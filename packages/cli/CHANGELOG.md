@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.3.14 - 2026-05-14
+
+### Added
+
+- **`scbe workspace import --export-path <path> [--target-root <dir>] [--hint <name>] [--json]`**: forwards to `scbe-agent-bus workspace import`. Cold-restore a workspace from a previously-exported manifest. Verifies the export FIRST and refuses (exit 1) any export that fails tamper-class checks — so the restored workspace is provably untampered. Records the source export's `manifest_sha256` as the new workspace's provenance anchor. Lineage classifies the result as `kind: 'import'`.
+
+### Changed
+
+- **Bumped `scbe-agent-bus` dependency**: `^0.3.8 → ^0.3.9` for the workspace import command.
+
 ## 4.3.13 - 2026-05-14
 
 ### Added

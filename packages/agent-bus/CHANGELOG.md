@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.9
+
+- **Workspace import command**: adds `scbe-agent-bus workspace import --export-path <path> [--target-root <dir>] [--hint <name>] [--json]`. Cold-restores a workspace from a previously-exported manifest into a fresh location. Always runs the standard verifier FIRST and refuses (exit 1) to import any export that fails any tamper class — the imported workspace is provably untampered or it doesn't exist.
+- **New public API**: `importAgentWorkspace(options)` (TypeScript), schema `aethermoor.bus.workspace_import.v1`. Records `source_export_path`, `source_export_id`, `source_manifest_sha256`, `source_workspace_id`, `imported_files`, `imported_bytes` — the source manifest sha256 anchors the new workspace's provenance back to the original export.
+- **Source `20_receipts/` is NOT replayed**: the imported workspace has its own audit chain anchored by the import receipt. Replaying the source's formation receipt would overwrite the new workspace's identity and pollute its lineage. Lineage walker's `kind: 'import'` carries `import_count` so reviewers can spot cold-restored workspaces in a chain.
+
 ## 0.3.8
 
 - **Workspace report command**: adds `scbe-agent-bus workspace report --workspace-root <path> [--json]`. Operator dashboard combining lineage summary, per-folder file/byte counts (`00_inbox` through `90_tmp`), workspace metadata (id, created_at, last_activity), and an `audit_health` color (`green` = all exports verified clean, `amber` = unverified exports present, `red` = any failed verify). Pure read-only.

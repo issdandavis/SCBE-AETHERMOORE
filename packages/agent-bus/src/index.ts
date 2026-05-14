@@ -654,6 +654,108 @@ export function verifyAllAgentWorkspaceExports(
   };
 }
 
+export interface WorkspaceImportOptions {
+  exportPath: string;
+  /** Parent directory under which the new workspace folder is created.
+   * Defaults to `.aethermoor-bus/workspaces`. */
+  targetRoot?: string;
+  /** Optional hint baked into the new workspace id. Defaults to `import`. */
+  hint?: string;
+}
+
+export interface AgentWorkspaceImportReceipt {
+  schema_version: 'aethermoor.bus.workspace_import.v1';
+  receipt: 'SCBE_WORKSPACE_IMPORT=1' | 'SCBE_WORKSPACE_IMPORT=0';
+  source_export_path: string;
+  source_export_id: string;
+  source_manifest_sha256: string;
+  source_workspace_id: string;
+  target_workspace_id: string;
+  target_workspace_root: string;
+  imported_files: number;
+  imported_bytes: number;
+  imported_at: string;
+  verify_pass: boolean;
+  verify_mismatches: WorkspaceVerifyMismatch[];
+  receipt_path: string;
+}
+
+/**
+ * Cold-restore a workspace from a previously-exported manifest. Always runs
+ * the standard verify FIRST and refuses to import any export that fails any
+ * tamper class. The new workspace records the source export's manifest sha256
+ * as its provenance anchor — `lineageAgentWorkspace` recognizes the resulting
+ * import receipt and chains it after formation.
+ *
+ * The new workspace's own formation receipt is written first (so 20_receipts/
+ * is populated for downstream commands), followed by the import receipt.
+ */
+export function importAgentWorkspace(
+  options: WorkspaceImportOptions
+): AgentWorkspaceImportReceipt {
+  const exportPath = path.resolve(options.exportPath);
+  // Verify FIRST. Refuse to import any tampered export.
+  const verifyReceipt = verifyAgentWorkspaceExport({ exportPath, persistReceipt: false });
+  if (verifyReceipt.receipt !== 'SCBE_WORKSPACE_VERIFY_PASS=1') {
+    throw new Error(
+      `cannot import ${exportPath}: verify failed with ${verifyReceipt.mismatches.length} ` +
+        `mismatch(es) (first reason: ${verifyReceipt.mismatches[0]?.reason ?? 'unknown'})`
+    );
+  }
+  const manifestPath = path.join(exportPath, 'manifest.json');
+  const manifest: WorkspaceExportManifest = JSON.parse(
+    fs.readFileSync(manifestPath, 'utf8')
+  );
+
+  // Form a new workspace under targetRoot.
+  const hint = (options.hint || 'import').trim();
+  const target = createAgentWorkspace({ root: options.targetRoot, hint });
+
+  // Restore every manifested file into the new workspace at its original
+  // relative path (which already includes the leading folder, e.g.
+  // `00_inbox/note.txt`). Skip the source's `20_receipts/` — the new
+  // workspace has its own audit chain anchored by the import receipt's
+  // source_export_id + source_manifest_sha256 fields. Copying the source's
+  // workspace.json would overwrite the new workspace's formation receipt
+  // and cause lineageAgentWorkspace to report the source's workspace_id.
+  let importedBytes = 0;
+  let importedFiles = 0;
+  for (const entry of manifest.files) {
+    if (entry.path.startsWith('20_receipts/')) continue;
+    const src = path.join(exportPath, entry.path);
+    const dest = path.join(target.workspace_root, entry.path);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.copyFileSync(src, dest);
+    // Re-verify the restored byte count matches the manifest.
+    const { bytes } = sha256OfFile(dest);
+    importedBytes += bytes;
+    importedFiles += 1;
+  }
+
+  const importedAt = new Date().toISOString();
+  const tsSafe = importedAt.replace(/[:.]/g, '-');
+  const receiptName = `import-${manifest.export_id}-${tsSafe}.json`;
+  const receiptPath = path.join(target.workspace_root, '20_receipts', receiptName);
+  const receipt: AgentWorkspaceImportReceipt = {
+    schema_version: 'aethermoor.bus.workspace_import.v1',
+    receipt: 'SCBE_WORKSPACE_IMPORT=1',
+    source_export_path: exportPath,
+    source_export_id: manifest.export_id,
+    source_manifest_sha256: verifyReceipt.manifest_sha256_actual,
+    source_workspace_id: manifest.workspace_id,
+    target_workspace_id: target.workspace_id,
+    target_workspace_root: target.workspace_root,
+    imported_files: importedFiles,
+    imported_bytes: importedBytes,
+    imported_at: importedAt,
+    verify_pass: true,
+    verify_mismatches: [],
+    receipt_path: receiptPath,
+  };
+  fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, 'utf8');
+  return receipt;
+}
+
 export interface WorkspaceReportOptions {
   workspaceRoot: string;
 }
@@ -677,6 +779,7 @@ export interface AgentWorkspaceReportReceipt {
     ingest_count: number;
     export_count: number;
     verify_count: number;
+    import_count: number;
     failed_verifies: number;
     unverified_exports: string[];
   };
@@ -745,6 +848,7 @@ export function reportAgentWorkspace(
       ingest_count: lineage.ingest_count,
       export_count: lineage.export_count,
       verify_count: lineage.verify_count,
+      import_count: lineage.import_count,
       failed_verifies: lineage.failed_verifies,
       unverified_exports: lineage.unverified_exports,
     },
@@ -758,7 +862,7 @@ export interface WorkspaceLineageOptions {
 }
 
 export interface LineageEntry {
-  kind: 'formation' | 'ingest' | 'export' | 'verify' | 'unknown';
+  kind: 'formation' | 'ingest' | 'export' | 'verify' | 'import' | 'unknown';
   receipt_path: string;
   receipt_name: string;
   timestamp: string;
@@ -782,6 +886,7 @@ export interface AgentWorkspaceLineageReceipt {
   ingest_count: number;
   export_count: number;
   verify_count: number;
+  import_count: number;
   unverified_exports: string[];
   failed_verifies: number;
 }
@@ -791,6 +896,7 @@ const LINEAGE_KIND_BY_SCHEMA: Record<string, LineageEntry['kind']> = {
   'aethermoor.bus.workspace_ingest.v1': 'ingest',
   'aethermoor.bus.workspace_export.v1': 'export',
   'aethermoor.bus.workspace_verify.v1': 'verify',
+  'aethermoor.bus.workspace_import.v1': 'import',
 };
 
 /**
@@ -887,10 +993,12 @@ export function lineageAgentWorkspace(
   let ingestCount = 0;
   let exportCount = 0;
   let verifyCount = 0;
+  let importCount = 0;
   let failedVerifies = 0;
   for (const e of entries) {
     if (e.kind === 'formation') formationCount += 1;
     if (e.kind === 'ingest') ingestCount += 1;
+    if (e.kind === 'import') importCount += 1;
     if (e.kind === 'export') {
       exportCount += 1;
       if (e.export_id) exportIds.add(e.export_id);
@@ -915,6 +1023,7 @@ export function lineageAgentWorkspace(
     ingest_count: ingestCount,
     export_count: exportCount,
     verify_count: verifyCount,
+    import_count: importCount,
     unverified_exports: unverifiedExports,
     failed_verifies: failedVerifies,
   };

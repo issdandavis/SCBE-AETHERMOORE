@@ -84,12 +84,13 @@ instructions:
   - `scbe workspace new --hint <name> --json`
   - `scbe workspace ingest --workspace-root <path> --source-path <file> [--rename <name>] --json`
   - `scbe workspace export --workspace-root <path> [--out <name>] [--include 00_inbox,10_work] --json`
+  - `scbe workspace import --export-path <path> [--target-root <dir>] [--hint <name>] --json` (refuses tampered exports)
   - `scbe workspace verify --export-path <path> [--no-persist] --json`
   - `scbe workspace verify --all --workspace-root <path> [--no-persist] --json`
   - `scbe workspace lineage --workspace-root <path> --json`
   - `scbe workspace report --workspace-root <path> --json` (operator dashboard: audit_health=green/amber/red)
-- Schemas: `aethermoor.bus.workspace_{receipt,ingest,export,verify,verify_all,lineage,report}.v1`
-- Receipt flags: `SCBE_WORKSPACE_{READY,INGEST,EXPORT,VERIFY_PASS,VERIFY_ALL_PASS,LINEAGE,REPORT}=1`
+- Schemas: `aethermoor.bus.workspace_{receipt,ingest,export,verify,verify_all,import,lineage,report}.v1`
+- Receipt flags: `SCBE_WORKSPACE_{READY,INGEST,EXPORT,VERIFY_PASS,VERIFY_ALL_PASS,IMPORT,LINEAGE,REPORT}=1`
 - Tamper-detection classes recognised by verify: `sha256_mismatch`, `bytes_mismatch`, `missing_file`, `extra_file`.
 - Static prefilter for Solidity (composes with trap-in-good-loops): `scbe contract scan <file.sol> --emit-redirect-prompt --json`.
 - Input-side trap inspector: `scbe trap-redirect --input "<prompt>" --json` (also accepts `--file` or stdin). Returns `scbe.trap_redirect.v1` with the defensive prompt that would be forwarded in place of the attacker text.

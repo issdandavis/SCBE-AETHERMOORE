@@ -277,6 +277,125 @@ def test_workspace_lineage_classifies_chain(tmp_path: Path) -> None:
     assert kinds == ["formation", "export", "verify"]
 
 
+def test_workspace_import_restores_files_with_provenance_anchor(tmp_path: Path) -> None:
+    build_agent_bus()
+    source_ws = _new_workspace_with_content(tmp_path / "source")
+    export = _export_workspace(source_ws)
+    target_root = tmp_path / "restored"
+    proc = subprocess.run(
+        [
+            NODE,
+            str(AGENT_BUS),
+            "workspace",
+            "import",
+            "--export-path",
+            export["export_path"],
+            "--target-root",
+            str(target_root),
+            "--hint",
+            "cold",
+            "--json",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "aethermoor.bus.workspace_import.v1"
+    assert payload["receipt"] == "SCBE_WORKSPACE_IMPORT=1"
+    assert payload["verify_pass"] is True
+    assert payload["source_export_id"] == export["export_id"]
+    assert payload["source_manifest_sha256"] == export["manifest_sha256"]
+    target_ws = Path(payload["target_workspace_root"])
+    assert (target_ws / "20_receipts" / "workspace.json").exists()  # new workspace formation
+    assert Path(payload["receipt_path"]).exists()
+    # source 20_receipts/ NOT replayed
+    receipts = sorted(p.name for p in (target_ws / "20_receipts").iterdir())
+    # only the new formation + the new import receipt should be present
+    assert "workspace.json" in receipts
+    assert any(n.startswith("import-") for n in receipts)
+    assert not any(n.startswith("ingest-") for n in receipts)
+
+
+def test_workspace_import_refuses_tampered_export(tmp_path: Path) -> None:
+    build_agent_bus()
+    source_ws = _new_workspace_with_content(tmp_path / "source")
+    export = _export_workspace(source_ws)
+    # tamper the export
+    export_path = Path(export["export_path"])
+    (export_path / "00_inbox" / "note.txt").write_text("TAMPERED\n", encoding="utf-8")
+    target_root = tmp_path / "restored"
+    proc = subprocess.run(
+        [
+            NODE,
+            str(AGENT_BUS),
+            "workspace",
+            "import",
+            "--export-path",
+            export["export_path"],
+            "--target-root",
+            str(target_root),
+            "--json",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    assert proc.returncode == 1
+    assert "verify failed" in proc.stderr
+    # no target workspace should have been created
+    assert not target_root.exists() or not any(target_root.iterdir())
+
+
+def test_workspace_lineage_classifies_import(tmp_path: Path) -> None:
+    build_agent_bus()
+    source_ws = _new_workspace_with_content(tmp_path / "source")
+    export = _export_workspace(source_ws)
+    target_root = tmp_path / "restored"
+    proc = subprocess.run(
+        [
+            NODE,
+            str(AGENT_BUS),
+            "workspace",
+            "import",
+            "--export-path",
+            export["export_path"],
+            "--target-root",
+            str(target_root),
+            "--json",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    import_payload = json.loads(proc.stdout)
+    target_ws = Path(import_payload["target_workspace_root"])
+    lin = subprocess.run(
+        [NODE, str(AGENT_BUS), "workspace", "lineage", "--workspace-root", str(target_ws), "--json"],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    lineage = json.loads(lin.stdout)
+    assert lineage["import_count"] == 1
+    assert lineage["ingest_count"] == 0  # source ingests NOT replayed
+    kinds = [e["kind"] for e in lineage["entries"]]
+    assert kinds == ["formation", "import"]
+
+
 def test_workspace_report_audit_health_amber_unverified(tmp_path: Path) -> None:
     build_agent_bus()
     ws = _new_workspace_with_content(tmp_path)

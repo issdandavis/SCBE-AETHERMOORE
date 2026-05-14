@@ -5,6 +5,7 @@ const path = require('node:path');
 const {
   createAgentWorkspace,
   exportAgentWorkspace,
+  importAgentWorkspace,
   ingestIntoAgentWorkspace,
   lineageAgentWorkspace,
   reportAgentWorkspace,
@@ -96,6 +97,7 @@ Usage:
   scbe-agent-bus workspace new --hint customer-smoke --json
   scbe-agent-bus workspace ingest --workspace-root .aethermoor-bus/workspaces/<id> --source-path /path/to/file --json
   scbe-agent-bus workspace export --workspace-root .aethermoor-bus/workspaces/<id> --json
+  scbe-agent-bus workspace import --export-path .aethermoor-bus/workspaces/<id>/30_exports/<eid> --json
   scbe-agent-bus workspace verify --export-path .aethermoor-bus/workspaces/<id>/30_exports/<eid> --json
   scbe-agent-bus workspace verify --all --workspace-root .aethermoor-bus/workspaces/<id> --json
   scbe-agent-bus workspace lineage --workspace-root .aethermoor-bus/workspaces/<id> --json
@@ -234,6 +236,43 @@ async function main() {
       process.exitCode = payload.receipt === 'SCBE_WORKSPACE_VERIFY_PASS=1' ? 0 : 1;
       return;
     }
+    if (action === 'import') {
+      const exportPath = String(flags['export-path'] || '').trim();
+      if (!exportPath) {
+        process.stderr.write(
+          'Usage: scbe-agent-bus workspace import --export-path <path> [--target-root <dir>] [--hint <name>] [--json]\n'
+        );
+        process.exitCode = 2;
+        return;
+      }
+      const targetRoot = flags['target-root'] ? String(flags['target-root']) : undefined;
+      const hint = flags.hint ? String(flags.hint) : undefined;
+      let payload;
+      try {
+        payload = importAgentWorkspace({ exportPath, targetRoot, hint });
+      } catch (err) {
+        process.stderr.write(`scbe-agent-bus workspace import: ${err.message}\n`);
+        process.exitCode = 1;
+        return;
+      }
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+      } else {
+        process.stdout.write(
+          [
+            `SCBE workspace import receipt: ${payload.receipt}`,
+            `Source export:   ${payload.source_export_path}`,
+            `Source export id: ${payload.source_export_id}`,
+            `Source manifest sha256: ${payload.source_manifest_sha256}`,
+            `Target workspace: ${payload.target_workspace_root}`,
+            `Files imported:  ${payload.imported_files}    bytes: ${payload.imported_bytes}`,
+            `Receipt:         ${payload.receipt_path}`,
+            '',
+          ].join('\n')
+        );
+      }
+      return;
+    }
     if (action === 'report') {
       const workspaceRoot = String(flags['workspace-root'] || flags.root || '').trim();
       if (!workspaceRoot) {
@@ -322,7 +361,7 @@ async function main() {
           `Workspace:        ${payload.workspace_root}`,
           `Workspace id:     ${payload.workspace_id}`,
           `Generated at:     ${payload.generated_at}`,
-          `Formation: ${payload.formation_count}    Ingests: ${payload.ingest_count}    Exports: ${payload.export_count}    Verifies: ${payload.verify_count}    Failed verifies: ${payload.failed_verifies}`,
+          `Formation: ${payload.formation_count}    Ingests: ${payload.ingest_count}    Imports: ${payload.import_count}    Exports: ${payload.export_count}    Verifies: ${payload.verify_count}    Failed verifies: ${payload.failed_verifies}`,
           `Unverified exports (${payload.unverified_exports.length}): ${payload.unverified_exports.join(', ') || '<none>'}`,
           '',
           'Chain:',
@@ -392,6 +431,7 @@ async function main() {
         '  scbe-agent-bus workspace new [--root <path>] [--hint <name>] [--json]\n' +
         '  scbe-agent-bus workspace ingest --workspace-root <path> --source-path <file> [--rename <name>] [--json]\n' +
         '  scbe-agent-bus workspace export --workspace-root <path> [--out <name>] [--include 00_inbox,10_work] [--json]\n' +
+        '  scbe-agent-bus workspace import --export-path <path> [--target-root <dir>] [--hint <name>] [--json]\n' +
         '  scbe-agent-bus workspace verify --export-path <path> [--no-persist] [--json]\n' +
         '  scbe-agent-bus workspace verify --all --workspace-root <path> [--no-persist] [--json]\n' +
         '  scbe-agent-bus workspace lineage --workspace-root <path> [--json]\n' +
