@@ -2,6 +2,7 @@
 
 const {
   createAgentWorkspace,
+  exportAgentWorkspace,
   postAgentBusEvent,
   runAgentBusTerminalUi,
   startAgentBusServer,
@@ -86,6 +87,7 @@ Usage:
   scbe-agent-bus send --task "review changed files" --task-type review --json
   scbe-agent-bus health --base-url http://127.0.0.1:8787 --json
   scbe-agent-bus workspace new --hint customer-smoke --json
+  scbe-agent-bus workspace export --workspace-root .aethermoor-bus/workspaces/<id> --json
   scbe-agent-bus upgrade
 
 Commands:
@@ -115,29 +117,70 @@ async function main() {
   }
   if (command === 'workspace') {
     const action = String(flags._action || process.argv[3] || 'help').trim();
-    if (action !== 'new') {
-      process.stderr.write(
-        'Usage: scbe-agent-bus workspace new [--root <path>] [--hint <name>] [--json]\n'
-      );
-      process.exitCode = action === 'help' ? 0 : 2;
+    if (action === 'new') {
+      const payload = createAgentWorkspace({
+        root: flags.root ? String(flags.root) : undefined,
+        hint: flags.hint ? String(flags.hint) : undefined,
+      });
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+      } else {
+        process.stdout.write(
+          [
+            `SCBE workspace receipt: ${payload.receipt}`,
+            `Workspace: ${payload.workspace_root}`,
+            `Receipt: ${payload.receipt_path}`,
+            '',
+          ].join('\n')
+        );
+      }
       return;
     }
-    const payload = createAgentWorkspace({
-      root: flags.root ? String(flags.root) : undefined,
-      hint: flags.hint ? String(flags.hint) : undefined,
-    });
-    if (flags.json) {
-      process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
-    } else {
-      process.stdout.write(
-        [
-          `SCBE workspace receipt: ${payload.receipt}`,
-          `Workspace: ${payload.workspace_root}`,
-          `Receipt: ${payload.receipt_path}`,
-          '',
-        ].join('\n')
-      );
+    if (action === 'export') {
+      const workspaceRoot = String(flags['workspace-root'] || '').trim();
+      if (!workspaceRoot) {
+        process.stderr.write(
+          'Usage: scbe-agent-bus workspace export --workspace-root <path> [--out <name>] [--include 00_inbox,10_work] [--json]\n'
+        );
+        process.exitCode = 2;
+        return;
+      }
+      const include =
+        flags.include && typeof flags.include === 'string'
+          ? String(flags.include)
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : undefined;
+      const payload = exportAgentWorkspace({
+        workspaceRoot,
+        out: flags.out ? String(flags.out) : undefined,
+        include,
+      });
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+      } else {
+        process.stdout.write(
+          [
+            `SCBE workspace export receipt: ${payload.receipt}`,
+            `Workspace: ${payload.workspace_root}`,
+            `Export:    ${payload.export_path}`,
+            `Manifest:  ${payload.manifest_path}`,
+            `Files:     ${payload.file_count} (${payload.total_bytes} bytes)`,
+            `Manifest sha256: ${payload.manifest_sha256}`,
+            `Receipt:   ${payload.receipt_path}`,
+            '',
+          ].join('\n')
+        );
+      }
+      return;
     }
+    process.stderr.write(
+      'Usage:\n' +
+        '  scbe-agent-bus workspace new [--root <path>] [--hint <name>] [--json]\n' +
+        '  scbe-agent-bus workspace export --workspace-root <path> [--out <name>] [--include 00_inbox,10_work] [--json]\n'
+    );
+    process.exitCode = action === 'help' ? 0 : 2;
     return;
   }
   if (command === 'serve') {

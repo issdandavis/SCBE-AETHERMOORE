@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.3.5 - 2026-05-14
+
+### Added
+
+- **`scbe workspace export --workspace-root <path> [--out <name>] [--include 00_inbox,10_work] [--json]`**: forwards to `scbe-agent-bus workspace export`. Copies the included subfolders of the workspace into `<workspace>/30_exports/<export-id>/`, writes a manifest with per-file sha256, and emits an `SCBE_WORKSPACE_EXPORT=1` receipt at `<workspace>/20_receipts/export-<export-id>.json` with the manifest sha256 as the chain-of-custody anchor. Default include = `00_inbox`, `10_work`, `20_receipts`, `40_refs`; `30_exports` (self) and `90_tmp` (scratch) are never exported.
+
+### Changed
+
+- **Bumped `scbe-agent-bus` dependency**: `^0.3.1 → ^0.3.2` for the workspace export command.
+
 ## 4.3.4 - 2026-05-14
 
 ### Added

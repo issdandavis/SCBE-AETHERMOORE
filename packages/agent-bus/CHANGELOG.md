@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.2
+
+- **Workspace export command**: adds `scbe-agent-bus workspace export --workspace-root <path> [--out <name>] [--include <comma-separated>] [--json]`. Copies the included folders (default `00_inbox`, `10_work`, `20_receipts`, `40_refs`) into `<workspace>/30_exports/<export-id>/`, writes a `manifest.json` with per-file sha256, and emits an `SCBE_WORKSPACE_EXPORT=1` receipt at `<workspace>/20_receipts/export-<export-id>.json` including the manifest's sha256 as a chain-of-custody anchor. `30_exports` (self) and `90_tmp` (scratch) are never exported.
+- **New public API**: `exportAgentWorkspace(options)` (TypeScript), with schemas `aethermoor.bus.workspace_export.v1` and `aethermoor.bus.workspace_export_manifest.v1`.
+
 ## 0.3.1
 
 - **Workspace formation command**: adds `scbe-agent-bus workspace new [--root <path>] [--hint <name>] [--json]`, creating the canonical `.aethermoor-bus/workspaces/<workspace-id>/` folder shape and writing a `SCBE_WORKSPACE_READY=1` receipt into `20_receipts/workspace.json`.

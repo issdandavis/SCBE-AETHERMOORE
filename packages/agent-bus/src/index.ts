@@ -128,6 +128,175 @@ export function createAgentWorkspace(options: WorkspaceOptions = {}): AgentWorks
   return payload;
 }
 
+export interface WorkspaceExportOptions {
+  workspaceRoot: string;
+  out?: string;
+  include?: string[];
+}
+
+export interface WorkspaceExportManifestEntry {
+  path: string;
+  sha256: string;
+  bytes: number;
+}
+
+export interface WorkspaceExportManifest {
+  schema_version: 'aethermoor.bus.workspace_export_manifest.v1';
+  export_id: string;
+  workspace_id: string;
+  workspace_root: string;
+  created_at: string;
+  included_folders: string[];
+  excluded_folders: string[];
+  file_count: number;
+  total_bytes: number;
+  files: WorkspaceExportManifestEntry[];
+}
+
+export interface AgentWorkspaceExportReceipt {
+  schema_version: 'aethermoor.bus.workspace_export.v1';
+  receipt: 'SCBE_WORKSPACE_EXPORT=1';
+  workspace_id: string;
+  workspace_root: string;
+  export_id: string;
+  export_path: string;
+  manifest_path: string;
+  manifest_sha256: string;
+  created_at: string;
+  file_count: number;
+  total_bytes: number;
+  included_folders: string[];
+  excluded_folders: string[];
+  receipt_path: string;
+}
+
+const DEFAULT_EXPORT_INCLUDE = ['00_inbox', '10_work', '20_receipts', '40_refs'];
+const NEVER_EXPORT = new Set(['30_exports', '90_tmp']);
+
+function sha256OfFile(filePath: string): { hash: string; bytes: number } {
+  const hash = crypto.createHash('sha256');
+  const data = fs.readFileSync(filePath);
+  hash.update(data);
+  return { hash: hash.digest('hex'), bytes: data.length };
+}
+
+function walkFiles(root: string, relPrefix = ''): string[] {
+  const out: string[] = [];
+  const stack: Array<{ abs: string; rel: string }> = [{ abs: root, rel: relPrefix }];
+  while (stack.length > 0) {
+    const next = stack.pop()!;
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(next.abs, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      const abs = path.join(next.abs, entry.name);
+      const rel = next.rel ? `${next.rel}/${entry.name}` : entry.name;
+      if (entry.isSymbolicLink()) continue;
+      if (entry.isDirectory()) {
+        stack.push({ abs, rel });
+      } else if (entry.isFile()) {
+        out.push(rel);
+      }
+    }
+  }
+  out.sort();
+  return out;
+}
+
+export function exportAgentWorkspace(
+  options: WorkspaceExportOptions
+): AgentWorkspaceExportReceipt {
+  const workspaceRoot = path.resolve(options.workspaceRoot);
+  if (!fs.existsSync(workspaceRoot) || !fs.statSync(workspaceRoot).isDirectory()) {
+    throw new Error(`workspace not found at ${workspaceRoot}`);
+  }
+  // Recover workspace_id from the formation receipt when present; fall back to basename.
+  let workspaceId = path.basename(workspaceRoot);
+  const formationReceiptPath = path.join(workspaceRoot, '20_receipts', 'workspace.json');
+  if (fs.existsSync(formationReceiptPath)) {
+    try {
+      const raw = fs.readFileSync(formationReceiptPath, 'utf8');
+      const parsed = JSON.parse(raw) as { workspace_id?: string };
+      if (parsed.workspace_id) workspaceId = parsed.workspace_id;
+    } catch {
+      // tolerate corrupt receipt — keep basename fallback
+    }
+  }
+
+  const requestedInclude = (options.include && options.include.length > 0
+    ? options.include
+    : DEFAULT_EXPORT_INCLUDE
+  ).filter((folder) => !NEVER_EXPORT.has(folder));
+  const includedFolders = requestedInclude.filter((folder) =>
+    fs.existsSync(path.join(workspaceRoot, folder))
+  );
+  const excludedFolders = Array.from(NEVER_EXPORT);
+
+  const exportId = `${timestampId()}-${slugify(options.out || 'export')}-${crypto
+    .randomBytes(3)
+    .toString('hex')}`;
+  const exportPath = path.join(workspaceRoot, '30_exports', exportId);
+  fs.mkdirSync(exportPath, { recursive: true });
+
+  const manifestEntries: WorkspaceExportManifestEntry[] = [];
+  let totalBytes = 0;
+  for (const folder of includedFolders) {
+    const folderAbs = path.join(workspaceRoot, folder);
+    const relFiles = walkFiles(folderAbs);
+    for (const rel of relFiles) {
+      const srcAbs = path.join(folderAbs, rel);
+      const destRel = `${folder}/${rel}`;
+      const destAbs = path.join(exportPath, destRel);
+      fs.mkdirSync(path.dirname(destAbs), { recursive: true });
+      fs.copyFileSync(srcAbs, destAbs);
+      const { hash, bytes } = sha256OfFile(destAbs);
+      manifestEntries.push({ path: destRel, sha256: hash, bytes });
+      totalBytes += bytes;
+    }
+  }
+
+  const manifest: WorkspaceExportManifest = {
+    schema_version: 'aethermoor.bus.workspace_export_manifest.v1',
+    export_id: exportId,
+    workspace_id: workspaceId,
+    workspace_root: workspaceRoot,
+    created_at: new Date().toISOString(),
+    included_folders: includedFolders,
+    excluded_folders: excludedFolders,
+    file_count: manifestEntries.length,
+    total_bytes: totalBytes,
+    files: manifestEntries,
+  };
+  const manifestPath = path.join(exportPath, 'manifest.json');
+  const manifestJson = `${JSON.stringify(manifest, null, 2)}\n`;
+  fs.writeFileSync(manifestPath, manifestJson, 'utf8');
+  const manifestSha256 = crypto.createHash('sha256').update(manifestJson).digest('hex');
+
+  const receiptPath = path.join(workspaceRoot, '20_receipts', `export-${exportId}.json`);
+  fs.mkdirSync(path.dirname(receiptPath), { recursive: true });
+  const receipt: AgentWorkspaceExportReceipt = {
+    schema_version: 'aethermoor.bus.workspace_export.v1',
+    receipt: 'SCBE_WORKSPACE_EXPORT=1',
+    workspace_id: workspaceId,
+    workspace_root: workspaceRoot,
+    export_id: exportId,
+    export_path: exportPath,
+    manifest_path: manifestPath,
+    manifest_sha256: manifestSha256,
+    created_at: manifest.created_at,
+    file_count: manifest.file_count,
+    total_bytes: manifest.total_bytes,
+    included_folders: includedFolders,
+    excluded_folders: excludedFolders,
+    receipt_path: receiptPath,
+  };
+  fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, 'utf8');
+  return receipt;
+}
+
 function normalizeTaskType(value: unknown): string {
   const taskType = String(value || 'general')
     .trim()
