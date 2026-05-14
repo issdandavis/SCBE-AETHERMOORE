@@ -61,9 +61,15 @@ the logged `d` and `p_d` can recompute `H` exactly without rerunning
 the model.
 
 This is the audit trail other governance vendors lack — Anthropic's
-Petri does detection without enforcement; PNNL's ALOHA has no
-governance layer at all. SCBE composes with both as the enforcement
-surface that emits the audit trail.
+Petri does detection without enforcement; Anthropic's SCONE-bench
+(red.anthropic.com/2025/smart-contracts/) measures attacker capability
+(frontier models autonomously finding $550M in simulated smart-contract
+exploits across 405 benchmark contracts) but does not ship a defensive
+gate; PNNL's ALOHA has no governance layer at all. SCBE composes with
+all three as the enforcement surface that emits the audit trail. As of
+2026-05-14 SCBE ships `scbe contract scan` as a SCONE-class static
+prefilter and SCONE-aware anchors in the production governed-output
+proxy.
 
 ### 3.2 AetherDesk — local operator shell (PR #1640)
 
@@ -109,7 +115,7 @@ Full report at `artifacts/aetherdesk_bench/bench_report_*.json`.
 | Headwind | How SCBE responds |
 |---|---|
 | AI buyer trust is at floor (77% of "Success" sub-cat Amazon AI books in late 2025 were AI-generated) | The CI-validated runnable-ebook format and the GeoSeal receipts mean every claim ships with a re-runnable proof |
-| Governance vendors detect but don't enforce (Petri, ALOHA) | SCBE provides the enforcement gate that emits the receipt those tools want to consume |
+| Governance vendors detect but don't enforce (Petri, ALOHA); attacker-capability benchmarks measure offense but ship no defense (Anthropic SCONE-bench: $550M in simulated smart-contract exploits across 405 benchmark contracts) | SCBE provides the enforcement gate that emits the receipt those tools want to consume; ships `scbe contract scan` SCONE-class static prefilter and SCONE-aware governance anchors |
 | Coding-agent compute costs scale with traffic | The mechanical compile-CA path replaces LLM calls for the routine ops that dominate volume (arithmetic, comparison, aggregation) at zero per-call cost |
 | Post-quantum migration is forcing the next refactor of every secure system anyway | SCBE is already on ML-DSA-65 / ML-KEM-768 (the renamed Dilithium3 / Kyber768) with fallback handling for older liboqs builds |
 
