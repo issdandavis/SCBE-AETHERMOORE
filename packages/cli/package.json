@@ -1,7 +1,7 @@
 {
   "name": "scbe-aethermoore-cli",
-  "version": "4.3.3",
-  "description": "Standalone CLI for SCBE-AETHERMOORE: GeoSeal tools, flow operator loop (plan/packetize/status/run-next/continue/report), liboqs proof receipts, agent-bus passthrough, tokenizer lanes, governance packets, web lookup, mechanical verification, governance abacus (BigInt L12+L13).",
+  "version": "4.3.4",
+  "description": "Standalone CLI for SCBE-AETHERMOORE: GeoSeal tools, flow operator loop (plan/packetize/status/run-next/continue/report), liboqs proof receipts, bus workspace formation, agent-bus passthrough, tokenizer lanes, governance packets, web lookup, mechanical verification, governance abacus (BigInt L12+L13).",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT OR Apache-2.0",
   "type": "commonjs",
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "scbe-aethermoore": "^4.1.0",
-    "scbe-agent-bus": "^0.3.0"
+    "scbe-agent-bus": "^0.3.1"
   },
   "keywords": [
     "scbe",

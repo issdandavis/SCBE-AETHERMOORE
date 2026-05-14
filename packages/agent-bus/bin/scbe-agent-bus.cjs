@@ -1,20 +1,27 @@
 #!/usr/bin/env node
 
-const { postAgentBusEvent, runAgentBusTerminalUi, startAgentBusServer } = require("../dist/index.js");
+const {
+  createAgentWorkspace,
+  postAgentBusEvent,
+  runAgentBusTerminalUi,
+  startAgentBusServer,
+} = require('../dist/index.js');
 
-const HOSTED_INTAKE_URL = "https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html";
-const SERVICE_CREDITS_URL = "https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html";
-const CREDIT_TOPUP_URL = "https://ko-fi.com/izdandavis";
+const HOSTED_INTAKE_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html';
+const SERVICE_CREDITS_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html';
+const CREDIT_TOPUP_URL = 'https://ko-fi.com/izdandavis';
 
-const LOCAL_PROVIDERS = new Set(["offline", "local", "ollama", "local_only", ""]);
+const LOCAL_PROVIDERS = new Set(['offline', 'local', 'ollama', 'local_only', '']);
 
 function hasHostedCredential() {
-  const key = String(process.env.SCBE_API_KEY || "").trim();
+  const key = String(process.env.SCBE_API_KEY || '').trim();
   return key.length > 0;
 }
 
 function wantsHostedDispatch(flags) {
-  const provider = String(flags["dispatch-provider"] || "offline").trim().toLowerCase();
+  const provider = String(flags['dispatch-provider'] || 'offline')
+    .trim()
+    .toLowerCase();
   return !LOCAL_PROVIDERS.has(provider);
 }
 
@@ -54,20 +61,20 @@ function parseArgs(argv) {
   const flags = {};
   for (let i = 2; i < argv.length; i += 1) {
     const token = argv[i];
-    if (!token.startsWith("--")) {
+    if (!token.startsWith('--')) {
       positionals.push(token);
       continue;
     }
     const key = token.slice(2);
     const next = argv[i + 1];
-    if (!next || next.startsWith("--")) {
+    if (!next || next.startsWith('--')) {
       flags[key] = true;
       continue;
     }
     flags[key] = next;
     i += 1;
   }
-  return { command: positionals[0] || "help", flags };
+  return { command: positionals[0] || 'help', flags };
 }
 
 function printHelp() {
@@ -78,6 +85,7 @@ Usage:
   scbe-agent-bus ui --base-url http://127.0.0.1:8787
   scbe-agent-bus send --task "review changed files" --task-type review --json
   scbe-agent-bus health --base-url http://127.0.0.1:8787 --json
+  scbe-agent-bus workspace new --hint customer-smoke --json
   scbe-agent-bus upgrade
 
 Commands:
@@ -85,6 +93,7 @@ Commands:
   ui        Start the terminal frontend.
   send      Send one governed task to the backend.
   health    Check backend health.
+  workspace Create a temporary local bus workspace.
   upgrade   Show how to enable hosted runs (intake, credits, top-up).
 
 Local routing is free. Hosted runs require SCBE_API_KEY (see 'upgrade').
@@ -93,41 +102,70 @@ Local routing is free. Hosted runs require SCBE_API_KEY (see 'upgrade').
 
 async function main() {
   const { command, flags } = parseArgs(process.argv);
-  const baseUrl = String(flags["base-url"] || process.env.SCBE_AGENT_BUS_URL || "http://127.0.0.1:8787");
-  if (command === "help" || flags.help) {
+  const baseUrl = String(
+    flags['base-url'] || process.env.SCBE_AGENT_BUS_URL || 'http://127.0.0.1:8787'
+  );
+  if (command === 'help' || flags.help) {
     printHelp();
     return;
   }
-  if (command === "upgrade") {
+  if (command === 'upgrade') {
     printUpgrade();
     return;
   }
-  if (command === "serve") {
+  if (command === 'workspace') {
+    const action = String(flags._action || process.argv[3] || 'help').trim();
+    if (action !== 'new') {
+      process.stderr.write(
+        'Usage: scbe-agent-bus workspace new [--root <path>] [--hint <name>] [--json]\n'
+      );
+      process.exitCode = action === 'help' ? 0 : 2;
+      return;
+    }
+    const payload = createAgentWorkspace({
+      root: flags.root ? String(flags.root) : undefined,
+      hint: flags.hint ? String(flags.hint) : undefined,
+    });
+    if (flags.json) {
+      process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    } else {
+      process.stdout.write(
+        [
+          `SCBE workspace receipt: ${payload.receipt}`,
+          `Workspace: ${payload.workspace_root}`,
+          `Receipt: ${payload.receipt_path}`,
+          '',
+        ].join('\n')
+      );
+    }
+    return;
+  }
+  if (command === 'serve') {
     const handle = await startAgentBusServer({
-      host: String(flags.host || "127.0.0.1"),
+      host: String(flags.host || '127.0.0.1'),
       port: Number(flags.port || 8787),
-      repoRoot: flags["repo-root"] ? String(flags["repo-root"]) : undefined,
+      repoRoot: flags['repo-root'] ? String(flags['repo-root']) : undefined,
       python: flags.python ? String(flags.python) : undefined,
-      continueOnError: Boolean(flags["continue-on-error"]),
+      continueOnError: Boolean(flags['continue-on-error']),
     });
     const payload = {
-      schema_version: "scbe-agent-bus-backend-start-v1",
+      schema_version: 'scbe-agent-bus-backend-start-v1',
       ok: true,
       url: handle.url,
-      routes: ["/health", "/v1/events", "/v1/batch"],
+      routes: ['/health', '/v1/events', '/v1/batch'],
     };
     process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
     return;
   }
-  if (command === "ui") {
+  if (command === 'ui') {
     await runAgentBusTerminalUi({ baseUrl });
     return;
   }
-  if (command === "send") {
-    const task = String(flags.task || "").trim();
-    if (!task) throw new Error("send requires --task");
+  if (command === 'send') {
+    const task = String(flags.task || '').trim();
+    if (!task) throw new Error('send requires --task');
     if (wantsHostedDispatch(flags) && !hasHostedCredential()) {
-      const provider = String(flags["dispatch-provider"] || "offline");
+      const provider = String(flags['dispatch-provider'] || 'offline');
       printHostedIntakeNotice(provider);
       process.exitCode = 2;
       return;
@@ -135,20 +173,24 @@ async function main() {
     const result = await postAgentBusEvent(
       {
         task,
-        taskType: String(flags["task-type"] || "general"),
-        privacy: String(flags.privacy || "local_only"),
-        budgetCents: Number(flags["budget-cents"] || 0),
-        dispatchProvider: String(flags["dispatch-provider"] || "offline"),
-        dispatch: flags.dispatch !== "false",
+        taskType: String(flags['task-type'] || 'general'),
+        privacy: String(flags.privacy || 'local_only'),
+        budgetCents: Number(flags['budget-cents'] || 0),
+        dispatchProvider: String(flags['dispatch-provider'] || 'offline'),
+        dispatch: flags.dispatch !== 'false',
       },
       { baseUrl }
     );
-    process.stdout.write(flags.json ? `${JSON.stringify(result, null, 2)}\n` : `${JSON.stringify(result)}\n`);
+    process.stdout.write(
+      flags.json ? `${JSON.stringify(result, null, 2)}\n` : `${JSON.stringify(result)}\n`
+    );
     return;
   }
-  if (command === "health") {
-    const result = await fetch(`${baseUrl.replace(/\/+$/, "")}/health`).then((res) => res.json());
-    process.stdout.write(flags.json ? `${JSON.stringify(result, null, 2)}\n` : `${JSON.stringify(result)}\n`);
+  if (command === 'health') {
+    const result = await fetch(`${baseUrl.replace(/\/+$/, '')}/health`).then((res) => res.json());
+    process.stdout.write(
+      flags.json ? `${JSON.stringify(result, null, 2)}\n` : `${JSON.stringify(result)}\n`
+    );
     return;
   }
   throw new Error(`unknown command: ${command}`);
