@@ -277,6 +277,72 @@ def test_workspace_lineage_classifies_chain(tmp_path: Path) -> None:
     assert kinds == ["formation", "export", "verify"]
 
 
+def test_workspace_report_audit_health_amber_unverified(tmp_path: Path) -> None:
+    build_agent_bus()
+    ws = _new_workspace_with_content(tmp_path)
+    _export_workspace(ws)
+    # do NOT verify -> AMBER
+    proc = subprocess.run(
+        [NODE, str(AGENT_BUS), "workspace", "report", "--workspace-root", str(ws), "--json"],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "aethermoor.bus.workspace_report.v1"
+    assert payload["receipt"] == "SCBE_WORKSPACE_REPORT=1"
+    assert payload["audit_health"] == "amber"
+    assert payload["lineage_summary"]["unverified_exports"]
+    # folder list always includes the canonical 6
+    folder_paths = {f["path"] for f in payload["folders"]}
+    assert folder_paths == {"00_inbox", "10_work", "20_receipts", "30_exports", "40_refs", "90_tmp"}
+
+
+def test_workspace_report_audit_health_green_after_verify(tmp_path: Path) -> None:
+    build_agent_bus()
+    ws = _new_workspace_with_content(tmp_path)
+    export = _export_workspace(ws)
+    _verify_export(Path(export["export_path"]))  # auto-persists
+    proc = subprocess.run(
+        [NODE, str(AGENT_BUS), "workspace", "report", "--workspace-root", str(ws), "--json"],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    payload = json.loads(proc.stdout)
+    assert payload["audit_health"] == "green"
+    assert payload["lineage_summary"]["unverified_exports"] == []
+
+
+def test_workspace_report_audit_health_red_on_failed_verify(tmp_path: Path) -> None:
+    build_agent_bus()
+    ws = _new_workspace_with_content(tmp_path)
+    export = _export_workspace(ws)
+    export_path = Path(export["export_path"])
+    # tamper FIRST, then verify -> persists a failed verify
+    (export_path / "00_inbox" / "note.txt").write_text("TAMPERED\n", encoding="utf-8")
+    _verify_export(export_path)
+    proc = subprocess.run(
+        [NODE, str(AGENT_BUS), "workspace", "report", "--workspace-root", str(ws), "--json"],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    payload = json.loads(proc.stdout)
+    assert payload["audit_health"] == "red"
+    assert payload["lineage_summary"]["failed_verifies"] == 1
+
+
 def test_workspace_ingest_copies_file_with_receipt(tmp_path: Path) -> None:
     build_agent_bus()
     ws = _new_workspace_with_content(tmp_path)

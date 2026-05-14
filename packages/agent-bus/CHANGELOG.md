@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.8
+
+- **Workspace report command**: adds `scbe-agent-bus workspace report --workspace-root <path> [--json]`. Operator dashboard combining lineage summary, per-folder file/byte counts (`00_inbox` through `90_tmp`), workspace metadata (id, created_at, last_activity), and an `audit_health` color (`green` = all exports verified clean, `amber` = unverified exports present, `red` = any failed verify). Pure read-only.
+- **New public API**: `reportAgentWorkspace(options)` (TypeScript), schema `aethermoor.bus.workspace_report.v1`. Composes existing surfaces — no new storage, just a single-call view operators can use to answer "what does this workspace look like right now."
+
 ## 0.3.7
 
 - **Workspace ingest command**: adds `scbe-agent-bus workspace ingest --workspace-root <path> --source-path <file> [--rename <name>] [--json]`. Copies the source file into `<workspace>/00_inbox/`, computes sha256 of both source and destination (must match — mismatch throws), and writes an `SCBE_WORKSPACE_INGEST=1` receipt under `20_receipts/ingest-<utc-ts>-<basename>.json`. Closes the audit chain at the entry point: before this, files appeared in `00_inbox/` with no provenance.

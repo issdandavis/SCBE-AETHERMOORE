@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.3.12 - 2026-05-14
+
+### Added
+
+- **`scbe workspace report --workspace-root <path> [--json]`**: forwards to `scbe-agent-bus workspace report`. Operator dashboard: per-folder file/byte counts, lineage summary (formation/ingest/export/verify counts + unverified exports + failed verifies), workspace metadata, and an `audit_health` color (`green` / `amber` / `red`). Read-only.
+
+### Changed
+
+- **Bumped `scbe-agent-bus` dependency**: `^0.3.7 → ^0.3.8` for the workspace report command.
+
 ## 4.3.11 - 2026-05-14
 
 ### Added

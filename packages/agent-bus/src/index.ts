@@ -654,6 +654,105 @@ export function verifyAllAgentWorkspaceExports(
   };
 }
 
+export interface WorkspaceReportOptions {
+  workspaceRoot: string;
+}
+
+export interface FolderStat {
+  path: string;
+  file_count: number;
+  total_bytes: number;
+}
+
+export interface AgentWorkspaceReportReceipt {
+  schema_version: 'aethermoor.bus.workspace_report.v1';
+  receipt: 'SCBE_WORKSPACE_REPORT=1';
+  workspace_id: string;
+  workspace_root: string;
+  generated_at: string;
+  created_at: string;
+  folders: FolderStat[];
+  lineage_summary: {
+    formation_count: number;
+    ingest_count: number;
+    export_count: number;
+    verify_count: number;
+    failed_verifies: number;
+    unverified_exports: string[];
+  };
+  last_activity: string;
+  audit_health: 'green' | 'amber' | 'red';
+}
+
+const REPORT_FOLDERS = ['00_inbox', '10_work', '20_receipts', '30_exports', '40_refs', '90_tmp'];
+
+function folderStat(workspaceRoot: string, folder: string): FolderStat {
+  const abs = path.join(workspaceRoot, folder);
+  if (!fs.existsSync(abs)) {
+    return { path: folder, file_count: 0, total_bytes: 0 };
+  }
+  let fileCount = 0;
+  let totalBytes = 0;
+  for (const rel of walkFiles(abs)) {
+    try {
+      const st = fs.statSync(path.join(abs, rel));
+      if (st.isFile()) {
+        fileCount += 1;
+        totalBytes += st.size;
+      }
+    } catch {
+      // tolerate missing/locked file
+    }
+  }
+  return { path: folder, file_count: fileCount, total_bytes: totalBytes };
+}
+
+/**
+ * Operator dashboard. Returns folder file/byte counts, lineage summary, and
+ * an `audit_health` color: green if every export has a passing verify, amber
+ * if there are unverified exports, red if any verify failed. Pure read-only.
+ */
+export function reportAgentWorkspace(
+  options: WorkspaceReportOptions
+): AgentWorkspaceReportReceipt {
+  const workspaceRoot = path.resolve(options.workspaceRoot);
+  if (!fs.existsSync(workspaceRoot) || !fs.statSync(workspaceRoot).isDirectory()) {
+    throw new Error(`workspace not found at ${workspaceRoot}`);
+  }
+  const lineage = lineageAgentWorkspace({ workspaceRoot });
+  let createdAt = '';
+  const formation = lineage.entries.find((e) => e.kind === 'formation');
+  if (formation) createdAt = formation.timestamp;
+  const lastActivity =
+    lineage.entries.length > 0
+      ? lineage.entries[lineage.entries.length - 1].timestamp
+      : createdAt;
+  const folders: FolderStat[] = REPORT_FOLDERS.map((f) => folderStat(workspaceRoot, f));
+  let auditHealth: 'green' | 'amber' | 'red' = 'green';
+  if (lineage.failed_verifies > 0) auditHealth = 'red';
+  else if (lineage.unverified_exports.length > 0 && lineage.export_count > 0)
+    auditHealth = 'amber';
+  return {
+    schema_version: 'aethermoor.bus.workspace_report.v1',
+    receipt: 'SCBE_WORKSPACE_REPORT=1',
+    workspace_id: lineage.workspace_id,
+    workspace_root: workspaceRoot,
+    generated_at: new Date().toISOString(),
+    created_at: createdAt,
+    folders,
+    lineage_summary: {
+      formation_count: lineage.formation_count,
+      ingest_count: lineage.ingest_count,
+      export_count: lineage.export_count,
+      verify_count: lineage.verify_count,
+      failed_verifies: lineage.failed_verifies,
+      unverified_exports: lineage.unverified_exports,
+    },
+    last_activity: lastActivity,
+    audit_health: auditHealth,
+  };
+}
+
 export interface WorkspaceLineageOptions {
   workspaceRoot: string;
 }
