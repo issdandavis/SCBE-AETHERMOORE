@@ -45,12 +45,23 @@ function parse(argv) {
   return args;
 }
 
+const DECISION_ICON = {
+  ALLOW: '[OK]',
+  QUARANTINE: '[??]',
+  ESCALATE: '[!!]',
+  DENY: '[XX]',
+};
+
 function printRecord(record, json) {
   if (json) {
     process.stdout.write(`${JSON.stringify(record, null, 2)}\n`);
     return;
   }
-  process.stdout.write(`${record.decision}\t${record.score.toFixed(6)}\t${record.text}\n`);
+  const icon = DECISION_ICON[record.decision] || '[??]';
+  const decision = record.decision.padEnd(10, ' ');
+  process.stdout.write(
+    `${icon} ${decision}    score=${record.score.toFixed(4)}  d*=${record.d_star.toFixed(4)}  pd=${record.phase_deviation.toFixed(4)}  len=${record.input_len}\n`
+  );
 }
 
 function main() {
