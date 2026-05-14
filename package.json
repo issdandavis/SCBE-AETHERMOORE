@@ -1,6 +1,6 @@
 {
   "name": "scbe-aethermoore",
-  "version": "4.0.10",
+  "version": "4.1.0",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT OR Apache-2.0",
@@ -80,7 +80,7 @@
     "examples/npm"
   ],
   "scripts": {
-    "clean": "rimraf dist",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
     "clean:release": "node scripts/npm_prepublish_cleanup.js",
     "build": "npm run clean && npm run build:src",
     "build:src": "tsc -p tsconfig.json && node scripts/write_root_index_dts.mjs",
@@ -218,7 +218,7 @@
     "mcp:servers": "node ./scripts/scbe_mcp_terminal.mjs --Action servers",
     "mcp:tools": "node ./scripts/scbe_mcp_terminal.mjs --Action tools",
     "mcp:gateway": "node ./scripts/scbe_mcp_terminal.mjs --Action gateway",
-    "publish:prepare": "npm run clean:release && npm run build",
+    "publish:prepare": "npm run clean:release && npm run build && node scripts/npm_break_dist_hardlinks.js",
     "publish:pack:json": "node -e \"require('fs').mkdirSync('artifacts/npm-pack',{recursive:true})\" && npm pack --dry-run --json --ignore-scripts --cache ./.npm-cache > artifacts/npm-pack/pack.json",
     "publish:check:strict": "npm run publish:pack:json && node scripts/npm_pack_guard.js --pack-json artifacts/npm-pack/pack.json",
     "publish:smoke:consumer": "node scripts/npm_consumer_smoke.mjs",

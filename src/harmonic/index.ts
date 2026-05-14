@@ -585,3 +585,16 @@ export {
   type GovernanceRoutingResult,
   type GovernanceRouterConfig,
 } from './phdmSheafLattice.js';
+
+
+// ── Governance Abacus (deterministic BigInt-only L12+L13 mechanical scoring) ──
+export {
+  runGovernanceAbacus,
+  formatAbacusBoard,
+  TIER_THRESHOLDS,
+  type GovernanceTier,
+  type AbacusConfig,
+  type AbacusInput,
+  type AbacusBead,
+  type AbacusRun,
+} from './governanceAbacus.js';

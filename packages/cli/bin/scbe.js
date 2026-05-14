@@ -30,10 +30,28 @@ Core commands:
   scbe selftest
   scbe doctor --json
   scbe credits
+  scbe upgrade
   scbe shell
   scbe run "npm test"
   scbe status
   scbe history --limit 20
+
+Flow loop (operator workflow — source checkout required for plan/packetize):
+  scbe flow plan --task "fix this repo issue"
+  scbe flow packetize
+  scbe flow status
+  scbe flow run-next
+  scbe flow continue --max-iter 10
+  scbe flow report
+
+Agent bus (governed event routing — works against any scbe-agent-bus backend):
+  scbe agent-bus serve --port 8787
+  scbe agent-bus send --task "review changed files" --task-type review
+  scbe agent-bus upgrade
+
+Governance abacus (deterministic BigInt-only L12+L13 scoring — no float drift):
+  scbe abacus run --d-h 0.4 --pd 0.1
+  scbe abacus run --d-h 0.4 --pd 0.1 --json
 
 Compiler and routing commands, available from a source checkout:
   scbe compile-ca --opcodes "0x09 0x09 0x00" --target python
@@ -44,7 +62,9 @@ Compiler and routing commands, available from a source checkout:
 
 Hosted run path:
   scbe credits      Print service-credit policy and hosted-run links.
+  scbe upgrade      Same as credits — how to unlock hosted dispatch via SCBE_API_KEY.
 
+Local routing is free. Hosted runs require credits (see 'scbe upgrade').
 Unknown commands are forwarded to the GeoSeal shell from scbe-aethermoore.
 `;
 
@@ -497,6 +517,221 @@ function runRouteCompiler(args) {
   runPythonScript("scripts/aetherpp/cli.py", args);
 }
 
+function runFlow(args) {
+  // Bridge to scripts/scbe-system-cli.py flow <sub> — same source-checkout pattern as compile/route.
+  runPythonScript("scripts/scbe-system-cli.py", ["flow", ...args]);
+}
+
+// Top-level commands scbe handles directly. Used by the typo-suggestion guard.
+// Order doesn't matter; this list is the complete set of scbe-owned verbs.
+const KNOWN_COMMANDS = [
+  "help",
+  "version",
+  "demo",
+  "magic",
+  "selftest",
+  "doctor",
+  "credits",
+  "hosted-run",
+  "upgrade",
+  "shell",
+  "run",
+  "status",
+  "history",
+  "flow",
+  "agent-bus",
+  "agentbus",
+  "abacus",
+  "compile-ca",
+  "ca-plan",
+  "render-op",
+  "compile",
+  "route",
+  "aetherpp",
+];
+
+function levenshtein(a, b) {
+  if (a === b) return 0;
+  if (!a) return b.length;
+  if (!b) return a.length;
+  const m = a.length;
+  const n = b.length;
+  let prev = new Array(n + 1);
+  let curr = new Array(n + 1);
+  for (let j = 0; j <= n; j += 1) prev[j] = j;
+  for (let i = 1; i <= m; i += 1) {
+    curr[0] = i;
+    for (let j = 1; j <= n; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+    }
+    const swap = prev;
+    prev = curr;
+    curr = swap;
+  }
+  return prev[n];
+}
+
+// Returns the closest known command if input is plausibly a typo (distance <= 2
+// AND shorter than the input length so we don't suggest "run" for "x"). Returns
+// null if the input doesn't look like a typo of any scbe command — in that case
+// the caller should fall through to the geoseal passthrough, which has its own
+// (broader) set of subcommands we don't know about.
+function suggestCommand(input) {
+  if (!input || KNOWN_COMMANDS.includes(input)) return null;
+  let best = null;
+  let bestDist = Infinity;
+  for (const cmd of KNOWN_COMMANDS) {
+    const d = levenshtein(input, cmd);
+    if (d < bestDist) {
+      bestDist = d;
+      best = cmd;
+    }
+  }
+  if (bestDist <= 2 && bestDist < input.length) return best;
+  return null;
+}
+
+function resolveHarmonicModule() {
+  try {
+    return require("scbe-aethermoore/harmonic");
+  } catch (_err) {
+    const local = path.resolve(repoRoot(), "dist", "src", "harmonic", "index.js");
+    if (fs.existsSync(local)) return require(local);
+    return null;
+  }
+}
+
+function parseAbacusFlag(args, key) {
+  const idx = args.indexOf(key);
+  if (idx < 0 || idx + 1 >= args.length) return null;
+  const value = Number(args[idx + 1]);
+  return Number.isFinite(value) ? value : null;
+}
+
+function runAbacus(args) {
+  const sub = args[0] || "help";
+  if (sub === "help" || sub === "--help" || sub === "-h") {
+    process.stdout.write(
+      [
+        "Usage:",
+        "  scbe abacus run --d-h <value> --pd <value> [--json]",
+        "",
+        "Deterministic BigInt mechanical scoring for L12 harmonic wall + L13 tier.",
+        "Same inputs produce bit-identical scores and tiers on every platform.",
+        "",
+        "Formula:  H(d_h, pd) = 1 / (1 + d_h + 2*pd)",
+        "Tiers:    H >= 0.65 ALLOW; >= 0.45 QUARANTINE; >= 0.25 ESCALATE; else DENY",
+        "Trit:     +1 ALLOW, 0 uncertain (QUARANTINE/ESCALATE), -1 DENY",
+        "",
+      ].join("\n"),
+    );
+    process.exit(0);
+  }
+  if (sub !== "run") {
+    process.stderr.write(`unknown abacus subcommand: ${sub}\n`);
+    process.exit(2);
+  }
+  const d_h = parseAbacusFlag(args, "--d-h");
+  const phase_dev = parseAbacusFlag(args, "--pd");
+  if (d_h === null || phase_dev === null) {
+    process.stderr.write("scbe abacus run requires --d-h <value> --pd <value>\n");
+    process.exit(2);
+  }
+  const harmonic = resolveHarmonicModule();
+  if (!harmonic || typeof harmonic.runGovernanceAbacus !== "function") {
+    process.stderr.write(
+      "scbe abacus requires scbe-aethermoore (>=4.1) with the governanceAbacus export.\n" +
+        "Install with: npm i -g scbe-aethermoore\n",
+    );
+    process.exit(2);
+  }
+  const run = harmonic.runGovernanceAbacus({ d_h, phase_dev });
+  const asJson = args.includes("--json");
+  if (asJson) {
+    const payload = {
+      schema_version: "scbe_governance_abacus_v1",
+      input: run.input,
+      config: { scale: run.config.scale.toString() },
+      beads: {
+        d_h: { position: run.beads.d_h.position.toString(), display: run.beads.d_h.display },
+        phase_dev: { position: run.beads.phase_dev.position.toString(), display: run.beads.phase_dev.display },
+        denominator: { position: run.beads.denominator.position.toString(), display: run.beads.denominator.display },
+        score: { position: run.beads.score.position.toString(), display: run.beads.score.display },
+      },
+      score: { num: run.score.num.toString(), den: run.score.den.toString() },
+      score_decimal: run.score_decimal,
+      tier: run.tier,
+      trit: run.trit,
+    };
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+  } else {
+    process.stdout.write(harmonic.formatAbacusBoard(run));
+  }
+  process.exit(0);
+}
+
+function resolveAgentBusBin() {
+  try {
+    const entry = require.resolve("scbe-agent-bus/package.json");
+    return path.resolve(path.dirname(entry), "bin", "scbe-agent-bus.cjs");
+  } catch (_err) {
+    const localFallback = path.resolve(__dirname, "..", "..", "agent-bus", "bin", "scbe-agent-bus.cjs");
+    try {
+      fs.accessSync(localFallback);
+      return localFallback;
+    } catch (_fallbackErr) {
+      return null;
+    }
+  }
+}
+
+function runAgentBus(args) {
+  const target = resolveAgentBusBin();
+  if (!target) {
+    process.stderr.write(
+      "scbe agent-bus requires scbe-agent-bus. Install with: npm i -g scbe-agent-bus\n",
+    );
+    process.exit(2);
+  }
+  const child = spawnSync(process.execPath, [target, ...args], { stdio: "inherit" });
+  if (typeof child.status === "number") process.exit(child.status);
+  process.exit(1);
+}
+
+function runUpgrade(args) {
+  // Aliased to credits semantically; if scbe-agent-bus is installed, defer to its upgrade
+  // command so the single source of truth for hosted-run guidance lives in one place.
+  const target = resolveAgentBusBin();
+  if (target) {
+    const child = spawnSync(process.execPath, [target, "upgrade", ...args], { stdio: "inherit" });
+    if (typeof child.status === "number") process.exit(child.status);
+    process.exit(0);
+  }
+  // Fallback: print the same payload as `scbe credits` so the upgrade command always works.
+  const asJson = args.includes("--json");
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(SERVICE_CREDITS, null, 2)}\n`);
+  } else {
+    process.stdout.write(
+      [
+        "SCBE Service Credits — hosted runs",
+        "",
+        SERVICE_CREDITS.policy,
+        `Fee: ${SERVICE_CREDITS.fee}`,
+        "",
+        `Hosted run intake: ${SERVICE_CREDITS.hosted_run_intake}`,
+        `Service credits:    ${SERVICE_CREDITS.service_credits}`,
+        `Top up:             ${SERVICE_CREDITS.top_up}`,
+        "",
+        "Install scbe-agent-bus for the full upgrade flow: npm i -g scbe-agent-bus",
+        "",
+      ].join("\n"),
+    );
+  }
+  process.exit(0);
+}
+
 function runSelftest() {
   const target = resolveGeosealBin();
   const checks = [
@@ -607,6 +842,22 @@ if (argv[0] === "shell") {
   return;
 }
 
+if (argv[0] === "flow") {
+  runFlow(argv.slice(1));
+}
+
+if (argv[0] === "agent-bus" || argv[0] === "agentbus") {
+  runAgentBus(argv.slice(1));
+}
+
+if (argv[0] === "upgrade") {
+  runUpgrade(argv.slice(1));
+}
+
+if (argv[0] === "abacus") {
+  runAbacus(argv.slice(1));
+}
+
 if (argv[0] === "compile-ca" || argv[0] === "ca-plan" || argv[0] === "render-op") {
   runCompiler(argv);
 }
@@ -645,6 +896,22 @@ if (argv[0] === "compile") {
 
 if (argv[0] === "route" || argv[0] === "aetherpp") {
   runRouteCompiler(argv[0] === "route" ? argv.slice(1) : argv.slice(1));
+}
+
+// Typo guard: if argv[0] looks like a near-miss of a known scbe command,
+// suggest the corrected form and exit. We don't auto-execute the suggestion —
+// running a different command than the user typed is the classic
+// typo-amplification trap. Unknown-but-not-close inputs fall through to the
+// geoseal passthrough below, which has its own command set.
+{
+  const suggestion = suggestCommand(argv[0]);
+  if (suggestion) {
+    process.stderr.write(
+      `scbe: '${argv[0]}' is not a scbe command. Did you mean 'scbe ${suggestion}'?\n` +
+        `      Run 'scbe help' for the full command list.\n`,
+    );
+    process.exit(2);
+  }
 }
 
 const target = resolveGeosealBin();

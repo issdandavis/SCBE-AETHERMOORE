@@ -74,6 +74,7 @@ from src.ca_lexicon import (
     trit_vector,
 )
 from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
+from src.tokenizer.code_weight_packets import semantic_operation_signature_from_tokens
 from src.crypto.geoseal_execution_gate import (
     DEFAULT_AUDIT_SECRET_ENV,
     DEFAULT_EXEC_AUDIT_LOG,
@@ -1160,6 +1161,10 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
     lexical_tokens = re.findall(r"[A-Za-z_][A-Za-z0-9_]*|==|!=|<=|>=|[^\s]", source)
     transport_tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(transport, source_bytes)
     semantic = _compute_semantic_expression(source)
+    semantic_operation = semantic_operation_signature_from_tokens(lexical_tokens, language=language)
+    semantic["operation_signature"] = semantic_operation
+    semantic["operation_path"] = semantic_operation["operation_path"]
+    semantic["interchange_key"] = semantic_operation["interchange_key"]
     definitions = [
         {"symbol": name, "kind": kind}
         for kind, name in re.findall(r"\b(import|class|def)\s+([A-Za-z_][A-Za-z0-9_]*)", source)
@@ -1260,6 +1265,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
             ],
         },
         "semantic_expression": semantic,
+        "semantic_operation_signature": semantic_operation,
         "route_ir": _build_route_ir_for_source(
             source=source,
             source_name=source_name,
