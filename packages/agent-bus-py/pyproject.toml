@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scbe-agent-bus"
-version = "0.2.0"
-description = "SCBE agent-bus: Python surface over the SCBE governed event runner. Routes AI/human/AI events through the harmonic-wall pipeline and returns a typed envelope."
+version = "0.3.0"
+description = "SCBE agent-bus: Python surface over the SCBE governed event runner. Routes AI/human/AI events through the harmonic-wall pipeline, wraps the workspace audit chain (formation/ingest/export/verify/import/lineage/report), and the trap-in-good-loops dispatch surface (free-only: offline echo + local Ollama)."
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 license-files = ["LICENSE", "LICENSE-APACHE"]

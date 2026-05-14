@@ -28,6 +28,34 @@ from pathlib import Path
 from typing import Any, Iterable, Literal, Optional, TypedDict
 
 from .companions import COMPANION_PACKAGES, recommend_companion_packages
+from .lineage import (
+    LINEAGE_SCHEMA,
+    REPORT_SCHEMA,
+    AuditHealth,
+    FolderStat,
+    LineageEntry,
+    LineageKind,
+    WorkspaceLineage,
+    WorkspaceReport,
+    has_unverified_exports,
+    is_clean_chain,
+    read_lineage,
+    read_report,
+)
+from .workspace import (
+    WorkspaceError,
+    trap_dispatch,
+    trap_dispatch_batch,
+    trap_redirect,
+    workspace_export,
+    workspace_import,
+    workspace_ingest,
+    workspace_lineage,
+    workspace_new,
+    workspace_report,
+    workspace_verify,
+    workspace_verify_all,
+)
 
 __all__ = [
     "AgentBusEvent",
@@ -38,10 +66,37 @@ __all__ = [
     "AgentBusError",
     "COMPANION_PACKAGES",
     "recommend_companion_packages",
+    # workspace audit chain
+    "WorkspaceError",
+    "workspace_new",
+    "workspace_ingest",
+    "workspace_export",
+    "workspace_verify",
+    "workspace_verify_all",
+    "workspace_lineage",
+    "workspace_report",
+    "workspace_import",
+    # trap-in-good-loops
+    "trap_redirect",
+    "trap_dispatch",
+    "trap_dispatch_batch",
+    # typed receipt readers
+    "LineageEntry",
+    "WorkspaceLineage",
+    "FolderStat",
+    "WorkspaceReport",
+    "LineageKind",
+    "AuditHealth",
+    "LINEAGE_SCHEMA",
+    "REPORT_SCHEMA",
+    "read_lineage",
+    "read_report",
+    "has_unverified_exports",
+    "is_clean_chain",
     "__version__",
 ]
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 Privacy = Literal["local_only", "remote_ok"]
 TaskType = Literal["coding", "review", "research", "governance", "training", "general"]
