@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.5
+
+- **Verify now persists a receipt by default**: `verifyAgentWorkspaceExport()` writes `<workspaceRoot>/20_receipts/verify-<export-id>-<utc-ts>.json` so that `lineageAgentWorkspace()` can pick it up without a manual stdout redirect. The on-disk JSON is bit-identical to the in-memory return value. Best-effort: if the receipts directory is missing or the write fails, the verify result is still returned and `receipt_path` is empty.
+- **Opt-out flag**: `scbe-agent-bus workspace verify --no-persist` skips the write — useful for ad-hoc local audits or read-only CI checks that shouldn't mutate the workspace.
+- **New field**: `AgentWorkspaceVerifyReceipt.receipt_path` (absolute path of the written receipt, or empty string when persistence was skipped). Schema version unchanged (`aethermoor.bus.workspace_verify.v1`).
+
 ## 0.3.4
 
 - **Workspace lineage command**: adds `scbe-agent-bus workspace lineage --workspace-root <path> [--json]`. Walks `<workspace>/20_receipts/`, classifies each receipt by `schema_version` (formation / export / verify), and returns the chronological audit chain plus a summary: `formation_count`, `export_count`, `verify_count`, `failed_verifies`, and `unverified_exports[]` (exports without a matching verify receipt). Read-only — never writes to the workspace.

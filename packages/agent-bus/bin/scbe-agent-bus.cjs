@@ -144,12 +144,13 @@ async function main() {
       const exportPath = String(flags['export-path'] || '').trim();
       if (!exportPath) {
         process.stderr.write(
-          'Usage: scbe-agent-bus workspace verify --export-path <path> [--json]\n'
+          'Usage: scbe-agent-bus workspace verify --export-path <path> [--no-persist] [--json]\n'
         );
         process.exitCode = 2;
         return;
       }
-      const payload = verifyAgentWorkspaceExport({ exportPath });
+      const persistReceipt = !flags['no-persist'];
+      const payload = verifyAgentWorkspaceExport({ exportPath, persistReceipt });
       if (flags.json) {
         process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
       } else {
@@ -162,6 +163,7 @@ async function main() {
           `Manifest intact: ${payload.manifest_intact}`,
           `Files claimed: ${payload.file_count_claimed}    actual: ${payload.file_count_actual}`,
           `Bytes claimed: ${payload.total_bytes_claimed}    actual: ${payload.total_bytes_actual}`,
+          `Receipt:   ${payload.receipt_path || '<not persisted>'}`,
         ];
         if (payload.mismatches.length === 0) {
           lines.push('No mismatches.');

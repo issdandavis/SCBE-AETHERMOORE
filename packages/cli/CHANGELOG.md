@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.3.9 - 2026-05-14
+
+### Changed
+
+- **`scbe workspace verify` now persists by default**: forwards to `scbe-agent-bus workspace verify`, which writes the verify receipt into `<workspace>/20_receipts/verify-<export-id>-<utc-ts>.json`. `scbe workspace lineage` automatically picks it up. Use `--no-persist` to opt out for ad-hoc local audits or read-only CI checks. The output text now shows `Receipt: <path>` or `Receipt: <not persisted>`.
+- **Bumped `scbe-agent-bus` dependency**: `^0.3.4 → ^0.3.5` for the verify persistence change.
+
 ## 4.3.8 - 2026-05-14
 
 ### Added

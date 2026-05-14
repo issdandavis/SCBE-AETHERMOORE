@@ -299,6 +299,13 @@ export function exportAgentWorkspace(
 
 export interface WorkspaceVerifyOptions {
   exportPath: string;
+  /**
+   * When true (default), write the verify receipt to
+   * `<workspaceRoot>/20_receipts/verify-<export-id>-<utc-ts>.json` so that
+   * `lineageAgentWorkspace()` can pick it up. Set to false in CI checks that
+   * shouldn't mutate the workspace, or for ad-hoc local audits.
+   */
+  persistReceipt?: boolean;
 }
 
 export interface WorkspaceVerifyMismatch {
@@ -324,6 +331,12 @@ export interface AgentWorkspaceVerifyReceipt {
   total_bytes_actual: number;
   mismatches: WorkspaceVerifyMismatch[];
   verified_at: string;
+  /**
+   * Absolute path to the receipt written under `<workspaceRoot>/20_receipts/`
+   * when `persistReceipt` was true. Empty string when persistence was skipped
+   * or when the workspace root could not be recovered from the manifest.
+   */
+  receipt_path: string;
 }
 
 /**
@@ -424,7 +437,7 @@ export function verifyAgentWorkspaceExport(
     manifestClaimedSha === '' ? true : manifestActualSha === manifestClaimedSha;
   const passed = mismatches.length === 0 && manifestIntact;
 
-  return {
+  const receipt: AgentWorkspaceVerifyReceipt = {
     schema_version: 'aethermoor.bus.workspace_verify.v1',
     receipt: passed ? 'SCBE_WORKSPACE_VERIFY_PASS=1' : 'SCBE_WORKSPACE_VERIFY_PASS=0',
     export_path: exportPath,
@@ -438,7 +451,30 @@ export function verifyAgentWorkspaceExport(
     total_bytes_actual: actualBytes,
     mismatches,
     verified_at: new Date().toISOString(),
+    receipt_path: '',
   };
+
+  const shouldPersist = options.persistReceipt !== false;
+  if (shouldPersist && manifest.workspace_root && manifest.export_id) {
+    try {
+      const receiptsDir = path.join(manifest.workspace_root, '20_receipts');
+      if (fs.existsSync(receiptsDir)) {
+        const ts = receipt.verified_at.replace(/[:.]/g, '-');
+        const receiptName = `verify-${manifest.export_id}-${ts}.json`;
+        const receiptPath = path.join(receiptsDir, receiptName);
+        receipt.receipt_path = receiptPath;
+        // serialize with receipt_path populated so the on-disk and in-memory
+        // representations are identical
+        fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, 'utf8');
+      }
+    } catch {
+      // persistence is best-effort; never block a verify result on a write
+      // failure. receipt_path stays "" if we couldn't write.
+      receipt.receipt_path = '';
+    }
+  }
+
+  return receipt;
 }
 
 export interface WorkspaceLineageOptions {
