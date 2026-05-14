@@ -185,8 +185,10 @@ def _public_dispatch_payload(response: Dict[str, Any]) -> Dict[str, Any]:
                 "model": result.get("model"),
                 "finish_reason": result.get("finish_reason"),
                 "text": result.get("text", ""),
+                "fallback_from": result.get("fallback_from"),
             },
             "bus_event": {
+                "version": bus_event.get("version", "hydra-free-llm-bus-event-v1"),
                 "event_id": bus_event.get("event_id"),
                 "origin": bus_event.get("origin"),
                 "timestamp": bus_event.get("timestamp"),

@@ -94,6 +94,9 @@ instructions:
 - Tamper-detection classes recognised by verify: `sha256_mismatch`, `bytes_mismatch`, `missing_file`, `extra_file`.
 - Static prefilter for Solidity (composes with trap-in-good-loops): `scbe contract scan <file.sol> --emit-redirect-prompt --json`.
 - Input-side trap inspector: `scbe trap-redirect --input "<prompt>" --json` (also accepts `--file` or stdin). Returns `scbe.trap_redirect.v1` with the defensive prompt that would be forwarded in place of the attacker text.
+- Trap dispatcher (free-only): `scbe trap-dispatch --input "<prompt>" --json` (default provider `offline` = deterministic echo, zero cost). Use `--provider ollama --model <name>` for a local Ollama daemon at `$OLLAMA_BASE_URL`. Schema `scbe.trap_dispatch.v1`, flag `SCBE_TRAP_DISPATCH=1`. By design, paid providers are rejected with exit 2 — this command never spends money.
+- Trap dispatch → workspace audit chain: add `--workspace-root <path>` to persist each dispatch as receipt schema `aethermoor.bus.workspace_trap_dispatch.v1`. `scbe workspace lineage` then reports `trap_dispatch_count` + `trap_redirect_count` and classifies entries as `kind: 'trap_dispatch'`. Receipts record sha256s + gate decision only — never the attacker text.
+- Trap dispatch batch (adversarial corpus testing): `scbe trap-dispatch --batch prompts.jsonl [--workspace-root <path>] --json`. Each row is raw text or `{"input":"...","tag":"..."}`. Summary schema `scbe.trap_dispatch_batch.v1` with `dispatch_pass / redirect_emitted / deny / allow` aggregate counts.
 
 ## Core concepts (keywords for retrieval)
 - hyperbolic geometry authorization, Poincaré ball risk bounding

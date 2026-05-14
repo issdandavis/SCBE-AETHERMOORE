@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.10
+
+- **Lineage walker recognizes `trap_dispatch` receipts**: `LineageEntry.kind` adds `'trap_dispatch'`, mapped from new schema `aethermoor.bus.workspace_trap_dispatch.v1`. Receipts written by `scbe trap-dispatch --workspace-root <path>` now show up in chronological lineage alongside formation/ingest/export entries.
+- **New lineage counters**: `AgentWorkspaceLineageReceipt.trap_dispatch_count` (total dispatches recorded in the workspace) and `trap_redirect_count` (subset where SCONE redirect actually fired). Surfaced through `reportAgentWorkspace()` as `lineage_summary.trap_dispatch_count` + `lineage_summary.trap_redirect_count`.
+- **`LineageEntry` adds `gate_decision` + `redirect_emitted` fields** populated only for trap_dispatch entries — reviewers can see which inputs hit DENY without re-reading the underlying envelope.
+
 ## 0.3.9
 
 - **Workspace import command**: adds `scbe-agent-bus workspace import --export-path <path> [--target-root <dir>] [--hint <name>] [--json]`. Cold-restores a workspace from a previously-exported manifest into a fresh location. Always runs the standard verifier FIRST and refuses (exit 1) to import any export that fails any tamper class — the imported workspace is provably untampered or it doesn't exist.

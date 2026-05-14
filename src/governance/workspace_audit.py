@@ -18,7 +18,7 @@ from typing import List, Literal, Optional, Union
 LINEAGE_SCHEMA = "aethermoor.bus.workspace_lineage.v1"
 REPORT_SCHEMA = "aethermoor.bus.workspace_report.v1"
 
-LineageKind = Literal["formation", "ingest", "export", "verify", "import", "unknown"]
+LineageKind = Literal["formation", "ingest", "export", "verify", "import", "trap_dispatch", "unknown"]
 AuditHealth = Literal["green", "amber", "red"]
 
 
@@ -34,6 +34,9 @@ class LineageEntry:
     manifest_sha256: Optional[str] = None
     manifest_intact: Optional[bool] = None
     mismatch_count: Optional[int] = None
+    # Populated only for trap_dispatch entries.
+    gate_decision: Optional[str] = None
+    redirect_emitted: Optional[bool] = None
     parse_error: Optional[str] = None
 
 
@@ -50,6 +53,8 @@ class WorkspaceLineage:
     export_count: int = 0
     verify_count: int = 0
     import_count: int = 0
+    trap_dispatch_count: int = 0
+    trap_redirect_count: int = 0
     unverified_exports: List[str] = field(default_factory=list)
     failed_verifies: int = 0
 
@@ -75,6 +80,8 @@ class WorkspaceReport:
     export_count: int = 0
     verify_count: int = 0
     import_count: int = 0
+    trap_dispatch_count: int = 0
+    trap_redirect_count: int = 0
     failed_verifies: int = 0
     unverified_exports: List[str] = field(default_factory=list)
     last_activity: str = ""
@@ -98,6 +105,8 @@ def _lineage_from_dict(d: dict) -> WorkspaceLineage:
                 manifest_sha256=raw.get("manifest_sha256"),
                 manifest_intact=raw.get("manifest_intact"),
                 mismatch_count=raw.get("mismatch_count"),
+                gate_decision=raw.get("gate_decision"),
+                redirect_emitted=raw.get("redirect_emitted"),
                 parse_error=raw.get("parse_error"),
             )
         )
@@ -113,6 +122,8 @@ def _lineage_from_dict(d: dict) -> WorkspaceLineage:
         export_count=int(d.get("export_count", 0)),
         verify_count=int(d.get("verify_count", 0)),
         import_count=int(d.get("import_count", 0)),
+        trap_dispatch_count=int(d.get("trap_dispatch_count", 0)),
+        trap_redirect_count=int(d.get("trap_redirect_count", 0)),
         unverified_exports=list(d.get("unverified_exports", [])),
         failed_verifies=int(d.get("failed_verifies", 0)),
     )
@@ -143,6 +154,8 @@ def _report_from_dict(d: dict) -> WorkspaceReport:
         export_count=int(ls.get("export_count", 0)),
         verify_count=int(ls.get("verify_count", 0)),
         import_count=int(ls.get("import_count", 0)),
+        trap_dispatch_count=int(ls.get("trap_dispatch_count", 0)),
+        trap_redirect_count=int(ls.get("trap_redirect_count", 0)),
         failed_verifies=int(ls.get("failed_verifies", 0)),
         unverified_exports=list(ls.get("unverified_exports", [])),
         last_activity=d.get("last_activity", ""),

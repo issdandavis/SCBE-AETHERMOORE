@@ -1,5 +1,22 @@
 # Changelog
 
+## 4.3.16 - 2026-05-14
+
+### Added
+
+- **`scbe trap-dispatch --workspace-root <path>`**: when set, the dispatch envelope is persisted as a workspace receipt under `<root>/20_receipts/trap-dispatch-<utc-ts>-<sha-prefix>.json` with schema `aethermoor.bus.workspace_trap_dispatch.v1` and flag `SCBE_WORKSPACE_TRAP_DISPATCH=1`. The receipt records sha256s + gate decision + redirect status — it never quotes attacker text. `scbe workspace lineage` classifies these as `kind: 'trap_dispatch'` and surfaces `trap_dispatch_count` + `trap_redirect_count`. `scbe workspace report` carries the same counts in `lineage_summary`. Wires the trap-in-good-loops gate into the audit chain.
+- **`scbe trap-dispatch --batch <file.jsonl>`**: process a corpus of prompts in one pass for adversarial testing. Each JSONL row is either raw text or `{"input":"...","tag":"..."}`. Emits an aggregate `scbe.trap_dispatch_batch.v1` summary with `dispatch_pass / dispatch_fail / redirect_emitted / deny / allow` counts and one row per envelope (input sha + decision + receipt path only — never the input text or response). Combines with `--workspace-root` to persist one workspace receipt per row. Exit code 1 if any row failed to dispatch.
+
+### Changed
+
+- **Bumped `scbe-agent-bus` dependency**: `^0.3.9 → ^0.3.10` for the trap_dispatch lineage kind + counters.
+
+## 4.3.15 - 2026-05-14
+
+### Added
+
+- **`scbe trap-dispatch [--input <text>] [--file <path>] [--provider offline|ollama] [--model <name>] [--ollama-url <url>] [--timeout-ms <ms>] [--json]`**: companion to `scbe trap-redirect`. Runs the governance proxy preflight on the input; if a SCONE-tagged rule fires DENY, dispatches the DEFENSIVE redirect prompt to a FREE local provider in place of the attacker text. Otherwise forwards the original prompt. Default provider is `offline` (deterministic echo, zero network calls, zero cost). Explicit `--provider ollama` opts into a local Ollama daemon at `$OLLAMA_BASE_URL` (default `http://127.0.0.1:11434`). No paid providers by design — paid provider names (anthropic/openai/xai/hf-router) are rejected with exit code 2. Emits `SCBE_TRAP_DISPATCH=1` on success, `SCBE_TRAP_DISPATCH=0` with structured error envelope on dispatch failure. Schema `scbe.trap_dispatch.v1`. Records `input_sha256` + `dispatched_prompt_sha256` so reviewers can confirm a redirect occurred without ever quoting attacker text. Pure-Node, uses built-in `fetch` (Node 20+).
+
 ## 4.3.14 - 2026-05-14
 
 ### Added
