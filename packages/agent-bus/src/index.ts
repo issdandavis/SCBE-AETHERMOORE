@@ -1,4 +1,6 @@
 import { spawnSync } from 'node:child_process';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
 import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
@@ -56,7 +58,75 @@ export interface AgentBusClientOptions {
   fetchImpl?: typeof fetch;
 }
 
+export interface WorkspaceOptions {
+  root?: string;
+  hint?: string;
+}
+
+export interface AgentWorkspaceReceipt {
+  schema_version: 'aethermoor.bus.workspace_receipt.v1';
+  receipt: 'SCBE_WORKSPACE_READY=1';
+  workspace_id: string;
+  workspace_root: string;
+  created_at: string;
+  formation: {
+    schema_version: 'aethermoor.bus.workspace_formation.v1';
+    default_root: '.aethermoor-bus/workspaces';
+    folders: Array<{ path: string; purpose: string }>;
+  };
+  receipt_path: string;
+}
+
+export const WORKSPACE_FORMATION: AgentWorkspaceReceipt['formation'] = {
+  schema_version: 'aethermoor.bus.workspace_formation.v1',
+  default_root: '.aethermoor-bus/workspaces',
+  folders: [
+    { path: '00_inbox', purpose: 'raw drops, uploads, imports, unclassified files' },
+    { path: '10_work', purpose: 'active editable working files' },
+    { path: '20_receipts', purpose: 'governance verdicts, hashes, signatures, run receipts' },
+    { path: '30_exports', purpose: 'customer-ready packets and handoff bundles' },
+    { path: '40_refs', purpose: 'non-secret reference files and source notes' },
+    { path: '90_tmp', purpose: 'scratch files, deleted after offload verification' },
+  ],
+};
+
 const TASK_TYPES = new Set(['coding', 'review', 'research', 'governance', 'training', 'general']);
+
+function slugify(value: string): string {
+  return String(value || 'workspace')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48) || 'workspace';
+}
+
+function timestampId(date = new Date()): string {
+  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+}
+
+export function createAgentWorkspace(options: WorkspaceOptions = {}): AgentWorkspaceReceipt {
+  const baseRoot = path.resolve(options.root || WORKSPACE_FORMATION.default_root);
+  const workspaceId = `${timestampId()}-${slugify(options.hint || 'workspace')}-${crypto
+    .randomBytes(3)
+    .toString('hex')}`;
+  const workspaceRoot = path.join(baseRoot, workspaceId);
+  fs.mkdirSync(workspaceRoot, { recursive: true });
+  for (const folder of WORKSPACE_FORMATION.folders) {
+    fs.mkdirSync(path.join(workspaceRoot, folder.path), { recursive: true });
+  }
+  const payload: AgentWorkspaceReceipt = {
+    schema_version: 'aethermoor.bus.workspace_receipt.v1',
+    receipt: 'SCBE_WORKSPACE_READY=1',
+    workspace_id: workspaceId,
+    workspace_root: workspaceRoot,
+    created_at: new Date().toISOString(),
+    formation: WORKSPACE_FORMATION,
+    receipt_path: path.join(workspaceRoot, '20_receipts', 'workspace.json'),
+  };
+  fs.writeFileSync(payload.receipt_path, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+  return payload;
+}
 
 function normalizeTaskType(value: unknown): string {
   const taskType = String(value || 'general')

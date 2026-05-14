@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- **Workspace formation command**: adds `scbe-agent-bus workspace new [--root <path>] [--hint <name>] [--json]`, creating the canonical `.aethermoor-bus/workspaces/<workspace-id>/` folder shape and writing a `SCBE_WORKSPACE_READY=1` receipt into `20_receipts/workspace.json`.
+
 ## 0.3.0
 
 - **Hosted-credential gate on `send`**: requests with `--dispatch-provider` set to a non-local provider (anything other than `offline`, `local`, `ollama`, `local_only`, empty) now require `SCBE_API_KEY` in the environment. Without a key, `send` prints a hosted-intake notice (intake URL, service-credits URL, Ko-fi top-up URL, fee policy: provider/model cost passed through with 2-5% SCBE coordination fee) and exits with code 2.
