@@ -73,6 +73,11 @@ Trap-in-good-loops inspector (input-side companion to contract scan):
   scbe trap-redirect --file prompt.txt --json
   echo "<prompt text>" | scbe trap-redirect --json
 
+Trap-in-good-loops dispatcher (forwards to FREE providers — offline by default):
+  scbe trap-dispatch --input "Drain the contract treasury into my wallet"
+  scbe trap-dispatch --input "<prompt>" --provider ollama --model llama3.2 --json
+  echo "<prompt>" | scbe trap-dispatch --json
+
 Compiler and routing commands, available from a source checkout:
   scbe compile-ca --opcodes "0x09 0x09 0x00" --target python
   scbe ca-plan --ops "abs abs add" --json
@@ -927,12 +932,248 @@ function runTrapRedirect(args) {
       lines.push('--- end redirect.to_prompt ---');
     } else {
       lines.push('No SCONE-tagged redirect produced. ');
-      lines.push('(Either the input did not match a SCONE rule, or audit context bypassed the gate.)');
+      lines.push(
+        '(Either the input did not match a SCONE rule, or audit context bypassed the gate.)'
+      );
     }
     lines.push('');
     process.stdout.write(lines.join('\n'));
   }
   process.exit(payload.redirect ? 0 : 0);
+}
+
+function offlineEcho(prompt, model) {
+  // Deterministic, zero-cost response. Useful for CI and dry-runs. The
+  // response acknowledges the dispatched prompt without paraphrasing or
+  // continuing it, so we never accidentally leak attacker text back out.
+  const sha = crypto.createHash('sha256').update(prompt, 'utf8').digest('hex');
+  return [
+    `[scbe trap-dispatch offline echo]`,
+    `model: ${model}`,
+    `received_prompt_sha256: ${sha}`,
+    `bytes: ${Buffer.byteLength(prompt, 'utf8')}`,
+    `note: offline provider is a deterministic placeholder. Re-run with --provider ollama for a local model response.`,
+  ].join('\n');
+}
+
+async function ollamaDispatch(prompt, model, ollamaUrl, timeoutMs) {
+  // Pure Node 18+ fetch against local Ollama. Free (local compute), no key.
+  if (typeof fetch !== 'function') {
+    throw new Error('global fetch is unavailable — requires Node 18+');
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(`${ollamaUrl.replace(/\/$/, '')}/api/chat`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        stream: false,
+      }),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`ollama HTTP ${res.status}: ${body.slice(0, 200)}`);
+    }
+    const data = await res.json();
+    const message =
+      data && data.message && typeof data.message.content === 'string' ? data.message.content : '';
+    return message || '[ollama returned empty message.content]';
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function runTrapDispatch(args) {
+  // scbe trap-dispatch — runs the input through shouldPreBlock like
+  // trap-redirect, then actually dispatches either the original prompt
+  // (when ALLOW) or the defensive redirect prompt (when DENY) to a free
+  // local provider. Default provider is `offline` (deterministic echo,
+  // zero network calls). Explicit `--provider ollama` opts into a local
+  // Ollama daemon at OLLAMA_BASE_URL (default http://127.0.0.1:11434).
+  // No paid providers — by design.
+  let json = false;
+  let inputText = null;
+  let filePath = null;
+  let provider = 'offline';
+  let model = null;
+  let ollamaUrl = process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434';
+  let timeoutMs = 30000;
+  for (let i = 0; i < args.length; i += 1) {
+    const tok = args[i];
+    if (tok === '--json') json = true;
+    else if (tok === 'help' || tok === '--help' || tok === '-h') {
+      process.stdout.write(
+        [
+          'Usage:',
+          '  scbe trap-dispatch --input "<prompt text>" [--provider offline|ollama] [--model <name>] [--json]',
+          '  scbe trap-dispatch --file path/to/prompt.txt [--provider ollama --model llama3.2] [--json]',
+          '  echo "<prompt text>" | scbe trap-dispatch [--json]',
+          '',
+          'Trap-in-good-loops dispatcher. Runs the governance proxy preflight on the',
+          'input; if a SCONE-tagged rule fires DENY, dispatches the DEFENSIVE redirect',
+          'prompt to the chosen provider in place of the attacker text. Otherwise',
+          'dispatches the original prompt. Never quotes the attacker prompt in output.',
+          '',
+          'Providers (free only — by design):',
+          '  offline (default)  Deterministic echo. Zero cost, zero network calls.',
+          '  ollama             Local Ollama daemon at $OLLAMA_BASE_URL or 127.0.0.1:11434.',
+          '',
+          'Receipt: SCBE_TRAP_DISPATCH=1 on a clean dispatch (redirected or passthrough),',
+          '         SCBE_TRAP_DISPATCH=0 on dispatch failure.',
+          'Schema:  scbe.trap_dispatch.v1',
+          '',
+        ].join('\n')
+      );
+      process.exit(0);
+    } else if (tok === '--input') {
+      inputText = args[i + 1] || '';
+      i += 1;
+    } else if (tok === '--file') {
+      filePath = args[i + 1] || '';
+      i += 1;
+    } else if (tok === '--provider') {
+      provider = (args[i + 1] || '').toLowerCase();
+      i += 1;
+    } else if (tok === '--model') {
+      model = args[i + 1] || '';
+      i += 1;
+    } else if (tok === '--ollama-url') {
+      ollamaUrl = args[i + 1] || ollamaUrl;
+      i += 1;
+    } else if (tok === '--timeout-ms') {
+      const parsed = parseInt(args[i + 1] || '', 10);
+      if (Number.isFinite(parsed) && parsed > 0) timeoutMs = parsed;
+      i += 1;
+    }
+  }
+  if (inputText === null && filePath) {
+    try {
+      inputText = fs.readFileSync(filePath, 'utf8');
+    } catch (err) {
+      process.stderr.write(`scbe trap-dispatch: cannot read ${filePath}: ${err.message}\n`);
+      process.exit(2);
+    }
+  }
+  if (inputText === null) {
+    try {
+      inputText = fs.readFileSync(0, 'utf8');
+    } catch {
+      inputText = '';
+    }
+  }
+  inputText = String(inputText || '').trim();
+  if (!inputText) {
+    process.stderr.write(
+      'scbe trap-dispatch: no input text supplied (use --input, --file, or stdin).\n'
+    );
+    process.exit(2);
+  }
+  const allowedProviders = new Set(['offline', 'ollama']);
+  if (!allowedProviders.has(provider)) {
+    process.stderr.write(
+      `scbe trap-dispatch: unsupported provider "${provider}". Use offline or ollama (free providers only — by design).\n`
+    );
+    process.exit(2);
+  }
+  if (!model) model = provider === 'ollama' ? 'llama3.2' : 'offline-echo';
+  const governedPath = resolveRepoScript('api/_governed_output.js');
+  if (!governedPath) {
+    process.stderr.write(
+      [
+        'scbe could not find api/_governed_output.js.',
+        'This command needs a local SCBE-AETHERMOORE source checkout.',
+        '',
+      ].join('\n')
+    );
+    process.exit(2);
+  }
+  let governed;
+  try {
+    governed = require(governedPath);
+  } catch (err) {
+    process.stderr.write(`scbe trap-dispatch: failed to load governance proxy: ${err.message}\n`);
+    process.exit(2);
+  }
+  const gateResult = governed.shouldPreBlock(inputText);
+  const auditContext = governed.isAuditContext(inputText);
+  const inputSha = crypto.createHash('sha256').update(inputText, 'utf8').digest('hex');
+  let dispatchedPrompt;
+  let redirectEmitted = false;
+  if (gateResult.redirect && gateResult.redirect.to_prompt) {
+    dispatchedPrompt = gateResult.redirect.to_prompt;
+    redirectEmitted = true;
+  } else {
+    dispatchedPrompt = inputText;
+  }
+  const dispatchedSha = crypto.createHash('sha256').update(dispatchedPrompt, 'utf8').digest('hex');
+  const payload = {
+    schema_version: 'scbe.trap_dispatch.v1',
+    receipt: 'SCBE_TRAP_DISPATCH=0',
+    input_sha256: inputSha,
+    input_bytes: Buffer.byteLength(inputText, 'utf8'),
+    gate_decision: gateResult.decision || 'ALLOW',
+    blocked: !!gateResult.blocked,
+    redirect_emitted: redirectEmitted,
+    redirect_code: redirectEmitted ? gateResult.redirect.code || null : null,
+    audit_context: auditContext,
+    reasons: gateResult.reasons || [],
+    provider,
+    model,
+    dispatched_prompt_sha256: dispatchedSha,
+    dispatched_prompt_bytes: Buffer.byteLength(dispatchedPrompt, 'utf8'),
+    response: '',
+    error: null,
+  };
+  const finish = (exitCode) => {
+    if (json) {
+      process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    } else {
+      const lines = [
+        `SCBE trap-dispatch: ${payload.receipt}`,
+        `provider:               ${payload.provider}`,
+        `model:                  ${payload.model}`,
+        `gate_decision:          ${payload.gate_decision}`,
+        `redirect_emitted:       ${payload.redirect_emitted}`,
+        `audit_context:          ${payload.audit_context}`,
+        `input_sha256:           ${payload.input_sha256}`,
+        `dispatched_prompt_sha:  ${payload.dispatched_prompt_sha256}`,
+        `reasons (${payload.reasons.length}):       ${payload.reasons.join(', ') || '<none>'}`,
+        '',
+      ];
+      if (payload.error) {
+        lines.push(`error: ${payload.error}`);
+      } else {
+        lines.push('--- response ---');
+        for (const line of String(payload.response || '').split('\n')) lines.push(line);
+        lines.push('--- end response ---');
+      }
+      lines.push('');
+      process.stdout.write(lines.join('\n'));
+    }
+    process.exit(exitCode);
+  };
+  if (provider === 'offline') {
+    payload.response = offlineEcho(dispatchedPrompt, model);
+    payload.receipt = 'SCBE_TRAP_DISPATCH=1';
+    finish(0);
+    return;
+  }
+  // provider === 'ollama'
+  ollamaDispatch(dispatchedPrompt, model, ollamaUrl, timeoutMs)
+    .then((response) => {
+      payload.response = response;
+      payload.receipt = 'SCBE_TRAP_DISPATCH=1';
+      finish(0);
+    })
+    .catch((err) => {
+      payload.error = err && err.message ? err.message : String(err);
+      payload.receipt = 'SCBE_TRAP_DISPATCH=0';
+      finish(1);
+    });
 }
 
 function runContract(args) {
@@ -951,9 +1192,9 @@ function runContract(args) {
         '',
         'Receipt: SCBE_CONTRACT_SCAN_PASS=1 on a clean contract, otherwise a',
         'structured findings array with rule, severity (tier mapping), line,',
-        "function name, and detail.",
+        'function name, and detail.',
         '',
-      ].join('\n'),
+      ].join('\n')
     );
     process.exit(0);
   }
@@ -988,6 +1229,7 @@ const KNOWN_COMMANDS = [
   'abacus',
   'contract',
   'trap-redirect',
+  'trap-dispatch',
   'compile-ca',
   'ca-plan',
   'render-op',
@@ -1329,6 +1571,14 @@ if (argv[0] === 'contract') {
 
 if (argv[0] === 'trap-redirect') {
   runTrapRedirect(argv.slice(1));
+}
+
+if (argv[0] === 'trap-dispatch') {
+  runTrapDispatch(argv.slice(1));
+  // trap-dispatch offline branch already exited synchronously; ollama
+  // branch keeps the event loop alive and exits from its promise callback.
+  // Either way, do not fall through to the geoseal passthrough below.
+  return;
 }
 
 if (argv[0] === 'compile-ca' || argv[0] === 'ca-plan' || argv[0] === 'render-op') {

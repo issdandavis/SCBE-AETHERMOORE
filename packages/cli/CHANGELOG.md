@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.15 - 2026-05-14
+
+### Added
+
+- **`scbe trap-dispatch [--input <text>] [--file <path>] [--provider offline|ollama] [--model <name>] [--ollama-url <url>] [--timeout-ms <ms>] [--json]`**: companion to `scbe trap-redirect`. Runs the governance proxy preflight on the input; if a SCONE-tagged rule fires DENY, dispatches the DEFENSIVE redirect prompt to a FREE local provider in place of the attacker text. Otherwise forwards the original prompt. Default provider is `offline` (deterministic echo, zero network calls, zero cost). Explicit `--provider ollama` opts into a local Ollama daemon at `$OLLAMA_BASE_URL` (default `http://127.0.0.1:11434`). No paid providers by design — paid provider names (anthropic/openai/xai/hf-router) are rejected with exit code 2. Emits `SCBE_TRAP_DISPATCH=1` on success, `SCBE_TRAP_DISPATCH=0` with structured error envelope on dispatch failure. Schema `scbe.trap_dispatch.v1`. Records `input_sha256` + `dispatched_prompt_sha256` so reviewers can confirm a redirect occurred without ever quoting attacker text. Pure-Node, uses built-in `fetch` (Node 20+).
+
 ## 4.3.14 - 2026-05-14
 
 ### Added

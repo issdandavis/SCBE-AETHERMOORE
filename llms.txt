@@ -94,6 +94,7 @@ instructions:
 - Tamper-detection classes recognised by verify: `sha256_mismatch`, `bytes_mismatch`, `missing_file`, `extra_file`.
 - Static prefilter for Solidity (composes with trap-in-good-loops): `scbe contract scan <file.sol> --emit-redirect-prompt --json`.
 - Input-side trap inspector: `scbe trap-redirect --input "<prompt>" --json` (also accepts `--file` or stdin). Returns `scbe.trap_redirect.v1` with the defensive prompt that would be forwarded in place of the attacker text.
+- Trap dispatcher (free-only): `scbe trap-dispatch --input "<prompt>" --json` (default provider `offline` = deterministic echo, zero cost). Use `--provider ollama --model <name>` for a local Ollama daemon at `$OLLAMA_BASE_URL`. Schema `scbe.trap_dispatch.v1`, flag `SCBE_TRAP_DISPATCH=1`. By design, paid providers are rejected with exit 2 — this command never spends money.
 
 ## Core concepts (keywords for retrieval)
 - hyperbolic geometry authorization, Poincaré ball risk bounding
