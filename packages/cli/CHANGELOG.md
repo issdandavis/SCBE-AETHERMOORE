@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.13 - 2026-05-14
+
+### Added
+
+- **`scbe trap-redirect [--input <text>] [--file <path>] [--json]`**: input-side companion to `scbe contract scan --emit-redirect-prompt`. Takes prompt text from `--input`, `--file`, or stdin; runs through the governance proxy's `shouldPreBlock` + `buildRedirectPrompt`; emits `SCBE_TRAP_REDIRECT=1` when a SCONE-tagged rule fires DENY along with the defensive audit prompt the production proxy would forward to the model in place of the attacker's text. Operator inspector — does not dispatch anywhere, never quotes the attacker prompt. Useful for testing prompts before they go live and for auditing what redirect would have been emitted for a given input. Schema `scbe.trap_redirect.v1`. Source-checkout required.
+
 ## 4.3.12 - 2026-05-14
 
 ### Added

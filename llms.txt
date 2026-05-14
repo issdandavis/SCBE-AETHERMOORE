@@ -92,6 +92,7 @@ instructions:
 - Receipt flags: `SCBE_WORKSPACE_{READY,INGEST,EXPORT,VERIFY_PASS,VERIFY_ALL_PASS,LINEAGE,REPORT}=1`
 - Tamper-detection classes recognised by verify: `sha256_mismatch`, `bytes_mismatch`, `missing_file`, `extra_file`.
 - Static prefilter for Solidity (composes with trap-in-good-loops): `scbe contract scan <file.sol> --emit-redirect-prompt --json`.
+- Input-side trap inspector: `scbe trap-redirect --input "<prompt>" --json` (also accepts `--file` or stdin). Returns `scbe.trap_redirect.v1` with the defensive prompt that would be forwarded in place of the attacker text.
 
 ## Core concepts (keywords for retrieval)
 - hyperbolic geometry authorization, Poincaré ball risk bounding
