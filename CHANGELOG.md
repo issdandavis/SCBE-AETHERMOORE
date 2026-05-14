@@ -1,5 +1,17 @@
 # SCBE Production Pack Changelog
 
+## [4.1.0] - 2026-05-13
+
+### Added
+
+- **Governance abacus (deterministic BigInt-only L12+L13 scoring)**: `src/harmonic/governanceAbacus.ts` mechanically implements the canonical harmonic wall `H(d_h, pd) = 1/(1 + d_h + 2*pd)` and the L13 four-tier mapping (ALLOW / QUARANTINE / ESCALATE / DENY) in pure BigInt arithmetic at a configurable bead-grid scale (default 1e6). Same inputs produce bit-identical scores and tiers on every platform — no float drift, no NaN class, exact rational output also available. Public API: `runGovernanceAbacus`, `formatAbacusBoard`, `TIER_THRESHOLDS`. Re-exported from `scbe-aethermoore/harmonic`.
+- **Multi-abacus architecture doc** at `docs/ABACUS_ARCHITECTURE.md` parking the per-system roadmap (Roman tier-board, Egyptian unit-fraction tongue weights, schoty rolling-window breathing, soroban triadic temporal, suanpan composite) behind a documented contract — build only when a concrete consumer asks.
+- **Parity smoke** at `scripts/harmonic/abacus_smoke.cjs` (7/7 PASS within 1e-6, tier-identical across the full decision spectrum) verifying the abacus tracks the canonical `harmonicScale` formula exactly.
+
+### Changed
+
+- **`npm run clean` is now portable**: replaced `rimraf dist` with a pure-Node `fs.rmSync` one-liner so the build no longer depends on the `rimraf` package being present in `node_modules`. Unblocks `npm run build` on fresh installs.
+
 ## [4.0.10] - 2026-05-13
 
 ### Added
