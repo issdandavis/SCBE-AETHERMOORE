@@ -86,5 +86,12 @@ def test_cli_status_reports_terminal_capabilities() -> None:
     assert proc.returncode == 0, proc.stderr
     payload = json.loads(proc.stdout)
     assert payload["schema_version"] == "scbe_terminal_status_v1"
+    assert payload["receipt"] == "SCBE_STATUS_READY=1"
     assert payload["compiler_available"] is True
     assert payload["router_available"] is True
+    assert payload["git"]["commit"]
+    assert "branch" in payload["git"]
+    assert "ci" in payload
+    assert payload["providers"]["local"]["available"] is True
+    assert payload["budget"]["posture"] in {"local_free_default", "hosted_enabled"}
+    assert payload["workspace"]["flow_status_ready"] is True

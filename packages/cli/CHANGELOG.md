@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.1 - 2026-05-14
+
+### Changed
+
+- **`scbe status` operator receipt**: expands the status payload with `SCBE_STATUS_READY=1`, Git branch/commit/dirty posture, latest GitHub Actions run summary when `gh` is available, provider posture, budget/hosted-run posture, workspace roots, and the last recorded governance gate. The command remains read-only and fail-soft.
+
 ## 4.3.0 - 2026-05-13
 
 ### Added
