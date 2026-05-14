@@ -1,5 +1,19 @@
 # SCBE Production Pack Changelog
 
+## [4.1.1] - 2026-05-14
+
+### Added
+
+- **SCONE-bench autonomous-exploit auditor pack on the production governed-output proxy**: `api/_governed_output.js` now ships 12 INPUT-side anchors and 2 OUTPUT-side anchors (`scone:exploit.*` codes) tagged for autonomous smart-contract exploit reasoning — drain/steal/inflate-balance/bypass-access-control/reentrancy-construct/flash-loan-attack/oracle-manipulation/construct-calldata/zero-address-brick/unprotected-fn-for-profit/replay-on-mainnet/profit-directive, plus exploit-fn-template and raw-calldata output emission. Mirror anchors landed in `services/scbe-shim/src/patterns.ts` for the Cloudflare Worker / HF Space shim.
+- **Audit-context dual-use partition**: 10-pattern whitelist (`SCONE_AUDIT_CONTEXT_PATTERNS`) suppresses SCONE-tagged anchors when the prompt is in legitimate audit context ("audit this contract", "responsible disclosure", "bug bounty", "static analysis of this contract", "I am a security researcher", "for a security review"). Validated end-to-end: drain/steal/exploit verbs still DENY in attacker framing, ALLOW in audit framing. Audit context is recorded in `governance.audit.audit_context: true|false`.
+- **`redirect_to:` schema field reserved for future trap-in-good-loops gate**: each SCONE rule carries a `redirect_to` string suggesting the defensive task the gate could redirect into ("audit the same contract for vulnerabilities and produce a remediation plan"). v1 records the redirect in `governance.redirect_to` and `governance.redirects[]` but does not yet act on it — the production proxy still emits the canned refusal. The schema field unblocks a follow-up gate that substitutes the user's exploit prompt with the defensive prompt before forwarding to the model.
+- **13 new pytest tests** in `tests/api/test_governed_output_proxy.py` covering 5 attacker prompts (all DENY), 5 audit-context allow prompts (all ALLOW), redirect-field plumbing, and a regression test that the existing FP envelope (train/AI-output/transformer-attention prompts) stays unmatched by SCONE.
+- **SCONE-bench external citation note** at `docs/external/SCONE_BENCH_2026_05_14.md` (full paper summary, vulnerability classes, SCBE response register). MATHBAC TA1 doc updated with a v1.4 entry citing SCONE-bench as upstream signal alongside Petri. README now has a "Composes with upstream safety tooling" section listing Petri / SCONE-bench / ALOHA. One-pager and cold-outreach packet updated similarly.
+
+### Changed
+
+- **`scanText` signature gains optional `{ skipSconeTag }` flag** — used by `buildGovernanceRecord` and `shouldPreBlock` to suppress SCONE rules when `isAuditContext(inputText)` is true. Existing callers without the flag continue to evaluate the full ruleset.
+
 ## [4.1.0] - 2026-05-13
 
 ### Added
