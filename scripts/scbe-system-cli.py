@@ -3726,6 +3726,162 @@ def cmd_flow_continue(args: argparse.Namespace) -> int:
     return _json_result(args, payload, lines)
 
 
+def _flow_report_verdict(board: dict[str, object]) -> tuple[str, str]:
+    blocked_steps = list(board.get("blocked_steps", []))
+    ready_count = int(board.get("ready_count") or 0)
+    rows = list(board.get("rows", []))
+    if blocked_steps:
+        return "blocked", "retry_or_escalate"
+    if ready_count:
+        return "in_progress", "run_continue"
+    if any(row.get("status") in {"waiting", "invalid"} for row in rows):
+        return "waiting", "resolve_dependencies"
+    return "completed", "archive_or_deliver"
+
+
+def _build_flow_report(board: dict[str, object], status_path: Path, repo_root: Path) -> dict[str, object]:
+    rows = list(board.get("rows", []))
+    counts = dict(board.get("counts", {}))
+    verdict, next_action = _flow_report_verdict(board)
+    continue_result = dict(board.get("flow_continue", {}))
+    run_next_result = dict(board.get("run_next", {}))
+    run_source = "flow_continue" if continue_result else "run_next" if run_next_result else "status"
+    runs = list(continue_result.get("runs", []))
+    if not runs and run_next_result:
+        runs = [run_next_result]
+    completion = {
+        "total": len(rows),
+        "completed": len([row for row in rows if row.get("status") == "completed"]),
+        "blocked": len([row for row in rows if row.get("status") == "blocked"]),
+        "ready": len([row for row in rows if row.get("status") == "ready"]),
+        "waiting": len([row for row in rows if row.get("status") == "waiting"]),
+        "invalid": len([row for row in rows if row.get("status") == "invalid"]),
+    }
+    return {
+        "schema_version": "scbe_flow_report_v1",
+        "generated_at": _now_iso(),
+        "source_status": _display_path(status_path, repo_root),
+        "task": board.get("task"),
+        "workflow_template": board.get("workflow_template"),
+        "verdict": verdict,
+        "next_action": next_action,
+        "completion": completion,
+        "counts": counts,
+        "completed_steps": list(board.get("completed_steps", [])),
+        "blocked_steps": list(board.get("blocked_steps", [])),
+        "ready_count": board.get("ready_count", 0),
+        "next_packet_ids": [row.get("task_id") for row in board.get("next_packets", [])],
+        "run_source": run_source,
+        "stop_reason": continue_result.get("stop_reason") or run_next_result.get("reason") or "",
+        "executed_count": continue_result.get("executed_count") or int(bool(run_next_result.get("executed"))),
+        "runs": [
+            {
+                "step_id": run.get("step_id"),
+                "task_id": run.get("task_id"),
+                "returncode": run.get("returncode"),
+                "executed": run.get("executed"),
+            }
+            for run in runs
+        ],
+        "steps": [
+            {
+                "step_id": row.get("step_id"),
+                "status": row.get("status"),
+                "owner_agent_id": row.get("owner_agent_id"),
+                "goal": row.get("goal"),
+            }
+            for row in rows
+        ],
+    }
+
+
+def _render_flow_report_markdown(report: dict[str, object]) -> str:
+    completion = dict(report.get("completion", {}))
+    lines = [
+        "# SCBE Flow Report",
+        "",
+        f"Task: {report.get('task')}",
+        f"Template: `{report.get('workflow_template')}`",
+        f"Verdict: `{report.get('verdict')}`",
+        f"Next action: `{report.get('next_action')}`",
+        f"Source status: `{report.get('source_status')}`",
+        "",
+        "## Completion",
+        "",
+        f"- Total steps: `{completion.get('total', 0)}`",
+        f"- Completed: `{completion.get('completed', 0)}`",
+        f"- Blocked: `{completion.get('blocked', 0)}`",
+        f"- Ready: `{completion.get('ready', 0)}`",
+        f"- Waiting: `{completion.get('waiting', 0)}`",
+        f"- Invalid: `{completion.get('invalid', 0)}`",
+        "",
+        "## Step Results",
+        "",
+        "| Step | Status | Owner | Goal |",
+        "| --- | --- | --- | --- |",
+    ]
+    for step in report.get("steps", []):
+        goal = str(step.get("goal") or "").replace("|", "\\|")
+        lines.append(f"| `{step.get('step_id')}` | `{step.get('status')}` | `{step.get('owner_agent_id')}` | {goal} |")
+    lines.extend(["", "## Run Evidence", ""])
+    runs = list(report.get("runs", []))
+    if not runs:
+        lines.append("- No packet execution evidence attached to this status board.")
+    for run in runs:
+        lines.append(f"- `{run.get('step_id')}` returncode `{run.get('returncode')}` executed `{run.get('executed')}`")
+    blocked_steps = list(report.get("blocked_steps", []))
+    if blocked_steps:
+        lines.extend(["", "## Retry Focus", ""])
+        for step in blocked_steps:
+            lines.append(f"- Retry or escalate blocked step `{step}` with the saved run evidence.")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def cmd_flow_report(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root
+    status_path = _repo_path(repo_root, args.status)
+    if not status_path.exists():
+        print(f"Flow status board not found: {status_path}")
+        return 2
+    try:
+        board = _load_flow_json(status_path)
+    except json.JSONDecodeError as exc:
+        print(f"Invalid flow status board JSON: {exc}")
+        return 2
+    if board.get("schema_version") != "scbe_flow_status_board_v1":
+        print("Expected scbe_flow_status_board_v1 status board.")
+        return 2
+
+    output_path = (
+        _repo_path(repo_root, args.output) if args.output else status_path.with_name(f"{status_path.stem}-report.md")
+    )
+    json_output_path = (
+        _repo_path(repo_root, args.json_output) if args.json_output else output_path.with_suffix(".report.json")
+    )
+    report = _build_flow_report(board, status_path, repo_root)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    json_output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(_render_flow_report_markdown(report), encoding="utf-8")
+    json_output_path.write_text(json.dumps(report, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+
+    payload = {
+        "schema_version": "scbe_flow_report_v1",
+        "verdict": report["verdict"],
+        "next_action": report["next_action"],
+        "completion": report["completion"],
+        "output_path": _display_path(output_path, repo_root),
+        "json_output": _display_path(json_output_path, repo_root),
+    }
+    lines = [
+        f"Flow report verdict: {report['verdict']}",
+        f"Next action: {report['next_action']}",
+        f"Saved flow report: {output_path}",
+        f"Saved flow report JSON: {json_output_path}",
+    ]
+    return _json_result(args, payload, lines)
+
+
 def cmd_colab_list(args: argparse.Namespace) -> int:
     repo_root = args.repo_root
     notebooks = _colab_catalog_payloads(repo_root)
@@ -5698,6 +5854,12 @@ def build_parser() -> argparse.ArgumentParser:
     flow_continue.add_argument("--timeout-seconds", type=int, default=120, help="Per-packet execution timeout")
     flow_continue.add_argument("--dry-run", action="store_true", help="Select the next packet without running it")
     flow_continue.set_defaults(func=cmd_flow_continue)
+    flow_report = flow_sub.add_parser("report", help="Render a deliverable report from a flow status board")
+    add_runtime_cli_flags(flow_report)
+    flow_report.add_argument("--status", required=True, help="Path to a flow status board JSON")
+    flow_report.add_argument("--output", default="", help="Output Markdown report path")
+    flow_report.add_argument("--json-output", default="", help="Output machine-readable report JSON path")
+    flow_report.set_defaults(func=cmd_flow_report)
 
     agentbus = sub.add_parser("agentbus", help="Run a user-facing shaped agent-bus task")
     add_runtime_cli_flags(agentbus)
