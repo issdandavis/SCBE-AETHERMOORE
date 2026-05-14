@@ -1,21 +1,21 @@
 #!/usr/bin/env node
-"use strict";
+'use strict';
 
-const { spawnSync } = require("node:child_process");
-const crypto = require("node:crypto");
-const fs = require("node:fs");
-const path = require("node:path");
-const readline = require("node:readline");
+const { spawnSync } = require('node:child_process');
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const path = require('node:path');
+const readline = require('node:readline');
 
 const SERVICE_CREDITS = {
-  schema_version: "scbe_service_credits_v1",
-  name: "SCBE Service Credits",
+  schema_version: 'scbe_service_credits_v1',
+  name: 'SCBE Service Credits',
   policy:
-    "Free/local/Ollama-first by default; credits only apply to hosted capacity, report delivery, storage, and provider/model usage.",
-  fee: "actual provider/model cost + 2-5% SCBE coordination fee",
-  hosted_run_intake: "https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html",
-  service_credits: "https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html",
-  top_up: "https://ko-fi.com/izdandavis",
+    'Free/local/Ollama-first by default; credits only apply to hosted capacity, report delivery, storage, and provider/model usage.',
+  fee: 'actual provider/model cost + 2-5% SCBE coordination fee',
+  hosted_run_intake: 'https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html',
+  service_credits: 'https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html',
+  top_up: 'https://ko-fi.com/izdandavis',
 };
 
 const CLI_HELP = `scbe-aethermoore-cli
@@ -70,16 +70,16 @@ Unknown commands are forwarded to the GeoSeal shell from scbe-aethermoore.
 
 function resolveGeosealBin() {
   try {
-    const entry = require.resolve("scbe-aethermoore");
-    return path.resolve(path.dirname(entry), "..", "..", "bin", "geoseal.cjs");
+    const entry = require.resolve('scbe-aethermoore');
+    return path.resolve(path.dirname(entry), '..', '..', 'bin', 'geoseal.cjs');
   } catch (_err) {
-    const localFallback = path.resolve(__dirname, "..", "..", "..", "bin", "geoseal.cjs");
+    const localFallback = path.resolve(__dirname, '..', '..', '..', 'bin', 'geoseal.cjs');
     try {
-      require("node:fs").accessSync(localFallback);
+      require('node:fs').accessSync(localFallback);
       return localFallback;
     } catch (_fallbackErr) {
       process.stderr.write(
-        "scbe-aethermoore-cli could not find scbe-aethermoore. Reinstall with: npm i -g scbe-aethermoore-cli\n",
+        'scbe-aethermoore-cli could not find scbe-aethermoore. Reinstall with: npm i -g scbe-aethermoore-cli\n'
       );
       process.exit(1);
     }
@@ -87,7 +87,7 @@ function resolveGeosealBin() {
 }
 
 function repoRoot() {
-  return path.resolve(__dirname, "..", "..", "..");
+  return path.resolve(__dirname, '..', '..', '..');
 }
 
 function resolveRepoScript(relativePath) {
@@ -97,7 +97,7 @@ function resolveRepoScript(relativePath) {
 }
 
 function pythonCommand() {
-  return process.env.SCBE_PYTHON || process.env.PYTHON || "python";
+  return process.env.SCBE_PYTHON || process.env.PYTHON || 'python';
 }
 
 function nowIso() {
@@ -105,80 +105,107 @@ function nowIso() {
 }
 
 function timezone() {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone || "unknown";
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown';
 }
 
 function historyPath() {
-  return path.resolve(repoRoot(), "artifacts", "scbe-terminal", "history.jsonl");
+  return path.resolve(repoRoot(), 'artifacts', 'scbe-terminal', 'history.jsonl');
+}
+
+function runCapture(command, args, options = {}) {
+  const child = spawnSync(command, args, {
+    cwd: options.cwd || repoRoot(),
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: options.timeout || 5000,
+  });
+  return {
+    ok: child.status === 0,
+    status: typeof child.status === 'number' ? child.status : 1,
+    stdout: String(child.stdout || '').trim(),
+    stderr: String(child.stderr || '').trim(),
+  };
+}
+
+function safeGit(args) {
+  return runCapture('git', args, { timeout: 5000 });
+}
+
+function firstLine(text) {
+  return (
+    String(text || '')
+      .split(/\r?\n/)
+      .filter(Boolean)[0] || ''
+  );
 }
 
 function appendHistory(row) {
   const target = historyPath();
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.appendFileSync(target, `${JSON.stringify(row)}\n`, "utf8");
+  fs.appendFileSync(target, `${JSON.stringify(row)}\n`, 'utf8');
 }
 
 function inferCompass(command) {
   const lower = command.toLowerCase();
-  const first = lower.trim().split(/\s+/)[0] || "";
-  let lane = "shell";
-  let language = "unknown";
-  let intent = "execute";
-  if (["npm", "pnpm", "yarn", "node", "npx"].includes(first)) {
-    lane = "node";
-    language = "javascript/typescript";
-  } else if (["python", "py", "pytest", "pip"].includes(first)) {
-    lane = "python";
-    language = "python";
-  } else if (["cargo", "rustc"].includes(first)) {
-    lane = "rust";
-    language = "rust";
-  } else if (["go", "gofmt"].includes(first)) {
-    lane = "go";
-    language = "go";
-  } else if (["git", "gh"].includes(first)) {
-    lane = "git";
-    language = "repository";
-  } else if (["vercel", "netlify", "firebase", "docker"].includes(first)) {
-    lane = "deploy";
-    language = "ops";
+  const first = lower.trim().split(/\s+/)[0] || '';
+  let lane = 'shell';
+  let language = 'unknown';
+  let intent = 'execute';
+  if (['npm', 'pnpm', 'yarn', 'node', 'npx'].includes(first)) {
+    lane = 'node';
+    language = 'javascript/typescript';
+  } else if (['python', 'py', 'pytest', 'pip'].includes(first)) {
+    lane = 'python';
+    language = 'python';
+  } else if (['cargo', 'rustc'].includes(first)) {
+    lane = 'rust';
+    language = 'rust';
+  } else if (['go', 'gofmt'].includes(first)) {
+    lane = 'go';
+    language = 'go';
+  } else if (['git', 'gh'].includes(first)) {
+    lane = 'git';
+    language = 'repository';
+  } else if (['vercel', 'netlify', 'firebase', 'docker'].includes(first)) {
+    lane = 'deploy';
+    language = 'ops';
   }
-  if (/\b(test|pytest|vitest|jest|check|verify)\b/.test(lower)) intent = "verify";
-  if (/\b(build|compile|tsc|cargo build)\b/.test(lower)) intent = "build";
-  if (/\b(deploy|publish|release|vercel|netlify|firebase)\b/.test(lower)) intent = "deploy";
-  if (/\b(lint|format|black|ruff|prettier)\b/.test(lower)) intent = "hygiene";
+  if (/\b(test|pytest|vitest|jest|check|verify)\b/.test(lower)) intent = 'verify';
+  if (/\b(build|compile|tsc|cargo build)\b/.test(lower)) intent = 'build';
+  if (/\b(deploy|publish|release|vercel|netlify|firebase)\b/.test(lower)) intent = 'deploy';
+  if (/\b(lint|format|black|ruff|prettier)\b/.test(lower)) intent = 'hygiene';
   return { lane, language, intent };
 }
 
 function gateCommand(command) {
   const code = [
-    "import json, sys",
-    "from src.crypto.geoseal_execution_gate import scan_command",
-    "print(json.dumps(scan_command(sys.argv[1]).to_dict()))",
-  ].join("; ");
-  const child = spawnSync(pythonCommand(), ["-c", code, command], {
+    'import json, sys',
+    'from src.crypto.geoseal_execution_gate import scan_command',
+    'print(json.dumps(scan_command(sys.argv[1]).to_dict()))',
+  ].join('; ');
+  const child = spawnSync(pythonCommand(), ['-c', code, command], {
     cwd: repoRoot(),
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"],
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
   });
   if (child.status !== 0) {
     return {
       allowed: true,
-      tier: "WARN",
+      tier: 'WARN',
       parser_ok: false,
-      findings: ["GeoSeal execution gate unavailable; command allowed with warning"],
-      stderr_preview: String(child.stderr || "").slice(0, 500),
+      findings: ['GeoSeal execution gate unavailable; command allowed with warning'],
+      stderr_preview: String(child.stderr || '').slice(0, 500),
     };
   }
   try {
-    return JSON.parse(String(child.stdout || "{}"));
+    return JSON.parse(String(child.stdout || '{}'));
   } catch (_err) {
     return {
       allowed: true,
-      tier: "WARN",
+      tier: 'WARN',
       parser_ok: false,
-      findings: ["GeoSeal execution gate returned non-JSON; command allowed with warning"],
-      stdout_preview: String(child.stdout || "").slice(0, 500),
+      findings: ['GeoSeal execution gate returned non-JSON; command allowed with warning'],
+      stdout_preview: String(child.stdout || '').slice(0, 500),
     };
   }
 }
@@ -186,60 +213,62 @@ function gateCommand(command) {
 function normalizeFindings(gate) {
   const findings = Array.isArray(gate.findings) ? gate.findings : [];
   return findings.map((finding) => {
-    if (typeof finding === "string") return finding;
-    return String(finding.rule || finding.message || "geoseal.finding");
+    if (typeof finding === 'string') return finding;
+    return String(finding.rule || finding.message || 'geoseal.finding');
   });
 }
 
 function reasonCodesForGate(gate) {
   const findings = Array.isArray(gate.findings) ? gate.findings : [];
   const reasons = findings.map((finding) => {
-    const rule = typeof finding === "string" ? finding : finding.rule || "unknown";
-    return `geoseal.execution_gate.${String(rule).replace(/[^A-Za-z0-9_.-]/g, "_")}`;
+    const rule = typeof finding === 'string' ? finding : finding.rule || 'unknown';
+    return `geoseal.execution_gate.${String(rule).replace(/[^A-Za-z0-9_.-]/g, '_')}`;
   });
-  if (!gate.parser_ok) reasons.push("geoseal.execution_gate.parser_unavailable");
-  return reasons.length ? reasons : ["geoseal.execution_gate.no_findings"];
+  if (!gate.parser_ok) reasons.push('geoseal.execution_gate.parser_unavailable');
+  return reasons.length ? reasons : ['geoseal.execution_gate.no_findings'];
 }
 
 function suggestedCorrectionForGate(gate) {
-  const tier = String(gate.tier || "ALLOW").toUpperCase();
-  if (tier === "DENY") {
-    return "Do not execute the requested tool call. Ask for a dry-run command proposal, restrict the allowed paths, and require human approval for destructive or secret-touching operations.";
+  const tier = String(gate.tier || 'ALLOW').toUpperCase();
+  if (tier === 'DENY') {
+    return 'Do not execute the requested tool call. Ask for a dry-run command proposal, restrict the allowed paths, and require human approval for destructive or secret-touching operations.';
   }
-  if (tier === "ESCALATE") {
-    return "Pause the tool call and route it to a human or higher-trust reviewer with the command hash and findings attached.";
+  if (tier === 'ESCALATE') {
+    return 'Pause the tool call and route it to a human or higher-trust reviewer with the command hash and findings attached.';
   }
-  if (tier === "QUARANTINE") {
-    return "Run only in observe/dry-run mode first, then retry with explicit claimed paths and a narrower command.";
+  if (tier === 'QUARANTINE') {
+    return 'Run only in observe/dry-run mode first, then retry with explicit claimed paths and a narrower command.';
   }
-  return "Allowed. Keep the audit record with the downstream agent response.";
+  return 'Allowed. Keep the audit record with the downstream agent response.';
 }
 
 function governedOutputForGate({ prompt, command, gate }) {
-  const tier = String(gate.tier || "ALLOW").toUpperCase();
-  const decision = tier === "ALLOW" ? "ALLOW" : tier;
-  const commandHash = gate.command_sha256 || crypto.createHash("sha256").update(command).digest("hex");
+  const tier = String(gate.tier || 'ALLOW').toUpperCase();
+  const decision = tier === 'ALLOW' ? 'ALLOW' : tier;
+  const commandHash =
+    gate.command_sha256 || crypto.createHash('sha256').update(command).digest('hex');
   const sealMaterial = JSON.stringify({
-    schema_version: "scbe_governed_output_demo_v1",
+    schema_version: 'scbe_governed_output_demo_v1',
     prompt,
     command_sha256: commandHash,
     decision,
     tier,
     reasons: reasonCodesForGate(gate),
   });
-  const auditHash = crypto.createHash("sha256").update(sealMaterial).digest("hex");
-  const blocked = decision !== "ALLOW";
+  const auditHash = crypto.createHash('sha256').update(sealMaterial).digest('hex');
+  const blocked = decision !== 'ALLOW';
   return {
-    schema_version: "scbe_governed_output_demo_v1",
-    product_moment: "Put SCBE between an AI agent and its tools. In five minutes, see what it catches, why it caught it, and what audit trail it leaves behind.",
+    schema_version: 'scbe_governed_output_demo_v1',
+    product_moment:
+      'Put SCBE between an AI agent and its tools. In five minutes, see what it catches, why it caught it, and what audit trail it leaves behind.',
     input: {
-      role: "ai_agent",
+      role: 'ai_agent',
       prompt,
       proposed_tool_call: command,
     },
     output: blocked
-      ? "Blocked unsafe tool execution request before it reached the shell."
-      : "Allowed tool execution request with audit metadata.",
+      ? 'Blocked unsafe tool execution request before it reached the shell.'
+      : 'Allowed tool execution request with audit metadata.',
     decision,
     reasons: reasonCodesForGate(gate),
     suggested_correction: suggestedCorrectionForGate(gate),
@@ -251,20 +280,20 @@ function governedOutputForGate({ prompt, command, gate }) {
       parser_ok: Boolean(gate.parser_ok),
       findings: normalizeFindings(gate),
     },
-    next_step: "Try: scbe run \"node --version\" --json",
+    next_step: 'Try: scbe run "node --version" --json',
   };
 }
 
 function parseDemoArgs(args) {
   const out = {
-    json: args.includes("--json"),
+    json: args.includes('--json'),
     prompt:
-      "My AI agent wants to clean deployment secrets and rerun production setup. Should it execute the shell command?",
+      'My AI agent wants to clean deployment secrets and rerun production setup. Should it execute the shell command?',
     command: 'Remove-Item -Recurse -Force "config/connector_oauth/.env.connector.oauth"',
   };
-  const commandIndex = args.indexOf("--command");
+  const commandIndex = args.indexOf('--command');
   if (commandIndex >= 0 && args[commandIndex + 1]) out.command = args[commandIndex + 1];
-  const promptIndex = args.indexOf("--prompt");
+  const promptIndex = args.indexOf('--prompt');
   if (promptIndex >= 0 && args[promptIndex + 1]) out.prompt = args[promptIndex + 1];
   return out;
 }
@@ -282,24 +311,24 @@ function runMagicDemo(args) {
   } else {
     process.stdout.write(
       [
-        "SCBE 5-minute agent safety demo",
-        "",
+        'SCBE 5-minute agent safety demo',
+        '',
         packet.product_moment,
-        "",
+        '',
         `Input:    ${packet.input.prompt}`,
         `Tool:     ${packet.input.proposed_tool_call}`,
         `Decision: ${packet.decision}`,
         `Output:   ${packet.output}`,
-        "",
-        "Reasons:",
+        '',
+        'Reasons:',
         ...packet.reasons.map((reason) => `- ${reason}`),
-        "",
+        '',
         `Fix:      ${packet.suggested_correction}`,
         `Audit:    ${packet.geoseal.audit_id}`,
-        "",
+        '',
         packet.next_step,
-        "",
-      ].join("\n"),
+        '',
+      ].join('\n')
     );
   }
   process.exit(0);
@@ -312,7 +341,7 @@ function runShellCommand(command, options = {}) {
   const gate = gateCommand(command);
   const startedAt = nowIso();
   const row = {
-    schema_version: "scbe_terminal_run_v1",
+    schema_version: 'scbe_terminal_run_v1',
     started_at: startedAt,
     cwd,
     command,
@@ -330,9 +359,9 @@ function runShellCommand(command, options = {}) {
   if (!gate.allowed) {
     row.duration_ms = Date.now() - start;
     row.failure = {
-      kind: "governance_block",
+      kind: 'governance_block',
       summary: `GeoSeal blocked command at tier ${gate.tier}`,
-      next_step: "Inspect governance.findings and rerun with a narrower command.",
+      next_step: 'Inspect governance.findings and rerun with a narrower command.',
     };
     appendHistory(row);
     if (!options.json) {
@@ -343,20 +372,22 @@ function runShellCommand(command, options = {}) {
   }
 
   if (!options.quiet && !options.json) {
-    process.stdout.write(`SCBE ${compass.intent}/${compass.lane} | GeoSeal ${gate.tier} | ${startedAt}\n`);
+    process.stdout.write(
+      `SCBE ${compass.intent}/${compass.lane} | GeoSeal ${gate.tier} | ${startedAt}\n`
+    );
   }
   const child = spawnSync(command, {
     cwd,
     shell: true,
-    stdio: options.capture ? ["ignore", "pipe", "pipe"] : "inherit",
-    encoding: "utf8",
+    stdio: options.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
+    encoding: 'utf8',
   });
-  row.exit_code = typeof child.status === "number" ? child.status : 1;
+  row.exit_code = typeof child.status === 'number' ? child.status : 1;
   row.duration_ms = Date.now() - start;
   row.success = row.exit_code === 0;
   if (options.capture) {
-    row.stdout_preview = String(child.stdout || "").slice(-2000);
-    row.stderr_preview = String(child.stderr || "").slice(-2000);
+    row.stdout_preview = String(child.stdout || '').slice(-2000);
+    row.stderr_preview = String(child.stderr || '').slice(-2000);
   }
   if (!row.success) {
     row.failure = classifyFailure(command, row, child);
@@ -366,114 +397,245 @@ function runShellCommand(command, options = {}) {
 }
 
 function classifyFailure(command, row, child) {
-  const text = `${child?.stderr || ""}\n${child?.stdout || ""}`.toLowerCase();
-  if (text.includes("module not found") || text.includes("cannot find module")) {
+  const text = `${child?.stderr || ''}\n${child?.stdout || ''}`.toLowerCase();
+  if (text.includes('module not found') || text.includes('cannot find module')) {
     return {
-      kind: "missing_dependency",
-      summary: "A module or package was not found.",
-      next_step: "Run the project install command, then retry the same command.",
+      kind: 'missing_dependency',
+      summary: 'A module or package was not found.',
+      next_step: 'Run the project install command, then retry the same command.',
     };
   }
-  if (text.includes("command not found") || text.includes("not recognized")) {
+  if (text.includes('command not found') || text.includes('not recognized')) {
     return {
-      kind: "missing_tool",
-      summary: "The shell could not find the requested executable.",
-      next_step: "Check PATH or install the missing CLI locally in this project.",
+      kind: 'missing_tool',
+      summary: 'The shell could not find the requested executable.',
+      next_step: 'Check PATH or install the missing CLI locally in this project.',
     };
   }
   if (/\bsyntaxerror\b|parse error|unexpected token/.test(text)) {
     return {
-      kind: "syntax",
-      summary: "The tool reported a parse or syntax error.",
-      next_step: "Open the reported file/line, fix syntax, and rerun verification.",
+      kind: 'syntax',
+      summary: 'The tool reported a parse or syntax error.',
+      next_step: 'Open the reported file/line, fix syntax, and rerun verification.',
     };
   }
   if (/\btest failed\b|failed\b|assert/.test(text)) {
     return {
-      kind: "test_failure",
-      summary: "A verification command failed.",
-      next_step: "Inspect the first failing test or assertion, patch behavior, then rerun.",
+      kind: 'test_failure',
+      summary: 'A verification command failed.',
+      next_step: 'Inspect the first failing test or assertion, patch behavior, then rerun.',
     };
   }
   return {
-    kind: "command_failed",
+    kind: 'command_failed',
     summary: `Command exited ${row.exit_code}.`,
-    next_step: "Rerun with --json or inspect the command output for the first concrete error.",
+    next_step: 'Rerun with --json or inspect the command output for the first concrete error.',
   };
 }
 
 function parseRunArgs(args) {
-  const json = args.includes("--json");
-  const quiet = args.includes("--quiet");
-  const capture = json || args.includes("--capture");
-  const filtered = args.filter((arg) => !["--json", "--quiet", "--capture"].includes(arg));
-  return { command: filtered.join(" "), json, quiet, capture };
+  const json = args.includes('--json');
+  const quiet = args.includes('--quiet');
+  const capture = json || args.includes('--capture');
+  const filtered = args.filter((arg) => !['--json', '--quiet', '--capture'].includes(arg));
+  return { command: filtered.join(' '), json, quiet, capture };
 }
 
 function printHistory(limit = 20) {
   const target = historyPath();
   if (!fs.existsSync(target)) {
-    process.stdout.write("No SCBE terminal history yet.\n");
+    process.stdout.write('No SCBE terminal history yet.\n');
     return;
   }
   const rows = fs
-    .readFileSync(target, "utf8")
+    .readFileSync(target, 'utf8')
     .trim()
     .split(/\r?\n/)
     .filter(Boolean)
     .slice(-limit)
     .map((line) => JSON.parse(line));
   for (const row of rows) {
-    const mark = row.success ? "PASS" : "FAIL";
+    const mark = row.success ? 'PASS' : 'FAIL';
     process.stdout.write(
-      `${row.started_at} ${mark} ${row.compass.intent}/${row.compass.lane} ${row.exit_code} ${row.command}\n`,
+      `${row.started_at} ${mark} ${row.compass.intent}/${row.compass.lane} ${row.exit_code} ${row.command}\n`
     );
   }
 }
 
+function readLastHistoryRow() {
+  const target = historyPath();
+  if (!fs.existsSync(target)) return null;
+  const lines = fs.readFileSync(target, 'utf8').trim().split(/\r?\n/).filter(Boolean);
+  if (!lines.length) return null;
+  try {
+    return JSON.parse(lines[lines.length - 1]);
+  } catch (_err) {
+    return { parse_error: true };
+  }
+}
+
+function providerPosture() {
+  const env = process.env;
+  return {
+    local: {
+      available: true,
+      detail: 'local shell and repo commands are free/default',
+    },
+    ollama: {
+      configured: Boolean(env.OLLAMA_HOST || env.SCBE_OLLAMA_HOST),
+      detail: env.OLLAMA_HOST || env.SCBE_OLLAMA_HOST || 'default local endpoint not probed',
+    },
+    huggingface: {
+      configured: Boolean(env.HF_TOKEN || env.HUGGINGFACE_API_TOKEN),
+      detail:
+        env.HF_TOKEN || env.HUGGINGFACE_API_TOKEN
+          ? 'token present in environment'
+          : 'missing HF token',
+    },
+    hosted: {
+      configured: Boolean(env.SCBE_API_KEY),
+      detail: env.SCBE_API_KEY
+        ? 'SCBE_API_KEY present'
+        : 'hosted runs disabled until SCBE_API_KEY is set',
+    },
+  };
+}
+
+function workspacePosture(root) {
+  const flowStatus = path.join(root, 'artifacts', 'flow_status');
+  const flowPackets = path.join(root, 'artifacts', 'flow_packets');
+  const terminalHistory = historyPath();
+  return {
+    flow_status_dir: flowStatus,
+    flow_status_ready: fs.existsSync(flowStatus),
+    flow_packets_dir: flowPackets,
+    flow_packets_ready: fs.existsSync(flowPackets),
+    terminal_history_path: terminalHistory,
+    terminal_history_ready: fs.existsSync(terminalHistory),
+  };
+}
+
+function latestCiStatus(branch) {
+  if (!branch || branch === 'unknown') {
+    return { available: false, status: 'unknown', detail: 'branch unknown' };
+  }
+  const child = runCapture(
+    'gh',
+    [
+      'run',
+      'list',
+      '--branch',
+      branch,
+      '--limit',
+      '1',
+      '--json',
+      'databaseId,name,status,conclusion',
+    ],
+    { timeout: 8000 }
+  );
+  if (!child.ok) {
+    return {
+      available: false,
+      status: 'unknown',
+      detail: firstLine(child.stderr) || 'gh run list unavailable',
+    };
+  }
+  try {
+    const rows = JSON.parse(child.stdout || '[]');
+    const latest = rows[0] || null;
+    return {
+      available: true,
+      status: latest ? latest.status : 'none',
+      conclusion: latest ? latest.conclusion : null,
+      workflow: latest ? latest.name : null,
+      run_id: latest ? latest.databaseId : null,
+    };
+  } catch (_err) {
+    return { available: false, status: 'unknown', detail: 'gh returned non-JSON' };
+  }
+}
+
+function gitPosture(root) {
+  const branch = safeGit(['branch', '--show-current']);
+  const commit = safeGit(['rev-parse', '--short', 'HEAD']);
+  const porcelain = safeGit(['status', '--short']);
+  const upstream = safeGit(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  return {
+    root,
+    branch: branch.ok && branch.stdout ? branch.stdout : 'unknown',
+    commit: commit.ok ? commit.stdout : 'unknown',
+    dirty: porcelain.ok ? Boolean(porcelain.stdout) : null,
+    upstream: upstream.ok ? upstream.stdout : null,
+  };
+}
+
 function runStatus() {
+  const root = repoRoot();
+  const git = gitPosture(root);
+  const lastRun = readLastHistoryRow();
   const payload = {
-    schema_version: "scbe_terminal_status_v1",
+    schema_version: 'scbe_terminal_status_v1',
+    receipt: 'SCBE_STATUS_READY=1',
+    generated_at: nowIso(),
     cwd: process.cwd(),
-    repo_root: repoRoot(),
+    repo_root: root,
     history_path: historyPath(),
     timezone: timezone(),
-    compiler_available: Boolean(resolveRepoScript("scripts/agents/scbe_code.py")),
-    router_available: Boolean(resolveRepoScript("scripts/aetherpp/cli.py")),
+    compiler_available: Boolean(resolveRepoScript('scripts/agents/scbe_code.py')),
+    router_available: Boolean(resolveRepoScript('scripts/aetherpp/cli.py')),
     geoseal_available: Boolean(resolveGeosealBin()),
+    git,
+    ci: latestCiStatus(git.branch),
+    providers: providerPosture(),
+    budget: {
+      posture: process.env.SCBE_API_KEY ? 'hosted_enabled' : 'local_free_default',
+      policy: SERVICE_CREDITS.policy,
+      fee: SERVICE_CREDITS.fee,
+      upgrade: SERVICE_CREDITS.hosted_run_intake,
+    },
+    workspace: workspacePosture(root),
+    last_gate: lastRun
+      ? {
+          command: lastRun.command || null,
+          success: lastRun.success ?? null,
+          exit_code: lastRun.exit_code ?? null,
+          governance: lastRun.governance || null,
+          started_at: lastRun.started_at || null,
+        }
+      : null,
   };
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
 }
 
 function runInteractiveShell() {
-  process.stdout.write("SCBE Terminal. Type commands normally. Use :help or :exit.\n");
+  process.stdout.write('SCBE Terminal. Type commands normally. Use :help or :exit.\n');
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: "scbe> ",
+    prompt: 'scbe> ',
   });
   rl.prompt();
-  rl.on("line", (line) => {
+  rl.on('line', (line) => {
     const command = line.trim();
     if (!command) {
       rl.prompt();
       return;
     }
-    if (command === ":exit" || command === "exit" || command === "quit") {
+    if (command === ':exit' || command === 'exit' || command === 'quit') {
       rl.close();
       return;
     }
-    if (command === ":help" || command === "help") {
+    if (command === ':help' || command === 'help') {
       process.stdout.write(CLI_HELP);
       rl.prompt();
       return;
     }
-    if (command === ":status" || command === "status") {
+    if (command === ':status' || command === 'status') {
       runStatus();
       rl.prompt();
       return;
     }
-    if (command.startsWith(":history") || command === "history") {
+    if (command.startsWith(':history') || command === 'history') {
       printHistory(20);
       rl.prompt();
       return;
@@ -483,7 +645,9 @@ function runInteractiveShell() {
       : command;
     const row = runShellCommand(scbeCommand);
     if (!row.success && row.failure) {
-      process.stdout.write(`SCBE failure: ${row.failure.summary}\nNext: ${row.failure.next_step}\n`);
+      process.stdout.write(
+        `SCBE failure: ${row.failure.summary}\nNext: ${row.failure.next_step}\n`
+      );
     }
     rl.prompt();
   });
@@ -495,59 +659,59 @@ function runPythonScript(relativePath, args) {
     process.stderr.write(
       [
         `scbe could not find ${relativePath}.`,
-        "This command needs a local SCBE-AETHERMOORE source checkout.",
-        "Use the repo-local CLI, or install the full source package before running compiler/routing lanes.",
-        "",
-      ].join("\n"),
+        'This command needs a local SCBE-AETHERMOORE source checkout.',
+        'Use the repo-local CLI, or install the full source package before running compiler/routing lanes.',
+        '',
+      ].join('\n')
     );
     process.exit(2);
   }
   const child = spawnSync(pythonCommand(), [script, ...args], {
-    stdio: "inherit",
+    stdio: 'inherit',
   });
-  if (typeof child.status === "number") process.exit(child.status);
+  if (typeof child.status === 'number') process.exit(child.status);
   process.exit(1);
 }
 
 function runCompiler(args) {
-  runPythonScript("scripts/agents/scbe_code.py", args);
+  runPythonScript('scripts/agents/scbe_code.py', args);
 }
 
 function runRouteCompiler(args) {
-  runPythonScript("scripts/aetherpp/cli.py", args);
+  runPythonScript('scripts/aetherpp/cli.py', args);
 }
 
 function runFlow(args) {
   // Bridge to scripts/scbe-system-cli.py flow <sub> — same source-checkout pattern as compile/route.
-  runPythonScript("scripts/scbe-system-cli.py", ["flow", ...args]);
+  runPythonScript('scripts/scbe-system-cli.py', ['flow', ...args]);
 }
 
 // Top-level commands scbe handles directly. Used by the typo-suggestion guard.
 // Order doesn't matter; this list is the complete set of scbe-owned verbs.
 const KNOWN_COMMANDS = [
-  "help",
-  "version",
-  "demo",
-  "magic",
-  "selftest",
-  "doctor",
-  "credits",
-  "hosted-run",
-  "upgrade",
-  "shell",
-  "run",
-  "status",
-  "history",
-  "flow",
-  "agent-bus",
-  "agentbus",
-  "abacus",
-  "compile-ca",
-  "ca-plan",
-  "render-op",
-  "compile",
-  "route",
-  "aetherpp",
+  'help',
+  'version',
+  'demo',
+  'magic',
+  'selftest',
+  'doctor',
+  'credits',
+  'hosted-run',
+  'upgrade',
+  'shell',
+  'run',
+  'status',
+  'history',
+  'flow',
+  'agent-bus',
+  'agentbus',
+  'abacus',
+  'compile-ca',
+  'ca-plan',
+  'render-op',
+  'compile',
+  'route',
+  'aetherpp',
 ];
 
 function levenshtein(a, b) {
@@ -594,9 +758,9 @@ function suggestCommand(input) {
 
 function resolveHarmonicModule() {
   try {
-    return require("scbe-aethermoore/harmonic");
+    return require('scbe-aethermoore/harmonic');
   } catch (_err) {
-    const local = path.resolve(repoRoot(), "dist", "src", "harmonic", "index.js");
+    const local = path.resolve(repoRoot(), 'dist', 'src', 'harmonic', 'index.js');
     if (fs.existsSync(local)) return require(local);
     return null;
   }
@@ -610,53 +774,59 @@ function parseAbacusFlag(args, key) {
 }
 
 function runAbacus(args) {
-  const sub = args[0] || "help";
-  if (sub === "help" || sub === "--help" || sub === "-h") {
+  const sub = args[0] || 'help';
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
     process.stdout.write(
       [
-        "Usage:",
-        "  scbe abacus run --d-h <value> --pd <value> [--json]",
-        "",
-        "Deterministic BigInt mechanical scoring for L12 harmonic wall + L13 tier.",
-        "Same inputs produce bit-identical scores and tiers on every platform.",
-        "",
-        "Formula:  H(d_h, pd) = 1 / (1 + d_h + 2*pd)",
-        "Tiers:    H >= 0.65 ALLOW; >= 0.45 QUARANTINE; >= 0.25 ESCALATE; else DENY",
-        "Trit:     +1 ALLOW, 0 uncertain (QUARANTINE/ESCALATE), -1 DENY",
-        "",
-      ].join("\n"),
+        'Usage:',
+        '  scbe abacus run --d-h <value> --pd <value> [--json]',
+        '',
+        'Deterministic BigInt mechanical scoring for L12 harmonic wall + L13 tier.',
+        'Same inputs produce bit-identical scores and tiers on every platform.',
+        '',
+        'Formula:  H(d_h, pd) = 1 / (1 + d_h + 2*pd)',
+        'Tiers:    H >= 0.65 ALLOW; >= 0.45 QUARANTINE; >= 0.25 ESCALATE; else DENY',
+        'Trit:     +1 ALLOW, 0 uncertain (QUARANTINE/ESCALATE), -1 DENY',
+        '',
+      ].join('\n')
     );
     process.exit(0);
   }
-  if (sub !== "run") {
+  if (sub !== 'run') {
     process.stderr.write(`unknown abacus subcommand: ${sub}\n`);
     process.exit(2);
   }
-  const d_h = parseAbacusFlag(args, "--d-h");
-  const phase_dev = parseAbacusFlag(args, "--pd");
+  const d_h = parseAbacusFlag(args, '--d-h');
+  const phase_dev = parseAbacusFlag(args, '--pd');
   if (d_h === null || phase_dev === null) {
-    process.stderr.write("scbe abacus run requires --d-h <value> --pd <value>\n");
+    process.stderr.write('scbe abacus run requires --d-h <value> --pd <value>\n');
     process.exit(2);
   }
   const harmonic = resolveHarmonicModule();
-  if (!harmonic || typeof harmonic.runGovernanceAbacus !== "function") {
+  if (!harmonic || typeof harmonic.runGovernanceAbacus !== 'function') {
     process.stderr.write(
-      "scbe abacus requires scbe-aethermoore (>=4.1) with the governanceAbacus export.\n" +
-        "Install with: npm i -g scbe-aethermoore\n",
+      'scbe abacus requires scbe-aethermoore (>=4.1) with the governanceAbacus export.\n' +
+        'Install with: npm i -g scbe-aethermoore\n'
     );
     process.exit(2);
   }
   const run = harmonic.runGovernanceAbacus({ d_h, phase_dev });
-  const asJson = args.includes("--json");
+  const asJson = args.includes('--json');
   if (asJson) {
     const payload = {
-      schema_version: "scbe_governance_abacus_v1",
+      schema_version: 'scbe_governance_abacus_v1',
       input: run.input,
       config: { scale: run.config.scale.toString() },
       beads: {
         d_h: { position: run.beads.d_h.position.toString(), display: run.beads.d_h.display },
-        phase_dev: { position: run.beads.phase_dev.position.toString(), display: run.beads.phase_dev.display },
-        denominator: { position: run.beads.denominator.position.toString(), display: run.beads.denominator.display },
+        phase_dev: {
+          position: run.beads.phase_dev.position.toString(),
+          display: run.beads.phase_dev.display,
+        },
+        denominator: {
+          position: run.beads.denominator.position.toString(),
+          display: run.beads.denominator.display,
+        },
         score: { position: run.beads.score.position.toString(), display: run.beads.score.display },
       },
       score: { num: run.score.num.toString(), den: run.score.den.toString() },
@@ -673,10 +843,17 @@ function runAbacus(args) {
 
 function resolveAgentBusBin() {
   try {
-    const entry = require.resolve("scbe-agent-bus/package.json");
-    return path.resolve(path.dirname(entry), "bin", "scbe-agent-bus.cjs");
+    const entry = require.resolve('scbe-agent-bus/package.json');
+    return path.resolve(path.dirname(entry), 'bin', 'scbe-agent-bus.cjs');
   } catch (_err) {
-    const localFallback = path.resolve(__dirname, "..", "..", "agent-bus", "bin", "scbe-agent-bus.cjs");
+    const localFallback = path.resolve(
+      __dirname,
+      '..',
+      '..',
+      'agent-bus',
+      'bin',
+      'scbe-agent-bus.cjs'
+    );
     try {
       fs.accessSync(localFallback);
       return localFallback;
@@ -690,12 +867,12 @@ function runAgentBus(args) {
   const target = resolveAgentBusBin();
   if (!target) {
     process.stderr.write(
-      "scbe agent-bus requires scbe-agent-bus. Install with: npm i -g scbe-agent-bus\n",
+      'scbe agent-bus requires scbe-agent-bus. Install with: npm i -g scbe-agent-bus\n'
     );
     process.exit(2);
   }
-  const child = spawnSync(process.execPath, [target, ...args], { stdio: "inherit" });
-  if (typeof child.status === "number") process.exit(child.status);
+  const child = spawnSync(process.execPath, [target, ...args], { stdio: 'inherit' });
+  if (typeof child.status === 'number') process.exit(child.status);
   process.exit(1);
 }
 
@@ -704,29 +881,29 @@ function runUpgrade(args) {
   // command so the single source of truth for hosted-run guidance lives in one place.
   const target = resolveAgentBusBin();
   if (target) {
-    const child = spawnSync(process.execPath, [target, "upgrade", ...args], { stdio: "inherit" });
-    if (typeof child.status === "number") process.exit(child.status);
+    const child = spawnSync(process.execPath, [target, 'upgrade', ...args], { stdio: 'inherit' });
+    if (typeof child.status === 'number') process.exit(child.status);
     process.exit(0);
   }
   // Fallback: print the same payload as `scbe credits` so the upgrade command always works.
-  const asJson = args.includes("--json");
+  const asJson = args.includes('--json');
   if (asJson) {
     process.stdout.write(`${JSON.stringify(SERVICE_CREDITS, null, 2)}\n`);
   } else {
     process.stdout.write(
       [
-        "SCBE Service Credits — hosted runs",
-        "",
+        'SCBE Service Credits — hosted runs',
+        '',
         SERVICE_CREDITS.policy,
         `Fee: ${SERVICE_CREDITS.fee}`,
-        "",
+        '',
         `Hosted run intake: ${SERVICE_CREDITS.hosted_run_intake}`,
         `Service credits:    ${SERVICE_CREDITS.service_credits}`,
         `Top up:             ${SERVICE_CREDITS.top_up}`,
-        "",
-        "Install scbe-agent-bus for the full upgrade flow: npm i -g scbe-agent-bus",
-        "",
-      ].join("\n"),
+        '',
+        'Install scbe-agent-bus for the full upgrade flow: npm i -g scbe-agent-bus',
+        '',
+      ].join('\n')
     );
   }
   process.exit(0);
@@ -734,43 +911,40 @@ function runUpgrade(args) {
 
 function runSelftest() {
   const target = resolveGeosealBin();
-  const checks = [
-    ["version"],
-    ["doctor", "--json"],
-  ];
+  const checks = [['version'], ['doctor', '--json']];
   const results = checks.map((args) => {
     const child = spawnSync(process.execPath, [target, ...args], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
     return {
-      command: `scbe ${args.join(" ")}`,
+      command: `scbe ${args.join(' ')}`,
       ok: child.status === 0,
       status: child.status,
-      stdout_preview: String(child.stdout || "").slice(0, 500),
-      stderr_preview: String(child.stderr || "").slice(0, 500),
+      stdout_preview: String(child.stdout || '').slice(0, 500),
+      stderr_preview: String(child.stderr || '').slice(0, 500),
     };
   });
-  const compilerScript = resolveRepoScript("scripts/agents/scbe_code.py");
+  const compilerScript = resolveRepoScript('scripts/agents/scbe_code.py');
   if (compilerScript) {
     const child = spawnSync(
       pythonCommand(),
-      [compilerScript, "ca-plan", "--ops", "abs abs add", "--json"],
+      [compilerScript, 'ca-plan', '--ops', 'abs abs add', '--json'],
       {
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "pipe"],
-      },
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      }
     );
     results.push({
-      command: "scbe ca-plan --ops \"abs abs add\" --json",
+      command: 'scbe ca-plan --ops "abs abs add" --json',
       ok: child.status === 0,
       status: child.status,
-      stdout_preview: String(child.stdout || "").slice(0, 500),
-      stderr_preview: String(child.stderr || "").slice(0, 500),
+      stdout_preview: String(child.stdout || '').slice(0, 500),
+      stderr_preview: String(child.stderr || '').slice(0, 500),
     });
   }
   const payload = {
-    schema_version: "scbe_aethermoore_cli_selftest_v1",
+    schema_version: 'scbe_aethermoore_cli_selftest_v1',
     ok: results.every((row) => row.ok),
     results,
   };
@@ -779,54 +953,54 @@ function runSelftest() {
 }
 
 const argv = process.argv.slice(2);
-if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h" || argv[0] === "help") {
+if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h' || argv[0] === 'help') {
   process.stdout.write(CLI_HELP);
   process.exit(0);
 }
 
-if (argv[0] === "demo" || argv[0] === "magic") {
+if (argv[0] === 'demo' || argv[0] === 'magic') {
   runMagicDemo(argv.slice(1));
 }
 
-if (argv[0] === "credits" || argv[0] === "hosted-run") {
-  const asJson = argv.includes("--json");
+if (argv[0] === 'credits' || argv[0] === 'hosted-run') {
+  const asJson = argv.includes('--json');
   if (asJson) {
     process.stdout.write(`${JSON.stringify(SERVICE_CREDITS, null, 2)}\n`);
   } else {
     process.stdout.write(
       [
-        "SCBE Service Credits",
-        "",
+        'SCBE Service Credits',
+        '',
         SERVICE_CREDITS.policy,
         `Fee: ${SERVICE_CREDITS.fee}`,
-        "",
+        '',
         `Hosted run intake: ${SERVICE_CREDITS.hosted_run_intake}`,
         `Service credits:    ${SERVICE_CREDITS.service_credits}`,
         `Top up:             ${SERVICE_CREDITS.top_up}`,
-        "",
-      ].join("\n"),
+        '',
+      ].join('\n')
     );
   }
   process.exit(0);
 }
 
-if (argv[0] === "selftest") {
+if (argv[0] === 'selftest') {
   runSelftest();
 }
 
-if (argv[0] === "status") {
+if (argv[0] === 'status') {
   runStatus();
   process.exit(0);
 }
 
-if (argv[0] === "history") {
-  const limitIndex = argv.indexOf("--limit");
+if (argv[0] === 'history') {
+  const limitIndex = argv.indexOf('--limit');
   const limit = limitIndex >= 0 ? Number(argv[limitIndex + 1] || 20) : 20;
   printHistory(Number.isFinite(limit) ? limit : 20);
   process.exit(0);
 }
 
-if (argv[0] === "run") {
+if (argv[0] === 'run') {
   const { command, json, quiet, capture } = parseRunArgs(argv.slice(1));
   if (!command) {
     process.stderr.write('Usage: scbe run "npm test"\n');
@@ -837,55 +1011,55 @@ if (argv[0] === "run") {
   process.exit(row.exit_code);
 }
 
-if (argv[0] === "shell") {
+if (argv[0] === 'shell') {
   runInteractiveShell();
   return;
 }
 
-if (argv[0] === "flow") {
+if (argv[0] === 'flow') {
   runFlow(argv.slice(1));
 }
 
-if (argv[0] === "agent-bus" || argv[0] === "agentbus") {
+if (argv[0] === 'agent-bus' || argv[0] === 'agentbus') {
   runAgentBus(argv.slice(1));
 }
 
-if (argv[0] === "upgrade") {
+if (argv[0] === 'upgrade') {
   runUpgrade(argv.slice(1));
 }
 
-if (argv[0] === "abacus") {
+if (argv[0] === 'abacus') {
   runAbacus(argv.slice(1));
 }
 
-if (argv[0] === "compile-ca" || argv[0] === "ca-plan" || argv[0] === "render-op") {
+if (argv[0] === 'compile-ca' || argv[0] === 'ca-plan' || argv[0] === 'render-op') {
   runCompiler(argv);
 }
 
-if (argv[0] === "compile") {
+if (argv[0] === 'compile') {
   const [, mode, ...rest] = argv;
-  if (!mode || mode === "--help" || mode === "-h") {
+  if (!mode || mode === '--help' || mode === '-h') {
     process.stdout.write(
       [
-        "Usage:",
-        "  scbe compile ca --opcodes \"0x09 0x09 0x00\" --target python",
-        "  scbe compile plan --ops \"abs abs add\" --json",
-        "  scbe compile op --op add --target KO --a left --b right",
-        "",
-      ].join("\n"),
+        'Usage:',
+        '  scbe compile ca --opcodes "0x09 0x09 0x00" --target python',
+        '  scbe compile plan --ops "abs abs add" --json',
+        '  scbe compile op --op add --target KO --a left --b right',
+        '',
+      ].join('\n')
     );
     process.exit(0);
   }
   const compilerMode = {
-    ca: "compile-ca",
-    "compile-ca": "compile-ca",
-    plan: "ca-plan",
-    "ca-plan": "ca-plan",
-    op: "render-op",
-    "render-op": "render-op",
-    manifest: "manifest",
-    generate: "generate",
-    apply: "apply",
+    ca: 'compile-ca',
+    'compile-ca': 'compile-ca',
+    plan: 'ca-plan',
+    'ca-plan': 'ca-plan',
+    op: 'render-op',
+    'render-op': 'render-op',
+    manifest: 'manifest',
+    generate: 'generate',
+    apply: 'apply',
   }[mode];
   if (!compilerMode) {
     process.stderr.write(`unknown compile mode ${mode}\n`);
@@ -894,8 +1068,8 @@ if (argv[0] === "compile") {
   runCompiler([compilerMode, ...rest]);
 }
 
-if (argv[0] === "route" || argv[0] === "aetherpp") {
-  runRouteCompiler(argv[0] === "route" ? argv.slice(1) : argv.slice(1));
+if (argv[0] === 'route' || argv[0] === 'aetherpp') {
+  runRouteCompiler(argv[0] === 'route' ? argv.slice(1) : argv.slice(1));
 }
 
 // Typo guard: if argv[0] looks like a near-miss of a known scbe command,
@@ -908,7 +1082,7 @@ if (argv[0] === "route" || argv[0] === "aetherpp") {
   if (suggestion) {
     process.stderr.write(
       `scbe: '${argv[0]}' is not a scbe command. Did you mean 'scbe ${suggestion}'?\n` +
-        `      Run 'scbe help' for the full command list.\n`,
+        `      Run 'scbe help' for the full command list.\n`
     );
     process.exit(2);
   }
@@ -916,10 +1090,10 @@ if (argv[0] === "route" || argv[0] === "aetherpp") {
 
 const target = resolveGeosealBin();
 const child = spawnSync(process.execPath, [target, ...argv], {
-  stdio: "inherit",
+  stdio: 'inherit',
 });
 
-if (typeof child.status === "number") {
+if (typeof child.status === 'number') {
   process.exit(child.status);
 }
 
