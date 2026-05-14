@@ -23,7 +23,7 @@ These labs hire continuously and have publicly stated they're under-staffed for 
 
 - **URL to verify openings:** https://www.anthropic.com/careers
 - **Likely contact for Alignment team:** Jared Kaplan (co-founder, leads alignment research direction). Email format unknown — apply through portal.
-- **Why this fit:** SCBE composes with Petri (their open-source auditing tool); your work is detection-tool-friendly enforcement, exactly what they need.
+- **Why this fit:** SCBE composes with both Petri (their open-source auditing tool) and SCONE-bench (their red team's 2025 smart-contract attacker-capability benchmark); your work is the matching enforcement layer that both detection-only tools assume but neither ship.
 
 **Cover letter (paste into application):**
 
@@ -35,7 +35,12 @@ a 14-layer AI governance pipeline grounded in hyperbolic geometry. The
 substrate composes with Petri — when I wire it as the enforcement layer
 behind your audit tool, the 2026-05-13 v7-matched harness denies or
 escalates 171/173 seeds, with a 1.16% false-allow rate and two named
-residuals now tracked as regressions.
+residuals now tracked as regressions. It also composes with the
+red.anthropic.com/2025/smart-contracts SCONE-bench finding — SCBE now
+ships `scbe contract scan` as a SCONE-class static prefilter plus
+SCONE-aware governance anchors in the production proxy, so the same
+defensive surface that catches Petri seeds also catches the autonomous-
+exploit-reasoning class your red team identified.
 
 I work solo, MIT-license everything, and have shipped:
 - npm: scbe-aethermoore (the 14-layer pipeline)
