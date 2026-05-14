@@ -1,5 +1,15 @@
 # SCBE Production Pack Changelog
 
+## [4.1.2] - 2026-05-14
+
+### Added
+
+- **Trap-in-good-loops gate (operational)**: the `redirect_to:` field reserved in 4.1.1 now actually rewrites the model-facing prompt. When `shouldPreBlock` or `buildGovernanceRecord` encounters a `DENY` decision that fired a SCONE-tagged rule with `redirect_to`, it returns a `redirect.to_prompt` containing a defensive audit task — the caller forwards this to the model **instead of** the original attacker prompt. The model only sees the defensive task; the original prompt is NOT quoted. Effect: a smart-contract exploit prompt is converted into an audit-and-patch task, so the bad agent is trapped in a productive defensive loop instead of refused.
+- **New helper `buildRedirectPrompt(redirects)`**: pure-function constructor for the redirect prompt. Takes a redirects array from `scanText`, returns the trap-loop prompt or `null` if no SCONE-tagged redirect is present.
+- **Non-SCONE DENYs keep canned refusal**: prompt-injection, secret-exfiltration, and harmful-endorsement DENYs (which have no productive defensive task to redirect to) continue to emit the canned refusal — the trap-loop intervention is gated to SCONE-tagged rules only.
+- **`intervention` field gains `input_redirect` value**: indicates the caller should forward `redirect.to_prompt` rather than emit `output`.
+- **8 new pytest tests** in `tests/api/test_governed_output_proxy.py` (now 46 total) — verifies attacker prompts trigger redirects, non-SCONE DENYs keep canned refusals, audit context still bypasses, redirect prompts have no attacker verbs in final-position lines.
+
 ## [4.1.1] - 2026-05-14
 
 ### Added
