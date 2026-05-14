@@ -3,6 +3,7 @@
 const {
   createAgentWorkspace,
   exportAgentWorkspace,
+  lineageAgentWorkspace,
   postAgentBusEvent,
   runAgentBusTerminalUi,
   startAgentBusServer,
@@ -90,6 +91,7 @@ Usage:
   scbe-agent-bus workspace new --hint customer-smoke --json
   scbe-agent-bus workspace export --workspace-root .aethermoor-bus/workspaces/<id> --json
   scbe-agent-bus workspace verify --export-path .aethermoor-bus/workspaces/<id>/30_exports/<eid> --json
+  scbe-agent-bus workspace lineage --workspace-root .aethermoor-bus/workspaces/<id> --json
   scbe-agent-bus upgrade
 
 Commands:
@@ -181,6 +183,50 @@ async function main() {
       process.exitCode = payload.receipt === 'SCBE_WORKSPACE_VERIFY_PASS=1' ? 0 : 1;
       return;
     }
+    if (action === 'lineage') {
+      const workspaceRoot = String(flags['workspace-root'] || flags.root || '').trim();
+      if (!workspaceRoot) {
+        process.stderr.write(
+          'Usage: scbe-agent-bus workspace lineage --workspace-root <path> [--json]\n'
+        );
+        process.exitCode = 2;
+        return;
+      }
+      const payload = lineageAgentWorkspace({ workspaceRoot });
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+      } else {
+        const lines = [
+          `SCBE workspace lineage receipt: ${payload.receipt}`,
+          `Workspace:        ${payload.workspace_root}`,
+          `Workspace id:     ${payload.workspace_id}`,
+          `Generated at:     ${payload.generated_at}`,
+          `Formation: ${payload.formation_count}    Exports: ${payload.export_count}    Verifies: ${payload.verify_count}    Failed verifies: ${payload.failed_verifies}`,
+          `Unverified exports (${payload.unverified_exports.length}): ${payload.unverified_exports.join(', ') || '<none>'}`,
+          '',
+          'Chain:',
+        ];
+        if (payload.entries.length === 0) {
+          lines.push('  <empty>');
+        } else {
+          for (const e of payload.entries) {
+            const extra = [];
+            if (e.export_id) extra.push(`export=${e.export_id}`);
+            if (e.manifest_sha256) extra.push(`manifest=${e.manifest_sha256.slice(0, 12)}…`);
+            if (typeof e.manifest_intact === 'boolean')
+              extra.push(`intact=${e.manifest_intact}`);
+            if (typeof e.mismatch_count === 'number')
+              extra.push(`mismatches=${e.mismatch_count}`);
+            const suffix = extra.length > 0 ? ` (${extra.join(' ')})` : '';
+            lines.push(`  [${e.kind}] ${e.timestamp || '?'}  ${e.receipt_name}${suffix}`);
+            if (e.parse_error) lines.push(`     parse_error: ${e.parse_error}`);
+          }
+        }
+        lines.push('');
+        process.stdout.write(lines.join('\n'));
+      }
+      return;
+    }
     if (action === 'export') {
       const workspaceRoot = String(flags['workspace-root'] || '').trim();
       if (!workspaceRoot) {
@@ -224,7 +270,8 @@ async function main() {
       'Usage:\n' +
         '  scbe-agent-bus workspace new [--root <path>] [--hint <name>] [--json]\n' +
         '  scbe-agent-bus workspace export --workspace-root <path> [--out <name>] [--include 00_inbox,10_work] [--json]\n' +
-        '  scbe-agent-bus workspace verify --export-path <path> [--json]\n'
+        '  scbe-agent-bus workspace verify --export-path <path> [--json]\n' +
+        '  scbe-agent-bus workspace lineage --workspace-root <path> [--json]\n'
     );
     process.exitCode = action === 'help' ? 0 : 2;
     return;

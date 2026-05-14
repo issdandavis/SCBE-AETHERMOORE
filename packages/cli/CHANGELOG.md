@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.3.8 - 2026-05-14
+
+### Added
+
+- **`scbe workspace lineage --workspace-root <path> [--json]`**: forwards to the new `scbe-agent-bus workspace lineage`. Walks `<workspace>/20_receipts/` and emits the full audit chain — formation receipt + every export + every verify — in chronological order, plus summary counts and an `unverified_exports[]` list (exports without a matching verify). Receipt flag: `SCBE_WORKSPACE_LINEAGE=1`. Read-only.
+
+### Changed
+
+- **Bumped `scbe-agent-bus` dependency**: `^0.3.3 → ^0.3.4` for the workspace lineage command.
+
 ## 4.3.7 - 2026-05-14
 
 ### Added

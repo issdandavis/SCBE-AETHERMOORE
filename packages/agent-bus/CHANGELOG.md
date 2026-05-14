@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.4
+
+- **Workspace lineage command**: adds `scbe-agent-bus workspace lineage --workspace-root <path> [--json]`. Walks `<workspace>/20_receipts/`, classifies each receipt by `schema_version` (formation / export / verify), and returns the chronological audit chain plus a summary: `formation_count`, `export_count`, `verify_count`, `failed_verifies`, and `unverified_exports[]` (exports without a matching verify receipt). Read-only — never writes to the workspace.
+- **New public API**: `lineageAgentWorkspace(options)` (TypeScript), schema `aethermoor.bus.workspace_lineage.v1`. Receipt flag: `SCBE_WORKSPACE_LINEAGE=1`.
+- **Use case**: compliance reviewer asks "has every export been audited?" — `unverified_exports` answers in one call.
+
 ## 0.3.3
 
 - **Workspace verify command**: adds `scbe-agent-bus workspace verify --export-path <path> [--json]`. Walks the export folder, re-hashes every file, compares against `manifest.json`, and re-hashes `manifest.json` itself against the export receipt's `manifest_sha256` anchor. Detects four classes of tampering: `sha256_mismatch`, `bytes_mismatch`, `missing_file`, `extra_file`. Emits `SCBE_WORKSPACE_VERIFY_PASS=1` only when all per-file sha256s match AND the manifest sha256 chain anchor matches.

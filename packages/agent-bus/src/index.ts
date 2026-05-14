@@ -441,6 +441,168 @@ export function verifyAgentWorkspaceExport(
   };
 }
 
+export interface WorkspaceLineageOptions {
+  workspaceRoot: string;
+}
+
+export interface LineageEntry {
+  kind: 'formation' | 'export' | 'verify' | 'unknown';
+  receipt_path: string;
+  receipt_name: string;
+  timestamp: string;
+  schema_version: string;
+  receipt: string;
+  export_id?: string;
+  manifest_sha256?: string;
+  manifest_intact?: boolean;
+  mismatch_count?: number;
+  parse_error?: string;
+}
+
+export interface AgentWorkspaceLineageReceipt {
+  schema_version: 'aethermoor.bus.workspace_lineage.v1';
+  receipt: 'SCBE_WORKSPACE_LINEAGE=1';
+  workspace_root: string;
+  workspace_id: string;
+  generated_at: string;
+  entries: LineageEntry[];
+  formation_count: number;
+  export_count: number;
+  verify_count: number;
+  unverified_exports: string[];
+  failed_verifies: number;
+}
+
+const LINEAGE_KIND_BY_SCHEMA: Record<string, LineageEntry['kind']> = {
+  'aethermoor.bus.workspace_receipt.v1': 'formation',
+  'aethermoor.bus.workspace_export.v1': 'export',
+  'aethermoor.bus.workspace_verify.v1': 'verify',
+};
+
+/**
+ * Walk a workspace's 20_receipts/ directory and build a chronological audit
+ * chain of formation, export, and verify receipts. Read-only: never writes.
+ *
+ * Reports the set of exports without a matching verify receipt (unverified) and
+ * the count of verify receipts that recorded SCBE_WORKSPACE_VERIFY_PASS=0
+ * (failed_verifies). Suitable for compliance reviewers checking that every
+ * export has been audited.
+ */
+export function lineageAgentWorkspace(
+  options: WorkspaceLineageOptions
+): AgentWorkspaceLineageReceipt {
+  const workspaceRoot = path.resolve(options.workspaceRoot);
+  if (!fs.existsSync(workspaceRoot) || !fs.statSync(workspaceRoot).isDirectory()) {
+    throw new Error(`workspace not found at ${workspaceRoot}`);
+  }
+  const receiptsDir = path.join(workspaceRoot, '20_receipts');
+  let workspaceId = path.basename(workspaceRoot);
+
+  const entries: LineageEntry[] = [];
+  if (fs.existsSync(receiptsDir)) {
+    const fileNames = fs
+      .readdirSync(receiptsDir, { withFileTypes: true })
+      .filter((d) => d.isFile() && d.name.endsWith('.json'))
+      .map((d) => d.name);
+    for (const name of fileNames) {
+      const abs = path.join(receiptsDir, name);
+      let parsed: Record<string, unknown> | null = null;
+      let parseError: string | undefined;
+      try {
+        parsed = JSON.parse(fs.readFileSync(abs, 'utf8'));
+      } catch (err) {
+        parseError = err instanceof Error ? err.message : String(err);
+      }
+      const schemaVersion =
+        parsed && typeof parsed.schema_version === 'string' ? parsed.schema_version : '';
+      const kind: LineageEntry['kind'] = LINEAGE_KIND_BY_SCHEMA[schemaVersion] ?? 'unknown';
+      const receiptFlag =
+        parsed && typeof parsed.receipt === 'string' ? parsed.receipt : '';
+      // pick a timestamp field per kind
+      let timestamp = '';
+      if (parsed) {
+        if (typeof parsed.created_at === 'string') timestamp = parsed.created_at;
+        else if (typeof parsed.verified_at === 'string')
+          timestamp = parsed.verified_at as string;
+      }
+      if (!timestamp) {
+        try {
+          timestamp = fs.statSync(abs).mtime.toISOString();
+        } catch {
+          timestamp = '';
+        }
+      }
+      const entry: LineageEntry = {
+        kind,
+        receipt_path: abs,
+        receipt_name: name,
+        timestamp,
+        schema_version: schemaVersion,
+        receipt: receiptFlag,
+      };
+      if (parseError) entry.parse_error = parseError;
+      if (kind === 'formation' && parsed && typeof parsed.workspace_id === 'string') {
+        workspaceId = parsed.workspace_id;
+      }
+      if (kind === 'export' && parsed) {
+        if (typeof parsed.export_id === 'string') entry.export_id = parsed.export_id;
+        if (typeof parsed.manifest_sha256 === 'string')
+          entry.manifest_sha256 = parsed.manifest_sha256;
+      }
+      if (kind === 'verify' && parsed) {
+        if (typeof parsed.manifest_intact === 'boolean')
+          entry.manifest_intact = parsed.manifest_intact;
+        if (Array.isArray(parsed.mismatches))
+          entry.mismatch_count = parsed.mismatches.length;
+        // verify receipts also reference the export they audited via export_path
+        if (typeof parsed.export_path === 'string') {
+          entry.export_id = path.basename(parsed.export_path as string);
+        }
+      }
+      entries.push(entry);
+    }
+  }
+  entries.sort((a, b) => {
+    if (a.timestamp && b.timestamp) return a.timestamp.localeCompare(b.timestamp);
+    return a.receipt_name.localeCompare(b.receipt_name);
+  });
+
+  const exportIds = new Set<string>();
+  const verifiedExportIds = new Set<string>();
+  let formationCount = 0;
+  let exportCount = 0;
+  let verifyCount = 0;
+  let failedVerifies = 0;
+  for (const e of entries) {
+    if (e.kind === 'formation') formationCount += 1;
+    if (e.kind === 'export') {
+      exportCount += 1;
+      if (e.export_id) exportIds.add(e.export_id);
+    }
+    if (e.kind === 'verify') {
+      verifyCount += 1;
+      if (e.receipt === 'SCBE_WORKSPACE_VERIFY_PASS=0') failedVerifies += 1;
+      if (e.export_id) verifiedExportIds.add(e.export_id);
+    }
+  }
+  const unverifiedExports = Array.from(exportIds).filter((id) => !verifiedExportIds.has(id));
+  unverifiedExports.sort();
+
+  return {
+    schema_version: 'aethermoor.bus.workspace_lineage.v1',
+    receipt: 'SCBE_WORKSPACE_LINEAGE=1',
+    workspace_root: workspaceRoot,
+    workspace_id: workspaceId,
+    generated_at: new Date().toISOString(),
+    entries,
+    formation_count: formationCount,
+    export_count: exportCount,
+    verify_count: verifyCount,
+    unverified_exports: unverifiedExports,
+    failed_verifies: failedVerifies,
+  };
+}
+
 function normalizeTaskType(value: unknown): string {
   const taskType = String(value || 'general')
     .trim()
