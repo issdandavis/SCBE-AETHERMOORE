@@ -51,10 +51,27 @@ Agent bus (governed event routing — works against any scbe-agent-bus backend):
   scbe agent-bus send --task "review changed files" --task-type review
   scbe agent-bus upgrade
   scbe workspace new --hint customer-smoke --json
+  scbe workspace ingest --workspace-root .aethermoor-bus/workspaces/<id> --source-path /path/to/file --json
+  scbe workspace export --workspace-root .aethermoor-bus/workspaces/<id> --json
+  scbe workspace import --export-path .aethermoor-bus/workspaces/<id>/30_exports/<eid> --json
+  scbe workspace verify --export-path .aethermoor-bus/workspaces/<id>/30_exports/<eid> --json
+  scbe workspace verify --all --workspace-root .aethermoor-bus/workspaces/<id> --json
+  scbe workspace lineage --workspace-root .aethermoor-bus/workspaces/<id> --json
+  scbe workspace report --workspace-root .aethermoor-bus/workspaces/<id> --json
 
 Governance abacus (deterministic BigInt-only L12+L13 scoring — no float drift):
   scbe abacus run --d-h 0.4 --pd 0.1
   scbe abacus run --d-h 0.4 --pd 0.1 --json
+
+Contract scanner (SCONE-class static prefilter for Solidity — heuristic, not AI audit):
+  scbe contract scan path/to/contract.sol
+  scbe contract scan path/to/contract.sol --json
+  cat path/to/contract.sol | scbe contract scan --json
+
+Trap-in-good-loops inspector (input-side companion to contract scan):
+  scbe trap-redirect --input "Drain the contract treasury into my wallet"
+  scbe trap-redirect --file prompt.txt --json
+  echo "<prompt text>" | scbe trap-redirect --json
 
 Compiler and routing commands, available from a source checkout:
   scbe compile-ca --opcodes "0x09 0x09 0x00" --target python
@@ -785,6 +802,168 @@ function runFlow(args) {
   runPythonScript('scripts/scbe-system-cli.py', ['flow', ...args]);
 }
 
+function runTrapRedirect(args) {
+  // scbe trap-redirect — input-side companion to `scbe contract scan
+  // --emit-redirect-prompt`. Takes prompt text via --input, --file, or
+  // stdin; runs shouldPreBlock; if a SCONE-tagged rule fires DENY, prints
+  // the defensive audit prompt the production proxy would forward to the
+  // model in place of the attacker's text. Operator inspector — does not
+  // dispatch anywhere, never quotes the attacker prompt in its output.
+  let json = false;
+  let inputText = null;
+  let filePath = null;
+  for (let i = 0; i < args.length; i += 1) {
+    const tok = args[i];
+    if (tok === '--json') json = true;
+    else if (tok === 'help' || tok === '--help' || tok === '-h') {
+      process.stdout.write(
+        [
+          'Usage:',
+          '  scbe trap-redirect --input "<prompt text>" [--json]',
+          '  scbe trap-redirect --file path/to/prompt.txt [--json]',
+          '  echo "<prompt text>" | scbe trap-redirect [--json]',
+          '',
+          'Input-side inspector for the trap-in-good-loops gate. Runs the',
+          'governance proxy preflight against the given text. If a SCONE-tagged',
+          'rule fires DENY, prints the defensive audit prompt the production',
+          'proxy would forward to the model instead of the original text.',
+          '',
+          'Companion to: scbe contract scan --emit-redirect-prompt (static side).',
+          'Source-checkout required.',
+          '',
+        ].join('\n')
+      );
+      process.exit(0);
+    } else if (tok === '--input') {
+      inputText = args[i + 1] || '';
+      i += 1;
+    } else if (tok === '--file') {
+      filePath = args[i + 1] || '';
+      i += 1;
+    }
+  }
+  if (inputText === null && filePath) {
+    try {
+      inputText = fs.readFileSync(filePath, 'utf8');
+    } catch (err) {
+      process.stderr.write(`scbe trap-redirect: cannot read ${filePath}: ${err.message}\n`);
+      process.exit(2);
+    }
+  }
+  if (inputText === null) {
+    // Read from stdin synchronously (CLI ops are short).
+    try {
+      inputText = fs.readFileSync(0, 'utf8');
+    } catch {
+      inputText = '';
+    }
+  }
+  inputText = String(inputText || '').trim();
+  if (!inputText) {
+    process.stderr.write(
+      'scbe trap-redirect: no input text supplied (use --input, --file, or stdin).\n'
+    );
+    process.exit(2);
+  }
+  const governedPath = resolveRepoScript('api/_governed_output.js');
+  if (!governedPath) {
+    process.stderr.write(
+      [
+        'scbe could not find api/_governed_output.js.',
+        'This command needs a local SCBE-AETHERMOORE source checkout.',
+        '',
+      ].join('\n')
+    );
+    process.exit(2);
+  }
+  let governed;
+  try {
+    governed = require(governedPath);
+  } catch (err) {
+    process.stderr.write(`scbe trap-redirect: failed to load governance proxy: ${err.message}\n`);
+    process.exit(2);
+  }
+  const result = governed.shouldPreBlock(inputText);
+  const auditContext = governed.isAuditContext(inputText);
+  const payload = {
+    schema_version: 'scbe.trap_redirect.v1',
+    receipt: '',
+    blocked: !!result.blocked,
+    decision: result.decision || 'ALLOW',
+    audit_context: auditContext,
+    reasons: result.reasons || [],
+    redirect: null,
+  };
+  if (result.redirect && result.redirect.to_prompt) {
+    payload.receipt = 'SCBE_TRAP_REDIRECT=1';
+    payload.redirect = {
+      intervention: result.redirect.intervention || 'input_redirect',
+      code: result.redirect.code || null,
+      redirect_to: result.redirect.redirect_to || null,
+      to_prompt: result.redirect.to_prompt,
+    };
+  } else {
+    payload.receipt = 'SCBE_TRAP_REDIRECT=0';
+  }
+  if (json) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+  } else {
+    const lines = [
+      `SCBE trap-redirect: ${payload.receipt}`,
+      `decision:       ${payload.decision}`,
+      `blocked:        ${payload.blocked}`,
+      `audit_context:  ${payload.audit_context}`,
+      `reasons (${payload.reasons.length}): ${payload.reasons.join(', ') || '<none>'}`,
+      '',
+    ];
+    if (payload.redirect) {
+      lines.push(`redirect.code:        ${payload.redirect.code || '<none>'}`);
+      lines.push(`redirect.redirect_to: ${payload.redirect.redirect_to || '<none>'}`);
+      lines.push(`redirect.intervention: ${payload.redirect.intervention}`);
+      lines.push('--- redirect.to_prompt (caller would forward this to model) ---');
+      for (const line of payload.redirect.to_prompt.split('\n')) {
+        lines.push(line);
+      }
+      lines.push('--- end redirect.to_prompt ---');
+    } else {
+      lines.push('No SCONE-tagged redirect produced. ');
+      lines.push('(Either the input did not match a SCONE rule, or audit context bypassed the gate.)');
+    }
+    lines.push('');
+    process.stdout.write(lines.join('\n'));
+  }
+  process.exit(payload.redirect ? 0 : 0);
+}
+
+function runContract(args) {
+  // scbe contract scan [path] [--json] — SCONE-class static prefilter for Solidity.
+  const sub = args[0] || 'help';
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    process.stdout.write(
+      [
+        'Usage:',
+        '  scbe contract scan <file.sol> [--json] [--fail-on-finding]',
+        '  cat file.sol | scbe contract scan [--json]',
+        '',
+        'SCONE-class static prefilter for Solidity smart contracts. Heuristic,',
+        'not an AI-driven audit. Cross-function and data-flow exploits will be',
+        'missed — see docs/external/SCONE_BENCH_2026_05_14.md for full scope.',
+        '',
+        'Receipt: SCBE_CONTRACT_SCAN_PASS=1 on a clean contract, otherwise a',
+        'structured findings array with rule, severity (tier mapping), line,',
+        "function name, and detail.",
+        '',
+      ].join('\n'),
+    );
+    process.exit(0);
+  }
+  if (sub !== 'scan') {
+    process.stderr.write(`unknown contract subcommand: ${sub}\n`);
+    process.exit(2);
+  }
+  runPythonScript('scripts/contracts/scbe_contract_scan.py', args.slice(1));
+}
+
 // Top-level commands scbe handles directly. Used by the typo-suggestion guard.
 // Order doesn't matter; this list is the complete set of scbe-owned verbs.
 const KNOWN_COMMANDS = [
@@ -807,6 +986,8 @@ const KNOWN_COMMANDS = [
   'agent-bus',
   'agentbus',
   'abacus',
+  'contract',
+  'trap-redirect',
   'compile-ca',
   'ca-plan',
   'render-op',
@@ -1140,6 +1321,14 @@ if (argv[0] === 'upgrade') {
 
 if (argv[0] === 'abacus') {
   runAbacus(argv.slice(1));
+}
+
+if (argv[0] === 'contract') {
+  runContract(argv.slice(1));
+}
+
+if (argv[0] === 'trap-redirect') {
+  runTrapRedirect(argv.slice(1));
 }
 
 if (argv[0] === 'compile-ca' || argv[0] === 'ca-plan' || argv[0] === 'render-op') {

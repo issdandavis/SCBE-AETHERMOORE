@@ -253,6 +253,14 @@ pip install scbe-aethermoore
 - Research hub: [`docs/README.md`](docs/README.md)
 - Review + cleanup report: [`docs/REPO_AUDIT.md`](docs/REPO_AUDIT.md)
 
+## Composes with upstream safety tooling
+
+SCBE is the **enforcement** layer. It composes with detection-only auditing tools and attacker-capability benchmarks as the gate that emits the audit-trail receipt those tools assume.
+
+- **Anthropic Petri** ([github.com/safety-research/petri](https://github.com/safety-research/petri)) — open-source 36-dimension auditor over 173+ adversarial seeds. SCBE's L13 governance gate consumes Petri findings as input; at v7-matched config SCBE denies or escalates 171/173 Petri seeds (1.16% false-allow). Notes: [`docs/external/PETRI_FINDINGS_2026_05_08.md`](docs/external/PETRI_FINDINGS_2026_05_08.md).
+- **Anthropic SCONE-bench** ([red.anthropic.com/2025/smart-contracts/](https://red.anthropic.com/2025/smart-contracts/)) — 405-contract attacker-capability benchmark; frontier models autonomously found exploits totaling $550.1M in simulation and 2 zero-days in recent deployed contracts. SCBE ships `scbe contract scan` as a SCONE-class static prefilter plus SCONE-aware anchors in the production governed-output proxy, with a schema field (`redirect_to:`) reserved for the future "trap exploit reasoning in defensive audit loops" architecture. Notes: [`docs/external/SCONE_BENCH_2026_05_14.md`](docs/external/SCONE_BENCH_2026_05_14.md).
+- **PNNL ALOHA** — no governance layer at all; SCBE fills that gap end-to-end.
+
 ## Notes on claim boundaries
 
 - The primary public domain is `aethermoore.com`; GitHub Pages is the mirror surface.

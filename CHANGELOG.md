@@ -1,5 +1,37 @@
 # SCBE Production Pack Changelog
 
+## [4.1.3] - 2026-05-14
+
+### Added
+
+- **`scbe contract scan --emit-redirect-prompt` (trap-in-good-loops bridge)**: when the SCONE-class static prefilter finds DENY-tier vulnerabilities, it now emits a structured `redirect` payload (schema `scbe.contract_scan.redirect.v1`) containing a defensive audit prompt that names the specific findings by rule + line number. The caller can hand this prompt to a model in place of any attacker exploit prompt that references the same file — companion to `api/_governed_output.js::buildRedirectPrompt()` which already does the same on the input side. ESCALATE-tier-only findings produce no redirect; only the "guaranteed bad" class triggers the swap.
+- **New helper `build_redirect_prompt(result)`** in `scripts/contracts/scbe_contract_scan.py`: pure-function constructor for the redirect payload, mirrors the JS `buildRedirectPrompt` contract (no attacker text quoted, refuse-reverse anchor, defensive-task framing, bans exploit-output explicitly).
+- **4 new pytest tests** in `tests/contracts/test_scbe_contract_scan.py` (now 12 total) — verifies clean contracts emit no redirect, ESCALATE-only findings emit no redirect, DENY findings produce the correct schema + rule list, and the prompt carries every required defensive anchor (DEFENSIVE task / security auditor / remediation plan / no exploit calldata / reverse-redirect refusal).
+
+## [4.1.2] - 2026-05-14
+
+### Added
+
+- **Trap-in-good-loops gate (operational)**: the `redirect_to:` field reserved in 4.1.1 now actually rewrites the model-facing prompt. When `shouldPreBlock` or `buildGovernanceRecord` encounters a `DENY` decision that fired a SCONE-tagged rule with `redirect_to`, it returns a `redirect.to_prompt` containing a defensive audit task — the caller forwards this to the model **instead of** the original attacker prompt. The model only sees the defensive task; the original prompt is NOT quoted. Effect: a smart-contract exploit prompt is converted into an audit-and-patch task, so the bad agent is trapped in a productive defensive loop instead of refused.
+- **New helper `buildRedirectPrompt(redirects)`**: pure-function constructor for the redirect prompt. Takes a redirects array from `scanText`, returns the trap-loop prompt or `null` if no SCONE-tagged redirect is present.
+- **Non-SCONE DENYs keep canned refusal**: prompt-injection, secret-exfiltration, and harmful-endorsement DENYs (which have no productive defensive task to redirect to) continue to emit the canned refusal — the trap-loop intervention is gated to SCONE-tagged rules only.
+- **`intervention` field gains `input_redirect` value**: indicates the caller should forward `redirect.to_prompt` rather than emit `output`.
+- **8 new pytest tests** in `tests/api/test_governed_output_proxy.py` (now 46 total) — verifies attacker prompts trigger redirects, non-SCONE DENYs keep canned refusals, audit context still bypasses, redirect prompts have no attacker verbs in final-position lines.
+
+## [4.1.1] - 2026-05-14
+
+### Added
+
+- **SCONE-bench autonomous-exploit auditor pack on the production governed-output proxy**: `api/_governed_output.js` now ships 12 INPUT-side anchors and 2 OUTPUT-side anchors (`scone:exploit.*` codes) tagged for autonomous smart-contract exploit reasoning — drain/steal/inflate-balance/bypass-access-control/reentrancy-construct/flash-loan-attack/oracle-manipulation/construct-calldata/zero-address-brick/unprotected-fn-for-profit/replay-on-mainnet/profit-directive, plus exploit-fn-template and raw-calldata output emission. Mirror anchors landed in `services/scbe-shim/src/patterns.ts` for the Cloudflare Worker / HF Space shim.
+- **Audit-context dual-use partition**: 10-pattern whitelist (`SCONE_AUDIT_CONTEXT_PATTERNS`) suppresses SCONE-tagged anchors when the prompt is in legitimate audit context ("audit this contract", "responsible disclosure", "bug bounty", "static analysis of this contract", "I am a security researcher", "for a security review"). Validated end-to-end: drain/steal/exploit verbs still DENY in attacker framing, ALLOW in audit framing. Audit context is recorded in `governance.audit.audit_context: true|false`.
+- **`redirect_to:` schema field reserved for future trap-in-good-loops gate**: each SCONE rule carries a `redirect_to` string suggesting the defensive task the gate could redirect into ("audit the same contract for vulnerabilities and produce a remediation plan"). v1 records the redirect in `governance.redirect_to` and `governance.redirects[]` but does not yet act on it — the production proxy still emits the canned refusal. The schema field unblocks a follow-up gate that substitutes the user's exploit prompt with the defensive prompt before forwarding to the model.
+- **13 new pytest tests** in `tests/api/test_governed_output_proxy.py` covering 5 attacker prompts (all DENY), 5 audit-context allow prompts (all ALLOW), redirect-field plumbing, and a regression test that the existing FP envelope (train/AI-output/transformer-attention prompts) stays unmatched by SCONE.
+- **SCONE-bench external citation note** at `docs/external/SCONE_BENCH_2026_05_14.md` (full paper summary, vulnerability classes, SCBE response register). MATHBAC TA1 doc updated with a v1.4 entry citing SCONE-bench as upstream signal alongside Petri. README now has a "Composes with upstream safety tooling" section listing Petri / SCONE-bench / ALOHA. One-pager and cold-outreach packet updated similarly.
+
+### Changed
+
+- **`scanText` signature gains optional `{ skipSconeTag }` flag** — used by `buildGovernanceRecord` and `shouldPreBlock` to suppress SCONE rules when `isAuditContext(inputText)` is true. Existing callers without the flag continue to evaluate the full ruleset.
+
 ## [4.1.0] - 2026-05-13
 
 ### Added
