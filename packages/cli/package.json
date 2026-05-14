@@ -1,6 +1,6 @@
 {
   "name": "scbe-aethermoore-cli",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "description": "Standalone CLI for SCBE-AETHERMOORE: GeoSeal tools, flow operator loop (plan/packetize/status/run-next/continue/report), agent-bus passthrough, tokenizer lanes, governance packets, web lookup, mechanical verification, governance abacus (BigInt L12+L13).",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT OR Apache-2.0",
