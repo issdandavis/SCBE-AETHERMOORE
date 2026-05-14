@@ -277,6 +277,117 @@ def test_workspace_lineage_classifies_chain(tmp_path: Path) -> None:
     assert kinds == ["formation", "export", "verify"]
 
 
+def test_workspace_ingest_copies_file_with_receipt(tmp_path: Path) -> None:
+    build_agent_bus()
+    ws = _new_workspace_with_content(tmp_path)
+    source = tmp_path / "outside.txt"
+    source.write_text("ingest me\n", encoding="utf-8")
+    proc = subprocess.run(
+        [
+            NODE,
+            str(AGENT_BUS),
+            "workspace",
+            "ingest",
+            "--workspace-root",
+            str(ws),
+            "--source-path",
+            str(source),
+            "--json",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "aethermoor.bus.workspace_ingest.v1"
+    assert payload["receipt"] == "SCBE_WORKSPACE_INGEST=1"
+    assert payload["source_sha256"] == payload["destination_sha256"]
+    assert len(payload["source_sha256"]) == 64
+    assert payload["destination_rel"] == "00_inbox/outside.txt"
+    assert Path(payload["destination_path"]).exists()
+    assert Path(payload["receipt_path"]).exists()
+    # the persisted receipt is bit-identical to the in-memory response
+    on_disk = json.loads(Path(payload["receipt_path"]).read_text(encoding="utf-8"))
+    assert on_disk == payload
+
+
+def test_workspace_ingest_rename_target(tmp_path: Path) -> None:
+    build_agent_bus()
+    ws = _new_workspace_with_content(tmp_path)
+    source = tmp_path / "tmpname.dat"
+    source.write_text("payload\n", encoding="utf-8")
+    proc = subprocess.run(
+        [
+            NODE,
+            str(AGENT_BUS),
+            "workspace",
+            "ingest",
+            "--workspace-root",
+            str(ws),
+            "--source-path",
+            str(source),
+            "--rename",
+            "audit_target.dat",
+            "--json",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["destination_rel"] == "00_inbox/audit_target.dat"
+    assert (ws / "00_inbox" / "audit_target.dat").exists()
+
+
+def test_workspace_lineage_counts_ingests(tmp_path: Path) -> None:
+    build_agent_bus()
+    ws = _new_workspace_with_content(tmp_path)
+    for i in range(3):
+        source = tmp_path / f"ingest_{i}.txt"
+        source.write_text(f"file {i}\n", encoding="utf-8")
+        subprocess.run(
+            [
+                NODE,
+                str(AGENT_BUS),
+                "workspace",
+                "ingest",
+                "--workspace-root",
+                str(ws),
+                "--source-path",
+                str(source),
+                "--json",
+            ],
+            cwd=REPO_ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=60,
+            check=True,
+        )
+    proc = subprocess.run(
+        [NODE, str(AGENT_BUS), "workspace", "lineage", "--workspace-root", str(ws), "--json"],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    payload = json.loads(proc.stdout)
+    assert payload["ingest_count"] == 3
+    kinds = [e["kind"] for e in payload["entries"]]
+    assert kinds.count("ingest") == 3
+    assert kinds[0] == "formation"
+
+
 def test_workspace_lineage_flags_unverified_export(tmp_path: Path) -> None:
     build_agent_bus()
     ws = _new_workspace_with_content(tmp_path)

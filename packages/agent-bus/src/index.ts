@@ -477,6 +477,103 @@ export function verifyAgentWorkspaceExport(
   return receipt;
 }
 
+export interface WorkspaceIngestOptions {
+  workspaceRoot: string;
+  sourcePath: string;
+  /** Optional override for the basename used inside 00_inbox/. Defaults to the
+   * source file's basename. Useful when ingesting multiple files with
+   * conflicting names. */
+  rename?: string;
+}
+
+export interface AgentWorkspaceIngestReceipt {
+  schema_version: 'aethermoor.bus.workspace_ingest.v1';
+  receipt: 'SCBE_WORKSPACE_INGEST=1';
+  workspace_id: string;
+  workspace_root: string;
+  source_path: string;
+  destination_path: string;
+  destination_rel: string;
+  source_sha256: string;
+  destination_sha256: string;
+  bytes: number;
+  ingested_at: string;
+  receipt_path: string;
+}
+
+/**
+ * Copy a file from any path into `<workspaceRoot>/00_inbox/` with a sha256
+ * receipt persisted under `20_receipts/ingest-<utc-ts>-<basename>.json`. The
+ * receipt records both source_sha256 and destination_sha256 (they must match;
+ * mismatch indicates filesystem corruption during copy and throws). Closes the
+ * audit chain at the entry point — before this, files appeared in 00_inbox/
+ * with no provenance.
+ */
+export function ingestIntoAgentWorkspace(
+  options: WorkspaceIngestOptions
+): AgentWorkspaceIngestReceipt {
+  const workspaceRoot = path.resolve(options.workspaceRoot);
+  if (!fs.existsSync(workspaceRoot) || !fs.statSync(workspaceRoot).isDirectory()) {
+    throw new Error(`workspace not found at ${workspaceRoot}`);
+  }
+  const sourcePath = path.resolve(options.sourcePath);
+  if (!fs.existsSync(sourcePath) || !fs.statSync(sourcePath).isFile()) {
+    throw new Error(`source file not found at ${sourcePath}`);
+  }
+  const inboxDir = path.join(workspaceRoot, '00_inbox');
+  if (!fs.existsSync(inboxDir)) fs.mkdirSync(inboxDir, { recursive: true });
+
+  const destName = (options.rename ?? path.basename(sourcePath)).trim();
+  if (!destName || destName.includes('/') || destName.includes('\\')) {
+    throw new Error(`invalid rename target: ${JSON.stringify(destName)}`);
+  }
+  const destPath = path.join(inboxDir, destName);
+  fs.copyFileSync(sourcePath, destPath);
+  const sourceHash = sha256OfFile(sourcePath);
+  const destHash = sha256OfFile(destPath);
+  if (sourceHash.hash !== destHash.hash) {
+    throw new Error(
+      `sha256 mismatch after copy (source=${sourceHash.hash}, dest=${destHash.hash})`
+    );
+  }
+
+  let workspaceId = path.basename(workspaceRoot);
+  const formationReceiptPath = path.join(workspaceRoot, '20_receipts', 'workspace.json');
+  if (fs.existsSync(formationReceiptPath)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(formationReceiptPath, 'utf8')) as {
+        workspace_id?: string;
+      };
+      if (parsed.workspace_id) workspaceId = parsed.workspace_id;
+    } catch {
+      // tolerate
+    }
+  }
+
+  const ingestedAt = new Date().toISOString();
+  const tsSafe = ingestedAt.replace(/[:.]/g, '-');
+  const receiptName = `ingest-${tsSafe}-${destName}.json`;
+  const receiptsDir = path.join(workspaceRoot, '20_receipts');
+  if (!fs.existsSync(receiptsDir)) fs.mkdirSync(receiptsDir, { recursive: true });
+  const receiptPath = path.join(receiptsDir, receiptName);
+  const receipt: AgentWorkspaceIngestReceipt = {
+    schema_version: 'aethermoor.bus.workspace_ingest.v1',
+    receipt: 'SCBE_WORKSPACE_INGEST=1',
+    workspace_id: workspaceId,
+    workspace_root: workspaceRoot,
+    source_path: sourcePath,
+    destination_path: destPath,
+    destination_rel: `00_inbox/${destName}`,
+    source_sha256: sourceHash.hash,
+    destination_sha256: destHash.hash,
+    bytes: destHash.bytes,
+    ingested_at: ingestedAt,
+    receipt_path: receiptPath,
+  };
+  fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, 'utf8');
+  return receipt;
+}
+
 export interface WorkspaceVerifyAllOptions {
   workspaceRoot: string;
   persistReceipt?: boolean;
@@ -562,7 +659,7 @@ export interface WorkspaceLineageOptions {
 }
 
 export interface LineageEntry {
-  kind: 'formation' | 'export' | 'verify' | 'unknown';
+  kind: 'formation' | 'ingest' | 'export' | 'verify' | 'unknown';
   receipt_path: string;
   receipt_name: string;
   timestamp: string;
@@ -583,6 +680,7 @@ export interface AgentWorkspaceLineageReceipt {
   generated_at: string;
   entries: LineageEntry[];
   formation_count: number;
+  ingest_count: number;
   export_count: number;
   verify_count: number;
   unverified_exports: string[];
@@ -591,6 +689,7 @@ export interface AgentWorkspaceLineageReceipt {
 
 const LINEAGE_KIND_BY_SCHEMA: Record<string, LineageEntry['kind']> = {
   'aethermoor.bus.workspace_receipt.v1': 'formation',
+  'aethermoor.bus.workspace_ingest.v1': 'ingest',
   'aethermoor.bus.workspace_export.v1': 'export',
   'aethermoor.bus.workspace_verify.v1': 'verify',
 };
@@ -686,11 +785,13 @@ export function lineageAgentWorkspace(
   const exportIds = new Set<string>();
   const verifiedExportIds = new Set<string>();
   let formationCount = 0;
+  let ingestCount = 0;
   let exportCount = 0;
   let verifyCount = 0;
   let failedVerifies = 0;
   for (const e of entries) {
     if (e.kind === 'formation') formationCount += 1;
+    if (e.kind === 'ingest') ingestCount += 1;
     if (e.kind === 'export') {
       exportCount += 1;
       if (e.export_id) exportIds.add(e.export_id);
@@ -712,6 +813,7 @@ export function lineageAgentWorkspace(
     generated_at: new Date().toISOString(),
     entries,
     formation_count: formationCount,
+    ingest_count: ingestCount,
     export_count: exportCount,
     verify_count: verifyCount,
     unverified_exports: unverifiedExports,

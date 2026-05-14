@@ -5,6 +5,7 @@ const path = require('node:path');
 const {
   createAgentWorkspace,
   exportAgentWorkspace,
+  ingestIntoAgentWorkspace,
   lineageAgentWorkspace,
   verifyAllAgentWorkspaceExports,
   postAgentBusEvent,
@@ -92,6 +93,7 @@ Usage:
   scbe-agent-bus send --task "review changed files" --task-type review --json
   scbe-agent-bus health --base-url http://127.0.0.1:8787 --json
   scbe-agent-bus workspace new --hint customer-smoke --json
+  scbe-agent-bus workspace ingest --workspace-root .aethermoor-bus/workspaces/<id> --source-path /path/to/file --json
   scbe-agent-bus workspace export --workspace-root .aethermoor-bus/workspaces/<id> --json
   scbe-agent-bus workspace verify --export-path .aethermoor-bus/workspaces/<id>/30_exports/<eid> --json
   scbe-agent-bus workspace verify --all --workspace-root .aethermoor-bus/workspaces/<id> --json
@@ -230,6 +232,36 @@ async function main() {
       process.exitCode = payload.receipt === 'SCBE_WORKSPACE_VERIFY_PASS=1' ? 0 : 1;
       return;
     }
+    if (action === 'ingest') {
+      const workspaceRoot = String(flags['workspace-root'] || flags.root || '').trim();
+      const sourcePath = String(flags['source-path'] || flags.source || '').trim();
+      if (!workspaceRoot || !sourcePath) {
+        process.stderr.write(
+          'Usage: scbe-agent-bus workspace ingest --workspace-root <path> --source-path <file> [--rename <name>] [--json]\n'
+        );
+        process.exitCode = 2;
+        return;
+      }
+      const rename = flags.rename ? String(flags.rename) : undefined;
+      const payload = ingestIntoAgentWorkspace({ workspaceRoot, sourcePath, rename });
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+      } else {
+        process.stdout.write(
+          [
+            `SCBE workspace ingest receipt: ${payload.receipt}`,
+            `Workspace: ${payload.workspace_root}`,
+            `Source:    ${payload.source_path}`,
+            `Dest:      ${payload.destination_path}`,
+            `SHA-256:   ${payload.destination_sha256}`,
+            `Bytes:     ${payload.bytes}`,
+            `Receipt:   ${payload.receipt_path}`,
+            '',
+          ].join('\n')
+        );
+      }
+      return;
+    }
     if (action === 'lineage') {
       const workspaceRoot = String(flags['workspace-root'] || flags.root || '').trim();
       if (!workspaceRoot) {
@@ -248,7 +280,7 @@ async function main() {
           `Workspace:        ${payload.workspace_root}`,
           `Workspace id:     ${payload.workspace_id}`,
           `Generated at:     ${payload.generated_at}`,
-          `Formation: ${payload.formation_count}    Exports: ${payload.export_count}    Verifies: ${payload.verify_count}    Failed verifies: ${payload.failed_verifies}`,
+          `Formation: ${payload.formation_count}    Ingests: ${payload.ingest_count}    Exports: ${payload.export_count}    Verifies: ${payload.verify_count}    Failed verifies: ${payload.failed_verifies}`,
           `Unverified exports (${payload.unverified_exports.length}): ${payload.unverified_exports.join(', ') || '<none>'}`,
           '',
           'Chain:',
@@ -316,6 +348,7 @@ async function main() {
     process.stderr.write(
       'Usage:\n' +
         '  scbe-agent-bus workspace new [--root <path>] [--hint <name>] [--json]\n' +
+        '  scbe-agent-bus workspace ingest --workspace-root <path> --source-path <file> [--rename <name>] [--json]\n' +
         '  scbe-agent-bus workspace export --workspace-root <path> [--out <name>] [--include 00_inbox,10_work] [--json]\n' +
         '  scbe-agent-bus workspace verify --export-path <path> [--no-persist] [--json]\n' +
         '  scbe-agent-bus workspace verify --all --workspace-root <path> [--no-persist] [--json]\n' +

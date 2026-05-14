@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.3.11 - 2026-05-14
+
+### Added
+
+- **`scbe workspace ingest --workspace-root <path> --source-path <file> [--rename <name>] [--json]`**: forwards to the new `scbe-agent-bus workspace ingest`. Copies any external file into `<workspace>/00_inbox/` with a sha256 receipt at `<workspace>/20_receipts/ingest-<utc-ts>-<basename>.json`. Closes the audit chain at intake: every file in the workspace now has a provenance receipt the `scbe workspace lineage` walker can surface. Receipt flag: `SCBE_WORKSPACE_INGEST=1`.
+
+### Changed
+
+- **Bumped `scbe-agent-bus` dependency**: `^0.3.6 → ^0.3.7` for the workspace ingest command.
+
 ## 4.3.10 - 2026-05-14
 
 ### Added

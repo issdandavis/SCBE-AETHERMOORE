@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.7
+
+- **Workspace ingest command**: adds `scbe-agent-bus workspace ingest --workspace-root <path> --source-path <file> [--rename <name>] [--json]`. Copies the source file into `<workspace>/00_inbox/`, computes sha256 of both source and destination (must match — mismatch throws), and writes an `SCBE_WORKSPACE_INGEST=1` receipt under `20_receipts/ingest-<utc-ts>-<basename>.json`. Closes the audit chain at the entry point: before this, files appeared in `00_inbox/` with no provenance.
+- **New public API**: `ingestIntoAgentWorkspace(options)` (TypeScript), schema `aethermoor.bus.workspace_ingest.v1`. Records `source_path`, `destination_path`, `destination_rel`, `source_sha256`, `destination_sha256`, `bytes`, `ingested_at`.
+- **Lineage walker recognizes ingest receipts**: `LineageEntry.kind` now includes `'ingest'`; `AgentWorkspaceLineageReceipt.ingest_count` reports how many files have a provenance receipt. The chronological chain interleaves ingest entries between formation and export.
+
 ## 0.3.6
 
 - **Batch verify command**: adds `scbe-agent-bus workspace verify --all --workspace-root <path> [--no-persist] [--json]`. Walks every subdirectory of `<workspaceRoot>/30_exports/` that contains a `manifest.json` and runs the single-export verifier on each, aggregating pass/fail counts. Emits `SCBE_WORKSPACE_VERIFY_ALL_PASS=1` only when every export passes. Individual verify receipts are still persisted under `20_receipts/` so `lineageAgentWorkspace()` reflects the new state. Exit code 1 on any failure so CI can gate on it.
