@@ -76,12 +76,31 @@ instructions:
 - Examples: https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/examples
 - Tests: https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/tests
 
+## Operator audit chain (workspace commands)
+- Every file flowing through an SCBE workspace carries a sha256 receipt.
+- Phases compose: `new` -> `ingest` -> `export` -> `verify` (auto-persists) -> `lineage` / `report`.
+- Receipts live under `<workspace>/20_receipts/` and are picked up by `scbe workspace lineage` chronologically.
+- CLI entry points:
+  - `scbe workspace new --hint <name> --json`
+  - `scbe workspace ingest --workspace-root <path> --source-path <file> [--rename <name>] --json`
+  - `scbe workspace export --workspace-root <path> [--out <name>] [--include 00_inbox,10_work] --json`
+  - `scbe workspace verify --export-path <path> [--no-persist] --json`
+  - `scbe workspace verify --all --workspace-root <path> [--no-persist] --json`
+  - `scbe workspace lineage --workspace-root <path> --json`
+  - `scbe workspace report --workspace-root <path> --json` (operator dashboard: audit_health=green/amber/red)
+- Schemas: `aethermoor.bus.workspace_{receipt,ingest,export,verify,verify_all,lineage,report}.v1`
+- Receipt flags: `SCBE_WORKSPACE_{READY,INGEST,EXPORT,VERIFY_PASS,VERIFY_ALL_PASS,LINEAGE,REPORT}=1`
+- Tamper-detection classes recognised by verify: `sha256_mismatch`, `bytes_mismatch`, `missing_file`, `extra_file`.
+- Static prefilter for Solidity (composes with trap-in-good-loops): `scbe contract scan <file.sol> --emit-redirect-prompt --json`.
+
 ## Core concepts (keywords for retrieval)
 - hyperbolic geometry authorization, Poincaré ball risk bounding
 - 14-layer security pipeline
 - post-quantum cryptography (Kyber, Dilithium)
 - Lyapunov stability / provable safety bounds
 - Hamiltonian CFI, coherence scoring, semantic tokenization
+- trap-in-good-loops governance gate (input redirect + static-scan redirect)
+- chain-of-custody receipts for AI agent workspaces
 
 ## Citation guidance (how to reference this project)
 - Prefer linking to README + SCBE_SYSTEM_OVERVIEW + ARCHITECTURE + LAYER_INDEX for conceptual descriptions.
