@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.6
+
+- **Batch verify command**: adds `scbe-agent-bus workspace verify --all --workspace-root <path> [--no-persist] [--json]`. Walks every subdirectory of `<workspaceRoot>/30_exports/` that contains a `manifest.json` and runs the single-export verifier on each, aggregating pass/fail counts. Emits `SCBE_WORKSPACE_VERIFY_ALL_PASS=1` only when every export passes. Individual verify receipts are still persisted under `20_receipts/` so `lineageAgentWorkspace()` reflects the new state. Exit code 1 on any failure so CI can gate on it.
+- **New public API**: `verifyAllAgentWorkspaceExports(options)` (TypeScript), schema `aethermoor.bus.workspace_verify_all.v1` with per-export `results[]`.
+
 ## 0.3.5
 
 - **Verify now persists a receipt by default**: `verifyAgentWorkspaceExport()` writes `<workspaceRoot>/20_receipts/verify-<export-id>-<utc-ts>.json` so that `lineageAgentWorkspace()` can pick it up without a manual stdout redirect. The on-disk JSON is bit-identical to the in-memory return value. Best-effort: if the receipts directory is missing or the write fails, the verify result is still returned and `receipt_path` is empty.

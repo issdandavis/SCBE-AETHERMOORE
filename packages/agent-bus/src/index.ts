@@ -477,6 +477,86 @@ export function verifyAgentWorkspaceExport(
   return receipt;
 }
 
+export interface WorkspaceVerifyAllOptions {
+  workspaceRoot: string;
+  persistReceipt?: boolean;
+}
+
+export interface AgentWorkspaceVerifyAllReceipt {
+  schema_version: 'aethermoor.bus.workspace_verify_all.v1';
+  receipt: 'SCBE_WORKSPACE_VERIFY_ALL_PASS=1' | 'SCBE_WORKSPACE_VERIFY_ALL_PASS=0';
+  workspace_root: string;
+  workspace_id: string;
+  verified_at: string;
+  export_count: number;
+  passed_count: number;
+  failed_count: number;
+  results: AgentWorkspaceVerifyReceipt[];
+}
+
+/**
+ * Verify every export under `<workspaceRoot>/30_exports/`. Runs the same
+ * single-export verifier on each, aggregates pass/fail counts, and (by default)
+ * persists individual verify receipts so `lineageAgentWorkspace()` updates
+ * automatically. Returns SCBE_WORKSPACE_VERIFY_ALL_PASS=1 only when every
+ * export passes and no manifest tampering was detected.
+ */
+export function verifyAllAgentWorkspaceExports(
+  options: WorkspaceVerifyAllOptions
+): AgentWorkspaceVerifyAllReceipt {
+  const workspaceRoot = path.resolve(options.workspaceRoot);
+  if (!fs.existsSync(workspaceRoot) || !fs.statSync(workspaceRoot).isDirectory()) {
+    throw new Error(`workspace not found at ${workspaceRoot}`);
+  }
+  let workspaceId = path.basename(workspaceRoot);
+  const formationReceiptPath = path.join(workspaceRoot, '20_receipts', 'workspace.json');
+  if (fs.existsSync(formationReceiptPath)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(formationReceiptPath, 'utf8')) as {
+        workspace_id?: string;
+      };
+      if (parsed.workspace_id) workspaceId = parsed.workspace_id;
+    } catch {
+      // tolerate
+    }
+  }
+  const exportsDir = path.join(workspaceRoot, '30_exports');
+  const results: AgentWorkspaceVerifyReceipt[] = [];
+  let passed = 0;
+  let failed = 0;
+  if (fs.existsSync(exportsDir)) {
+    const exportDirs = fs
+      .readdirSync(exportsDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => path.join(exportsDir, d.name))
+      .filter((abs) => fs.existsSync(path.join(abs, 'manifest.json')))
+      .sort();
+    for (const exportPath of exportDirs) {
+      const verifyReceipt = verifyAgentWorkspaceExport({
+        exportPath,
+        persistReceipt: options.persistReceipt !== false,
+      });
+      results.push(verifyReceipt);
+      if (verifyReceipt.receipt === 'SCBE_WORKSPACE_VERIFY_PASS=1') passed += 1;
+      else failed += 1;
+    }
+  }
+  return {
+    schema_version: 'aethermoor.bus.workspace_verify_all.v1',
+    receipt:
+      failed === 0
+        ? 'SCBE_WORKSPACE_VERIFY_ALL_PASS=1'
+        : 'SCBE_WORKSPACE_VERIFY_ALL_PASS=0',
+    workspace_root: workspaceRoot,
+    workspace_id: workspaceId,
+    verified_at: new Date().toISOString(),
+    export_count: results.length,
+    passed_count: passed,
+    failed_count: failed,
+    results,
+  };
+}
+
 export interface WorkspaceLineageOptions {
   workspaceRoot: string;
 }

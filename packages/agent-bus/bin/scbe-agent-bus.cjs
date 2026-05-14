@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 
+const path = require('node:path');
+
 const {
   createAgentWorkspace,
   exportAgentWorkspace,
   lineageAgentWorkspace,
+  verifyAllAgentWorkspaceExports,
   postAgentBusEvent,
   runAgentBusTerminalUi,
   startAgentBusServer,
@@ -91,6 +94,7 @@ Usage:
   scbe-agent-bus workspace new --hint customer-smoke --json
   scbe-agent-bus workspace export --workspace-root .aethermoor-bus/workspaces/<id> --json
   scbe-agent-bus workspace verify --export-path .aethermoor-bus/workspaces/<id>/30_exports/<eid> --json
+  scbe-agent-bus workspace verify --all --workspace-root .aethermoor-bus/workspaces/<id> --json
   scbe-agent-bus workspace lineage --workspace-root .aethermoor-bus/workspaces/<id> --json
   scbe-agent-bus upgrade
 
@@ -141,15 +145,56 @@ async function main() {
       return;
     }
     if (action === 'verify') {
+      const persistReceipt = !flags['no-persist'];
+      if (flags.all) {
+        const workspaceRoot = String(flags['workspace-root'] || flags.root || '').trim();
+        if (!workspaceRoot) {
+          process.stderr.write(
+            'Usage: scbe-agent-bus workspace verify --all --workspace-root <path> [--no-persist] [--json]\n'
+          );
+          process.exitCode = 2;
+          return;
+        }
+        const payload = verifyAllAgentWorkspaceExports({ workspaceRoot, persistReceipt });
+        if (flags.json) {
+          process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+        } else {
+          const lines = [
+            `SCBE workspace verify-all receipt: ${payload.receipt}`,
+            `Workspace:    ${payload.workspace_root}`,
+            `Workspace id: ${payload.workspace_id}`,
+            `Verified at:  ${payload.verified_at}`,
+            `Exports: ${payload.export_count}    Passed: ${payload.passed_count}    Failed: ${payload.failed_count}`,
+            '',
+          ];
+          if (payload.results.length === 0) {
+            lines.push('No exports found under 30_exports/.');
+          } else {
+            lines.push('Per-export results:');
+            for (const r of payload.results) {
+              const flag = r.receipt === 'SCBE_WORKSPACE_VERIFY_PASS=1' ? 'PASS' : 'FAIL';
+              lines.push(
+                `  [${flag}] ${path.basename(r.export_path)}    intact=${r.manifest_intact}    mismatches=${r.mismatches.length}`
+              );
+            }
+          }
+          lines.push('');
+          process.stdout.write(lines.join('\n'));
+        }
+        process.exitCode =
+          payload.receipt === 'SCBE_WORKSPACE_VERIFY_ALL_PASS=1' ? 0 : 1;
+        return;
+      }
       const exportPath = String(flags['export-path'] || '').trim();
       if (!exportPath) {
         process.stderr.write(
-          'Usage: scbe-agent-bus workspace verify --export-path <path> [--no-persist] [--json]\n'
+          'Usage:\n' +
+            '  scbe-agent-bus workspace verify --export-path <path> [--no-persist] [--json]\n' +
+            '  scbe-agent-bus workspace verify --all --workspace-root <path> [--no-persist] [--json]\n'
         );
         process.exitCode = 2;
         return;
       }
-      const persistReceipt = !flags['no-persist'];
       const payload = verifyAgentWorkspaceExport({ exportPath, persistReceipt });
       if (flags.json) {
         process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
@@ -272,7 +317,8 @@ async function main() {
       'Usage:\n' +
         '  scbe-agent-bus workspace new [--root <path>] [--hint <name>] [--json]\n' +
         '  scbe-agent-bus workspace export --workspace-root <path> [--out <name>] [--include 00_inbox,10_work] [--json]\n' +
-        '  scbe-agent-bus workspace verify --export-path <path> [--json]\n' +
+        '  scbe-agent-bus workspace verify --export-path <path> [--no-persist] [--json]\n' +
+        '  scbe-agent-bus workspace verify --all --workspace-root <path> [--no-persist] [--json]\n' +
         '  scbe-agent-bus workspace lineage --workspace-root <path> [--json]\n'
     );
     process.exitCode = action === 'help' ? 0 : 2;

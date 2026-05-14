@@ -53,6 +53,7 @@ Agent bus (governed event routing — works against any scbe-agent-bus backend):
   scbe workspace new --hint customer-smoke --json
   scbe workspace export --workspace-root .aethermoor-bus/workspaces/<id> --json
   scbe workspace verify --export-path .aethermoor-bus/workspaces/<id>/30_exports/<eid> --json
+  scbe workspace verify --all --workspace-root .aethermoor-bus/workspaces/<id> --json
   scbe workspace lineage --workspace-root .aethermoor-bus/workspaces/<id> --json
 
 Governance abacus (deterministic BigInt-only L12+L13 scoring — no float drift):

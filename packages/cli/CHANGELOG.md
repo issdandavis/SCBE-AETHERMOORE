@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.3.10 - 2026-05-14
+
+### Added
+
+- **`scbe workspace verify --all --workspace-root <path>`**: forwards to the new `scbe-agent-bus workspace verify --all`. One call verifies every export under `<workspaceRoot>/30_exports/`, persists individual verify receipts (so lineage updates), and emits `SCBE_WORKSPACE_VERIFY_ALL_PASS=1` only when every export passes. Exit code 1 on any failure for CI gating.
+
+### Changed
+
+- **Bumped `scbe-agent-bus` dependency**: `^0.3.5 → ^0.3.6` for the batch verify command.
+
 ## 4.3.9 - 2026-05-14
 
 ### Changed
