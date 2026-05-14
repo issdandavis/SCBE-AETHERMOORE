@@ -146,6 +146,18 @@ def test_flow_packetize_builds_bounded_work_packets(tmp_path: Path) -> None:
     assert "node_modules" in first_packet["blocked_paths"]
     assert len(first_packet["support_cells"]) == 2
     assert first_packet["return_format"]["required"]
+    assert first_packet["handoff_contract"]["who"] == first_packet["owner_agent_id"]
+    assert first_packet["handoff_contract"]["what"].startswith(first_packet["step_name"])
+    assert first_packet["workingness_gate"]["authority"] == "workingness_over_consensus"
+    assert first_packet["workingness_gate"]["consensus_role"] == "advisory_signal_only"
+    assert "commands_run" in first_packet["workingness_gate"]["evidence_required"]
+
+    contract = bundle["coordination_contract"]
+    assert contract["schema_version"] == "scbe_coordination_contract_v1"
+    assert contract["packet_count"] == bundle["packet_count"]
+    assert contract["proof_authority"].startswith("runnable checks")
+    assert "node_modules" in contract["blocked_paths"]
+    assert any("known failures" in item for item in contract["completion_checklist"])
 
     action_map = bundle["action_map"]
     assert action_map["enabled"] is True

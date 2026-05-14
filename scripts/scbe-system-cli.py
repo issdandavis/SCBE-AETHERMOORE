@@ -1260,6 +1260,73 @@ def _step_support_cells(step: dict[str, object], count: int) -> list[dict[str, o
     return cells
 
 
+def _packet_workingness_gate(step: dict[str, object]) -> dict[str, object]:
+    return {
+        "authority": "workingness_over_consensus",
+        "consensus_role": "advisory_signal_only",
+        "pass_condition": str(step["acceptance"]),
+        "evidence_required": [
+            "changed_files_or_none",
+            "commands_run",
+            "command_results",
+            "artifact_paths",
+            "known_failures_or_empty",
+        ],
+        "retry_rule": (
+            "If evidence fails, update the failure notes and retry from the smallest affected packet; "
+            "do not replay completed dependency packets unless their inputs changed."
+        ),
+    }
+
+
+def _packet_handoff_contract(step: dict[str, object], task: str) -> dict[str, object]:
+    return {
+        "who": str(step["owner_agent_id"]),
+        "what": f"{step['name']} for {task}",
+        "when": {
+            "start_after": list(step["depends_on"]),
+            "finish_when": str(step["acceptance"]),
+        },
+        "where": {
+            "owner_role": str(step["owner_role"]),
+            "owner_tongue": str(step["owner_tongue"]),
+            "handoff_tag": str(step["handoff_tag"]),
+        },
+        "why": list(step["deliverables"]),
+        "how": [
+            "read declared inputs first",
+            "operate only inside allowed paths",
+            "return evidence in the required format",
+            "escalate instead of guessing when blocked",
+        ],
+    }
+
+
+def _build_coordination_contract(work_packets: list[dict[str, object]]) -> dict[str, object]:
+    owners = sorted({str(packet["owner_agent_id"]) for packet in work_packets})
+    blocked_paths = sorted({str(path) for packet in work_packets for path in packet.get("blocked_paths", [])})
+    return {
+        "schema_version": "scbe_coordination_contract_v1",
+        "policy": "many agents may work in parallel, but one packet owns one bounded responsibility",
+        "agent_count": len(owners),
+        "packet_count": len(work_packets),
+        "owners": owners,
+        "proof_authority": "runnable checks, artifacts, and changed files outrank model agreement",
+        "consensus_policy": (
+            "Consensus helps identify risk and overlap, but it cannot block a packet that has satisfied "
+            "its workingness gate unless a hard safety rule is triggered."
+        ),
+        "blocked_paths": blocked_paths,
+        "completion_checklist": [
+            "every packet status is completed or intentionally blocked",
+            "all dependencies point to packet step ids that exist",
+            "changed files stay inside allowed paths",
+            "proof commands or artifacts are present for completed packets",
+            "known failures are captured with retry guidance",
+        ],
+    }
+
+
 def _build_work_packets(flow_packet: dict[str, object], support_units: int) -> list[dict[str, object]]:
     packets: list[dict[str, object]] = []
     task = str(flow_packet["task"])
@@ -1308,6 +1375,8 @@ def _build_work_packets(flow_packet: dict[str, object], support_units: int) -> l
                     ],
                     "status_values": ["completed", "blocked", "needs_review"],
                 },
+                "handoff_contract": _packet_handoff_contract(step, task),
+                "workingness_gate": _packet_workingness_gate(step),
                 "support_cells": _step_support_cells(step, support_units),
                 "telemetry": {
                     "lane": "system-cli",
@@ -3088,6 +3157,7 @@ def cmd_flow_packetize(args: argparse.Namespace) -> int:
         "formation": flow_packet["formation"],
         "support_units_per_step": support_units,
         "packet_count": len(work_packets),
+        "coordination_contract": _build_coordination_contract(work_packets),
         "packets": work_packets,
         "action_map": {},
     }
