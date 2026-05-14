@@ -213,6 +213,13 @@ def test_code_packet_emits_source_packet(tmp_path: Path) -> None:
     assert packet["scip_symbol_index"]["planned_provider"] == "scip"
     assert packet["semantic_token_bridge"]["provider"] == "tree_sitter_semantic_tokens"
     assert packet["semantic_token_bridge"]["planned_provider"] == "lsp_semantic_tokens"
+    assert packet["semantic_operation_signature"]["schema_version"] == "scbe-semantic-operation-signature-v1"
+    assert packet["semantic_operation_signature"]["operation_path"] == [
+        "function_definition/2",
+        "return_flow",
+        "arithmetic:add/2",
+    ]
+    assert packet["semantic_expression"]["interchange_key"] == packet["semantic_operation_signature"]["interchange_key"]
     assert "def" in packet["lexical_tokens"]
     assert packet["route_ir"]["schema_version"] == "scbe_route_ir_v1"
     assert packet["route_ir"]["route"]["tongue"] == "KO"
