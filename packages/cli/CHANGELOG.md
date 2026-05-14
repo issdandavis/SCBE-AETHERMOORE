@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.3.7 - 2026-05-14
+
+### Added
+
+- **`scbe workspace verify --export-path <path> [--json]`**: forwards to the new `scbe-agent-bus workspace verify`. Re-hashes every file in an exported workspace and verifies against `manifest.json`, plus the manifest's own sha256 against the export receipt anchor. Emits `SCBE_WORKSPACE_VERIFY_PASS=1` on a clean chain; exit code 1 on any tamper (so CI can gate on it). Detects sha256 mismatches, byte-count mismatches, missing files, and extra files not in the manifest.
+
+### Changed
+
+- **Bumped `scbe-agent-bus` dependency**: `^0.3.2 → ^0.3.3` for the workspace verify command.
+
 ## 4.3.6 - 2026-05-14
 
 ### Added

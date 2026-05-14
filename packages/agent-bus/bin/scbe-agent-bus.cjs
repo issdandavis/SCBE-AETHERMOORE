@@ -6,6 +6,7 @@ const {
   postAgentBusEvent,
   runAgentBusTerminalUi,
   startAgentBusServer,
+  verifyAgentWorkspaceExport,
 } = require('../dist/index.js');
 
 const HOSTED_INTAKE_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html';
@@ -88,6 +89,7 @@ Usage:
   scbe-agent-bus health --base-url http://127.0.0.1:8787 --json
   scbe-agent-bus workspace new --hint customer-smoke --json
   scbe-agent-bus workspace export --workspace-root .aethermoor-bus/workspaces/<id> --json
+  scbe-agent-bus workspace verify --export-path .aethermoor-bus/workspaces/<id>/30_exports/<eid> --json
   scbe-agent-bus upgrade
 
 Commands:
@@ -136,6 +138,49 @@ async function main() {
       }
       return;
     }
+    if (action === 'verify') {
+      const exportPath = String(flags['export-path'] || '').trim();
+      if (!exportPath) {
+        process.stderr.write(
+          'Usage: scbe-agent-bus workspace verify --export-path <path> [--json]\n'
+        );
+        process.exitCode = 2;
+        return;
+      }
+      const payload = verifyAgentWorkspaceExport({ exportPath });
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+      } else {
+        const lines = [
+          `SCBE workspace verify receipt: ${payload.receipt}`,
+          `Export:    ${payload.export_path}`,
+          `Manifest:  ${payload.manifest_path}`,
+          `Manifest sha256 claimed: ${payload.manifest_sha256_claimed || '<no receipt>'}`,
+          `Manifest sha256 actual:  ${payload.manifest_sha256_actual}`,
+          `Manifest intact: ${payload.manifest_intact}`,
+          `Files claimed: ${payload.file_count_claimed}    actual: ${payload.file_count_actual}`,
+          `Bytes claimed: ${payload.total_bytes_claimed}    actual: ${payload.total_bytes_actual}`,
+        ];
+        if (payload.mismatches.length === 0) {
+          lines.push('No mismatches.');
+        } else {
+          lines.push(`Mismatches (${payload.mismatches.length}):`);
+          for (const m of payload.mismatches) {
+            lines.push(`  [${m.reason}] ${m.path}`);
+            if (m.expected_sha256) {
+              lines.push(`      expected sha256: ${m.expected_sha256}`);
+            }
+            if (m.actual_sha256) {
+              lines.push(`      actual sha256:   ${m.actual_sha256}`);
+            }
+          }
+        }
+        lines.push('');
+        process.stdout.write(lines.join('\n'));
+      }
+      process.exitCode = payload.receipt === 'SCBE_WORKSPACE_VERIFY_PASS=1' ? 0 : 1;
+      return;
+    }
     if (action === 'export') {
       const workspaceRoot = String(flags['workspace-root'] || '').trim();
       if (!workspaceRoot) {
@@ -178,7 +223,8 @@ async function main() {
     process.stderr.write(
       'Usage:\n' +
         '  scbe-agent-bus workspace new [--root <path>] [--hint <name>] [--json]\n' +
-        '  scbe-agent-bus workspace export --workspace-root <path> [--out <name>] [--include 00_inbox,10_work] [--json]\n'
+        '  scbe-agent-bus workspace export --workspace-root <path> [--out <name>] [--include 00_inbox,10_work] [--json]\n' +
+        '  scbe-agent-bus workspace verify --export-path <path> [--json]\n'
     );
     process.exitCode = action === 'help' ? 0 : 2;
     return;

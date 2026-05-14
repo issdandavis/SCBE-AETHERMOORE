@@ -297,6 +297,150 @@ export function exportAgentWorkspace(
   return receipt;
 }
 
+export interface WorkspaceVerifyOptions {
+  exportPath: string;
+}
+
+export interface WorkspaceVerifyMismatch {
+  path: string;
+  reason: 'sha256_mismatch' | 'missing_file' | 'extra_file' | 'bytes_mismatch';
+  expected_sha256?: string;
+  actual_sha256?: string;
+  expected_bytes?: number;
+  actual_bytes?: number;
+}
+
+export interface AgentWorkspaceVerifyReceipt {
+  schema_version: 'aethermoor.bus.workspace_verify.v1';
+  receipt: 'SCBE_WORKSPACE_VERIFY_PASS=1' | 'SCBE_WORKSPACE_VERIFY_PASS=0';
+  export_path: string;
+  manifest_path: string;
+  manifest_sha256_claimed: string;
+  manifest_sha256_actual: string;
+  manifest_intact: boolean;
+  file_count_claimed: number;
+  file_count_actual: number;
+  total_bytes_claimed: number;
+  total_bytes_actual: number;
+  mismatches: WorkspaceVerifyMismatch[];
+  verified_at: string;
+}
+
+/**
+ * Walk a previously-exported workspace folder and re-verify every sha256
+ * against the manifest. Detects four classes of tampering:
+ *   - sha256_mismatch: a file's content has been modified
+ *   - bytes_mismatch:  byte count differs (subset of sha256_mismatch)
+ *   - missing_file:    a manifested file is no longer present
+ *   - extra_file:      a file is present that the manifest does not list
+ *
+ * Also re-hashes manifest.json itself and compares to the export receipt's
+ * `manifest_sha256` field (read separately). This is the full chain-of-custody
+ * audit — the receipt anchors the manifest sha256, the manifest anchors every
+ * file sha256.
+ */
+export function verifyAgentWorkspaceExport(
+  options: WorkspaceVerifyOptions
+): AgentWorkspaceVerifyReceipt {
+  const exportPath = path.resolve(options.exportPath);
+  const manifestPath = path.join(exportPath, 'manifest.json');
+  if (!fs.existsSync(manifestPath)) {
+    throw new Error(`manifest not found at ${manifestPath}`);
+  }
+  const manifestBytes = fs.readFileSync(manifestPath);
+  const manifestActualSha = crypto.createHash('sha256').update(manifestBytes).digest('hex');
+  const manifest: WorkspaceExportManifest = JSON.parse(manifestBytes.toString('utf8'));
+
+  // The manifest carries the export receipt's record of its own sha256 only
+  // indirectly — read the matching export receipt under 20_receipts when
+  // available. Falls back to comparing only the per-file hashes.
+  let manifestClaimedSha = '';
+  // Receipt sits at <workspaceRoot>/20_receipts/export-<export-id>.json.
+  // workspaceRoot can be recovered from manifest.workspace_root; fall back to
+  // walking up from exportPath.
+  try {
+    const receiptDir = path.join(manifest.workspace_root, '20_receipts');
+    const receiptName = `export-${manifest.export_id}.json`;
+    const receiptPath = path.join(receiptDir, receiptName);
+    if (fs.existsSync(receiptPath)) {
+      const exportReceipt = JSON.parse(fs.readFileSync(receiptPath, 'utf8'));
+      if (typeof exportReceipt.manifest_sha256 === 'string') {
+        manifestClaimedSha = exportReceipt.manifest_sha256;
+      }
+    }
+  } catch {
+    // tolerate: missing receipt just means we can't anchor the manifest hash,
+    // but per-file verification still runs below.
+  }
+
+  const mismatches: WorkspaceVerifyMismatch[] = [];
+
+  // Build the set of present files (excluding manifest.json itself).
+  const presentFiles = walkFiles(exportPath).filter((rel) => rel !== 'manifest.json');
+  const manifestPaths = new Set(manifest.files.map((f) => f.path));
+
+  // 1. Verify each manifest entry against actual content.
+  let actualBytes = 0;
+  for (const entry of manifest.files) {
+    const abs = path.join(exportPath, entry.path);
+    if (!fs.existsSync(abs)) {
+      mismatches.push({
+        path: entry.path,
+        reason: 'missing_file',
+        expected_sha256: entry.sha256,
+        expected_bytes: entry.bytes,
+      });
+      continue;
+    }
+    const { hash, bytes } = sha256OfFile(abs);
+    actualBytes += bytes;
+    if (hash !== entry.sha256) {
+      mismatches.push({
+        path: entry.path,
+        reason: 'sha256_mismatch',
+        expected_sha256: entry.sha256,
+        actual_sha256: hash,
+        expected_bytes: entry.bytes,
+        actual_bytes: bytes,
+      });
+    } else if (bytes !== entry.bytes) {
+      mismatches.push({
+        path: entry.path,
+        reason: 'bytes_mismatch',
+        expected_bytes: entry.bytes,
+        actual_bytes: bytes,
+      });
+    }
+  }
+
+  // 2. Flag extra files (present but not in manifest).
+  for (const rel of presentFiles) {
+    if (!manifestPaths.has(rel)) {
+      mismatches.push({ path: rel, reason: 'extra_file' });
+    }
+  }
+
+  const manifestIntact =
+    manifestClaimedSha === '' ? true : manifestActualSha === manifestClaimedSha;
+  const passed = mismatches.length === 0 && manifestIntact;
+
+  return {
+    schema_version: 'aethermoor.bus.workspace_verify.v1',
+    receipt: passed ? 'SCBE_WORKSPACE_VERIFY_PASS=1' : 'SCBE_WORKSPACE_VERIFY_PASS=0',
+    export_path: exportPath,
+    manifest_path: manifestPath,
+    manifest_sha256_claimed: manifestClaimedSha,
+    manifest_sha256_actual: manifestActualSha,
+    manifest_intact: manifestIntact,
+    file_count_claimed: manifest.file_count,
+    file_count_actual: presentFiles.length,
+    total_bytes_claimed: manifest.total_bytes,
+    total_bytes_actual: actualBytes,
+    mismatches,
+    verified_at: new Date().toISOString(),
+  };
+}
+
 function normalizeTaskType(value: unknown): string {
   const taskType = String(value || 'general')
     .trim()

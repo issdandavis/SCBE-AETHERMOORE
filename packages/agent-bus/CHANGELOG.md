@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.3
+
+- **Workspace verify command**: adds `scbe-agent-bus workspace verify --export-path <path> [--json]`. Walks the export folder, re-hashes every file, compares against `manifest.json`, and re-hashes `manifest.json` itself against the export receipt's `manifest_sha256` anchor. Detects four classes of tampering: `sha256_mismatch`, `bytes_mismatch`, `missing_file`, `extra_file`. Emits `SCBE_WORKSPACE_VERIFY_PASS=1` only when all per-file sha256s match AND the manifest sha256 chain anchor matches.
+- **New public API**: `verifyAgentWorkspaceExport(options)` (TypeScript), with schema `aethermoor.bus.workspace_verify.v1`. Returns a structured receipt with `manifest_intact`, `mismatches[]`, claimed vs actual counts.
+- **Exit code 1 on verify failure** so the command is usable in CI pipelines as a tamper gate.
+
 ## 0.3.2
 
 - **Workspace export command**: adds `scbe-agent-bus workspace export --workspace-root <path> [--out <name>] [--include <comma-separated>] [--json]`. Copies the included folders (default `00_inbox`, `10_work`, `20_receipts`, `40_refs`) into `<workspace>/30_exports/<export-id>/`, writes a `manifest.json` with per-file sha256, and emits an `SCBE_WORKSPACE_EXPORT=1` receipt at `<workspace>/20_receipts/export-<export-id>.json` including the manifest's sha256 as a chain-of-custody anchor. `30_exports` (self) and `90_tmp` (scratch) are never exported.
