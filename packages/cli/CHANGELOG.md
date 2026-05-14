@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.3.4 - 2026-05-14
+
+### Added
+
+- **`scbe workspace new [--hint <name>] [--json]`**: forwards to the agent-bus workspace formation command and emits `SCBE_WORKSPACE_READY=1` for a freshly-created local bus workspace.
+
+### Changed
+
+- **Bumped `scbe-agent-bus` dependency**: `^0.3.0 → ^0.3.1` for the workspace formation command.
+
 ## 4.3.3 - 2026-05-14
 
 ### Fixed

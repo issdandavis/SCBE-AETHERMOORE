@@ -50,6 +50,7 @@ Agent bus (governed event routing — works against any scbe-agent-bus backend):
   scbe agent-bus serve --port 8787
   scbe agent-bus send --task "review changed files" --task-type review
   scbe agent-bus upgrade
+  scbe workspace new --hint customer-smoke --json
 
 Governance abacus (deterministic BigInt-only L12+L13 scoring — no float drift):
   scbe abacus run --d-h 0.4 --pd 0.1
@@ -802,6 +803,7 @@ const KNOWN_COMMANDS = [
   'liboqs',
   'history',
   'flow',
+  'workspace',
   'agent-bus',
   'agentbus',
   'abacus',
@@ -941,24 +943,25 @@ function runAbacus(args) {
 }
 
 function resolveAgentBusBin() {
+  const localFallback = path.resolve(
+    __dirname,
+    '..',
+    '..',
+    'agent-bus',
+    'bin',
+    'scbe-agent-bus.cjs'
+  );
+  try {
+    fs.accessSync(localFallback);
+    return localFallback;
+  } catch (_fallbackErr) {
+    // Continue to the installed package lookup below.
+  }
   try {
     const entry = require.resolve('scbe-agent-bus/package.json');
     return path.resolve(path.dirname(entry), 'bin', 'scbe-agent-bus.cjs');
   } catch (_err) {
-    const localFallback = path.resolve(
-      __dirname,
-      '..',
-      '..',
-      'agent-bus',
-      'bin',
-      'scbe-agent-bus.cjs'
-    );
-    try {
-      fs.accessSync(localFallback);
-      return localFallback;
-    } catch (_fallbackErr) {
-      return null;
-    }
+    return null;
   }
 }
 
@@ -1121,6 +1124,10 @@ if (argv[0] === 'shell') {
 
 if (argv[0] === 'flow') {
   runFlow(argv.slice(1));
+}
+
+if (argv[0] === 'workspace') {
+  runAgentBus(['workspace', ...argv.slice(1)]);
 }
 
 if (argv[0] === 'agent-bus' || argv[0] === 'agentbus') {
