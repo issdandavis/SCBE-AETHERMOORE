@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.3.3 - 2026-05-14
+
+### Fixed
+
+- **`scbe liboqs` outside a source checkout**: fresh npm installs now return a structured `SCBE_LIBOQS_PASS=0` source-checkout-required receipt instead of a raw Python `ModuleNotFoundError`.
+
+## 4.3.2 - 2026-05-14
+
+### Added
+
+- **`scbe liboqs [--json]` native proof receipt**: runs the existing `src.crypto.pqc_liboqs` governance proof ladder plus an ML-KEM roundtrip and ML-DSA verify smoke. Emits `SCBE_LIBOQS_PASS=1` only when native liboqs is active and the smoke passes; lower proof tiers are reported honestly with `SCBE_LIBOQS_PASS=0`.
+
 ## 4.3.1 - 2026-05-14
 
 ### Changed

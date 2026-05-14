@@ -34,6 +34,8 @@ Core commands:
   scbe shell
   scbe run "npm test"
   scbe status
+  scbe liboqs
+  scbe liboqs --json
   scbe history --limit 20
 
 Flow loop (operator workflow — source checkout required for plan/packetize):
@@ -182,7 +184,7 @@ function gateCommand(command) {
     'import json, sys',
     'from src.crypto.geoseal_execution_gate import scan_command',
     'print(json.dumps(scan_command(sys.argv[1]).to_dict()))',
-  ].join('; ');
+  ].join('\n');
   const child = spawnSync(pythonCommand(), ['-c', code, command], {
     cwd: repoRoot(),
     encoding: 'utf8',
@@ -607,6 +609,102 @@ function runStatus() {
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
 }
 
+function runLiboqs(args) {
+  const asJson = args.includes('--json');
+  if (!resolveRepoScript('src/crypto/pqc_liboqs.py')) {
+    const payload = {
+      schema_version: 'scbe_liboqs_receipt_v1',
+      receipt: 'SCBE_LIBOQS_PASS=0',
+      native_pass: false,
+      error: 'source checkout required',
+      detail:
+        'scbe liboqs needs the local SCBE-AETHERMOORE Python source tree at src/crypto/pqc_liboqs.py.',
+    };
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    process.exit(2);
+  }
+  const code = [
+    'import json',
+    'from src.crypto.pqc_liboqs import MLDSA65, MLKEM768, get_pqc_governance_status',
+    'status = get_pqc_governance_status()',
+    'kem = MLKEM768()',
+    'ct, ss = kem.encapsulate()',
+    'ss2 = kem.decapsulate(ct)',
+    'dsa = MLDSA65()',
+    'msg = b"scbe-liboqs-smoke"',
+    'sig = dsa.sign(msg)',
+    'kem_roundtrip = bool(ss == ss2)',
+    'dsa_verify = bool(dsa.verify(msg, sig))',
+    'native_pass = bool(status.get("liboqs_available") and kem_roundtrip and dsa_verify)',
+    'print(json.dumps({',
+    '  "schema_version": "scbe_liboqs_receipt_v1",',
+    '  "receipt": "SCBE_LIBOQS_PASS=1" if native_pass else "SCBE_LIBOQS_PASS=0",',
+    '  "native_pass": native_pass,',
+    '  "status": status,',
+    '  "smoke": {',
+    '    "ml_kem_roundtrip": kem_roundtrip,',
+    '    "ml_dsa_verify": dsa_verify,',
+    '    "ciphertext_bytes": len(ct),',
+    '    "shared_secret_bytes": len(ss),',
+    '    "signature_bytes": len(sig),',
+    '  },',
+    '}))',
+  ].join('\n');
+  const result = runCapture(pythonCommand(), ['-c', code], { timeout: 20000 });
+  if (!result.ok) {
+    const payload = {
+      schema_version: 'scbe_liboqs_receipt_v1',
+      receipt: 'SCBE_LIBOQS_PASS=0',
+      native_pass: false,
+      error: 'pqc_liboqs smoke failed to execute',
+      stderr_preview: result.stderr.slice(0, 1000),
+      stdout_preview: result.stdout.slice(0, 1000),
+    };
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    process.exit(1);
+  }
+  let payload;
+  try {
+    payload = JSON.parse(result.stdout);
+  } catch (_err) {
+    payload = {
+      schema_version: 'scbe_liboqs_receipt_v1',
+      receipt: 'SCBE_LIBOQS_PASS=0',
+      native_pass: false,
+      error: 'pqc_liboqs smoke returned non-JSON',
+      stderr_preview: result.stderr.slice(0, 1000),
+      stdout_preview: result.stdout.slice(0, 1000),
+    };
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    process.exit(1);
+  }
+  if (result.stderr) {
+    payload.warnings = result.stderr
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+  } else {
+    const status = payload.status || {};
+    const smoke = payload.smoke || {};
+    process.stdout.write(
+      [
+        `SCBE liboqs receipt: ${payload.receipt}`,
+        `Native liboqs: ${payload.native_pass ? 'PASS' : 'NOT ACTIVE'}`,
+        `Proof tier: ${status.tier || 'unknown'} (${status.proof || 'unknown'})`,
+        `Backend: ${status.backend || 'unknown'}`,
+        `Quantum resistant: ${status.quantum_resistant ? 'true' : 'false'}`,
+        `KEM: ${status.kem_algorithm || 'unknown'} roundtrip=${smoke.ml_kem_roundtrip ? 'pass' : 'fail'}`,
+        `DSA: ${status.sig_algorithm || 'unknown'} verify=${smoke.ml_dsa_verify ? 'pass' : 'fail'}`,
+        '',
+      ].join('\n')
+    );
+  }
+  process.exit(payload.native_pass ? 0 : 1);
+}
+
 function runInteractiveShell() {
   process.stdout.write('SCBE Terminal. Type commands normally. Use :help or :exit.\n');
   const rl = readline.createInterface({
@@ -701,6 +799,7 @@ const KNOWN_COMMANDS = [
   'shell',
   'run',
   'status',
+  'liboqs',
   'history',
   'flow',
   'agent-bus',
@@ -991,6 +1090,10 @@ if (argv[0] === 'selftest') {
 if (argv[0] === 'status') {
   runStatus();
   process.exit(0);
+}
+
+if (argv[0] === 'liboqs') {
+  runLiboqs(argv.slice(1));
 }
 
 if (argv[0] === 'history') {
