@@ -853,6 +853,13 @@ def _ensure_flow_plan_packet(payload: dict[str, object]) -> None:
         raise ValueError("Input file is not an SCBE flow plan packet.")
 
 
+def _ensure_work_packet_bundle(payload: dict[str, object]) -> None:
+    if payload.get("schema_version") != "scbe_work_packet_bundle_v1":
+        raise ValueError("Input file is not an SCBE work packet bundle.")
+    if not isinstance(payload.get("packets"), list):
+        raise ValueError("Work packet bundle is missing packets.")
+
+
 def _role_paths(owner_role: str) -> dict[str, list[str]]:
     config = FLOW_ROLE_PATHS.get(owner_role, {})
     return {
@@ -3245,6 +3252,179 @@ def cmd_flow_packetize(args: argparse.Namespace) -> int:
     return _json_result(args, payload, lines)
 
 
+def _default_flow_status_output_path(repo_root: Path, packets_path: Path) -> Path:
+    return repo_root / "artifacts" / "flow_status" / f"{packets_path.stem}-status.json"
+
+
+def _default_flow_status_markdown_path(output_path: Path) -> Path:
+    return output_path.with_suffix(".md")
+
+
+def _packet_dispatch_command(packet: dict[str, object], repo_root: Path) -> list[str]:
+    task_type_by_role = {
+        "Architecture Curator": "research",
+        "Documentation Specialist": "research",
+        "Implementation Engineer": "coding",
+        "Integration Coordinator": "governance",
+        "Security Auditor": "review",
+        "Telemetry Archivist": "training",
+    }
+    role = str(packet.get("owner_role") or "")
+    task_type = task_type_by_role.get(role, "general")
+    return [
+        "python",
+        "scripts/scbe-system-cli.py",
+        "--repo-root",
+        _display_path(repo_root, repo_root),
+        "agentbus",
+        "run",
+        "--task",
+        str(packet.get("goal") or packet.get("task") or ""),
+        "--task-type",
+        task_type,
+        "--series-id",
+        _flow_slug(str(packet.get("task_id") or "packet"), fallback="packet"),
+        "--privacy",
+        "local_only",
+        "--json",
+    ]
+
+
+def _build_flow_status_board(
+    bundle: dict[str, object],
+    repo_root: Path,
+    completed_steps: set[str],
+    blocked_steps: set[str],
+) -> dict[str, object]:
+    packets = list(bundle.get("packets", []))
+    known_steps = {str(packet.get("step_id")) for packet in packets}
+    rows: list[dict[str, object]] = []
+    for packet in packets:
+        step_id = str(packet.get("step_id") or "")
+        dependencies = [str(dep) for dep in packet.get("dependencies", [])]
+        missing_dependencies = [dep for dep in dependencies if dep not in known_steps]
+        unmet_dependencies = [dep for dep in dependencies if dep not in completed_steps]
+        if step_id in blocked_steps:
+            status = "blocked"
+        elif step_id in completed_steps:
+            status = "completed"
+        elif missing_dependencies:
+            status = "invalid"
+        elif unmet_dependencies:
+            status = "waiting"
+        else:
+            status = "ready"
+        rows.append(
+            {
+                "task_id": packet.get("task_id"),
+                "step_id": step_id,
+                "status": status,
+                "owner_agent_id": packet.get("owner_agent_id"),
+                "owner_role": packet.get("owner_role"),
+                "goal": packet.get("goal"),
+                "dependencies": dependencies,
+                "unmet_dependencies": unmet_dependencies,
+                "missing_dependencies": missing_dependencies,
+                "allowed_paths": packet.get("allowed_paths", []),
+                "blocked_paths": packet.get("blocked_paths", []),
+                "workingness_gate": packet.get("workingness_gate", {}),
+                "dispatch_command": _packet_dispatch_command(packet, repo_root),
+            }
+        )
+    counts = {
+        status: sum(1 for row in rows if row["status"] == status) for status in sorted({row["status"] for row in rows})
+    }
+    return {
+        "schema_version": "scbe_flow_status_board_v1",
+        "generated_at": _now_iso(),
+        "source_bundle": str(bundle.get("source_plan", "")),
+        "task": bundle.get("task"),
+        "workflow_template": bundle.get("workflow_template"),
+        "coordination_contract": bundle.get("coordination_contract", {}),
+        "counts": counts,
+        "ready_count": counts.get("ready", 0),
+        "completed_steps": sorted(completed_steps),
+        "blocked_steps": sorted(blocked_steps),
+        "rows": rows,
+        "next_packets": [row for row in rows if row["status"] == "ready"],
+    }
+
+
+def _render_flow_status_markdown(board: dict[str, object]) -> str:
+    rows = list(board.get("rows", []))
+    lines = [
+        "# SCBE Flow Status Board",
+        "",
+        f"Task: {board.get('task')}",
+        f"Template: `{board.get('workflow_template')}`",
+        f"Ready packets: `{board.get('ready_count')}`",
+        "",
+        "## Packet State",
+        "",
+        "| Step | Status | Owner | Goal |",
+        "| --- | --- | --- | --- |",
+    ]
+    for row in rows:
+        goal = str(row.get("goal") or "").replace("|", "\\|")
+        lines.append(f"| `{row.get('step_id')}` | `{row.get('status')}` | `{row.get('owner_agent_id')}` | {goal} |")
+    lines.extend(["", "## Next Work"])
+    ready_rows = [row for row in rows if row.get("status") == "ready"]
+    if not ready_rows:
+        lines.append("- No ready packets.")
+    for row in ready_rows:
+        lines.append(f"- `{row.get('step_id')}` owned by `{row.get('owner_agent_id')}`")
+        lines.append(f"  - Goal: {row.get('goal')}")
+        lines.append(f"  - Dispatch argv: `{json.dumps(row.get('dispatch_command', []), ensure_ascii=True)}`")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def cmd_flow_status(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root
+    packets_path = _repo_path(repo_root, args.packets)
+    if not packets_path.exists():
+        print(f"Work packet bundle not found: {packets_path}")
+        return 2
+    try:
+        bundle = _load_flow_json(packets_path)
+        _ensure_work_packet_bundle(bundle)
+    except (json.JSONDecodeError, ValueError) as exc:
+        print(str(exc))
+        return 2
+
+    completed_steps = {str(item).strip() for item in args.completed if str(item).strip()}
+    blocked_steps = {str(item).strip() for item in args.blocked if str(item).strip()}
+    board = _build_flow_status_board(bundle, repo_root, completed_steps, blocked_steps)
+
+    output_path = (
+        _repo_path(repo_root, args.output) if args.output else _default_flow_status_output_path(repo_root, packets_path)
+    )
+    markdown_path = (
+        _repo_path(repo_root, args.markdown_output)
+        if args.markdown_output
+        else _default_flow_status_markdown_path(output_path)
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    markdown_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(board, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    markdown_path.write_text(_render_flow_status_markdown(board), encoding="utf-8")
+
+    payload = {
+        "schema_version": "scbe_flow_status_result_v1",
+        "output_path": _display_path(output_path, repo_root),
+        "markdown_path": _display_path(markdown_path, repo_root),
+        "ready_count": board["ready_count"],
+        "counts": board["counts"],
+        "next_packet_ids": [row["task_id"] for row in board["next_packets"]],
+    }
+    lines = [
+        f"Saved flow status: {output_path}",
+        f"Saved operator board: {markdown_path}",
+        f"Ready packets: {board['ready_count']}",
+    ]
+    return _json_result(args, payload, lines)
+
+
 def cmd_colab_list(args: argparse.Namespace) -> int:
     repo_root = args.repo_root
     notebooks = _colab_catalog_payloads(repo_root)
@@ -5154,6 +5334,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Skip action-map emission and only write the packet bundle",
     )
     flow_packetize.set_defaults(func=cmd_flow_packetize, emit_action_map=True)
+    flow_status = flow_sub.add_parser("status", help="Build a ready/waiting/completed board from work packets")
+    add_runtime_cli_flags(flow_status)
+    flow_status.add_argument("--packets", required=True, help="Path to an SCBE work packet bundle JSON")
+    flow_status.add_argument(
+        "--completed",
+        action="append",
+        default=[],
+        help="Step id already completed; repeat for multiple completed packets",
+    )
+    flow_status.add_argument(
+        "--blocked",
+        action="append",
+        default=[],
+        help="Step id intentionally blocked; repeat for multiple blocked packets",
+    )
+    flow_status.add_argument("--output", default="", help="Output JSON path for the status board")
+    flow_status.add_argument("--markdown-output", default="", help="Output Markdown path for the operator board")
+    flow_status.set_defaults(func=cmd_flow_status)
 
     agentbus = sub.add_parser("agentbus", help="Run a user-facing shaped agent-bus task")
     add_runtime_cli_flags(agentbus)
