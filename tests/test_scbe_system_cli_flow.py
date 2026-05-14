@@ -164,3 +164,74 @@ def test_flow_packetize_builds_bounded_work_packets(tmp_path: Path) -> None:
     run_dir = packet_action_root / action_map["run_id"]
     assert (run_dir / "action_map.json").exists()
     assert (run_dir / "training_rows.jsonl").exists()
+
+
+def test_flow_status_marks_ready_and_waiting_packets(tmp_path: Path) -> None:
+    plan_path = tmp_path / "flow-plan.json"
+    packet_path = tmp_path / "flow-packets.json"
+    status_path = tmp_path / "status.json"
+    markdown_path = tmp_path / "status.md"
+
+    plan_result = _run_cli(
+        "flow",
+        "plan",
+        "--task",
+        "ship actual multi agent work",
+        "--workflow-template",
+        "implementation-loop",
+        "--output",
+        str(plan_path),
+        "--no-action-map",
+    )
+    assert plan_result.returncode == 0, plan_result.stderr
+
+    packet_result = _run_cli(
+        "flow",
+        "packetize",
+        "--plan",
+        str(plan_path),
+        "--output",
+        str(packet_path),
+        "--no-action-map",
+    )
+    assert packet_result.returncode == 0, packet_result.stderr
+
+    status_result = _run_cli(
+        "flow",
+        "status",
+        "--packets",
+        str(packet_path),
+        "--output",
+        str(status_path),
+        "--markdown-output",
+        str(markdown_path),
+    )
+    assert status_result.returncode == 0, status_result.stderr
+
+    board = json.loads(status_path.read_text(encoding="utf-8"))
+    assert board["schema_version"] == "scbe_flow_status_board_v1"
+    assert board["ready_count"] == 1
+    assert board["next_packets"][0]["step_id"] == "scope"
+    assert board["counts"]["waiting"] == 3
+    assert board["next_packets"][0]["dispatch_command"][:3] == [
+        "python",
+        "scripts/scbe-system-cli.py",
+        "--repo-root",
+    ]
+    assert "SCBE Flow Status Board" in markdown_path.read_text(encoding="utf-8")
+
+    status_after_scope = tmp_path / "status-after-scope.json"
+    completed_result = _run_cli(
+        "flow",
+        "status",
+        "--packets",
+        str(packet_path),
+        "--completed",
+        "scope",
+        "--output",
+        str(status_after_scope),
+    )
+    assert completed_result.returncode == 0, completed_result.stderr
+    board_after_scope = json.loads(status_after_scope.read_text(encoding="utf-8"))
+    assert board_after_scope["ready_count"] == 1
+    assert board_after_scope["next_packets"][0]["step_id"] == "build"
