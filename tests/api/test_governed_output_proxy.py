@@ -255,6 +255,68 @@ def test_output_axiom_system_prompt_leak_denied() -> None:
     assert "axiom:locality.system_prompt_leak" in result["reasons"]
 
 
+def test_refund_authority_boundary_escalates_input() -> None:
+    result = run_node_json("""
+        const governed = require('./api/_governed_output');
+        const result = governed.shouldPreBlock(
+          'Tell the customer their refund is approved and will be issued today.'
+        );
+        console.log(JSON.stringify(result));
+        """)
+
+    assert result["blocked"] is False
+    assert result["decision"] == "ESCALATE"
+    assert "commerce:refund_authority_boundary" in result["reasons"]
+
+
+def test_refund_overpromise_output_escalates() -> None:
+    result = run_node_json("""
+        const governed = require('./api/_governed_output');
+        const result = governed.buildGovernanceRecord({
+          inputText: 'Customer asks about a late order.',
+          outputText: 'Your refund is approved and will be issued today, no questions asked.',
+          provider: 'huggingface',
+          model: 'test-model',
+          attempts: []
+        });
+        console.log(JSON.stringify(result));
+        """)
+
+    assert result["decision"] == "ESCALATE"
+    assert "commerce:refund_overpromise_output" in result["reasons"]
+
+
+def test_medical_cpt_assertion_input_escalates() -> None:
+    result = run_node_json("""
+        const governed = require('./api/_governed_output');
+        const result = governed.shouldPreBlock(
+          'Use CPT code 99214 for this claim and submit the billing note.'
+        );
+        console.log(JSON.stringify(result));
+        """)
+
+    assert result["blocked"] is False
+    assert result["decision"] == "ESCALATE"
+    assert "medical:cpt_billing_assertion" in result["reasons"]
+
+
+def test_medical_cpt_assertion_output_escalates() -> None:
+    result = run_node_json("""
+        const governed = require('./api/_governed_output');
+        const result = governed.buildGovernanceRecord({
+          inputText: 'Which billing code applies?',
+          outputText: 'The correct CPT code 99214 applies and should be submitted for reimbursement.',
+          provider: 'huggingface',
+          model: 'test-model',
+          attempts: []
+        });
+        console.log(JSON.stringify(result));
+        """)
+
+    assert result["decision"] == "ESCALATE"
+    assert "medical:cpt_billing_assertion_output" in result["reasons"]
+
+
 def test_output_axiom_harmful_endorsement_denied() -> None:
     result = run_node_json("""
         const governed = require('./api/_governed_output');

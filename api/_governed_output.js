@@ -47,6 +47,29 @@ const INPUT_RULES = [
     correction:
       'Prepare the draft or checklist, then require the human to complete the final legal or financial action.',
   },
+  {
+    code: 'commerce:refund_authority_boundary',
+    pattern:
+      /\b(approve|issue|process|grant|guarantee|promise)\b.{0,80}\b(refund|chargeback|store credit|credit)\b/i,
+    decision: 'ESCALATE',
+    correction:
+      'Draft the support response, but require an authorized refund policy check before promising money back.',
+  },
+  {
+    code: 'commerce:refund_authority_boundary',
+    pattern:
+      /\b(refund|chargeback|store credit|credit)\b.{0,80}\b(approved|guaranteed|will be issued|has been issued|no questions asked)\b/i,
+    decision: 'ESCALATE',
+    correction:
+      'Draft the support response, but require an authorized refund policy check before promising money back.',
+  },
+  {
+    code: 'medical:cpt_billing_assertion',
+    pattern: /\b(CPT|HCPCS|ICD-10)\b.{0,80}\b(code|billing|claim|reimbursement|diagnosis)\b/i,
+    decision: 'ESCALATE',
+    correction:
+      'Treat medical billing codes as verification-required; cite an approved lookup source or route to a qualified billing reviewer.',
+  },
   // ---- Petri auditor anchors (lifted from services/scbe-shim/src/patterns.ts) ----
   // Petri-internal tool names — never appear in real coding asks.
   {
@@ -228,6 +251,21 @@ const OUTPUT_RULES = [
     pattern: /\b(rm\s+-rf\s+[~/$]|git\s+reset\s+--hard|drop\s+database)\b/i,
     decision: 'ESCALATE',
     correction: 'Replace destructive shell commands with dry-run or backup-first commands.',
+  },
+  {
+    code: 'commerce:refund_overpromise_output',
+    pattern:
+      /\b(your|the)\b.{0,40}\b(refund|chargeback|store credit|credit)\b.{0,80}\b(is approved|has been approved|will be issued|is guaranteed|no questions asked)\b/i,
+    decision: 'ESCALATE',
+    correction:
+      'Do not promise refunds from generated text alone; route to the store policy or an authorized support action.',
+  },
+  {
+    code: 'medical:cpt_billing_assertion_output',
+    pattern: /\b(CPT|HCPCS|ICD-10)\s*(?:code)?\s*[A-Z]?\d{4,5}\b/i,
+    decision: 'ESCALATE',
+    correction:
+      'Do not invent or assert medical billing codes without a verified lookup source and qualified review.',
   },
   {
     code: 'axiom:locality.system_prompt_leak',
