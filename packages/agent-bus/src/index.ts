@@ -93,16 +93,21 @@ export const WORKSPACE_FORMATION: AgentWorkspaceReceipt['formation'] = {
 const TASK_TYPES = new Set(['coding', 'review', 'research', 'governance', 'training', 'general']);
 
 function slugify(value: string): string {
-  return String(value || 'workspace')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 48) || 'workspace';
+  return (
+    String(value || 'workspace')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 48) || 'workspace'
+  );
 }
 
 function timestampId(date = new Date()): string {
-  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  return date
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}Z$/, 'Z');
 }
 
 export function createAgentWorkspace(options: WorkspaceOptions = {}): AgentWorkspaceReceipt {
@@ -206,9 +211,7 @@ function walkFiles(root: string, relPrefix = ''): string[] {
   return out;
 }
 
-export function exportAgentWorkspace(
-  options: WorkspaceExportOptions
-): AgentWorkspaceExportReceipt {
+export function exportAgentWorkspace(options: WorkspaceExportOptions): AgentWorkspaceExportReceipt {
   const workspaceRoot = path.resolve(options.workspaceRoot);
   if (!fs.existsSync(workspaceRoot) || !fs.statSync(workspaceRoot).isDirectory()) {
     throw new Error(`workspace not found at ${workspaceRoot}`);
@@ -226,9 +229,8 @@ export function exportAgentWorkspace(
     }
   }
 
-  const requestedInclude = (options.include && options.include.length > 0
-    ? options.include
-    : DEFAULT_EXPORT_INCLUDE
+  const requestedInclude = (
+    options.include && options.include.length > 0 ? options.include : DEFAULT_EXPORT_INCLUDE
   ).filter((folder) => !NEVER_EXPORT.has(folder));
   const includedFolders = requestedInclude.filter((folder) =>
     fs.existsSync(path.join(workspaceRoot, folder))
@@ -640,10 +642,7 @@ export function verifyAllAgentWorkspaceExports(
   }
   return {
     schema_version: 'aethermoor.bus.workspace_verify_all.v1',
-    receipt:
-      failed === 0
-        ? 'SCBE_WORKSPACE_VERIFY_ALL_PASS=1'
-        : 'SCBE_WORKSPACE_VERIFY_ALL_PASS=0',
+    receipt: failed === 0 ? 'SCBE_WORKSPACE_VERIFY_ALL_PASS=1' : 'SCBE_WORKSPACE_VERIFY_ALL_PASS=0',
     workspace_root: workspaceRoot,
     workspace_id: workspaceId,
     verified_at: new Date().toISOString(),
@@ -690,9 +689,7 @@ export interface AgentWorkspaceImportReceipt {
  * The new workspace's own formation receipt is written first (so 20_receipts/
  * is populated for downstream commands), followed by the import receipt.
  */
-export function importAgentWorkspace(
-  options: WorkspaceImportOptions
-): AgentWorkspaceImportReceipt {
+export function importAgentWorkspace(options: WorkspaceImportOptions): AgentWorkspaceImportReceipt {
   const exportPath = path.resolve(options.exportPath);
   // Verify FIRST. Refuse to import any tampered export.
   const verifyReceipt = verifyAgentWorkspaceExport({ exportPath, persistReceipt: false });
@@ -703,9 +700,7 @@ export function importAgentWorkspace(
     );
   }
   const manifestPath = path.join(exportPath, 'manifest.json');
-  const manifest: WorkspaceExportManifest = JSON.parse(
-    fs.readFileSync(manifestPath, 'utf8')
-  );
+  const manifest: WorkspaceExportManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
   // Form a new workspace under targetRoot.
   const hint = (options.hint || 'import').trim();
@@ -780,6 +775,8 @@ export interface AgentWorkspaceReportReceipt {
     export_count: number;
     verify_count: number;
     import_count: number;
+    trap_dispatch_count: number;
+    trap_redirect_count: number;
     failed_verifies: number;
     unverified_exports: string[];
   };
@@ -815,9 +812,7 @@ function folderStat(workspaceRoot: string, folder: string): FolderStat {
  * an `audit_health` color: green if every export has a passing verify, amber
  * if there are unverified exports, red if any verify failed. Pure read-only.
  */
-export function reportAgentWorkspace(
-  options: WorkspaceReportOptions
-): AgentWorkspaceReportReceipt {
+export function reportAgentWorkspace(options: WorkspaceReportOptions): AgentWorkspaceReportReceipt {
   const workspaceRoot = path.resolve(options.workspaceRoot);
   if (!fs.existsSync(workspaceRoot) || !fs.statSync(workspaceRoot).isDirectory()) {
     throw new Error(`workspace not found at ${workspaceRoot}`);
@@ -827,14 +822,11 @@ export function reportAgentWorkspace(
   const formation = lineage.entries.find((e) => e.kind === 'formation');
   if (formation) createdAt = formation.timestamp;
   const lastActivity =
-    lineage.entries.length > 0
-      ? lineage.entries[lineage.entries.length - 1].timestamp
-      : createdAt;
+    lineage.entries.length > 0 ? lineage.entries[lineage.entries.length - 1].timestamp : createdAt;
   const folders: FolderStat[] = REPORT_FOLDERS.map((f) => folderStat(workspaceRoot, f));
   let auditHealth: 'green' | 'amber' | 'red' = 'green';
   if (lineage.failed_verifies > 0) auditHealth = 'red';
-  else if (lineage.unverified_exports.length > 0 && lineage.export_count > 0)
-    auditHealth = 'amber';
+  else if (lineage.unverified_exports.length > 0 && lineage.export_count > 0) auditHealth = 'amber';
   return {
     schema_version: 'aethermoor.bus.workspace_report.v1',
     receipt: 'SCBE_WORKSPACE_REPORT=1',
@@ -849,6 +841,8 @@ export function reportAgentWorkspace(
       export_count: lineage.export_count,
       verify_count: lineage.verify_count,
       import_count: lineage.import_count,
+      trap_dispatch_count: lineage.trap_dispatch_count,
+      trap_redirect_count: lineage.trap_redirect_count,
       failed_verifies: lineage.failed_verifies,
       unverified_exports: lineage.unverified_exports,
     },
@@ -862,7 +856,7 @@ export interface WorkspaceLineageOptions {
 }
 
 export interface LineageEntry {
-  kind: 'formation' | 'ingest' | 'export' | 'verify' | 'import' | 'unknown';
+  kind: 'formation' | 'ingest' | 'export' | 'verify' | 'import' | 'trap_dispatch' | 'unknown';
   receipt_path: string;
   receipt_name: string;
   timestamp: string;
@@ -872,6 +866,11 @@ export interface LineageEntry {
   manifest_sha256?: string;
   manifest_intact?: boolean;
   mismatch_count?: number;
+  // For trap_dispatch entries: gate decision + whether a redirect was emitted.
+  // These let lineage consumers spot adversarial inputs without re-reading the
+  // underlying envelope (and without exposing the attacker text itself).
+  gate_decision?: string;
+  redirect_emitted?: boolean;
   parse_error?: string;
 }
 
@@ -887,6 +886,8 @@ export interface AgentWorkspaceLineageReceipt {
   export_count: number;
   verify_count: number;
   import_count: number;
+  trap_dispatch_count: number;
+  trap_redirect_count: number;
   unverified_exports: string[];
   failed_verifies: number;
 }
@@ -897,6 +898,7 @@ const LINEAGE_KIND_BY_SCHEMA: Record<string, LineageEntry['kind']> = {
   'aethermoor.bus.workspace_export.v1': 'export',
   'aethermoor.bus.workspace_verify.v1': 'verify',
   'aethermoor.bus.workspace_import.v1': 'import',
+  'aethermoor.bus.workspace_trap_dispatch.v1': 'trap_dispatch',
 };
 
 /**
@@ -936,14 +938,12 @@ export function lineageAgentWorkspace(
       const schemaVersion =
         parsed && typeof parsed.schema_version === 'string' ? parsed.schema_version : '';
       const kind: LineageEntry['kind'] = LINEAGE_KIND_BY_SCHEMA[schemaVersion] ?? 'unknown';
-      const receiptFlag =
-        parsed && typeof parsed.receipt === 'string' ? parsed.receipt : '';
+      const receiptFlag = parsed && typeof parsed.receipt === 'string' ? parsed.receipt : '';
       // pick a timestamp field per kind
       let timestamp = '';
       if (parsed) {
         if (typeof parsed.created_at === 'string') timestamp = parsed.created_at;
-        else if (typeof parsed.verified_at === 'string')
-          timestamp = parsed.verified_at as string;
+        else if (typeof parsed.verified_at === 'string') timestamp = parsed.verified_at as string;
       }
       if (!timestamp) {
         try {
@@ -972,12 +972,16 @@ export function lineageAgentWorkspace(
       if (kind === 'verify' && parsed) {
         if (typeof parsed.manifest_intact === 'boolean')
           entry.manifest_intact = parsed.manifest_intact;
-        if (Array.isArray(parsed.mismatches))
-          entry.mismatch_count = parsed.mismatches.length;
+        if (Array.isArray(parsed.mismatches)) entry.mismatch_count = parsed.mismatches.length;
         // verify receipts also reference the export they audited via export_path
         if (typeof parsed.export_path === 'string') {
           entry.export_id = path.basename(parsed.export_path as string);
         }
+      }
+      if (kind === 'trap_dispatch' && parsed) {
+        if (typeof parsed.gate_decision === 'string') entry.gate_decision = parsed.gate_decision;
+        if (typeof parsed.redirect_emitted === 'boolean')
+          entry.redirect_emitted = parsed.redirect_emitted;
       }
       entries.push(entry);
     }
@@ -994,6 +998,8 @@ export function lineageAgentWorkspace(
   let exportCount = 0;
   let verifyCount = 0;
   let importCount = 0;
+  let trapDispatchCount = 0;
+  let trapRedirectCount = 0;
   let failedVerifies = 0;
   for (const e of entries) {
     if (e.kind === 'formation') formationCount += 1;
@@ -1007,6 +1013,10 @@ export function lineageAgentWorkspace(
       verifyCount += 1;
       if (e.receipt === 'SCBE_WORKSPACE_VERIFY_PASS=0') failedVerifies += 1;
       if (e.export_id) verifiedExportIds.add(e.export_id);
+    }
+    if (e.kind === 'trap_dispatch') {
+      trapDispatchCount += 1;
+      if (e.redirect_emitted) trapRedirectCount += 1;
     }
   }
   const unverifiedExports = Array.from(exportIds).filter((id) => !verifiedExportIds.has(id));
@@ -1024,6 +1034,8 @@ export function lineageAgentWorkspace(
     export_count: exportCount,
     verify_count: verifyCount,
     import_count: importCount,
+    trap_dispatch_count: trapDispatchCount,
+    trap_redirect_count: trapRedirectCount,
     unverified_exports: unverifiedExports,
     failed_verifies: failedVerifies,
   };
