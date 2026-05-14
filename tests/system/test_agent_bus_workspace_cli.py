@@ -277,6 +277,107 @@ def test_workspace_lineage_classifies_chain(tmp_path: Path) -> None:
     assert kinds == ["formation", "export", "verify"]
 
 
+def test_workspace_export_import_export_roundtrip_preserves_content(tmp_path: Path) -> None:
+    """Export A -> Import to B -> Export B. Every content file in export_B
+    must match export_A bit-exactly (same sha256, same bytes). This is the
+    integrity gate for the cold-restore story: if anyone shares an export
+    bundle, the recipient can import + re-export and get the same content
+    hashes back, proving lossless round-trip.
+    """
+    build_agent_bus()
+
+    # Stage a source workspace with mixed-content files in 00_inbox and 10_work.
+    source_ws = tmp_path / "source"
+    proc = subprocess.run(
+        [
+            NODE,
+            str(AGENT_BUS),
+            "workspace",
+            "new",
+            "--root",
+            str(source_ws),
+            "--hint",
+            "roundtrip-A",
+            "--json",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    ws_a = Path(json.loads(proc.stdout)["workspace_root"])
+    # write three files with different content shapes (text, binary-like, multiline)
+    (ws_a / "00_inbox" / "note.txt").write_text("hello world\n", encoding="utf-8")
+    (ws_a / "10_work" / "doc.md").write_text("# Title\n\nbody text\n", encoding="utf-8")
+    (ws_a / "10_work" / "binary.dat").write_bytes(bytes(range(256)))
+
+    # Export A.
+    export_a = _export_workspace(ws_a, out_hint="A")
+    export_a_path = Path(export_a["export_path"])
+
+    # Import A into a fresh location B.
+    proc = subprocess.run(
+        [
+            NODE,
+            str(AGENT_BUS),
+            "workspace",
+            "import",
+            "--export-path",
+            str(export_a_path),
+            "--target-root",
+            str(tmp_path / "restored"),
+            "--hint",
+            "roundtrip-B",
+            "--json",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    ws_b = Path(json.loads(proc.stdout)["target_workspace_root"])
+
+    # Export B.
+    export_b = _export_workspace(ws_b, out_hint="B")
+    export_b_path = Path(export_b["export_path"])
+
+    # Compare manifests by content sha256.
+    manifest_a = json.loads((export_a_path / "manifest.json").read_text(encoding="utf-8"))
+    manifest_b = json.loads((export_b_path / "manifest.json").read_text(encoding="utf-8"))
+
+    # Build sha256 -> set of paths for both manifests.
+    def content_paths(manifest: dict) -> dict[str, set[str]]:
+        out: dict[str, set[str]] = {}
+        for entry in manifest["files"]:
+            # the source 20_receipts/workspace.json is replayed only in A, not B.
+            # comparing content files only (00_inbox/10_work/40_refs) is the
+            # right thing for round-trip identity.
+            if entry["path"].startswith("20_receipts/"):
+                continue
+            out.setdefault(entry["sha256"], set()).add(entry["path"])
+        return out
+
+    paths_by_hash_a = content_paths(manifest_a)
+    paths_by_hash_b = content_paths(manifest_b)
+    assert (
+        paths_by_hash_a == paths_by_hash_b
+    ), f"content sha256 set differs: A={sorted(paths_by_hash_a)} B={sorted(paths_by_hash_b)}"
+
+    # Confirm every restored file is byte-identical to its source.
+    for entry in manifest_a["files"]:
+        if entry["path"].startswith("20_receipts/"):
+            continue
+        src_bytes = (export_a_path / entry["path"]).read_bytes()
+        dst_bytes = (ws_b / entry["path"]).read_bytes()
+        assert src_bytes == dst_bytes, f"byte mismatch for {entry['path']}"
+
+
 def test_workspace_import_restores_files_with_provenance_anchor(tmp_path: Path) -> None:
     build_agent_bus()
     source_ws = _new_workspace_with_content(tmp_path / "source")
