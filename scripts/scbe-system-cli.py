@@ -3379,6 +3379,24 @@ def _render_flow_status_markdown(board: dict[str, object]) -> str:
     return "\n".join(lines)
 
 
+def _flow_tail(text: str, limit: int = 1600) -> str:
+    cleaned = str(text or "").strip()
+    if len(cleaned) <= limit:
+        return cleaned
+    return cleaned[-limit:]
+
+
+def _write_flow_status_outputs(
+    board: dict[str, object],
+    output_path: Path,
+    markdown_path: Path,
+) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    markdown_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(board, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    markdown_path.write_text(_render_flow_status_markdown(board), encoding="utf-8")
+
+
 def cmd_flow_status(args: argparse.Namespace) -> int:
     repo_root = args.repo_root
     packets_path = _repo_path(repo_root, args.packets)
@@ -3404,10 +3422,7 @@ def cmd_flow_status(args: argparse.Namespace) -> int:
         if args.markdown_output
         else _default_flow_status_markdown_path(output_path)
     )
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    markdown_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(board, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
-    markdown_path.write_text(_render_flow_status_markdown(board), encoding="utf-8")
+    _write_flow_status_outputs(board, output_path, markdown_path)
 
     payload = {
         "schema_version": "scbe_flow_status_result_v1",
@@ -3421,6 +3436,159 @@ def cmd_flow_status(args: argparse.Namespace) -> int:
         f"Saved flow status: {output_path}",
         f"Saved operator board: {markdown_path}",
         f"Ready packets: {board['ready_count']}",
+    ]
+    return _json_result(args, payload, lines)
+
+
+def cmd_flow_run_next(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root
+    packets_path = _repo_path(repo_root, args.packets)
+    if not packets_path.exists():
+        print(f"Work packet bundle not found: {packets_path}")
+        return 2
+    try:
+        bundle = _load_flow_json(packets_path)
+        _ensure_work_packet_bundle(bundle)
+    except (json.JSONDecodeError, ValueError) as exc:
+        print(str(exc))
+        return 2
+
+    completed_steps = {str(item).strip() for item in args.completed if str(item).strip()}
+    blocked_steps = {str(item).strip() for item in args.blocked if str(item).strip()}
+    before_board = _build_flow_status_board(bundle, repo_root, completed_steps, blocked_steps)
+    ready_packets = list(before_board["next_packets"])
+
+    output_path = (
+        _repo_path(repo_root, args.output) if args.output else _default_flow_status_output_path(repo_root, packets_path)
+    )
+    markdown_path = (
+        _repo_path(repo_root, args.markdown_output)
+        if args.markdown_output
+        else _default_flow_status_markdown_path(output_path)
+    )
+    run_output_path = (
+        _repo_path(repo_root, args.run_output)
+        if args.run_output
+        else output_path.with_name(f"{output_path.stem}-run.json")
+    )
+
+    if not ready_packets:
+        before_board["run_next"] = {
+            "schema_version": "scbe_flow_run_next_result_v1",
+            "executed": False,
+            "reason": "no_ready_packet",
+        }
+        _write_flow_status_outputs(before_board, output_path, markdown_path)
+        run_output_path.parent.mkdir(parents=True, exist_ok=True)
+        run_output_path.write_text(
+            json.dumps(before_board["run_next"], indent=2, ensure_ascii=True) + "\n",
+            encoding="utf-8",
+        )
+        payload = {
+            "schema_version": "scbe_flow_run_next_result_v1",
+            "executed": False,
+            "reason": "no_ready_packet",
+            "output_path": _display_path(output_path, repo_root),
+            "markdown_path": _display_path(markdown_path, repo_root),
+            "run_output": _display_path(run_output_path, repo_root),
+        }
+        return _json_result(args, payload, ["No ready packet."])
+
+    packet = ready_packets[0]
+    command = [str(part) for part in packet.get("dispatch_command", [])]
+    if not command:
+        print("Ready packet is missing dispatch_command.")
+        return 2
+
+    if args.dry_run:
+        run_result = {
+            "schema_version": "scbe_flow_run_next_result_v1",
+            "executed": False,
+            "dry_run": True,
+            "step_id": packet["step_id"],
+            "task_id": packet["task_id"],
+            "command": command,
+            "returncode": None,
+            "stdout_tail": "",
+            "stderr_tail": "",
+        }
+        after_completed = set(completed_steps)
+        after_blocked = set(blocked_steps)
+    else:
+        try:
+            proc = subprocess.run(
+                command,
+                cwd=str(repo_root),
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=max(1, int(args.timeout_seconds)),
+                check=False,
+            )
+            run_result = {
+                "schema_version": "scbe_flow_run_next_result_v1",
+                "executed": True,
+                "dry_run": False,
+                "step_id": packet["step_id"],
+                "task_id": packet["task_id"],
+                "command": command,
+                "returncode": proc.returncode,
+                "stdout_tail": _flow_tail(proc.stdout),
+                "stderr_tail": _flow_tail(proc.stderr),
+            }
+        except subprocess.TimeoutExpired as exc:
+            run_result = {
+                "schema_version": "scbe_flow_run_next_result_v1",
+                "executed": True,
+                "dry_run": False,
+                "step_id": packet["step_id"],
+                "task_id": packet["task_id"],
+                "command": command,
+                "returncode": 124,
+                "stdout_tail": _flow_tail(exc.stdout or ""),
+                "stderr_tail": _flow_tail(exc.stderr or "flow run-next timed out"),
+            }
+        after_completed = set(completed_steps)
+        after_blocked = set(blocked_steps)
+        if run_result["returncode"] == 0:
+            after_completed.add(str(packet["step_id"]))
+        else:
+            after_blocked.add(str(packet["step_id"]))
+
+    after_board = _build_flow_status_board(bundle, repo_root, after_completed, after_blocked)
+    run_result.update(
+        {
+            "completed_steps": after_board["completed_steps"],
+            "blocked_steps": after_board["blocked_steps"],
+            "ready_count": after_board["ready_count"],
+            "next_packet_ids": [row["task_id"] for row in after_board["next_packets"]],
+        }
+    )
+    after_board["run_next"] = run_result
+    _write_flow_status_outputs(after_board, output_path, markdown_path)
+    run_output_path.parent.mkdir(parents=True, exist_ok=True)
+    run_output_path.write_text(json.dumps(run_result, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+
+    payload = {
+        "schema_version": "scbe_flow_run_next_result_v1",
+        "executed": run_result["executed"],
+        "dry_run": run_result["dry_run"],
+        "step_id": run_result["step_id"],
+        "task_id": run_result["task_id"],
+        "returncode": run_result["returncode"],
+        "completed_steps": after_board["completed_steps"],
+        "blocked_steps": after_board["blocked_steps"],
+        "ready_count": after_board["ready_count"],
+        "next_packet_ids": [row["task_id"] for row in after_board["next_packets"]],
+        "output_path": _display_path(output_path, repo_root),
+        "markdown_path": _display_path(markdown_path, repo_root),
+        "run_output": _display_path(run_output_path, repo_root),
+    }
+    lines = [
+        f"Ran packet: {run_result['step_id']}",
+        f"Return code: {run_result['returncode']}",
+        f"Saved flow status: {output_path}",
+        f"Saved run result: {run_output_path}",
     ]
     return _json_result(args, payload, lines)
 
@@ -5352,6 +5520,27 @@ def build_parser() -> argparse.ArgumentParser:
     flow_status.add_argument("--output", default="", help="Output JSON path for the status board")
     flow_status.add_argument("--markdown-output", default="", help="Output Markdown path for the operator board")
     flow_status.set_defaults(func=cmd_flow_status)
+    flow_run_next = flow_sub.add_parser("run-next", help="Run the first ready work packet through the agent bus")
+    add_runtime_cli_flags(flow_run_next)
+    flow_run_next.add_argument("--packets", required=True, help="Path to an SCBE work packet bundle JSON")
+    flow_run_next.add_argument(
+        "--completed",
+        action="append",
+        default=[],
+        help="Step id already completed; repeat for multiple completed packets",
+    )
+    flow_run_next.add_argument(
+        "--blocked",
+        action="append",
+        default=[],
+        help="Step id intentionally blocked; repeat for multiple blocked packets",
+    )
+    flow_run_next.add_argument("--output", default="", help="Output JSON path for the updated status board")
+    flow_run_next.add_argument("--markdown-output", default="", help="Output Markdown path for the operator board")
+    flow_run_next.add_argument("--run-output", default="", help="Output JSON path for the selected packet run result")
+    flow_run_next.add_argument("--timeout-seconds", type=int, default=120)
+    flow_run_next.add_argument("--dry-run", action="store_true", help="Show the selected packet without running it")
+    flow_run_next.set_defaults(func=cmd_flow_run_next)
 
     agentbus = sub.add_parser("agentbus", help="Run a user-facing shaped agent-bus task")
     add_runtime_cli_flags(agentbus)
