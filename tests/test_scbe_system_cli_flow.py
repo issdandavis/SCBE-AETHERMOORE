@@ -235,3 +235,60 @@ def test_flow_status_marks_ready_and_waiting_packets(tmp_path: Path) -> None:
     board_after_scope = json.loads(status_after_scope.read_text(encoding="utf-8"))
     assert board_after_scope["ready_count"] == 1
     assert board_after_scope["next_packets"][0]["step_id"] == "build"
+
+
+def test_flow_run_next_dry_run_selects_first_ready_packet(tmp_path: Path) -> None:
+    plan_path = tmp_path / "flow-plan.json"
+    packet_path = tmp_path / "flow-packets.json"
+    status_path = tmp_path / "run-next-status.json"
+    run_output = tmp_path / "run-next.json"
+
+    plan_result = _run_cli(
+        "flow",
+        "plan",
+        "--task",
+        "run next packet",
+        "--workflow-template",
+        "implementation-loop",
+        "--output",
+        str(plan_path),
+        "--no-action-map",
+    )
+    assert plan_result.returncode == 0, plan_result.stderr
+
+    packet_result = _run_cli(
+        "flow",
+        "packetize",
+        "--plan",
+        str(plan_path),
+        "--output",
+        str(packet_path),
+        "--no-action-map",
+    )
+    assert packet_result.returncode == 0, packet_result.stderr
+
+    run_result = _run_cli(
+        "--json",
+        "flow",
+        "run-next",
+        "--packets",
+        str(packet_path),
+        "--output",
+        str(status_path),
+        "--run-output",
+        str(run_output),
+        "--dry-run",
+    )
+    assert run_result.returncode == 0, run_result.stderr
+
+    run_packet = json.loads(run_output.read_text(encoding="utf-8"))
+    assert run_packet["schema_version"] == "scbe_flow_run_next_result_v1"
+    assert run_packet["executed"] is False
+    assert run_packet["dry_run"] is True
+    assert run_packet["step_id"] == "scope"
+    assert run_packet["ready_count"] == 1
+    assert run_packet["completed_steps"] == []
+    assert run_packet["command"][:3] == ["python", "scripts/scbe-system-cli.py", "--repo-root"]
+    board = json.loads(status_path.read_text(encoding="utf-8"))
+    assert board["run_next"]["dry_run"] is True
+    assert board["next_packets"][0]["step_id"] == "scope"
