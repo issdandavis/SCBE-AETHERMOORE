@@ -995,6 +995,11 @@ function runTrapDispatch(args) {
   // zero network calls). Explicit `--provider ollama` opts into a local
   // Ollama daemon at OLLAMA_BASE_URL (default http://127.0.0.1:11434).
   // No paid providers — by design.
+  //
+  // When --workspace-root is supplied, the dispatch envelope is persisted
+  // as a workspace receipt under <root>/20_receipts/trap-dispatch-<ts>-<sha>.json
+  // with schema aethermoor.bus.workspace_trap_dispatch.v1 so the lineage
+  // walker can surface it alongside formation/ingest/export entries.
   let json = false;
   let inputText = null;
   let filePath = null;
@@ -1002,6 +1007,8 @@ function runTrapDispatch(args) {
   let model = null;
   let ollamaUrl = process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434';
   let timeoutMs = 30000;
+  let workspaceRoot = null;
+  let batchPath = null;
   for (let i = 0; i < args.length; i += 1) {
     const tok = args[i];
     if (tok === '--json') json = true;
@@ -1011,6 +1018,8 @@ function runTrapDispatch(args) {
           'Usage:',
           '  scbe trap-dispatch --input "<prompt text>" [--provider offline|ollama] [--model <name>] [--json]',
           '  scbe trap-dispatch --file path/to/prompt.txt [--provider ollama --model llama3.2] [--json]',
+          '  scbe trap-dispatch --input "<prompt>" --workspace-root <path> [--json]',
+          '  scbe trap-dispatch --batch prompts.jsonl [--workspace-root <path>] [--json]',
           '  echo "<prompt text>" | scbe trap-dispatch [--json]',
           '',
           'Trap-in-good-loops dispatcher. Runs the governance proxy preflight on the',
@@ -1022,9 +1031,20 @@ function runTrapDispatch(args) {
           '  offline (default)  Deterministic echo. Zero cost, zero network calls.',
           '  ollama             Local Ollama daemon at $OLLAMA_BASE_URL or 127.0.0.1:11434.',
           '',
+          'Audit chain integration:',
+          '  --workspace-root <path>  Persist envelope as a workspace receipt.',
+          '                           Schema: aethermoor.bus.workspace_trap_dispatch.v1',
+          '                           Lineage walker reports trap_dispatch_count and',
+          '                           trap_redirect_count over the chain.',
+          '',
+          'Batch mode (adversarial corpus testing):',
+          '  --batch <file.jsonl>     One prompt per line, either raw text or a JSON',
+          '                           object with {"input":"...","tag":"...optional"}.',
+          '                           Emits an aggregate summary; one envelope per row.',
+          '',
           'Receipt: SCBE_TRAP_DISPATCH=1 on a clean dispatch (redirected or passthrough),',
           '         SCBE_TRAP_DISPATCH=0 on dispatch failure.',
-          'Schema:  scbe.trap_dispatch.v1',
+          'Schema:  scbe.trap_dispatch.v1 (single) | scbe.trap_dispatch_batch.v1 (batch)',
           '',
         ].join('\n')
       );
@@ -1048,7 +1068,24 @@ function runTrapDispatch(args) {
       const parsed = parseInt(args[i + 1] || '', 10);
       if (Number.isFinite(parsed) && parsed > 0) timeoutMs = parsed;
       i += 1;
+    } else if (tok === '--workspace-root') {
+      workspaceRoot = args[i + 1] || '';
+      i += 1;
+    } else if (tok === '--batch') {
+      batchPath = args[i + 1] || '';
+      i += 1;
     }
+  }
+  if (batchPath) {
+    return runTrapDispatchBatch({
+      batchPath,
+      json,
+      provider,
+      model,
+      ollamaUrl,
+      timeoutMs,
+      workspaceRoot,
+    });
   }
   if (inputText === null && filePath) {
     try {
@@ -1129,6 +1166,21 @@ function runTrapDispatch(args) {
     error: null,
   };
   const finish = (exitCode) => {
+    // Persist as a workspace receipt before printing/exiting so the audit
+    // chain captures the dispatch even if the caller pipes stdout away.
+    if (workspaceRoot) {
+      const persistResult = persistTrapDispatchReceipt(workspaceRoot, payload);
+      payload.workspace_receipt_path = persistResult.receipt_path;
+      payload.workspace_root = persistResult.workspace_root;
+      if (persistResult.error) {
+        // Persistence failure should be visible but must not silently dispatch
+        // — surface it on stderr but keep the receipt flag honest about what
+        // happened to the model call.
+        process.stderr.write(
+          `scbe trap-dispatch: receipt persist failed: ${persistResult.error}\n`
+        );
+      }
+    }
     if (json) {
       process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
     } else {
@@ -1144,6 +1196,9 @@ function runTrapDispatch(args) {
         `reasons (${payload.reasons.length}):       ${payload.reasons.join(', ') || '<none>'}`,
         '',
       ];
+      if (payload.workspace_receipt_path) {
+        lines.push(`workspace_receipt:      ${payload.workspace_receipt_path}`);
+      }
       if (payload.error) {
         lines.push(`error: ${payload.error}`);
       } else {
@@ -1174,6 +1229,289 @@ function runTrapDispatch(args) {
       payload.receipt = 'SCBE_TRAP_DISPATCH=0';
       finish(1);
     });
+}
+
+function persistTrapDispatchReceipt(workspaceRoot, dispatchPayload) {
+  // Writes the trap-dispatch envelope as a workspace receipt under
+  // <root>/20_receipts/trap-dispatch-<utc-ts>-<sha-prefix>.json so the
+  // lineage walker can surface it. Returns { receipt_path, workspace_root,
+  // error } — never throws, since this is best-effort persistence inside
+  // the runner's `finish` callback.
+  try {
+    const resolvedRoot = path.resolve(workspaceRoot);
+    if (!fs.existsSync(resolvedRoot) || !fs.statSync(resolvedRoot).isDirectory()) {
+      return {
+        receipt_path: '',
+        workspace_root: resolvedRoot,
+        error: `workspace not found at ${resolvedRoot}`,
+      };
+    }
+    const receiptsDir = path.join(resolvedRoot, '20_receipts');
+    fs.mkdirSync(receiptsDir, { recursive: true });
+    const tsCompact = new Date().toISOString().replace(/[:.]/g, '-');
+    const shaPrefix = (dispatchPayload.input_sha256 || '').slice(0, 12) || 'no-sha';
+    const fileName = `trap-dispatch-${tsCompact}-${shaPrefix}.json`;
+    const receiptPath = path.join(receiptsDir, fileName);
+    const workspaceReceipt = {
+      schema_version: 'aethermoor.bus.workspace_trap_dispatch.v1',
+      receipt:
+        dispatchPayload.receipt === 'SCBE_TRAP_DISPATCH=1'
+          ? 'SCBE_WORKSPACE_TRAP_DISPATCH=1'
+          : 'SCBE_WORKSPACE_TRAP_DISPATCH=0',
+      created_at: new Date().toISOString(),
+      input_sha256: dispatchPayload.input_sha256,
+      input_bytes: dispatchPayload.input_bytes,
+      gate_decision: dispatchPayload.gate_decision,
+      blocked: dispatchPayload.blocked,
+      redirect_emitted: dispatchPayload.redirect_emitted,
+      redirect_code: dispatchPayload.redirect_code,
+      audit_context: dispatchPayload.audit_context,
+      reasons: dispatchPayload.reasons || [],
+      provider: dispatchPayload.provider,
+      model: dispatchPayload.model,
+      dispatched_prompt_sha256: dispatchPayload.dispatched_prompt_sha256,
+      dispatched_prompt_bytes: dispatchPayload.dispatched_prompt_bytes,
+      response_bytes: Buffer.byteLength(String(dispatchPayload.response || ''), 'utf8'),
+      response_sha256: crypto
+        .createHash('sha256')
+        .update(String(dispatchPayload.response || ''), 'utf8')
+        .digest('hex'),
+      error: dispatchPayload.error || null,
+    };
+    fs.writeFileSync(receiptPath, `${JSON.stringify(workspaceReceipt, null, 2)}\n`, 'utf8');
+    return { receipt_path: receiptPath, workspace_root: resolvedRoot, error: null };
+  } catch (err) {
+    return {
+      receipt_path: '',
+      workspace_root: workspaceRoot,
+      error: err && err.message ? err.message : String(err),
+    };
+  }
+}
+
+function parseBatchLine(line) {
+  // Each JSONL row is either a raw string prompt or a JSON object with
+  // {"input":"...","tag":"..."}. Anything else is skipped with an error.
+  const trimmed = String(line || '').trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith('{')) {
+    try {
+      const obj = JSON.parse(trimmed);
+      const input = typeof obj.input === 'string' ? obj.input : '';
+      if (!input) return { error: 'object missing string "input" field' };
+      return { input, tag: typeof obj.tag === 'string' ? obj.tag : '' };
+    } catch (err) {
+      return { error: `JSON parse error: ${err.message}` };
+    }
+  }
+  return { input: trimmed, tag: '' };
+}
+
+function dispatchSinglePrompt(inputText, provider, model, ollamaUrl, timeoutMs, governed) {
+  // Pure helper used by both the single-shot CLI path and the batch path.
+  // Returns a Promise of the dispatch envelope. For the offline provider
+  // the promise resolves synchronously on the next tick.
+  const gateResult = governed.shouldPreBlock(inputText);
+  const auditContext = governed.isAuditContext(inputText);
+  const inputSha = crypto.createHash('sha256').update(inputText, 'utf8').digest('hex');
+  let dispatchedPrompt;
+  let redirectEmitted = false;
+  if (gateResult.redirect && gateResult.redirect.to_prompt) {
+    dispatchedPrompt = gateResult.redirect.to_prompt;
+    redirectEmitted = true;
+  } else {
+    dispatchedPrompt = inputText;
+  }
+  const dispatchedSha = crypto.createHash('sha256').update(dispatchedPrompt, 'utf8').digest('hex');
+  const envelope = {
+    schema_version: 'scbe.trap_dispatch.v1',
+    receipt: 'SCBE_TRAP_DISPATCH=0',
+    input_sha256: inputSha,
+    input_bytes: Buffer.byteLength(inputText, 'utf8'),
+    gate_decision: gateResult.decision || 'ALLOW',
+    blocked: !!gateResult.blocked,
+    redirect_emitted: redirectEmitted,
+    redirect_code: redirectEmitted ? gateResult.redirect.code || null : null,
+    audit_context: auditContext,
+    reasons: gateResult.reasons || [],
+    provider,
+    model,
+    dispatched_prompt_sha256: dispatchedSha,
+    dispatched_prompt_bytes: Buffer.byteLength(dispatchedPrompt, 'utf8'),
+    response: '',
+    error: null,
+  };
+  if (provider === 'offline') {
+    envelope.response = offlineEcho(dispatchedPrompt, model);
+    envelope.receipt = 'SCBE_TRAP_DISPATCH=1';
+    return Promise.resolve(envelope);
+  }
+  return ollamaDispatch(dispatchedPrompt, model, ollamaUrl, timeoutMs)
+    .then((response) => {
+      envelope.response = response;
+      envelope.receipt = 'SCBE_TRAP_DISPATCH=1';
+      return envelope;
+    })
+    .catch((err) => {
+      envelope.error = err && err.message ? err.message : String(err);
+      envelope.receipt = 'SCBE_TRAP_DISPATCH=0';
+      return envelope;
+    });
+}
+
+function runTrapDispatchBatch(options) {
+  const {
+    batchPath,
+    json,
+    provider,
+    model: requestedModel,
+    ollamaUrl,
+    timeoutMs,
+    workspaceRoot,
+  } = options;
+  const allowedProviders = new Set(['offline', 'ollama']);
+  if (!allowedProviders.has(provider)) {
+    process.stderr.write(
+      `scbe trap-dispatch: unsupported provider "${provider}". Use offline or ollama (free providers only — by design).\n`
+    );
+    process.exit(2);
+  }
+  const model = requestedModel || (provider === 'ollama' ? 'llama3.2' : 'offline-echo');
+  let raw;
+  try {
+    raw = fs.readFileSync(batchPath, 'utf8');
+  } catch (err) {
+    process.stderr.write(`scbe trap-dispatch: cannot read ${batchPath}: ${err.message}\n`);
+    process.exit(2);
+  }
+  const lines = raw.split(/\r?\n/);
+  const rows = [];
+  for (let lineNo = 0; lineNo < lines.length; lineNo += 1) {
+    const parsed = parseBatchLine(lines[lineNo]);
+    if (parsed === null) continue;
+    parsed.line_no = lineNo + 1;
+    rows.push(parsed);
+  }
+  if (rows.length === 0) {
+    process.stderr.write(
+      `scbe trap-dispatch: batch file ${batchPath} contained zero usable rows.\n`
+    );
+    process.exit(2);
+  }
+  const governedPath = resolveRepoScript('api/_governed_output.js');
+  if (!governedPath) {
+    process.stderr.write(
+      'scbe could not find api/_governed_output.js. Source checkout required.\n'
+    );
+    process.exit(2);
+  }
+  let governed;
+  try {
+    governed = require(governedPath);
+  } catch (err) {
+    process.stderr.write(`scbe trap-dispatch: failed to load governance proxy: ${err.message}\n`);
+    process.exit(2);
+  }
+  // Process rows sequentially so ollama doesn't open N concurrent sockets to
+  // a local daemon. Sequential also gives deterministic ordering in receipts.
+  (async () => {
+    const results = [];
+    let dispatchPassCount = 0;
+    let dispatchFailCount = 0;
+    let redirectCount = 0;
+    let denyCount = 0;
+    let allowCount = 0;
+    for (const row of rows) {
+      if (row.error) {
+        results.push({
+          line_no: row.line_no,
+          tag: row.tag || '',
+          error: row.error,
+        });
+        dispatchFailCount += 1;
+        continue;
+      }
+      let envelope;
+      try {
+        envelope = await dispatchSinglePrompt(
+          row.input,
+          provider,
+          model,
+          ollamaUrl,
+          timeoutMs,
+          governed
+        );
+      } catch (err) {
+        envelope = {
+          schema_version: 'scbe.trap_dispatch.v1',
+          receipt: 'SCBE_TRAP_DISPATCH=0',
+          error: err && err.message ? err.message : String(err),
+        };
+      }
+      if (envelope.receipt === 'SCBE_TRAP_DISPATCH=1') dispatchPassCount += 1;
+      else dispatchFailCount += 1;
+      if (envelope.redirect_emitted) redirectCount += 1;
+      if (envelope.gate_decision === 'DENY') denyCount += 1;
+      if (envelope.gate_decision === 'ALLOW') allowCount += 1;
+      let workspaceReceiptPath = '';
+      if (workspaceRoot) {
+        const persistResult = persistTrapDispatchReceipt(workspaceRoot, envelope);
+        workspaceReceiptPath = persistResult.receipt_path;
+        if (persistResult.error) {
+          process.stderr.write(
+            `scbe trap-dispatch: batch row ${row.line_no} persist failed: ${persistResult.error}\n`
+          );
+        }
+      }
+      results.push({
+        line_no: row.line_no,
+        tag: row.tag || '',
+        // do NOT echo the input text or response into the batch summary — keep
+        // the surface attacker-text-free. Reviewers can pull the workspace
+        // receipt by sha if they need detail.
+        input_sha256: envelope.input_sha256,
+        gate_decision: envelope.gate_decision,
+        redirect_emitted: envelope.redirect_emitted,
+        receipt: envelope.receipt,
+        workspace_receipt_path: workspaceReceiptPath || null,
+        error: envelope.error || null,
+      });
+    }
+    const summary = {
+      schema_version: 'scbe.trap_dispatch_batch.v1',
+      receipt:
+        dispatchFailCount === 0 ? 'SCBE_TRAP_DISPATCH_BATCH=1' : 'SCBE_TRAP_DISPATCH_BATCH=0',
+      generated_at: new Date().toISOString(),
+      provider,
+      model,
+      workspace_root: workspaceRoot ? path.resolve(workspaceRoot) : null,
+      total_rows: rows.length,
+      dispatch_pass: dispatchPassCount,
+      dispatch_fail: dispatchFailCount,
+      redirect_emitted: redirectCount,
+      deny: denyCount,
+      allow: allowCount,
+      results,
+    };
+    if (json) {
+      process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
+    } else {
+      const lines2 = [
+        `SCBE trap-dispatch batch: ${summary.receipt}`,
+        `provider:           ${summary.provider}`,
+        `model:              ${summary.model}`,
+        `total_rows:         ${summary.total_rows}`,
+        `dispatch_pass:      ${summary.dispatch_pass}`,
+        `dispatch_fail:      ${summary.dispatch_fail}`,
+        `redirect_emitted:   ${summary.redirect_emitted}`,
+        `deny / allow:       ${summary.deny} / ${summary.allow}`,
+      ];
+      if (summary.workspace_root) lines2.push(`workspace_root:     ${summary.workspace_root}`);
+      lines2.push('');
+      process.stdout.write(lines2.join('\n'));
+    }
+    process.exit(dispatchFailCount === 0 ? 0 : 1);
+  })();
 }
 
 function runContract(args) {

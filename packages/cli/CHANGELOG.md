@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.3.16 - 2026-05-14
+
+### Added
+
+- **`scbe trap-dispatch --workspace-root <path>`**: when set, the dispatch envelope is persisted as a workspace receipt under `<root>/20_receipts/trap-dispatch-<utc-ts>-<sha-prefix>.json` with schema `aethermoor.bus.workspace_trap_dispatch.v1` and flag `SCBE_WORKSPACE_TRAP_DISPATCH=1`. The receipt records sha256s + gate decision + redirect status — it never quotes attacker text. `scbe workspace lineage` classifies these as `kind: 'trap_dispatch'` and surfaces `trap_dispatch_count` + `trap_redirect_count`. `scbe workspace report` carries the same counts in `lineage_summary`. Wires the trap-in-good-loops gate into the audit chain.
+- **`scbe trap-dispatch --batch <file.jsonl>`**: process a corpus of prompts in one pass for adversarial testing. Each JSONL row is either raw text or `{"input":"...","tag":"..."}`. Emits an aggregate `scbe.trap_dispatch_batch.v1` summary with `dispatch_pass / dispatch_fail / redirect_emitted / deny / allow` counts and one row per envelope (input sha + decision + receipt path only — never the input text or response). Combines with `--workspace-root` to persist one workspace receipt per row. Exit code 1 if any row failed to dispatch.
+
+### Changed
+
+- **Bumped `scbe-agent-bus` dependency**: `^0.3.9 → ^0.3.10` for the trap_dispatch lineage kind + counters.
+
 ## 4.3.15 - 2026-05-14
 
 ### Added
