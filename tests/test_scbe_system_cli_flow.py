@@ -349,3 +349,66 @@ def test_flow_continue_dry_run_stops_after_first_ready_packet(tmp_path: Path) ->
     board = json.loads(status_path.read_text(encoding="utf-8"))
     assert board["flow_continue"]["stop_reason"] == "dry_run"
     assert board["next_packets"][0]["step_id"] == "scope"
+
+
+def test_flow_report_summarizes_completed_status_board(tmp_path: Path) -> None:
+    status_path = tmp_path / "status.json"
+    report_path = tmp_path / "report.md"
+    summary_path = tmp_path / "report.json"
+    status_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "scbe_flow_status_board_v1",
+                "task": "deliver customer workflow snapshot",
+                "workflow_template": "implementation-loop",
+                "ready_count": 0,
+                "completed_steps": ["build", "publish", "scope", "verify"],
+                "blocked_steps": [],
+                "counts": {"completed": 4},
+                "rows": [
+                    {"step_id": "scope", "status": "completed", "owner_agent_id": "ko", "goal": "Scope Packet"},
+                    {"step_id": "build", "status": "completed", "owner_agent_id": "ca", "goal": "Code Build"},
+                    {"step_id": "verify", "status": "completed", "owner_agent_id": "ru", "goal": "Security Review"},
+                    {"step_id": "publish", "status": "completed", "owner_agent_id": "dr", "goal": "Guide + Telemetry"},
+                ],
+                "flow_continue": {
+                    "schema_version": "scbe_flow_continue_result_v1",
+                    "stop_reason": "completed",
+                    "executed_count": 4,
+                    "runs": [
+                        {"step_id": "scope", "returncode": 0},
+                        {"step_id": "build", "returncode": 0},
+                        {"step_id": "verify", "returncode": 0},
+                        {"step_id": "publish", "returncode": 0},
+                    ],
+                },
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    result = _run_cli(
+        "flow",
+        "report",
+        "--status",
+        str(status_path),
+        "--output",
+        str(report_path),
+        "--json-output",
+        str(summary_path),
+    )
+
+    assert result.returncode == 0, result.stderr
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    assert summary["schema_version"] == "scbe_flow_report_v1"
+    assert summary["verdict"] == "completed"
+    assert summary["completion"]["completed"] == 4
+    assert summary["completion"]["blocked"] == 0
+    assert summary["next_action"] == "archive_or_deliver"
+
+    report = report_path.read_text(encoding="utf-8")
+    assert "# SCBE Flow Report" in report
+    assert "deliver customer workflow snapshot" in report
+    assert "`completed`" in report
+    assert "archive_or_deliver" in report
