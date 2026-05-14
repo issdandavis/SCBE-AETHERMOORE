@@ -1,6 +1,9 @@
 import json
+import shutil
 import subprocess
 from pathlib import Path
+
+import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CLI = REPO_ROOT / "packages" / "cli" / "bin" / "scbe.js"
@@ -95,3 +98,47 @@ def test_cli_status_reports_terminal_capabilities() -> None:
     assert payload["providers"]["local"]["available"] is True
     assert payload["budget"]["posture"] in {"local_free_default", "hosted_enabled"}
     assert payload["workspace"]["flow_status_ready"] is True
+
+
+def test_cli_liboqs_reports_native_proof_receipt() -> None:
+    from src.crypto.pqc_liboqs import get_pqc_governance_status
+
+    if get_pqc_governance_status()["tier"] != 1:
+        pytest.skip("native liboqs is optional in CI")
+
+    proc = run_cli("liboqs", "--json")
+
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "scbe_liboqs_receipt_v1"
+    assert payload["receipt"] == "SCBE_LIBOQS_PASS=1"
+    assert payload["native_pass"] is True
+    assert payload["status"]["tier"] == 1
+    assert payload["status"]["liboqs_available"] is True
+    assert payload["smoke"]["ml_kem_roundtrip"] is True
+    assert payload["smoke"]["ml_dsa_verify"] is True
+
+
+def test_cli_liboqs_reports_source_checkout_required_outside_repo(tmp_path: Path) -> None:
+    package_root = tmp_path / "node_modules" / "scbe-aethermoore-cli"
+    bin_dir = package_root / "bin"
+    bin_dir.mkdir(parents=True)
+    copied_cli = bin_dir / "scbe.js"
+    shutil.copy2(CLI, copied_cli)
+
+    proc = subprocess.run(
+        ["node", str(copied_cli), "liboqs", "--json"],
+        cwd=tmp_path,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+
+    assert proc.returncode == 2, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "scbe_liboqs_receipt_v1"
+    assert payload["receipt"] == "SCBE_LIBOQS_PASS=0"
+    assert payload["native_pass"] is False
+    assert payload["error"] == "source checkout required"
