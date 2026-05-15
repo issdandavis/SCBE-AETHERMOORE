@@ -39,6 +39,15 @@ class FreeLLMDispatchRequest(BaseModel):
         description="Return route decision without sending prompt to a provider",
     )
     metadata: Dict[str, Any] = Field(default_factory=dict)
+    context_docs: Optional[list[str]] = Field(
+        default=None,
+        description=(
+            "RAG context documents to inspect for indirect prompt injection. "
+            "Each string is one retrieved chunk. SCBE scans for SCONE-tagged "
+            "adversarial patterns embedded in retrieved content before dispatch."
+        ),
+        max_length=32,
+    )
 
 
 class OllamaLaunchPlanRequest(BaseModel):
@@ -469,6 +478,46 @@ async def plan_ollama_launcher(request: OllamaLaunchPlanRequest, x_api_key: str 
     return {"status": "ok", "data": build_ollama_launch_plan(request, user=user)}
 
 
+_RAG_SCONE_PATTERNS = [
+    # Common indirect prompt injection markers
+    "ignore previous instructions",
+    "disregard the above",
+    "system prompt:",
+    "new instruction:",
+    "you are now",
+    "forget your",
+    "override your",
+    "[system]",
+    "<<sys>>",
+    "###instruction",
+    "###system",
+    "drain the",
+    "transfer all",
+    "exfiltrate",
+    "bypass the",
+    "reveal your instructions",
+]
+
+
+def _inspect_rag_context(docs: list[str]) -> Optional[Dict[str, Any]]:
+    """Scan retrieved context documents for indirect prompt injection patterns.
+
+    Returns a violation envelope if any document contains a SCONE-tagged
+    adversarial pattern, or None if all documents are clean.
+    """
+    for i, doc in enumerate(docs):
+        doc_lower = doc.lower()
+        for pattern in _RAG_SCONE_PATTERNS:
+            if pattern in doc_lower:
+                return {
+                    "rag_injection_detected": True,
+                    "document_index": i,
+                    "matched_pattern": pattern,
+                    "document_sha256": hashlib.sha256(doc.encode()).hexdigest(),
+                }
+    return None
+
+
 def dispatch_free_llm_request(
     request: FreeLLMDispatchRequest,
     *,
@@ -476,6 +525,18 @@ def dispatch_free_llm_request(
     origin: Literal["inside", "outside"] = "inside",
 ) -> Dict[str, Any]:
     """Dispatch a free/open LLM request and write a redacted bus event."""
+
+    # RAG document inspection: scan retrieved context for indirect injection
+    if request.context_docs:
+        violation = _inspect_rag_context(request.context_docs)
+        if violation:
+            return {
+                "ok": False,
+                "gate_decision": "DENY",
+                "reason": "rag_indirect_injection",
+                "detail": violation,
+                "schema_version": "scbe.free_llm.rag_deny.v1",
+            }
 
     registry = free_llm_registry()
     provider = _select_provider(request, registry)

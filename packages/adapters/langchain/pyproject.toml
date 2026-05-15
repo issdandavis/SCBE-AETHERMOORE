@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scbe-langchain"
+version = "0.1.0"
+description = "SCBE governance gate for LangChain — wraps any chat model with trap-dispatch + audit"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+requires-python = ">=3.11"
+authors = [{name = "Issac Daniel Davis", email = "issdandavis@gmail.com"}]
+keywords = ["scbe", "langchain", "ai-safety", "governance", "agent"]
+dependencies = []
+
+[project.optional-dependencies]
+langchain = ["langchain-core>=0.2"]
+
+[project.urls]
+Homepage = "https://aethermoore.com"
+Repository = "https://github.com/issdandavis/SCBE-AETHERMOORE"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["scbe_langchain*"]

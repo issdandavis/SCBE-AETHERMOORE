@@ -1119,6 +1119,20 @@ async def governance_check(
         if result.get("mmx") is not None:
             gov_data["mmx"] = result["mmx"]
 
+        # Outbound webhook relay for DENY/ESCALATE events
+        try:
+            from src.api.webhook_relay import relay_governance_event
+
+            relay_governance_event(
+                decision=gov_data["decision"],
+                score=gov_data["risk_score"],
+                agent=agent,
+                topic=topic,
+                reason=gov_data["reason"],
+            )
+        except Exception:
+            pass
+
         return {
             "status": "ok",
             "data": gov_data,
@@ -1657,6 +1671,54 @@ async def metrics(user: str = Depends(verify_api_key)):
     return {"status": "ok", "data": metrics_store.get_metrics()}
 
 
+@app.get("/metrics/prometheus", tags=["System"], include_in_schema=False)
+async def metrics_prometheus():
+    """Prometheus text-format scrape endpoint (unauthenticated — scrapers don't send headers).
+
+    Exposes counters and gauges for Prometheus/Grafana integration.
+    Add to prometheus.yml:
+        - job_name: scbe
+          static_configs:
+            - targets: ['api.aethermoore.com']
+          metrics_path: /metrics/prometheus
+    """
+    from fastapi.responses import PlainTextResponse
+
+    m = metrics_store.get_metrics()
+    uptime = m["uptime_seconds"]
+    avg_risk = m["avg_risk_score"]
+
+    # Build Prometheus text format (exposition format 0.0.4)
+    lines = [
+        "# HELP scbe_seals_total Total number of memory seal operations",
+        "# TYPE scbe_seals_total counter",
+        f"scbe_seals_total {m['total_seals']}",
+        "# HELP scbe_retrievals_total Total number of memory retrieve operations",
+        "# TYPE scbe_retrievals_total counter",
+        f"scbe_retrievals_total {m['total_retrievals']}",
+        "# HELP scbe_denials_total Total governance decisions that returned DENY",
+        "# TYPE scbe_denials_total counter",
+        f"scbe_denials_total {m['total_denials']}",
+        "# HELP scbe_avg_risk_score Rolling average risk score (0.0 = safe, 1.0 = max risk)",
+        "# TYPE scbe_avg_risk_score gauge",
+        f"scbe_avg_risk_score {avg_risk:.6f}",
+        "# HELP scbe_uptime_seconds Seconds since API process started",
+        "# TYPE scbe_uptime_seconds gauge",
+        f"scbe_uptime_seconds {uptime}",
+    ]
+
+    # Per-agent request counters
+    lines += [
+        "# HELP scbe_agent_requests_total Requests per agent identifier",
+        "# TYPE scbe_agent_requests_total counter",
+    ]
+    for entry in m.get("top_agents", []):
+        agent_label = entry["agent"].replace('"', "").replace("\\", "")
+        lines.append(f'scbe_agent_requests_total{{agent="{agent_label}"}} {entry["requests"]}')
+
+    return PlainTextResponse("\n".join(lines) + "\n", media_type="text/plain; version=0.0.4")
+
+
 # ============================================================================
 # ERROR HANDLERS
 # ============================================================================
@@ -1709,6 +1771,18 @@ async def startup_event():
     print()
     print("Documentation: http://localhost:8000/docs")
     print("=" * 80)
+
+    # Restore billing API keys from SQLite into live auth store
+    try:
+        from src.api import billing_store as _billing_store
+        from src.api.stripe_billing import BILLING_CUSTOMERS, BILLING_API_KEYS
+
+        purchase_log: list = []
+        _billing_store.load_into_memory(BILLING_CUSTOMERS, BILLING_API_KEYS, purchase_log, VALID_API_KEYS)
+        live_count = sum(1 for r in BILLING_API_KEYS.values() if r.get("active"))
+        logger.info("billing_store: restored %d active API key(s)", live_count)
+    except Exception as _bs_exc:
+        logger.warning("billing_store restore failed (non-fatal): %s", _bs_exc)
 
     # Initialize HYDRA spine
     try:

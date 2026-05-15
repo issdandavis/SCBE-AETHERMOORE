@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scbe-autogen"
+version = "0.1.0"
+description = "SCBE governance gate for Microsoft AutoGen — wraps agents with trap-dispatch + audit"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+requires-python = ">=3.11"
+authors = [{name = "Issac Daniel Davis", email = "issdandavis@gmail.com"}]
+keywords = ["scbe", "autogen", "ai-safety", "governance", "multi-agent"]
+dependencies = []
+
+[project.optional-dependencies]
+autogen-v4 = ["autogen-agentchat>=0.4", "autogen-core>=0.4"]
+autogen-v2 = ["pyautogen>=0.2"]
+
+[project.urls]
+Homepage = "https://aethermoore.com"
+Repository = "https://github.com/issdandavis/SCBE-AETHERMOORE"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["scbe_autogen*"]

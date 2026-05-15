@@ -1,0 +1,50 @@
+# fly.toml — SCBE-AETHERMOORE API deployment on Fly.io
+# Deploy: fly launch (first time) or fly deploy (updates)
+# Set secrets: fly secrets set STRIPE_SECRET_KEY=sk_live_... STRIPE_WEBHOOK_SECRET=whsec_...
+
+app = "scbe-aethermoore-api"
+primary_region = "sea"      # Seattle — close to PNNL, Port Angeles
+
+[build]
+dockerfile = "Dockerfile.api"
+
+[env]
+SCBE_ENV = "production"
+SCBE_LOG_LEVEL = "INFO"
+PORT = "8080"
+SCBE_BILLING_DB_PATH = "/app/data/billing.sqlite3"
+SCBE_METERING_DB_PATH = "/app/data/metering.sqlite3"
+SEMANTIC_MESH_DB_PATH = "/app/data/semantic_mesh.sqlite3"
+SCBE_BILLING_BASE_URL = "https://scbe-aethermoore-api.fly.dev"
+
+[http_service]
+internal_port = 8080
+force_https = true
+auto_stop_machines = "stop"
+auto_start_machines = true
+min_machines_running = 0        # Scale to zero on idle (free tier friendly)
+
+  [[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  path = "/v1/health"
+  timeout = "10s"
+
+[[vm]]
+size = "shared-cpu-1x"          # $0 on free tier, $0.0001/sec when running
+memory = "512mb"
+
+[mounts]
+  source = "scbe_data"
+  destination = "/app/data"
+  initial_size = "1gb"
+
+# Required secrets (set via: fly secrets set KEY=value)
+# STRIPE_SECRET_KEY          — Stripe live or test key
+# STRIPE_WEBHOOK_SECRET      — Stripe webhook signing secret
+# SCBE_OWNER_API_TOKEN       — Your admin token for /billing/purchases
+# SCBE_SMTP_USER             — SMTP username (ai@aethermoore.com)
+# SCBE_SMTP_PASS             — SMTP password
+# SCBE_WEBHOOK_URL           — Optional: outbound webhook URL for DENY events
+# SCBE_WEBHOOK_SECRET        — Optional: HMAC secret for outbound webhooks

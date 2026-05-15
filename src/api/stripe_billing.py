@@ -32,6 +32,8 @@ from pydantic import BaseModel, Field
 
 billing_router = APIRouter(prefix="/billing", tags=["Billing"])
 
+from src.api import billing_store as _billing_store
+
 # ---------------------------------------------------------------------------
 # Plan definitions
 # ---------------------------------------------------------------------------
@@ -256,7 +258,18 @@ async def checkout_success(session_id: str = ""):
             "message": "Payment successful. Your API key will be emailed.",
         }
 
-    # Look up if we've already provisioned
+    # Look up if we've already provisioned (in-memory first, then SQLite)
+    for api_key, record in BILLING_API_KEYS.items():
+        if record.get("checkout_session_id") == session_id:
+            return {
+                "status": "ok",
+                "message": "Subscription active",
+                "api_key": api_key,
+                "plan": record["plan"],
+            }
+    # Also check persistent store (survives restarts)
+    purchase_log: list = []
+    _billing_store.load_into_memory(BILLING_CUSTOMERS, BILLING_API_KEYS, purchase_log, {})
     for api_key, record in BILLING_API_KEYS.items():
         if record.get("checkout_session_id") == session_id:
             return {
@@ -351,10 +364,18 @@ def _handle_checkout_completed(session: Dict[str, Any]) -> None:
     BILLING_CUSTOMERS[customer_id] = record
     BILLING_API_KEYS[api_key] = record
 
-    # Also register in the SaaS API key store so endpoints accept it
-    from src.api.saas_routes import VALID_API_KEYS
+    # Persist to SQLite so keys survive restarts
+    _billing_store.save_customer(customer_id, record)
+    _billing_store.save_api_key(api_key, customer_id, record)
+
+    # Register in the live auth store
+    from src.api.auth_config import VALID_API_KEYS
 
     VALID_API_KEYS[api_key] = email or customer_id
+
+    # Email the API key to the customer
+    if email:
+        _send_subscription_api_key_email(email, api_key, plan_id)
 
 
 def _handle_subscription_updated(subscription: Dict[str, Any]) -> None:
@@ -382,8 +403,12 @@ def _handle_subscription_deleted(subscription: Dict[str, Any]) -> None:
     record["active"] = False
     api_key = record.get("api_key", "")
 
-    # Remove from valid API keys
-    from src.api.saas_routes import VALID_API_KEYS
+    # Persist revocation to SQLite
+    _billing_store.save_api_key(api_key, customer_id, record)
+    _billing_store.remove_api_key_from_valid_auth(api_key)
+
+    # Remove from live auth store
+    from src.api.auth_config import VALID_API_KEYS
 
     VALID_API_KEYS.pop(api_key, None)
 
@@ -582,6 +607,70 @@ If you have any questions, reply to this email or reach us at ai@aethermoore.com
             _safe_for_log(exc),
         )
         return False
+
+
+def _send_subscription_api_key_email(to_email: str, api_key: str, plan_id: str) -> None:
+    """Email an API key to a new subscription customer."""
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    smtp_host = os.getenv("SCBE_SMTP_HOST", "smtp.porkbun.com")
+    smtp_port = int(os.getenv("SCBE_SMTP_PORT", "587"))
+    smtp_user = os.getenv("SCBE_SMTP_USER", "ai@aethermoore.com")
+    smtp_pass = os.getenv("SCBE_SMTP_PASS", "")
+
+    docs_url = "https://aethermoore.com/docs"
+    plan_name = PLANS.get(plan_id, {}).get("name", plan_id.capitalize())
+    subject = f"Your SCBE {plan_name} API key"
+    html_body = f"""<html><body style="font-family: Georgia, serif; color: #333; max-width: 600px;">
+<h2 style="color: #d6a756;">Welcome to SCBE-AETHERMOORE</h2>
+<p>Your <strong>{plan_name}</strong> subscription is active. Here is your API key:</p>
+<p style="background:#f5f0e8;padding:12px;border-radius:6px;font-family:monospace;word-break:break-all;">
+{api_key}</p>
+<p><strong>Quick start:</strong></p>
+<pre style="background:#1a1a1a;color:#e8d5a0;padding:12px;border-radius:6px;font-size:13px;">
+curl -H "x-api-key: {api_key}" \\
+     https://api.aethermoore.com/governance-check?agent=my_agent
+</pre>
+<p><a href="{docs_url}" style="display:inline-block;padding:12px 24px;background:#d6a756;
+color:#14110c;text-decoration:none;border-radius:6px;font-weight:bold;">Read the Docs</a></p>
+<hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
+<p style="font-size:14px;color:#888;">Questions? Reply to this email or contact ai@aethermoore.com</p>
+</body></html>"""
+
+    text_body = (
+        f"Welcome to SCBE-AETHERMOORE\n\n"
+        f"Your {plan_name} subscription is active.\n\n"
+        f"API key: {api_key}\n\n"
+        f"Docs: {docs_url}\n\n"
+        f"Questions? Contact ai@aethermoore.com"
+    )
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"AetherMoore <{smtp_user}>"
+    msg["To"] = to_email
+    msg["Reply-To"] = "ai@aethermoore.com"
+    msg.attach(MIMEText(text_body, "plain"))
+    msg.attach(MIMEText(html_body, "html"))
+
+    if not smtp_pass:
+        LOGGER.warning(
+            "SMTP not configured — would send API key to %s for plan %s",
+            _safe_for_log(to_email),
+            plan_id,
+        )
+        return
+
+    try:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+        LOGGER.info("API key email sent to %s", _safe_for_log(to_email))
+    except Exception as exc:
+        LOGGER.error("Failed to send API key email to %s: %s", _safe_for_log(to_email), exc)
 
 
 def _notify_owner(product_name: str, buyer_email: str, amount_cents: int) -> None:
