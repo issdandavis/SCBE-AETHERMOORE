@@ -261,6 +261,14 @@ CONNECTOR_STORE: Dict[str, Dict[str, Any]] = {}
 # ============================================================================
 
 
+def _validate_6d_position(v: List[int]) -> List[int]:
+    if len(v) != 6:
+        raise ValueError("Position must contain exactly 6 integers")
+    if not all(isinstance(x, int) for x in v):
+        raise ValueError("Position must contain integers")
+    return v
+
+
 class SealRequest(BaseModel):
     plaintext: str = Field(..., max_length=4096, description="Data to seal (max 4KB)")
     agent: str = Field(..., min_length=1, max_length=256, description="Agent identifier")
@@ -270,11 +278,7 @@ class SealRequest(BaseModel):
     @field_validator("position")
     @classmethod
     def validate_position(cls, v):
-        if len(v) != 6:
-            raise ValueError("Position must contain exactly 6 integers")
-        if not all(isinstance(x, int) for x in v):
-            raise ValueError("Position must contain integers")
-        return v
+        return _validate_6d_position(v)
 
 
 class RetrieveRequest(BaseModel):
@@ -285,11 +289,7 @@ class RetrieveRequest(BaseModel):
     @field_validator("position")
     @classmethod
     def validate_position(cls, v):
-        if len(v) != 6:
-            raise ValueError("Position must contain exactly 6 integers")
-        if not all(isinstance(x, int) for x in v):
-            raise ValueError("Position must contain integers")
-        return v
+        return _validate_6d_position(v)
 
 
 class SimulateAttackRequest(BaseModel):
@@ -875,7 +875,8 @@ def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Di
             "code": "connector_network_error",
             "detail": "connector network error",
         }
-    except Exception:
+    except Exception as exc:
+        logger.error("connector dispatch failed: %s", exc)
         return {
             "ok": False,
             "code": "connector_dispatch_error",
@@ -1130,8 +1131,8 @@ async def governance_check(
                 topic=topic,
                 reason=gov_data["reason"],
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("webhook relay skipped: %s", exc)
 
         return {
             "status": "ok",
@@ -1250,7 +1251,7 @@ async def polly_pad_spaceport_status():
                 "play_card": True,
                 "local_chat": True,
             },
-            "api_base_hint": "http://127.0.0.1:8002",
+            "api_base_hint": os.getenv("SCBE_POLLY_API_BASE", "http://127.0.0.1:8002"),
         },
     }
 
@@ -1650,10 +1651,7 @@ async def health():
 
     return {
         "status": "healthy",
-        "version": "3.0.0",
-        "tests_passing": 120,
-        "tests_total": 160,
-        "coverage": "75%",
+        "version": "4.1.3",
         "uptime_seconds": metrics_store.get_metrics()["uptime_seconds"],
         "postgres_lite": health_postgres_payload(),
     }

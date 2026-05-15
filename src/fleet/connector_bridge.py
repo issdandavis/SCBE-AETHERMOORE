@@ -21,7 +21,8 @@ import httpx
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 NOTEBOOKLM_SCRIPT = REPO_ROOT / "scripts" / "system" / "notebooklm_connector.py"
-DEFAULT_AUTOMATIONS_URL = "http://127.0.0.1:8001/v1/automations/emit"
+def _automations_url() -> str:
+    return os.environ.get("SCBE_AUTOMATIONS_URL", "http://127.0.0.1:8001/v1/automations/emit")
 
 
 @dataclass
@@ -216,7 +217,7 @@ class ConnectorBridge:
         if not event:
             return ConnectorResult(success=False, error="event is required")
 
-        target_url = str(os.getenv("SCBE_AUTOMATIONS_URL", DEFAULT_AUTOMATIONS_URL)).strip()
+        target_url = _automations_url()
         parsed = urlparse(target_url)
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
             return ConnectorResult(success=False, error="SCBE_AUTOMATIONS_URL must be a valid http(s) URL")

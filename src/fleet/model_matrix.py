@@ -171,10 +171,12 @@ async def _call_gemini(config: ModelConfig, prompt: str, context: Optional[str] 
 
 
 async def _call_ollama(config: ModelConfig, prompt: str, context: Optional[str] = None) -> str:
-    """Query a local Ollama instance at localhost:11434."""
+    """Query a local Ollama instance. Override endpoint via OLLAMA_BASE_URL."""
     try:
+        import os
         import urllib.request
 
+        ollama_base = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
         payload = json.dumps(
             {
                 "model": config.model_id,
@@ -188,7 +190,7 @@ async def _call_ollama(config: ModelConfig, prompt: str, context: Optional[str] 
         ).encode()
 
         req = urllib.request.Request(
-            "http://localhost:11434/api/generate",
+            f"{ollama_base}/api/generate",
             data=payload,
             headers={"Content-Type": "application/json"},
             method="POST",

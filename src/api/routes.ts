@@ -127,37 +127,17 @@ export interface VerifyResponse {
 }
 
 export interface StatusResponse {
-  /** System status */
   status: 'healthy' | 'degraded' | 'unhealthy';
-  /** Component health */
-  components: {
-    pipeline: ComponentStatus;
-    crypto: ComponentStatus;
-    fleet: ComponentStatus;
-    redis: ComponentStatus;
-  };
-  /** System metrics */
   metrics: {
-    requestsPerSecond: number;
-    avgLatencyMs: number;
-    p99LatencyMs: number;
     uptimeSeconds: number;
     memoryUsageMB: number;
   };
-  /** Version info */
   version: {
     api: string;
     scbe: string;
     pqc: string;
   };
-  /** Timestamp */
   timestamp: string;
-}
-
-export interface ComponentStatus {
-  status: 'up' | 'down' | 'degraded';
-  latencyMs?: number;
-  message?: string;
 }
 
 export interface FleetTaskRequest {
@@ -403,22 +383,13 @@ export async function handleGetStatus(): Promise<StatusResponse> {
 
   return {
     status: 'healthy',
-    components: {
-      pipeline: { status: 'up', latencyMs: 4.2 },
-      crypto: { status: 'up', latencyMs: 0.8 },
-      fleet: { status: 'up', latencyMs: 1.2 },
-      redis: { status: 'up', latencyMs: 0.5, message: 'Connected to localhost:6379' },
-    },
     metrics: {
-      requestsPerSecond: 2847,
-      avgLatencyMs: 4.2,
-      p99LatencyMs: 18.3,
       uptimeSeconds: Math.floor(uptimeSeconds),
       memoryUsageMB: Math.round(memoryUsageMB * 100) / 100,
     },
     version: {
-      api: '1.0.0',
-      scbe: '4.0.0',
+      api: '4.1.3',
+      scbe: '4.1.3',
       pqc: '1.0.0',
     },
     timestamp: new Date().toISOString(),

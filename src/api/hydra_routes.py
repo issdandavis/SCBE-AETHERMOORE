@@ -9,8 +9,11 @@ and LLM think/reason capabilities.
 All endpoints use the same x-api-key header auth as the core SCBE API.
 """
 
+import logging
 import os
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger("scbe.hydra_routes")
 
 from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel, Field
@@ -253,10 +256,8 @@ async def hydra_register_head(
 
         provider = create_provider(request.ai_type, model=request.model)
         _providers[head.head_id] = provider
-    except Exception:
-        # Provider creation is best-effort; the head still works for
-        # execute/workflow operations without an LLM provider.
-        pass
+    except Exception as exc:
+        logger.warning("head %s: LLM provider not attached (head still works for execute/workflow): %s", head.head_id, exc)
 
     return {
         "status": "created",
