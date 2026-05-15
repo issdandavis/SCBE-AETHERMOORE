@@ -3,6 +3,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+pytestmark = pytest.mark.slow
+
 
 def _write_manifest(path: Path, provider: str, artifact_id: str, role: str, quality: float = 0.8) -> None:
     payload = {

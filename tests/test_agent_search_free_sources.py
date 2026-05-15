@@ -5,6 +5,10 @@ import subprocess
 import textwrap
 from pathlib import Path
 
+import pytest
+
+pytestmark = pytest.mark.slow
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SEARCH_JS = REPO_ROOT / "api" / "agent" / "search.js"
 

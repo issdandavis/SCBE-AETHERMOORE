@@ -36,6 +36,9 @@ from src.coding_spine.router import (
 from src.coding_spine.polly_client import explain_provider_chain
 from src.coding_spine.shared_ir import build_route_ir, equivalent_ir, infer_semantic_ir
 from src.geoseal_cli import (
+
+
+pytestmark = pytest.mark.slow
     compute_seal,
     phi_wall_cost,
     phi_wall_tier,

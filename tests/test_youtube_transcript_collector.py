@@ -13,6 +13,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from scripts.apollo.youtube_transcript_collector import (
+
+
+pytestmark = pytest.mark.slow
     _TRANSCRIPT_DELAY,
     get_transcript,
     scrub_transcript,

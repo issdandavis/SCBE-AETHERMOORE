@@ -5,6 +5,9 @@ from pathlib import Path
 import pytest
 
 from scripts.run_legacy_hf_eval import (
+
+
+pytestmark = pytest.mark.slow
     EVAL_SCRIPT,
     build_eval_command,
     choose_python_for_eval,

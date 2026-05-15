@@ -6,6 +6,10 @@ import sys
 
 from src.coding_spine.domino_workflow import build_domino_workflow_from_specs, parse_tile
 
+import pytest
+
+pytestmark = pytest.mark.slow
+
 
 def test_parse_tile_supports_named_contract_and_dots():
     tile = parse_tile("gather:intent|evidence:1/5")

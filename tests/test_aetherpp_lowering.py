@@ -8,6 +8,10 @@ from pathlib import Path
 from scripts.aetherpp.lower import lower_ast
 from scripts.aetherpp.parse import ast_to_dict, parse_program
 
+import pytest
+
+pytestmark = pytest.mark.slow
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 

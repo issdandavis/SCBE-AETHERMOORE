@@ -7,6 +7,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+pytestmark = pytest.mark.slow
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = REPO_ROOT / "config" / "compliance" / "public_sources.json"
 SCRIPT = REPO_ROOT / "scripts" / "system" / "fetch_public_compliance_corpus.py"

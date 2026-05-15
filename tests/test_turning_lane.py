@@ -13,6 +13,9 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from symphonic_cipher.scbe_aethermoore.turning_lane import (
+
+
+pytestmark = pytest.mark.slow
     build_atomic_execution_bundle,
     prepare_execution_packet,
     prove_execution_packet,

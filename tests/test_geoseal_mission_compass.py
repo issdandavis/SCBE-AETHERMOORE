@@ -7,6 +7,10 @@ from pathlib import Path
 
 from src.geoseal_mission_compass import build_mars_mission_compass, infer_goal_tongue
 
+import pytest
+
+pytestmark = pytest.mark.slow
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 

@@ -7,6 +7,9 @@ import pytest
 from scripts.run_thermal_mirror_probe import PROBE_SCRIPT, build_probe_command, main
 
 
+pytestmark = pytest.mark.slow
+
+
 def test_build_probe_command_targets_probe_script() -> None:
     command = build_probe_command(Path(r"C:\Users\issda\Python312\python.exe"), ["--json", "--control", "banded"])
 

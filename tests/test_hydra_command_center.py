@@ -8,6 +8,9 @@ from urllib.parse import urlparse
 
 import pytest
 
+
+pytestmark = pytest.mark.slow
+
 ROOT = Path(__file__).resolve().parents[1]
 COMMAND_CENTER = ROOT / "scripts" / "hydra_command_center.ps1"
 

@@ -7,6 +7,10 @@ import sys
 from argparse import Namespace
 from pathlib import Path
 
+import pytest
+
+pytestmark = pytest.mark.slow
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "system" / "collect_sam_coding_opportunities.py"
 

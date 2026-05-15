@@ -6,6 +6,10 @@ import sys
 import uuid
 from pathlib import Path
 
+import pytest
+
+pytestmark = pytest.mark.slow
+
 ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "scripts" / "scbe-system-cli.py"
 

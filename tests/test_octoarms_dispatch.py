@@ -6,6 +6,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+pytestmark = pytest.mark.slow
+
 ROOT = Path(__file__).resolve().parents[1]
 DISPATCH = ROOT / "scripts" / "system" / "octoarms_dispatch.py"
 

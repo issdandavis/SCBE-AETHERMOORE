@@ -6,6 +6,10 @@ import sys
 from pathlib import Path
 
 from src.crypto.sacred_tongue_payload_bijection import (
+
+import pytest
+
+pytestmark = pytest.mark.slow
     canonical_json_bytes,
     prove_dict,
     prove_bytes_all_tongues,

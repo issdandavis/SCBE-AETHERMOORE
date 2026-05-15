@@ -10,6 +10,10 @@ import json
 import subprocess
 from pathlib import Path
 
+import pytest
+
+pytestmark = pytest.mark.slow
+
 ROOT = Path(__file__).resolve().parents[1]
 ENVELOPE_JS = ROOT / "src" / "word-addin" / "session_envelope.js"
 

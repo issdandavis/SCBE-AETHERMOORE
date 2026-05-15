@@ -5,6 +5,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+pytestmark = pytest.mark.slow
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts" / "system" / "build_cross_language_lookup.py"
 ARTIFACT = REPO_ROOT / "artifacts" / "cross_language_lookup" / "full_cross_language_lookup.json"
