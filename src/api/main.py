@@ -31,6 +31,7 @@ from collections import defaultdict
 from enum import Enum
 from urllib import request as urlrequest
 from urllib.error import HTTPError, URLError
+import uuid
 import sys
 import os
 
@@ -192,6 +193,16 @@ class RateLimiter:
 
 
 rate_limiter = RateLimiter()
+
+
+@app.middleware("http")
+async def correlation_id_middleware(request: Request, call_next):
+    """Stamp every request with a correlation ID for log tracing."""
+    rid = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = rid
+    logger.debug("rid=%s method=%s path=%s status=%d", rid, request.method, request.url.path, response.status_code)
+    return response
 
 
 @app.middleware("http")
@@ -1735,8 +1746,34 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 # ============================================================================
 
 
+def _validate_startup_config() -> None:
+    """Warn (dev) or raise (production) when critical env vars are missing."""
+    env = os.getenv("SCBE_ENV", "development").lower()
+    is_prod = env in {"production", "prod", "staging"}
+
+    required_in_prod = {
+        "SCBE_HMAC_MASTER_KEY": "memory sealing HMAC — all /seal-memory calls will fail",
+        "STRIPE_SECRET_KEY": "Stripe billing — /checkout and webhook endpoints will fail",
+        "SCBE_WEBHOOK_SECRET": "outbound webhook signing — governance events won't be signed",
+    }
+
+    missing = [var for var in required_in_prod if not os.getenv(var)]
+    if not missing:
+        return
+
+    lines = [f"  {v}: {required_in_prod[v]}" for v in missing]
+    msg = "Missing env vars:\n" + "\n".join(lines)
+
+    if is_prod:
+        raise RuntimeError(f"[SCBE] Refusing to start in {env!r} with missing config.\n{msg}")
+    else:
+        for v in missing:
+            logger.warning("SCBE_ENV=%s — %s not set (%s)", env, v, required_in_prod[v])
+
+
 @app.on_event("startup")
 async def startup_event():
+    _validate_startup_config()
     print("=" * 80)
     print("SCBE-AETHERMOORE MVP API v3.0.0")
     print("=" * 80)

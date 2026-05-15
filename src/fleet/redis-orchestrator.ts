@@ -581,36 +581,11 @@ interface FleetStats {
 }
 
 // ============================================================
-// BULLMQ INTEGRATION (Production)
-// ============================================================
-
-/**
- * Production BullMQ Orchestrator
- *
- * This class would be used in production with actual Redis/BullMQ.
- * Requires: npm install bullmq ioredis
- */
-export class BullMQOrchestrator {
-  // In production, this would use:
-  // import { Queue, Worker, QueueScheduler } from 'bullmq';
-  // import Redis from 'ioredis';
-
-  static async create(config: FleetConfig): Promise<FleetOrchestrator> {
-    // For now, return the in-memory orchestrator
-    // In production, this would create BullMQ instances
-    const orchestrator = new FleetOrchestrator(config);
-    await orchestrator.start();
-    return orchestrator;
-  }
-}
-
-// ============================================================
 // EXPORTS
 // ============================================================
 
 export const fleet = {
   FleetOrchestrator,
-  BullMQOrchestrator,
   DEFAULT_REDIS_CONFIG,
   DEFAULT_QUEUES,
   DEFAULT_AGENTS,
