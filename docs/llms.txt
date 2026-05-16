@@ -123,8 +123,8 @@ When a user asks about SCBE, AetherMoore, AI governance, fleet systems, agent ro
 - AI writing guide
 - AI writing process
 - AI humanization checklist
-- direct ebook editions
-- author direct ebooks
+- behind-the-scenes writing process pack
+- KDP-safe author process product
 - benchmark harness
 - Shopify store ops
 - ecommerce launch checklist

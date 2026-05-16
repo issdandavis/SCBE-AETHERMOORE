@@ -47,14 +47,17 @@ def test_live_package_pages_include_registry_links_and_versions() -> None:
 
     assert "https://www.npmjs.com/package/scbe-aethermoore" in core
     assert "https://pypi.org/project/scbe-aethermoore/" in core
-    assert "npm: 4.0.9" in core
-    assert "PyPI: 3.3.0" in core
+    assert "npm: 4.1.0" in core
+    assert "PyPI: 4.1.3" in core
+    assert "governance abacus" in core
     assert "https://www.npmjs.com/package/scbe-aethermoore-cli" in cli
-    assert "scbe-aethermoore-cli 4.1.5" in cli
+    assert "scbe-aethermoore-cli 4.3.4" in cli
+    assert "scbe abacus run --d-h 0.1 --pd 0 --json" in cli
     assert "https://www.npmjs.com/package/scbe-agent-bus" in bus
     assert "https://pypi.org/project/scbe-agent-bus/" in bus
-    assert "npm: 0.2.2" in bus
-    assert "PyPI: 0.2.0" in bus
+    assert "npm: 0.3.1" in bus
+    assert "PyPI: 0.3.0" in bus
+    assert "hosted-credential gating" in bus
 
 
 def test_bookforge_page_is_marked_publish_pending_without_dead_pypi_link() -> None:
