@@ -19,6 +19,7 @@ def test_bookshelf_catalog_points_to_real_pages_and_assets() -> None:
         assert book["title"]
         assert book["author"] == "Issac Daniel Davis"
         assert book["formats"]
+        assert book["direct_ebook"]
         assert book["reader_fit"]
         assert book["process"]
 
@@ -37,6 +38,8 @@ def test_bookshelf_catalog_matches_current_kdp_statuses() -> None:
     assert miracle_formats["Paperback"]["last_modified"] == "2026-05-13"
     assert miracle_formats["Hardcover"]["status"] == "Not created"
     assert miracle_formats["Hardcover"]["available"] is False
+    assert books["miracle-memory"]["direct_ebook"]["status"] == "planned"
+    assert books["miracle-memory"]["direct_ebook"]["target_price_usd"] == "3.99"
 
     six_formats = {fmt["name"]: fmt for fmt in books["six-tongues-protocol"]["formats"]}
     assert six_formats["Kindle eBook"]["status"] == "Live"
@@ -51,6 +54,8 @@ def test_bookshelf_catalog_matches_current_kdp_statuses() -> None:
     assert six_formats["Hardcover"]["status"] == "Draft"
     assert six_formats["Hardcover"]["last_modified"] == "2026-03-18"
     assert six_formats["Hardcover"]["available"] is False
+    assert books["six-tongues-protocol"]["direct_ebook"]["status"] == "planned"
+    assert books["six-tongues-protocol"]["direct_ebook"]["target_price_usd"] == "2.99"
 
 
 def test_bookshelf_hub_links_each_book_page_and_process_lane() -> None:
@@ -60,6 +65,10 @@ def test_bookshelf_hub_links_each_book_page_and_process_lane() -> None:
     assert 'href="books/miracle-memory.html"' in page
     assert 'href="books/six-tongues-protocol.html"' in page
     assert "Publishing Process" in page
+    assert "Direct Ebook Editions" in page
+    assert "Target direct ebook: $2.99" in page
+    assert "Target direct ebook: $3.99" in page
+    assert 'href="guides.html#ai-writing-system"' in page
     assert "static/books/miracle-memory-cover.png" in page
     assert "static/books/six-tongues-cover.jpg" in page
     assert "May 13, 2026 update" in page
@@ -79,6 +88,9 @@ def test_six_tongues_page_uses_live_amazon_asins() -> None:
     assert "Submitted March 16, 2026" in page
     assert "Submitted March 17, 2026" in page
     assert "Last modified March 18, 2026" in page
+    assert "Direct Ebook Edition" in page
+    assert "Target direct price: $2.99" in page
+    assert "direct ebook checkout is held" in page
 
 
 def test_miracle_memory_page_marks_kdp_review_without_fake_purchase_link() -> None:
@@ -91,6 +103,9 @@ def test_miracle_memory_page_marks_kdp_review_without_fake_purchase_link() -> No
     assert "Amazon link coming after review" in page
     assert "Last modified May 13, 2026" in page
     assert "Hardcover:</strong> not created yet" in page
+    assert "Direct Ebook Edition" in page
+    assert "Target direct price: $3.99" in page
+    assert "direct checkout is held" in page
     assert "amazon.com/dp/" not in page.lower()
 
 
@@ -99,12 +114,41 @@ def test_bookshelf_routes_are_discoverable_to_search_and_vercel() -> None:
     vercelignore = (REPO_ROOT / ".vercelignore").read_text(encoding="utf-8")
     ignore_build = (REPO_ROOT / "scripts" / "vercel" / "ignore-build.cjs").read_text(encoding="utf-8")
     homepage = (DOCS / "index.html").read_text(encoding="utf-8")
+    llms = (DOCS / "llms.txt").read_text(encoding="utf-8")
+    robots = (DOCS / "robots.txt").read_text(encoding="utf-8")
 
     assert "https://aethermoore.com/SCBE-AETHERMOORE/books.html" in sitemap
     assert "https://aethermoore.com/SCBE-AETHERMOORE/books/miracle-memory.html" in sitemap
     assert "https://aethermoore.com/SCBE-AETHERMOORE/books/six-tongues-protocol.html" in sitemap
+    assert "https://aethermoore.com/SCBE-AETHERMOORE/guides.html" in sitemap
+    assert "https://aethermoore.com/SCBE-AETHERMOORE/downloads/ai-writing-system-guide.md" in sitemap
     assert "!docs/books.html" in vercelignore
     assert "!docs/books/**" in vercelignore
+    assert "!docs/guides.html" in vercelignore
+    assert "!docs/downloads/**" in vercelignore
     assert "'docs/books.html'" in ignore_build
     assert "'docs/books'" in ignore_build
+    assert "'docs/guides.html'" in ignore_build
+    assert "'docs/downloads'" in ignore_build
     assert 'href="books.html"' in homepage
+    assert 'href="guides.html"' in homepage
+    assert "https://aethermoore.com/SCBE-AETHERMOORE/guides.html" in llms
+    assert "Guides: https://aethermoore.com/SCBE-AETHERMOORE/guides.html" in robots
+
+
+def test_guides_page_links_live_downloads() -> None:
+    page = (DOCS / "guides.html").read_text(encoding="utf-8")
+
+    assert "AetherMoore Working Guides" in page
+    assert "AI Writing System" in page
+    assert "Humanization Pass" in page
+    assert "AI Security Starter" in page
+
+    downloads = [
+        "downloads/ai-writing-system-guide.md",
+        "downloads/humanization-pass-checklist.md",
+        "downloads/security-governance-checklist.md",
+    ]
+    for download in downloads:
+        assert f'href="{download}"' in page
+        assert (DOCS / download).exists(), download

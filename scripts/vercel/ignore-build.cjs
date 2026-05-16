@@ -38,6 +38,8 @@ const relevantPaths = [
   'docs/packages',
   'docs/books.html',
   'docs/books',
+  'docs/guides.html',
+  'docs/downloads',
   'docs/start-here.html',
   'docs/agents.html',
   'docs/chat.html',
