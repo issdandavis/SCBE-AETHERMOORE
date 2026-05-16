@@ -23,12 +23,14 @@ Preferred setup: set product metadata on each Stripe Payment Link.
 
 - Toolkit Payment Link: `metadata[scbe_product]=toolkit`
 - Training Vault Payment Link: `metadata[scbe_product]=vault`
+- Behind-the-Scenes Writing Process Pack: `metadata[scbe_product]=making_of`
 
 Fallback setup for existing links: map Stripe Payment Link IDs in environment.
 
 ```text
 SCBE_PAYMENT_LINK_TOOLKIT=plink_...
 SCBE_PAYMENT_LINK_VAULT=plink_...
+SCBE_PAYMENT_LINK_MAKING_OF=plink_...
 ```
 
 Do not route by price. Both current products are low-cost one-time offers and
@@ -41,6 +43,7 @@ Set direct product download URLs in environment when the ZIPs are hosted.
 ```text
 SCBE_TOOLKIT_DOWNLOAD_URL=https://...
 SCBE_VAULT_DOWNLOAD_URL=https://...
+SCBE_MAKING_OF_BLOB_URL=https://...
 ```
 
 If these are not set, the delivery email falls back to the latest GitHub release:
@@ -84,4 +87,5 @@ attempt and records the purchase as an audit trail item.
 ```powershell
 python -m pytest tests\api\test_stripe_billing_hardening.py tests\test_package_products.py -q
 python scripts\package_products.py --product all --output-dir artifacts\product_delivery_current_smoke
+python scripts\package_products.py --product making-of --output-dir artifacts\product_delivery_current_smoke
 ```

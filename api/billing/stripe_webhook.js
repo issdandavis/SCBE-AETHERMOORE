@@ -28,7 +28,9 @@ const SNAPSHOT_AMOUNT_CENTS = 50000;
 const HEARTBEAT_AMOUNT_CENTS = 9900;
 const LIVE_WORKFLOW_SNAPSHOT_PAYMENT_LINK_ID = 'plink_1TW71yJTF2SuUODIqYFRU9JY';
 const LIVE_HEARTBEAT_PAYMENT_LINK_ID = 'plink_1TW71zJTF2SuUODICZLQCCS3';
+const LIVE_MAKING_OF_PAYMENT_LINK_ID = 'plink_1TXo24JTF2SuUODIoRc6T3DD';
 const DIGITAL_PRODUCT_AMOUNT_CENTS = 2900;
+const MAKING_OF_AMOUNT_CENTS = 700;
 const TOLERANCE_SECONDS = 300; // Stripe default replay window
 
 const DIGITAL_PRODUCTS = {
@@ -45,6 +47,13 @@ const DIGITAL_PRODUCTS = {
     displayName: 'SCBE AI Security Training Vault',
     packageName: 'SCBE_AI_Security_Training_Vault_v1.zip',
     manualUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/product-manual/training-vault.html',
+  },
+  making_of: {
+    key: 'making_of',
+    source: 'behind-the-scenes-writing-process-pack',
+    displayName: 'AetherMoore Behind-the-Scenes Writing Process Pack',
+    packageName: 'AetherMoore_Behind_The_Scenes_Writing_Process_Pack_v1.zip',
+    manualUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/guides.html#behind-the-scenes-pack',
   },
 };
 
@@ -139,6 +148,10 @@ function snapshotConfig() {
       process.env.STRIPE_VAULT_PAYMENT_LINK_ID ||
       process.env.SCBE_PAYMENT_LINK_VAULT ||
       '',
+    makingOfPaymentLinkId:
+      process.env.STRIPE_MAKING_OF_PAYMENT_LINK_ID ||
+      process.env.SCBE_PAYMENT_LINK_MAKING_OF ||
+      LIVE_MAKING_OF_PAYMENT_LINK_ID,
     repo: process.env.POLLY_TRAIN_REPO || process.env.GITHUB_REPO || 'issdandavis/SCBE-AETHERMOORE',
     githubToken:
       process.env.POLLY_TRAIN_GITHUB_TOKEN ||
@@ -222,7 +235,11 @@ function isDigitalProductSession(session, cfg, productKey) {
   if (!product) return false;
 
   const paymentLinkId =
-    productKey === 'toolkit' ? cfg.toolkitPaymentLinkId : cfg.vaultPaymentLinkId;
+    productKey === 'toolkit'
+      ? cfg.toolkitPaymentLinkId
+      : productKey === 'vault'
+        ? cfg.vaultPaymentLinkId
+        : cfg.makingOfPaymentLinkId;
   if (paymentLinkId && session.payment_link === paymentLinkId) return true;
 
   const metadataKey = sessionProductMetadata(session);
@@ -231,9 +248,11 @@ function isDigitalProductSession(session, cfg, productKey) {
     metadataKey === product.source ||
     metadataKey === normalizeProductKey(product.displayName)
   ) {
+    const expectedAmount =
+      productKey === 'making_of' ? MAKING_OF_AMOUNT_CENTS : DIGITAL_PRODUCT_AMOUNT_CENTS;
     return (
       session.mode === 'payment' &&
-      Number(session.amount_total) === DIGITAL_PRODUCT_AMOUNT_CENTS &&
+      Number(session.amount_total) === expectedAmount &&
       String(session.currency || '').toLowerCase() === 'usd'
     );
   }
@@ -247,6 +266,10 @@ function isToolkitSession(session, cfg) {
 
 function isVaultSession(session, cfg) {
   return isDigitalProductSession(session, cfg, 'vault');
+}
+
+function isMakingOfSession(session, cfg) {
+  return isDigitalProductSession(session, cfg, 'making_of');
 }
 
 async function fetchWithTimeout(url, init, timeoutMs) {
@@ -438,6 +461,16 @@ module.exports = async function handler(req, res) {
         dispatch,
       });
     }
+    if (isMakingOfSession(session, cfg)) {
+      const dispatch = await dispatchProductDelivery(session, cfg, 'making_of');
+      return sendJson(res, 200, {
+        ok: true,
+        handled: 'product_delivery',
+        product_key: 'making_of',
+        session_id: session && session.id,
+        dispatch,
+      });
+    }
     return sendJson(res, 200, {
       ok: true,
       handled: 'checkout_other',
@@ -456,6 +489,7 @@ module.exports._private = {
   isHeartbeatSession,
   isToolkitSession,
   isVaultSession,
+  isMakingOfSession,
   isDigitalProductSession,
   snapshotConfig,
   buildSessionRecord,
@@ -464,6 +498,7 @@ module.exports._private = {
   LIVE_WORKFLOW_SNAPSHOT_PAYMENT_LINK_ID,
   HEARTBEAT_AMOUNT_CENTS,
   DIGITAL_PRODUCT_AMOUNT_CENTS,
+  MAKING_OF_AMOUNT_CENTS,
   DIGITAL_PRODUCTS,
   TOLERANCE_SECONDS,
 };

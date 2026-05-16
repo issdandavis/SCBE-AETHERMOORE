@@ -193,7 +193,8 @@ def test_download_bridge_serves_private_blob_with_delivery_token() -> None:
     assert "BLOB_READ_WRITE_TOKEN" in source
     assert "SCBE_TOOLKIT_BLOB_URL" in source
     assert "SCBE_VAULT_BLOB_URL" in source
-    assert "product must be toolkit or vault" in source
+    assert "SCBE_MAKING_OF_BLOB_URL" in source
+    assert "product must be toolkit, vault, or making_of" in source
     assert "Content-Disposition" in source
     assert 'Cache-Control", "private, no-store"' in source
 
@@ -218,6 +219,9 @@ def test_public_offer_catalog_has_live_revenue_links() -> None:
     assert by_id["shopify_command_center_snapshot"]["price_label"] == "$99 starter"
     assert by_id["shopify_command_center_snapshot"]["proof_url"].endswith("/shopify-command-center.html")
     assert by_id["governance_snapshot"]["intake_url"].endswith("/governance-snapshot.html#intake")
+    assert by_id["behind_the_scenes_pack"]["checkout_url"] == "https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n"
+    assert by_id["behind_the_scenes_pack"]["price_label"] == "$7"
+    assert by_id["behind_the_scenes_pack"]["stripe_payment_link_id"] == "plink_1TXo24JTF2SuUODIoRc6T3DD"
     assert offers["usage_policy"]["service_fee_percent_range"] == [2, 5]
 
 
