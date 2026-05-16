@@ -28,7 +28,8 @@
             <h1>scbe-aethermoore-cli</h1>
             <p class="lede">
               A terminal-first package for humans and AI agents: run checks, call GeoSeal, route tokenizer work, and
-              keep command workflows tied to SCBE verification.
+              keep command workflows tied to SCBE verification. Recent releases add abacus runs and no-auto-execute
+              typo suggestions for SCBE-owned commands.
             </p>
             <code class="command">npm install -g scbe-aethermoore-cli</code>
             <div class="cta-row">
@@ -44,7 +45,9 @@
               <div><strong>$ scbe selftest</strong></div>
               <div>checks passed</div>
               <div><strong>$ scbe version</strong></div>
-              <div>scbe-aethermoore-cli 4.1.5</div>
+              <div>scbe-aethermoore-cli 4.3.4</div>
+              <div><strong>$ scbe abacus run --d-h 0.1 --pd 0 --json</strong></div>
+              <div>{ "tier": "ALLOW", "trit": 1 }</div>
               <div><strong>$ geoseal verify-file build.zip</strong></div>
               <div>receipt emitted</div>
             </div>
@@ -58,7 +61,7 @@
             </article>
             <article class="panel">
               <h3>What It Gives</h3>
-              <p>Global `scbe`, `geoseal`, and `scbe-geoseal` commands backed by the core SCBE package.</p>
+              <p>Global <code>scbe</code>, <code>geoseal</code>, and <code>scbe-geoseal</code> commands backed by the core SCBE package.</p>
             </article>
             <article class="panel">
               <h3>Use It With</h3>
