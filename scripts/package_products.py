@@ -177,6 +177,10 @@ MAKING_OF_FILES = [
     ("docs/downloads/ai-writing-system-guide.md", "guides/ai-writing-system-guide.md"),
     ("docs/downloads/humanization-pass-checklist.md", "guides/humanization-pass-checklist.md"),
     ("docs/downloads/security-governance-checklist.md", "guides/security-governance-checklist.md"),
+    (
+        "docs/downloads/aethermoore-writing-techniques-fieldbook.md",
+        "guides/aethermoore-writing-techniques-fieldbook.md",
+    ),
     ("docs/books.html", "site-source/books.html"),
     ("docs/guides.html", "site-source/guides.html"),
     ("docs/books/six-tongues-protocol.html", "site-source/books/six-tongues-protocol.html"),
@@ -208,7 +212,8 @@ material for readers and writers who want to study the workflow.
 1. Read `PROCESS_NOTES.txt`.
 2. Open `guides/ai-writing-system-guide.md`.
 3. Open `guides/humanization-pass-checklist.md`.
-4. Use `site-source/` to see how the book pages and guide hub are positioned.
+4. Open `guides/aethermoore-writing-techniques-fieldbook.md`.
+5. Use `site-source/` to see how the book pages and guide hub are positioned.
 
 ## Support
 
@@ -369,7 +374,11 @@ def package_making_of(output_dir: Path) -> Path:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Package SCBE products for delivery")
-    parser.add_argument("--product", choices=["toolkit", "vault", "making-of", "all"], default="all")
+    parser.add_argument(
+        "--product",
+        choices=["toolkit", "vault", "making-of", "writing", "all"],
+        default="all",
+    )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
 
@@ -385,7 +394,7 @@ def main() -> None:
         package_vault(args.output_dir)
         print()
 
-    if args.product in ("making-of", "all"):
+    if args.product in ("making-of", "writing", "all"):
         print("=== Packaging Behind-the-Scenes Writing Process Pack ===")
         package_making_of(args.output_dir)
         print()
