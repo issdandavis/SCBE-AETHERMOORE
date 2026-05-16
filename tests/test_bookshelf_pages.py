@@ -12,6 +12,9 @@ def test_bookshelf_catalog_points_to_real_pages_and_assets() -> None:
 
     assert catalog["schema"] == "aethermoore-bookshelf-v1"
     assert catalog["books"], "bookshelf catalog should not be empty"
+    assert catalog["direct_process_pack"]["status"] == "live"
+    assert catalog["direct_process_pack"]["price_usd"] == "7.00"
+    assert catalog["direct_process_pack"]["checkout_url"].startswith("https://buy.stripe.com/")
 
     for book in catalog["books"]:
         assert (DOCS / book["page"]).exists(), book["page"]
@@ -38,7 +41,7 @@ def test_bookshelf_catalog_matches_current_kdp_statuses() -> None:
     assert miracle_formats["Paperback"]["last_modified"] == "2026-05-13"
     assert miracle_formats["Hardcover"]["status"] == "Not created"
     assert miracle_formats["Hardcover"]["available"] is False
-    assert books["miracle-memory"]["direct_ebook"]["status"] == "planned"
+    assert books["miracle-memory"]["direct_ebook"]["status"] == "not offered while KDP Select"
     assert books["miracle-memory"]["direct_ebook"]["target_price_usd"] == "3.99"
 
     six_formats = {fmt["name"]: fmt for fmt in books["six-tongues-protocol"]["formats"]}
@@ -54,7 +57,7 @@ def test_bookshelf_catalog_matches_current_kdp_statuses() -> None:
     assert six_formats["Hardcover"]["status"] == "Draft"
     assert six_formats["Hardcover"]["last_modified"] == "2026-03-18"
     assert six_formats["Hardcover"]["available"] is False
-    assert books["six-tongues-protocol"]["direct_ebook"]["status"] == "planned"
+    assert books["six-tongues-protocol"]["direct_ebook"]["status"] == "not offered while KDP Select"
     assert books["six-tongues-protocol"]["direct_ebook"]["target_price_usd"] == "2.99"
 
 
@@ -65,9 +68,10 @@ def test_bookshelf_hub_links_each_book_page_and_process_lane() -> None:
     assert 'href="books/miracle-memory.html"' in page
     assert 'href="books/six-tongues-protocol.html"' in page
     assert "Publishing Process" in page
-    assert "Direct Ebook Editions" in page
-    assert "Target direct ebook: $2.99" in page
-    assert "Target direct ebook: $3.99" in page
+    assert "Behind-The-Scenes Direct Pack" in page
+    assert "Buy The Process Pack - $7" in page
+    assert "https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n" in page
+    assert "does not include the KDP book manuscript" in page
     assert 'href="guides.html#ai-writing-system"' in page
     assert "static/books/miracle-memory-cover.png" in page
     assert "static/books/six-tongues-cover.jpg" in page
@@ -88,9 +92,9 @@ def test_six_tongues_page_uses_live_amazon_asins() -> None:
     assert "Submitted March 16, 2026" in page
     assert "Submitted March 17, 2026" in page
     assert "Last modified March 18, 2026" in page
-    assert "Direct Ebook Edition" in page
-    assert "Target direct price: $2.99" in page
-    assert "direct ebook checkout is held" in page
+    assert "Behind-The-Scenes Process Pack" in page
+    assert "Buy Process Pack - $7" in page
+    assert "This is not the book manuscript" in page
 
 
 def test_miracle_memory_page_marks_kdp_review_without_fake_purchase_link() -> None:
@@ -103,9 +107,9 @@ def test_miracle_memory_page_marks_kdp_review_without_fake_purchase_link() -> No
     assert "Amazon link coming after review" in page
     assert "Last modified May 13, 2026" in page
     assert "Hardcover:</strong> not created yet" in page
-    assert "Direct Ebook Edition" in page
-    assert "Target direct price: $3.99" in page
-    assert "direct checkout is held" in page
+    assert "Behind-The-Scenes Process Pack" in page
+    assert "Buy Process Pack - $7" in page
+    assert "This is not the book manuscript" in page
     assert "amazon.com/dp/" not in page.lower()
 
 
@@ -143,6 +147,8 @@ def test_guides_page_links_live_downloads() -> None:
     assert "AI Writing System" in page
     assert "Humanization Pass" in page
     assert "AI Security Starter" in page
+    assert "Behind-The-Scenes Writing Process Pack" in page
+    assert "https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n" in page
 
     downloads = [
         "downloads/ai-writing-system-guide.md",

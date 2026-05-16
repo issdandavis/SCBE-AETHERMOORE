@@ -2,6 +2,15 @@
   "schema": "aethermoore-bookshelf-v1",
   "updated": "2026-05-16",
   "owner": "Issac Daniel Davis",
+  "direct_process_pack": {
+    "id": "behind-the-scenes-pack",
+    "name": "AetherMoore Behind-the-Scenes Writing Process Pack",
+    "status": "live",
+    "price_usd": "7.00",
+    "checkout_url": "https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n",
+    "formats": ["PDF", "TXT"],
+    "note": "Separate making-of/process material. It does not include the KDP book manuscript, so the books can remain in KDP Select."
+  },
   "books": [
     {
       "id": "miracle-memory",
@@ -13,11 +22,11 @@
       "page": "books/miracle-memory.html",
       "cover": "static/books/miracle-memory-cover.png",
       "direct_ebook": {
-        "status": "planned",
+        "status": "not offered while KDP Select",
         "target_price_usd": "3.99",
         "formats": ["EPUB", "PDF"],
         "page_anchor": "direct-ebook",
-        "rights_note": "Direct ebook fulfillment is held while the Kindle edition is in review and enrolled in KDP Select."
+        "rights_note": "The book manuscript stays on KDP/KDP Select. A separate behind-the-scenes process pack is sold directly on AetherMoore."
       },
       "formats": [
         {
@@ -62,11 +71,11 @@
       "page": "books/six-tongues-protocol.html",
       "cover": "static/books/six-tongues-cover.jpg",
       "direct_ebook": {
-        "status": "planned",
+        "status": "not offered while KDP Select",
         "target_price_usd": "2.99",
         "formats": ["EPUB", "PDF"],
         "page_anchor": "direct-ebook",
-        "rights_note": "Direct ebook fulfillment is held while the Kindle edition is enrolled in KDP Select."
+        "rights_note": "The book manuscript stays on KDP/KDP Select. A separate behind-the-scenes process pack is sold directly on AetherMoore."
       },
       "formats": [
         {

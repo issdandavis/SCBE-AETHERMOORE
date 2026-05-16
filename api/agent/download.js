@@ -11,6 +11,10 @@ const PRODUCTS = {
     envUrl: "SCBE_VAULT_BLOB_URL",
     filename: "SCBE_AI_Security_Training_Vault_v1.zip",
   },
+  making_of: {
+    envUrl: "SCBE_MAKING_OF_BLOB_URL",
+    filename: "AetherMoore_Behind_The_Scenes_Writing_Process_Pack_v1.zip",
+  },
 };
 
 function resolveProduct(req) {
@@ -45,7 +49,7 @@ module.exports = async function handler(req, res) {
   const productKey = resolveProduct(req);
   const product = PRODUCTS[productKey];
   if (!product) {
-    return sendJson(res, 400, { status: "error", error: "product must be toolkit or vault" });
+    return sendJson(res, 400, { status: "error", error: "product must be toolkit, vault, or making_of" });
   }
 
   const blobUrl = String(process.env[product.envUrl] || "").trim();

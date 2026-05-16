@@ -202,7 +202,7 @@ describe('polly lead handler — anti-abuse', () => {
 
 describe('polly commerce intent classification', () => {
   it('catalog has live products with valid checkout urls', () => {
-    expect(commerce.PRODUCT_CATALOG).toHaveLength(9);
+    expect(commerce.PRODUCT_CATALOG).toHaveLength(10);
     for (const product of commerce.PRODUCT_CATALOG) {
       expect(product.checkoutUrl).toMatch(/^(https:\/\/(buy\.stripe\.com|ko-fi\.com)|mailto:)/);
       expect(product.keywords.length).toBeGreaterThan(0);
@@ -270,6 +270,13 @@ describe('polly commerce intent classification', () => {
     expect(intent.name).toBe('buy');
     expect(intent.confidence).toBeCloseTo(0.6, 2);
     expect(intent.product.sku).toBe('ai-security-training-vault');
+  });
+
+  it('classifies behind-the-scenes process pack as a buyable digital product', () => {
+    const intent = commerce.classifyIntent('I want the behind the scenes writing process pack');
+    expect(intent.name).toBe('buy');
+    expect(intent.product.sku).toBe('behind-the-scenes-writing-process-pack');
+    expect(intent.product.checkoutUrl).toBe('https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n');
   });
 
   it('classifies governance snapshot as a buyable fixed-scope product', () => {
