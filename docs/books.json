@@ -1,6 +1,6 @@
 {
   "schema": "aethermoore-bookshelf-v1",
-  "updated": "2026-05-13",
+  "updated": "2026-05-16",
   "owner": "Issac Daniel Davis",
   "books": [
     {
@@ -12,6 +12,13 @@
       "theme": "witness-history",
       "page": "books/miracle-memory.html",
       "cover": "static/books/miracle-memory-cover.png",
+      "direct_ebook": {
+        "status": "planned",
+        "target_price_usd": "3.99",
+        "formats": ["EPUB", "PDF"],
+        "page_anchor": "direct-ebook",
+        "rights_note": "Direct ebook fulfillment is held while the Kindle edition is in review and enrolled in KDP Select."
+      },
       "formats": [
         {
           "name": "Kindle eBook",
@@ -54,6 +61,13 @@
       "theme": "protocol-fantasy",
       "page": "books/six-tongues-protocol.html",
       "cover": "static/books/six-tongues-cover.jpg",
+      "direct_ebook": {
+        "status": "planned",
+        "target_price_usd": "2.99",
+        "formats": ["EPUB", "PDF"],
+        "page_anchor": "direct-ebook",
+        "rights_note": "Direct ebook fulfillment is held while the Kindle edition is enrolled in KDP Select."
+      },
       "formats": [
         {
           "name": "Kindle eBook",

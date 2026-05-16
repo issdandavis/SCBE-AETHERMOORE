@@ -278,7 +278,10 @@ h2 {
 
 .book-card,
 .process-item,
-.detail-panel {
+.detail-panel,
+.guide-card,
+.download-card,
+.direct-card {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--panel);
@@ -358,7 +361,10 @@ h2 {
 }
 
 .process-grid,
-.detail-grid {
+.detail-grid,
+.guide-grid,
+.download-grid,
+.direct-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
@@ -368,9 +374,52 @@ h2 {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
+.guide-grid,
+.download-grid,
+.direct-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .process-item,
-.detail-panel {
+.detail-panel,
+.guide-card,
+.download-card,
+.direct-card {
   padding: 20px;
+}
+
+.guide-card h3,
+.download-card h3,
+.direct-card h3 {
+  margin-top: 0;
+}
+
+.guide-card p,
+.download-card p,
+.direct-card p {
+  color: var(--muted);
+  line-height: 1.58;
+}
+
+.direct-price {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 32px;
+  align-items: center;
+  margin: 6px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 12px;
+  color: var(--accent);
+  font-weight: 900;
+}
+
+.rights-note {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 
 .process-item span {
@@ -443,7 +492,10 @@ h2 {
 
   .book-grid,
   .detail-grid,
-  .process-grid {
+  .process-grid,
+  .guide-grid,
+  .download-grid,
+  .direct-grid {
     grid-template-columns: 1fr;
   }
 
