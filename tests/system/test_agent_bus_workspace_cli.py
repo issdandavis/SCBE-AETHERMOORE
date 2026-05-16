@@ -8,12 +8,30 @@ AGENT_BUS = REPO_ROOT / "packages" / "agent-bus" / "bin" / "scbe-agent-bus.cjs"
 SCBE = REPO_ROOT / "packages" / "cli" / "bin" / "scbe.js"
 NPM = shutil.which("npm") or shutil.which("npm.cmd") or "npm"
 NODE = shutil.which("node") or shutil.which("node.exe") or "node"
+_AGENT_BUS_BUILT = False
 
 
 def build_agent_bus() -> None:
+    global _AGENT_BUS_BUILT
+    if _AGENT_BUS_BUILT:
+        return
+
+    package_root = REPO_ROOT / "packages" / "agent-bus"
+    if not (package_root / "node_modules" / "@types" / "node").exists():
+        install = subprocess.run(
+            [NPM, "install", "--include=dev"],
+            cwd=package_root,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=120,
+            check=False,
+        )
+        assert install.returncode == 0, install.stderr
+
     proc = subprocess.run(
         [NPM, "run", "build"],
-        cwd=REPO_ROOT / "packages" / "agent-bus",
+        cwd=package_root,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -21,6 +39,7 @@ def build_agent_bus() -> None:
         check=False,
     )
     assert proc.returncode == 0, proc.stderr
+    _AGENT_BUS_BUILT = True
 
 
 def assert_workspace_payload(payload: dict, root: Path) -> None:
