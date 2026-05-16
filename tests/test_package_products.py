@@ -69,6 +69,7 @@ def test_making_of_zip_excludes_manuscripts_and_includes_process_guides(tmp_path
 
     assert "guides/ai-writing-system-guide.md" in names
     assert "guides/humanization-pass-checklist.md" in names
+    assert "guides/aethermoore-writing-techniques-fieldbook.md" in names
     assert "site-source/books.html" in names
     assert "does NOT include the manuscript text" in readme
     assert "Amazon/KDP sells the finished book" in process_notes
