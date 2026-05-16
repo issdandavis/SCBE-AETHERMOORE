@@ -4,11 +4,13 @@
 Creates two product ZIPs:
 1. AI Governance Toolkit ($29) — templates, decision records, architecture docs
 2. AI Security Training Vault ($29) — SFT pairs, benchmark scripts, Colab notebook
+3. AetherMoore Writing Technique Pack ($7) — AI writing guides and humanization process docs
 
 Usage:
     python scripts/package_products.py
     python scripts/package_products.py --product toolkit
     python scripts/package_products.py --product vault
+    python scripts/package_products.py --product writing
     python scripts/package_products.py --output-dir /path/to/output
 """
 
@@ -171,6 +173,64 @@ MIT License — use commercially, modify freely, attribution appreciated.
 (c) 2026 Issac Davis / AetherMoore
 """
 
+# ---- Product: AetherMoore Writing Technique Pack ----
+
+WRITING_PACK_FILES = [
+    (
+        "docs/downloads/ai-writing-system-guide.md",
+        "guides/ai-writing-system-guide.md",
+    ),
+    (
+        "docs/downloads/humanization-pass-checklist.md",
+        "guides/humanization-pass-checklist.md",
+    ),
+    (
+        "docs/downloads/security-governance-checklist.md",
+        "guides/security-governance-checklist.md",
+    ),
+    (
+        "docs/downloads/aethermoore-writing-techniques-fieldbook.md",
+        "guides/aethermoore-writing-techniques-fieldbook.md",
+    ),
+]
+
+WRITING_PACK_README = """# AetherMoore Writing Technique Pack
+
+Thank you for purchasing the AetherMoore Writing Technique Pack.
+
+This is the process material, not the KDP book manuscripts. It packages the
+working AI writing techniques used across AetherMoore book work: control docs,
+voice anchors, dry reads, scene-first revision, dialogue pressure, serial drama
+tension, food/object work, and humanization passes.
+
+## What's Inside
+
+- `guides/ai-writing-system-guide.md` — the short operating model
+- `guides/humanization-pass-checklist.md` — the pass that catches AI tells
+- `guides/security-governance-checklist.md` — reference-monitor thinking for AI tools
+- `guides/aethermoore-writing-techniques-fieldbook.md` — the fuller technique fieldbook
+- `metadata.json` — product, version, source file list, and build timestamp
+
+## How To Use It
+
+1. Start with the fieldbook.
+2. Build separate control docs for your book.
+3. Write human seed paragraphs for the scenes that need your real voice.
+4. Draft too much, then cut and layer.
+5. Run the humanization checklist after the scene has a real want.
+
+## Support
+
+- Email: ai@aethermoore.com
+- Site: https://aethermoore.com/SCBE-AETHERMOORE/guides.html
+
+## License
+
+MIT License — use commercially, modify freely, attribution appreciated.
+
+(c) 2026 Issac Davis / AetherMoore
+"""
+
 
 def _count_jsonl_records(path: Path) -> int:
     """Count non-empty lines in a JSONL file."""
@@ -265,9 +325,48 @@ def package_vault(output_dir: Path) -> Path:
     return zip_path
 
 
+def package_writing(output_dir: Path) -> Path:
+    """Package the AetherMoore Writing Technique Pack."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    zip_path = output_dir / "AetherMoore_Writing_Technique_Pack_v1.zip"
+
+    with ZipFile(zip_path, "w", ZIP_DEFLATED) as zf:
+        zf.writestr("README.md", WRITING_PACK_README)
+        zf.writestr(
+            "LICENSE", "MIT License\n\nCopyright (c) 2026 Issac Davis / AetherMoore\n"
+        )
+
+        included: list[dict[str, str]] = []
+        for src_rel, dst_rel in WRITING_PACK_FILES:
+            src = REPO_ROOT / src_rel
+            if src.exists():
+                zf.write(src, dst_rel)
+                included.append({"source": src_rel, "path": dst_rel})
+                print(f"  + {dst_rel}")
+            else:
+                print(f"  ! MISSING: {src_rel}")
+
+        metadata = {
+            "product": "AetherMoore Writing Technique Pack",
+            "version": "1.0",
+            "packaged_at": datetime.now(timezone.utc).isoformat(),
+            "author": "Issac Davis",
+            "license": "MIT",
+            "kdp_boundary": "Process material only; book manuscripts remain on KDP/Amazon.",
+            "files": included,
+        }
+        zf.writestr("metadata.json", json.dumps(metadata, indent=2))
+
+    size_mb = zip_path.stat().st_size / (1024 * 1024)
+    print(f"\nWriting technique pack packaged: {zip_path} ({size_mb:.1f} MB)")
+    return zip_path
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Package SCBE products for delivery")
-    parser.add_argument("--product", choices=["toolkit", "vault", "all"], default="all")
+    parser.add_argument(
+        "--product", choices=["toolkit", "vault", "writing", "all"], default="all"
+    )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
 
@@ -281,6 +380,11 @@ def main() -> None:
     if args.product in ("vault", "all"):
         print("=== Packaging AI Security Training Vault ===")
         package_vault(args.output_dir)
+        print()
+
+    if args.product in ("writing", "all"):
+        print("=== Packaging AetherMoore Writing Technique Pack ===")
+        package_writing(args.output_dir)
         print()
 
     print(
