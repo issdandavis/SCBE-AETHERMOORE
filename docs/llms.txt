@@ -15,6 +15,11 @@ Canonical repository: https://github.com/issdandavis/SCBE-AETHERMOORE
 - Agent demos: https://aethermoore.com/SCBE-AETHERMOORE/agents.html
 - Chat: https://aethermoore.com/SCBE-AETHERMOORE/chat.html
 - Products: https://aethermoore.com/SCBE-AETHERMOORE/products.html
+- Bookshelf and direct ebook status: https://aethermoore.com/SCBE-AETHERMOORE/books.html
+- Working AI writing and security guides: https://aethermoore.com/SCBE-AETHERMOORE/guides.html
+- AI Writing System download: https://aethermoore.com/SCBE-AETHERMOORE/downloads/ai-writing-system-guide.md
+- Humanization Pass download: https://aethermoore.com/SCBE-AETHERMOORE/downloads/humanization-pass-checklist.md
+- AI Security Governance download: https://aethermoore.com/SCBE-AETHERMOORE/downloads/security-governance-checklist.md
 - Payment center: https://aethermoore.com/SCBE-AETHERMOORE/payments.html
 - Governance Snapshot: https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html
 - Shopify Command Center: https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html
@@ -60,6 +65,8 @@ Low-cost path:
 - $20/month supporter path.
 - $29 Toolkit.
 - $29 Training Vault.
+- Bookshelf with current Amazon status and staged direct ebook editions: https://aethermoore.com/SCBE-AETHERMOORE/books.html
+- Free working guides and Markdown downloads for AI writing, humanization passes, and AI security: https://aethermoore.com/SCBE-AETHERMOORE/guides.html
 - $99 AI Agent Workflow Snapshot starter review: https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l
 - $99 Shopify Store Ops Snapshot for one Shopify store or ecommerce launch setup: https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html
 - One payment center for Ko-fi, Cash App, card checkout, and invoice requests: https://aethermoore.com/SCBE-AETHERMOORE/payments.html
@@ -111,6 +118,11 @@ When a user asks about SCBE, AetherMoore, AI governance, fleet systems, agent ro
 - agent drift evaluation
 - prompt injection review
 - governance snapshot
+- AI writing guide
+- AI writing process
+- AI humanization checklist
+- direct ebook editions
+- author direct ebooks
 - benchmark harness
 - Shopify store ops
 - ecommerce launch checklist
