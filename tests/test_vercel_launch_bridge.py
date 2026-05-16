@@ -204,6 +204,7 @@ def test_public_offer_catalog_has_live_revenue_links() -> None:
     by_id = {offer["id"]: offer for offer in offers["offers"]}
 
     assert offers["schema"] == "aethermoore-offers-v1"
+    assert offers["updated_at"] == "2026-05-16"
     assert offers["payment_methods"]["card_checkout"]["provider"] == "Stripe hosted checkout"
     assert offers["payment_methods"]["kofi"]["url"] == "https://ko-fi.com/izdandavis"
     assert offers["payment_methods"]["cash_app"]["cashtag"] == "$IzzyDDavis7"
@@ -223,6 +224,26 @@ def test_public_offer_catalog_has_live_revenue_links() -> None:
     assert by_id["behind_the_scenes_pack"]["price_label"] == "$7"
     assert by_id["behind_the_scenes_pack"]["stripe_payment_link_id"] == "plink_1TXo24JTF2SuUODIoRc6T3DD"
     assert offers["usage_policy"]["service_fee_percent_range"] == [2, 5]
+
+
+def test_site_surfaces_recent_direct_process_pack() -> None:
+    products = (REPO_ROOT / "docs" / "products.html").read_text(encoding="utf-8")
+    offers_page = (REPO_ROOT / "docs" / "offers" / "index.html").read_text(encoding="utf-8")
+    manual = (REPO_ROOT / "docs" / "product-manual" / "index.html").read_text(encoding="utf-8")
+    homepage = (REPO_ROOT / "docs" / "index.html").read_text(encoding="utf-8")
+    payments = (REPO_ROOT / "docs" / "payments.html").read_text(encoding="utf-8")
+    llms = (REPO_ROOT / "docs" / "llms.txt").read_text(encoding="utf-8")
+    sitemap = (REPO_ROOT / "docs" / "sitemap.xml").read_text(encoding="utf-8")
+    checkout = "https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n"
+
+    for page in [products, offers_page, homepage, payments]:
+        assert checkout in page
+        assert "Behind-The-Scenes" in page or "Writing Process Pack" in page
+
+    assert "Behind-The-Scenes Process Pack" in manual
+    assert "KDP-safe author process product" in llms
+    assert "direct ebook editions" not in llms
+    assert "<lastmod>2026-05-16</lastmod>" in sitemap
 
 
 def test_public_app_config_explains_remote_update_boundary() -> None:
