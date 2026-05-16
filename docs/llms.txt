@@ -15,8 +15,9 @@ Canonical repository: https://github.com/issdandavis/SCBE-AETHERMOORE
 - Agent demos: https://aethermoore.com/SCBE-AETHERMOORE/agents.html
 - Chat: https://aethermoore.com/SCBE-AETHERMOORE/chat.html
 - Products: https://aethermoore.com/SCBE-AETHERMOORE/products.html
-- Bookshelf and direct ebook status: https://aethermoore.com/SCBE-AETHERMOORE/books.html
+- Bookshelf and KDP/direct-process status: https://aethermoore.com/SCBE-AETHERMOORE/books.html
 - Working AI writing and security guides: https://aethermoore.com/SCBE-AETHERMOORE/guides.html
+- Behind-the-scenes writing process pack checkout: https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n
 - AI Writing System download: https://aethermoore.com/SCBE-AETHERMOORE/downloads/ai-writing-system-guide.md
 - Humanization Pass download: https://aethermoore.com/SCBE-AETHERMOORE/downloads/humanization-pass-checklist.md
 - AI Security Governance download: https://aethermoore.com/SCBE-AETHERMOORE/downloads/security-governance-checklist.md
@@ -65,8 +66,9 @@ Low-cost path:
 - $20/month supporter path.
 - $29 Toolkit.
 - $29 Training Vault.
-- Bookshelf with current Amazon status and staged direct ebook editions: https://aethermoore.com/SCBE-AETHERMOORE/books.html
+- Bookshelf with current Amazon/KDP status: https://aethermoore.com/SCBE-AETHERMOORE/books.html
 - Free working guides and Markdown downloads for AI writing, humanization passes, and AI security: https://aethermoore.com/SCBE-AETHERMOORE/guides.html
+- $7 Behind-the-Scenes Writing Process Pack (process material, not the KDP book manuscripts): https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n
 - $99 AI Agent Workflow Snapshot starter review: https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l
 - $99 Shopify Store Ops Snapshot for one Shopify store or ecommerce launch setup: https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html
 - One payment center for Ko-fi, Cash App, card checkout, and invoice requests: https://aethermoore.com/SCBE-AETHERMOORE/payments.html

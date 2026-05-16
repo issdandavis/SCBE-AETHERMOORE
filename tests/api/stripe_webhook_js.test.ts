@@ -22,6 +22,7 @@ const WORKFLOW_SNAPSHOT_LINK_ID = 'plink_workflow_snapshot_test_99';
 const HEARTBEAT_LINK_ID = 'plink_heartbeat_test_99';
 const TOOLKIT_LINK_ID = 'plink_toolkit_test_29';
 const VAULT_LINK_ID = 'plink_vault_test_29';
+const MAKING_OF_LINK_ID = 'plink_making_of_test_7';
 
 function setEnv(): void {
   process.env.STRIPE_WEBHOOK_SECRET = TEST_SECRET;
@@ -30,6 +31,7 @@ function setEnv(): void {
   process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID = HEARTBEAT_LINK_ID;
   process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID = TOOLKIT_LINK_ID;
   process.env.STRIPE_VAULT_PAYMENT_LINK_ID = VAULT_LINK_ID;
+  process.env.STRIPE_MAKING_OF_PAYMENT_LINK_ID = MAKING_OF_LINK_ID;
   process.env.GITHUB_TOKEN = 'ghp_test_token';
   process.env.GITHUB_REPO = 'test-org/test-repo';
   process.env.POLLY_SNAPSHOT_DISPATCH_ENABLED = 'true';
@@ -43,8 +45,10 @@ function clearEnv(): void {
   delete process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID;
   delete process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID;
   delete process.env.STRIPE_VAULT_PAYMENT_LINK_ID;
+  delete process.env.STRIPE_MAKING_OF_PAYMENT_LINK_ID;
   delete process.env.SCBE_PAYMENT_LINK_TOOLKIT;
   delete process.env.SCBE_PAYMENT_LINK_VAULT;
+  delete process.env.SCBE_PAYMENT_LINK_MAKING_OF;
   delete process.env.GITHUB_TOKEN;
   delete process.env.GH_TOKEN;
   delete process.env.POLLY_TRAIN_GITHUB_TOKEN;
@@ -181,10 +185,16 @@ function heartbeatEvent(overrides: Record<string, unknown> = {}): string {
 }
 
 function productEvent(
-  productKey: 'toolkit' | 'vault',
+  productKey: 'toolkit' | 'vault' | 'making_of',
   overrides: Record<string, unknown> = {}
 ): string {
-  const linkId = productKey === 'toolkit' ? TOOLKIT_LINK_ID : VAULT_LINK_ID;
+  const linkId =
+    productKey === 'toolkit'
+      ? TOOLKIT_LINK_ID
+      : productKey === 'vault'
+        ? VAULT_LINK_ID
+        : MAKING_OF_LINK_ID;
+  const amount = productKey === 'making_of' ? 700 : 2900;
   return JSON.stringify({
     id: `evt_test_${productKey}`,
     type: 'checkout.session.completed',
@@ -193,7 +203,7 @@ function productEvent(
         id: `cs_test_${productKey}_29`,
         object: 'checkout.session',
         mode: 'payment',
-        amount_total: 2900,
+        amount_total: amount,
         currency: 'usd',
         payment_link: linkId,
         payment_intent: `pi_test_${productKey}`,
@@ -451,15 +461,24 @@ describe('stripe webhook — digital product detection', () => {
     expect(isVaultSession({ payment_link: VAULT_LINK_ID }, cfg)).toBe(true);
   });
 
+  it('matches making-of pack by payment_link id', () => {
+    const { isMakingOfSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = snapshotConfig();
+    expect(isMakingOfSession({ payment_link: MAKING_OF_LINK_ID }, cfg)).toBe(true);
+  });
+
   it('accepts existing SCBE product payment link env aliases', () => {
     clearEnv();
     process.env.SCBE_PAYMENT_LINK_TOOLKIT = 'plink_toolkit_alias';
     process.env.SCBE_PAYMENT_LINK_VAULT = 'plink_vault_alias';
-    const { isToolkitSession, isVaultSession, snapshotConfig } = stripeWebhook._private;
+    process.env.SCBE_PAYMENT_LINK_MAKING_OF = 'plink_making_of_alias';
+    const { isToolkitSession, isVaultSession, isMakingOfSession, snapshotConfig } =
+      stripeWebhook._private;
     const cfg = snapshotConfig();
 
     expect(isToolkitSession({ payment_link: 'plink_toolkit_alias' }, cfg)).toBe(true);
     expect(isVaultSession({ payment_link: 'plink_vault_alias' }, cfg)).toBe(true);
+    expect(isMakingOfSession({ payment_link: 'plink_making_of_alias' }, cfg)).toBe(true);
   });
 
   it('matches toolkit by explicit metadata + $29 payment when link id is absent', () => {
@@ -490,6 +509,23 @@ describe('stripe webhook — digital product detection', () => {
     };
     expect(isToolkitSession(session, cfg)).toBe(false);
     expect(isVaultSession(session, cfg)).toBe(false);
+  });
+
+  it('matches making-of pack by explicit metadata + $7 payment when link id is absent', () => {
+    const { isMakingOfSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = { ...snapshotConfig(), makingOfPaymentLinkId: '' };
+    expect(
+      isMakingOfSession(
+        {
+          mode: 'payment',
+          amount_total: 700,
+          currency: 'usd',
+          payment_link: 'plink_recreated',
+          metadata: { scbe_product: 'making_of' },
+        },
+        cfg
+      )
+    ).toBe(true);
   });
 
   it('rejects subscription mode even with matching toolkit metadata', () => {
@@ -665,6 +701,34 @@ describe('stripe webhook — event routing', () => {
     expect(rec.product_name).toBe('SCBE AI Governance Toolkit');
     expect(rec.package_name).toBe('SCBE_AI_Governance_Toolkit_v1.zip');
     expect(rec.source).toBe('ai-governance-toolkit');
+  });
+
+  it('making-of checkout completes → product delivery dispatch payload', async () => {
+    let capturedBody: string | undefined;
+    vi.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
+      capturedBody = (init as { body: string }).body;
+      return new Response('{}', { status: 200 });
+    });
+    const raw = productEvent('making_of');
+    const sig = signPayload(raw, TEST_SECRET);
+    const req = makeReq({ rawBody: raw, headers: { 'stripe-signature': sig } });
+    const res = makeRes();
+    await stripeWebhook(req as never, res as never);
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { handled: string; product_key: string }).handled).toBe('product_delivery');
+    expect((res.body as { handled: string; product_key: string }).product_key).toBe('making_of');
+    expect(capturedBody).toBeDefined();
+    const dispatched = JSON.parse(capturedBody as string);
+    expect(dispatched.event_type).toBe('polly_product_delivery');
+    const rec = dispatched.client_payload.record;
+    expect(rec.kind).toBe('product_delivery');
+    expect(rec.session_id).toBe('cs_test_making_of_29');
+    expect(rec.contact_email).toBe('making_of@example.com');
+    expect(rec.amount_total).toBe(700);
+    expect(rec.product_key).toBe('making_of');
+    expect(rec.product_name).toBe('AetherMoore Behind-the-Scenes Writing Process Pack');
+    expect(rec.package_name).toBe('AetherMoore_Behind_The_Scenes_Writing_Process_Pack_v1.zip');
+    expect(rec.source).toBe('behind-the-scenes-writing-process-pack');
   });
 
   it('ambiguous $29 checkout completes → checkout_other, no dispatch', async () => {

@@ -171,6 +171,73 @@ MIT License — use commercially, modify freely, attribution appreciated.
 (c) 2026 Issac Davis / AetherMoore
 """
 
+# ---- Product: Behind-the-Scenes Writing Process Pack ----
+
+MAKING_OF_FILES = [
+    ("docs/downloads/ai-writing-system-guide.md", "guides/ai-writing-system-guide.md"),
+    ("docs/downloads/humanization-pass-checklist.md", "guides/humanization-pass-checklist.md"),
+    ("docs/downloads/security-governance-checklist.md", "guides/security-governance-checklist.md"),
+    ("docs/books.html", "site-source/books.html"),
+    ("docs/guides.html", "site-source/guides.html"),
+    ("docs/books/six-tongues-protocol.html", "site-source/books/six-tongues-protocol.html"),
+    ("docs/books/miracle-memory.html", "site-source/books/miracle-memory.html"),
+]
+
+MAKING_OF_README = """# AetherMoore Behind-the-Scenes Writing Process Pack
+
+Thank you for purchasing the AetherMoore Behind-the-Scenes Writing Process Pack.
+
+## What This Is
+
+This is a process product: AI-assisted writing guides, humanization checklists,
+book-page source material, and practical notes on how the AetherMoore book and
+guide surfaces are built.
+
+## What This Is Not
+
+This package does NOT include the manuscript text of:
+
+- The Six Tongues Protocol
+- The Miracle Was The Memory
+
+Those books stay on Amazon/KDP. This packet is separate making-of/process
+material for readers and writers who want to study the workflow.
+
+## Start Here
+
+1. Read `PROCESS_NOTES.txt`.
+2. Open `guides/ai-writing-system-guide.md`.
+3. Open `guides/humanization-pass-checklist.md`.
+4. Use `site-source/` to see how the book pages and guide hub are positioned.
+
+## Support
+
+- Email: ai@aethermoore.com
+- Site: https://aethermoore.com/SCBE-AETHERMOORE/guides.html
+
+(c) 2026 Issac Davis / AetherMoore
+"""
+
+MAKING_OF_PROCESS_NOTES = """AETHERMOORE WRITING PROCESS NOTES
+
+The working method:
+
+1. Put the book into control documents instead of one giant prompt.
+2. Keep outline, continuity, character wants, voice notes, and scene fragments separate.
+3. Let AI draft too much, then cut and layer with human voice.
+4. Do not humanize by sprinkling typos. Humanize by repairing thought path, scene pressure, dialogue wants, body language, and object logic.
+5. Keep the book itself on KDP/KDP Select when enrolled there. Sell separate process material directly.
+
+The useful split:
+
+- Amazon/KDP sells the finished book.
+- AetherMoore sells the making-of lane, guide lane, checklists, and workflow.
+
+Why this packet exists:
+
+Readers and writers often want the process behind a book more than a vague prompt list. This packet preserves the practical layer: how scenes are scaffolded, how AI tells are detected, how voice is blended, and how the site routes books, guides, and paid process material without mixing up rights.
+"""
+
 
 def _count_jsonl_records(path: Path) -> int:
     """Count non-empty lines in a JSONL file."""
@@ -265,9 +332,44 @@ def package_vault(output_dir: Path) -> Path:
     return zip_path
 
 
+def package_making_of(output_dir: Path) -> Path:
+    """Package the behind-the-scenes writing process pack."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    zip_path = output_dir / "AetherMoore_Behind_The_Scenes_Writing_Process_Pack_v1.zip"
+
+    with ZipFile(zip_path, "w", ZIP_DEFLATED) as zf:
+        zf.writestr("README.md", MAKING_OF_README)
+        zf.writestr("PROCESS_NOTES.txt", MAKING_OF_PROCESS_NOTES)
+        zf.writestr(
+            "LICENSE", "Copyright (c) 2026 Issac Davis / AetherMoore. Personal reader/writer use allowed.\n"
+        )
+
+        for src_rel, dst_rel in MAKING_OF_FILES:
+            src = REPO_ROOT / src_rel
+            if src.exists():
+                zf.write(src, dst_rel)
+                print(f"  + {dst_rel}")
+            else:
+                print(f"  ! MISSING: {src_rel}")
+
+        metadata = {
+            "product": "AetherMoore Behind-the-Scenes Writing Process Pack",
+            "version": "1.0",
+            "packaged_at": datetime.now(timezone.utc).isoformat(),
+            "author": "Issac Davis",
+            "does_not_include": ["The Six Tongues Protocol manuscript", "The Miracle Was The Memory manuscript"],
+            "checkout_url": "https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n",
+        }
+        zf.writestr("metadata.json", json.dumps(metadata, indent=2))
+
+    size_mb = zip_path.stat().st_size / (1024 * 1024)
+    print(f"\nBehind-the-scenes pack packaged: {zip_path} ({size_mb:.1f} MB)")
+    return zip_path
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Package SCBE products for delivery")
-    parser.add_argument("--product", choices=["toolkit", "vault", "all"], default="all")
+    parser.add_argument("--product", choices=["toolkit", "vault", "making-of", "all"], default="all")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
 
@@ -281,6 +383,11 @@ def main() -> None:
     if args.product in ("vault", "all"):
         print("=== Packaging AI Security Training Vault ===")
         package_vault(args.output_dir)
+        print()
+
+    if args.product in ("making-of", "all"):
+        print("=== Packaging Behind-the-Scenes Writing Process Pack ===")
+        package_making_of(args.output_dir)
         print()
 
     print(

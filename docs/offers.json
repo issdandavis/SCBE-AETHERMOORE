@@ -186,6 +186,26 @@
       },
       "value_position": "priced as a low-friction dataset and benchmark starter rather than a paid compute commitment",
       "status": "live"
+    },
+    {
+      "id": "behind_the_scenes_pack",
+      "name": "AetherMoore Behind-the-Scenes Writing Process Pack",
+      "price_label": "$7",
+      "type": "digital_download",
+      "checkout_url": "https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n",
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/guides.html#behind-the-scenes-pack",
+      "delivery": {
+        "mode": "stripe_webhook_product_delivery",
+        "package_name": "AetherMoore_Behind_The_Scenes_Writing_Process_Pack_v1.zip",
+        "requires_env": [
+          "STRIPE_MAKING_OF_PAYMENT_LINK_ID or SCBE_PAYMENT_LINK_MAKING_OF",
+          "SCBE_DELIVERY_TOKEN",
+          "SCBE_MAKING_OF_BLOB_URL"
+        ]
+      },
+      "value_position": "priced as a small reader/writer process packet while the books themselves stay on KDP/KDP Select",
+      "status": "live",
+      "stripe_payment_link_id": "plink_1TXo24JTF2SuUODIoRc6T3DD"
     }
   ]
 }

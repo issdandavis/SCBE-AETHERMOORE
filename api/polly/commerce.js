@@ -202,6 +202,27 @@ const PRODUCT_CATALOG = [
     ],
   },
   {
+    sku: 'behind-the-scenes-writing-process-pack',
+    name: 'AetherMoore Behind-the-Scenes Writing Process Pack',
+    priceLabel: '$7 one-time',
+    short:
+      'PDF/TXT process packet covering the making-of notes, AI writing workflow, revision passes, and publishing lane. The books themselves stay on Amazon/KDP.',
+    checkoutUrl: checkoutUrlFromEnv(
+      'SCBE_PAYMENT_LINK_MAKING_OF',
+      'https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n'
+    ),
+    deliveryUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/guides.html#behind-the-scenes-pack',
+    keywords: [
+      'behind the scenes',
+      'making of',
+      'writing process pack',
+      'ai writing process',
+      'process pack',
+      'book process',
+      'humanization',
+    ],
+  },
+  {
     sku: 'five-dollar-tip-jar',
     name: '$5 SCBE Tip Jar',
     priceLabel: '$5 one-time',
