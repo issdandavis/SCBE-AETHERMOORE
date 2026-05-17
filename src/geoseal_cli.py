@@ -5171,7 +5171,102 @@ def build_parser() -> argparse.ArgumentParser:
     p_wf_run.add_argument("--verbose", "-v", action="store_true")
     p_wf_run.set_defaults(func=cmd_workflow, workflow_cmd="run")
 
+    p_terminus = sub.add_parser(
+        "terminus-training",
+        help="Run Terminus guild agent training (benchmark or scripted scenario)",
+    )
+    p_terminus.add_argument("--mode", choices=["benchmark", "scripted"], default="benchmark")
+    p_terminus.add_argument("--scenario", default="guild_math_intro", help="Scenario name for scripted mode")
+    p_terminus.add_argument("--agent-id", default="benchmark-agent")
+    p_terminus.add_argument("--out-dir", default="artifacts/terminus_training")
+    p_terminus.add_argument("--json", action="store_true")
+    p_terminus.set_defaults(func=cmd_terminus_training)
+
+    p_yy = sub.add_parser("yin-yang-dual", help="Build a KO/DR yin-yang dual token packet")
+    p_yy.add_argument("--ko-text", required=True)
+    p_yy.add_argument("--dr-text", required=True)
+    p_yy.add_argument("--frame", type=int, choices=[0, 1], default=0, help="Active frame: 0=KO, 1=DR")
+    p_yy.add_argument("--size", type=int, default=9, help="Odd surface size >= 5")
+    p_yy.add_argument("--json", action="store_true")
+    p_yy.set_defaults(func=cmd_yin_yang_dual)
+
+    p_pair = sub.add_parser(
+        "pair-agent-training",
+        help="Build the GeoShell Builder/Navigator pair-agent SFT dataset",
+    )
+    p_pair.add_argument("--output-dir", default="training-data/sft")
+    p_pair.add_argument("--event-path", default="artifacts/geoshell/pair_agent/latest_events.json")
+    p_pair.add_argument("--json", action="store_true")
+    p_pair.set_defaults(func=cmd_pair_agent_training)
+
     return p
+
+
+def cmd_terminus_training(args: argparse.Namespace) -> int:
+    """Bridge the geoseal CLI to the Terminus guild training runner."""
+    from scripts.benchmark.terminus_training_runner import (
+        BENCHMARK_PATHS,
+        run_benchmark,
+        run_scripted,
+    )
+
+    out_dir = Path(args.out_dir)
+    if args.mode == "scripted":
+        payload = run_scripted(
+            BENCHMARK_PATHS[args.scenario],
+            agent_id=args.agent_id,
+            scenario=args.scenario,
+            out_dir=out_dir,
+        )
+    else:
+        payload = run_benchmark(out_dir, agent_id=args.agent_id)
+
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        score = payload.get("total_score", payload.get("score"))
+        print(f"pass={payload.get('pass', 'n/a')} score={score}")
+    return 0
+
+
+def cmd_yin_yang_dual(args: argparse.Namespace) -> int:
+    """Bridge the geoseal CLI to the KO/DR yin-yang dual token builder."""
+    from src.tokenizer.yin_yang_lattice import build_yin_yang_dual_packet
+
+    packet = build_yin_yang_dual_packet(
+        ko_text=args.ko_text,
+        dr_text=args.dr_text,
+        size=args.size,
+        active_frame=args.frame,
+    )
+    if args.json:
+        print(json.dumps(packet, indent=2))
+    else:
+        print(f"active={packet['active_tongue']} schema={packet['schema_version']}")
+    return 0
+
+
+def cmd_pair_agent_training(args: argparse.Namespace) -> int:
+    """Bridge the geoseal CLI to the GeoShell pair-agent SFT builder."""
+    from scripts.training_data.build_geoshell_pair_agent_sft import (
+        build_dataset,
+        write_outputs,
+    )
+
+    dataset = build_dataset()
+    paths = write_outputs(dataset, Path(args.output_dir), Path(args.event_path))
+    payload = {
+        "ok": True,
+        "train_count": len(dataset["train"]),
+        "holdout_count": len(dataset["holdout"]),
+        "paths": paths,
+        "geoshell_event_feed": paths["events"],
+    }
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(f"ok train={payload['train_count']} holdout={payload['holdout_count']} " f"manifest={paths['manifest']}")
+    return 0
 
 
 def main(argv: Optional[List[str]] = None) -> int:
