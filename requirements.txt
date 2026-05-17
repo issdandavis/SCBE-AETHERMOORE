@@ -17,7 +17,7 @@ jsonschema>=4.23.0
 # dedicated PQC Native liboqs workflow using liboqs 0.15.0. Normal PR CI may
 # force the deterministic fallback path, but release/security validation must
 # pass native liboqs Tier 1.
-liboqs-python==0.14.1
+liboqs-python==0.15.0
 # python-oqs is currently unavailable in PyPI CI environments; use liboqs-python.
 pycryptodome>=3.20.0
 argon2-cffi>=23.1.0
