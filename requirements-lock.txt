@@ -161,7 +161,7 @@ playwright==1.59.0
 pluggy==1.6.0
 ply==3.11
 prance==25.4.8.0
-pre_commit==4.5.1
+pre_commit==4.6.0
 prompt_toolkit==3.0.52
 propcache==0.5.2
 protobuf==7.34.1
