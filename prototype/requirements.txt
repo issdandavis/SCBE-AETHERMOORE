@@ -1,7 +1,7 @@
 # ToyPHDM Prototype Dependencies
 
 # Core
-numpy>=1.24.0
+numpy>=2.4.5
 
 # Visualization
 matplotlib>=3.10.9
