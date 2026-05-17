@@ -5211,15 +5211,22 @@ def cmd_terminus_training(args: argparse.Namespace) -> int:
     )
 
     out_dir = Path(args.out_dir)
-    if args.mode == "scripted":
-        payload = run_scripted(
-            BENCHMARK_PATHS[args.scenario],
-            agent_id=args.agent_id,
-            scenario=args.scenario,
-            out_dir=out_dir,
-        )
-    else:
-        payload = run_benchmark(out_dir, agent_id=args.agent_id)
+    try:
+        if args.mode == "scripted":
+            if args.scenario not in BENCHMARK_PATHS:
+                raise SystemExit(
+                    f"error: unknown scenario {args.scenario!r}; choose from {', '.join(sorted(BENCHMARK_PATHS))}"
+                )
+            payload = run_scripted(
+                BENCHMARK_PATHS[args.scenario],
+                agent_id=args.agent_id,
+                scenario=args.scenario,
+                out_dir=out_dir,
+            )
+        else:
+            payload = run_benchmark(out_dir, agent_id=args.agent_id)
+    except (ValueError, KeyError, FileNotFoundError) as exc:
+        raise SystemExit(f"error: {exc}")
 
     if args.json:
         print(json.dumps(payload, indent=2))
@@ -5233,12 +5240,15 @@ def cmd_yin_yang_dual(args: argparse.Namespace) -> int:
     """Bridge the geoseal CLI to the KO/DR yin-yang dual token builder."""
     from src.tokenizer.yin_yang_lattice import build_yin_yang_dual_packet
 
-    packet = build_yin_yang_dual_packet(
-        ko_text=args.ko_text,
-        dr_text=args.dr_text,
-        size=args.size,
-        active_frame=args.frame,
-    )
+    try:
+        packet = build_yin_yang_dual_packet(
+            ko_text=args.ko_text,
+            dr_text=args.dr_text,
+            size=args.size,
+            active_frame=args.frame,
+        )
+    except (ValueError, KeyError) as exc:
+        raise SystemExit(f"error: {exc}")
     if args.json:
         print(json.dumps(packet, indent=2))
     else:
@@ -5253,8 +5263,11 @@ def cmd_pair_agent_training(args: argparse.Namespace) -> int:
         write_outputs,
     )
 
-    dataset = build_dataset()
-    paths = write_outputs(dataset, Path(args.output_dir), Path(args.event_path))
+    try:
+        dataset = build_dataset()
+        paths = write_outputs(dataset, Path(args.output_dir), Path(args.event_path))
+    except (ValueError, KeyError, OSError) as exc:
+        raise SystemExit(f"error: {exc}")
     payload = {
         "ok": True,
         "train_count": len(dataset["train"]),
