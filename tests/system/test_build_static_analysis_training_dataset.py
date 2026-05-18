@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = REPO_ROOT / "scripts" / "system" / "build_static_analysis_training_dataset.py"
@@ -17,6 +19,10 @@ def _load_module(path: Path, name: str):
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def _url_hosts(text: str) -> set[str]:
+    return {urlparse(match.group(0)).netloc for match in re.finditer(r"https?://[^\s)\"']+", text)}
 
 
 def test_redaction_removes_tokens_and_home_path() -> None:
@@ -36,7 +42,7 @@ def test_scenarios_include_shopify_tailwind_and_safety_gate() -> None:
     assert "shopify_tailwind_cdn_to_bundled_vite" in scenarios
     assert "safe_reverse_engineering_policy_gate" in scenarios
     assert "reverse_engineering_levels_video_to_training" in scenarios
-    assert "cdn.tailwindcss.com" in scenarios["shopify_tailwind_cdn_to_bundled_vite"].user_prompt
+    assert "cdn.tailwindcss.com" in _url_hosts(scenarios["shopify_tailwind_cdn_to_bundled_vite"].user_prompt)
     assert "offensive payload" in " ".join(scenarios["safe_reverse_engineering_policy_gate"].remediation_steps)
     video = scenarios["reverse_engineering_levels_video_to_training"]
     assert "strings" in " ".join(video.analysis_steps)
