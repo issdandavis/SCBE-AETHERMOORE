@@ -1,9 +1,33 @@
 from __future__ import annotations
 
+from html.parser import HTMLParser
 import json
 from pathlib import Path
+from urllib.parse import urlparse
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+class _HrefParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.hrefs: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        for name, value in attrs:
+            if name == "href" and value:
+                self.hrefs.append(value)
+
+
+def _hrefs(html: str) -> list[str]:
+    parser = _HrefParser()
+    parser.feed(html)
+    return parser.hrefs
+
+
+def _assert_url_present(html: str, expected: str) -> None:
+    expected_url = urlparse(expected)
+    assert any(urlparse(href) == expected_url for href in _hrefs(html))
 
 
 def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
@@ -285,9 +309,9 @@ def test_shopify_command_center_page_exposes_demo_repo_and_payment_paths() -> No
     sitemap = (REPO_ROOT / "docs" / "sitemap.xml").read_text(encoding="utf-8")
 
     assert "Shopify Store Ops Snapshot" in page
-    assert "https://shopify-command-center-165664533862.us-west2.run.app" in page
-    assert "https://github.com/issdandavis/Shopify-Command-Center" in page
-    assert "https://ko-fi.com/izdandavis" in page
+    _assert_url_present(page, "https://shopify-command-center-165664533862.us-west2.run.app")
+    _assert_url_present(page, "https://github.com/issdandavis/Shopify-Command-Center")
+    _assert_url_present(page, "https://ko-fi.com/izdandavis")
     assert "$IzzyDDavis7" in page
     assert "static/polly-sidebar-agent.js" in page
     assert "Shopify Store Ops Snapshot" in products

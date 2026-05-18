@@ -13,6 +13,7 @@ import hashlib
 import json
 import math
 import sys
+import tempfile
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -23,6 +24,14 @@ DEFAULT_POLICY_PATH = REPO_ROOT / "config" / "security" / "traditional_security_
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "artifacts" / "security" / "traditional_layers"
 SCHEMA_VERSION = "scbe_traditional_security_layers_v1"
 EICAR_ASCII = b"X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*"
+ALLOWED_PATH_ROOTS = tuple(
+    root.resolve()
+    for root in (
+        REPO_ROOT,
+        Path.home(),
+        Path(tempfile.gettempdir()),
+    )
+)
 
 
 @dataclass(frozen=True)
@@ -53,8 +62,41 @@ def now_utc() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def _is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
+def resolve_local_path(path: Path, *, must_exist: bool = False) -> Path:
+    """Resolve a caller-supplied path and enforce local allowed roots.
+
+    The security layer is a local artifact triage tool. It can inspect files in
+    the repo, the user's profile, or the OS temp tree used by tests, but it must
+    not let API/CLI input become an arbitrary filesystem path expression.
+    """
+    resolved = path.expanduser().resolve(strict=must_exist)
+    if not any(_is_relative_to(resolved, root) for root in ALLOWED_PATH_ROOTS):
+        allowed = ", ".join(str(root) for root in ALLOWED_PATH_ROOTS)
+        raise ValueError(f"path is outside allowed local roots: {resolved} (allowed: {allowed})")
+    return resolved
+
+
+def resolve_local_file(path: Path) -> Path:
+    resolved = resolve_local_path(path, must_exist=True)
+    if not resolved.is_file():
+        raise FileNotFoundError(resolved)
+    return resolved
+
+
+def resolve_local_output_dir(path: Path) -> Path:
+    return resolve_local_path(path, must_exist=False)
+
+
 def public_path(path: Path) -> str:
-    raw = str(path.resolve())
+    raw = str(resolve_local_path(path, must_exist=False))
     replacements = {
         str(REPO_ROOT): "%REPO%",
         str(Path.home()): "%USERPROFILE%",
@@ -66,6 +108,7 @@ def public_path(path: Path) -> str:
 
 
 def sha256_file(path: Path) -> str:
+    path = resolve_local_file(path)
     digest = hashlib.sha256()
     with path.open("rb") as fh:
         for chunk in iter(lambda: fh.read(1024 * 1024), b""):
@@ -107,6 +150,7 @@ def magic_kind(data: bytes) -> str:
 
 
 def load_policy(path: Path = DEFAULT_POLICY_PATH) -> dict[str, Any]:
+    path = resolve_local_path(path, must_exist=False)
     if not path.exists():
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
@@ -124,8 +168,8 @@ def _is_trusted_repo_path(path: Path, policy: dict[str, Any]) -> bool:
 def evaluate_artifact(
     path: Path, policy_path: Path = DEFAULT_POLICY_PATH, max_bytes: int = 5_000_000
 ) -> TraditionalSecurityReport:
-    if not path.exists() or not path.is_file():
-        raise FileNotFoundError(path)
+    path = resolve_local_file(path)
+    policy_path = resolve_local_path(policy_path, must_exist=False)
     policy = load_policy(policy_path)
     data = path.read_bytes()
     scanned = data[:max_bytes]
@@ -250,6 +294,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     report = evaluate_artifact(args.artifact, policy_path=args.policy)
     payload = report_to_dict(report)
+    args.output_dir = resolve_local_output_dir(args.output_dir)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     out_path = args.output_dir / f"{report.artifact_sha256[:16]}.json"
     out_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
