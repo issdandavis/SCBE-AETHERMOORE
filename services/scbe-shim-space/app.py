@@ -114,6 +114,23 @@ class TriageRequest(BaseModel):
     max_bytes: Optional[int] = 5_000_000
 
 
+def _resolve_triage_artifact_path(raw_path: str):
+    import pathlib as _pl
+    import tempfile as _tempfile
+
+    candidate = _pl.Path(raw_path).expanduser().resolve(strict=True)
+    allowed_roots = [
+        _pl.Path.cwd().resolve(),
+        _pl.Path(__file__).resolve().parent,
+        _pl.Path(_tempfile.gettempdir()).resolve(),
+    ]
+    if not any(candidate == root or root in candidate.parents for root in allowed_roots):
+        raise HTTPException(status_code=400, detail="artifact path is outside allowed local roots")
+    if not candidate.is_file():
+        raise HTTPException(status_code=404, detail="artifact is not a file")
+    return candidate
+
+
 @app.post("/v1/scbe/triage")
 def scbe_triage(req: TriageRequest) -> dict:
     """Run Codex's traditional security layers + signal fusion on a local
@@ -129,11 +146,10 @@ def scbe_triage(req: TriageRequest) -> dict:
             status_code=501,
             detail="traditional_security_layers not importable in this deploy; mount the repo or rebuild with --build-arg INCLUDE_REPO=1",
         )
-    import pathlib as _pl
-
-    p = _pl.Path(req.artifact_path)
-    if not p.exists():
-        raise HTTPException(status_code=404, detail=f"artifact not found: {p}")
+    try:
+        p = _resolve_triage_artifact_path(req.artifact_path)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="artifact not found") from None
     try:
         report = _evaluate_artifact(p, max_bytes=req.max_bytes or 5_000_000)  # type: ignore
     except Exception as e:
