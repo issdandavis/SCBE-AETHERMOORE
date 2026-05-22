@@ -74,7 +74,12 @@ from src.ca_lexicon import (
     trit_vector,
 )
 from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
-from src.tokenizer.code_weight_packets import semantic_operation_signature_from_tokens
+from src.tokenizer.code_weight_packets import (
+    analyze_chemical_composition,
+    resolve_element,
+    semantic_operation_signature_from_tokens,
+)
+from src.tokenizer.code_weight_packets import _semantic_class as _stisa_semantic_class
 from src.crypto.geoseal_execution_gate import (
     DEFAULT_AUDIT_SECRET_ENV,
     DEFAULT_EXEC_AUDIT_LOG,
@@ -83,6 +88,12 @@ from src.crypto.geoseal_execution_gate import (
     execute_governed_command,
     scan_command,
 )
+from src.crypto.geoseal_legitimacy import CoarseLocation, run_legitimacy_trial
+from src.research_navigation import (
+    build_research_evidence_packet,
+    build_youtube_navigation_packet,
+)
+from src.coding_board.pipeline import run_coding_trial
 from src.agentic.meet_in_the_middle import (
     CodeHalf,
     SeamContract,
@@ -1172,22 +1183,21 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
     class_names = set(re.findall(r"\bclass\s+([A-Za-z_][A-Za-z0-9_]*)", source))
     function_names = set(re.findall(r"\bdef\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", source))
     stisa_rows = []
-    for i, tok in enumerate(lexical_tokens):
+    stisa_elements: list[dict[str, Any]] = []
+    for tok in lexical_tokens:
+        semantic_class = _stisa_semantic_class(tok)
+        element = resolve_element(tok, semantic_class)
+        stisa_elements.append(element)
         stisa_rows.append(
             {
                 "token": tok,
-                "feature_vector": [
-                    float((len(tok) + i) % 119),
-                    float((i % 18) + 1),
-                    float((i % 7) + 1),
-                    float((len(tok) % 8) + 1),
-                    float(min(4.0, (sum(ord(c) for c in tok) % 400) / 100.0)),
-                    float((i % 7) + 1),
-                    float((i % 6) + 1),
-                    0.0,
-                ],
+                "semantic_class": semantic_class,
+                "feature_vector": [float(x) for x in element["feat"]],
             }
         )
+    stisa_chemistry = analyze_chemical_composition(
+        lexical_tokens, stisa_elements, operation_path=semantic_operation["operation_path"]
+    )
     language_views = [{code: LANG_MAP[code], "snippet": emit_code("add", code, a="x", b="y")} for code in TONGUE_NAMES]
     return {
         "version": "scbe-code-weight-packet-v1",
@@ -1220,19 +1230,21 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
             "field_definitions": [
                 {"name": n}
                 for n in [
-                    "Z_proxy",
-                    "group_proxy",
-                    "period_proxy",
-                    "valence_proxy",
-                    "chi_proxy",
-                    "band_flag",
+                    "Z",
+                    "group",
+                    "period",
+                    "valence",
+                    "chi",
+                    "band",
                     "tongue_id",
                     "reserved",
                 ]
             ],
             "token_rows": stisa_rows,
             "binary_groups": ([{"group_id": "g0", "tokens": lexical_tokens[:8]}] if lexical_tokens else []),
+            "chemical_composition": stisa_chemistry,
         },
+        "chemical_composition": stisa_chemistry,
         "structural_parse": {
             "provider": "tree_sitter",
             "planned_provider": "tree_sitter",
@@ -1515,12 +1527,12 @@ def _build_topology_view(packet: dict[str, Any], max_binary_nodes: int = 8) -> d
         "version": "scbe-topology-view-v1",
         "route_tongue": packet["route"]["tongue"],
         "axes": [
-            "Z_proxy",
-            "group_proxy",
-            "period_proxy",
-            "valence_proxy",
-            "chi_proxy",
-            "band_flag",
+            "Z",
+            "group",
+            "period",
+            "valence",
+            "chi",
+            "band",
             "tongue_id",
             "reserved",
         ],
@@ -2396,6 +2408,133 @@ def cmd_exec(args: argparse.Namespace) -> int:
     if not result.ran:
         return 2
     return result.returncode or 0
+
+
+def cmd_legitimacy_trial(args: argparse.Namespace) -> int:
+    location = CoarseLocation(
+        source=args.location_source,
+        label=args.location_label,
+        confidence=args.location_confidence,
+    )
+    cleaned = _strip_argv_separator(args.command)
+    command = subprocess.list2cmdline(cleaned) if isinstance(cleaned, list) and cleaned else None
+    payload = run_legitimacy_trial(
+        goal=args.goal,
+        expected_tool=args.tool,
+        origin=args.origin,
+        expected_state=args.expected_state,
+        privacy=args.privacy,
+        command=command,
+        workspace=Path(args.workspace) if args.workspace else None,
+        location=location,
+        network_state=args.network_state,
+    )
+    decision = payload["decision"]
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(
+            f"[legitimacy] decision={decision['decision']} "
+            f"allowed_cli={decision['allowed_cli']} score={decision['score']}"
+        )
+        for finding in decision["findings"]:
+            print(f"  - {finding['rule']}: {finding['message']}")
+        print(f"[seal] packet_sha256={decision['packet_sha256']}")
+    if decision["decision"] == "DENY":
+        return 3
+    if decision["decision"] == "ESCALATE":
+        return 2
+    if decision["decision"] == "PROBE_ONLY":
+        return 1
+    return 0
+
+
+def cmd_research_nav(args: argparse.Namespace) -> int:
+    content = None
+    if args.content_file:
+        content = Path(args.content_file).read_text(encoding="utf-8")
+    elif args.content:
+        content = args.content
+    packet = build_research_evidence_packet(
+        url=args.url,
+        content=content,
+        fetch=not args.no_fetch,
+        max_links=args.max_links,
+        timeout=args.timeout,
+    ).to_dict()
+    if args.json:
+        print(json.dumps(packet, indent=2, ensure_ascii=False))
+    else:
+        print(f"[research-nav] status={packet['status']} title={packet['title'] or '-'}")
+        print(f"[research-nav] url={packet['resolved_url']}")
+        print(
+            f"[research-nav] verdict={packet['security'].get('verdict')} "
+            f"decision={packet['security'].get('governance_decision')}"
+        )
+        print(packet["text_excerpt"][:500])
+    return 0 if packet["status"] not in {"fetch_error"} else 1
+
+
+def cmd_youtube_nav(args: argparse.Namespace) -> int:
+    packet = build_youtube_navigation_packet(
+        target=args.target,
+        fetch_metadata=args.fetch_metadata,
+        fetch_transcript=args.fetch_transcript,
+        languages=args.language or ["en"],
+        max_links=args.max_links,
+    )
+    if args.json:
+        print(json.dumps(packet, indent=2, ensure_ascii=False))
+    else:
+        transcript = packet["transcript"]
+        print(f"[youtube-nav] video_id={packet['video_id']}")
+        print(f"[youtube-nav] url={packet['canonical_url']}")
+        print(
+            f"[youtube-nav] metadata={packet['metrics']['has_metadata']} "
+            f"transcript={transcript['available']} segments={transcript['segment_count']}"
+        )
+        if transcript["text_excerpt"]:
+            print(transcript["text_excerpt"][:500])
+        if transcript["error"]:
+            print(f"[youtube-nav] transcript_error={transcript['error']}", file=sys.stderr)
+    return 0 if not packet["transcript"]["error"] else 1
+
+
+def cmd_coding_trial(args: argparse.Namespace) -> int:
+    location = CoarseLocation(
+        source=args.location_source,
+        label=args.location_label,
+        confidence=args.location_confidence,
+    )
+    cleaned = _strip_argv_separator(args.command)
+    payload = run_coding_trial(
+        goal=args.goal,
+        command=cleaned if isinstance(cleaned, list) else [str(cleaned)],
+        workspace=Path(args.workspace) if args.workspace else None,
+        origin=args.origin,
+        expected_tool=args.tool,
+        expected_state=args.expected_state,
+        privacy=args.privacy,
+        location=location,
+        network_state=args.network_state,
+        timeout=args.timeout,
+    )
+    if args.json:
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+    else:
+        legitimacy = payload["legitimacy"]["decision"]
+        probe = payload["probe"]
+        print(
+            f"[coding-trial] legitimacy={legitimacy['decision']} "
+            f"probe={probe['mode']} legal={probe['legal']} accepted={payload['accepted']}"
+        )
+        if probe.get("reason"):
+            print(f"[coding-trial] reason={probe['reason']}")
+    if payload["legitimacy"]["decision"]["decision"] == "DENY":
+        return 3
+    if payload["accepted"]:
+        return 0
+    return 1
 
 
 # ---------------------------------------------------------------------------
@@ -4842,6 +4981,93 @@ def build_parser() -> argparse.ArgumentParser:
     p_exec.add_argument("--no-audit", action="store_true")
     p_exec.add_argument("--json", action="store_true")
     p_exec.set_defaults(func=cmd_exec)
+
+    p_legitimacy = sub.add_parser(
+        "legitimacy-trial",
+        help="Evaluate time/location/workspace/intent context before opening CLI/tool authority",
+    )
+    p_legitimacy.add_argument("--goal", required=True, help="Human-readable goal or command intent")
+    p_legitimacy.add_argument("--tool", required=True, help="Expected tool/op, e.g. terminal.command.request")
+    p_legitimacy.add_argument(
+        "--origin",
+        default="user",
+        choices=["user", "agent", "workflow"],
+        help="Who is requesting authority",
+    )
+    p_legitimacy.add_argument("--expected-state", default="unspecified")
+    p_legitimacy.add_argument("--privacy", default="local_only", choices=["local_only", "hosted"])
+    p_legitimacy.add_argument("--workspace", default=None, help="Workspace root for write/execute authority")
+    p_legitimacy.add_argument(
+        "--location-source",
+        default="unknown",
+        choices=["user_confirmed", "network", "device", "simulated", "unknown"],
+    )
+    p_legitimacy.add_argument("--location-label", default="unknown")
+    p_legitimacy.add_argument("--location-confidence", type=float, default=0.0)
+    p_legitimacy.add_argument(
+        "--network-state",
+        default="unknown",
+        choices=["offline", "local", "online", "unknown"],
+    )
+    p_legitimacy.add_argument(
+        "command",
+        nargs=argparse.REMAINDER,
+        help="Optional command shape to parse/scan after --",
+    )
+    p_legitimacy.add_argument("--json", action="store_true")
+    p_legitimacy.set_defaults(func=cmd_legitimacy_trial)
+
+    p_research_nav = sub.add_parser(
+        "research-nav",
+        help="Build a structured evidence packet for a web source without ad-hoc scraping output",
+    )
+    p_research_nav.add_argument("--url", required=True)
+    p_research_nav.add_argument("--content", default=None, help="Inline content for offline packet tests")
+    p_research_nav.add_argument("--content-file", default=None, help="Read source content from a local file")
+    p_research_nav.add_argument("--no-fetch", action="store_true", help="Do not fetch URL; use inline/local content only")
+    p_research_nav.add_argument("--max-links", type=int, default=20)
+    p_research_nav.add_argument("--timeout", type=float, default=12.0)
+    p_research_nav.add_argument("--json", action="store_true")
+    p_research_nav.set_defaults(func=cmd_research_nav)
+
+    p_youtube_nav = sub.add_parser(
+        "youtube-nav",
+        help="Build a structured YouTube navigation packet with optional transcript evidence",
+    )
+    p_youtube_nav.add_argument("target", help="YouTube URL or 11-character video ID")
+    p_youtube_nav.add_argument("--fetch-metadata", action="store_true", help="Fetch the YouTube watch page")
+    p_youtube_nav.add_argument("--fetch-transcript", action="store_true", help="Fetch transcript via youtube-transcript-api")
+    p_youtube_nav.add_argument("--language", action="append", default=None, help="Transcript language; repeat for fallbacks")
+    p_youtube_nav.add_argument("--max-links", type=int, default=20)
+    p_youtube_nav.add_argument("--json", action="store_true")
+    p_youtube_nav.set_defaults(func=cmd_youtube_nav)
+
+    p_coding_trial = sub.add_parser(
+        "coding-trial",
+        help="Run legitimacy trial plus a non-destructive compiler/test probe for a coding command",
+    )
+    p_coding_trial.add_argument("--goal", required=True)
+    p_coding_trial.add_argument("--tool", default="terminal.command.request")
+    p_coding_trial.add_argument("--origin", default="user", choices=["user", "agent", "workflow"])
+    p_coding_trial.add_argument("--expected-state", default="unspecified")
+    p_coding_trial.add_argument("--privacy", default="local_only", choices=["local_only", "hosted"])
+    p_coding_trial.add_argument("--workspace", default=None)
+    p_coding_trial.add_argument(
+        "--location-source",
+        default="unknown",
+        choices=["user_confirmed", "network", "device", "simulated", "unknown"],
+    )
+    p_coding_trial.add_argument("--location-label", default="unknown")
+    p_coding_trial.add_argument("--location-confidence", type=float, default=0.0)
+    p_coding_trial.add_argument(
+        "--network-state",
+        default="unknown",
+        choices=["offline", "local", "online", "unknown"],
+    )
+    p_coding_trial.add_argument("--timeout", type=float, default=30.0)
+    p_coding_trial.add_argument("command", nargs=argparse.REMAINDER)
+    p_coding_trial.add_argument("--json", action="store_true")
+    p_coding_trial.set_defaults(func=cmd_coding_trial)
 
     # ────────────────────────────────────────────────────────────────────
     # seal-here — first subcommand on the BoundCommand parameter-binding
