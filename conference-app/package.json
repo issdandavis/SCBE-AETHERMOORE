@@ -15,16 +15,16 @@
     "test:watch": "vitest --watch"
   },
   "dependencies": {
-    "express": "^5.2.1",
-    "uuid": "^14.0.0",
     "cors": "^2.8.5",
+    "express": "^5.2.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.0"
+    "react-router-dom": "^7.6.0",
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
     "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
     "@types/node": "^22.15.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
@@ -35,5 +35,8 @@
     "typescript": "^5.8.3",
     "vite": "^8.0.7",
     "vitest": "^4.0.17"
+  },
+  "overrides": {
+    "qs": "^6.15.2"
   }
 }
