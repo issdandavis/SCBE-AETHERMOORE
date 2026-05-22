@@ -1,3 +1,7 @@
+import httpx
+import respx
+
+
 def test_health_returns_ok(client):
     resp = client.get("/health")
     assert resp.status_code == 200
@@ -48,3 +52,44 @@ def test_unknown_op_returns_quarantined(client):
     data = resp.json()
     assert data["ok"] is False
     assert data["error"]["code"] in ("QUARANTINE", "OP_NOT_FOUND")
+
+
+@respx.mock
+def test_llm_chat_calls_ollama_and_returns_ok(client):
+    stream_lines = (
+        b'{"model":"llama3","message":{"role":"assistant","content":"Hello"},"done":false}\n'
+        b'{"model":"llama3","message":{"role":"assistant","content":" world"},"done":false}\n'
+        b'{"model":"llama3","message":{"role":"assistant","content":""},"done":true}\n'
+    )
+    respx.post("http://localhost:11434/api/chat").mock(
+        return_value=httpx.Response(200, content=stream_lines)
+    )
+    payload = {
+        "op": "llm.chat",
+        "args": {"messages": [{"role": "user", "content": "hi"}], "model": "llama3"},
+        "request_id": "test-chat-001",
+        "origin": {"kind": "app", "id": "chat-window"},
+        "privacy": "local_only",
+    }
+    resp = client.post("/v1/op", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["ok"] is True
+    assert "content" in data["output"]
+
+
+@respx.mock
+def test_llm_chat_returns_error_when_ollama_unavailable(client):
+    respx.post("http://localhost:11434/api/chat").mock(side_effect=httpx.ConnectError("refused"))
+    payload = {
+        "op": "llm.chat",
+        "args": {"messages": [{"role": "user", "content": "hi"}]},
+        "request_id": "test-chat-002",
+        "origin": {"kind": "app", "id": "chat-window"},
+        "privacy": "local_only",
+    }
+    resp = client.post("/v1/op", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["ok"] is False
+    assert data["error"]["code"] == "OLLAMA_UNAVAILABLE"
