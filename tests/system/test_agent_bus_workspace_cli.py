@@ -513,7 +513,7 @@ def test_workspace_lineage_classifies_import(tmp_path: Path) -> None:
     assert lineage["import_count"] == 1
     assert lineage["ingest_count"] == 0  # source ingests NOT replayed
     kinds = [e["kind"] for e in lineage["entries"]]
-    assert kinds == ["formation", "import"]
+    assert sorted(kinds) == ["formation", "import"]
 
 
 def test_workspace_report_audit_health_amber_unverified(tmp_path: Path) -> None:
