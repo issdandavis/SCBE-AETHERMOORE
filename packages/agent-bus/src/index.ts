@@ -901,16 +901,6 @@ const LINEAGE_KIND_BY_SCHEMA: Record<string, LineageEntry['kind']> = {
   'aethermoor.bus.workspace_trap_dispatch.v1': 'trap_dispatch',
 };
 
-const LINEAGE_KIND_ORDER: Record<LineageEntry['kind'], number> = {
-  formation: 0,
-  ingest: 1,
-  import: 2,
-  export: 3,
-  verify: 4,
-  trap_dispatch: 5,
-  unknown: 99,
-};
-
 /**
  * Walk a workspace's 20_receipts/ directory and build a chronological audit
  * chain of formation, export, and verify receipts. Read-only: never writes.
@@ -954,8 +944,6 @@ export function lineageAgentWorkspace(
       if (parsed) {
         if (typeof parsed.created_at === 'string') timestamp = parsed.created_at;
         else if (typeof parsed.verified_at === 'string') timestamp = parsed.verified_at as string;
-        else if (typeof parsed.ingested_at === 'string') timestamp = parsed.ingested_at as string;
-        else if (typeof parsed.imported_at === 'string') timestamp = parsed.imported_at as string;
       }
       if (!timestamp) {
         try {
@@ -999,12 +987,7 @@ export function lineageAgentWorkspace(
     }
   }
   entries.sort((a, b) => {
-    if (a.timestamp && b.timestamp) {
-      const byTimestamp = a.timestamp.localeCompare(b.timestamp);
-      if (byTimestamp !== 0) return byTimestamp;
-    }
-    const byKind = LINEAGE_KIND_ORDER[a.kind] - LINEAGE_KIND_ORDER[b.kind];
-    if (byKind !== 0) return byKind;
+    if (a.timestamp && b.timestamp) return a.timestamp.localeCompare(b.timestamp);
     return a.receipt_name.localeCompare(b.receipt_name);
   });
 

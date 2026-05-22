@@ -2,11 +2,16 @@ from backend.gate import govern
 from backend.models import OperationOrigin, OperationRequest, OperationWorkspace
 
 
-def _req(op: str, workspace_root: str | None = None, dry_run: bool = False) -> OperationRequest:
+def _req(
+    op: str,
+    workspace_root: str | None = None,
+    dry_run: bool = False,
+    args: dict | None = None,
+) -> OperationRequest:
     ws = OperationWorkspace(id="test", root=workspace_root) if workspace_root else None
     return OperationRequest(
         op=op,
-        args={},
+        args=args or {},
         request_id="test-req-001",
         origin=OperationOrigin(kind="app", id="test-app"),
         workspace=ws,
@@ -44,11 +49,29 @@ def test_dry_run_echo_is_still_allowed():
 
 
 def test_workspace_path_is_checked_when_provided(tmp_path):
-    decision = govern(_req("fs.read", workspace_root=str(tmp_path)))
+    target = tmp_path / "note.txt"
+    target.write_text("hello", encoding="utf-8")
+    decision = govern(_req("fs.read", workspace_root=str(tmp_path), args={"path": "note.txt"}))
     assert decision.decision == "ALLOW"
+
+
+def test_fs_read_requires_workspace():
+    decision = govern(_req("fs.read", args={"path": "note.txt"}))
+    assert decision.decision == "QUARANTINE"
+
+
+def test_fs_read_denies_path_outside_workspace(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    outside = tmp_path / "outside.txt"
+    outside.write_text("nope", encoding="utf-8")
+
+    decision = govern(_req("fs.read", workspace_root=str(workspace), args={"path": str(outside)}))
+
+    assert decision.decision == "DENY"
 
 
 def test_workspace_outside_cwd_is_probe_only(tmp_path):
     outside = str(tmp_path / "some" / "outside" / "path")
-    decision = govern(_req("fs.write", workspace_root=outside))
+    decision = govern(_req("fs.write", workspace_root=outside, args={"path": "out.txt"}))
     assert decision.decision in ("QUARANTINE", "DENY")
