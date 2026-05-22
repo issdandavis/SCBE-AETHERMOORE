@@ -2,14 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths-ignore:
       - 'CHANGELOG.md'
       - 'docs/**'
       - '*.md'
       - '.github/workflows/**'
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -27,10 +27,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -48,7 +48,7 @@ jobs:
         run: npm test
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dist-node20
           path: dist/
@@ -62,14 +62,15 @@ jobs:
       # PR CI exercises the deterministic fallback/PQC governance path. Native
       # liboqs builds are handled by the dedicated "PQC Native liboqs" workflow,
       # which must pass for release/security validation.
-      SCBE_FORCE_SKIP_LIBOQS: "1"
+      SCBE_FORCE_SKIP_LIBOQS: '1'
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Python 3.11
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -82,13 +83,25 @@ jobs:
 
       - name: Run Python tests
         run: |
-          python scripts/system/run_core_python_checks.py
+          python scripts/system/run_core_python_checks.py -- --cov=src --cov-report=xml
+
+      - name: Check coverage report
+        id: coverage-report
+        run: |
+          if [ -s coverage.xml ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "coverage.xml was not generated; skipping Codecov upload."
+          fi
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        if: ${{ env.CODECOV_TOKEN != '' && steps.coverage-report.outputs.exists == 'true' }}
+        uses: codecov/codecov-action@v6
         # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
           flags: python
           name: python-3.11
@@ -100,10 +113,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Python 3.11
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -133,10 +146,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -148,7 +161,7 @@ jobs:
         run: npx prettier --check "src/**/*.ts" "tests/**/*.ts"
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
