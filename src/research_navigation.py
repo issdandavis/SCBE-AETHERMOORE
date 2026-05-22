@@ -148,7 +148,9 @@ def build_research_evidence_packet(
     title = _extract_title(body)
     excerpt = _clean_html_text(body, limit=1200)
     links = _extract_links(body, resolved_url, max_links=max(0, max_links))
-    security = _scan_content(body, resolved_url) if body else {"verdict": "NO_CONTENT", "governance_decision": "QUARANTINE"}
+    security = (
+        _scan_content(body, resolved_url) if body else {"verdict": "NO_CONTENT", "governance_decision": "QUARANTINE"}
+    )
     return ResearchEvidencePacket(
         url=raw_url,
         resolved_url=resolved_url,

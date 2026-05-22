@@ -5024,7 +5024,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_research_nav.add_argument("--url", required=True)
     p_research_nav.add_argument("--content", default=None, help="Inline content for offline packet tests")
     p_research_nav.add_argument("--content-file", default=None, help="Read source content from a local file")
-    p_research_nav.add_argument("--no-fetch", action="store_true", help="Do not fetch URL; use inline/local content only")
+    p_research_nav.add_argument(
+        "--no-fetch", action="store_true", help="Do not fetch URL; use inline/local content only"
+    )
     p_research_nav.add_argument("--max-links", type=int, default=20)
     p_research_nav.add_argument("--timeout", type=float, default=12.0)
     p_research_nav.add_argument("--json", action="store_true")
@@ -5036,8 +5038,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_youtube_nav.add_argument("target", help="YouTube URL or 11-character video ID")
     p_youtube_nav.add_argument("--fetch-metadata", action="store_true", help="Fetch the YouTube watch page")
-    p_youtube_nav.add_argument("--fetch-transcript", action="store_true", help="Fetch transcript via youtube-transcript-api")
-    p_youtube_nav.add_argument("--language", action="append", default=None, help="Transcript language; repeat for fallbacks")
+    p_youtube_nav.add_argument(
+        "--fetch-transcript", action="store_true", help="Fetch transcript via youtube-transcript-api"
+    )
+    p_youtube_nav.add_argument(
+        "--language", action="append", default=None, help="Transcript language; repeat for fallbacks"
+    )
     p_youtube_nav.add_argument("--max-links", type=int, default=20)
     p_youtube_nav.add_argument("--json", action="store_true")
     p_youtube_nav.set_defaults(func=cmd_youtube_nav)

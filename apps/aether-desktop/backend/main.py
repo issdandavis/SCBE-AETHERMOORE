@@ -40,11 +40,30 @@ async def op_endpoint(req: OperationRequest) -> OperationResult:
     decision = govern(req)
     _audit.write_request(req, decision)
 
-    if decision.decision in ("DENY", "QUARANTINE"):
+    if decision.decision in ("DENY", "QUARANTINE", "ESCALATE"):
         result = OperationResult(
             request_id=req.request_id,
             ok=False,
             error=OperationError(code=decision.decision, message=decision.reason),
+        )
+        _audit.complete(req.request_id, result)
+        return result
+
+    if req.dry_run:
+        result = OperationResult(
+            request_id=req.request_id,
+            ok=True,
+            output={
+                "dry_run": True,
+                "decision": decision.model_dump(),
+                "operation": {
+                    "op": req.op,
+                    "args": req.args,
+                    "origin": req.origin.model_dump(),
+                    "workspace": req.workspace.model_dump() if req.workspace else None,
+                    "privacy": req.privacy,
+                },
+            },
         )
         _audit.complete(req.request_id, result)
         return result

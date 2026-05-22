@@ -1,5 +1,10 @@
+import asyncio
+
 import httpx
 import respx
+
+from backend.handlers.llm_chat import llm_chat_handler
+from backend.models import OperationDecision
 
 
 def test_health_returns_ok(client):
@@ -54,6 +59,32 @@ def test_unknown_op_returns_quarantined(client):
     assert data["error"]["code"] in ("QUARANTINE", "OP_NOT_FOUND")
 
 
+def test_escalated_op_does_not_dispatch(client, monkeypatch):
+    def escalate(_req):
+        return OperationDecision(
+            request_id="test-escalate-001",
+            decision="ESCALATE",
+            zone="YELLOW",
+            reason="manual approval required",
+            policy="test-escalate",
+            latency_ms=0.1,
+        )
+
+    monkeypatch.setattr("backend.main.govern", escalate)
+    payload = {
+        "op": "echo",
+        "args": {"msg": "should not dispatch"},
+        "request_id": "test-escalate-001",
+        "origin": {"kind": "app", "id": "test"},
+        "privacy": "local_only",
+    }
+    resp = client.post("/v1/op", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["ok"] is False
+    assert data["error"]["code"] == "ESCALATE"
+
+
 @respx.mock
 def test_llm_chat_calls_ollama_and_returns_ok(client):
     stream_lines = (
@@ -61,9 +92,7 @@ def test_llm_chat_calls_ollama_and_returns_ok(client):
         b'{"model":"llama3","message":{"role":"assistant","content":" world"},"done":false}\n'
         b'{"model":"llama3","message":{"role":"assistant","content":""},"done":true}\n'
     )
-    respx.post("http://localhost:11434/api/chat").mock(
-        return_value=httpx.Response(200, content=stream_lines)
-    )
+    respx.post("http://localhost:11434/api/chat").mock(return_value=httpx.Response(200, content=stream_lines))
     payload = {
         "op": "llm.chat",
         "args": {"messages": [{"role": "user", "content": "hi"}], "model": "llama3"},
@@ -76,6 +105,28 @@ def test_llm_chat_calls_ollama_and_returns_ok(client):
     data = resp.json()
     assert data["ok"] is True
     assert "content" in data["output"]
+
+
+@respx.mock
+def test_dry_run_llm_chat_does_not_call_ollama(client):
+    route = respx.post("http://localhost:11434/api/chat").mock(
+        return_value=httpx.Response(500, text="should not be called")
+    )
+    payload = {
+        "op": "llm.chat",
+        "args": {"messages": [{"role": "user", "content": "hi"}], "model": "llama3"},
+        "request_id": "test-chat-dry-run-001",
+        "origin": {"kind": "app", "id": "chat-window"},
+        "privacy": "local_only",
+        "dry_run": True,
+    }
+    resp = client.post("/v1/op", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["ok"] is True
+    assert data["output"]["dry_run"] is True
+    assert data["output"]["operation"]["op"] == "llm.chat"
+    assert route.called is False
 
 
 @respx.mock
@@ -93,3 +144,27 @@ def test_llm_chat_returns_error_when_ollama_unavailable(client):
     data = resp.json()
     assert data["ok"] is False
     assert data["error"]["code"] == "OLLAMA_UNAVAILABLE"
+
+
+@respx.mock
+def test_llm_chat_error_emits_done_event():
+    async def run():
+        respx.post("http://localhost:11434/api/chat").mock(side_effect=httpx.ConnectError("refused"))
+        queue = asyncio.Queue()
+        req = {
+            "op": "llm.chat",
+            "args": {"messages": [{"role": "user", "content": "hi"}]},
+            "request_id": "test-chat-events-error-001",
+            "origin": {"kind": "app", "id": "chat-window"},
+            "privacy": "local_only",
+        }
+        from backend.models import OperationRequest
+
+        result = await llm_chat_handler(OperationRequest(**req), event_queue=queue)
+        event = await asyncio.wait_for(queue.get(), timeout=1.0)
+        return result, event
+
+    result, event = asyncio.run(run())
+    assert result.ok is False
+    assert event["type"] == "done"
+    assert event["error_code"] == "OLLAMA_UNAVAILABLE"
