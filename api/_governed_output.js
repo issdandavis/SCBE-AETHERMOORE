@@ -58,6 +58,29 @@ const INPUT_RULES = [
       'Ask for a configuration checklist or redacted secret-handling pattern, not the secret value.',
   },
   {
+    code: 'commerce:payment_credential_theft',
+    pattern:
+      /\b(?:give|send|show|reveal|dump|steal|exfiltrate|post|paste)\b.{0,80}\b(?:credit\s*card|card\s*number|cvv|bank\s+login|payment\s+(?:card|method|token))\b/i,
+    decision: 'DENY',
+    correction:
+      'Do not request payment credentials. Use a customer-controlled checkout or token vault where SCBE only records the governance receipt.',
+  },
+  {
+    code: 'commerce:payment_credential_theft',
+    pattern:
+      /\b(?:credit\s*card|card\s*number|cvv|bank\s+login|payment\s+(?:card|method|token))\b.{0,80}\b(?:give|send|show|reveal|dump|steal|exfiltrate|post|paste)\b/i,
+    decision: 'DENY',
+    correction:
+      'Do not request payment credentials. Use a customer-controlled checkout or token vault where SCBE only records the governance receipt.',
+  },
+  {
+    code: 'safety:abusive_sexual_demand',
+    pattern: /\b(?:eat\s+ass|suck\s+(?:my|a)|blow\s+(?:me|job))\b/i,
+    decision: 'DENY',
+    correction:
+      'Reject abusive sexual demands and restate a bounded, non-abusive task if one exists.',
+  },
+  {
     code: 'axiom:composition.destructive_action',
     pattern:
       /\b(rm\s+-rf|format\s+[a-z]:|delete\s+all|drop\s+database|wipe\s+disk|purge\s+production)\b/i,
