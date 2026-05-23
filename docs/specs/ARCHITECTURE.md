@@ -203,8 +203,8 @@ SCBE-AETHERMOORE/
 | AV | Avali | I/O & Messaging |
 | RU | Runethic | Policy & Constraints |
 | CA | Cassisivadan | Logic & Computation |
-| UM | Umbroth | Security & Privacy |
-| DR | Draumric | Types & Structures |
+| UM | Umbroth | Redaction & Privacy |
+| DR | Draumric | Authentication & Integrity |
 
 **Policy Levels:**
 - `standard` - Requires KO tongue

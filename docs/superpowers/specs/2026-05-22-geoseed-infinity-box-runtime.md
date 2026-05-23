@@ -83,8 +83,8 @@ A shape is not allowed to prove security, physics, or correctness by itself. Eve
 | AV | Transport | Spiral | Research navigation, web/video traversal, widening search |
 | RU | Entropy | Fractal | Adversarial branching, anomaly exploration, ambiguity pressure |
 | CA | Compute | Cubic | Compile checks, tests, transforms, structured tool execution |
-| UM | Security | Icosahedral | Policy gates, threat faces, denial surfaces |
-| DR | Structure | Dodecahedral | Schemas, documentation, contracts, stable interfaces |
+| UM | Redaction/Privacy | Icosahedral | Policy gates, threat faces, denial surfaces |
+| DR | Authentication/Integrity | Dodecahedral | Auth tags, documentation, contracts, stable interfaces |
 
 ### 4.2 PHDM Containment Shapes
 

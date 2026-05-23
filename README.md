@@ -216,7 +216,7 @@ Cross-model biblical null-space evaluation:
 ## What's in the box
 
 - **14-layer governance pipeline** — from context embedding to risk decision
-- **6 Sacred Tongues** — KO (intent), AV (transport), RU (policy), CA (compute), UM (security), DR (structure)
+- **6 Sacred Tongues** — KO (intent), AV (transport), RU (policy), CA (compute), UM (redaction/privacy), DR (authentication/integrity)
 - **Semantic projector** — trained 385x6 matrix mapping sentence embeddings to tongue coordinates
 - **Bijective tongue transport** — byte/token round-trip layer for exact packet and code transport
 - **Harmonic score** — H_score(d*, pd) = 1 / (1 + d* + 2·pd), bounded production Layer 12 score

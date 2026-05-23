@@ -10,8 +10,8 @@
 | **AV** | Avali | **TypeScript** | Wisdom/Knowledge tongue. TypeScript encodes structural knowledge through its type system. Types are declarative wisdom about data shape. AV governs the Poincare embedding layers (L3-L4) where structure is made explicit. TypeScript's architecture orientation maps to AV's role as the "knows what it is" tongue. | 60 deg | w_AV = phi^1 = 1.618 |
 | **RU** | Runethic | **Rust** | Governance/Entropy tongue. Rust's ownership and borrow checker enforce governance at compile time. Memory safety rules are Runethic law: the compiler is the judge. RU governs the defensive verification layers (L5-L6) where constraints are checked. Rust's zero-cost abstractions embody RU's principle that governance should not add overhead. | 120 deg | w_RU = phi^2 = 2.618 |
 | **CA** | Cassisivadan | **C** | Compute/Logic tongue. C is raw computation without abstraction: pointers, manual memory, direct hardware access. CA governs the phase transform and realm distance layers (L7-L8) where mathematical computation is primary. C sits closest to the machine, and CA sits closest to pure logic. | 180 deg | w_CA = phi^3 = 4.236 |
-| **UM** | Umbroth | **Julia** | Security/Defense tongue. Julia combines high-level expressiveness with near-C performance, making it the language for defensive computation: cryptographic verification, anomaly detection, spectral analysis. UM governs the coherence layers (L9-L10) where threat patterns are detected through FFT and quaternion analysis. Julia's multiple dispatch mirrors UM's multi-vector threat assessment. | 240 deg | w_UM = phi^4 = 6.854 |
-| **DR** | Draumric | **Haskell** | Structure/Architecture tongue. Haskell is pure functional architecture: monads compose, types constrain, referential transparency guarantees structural integrity. DR governs the deepest layers (L11-L12) where triadic temporal aggregation and harmonic scaling operate. Haskell's category-theoretic foundations match DR's role as the tongue of deep pattern and structure. | 300 deg | w_DR = phi^5 = 11.090 |
+| **UM** | Umbroth | **Julia** | Redaction/Privacy tongue. Julia combines high-level expressiveness with near-C performance, making it the language for defensive computation: cryptographic verification, anomaly detection, spectral analysis. UM governs the coherence layers (L9-L10) where redaction patterns are detected through FFT and quaternion analysis. Julia's multiple dispatch mirrors UM's multi-vector privacy enforcement. | 240 deg | w_UM = phi^4 = 6.854 |
+| **DR** | Draumric | **Haskell** | Authentication/Integrity tongue. Haskell is pure functional architecture: monads compose, types constrain, referential transparency guarantees structural integrity. DR governs the deepest layers (L11-L12) where triadic temporal aggregation and harmonic scaling operate. Haskell's category-theoretic foundations match DR's role as the tongue of authentication and integrity verification. | 300 deg | w_DR = phi^5 = 11.090 |
 
 ## Phase Geometry
 
@@ -44,7 +44,7 @@ Mirror pairs cancel surface features but reveal deep structure:
 
 - **KO <-> DR** (Python <-> Haskell): Intent vs Architecture. What code DOES vs what code IS.
 - **AV <-> CA** (TypeScript <-> C): Knowledge vs Compute. What code KNOWS vs what code COMPUTES.
-- **RU <-> UM** (Rust <-> Julia): Governance vs Security. What code GOVERNS vs what code PROTECTS.
+- **RU <-> UM** (Rust <-> Julia): Governance vs Redaction/Privacy. What code GOVERNS vs what code REDACTS/PROTECTS.
 
 ### Quadrature (90 deg separation)
 
@@ -72,7 +72,7 @@ DR: phi^5 = 11.090   (11.090x weight -- rarest but most impactful)
 This means:
 
 - **KO records** (Python) are the most common but carry the lowest per-record weight. They form the broad foundation.
-- **DR records** (Haskell) are the rarest but each one carries 11x the training signal. They teach deep structural understanding.
+- **DR records** (Haskell) are the rarest but each one carries 11x the training signal. They teach deep authentication and integrity patterns.
 - The total phi-weighted training signal is balanced across tongues by adjusting sampling frequency inversely to weight.
 
 ## Extended Language Grid

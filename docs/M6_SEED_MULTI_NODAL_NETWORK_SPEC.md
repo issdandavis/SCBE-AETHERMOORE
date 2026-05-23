@@ -36,7 +36,7 @@ artifacts.
 | Runethic | RU | 2.62 | policy / permissions | Rust |
 | Cassisivadan | CA | 4.24 | computation / transformation | Mathematica |
 | Umbroth | UM | 6.85 | privacy / protection | Haskell |
-| Draumric | DR | 11.09 | schema / authentication | Markdown |
+| Draumric | DR | 11.09 | authentication / integrity | Markdown |
 
 Each seed can initialize a node, role, or governance perspective. A
 multi-nodal system is valid only when the combined state remains consistent
