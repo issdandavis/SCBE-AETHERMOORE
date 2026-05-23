@@ -1,0 +1,56 @@
+name: publish-agent-bus
+
+on:
+  push:
+    tags:
+      - 'agent-bus/v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g. 0.3.11). Must match package.json.'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish scbe-agent-bus to npm
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/agent-bus
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify version
+        run: |
+          PKG_VER=$(node -p "require('./package.json').version")
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${GITHUB_REF#refs/tags/agent-bus/v}"
+          else
+            TAG="${{ inputs.version }}"
+          fi
+          if [ "$PKG_VER" != "$TAG" ]; then
+            echo "::error::package.json version ($PKG_VER) does not match expected ($TAG)"
+            exit 1
+          fi
+          echo "Publishing scbe-agent-bus@$PKG_VER"
+
+      - name: Publish
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
