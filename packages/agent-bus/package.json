@@ -20,10 +20,15 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "prettier --check .",
     "agentbus:pipe": "node ../../scripts/system/agentbus_pipe.mjs",
     "pack:dry": "npm pack --dry-run --json",
     "prepublishOnly": "npm run build",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "prepare": "cd ../.. && husky install packages/agent-bus/.husky"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -54,8 +59,20 @@
   "publishConfig": {
     "access": "public"
   },
+  "dependencies": {
+    "zod": "^4.0.0"
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vitest": "^4.0.17",
+    "prettier": "^3.2.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^14.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,js,json,md}": [
+      "prettier --write"
+    ]
   }
 }

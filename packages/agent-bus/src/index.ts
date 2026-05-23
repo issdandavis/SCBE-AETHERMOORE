@@ -5,6 +5,7 @@ import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import path from 'node:path';
+import { WorkspaceExportManifestSchema, parseReceipt } from './schemas.js';
 
 export type AgentBusPrivacy = 'local_only' | 'remote_allowed' | string;
 
@@ -185,6 +186,22 @@ function sha256OfFile(filePath: string): { hash: string; bytes: number } {
   return { hash: hash.digest('hex'), bytes: data.length };
 }
 
+/** Streaming variant — constant memory regardless of file size. */
+function sha256OfFileAsync(filePath: string): Promise<{ hash: string; bytes: number }> {
+  return new Promise((resolve, reject) => {
+    const hasher = crypto.createHash('sha256');
+    let bytes = 0;
+    const stream = fs.createReadStream(filePath);
+    stream.on('data', (chunk: Buffer | string) => {
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      bytes += buf.length;
+      hasher.update(buf);
+    });
+    stream.on('end', () => resolve({ hash: hasher.digest('hex'), bytes }));
+    stream.on('error', reject);
+  });
+}
+
 function walkFiles(root: string, relPrefix = ''): string[] {
   const out: string[] = [];
   const stack: Array<{ abs: string; rel: string }> = [{ abs: root, rel: relPrefix }];
@@ -299,6 +316,109 @@ export function exportAgentWorkspace(options: WorkspaceExportOptions): AgentWork
   return receipt;
 }
 
+/**
+ * Async (streaming) variant of {@link exportAgentWorkspace}.
+ * Hashes each file via createReadStream — safe for large files, no OOM risk.
+ */
+export async function exportAgentWorkspaceAsync(
+  options: WorkspaceExportOptions
+): Promise<AgentWorkspaceExportReceipt> {
+  const workspaceRoot = path.resolve(options.workspaceRoot);
+  if (!fs.existsSync(workspaceRoot) || !fs.statSync(workspaceRoot).isDirectory()) {
+    throw new Error(`workspace not found at ${workspaceRoot}`);
+  }
+  let workspaceId = path.basename(workspaceRoot);
+  const formationReceiptPath = path.join(workspaceRoot, '20_receipts', 'workspace.json');
+  if (fs.existsSync(formationReceiptPath)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(formationReceiptPath, 'utf8')) as {
+        workspace_id?: string;
+      };
+      if (parsed.workspace_id) workspaceId = parsed.workspace_id;
+    } catch {
+      /* tolerate */
+    }
+  }
+
+  const requestedInclude = (
+    options.include && options.include.length > 0 ? options.include : DEFAULT_EXPORT_INCLUDE
+  ).filter((folder) => !NEVER_EXPORT.has(folder));
+
+  const exportId = `${timestampId()}-${crypto.randomBytes(3).toString('hex')}`;
+  const exportBase = options.out
+    ? path.resolve(options.out)
+    : path.join(workspaceRoot, '30_exports');
+  const exportPath = path.join(exportBase, exportId);
+  fs.mkdirSync(exportPath, { recursive: true });
+
+  const includedFolders: string[] = [];
+  const excludedFolders: string[] = [];
+  const manifestEntries: WorkspaceExportManifestEntry[] = [];
+  let totalBytes = 0;
+
+  for (const folder of WORKSPACE_FORMATION.folders.map((f) => f.path)) {
+    if (NEVER_EXPORT.has(folder)) {
+      excludedFolders.push(folder);
+      continue;
+    }
+    if (!requestedInclude.includes(folder)) {
+      excludedFolders.push(folder);
+      continue;
+    }
+    includedFolders.push(folder);
+    const srcFolder = path.join(workspaceRoot, folder);
+    if (!fs.existsSync(srcFolder)) continue;
+    for (const rel of walkFiles(srcFolder)) {
+      const srcAbs = path.join(srcFolder, rel);
+      const destRel = `${folder}/${rel}`;
+      const destAbs = path.join(exportPath, destRel);
+      fs.mkdirSync(path.dirname(destAbs), { recursive: true });
+      fs.copyFileSync(srcAbs, destAbs);
+      const { hash, bytes } = await sha256OfFileAsync(destAbs);
+      manifestEntries.push({ path: destRel, sha256: hash, bytes });
+      totalBytes += bytes;
+    }
+  }
+
+  const manifest: WorkspaceExportManifest = {
+    schema_version: 'aethermoor.bus.workspace_export_manifest.v1',
+    export_id: exportId,
+    workspace_id: workspaceId,
+    workspace_root: workspaceRoot,
+    created_at: new Date().toISOString(),
+    included_folders: includedFolders,
+    excluded_folders: excludedFolders,
+    file_count: manifestEntries.length,
+    total_bytes: totalBytes,
+    files: manifestEntries,
+  };
+  const manifestPath = path.join(exportPath, 'manifest.json');
+  const manifestJson = `${JSON.stringify(manifest, null, 2)}\n`;
+  fs.writeFileSync(manifestPath, manifestJson, 'utf8');
+  const manifestSha256 = crypto.createHash('sha256').update(manifestJson).digest('hex');
+
+  const receiptPath = path.join(workspaceRoot, '20_receipts', `export-${exportId}.json`);
+  fs.mkdirSync(path.dirname(receiptPath), { recursive: true });
+  const receipt: AgentWorkspaceExportReceipt = {
+    schema_version: 'aethermoor.bus.workspace_export.v1',
+    receipt: 'SCBE_WORKSPACE_EXPORT=1',
+    workspace_id: workspaceId,
+    workspace_root: workspaceRoot,
+    export_id: exportId,
+    export_path: exportPath,
+    manifest_path: manifestPath,
+    manifest_sha256: manifestSha256,
+    created_at: manifest.created_at,
+    file_count: manifest.file_count,
+    total_bytes: manifest.total_bytes,
+    included_folders: includedFolders,
+    excluded_folders: excludedFolders,
+    receipt_path: receiptPath,
+  };
+  fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, 'utf8');
+  return receipt;
+}
+
 export interface WorkspaceVerifyOptions {
   exportPath: string;
   /**
@@ -364,7 +484,15 @@ export function verifyAgentWorkspaceExport(
   }
   const manifestBytes = fs.readFileSync(manifestPath);
   const manifestActualSha = crypto.createHash('sha256').update(manifestBytes).digest('hex');
-  const manifest: WorkspaceExportManifest = JSON.parse(manifestBytes.toString('utf8'));
+  const manifestParsed = parseReceipt(
+    JSON.parse(manifestBytes.toString('utf8')),
+    WorkspaceExportManifestSchema,
+    manifestPath
+  );
+  if (!manifestParsed.ok) {
+    throw new Error(`manifest schema validation failed: ${manifestParsed.error}`);
+  }
+  const manifest: WorkspaceExportManifest = manifestParsed.data;
 
   // The manifest carries the export receipt's record of its own sha256 only
   // indirectly — read the matching export receipt under 20_receipts when
@@ -472,6 +600,128 @@ export function verifyAgentWorkspaceExport(
     } catch {
       // persistence is best-effort; never block a verify result on a write
       // failure. receipt_path stays "" if we couldn't write.
+      receipt.receipt_path = '';
+    }
+  }
+
+  return receipt;
+}
+
+/**
+ * Async (streaming) variant of {@link verifyAgentWorkspaceExport}.
+ * Hashes each file via createReadStream — safe for large exports, no OOM risk.
+ */
+export async function verifyAgentWorkspaceExportAsync(
+  options: WorkspaceVerifyOptions
+): Promise<AgentWorkspaceVerifyReceipt> {
+  const exportPath = path.resolve(options.exportPath);
+  const manifestPath = path.join(exportPath, 'manifest.json');
+  if (!fs.existsSync(manifestPath)) {
+    throw new Error(`manifest not found at ${manifestPath}`);
+  }
+  const manifestBytes = fs.readFileSync(manifestPath);
+  const manifestActualSha = crypto.createHash('sha256').update(manifestBytes).digest('hex');
+  const manifestParsed = parseReceipt(
+    JSON.parse(manifestBytes.toString('utf8')),
+    WorkspaceExportManifestSchema,
+    manifestPath
+  );
+  if (!manifestParsed.ok) {
+    throw new Error(`manifest schema validation failed: ${manifestParsed.error}`);
+  }
+  const manifest: WorkspaceExportManifest = manifestParsed.data;
+
+  let manifestClaimedSha = '';
+  try {
+    const receiptDir = path.join(manifest.workspace_root, '20_receipts');
+    const receiptName = `export-${manifest.export_id}.json`;
+    const receiptPath = path.join(receiptDir, receiptName);
+    if (fs.existsSync(receiptPath)) {
+      const exportReceipt = JSON.parse(fs.readFileSync(receiptPath, 'utf8'));
+      if (typeof exportReceipt.manifest_sha256 === 'string') {
+        manifestClaimedSha = exportReceipt.manifest_sha256;
+      }
+    }
+  } catch {
+    /* tolerate */
+  }
+
+  const mismatches: WorkspaceVerifyMismatch[] = [];
+  const presentFiles = walkFiles(exportPath).filter((rel) => rel !== 'manifest.json');
+  const manifestPaths = new Set(manifest.files.map((f) => f.path));
+
+  let actualBytes = 0;
+  for (const entry of manifest.files) {
+    const abs = path.join(exportPath, entry.path);
+    if (!fs.existsSync(abs)) {
+      mismatches.push({
+        path: entry.path,
+        reason: 'missing_file',
+        expected_sha256: entry.sha256,
+        expected_bytes: entry.bytes,
+      });
+      continue;
+    }
+    const { hash, bytes } = await sha256OfFileAsync(abs);
+    actualBytes += bytes;
+    if (hash !== entry.sha256) {
+      mismatches.push({
+        path: entry.path,
+        reason: 'sha256_mismatch',
+        expected_sha256: entry.sha256,
+        actual_sha256: hash,
+        expected_bytes: entry.bytes,
+        actual_bytes: bytes,
+      });
+    } else if (bytes !== entry.bytes) {
+      mismatches.push({
+        path: entry.path,
+        reason: 'bytes_mismatch',
+        expected_bytes: entry.bytes,
+        actual_bytes: bytes,
+      });
+    }
+  }
+
+  for (const rel of presentFiles) {
+    if (!manifestPaths.has(rel)) {
+      mismatches.push({ path: rel, reason: 'extra_file' });
+    }
+  }
+
+  const manifestIntact =
+    manifestClaimedSha === '' ? true : manifestActualSha === manifestClaimedSha;
+  const passed = mismatches.length === 0 && manifestIntact;
+
+  const receipt: AgentWorkspaceVerifyReceipt = {
+    schema_version: 'aethermoor.bus.workspace_verify.v1',
+    receipt: passed ? 'SCBE_WORKSPACE_VERIFY_PASS=1' : 'SCBE_WORKSPACE_VERIFY_PASS=0',
+    export_path: exportPath,
+    manifest_path: manifestPath,
+    manifest_sha256_claimed: manifestClaimedSha,
+    manifest_sha256_actual: manifestActualSha,
+    manifest_intact: manifestIntact,
+    file_count_claimed: manifest.file_count,
+    file_count_actual: presentFiles.length,
+    total_bytes_claimed: manifest.total_bytes,
+    total_bytes_actual: actualBytes,
+    mismatches,
+    verified_at: new Date().toISOString(),
+    receipt_path: '',
+  };
+
+  const shouldPersist = options.persistReceipt !== false;
+  if (shouldPersist && manifest.workspace_root && manifest.export_id) {
+    try {
+      const receiptsDir = path.join(manifest.workspace_root, '20_receipts');
+      if (fs.existsSync(receiptsDir)) {
+        const ts = receipt.verified_at.replace(/[:.]/g, '-');
+        const receiptName = `verify-${manifest.export_id}-${ts}.json`;
+        const receiptPath = path.join(receiptsDir, receiptName);
+        receipt.receipt_path = receiptPath;
+        fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, 'utf8');
+      }
+    } catch {
       receipt.receipt_path = '';
     }
   }
