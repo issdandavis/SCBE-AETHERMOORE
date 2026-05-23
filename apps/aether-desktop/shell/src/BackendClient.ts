@@ -33,21 +33,24 @@ export interface EventSubscription {
   unsubscribe: () => void;
 }
 
-export function createBackendClient(baseUrl: string): BackendClient {
+export function createBackendClient(baseUrl: string, apiKey?: string): BackendClient {
   const wsBase = baseUrl.replace(/^http/, 'ws');
 
   return {
     async runOp(req: OperationRequest): Promise<OperationResult> {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (apiKey) headers['X-API-Key'] = apiKey;
       const resp = await fetch(`${baseUrl}/v1/op`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(req),
       });
       return resp.json() as Promise<OperationResult>;
     },
 
     subscribeEvents(requestId, onEvent, onDone) {
-      const ws = new WebSocket(`${wsBase}/v1/events?request_id=${requestId}`);
+      const keyParam = apiKey ? `&api_key=${encodeURIComponent(apiKey)}` : '';
+      const ws = new WebSocket(`${wsBase}/v1/events?request_id=${requestId}${keyParam}`);
       const ready = new Promise<void>((resolve, reject) => {
         ws.onopen = () => resolve();
         ws.onerror = () =>

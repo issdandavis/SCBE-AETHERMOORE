@@ -40,9 +40,30 @@ async function sha256(text: string): Promise<string> {
     .join('');
 }
 
+const VFS_KEY = 'aether-desktop:vfs';
+
+function vfsLoad(): Map<string, string> {
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(VFS_KEY) : null;
+    return raw ? new Map(Object.entries(JSON.parse(raw) as Record<string, string>)) : new Map();
+  } catch {
+    return new Map();
+  }
+}
+
+function vfsSave(vfs: Map<string, string>): void {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(VFS_KEY, JSON.stringify(Object.fromEntries(vfs)));
+    }
+  } catch {
+    // storage quota or SSR — silently no-op
+  }
+}
+
 export function createToolBus(client: BackendClient): ToolBus {
   const registry = new Map<string, ToolDef>();
-  const vfs = new Map<string, string>();
+  const vfs = vfsLoad();
 
   function register(def: ToolDef): void {
     registry.set(def.name, def);
@@ -138,6 +159,7 @@ export function createToolBus(client: BackendClient): ToolBus {
       const path = args['path'] as string;
       const content = args['content'] as string;
       vfs.set(path, content);
+      vfsSave(vfs);
       return { path, bytes: content.length };
     },
   });
