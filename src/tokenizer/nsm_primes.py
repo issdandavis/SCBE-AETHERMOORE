@@ -23,7 +23,7 @@ Tongue order by phi-weight:
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Literal
 
 # ---------------------------------------------------------------------------
@@ -40,7 +40,7 @@ TONGUE_PHASE: dict[str, float] = {
     "UM": 4 * math.pi / 3,
     "DR": 5 * math.pi / 3,
 }
-TONGUE_WEIGHT: dict[str, float] = {t: PHI ** i for i, t in enumerate(TONGUE_ORDER)}
+TONGUE_WEIGHT: dict[str, float] = {t: PHI**i for i, t in enumerate(TONGUE_ORDER)}
 POINCARE_EPSILON: float = 1e-6  # keep r strictly inside the open ball
 
 # Grid positions: 16×16 per tongue.  Primary NSM primes occupy rows 0–3,
@@ -351,13 +351,14 @@ def all_primes() -> tuple[NSMPrime, ...]:
 # Coverage analysis
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CoverageReport:
     total: int
-    primary_only: int           # confidence >= 0.75 in one tongue
-    cross_tongue: int           # meaningful presence in 2+ tongues
-    unspanned: int              # no tongue with confidence >= 0.25
-    by_tongue: dict[str, int]   # count of primaries per tongue
+    primary_only: int  # confidence >= 0.75 in one tongue
+    cross_tongue: int  # meaningful presence in 2+ tongues
+    unspanned: int  # no tongue with confidence >= 0.25
+    by_tongue: dict[str, int]  # count of primaries per tongue
     cross_pairs: list[tuple[str, str, str]]  # (prime_label, t1, t2)
     unspanned_primes: list[str]
     notes: list[str]
@@ -389,8 +390,7 @@ def coverage_report() -> CoverageReport:
     if "FEEL" in [p.label for p in NSM_PRIMES if p.is_cross_tongue]:
         notes.append("FEEL and THINK resist clean assignment — inner experience is genuinely cross-tongue")
     notes.append(
-        f"BECAUSE appears under both KO and RU — causal relation is intent AND policy; "
-        f"both isotopes needed"
+        f"BECAUSE appears under both KO and RU — causal relation is intent AND policy; " f"both isotopes needed"
     )
 
     return CoverageReport(
@@ -408,6 +408,7 @@ def coverage_report() -> CoverageReport:
 # ---------------------------------------------------------------------------
 # Grid position utilities
 # ---------------------------------------------------------------------------
+
 
 def grid_index(row: int, col: int) -> int:
     """Row-major index into a 16×16 tongue grid."""
@@ -427,6 +428,7 @@ def grid_position_for_tongue(tongue: TongueCode) -> dict[int, NSMPrime]:
 # ---------------------------------------------------------------------------
 # Phi-extrapolation on the Poincaré ball (Riemannian exponential map)
 # ---------------------------------------------------------------------------
+
 
 def _poincare_exp_map(x: tuple[float, float], v: tuple[float, float]) -> tuple[float, float]:
     """
@@ -531,28 +533,27 @@ def phi_extrapolate(prime: NSMPrime, steps: int = 3) -> list[PhiExtrapolation]:
         # Check if this matches a known prime
         known_match: NSMPrime | None = None
         for candidate in primes_for_tongue(next_tongue):
-            if (
-                candidate.grid_row == grid_row
-                and abs(candidate.r - new_r) < 0.08
-            ):
+            if candidate.grid_row == grid_row and abs(candidate.r - new_r) < 0.08:
                 known_match = candidate
                 break
 
         cand_label = known_match.label if known_match else f"[CANDIDATE: {next_tongue}·{step}]"
 
-        results.append(PhiExtrapolation(
-            source_id=prime.id,
-            n=step,
-            derived_tongue=next_tongue,
-            derived_r=new_r,
-            derived_theta=new_theta,
-            grid_row=grid_row,
-            grid_col=grid_col,
-            candidate_label=cand_label,
-            confidence=known_match.primary_confidence if known_match else 0.0,
-            is_known_prime=known_match is not None,
-            matched_prime=known_match.id if known_match else None,
-        ))
+        results.append(
+            PhiExtrapolation(
+                source_id=prime.id,
+                n=step,
+                derived_tongue=next_tongue,
+                derived_r=new_r,
+                derived_theta=new_theta,
+                grid_row=grid_row,
+                grid_col=grid_col,
+                candidate_label=cand_label,
+                confidence=known_match.primary_confidence if known_match else 0.0,
+                is_known_prime=known_match is not None,
+                matched_prime=known_match.id if known_match else None,
+            )
+        )
 
         # Update current position for next step
         x = new_x
