@@ -28,7 +28,7 @@
     "pack:dry": "npm pack --dry-run --json",
     "prepublishOnly": "npm run build",
     "prepack": "npm run build",
-    "prepare": "husky install"
+    "prepare": "cd ../.. && husky install packages/agent-bus/.husky"
   },
   "engines": {
     "node": ">=18.0.0"

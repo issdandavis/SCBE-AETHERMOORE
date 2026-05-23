@@ -1,0 +1,30 @@
+name: agent-bus · Lint and Test
+
+on:
+  push:
+    branches: ["main", "master", "dev"]
+    paths: ["packages/agent-bus/**"]
+  pull_request:
+    branches: ["main", "master", "dev"]
+    paths: ["packages/agent-bus/**"]
+
+defaults:
+  run:
+    working-directory: packages/agent-bus
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: packages/agent-bus/package-lock.json
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+      - name: Prettier check
+        run: npm run format:check
+      - name: Run tests
+        run: npm test
