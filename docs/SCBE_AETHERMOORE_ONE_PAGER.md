@@ -1,26 +1,64 @@
 # SCBE-AETHERMOORE — one-pager
 
 A single-file overview of the project for partners, contracting officers,
-recruiters, and reviewers. Last updated 2026-05-10. Canonical source:
+recruiters, and reviewers. Last updated 2026-05-23. Canonical source:
 `docs/SCBE_AETHERMOORE_ONE_PAGER.md` in `github.com/issdandavis/SCBE-AETHERMOORE`.
 
 ---
 
 ## 1. The pitch in one paragraph
 
-SCBE-AETHERMOORE is an AI safety and governance framework that uses
-hyperbolic geometry (the Poincaré ball model) to make adversarial drift
-*exponentially* more expensive than legitimate use, while a 14-layer
-processing pipeline emits cryptographic receipts for every gate decision
-so auditors can replay any action months later. The receipt mechanism
-(GeoSeal) plus the local operator console (AetherDesk) plus the
-mechanical coding mechanism (compile-CA → bijective source in
-Python/TypeScript/Go without an LLM call) together form a deployable
-governance overlay that sits in front of any LLM API. Author is a
-self-taught engineer with active SAM.gov / CAGE registration, two
-DARPA submissions on file (CLARA + MATHBAC), and a published prior-art
-book on KDP (ASIN B0GSSFQD9G). Repo is open source; the governance
-overlay and managed-ops services are the revenue surface.
+SCBE-AETHERMOORE is a **model-agnostic execution board**: any AI model can
+propose an action, but actions only execute if they are legal moves inside a
+typed workflow space. The board enforces legality — the model does not. This
+removes the dependency on model alignment: even a noisy or adversarial model
+cannot advance system state past an illegal move.
+
+The board runs on hyperbolic geometry (the Poincaré ball model) so adversarial
+drift costs exponentially more than legitimate use. A 14-layer processing
+pipeline emits cryptographic receipts for every gate decision so auditors can
+replay any action months later. The receipt mechanism (GeoSeal) plus the local
+operator console (AetherDesk) plus the mechanical coding mechanism (compile-CA →
+bijective source in Python/TypeScript/Go without an LLM call) together form a
+deployable governance overlay that works in front of any LLM API. Author is a
+self-taught engineer with active SAM.gov / CAGE registration, two DARPA
+submissions on file (CLARA + MATHBAC), and a published prior-art book on KDP
+(ASIN B0GSSFQD9G). Repo is open source; the governance overlay and
+managed-ops services are the revenue surface.
+
+### 1.1 The GeoBoard execution model
+
+> SCBE turns AI autonomy into board play: models propose moves, but only the
+> legal-move matrix can advance the system state.
+
+Every operation passes through a six-stage pipeline before it executes:
+
+```
+state → proposed move → legality check → simulation → receipt → dispatch or deny
+```
+
+Think of a system as a domino chain. Each domino is a task, tool call, file
+change, branch, or decision point. The spacing between dominoes is dependency
+distance. The terrain the chain crosses is permissions, tests, latency, cost,
+risk, and ownership. A missing domino is a broken dependency; a blocked fall is
+a failed precondition; a bad branch is visible before execution because the
+chain no longer reaches the target.
+
+The board has six components:
+
+| Component | What it does |
+|---|---|
+| **Typed state objects** | Files, tools, APIs, branches, scenes, agents, UI nodes, deploy targets — every entity in the system has a type |
+| **Legal move catalog** | The complete set of operations the system can perform (edit file, run test, open PR, merge branch, dispatch browser action, invoke coding harness) |
+| **Preconditions** | What must be true before a move can be attempted |
+| **Effects** | What changes in state after the move succeeds |
+| **Constraint terrain** | Permissions, risk budget, cost ceiling, test coverage, ownership, dependency order |
+| **Governance receipt** | Structured log of the decision (decision tier, harmonic score, timestamp, requesting origin) emitted before dispatch |
+
+The 14-layer pipeline (L1–L14) is the legality engine. L12's harmonic wall
+`H(d, p_d) = 1 / (1 + φ·d_H + 2·p_d)` produces the score; L13 maps it to
+ALLOW / QUARANTINE / ESCALATE / DENY. The score is algebraically bounded —
+there is no prompt that can argue it past 1.0.
 
 ---
 
