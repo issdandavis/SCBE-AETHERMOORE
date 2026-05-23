@@ -15,6 +15,8 @@ The config lives at `config/eval/aether_programmer_index.v1.json`. The scorer li
 
 Branch operating model: see `docs/ops/AGENTIC_VINE_BRANCH_WORKFLOW.md`. Index improvement should move through small vine/ring branches so failures, fixes, format cleanup, and benchmark evidence do not overwrite each other.
 
+External task lanes: see `docs/benchmarks/OPEN_SOURCE_AGENT_TASK_LANES.md` and `config/eval/aether_external_task_lanes.v1.json`. The index should run against open-source task pools, not only this repo's current state.
+
 ## Core Rule
 
 Every task has a binary entry gate:
