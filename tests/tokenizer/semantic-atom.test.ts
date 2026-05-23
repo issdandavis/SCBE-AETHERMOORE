@@ -10,6 +10,7 @@ import {
 describe('semantic atom tokenizer', () => {
   it('defines flow as a stable nucleus with code and natural orbitals', () => {
     const flow = getSemanticAtom('FLOW');
+    const transform = getSemanticAtom('TRANSFORM');
 
     expect(flow?.nucleus.invariants).toEqual([
       'direction',
@@ -21,6 +22,8 @@ describe('semantic atom tokenizer', () => {
     expect(flow?.orbitals.map((orbital) => orbital.domain)).toContain('natural');
     expect(flow?.codeRelations.blockers).toContain('type error');
     expect(flow?.codeRelations.patterns).toContain('input -> function -> output');
+    expect(transform?.nucleus.invariants).toContain('preservation_rule');
+    expect(transform?.codeRelations.patterns).toContain('operands -> operator -> result');
   });
 
   it('keeps water and flow related without collapsing them into the same atom', () => {
