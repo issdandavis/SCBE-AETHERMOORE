@@ -95,6 +95,28 @@ export {
   type SemanticWorkflowThread,
 } from './semantic-workflow-thread.js';
 
+// SS4 NSM Prime Anchors — Wierzbicka semantic primes + phi-extrapolation
+export {
+  NSM_PRIMES,
+  PHI,
+  TONGUE_ORDER,
+  TONGUE_PHASE,
+  TONGUE_WEIGHT,
+  getPrime,
+  primesForTongue,
+  coverageReport,
+  gridIndex,
+  primeGridIndex,
+  gridPositionForTongue,
+  phiExtrapolate,
+  phiExtrapolateAll,
+  findEmptyLatticeSites,
+  type NSMPrime,
+  type PrimeSpan,
+  type PhiExtrapolation,
+  type CoverageReport,
+} from './nsmPrimes.js';
+
 // Quantum Lattice Integration
 export {
   // Types
