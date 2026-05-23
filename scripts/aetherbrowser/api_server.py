@@ -1414,6 +1414,9 @@ def _chat_grounding_prompt(
         "- If support is missing, say so directly.",
         "- Never blur lore canon and SCBE science into one unsupported claim.",
         "- Stay concise, useful, and specific.",
+        "- Operator UI mode: use at most 5 short bullets unless the user asks for depth.",
+        "- Do not write poems, roleplay, story packets, or decorative metaphors unless fiction is explicitly requested.",
+        "- If the user input is only a number, say it needs an active menu context and do not riff on the number.",
     ]
     if coding_tutor:
         rules.extend(
@@ -1438,6 +1441,26 @@ def _chat_grounding_prompt(
         f"User question:\n{question}\n\n"
         "Answer:"
     ).strip()
+
+
+def _arena_local_command_response(message: str) -> Optional[str]:
+    value = (message or "").strip()
+    if not value:
+        return None
+    if value.isdigit():
+        return (
+            f'Selection "{value}" was captured, but no active numbered menu was provided. '
+            "No model deliberation is needed. Give a full command like `open Arena`, "
+            "`summarize this`, or `deliberate: should I ship this?`."
+        )
+    if value.lower() in {"/help", "help"}:
+        return (
+            "Round Table command help:\n"
+            "- Type a full instruction to call the models.\n"
+            "- Use a bare number only when a visible numbered menu is active.\n"
+            "- Use `/clear` in the browser UI to clear visible transcripts."
+        )
+    return None
 
 
 def _mode_guidance(mode: str) -> str:
@@ -1505,7 +1528,12 @@ def _call_local_ollama(prompt: str, model_id: Optional[str] = None) -> dict[str,
     try:
         response = _req.post(
             "http://localhost:11434/api/generate",
-            json={"model": chosen_model, "prompt": prompt, "stream": False},
+            json={
+                "model": chosen_model,
+                "prompt": prompt,
+                "stream": False,
+                "options": {"temperature": 0.2, "num_predict": 420},
+            },
             timeout=120,
         )
         if response.status_code != 200:
@@ -1537,7 +1565,7 @@ def _call_huggingface_chat(prompt: str, model_id: Optional[str] = None) -> dict[
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.2,
-        "max_tokens": 900,
+        "max_tokens": 420,
     }
     request = urllib.request.Request(
         HF_CHAT_ROUTER_URL,
@@ -1926,6 +1954,22 @@ async def arena_compat_chat(req: ArenaCompatChatRequest):
         return {
             "detail": f"Tentacle '{tentacle}' is not wired into the local spaceport backend yet.",
             "tentacle": tentacle,
+        }
+
+    command_response = _arena_local_command_response(req.message)
+    if command_response is not None:
+        return {
+            "response": command_response,
+            "tentacle": tentacle,
+            "model": "local-command-parser",
+            "latency_ms": 0,
+            "governance_score": 1.0,
+            "domain": "command",
+            "domain_scores": {},
+            "active_profiles": [],
+            "coding_spine": None,
+            "sources": [],
+            "rag": {"enabled": False, "public_only": True, "index": {}},
         }
 
     domain, domain_scores = _classify_chat_domain(req.message, req.context, req.mode, req.domain)
