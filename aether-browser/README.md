@@ -26,7 +26,7 @@ The core insight from SCBE: **adversarial intent costs exponentially more the fu
 |  |                     |  |   WALL (boundary)   |  |  RU: Perms     | |
 |  +---------------------+  +---------------------+  |  CA: Compute   | |
 |                                                     |  UM: Privacy   | |
-|  +------------------------------------------------+ |  DR: Schema    | |
+|  +------------------------------------------------+ |  DR: AuthInteg | |
 |  |           Poincare Ball Trust Model             | +----------------+ |
 |  |                                                  |                  |
 |  |  origin (0,0) = max trust                       |                  |
@@ -79,9 +79,9 @@ Each request is analysed across six security dimensions, derived from the SCBE S
 | Runethic     | RU | Permission checking     | Does the page have permission for resources? |
 | Cassisivadan | CA | Computation safety      | Is the page running safe scripts?            |
 | Umbroth      | UM | Privacy protection      | Is the page leaking user data?               |
-| Draumric     | DR | Schema validation       | Does the page structure match expectations?  |
+| Draumric     | DR | Authentication/Integrity | Does the page identity and structure match expectations? |
 
-Scores are combined using **phi-weighted composite scoring** (Golden Ratio PHI = 1.618...), giving highest weight to intent analysis (KO) and decreasing weight through schema validation (DR).
+Scores are combined using **phi-weighted composite scoring** (Golden Ratio PHI = 1.618...), giving highest weight to intent analysis (KO) and decreasing weight through authentication/integrity checks (DR).
 
 ### Harmonic Wall
 
