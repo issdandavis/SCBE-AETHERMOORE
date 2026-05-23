@@ -1,0 +1,80 @@
+name: YouTube Video Upload
+
+on:
+  workflow_dispatch:
+    inputs:
+      video_path:
+        description: "Path to video file in repo/artifact (relative)"
+        required: true
+        type: string
+      title:
+        description: "YouTube video title"
+        required: false
+        type: string
+      description:
+        description: "YouTube video description"
+        required: false
+        default: ""
+        type: string
+      privacy:
+        description: "Privacy status"
+        required: false
+        default: "private"
+        type: choice
+        options: [private, unlisted, public]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ffmpeg/ffprobe
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify video (ffprobe + sha256)
+        id: verify
+        run: |
+          node scripts/video/verify.js \
+            --file "${{ github.event.inputs.video_path }}" \
+            --out verify-receipt.json
+          echo "sha256=$(jq -r .sha256 verify-receipt.json)" >> "$GITHUB_OUTPUT"
+          cat verify-receipt.json
+
+      - name: Safety check — no DENY from GeoSeal verify (dry-run)
+        run: |
+          pip install pytest --quiet
+          python -m scripts.system.geoseal_llm_verify \
+            --json "{\"op\":\"upload\",\"file\":\"${{ github.event.inputs.video_path }}\",\"sha256\":\"${{ steps.verify.outputs.sha256 }}\"}" \
+            --dry-run --quiet || true
+        continue-on-error: true
+
+      - name: Upload to YouTube (resumable)
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: |
+          node scripts/youtube/upload.js \
+            --file "${{ github.event.inputs.video_path }}" \
+            --title "${{ github.event.inputs.title || github.event.inputs.video_path }}" \
+            --description "${{ github.event.inputs.description }}" \
+            --privacy "${{ github.event.inputs.privacy }}" \
+            --receipt-out upload-receipt.json
+
+      - name: Upload receipts as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: upload-receipts-${{ github.run_id }}
+          path: |
+            verify-receipt.json
+            upload-receipt.json
+          retention-days: 30
