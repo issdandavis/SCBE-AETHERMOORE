@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.4.0 - 2026-05-23
+
+### Added
+
+- **Natural-language command resolver**: type `scbe "check if my workspace is clean"` or `scbe "make a report"` — the CLI maps plain English phrases to existing legal verbs without any model or AI. Deterministic, offline, zero new dependencies. Triggered when input doesn't match a known command. `--yes` / `-y` skips the confirm prompt. `--json` returns the ledger entry and exits without executing.
+- **Autocorrect with receipt ledger**: every NL invocation is logged to `~/.scbe/input_ledger.jsonl` as a `scbe.nl_input.v1` record containing `original`, `corrected_input`, `corrections[]`, `resolved_command`, `confidence`, `tongue`, `executed`, and `exit_code`. Spelling corrections are printed as `[autocorrect] 'typo' → 'word'` before execution.
+- **Explain-before-run**: the CLI prints `[scbe] I will run: scbe <command>` and `[route] <TONGUE> — <description>` before executing, then prompts for confirmation (synchronous, works in any shell). Confidence < 0.6 shows suggestions and exits 2; confidence < 0.3 falls through to the existing command surface.
+- **INTENT_TABLE**: 18 intent entries mapping synonym clusters to commands, labelled with Sacred Tongue routing labels (KO=origin/intent, AV=dispatch/action, RU=governance/scan, CA=verify/harmony, UM=scan/input, DR=receipt/lineage). Examples: `"verify audit tamper check"` → `workspace verify --all` (CA), `"lineage history trail chain"` → `workspace lineage` (DR), `"send dispatch submit task"` → `agent-bus send` (AV).
+
 ## 4.3.16 - 2026-05-14
 
 ### Added
