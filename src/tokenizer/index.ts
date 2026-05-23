@@ -47,6 +47,11 @@ export {
 } from './ss1.js';
 
 // SS2 Semantic Atom Layer
+// NOTE: SemanticWorkflowThread is intentionally NOT re-exported from
+// semantic-atom.js here. The name is claimed by the richer
+// semantic-workflow-thread.ts module below (schema 'scbe-workflow-thread-v1').
+// Callers that need the simpler SemanticWorkflowThread from semantic-atom.ts
+// can import it directly from './semantic-atom.js'.
 export {
   SEMANTIC_ATOMS,
   getSemanticAtom,
@@ -69,8 +74,26 @@ export {
   type SemanticLedgerEntry,
   type SemanticWorkflowNode,
   type SemanticWorkflowEdge,
-  type SemanticWorkflowThread,
 } from './semantic-atom.js';
+
+// SS3 Semantic Workflow Thread — multi-lane highway model
+export {
+  // Builder class
+  WorkflowThreadBuilder,
+
+  // Factory and utilities
+  createWorkflowThread,
+  serializeThread,
+  validateThread,
+
+  // Types
+  type ThreadEdgeKind,
+  type ThreadNode,
+  type ThreadEdge,
+  type TunnelSegment,
+  type WorkflowThreadReceipt,
+  type SemanticWorkflowThread,
+} from './semantic-workflow-thread.js';
 
 // Quantum Lattice Integration
 export {

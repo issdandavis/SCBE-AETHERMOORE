@@ -282,6 +282,102 @@ export const SEMANTIC_ATOMS: Record<string, SemanticAtom> = {
       refinements: ['initial atom-like semantic tokenizer layer'],
     },
   },
+  TRANSFORM: {
+    schemaVersion: 'scbe-semantic-atom-v1',
+    semanticId: 'TRANSFORM',
+    bucketId: 'CORE:OPERATION:STATE_CHANGE',
+    surfaceForms: [
+      'transform',
+      'transforms',
+      'change',
+      'convert',
+      'compile',
+      'compute',
+      'add',
+      'subtract',
+      'multiply',
+      'divide',
+      'map',
+    ],
+    tongues: ['KO', 'AV', 'RU', 'CA', 'UM', 'DR'],
+    nucleus: {
+      meaning:
+        'A bounded operation that changes representation or state while preserving required invariants.',
+      invariants: ['input_state', 'operation', 'output_state', 'preservation_rule'],
+    },
+    orbitals: [
+      {
+        domain: 'code',
+        role: 'operation',
+        terms: ['function call', 'arithmetic', 'compiler pass'],
+        stability: 0.96,
+      },
+      {
+        domain: 'workflow',
+        role: 'work-step',
+        terms: ['convert', 'compile', 'process'],
+        stability: 0.92,
+      },
+      {
+        domain: 'chemical',
+        role: 'reaction',
+        terms: ['reactants', 'products', 'conservation'],
+        stability: 0.9,
+      },
+    ],
+    bonds: [
+      {
+        kind: 'enables',
+        target: 'FLOW',
+        domain: 'workflow',
+        evidence: 'transforms move state from one valid representation to another',
+      },
+      {
+        kind: 'guards',
+        target: 'BLOCK',
+        domain: 'governance',
+        evidence: 'invalid transforms must be blocked by invariant checks',
+      },
+      {
+        kind: 'analogous_to',
+        target: 'REACTION',
+        domain: 'chemical',
+        evidence: 'reactants become products while conservation rules hold',
+      },
+    ],
+    isotopes: [
+      {
+        domain: 'code',
+        id: 'TRANSFORM:CODE:FUNCTION',
+        examples: ['add(a,b)', 'parse(input)', 'compile(source)'],
+      },
+      {
+        domain: 'workflow',
+        id: 'TRANSFORM:WORKFLOW:PROCESS',
+        examples: ['ingest', 'normalize', 'export'],
+      },
+      { domain: 'chemical', id: 'TRANSFORM:CHEMICAL:REACTION', examples: ['2H2 + O2 -> 2H2O'] },
+    ],
+    codeRelations: {
+      patterns: [
+        'input -> transform -> output',
+        'source -> compiler_pass -> artifact',
+        'operands -> operator -> result',
+      ],
+      blockers: ['invariant violation', 'type mismatch', 'unbalanced transformation'],
+      accelerators: ['cached intermediate', 'compiler IR', 'verified rewrite'],
+      analogies: [
+        'reaction:chemistry :: function:code',
+        'compiler_pass:source :: catalyst:reaction',
+      ],
+    },
+    atomicProxy: { symbol: 'C', role: 'operator', valence: 4, stableCore: true },
+    lineage: {
+      preseeded: true,
+      version: '2026-05-23',
+      refinements: ['added to ground cross-language operation signatures into semantic atoms'],
+    },
+  },
   WATER: {
     schemaVersion: 'scbe-semantic-atom-v1',
     semanticId: 'WATER',
