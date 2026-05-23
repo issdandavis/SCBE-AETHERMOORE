@@ -95,14 +95,14 @@ Non-local providers require `SCBE_API_KEY` — see `upgrade`.
 
 Workspaces are temporary, auditable working areas with a six-folder shape:
 
-| Folder | Purpose |
-|---|---|
-| `00_inbox` | Raw drops, uploads, imports, unclassified files |
-| `10_work` | Active editable working files |
-| `20_receipts` | Governance receipts, hashes, run records |
-| `30_exports` | Customer-ready packets and handoff bundles |
-| `40_refs` | Non-secret reference files and source notes |
-| `90_tmp` | Scratch files, deleted after offload verification |
+| Folder        | Purpose                                           |
+| ------------- | ------------------------------------------------- |
+| `00_inbox`    | Raw drops, uploads, imports, unclassified files   |
+| `10_work`     | Active editable working files                     |
+| `20_receipts` | Governance receipts, hashes, run records          |
+| `30_exports`  | Customer-ready packets and handoff bundles        |
+| `40_refs`     | Non-secret reference files and source notes       |
+| `90_tmp`      | Scratch files, deleted after offload verification |
 
 Every workspace command writes a structured JSON receipt so the full audit chain is
 replayable without re-running any model.

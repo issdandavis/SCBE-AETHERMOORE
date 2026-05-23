@@ -187,8 +187,7 @@ async function main() {
           lines.push('');
           process.stdout.write(lines.join('\n'));
         }
-        process.exitCode =
-          payload.receipt === 'SCBE_WORKSPACE_VERIFY_ALL_PASS=1' ? 0 : 1;
+        process.exitCode = payload.receipt === 'SCBE_WORKSPACE_VERIFY_ALL_PASS=1' ? 0 : 1;
         return;
       }
       const exportPath = String(flags['export-path'] || '').trim();
@@ -373,10 +372,8 @@ async function main() {
             const extra = [];
             if (e.export_id) extra.push(`export=${e.export_id}`);
             if (e.manifest_sha256) extra.push(`manifest=${e.manifest_sha256.slice(0, 12)}…`);
-            if (typeof e.manifest_intact === 'boolean')
-              extra.push(`intact=${e.manifest_intact}`);
-            if (typeof e.mismatch_count === 'number')
-              extra.push(`mismatches=${e.mismatch_count}`);
+            if (typeof e.manifest_intact === 'boolean') extra.push(`intact=${e.manifest_intact}`);
+            if (typeof e.mismatch_count === 'number') extra.push(`mismatches=${e.mismatch_count}`);
             const suffix = extra.length > 0 ? ` (${extra.join(' ')})` : '';
             lines.push(`  [${e.kind}] ${e.timestamp || '?'}  ${e.receipt_name}${suffix}`);
             if (e.parse_error) lines.push(`     parse_error: ${e.parse_error}`);
