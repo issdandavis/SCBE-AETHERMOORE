@@ -20,13 +20,7 @@ export type Lang = 'KO' | 'AV' | 'RU' | 'CA' | 'UM' | 'DR';
 export const LANGS: readonly Lang[] = ['KO', 'AV', 'RU', 'CA', 'UM', 'DR'] as const;
 
 /** Polly Pad operational modes — one per tongue-function */
-export type PadMode =
-  | 'ENGINEERING'
-  | 'NAVIGATION'
-  | 'SYSTEMS'
-  | 'SCIENCE'
-  | 'COMMS'
-  | 'MISSION';
+export type PadMode = 'ENGINEERING' | 'NAVIGATION' | 'SYSTEMS' | 'SCIENCE' | 'COMMS' | 'MISSION';
 
 /** All valid pad modes */
 export const PAD_MODES: readonly PadMode[] = [

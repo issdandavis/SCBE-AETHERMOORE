@@ -300,7 +300,7 @@ export const PAD_GEODESIC_CONSTRAINTS: Record<PadMode, GeodesicConstraint> = {
  */
 export function localCurvature(position: Vector6D): number {
   const normSq = position.reduce((sum, x) => sum + x * x, 0);
-  const denom = (1 - normSq);
+  const denom = 1 - normSq;
   if (denom <= 0) return Infinity;
   return 2 / (denom * denom);
 }
@@ -385,8 +385,14 @@ export function padAccessibilityMap(
           center[4] + r * Math.cos(angle * 2.1) * 0.1,
           center[5] + r * Math.sin(angle * 1.7) * 0.1,
         ] as Vector6D,
-        phase: [(2 * Math.PI * 0) / 6, (2 * Math.PI * 1) / 6, (2 * Math.PI * 2) / 6,
-                (2 * Math.PI * 3) / 6, (2 * Math.PI * 4) / 6, (2 * Math.PI * 5) / 6] as Vector6D,
+        phase: [
+          (2 * Math.PI * 0) / 6,
+          (2 * Math.PI * 1) / 6,
+          (2 * Math.PI * 2) / 6,
+          (2 * Math.PI * 3) / 6,
+          (2 * Math.PI * 4) / 6,
+          (2 * Math.PI * 5) / 6,
+        ] as Vector6D,
         mass: 1.0,
       };
 

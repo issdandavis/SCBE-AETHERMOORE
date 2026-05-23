@@ -216,7 +216,7 @@ export function detectTemporalRegularity(
 
   // Low CV = regular timing = suspicious
   // Map CV to [0, 1]: sigmoid centered at jitterThreshold-normalized CV
-  const normalizedCV = cv * mean / Math.max(jitterThreshold, 1);
+  const normalizedCV = (cv * mean) / Math.max(jitterThreshold, 1);
   return 1 / (1 + normalizedCV);
 }
 
@@ -228,10 +228,7 @@ export function detectTemporalRegularity(
  *
  * @returns Coverage in [0, 1]
  */
-export function computeCoverageBreadth(
-  positions: Vector6D[],
-  binCount: number = 5
-): number {
+export function computeCoverageBreadth(positions: Vector6D[], binCount: number = 5): number {
   if (positions.length === 0) return 0;
 
   const visited = new Set<string>();
@@ -252,10 +249,7 @@ export function computeCoverageBreadth(
  *
  * @returns Score in [0, 1] — higher = more repetitive
  */
-export function computeRepetitionScore(
-  positions: Vector6D[],
-  distThreshold: number = 0.1
-): number {
+export function computeRepetitionScore(positions: Vector6D[], distThreshold: number = 0.1): number {
   if (positions.length < 2) return 0;
 
   let nearPairs = 0;
@@ -332,9 +326,9 @@ export function detectProbing(
   const confidence = Math.min(
     1,
     0.25 * entropySignal +
-    0.25 * temporalRegularity +
-    0.25 * Math.min(coverageBreadth / Math.max(config.coverageThreshold, EPSILON), 1) +
-    0.25 * repetitionScore
+      0.25 * temporalRegularity +
+      0.25 * Math.min(coverageBreadth / Math.max(config.coverageThreshold, EPSILON), 1) +
+      0.25 * repetitionScore
   );
 
   let classification: ProbingSignature['classification'];
@@ -432,11 +426,7 @@ export function computeLeakageBudget(
  * @param theta - Threshold center (default: 0.5)
  * @returns Signal retention in [0, 1]
  */
-export function sigmoidGate(
-  pressure: number,
-  k: number = 10,
-  theta: number = 0.5
-): number {
+export function sigmoidGate(pressure: number, k: number = 10, theta: number = 0.5): number {
   return 1 / (1 + Math.exp(k * (pressure - theta)));
 }
 
@@ -556,13 +546,13 @@ export function assessEntropySurface(
   // Defense posture
   let posture: EntropySurfaceAssessment['posture'];
   if (nullification.strength > 0.9 || leakage.exhausted) {
-    posture = 'SILENT';        // Near-zero information emission
+    posture = 'SILENT'; // Near-zero information emission
   } else if (nullification.strength > 0.5) {
-    posture = 'OPAQUE';        // Heavily degraded output
+    posture = 'OPAQUE'; // Heavily degraded output
   } else if (nullification.active) {
-    posture = 'GUARDED';       // Partial signal degradation
+    posture = 'GUARDED'; // Partial signal degradation
   } else {
-    posture = 'TRANSPARENT';   // Full signal, normal operation
+    posture = 'TRANSPARENT'; // Full signal, normal operation
   }
 
   return {

@@ -100,7 +100,7 @@ export const BASELINE_RESONANCE_CONFIG: Required<ResonanceConfig> = {
  */
 export const EVOLVED_RESONANCE_CONFIG: Required<ResonanceConfig> = {
   R: 1.731,
-  passThreshold: 0.30,
+  passThreshold: 0.3,
   rejectThreshold: 0.213,
   weights: TONGUE_WEIGHTS,
   signalPhaseOffset: 0,
@@ -124,7 +124,7 @@ export const EVOLVED_V1_CONFIG = EVOLVED_RESONANCE_CONFIG;
  */
 export const EVOLVED_V2_CONFIG: Required<ResonanceConfig> = {
   R: 1.731,
-  passThreshold: 0.30,
+  passThreshold: 0.3,
   rejectThreshold: 0.213,
   weights: TONGUE_WEIGHTS,
   signalPhaseOffset: 0,
@@ -211,7 +211,7 @@ function crossCorrelate(actual: number[], expected: number[]): number {
  */
 function matchedFilterPhaseScore(
   contributions: Record<string, number>,
-  phaseReferenceOffset: number,
+  phaseReferenceOffset: number
 ): { phaseScore: number; phaseCorrelation: number } {
   const actual = TONGUE_NAMES.map((name) => Math.abs(contributions[name] ?? 0));
   const referencePattern = expectedTonguePattern(phaseReferenceOffset);
@@ -251,7 +251,8 @@ export function tongueWave(
     const phaseAlignment = (1 + Math.cos(signalPhaseOffset - tonguePhase)) / 2;
     const effectiveWeight = w[l] * (0.3 + 0.7 * phaseAlignment);
 
-    const value = effectiveWeight * Math.cos(2 * Math.PI * freq * t + tonguePhase + signalPhaseOffset);
+    const value =
+      effectiveWeight * Math.cos(2 * Math.PI * freq * t + tonguePhase + signalPhaseOffset);
     contributions[TONGUE_NAMES[l]] = value;
     sum += value;
     totalWeight += effectiveWeight;
@@ -284,7 +285,8 @@ export function resonanceGate(
   const geoDecay = cfg.geometryDecay ?? PHI;
   const wavePow = cfg.wavePower ?? 1.0;
   const geoFloor = cfg.geometryFloor ?? 0.0;
-  const phaseStrategy = cfg.phaseStrategy ?? (cfg.preset === 'evolved_v2' ? 'matched_filter' : 'weighted_wave');
+  const phaseStrategy =
+    cfg.phaseStrategy ?? (cfg.preset === 'evolved_v2' ? 'matched_filter' : 'weighted_wave');
   const phaseReferenceOffset = cfg.phaseReferenceOffset ?? 0;
 
   const boundedDStar = Math.max(0, dStar);
@@ -293,12 +295,13 @@ export function resonanceGate(
 
   const waveAlignment = Math.max(0, Math.min(1, (combined + 1) / 2));
   const geometryAlignment = geometryAlignmentFor(boundedDStar, geoDecay, geoFloor);
-  const matchedPhase = phaseStrategy === 'matched_filter'
-    ? matchedFilterPhaseScore(contributions, phaseReferenceOffset)
-    : null;
+  const matchedPhase =
+    phaseStrategy === 'matched_filter'
+      ? matchedFilterPhaseScore(contributions, phaseReferenceOffset)
+      : null;
   const phaseScore = matchedPhase?.phaseScore ?? waveAlignment;
   const phaseCorrelation = matchedPhase?.phaseCorrelation ?? null;
-  const rho = Math.max(0, Math.min(1, (phaseScore ** wavePow) * geometryAlignment));
+  const rho = Math.max(0, Math.min(1, phaseScore ** wavePow * geometryAlignment));
   const rawAmplitude = envelope * waveAlignment;
   const barrierCost = envelope / Math.max(rho, 1e-6);
 

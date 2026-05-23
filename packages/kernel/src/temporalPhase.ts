@@ -64,32 +64,32 @@ export interface TPhaseConfig {
 /** Default configurations for each T-phase */
 export const DEFAULT_PHASE_CONFIGS: Record<TPhaseType, TPhaseConfig> = {
   [TPhaseType.FAST]: {
-    decayRate: 0.99,        // Very slow decay per step — anomalies linger
-    breathAmplitude: 0.0,   // No breathing at inference scale
+    decayRate: 0.99, // Very slow decay per step — anomalies linger
+    breathAmplitude: 0.0, // No breathing at inference scale
     breathPeriod: 1,
-    tongueAffinity: [1, 1, 1, 1, 1, 1],  // Uniform — all tongues equal
+    tongueAffinity: [1, 1, 1, 1, 1, 1], // Uniform — all tongues equal
   },
   [TPhaseType.MEMORY]: {
-    decayRate: 0.90,        // Moderate decay — session-scale forgetting
-    breathAmplitude: 0.05,  // Gentle breathing
-    breathPeriod: 20,       // 20 turns per cycle
+    decayRate: 0.9, // Moderate decay — session-scale forgetting
+    breathAmplitude: 0.05, // Gentle breathing
+    breathPeriod: 20, // 20 turns per cycle
     tongueAffinity: [1, 1, 1, 1, 1, 1],
   },
   [TPhaseType.GOVERNANCE]: {
-    decayRate: 0.80,        // Faster decay — old epochs matter less
-    breathAmplitude: 0.1,   // Moderate breathing
-    breathPeriod: 100,      // 100 epochs per cycle
+    decayRate: 0.8, // Faster decay — old epochs matter less
+    breathAmplitude: 0.1, // Moderate breathing
+    breathPeriod: 100, // 100 epochs per cycle
     tongueAffinity: [1, 1, 1, 1, 1, 1],
   },
   [TPhaseType.CIRCADIAN]: {
     decayRate: 0.95,
-    breathAmplitude: 0.3,   // Strong breathing — day/night rhythm
-    breathPeriod: 24,       // 24-unit cycle (hours, or abstract)
+    breathAmplitude: 0.3, // Strong breathing — day/night rhythm
+    breathPeriod: 24, // 24-unit cycle (hours, or abstract)
     // Day phase: favor interactive tongues (KO, AV); Night: maintenance (UM, DR)
-    tongueAffinity: [1, 1, 1, 1, 1, 1],  // Overridden by circadian logic
+    tongueAffinity: [1, 1, 1, 1, 1, 1], // Overridden by circadian logic
   },
   [TPhaseType.SET]: {
-    decayRate: 0.5,         // Aggressive decay — set events are punctuated
+    decayRate: 0.5, // Aggressive decay — set events are punctuated
     breathAmplitude: 0.0,
     breathPeriod: 1,
     tongueAffinity: [1, 1, 1, 1, 1, 1],
@@ -149,14 +149,9 @@ export function createClock(type: TPhaseType): TPhaseClockState {
  *
  * Controls realm expansion/contraction on this clock's timescale.
  */
-export function computeBreathingFactor(
-  tick: number,
-  config: TPhaseConfig
-): number {
+export function computeBreathingFactor(tick: number, config: TPhaseConfig): number {
   if (config.breathAmplitude === 0 || config.breathPeriod <= 0) return 1.0;
-  return 1.0 + config.breathAmplitude * Math.sin(
-    2 * Math.PI * tick / config.breathPeriod
-  );
+  return 1.0 + config.breathAmplitude * Math.sin((2 * Math.PI * tick) / config.breathPeriod);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -177,17 +172,17 @@ export function circadianTongueAffinity(
 ): [number, number, number, number, number, number] {
   if (period <= 0) return [1, 1, 1, 1, 1, 1];
   const phase = (2 * Math.PI * tick) / period;
-  const dayFactor = (1 + Math.cos(phase)) / 2;     // 1 at day, 0 at night
-  const nightFactor = (1 - Math.cos(phase)) / 2;   // 0 at day, 1 at night
+  const dayFactor = (1 + Math.cos(phase)) / 2; // 1 at day, 0 at night
+  const nightFactor = (1 - Math.cos(phase)) / 2; // 0 at day, 1 at night
 
   // KO, AV, RU are interactive (day); CA, DR, UM are maintenance (night)
   return [
-    0.5 + dayFactor,       // KO: peaks at day
-    0.5 + dayFactor,       // AV: peaks at day
-    0.5 + 0.5 * dayFactor + 0.5 * nightFactor,  // RU: always moderate
-    0.5 + nightFactor,     // CA: peaks at night
-    0.5 + nightFactor,     // DR: peaks at night
-    0.5 + nightFactor,     // UM: peaks at night
+    0.5 + dayFactor, // KO: peaks at day
+    0.5 + dayFactor, // AV: peaks at day
+    0.5 + 0.5 * dayFactor + 0.5 * nightFactor, // RU: always moderate
+    0.5 + nightFactor, // CA: peaks at night
+    0.5 + nightFactor, // DR: peaks at night
+    0.5 + nightFactor, // UM: peaks at night
   ];
 }
 
@@ -270,10 +265,7 @@ export interface ContextEvent {
  * Apply a context event (T_set) to a clock.
  * Returns a new clock state (immutable).
  */
-export function applyContextEvent(
-  clock: TPhaseClockState,
-  event: ContextEvent
-): TPhaseClockState {
+export function applyContextEvent(clock: TPhaseClockState, event: ContextEvent): TPhaseClockState {
   // Check if this clock is targeted
   if (event.targetClocks.length > 0 && !event.targetClocks.includes(clock.type)) {
     return clock;
@@ -377,10 +369,7 @@ export function tickPhases(
 /**
  * Apply a context event to the multi-clock system.
  */
-export function injectContext(
-  state: MultiClockState,
-  event: ContextEvent
-): MultiClockState {
+export function injectContext(state: MultiClockState, event: ContextEvent): MultiClockState {
   const clocks = { ...state.clocks };
   for (const phase of Object.values(TPhaseType)) {
     clocks[phase] = applyContextEvent(state.clocks[phase], event);
@@ -456,8 +445,8 @@ export function combinedXFactor(state: MultiClockState): number {
 
   // Minimum trust across active clocks
   const trusts = Object.values(clocks)
-    .filter(c => c.active)
-    .map(c => c.trustScore);
+    .filter((c) => c.active)
+    .map((c) => c.trustScore);
   const minTrust = trusts.length > 0 ? Math.min(...trusts) : 1.0;
 
   const trustModifier = 1.0 + (1.0 - minTrust);
@@ -495,9 +484,11 @@ export function computeMultiPhaseRisk(state: MultiClockState): MultiPhaseRisk {
   const breathing = circClock.breathingFactor;
 
   // Decision: strictest across all clocks
-  const trusts = Object.values(clocks).filter(c => c.active).map(c => c.trustScore);
+  const trusts = Object.values(clocks)
+    .filter((c) => c.active)
+    .map((c) => c.trustScore);
   const minTrust = trusts.length > 0 ? Math.min(...trusts) : 1.0;
-  const maxIntent = Math.max(...Object.values(clocks).map(c => c.accumulatedIntent));
+  const maxIntent = Math.max(...Object.values(clocks).map((c) => c.accumulatedIntent));
 
   let decision: 'ALLOW' | 'QUARANTINE' | 'DENY' | 'EXILE';
   if (minTrust < 0.1 || maxIntent >= 9.0) {
