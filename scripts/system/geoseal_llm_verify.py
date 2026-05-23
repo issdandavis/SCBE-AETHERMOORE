@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """geoseal_llm_verify.py — concurrent multi-LLM verification harness for GeoSeal outputs.
 
-Reads a GeoSeal governance record, fans it out to N tiny cloud LLMs in two
+Reads a GeoSeal governance record, fans it out to free/local LLM reviewers in two
 interlocked phases, collects independent verdicts, reduces to a quorum decision,
-and writes a receipted JSON artifact.
+and writes a receipted JSON artifact. Hosted/API providers are opt-in only.
 
 Three-phase concurrent architecture:
   Phase 1 (fast triage, ~1s):   Cerebras + Groq/8B fired simultaneously
@@ -11,9 +11,12 @@ Three-phase concurrent architecture:
   Phase 3 (synthesis, ~0.1s):   MultiModelModalMatrix reducer → receipt
 
 Independent streams: each provider call is isolated — different base URLs, models,
-API keys, and timeout budgets. Failure of one stream never blocks others.
+and timeout budgets. Failure of one stream never blocks others.
 
-Providers (all via env vars):
+Default providers:
+  Ollama local        → localhost:11434   (no API key)
+
+Optional hosted providers (disabled unless --allow-hosted is passed):
   CEREBRAS_API_KEY    → api.cerebras.ai    (llama-4-scout-17b-16e default)
   GROQ_API_KEY        → api.groq.com       (llama3-8b-8192 default)
   TOGETHER_API_KEY    → api.together.xyz   (Llama-3.2-3B-Instruct-Turbo default)
@@ -26,6 +29,7 @@ Usage:
   python -m scripts.system.geoseal_llm_verify --json '{"op":"add","tongue":"KO","output":"def add..."}'
   python -m scripts.system.geoseal_llm_verify --last --dry-run   # mock responses
   python -m scripts.system.geoseal_llm_verify --last --phase 1   # phase 1 only
+  python -m scripts.system.geoseal_llm_verify --last --allow-hosted  # opt into API providers
 """
 
 from __future__ import annotations
@@ -47,15 +51,22 @@ import urllib.request
 
 # ─── Provider registry ───────────────────────────────────────────────────────
 
+
 @dataclass
 class ProviderSpec:
     name: str
     base_url: str
     api_key_env: str
     default_model: str
-    phase: int        # 1 = fast triage, 2 = focused review
+    phase: int  # 1 = fast triage, 2 = focused review
     timeout_s: int = 15
     max_tokens: int = 256
+    hosted: bool = True
+
+    @property
+    def is_local(self) -> bool:
+        return self.base_url.startswith("http://localhost") or self.base_url.startswith("http://127.0.0.1")
+
 
 PROVIDERS: list[ProviderSpec] = [
     # ── Phase 1: fast triage (fire first, ~1s) ────────────────────────────────
@@ -66,6 +77,7 @@ PROVIDERS: list[ProviderSpec] = [
         default_model="llama-4-scout-17b-16e",
         phase=1,
         timeout_s=10,
+        hosted=True,
     ),
     ProviderSpec(
         name="groq-8b",
@@ -74,6 +86,7 @@ PROVIDERS: list[ProviderSpec] = [
         default_model="llama3-8b-8192",
         phase=1,
         timeout_s=12,
+        hosted=True,
     ),
     # NVIDIA NIM free tier — many small models, no cost
     ProviderSpec(
@@ -83,15 +96,17 @@ PROVIDERS: list[ProviderSpec] = [
         default_model="meta/llama-3.2-3b-instruct",
         phase=1,
         timeout_s=15,
+        hosted=True,
     ),
     # Ollama local — zero cost, any pulled model
     ProviderSpec(
         name="ollama-local",
         base_url="http://localhost:11434/v1",
-        api_key_env="OLLAMA_API_KEY",   # set to "ollama" or any string; checked for existence
+        api_key_env="",  # local Ollama needs no API key
         default_model="llama3.2:3b",
         phase=1,
         timeout_s=30,
+        hosted=False,
     ),
     # ── Phase 2: focused review — interlocked, uses Phase 1 output ────────────
     ProviderSpec(
@@ -101,6 +116,7 @@ PROVIDERS: list[ProviderSpec] = [
         default_model="gemma2-9b-it",
         phase=2,
         timeout_s=15,
+        hosted=True,
     ),
     # NVIDIA Phi-3 mini — 3.8B, very fast on NIM
     ProviderSpec(
@@ -110,6 +126,7 @@ PROVIDERS: list[ProviderSpec] = [
         default_model="microsoft/phi-3-mini-128k-instruct",
         phase=2,
         timeout_s=20,
+        hosted=True,
     ),
     # NVIDIA Gemma-2 2B — weakest model, good for stress-testing consensus
     ProviderSpec(
@@ -119,6 +136,7 @@ PROVIDERS: list[ProviderSpec] = [
         default_model="google/gemma-2-2b-it",
         phase=2,
         timeout_s=20,
+        hosted=True,
     ),
     ProviderSpec(
         name="together-3b",
@@ -127,6 +145,7 @@ PROVIDERS: list[ProviderSpec] = [
         default_model="meta-llama/Llama-3.2-3B-Instruct-Turbo",
         phase=2,
         timeout_s=20,
+        hosted=True,
     ),
     ProviderSpec(
         name="fireworks-3b",
@@ -135,6 +154,7 @@ PROVIDERS: list[ProviderSpec] = [
         default_model="accounts/fireworks/models/llama-v3p2-3b-instruct",
         phase=2,
         timeout_s=20,
+        hosted=True,
     ),
     ProviderSpec(
         name="openrouter-3b",
@@ -143,31 +163,54 @@ PROVIDERS: list[ProviderSpec] = [
         default_model="meta-llama/llama-3.2-3b-instruct",
         phase=2,
         timeout_s=20,
+        hosted=True,
     ),
     # Ollama second model — independent stream from ollama-local
     ProviderSpec(
         name="ollama-phi",
         base_url="http://localhost:11434/v1",
-        api_key_env="OLLAMA_API_KEY",
+        api_key_env="",
         default_model="phi3:mini",
         phase=2,
         timeout_s=30,
+        hosted=False,
     ),
 ]
 
+
+def select_providers(
+    *,
+    providers: Optional[list[str]] = None,
+    dry_run: bool = False,
+    allow_hosted: bool = False,
+    max_phase: int = 2,
+) -> list[ProviderSpec]:
+    """Resolve providers without silently opting into API-backed calls."""
+    active = [
+        s
+        for s in PROVIDERS
+        if s.phase <= max_phase and (providers is None or s.name in providers) and (allow_hosted or not s.hosted)
+    ]
+    if dry_run:
+        return active
+    return [s for s in active if s.is_local or (s.api_key_env and os.environ.get(s.api_key_env))]
+
+
 # ─── Verdict schema ───────────────────────────────────────────────────────────
+
 
 @dataclass
 class ProviderVerdict:
     provider: str
     model: str
     phase: int
-    decision: str          # ALLOW | QUARANTINE | DENY | ERROR
-    confidence: float      # 0.0–1.0
+    decision: str  # ALLOW | QUARANTINE | DENY | ERROR
+    confidence: float  # 0.0–1.0
     rationale: str
     latency_ms: float
     raw_response: str
     error: Optional[str] = None
+
 
 @dataclass
 class VerifyReceipt:
@@ -185,7 +228,9 @@ class VerifyReceipt:
     error_count: int = 0
     total_latency_ms: float = 0.0
 
+
 # ─── HTTP call (sync, runs in executor) ──────────────────────────────────────
+
 
 def _chat_sync(
     spec: ProviderSpec,
@@ -197,8 +242,8 @@ def _chat_sync(
         time.sleep(0.05)
         return f"ALLOW confidence:0.82 — dry-run mock from {spec.name}", None, 50.0
 
-    is_local = spec.base_url.startswith("http://localhost")
-    key = os.environ.get(spec.api_key_env, "ollama" if is_local else "")
+    is_local = spec.is_local
+    key = os.environ.get(spec.api_key_env, "") if spec.api_key_env else ""
     if not key and not is_local:
         return "", f"missing env var {spec.api_key_env}", 0.0
 
@@ -239,6 +284,7 @@ def _chat_sync(
         latency = (time.monotonic() - t0) * 1000
         return "", f"{type(exc).__name__}: {exc}", latency
 
+
 # ─── Prompt builders ─────────────────────────────────────────────────────────
 
 _TRIAGE_SYSTEM = (
@@ -263,6 +309,7 @@ _FOCUSED_SYSTEM = (
     "Do not add any other text."
 )
 
+
 def _build_triage_messages(record: dict[str, Any]) -> list[dict[str, str]]:
     content_lines = [
         "GeoSeal output to review:",
@@ -282,19 +329,24 @@ def _build_triage_messages(record: dict[str, Any]) -> list[dict[str, str]]:
         {"role": "user", "content": "\n".join(content_lines)},
     ]
 
+
 def _build_focused_messages(
     record: dict[str, Any],
     phase1_concern: str,
 ) -> list[dict[str, str]]:
     base = _build_triage_messages(record)
     base[0] = {"role": "system", "content": _FOCUSED_SYSTEM}
-    base.append({
-        "role": "user",
-        "content": f"Phase 1 concern flagged: {phase1_concern}\nDo you confirm this concern?",
-    })
+    base.append(
+        {
+            "role": "user",
+            "content": f"Phase 1 concern flagged: {phase1_concern}\nDo you confirm this concern?",
+        }
+    )
     return base
 
+
 # ─── Response parser ─────────────────────────────────────────────────────────
+
 
 def _parse_verdict(text: str, spec: ProviderSpec, latency_ms: float, error: Optional[str]) -> ProviderVerdict:
     if error:
@@ -336,7 +388,9 @@ def _parse_verdict(text: str, spec: ProviderSpec, latency_ms: float, error: Opti
         raw_response=text[:500],
     )
 
+
 # ─── Phase runners ────────────────────────────────────────────────────────────
+
 
 async def _run_phase(
     specs: list[ProviderSpec],
@@ -348,14 +402,14 @@ async def _run_phase(
 
     async def _call(spec: ProviderSpec) -> ProviderVerdict:
         msgs = messages_per_spec[spec.name]
-        text, err, latency = await loop.run_in_executor(
-            executor, _chat_sync, spec, msgs, dry_run
-        )
+        text, err, latency = await loop.run_in_executor(executor, _chat_sync, spec, msgs, dry_run)
         return _parse_verdict(text, spec, latency, err)
 
     return list(await asyncio.gather(*[_call(s) for s in specs]))
 
+
 # ─── Quorum reducer ───────────────────────────────────────────────────────────
+
 
 def _reduce_quorum(verdicts: list[ProviderVerdict]) -> tuple[str, float, dict[str, int]]:
     """Weighted vote: error verdicts contribute 0 weight."""
@@ -375,7 +429,9 @@ def _reduce_quorum(verdicts: list[ProviderVerdict]) -> tuple[str, float, dict[st
     decision = max(norm, key=lambda k: norm[k])
     return decision, round(norm[decision], 3), support
 
+
 # ─── Main verification flow ───────────────────────────────────────────────────
+
 
 async def verify_async(
     record: dict[str, Any],
@@ -383,23 +439,20 @@ async def verify_async(
     dry_run: bool = False,
     max_phase: int = 2,
     providers: Optional[list[str]] = None,
+    allow_hosted: bool = False,
 ) -> VerifyReceipt:
     t_start = time.monotonic()
     receipt = VerifyReceipt(
         created_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        record_sha256=hashlib.sha256(
-            json.dumps(record, sort_keys=True).encode("utf-8")
-        ).hexdigest(),
+        record_sha256=hashlib.sha256(json.dumps(record, sort_keys=True).encode("utf-8")).hexdigest(),
     )
 
-    active = [s for s in PROVIDERS if providers is None or s.name in providers]
-    # Filter out providers with no API key (unless dry-run)
-    if not dry_run:
-        active = [
-            s for s in active
-            # Ollama: skip key check, just needs localhost reachable
-            if s.base_url.startswith("http://localhost") or os.environ.get(s.api_key_env)
-        ]
+    active = select_providers(
+        providers=providers,
+        dry_run=dry_run,
+        allow_hosted=allow_hosted,
+        max_phase=max_phase,
+    )
 
     if not active:
         receipt.receipt = "SCBE_GEOSEAL_VERIFY=0"
@@ -423,10 +476,7 @@ async def verify_async(
         p2_specs = [s for s in active if s.phase == 2]
         p2_verdicts: list[ProviderVerdict] = []
         if p2_specs and max_phase >= 2:
-            p2_msgs = {
-                s.name: _build_focused_messages(record, phase1_concern)
-                for s in p2_specs
-            }
+            p2_msgs = {s.name: _build_focused_messages(record, phase1_concern) for s in p2_specs}
             p2_verdicts = await _run_phase(p2_specs, p2_msgs, executor, dry_run)
             receipt.phase_2_verdicts = [asdict(v) for v in p2_verdicts]
 
@@ -444,7 +494,9 @@ async def verify_async(
 
     return receipt
 
+
 # ─── CLI ─────────────────────────────────────────────────────────────────────
+
 
 def _load_last_record(path: str = ".scbe/geoseal_calls.jsonl") -> dict[str, Any]:
     p = Path(path)
@@ -463,6 +515,7 @@ def _load_last_record(path: str = ".scbe/geoseal_calls.jsonl") -> dict[str, Any]
         raise ValueError(f"No records in {path}")
     return last
 
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     src = ap.add_mutually_exclusive_group(required=True)
@@ -470,6 +523,11 @@ def main() -> None:
     src.add_argument("--record", metavar="PATH", help="path to a JSONL or JSON file")
     src.add_argument("--json", metavar="JSON", help="inline JSON record string")
     ap.add_argument("--dry-run", action="store_true", help="mock all LLM calls")
+    ap.add_argument(
+        "--allow-hosted",
+        action="store_true",
+        help="opt into hosted/API-backed providers; default is local/free only",
+    )
     ap.add_argument("--phase", type=int, choices=[1, 2], default=2, help="run only up to this phase")
     ap.add_argument("--providers", metavar="NAMES", help="comma-separated provider names to include")
     ap.add_argument("--out", metavar="PATH", help="write receipt JSON to this path")
@@ -491,13 +549,16 @@ def main() -> None:
     providers = [x.strip() for x in args.providers.split(",")] if args.providers else None
 
     if not args.quiet:
-        active_count = len([
-            s for s in PROVIDERS
-            if (providers is None or s.name in providers)
-            and (args.dry_run or os.environ.get(s.api_key_env))
-            and s.phase <= args.phase
-        ])
-        print(f"[geoseal-verify] Firing {active_count} providers across {args.phase} phase(s)…", flush=True)
+        active_count = len(
+            select_providers(
+                providers=providers,
+                dry_run=args.dry_run,
+                allow_hosted=args.allow_hosted,
+                max_phase=args.phase,
+            )
+        )
+        mode = "hosted opt-in" if args.allow_hosted else "local/free"
+        print(f"[geoseal-verify] Firing {active_count} providers across {args.phase} phase(s) ({mode})…", flush=True)
 
     receipt = asyncio.run(
         verify_async(
@@ -505,6 +566,7 @@ def main() -> None:
             dry_run=args.dry_run,
             max_phase=args.phase,
             providers=providers,
+            allow_hosted=args.allow_hosted,
         )
     )
 
@@ -521,6 +583,7 @@ def main() -> None:
     # Exit non-zero if DENY or UNKNOWN
     if receipt.quorum_decision in {"DENY", "UNKNOWN", "NO_PROVIDERS"}:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
