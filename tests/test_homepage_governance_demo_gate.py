@@ -28,3 +28,13 @@ def test_homepage_governance_demo_uses_real_gate_before_browser_fallback() -> No
     assert "REAL_GATE_API" in html
     assert "BROWSER_FALLBACK" in html
     assert "Customer token vault" in html
+
+
+def test_homepage_governance_demo_has_executable_use_case_samples() -> None:
+    html = INDEX.read_text(encoding="utf-8")
+
+    assert "GOVERNANCE_SAMPLES" in html
+    assert "setGovernanceSample" in html
+    assert "Safe paid run" in html
+    assert "Payment theft" in html
+    assert "gov-source-label" in html
