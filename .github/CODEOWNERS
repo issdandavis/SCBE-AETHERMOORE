@@ -23,6 +23,9 @@ src/governance/ @issdandavis
 # Agents
 agents/ @issdandavis
 
+# Packages
+packages/agent-bus/** @issdandavis
+
 # Package config
 package.json @issdandavis
 tsconfig.json @issdandavis
