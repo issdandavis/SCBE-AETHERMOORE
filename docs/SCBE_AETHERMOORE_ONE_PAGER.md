@@ -11,20 +11,20 @@ recruiters, and reviewers. Last updated 2026-05-23. Canonical source:
 SCBE-AETHERMOORE is a **model-agnostic execution board**: any AI model can
 propose an action, but actions only execute if they are legal moves inside a
 typed workflow space. The board enforces legality — the model does not. This
-removes the dependency on model alignment: even a noisy or adversarial model
-cannot advance system state past an illegal move.
+keeps dispatch control outside the model: even a noisy or adversarial model
+cannot advance system state through an illegal move.
 
-The board runs on hyperbolic geometry (the Poincaré ball model) so adversarial
-drift costs exponentially more than legitimate use. A 14-layer processing
-pipeline emits cryptographic receipts for every gate decision so auditors can
-replay any action months later. The receipt mechanism (GeoSeal) plus the local
-operator console (AetherDesk) plus the mechanical coding mechanism (compile-CA →
+The board uses hyperbolic geometry (the Poincaré ball model) to make drift
+measurable as distance from trusted state. A 14-layer processing pipeline emits
+cryptographic receipts for every gate decision so auditors can replay any
+action months later. The receipt mechanism (GeoSeal) plus the local operator
+console (AetherDesk) plus the mechanical coding mechanism (compile-CA →
 bijective source in Python/TypeScript/Go without an LLM call) together form a
 deployable governance overlay that works in front of any LLM API. Author is a
 self-taught engineer with active SAM.gov / CAGE registration, two DARPA
 submissions on file (CLARA + MATHBAC), and a published prior-art book on KDP
-(ASIN B0GSSFQD9G). Repo is open source; the governance overlay and
-managed-ops services are the revenue surface.
+(ASIN B0GSSFQD9G). Repo is open source; the governance overlay and managed-ops
+services are the revenue surface.
 
 ### 1.1 The GeoBoard execution model
 
