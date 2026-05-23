@@ -1,8 +1,8 @@
 # Architecture Overview
 
 **Core model:** SCBE is a model-agnostic execution board. Any AI proposes an action;
-the board decides whether it is a legal move. Safety holds regardless of model quality
-because the model does not decide what executes — the board does.
+the board decides whether it is a legal move. Dispatch control is model-independent:
+the model proposes, but the board decides what executes.
 
 Pipeline: `state → proposed move → legality check → simulation → receipt → dispatch or deny`
 
