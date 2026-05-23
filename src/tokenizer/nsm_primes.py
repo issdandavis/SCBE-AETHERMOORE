@@ -459,6 +459,28 @@ def _poincare_exp_map(x: tuple[float, float], v: tuple[float, float]) -> tuple[f
     return (new_r * math.cos(v_theta), new_r * math.sin(v_theta))
 
 
+def _proximity_confidence(
+    tongue: TongueCode,
+    r: float,
+    grid_row: int,
+    grid_col: int,
+    *,
+    scale: float = 0.18,
+) -> float:
+    """Soft confidence for an empty lattice site: exp(-d/scale) to nearest known primary."""
+    best = math.inf
+    for p in NSM_PRIMES:
+        if p.primary_tongue != tongue:
+            continue
+        dr = abs(p.r - r)
+        drow = abs(p.grid_row - grid_row)
+        dcol = min(abs(p.grid_col - grid_col), GRID_SIZE - abs(p.grid_col - grid_col))
+        dist = dr + (drow + dcol) / GRID_SIZE
+        if dist < best:
+            best = dist
+    return math.exp(-best / scale) if math.isfinite(best) else 0.0
+
+
 @dataclass(frozen=True)
 class PhiExtrapolation:
     """
@@ -549,7 +571,9 @@ def phi_extrapolate(prime: NSMPrime, steps: int = 3) -> list[PhiExtrapolation]:
                 grid_row=grid_row,
                 grid_col=grid_col,
                 candidate_label=cand_label,
-                confidence=known_match.primary_confidence if known_match else 0.0,
+                confidence=known_match.primary_confidence
+                if known_match
+                else _proximity_confidence(next_tongue, new_r, grid_row, grid_col),
                 is_known_prime=known_match is not None,
                 matched_prime=known_match.id if known_match else None,
             )
@@ -581,11 +605,112 @@ def find_empty_lattice_sites(steps: int = 2) -> list[PhiExtrapolation]:
     return empty
 
 
+# ---------------------------------------------------------------------------
+# Sub-prime anchors — ratioed phi entry points along a root prime's axis
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class SubPrimeAnchor:
+    """
+    A semantic position derived from a root prime by φⁿ-ratioed radial scaling.
+
+    Unlike PhiExtrapolation (which cycles tongues), sub-prime anchors stay on
+    the root prime's own tongue axis and walk radially outward by powers of φ
+    in arctanh space:
+
+        r_n = tanh(arctanh(r₀) × φⁿ)
+
+    This generates a family of deeper primes sharing the root's intentional axis.
+    Example from WANT (r₀=0.22, KO tongue):
+        n=1 → r≈0.35  (NEED — desire with urgency)
+        n=2 → r≈0.53  (COMPEL — drive beyond preference)
+        n=3 → r≈0.74  (MUST — drive approaching necessity)
+        n=4 → r≈0.91  (INEVITABILITY — boundary of representable desire)
+
+    The "ratioed" framing means sub-prime n is always measured relative to the
+    root, not the previous step — making the series a single generative formula.
+    """
+
+    root_id: str
+    n: int
+    tongue: TongueCode
+    r: float
+    theta: float
+    grid_row: int
+    grid_col: int
+    candidate_label: str
+    proximity_confidence: float
+    is_known_prime: bool = False
+    matched_prime: str | None = None
+
+
+def generate_subprime_anchors(prime: NSMPrime, steps: int = 4) -> list[SubPrimeAnchor]:
+    """
+    Generate sub-prime anchors by φⁿ-ratioed scaling from a root prime.
+
+    Each anchor n sits at r_n = tanh(arctanh(r₀) × φⁿ), staying on the root's
+    own tongue axis (same θ = tongue phase angle).  The series predicts semantic
+    concepts that are "more of the same prime" — stronger, deeper, or more
+    abstract versions of the root concept.
+
+    Args:
+        prime: The root NSM prime to extrapolate from.
+        steps: How many φⁿ sub-prime anchors to generate (default 4).
+
+    Returns:
+        List of SubPrimeAnchor, one per step.
+    """
+    anchors: list[SubPrimeAnchor] = []
+    r0 = prime.r
+    theta = prime.poincare_theta
+    root_arctanh = math.atanh(min(r0, 1.0 - POINCARE_EPSILON))
+
+    for n in range(1, steps + 1):
+        scaled_arctanh = root_arctanh * (PHI**n)
+        r_n = math.tanh(min(scaled_arctanh, 10.0))
+        r_n = min(r_n, 1.0 - POINCARE_EPSILON)
+
+        grid_row = min(int(r_n * GRID_SIZE), GRID_SIZE - 1)
+        grid_col = int((theta % (2 * math.pi)) / (2 * math.pi) * GRID_SIZE) % GRID_SIZE
+
+        known_match: NSMPrime | None = None
+        for candidate in primes_for_tongue(prime.primary_tongue):
+            if candidate.grid_row == grid_row and abs(candidate.r - r_n) < 0.08:
+                known_match = candidate
+                break
+
+        prox = (
+            known_match.primary_confidence
+            if known_match
+            else _proximity_confidence(prime.primary_tongue, r_n, grid_row, grid_col)
+        )
+
+        anchors.append(
+            SubPrimeAnchor(
+                root_id=prime.id,
+                n=n,
+                tongue=prime.primary_tongue,
+                r=r_n,
+                theta=theta,
+                grid_row=grid_row,
+                grid_col=grid_col,
+                candidate_label=known_match.label if known_match else f"[SUB: {prime.label}.phi{n}]",
+                proximity_confidence=prox,
+                is_known_prime=known_match is not None,
+                matched_prime=known_match.id if known_match else None,
+            )
+        )
+
+    return anchors
+
+
 __all__ = [
     # Types
     "NSMPrime",
     "PrimeSpan",
     "PhiExtrapolation",
+    "SubPrimeAnchor",
     "CoverageReport",
     "TongueCode",
     # Data
@@ -607,4 +732,5 @@ __all__ = [
     "phi_extrapolate",
     "phi_extrapolate_all",
     "find_empty_lattice_sites",
+    "generate_subprime_anchors",
 ]

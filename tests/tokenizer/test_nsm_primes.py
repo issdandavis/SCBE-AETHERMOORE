@@ -11,9 +11,11 @@ from src.tokenizer.nsm_primes import (
     TONGUE_PHASE,
     CoverageReport,
     PhiExtrapolation,
+    SubPrimeAnchor,
     all_primes,
     coverage_report,
     find_empty_lattice_sites,
+    generate_subprime_anchors,
     get_prime,
     grid_index,
     phi_extrapolate,
@@ -318,3 +320,107 @@ def test_derived_primes_have_larger_r():
     order2 = [p.r for p in NSM_PRIMES if p.phi_order == 2]
     if order0 and order2:
         assert max(order0) < max(order2) + 0.05, "phi_order=2 primes should reach further than phi_order=0"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Proximity confidence
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_empty_extrapolation_sites_have_nonzero_confidence():
+    """Empty lattice sites should now carry proximity confidence, not 0."""
+    p = get_prime("av.say")
+    assert p is not None
+    results = phi_extrapolate(p, steps=2)
+    empty = [ex for ex in results if not ex.is_known_prime]
+    assert len(empty) > 0, "SAY extrapolation should produce at least one empty site"
+    for ex in empty:
+        assert ex.confidence > 0.0, (
+            f"Empty site step {ex.n} tongue {ex.derived_tongue} should have nonzero proximity confidence"
+        )
+
+
+def test_known_prime_match_has_high_confidence():
+    """When extrapolation hits a known prime the confidence should equal that prime's span confidence."""
+    # Walk all primes a few steps and check any known hit is >= 0.5
+    for p in NSM_PRIMES:
+        for ex in phi_extrapolate(p, steps=3):
+            if ex.is_known_prime:
+                assert ex.confidence >= 0.5, (
+                    f"{p.id} step {ex.n}: matched {ex.matched_prime} but conf={ex.confidence}"
+                )
+
+
+def test_proximity_confidence_decays_with_steps():
+    """First step from SAY is closer to known primes than later steps — conf should be higher."""
+    say = get_prime("av.say")
+    assert say is not None
+    results = phi_extrapolate(say, steps=3)
+    empty = [ex for ex in results if not ex.is_known_prime]
+    if len(empty) >= 2:
+        assert empty[0].confidence >= empty[1].confidence, (
+            f"Confidence should decay along geodesic: step 1 conf={empty[0].confidence} "
+            f"should be >= step 2 conf={empty[1].confidence}"
+        )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sub-prime anchors
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_generate_subprime_anchors_count():
+    p = get_prime("ko.want")
+    assert p is not None
+    anchors = generate_subprime_anchors(p, steps=4)
+    assert len(anchors) == 4
+
+
+def test_subprime_anchors_stay_on_root_tongue():
+    for prime in NSM_PRIMES[:10]:
+        for anchor in generate_subprime_anchors(prime, steps=3):
+            assert anchor.tongue == prime.primary_tongue, (
+                f"{prime.id}: sub-prime should stay on {prime.primary_tongue}, got {anchor.tongue}"
+            )
+
+
+def test_subprime_radii_strictly_increasing():
+    p = get_prime("ko.want")
+    assert p is not None
+    anchors = generate_subprime_anchors(p, steps=5)
+    for i in range(1, len(anchors)):
+        assert anchors[i].r > anchors[i - 1].r, (
+            f"Sub-prime radii should increase: step {i} r={anchors[i-1].r} >= step {i+1} r={anchors[i].r}"
+        )
+
+
+def test_subprime_radii_in_open_ball():
+    for p in NSM_PRIMES:
+        for anchor in generate_subprime_anchors(p, steps=4):
+            assert 0.0 < anchor.r < 1.0, (
+                f"{p.id} phi^{anchor.n}: r={anchor.r} outside (0,1)"
+            )
+
+
+def test_subprime_anchor_is_dataclass():
+    p = get_prime("av.say")
+    assert p is not None
+    anchors = generate_subprime_anchors(p, steps=2)
+    for a in anchors:
+        assert isinstance(a, SubPrimeAnchor)
+        assert isinstance(a.proximity_confidence, float)
+        assert a.root_id == p.id
+        assert a.n in (1, 2)
+
+
+def test_subprime_phi1_radius_matches_formula():
+    """phi^1 sub-prime radius = tanh(arctanh(r0) * phi)."""
+    import math
+
+    p = get_prime("ko.want")
+    assert p is not None
+    expected_r1 = math.tanh(math.atanh(p.r) * PHI)
+    anchors = generate_subprime_anchors(p, steps=1)
+    assert abs(anchors[0].r - expected_r1) < 1e-6, (
+        f"phi^1 radius should be tanh(arctanh({p.r}) * phi) = {expected_r1:.6f}, got {anchors[0].r:.6f}"
+    )
