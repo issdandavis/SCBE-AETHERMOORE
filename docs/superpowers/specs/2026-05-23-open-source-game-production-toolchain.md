@@ -46,6 +46,11 @@ The important boundary is simple:
 
 ## Tool Choices
 
+The source article names ten tools: Blockbench, Pencil2D, Pixelorama, Material
+Maker, LDtk, Tiled, Audacity, Yarn Spinner, Gum, and Dear ImGui. This lane does
+not adopt all ten immediately; it maps each one to the production job it could
+own, then prioritizes the tools that match current repo surfaces.
+
 ### Dialogue: Yarn Spinner First
 
 Use Yarn Spinner as the first serious dialogue-authoring target because it
@@ -111,6 +116,44 @@ Future operator command:
 /game asset validate assets/game/manifest.json
 ```
 
+### 2D Animation: Pencil2D As A Clean Animation Source
+
+Pencil2D is a separate candidate from Pixelorama. Pixelorama owns game-native
+pixel spritesheets; Pencil2D owns hand-drawn frame-by-frame animation, roughs,
+camera passes, and image-sequence exports.
+
+Initial repo target:
+- Treat Pencil2D output as animation-source material, not runtime truth.
+- Import only exported image sequences or spritesheets through the same asset
+  manifest used for Pixelorama.
+- Validate frame count, dimensions, naming, and intended runtime lane before any
+  generated animation is consumed by Godot or the web runtime.
+
+Future operator command:
+
+```text
+/game animation validate assets/game/animations/manifest.json
+```
+
+### Procedural Materials: Material Maker Later
+
+Material Maker is useful when the art direction needs repeatable procedural PBR
+materials rather than one-off painted textures. It is relevant for Godot and
+3D/2.5D lanes, but it is not required for the current narrative-combat smoke.
+
+Initial repo target:
+- Defer until a scene actually consumes procedural materials.
+- When adopted, record the source graph, exported texture set, target shader,
+  license, and runtime path in the asset manifest.
+- Validate that every exported material has the expected albedo/normal/roughness
+  files before a build uses it.
+
+Future operator command:
+
+```text
+/game material validate assets/game/materials/manifest.json
+```
+
 ### 3D Assets: Blockbench Later
 
 Blockbench is useful when the project needs low-poly 3D models, pixel-textured
@@ -138,7 +181,27 @@ Future operator command:
 /game audio validate assets/audio/manifest.json
 ```
 
-### UI and Debug: ImGui Pattern, Browser Operator Surface Now
+### Runtime UI Layout: Gum As A Future UI Authoring Candidate
+
+Gum belongs in the production map as a UI layout/editor candidate: menus, HUDs,
+states, anchors, nested containers, and XML layouts that a runtime can load. It
+is not the same job as the Arena operator surface.
+
+Initial repo target:
+- Defer until there is a real in-game UI/HUD need outside the existing web
+  interface.
+- Keep any Gum exports behind a small adapter that validates screens, states,
+  and referenced assets.
+- Do not replace the browser Arena/operator UI with Gum; this is for game
+  runtime UI, not repo operations.
+
+Future operator command:
+
+```text
+/game ui validate assets/game/ui/manifest.json
+```
+
+### Debug UI: ImGui Pattern, Browser Operator Surface Now
 
 Dear ImGui matters here less as a direct dependency and more as the product
 pattern: immediate, cheap debug controls should sit next to the running system.
@@ -171,6 +234,9 @@ must turn that into one of these bounded operations:
 | Export dialogue | Branch graph has stable IDs and reachable nodes |
 | Import map | Entities map to known feature/terrain types |
 | Validate assets | Manifest paths exist and dimensions/metadata match |
+| Validate animation | Frame sequence names, dimensions, and counts match manifest |
+| Validate materials | Texture-set files exist and match expected material channels |
+| Validate UI | Screens, states, and referenced assets exist |
 | Build runtime | Godot/web target can load referenced files |
 | Smoke play | A tiny encounter runs from input to rendered packet |
 
@@ -207,6 +273,9 @@ Do not blur this note into the canonical SCBE architecture.
   invoke through bounded commands.
 - Not a commitment to adopt all listed tools. Yarn Spinner and LDtk are the first
   serious candidates because they match current repo data shapes.
+- Not a claim that art tools are runtime dependencies. Pencil2D, Pixelorama,
+  Material Maker, Blockbench, Audacity, and Gum are authoring/export sources;
+  the repo should validate exported artifacts and manifests.
 - Not a license to commit generated caches or bulky exports. Source manifests,
   adapters, and small fixtures belong in repo; generated assets need explicit
   review.
