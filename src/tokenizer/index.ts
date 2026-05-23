@@ -111,9 +111,11 @@ export {
   phiExtrapolate,
   phiExtrapolateAll,
   findEmptyLatticeSites,
+  generateSubprimeAnchors,
   type NSMPrime,
   type PrimeSpan,
   type PhiExtrapolation,
+  type SubPrimeAnchor,
   type CoverageReport,
 } from './nsmPrimes.js';
 
