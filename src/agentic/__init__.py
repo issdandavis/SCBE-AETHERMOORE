@@ -12,3 +12,13 @@ from .meet_in_the_middle import (  # noqa: F401
     SeamContract,
     merge_halves,
 )
+from .dcp_routes import (  # noqa: F401
+    GITHUB_COPILOT_PR_COMBO,
+    TETRIS_TREE_PR_PIECES,
+    TETRIS_TREE_PR_SLOTS,
+    approved_agentic_tools,
+    copilot_command_route,
+    create_github_pr_dcp,
+    github_command_route,
+    route_tetris_tree,
+)
