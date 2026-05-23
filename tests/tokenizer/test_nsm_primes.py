@@ -68,9 +68,9 @@ def test_spans_confidences_sum_to_at_most_1():
 def test_primary_span_has_highest_confidence():
     for p in NSM_PRIMES:
         if len(p.spans) > 1:
-            assert p.spans[0].confidence >= p.spans[1].confidence, (
-                f"{p.id}: first span ({p.spans[0].confidence}) < second ({p.spans[1].confidence})"
-            )
+            assert (
+                p.spans[0].confidence >= p.spans[1].confidence
+            ), f"{p.id}: first span ({p.spans[0].confidence}) < second ({p.spans[1].confidence})"
 
 
 def test_get_prime_returns_correct_object():
@@ -102,20 +102,20 @@ def test_all_primes_length():
 @pytest.mark.parametrize(
     "prime_id, expected_label, expected_tongue",
     [
-        ("ko.i",       "I",           "KO"),
-        ("ko.want",    "WANT",        "KO"),
-        ("ko.not",     "NOT",         "KO"),
-        ("av.hear",    "HEAR",        "AV"),
-        ("av.move",    "MOVE",        "AV"),
-        ("ru.good",    "GOOD",        "RU"),
-        ("ru.all",     "ALL",         "RU"),
-        ("ca.one",     "ONE",         "CA"),
-        ("ca.more",    "MORE",        "CA"),
-        ("um.inside",  "INSIDE",      "UM"),
-        ("um.feel",    "FEEL",        "UM"),
-        ("dr.before",  "BEFORE",      "DR"),
-        ("dr.after",   "AFTER",       "DR"),
-        ("dr.know",    "KNOW",        "DR"),
+        ("ko.i", "I", "KO"),
+        ("ko.want", "WANT", "KO"),
+        ("ko.not", "NOT", "KO"),
+        ("av.hear", "HEAR", "AV"),
+        ("av.move", "MOVE", "AV"),
+        ("ru.good", "GOOD", "RU"),
+        ("ru.all", "ALL", "RU"),
+        ("ca.one", "ONE", "CA"),
+        ("ca.more", "MORE", "CA"),
+        ("um.inside", "INSIDE", "UM"),
+        ("um.feel", "FEEL", "UM"),
+        ("dr.before", "BEFORE", "DR"),
+        ("dr.after", "AFTER", "DR"),
+        ("dr.know", "KNOW", "DR"),
     ],
 )
 def test_canonical_prime_assignments(prime_id, expected_label, expected_tongue):
@@ -202,9 +202,7 @@ def test_no_two_primaries_share_grid_slot_within_tongue():
         seen: set[int] = set()
         for p in primes_for_tongue(tongue):
             idx = prime_grid_index(p)
-            assert idx not in seen, (
-                f"{tongue}: grid slot {idx} (row={p.grid_row},col={p.grid_col}) is shared"
-            )
+            assert idx not in seen, f"{tongue}: grid slot {idx} (row={p.grid_row},col={p.grid_col}) is shared"
             seen.add(idx)
 
 
@@ -227,18 +225,14 @@ def test_phi_extrapolate_tongue_cycles():
     # Should cycle KO→AV→RU→CA→UM→DR
     expected = ["AV", "RU", "CA", "UM", "DR", "KO"]
     for i, ex in enumerate(results):
-        assert ex.derived_tongue == expected[i], (
-            f"step {i+1}: expected {expected[i]}, got {ex.derived_tongue}"
-        )
+        assert ex.derived_tongue == expected[i], f"step {i+1}: expected {expected[i]}, got {ex.derived_tongue}"
 
 
 def test_phi_extrapolate_radii_stay_in_ball():
     for p in NSM_PRIMES:
         results = phi_extrapolate(p, steps=4)
         for ex in results:
-            assert 0.0 < ex.derived_r < 1.0, (
-                f"{p.id} step {ex.n}: r={ex.derived_r} outside (0,1)"
-            )
+            assert 0.0 < ex.derived_r < 1.0, f"{p.id} step {ex.n}: r={ex.derived_r} outside (0,1)"
 
 
 def test_phi_extrapolate_radii_increase_monotonically():
@@ -247,9 +241,9 @@ def test_phi_extrapolate_radii_increase_monotonically():
     results = phi_extrapolate(p, steps=4)
     for i in range(1, len(results)):
         # Radius should generally increase but tanh compression may slow it
-        assert results[i].derived_r >= results[0].derived_r * 0.9, (
-            f"step {i+1} radius {results[i].derived_r} unexpectedly dropped from step 1 {results[0].derived_r}"
-        )
+        assert (
+            results[i].derived_r >= results[0].derived_r * 0.9
+        ), f"step {i+1} radius {results[i].derived_r} unexpectedly dropped from step 1 {results[0].derived_r}"
 
 
 def test_phi_extrapolation_result_types():
@@ -282,9 +276,9 @@ def test_find_empty_lattice_sites_returns_list():
 def test_empty_lattice_sites_have_candidate_labels():
     sites = find_empty_lattice_sites(steps=2)
     for site in sites:
-        assert site.candidate_label.startswith("[CANDIDATE:"), (
-            f"empty site should have candidate label, got: {site.candidate_label}"
-        )
+        assert site.candidate_label.startswith(
+            "[CANDIDATE:"
+        ), f"empty site should have candidate label, got: {site.candidate_label}"
 
 
 def test_phi_extrapolate_pure_prime_first_step_tongue():
@@ -323,6 +317,4 @@ def test_derived_primes_have_larger_r():
     order0 = [p.r for p in NSM_PRIMES if p.phi_order == 0]
     order2 = [p.r for p in NSM_PRIMES if p.phi_order == 2]
     if order0 and order2:
-        assert max(order0) < max(order2) + 0.05, (
-            "phi_order=2 primes should reach further than phi_order=0"
-        )
+        assert max(order0) < max(order2) + 0.05, "phi_order=2 primes should reach further than phi_order=0"

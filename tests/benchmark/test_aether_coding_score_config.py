@@ -21,9 +21,7 @@ def test_aether_coding_score_has_claim_guardrails() -> None:
     guardrails = data["claim_guardrails"]
     assert any("smoke run" in guardrail for guardrail in guardrails)
     assert any("simulated competitor" in guardrail for guardrail in guardrails)
-    assert any(
-        "harness" in guardrail and "cost" in guardrail for guardrail in guardrails
-    )
+    assert any("harness" in guardrail and "cost" in guardrail for guardrail in guardrails)
 
 
 def test_aether_coding_score_tracks_are_actionable() -> None:
@@ -64,11 +62,7 @@ def test_research_claim_registry_has_status_fences() -> None:
 def test_research_claim_registry_blocks_unsupported_public_claims() -> None:
     data = json.loads(CLAIM_REGISTRY.read_text(encoding="utf-8"))
 
-    rejected = {
-        claim["claim_id"]: claim
-        for claim in data["claims"]
-        if claim["status"] == "reject_for_public_claims"
-    }
+    rejected = {claim["claim_id"]: claim for claim in data["claims"] if claim["status"] == "reject_for_public_claims"}
     assert "first_ai_programmer_index" in rejected
     assert "gated_kertos_model" in rejected
     assert all(not claim["source_url"] for claim in rejected.values())
@@ -77,10 +71,6 @@ def test_research_claim_registry_blocks_unsupported_public_claims() -> None:
 def test_watch_claims_are_not_marked_verified() -> None:
     data = json.loads(CLAIM_REGISTRY.read_text(encoding="utf-8"))
 
-    watch = {
-        claim["claim_id"]: claim
-        for claim in data["claims"]
-        if claim["status"] == "watch"
-    }
+    watch = {claim["claim_id"]: claim for claim in data["claims"] if claim["status"] == "watch"}
     assert "frontier_model_escape_april_2026" in watch
     assert "aethelgard_dynamic_capability_governance" in watch
