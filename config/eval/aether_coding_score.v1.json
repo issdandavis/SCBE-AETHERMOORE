@@ -3,6 +3,7 @@
   "name": "Aether Coding Score / 100",
   "status": "scoring_design_not_leaderboard_claim",
   "last_researched": "2026-05-23",
+  "research_claim_registry": "config/eval/aether_research_claim_registry.v1.json",
   "formula": "sum(track_weight * normalized_benchmark_score * evidence_multiplier)",
   "evidence_multipliers": {
     "official_full_run": 1.0,

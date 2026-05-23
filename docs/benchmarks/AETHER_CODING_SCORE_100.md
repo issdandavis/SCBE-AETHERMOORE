@@ -7,6 +7,8 @@ This is the coding-agent scorecard for SCBE/AetherMoore systems. It is meant to 
 
 The rule is simple: no benchmark evidence, no points. A smoke test proves plumbing, not capability.
 
+Research claim gate: see `docs/research/AI_AGENT_RESEARCH_CLAIM_REGISTER_2026-05-23.md` and `config/eval/aether_research_claim_registry.v1.json`. External claims marked `watch` or `reject_for_public_claims` must not be promoted into product copy.
+
 ## Score Formula
 
 ```
@@ -96,4 +98,3 @@ Allowed claims today:
 - "SCBE has a public benchmark plan and local governance/security harnesses."
 - "SCBE can produce benchmark evidence packets."
 - "The Aether Coding Score defines how we will grade coding-agent capability out of 100."
-
