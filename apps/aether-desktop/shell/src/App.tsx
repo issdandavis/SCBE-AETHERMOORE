@@ -6,6 +6,7 @@ import { createToolBus } from './toolBus';
 
 const BACKEND_URL =
   (import.meta.env['VITE_BACKEND_URL'] as string | undefined) ?? 'http://localhost:8001';
+const BACKEND_API_KEY = import.meta.env['VITE_BACKEND_API_KEY'] as string | undefined;
 
 type Tab = 'chat' | 'tools';
 
@@ -22,7 +23,7 @@ const TAB_BTN = (active: boolean): React.CSSProperties => ({
 
 export function App() {
   const [tab, setTab] = useState<Tab>('chat');
-  const client = useMemo(() => createBackendClient(BACKEND_URL), []);
+  const client = useMemo(() => createBackendClient(BACKEND_URL, BACKEND_API_KEY), []);
   const bus = useMemo(() => createToolBus(client), [client]);
 
   return (

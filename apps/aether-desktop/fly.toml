@@ -1,0 +1,32 @@
+# Deploy: cd apps/aether-desktop && fly deploy
+# First time: fly launch --no-deploy (then set secrets, then fly deploy)
+#
+# Required secrets (set once):
+#   fly secrets set AETHER_DESKTOP_API_KEY=<your-key>
+#   fly secrets set GROQ_API_KEY=<your-groq-key>
+
+app = "aether-desktop-backend"
+primary_region = "sea"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8001
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[env]
+  AETHER_DESKTOP_AUDIT_DIR = "/app/audit"
+
+[[mounts]]
+  source = "aether_audit"
+  destination = "/app/audit"
+  initial_size = "1gb"

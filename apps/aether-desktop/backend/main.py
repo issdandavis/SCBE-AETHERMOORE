@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import os
 
-from fastapi import FastAPI, WebSocket
+from fastapi import Depends, FastAPI, WebSocket
 
 from .audit import AuditWriter
+from .auth import require_api_key
 from .gate import govern
 from .handlers.echo import echo_handler
 from .handlers.llm_chat import llm_chat_handler
@@ -35,7 +37,7 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.post("/v1/op")
+@app.post("/v1/op", dependencies=[Depends(require_api_key)])
 async def op_endpoint(req: OperationRequest) -> OperationResult:
     decision = govern(req)
     _audit.write_request(req, decision)
@@ -74,7 +76,11 @@ async def op_endpoint(req: OperationRequest) -> OperationResult:
 
 
 @app.websocket("/v1/events")
-async def events_ws(websocket: WebSocket, request_id: str) -> None:
+async def events_ws(websocket: WebSocket, request_id: str, api_key: str | None = None) -> None:
+    required_key = os.getenv("AETHER_DESKTOP_API_KEY", "")
+    if required_key and api_key != required_key:
+        await websocket.close(code=4001)
+        return
     await websocket.accept()
     queue: asyncio.Queue = asyncio.Queue()
     _event_queues[request_id] = queue
