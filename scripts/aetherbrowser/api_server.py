@@ -3225,6 +3225,13 @@ def _cli_command_registry() -> list[dict[str, Any]]:
             "example": 'harness plan "fix failing lint in public arena" --permission-mode observe',
         },
         {
+            "cmd": "game smoke narrative-combat [--seed N]",
+            "lane": "game-production",
+            "interop": {"web": True, "python": True, "node": False, "connectors": False},
+            "desc": "Run deterministic game-production smokes through existing narrative tooling.",
+            "example": "game smoke narrative-combat --seed 1337",
+        },
+        {
             "cmd": "momentum run <train_id> [--flow X] [--execute] [--max-parallel N]",
             "lane": "momentum",
             "interop": {"web": True, "python": True, "node": False, "connectors": False},
@@ -3277,6 +3284,7 @@ def _cli_help_text() -> str:
         "  bus verify [events.jsonl]",
         "  bus replay [events.jsonl] [--by-task]",
         '  harness plan "intent..." [--permission-mode observe|assist] [--language python|typescript]',
+        "  game smoke narrative-combat [--seed N]",
         "  momentum run <train_id> [--flow X] [--execute] [--max-parallel N]",
         "  momentum latest [train_id]",
         '  chessboard generate "goal..."',
@@ -3290,6 +3298,7 @@ def _cli_help_text() -> str:
         "  ops tests",
         '  bus run "inspect current repo health" --no-search',
         '  harness plan "add a regression test for the arena command parser"',
+        "  game smoke narrative-combat --seed 1337",
         "  momentum run daily_ops --execute --max-parallel 3",
         '  chessboard generate "Improve long-running agent workflows"',
         "  docs show aetherbrowser-config",
@@ -3357,6 +3366,14 @@ def _cli_parse_flags(parts: list[str]) -> dict[str, Any]:
             continue
         if p == "--language" and i + 1 < len(parts):
             out["language"] = parts[i + 1]
+            i += 2
+            continue
+        if p == "--seed" and i + 1 < len(parts):
+            try:
+                out["seed"] = int(parts[i + 1])
+            except Exception:
+                logger.debug("Suppressed error", exc_info=True)
+                out["seed"] = parts[i + 1]
             i += 2
             continue
         if p == "--tool" and i + 1 < len(parts):
@@ -3504,6 +3521,44 @@ def _cli_harness_plan(rest: list[str]) -> dict[str, Any]:
     return {"ok": True, "lane": "coding-harness", "result": plan}
 
 
+def _cli_game(rest: list[str]) -> dict[str, Any]:
+    if len(rest) < 2 or rest[0].lower() != "smoke":
+        return {"ok": False, "error": "Usage: game smoke narrative-combat [--seed N]"}
+
+    target = rest[1].lower()
+    flags = _cli_parse_flags(rest[2:])
+    if target not in {"narrative-combat", "narrative_combat"}:
+        return {"ok": False, "error": f"Unknown game smoke target: {target}"}
+
+    seed = flags.get("seed", 1337)
+    if not isinstance(seed, int):
+        return {"ok": False, "error": "--seed must be an integer"}
+
+    from src.narrative_combat.director import Director
+    from src.narrative_combat.fixtures import boss_duel_demo
+
+    packet = Director(boss_duel_demo(seed=seed)).run()
+    artifact_dir = ROOT / "artifacts" / "game" / "smokes"
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+    artifact_path = artifact_dir / f"narrative_combat_seed_{seed}.json"
+    artifact_path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    aftermath = packet.get("aftermath") if isinstance(packet, dict) else {}
+    path = packet.get("path") if isinstance(packet, dict) else {}
+    result = {
+        "schema": packet.get("schema"),
+        "encounter_id": packet.get("encounter_id"),
+        "seed": packet.get("seed"),
+        "beat_count": len(packet.get("beats", [])),
+        "phases": [beat.get("phase") for beat in packet.get("beats", []) if isinstance(beat, dict)],
+        "winner": aftermath.get("winner") if isinstance(aftermath, dict) else None,
+        "price_paid": aftermath.get("price_paid", []) if isinstance(aftermath, dict) else [],
+        "chosen_path": path.get("chosen", []) if isinstance(path, dict) else [],
+        "artifact": str(artifact_path.relative_to(ROOT)),
+    }
+    return {"ok": True, "lane": "game-production", "result": result}
+
+
 async def _cli_dispatch(parts: list[str]) -> dict[str, Any]:
     if not parts:
         return {"ok": True, "result": _cli_help_text()}
@@ -3558,6 +3613,9 @@ async def _cli_dispatch(parts: list[str]) -> dict[str, Any]:
 
     if cmd in {"harness", "code"}:
         return _cli_harness_plan(rest)
+
+    if cmd == "game":
+        return _cli_game(rest)
 
     if cmd == "momentum":
         if not rest:
