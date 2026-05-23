@@ -22,6 +22,11 @@ on:
         default: "private"
         type: choice
         options: [private, unlisted, public]
+      chunk_size_mb:
+        description: "Upload chunk size in MiB"
+        required: false
+        default: "8"
+        type: string
 
 permissions:
   contents: read
@@ -67,6 +72,7 @@ jobs:
             --title "${{ github.event.inputs.title || github.event.inputs.video_path }}" \
             --description "${{ github.event.inputs.description }}" \
             --privacy "${{ github.event.inputs.privacy }}" \
+            --chunk-size-mb "${{ github.event.inputs.chunk_size_mb }}" \
             --receipt-out upload-receipt.json
 
       - name: Upload receipts as artifacts

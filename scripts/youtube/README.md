@@ -14,8 +14,11 @@ node scripts/youtube/upload.js \
   --title "My Video" \
   --description "Description here" \
   --privacy private \
+  --chunk-size-mb 8 \
   --receipt-out upload-receipt.json
 ```
+
+Uploads use YouTube's resumable protocol in chunks. If a chunk fails with a retryable error, the script queries the upload session for the committed byte range and resumes from there.
 
 **Required env vars** (add as GitHub Actions secrets or export locally):
 
@@ -28,6 +31,8 @@ YT_REFRESH_TOKEN   # Long-lived refresh token (see below)
 **Optional:**
 ```
 YT_CHANNEL_ID      # Target channel (defaults to authenticated user's channel)
+YT_CHUNK_SIZE_MB   # Default chunk size if --chunk-size-mb is omitted
+YT_UPLOAD_MAX_RETRIES
 ```
 
 ### `scripts/video/verify.js`
@@ -53,4 +58,4 @@ Exit 0 = all checks pass. Exit 1 = warnings (audio/video codec issues). Exit 2 =
 
 `.github/workflows/video-upload.yml` — trigger via `workflow_dispatch` in the GitHub UI.
 
-Runs: ffprobe verify → GeoSeal safety check (dry-run) → resumable upload → artifact receipt.
+Runs: ffprobe verify → GeoSeal safety check (dry-run) → chunked resumable upload → artifact receipt.
