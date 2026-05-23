@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
 from .models import AuditRecord, AuditResultSummary, OperationDecision, OperationRequest, OperationResult
 
-_REDACTED_KEYS: frozenset[str] = frozenset(
-    {"api_key", "secret", "password", "token", "bearer", "credential"}
-)
+_REDACTED_KEYS: frozenset[str] = frozenset({"api_key", "secret", "password", "token", "bearer", "credential"})
 
 
 def _redact_args(args: dict) -> dict:
@@ -18,7 +17,7 @@ def _redact_args(args: dict) -> dict:
 class AuditWriter:
     def __init__(self, audit_dir: Path | None = None) -> None:
         if audit_dir is None:
-            audit_dir = Path(".scbe")
+            audit_dir = Path(os.getenv("AETHER_DESKTOP_AUDIT_DIR", ".scbe"))
         self._log_path = Path(audit_dir) / "audit.jsonl"
         self._log_path.parent.mkdir(parents=True, exist_ok=True)
 
