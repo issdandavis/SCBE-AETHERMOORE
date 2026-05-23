@@ -642,7 +642,7 @@
       <input
         class="deal-input"
         id="dealInput"
-        placeholder="Deal to all players or Deliberate for consensus..."
+        placeholder='Deal to all, or use /bus "task" and /code "intent"...'
         autocomplete="off"
       />
       <button class="deal-btn" id="dealBtn" onclick="dealToAll()">Deal</button>
@@ -1050,7 +1050,9 @@
 
       function renderMessageContent(div, role, text) {
         const raw = String(text || '');
-        const shouldCompact = role === 'ai' && (raw.length > 700 || raw.split('\n').length > 9);
+        const shouldCompact =
+          (role === 'ai' || role === 'synthesis') &&
+          (raw.length > 700 || raw.split('\n').length > 9);
         if (!shouldCompact) {
           let content = escHtml(raw);
           content = content.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre>$2</pre>');
@@ -1067,7 +1069,7 @@
         const details = document.createElement('details');
         details.className = 'raw-toggle';
         const label = document.createElement('summary');
-        label.textContent = 'Raw model output';
+        label.textContent = role === 'synthesis' ? 'Raw operator output' : 'Raw model output';
         const pre = document.createElement('pre');
         pre.textContent = raw;
         details.appendChild(label);
@@ -1076,7 +1078,39 @@
         div.appendChild(details);
       }
 
-      function handleArenaCommand(text, sourceLabel = 'Command') {
+      function formatCliResult(command, data) {
+        const payload =
+          data && typeof data === 'object' && data.result !== undefined ? data.result : data;
+        const body =
+          typeof payload === 'string' ? payload : JSON.stringify(payload ?? data ?? {}, null, 2);
+        const status = data && data.ok === false ? 'FAILED' : 'OK';
+        const stderr = data && data.stderr ? `\n\nSTDERR:\n${data.stderr}` : '';
+        const stdout = data && data.stdout ? `\n\nSTDOUT:\n${data.stdout}` : '';
+        return `[OPERATOR ${status}] ${command}${stdout || `\n\n${body}`}${stderr}`;
+      }
+
+      async function runArenaCliCommand(command, sourceLabel = 'Command') {
+        const seatId = narratorSeatId();
+        addMessage(seatId, 'synthesis', `[${sourceLabel}] Running: ${command}`, 'operator cli');
+        try {
+          const resp = await fetch(API + '/api/cli/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ command }),
+          });
+          const data = await resp.json();
+          addMessage(
+            seatId,
+            data.ok === false ? 'error' : 'synthesis',
+            formatCliResult(command, data),
+            'operator cli'
+          );
+        } catch (err) {
+          addMessage(seatId, 'error', `[${sourceLabel}] CLI error: ${err.message || 'failed'}`);
+        }
+      }
+
+      async function handleArenaCommand(text, sourceLabel = 'Command') {
         const value = String(text || '').trim();
         if (!value) return false;
         const seatId = narratorSeatId();
@@ -1093,7 +1127,7 @@
           addMessage(
             seatId,
             'synthesis',
-            '[COMMAND HELP]\n/clear - clear seat transcripts\nA bare number is treated as a UI selection, not a creative prompt.',
+            '[COMMAND HELP]\n/clear - clear seat transcripts\n/bus <agent-bus command> - run safe Agent Bus verbs\n/code <intent> - compile a safe coding harness plan\n/cli <safe command> - run the allowlisted AetherBrowser CLI\nA bare number is treated as a UI selection, not a creative prompt.',
             'local parser'
           );
           return true;
@@ -1104,6 +1138,21 @@
             if (chat) chat.replaceChildren();
           });
           addMessage(seatId, 'synthesis', '[COMMAND] Cleared visible transcripts.', 'local parser');
+          return true;
+        }
+        if (value.startsWith('/bus ')) {
+          await runArenaCliCommand('bus ' + value.slice(5).trim(), sourceLabel);
+          return true;
+        }
+        if (value.startsWith('/code ')) {
+          await runArenaCliCommand(
+            'harness plan ' + JSON.stringify(value.slice(6).trim()),
+            sourceLabel
+          );
+          return true;
+        }
+        if (value.startsWith('/cli ')) {
+          await runArenaCliCommand(value.slice(5).trim(), sourceLabel);
           return true;
         }
         return false;
@@ -1216,7 +1265,7 @@
         const input = document.getElementById('input-' + playerId);
         const text = message || (input ? input.value.trim() : '');
         if (!text) return null;
-        if (!message && handleArenaCommand(text, playerId)) {
+        if (!message && (await handleArenaCommand(text, playerId))) {
           if (input) input.value = '';
           return null;
         }
@@ -1311,7 +1360,7 @@
         const text = input.value.trim();
         if (!text) return;
         input.value = '';
-        if (handleArenaCommand(text, 'Deal')) return;
+        if (await handleArenaCommand(text, 'Deal')) return;
 
         document.getElementById('dealBtn').disabled = true;
         document.getElementById('dealBtn').textContent = 'Dealing...';
@@ -1329,7 +1378,7 @@
         const text = input.value.trim();
         if (!text) return;
         input.value = '';
-        if (handleArenaCommand(text, 'Relay')) return;
+        if (await handleArenaCommand(text, 'Relay')) return;
 
         const btn = document.getElementById('relayBtn');
         btn.disabled = true;
@@ -1372,7 +1421,7 @@
         const topic = input.value.trim();
         if (!topic) return;
         input.value = '';
-        if (handleArenaCommand(topic, 'Debate')) return;
+        if (await handleArenaCommand(topic, 'Debate')) return;
 
         const btn = document.getElementById('debateBtn');
         btn.disabled = true;
@@ -1418,7 +1467,7 @@
         const text = input.value.trim();
         if (!text) return;
         input.value = '';
-        if (handleArenaCommand(text, 'Deliberate')) return;
+        if (await handleArenaCommand(text, 'Deliberate')) return;
 
         const btn = document.getElementById('deliberateBtn');
         btn.disabled = true;
