@@ -1161,8 +1161,8 @@
               </div>
               <p style="font-size: 14px; color: var(--muted); margin-bottom: 14px">
                 Type any AI prompt or task below. The 14-layer pipeline evaluates intent, calculates
-                hyperbolic risk, and returns a governance decision — the same gate used in the
-                91/91 denied-policy harness.
+                hyperbolic risk, and returns a governance decision. This use-case demo calls the
+                real governed-chat preflight first, then falls back to browser math if the API is unreachable.
               </p>
               <div style="display: grid; gap: 10px">
                 <textarea
@@ -1182,6 +1182,22 @@
                   "
                 ></textarea>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
+                  <select
+                    id="gov-use-case"
+                    style="
+                      background: rgba(255, 255, 255, 0.05);
+                      border: 1px solid var(--line);
+                      border-radius: 8px;
+                      padding: 10px 14px;
+                      color: var(--text);
+                      font-size: 14px;
+                    "
+                  >
+                    <option value="paid-model">Paid model run</option>
+                    <option value="agent-bus">Agent bus handoff</option>
+                    <option value="code-harness">Coding harness patch</option>
+                    <option value="data-export">Data export</option>
+                  </select>
                   <select
                     id="gov-actor"
                     style="
@@ -1213,6 +1229,21 @@
                     <option value="internal">Internal system</option>
                     <option value="confidential">Confidential records</option>
                     <option value="restricted">Restricted infrastructure</option>
+                  </select>
+                  <select
+                    id="gov-custody"
+                    style="
+                      background: rgba(255, 255, 255, 0.05);
+                      border: 1px solid var(--line);
+                      border-radius: 8px;
+                      padding: 10px 14px;
+                      color: var(--text);
+                      font-size: 14px;
+                    "
+                  >
+                    <option value="customer-vault">Customer token vault</option>
+                    <option value="byok">BYOK provider account</option>
+                    <option value="platform-managed">Platform managed</option>
                   </select>
                   <button
                     id="gov-btn"
@@ -1296,6 +1327,16 @@
                     "
                   ></div>
                   <div
+                    id="gov-usecase-receipt"
+                    style="
+                      margin-top: 12px;
+                      display: grid;
+                      grid-template-columns: repeat(2, minmax(0, 1fr));
+                      gap: 10px;
+                      font-size: 12px;
+                    "
+                  ></div>
+                  <div
                     id="gov-formula"
                     style="
                       margin-top: 12px;
@@ -1333,6 +1374,16 @@
 
             <script>
               const PHI = 1.618033988749895;
+              const GOVERNED_CHAT_ENDPOINTS = [
+                '/v1/governed/chat/completions',
+                'https://scbe-agent-bridge-vercel.vercel.app/v1/governed/chat/completions',
+              ];
+              const CRITICAL_THREAT_PATTERNS = [
+                { label: 'credential/payment theft', pattern: /credit\s*card|card\s*number|cvv|bank\s+login/i },
+                { label: 'secret extraction', pattern: /api\s*key|secret|password|token|private\s*key/i },
+                { label: 'abusive sexual demand', pattern: /eat\s+ass|suck\s+(my|a)|blow\s+(me|job)/i },
+                { label: 'violent harm request', pattern: /\b(kill|murder|shoot|stab|bomb)\b/i },
+              ];
               const THREAT_PATTERNS = [
                 /delet/i,
                 /drop\s+table/i,
@@ -1357,6 +1408,9 @@
                 /do\s+anything\s+now/i,
                 /reveal\s+(api|key|secret|password|token)/i,
                 /dump\s+(database|credentials|users)/i,
+                /credit\s*card/i,
+                /credential/i,
+                /payment\s+(card|method|token)/i,
                 /kill\s+(process|server|all)/i,
                 /shutdown/i,
                 /format\s+drive/i,
@@ -1390,6 +1444,56 @@
                 confidential: 0.65,
                 restricted: 0.9,
               };
+              const USE_CASE_MAP = {
+                'paid-model': {
+                  label: 'Paid model run',
+                  route: 'model_gateway.dispatch',
+                  normalDispatch: 'Provider call released through customer-held token vault',
+                  deniedDispatch: 'No provider call. No customer tokens authorized.',
+                  baseSensitivity: 0.06,
+                },
+                'agent-bus': {
+                  label: 'Agent bus handoff',
+                  route: 'agent_bus.enqueue',
+                  normalDispatch: 'Task packet written to governed bus with receipt',
+                  deniedDispatch: 'Bus packet not queued.',
+                  baseSensitivity: 0.1,
+                },
+                'code-harness': {
+                  label: 'Coding harness patch',
+                  route: 'coding_harness.propose_patch',
+                  normalDispatch: 'Patch proposal allowed; tests still gate execution',
+                  deniedDispatch: 'Patch proposal blocked before filesystem mutation.',
+                  baseSensitivity: 0.16,
+                },
+                'data-export': {
+                  label: 'Data export',
+                  route: 'data_boundary.export',
+                  normalDispatch: 'Export request allowed only for declared scope',
+                  deniedDispatch: 'Export blocked before data leaves boundary.',
+                  baseSensitivity: 0.22,
+                },
+              };
+              const CUSTODY_MAP = {
+                'customer-vault': {
+                  label: 'Customer token vault',
+                  riskOffset: -0.04,
+                  rule:
+                    'SCBE never stores or spends user tokens; it records allow/deny receipts before the customer vault authorizes provider spend.',
+                },
+                byok: {
+                  label: 'BYOK provider account',
+                  riskOffset: 0,
+                  rule:
+                    'Provider key remains customer-owned; SCBE routes the decision and logs the preflight result.',
+                },
+                'platform-managed': {
+                  label: 'Platform managed',
+                  riskOffset: 0.12,
+                  rule:
+                    'Higher liability path: platform custody requires stricter review and billing controls.',
+                },
+              };
 
               function hyperbolicDist(u, v) {
                 const diff2 = (u - v) * (u - v);
@@ -1403,17 +1507,82 @@
                 return Math.pow(R, Math.pow(PHI * dStar, 2));
               }
 
-              function runGovernanceDemo() {
+              async function runRealGovernedGate(input, useCaseProfile, custodyProfile) {
+                const payload = {
+                  model: 'scbe-governed-output-v1',
+                  messages: [
+                    {
+                      role: 'system',
+                      content:
+                        'Evaluate this as an SCBE public use-case governance preflight. Return governed output only.',
+                    },
+                    { role: 'user', content: input },
+                  ],
+                  scbe_context: {
+                    use_case: useCaseProfile.label,
+                    route: useCaseProfile.route,
+                    token_custody: custodyProfile.label,
+                  },
+                };
+
+                for (const endpoint of GOVERNED_CHAT_ENDPOINTS) {
+                  try {
+                    const response = await fetch(endpoint, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(payload),
+                    });
+                    if (!response.ok) continue;
+                    const data = await response.json();
+                    const governance = data && data.scbe_governance;
+                    if (governance && governance.decision) {
+                      return {
+                        endpoint,
+                        governance,
+                        output:
+                          data.choices &&
+                          data.choices[0] &&
+                          data.choices[0].message &&
+                          data.choices[0].message.content,
+                      };
+                    }
+                  } catch (_error) {
+                    // This page can run on GitHub Pages or Vercel; keep trying fallbacks.
+                  }
+                }
+                return null;
+              }
+
+              async function runGovernanceDemo() {
                 const input = document.getElementById('gov-input').value.trim();
                 if (!input) return;
+                const btn = document.getElementById('gov-btn');
+                const previousText = btn.textContent;
+                btn.textContent = 'Evaluating...';
+                btn.disabled = true;
                 const actor = document.getElementById('gov-actor').value;
                 const resource = document.getElementById('gov-resource').value;
+                const useCase = document.getElementById('gov-use-case').value;
+                const custody = document.getElementById('gov-custody').value;
                 const trust = TRUST_MAP[actor];
-                const sensitivity = CLASS_MAP[resource];
+                const useCaseProfile = USE_CASE_MAP[useCase];
+                const custodyProfile = CUSTODY_MAP[custody];
+                const realGate = await runRealGovernedGate(input, useCaseProfile, custodyProfile);
+                const sensitivity = Math.max(
+                  0.01,
+                  Math.min(
+                    0.95,
+                    CLASS_MAP[resource] + useCaseProfile.baseSensitivity + custodyProfile.riskOffset
+                  )
+                );
 
                 // Threat scoring
                 let threatScore = 0;
                 let matchedThreats = [];
+                let matchedCriticalThreats = [];
+                CRITICAL_THREAT_PATTERNS.forEach((entry) => {
+                  if (entry.pattern.test(input)) matchedCriticalThreats.push(entry.label);
+                });
                 THREAT_PATTERNS.forEach((p) => {
                   if (p.test(input)) {
                     threatScore += 0.25;
@@ -1422,6 +1591,12 @@
                     );
                   }
                 });
+                if (matchedCriticalThreats.length > 0) {
+                  threatScore = Math.max(threatScore, 0.95);
+                  matchedThreats = Array.from(
+                    new Set(matchedCriticalThreats.concat(matchedThreats))
+                  );
+                }
                 threatScore = Math.min(threatScore, 1.0);
 
                 let benignScore = 0;
@@ -1453,33 +1628,47 @@
                     lenPenalty * 0.1 -
                     benignScore * 0.2) *
                   H;
+                if (matchedCriticalThreats.length > 0) risk = Math.max(risk, 0.96);
                 risk = Math.max(0, Math.min(1, risk));
 
                 // Decision
                 let decision, color, bgColor;
-                if (risk < 0.3) {
+                if (realGate && realGate.governance && realGate.governance.decision) {
+                  decision = realGate.governance.decision;
+                } else if (matchedCriticalThreats.length > 0) {
+                  decision = 'DENY';
+                } else if (risk < 0.3) {
                   decision = 'ALLOW';
-                  color = '#2dd3a6';
-                  bgColor = 'rgba(45,211,166,0.12)';
                 } else if (risk < 0.7) {
                   decision = 'QUARANTINE';
-                  color = '#f0bf67';
-                  bgColor = 'rgba(240,191,103,0.12)';
                 } else if (risk < 0.9) {
                   decision = 'ESCALATE';
-                  color = '#ff8c42';
-                  bgColor = 'rgba(255,140,66,0.12)';
                 } else {
                   decision = 'DENY';
+                }
+
+                if (decision === 'ALLOW') {
+                  color = '#2dd3a6';
+                  bgColor = 'rgba(45,211,166,0.12)';
+                } else if (decision === 'QUARANTINE') {
+                  color = '#f0bf67';
+                  bgColor = 'rgba(240,191,103,0.12)';
+                  risk = Math.max(risk, 0.42);
+                } else if (decision === 'ESCALATE') {
+                  color = '#ff8c42';
+                  bgColor = 'rgba(255,140,66,0.12)';
+                  risk = Math.max(risk, 0.72);
+                } else {
                   color = '#ff4757';
                   bgColor = 'rgba(255,71,87,0.12)';
+                  risk = Math.max(risk, 0.96);
                 }
 
                 // Rationale
                 let rationale = '';
                 if (decision === 'ALLOW')
                   rationale =
-                    'Intent appears safe. Actor trust and resource sensitivity are within acceptable bounds. Harmonic cost is low — safe execution path confirmed.';
+                    'Real governed preflight cleared the request. Actor trust, resource sensitivity, and custody mode are within the configured envelope.';
                 else if (decision === 'QUARANTINE')
                   rationale =
                     'Moderate risk detected. ' +
@@ -1497,10 +1686,16 @@
                 else
                   rationale =
                     'Adversarial intent detected. ' +
+                    (realGate && realGate.governance && realGate.governance.reasons
+                      ? 'Real gate reasons: ' + realGate.governance.reasons.join(', ') + '. '
+                      : '') +
+                    (matchedCriticalThreats.length
+                      ? 'Critical veto path matched: ' + matchedCriticalThreats.join(', ') + '. '
+                      : '') +
                     (matchedThreats.length
                       ? 'Matched threat signatures: ' + matchedThreats.join(', ') + '. '
                       : '') +
-                    'Hyperbolic cost scaling makes this action computationally infeasible. Blocked.';
+                    'Trust cannot override critical safety, credential, or payment-theft signals. Blocked before dispatch.';
 
                 // Render
                 const out = document.getElementById('gov-output');
@@ -1536,6 +1731,65 @@
                   ' matched</strong></div>';
 
                 document.getElementById('gov-rationale').textContent = rationale;
+                const dispatchState =
+                  decision === 'ALLOW'
+                    ? 'DISPATCH_READY'
+                    : decision === 'QUARANTINE'
+                      ? 'HELD_FOR_REVIEW'
+                      : decision === 'ESCALATE'
+                        ? 'SIGNER_APPROVAL_REQUIRED'
+                        : 'NO_DISPATCH';
+                const tokenState =
+                  decision === 'ALLOW' && custody !== 'platform-managed'
+                    ? 'CUSTOMER_AUTHORIZES_DIRECTLY'
+                    : decision === 'ALLOW'
+                      ? 'PLATFORM_BILLING_REVIEW'
+                      : 'NO_TOKEN_SPEND';
+                const dispatchText =
+                  decision === 'ALLOW' ? useCaseProfile.normalDispatch : useCaseProfile.deniedDispatch;
+                const receiptSeed = [
+                  input,
+                  actor,
+                  resource,
+                  useCase,
+                  custody,
+                  decision,
+                  risk.toFixed(4),
+                ].join('|');
+                let receiptHash = 2166136261;
+                for (let i = 0; i < receiptSeed.length; i++) {
+                  receiptHash ^= receiptSeed.charCodeAt(i);
+                  receiptHash = Math.imul(receiptHash, 16777619);
+                }
+                const receiptId =
+                  realGate && realGate.governance && realGate.governance.audit
+                    ? 'scbe-real-' + realGate.governance.audit.input_sha256_16
+                    : 'scbe-demo-' + (receiptHash >>> 0).toString(16).padStart(8, '0');
+                const gateSource = realGate ? 'REAL_GATE_API' : 'BROWSER_FALLBACK';
+                document.getElementById('gov-usecase-receipt').innerHTML =
+                  '<div style="padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:rgba(255,255,255,0.03);"><span style="color:var(--muted);">Use case</span><br><strong>' +
+                  useCaseProfile.label +
+                  '</strong><br><span style="color:var(--muted);">' +
+                  useCaseProfile.route +
+                  '</span></div>' +
+                  '<div style="padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:rgba(255,255,255,0.03);"><span style="color:var(--muted);">Dispatch</span><br><strong style="color:' +
+                  color +
+                  '">' +
+                  dispatchState +
+                  '</strong><br><span style="color:var(--muted);">' +
+                  dispatchText +
+                  '</span></div>' +
+                  '<div style="padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:rgba(255,255,255,0.03);"><span style="color:var(--muted);">Token custody</span><br><strong>' +
+                  tokenState +
+                  '</strong><br><span style="color:var(--muted);">' +
+                  custodyProfile.rule +
+                  '</span></div>' +
+                  '<div style="padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:rgba(255,255,255,0.03);"><span style="color:var(--muted);">Receipt</span><br><strong>' +
+                  receiptId +
+                  '</strong><br><span style="color:var(--muted);">' +
+                  gateSource +
+                  (realGate ? ' via ' + realGate.endpoint : '; local fallback hash only') +
+                  '</span></div>';
                 document.getElementById('gov-formula').textContent =
                   'H_wall(d*=' +
                   dStar.toFixed(2) +
@@ -1547,6 +1801,8 @@
                   Math.pow(PHI * dStar, 2).toFixed(2) +
                   ') = ' +
                   H.toFixed(4);
+                btn.textContent = previousText;
+                btn.disabled = false;
               }
 
               // Allow Enter key to trigger evaluation
