@@ -16,12 +16,25 @@ FIELD_DEFINITIONS = [
 ]
 
 LANGUAGE_TONGUES = {
+    # Natural programming languages
     "python": "KO",
     "typescript": "AV",
+    "javascript": "AV",
     "rust": "RU",
     "c": "CA",
+    "cpp": "CA",
+    "c++": "CA",
+    "csharp": "CA",
     "julia": "UM",
     "haskell": "DR",
+    # Markup / document languages
+    "html": "RU",
+    "css": "CA",
+    "markdown": "AV",
+    # Data / config languages
+    "json": "DR",
+    "yaml": "DR",
+    "toml": "DR",
 }
 
 TONGUE_PREFIX = {
@@ -40,6 +53,212 @@ def _sha256_text(value: str) -> str:
 
 def _lexical_tokens(source: str) -> list[str]:
     return re.findall(r"[A-Za-z_][A-Za-z0-9_]*|==|!=|<=|>=|->|=>|::|[^\s]", source)
+
+
+# ─── Domain-specific token classification tables ─────────────────────────────
+
+_HTML_STRUCTURE = frozenset(
+    {
+        "<div>",
+        "<span>",
+        "<section>",
+        "<article>",
+        "<header>",
+        "<footer>",
+        "<main>",
+        "<nav>",
+        "<aside>",
+        "<p>",
+        "<ul>",
+        "<ol>",
+        "<li>",
+        "<h1>",
+        "<h2>",
+        "<h3>",
+        "<h4>",
+        "<h5>",
+        "<h6>",
+        "<table>",
+        "<tr>",
+        "<td>",
+        "<th>",
+        "<form>",
+        "<button>",
+        "<select>",
+        "<input>",
+        "<label>",
+        "<figure>",
+        "<figcaption>",
+        "<blockquote>",
+    }
+)
+_HTML_ACTION = frozenset(
+    {
+        "<script>",
+        "<style>",
+        "<link>",
+        "<meta>",
+        "<iframe>",
+        "<canvas>",
+        "<video>",
+        "<audio>",
+        "<template>",
+    }
+)
+_HTML_RELATION = frozenset(
+    {
+        "href",
+        "src",
+        "id",
+        "class",
+        "type",
+        "name",
+        "value",
+        "action",
+        "method",
+        "rel",
+        "for",
+        "data",
+        "alt",
+        "title",
+        "placeholder",
+        "disabled",
+        "checked",
+        "selected",
+    }
+)
+
+_MD_STRUCTURE = frozenset({"#", "##", "###", "####", "#####", "######"})
+_MD_RELATION = frozenset({"[", "!["})
+_MD_ACTION = frozenset({"```", "`", "**", "*", "_", "__", "~~", "---"})
+
+_C_ACTION = frozenset(
+    {
+        "if",
+        "else",
+        "for",
+        "while",
+        "do",
+        "return",
+        "break",
+        "continue",
+        "switch",
+        "case",
+        "default",
+        "goto",
+    }
+)
+_C_STRUCTURE = frozenset({"struct", "union", "enum", "typedef"})
+_C_RELATION = frozenset({"->", ".", "&"})
+_C_INERT = frozenset({"void", "null", "nullptr", "false", "true", "none"})
+
+_CPP_ACTION = _C_ACTION | frozenset(
+    {
+        "new",
+        "delete",
+        "throw",
+        "try",
+        "catch",
+        "noexcept",
+        "explicit",
+        "inline",
+        "virtual",
+        "override",
+        "final",
+    }
+)
+_CPP_STRUCTURE = _C_STRUCTURE | frozenset({"class", "template", "namespace"})
+_CPP_RELATION = _C_RELATION | frozenset({"::", ".*", "->*"})
+
+_RUST_ACTION = frozenset(
+    {
+        "fn",
+        "impl",
+        "mod",
+        "pub",
+        "use",
+        "return",
+        "if",
+        "else",
+        "for",
+        "while",
+        "loop",
+        "match",
+        "let",
+        "mut",
+        "async",
+        "await",
+        "where",
+        "dyn",
+        "move",
+        "unsafe",
+        "extern",
+        "crate",
+    }
+)
+_RUST_STRUCTURE = frozenset({"struct", "enum", "trait", "type", "union"})
+_RUST_RELATION = frozenset({"&", "->", "::", ".", "=>", "?", "ref"})
+_RUST_INERT = frozenset({"None", "false", "true", "()"})
+
+
+def semantic_class_for_domain(token: str, language: str) -> str:
+    """Return the semantic class for a token given its source language.
+
+    Returns one of: ACTION, STRUCTURE, RELATION, INERT_WITNESS, ENTITY.
+    Falls back to the generic ``_semantic_class`` for unrecognised language/token pairs.
+    """
+    lang = language.lower()
+
+    if lang == "html":
+        lower = token.lower()
+        if lower in _HTML_STRUCTURE:
+            return "STRUCTURE"
+        if lower in _HTML_ACTION:
+            return "ACTION"
+        if lower in _HTML_RELATION:
+            return "RELATION"
+
+    elif lang == "markdown":
+        if token in _MD_STRUCTURE:
+            return "STRUCTURE"
+        if token in _MD_RELATION:
+            return "RELATION"
+        if token in _MD_ACTION:
+            return "ACTION"
+
+    elif lang == "c":
+        lower = token.lower()
+        if lower in _C_ACTION:
+            return "ACTION"
+        if lower in _C_STRUCTURE:
+            return "STRUCTURE"
+        if token in _C_RELATION:
+            return "RELATION"
+        if lower in _C_INERT:
+            return "INERT_WITNESS"
+
+    elif lang in ("cpp", "c++"):
+        lower = token.lower()
+        if lower in _CPP_ACTION:
+            return "ACTION"
+        if lower in _CPP_STRUCTURE:
+            return "STRUCTURE"
+        if token in _CPP_RELATION:
+            return "RELATION"
+        if lower in _C_INERT:
+            return "INERT_WITNESS"
+
+    elif lang == "rust":
+        if token in _RUST_ACTION:
+            return "ACTION"
+        if token in _RUST_STRUCTURE:
+            return "STRUCTURE"
+        if token in _RUST_RELATION:
+            return "RELATION"
+        if token in _RUST_INERT:
+            return "INERT_WITNESS"
+
+    return _semantic_class(token)
 
 
 def _semantic_class(token: str) -> str:
@@ -432,9 +651,11 @@ def build_code_weight_packet(source: str, *, language: str, source_name: str = "
 
 
 __all__ = [
+    "LANGUAGE_TONGUES",
     "analyze_chemical_composition",
     "build_code_weight_packet",
     "build_semantic_operation_signature",
     "resolve_element",
+    "semantic_class_for_domain",
     "semantic_operation_signature_from_tokens",
 ]
