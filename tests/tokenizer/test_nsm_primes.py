@@ -335,9 +335,9 @@ def test_empty_extrapolation_sites_have_nonzero_confidence():
     empty = [ex for ex in results if not ex.is_known_prime]
     assert len(empty) > 0, "SAY extrapolation should produce at least one empty site"
     for ex in empty:
-        assert ex.confidence > 0.0, (
-            f"Empty site step {ex.n} tongue {ex.derived_tongue} should have nonzero proximity confidence"
-        )
+        assert (
+            ex.confidence > 0.0
+        ), f"Empty site step {ex.n} tongue {ex.derived_tongue} should have nonzero proximity confidence"
 
 
 def test_known_prime_match_has_high_confidence():
@@ -346,9 +346,7 @@ def test_known_prime_match_has_high_confidence():
     for p in NSM_PRIMES:
         for ex in phi_extrapolate(p, steps=3):
             if ex.is_known_prime:
-                assert ex.confidence >= 0.5, (
-                    f"{p.id} step {ex.n}: matched {ex.matched_prime} but conf={ex.confidence}"
-                )
+                assert ex.confidence >= 0.5, f"{p.id} step {ex.n}: matched {ex.matched_prime} but conf={ex.confidence}"
 
 
 def test_proximity_confidence_decays_with_steps():
@@ -379,9 +377,9 @@ def test_generate_subprime_anchors_count():
 def test_subprime_anchors_stay_on_root_tongue():
     for prime in NSM_PRIMES[:10]:
         for anchor in generate_subprime_anchors(prime, steps=3):
-            assert anchor.tongue == prime.primary_tongue, (
-                f"{prime.id}: sub-prime should stay on {prime.primary_tongue}, got {anchor.tongue}"
-            )
+            assert (
+                anchor.tongue == prime.primary_tongue
+            ), f"{prime.id}: sub-prime should stay on {prime.primary_tongue}, got {anchor.tongue}"
 
 
 def test_subprime_radii_strictly_increasing():
@@ -389,17 +387,15 @@ def test_subprime_radii_strictly_increasing():
     assert p is not None
     anchors = generate_subprime_anchors(p, steps=5)
     for i in range(1, len(anchors)):
-        assert anchors[i].r > anchors[i - 1].r, (
-            f"Sub-prime radii should increase: step {i} r={anchors[i-1].r} >= step {i+1} r={anchors[i].r}"
-        )
+        assert (
+            anchors[i].r > anchors[i - 1].r
+        ), f"Sub-prime radii should increase: step {i} r={anchors[i-1].r} >= step {i+1} r={anchors[i].r}"
 
 
 def test_subprime_radii_in_open_ball():
     for p in NSM_PRIMES:
         for anchor in generate_subprime_anchors(p, steps=4):
-            assert 0.0 < anchor.r < 1.0, (
-                f"{p.id} phi^{anchor.n}: r={anchor.r} outside (0,1)"
-            )
+            assert 0.0 < anchor.r < 1.0, f"{p.id} phi^{anchor.n}: r={anchor.r} outside (0,1)"
 
 
 def test_subprime_anchor_is_dataclass():
@@ -421,6 +417,6 @@ def test_subprime_phi1_radius_matches_formula():
     assert p is not None
     expected_r1 = math.tanh(math.atanh(p.r) * PHI)
     anchors = generate_subprime_anchors(p, steps=1)
-    assert abs(anchors[0].r - expected_r1) < 1e-6, (
-        f"phi^1 radius should be tanh(arctanh({p.r}) * phi) = {expected_r1:.6f}, got {anchors[0].r:.6f}"
-    )
+    assert (
+        abs(anchors[0].r - expected_r1) < 1e-6
+    ), f"phi^1 radius should be tanh(arctanh({p.r}) * phi) = {expected_r1:.6f}, got {anchors[0].r:.6f}"

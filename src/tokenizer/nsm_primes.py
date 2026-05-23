@@ -571,9 +571,11 @@ def phi_extrapolate(prime: NSMPrime, steps: int = 3) -> list[PhiExtrapolation]:
                 grid_row=grid_row,
                 grid_col=grid_col,
                 candidate_label=cand_label,
-                confidence=known_match.primary_confidence
-                if known_match
-                else _proximity_confidence(next_tongue, new_r, grid_row, grid_col),
+                confidence=(
+                    known_match.primary_confidence
+                    if known_match
+                    else _proximity_confidence(next_tongue, new_r, grid_row, grid_col)
+                ),
                 is_known_prime=known_match is not None,
                 matched_prime=known_match.id if known_match else None,
             )
