@@ -251,7 +251,9 @@ def load_local_upload_evidence() -> dict[str, UploadSourceEvidence]:
     return evidence
 
 
-def inspect_video_record(record: dict[str, Any], source_index: dict[str, UploadSourceEvidence]) -> UploadedVideoInspection:
+def inspect_video_record(
+    record: dict[str, Any], source_index: dict[str, UploadSourceEvidence]
+) -> UploadedVideoInspection:
     video_id = record.get("id", "")
     snippet = record.get("snippet", {})
     status = record.get("status", {})
@@ -342,17 +344,22 @@ def inspect_video_record(record: dict[str, Any], source_index: dict[str, UploadS
             suggestions.append("Local source file from upload evidence is not present on this machine.")
 
     if not issues:
-        suggestions.append("No cutoff signal found from live metadata/transcript. Still review the tail before public release.")
+        suggestions.append(
+            "No cutoff signal found from live metadata/transcript. Still review the tail before public release."
+        )
     if source.file:
         suggestions.append(
             "Tail review: python scripts/publish/youtube_video_tool.py tail "
-            f"--file \"{source.file}\" --seconds 30 --out artifacts/youtube/reviews/{video_id}.tail.mp4"
+            f'--file "{source.file}" --seconds 30 --out artifacts/youtube/reviews/{video_id}.tail.mp4'
         )
         suggestions.append(
             "Repair flow: render a fixed ending clip, then run "
-            "python scripts/publish/youtube_video_tool.py append-ending --file <original.mp4> --ending <ending.mp4> --out <fixed.mp4>"
+            "python scripts/publish/youtube_video_tool.py append-ending "
+            "--file <original.mp4> --ending <ending.mp4> --out <fixed.mp4>"
         )
-    suggestions.append("YouTube cannot overwrite uploaded video media; upload the fixed file as a replacement/unlisted first.")
+    suggestions.append(
+        "YouTube cannot overwrite uploaded video media; upload the fixed file as a replacement/unlisted first."
+    )
 
     risk = "high" if risk_score >= 5 else "medium" if risk_score >= 2 else "low"
     return UploadedVideoInspection(
