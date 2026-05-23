@@ -6,6 +6,8 @@ Routes AI, human, and automation events through the SCBE harmonic-wall pipeline 
 returns typed result envelopes. Includes a local HTTP backend, a terminal UI, a full
 workspace audit-chain CLI, and TypeScript APIs for building governed agentic workflows.
 
+New to SCBE? Start with the product framing: [Free AI Agent Board](../../docs/product/FREE_AI_AGENT_BOARD.md) — use free, local, or BYOK models as proposal engines while SCBE validates legal moves, executes through the agent bus, and records receipts.
+
 ## Install
 
 ```bash
