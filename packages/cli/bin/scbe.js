@@ -4,6 +4,7 @@
 const { spawnSync } = require('node:child_process');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const readline = require('node:readline');
 
@@ -1618,6 +1619,268 @@ function suggestCommand(input) {
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// Natural-language command resolver + autocorrect ledger
+// ---------------------------------------------------------------------------
+
+const INTENT_TABLE = [
+  {
+    patterns: ['verify', 'check', 'audit', 'clean', 'tamper', 'integrity', 'safe', 'workspace'],
+    command: 'workspace verify --all',
+    tongue: 'CA',
+    description: 'Verify workspace integrity — tamper-check all governed records',
+  },
+  {
+    patterns: ['report', 'summary', 'dashboard', 'health', 'overview', 'workspace'],
+    command: 'workspace report',
+    tongue: 'DR',
+    description: 'Print a workspace governance report / dashboard',
+  },
+  {
+    patterns: ['lineage', 'history', 'trail', 'chain', 'receipts', 'audit'],
+    command: 'workspace lineage',
+    tongue: 'DR',
+    description: 'Show workspace audit trail and lineage chain',
+  },
+  {
+    patterns: ['new', 'create', 'make', 'start', 'init', 'workspace'],
+    command: 'workspace new',
+    tongue: 'KO',
+    description: 'Create a new governed workspace',
+  },
+  {
+    patterns: ['ingest', 'add', 'intake', 'bring', 'file'],
+    command: 'workspace ingest',
+    tongue: 'UM',
+    description: 'Ingest a file into the workspace',
+  },
+  {
+    patterns: ['export', 'package', 'bundle', 'ship', 'handoff', 'workspace'],
+    command: 'workspace export',
+    tongue: 'AV',
+    description: 'Export / package the workspace for handoff',
+  },
+  {
+    patterns: ['restore', 'import', 'workspace'],
+    command: 'workspace import',
+    tongue: 'KO',
+    description: 'Restore or import a workspace',
+  },
+  {
+    patterns: ['send', 'dispatch', 'submit', 'task'],
+    command: 'agent-bus send',
+    tongue: 'AV',
+    description: 'Send / dispatch a task to the agent bus',
+  },
+  {
+    patterns: ['scan', 'audit', 'contract', 'solidity'],
+    command: 'contract scan',
+    tongue: 'RU',
+    description: 'Scan / audit a Solidity contract',
+  },
+  {
+    patterns: ['trap', 'redirect', 'check', 'prompt'],
+    command: 'trap-redirect',
+    tongue: 'RU',
+    description: 'Run the trap-redirect prompt-safety layer',
+  },
+  {
+    patterns: ['doctor', 'diagnose', 'working'],
+    command: 'doctor --json',
+    tongue: 'CA',
+    description: 'Run diagnostics / health check',
+  },
+  {
+    patterns: ['status', 'current', 'state', 'whats', 'going'],
+    command: 'status',
+    tongue: 'DR',
+    description: 'Show current system status',
+  },
+  {
+    patterns: ['history', 'recent', 'commands'],
+    command: 'history --limit 20',
+    tongue: 'DR',
+    description: 'Show recent command history',
+  },
+  {
+    patterns: ['version', 'what'],
+    command: 'version',
+    tongue: 'KO',
+    description: 'Print the scbe version',
+  },
+  {
+    patterns: ['help', 'commands'],
+    command: '--help',
+    tongue: 'KO',
+    description: 'Show help / list available commands',
+  },
+  {
+    patterns: ['selftest', 'test'],
+    command: 'selftest',
+    tongue: 'CA',
+    description: 'Run the built-in self-test suite',
+  },
+  {
+    patterns: ['abacus', 'score', 'governance'],
+    command: 'abacus run',
+    tongue: 'RU',
+    description: 'Compute a governance score via the abacus',
+  },
+];
+
+const NL_STOP_WORDS = new Set([
+  'a', 'an', 'the', 'is', 'if', 'my', 'your', 'our', 'it', 'in', 'of',
+  'to', 'for', 'with', 'on', 'at', 'by', 'as', 'be', 'do', 'can', 'will',
+  'how', 'what', 'this', 'that', 'these', 'those', 'i', 'we', 'you', 'me',
+  'us', 'please', 'and', 'or', 'not', 'all', 'any', 'get', 'set', 'let',
+  'put', 'go', 'run',
+]);
+
+function nlVocab() {
+  const words = new Set();
+  for (const entry of INTENT_TABLE) {
+    for (const p of entry.patterns) {
+      for (const w of p.split(/\s+/)) {
+        if (w) words.add(w.toLowerCase());
+      }
+    }
+  }
+  for (const cmd of KNOWN_COMMANDS) words.add(cmd.toLowerCase());
+  return words;
+}
+
+function correctWord(word, vocab) {
+  if (word.length < 4) return { original: word, corrected: word, changed: false };
+  if (vocab.has(word)) return { original: word, corrected: word, changed: false };
+  const maxDist = Math.min(2, Math.floor(word.length / 3));
+  let best = null;
+  let bestDist = Infinity;
+  for (const v of vocab) {
+    const d = levenshtein(word, v);
+    if (d <= maxDist && d < bestDist) {
+      bestDist = d;
+      best = v;
+    }
+  }
+  if (best !== null) return { original: word, corrected: best, changed: true };
+  return { original: word, corrected: word, changed: false };
+}
+
+function resolveNaturalLanguage(rawInput) {
+  // 1. Normalise
+  const lower = rawInput.toLowerCase().replace(/[^a-z0-9\s-]/g, ' ');
+  // 2. Tokenise and remove stop words
+  const rawWords = lower.split(/\s+/).filter(w => w && !NL_STOP_WORDS.has(w));
+  // 3. Autocorrect
+  const vocab = nlVocab();
+  const correctionResults = rawWords.map(w => correctWord(w, vocab));
+  const corrections = correctionResults.filter(r => r.changed).map(r => ({ original: r.original, corrected: r.corrected }));
+  const tokens = correctionResults.map(r => r.corrected);
+  const corrected_input = tokens.join(' ');
+  // 4. Score each intent
+  const scored = INTENT_TABLE.map(entry => {
+    const patternWords = entry.patterns.flatMap(p => p.split(/\s+/));
+    const matchCount = patternWords.filter(pw => tokens.includes(pw)).length;
+    let score = matchCount / Math.max(1, tokens.length);
+    // Subword boost
+    for (const token of tokens) {
+      const isSubword = entry.patterns.some(p => p.includes(token) && !tokens.includes(token) === false);
+      if (isSubword) score += 0.1;
+    }
+    // Specificity boost: if a token exactly matches the FIRST pattern entry, the intent
+    // is domain-specific for that term and should win ties (e.g. "lineage" beats "report").
+    if (tokens.includes(entry.patterns[0])) score += 0.15;
+    return { command: entry.command, score, tongue: entry.tongue, description: entry.description };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  const top = scored[0];
+  const resolved_command = top && top.score > 0 ? top.command : null;
+  const confidence = top ? top.score : 0;
+  const tongue = top ? top.tongue : '';
+  const description = top ? top.description : '';
+  const candidates = scored.slice(0, 3).map(s => ({ command: s.command, score: s.score, tongue: s.tongue }));
+  return { resolved_command, confidence, tongue, description, corrections, corrected_input, candidates };
+}
+
+function writeLedger(entry) {
+  const dir = path.join(os.homedir(), '.scbe');
+  try {
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const line = JSON.stringify({ schema: 'scbe.nl_input.v1', ...entry }) + '\n';
+    fs.appendFileSync(path.join(dir, 'input_ledger.jsonl'), line, 'utf8');
+  } catch (_e) {
+    // Ledger write failure is non-fatal
+  }
+}
+
+function runNaturalLanguage(rawInput, flags) {
+  const result = resolveNaturalLanguage(rawInput);
+  const ledgerBase = {
+    ts: new Date().toISOString(),
+    original: rawInput,
+    corrected_input: result.corrected_input,
+    corrections: result.corrections,
+    resolved_command: result.resolved_command,
+    confidence: result.confidence,
+    tongue: result.tongue,
+  };
+  writeLedger({ ...ledgerBase, executed: false, exit_code: null });
+
+  if (flags.json) {
+    process.stdout.write(JSON.stringify({ ...ledgerBase, executed: false, exit_code: null }, null, 2) + '\n');
+    process.exit(0);
+  }
+
+  const pct = Math.round(result.confidence * 100);
+
+  if (result.confidence < 0.3) {
+    process.stderr.write(`scbe: I don't know how to do that.\nTop guesses:\n`);
+    for (const c of result.candidates) {
+      process.stderr.write(`  scbe ${c.command}  [${c.tongue}] (score: ${Math.round(c.score * 100)}%)\n`);
+    }
+    process.exit(2);
+  }
+
+  if (result.confidence < 0.6) {
+    process.stderr.write(
+      `scbe: Not sure. This might mean:\n` +
+      `  scbe ${result.resolved_command}\n` +
+      `  (confidence: ${pct}%)\n` +
+      `Run with --yes to execute without confirmation.\n`
+    );
+    process.exit(2);
+  }
+
+  // confidence >= 0.7
+  for (const c of result.corrections) {
+    process.stdout.write(`[autocorrect] '${c.original}' -> '${c.corrected}'\n`);
+  }
+  process.stdout.write(`[scbe] I will run: scbe ${result.resolved_command}\n`);
+  process.stdout.write(`[route] ${result.tongue} — ${result.description}\n`);
+
+  function execute() {
+    const cmdTokens = result.resolved_command.split(' ');
+    const child = spawnSync(process.execPath, [__filename, ...cmdTokens], { stdio: 'inherit' });
+    const exitCode = typeof child.status === 'number' ? child.status : 1;
+    writeLedger({ ...ledgerBase, executed: true, exit_code: exitCode });
+    process.exit(exitCode);
+  }
+
+  if (flags.yes) {
+    execute();
+  } else {
+    process.stderr.write('Press Enter to confirm, Ctrl+C to cancel: ');
+    const buf = Buffer.alloc(4096);
+    try { fs.readSync(0, buf, 0, buf.length, null); } catch (_) {}
+    // any response (including just Enter) = confirmed
+    execute();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// End natural-language resolver
+// ---------------------------------------------------------------------------
+
 function resolveHarmonicModule() {
   try {
     return require('scbe-aethermoore/harmonic');
@@ -1957,6 +2220,23 @@ if (argv[0] === 'compile') {
 
 if (argv[0] === 'route' || argv[0] === 'aetherpp') {
   runRouteCompiler(argv[0] === 'route' ? argv.slice(1) : argv.slice(1));
+}
+
+// Natural language resolver: triggered when input doesn't match any known command
+// and looks like a phrase or uses unknown words.
+if (!KNOWN_COMMANDS.includes(argv[0]) && argv[0] && !argv[0].startsWith('--')) {
+  const nlFlags = {
+    json: argv.includes('--json'),
+    yes: argv.includes('--yes') || argv.includes('-y'),
+  };
+  const rawInput = argv.filter(a => !a.startsWith('--') && a !== '-y').join(' ');
+  const result = resolveNaturalLanguage(rawInput);
+  if (result.confidence >= 0.3) {
+    runNaturalLanguage(rawInput, nlFlags);
+    // runNaturalLanguage always exits; safety backstop in case it somehow returns
+    process.exit(0);
+  }
+  // confidence < 0.3: fall through to typo guard and geoseal passthrough
 }
 
 // Typo guard: if argv[0] looks like a near-miss of a known scbe command,
