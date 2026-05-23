@@ -1,0 +1,59 @@
+{
+  "schema_version": "aether_writing_score_v1",
+  "purpose": "Local/free writing benchmark for AI-assisted product, editing, fiction, and governance writing. This is a usability and constraint-following score, not a claim of literary quality.",
+  "policy": {
+    "default_provider": "ollama_local",
+    "hosted_api_allowed": false,
+    "judge": "deterministic_checks"
+  },
+  "tasks": [
+    {
+      "task_id": "free_local_product_note",
+      "title": "Free/local product framing",
+      "prompt": "Write a concise product-management note for SCBE. Use exactly these Markdown headings, in this order: Problem, System, Next Step. Explain that the service should work with free/local AI, no API by default, and receipts for proof. Keep it practical for a non-coder. Length: 120-220 words. Do not use these words: revolutionary, magic, guaranteed.",
+      "min_words": 120,
+      "max_words": 220,
+      "required_terms": ["free/local", "no API", "receipt"],
+      "required_headings": ["Problem", "System", "Next Step"],
+      "forbidden_terms": ["revolutionary", "magic", "guaranteed"]
+    },
+    {
+      "task_id": "typo_repair_with_ledger",
+      "title": "Typo repair with change ledger",
+      "prompt": "Correct this text while preserving the original meaning: \"we need teh ai to write stuff but not lie abotu what it did and keep teh old words in a log.\" Return exactly two sections: Corrected: and Ledger:. The Ledger section must be a JSON array of objects with old, new, and reason fields. Length: 80-180 words.",
+      "min_words": 80,
+      "max_words": 180,
+      "required_terms": ["original meaning"],
+      "required_line_prefixes": ["Corrected:", "Ledger:"],
+      "required_json_array_fields": ["old", "new", "reason"]
+    },
+    {
+      "task_id": "fact_retention_long_context",
+      "title": "Long-context fact retention",
+      "prompt": "Write one coherent status update that preserves every numbered fact below. Mention each fact ID exactly once: F01 local-first, F02 no hosted API by default, F03 Ollama allowed, F04 receipts required, F05 user cannot code, F06 commands must be simple, F07 failed runs create repair tasks, F08 passes get quality upgrades, F09 YouTube videos need end checks, F10 transcripts matter, F11 benchmark claims need evidence, F12 unpaid routes come first. Length: 180-280 words.",
+      "min_words": 180,
+      "max_words": 280,
+      "required_terms": ["F01", "F02", "F03", "F04", "F05", "F06", "F07", "F08", "F09", "F10", "F11", "F12"],
+      "exactly_once_terms": ["F01", "F02", "F03", "F04", "F05", "F06", "F07", "F08", "F09", "F10", "F11", "F12"]
+    },
+    {
+      "task_id": "constrained_story_scene",
+      "title": "Constrained fiction scene",
+      "prompt": "Write a short fiction scene, not a summary. Requirements: 220-360 words, at least one line of dialogue, and include these exact words: rain, terminal, bell, ledger, shore. The scene should feel human and grounded. Do not mention AI, model, prompt, or benchmark.",
+      "min_words": 220,
+      "max_words": 360,
+      "required_terms": ["rain", "terminal", "bell", "ledger", "shore"],
+      "forbidden_terms": ["AI", "model", "prompt", "benchmark"],
+      "requires_dialogue": true
+    },
+    {
+      "task_id": "safety_case_explainer",
+      "title": "Safety case explainer",
+      "prompt": "Explain why constraints are the safety case for an embodied or agentic system. Write for a practical builder, not a philosopher. Include simulation, closed environment, audit log, free/local, and liability. Length: 150-260 words. Do not claim the system is perfect.",
+      "min_words": 150,
+      "max_words": 260,
+      "required_terms": ["simulation", "closed environment", "audit log", "free/local", "liability"],
+      "forbidden_terms": ["perfect"]
+    }
+  ]
+}
