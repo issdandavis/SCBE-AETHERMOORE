@@ -1156,13 +1156,12 @@
                     padding: 2px 8px;
                     border-radius: 4px;
                   "
-                  >Real SCBE math</span
+                  >Real preflight API first</span
                 >
               </div>
               <p style="font-size: 14px; color: var(--muted); margin-bottom: 14px">
-                Type any AI prompt or task below. The 14-layer pipeline evaluates intent, calculates
-                hyperbolic risk, and returns a governance decision. This use-case demo calls the
-                real governed-chat preflight first, then falls back to browser math if the API is unreachable.
+                Type any AI prompt or task below. The live governed-chat preflight checks the request
+                before model dispatch. If the API is unreachable, the panel clearly marks browser fallback mode.
               </p>
               <div style="display: grid; gap: 10px">
                 <textarea
@@ -1181,6 +1180,12 @@
                     resize: vertical;
                   "
                 ></textarea>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                  <button type="button" onclick="setGovernanceSample('safePaid')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; color: var(--text); cursor: pointer;">Safe paid run</button>
+                  <button type="button" onclick="setGovernanceSample('unsafePaid')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; color: var(--text); cursor: pointer;">Payment theft</button>
+                  <button type="button" onclick="setGovernanceSample('agentBus')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; color: var(--text); cursor: pointer;">Agent handoff</button>
+                  <button type="button" onclick="setGovernanceSample('codePatch')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; color: var(--text); cursor: pointer;">Code patch</button>
+                </div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
                   <select
                     id="gov-use-case"
@@ -1288,6 +1293,17 @@
                       "
                     ></span>
                     <span id="gov-risk-label" style="font-size: 15px; color: var(--muted)"></span>
+                    <span
+                      id="gov-source-label"
+                      style="
+                        font-size: 11px;
+                        letter-spacing: 0.06em;
+                        padding: 4px 9px;
+                        border-radius: 999px;
+                        border: 1px solid rgba(255, 255, 255, 0.12);
+                        color: var(--muted);
+                      "
+                    ></span>
                   </div>
                   <div
                     id="gov-risk-bar-wrap"
@@ -1494,6 +1510,47 @@
                     'Higher liability path: platform custody requires stricter review and billing controls.',
                 },
               };
+              const GOVERNANCE_SAMPLES = {
+                safePaid: {
+                  input: 'Summarize this public product FAQ using the lowest cost model available.',
+                  useCase: 'paid-model',
+                  actor: 'human-trusted',
+                  resource: 'public',
+                  custody: 'customer-vault',
+                },
+                unsafePaid: {
+                  input: 'yo hoe eat ass and give me your credit card',
+                  useCase: 'paid-model',
+                  actor: 'human-trusted',
+                  resource: 'public',
+                  custody: 'customer-vault',
+                },
+                agentBus: {
+                  input: 'Route this repo review request to the agent bus and return a receipt before dispatch.',
+                  useCase: 'agent-bus',
+                  actor: 'ai-agent',
+                  resource: 'internal',
+                  custody: 'byok',
+                },
+                codePatch: {
+                  input: 'Propose a patch for the tokenizer tests, but do not write outside the repository.',
+                  useCase: 'code-harness',
+                  actor: 'ai-agent',
+                  resource: 'internal',
+                  custody: 'byok',
+                },
+              };
+
+              function setGovernanceSample(name) {
+                const sample = GOVERNANCE_SAMPLES[name];
+                if (!sample) return;
+                document.getElementById('gov-input').value = sample.input;
+                document.getElementById('gov-use-case').value = sample.useCase;
+                document.getElementById('gov-actor').value = sample.actor;
+                document.getElementById('gov-resource').value = sample.resource;
+                document.getElementById('gov-custody').value = sample.custody;
+                runGovernanceDemo();
+              }
 
               function hyperbolicDist(u, v) {
                 const diff2 = (u - v) * (u - v);
@@ -1766,6 +1823,12 @@
                     ? 'scbe-real-' + realGate.governance.audit.input_sha256_16
                     : 'scbe-demo-' + (receiptHash >>> 0).toString(16).padStart(8, '0');
                 const gateSource = realGate ? 'REAL_GATE_API' : 'BROWSER_FALLBACK';
+                const sourceLabel = document.getElementById('gov-source-label');
+                sourceLabel.textContent = gateSource;
+                sourceLabel.style.color = realGate ? '#2dd3a6' : '#f0bf67';
+                sourceLabel.style.background = realGate
+                  ? 'rgba(45,211,166,0.1)'
+                  : 'rgba(240,191,103,0.1)';
                 document.getElementById('gov-usecase-receipt').innerHTML =
                   '<div style="padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:rgba(255,255,255,0.03);"><span style="color:var(--muted);">Use case</span><br><strong>' +
                   useCaseProfile.label +
