@@ -34,7 +34,11 @@
     "governance",
     "harmonic-wall",
     "agent-orchestration",
-    "ai-safety"
+    "ai-safety",
+    "workspace",
+    "audit-chain",
+    "agentic-cli",
+    "chain-of-custody"
   ],
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT OR Apache-2.0",
