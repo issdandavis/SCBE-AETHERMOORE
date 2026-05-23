@@ -3211,6 +3211,20 @@ def _cli_command_registry() -> list[dict[str, Any]]:
             "example": "ops tests",
         },
         {
+            "cmd": "bus run|summarize|analyze|perf|verify|replay ...",
+            "lane": "agent-bus",
+            "interop": {"web": True, "python": True, "node": False, "connectors": True},
+            "desc": "Dispatch safe Agent Bus operations through the existing CLI harness.",
+            "example": 'bus run "check the repo health" --no-search',
+        },
+        {
+            "cmd": "harness plan <intent...> [--permission-mode observe|assist] [--language python|typescript]",
+            "lane": "coding-harness",
+            "interop": {"web": True, "python": True, "node": False, "connectors": False},
+            "desc": "Compile an operator intent into a policy-checked coding harness plan. Read-only from the browser.",
+            "example": 'harness plan "fix failing lint in public arena" --permission-mode observe',
+        },
+        {
             "cmd": "momentum run <train_id> [--flow X] [--execute] [--max-parallel N]",
             "lane": "momentum",
             "interop": {"web": True, "python": True, "node": False, "connectors": False},
@@ -3256,6 +3270,13 @@ def _cli_help_text() -> str:
         '  vault search "query"',
         "  vault sync",
         "  ops email|youtube|tor|tests|git",
+        '  bus run "task..." [--no-search]',
+        '  bus summarize "query..."',
+        "  bus analyze <url>",
+        "  bus perf",
+        "  bus verify [events.jsonl]",
+        "  bus replay [events.jsonl] [--by-task]",
+        '  harness plan "intent..." [--permission-mode observe|assist] [--language python|typescript]',
         "  momentum run <train_id> [--flow X] [--execute] [--max-parallel N]",
         "  momentum latest [train_id]",
         '  chessboard generate "goal..."',
@@ -3267,6 +3288,8 @@ def _cli_help_text() -> str:
         "  trust aethermoore.com",
         '  vault search "phi poincare"',
         "  ops tests",
+        '  bus run "inspect current repo health" --no-search',
+        '  harness plan "add a regression test for the arena command parser"',
         "  momentum run daily_ops --execute --max-parallel 3",
         '  chessboard generate "Improve long-running agent workflows"',
         "  docs show aetherbrowser-config",
@@ -3307,7 +3330,7 @@ def _cli_docs_show(key: str, max_chars: int = 9000) -> dict[str, Any]:
 
 
 def _cli_parse_flags(parts: list[str]) -> dict[str, Any]:
-    """Very small flag parser for: --flow, --execute, --max-parallel."""
+    """Very small flag parser for safe allowlisted CLI verbs."""
     out: dict[str, Any] = {"args": []}
     i = 0
     while i < len(parts):
@@ -3328,9 +3351,157 @@ def _cli_parse_flags(parts: list[str]) -> dict[str, Any]:
                 out["max_parallel"] = parts[i + 1]
             i += 2
             continue
+        if p == "--permission-mode" and i + 1 < len(parts):
+            out["permission_mode"] = parts[i + 1]
+            i += 2
+            continue
+        if p == "--language" and i + 1 < len(parts):
+            out["language"] = parts[i + 1]
+            i += 2
+            continue
+        if p == "--tool" and i + 1 < len(parts):
+            out["tool"] = parts[i + 1]
+            i += 2
+            continue
+        if p == "--no-search":
+            out["no_search"] = True
+            i += 1
+            continue
+        if p == "--by-task":
+            out["by_task"] = True
+            i += 1
+            continue
         out["args"].append(p)
         i += 1
     return out
+
+
+def _cli_limited_subprocess_payload(
+    *,
+    lane: str,
+    cmd: list[str],
+    timeout: int,
+    stdout_chars: int = 5000,
+    stderr_chars: int = 1200,
+) -> dict[str, Any]:
+    result = _run_subprocess(cmd, timeout=timeout)
+    return {
+        "ok": result.get("exit_code", -1) == 0,
+        "lane": lane,
+        "exit_code": result.get("exit_code", -1),
+        "stdout": (result.get("stdout") or "")[:stdout_chars],
+        "stderr": (result.get("stderr") or "")[:stderr_chars] if result.get("stderr") else None,
+    }
+
+
+async def _cli_agent_bus(rest: list[str]) -> dict[str, Any]:
+    if not rest:
+        return {
+            "ok": False,
+            "error": "Usage: bus run|summarize|analyze|perf|verify|replay ...",
+        }
+
+    sub = rest[0].lower()
+    flags = _cli_parse_flags(rest[1:])
+    args = [str(x) for x in flags.get("args", [])]
+    base = [sys.executable, "-m", "agents.agent_bus_cli"]
+
+    if sub in {"run", "ask"}:
+        prompt = " ".join(args).strip().strip('"')
+        if not prompt:
+            return {"ok": False, "error": 'Usage: bus run "task..." [--no-search]'}
+        cmd = base + ["run", prompt, "--mode", "headless", "--max-sources", "3", "--budget", "0"]
+        if flags.get("no_search"):
+            cmd.append("--no-search")
+        return await asyncio.to_thread(
+            _cli_limited_subprocess_payload,
+            lane="agent-bus",
+            cmd=cmd,
+            timeout=180,
+        )
+
+    if sub == "summarize":
+        query = " ".join(args).strip().strip('"')
+        if not query:
+            return {"ok": False, "error": 'Usage: bus summarize "query..."'}
+        cmd = base + ["summarize", query, "--mode", "headless", "--max-sources", "5"]
+        return await asyncio.to_thread(
+            _cli_limited_subprocess_payload,
+            lane="agent-bus",
+            cmd=cmd,
+            timeout=180,
+        )
+
+    if sub == "analyze":
+        if not args:
+            return {"ok": False, "error": "Usage: bus analyze <url>"}
+        cmd = base + ["analyze", args[0], "--mode", "headless"]
+        return await asyncio.to_thread(
+            _cli_limited_subprocess_payload,
+            lane="agent-bus",
+            cmd=cmd,
+            timeout=180,
+        )
+
+    if sub == "perf":
+        return await asyncio.to_thread(
+            _cli_limited_subprocess_payload,
+            lane="agent-bus",
+            cmd=base + ["perf"],
+            timeout=30,
+        )
+
+    if sub == "verify":
+        path = args[0] if args else "artifacts/agent-bus/events.jsonl"
+        cmd = base + ["verify", path]
+        return await asyncio.to_thread(
+            _cli_limited_subprocess_payload,
+            lane="agent-bus",
+            cmd=cmd,
+            timeout=60,
+        )
+
+    if sub == "replay":
+        path = args[0] if args else "artifacts/agent-bus/events.jsonl"
+        cmd = base + ["replay", path]
+        if flags.get("by_task"):
+            cmd.append("--by-task")
+        return await asyncio.to_thread(
+            _cli_limited_subprocess_payload,
+            lane="agent-bus",
+            cmd=cmd,
+            timeout=60,
+        )
+
+    return {"ok": False, "error": f"Unknown bus subcommand: {sub}"}
+
+
+def _cli_harness_plan(rest: list[str]) -> dict[str, Any]:
+    if not rest or rest[0].lower() != "plan":
+        return {"ok": False, "error": "Usage: harness plan <intent...> [--permission-mode observe|assist]"}
+
+    flags = _cli_parse_flags(rest[1:])
+    intent = " ".join(str(x) for x in flags.get("args", [])).strip().strip('"')
+    if not intent:
+        return {"ok": False, "error": "Usage: harness plan <intent...>"}
+
+    permission_mode = str(flags.get("permission_mode") or "observe")
+    language = str(flags.get("language") or "python")
+    requested_tool = flags.get("tool")
+    if permission_mode not in {"observe", "assist"}:
+        return {"ok": False, "error": "Browser harness supports permission modes: observe, assist"}
+    if language not in {"python", "typescript", "go"}:
+        return {"ok": False, "error": "Supported harness languages: python, typescript, go"}
+
+    from src.coding_spine.command_compiler import compile_intent_to_plan
+
+    plan = compile_intent_to_plan(
+        intent=intent,
+        permission_mode=permission_mode,
+        preferred_language=language,
+        requested_tool=str(requested_tool) if requested_tool else None,
+    )
+    return {"ok": True, "lane": "coding-harness", "result": plan}
 
 
 async def _cli_dispatch(parts: list[str]) -> dict[str, Any]:
@@ -3381,6 +3552,12 @@ async def _cli_dispatch(parts: list[str]) -> dict[str, Any]:
         if op in {"git", "status"}:
             return await ops_git_status()
         return {"ok": False, "error": f"Unknown ops subcommand: {op}"}
+
+    if cmd == "bus":
+        return await _cli_agent_bus(rest)
+
+    if cmd in {"harness", "code"}:
+        return _cli_harness_plan(rest)
 
     if cmd == "momentum":
         if not rest:

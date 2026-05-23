@@ -40,6 +40,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import logging
 import math
 import os
 import re
@@ -52,6 +53,8 @@ import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+logging.getLogger("oqs.oqs").disabled = True
 
 if __package__ in (None, ""):
     repo_root = Path(__file__).resolve().parent.parent

@@ -108,6 +108,49 @@ def _feature_vector(element: dict[str, Any], semantic_class: str) -> list[float]
     ]
 
 
+def resolve_element(token: str, semantic_class: str | None = None) -> dict[str, Any]:
+    """Resolve a token into the STISA element proxy shape used by GeoSeal CLI."""
+
+    semantic = semantic_class or _semantic_class(token)
+    element = dict(_element_for(token, semantic))
+    element["feat"] = _feature_vector(element, semantic)
+    return element
+
+
+def analyze_chemical_composition(
+    tokens: list[str],
+    elements: list[dict[str, Any]],
+    *,
+    operation_path: list[str] | None = None,
+) -> dict[str, Any]:
+    """Summarize the token-element proxy mix for STISA/GeoSeal packet surfaces."""
+
+    symbol_counts: dict[str, int] = {}
+    total_z = 0.0
+    total_valence = 0.0
+    stable_witnesses = 0
+    for element in elements:
+        symbol = str(element.get("symbol", "?"))
+        symbol_counts[symbol] = symbol_counts.get(symbol, 0) + 1
+        total_z += float(element.get("Z", 0.0))
+        total_valence += float(element.get("valence", 0.0))
+        if element.get("witness_stable"):
+            stable_witnesses += 1
+
+    count = max(len(elements), 1)
+    return {
+        "schema_version": "scbe-stisa-chemical-composition-v1",
+        "token_count": len(tokens),
+        "element_count": len(elements),
+        "symbol_counts": symbol_counts,
+        "dominant_symbol": max(symbol_counts, key=symbol_counts.get) if symbol_counts else None,
+        "average_z": total_z / count,
+        "average_valence": total_valence / count,
+        "stable_witness_count": stable_witnesses,
+        "operation_path": operation_path or [],
+    }
+
+
 def _transport_tokens(source: str, tongue: str) -> list[str]:
     prefix = TONGUE_PREFIX.get(tongue, "tok")
     names = ("a", "e", "i", "o", "u", "y", "en", "ul", "la", "sa")
@@ -389,7 +432,9 @@ def build_code_weight_packet(source: str, *, language: str, source_name: str = "
 
 
 __all__ = [
+    "analyze_chemical_composition",
     "build_code_weight_packet",
     "build_semantic_operation_signature",
+    "resolve_element",
     "semantic_operation_signature_from_tokens",
 ]
