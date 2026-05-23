@@ -9,7 +9,6 @@ from src.geoseal_operator_space import (
     ring_to_governance_tier,
 )
 
-
 # ---------------------------------------------------------------------------
 # FS topology
 # ---------------------------------------------------------------------------
@@ -310,6 +309,7 @@ def test_decision_to_metadata():
     assert isinstance(meta["space_id"], str)
     assert isinstance(meta["governance_flags"], list)
     import json
+
     json.dumps(meta)  # must not raise
 
 
