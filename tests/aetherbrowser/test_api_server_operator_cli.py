@@ -13,9 +13,7 @@ def test_arena_numeric_input_stays_local_command() -> None:
 
 @pytest.mark.asyncio
 async def test_cli_dispatch_compiles_coding_harness_plan() -> None:
-    result = await api_server._cli_dispatch(
-        ["harness", "plan", "explain", "arena", "route"]
-    )
+    result = await api_server._cli_dispatch(["harness", "plan", "explain", "arena", "route"])
 
     assert result["ok"] is True
     assert result["lane"] == "coding-harness"
@@ -27,9 +25,7 @@ async def test_cli_dispatch_compiles_coding_harness_plan() -> None:
 
 @pytest.mark.asyncio
 async def test_cli_dispatch_rejects_mutating_harness_mode() -> None:
-    result = await api_server._cli_dispatch(
-        ["harness", "plan", "delete", "everything", "--permission-mode", "execute"]
-    )
+    result = await api_server._cli_dispatch(["harness", "plan", "delete", "everything", "--permission-mode", "execute"])
 
     assert result["ok"] is False
     assert "observe, assist" in result["error"]
@@ -66,14 +62,10 @@ async def test_cli_dispatch_agent_bus_uses_allowlisted_subprocess(
 
 
 @pytest.mark.asyncio
-async def test_cli_dispatch_game_smoke_writes_narrative_packet(
-    tmp_path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+async def test_cli_dispatch_game_smoke_writes_narrative_packet(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(api_server, "ROOT", tmp_path)
 
-    result = await api_server._cli_dispatch(
-        ["game", "smoke", "narrative-combat", "--seed", "1337"]
-    )
+    result = await api_server._cli_dispatch(["game", "smoke", "narrative-combat", "--seed", "1337"])
 
     assert result["ok"] is True
     assert result["lane"] == "game-production"

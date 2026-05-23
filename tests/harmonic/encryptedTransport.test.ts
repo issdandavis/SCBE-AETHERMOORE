@@ -9,6 +9,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
+import { Buffer } from 'node:buffer';
 import {
   generateTransportKey,
   encryptVector,
@@ -21,6 +22,14 @@ import {
   EncryptedVector,
 } from '../../src/harmonic/encryptedTransport';
 import { mobiusAdd, projectToBall } from '../../src/harmonic/hyperbolic';
+
+function tamperBase64UrlBytes(value: string): string {
+  let padded = value.replace(/-/g, '+').replace(/_/g, '/');
+  while (padded.length % 4) padded += '=';
+  const bytes = Buffer.from(padded, 'base64');
+  bytes[0] ^= 0xff;
+  return bytes.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
 
 describe('EncryptedTransport', () => {
   let key: VectorTransportKey;
@@ -150,7 +159,7 @@ describe('EncryptedTransport', () => {
       // Tamper with ciphertext
       const tampered: EncryptedVector = {
         ...encrypted,
-        ciphertext: encrypted.ciphertext.slice(0, -2) + 'XX',
+        ciphertext: tamperBase64UrlBytes(encrypted.ciphertext),
       };
 
       expect(() => decryptVector(tampered, key)).toThrow();
@@ -162,7 +171,7 @@ describe('EncryptedTransport', () => {
 
       const tampered: EncryptedVector = {
         ...encrypted,
-        tag: encrypted.tag.slice(0, -2) + 'XX',
+        tag: tamperBase64UrlBytes(encrypted.tag),
       };
 
       expect(() => decryptVector(tampered, key)).toThrow();
