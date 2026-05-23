@@ -75,11 +75,7 @@ class SearchGovernor:
             results = tuple(self.backend.search(query))
         except Exception:
             results = ()
-        latency_ms = (
-            0.0
-            if isinstance(self.backend, StubSearchBackend)
-            else (time.perf_counter() - start) * 1000.0
-        )
+        latency_ms = 0.0 if isinstance(self.backend, StubSearchBackend) else (time.perf_counter() - start) * 1000.0
         self._cache[key] = results
         self.audit.append(StudyRecord(query, "allow", self.backend.name, latency_ms, results))
         return results
