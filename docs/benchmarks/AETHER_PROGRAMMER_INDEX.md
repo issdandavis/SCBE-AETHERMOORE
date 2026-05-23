@@ -13,6 +13,8 @@ The Aether Programmer Index measures whether an AI coding system is actually usa
 
 The config lives at `config/eval/aether_programmer_index.v1.json`. The scorer lives at `scripts/eval/aether_programmer_index.py`.
 
+Branch operating model: see `docs/ops/AGENTIC_VINE_BRANCH_WORKFLOW.md`. Index improvement should move through small vine/ring branches so failures, fixes, format cleanup, and benchmark evidence do not overwrite each other.
+
 ## Core Rule
 
 Every task has a binary entry gate:
