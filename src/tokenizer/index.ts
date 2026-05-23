@@ -46,6 +46,32 @@ export {
   SS1Tokenizer,
 } from './ss1.js';
 
+// SS2 Semantic Atom Layer
+export {
+  SEMANTIC_ATOMS,
+  getSemanticAtom,
+  buildRelationTree,
+  embedSemanticAtom,
+  tokenizeSemanticAtoms,
+  buildSemanticLedgerEntry,
+  buildSemanticWorkflowThread,
+  type SemanticDomain,
+  type SemanticRelationKind,
+  type SemanticWorkflowChannel,
+  type SemanticNucleus,
+  type SemanticOrbital,
+  type SemanticBond,
+  type SemanticIsotope,
+  type SemanticCodeRelations,
+  type AtomicProxy,
+  type SemanticAtom,
+  type SemanticToken,
+  type SemanticLedgerEntry,
+  type SemanticWorkflowNode,
+  type SemanticWorkflowEdge,
+  type SemanticWorkflowThread,
+} from './semantic-atom.js';
+
 // Quantum Lattice Integration
 export {
   // Types
