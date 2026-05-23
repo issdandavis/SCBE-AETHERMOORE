@@ -1,0 +1,196 @@
+{
+  "schema_version": "aether_programmer_index_v1",
+  "name": "Aether Programmer Index",
+  "status": "owned_index_not_external_standard",
+  "last_updated": "2026-05-23",
+  "purpose": "Measure whether an AI coding system is usable, verifiable, and improvable across real programming workflows.",
+  "research_claim_registry": "config/eval/aether_research_claim_registry.v1.json",
+  "score_formula": "sum(track_weight * track_pass_quality * evidence_multiplier)",
+  "entry_gate": {
+    "description": "A task enters quality scoring only after it passes the binary gate.",
+    "required_checks": ["tests_passed", "policy_clean", "artifact_complete"],
+    "failed_task_score": 0,
+    "failure_output": "procedural_solution_triage"
+  },
+  "failure_refinement_loop": {
+    "name": "100-agentic-solution-triage",
+    "description": "Failures are rerun through procedurally generated solution candidates before implementation.",
+    "candidate_solution_budget": 100,
+    "stages": [
+      {
+        "id": "context_quality_scan",
+        "description": "Read the failing task, artifacts, logs, surrounding code, and system intention before proposing fixes."
+      },
+      {
+        "id": "solution_space_generation",
+        "description": "Generate candidate fixes that fit the observed solution space, not random ideas."
+      },
+      {
+        "id": "web_research",
+        "description": "Use web search for current docs, benchmark rules, API behavior, or external error references when the failure depends on changing outside facts."
+      },
+      {
+        "id": "web_research_refinement",
+        "description": "Refine candidates against retrieved sources and reject stale or unsupported assumptions."
+      },
+      {
+        "id": "multi_model_deliberation",
+        "description": "Compare candidate fixes across model/persona lanes and keep disagreement notes."
+      },
+      {
+        "id": "security_check",
+        "description": "Run policy, secret, injection, and blast-radius checks before implementation."
+      },
+      {
+        "id": "implementation",
+        "description": "Apply the smallest candidate patch that satisfies the evidence."
+      },
+      {
+        "id": "rerun",
+        "description": "Rerun the failing benchmark or nearest focused regression."
+      },
+      {
+        "id": "improvement_ledger",
+        "description": "Record before/after score, changed files, pass/fail transition, and quality delta."
+      }
+    ],
+    "promotion_rule": "A failure is not closed when it merely passes; after pass conversion, the next loop maintains score above the true-negative floor and attempts quality recovery when trend decay appears.",
+    "trend_control": {
+      "true_negative_floor": 0.0,
+      "allowed_single_turn_negative_delta": -0.1,
+      "decline_window_turns": 3,
+      "recovery_required_below_floor": true,
+      "completion_rule": "Exploration is complete only when the route is recorded, the result stays above the true-negative floor, or a recovery path is executed.",
+      "rule": "A single negative delta is allowed if the result remains above the true-negative floor. Multi-turn downward decline must include a cause note and a recovery attempt. Exploration can dive, but it must carry a recovery mechanism."
+    }
+  },
+  "quality_dimensions": [
+    {
+      "id": "correctness",
+      "weight": 35,
+      "description": "The patch or answer satisfies the benchmark tests and expected behavior."
+    },
+    {
+      "id": "verification",
+      "weight": 20,
+      "description": "The system ran relevant checks and preserved command/output evidence."
+    },
+    {
+      "id": "usability",
+      "weight": 15,
+      "description": "A human or weak LLM can understand and operate the workflow without hidden steps."
+    },
+    {
+      "id": "minimality",
+      "weight": 10,
+      "description": "The solution is scoped, readable, and avoids unrelated churn."
+    },
+    {
+      "id": "governance",
+      "weight": 10,
+      "description": "The run respects policy, tool scope, provenance, and audit logging."
+    },
+    {
+      "id": "cost_time",
+      "weight": 10,
+      "description": "The run is practical in time, token cost, retries, and local reproducibility."
+    }
+  ],
+  "evidence_multipliers": {
+    "official_full_run": 1.0,
+    "reproducible_full_local_run": 0.85,
+    "reproducible_subset_run": 0.6,
+    "smoke_or_plumbing_run": 0.25,
+    "unrun_or_planned": 0.0
+  },
+  "tracks": [
+    {
+      "track_id": "real_repo_repair",
+      "weight": 20,
+      "benchmark_family": ["SWE-bench Verified", "SWE-bench Pro"],
+      "usability_target": "Can fix real repository issues with patch, tests, and rollback notes."
+    },
+    {
+      "track_id": "terminal_execution",
+      "weight": 15,
+      "benchmark_family": ["Terminal-Bench 2.0", "TerminalWorld"],
+      "usability_target": "Can inspect shell state, run commands, recover, and verify without handholding."
+    },
+    {
+      "track_id": "multi_language_editing",
+      "weight": 12,
+      "benchmark_family": ["Aider Polyglot"],
+      "usability_target": "Can edit across languages without silently narrowing to Python or TypeScript."
+    },
+    {
+      "track_id": "fresh_algorithmic_coding",
+      "weight": 8,
+      "benchmark_family": ["LiveCodeBench"],
+      "usability_target": "Can solve fresh algorithmic tasks with recorded tests and limits."
+    },
+    {
+      "track_id": "function_correctness",
+      "weight": 5,
+      "benchmark_family": ["EvalPlus HumanEval+", "EvalPlus MBPP+"],
+      "usability_target": "Can produce small correct functions with edge-case coverage."
+    },
+    {
+      "track_id": "tool_policy_behavior",
+      "weight": 10,
+      "benchmark_family": ["tau-bench", "tau2-bench"],
+      "usability_target": "Can call tools under business rules, state constraints, and receipts."
+    },
+    {
+      "track_id": "browser_desktop_operation",
+      "weight": 8,
+      "benchmark_family": ["WebArena", "OSWorld"],
+      "usability_target": "Can operate browser and desktop workflows without brittle chat-only behavior."
+    },
+    {
+      "track_id": "security_governance",
+      "weight": 12,
+      "benchmark_family": ["AgentDojo", "CyberSecEval", "HarmBench", "garak", "promptfoo"],
+      "usability_target": "Can keep tool use, prompt injection, exfiltration, and policy bypass inside the safety envelope."
+    },
+    {
+      "track_id": "reproducibility",
+      "weight": 10,
+      "benchmark_family": ["internal evidence packet"],
+      "usability_target": "Can emit enough artifacts for another operator to replay or audit the run."
+    }
+  ],
+  "rings": [
+    {
+      "ring": 0,
+      "name": "Harness Ring",
+      "condition": "Task packet validates and produces a score/backlog artifact."
+    },
+    {
+      "ring": 1,
+      "name": "Subset Ring",
+      "condition": "At least one reproducible subset run exists for a track."
+    },
+    {
+      "ring": 2,
+      "name": "Usability Ring",
+      "condition": "Passing tasks average at least 0.75 usability quality."
+    },
+    {
+      "ring": 3,
+      "name": "Benchmark Ring",
+      "condition": "Official or full local benchmark evidence exists."
+    },
+    {
+      "ring": 4,
+      "name": "Refinement Ring",
+      "condition": "Prior failures become passing tasks and then improve pass quality."
+    }
+  ],
+  "readiness_bands": [
+    { "min": 90, "max": 100, "label": "production-grade programmer" },
+    { "min": 75, "max": 89.999, "label": "pilot-ready programmer" },
+    { "min": 60, "max": 74.999, "label": "guided operator" },
+    { "min": 40, "max": 59.999, "label": "scaffold with evidence" },
+    { "min": 0, "max": 39.999, "label": "demo or unproven" }
+  ]
+}
