@@ -85,6 +85,21 @@ export interface PhiExtrapolation {
   readonly matchedPrime: string | null;
 }
 
+/** A semantic position on a root prime's own tongue axis, scaled by φⁿ in arctanh space. */
+export interface SubPrimeAnchor {
+  readonly rootId: string;
+  readonly n: number;
+  readonly tongue: TongueCode;
+  readonly r: number;
+  readonly theta: number;
+  readonly gridRow: number;
+  readonly gridCol: number;
+  readonly candidateLabel: string;
+  readonly proximityConfidence: number;
+  readonly isKnownPrime: boolean;
+  readonly matchedPrime: string | null;
+}
+
 export interface CoverageReport {
   readonly total: number;
   readonly primaryOnly: number;
@@ -563,6 +578,26 @@ function poincareExpMap(x: [number, number], v: [number, number]): [number, numb
   return [newR * Math.cos(vTheta), newR * Math.sin(vTheta)];
 }
 
+/** Soft confidence for an empty lattice site: exp(-dist/scale) to nearest known primary. */
+function proximityConfidence(
+  tongue: TongueCode,
+  r: number,
+  gridRow: number,
+  gridCol: number,
+  scale = 0.18
+): number {
+  let best = Infinity;
+  for (const p of NSM_PRIMES) {
+    if (p.spans[0].tongue !== tongue) continue;
+    const dr = Math.abs(p.r - r);
+    const drow = Math.abs(p.gridRow - gridRow);
+    const dcol = Math.min(Math.abs(p.gridCol - gridCol), GRID_SIZE - Math.abs(p.gridCol - gridCol));
+    const dist = dr + (drow + dcol) / GRID_SIZE;
+    if (dist < best) best = dist;
+  }
+  return isFinite(best) ? Math.exp(-best / scale) : 0;
+}
+
 /**
  * Walk the geodesic from `p` for `steps` phi-scaled steps.
  *
@@ -612,7 +647,9 @@ export function phiExtrapolate(p: NSMPrime, steps = 3): PhiExtrapolation[] {
       gridRow: gRow,
       gridCol: gCol,
       candidateLabel: knownMatch?.label ?? `[CANDIDATE: ${nextTongue}·${step}]`,
-      confidence: knownMatch ? primaryConfidence(knownMatch) : 0,
+      confidence: knownMatch
+        ? primaryConfidence(knownMatch)
+        : proximityConfidence(nextTongue, newR, gRow, gCol),
       isKnownPrime: knownMatch !== null,
       matchedPrime: knownMatch?.id ?? null,
     });
@@ -636,4 +673,52 @@ export function findEmptyLatticeSites(steps = 2): PhiExtrapolation[] {
     }
   }
   return empty;
+}
+
+/**
+ * Generate sub-prime anchors by φⁿ-ratioed scaling from a root prime.
+ *
+ * Each anchor n sits at r_n = tanh(arctanh(r₀) × φⁿ), staying on the root's
+ * own tongue axis. The series predicts "more of the same prime" — deeper,
+ * stronger, or more abstract versions of the root concept.
+ */
+export function generateSubprimeAnchors(prime: NSMPrime, steps = 4): SubPrimeAnchor[] {
+  const anchors: SubPrimeAnchor[] = [];
+  const tongue = primaryTongue(prime);
+  const theta = TONGUE_PHASE[tongue];
+  const rootArctanh = Math.atanh(Math.min(prime.r, 1 - POINCARE_EPSILON));
+
+  for (let n = 1; n <= steps; n++) {
+    const scaledArctanh = rootArctanh * PHI ** n;
+    const rN = Math.min(Math.tanh(Math.min(scaledArctanh, 10)), 1 - POINCARE_EPSILON);
+
+    const gRow = Math.min(Math.floor(rN * GRID_SIZE), GRID_SIZE - 1);
+    const gCol =
+      Math.floor(
+        ((((theta % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) / (2 * Math.PI)) * GRID_SIZE
+      ) % GRID_SIZE;
+
+    const knownMatch =
+      primesForTongue(tongue).find((c) => c.gridRow === gRow && Math.abs(c.r - rN) < 0.08) ?? null;
+
+    const prox = knownMatch
+      ? primaryConfidence(knownMatch)
+      : proximityConfidence(tongue, rN, gRow, gCol);
+
+    anchors.push({
+      rootId: prime.id,
+      n,
+      tongue,
+      r: rN,
+      theta,
+      gridRow: gRow,
+      gridCol: gCol,
+      candidateLabel: knownMatch?.label ?? `[SUB: ${prime.label}.phi${n}]`,
+      proximityConfidence: prox,
+      isKnownPrime: knownMatch !== null,
+      matchedPrime: knownMatch?.id ?? null,
+    });
+  }
+
+  return anchors;
 }
