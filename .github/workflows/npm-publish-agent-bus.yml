@@ -51,6 +51,12 @@ jobs:
           echo "Publishing scbe-agent-bus@$PKG_VER"
 
       - name: Publish
-        run: npm publish --access public
+        run: |
+          PKG_VER=$(node -p "require('./package.json').version")
+          if npm view "scbe-agent-bus@$PKG_VER" version 2>/dev/null | grep -qx "$PKG_VER"; then
+            echo "::notice::scbe-agent-bus@$PKG_VER already published — skipping."
+            exit 0
+          fi
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
