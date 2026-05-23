@@ -642,7 +642,7 @@
       <input
         class="deal-input"
         id="dealInput"
-        placeholder='Deal to all, or use /bus "task" and /code "intent"...'
+        placeholder='Deal to all, or use /game smoke narrative-combat, /bus, or /code...'
         autocomplete="off"
       />
       <button class="deal-btn" id="dealBtn" onclick="dealToAll()">Deal</button>
@@ -1127,7 +1127,7 @@
           addMessage(
             seatId,
             'synthesis',
-            '[COMMAND HELP]\n/clear - clear seat transcripts\n/bus <agent-bus command> - run safe Agent Bus verbs\n/code <intent> - compile a safe coding harness plan\n/cli <safe command> - run the allowlisted AetherBrowser CLI\nA bare number is treated as a UI selection, not a creative prompt.',
+            '[COMMAND HELP]\n/clear - clear seat transcripts\n/game smoke narrative-combat [--seed N] - run deterministic game smokes\n/bus <agent-bus command> - run safe Agent Bus verbs\n/code <intent> - compile a safe coding harness plan\n/cli <safe command> - run the allowlisted AetherBrowser CLI\nA bare number is treated as a UI selection, not a creative prompt.',
             'local parser'
           );
           return true;
@@ -1149,6 +1149,10 @@
             'harness plan ' + JSON.stringify(value.slice(6).trim()),
             sourceLabel
           );
+          return true;
+        }
+        if (value.startsWith('/game ')) {
+          await runArenaCliCommand('game ' + value.slice(6).trim(), sourceLabel);
           return true;
         }
         if (value.startsWith('/cli ')) {
