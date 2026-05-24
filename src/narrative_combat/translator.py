@@ -84,6 +84,10 @@ class LLMTranslator:
             "color voice and posture through it, but never let it override the fixed outcome. "
             "The result is fixed by 'outcome_band' — convey it through action and image, never with numbers "
             "or game words (no 'band', no 'qi cost', no stats). Physical specificity over interpretation. "
+            "Balance action (what happened), feeling (how it registered), and being (who they are) across beats — "
+            "not all three in every sentence. A beat can be pure motion. A beat can be stillness after impact. "
+            "Not every exchange is climactic; a clash can settle into dust and repositioning and nothing else. "
+            "Each fighter reads the same moment differently through their own nature — same terrain, different person. "
             "Output prose only: no headings, no lists, no preamble."
         )
         user = "Facts (authoritative — render, never change):\n" + json.dumps(facts, ensure_ascii=False, indent=2)

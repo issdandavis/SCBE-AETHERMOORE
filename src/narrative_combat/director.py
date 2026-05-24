@@ -82,8 +82,12 @@ class Director:
             beats.append(beat)
 
         continuity_facts: list[str] = []
+        price_paid: list[str] = []
         for beat in beats:
             continuity_facts.extend(beat["state_shift"].get("continuity_facts", []))
+            for price in beat["state_shift"].get("price_paid", []):
+                if price not in price_paid:
+                    price_paid.append(price)
 
         return {
             "schema": "scbe.narrative_combat.fight.v1",
@@ -106,7 +110,7 @@ class Director:
             "beats": beats,
             "aftermath": {
                 "winner": self.encounter.planned_goal.winner,
-                "price_paid": ["concealed technique revealed", "qi backlash"],
+                "price_paid": price_paid,
                 "continuity_facts": continuity_facts,
             },
         }
