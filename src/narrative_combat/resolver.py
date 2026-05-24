@@ -21,6 +21,41 @@ def outcome_band(margin: int) -> OutcomeBand:
     return "catastrophic_reversal"
 
 
+def hidden_price(attacker: Fighter, technique: Technique) -> dict[str, list[str]]:
+    """Return the non-damage cost of revealing a hidden technique.
+
+    Hidden is a social/mechanical state, not a synonym for forbidden backlash.
+    A concealed meridian art can harm the body; an unclassified read should
+    usually expose the cultivator to scrutiny instead.
+    """
+
+    if not technique.hidden:
+        return {"injuries": [], "continuity_facts": [], "price_paid": []}
+
+    if bool(technique.effect.get("backlash", False)):
+        return {
+            "injuries": [f"{attacker.name} suffers meridian backlash"],
+            "continuity_facts": [f"{attacker.name}'s right arm trembles after meridian backlash."],
+            "price_paid": ["qi backlash"],
+        }
+
+    if bool(technique.effect.get("classification_break", False)):
+        return {
+            "injuries": [],
+            "continuity_facts": [f"{attacker.name}'s method is recorded as irregular rather than ranked."],
+            "price_paid": ["classification pressure"],
+        }
+
+    if technique.type == "sense":
+        return {
+            "injuries": [],
+            "continuity_facts": [f"{attacker.name}'s read is exposed before anyone can name it."],
+            "price_paid": ["social exposure"],
+        }
+
+    return {"injuries": [], "continuity_facts": [], "price_paid": ["hidden method exposed"]}
+
+
 class Resolver:
     def __init__(self, seed: int) -> None:
         self._rng = Random(seed)
@@ -50,9 +85,11 @@ class Resolver:
             "revealed": [technique.technique_id] if technique.hidden else [],
             "injuries": [],
             "continuity_facts": [],
+            "price_paid": ["concealed technique revealed"] if technique.hidden else [],
         }
-        if technique.hidden:
-            state_shift["injuries"] = [f"{attacker.name} suffers meridian backlash"]
-            state_shift["continuity_facts"] = [f"{attacker.name}'s right arm trembles after meridian backlash."]
+        price = hidden_price(attacker, technique)
+        state_shift["injuries"] = price["injuries"]
+        state_shift["continuity_facts"] = price["continuity_facts"]
+        state_shift["price_paid"] = list(state_shift["price_paid"]) + price["price_paid"]
 
         return ResolveResult(roll=roll, margin=margin, band=band, state_shift=state_shift)

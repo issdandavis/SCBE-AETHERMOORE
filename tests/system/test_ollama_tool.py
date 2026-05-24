@@ -55,3 +55,33 @@ def test_health_reports_unreachable(monkeypatch) -> None:
     result = ollama_tool.health()
     assert not result.ok
     assert result.data["error"] == "connection refused"
+
+
+def test_smoke_accepts_prompt_and_generation_options(monkeypatch) -> None:
+    captured = {}
+
+    def _fake_generate(prompt: str, **kwargs):
+        captured["prompt"] = prompt
+        captured.update(kwargs)
+        return ollama_tool.ToolResult(True, "generate", "ok", {"text": "OLLAMA_OK"})
+
+    monkeypatch.setattr(ollama_tool, "generate", _fake_generate)
+
+    result = ollama_tool.smoke(
+        prompt="Say OLLAMA_OK and one short readiness sentence.",
+        model="qwen2.5-coder:1.5b",
+        url="http://127.0.0.1:11434",
+        timeout_s=90,
+        num_predict=64,
+        temperature=0.1,
+    )
+
+    assert result.ok
+    assert captured == {
+        "prompt": "Say OLLAMA_OK and one short readiness sentence.",
+        "model": "qwen2.5-coder:1.5b",
+        "url": "http://127.0.0.1:11434",
+        "timeout_s": 90,
+        "num_predict": 64,
+        "temperature": 0.1,
+    }

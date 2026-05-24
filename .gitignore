@@ -198,6 +198,7 @@ untitled.webm
 .claude/settings.local.json
 .scbe/cli-context.json
 .scbe/route_ledger.jsonl
+.scbe/cloud_rag/
 .cell*_payload.json
 cell*-*.png
 colab-*.yml

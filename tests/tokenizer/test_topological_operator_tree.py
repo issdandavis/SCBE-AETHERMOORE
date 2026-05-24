@@ -57,3 +57,21 @@ def test_operator_signature_changes_when_tree_order_changes() -> None:
 def test_unknown_operation_token_is_rejected() -> None:
     with pytest.raises(ValueError, match="unknown operation token"):
         tokenize_operation_text("korah unknown dahru")
+
+
+def test_video_story_operation_words_are_routeable() -> None:
+    packet = operator_signature_packet(
+        "video story package quality gate manifest youtube upload"
+    )
+
+    assert [token["word"] for token in packet["tokens"]] == [
+        "video",
+        "story",
+        "package",
+        "quality",
+        "gate",
+        "manifest",
+        "youtube",
+        "upload",
+    ]
+    assert packet["signature"]["hex"]

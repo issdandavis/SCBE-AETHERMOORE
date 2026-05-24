@@ -4,7 +4,7 @@ import sys
 
 from src.narrative_combat.fixtures import boss_duel_demo
 from src.narrative_combat.director import Director, structurally_different
-from src.narrative_combat.resolver import Resolver, outcome_band
+from src.narrative_combat.resolver import Resolver, hidden_price, outcome_band
 from src.narrative_combat.translator import TemplateTranslator
 
 
@@ -45,6 +45,17 @@ def test_resolver_is_seeded_and_never_emits_damage():
     assert result_a == result_b
     assert "damage" not in result_a.state_shift
     assert 1 <= result_a.roll <= 20
+
+
+def test_hidden_meridian_art_keeps_body_backlash_price():
+    encounter = boss_duel_demo(seed=1337)
+    attacker = encounter.fighters[0]
+    technique = next(t for t in encounter.techniques if t.technique_id == "hidden_meridian_art")
+
+    price = hidden_price(attacker, technique)
+
+    assert price["price_paid"] == ["qi backlash"]
+    assert any("meridian backlash" in injury for injury in price["injuries"])
 
 
 def test_template_translator_is_deterministic_and_mentions_feature_cost_or_rule():
