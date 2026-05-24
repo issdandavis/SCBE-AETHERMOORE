@@ -213,6 +213,25 @@ describe('agent-bus workspace lifecycle', () => {
       expect(paths.some((p: string) => p.includes('40_refs'))).toBe(true);
     });
 
+    it('should refuse runtime folders even when explicitly requested', () => {
+      const receipt = createAgentWorkspace({ root: tmpDir, hint: 'test' });
+      const root = receipt.workspace_root;
+
+      fs.writeFileSync(path.join(root, '00_inbox', 'inbox.txt'), 'inbox');
+      fs.writeFileSync(path.join(root, '30_exports', 'export.txt'), 'export');
+      fs.writeFileSync(path.join(root, '90_tmp', 'tmp.txt'), 'tmp');
+
+      const exportReceipt = exportAgentWorkspace({
+        workspaceRoot: root,
+        include: ['00_inbox', '30_exports', '90_tmp'],
+      });
+      const manifest = JSON.parse(fs.readFileSync(exportReceipt.manifest_path, 'utf8'));
+
+      expect(manifest.included_folders).toEqual(['00_inbox']);
+      expect(manifest.excluded_folders).toEqual(['30_exports', '90_tmp']);
+      expect(manifest.files.map((f: { path: string }) => f.path)).toEqual(['00_inbox/inbox.txt']);
+    });
+
     it('should write export receipt to 20_receipts', () => {
       const receipt = createAgentWorkspace({ root: tmpDir, hint: 'test' });
       const root = receipt.workspace_root;

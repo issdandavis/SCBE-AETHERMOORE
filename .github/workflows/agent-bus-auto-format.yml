@@ -3,7 +3,9 @@ name: agent-bus · Auto-format PR
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    paths: ["packages/agent-bus/**"]
+    paths:
+      - "packages/agent-bus/**"
+      - ".github/workflows/agent-bus-*.yml"
   workflow_dispatch: {}
 
 defaults:

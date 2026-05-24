@@ -3,10 +3,14 @@ name: agent-bus · Format Check
 on:
   pull_request:
     branches: ["main", "master", "dev"]
-    paths: ["packages/agent-bus/**"]
+    paths:
+      - "packages/agent-bus/**"
+      - ".github/workflows/agent-bus-*.yml"
   push:
     branches: ["main", "master", "dev"]
-    paths: ["packages/agent-bus/**"]
+    paths:
+      - "packages/agent-bus/**"
+      - ".github/workflows/agent-bus-*.yml"
 
 defaults:
   run:
