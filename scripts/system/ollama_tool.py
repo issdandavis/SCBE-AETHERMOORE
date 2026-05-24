@@ -11,7 +11,6 @@ import argparse
 import json
 import os
 import subprocess
-import sys
 import time
 import urllib.error
 import urllib.request
@@ -233,14 +232,22 @@ def generate(
     )
 
 
-def smoke(model: str = DEFAULT_MODEL, url: str = DEFAULT_URL, timeout_s: int = 45) -> ToolResult:
+def smoke(
+    *,
+    prompt: str = "Reply with exactly: OLLAMA_OK",
+    model: str = DEFAULT_MODEL,
+    url: str = DEFAULT_URL,
+    timeout_s: int = 45,
+    num_predict: int = 16,
+    temperature: float = 0.0,
+) -> ToolResult:
     return generate(
-        "Reply with exactly: OLLAMA_OK",
+        prompt,
         model=model,
         url=url,
         timeout_s=timeout_s,
-        num_predict=16,
-        temperature=0.0,
+        num_predict=num_predict,
+        temperature=temperature,
     )
 
 
@@ -313,6 +320,9 @@ def main() -> None:
     smoke_parser = sub.add_parser("smoke")
     smoke_parser.add_argument("--model", default=DEFAULT_MODEL)
     smoke_parser.add_argument("--timeout", type=int, default=45)
+    smoke_parser.add_argument("--prompt", default="Reply with exactly: OLLAMA_OK")
+    smoke_parser.add_argument("--num-predict", type=int, default=16)
+    smoke_parser.add_argument("--temperature", type=float, default=0.0)
     add_json_flag(smoke_parser)
 
     gen_parser = sub.add_parser("generate")
@@ -341,7 +351,14 @@ def main() -> None:
     elif args.command == "pull":
         result = pull(args.model)
     elif args.command == "smoke":
-        result = smoke(model=args.model, url=args.url, timeout_s=args.timeout)
+        result = smoke(
+            prompt=args.prompt,
+            model=args.model,
+            url=args.url,
+            timeout_s=args.timeout,
+            num_predict=args.num_predict,
+            temperature=args.temperature,
+        )
     elif args.command == "generate":
         result = generate(
             args.prompt,

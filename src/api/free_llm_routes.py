@@ -265,7 +265,9 @@ def free_llm_registry() -> Dict[str, Any]:
     hf_token_present = bool(
         os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN") or os.getenv("HUGGING_FACE_HUB_TOKEN")
     )
-    ollama_base = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434").rstrip("/")
+    ollama_base = os.getenv("AGENT_OLLAMA_URL") or os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+    ollama_model = os.getenv("AGENT_OLLAMA_MODEL") or os.getenv("OLLAMA_MODEL") or "openclaw:latest"
+    ollama_base = ollama_base.rstrip("/")
     registry: Dict[str, Any] = {
         "version": "hydra-free-llm-registry-v1",
         "default_order": ["ollama", "huggingface", "offline"],
@@ -287,7 +289,7 @@ def free_llm_registry() -> Dict[str, Any]:
                 "privacy": "local",
                 "available": True,
                 "base_url": ollama_base,
-                "default_model": os.getenv("OLLAMA_MODEL", "qwen2.5-coder:0.5b"),
+                "default_model": ollama_model,
                 "dispatch": "ollama_api_chat",
             },
             "huggingface": {
