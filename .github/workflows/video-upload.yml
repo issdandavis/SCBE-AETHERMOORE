@@ -4,28 +4,48 @@ on:
   workflow_dispatch:
     inputs:
       video_path:
-        description: "Path to video file in repo/artifact (relative)"
+        description: 'Path to video file in repo/artifact (relative)'
         required: true
         type: string
       title:
-        description: "YouTube video title"
+        description: 'YouTube video title'
         required: false
         type: string
       description:
-        description: "YouTube video description"
+        description: 'YouTube video description'
         required: false
-        default: ""
+        default: ''
         type: string
-      privacy:
-        description: "Privacy status"
+      srt_path:
+        description: 'Optional SRT caption path'
         required: false
-        default: "private"
+        default: ''
+        type: string
+      thumbnail_path:
+        description: 'Optional thumbnail path'
+        required: false
+        default: ''
+        type: string
+      source_text_path:
+        description: 'Optional manuscript/source text path for story-ending verification'
+        required: false
+        default: ''
+        type: string
+      story_mode:
+        description: 'Require story-video package readiness checks'
+        required: false
+        default: true
+        type: boolean
+      privacy:
+        description: 'Privacy status'
+        required: false
+        default: 'private'
         type: choice
         options: [private, unlisted, public]
       chunk_size_mb:
-        description: "Upload chunk size in MiB"
+        description: 'Upload chunk size in MiB'
         required: false
-        default: "8"
+        default: '8'
         type: string
 
 permissions:
@@ -53,6 +73,44 @@ jobs:
           echo "sha256=$(jq -r .sha256 verify-receipt.json)" >> "$GITHUB_OUTPUT"
           cat verify-receipt.json
 
+      - name: Build YouTube metadata package
+        run: |
+          node scripts/youtube/package.js \
+            --out youtube-metadata.json \
+            --title "${{ github.event.inputs.title || github.event.inputs.video_path }}" \
+            --description "${{ github.event.inputs.description }}" \
+            --privacy "${{ github.event.inputs.privacy }}"
+
+      - name: Quality gate
+        run: |
+          args=(--file "${{ github.event.inputs.video_path }}" --metadata youtube-metadata.json --out quality-gate.json)
+          if [ -n "${{ github.event.inputs.srt_path }}" ]; then
+            args+=(--srt "${{ github.event.inputs.srt_path }}")
+          fi
+          if [ -n "${{ github.event.inputs.thumbnail_path }}" ]; then
+            args+=(--thumbnail "${{ github.event.inputs.thumbnail_path }}")
+          fi
+          if [ -n "${{ github.event.inputs.source_text_path }}" ]; then
+            args+=(--source-text "${{ github.event.inputs.source_text_path }}")
+          fi
+          if [ "${{ github.event.inputs.story_mode }}" = "true" ]; then
+            args+=(--story)
+          fi
+          node scripts/video/quality_gate.js "${args[@]}"
+          cat quality-gate.json
+
+      - name: Build video package manifest
+        run: |
+          args=(--video "${{ github.event.inputs.video_path }}" --metadata youtube-metadata.json --quality-report quality-gate.json --out video-package.json)
+          if [ -n "${{ github.event.inputs.srt_path }}" ]; then
+            args+=(--srt "${{ github.event.inputs.srt_path }}")
+          fi
+          if [ -n "${{ github.event.inputs.thumbnail_path }}" ]; then
+            args+=(--thumbnail "${{ github.event.inputs.thumbnail_path }}")
+          fi
+          node scripts/video/package_manifest.js "${args[@]}"
+          cat video-package.json
+
       - name: Safety check — no DENY from GeoSeal verify (dry-run)
         run: |
           pip install pytest --quiet
@@ -68,10 +126,7 @@ jobs:
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
         run: |
           node scripts/youtube/upload.js \
-            --file "${{ github.event.inputs.video_path }}" \
-            --title "${{ github.event.inputs.title || github.event.inputs.video_path }}" \
-            --description "${{ github.event.inputs.description }}" \
-            --privacy "${{ github.event.inputs.privacy }}" \
+            --manifest video-package.json \
             --chunk-size-mb "${{ github.event.inputs.chunk_size_mb }}" \
             --receipt-out upload-receipt.json
 
@@ -82,5 +137,8 @@ jobs:
           name: upload-receipts-${{ github.run_id }}
           path: |
             verify-receipt.json
+            youtube-metadata.json
+            quality-gate.json
+            video-package.json
             upload-receipt.json
           retention-days: 30

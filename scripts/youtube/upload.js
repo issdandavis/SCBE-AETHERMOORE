@@ -5,7 +5,10 @@ const crypto = require('crypto');
 const { spawn } = require('child_process');
 
 function usage() {
-  console.error('Usage: node upload.js --file <path> [--title] [--description] [--privacy] [--receipt-out <path>] [--chunk-size-mb 8] [--max-retries 5]');
+  console.error(
+    'Usage: node upload.js --file <path> [--title] [--description] [--privacy] [--receipt-out <path>] [--chunk-size-mb 8] [--max-retries 5]\n' +
+      '       node upload.js --manifest <video-package.json> [--receipt-out <path>] [--chunk-size-mb 8] [--max-retries 5]'
+  );
   process.exit(2);
 }
 
@@ -13,15 +16,57 @@ const argv = process.argv.slice(2);
 const opts = {};
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
-  if (a === '--file') opts.file = argv[++i];
+  if (a === '--manifest') opts.manifest = argv[++i];
+  else if (a === '--file') opts.file = argv[++i];
   else if (a === '--title') opts.title = argv[++i];
   else if (a === '--description') opts.description = argv[++i];
   else if (a === '--privacy') opts.privacy = argv[++i];
+  else if (a === '--tags')
+    opts.tags = argv[++i]
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+  else if (a === '--category-id') opts.categoryId = argv[++i];
+  else if (a === '--made-for-kids') opts.selfDeclaredMadeForKids = true;
   else if (a === '--receipt-out') opts.receiptOut = argv[++i];
   else if (a === '--chunk-size-mb') opts.chunkSizeMb = Number(argv[++i]);
   else if (a === '--max-retries') opts.maxRetries = Number(argv[++i]);
   else if (a === '--help') usage();
 }
+
+function readJson(filePath) {
+  return JSON.parse(fs.readFileSync(path.resolve(filePath), 'utf8'));
+}
+
+if (opts.manifest) {
+  opts.manifest = path.resolve(opts.manifest);
+  if (!fs.existsSync(opts.manifest)) {
+    console.error('manifest not found:', opts.manifest);
+    process.exit(3);
+  }
+  const manifest = readJson(opts.manifest);
+  if (manifest.quality && manifest.quality.ok === false) {
+    console.error('manifest quality gate failed; refusing upload:', opts.manifest);
+    process.exit(5);
+  }
+  if (manifest.quality && manifest.quality.storyReady === false) {
+    console.error('manifest story readiness gate failed; refusing upload:', opts.manifest);
+    process.exit(5);
+  }
+  const youtube = manifest.youtube || {};
+  opts.file = opts.file || manifest.assets?.video?.path;
+  opts.title = opts.title || youtube.title;
+  opts.description = opts.description || youtube.description;
+  opts.privacy = opts.privacy || youtube.privacy || youtube.privacyStatus;
+  opts.categoryId = opts.categoryId || youtube.categoryId;
+  opts.tags = opts.tags || youtube.tags;
+  opts.selfDeclaredMadeForKids =
+    typeof opts.selfDeclaredMadeForKids === 'boolean'
+      ? opts.selfDeclaredMadeForKids
+      : Boolean(youtube.selfDeclaredMadeForKids);
+  opts.loadedManifest = manifest;
+}
+
 if (!opts.file) usage();
 opts.file = path.resolve(opts.file);
 if (!fs.existsSync(opts.file)) {
@@ -54,7 +99,8 @@ async function refreshAccessToken(clientId, clientSecret, refreshToken) {
 }
 
 async function initiateResumable(metadata, accessToken, fileSize, mimeType) {
-  const url = 'https://www.googleapis.com/upload/youtube/v3/videos?part=snippet,status&uploadType=resumable';
+  const url =
+    'https://www.googleapis.com/upload/youtube/v3/videos?part=snippet,status&uploadType=resumable';
   const headers = {
     Authorization: 'Bearer ' + accessToken,
     'Content-Type': 'application/json; charset=UTF-8',
@@ -113,7 +159,13 @@ async function uploadChunk(uploadUrl, filePath, start, end, totalSize) {
     'Content-Length': String(end - start + 1),
     'Content-Range': `bytes ${start}-${end}/${totalSize}`,
   };
-  return fetch(uploadUrl, { method: 'PUT', headers, body: stream, duplex: 'half', redirect: 'manual' });
+  return fetch(uploadUrl, {
+    method: 'PUT',
+    headers,
+    body: stream,
+    duplex: 'half',
+    redirect: 'manual',
+  });
 }
 
 async function uploadFileResumable(uploadUrl, filePath, chunkSize, maxRetries) {
@@ -143,7 +195,9 @@ async function uploadFileResumable(uploadUrl, filePath, chunkSize, maxRetries) {
         attempt++;
         if (attempt > maxRetries) throw err;
         const delay = Math.min(30000, 1000 * 2 ** (attempt - 1));
-        console.warn(`Chunk upload attempt ${attempt} failed: ${String(err)}. Retrying in ${delay}ms...`);
+        console.warn(
+          `Chunk upload attempt ${attempt} failed: ${String(err)}. Retrying in ${delay}ms...`
+        );
         await sleep(delay);
         const status = await queryUploadOffset(uploadUrl, totalSize);
         if (status && status.complete) return status.resource;
@@ -158,7 +212,8 @@ async function uploadFileResumable(uploadUrl, filePath, chunkSize, maxRetries) {
 }
 
 async function pollProcessing(videoId, accessToken, maxAttempts = 30) {
-  const url = (id) => `https://www.googleapis.com/youtube/v3/videos?part=processingDetails&id=${id}`;
+  const url = (id) =>
+    `https://www.googleapis.com/youtube/v3/videos?part=processingDetails&id=${id}`;
   let attempt = 0;
   while (attempt < maxAttempts) {
     attempt++;
@@ -176,7 +231,8 @@ async function pollProcessing(videoId, accessToken, maxAttempts = 30) {
     const pd = items[0].processingDetails || {};
     const status = pd.processingStatus || 'unknown';
     console.log('processingStatus', status);
-    if (status === 'succeeded' || status === 'done' || status === 'processed') return { ok: true, details: pd };
+    if (status === 'succeeded' || status === 'done' || status === 'processed')
+      return { ok: true, details: pd };
     if (status === 'failed') return { ok: false, details: pd };
     // backoff
     await new Promise((r) => setTimeout(r, Math.min(15000, 2000 * attempt)));
@@ -206,7 +262,8 @@ function computeSha256Stream(filePath) {
     const chunkSizeMb = opts.chunkSizeMb || Number(process.env.YT_CHUNK_SIZE_MB || 8);
     const maxRetries = opts.maxRetries || Number(process.env.YT_UPLOAD_MAX_RETRIES || 5);
     const chunkSize = Math.max(1, Math.floor(chunkSizeMb)) * 1024 * 1024;
-    if (!Number.isFinite(chunkSizeMb) || chunkSizeMb <= 0) throw new Error('invalid --chunk-size-mb');
+    if (!Number.isFinite(chunkSizeMb) || chunkSizeMb <= 0)
+      throw new Error('invalid --chunk-size-mb');
     if (!Number.isFinite(maxRetries) || maxRetries < 0) throw new Error('invalid --max-retries');
 
     console.log('Refreshing access token...');
@@ -216,11 +273,12 @@ function computeSha256Stream(filePath) {
       snippet: {
         title: title,
         description: description,
-        categoryId: '22',
+        categoryId: opts.categoryId || '22',
+        ...(Array.isArray(opts.tags) && opts.tags.length ? { tags: opts.tags } : {}),
       },
       status: {
         privacyStatus: privacyStatus,
-        selfDeclaredMadeForKids: false,
+        selfDeclaredMadeForKids: Boolean(opts.selfDeclaredMadeForKids),
       },
     };
 
@@ -247,6 +305,7 @@ function computeSha256Stream(filePath) {
       videoId,
       chunkSize,
       maxRetries,
+      manifest: opts.manifest || null,
       uploadResponse: resource,
       processing,
       uploaded_at: new Date().toISOString(),
