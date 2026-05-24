@@ -2902,8 +2902,9 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
         if free_llm is None:
             print("Free LLM dispatch module is unavailable.")
             return 2
-        provider = args.dispatch_provider or str(round_packet["selected_provider"])
-        if provider not in {"offline", "ollama", "huggingface"}:
+        requested_provider = (args.dispatch_provider or "auto").strip().lower()
+        provider = None if requested_provider in {"", "auto"} else requested_provider
+        if provider is not None and provider not in {"offline", "ollama", "huggingface"}:
             provider = "offline"
         free_llm.REPO_ROOT = repo_root
         response = free_llm.dispatch_free_llm_request(
@@ -2920,12 +2921,14 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
             origin="inside",
         )
         data = dict(response.get("data", {}))
+        route = data.get("route", {}) if isinstance(data.get("route"), dict) else {}
         event = data.get("bus_event", {}) if isinstance(data.get("bus_event"), dict) else {}
         dispatch_payload = {
             "enabled": True,
-            "provider": provider,
+            "provider": route.get("provider", provider or "auto"),
+            "requested_provider": requested_provider,
             "event_id": event.get("event_id"),
-            "route": data.get("route", {}),
+            "route": route,
             "result": data.get("result", {}),
         }
 
@@ -5885,7 +5888,11 @@ def build_parser() -> argparse.ArgumentParser:
     agentbus_run.add_argument(
         "--dispatch", action="store_true", help="Dispatch the task through the free/local LLM bus"
     )
-    agentbus_run.add_argument("--dispatch-provider", default="offline")
+    agentbus_run.add_argument(
+        "--dispatch-provider",
+        default="auto",
+        help="Provider for dispatch: auto, offline, ollama, or huggingface. Auto prefers local free providers.",
+    )
     agentbus_run.add_argument("--dispatch-tail", type=int, default=5)
     agentbus_run.add_argument("--mirror-root", default="artifacts/agent_bus/mirror_room")
     agentbus_run.add_argument("--tracker-output-dir", default="artifacts/file_tracking/latest")

@@ -33,9 +33,23 @@ def test_free_llm_provider_registry_lists_default_open_lanes(
     assert {"offline", "ollama", "huggingface"}.issubset(registry["providers"])
     assert registry["providers"]["offline"]["available"] is True
     assert registry["providers"]["ollama"]["privacy"] == "local"
+    assert registry["providers"]["ollama"]["default_model"] == "openclaw:latest"
     assert registry["providers"]["huggingface"]["token_present"] is False
     assert "codex" in registry["agent_launchers"]["integrations"]
     assert registry["agent_launchers"]["aliases"]["copilot-cli"] == "copilot"
+
+
+def test_free_llm_provider_registry_uses_agent_ollama_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AGENT_OLLAMA_URL", "http://127.0.0.1:9999/")
+    monkeypatch.setenv("AGENT_OLLAMA_MODEL", "qwen2.5-coder:1.5b")
+    client = _client(monkeypatch)
+
+    response = client.get("/hydra/free-llm/providers", headers={"x-api-key": "test-key"})
+
+    assert response.status_code == 200
+    ollama = response.json()["data"]["providers"]["ollama"]
+    assert ollama["base_url"] == "http://127.0.0.1:9999"
+    assert ollama["default_model"] == "qwen2.5-coder:1.5b"
 
 
 def test_free_llm_dispatch_offline_returns_deterministic_local_result(

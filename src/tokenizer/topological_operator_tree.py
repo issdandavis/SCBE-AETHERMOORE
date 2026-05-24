@@ -22,6 +22,14 @@ DEFAULT_OPERATION_LEXICON: dict[str, int] = {
     "ulmar": 6,
     "vexin": 7,
     "zephyr": 8,
+    "video": 9,
+    "story": 10,
+    "package": 11,
+    "quality": 12,
+    "gate": 13,
+    "manifest": 14,
+    "youtube": 15,
+    "upload": 16,
 }
 
 
@@ -112,7 +120,9 @@ def tokenize_operation_text(
 
 
 def _leaf(token: dict[str, Any]) -> OperatorNode:
-    return OperatorNode(kind="leaf", label=str(token["word"]), value=int(token["field_value"]))
+    return OperatorNode(
+        kind="leaf", label=str(token["word"]), value=int(token["field_value"])
+    )
 
 
 def _seed_node(seed: int) -> OperatorNode:
@@ -150,7 +160,9 @@ def _hash_payload(payload: Any) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-def operator_signature_packet(text: str, *, lexicon: dict[str, int] | None = None) -> dict[str, Any]:
+def operator_signature_packet(
+    text: str, *, lexicon: dict[str, int] | None = None
+) -> dict[str, Any]:
     tokens = tokenize_operation_text(text, lexicon=lexicon)
     tree = build_topological_t_tree(tokens)
     tree_payload = tree.to_dict()
