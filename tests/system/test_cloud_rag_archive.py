@@ -18,9 +18,7 @@ def _load_module():
     return module
 
 
-def test_plan_archive_reports_reclaimable_bytes_when_delete_requested(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_plan_archive_reports_reclaimable_bytes_when_delete_requested(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "source"
@@ -50,9 +48,7 @@ def test_plan_archive_reports_reclaimable_bytes_when_delete_requested(
     assert manifest.exists()
 
 
-def test_archive_verifies_catalogs_and_deletes_source(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_archive_verifies_catalogs_and_deletes_source(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "source"
@@ -85,9 +81,7 @@ def test_archive_verifies_catalogs_and_deletes_source(
     assert "RAG visible text" in catalog.read_text(encoding="utf-8")
 
 
-def test_cleanup_verified_deletes_source_from_manifest(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_cleanup_verified_deletes_source_from_manifest(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "source"

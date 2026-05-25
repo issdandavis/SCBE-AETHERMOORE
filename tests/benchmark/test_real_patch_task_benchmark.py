@@ -9,9 +9,7 @@ MODULE_PATH = ROOT / "scripts" / "benchmark" / "real_patch_task_benchmark.py"
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location(
-        "real_patch_task_benchmark", MODULE_PATH
-    )
+    spec = importlib.util.spec_from_file_location("real_patch_task_benchmark", MODULE_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module

@@ -9,37 +9,26 @@ MODULE_PATH = ROOT / "scripts" / "ci" / "harness_release_readiness.py"
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location(
-        "harness_release_readiness", MODULE_PATH
-    )
+    spec = importlib.util.spec_from_file_location("harness_release_readiness", MODULE_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-def test_harness_release_readiness_passes_with_complete_artifacts(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_harness_release_readiness_passes_with_complete_artifacts(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     monkeypatch.setattr(module, "REPO_ROOT", tmp_path)
 
     (tmp_path / "artifacts/benchmarks/cli_competitive").mkdir(parents=True)
     (tmp_path / "artifacts/benchmarks/agentbus_competitive_wedge").mkdir(parents=True)
     (tmp_path / "artifacts/benchmarks/operator_agent_bus_eval").mkdir(parents=True)
-    (tmp_path / "artifacts/benchmarks/workflow_completion_checklist").mkdir(
-        parents=True
-    )
-    (
-        tmp_path
-        / "artifacts/benchmarks/cli_competitive/cli_competitive_benchmark_latest.json"
-    ).write_text(
+    (tmp_path / "artifacts/benchmarks/workflow_completion_checklist").mkdir(parents=True)
+    (tmp_path / "artifacts/benchmarks/cli_competitive/cli_competitive_benchmark_latest.json").write_text(
         json.dumps({"ok": True, "ranking": [{"name": "scbe-geoseal", "score": 1.0}]}),
         encoding="utf-8",
     )
-    (
-        tmp_path / "artifacts/benchmarks/agentbus_competitive_wedge/latest_report.json"
-    ).write_text(
+    (tmp_path / "artifacts/benchmarks/agentbus_competitive_wedge/latest_report.json").write_text(
         json.dumps(
             {
                 "summary": {"decision": "PASS", "bus_wins": 2, "task_count": 2},
@@ -51,9 +40,7 @@ def test_harness_release_readiness_passes_with_complete_artifacts(
         ),
         encoding="utf-8",
     )
-    (
-        tmp_path / "artifacts/benchmarks/operator_agent_bus_eval/latest_report.json"
-    ).write_text(
+    (tmp_path / "artifacts/benchmarks/operator_agent_bus_eval/latest_report.json").write_text(
         json.dumps(
             {
                 "decision": "PASS",
@@ -64,13 +51,8 @@ def test_harness_release_readiness_passes_with_complete_artifacts(
         ),
         encoding="utf-8",
     )
-    (
-        tmp_path
-        / "artifacts/benchmarks/workflow_completion_checklist/latest_completion_checklist.json"
-    ).write_text(
-        json.dumps(
-            {"completion_status": "ready_to_claim_done", "known_failure_count": 0}
-        ),
+    (tmp_path / "artifacts/benchmarks/workflow_completion_checklist/latest_completion_checklist.json").write_text(
+        json.dumps({"completion_status": "ready_to_claim_done", "known_failure_count": 0}),
         encoding="utf-8",
     )
 
@@ -83,9 +65,7 @@ def test_harness_release_readiness_passes_with_complete_artifacts(
     assert (tmp_path / report["markdown"]).exists()
 
 
-def test_harness_release_readiness_blocks_missing_artifacts(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_harness_release_readiness_blocks_missing_artifacts(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     monkeypatch.setattr(module, "REPO_ROOT", tmp_path)
 

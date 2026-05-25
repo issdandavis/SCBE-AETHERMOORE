@@ -216,9 +216,9 @@ describe('RWPv3Protocol', () => {
       const password = Buffer.from('password');
       const envelope = protocol.encrypt(password, Buffer.from('message'));
 
-      // Tamper with ciphertext — ensure replacement differs from original
-      const original = envelope.ct[0];
-      envelope.ct[0] = original === "bip'u" ? "bop'a" : "bip'u";
+      const ctBytes = TOKENIZER.decodeSection('ct', envelope.ct);
+      ctBytes[0] ^= 0xff;
+      envelope.ct = TOKENIZER.encodeSection('ct', ctBytes);
 
       expect(() => {
         protocol.decrypt(password, envelope);
@@ -229,8 +229,9 @@ describe('RWPv3Protocol', () => {
       const password = Buffer.from('password');
       const envelope = protocol.encrypt(password, Buffer.from('message'));
 
-      // Tamper with tag
-      envelope.tag[0] = "anvil'u";
+      const tagBytes = TOKENIZER.decodeSection('tag', envelope.tag);
+      tagBytes[0] ^= 0xff;
+      envelope.tag = TOKENIZER.encodeSection('tag', tagBytes);
 
       expect(() => {
         protocol.decrypt(password, envelope);
