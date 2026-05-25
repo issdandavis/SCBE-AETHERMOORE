@@ -1,15 +1,20 @@
 {
-  "updated": "2026-05-06T00:51:36Z",
+  "updated": "2026-05-10T17:11:18Z",
   "tasks": {
+    "agent_bus": {
+      "file": "latest-agent_bus.json",
+      "updated": "2026-05-10T17:11:18Z",
+      "preview": "{\"event\": {\"operation_command_chars\": 0, \"series_id\": \"pipe-event-1\", \"task_chars\": 51, \"task_sha256\": \"1d837ac66865fc9226d3a2af0a3952de7b3a5f76ff28b1bb3d95db62726c7c85\"}, \"event_index\": 1, \"exit_code"
+    },
     "monitor": {
       "file": "latest-monitor.json",
-      "updated": "2026-05-06T00:51:36Z",
-      "preview": "{'sites': [{'url': 'https://aethermoore.com/SCBE-AETHERMOORE/', 'title': 'AetherMoore Governed AI Toolkit | Dual-Layer Training Through The Six Tongues Protocol', 'description': 'Buy the AetherMoore g"
+      "updated": "2026-05-10T17:11:18Z",
+      "preview": "{\"sites\": [{\"description\": \"Buy the AetherMoore governed AI toolkit, try the live demos, and inspect the public proof stack. The system includes The Six Tongues Protocol, a narrative training layer th"
     },
     "research": {
       "file": "latest-research.json",
-      "updated": "2026-05-06T00:51:36Z",
-      "preview": "{'query': 'SCBE hyperbolic geometry AI governance', 'findings': [{'source_url': 'https://www.linkedin.com/posts/issac-davis-scbe-aether_github-issdandavisscbe-aethermoore-14-activity-74288241582157455"
+      "updated": "2026-05-10T17:11:18Z",
+      "preview": "{\"duration_seconds\": 7.880171580000024, \"errors\": [], \"findings\": [{\"confidence\": 0.9037353242285409, \"relevant_text\": \"(2025) published \\\"Hyperbolic Safety-Aware Vision-Language Models\\\" (HySAC), sho"
     }
   }
 }
