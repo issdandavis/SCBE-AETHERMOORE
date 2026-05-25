@@ -43,6 +43,15 @@ def branches_merged_into_main() -> set[str]:
     return {line.strip() for line in lines if line.strip()}
 
 
+def changed_paths_against_main(branch: str, limit: int = 400) -> list[str]:
+    try:
+        output = run_git(["diff", "--name-only", f"origin/main...{branch}"])
+    except subprocess.CalledProcessError:
+        return []
+    paths = [line.strip() for line in output.splitlines() if line.strip()]
+    return paths[:limit]
+
+
 def prefix_of(branch: str) -> str:
     name = branch.split("/", 1)[1] if "/" in branch else branch
     return name.split("/", 1)[0]
@@ -55,6 +64,56 @@ def safe_delete_candidate(branch: str, merged: set[str]) -> bool:
     if name.startswith(("backup/", "archive/", "snapshot/", "recovery/")):
         return False
     return True
+
+
+def classify_branch(branch: str, merged: set[str]) -> tuple[str, list[str]]:
+    name = branch.split("/", 1)[1] if "/" in branch else branch
+    reasons: list[str] = []
+    if safe_delete_candidate(branch, merged):
+        return "safe-delete-merged", ["merged into origin/main and not a backup namespace"]
+    if name.startswith(("backup/", "snapshot/", "recovery/")):
+        return "backup-preserve", ["backup/snapshot/recovery namespace"]
+    if name.startswith("automation/agent-data-"):
+        return "automation-data-review", ["generated automation data branch; inspect before delete"]
+
+    paths = changed_paths_against_main(branch)
+    if not paths:
+        return "unknown-review", ["no diff paths available or branch cannot be compared"]
+
+    path_set = set(paths)
+    if all(path.startswith("docs/") or path.endswith(".md") for path in path_set):
+        return "docs-only-convert-check", ["only docs/markdown paths changed"]
+    if any(
+        path.startswith((".github/workflows/", "deploy/", "k8s/"))
+        or path.startswith("Dockerfile")
+        or path.startswith("docker-compose")
+        or "deploy" in path.lower()
+        or "docker" in path.lower()
+        for path in path_set
+    ):
+        return "deployment-review", ["touches workflow/deploy/docker/k8s surfaces"]
+    if any(path.startswith(("src/", "scripts/", "packages/", "tests/", "api/", "agents/")) for path in path_set):
+        return "code-review", ["touches code/test/runtime paths"]
+    reasons.append("does not match known high-level buckets")
+    return "manual-review", reasons
+
+
+def branch_cleanup_lanes(branches: list[str], merged: set[str]) -> dict[str, list[dict[str, object]]]:
+    lanes: dict[str, list[dict[str, object]]] = defaultdict(list)
+    for branch in branches:
+        if not branch.startswith("origin/"):
+            continue
+        lane, reasons = classify_branch(branch, merged)
+        paths = changed_paths_against_main(branch, limit=25) if lane not in {"safe-delete-merged", "backup-preserve"} else []
+        lanes[lane].append(
+            {
+                "branch": branch,
+                "reasons": reasons,
+                "sample_paths": paths[:12],
+                "changed_path_count_sampled": len(paths),
+            }
+        )
+    return {lane: sorted(items, key=lambda item: str(item["branch"])) for lane, items in sorted(lanes.items())}
 
 
 def interesting_files(patterns: Iterable[str]) -> list[str]:
@@ -141,6 +200,7 @@ def build_report() -> dict[str, object]:
 
     prefix_counts = Counter(prefix_of(branch) for branch in branches if branch.startswith("origin/"))
     delete_candidates = [branch for branch in branches if branch.startswith("origin/") and safe_delete_candidate(branch, merged)]
+    cleanup_lanes = branch_cleanup_lanes(branches, merged)
 
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -152,6 +212,8 @@ def build_report() -> dict[str, object]:
         },
         "remote_branch_prefix_counts": dict(sorted(prefix_counts.items(), key=lambda item: (-item[1], item[0]))),
         "safe_delete_candidates": delete_candidates,
+        "branch_cleanup_lane_counts": {lane: len(items) for lane, items in cleanup_lanes.items()},
+        "branch_cleanup_lanes": cleanup_lanes,
         "deployment_surface_counts": {kind: len(paths) for kind, paths in sorted(deploy_by_kind.items())},
         "deployment_surfaces": {kind: sorted(paths) for kind, paths in sorted(deploy_by_kind.items())},
         "docs_to_code_candidates": docs_to_code_candidates(),
@@ -184,6 +246,28 @@ def write_markdown(report: dict[str, object], path: Path) -> None:
         lines.extend(f"- `{item}`" for item in delete_candidates)
     else:
         lines.append("- None at generation time.")
+    lines.extend(["", "## Branch Cleanup Lanes", ""])
+    lane_counts = report["branch_cleanup_lane_counts"]
+    assert isinstance(lane_counts, dict)
+    for key, value in lane_counts.items():
+        lines.append(f"- `{key}`: {value}")
+    lanes = report["branch_cleanup_lanes"]
+    assert isinstance(lanes, dict)
+    for lane, items in lanes.items():
+        assert isinstance(items, list)
+        lines.extend(["", f"### {lane}", ""])
+        for item in items[:40]:
+            assert isinstance(item, dict)
+            lines.append(f"- `{item['branch']}`")
+            reasons = item.get("reasons") or []
+            if reasons:
+                lines.append(f"  - reason: {'; '.join(str(reason) for reason in reasons)}")
+            sample_paths = item.get("sample_paths") or []
+            if sample_paths:
+                sample = ", ".join(f"`{path}`" for path in list(sample_paths)[:5])
+                lines.append(f"  - sample paths: {sample}")
+        if len(items) > 40:
+            lines.append(f"- ... {len(items) - 40} more")
     lines.extend(["", "## Deployment Surfaces", ""])
     surfaces = report["deployment_surfaces"]
     assert isinstance(surfaces, dict)
