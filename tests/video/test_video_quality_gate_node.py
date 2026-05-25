@@ -51,9 +51,7 @@ def render_fixture_video(path: Path, *, duration: float = 5.0) -> None:
     assert result.returncode == 0, result.stderr
 
 
-def write_story_assets(
-    tmp_path: Path, *, description: str, final_caption: str
-) -> tuple[Path, Path, Path]:
+def write_story_assets(tmp_path: Path, *, description: str, final_caption: str) -> tuple[Path, Path, Path]:
     srt = tmp_path / "captions.srt"
     srt.write_text(
         "1\n"
@@ -91,9 +89,7 @@ def write_story_assets(
     return srt, metadata, source
 
 
-def run_quality_gate(
-    tmp_path: Path, *args: str
-) -> tuple[subprocess.CompletedProcess[str], dict]:
+def run_quality_gate(tmp_path: Path, *args: str) -> tuple[subprocess.CompletedProcess[str], dict]:
     out = tmp_path / "quality.json"
     result = subprocess.run(
         ["node", str(QUALITY_GATE), *args, "--out", str(out)],
