@@ -60,9 +60,7 @@ def test_unknown_operation_token_is_rejected() -> None:
 
 
 def test_video_story_operation_words_are_routeable() -> None:
-    packet = operator_signature_packet(
-        "video story package quality gate manifest youtube upload"
-    )
+    packet = operator_signature_packet("video story package quality gate manifest youtube upload")
 
     assert [token["word"] for token in packet["tokens"]] == [
         "video",
