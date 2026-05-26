@@ -6,7 +6,7 @@ import { stdin as input, stdout as output } from 'node:process';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import path from 'node:path';
 import { WorkspaceExportManifestSchema, parseReceipt } from './schemas.js';
-import { detectTaskType, buildAtomLedger } from './semantic-bridge.js';
+import { detectTaskType, decompose } from './semantic-bridge.js';
 
 // Plugin + queue subsystems
 export {
@@ -38,7 +38,7 @@ export {
   type DimVec,
   type DimAxis,
   DIM_AXES,
-  // Atom table
+  // Atom table (10 atoms: 4 domain + 6 discourse)
   type AtomEntry,
   ATOM_TABLE,
   // Core decomposition / recomposition
@@ -46,9 +46,11 @@ export {
   type DecompositionResult,
   type RecompositionResult,
   type DimensionalAnalysis,
+  type DiscourseProfile,
   decompose,
   recompose,
   analyzeDimensions,
+  detectDiscourseProfile,
   // Binary / hex encoding helpers
   combineDims,
   dimsToHex,
@@ -144,8 +146,10 @@ export interface AgentBusResult {
     operation_command_chars: number;
   };
   result: unknown;
-  /** Compact semantic atom scan attached when atoms match the task text. */
-  semantic?: import('./semantic-bridge.js').AtomLedger;
+  /** Full dimensional decomposition attached when atoms match the task text. */
+  semantic?: import('./semantic-bridge.js').DecompositionResult;
+  /** Discourse profile from compound atom patterns (null = none detected). */
+  discourse_profile?: import('./semantic-bridge.js').DiscourseProfile;
 }
 
 export interface AgentBusServerHandle {
@@ -1585,7 +1589,7 @@ export async function runEvent(
   const payload = parseJson(result.stdout || '{}') as Record<string, unknown> | null;
   const taskPayload =
     payload && typeof payload.task === 'object' ? (payload.task as Record<string, unknown>) : null;
-  const ledger = buildAtomLedger(normalized.task);
+  const d = decompose(normalized.task);
   return {
     schema_version: 'scbe-agentbus-node-result-v1',
     event_index: 1,
@@ -1601,7 +1605,8 @@ export async function runEvent(
       operation_command_chars: normalized.operationCommand.length,
     },
     result: payload,
-    ...(ledger.tokenCount > 0 ? { semantic: ledger } : {}),
+    ...(d.tokenCount > 0 ? { semantic: d } : {}),
+    ...(d.discourseProfile ? { discourse_profile: d.discourseProfile } : {}),
   };
 }
 

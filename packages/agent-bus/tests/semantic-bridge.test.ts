@@ -8,6 +8,7 @@ import {
   decompose,
   recompose,
   analyzeDimensions,
+  detectDiscourseProfile,
   // encoding helpers
   combineDims,
   dimsToHex,
@@ -17,6 +18,7 @@ import {
   ATOM_TABLE,
   DIM_AXES,
   type DimVec,
+  type AtomHit,
 } from '../src/semantic-bridge.js';
 
 // ─── dimsToHex / hexToDims round-trip ────────────────────────────────────────
@@ -134,8 +136,22 @@ describe('combineDims', () => {
 // ─── ATOM_TABLE sanity ────────────────────────────────────────────────────────
 
 describe('ATOM_TABLE', () => {
-  it('contains BLOCK, TRANSFORM, FLOW, WATER', () => {
-    expect(Object.keys(ATOM_TABLE).sort()).toEqual(['BLOCK', 'FLOW', 'TRANSFORM', 'WATER'].sort());
+  it('contains 4 domain + 6 discourse atoms', () => {
+    const ids = Object.keys(ATOM_TABLE).sort();
+    expect(ids).toEqual(
+      [
+        'ANNOUNCE',
+        'BLOCK',
+        'CARRY',
+        'EXPAND',
+        'FLOW',
+        'HOLD',
+        'PIVOT',
+        'REQUEST',
+        'TRANSFORM',
+        'WATER',
+      ].sort()
+    );
   });
 
   it('each atom has a 6-element DimVec with values in [0,1]', () => {
@@ -268,10 +284,24 @@ describe('recompose', () => {
     expect(r.closest?.semanticId).toBe('FLOW');
   });
 
-  it('ranked list has all 4 atoms', () => {
+  it('ranked list has all 10 atoms (4 domain + 6 discourse)', () => {
     const r = recompose(dimsToHex([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]));
+    expect(r.ranked.length).toBe(10);
     const ids = r.ranked.map((x) => x.semanticId).sort();
-    expect(ids).toEqual(['BLOCK', 'FLOW', 'TRANSFORM', 'WATER'].sort());
+    expect(ids).toEqual(
+      [
+        'BLOCK',
+        'FLOW',
+        'TRANSFORM',
+        'WATER',
+        'ANNOUNCE',
+        'EXPAND',
+        'REQUEST',
+        'PIVOT',
+        'CARRY',
+        'HOLD',
+      ].sort()
+    );
   });
 
   it('ranked list is sorted by similarity descending', () => {
@@ -295,7 +325,7 @@ describe('recompose', () => {
   it('handles all-zeros hex gracefully', () => {
     const r = recompose('000000000000');
     expect(r.closest).not.toBeNull();
-    expect(r.ranked.length).toBe(4);
+    expect(r.ranked.length).toBe(10); // 4 domain + 6 discourse atoms
   });
 });
 
@@ -438,5 +468,169 @@ describe('buildAtomLedger (legacy)', () => {
     const b = buildAtomLedger('transform the data pipeline');
     expect(a.inputHash).toBe(b.inputHash);
     expect(a.tokenCount).toBe(b.tokenCount);
+  });
+});
+
+// ─── Discourse atoms ──────────────────────────────────────────────────────────
+
+describe('discourse atoms — surface forms', () => {
+  it('detects ANNOUNCE from "let me explain"', () => {
+    const hits = scanAtoms('let me explain what happened');
+    expect(hits.some((h) => h.semanticId === 'ANNOUNCE')).toBe(true);
+  });
+
+  it('detects EXPAND from "for example"', () => {
+    const hits = scanAtoms('for example this pattern appears');
+    expect(hits.some((h) => h.semanticId === 'EXPAND')).toBe(true);
+  });
+
+  it('detects REQUEST from "bear with me"', () => {
+    const hits = scanAtoms('bear with me here');
+    expect(hits.some((h) => h.semanticId === 'REQUEST')).toBe(true);
+  });
+
+  it('detects PIVOT from "but"', () => {
+    const hits = scanAtoms('but that is not the whole story');
+    expect(hits.some((h) => h.semanticId === 'PIVOT')).toBe(true);
+  });
+
+  it('detects PIVOT from "however"', () => {
+    const hits = scanAtoms('however we need to reconsider');
+    expect(hits.some((h) => h.semanticId === 'PIVOT')).toBe(true);
+  });
+
+  it('detects CARRY from "i remember"', () => {
+    const hits = scanAtoms('i remember when we had this problem before');
+    expect(hits.some((h) => h.semanticId === 'CARRY')).toBe(true);
+  });
+
+  it('detects HOLD from "mm" or "right"', () => {
+    const hitsA = scanAtoms('mm okay i see');
+    expect(hitsA.some((h) => h.semanticId === 'HOLD')).toBe(true);
+    const hitsB = scanAtoms('right yeah go on');
+    expect(hitsB.some((h) => h.semanticId === 'HOLD')).toBe(true);
+  });
+
+  it('discourse atoms have 6-element DimVec', () => {
+    const discourseIds = ['ANNOUNCE', 'EXPAND', 'REQUEST', 'PIVOT', 'CARRY', 'HOLD'];
+    for (const id of discourseIds) {
+      expect(ATOM_TABLE[id].dims.length).toBe(6);
+    }
+  });
+
+  it('PIVOT has high AV (transition) dimension', () => {
+    expect(ATOM_TABLE['PIVOT'].dims[1]).toBeGreaterThan(0.7); // AV axis
+  });
+
+  it('HOLD has very low AV (not moving) dimension', () => {
+    expect(ATOM_TABLE['HOLD'].dims[1]).toBeLessThan(0.2); // AV axis
+  });
+
+  it('CARRY has very high KO (observation) dimension', () => {
+    expect(ATOM_TABLE['CARRY'].dims[0]).toBeGreaterThan(0.85); // KO axis
+  });
+
+  it('ANNOUNCE has very high DR (generation) dimension', () => {
+    expect(ATOM_TABLE['ANNOUNCE'].dims[5]).toBeGreaterThan(0.85); // DR axis
+  });
+});
+
+// ─── detectDiscourseProfile ───────────────────────────────────────────────────
+
+describe('detectDiscourseProfile', () => {
+  const hit = (id: string): AtomHit => ({
+    semanticId: id,
+    bucketId: ATOM_TABLE[id]?.bucketId ?? id,
+    count: 1,
+    dims: ATOM_TABLE[id]?.dims ?? [0, 0, 0, 0, 0, 0],
+    hex: '000000000000',
+    binary: '00000000 00000000 00000000 00000000 00000000 00000000',
+  });
+
+  it('returns null for empty atom list', () => {
+    expect(detectDiscourseProfile([])).toBeNull();
+  });
+
+  it('returns null for domain atoms alone (no discourse pattern)', () => {
+    expect(detectDiscourseProfile([hit('TRANSFORM'), hit('FLOW')])).toBeNull();
+  });
+
+  it('PIVOT + BLOCK → governance_steer', () => {
+    expect(detectDiscourseProfile([hit('PIVOT'), hit('BLOCK')])).toBe('governance_steer');
+  });
+
+  it('BLOCK + PIVOT order does not matter', () => {
+    expect(detectDiscourseProfile([hit('BLOCK'), hit('PIVOT')])).toBe('governance_steer');
+  });
+
+  it('ANNOUNCE + EXPAND → long_turn', () => {
+    expect(detectDiscourseProfile([hit('ANNOUNCE'), hit('EXPAND')])).toBe('long_turn');
+  });
+
+  it('CARRY → warranted_claim', () => {
+    expect(detectDiscourseProfile([hit('CARRY')])).toBe('warranted_claim');
+  });
+
+  it('CARRY + other atoms still returns warranted_claim', () => {
+    expect(detectDiscourseProfile([hit('CARRY'), hit('TRANSFORM')])).toBe('warranted_claim');
+  });
+
+  it('REQUEST → floor_hold', () => {
+    expect(detectDiscourseProfile([hit('REQUEST')])).toBe('floor_hold');
+  });
+
+  it('HOLD alone → backchannel', () => {
+    expect(detectDiscourseProfile([hit('HOLD')])).toBe('backchannel');
+  });
+
+  it('HOLD + other atoms does NOT produce backchannel', () => {
+    const profile = detectDiscourseProfile([hit('HOLD'), hit('FLOW')]);
+    expect(profile).not.toBe('backchannel');
+  });
+
+  it('governance_steer takes priority over long_turn', () => {
+    // PIVOT+BLOCK+ANNOUNCE+EXPAND: governance_steer is checked first
+    expect(
+      detectDiscourseProfile([hit('PIVOT'), hit('BLOCK'), hit('ANNOUNCE'), hit('EXPAND')])
+    ).toBe('governance_steer');
+  });
+});
+
+// ─── decompose — discourse profile integration ───────────────────────────────
+
+describe('decompose — discourse profile', () => {
+  it('returns discourseProfile = null for unrecognized input', () => {
+    expect(decompose('hello foobar xyz').discourseProfile).toBeNull();
+  });
+
+  it('detects governance_steer on PIVOT + BLOCK text', () => {
+    const d = decompose('but the error was denied and we cannot proceed');
+    expect(d.discourseProfile).toBe('governance_steer');
+  });
+
+  it('governance_steer overrides taskType to "governance" regardless of current type', () => {
+    // Even with explicit 'coding' type, PIVOT+BLOCK compound overrides to governance
+    const d = decompose('but that error blocked us', 'coding');
+    expect(d.taskType).toBe('governance');
+  });
+
+  it('detects long_turn on ANNOUNCE + EXPAND text', () => {
+    const d = decompose('let me explain — for example this happens, similarly that happens');
+    expect(d.discourseProfile).toBe('long_turn');
+  });
+
+  it('detects warranted_claim on CARRY text', () => {
+    const d = decompose('i remember when we had this exact issue');
+    expect(d.discourseProfile).toBe('warranted_claim');
+  });
+
+  it('detects floor_hold on REQUEST text', () => {
+    const d = decompose('bear with me, just to finish this thought');
+    expect(d.discourseProfile).toBe('floor_hold');
+  });
+
+  it('detects backchannel on HOLD-only text', () => {
+    const d = decompose('mm right okay i see');
+    expect(d.discourseProfile).toBe('backchannel');
   });
 });

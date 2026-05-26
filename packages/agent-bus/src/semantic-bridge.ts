@@ -16,6 +16,13 @@
  *   - Words are the delivery mechanism; atoms + dimensions + hex are the
  *     substrate that numbers track.
  *
+ * Atom taxonomy:
+ *   Domain atoms   (content): BLOCK, TRANSFORM, FLOW, WATER
+ *   Discourse atoms (pragmatic turn-taking): ANNOUNCE, EXPAND, REQUEST, PIVOT, CARRY, HOLD
+ *
+ * Discourse profiles are detected from compound atom patterns and exposed on
+ * every DecompositionResult so the bus can route accordingly.
+ *
  * Zero external dependencies. Runs in-process inside the bus.
  */
 
@@ -52,14 +59,16 @@ export interface AtomEntry {
 }
 
 export const ATOM_TABLE: Record<string, AtomEntry> = {
+  // ─── Domain atoms (content primitives) ─────────────────────────────────────
+
   BLOCK: {
     semanticId: 'BLOCK',
     bucketId: 'CORE:CONSTRAINT:OBSTRUCTION',
     taskType: 'governance',
     valence: 2,
-    // Observation(high): sees the obstacle; Transition(low): stops movement;
-    // Structure(high): rigid constraint; Calculation(high): policy check;
-    // Boundary(high): edge condition; Generation(low): blocks creation.
+    // KO(high): sees the obstacle; AV(low): stops movement;
+    // RU(high): rigid constraint; CA(high): policy check;
+    // UM(high): edge condition; DR(low): blocks creation.
     dims: [0.85, 0.1, 0.9, 0.88, 0.8, 0.05],
     forms: [
       'block',
@@ -78,9 +87,9 @@ export const ATOM_TABLE: Record<string, AtomEntry> = {
     bucketId: 'CORE:OPERATION:STATE_CHANGE',
     taskType: 'coding',
     valence: 4,
-    // Observation(med): watches state; Transition(high): state changes;
-    // Structure(high): preserves form while changing content;
-    // Calculation(high): compute-heavy; Boundary(low): not edge; Generation(med).
+    // KO(med): watches state; AV(high): state changes;
+    // RU(high): preserves form; CA(high): compute-heavy;
+    // UM(low): not edge; DR(med): output generated.
     dims: [0.5, 0.82, 0.78, 0.92, 0.15, 0.55],
     forms: [
       'transform',
@@ -100,9 +109,9 @@ export const ATOM_TABLE: Record<string, AtomEntry> = {
     bucketId: 'CORE:MOTION:DIRECTED_CONTINUITY',
     taskType: 'research',
     valence: 3,
-    // Observation(med): track path; Transition(high): moves continuously;
-    // Structure(med): shaped channel; Calculation(low): not compute-heavy;
-    // Boundary(med): has edges; Generation(high): produces output downstream.
+    // KO(med): track path; AV(high): moves continuously;
+    // RU(med): shaped channel; CA(low): not compute-heavy;
+    // UM(med): has edges; DR(high): downstream output.
     dims: [0.6, 0.95, 0.55, 0.25, 0.45, 0.8],
     forms: ['flow', 'flows', 'stream', 'pipeline', 'control flow', 'data flow', 'event stream'],
   },
@@ -111,11 +120,160 @@ export const ATOM_TABLE: Record<string, AtomEntry> = {
     bucketId: 'CORE:MATERIAL:FLOWING_SOLVENT',
     taskType: 'research',
     valence: 2,
-    // Observation(high): highly visible; Transition(high): phase changes;
-    // Structure(low): amorphous; Calculation(low): not compute;
-    // Boundary(med): container walls; Generation(med): rain/growth.
+    // KO(high): highly visible; AV(high): phase changes;
+    // RU(low): amorphous; CA(low): not compute;
+    // UM(med): container walls; DR(med): rain/growth.
     dims: [0.88, 0.9, 0.2, 0.1, 0.5, 0.6],
     forms: ['water', 'river', 'rain', 'steam', 'ice', 'liquid'],
+  },
+
+  // ─── Discourse atoms (pragmatic / turn-taking primitives) ──────────────────
+  //
+  // These model the micro-grammar of how humans hold, steer, and earn the
+  // conversational floor. They compose with domain atoms to produce profiles:
+  //   ANNOUNCE + EXPAND  → 'long_turn'        (floor held, developing a point)
+  //   PIVOT    + BLOCK   → 'governance_steer' (steering around a denial)
+  //   CARRY              → 'warranted_claim'  (memory-backed assertion)
+  //   REQUEST            → 'floor_hold'       (requesting permission to continue)
+  //   HOLD alone         → 'backchannel'      (listener co-construction only)
+
+  ANNOUNCE: {
+    semanticId: 'ANNOUNCE',
+    bucketId: 'DISCOURSE:FLOOR:PRE_ANNOUNCE',
+    taskType: 'research',
+    valence: 3,
+    // KO(med): aware of listener; AV(low): pauses to set up;
+    // RU(high): creates frame/structure; CA(low): not compute-heavy;
+    // UM(med): opens possibility space; DR(very high): creates expectation contract.
+    dims: [0.6, 0.3, 0.88, 0.18, 0.38, 0.92],
+    forms: [
+      'let me explain',
+      'i want to say',
+      'the thing about',
+      'what you need to know',
+      'let me tell you',
+      'to give you context',
+      'a few things',
+      'three things',
+      'two things',
+      'one thing',
+    ],
+  },
+  EXPAND: {
+    semanticId: 'EXPAND',
+    bucketId: 'DISCOURSE:FLOOR:EXAMPLE_CHAIN',
+    taskType: 'research',
+    valence: 4,
+    // KO(med): observing examples; AV(high): moving through chain;
+    // RU(med): maintaining pattern; CA(high): cumulative reasoning;
+    // UM(low): not edge; DR(high): generates insight from accumulation.
+    dims: [0.55, 0.82, 0.58, 0.88, 0.2, 0.74],
+    forms: [
+      'for example',
+      'for instance',
+      'another example',
+      'another case',
+      'think about',
+      'just like',
+      'the same way',
+      'consider this',
+      'similarly',
+      'take for example',
+      'to illustrate',
+    ],
+  },
+  REQUEST: {
+    semanticId: 'REQUEST',
+    bucketId: 'DISCOURSE:FLOOR:PERMISSION_TOKEN',
+    taskType: 'governance',
+    valence: 2,
+    // KO(high): perceptive of social space; AV(low): paused at boundary;
+    // RU(med): maintains relational structure; CA(low): not logical;
+    // UM(very high): operates at permission edge; DR(low): asks not generates.
+    dims: [0.82, 0.18, 0.48, 0.12, 0.92, 0.1],
+    forms: [
+      'bear with me',
+      'i know this is a lot',
+      'almost done',
+      'one more thing',
+      'if i can',
+      'does that make sense',
+      'you know what i mean',
+      'just to finish',
+      'to wrap up',
+      'last thing',
+    ],
+  },
+  PIVOT: {
+    semanticId: 'PIVOT',
+    bucketId: 'DISCOURSE:STEER:REDIRECT',
+    taskType: 'governance',
+    valence: 3,
+    // KO(high): draws attention; AV(high): direction change;
+    // RU(low): disrupts prior structure; CA(med): logical reorientation;
+    // UM(high): operates at edge of prior frame; DR(med): installs new vector.
+    dims: [0.92, 0.88, 0.12, 0.62, 0.85, 0.52],
+    forms: [
+      'but',
+      'however',
+      'actually',
+      'what i mean is',
+      "here's the thing",
+      'look',
+      'the point is',
+      'that said',
+      'although',
+      'to be fair',
+      'i mean',
+      'wait',
+      'no but',
+    ],
+  },
+  CARRY: {
+    semanticId: 'CARRY',
+    bucketId: 'DISCOURSE:WARRANT:PERSONAL_MEMORY',
+    taskType: 'research',
+    valence: 2,
+    // KO(very high): perception of past event; AV(med): movement through time;
+    // RU(low): fluid not rigid; CA(low): affective not logical;
+    // UM(med): personal boundary, vulnerability; DR(high): generates credibility.
+    dims: [0.92, 0.62, 0.22, 0.15, 0.58, 0.8],
+    forms: [
+      'i remember',
+      'i was there',
+      'when i',
+      "i've seen",
+      'back when',
+      'i used to',
+      'i once',
+      'in my experience',
+      'true story',
+      'i had',
+      'i was in',
+    ],
+  },
+  HOLD: {
+    semanticId: 'HOLD',
+    bucketId: 'DISCOURSE:LISTENER:BACKCHANNEL',
+    taskType: 'general',
+    valence: 1,
+    // KO(high): attentive; AV(very low): not moving, holding still;
+    // RU(med): maintains conversation structure; CA(very low): not logical;
+    // UM(low): not at edge; DR(very low): receiving not generating.
+    dims: [0.88, 0.08, 0.62, 0.08, 0.35, 0.08],
+    forms: [
+      'mm',
+      'mhm',
+      'right',
+      'yeah',
+      'sure',
+      'okay',
+      'i see',
+      'go on',
+      'i hear you',
+      'tell me more',
+      'uh huh',
+    ],
   },
 };
 
@@ -205,6 +363,40 @@ export function dimsToBinary(dims: DimVec): string {
     .join(' ');
 }
 
+// ─── Discourse profile detection ─────────────────────────────────────────────
+
+/**
+ * Discourse profiles — compound patterns that describe how the floor is managed:
+ *
+ *   governance_steer  PIVOT + BLOCK  — speaker is redirecting around a denial
+ *   long_turn         ANNOUNCE + EXPAND — speaker has floor, developing a point
+ *   warranted_claim   CARRY present  — claim is backed by personal memory
+ *   floor_hold        REQUEST present — asking permission to continue
+ *   backchannel       HOLD only       — pure listener co-construction
+ */
+export type DiscourseProfile =
+  | 'governance_steer'
+  | 'long_turn'
+  | 'warranted_claim'
+  | 'floor_hold'
+  | 'backchannel'
+  | null;
+
+export function detectDiscourseProfile(atoms: AtomHit[]): DiscourseProfile {
+  const ids = new Set(atoms.map((a) => a.semanticId));
+  // Compound: PIVOT + BLOCK → someone is steering around a denial/constraint
+  if (ids.has('PIVOT') && ids.has('BLOCK')) return 'governance_steer';
+  // Compound: ANNOUNCE + EXPAND → speaker holds the floor, developing a point
+  if (ids.has('ANNOUNCE') && ids.has('EXPAND')) return 'long_turn';
+  // Single: CARRY → claim is warranted by personal memory
+  if (ids.has('CARRY')) return 'warranted_claim';
+  // Single: REQUEST → seeking permission to continue
+  if (ids.has('REQUEST')) return 'floor_hold';
+  // Listener-only: HOLD with no other atoms
+  if (ids.has('HOLD') && ids.size === 1) return 'backchannel';
+  return null;
+}
+
 // ─── Decomposition ────────────────────────────────────────────────────────────
 
 function normalizeText(text: string): string {
@@ -240,6 +432,11 @@ export interface DecompositionResult {
   dominant: string | null;
   /** Auto-detected taskType from dominant atom. */
   taskType: string;
+  /**
+   * Discourse profile from compound atom patterns, or null if none detected.
+   * governance_steer overrides taskType to 'governance' in detectTaskType().
+   */
+  discourseProfile: DiscourseProfile;
 }
 
 /**
@@ -296,8 +493,13 @@ export function decompose(input: string, currentTaskType = 'general'): Decomposi
   const combinedHex = dimsToHex(combinedDims);
   const combinedBinary = dimsToBinary(combinedDims);
 
+  const discourseProfile = detectDiscourseProfile(atomHits);
+
   let taskType = currentTaskType;
-  if (taskType === 'general' && dominant) {
+  // governance_steer overrides any current type — PIVOT+BLOCK is unambiguous
+  if (discourseProfile === 'governance_steer') {
+    taskType = 'governance';
+  } else if (taskType === 'general' && dominant) {
     taskType = ATOM_TABLE[dominant]?.taskType ?? 'general';
   }
 
@@ -312,6 +514,7 @@ export function decompose(input: string, currentTaskType = 'general'): Decomposi
     tokenCount,
     dominant,
     taskType,
+    discourseProfile,
   };
 }
 
