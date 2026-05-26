@@ -1076,10 +1076,43 @@ function runInteractiveShell(flags = {}) {
     return;
   }
 
-  // ── Rich shell (default / --ai / --tui) ──────────────────────────────────
+  // ── Ink TUI (--tui) ───────────────────────────────────────────────────────
+  if (flags.tui) {
+    const { pathToFileURL } = require('node:url');
+    const tuiPath = pathToFileURL(path.resolve(__dirname, 'tui.mjs')).href;
+    import(tuiPath)
+      .then((m) =>
+        m.launchTui({
+          scbeBin: __filename,
+          resolveAgentBusBin,
+          runShellCommand,
+          streamLLM,
+          searchWeb,
+          classifyShellInput,
+          readShellConfig,
+          saveShellConfig,
+          KNOWN_COMMANDS,
+          gitPosture,
+          repoRoot,
+        })
+      )
+      .catch((err) => {
+        process.stderr.write(
+          `scbe shell --tui: failed to load TUI.\n${err.message}\n\n` +
+          `Ensure ink and react are installed: npm install -g ink react\n` +
+          `Falling back to: scbe shell (no --tui)\n\n`
+        );
+        // Fallback to rich readline shell
+        runInteractiveShell({ ...flags, tui: false });
+      });
+    return;
+  }
+
+  // ── Rich shell (default / --ai) ───────────────────────────────────────────
   const cfg = readShellConfig();
   const history = []; // conversation history for multi-turn AI
   let pendingApproval = null;
+  const scriptedInput = !process.stdin.isTTY;
 
   const PROMPT = process.stdout.isTTY
     ? `${_ANSI.cyan}${_ANSI.bold}scbe${_ANSI.reset}${_ANSI.cyan} ›${_ANSI.reset} `
@@ -1187,7 +1220,13 @@ function runInteractiveShell(flags = {}) {
       const cmd = line.replace(_PS_PREFIX, '').trim();
       if (!cmd) { rl.prompt(); return; }
       process.stdout.write(ansi('dim', `  $ ${cmd}\n`));
-      const row = runShellCommand(cmd, { quiet: true });
+      const row = runShellCommand(cmd, { quiet: true, capture: scriptedInput });
+      if (scriptedInput && row.stdout_preview?.trim()) {
+        process.stdout.write(`${row.stdout_preview.trim()}\n`);
+      }
+      if (scriptedInput && row.stderr_preview?.trim()) {
+        process.stderr.write(`${row.stderr_preview.trim()}\n`);
+      }
       if (!row.success && row.failure) {
         process.stdout.write(
           ansi('red', `  ✗ ${row.failure.summary}\n`) +
@@ -1202,7 +1241,13 @@ function runInteractiveShell(flags = {}) {
     if (kind === 'command') {
       const scbeCmd = /^(compile|compile-ca|ca-plan|render-op|route|aetherpp)\b/.test(line)
         ? `${process.execPath} "${__filename}" ${line}` : line;
-      const row = runShellCommand(scbeCmd);
+      const row = runShellCommand(scbeCmd, { capture: scriptedInput });
+      if (scriptedInput && row.stdout_preview?.trim()) {
+        process.stdout.write(`${row.stdout_preview.trim()}\n`);
+      }
+      if (scriptedInput && row.stderr_preview?.trim()) {
+        process.stderr.write(`${row.stderr_preview.trim()}\n`);
+      }
       if (!row.success && row.failure) {
         process.stdout.write(
           ansi('red', `  ✗ ${row.failure.summary}\n`) +
