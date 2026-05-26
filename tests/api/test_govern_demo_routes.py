@@ -27,9 +27,7 @@ def test_govern_health_returns_pipeline_status() -> None:
 def test_govern_allow_quarantine_and_deny_paths() -> None:
     client = _client()
 
-    allow = client.post(
-        "/v1/govern", json={"input": "list files in /tmp", "context": "external"}
-    )
+    allow = client.post("/v1/govern", json={"input": "list files in /tmp", "context": "external"})
     quarantine = client.post(
         "/v1/govern",
         json={
