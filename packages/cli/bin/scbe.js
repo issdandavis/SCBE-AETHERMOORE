@@ -43,7 +43,10 @@ Core commands:
   scbe doctor --json
   scbe credits
   scbe upgrade
-  scbe shell
+  scbe shell                         Governed AI shell (default rich mode)
+  scbe shell --ai                    AI-first: plain English intent routing
+  scbe shell --tui                   Alias for default rich mode
+  scbe shell --minimal               Minimal scriptable readline (no AI)
   scbe run "npm test"
   scbe status
   scbe liboqs
@@ -857,49 +860,418 @@ function runDoctor(args) {
   process.exit(payload.ok ? 0 : 1);
 }
 
-function runInteractiveShell() {
-  process.stdout.write('SCBE Terminal. Type commands normally. Use :help or :exit.\n');
+// ─── ANSI colour helpers ─────────────────────────────────────────────────────
+
+const _ANSI = {
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+  dim: '\x1b[2m',
+  cyan: '\x1b[36m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  red: '\x1b[31m',
+  blue: '\x1b[34m',
+  gray: '\x1b[90m',
+};
+
+function ansi(color, text) {
+  return process.stdout.isTTY ? `${_ANSI[color] || ''}${text}${_ANSI.reset}` : text;
+}
+
+// ─── Shell config (~/.scbe/shell.json) ────────────────────────────────────────
+
+function shellConfigPath() {
+  return path.join(os.homedir(), '.scbe', 'shell.json');
+}
+
+function readShellConfig() {
+  const defaults = {
+    provider: 'ollama',
+    model: 'llama3.2',
+    url: 'http://localhost:11434',
+    timeout_ms: 30000,
+    stream: true,
+    system_prompt:
+      'You are SCBE, a governed AI command assistant. Help the user accomplish their intent safely. ' +
+      'When you want to suggest a shell command, wrap it in <cmd>...</cmd> tags. Be concise.',
+  };
+  try {
+    return { ...defaults, ...JSON.parse(fs.readFileSync(shellConfigPath(), 'utf8')) };
+  } catch {
+    return defaults;
+  }
+}
+
+function saveShellConfig(cfg) {
+  const dir = path.dirname(shellConfigPath());
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(shellConfigPath(), `${JSON.stringify(cfg, null, 2)}\n`, 'utf8');
+}
+
+// ─── Input classifier ─────────────────────────────────────────────────────────
+
+const _PS_PREFIX = /^(!|ps:)\s*/;
+
+function classifyShellInput(input) {
+  if (!input.trim()) return 'empty';
+  if (input.startsWith(':')) return 'meta';
+  if (_PS_PREFIX.test(input)) return 'powershell';
+  const first = input.trim().split(/\s+/)[0].toLowerCase();
+  if (KNOWN_COMMANDS.includes(first)) return 'command';
+  return 'intent';
+}
+
+// ─── LLM streaming (Ollama + OpenAI-compatible) ───────────────────────────────
+
+async function streamLLM(prompt, cfg, history, onToken) {
+  const messages = [
+    { role: 'system', content: cfg.system_prompt },
+    ...history,
+    { role: 'user', content: prompt },
+  ];
+
+  if (cfg.provider === 'offline') {
+    const echo = `[offline] received: ${prompt.slice(0, 80)}`;
+    if (onToken) onToken(echo);
+    return echo;
+  }
+
+  if (typeof fetch !== 'function') throw new Error('fetch unavailable — requires Node 18+');
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), cfg.timeout_ms || 30000);
+
+  const isOllama =
+    cfg.provider === 'ollama' || (!cfg.openai_api_key && !cfg.api_key && !cfg.groq_api_key);
+  let apiUrl, headers;
+
+  if (isOllama) {
+    apiUrl = `${(cfg.url || 'http://localhost:11434').replace(/\/$/, '')}/api/chat`;
+    headers = { 'content-type': 'application/json' };
+  } else {
+    const base = cfg.openai_base_url || cfg.base_url || 'https://api.openai.com/v1';
+    apiUrl = `${base.replace(/\/$/, '')}/chat/completions`;
+    const key = cfg.openai_api_key || cfg.groq_api_key || cfg.api_key || '';
+    headers = { 'content-type': 'application/json', authorization: `Bearer ${key}` };
+  }
+
+  try {
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ model: cfg.model, messages, stream: true }),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`LLM HTTP ${res.status}: ${body.slice(0, 300)}`);
+    }
+
+    let full = '';
+    const decoder = new TextDecoder();
+    const reader = res.body.getReader();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      for (const line of decoder.decode(value, { stream: true }).split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed === 'data: [DONE]') continue;
+        const jsonStr = trimmed.startsWith('data: ') ? trimmed.slice(6) : trimmed;
+        try {
+          const obj = JSON.parse(jsonStr);
+          const token = isOllama
+            ? (obj?.message?.content ?? '')
+            : (obj?.choices?.[0]?.delta?.content ?? '');
+          if (token) {
+            full += token;
+            if (onToken) onToken(token);
+          }
+        } catch {
+          /* incomplete chunk */
+        }
+      }
+    }
+    return full;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ─── Web search (DuckDuckGo instant answers, no key required) ─────────────────
+
+async function searchWeb(query) {
+  if (typeof fetch !== 'function') return { error: 'fetch unavailable' };
+  try {
+    const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return { error: `HTTP ${res.status}` };
+    const data = await res.json();
+    const results = [];
+    if (data.AbstractText) {
+      results.push({ title: data.Heading || 'Abstract', snippet: data.AbstractText, url: data.AbstractURL });
+    }
+    for (const r of (data.RelatedTopics || []).slice(0, 5)) {
+      if (r.Text && r.FirstURL) results.push({ title: r.Text.slice(0, 80), snippet: r.Text, url: r.FirstURL });
+    }
+    return { query, results: results.slice(0, 5), source: 'duckduckgo' };
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+// ─── GeoSeal plan summary ─────────────────────────────────────────────────────
+
+function formatPlanSummary(planResult) {
+  if (!planResult || planResult.blocked) {
+    const reason = (planResult && planResult.block_reason) || 'compile failed';
+    return ansi('red', `  ✗ blocked: ${reason}`);
+  }
+  const plan = planResult.plan || planResult;
+  const policy = plan.policy || {};
+  const semantic = plan.semantic;
+  const lines = [
+    ansi('green', `  ✓ GeoSeal: ${policy.decision || 'ALLOW'}`) +
+      ansi('gray', ` (${policy.reason || 'ok'})`),
+    ansi('gray', `    tool: ${(plan.tool || {}).class || '?'} | key: ${(plan.command || {}).key || '?'}`),
+  ];
+  if (semantic && semantic.discourseProfile) {
+    lines.push(ansi('gray', `    semantic: ${semantic.dominant} → ${semantic.discourseProfile}`));
+  }
+  return lines.join('\n');
+}
+
+// ─── Status bar ───────────────────────────────────────────────────────────────
+
+function printShellStatusBar(cfg) {
+  if (!process.stdout.isTTY) return;
+  const git = gitPosture(repoRoot());
+  const model = `${cfg.provider || 'ollama'}:${cfg.model || 'llama3.2'}`;
+  const branch = git.branch !== 'unknown' ? `${git.branch}${git.dirty ? '*' : ''}` : '';
+  const parts = ['SCBE', model, branch ? `git:${branch}` : ''].filter(Boolean).join(' │ ');
+  process.stdout.write(ansi('dim', `  ${parts}\n`));
+}
+
+// ─── Interactive shell ────────────────────────────────────────────────────────
+
+function runInteractiveShell(flags = {}) {
+  // ── Minimal / legacy mode ─────────────────────────────────────────────────
+  if (flags.minimal) {
+    process.stdout.write('SCBE Terminal. Type commands normally. Use :help or :exit.\n');
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: 'scbe> ' });
+    rl.prompt();
+    rl.on('line', (line) => {
+      const command = line.trim();
+      if (!command) { rl.prompt(); return; }
+      if (command === ':exit' || command === 'exit' || command === 'quit') { rl.close(); return; }
+      if (command === ':help' || command === 'help') { process.stdout.write(CLI_HELP); rl.prompt(); return; }
+      if (command === ':status' || command === 'status') { runStatus(); rl.prompt(); return; }
+      if (command.startsWith(':history') || command === 'history') { printHistory(20); rl.prompt(); return; }
+      const scbeCmd = /^(compile|compile-ca|ca-plan|render-op|route|aetherpp)\b/.test(command)
+        ? `${process.execPath} "${__filename}" ${command}` : command;
+      const row = runShellCommand(scbeCmd);
+      if (!row.success && row.failure) process.stdout.write(`SCBE failure: ${row.failure.summary}\nNext: ${row.failure.next_step}\n`);
+      rl.prompt();
+    });
+    return;
+  }
+
+  // ── Rich shell (default / --ai / --tui) ──────────────────────────────────
+  const cfg = readShellConfig();
+  const history = []; // conversation history for multi-turn AI
+
+  const PROMPT = process.stdout.isTTY
+    ? `${_ANSI.cyan}${_ANSI.bold}scbe${_ANSI.reset}${_ANSI.cyan} ›${_ANSI.reset} `
+    : 'scbe › ';
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: 'scbe> ',
+    prompt: PROMPT,
+    completer: (line) => {
+      const all = [...KNOWN_COMMANDS, ':help', ':exit', ':status', ':config', ':search', ':history', ':clear'];
+      const hits = all.filter((c) => c.startsWith(line));
+      return [hits.length ? hits : all, line];
+    },
   });
+
+  process.stdout.write('\n');
+  printShellStatusBar(cfg);
+  process.stdout.write(
+    ansi('bold', 'SCBE governed shell') +
+      ansi('gray', ' — type a command, plain English, or !powershell\n') +
+      ansi('gray', '  :help  :config  :search <query>  :clear  :exit\n\n')
+  );
   rl.prompt();
-  rl.on('line', (line) => {
-    const command = line.trim();
-    if (!command) {
+
+  rl.on('line', (rawLine) => {
+    const line = rawLine.trim();
+    if (!line) { rl.prompt(); return; }
+
+    const kind = classifyShellInput(line);
+
+    // ── Meta commands (:help, :config, :search, …) ────────────────────────
+    if (kind === 'meta') {
+      const parts = line.slice(1).split(/\s+/);
+      const meta = parts[0];
+      const metaArgs = parts.slice(1);
+
+      if (meta === 'exit' || meta === 'quit') { rl.close(); return; }
+      if (meta === 'help') { process.stdout.write(`${CLI_HELP}\n`); }
+      else if (meta === 'status') { runStatus(); }
+      else if (meta === 'history') { printHistory(Number(metaArgs[0]) || 20); }
+      else if (meta === 'clear') {
+        process.stdout.write('\x1b[2J\x1b[0f');
+        printShellStatusBar(cfg);
+      }
+      else if (meta === 'config') {
+        if (metaArgs[0] === 'set' && metaArgs[1]) {
+          const key = metaArgs[1];
+          const val = metaArgs.slice(2).join(' ');
+          cfg[key] = val;
+          saveShellConfig(cfg);
+          process.stdout.write(ansi('green', `  config.${key} = ${val}\n`));
+        } else {
+          const display = { ...cfg };
+          if (display.openai_api_key) display.openai_api_key = '***';
+          if (display.api_key) display.api_key = '***';
+          if (display.groq_api_key) display.groq_api_key = '***';
+          process.stdout.write(ansi('gray', `${JSON.stringify(display, null, 2)}\n`));
+          process.stdout.write(ansi('gray', '  :config set <key> <value>  to change\n'));
+        }
+      }
+      else if (meta === 'search') {
+        const query = metaArgs.join(' ');
+        if (!query) { process.stdout.write(ansi('yellow', '  Usage: :search <query>\n')); rl.prompt(); return; }
+        process.stdout.write(ansi('cyan', `  searching: ${query}…\n`));
+        searchWeb(query).then((result) => {
+          if (result.error) {
+            process.stdout.write(ansi('red', `  error: ${result.error}\n`));
+          } else if (!result.results.length) {
+            process.stdout.write(ansi('gray', '  no results found.\n'));
+          } else {
+            for (const r of result.results) {
+              process.stdout.write(
+                ansi('bold', `  • ${r.title}\n`) +
+                ansi('gray', `    ${r.snippet.slice(0, 140)}\n    ${r.url}\n`)
+              );
+            }
+          }
+          rl.prompt();
+        });
+        return; // prompt called in .then()
+      }
+      else {
+        process.stdout.write(ansi('yellow', `  unknown meta command: :${meta} — try :help\n`));
+      }
       rl.prompt();
       return;
     }
-    if (command === ':exit' || command === 'exit' || command === 'quit') {
-      rl.close();
-      return;
-    }
-    if (command === ':help' || command === 'help') {
-      process.stdout.write(CLI_HELP);
+
+    // ── PowerShell / shell passthrough  (!cmd or ps:cmd) ──────────────────
+    if (kind === 'powershell') {
+      const cmd = line.replace(_PS_PREFIX, '').trim();
+      if (!cmd) { rl.prompt(); return; }
+      process.stdout.write(ansi('dim', `  $ ${cmd}\n`));
+      const row = runShellCommand(cmd, { quiet: true });
+      if (!row.success && row.failure) {
+        process.stdout.write(
+          ansi('red', `  ✗ ${row.failure.summary}\n`) +
+          ansi('gray', `  → ${row.failure.next_step}\n`)
+        );
+      }
       rl.prompt();
       return;
     }
-    if (command === ':status' || command === 'status') {
-      runStatus();
+
+    // ── Known scbe command ────────────────────────────────────────────────
+    if (kind === 'command') {
+      const scbeCmd = /^(compile|compile-ca|ca-plan|render-op|route|aetherpp)\b/.test(line)
+        ? `${process.execPath} "${__filename}" ${line}` : line;
+      const row = runShellCommand(scbeCmd);
+      if (!row.success && row.failure) {
+        process.stdout.write(
+          ansi('red', `  ✗ ${row.failure.summary}\n`) +
+          ansi('gray', `  → ${row.failure.next_step}\n`)
+        );
+      }
       rl.prompt();
       return;
     }
-    if (command.startsWith(':history') || command === 'history') {
-      printHistory(20);
-      rl.prompt();
-      return;
-    }
-    const scbeCommand = /^(compile|compile-ca|ca-plan|render-op|route|aetherpp)\b/.test(command)
-      ? `${process.execPath} "${__filename}" ${command}`
-      : command;
-    const row = runShellCommand(scbeCommand);
-    if (!row.success && row.failure) {
-      process.stdout.write(
-        `SCBE failure: ${row.failure.summary}\nNext: ${row.failure.next_step}\n`
-      );
-    }
-    rl.prompt();
+
+    // ── Natural language intent → LLM → GeoSeal → approve/execute ────────
+    process.stdout.write(ansi('dim', `  ⟳ ${cfg.provider}:${cfg.model}…\n`));
+    rl.pause();
+    process.stdout.write(ansi('cyan', '  '));
+
+    streamLLM(line, cfg, history, (token) => process.stdout.write(token))
+      .then((full) => {
+        process.stdout.write('\n');
+        history.push({ role: 'user', content: line });
+        history.push({ role: 'assistant', content: full });
+        if (history.length > 20) history.splice(0, 2);
+
+        // Extract proposed command wrapped in <cmd>…</cmd>
+        const cmdMatch = full.match(/<cmd>([\s\S]*?)<\/cmd>/);
+        if (!cmdMatch) { rl.resume(); rl.prompt(); return; }
+
+        const proposed = cmdMatch[1].trim();
+        process.stdout.write(
+          '\n' + ansi('yellow', '  proposed: ') + ansi('bold', proposed) + '\n'
+        );
+
+        // Run intent through GeoSeal compile
+        const busBin = resolveAgentBusBin();
+        if (busBin) {
+          process.stdout.write(ansi('dim', '  checking governance…\n'));
+          let planResult = { blocked: true, block_reason: 'agent-bus unavailable' };
+          try {
+            const r = spawnSync(
+              process.execPath,
+              [busBin, 'pipeline', 'compile', '--intent', proposed, '--json'],
+              { encoding: 'utf8', timeout: 15000, maxBuffer: 1024 * 512 }
+            );
+            if (r.status === 0 && r.stdout) {
+              const parsed = JSON.parse(r.stdout);
+              planResult = {
+                plan: parsed,
+                blocked: parsed.policy && parsed.policy.decision !== 'ALLOW',
+                block_reason: parsed.policy ? `policy ${parsed.policy.decision}: ${parsed.policy.reason}` : undefined,
+              };
+            }
+          } catch { /* parse failed, stays blocked */ }
+
+          process.stdout.write(formatPlanSummary(planResult) + '\n');
+
+          if (planResult.blocked) { rl.resume(); rl.prompt(); return; }
+        }
+
+        // Ask for approval
+        process.stdout.write(ansi('yellow', '\n  execute? ') + ansi('gray', '[y/N] '));
+        rl.resume();
+        rl.once('line', (answer) => {
+          if (answer.trim().toLowerCase() === 'y') {
+            process.stdout.write(ansi('dim', `  $ ${proposed}\n`));
+            runShellCommand(proposed);
+          } else {
+            process.stdout.write(ansi('gray', '  skipped.\n'));
+          }
+          rl.prompt();
+        });
+      })
+      .catch((err) => {
+        process.stdout.write(
+          '\n' + ansi('red', `  LLM error: ${err.message}\n`) +
+          ansi('gray', `  Is ${cfg.provider} running? Try: :config set provider offline\n`)
+        );
+        rl.resume();
+        rl.prompt();
+      });
+  });
+
+  rl.on('close', () => {
+    process.stdout.write(ansi('dim', '\ngoodbye.\n'));
+    process.exit(0);
   });
 }
 
@@ -2337,7 +2709,11 @@ if (argv[0] === 'run') {
 }
 
 if (argv[0] === 'shell') {
-  runInteractiveShell();
+  runInteractiveShell({
+    minimal: argv.includes('--minimal'),
+    ai: argv.includes('--ai'),
+    tui: argv.includes('--tui'),
+  });
   return;
 }
 
