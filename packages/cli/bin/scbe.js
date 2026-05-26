@@ -47,6 +47,7 @@ Core commands:
   scbe shell --ai                    AI-first: plain English intent routing
   scbe shell --tui                   Alias for default rich mode
   scbe shell --minimal               Minimal scriptable readline (no AI)
+  scbe shell --agent-json            NDJSON stdin/stdout for harness/benchmark control
   scbe run "npm test"
   scbe status
   scbe liboqs
@@ -938,14 +939,28 @@ async function streamLLM(prompt, cfg, history, onToken) {
 
   if (typeof fetch !== 'function') throw new Error('fetch unavailable — requires Node 18+');
 
+  // Resolve Fireworks default model — swap out the ollama default if provider changed
+  const FIREWORKS_DEFAULT_MODEL = 'accounts/fireworks/models/kimi-k2p5';
+  const FIREWORKS_BASE_URL = 'https://api.fireworks.ai/inference/v1';
+  if (cfg.provider === 'fireworks' && (cfg.model === 'llama3.2' || !cfg.model)) {
+    cfg.model = FIREWORKS_DEFAULT_MODEL;
+  }
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), cfg.timeout_ms || 30000);
 
+  const isFireworks = cfg.provider === 'fireworks';
   const isOllama =
-    cfg.provider === 'ollama' || (!cfg.openai_api_key && !cfg.api_key && !cfg.groq_api_key);
+    !isFireworks &&
+    (cfg.provider === 'ollama' || (!cfg.openai_api_key && !cfg.api_key && !cfg.groq_api_key && !cfg.fireworks_api_key));
   let apiUrl, headers;
 
-  if (isOllama) {
+  if (isFireworks) {
+    const base = cfg.url || cfg.fireworks_base_url || FIREWORKS_BASE_URL;
+    apiUrl = `${base.replace(/\/$/, '')}/chat/completions`;
+    const key = cfg.fireworks_api_key || cfg.api_key || process.env.FIREWORKS_API_KEY || '';
+    headers = { 'content-type': 'application/json', authorization: `Bearer ${key}` };
+  } else if (isOllama) {
     apiUrl = `${(cfg.url || 'http://localhost:11434').replace(/\/$/, '')}/api/chat`;
     headers = { 'content-type': 'application/json' };
   } else {
@@ -1076,6 +1091,134 @@ function runInteractiveShell(flags = {}) {
     return;
   }
 
+  // ── Agent-JSON mode (--agent-json) — NDJSON stdin/stdout for harness control ─
+  if (flags.agentJson) {
+    const cfg = readShellConfig();
+    // Allow harness to override provider/model via env (e.g. SCBE_MODEL=ollama/llama3.2)
+    if (process.env.SCBE_MODEL) {
+      const slash = process.env.SCBE_MODEL.indexOf('/');
+      if (slash !== -1) {
+        cfg.provider = process.env.SCBE_MODEL.slice(0, slash);
+        cfg.model = process.env.SCBE_MODEL.slice(slash + 1);
+      } else {
+        cfg.model = process.env.SCBE_MODEL;
+      }
+    }
+    if (process.env.SCBE_PROVIDER) cfg.provider = process.env.SCBE_PROVIDER;
+    if (process.env.SCBE_URL) cfg.url = process.env.SCBE_URL;
+    if (process.env.SCBE_API_KEY) cfg.api_key = process.env.SCBE_API_KEY;
+    // Fireworks: pick up key from env automatically when provider is fireworks
+    if (cfg.provider === 'fireworks' && !cfg.fireworks_api_key && process.env.FIREWORKS_API_KEY) {
+      cfg.fireworks_api_key = process.env.FIREWORKS_API_KEY;
+    }
+
+    const history = [];
+    let instruction = null;
+    let busy = false;
+
+    process.stdout.write(JSON.stringify({ ready: true }) + '\n');
+
+    const rl = readline.createInterface({ input: process.stdin, terminal: false });
+
+    rl.on('line', async (rawLine) => {
+      if (busy) return; // serialize: ignore messages while processing
+      const line = rawLine.trim();
+      if (!line) return;
+
+      let msg;
+      try { msg = JSON.parse(line); } catch { return; }
+
+      if (msg.instruction) instruction = msg.instruction;
+      if (!instruction) {
+        process.stdout.write(JSON.stringify({ error: 'no instruction yet', done: false, commands: [] }) + '\n');
+        return;
+      }
+
+      busy = true;
+      rl.pause();
+
+      const terminalState = msg.terminal_state || '';
+      const prompt = instruction + (terminalState ? `\n\nCurrent terminal state:\n${terminalState}` : '');
+
+      let full;
+      try {
+        // SCBE_MOCK_RESPONSE bypasses LLM for testing — never set in production
+        full = process.env.SCBE_MOCK_RESPONSE || await streamLLM(prompt, cfg, history, () => {});
+      } catch (err) {
+        process.stdout.write(JSON.stringify({ error: err.message, done: false, commands: [] }) + '\n');
+        busy = false;
+        rl.resume();
+        return;
+      }
+
+      history.push({ role: 'user', content: prompt });
+      history.push({ role: 'assistant', content: full });
+      if (history.length > 20) history.splice(0, 2);
+
+      const cmdMatch = full.match(/<cmd>([\s\S]*?)<\/cmd>/);
+      const doneSignal = /task\s+(?:is\s+)?(?:complete|done|finished)/i.test(full) || /<done>/.test(full);
+
+      if (!cmdMatch) {
+        process.stdout.write(JSON.stringify({ commands: [], done: doneSignal, rationale: full.slice(0, 500) }) + '\n');
+        busy = false;
+        if (!doneSignal) rl.resume();
+        return;
+      }
+
+      const proposed = cmdMatch[1].trim();
+
+      // Run through GeoSeal governance
+      const busBin = resolveAgentBusBin();
+      let governance = { decision: 'ALLOW', reason: 'governance-unavailable' };
+      let blocked = false;
+
+      if (busBin) {
+        try {
+          const r = spawnSync(
+            process.execPath,
+            [busBin, 'pipeline', 'compile', '--intent', proposed, '--json'],
+            { encoding: 'utf8', timeout: 15000, maxBuffer: 1024 * 512 }
+          );
+          if (r.status === 0 && r.stdout) {
+            const plan = JSON.parse(r.stdout);
+            if (plan.policy) {
+              governance = { decision: plan.policy.decision, reason: plan.policy.reason };
+              blocked = plan.policy.decision !== 'ALLOW';
+            }
+            if (plan.semantic?.discourseProfile) governance.semantic = plan.semantic.discourseProfile;
+          }
+        } catch { /* stays ALLOW */ }
+      }
+
+      if (blocked) {
+        process.stdout.write(JSON.stringify({
+          commands: [],
+          done: false,
+          blocked: true,
+          rationale: `governance blocked: ${governance.reason}`,
+          governance,
+        }) + '\n');
+        busy = false;
+        rl.resume();
+        return;
+      }
+
+      const rationale = full.replace(/<cmd>[\s\S]*?<\/cmd>/g, '').trim().slice(0, 500);
+      process.stdout.write(JSON.stringify({
+        commands: [{ keystrokes: proposed, is_blocking: true, timeout_sec: 30 }],
+        done: doneSignal,
+        rationale,
+        governance,
+      }) + '\n');
+
+      busy = false;
+      if (!doneSignal) rl.resume();
+    });
+
+    rl.on('close', () => process.exit(0));
+    return;
+  }
+
   // ── Ink TUI (--tui) ───────────────────────────────────────────────────────
   if (flags.tui) {
     const { pathToFileURL } = require('node:url');
@@ -1183,6 +1326,7 @@ function runInteractiveShell(flags = {}) {
           if (display.openai_api_key) display.openai_api_key = '***';
           if (display.api_key) display.api_key = '***';
           if (display.groq_api_key) display.groq_api_key = '***';
+          if (display.fireworks_api_key) display.fireworks_api_key = '***';
           process.stdout.write(ansi('gray', `${JSON.stringify(display, null, 2)}\n`));
           process.stdout.write(ansi('gray', '  :config set <key> <value>  to change\n'));
         }
@@ -2764,6 +2908,7 @@ if (argv[0] === 'shell') {
     minimal: argv.includes('--minimal'),
     ai: argv.includes('--ai'),
     tui: argv.includes('--tui'),
+    agentJson: argv.includes('--agent-json'),
   });
   return;
 }

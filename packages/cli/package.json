@@ -12,7 +12,8 @@
   },
   "files": [
     "bin",
-    "scripts",
+    "scripts/scbe_tb_agent.py",
+    "scripts/shell_benchmark.cjs",
     "tests",
     "README.md",
     "LICENSE",
