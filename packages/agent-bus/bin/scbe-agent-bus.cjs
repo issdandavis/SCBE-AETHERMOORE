@@ -615,10 +615,14 @@ async function main() {
       if (flags.json) {
         process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
       } else if (payload.length === 0) {
-        process.stdout.write('No tools registered. Set SCBE_BUS_TOOLS=./tools.json to load tools.\n');
+        process.stdout.write(
+          'No tools registered. Set SCBE_BUS_TOOLS=./tools.json to load tools.\n'
+        );
       } else {
         for (const t of payload) {
-          process.stdout.write(`  ${t.name}  ${t.command} ${t.args.join(' ')}${t.description ? `  — ${t.description}` : ''}\n`);
+          process.stdout.write(
+            `  ${t.name}  ${t.command} ${t.args.join(' ')}${t.description ? `  — ${t.description}` : ''}\n`
+          );
         }
       }
       return;

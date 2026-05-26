@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spoken Longform Dialogue"
+  short_description: "Turn transcripts into human long dialogue"
+  default_prompt: "Use $spoken-longform-dialogue to revise this scene so one speaker can hold a long, human-feeling turn without sounding expository."
