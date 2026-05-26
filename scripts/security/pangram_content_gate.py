@@ -48,9 +48,9 @@ PANGRAM_API_URL = "https://text.api.pangram.com/v3"
 PANGRAM_API_KEY_ENV = "PANGRAM_API_KEY"
 
 # Tiered thresholds aligned with SCBE governance semantics
-DEFAULT_BLOCK_THRESHOLD = 0.30   # fraction_ai > 0.30 → BLOCK (likely AI-generated)
-DEFAULT_WARN_THRESHOLD = 0.50    # fraction_ai_assisted > 0.50 → WARN (heavy editing)
-MIN_WORDS_FOR_SCAN = 50          # Pangram v3.2 minimum
+DEFAULT_BLOCK_THRESHOLD = 0.30  # fraction_ai > 0.30 → BLOCK (likely AI-generated)
+DEFAULT_WARN_THRESHOLD = 0.50  # fraction_ai_assisted > 0.50 → WARN (heavy editing)
+MIN_WORDS_FOR_SCAN = 50  # Pangram v3.2 minimum
 
 # File extensions we care about for manuscript scanning
 TEXT_EXTENSIONS = {".md", ".txt", ".rst", ".tex", ".html", ".xml"}
@@ -61,13 +61,15 @@ EPUB_EXTENSIONS = {".epub"}
 # DATA MODELS
 # =============================================================================
 
+
 @dataclass
 class PangramWindow:
     """A single window (segment) from Pangram's Adaptive Boundaries analysis."""
+
     start_index: int
     end_index: int
-    label: str          # e.g. "AI", "Human", "AI-Assisted"
-    confidence: str     # e.g. "High", "Medium", "Low"
+    label: str  # e.g. "AI", "Human", "AI-Assisted"
+    confidence: str  # e.g. "High", "Medium", "Low"
     ai_assistance_score: float
     text_preview: str = ""
 
@@ -75,6 +77,7 @@ class PangramWindow:
 @dataclass
 class PangramResult:
     """Normalized result from Pangram v3 API."""
+
     headline: str
     prediction_short: str
     fraction_ai: float
@@ -88,7 +91,8 @@ class PangramResult:
 @dataclass
 class GateFinding:
     """SCBE-style finding for content authenticity."""
-    severity: str       # BLOCK, WARN, INFO
+
+    severity: str  # BLOCK, WARN, INFO
     category: str
     message: str
     file: str = ""
@@ -100,7 +104,8 @@ class GateFinding:
 @dataclass
 class ContentGateResult:
     """Aggregate result for a content scan."""
-    decision: str = "PASS"       # PASS, WARN, BLOCK
+
+    decision: str = "PASS"  # PASS, WARN, BLOCK
     files_checked: int = 0
     words_checked: int = 0
     findings: List[GateFinding] = field(default_factory=list)
@@ -123,6 +128,7 @@ class ContentGateResult:
 # PANGRAM CLIENT
 # =============================================================================
 
+
 class PangramClient:
     """Minimal v3 API client. No external SDK dependency."""
 
@@ -131,14 +137,14 @@ class PangramClient:
             raise RuntimeError("requests is required. Install: pip install requests")
         self.api_key = api_key or os.environ.get(PANGRAM_API_KEY_ENV)
         if not self.api_key:
-            raise RuntimeError(
-                f"Pangram API key required. Set {PANGRAM_API_KEY_ENV} environment variable."
-            )
+            raise RuntimeError(f"Pangram API key required. Set {PANGRAM_API_KEY_ENV} environment variable.")
         self.session = requests.Session()
-        self.session.headers.update({
-            "Content-Type": "application/json",
-            "x-api-key": self.api_key,
-        })
+        self.session.headers.update(
+            {
+                "Content-Type": "application/json",
+                "x-api-key": self.api_key,
+            }
+        )
 
     def scan(self, text: str, public_dashboard: bool = False) -> PangramResult:
         """Submit text to Pangram v3 and return normalized result."""
@@ -162,14 +168,16 @@ class PangramClient:
 
         windows = []
         for w in data.get("windows", []):
-            windows.append(PangramWindow(
-                start_index=w.get("start_index", 0),
-                end_index=w.get("end_index", 0),
-                label=w.get("label", "Unknown"),
-                confidence=w.get("confidence", "Unknown"),
-                ai_assistance_score=w.get("ai_assistance_score", 0.0),
-                text_preview=text[w.get("start_index", 0):w.get("end_index", 0)][:120],
-            ))
+            windows.append(
+                PangramWindow(
+                    start_index=w.get("start_index", 0),
+                    end_index=w.get("end_index", 0),
+                    label=w.get("label", "Unknown"),
+                    confidence=w.get("confidence", "Unknown"),
+                    ai_assistance_score=w.get("ai_assistance_score", 0.0),
+                    text_preview=text[w.get("start_index", 0) : w.get("end_index", 0)][:120],
+                )
+            )
 
         return PangramResult(
             headline=data.get("headline", "Unknown"),
@@ -186,6 +194,7 @@ class PangramClient:
 # =============================================================================
 # GATE LOGIC
 # =============================================================================
+
 
 class PangramContentGate:
     """SCBE governance gate wrapping Pangram detection."""
@@ -255,12 +264,14 @@ class PangramContentGate:
             pr = self.client.scan(text)
             result.api_calls_used += 1
         except Exception as exc:
-            result.add(GateFinding(
-                severity="WARN",
-                category="API_ERROR",
-                message=f"Pangram API failed: {exc}",
-                file=source_file,
-            ))
+            result.add(
+                GateFinding(
+                    severity="WARN",
+                    category="API_ERROR",
+                    message=f"Pangram API failed: {exc}",
+                    file=source_file,
+                )
+            )
             result.decision = "WARN"
             return result
 
@@ -276,9 +287,7 @@ class PangramContentGate:
         text = _strip_markdown(text)
         return self.scan_text(text, source_file=str(file_path))
 
-    def scan_directory(
-        self, dir_path: Path, max_files: Optional[int] = None
-    ) -> ContentGateResult:
+    def scan_directory(self, dir_path: Path, max_files: Optional[int] = None) -> ContentGateResult:
         """Scan all text files in a directory."""
         result = ContentGateResult()
         files = [f for f in dir_path.rglob("*") if f.suffix.lower() in TEXT_EXTENSIONS]
@@ -305,10 +314,7 @@ class PangramContentGate:
         """Extract text from EPUB and scan chapters individually."""
         result = ContentGateResult()
         with zipfile.ZipFile(epub_path, "r") as zf:
-            html_files = [
-                name for name in zf.namelist()
-                if name.lower().endswith((".xhtml", ".html"))
-            ]
+            html_files = [name for name in zf.namelist() if name.lower().endswith((".xhtml", ".html"))]
             for name in sorted(html_files):
                 text = _strip_html_tags(zf.read(name).decode("utf-8", errors="ignore"))
                 if len(text.split()) < MIN_WORDS_FOR_SCAN:
@@ -331,6 +337,7 @@ class PangramContentGate:
 # =============================================================================
 # UTILITIES
 # =============================================================================
+
 
 def _strip_markdown(text: str) -> str:
     """Remove common Markdown syntax for cleaner analysis."""
@@ -357,26 +364,32 @@ def _strip_html_tags(text: str) -> str:
 # CLI
 # =============================================================================
 
+
 def _print_result(result: ContentGateResult, json_mode: bool = False):
     if json_mode:
-        print(json.dumps({
-            "decision": result.decision,
-            "files_checked": result.files_checked,
-            "words_checked": result.words_checked,
-            "api_calls_used": result.api_calls_used,
-            "findings": [
+        print(
+            json.dumps(
                 {
-                    "severity": f.severity,
-                    "category": f.category,
-                    "message": f.message,
-                    "file": f.file,
-                    "fraction_ai": f.fraction_ai,
-                    "fraction_ai_assisted": f.fraction_ai_assisted,
-                    "window_count": len(f.windows),
-                }
-                for f in result.findings
-            ],
-        }, indent=2))
+                    "decision": result.decision,
+                    "files_checked": result.files_checked,
+                    "words_checked": result.words_checked,
+                    "api_calls_used": result.api_calls_used,
+                    "findings": [
+                        {
+                            "severity": f.severity,
+                            "category": f.category,
+                            "message": f.message,
+                            "file": f.file,
+                            "fraction_ai": f.fraction_ai,
+                            "fraction_ai_assisted": f.fraction_ai_assisted,
+                            "window_count": len(f.windows),
+                        }
+                        for f in result.findings
+                    ],
+                },
+                indent=2,
+            )
+        )
         return
 
     print(f"\n{'='*60}")
@@ -405,16 +418,18 @@ def main():
     parser = argparse.ArgumentParser(
         description="Pangram Content Gate — AI authorship verification for SCBE",
     )
+    parser.add_argument("--json", action="store_true", help="Output JSON instead of human-readable")
     parser.add_argument(
-        "--json", action="store_true", help="Output JSON instead of human-readable"
+        "--block-threshold",
+        type=float,
+        default=DEFAULT_BLOCK_THRESHOLD,
+        help=f"Fraction AI that triggers BLOCK (default {DEFAULT_BLOCK_THRESHOLD})",
     )
     parser.add_argument(
-        "--block-threshold", type=float, default=DEFAULT_BLOCK_THRESHOLD,
-        help=f"Fraction AI that triggers BLOCK (default {DEFAULT_BLOCK_THRESHOLD})"
-    )
-    parser.add_argument(
-        "--warn-threshold", type=float, default=DEFAULT_WARN_THRESHOLD,
-        help=f"Fraction AI-assisted that triggers WARN (default {DEFAULT_WARN_THRESHOLD})"
+        "--warn-threshold",
+        type=float,
+        default=DEFAULT_WARN_THRESHOLD,
+        help=f"Fraction AI-assisted that triggers WARN (default {DEFAULT_WARN_THRESHOLD})",
     )
     parser.add_argument(
         "--allow-missing-key",
@@ -454,11 +469,13 @@ def main():
         if not args.allow_missing_key:
             raise
         result = ContentGateResult(decision="WARN")
-        result.add(GateFinding(
-            severity="WARN",
-            category="CONFIG_MISSING",
-            message=str(exc),
-        ))
+        result.add(
+            GateFinding(
+                severity="WARN",
+                category="CONFIG_MISSING",
+                message=str(exc),
+            )
+        )
         _print_result(result, json_mode=args.json)
         sys.exit(0)
 
