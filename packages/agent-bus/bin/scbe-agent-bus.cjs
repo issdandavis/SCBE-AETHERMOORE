@@ -21,6 +21,8 @@ const {
   startQueueWorker,
   listTools,
   autoDiscoverTools,
+  compilePlan,
+  runPipeline,
 } = require('../dist/index.js');
 
 const HOSTED_INTAKE_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html';
@@ -102,6 +104,8 @@ Usage:
   scbe-agent-bus send --task "review changed files" --task-type review --json
   scbe-agent-bus send --task "heavy job" --enqueue --json
   scbe-agent-bus send --task "run linter" --tool lint --json
+  scbe-agent-bus pipeline run --intent "check security of changed files" [--json]
+  scbe-agent-bus pipeline compile --intent "explain routing for task.py" [--json]
   scbe-agent-bus health --base-url http://127.0.0.1:8787 --json
   scbe-agent-bus queue status --json
   scbe-agent-bus queue drain
@@ -127,6 +131,7 @@ Commands:
   queue     Inspect or run the event queue.
   plugins   List registered bus plugins.
   tools     List registered CLI tools (set SCBE_BUS_TOOLS=./tools.json to load).
+  pipeline  Compile and run natural-language intents through GeoSeal governance.
   workspace Create, export, verify, and clean bus workspaces.
   upgrade   Show how to enable hosted runs (intake, credits, top-up).
 
@@ -622,6 +627,92 @@ async function main() {
     process.exitCode = 2;
     return;
   }
+  if (command === 'pipeline') {
+    const action = String(process.argv[3] || 'run').trim();
+    const intent = String(flags.intent || '').trim();
+    const pipelineOpts = {
+      repoRoot: flags['repo-root'] ? String(flags['repo-root']) : undefined,
+      python: flags.python ? String(flags.python) : undefined,
+    };
+
+    if (action === 'compile') {
+      if (!intent) {
+        process.stderr.write('Usage: scbe-agent-bus pipeline compile --intent "..." [--json]\n');
+        process.exitCode = 2;
+        return;
+      }
+      const plan = compilePlan(intent, pipelineOpts);
+      if (!plan) {
+        const err = { ok: false, error: 'geoseal compile failed', intent };
+        process.stderr.write(
+          flags.json
+            ? `${JSON.stringify(err, null, 2)}\n`
+            : `geoseal compile failed for intent: "${intent}"\n`
+        );
+        process.exitCode = 1;
+        return;
+      }
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(plan, null, 2)}\n`);
+      } else {
+        process.stdout.write(
+          [
+            `GeoSeal plan (${plan.schema_version})`,
+            `Intent:   ${plan.intent.text}`,
+            `Tool:     ${plan.tool.class} (${plan.tool.contract.tool})`,
+            `Policy:   ${plan.policy.decision} — ${plan.policy.reason}`,
+            `Command:  ${plan.command.template}`,
+            `Runnable: ${plan.command.runnable}`,
+            '',
+          ].join('\n')
+        );
+      }
+      process.exitCode = plan.policy.decision === 'ALLOW' ? 0 : 1;
+      return;
+    }
+
+    if (action === 'run') {
+      if (!intent) {
+        process.stderr.write('Usage: scbe-agent-bus pipeline run --intent "..." [--json]\n');
+        process.exitCode = 2;
+        return;
+      }
+      const result = await runPipeline(intent, pipelineOpts);
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+      } else {
+        if (result.blocked) {
+          process.stderr.write(`Blocked: ${result.block_reason || 'policy denied'}\n`);
+        } else if (result.result) {
+          const r = result.result;
+          process.stdout.write(
+            [
+              `Pipeline result: ${r.ok ? 'OK' : 'FAIL'}`,
+              `Exit code: ${r.exit_code}`,
+              r.stderr_tail ? `Stderr: ${r.stderr_tail.slice(-200)}` : '',
+              '',
+            ]
+              .filter(Boolean)
+              .join('\n')
+          );
+          if (r.result != null) {
+            process.stdout.write(`${JSON.stringify(r.result, null, 2)}\n`);
+          }
+        }
+      }
+      process.exitCode = result.blocked || (result.result && !result.result.ok) ? 1 : 0;
+      return;
+    }
+
+    process.stderr.write(
+      'Usage:\n' +
+        '  scbe-agent-bus pipeline run --intent "..." [--json] [--repo-root <path>] [--python <exe>]\n' +
+        '  scbe-agent-bus pipeline compile --intent "..." [--json] [--repo-root <path>] [--python <exe>]\n'
+    );
+    process.exitCode = 2;
+    return;
+  }
+
   if (command === 'health') {
     const result = await fetch(`${baseUrl.replace(/\/+$/, '')}/health`).then((res) => res.json());
     process.stdout.write(
