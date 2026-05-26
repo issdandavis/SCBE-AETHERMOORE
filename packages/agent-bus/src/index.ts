@@ -32,9 +32,29 @@ export {
   startQueueWorker,
 } from './queue.js';
 
-// Semantic atom scanner (self-contained — no cross-package imports)
+// Semantic atom scanner + dimensional decomposition engine
 export {
+  // Dimension axis
+  type DimVec,
+  type DimAxis,
+  DIM_AXES,
+  // Atom table
+  type AtomEntry,
+  ATOM_TABLE,
+  // Core decomposition / recomposition
   type AtomHit,
+  type DecompositionResult,
+  type RecompositionResult,
+  type DimensionalAnalysis,
+  decompose,
+  recompose,
+  analyzeDimensions,
+  // Binary / hex encoding helpers
+  combineDims,
+  dimsToHex,
+  hexToDims,
+  dimsToBinary,
+  // Legacy thin API (backwards-compat)
   type AtomLedger,
   scanAtoms,
   detectTaskType,
