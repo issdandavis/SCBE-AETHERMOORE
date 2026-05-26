@@ -15,8 +15,46 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 import path from 'node:path';
 import type { AgentBusResult, RunOptions } from './index.js';
+import { checkCircuit, recordSuccess, recordFailure } from './resilience.js';
+import { decompose, type DecompositionResult } from './semantic-bridge.js';
+
+// ─── Repo root resolution ─────────────────────────────────────────────────────
+
+const GEOSL_CLI_MARKER = path.join('src', 'geoseal_cli.py');
+
+/**
+ * Resolve the SCBE repo root for GeoSeal calls.
+ * Priority:
+ *   1. options.repoRoot (validated — must contain src/geoseal_cli.py)
+ *   2. process.env.SCBE_REPO_ROOT (validated)
+ *   3. Walk up from process.cwd() looking for src/geoseal_cli.py
+ * Falls back to process.cwd() if nothing found.
+ */
+export function resolveRepoRoot(options: RunOptions = {}): string {
+  const candidates: (string | undefined)[] = [options.repoRoot, process.env.SCBE_REPO_ROOT];
+  for (const candidate of candidates) {
+    if (candidate) {
+      const resolved = path.resolve(candidate);
+      if (fs.existsSync(path.join(resolved, GEOSL_CLI_MARKER))) {
+        return resolved;
+      }
+    }
+  }
+
+  let cwd = process.cwd();
+  for (let i = 0; i < 6; i++) {
+    if (fs.existsSync(path.join(cwd, GEOSL_CLI_MARKER))) {
+      return cwd;
+    }
+    const parent = path.dirname(cwd);
+    if (parent === cwd) break;
+    cwd = parent;
+  }
+  return process.cwd();
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -68,14 +106,21 @@ export interface GeoSealPlan {
   command: GeoSealPlanCommand;
   strands?: { forward: string; reverse: string; converged: boolean };
   hashes: GeoSealPlanHashes;
+  /** Semantic decomposition of the intent text — attached at compile time. */
+  semantic?: DecompositionResult;
 }
 
 export interface PipelineRunResult {
   /** The compiled GeoSeal plan. Null if compile failed. */
   plan: GeoSealPlan | null;
-  /** True if policy gate or compile blocked execution. */
+  /** True if policy gate, semantic layer, or compile blocked execution. */
   blocked: boolean;
   block_reason?: string;
+  /**
+   * Set when the semantic layer escalated an otherwise-ALLOW plan.
+   * Value is the discourse profile that triggered escalation.
+   */
+  semantic_escalation?: string;
   /** Populated when blocked=false. */
   result?: AgentBusResult;
 }
@@ -123,7 +168,10 @@ export function parseShellTemplate(template: string): string[] {
  * Returns null if geoseal is unavailable or the output cannot be parsed.
  */
 export function compilePlan(intent: string, options: RunOptions = {}): GeoSealPlan | null {
-  const repoRoot = path.resolve(options.repoRoot || process.cwd());
+  if (!checkCircuit('geoseal-compile')) {
+    return null;
+  }
+  const repoRoot = resolveRepoRoot(options);
   const python = options.python || process.env.PYTHON || 'python';
 
   const r = spawnSync(
@@ -133,19 +181,26 @@ export function compilePlan(intent: string, options: RunOptions = {}): GeoSealPl
       encoding: 'utf-8',
       cwd: repoRoot,
       maxBuffer: 1024 * 1024 * 4,
+      timeout: 15000,
     }
   );
 
   if (r.status !== 0 || !r.stdout) {
+    recordFailure('geoseal-compile');
     return null;
   }
   try {
     const parsed = JSON.parse(r.stdout) as unknown;
     if (typeof parsed === 'object' && parsed !== null && 'schema_version' in parsed) {
-      return parsed as GeoSealPlan;
+      recordSuccess('geoseal-compile');
+      const plan = parsed as GeoSealPlan;
+      const semantic = decompose(intent);
+      return semantic.tokenCount > 0 ? { ...plan, semantic } : plan;
     }
+    recordFailure('geoseal-compile');
     return null;
   } catch {
+    recordFailure('geoseal-compile');
     return null;
   }
 }
@@ -156,7 +211,7 @@ export function compilePlan(intent: string, options: RunOptions = {}): GeoSealPl
  * calling this — gate enforcement is the caller's responsibility.
  */
 export function execPlan(plan: GeoSealPlan, options: RunOptions = {}): AgentBusResult {
-  const repoRoot = path.resolve(options.repoRoot || process.cwd());
+  const repoRoot = resolveRepoRoot(options);
   const startedAt = new Date().toISOString();
 
   const argv = parseShellTemplate(plan.command.template);
@@ -184,6 +239,7 @@ export function execPlan(plan: GeoSealPlan, options: RunOptions = {}): AgentBusR
     encoding: 'utf-8',
     cwd: repoRoot,
     maxBuffer: 1024 * 1024 * 8,
+    timeout: 30000,
   });
 
   let payload: unknown = null;
@@ -193,12 +249,19 @@ export function execPlan(plan: GeoSealPlan, options: RunOptions = {}): AgentBusR
     payload = r.stdout ? { raw_output: r.stdout } : null;
   }
 
+  const ok = r.status === 0;
+  if (ok) {
+    recordSuccess('geoseal-exec');
+  } else {
+    recordFailure('geoseal-exec');
+  }
+
   return {
     schema_version: 'scbe-agentbus-node-result-v1',
     event_index: 1,
     started_at: startedAt,
     finished_at: new Date().toISOString(),
-    ok: r.status === 0,
+    ok,
     exit_code: r.status,
     stderr_tail: String(r.stderr || '').slice(-1000),
     event: {
@@ -240,6 +303,19 @@ export async function runPipeline(
       plan,
       blocked: true,
       block_reason: `policy ${plan.policy.decision}: ${plan.policy.reason}`,
+    };
+  }
+
+  // Semantic governance check: governance_steer profile escalates an ALLOW plan.
+  // PIVOT+BLOCK in the intent means the user is discussing governance violations
+  // (e.g. "but the request was denied — however the barrier should have blocked it").
+  // GeoSeal may not catch this from the command template alone; the discourse layer does.
+  if (plan.semantic?.discourseProfile === 'governance_steer') {
+    return {
+      plan,
+      blocked: true,
+      block_reason: `semantic escalation: governance_steer profile detected — intent discusses policy/error context (escalated from ALLOW)`,
+      semantic_escalation: 'governance_steer',
     };
   }
 
