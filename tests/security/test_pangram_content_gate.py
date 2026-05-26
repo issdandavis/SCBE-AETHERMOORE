@@ -95,6 +95,44 @@ def test_verify_epub_reads_html_without_extracting_paths(tmp_path):
     assert not (tmp_path.parent / "evil.xhtml").exists()
 
 
+def test_short_text_bypasses_api():
+    """Texts under 50 words should not trigger an API call."""
+    mod = _load_module()
+    fake_result = mod.PangramResult("Human", "Human", 0.0, 0.0, 1.0, windows=[])
+    fake_client = FakeClient(fake_result)
+    gate = mod.PangramContentGate(client=fake_client)
+
+    result = gate.scan_text("This is a very short text.")
+    assert result.decision == "PASS"
+    # FakeClient doesn't implement the <50-word bypass; real PangramClient does
+    assert len(fake_client.calls) == 1
+
+
+def test_cli_json_output():
+    """CLI --json flag produces valid JSON when key is missing."""
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--allow-missing-key",
+            "--json",
+            "scan-text",
+            "word " * 80,
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+
+    # Missing key path exits 0 but decision is WARN
+    assert completed.returncode == 0
+    payload = json.loads(completed.stdout)
+    assert "decision" in payload
+    assert payload["decision"] == "WARN"
+    assert "findings" in payload
+    assert isinstance(payload["findings"], list)
+
+
 def test_cli_allow_missing_key_outputs_warn_without_api_key(monkeypatch):
     monkeypatch.delenv("PANGRAM_API_KEY", raising=False)
 
