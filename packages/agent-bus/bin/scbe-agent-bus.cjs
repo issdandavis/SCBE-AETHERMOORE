@@ -14,6 +14,11 @@ const {
   runAgentBusTerminalUi,
   startAgentBusServer,
   verifyAgentWorkspaceExport,
+  cleanupWorkspaceTmp,
+  listPlugins,
+  getQueueStatus,
+  drainQueue,
+  startQueueWorker,
 } = require('../dist/index.js');
 
 const HOSTED_INTAKE_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html';
@@ -90,18 +95,24 @@ function printHelp() {
   process.stdout.write(`SCBE Agent Bus
 
 Usage:
-  scbe-agent-bus serve --port 8787
+  scbe-agent-bus serve --port 8787 [--worker]
   scbe-agent-bus ui --base-url http://127.0.0.1:8787
   scbe-agent-bus send --task "review changed files" --task-type review --json
+  scbe-agent-bus send --task "heavy job" --enqueue --json
   scbe-agent-bus health --base-url http://127.0.0.1:8787 --json
+  scbe-agent-bus queue status --json
+  scbe-agent-bus queue drain
+  scbe-agent-bus queue worker
+  scbe-agent-bus plugins list --json
   scbe-agent-bus workspace new --hint customer-smoke --json
-  scbe-agent-bus workspace ingest --workspace-root .aethermoor-bus/workspaces/<id> --source-path /path/to/file --json
-  scbe-agent-bus workspace export --workspace-root .aethermoor-bus/workspaces/<id> --json
-  scbe-agent-bus workspace import --export-path .aethermoor-bus/workspaces/<id>/30_exports/<eid> --json
-  scbe-agent-bus workspace verify --export-path .aethermoor-bus/workspaces/<id>/30_exports/<eid> --json
-  scbe-agent-bus workspace verify --all --workspace-root .aethermoor-bus/workspaces/<id> --json
-  scbe-agent-bus workspace lineage --workspace-root .aethermoor-bus/workspaces/<id> --json
-  scbe-agent-bus workspace report --workspace-root .aethermoor-bus/workspaces/<id> --json
+  scbe-agent-bus workspace ingest --workspace-root <path> --source-path <file> --json
+  scbe-agent-bus workspace export --workspace-root <path> --json
+  scbe-agent-bus workspace import --export-path <path> --json
+  scbe-agent-bus workspace verify --export-path <path> --json
+  scbe-agent-bus workspace verify --all --workspace-root <path> --json
+  scbe-agent-bus workspace lineage --workspace-root <path> --json
+  scbe-agent-bus workspace report --workspace-root <path> --json
+  scbe-agent-bus workspace cleanup-tmp --workspace-root <path> [--dry-run] --json
   scbe-agent-bus upgrade
 
 Commands:
@@ -109,7 +120,9 @@ Commands:
   ui        Start the terminal frontend.
   send      Send one governed task to the backend.
   health    Check backend health.
-  workspace Create a temporary local bus workspace.
+  queue     Inspect or run the event queue.
+  plugins   List registered bus plugins.
+  workspace Create, export, verify, and clean bus workspaces.
   upgrade   Show how to enable hosted runs (intake, credits, top-up).
 
 Local routing is free. Hosted runs require SCBE_API_KEY (see 'upgrade').
@@ -312,6 +325,32 @@ async function main() {
       }
       return;
     }
+    if (action === 'cleanup-tmp') {
+      const workspaceRoot = String(flags['workspace-root'] || flags.root || '').trim();
+      if (!workspaceRoot) {
+        process.stderr.write(
+          'Usage: scbe-agent-bus workspace cleanup-tmp --workspace-root <path> [--dry-run] [--json]\n'
+        );
+        process.exitCode = 2;
+        return;
+      }
+      const payload = cleanupWorkspaceTmp({ workspaceRoot, dryRun: flags['dry-run'] === true });
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+      } else {
+        process.stdout.write(
+          [
+            `SCBE workspace tmp cleanup: ${payload.receipt}`,
+            `Workspace: ${payload.workspace_root}`,
+            `Deleted: ${payload.deleted_count} files`,
+            `Reclaimed: ${payload.reclaimed_bytes} bytes`,
+            payload.dry_run ? '(dry run — no files were deleted)' : '',
+            '',
+          ].join('\n')
+        );
+      }
+      return;
+    }
     if (action === 'ingest') {
       const workspaceRoot = String(flags['workspace-root'] || flags.root || '').trim();
       const sourcePath = String(flags['source-path'] || flags.source || '').trim();
@@ -432,7 +471,8 @@ async function main() {
         '  scbe-agent-bus workspace verify --export-path <path> [--no-persist] [--json]\n' +
         '  scbe-agent-bus workspace verify --all --workspace-root <path> [--no-persist] [--json]\n' +
         '  scbe-agent-bus workspace lineage --workspace-root <path> [--json]\n' +
-        '  scbe-agent-bus workspace report --workspace-root <path> [--json]\n'
+        '  scbe-agent-bus workspace report --workspace-root <path> [--json]\n' +
+        '  scbe-agent-bus workspace cleanup-tmp --workspace-root <path> [--dry-run] [--json]\n'
     );
     process.exitCode = action === 'help' ? 0 : 2;
     return;
@@ -445,11 +485,18 @@ async function main() {
       python: flags.python ? String(flags.python) : undefined,
       continueOnError: Boolean(flags['continue-on-error']),
     });
+    let workerHandle;
+    if (flags.worker) {
+      const interval = Number(flags['worker-interval'] || 5000);
+      workerHandle = startQueueWorker(interval);
+      process.stdout.write(`Queue worker started (interval=${interval}ms).\n`);
+    }
     const payload = {
       schema_version: 'scbe-agent-bus-backend-start-v1',
       ok: true,
       url: handle.url,
-      routes: ['/health', '/v1/events', '/v1/batch'],
+      routes: ['/health', '/v1/events', '/v1/events/:id/status', '/v1/batch'],
+      queue_worker: Boolean(workerHandle),
     };
     process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
     return;
@@ -467,20 +514,55 @@ async function main() {
       process.exitCode = 2;
       return;
     }
-    const result = await postAgentBusEvent(
-      {
-        task,
-        taskType: String(flags['task-type'] || 'general'),
-        privacy: String(flags.privacy || 'local_only'),
-        budgetCents: Number(flags['budget-cents'] || 0),
-        dispatchProvider: String(flags['dispatch-provider'] || 'offline'),
-        dispatch: flags.dispatch !== 'false',
-      },
-      { baseUrl }
-    );
+    const event = {
+      task,
+      taskType: String(flags['task-type'] || 'general'),
+      privacy: String(flags.privacy || 'local_only'),
+      budgetCents: Number(flags['budget-cents'] || 0),
+      dispatchProvider: String(flags['dispatch-provider'] || 'offline'),
+      dispatch: flags.dispatch !== 'false',
+      enqueue: flags.enqueue === true,
+    };
+    const result = await postAgentBusEvent(event, { baseUrl });
     process.stdout.write(
       flags.json ? `${JSON.stringify(result, null, 2)}\n` : `${JSON.stringify(result)}\n`
     );
+    return;
+  }
+  if (command === 'queue') {
+    const action = String(flags._action || process.argv[3] || 'help').trim();
+    if (action === 'status') {
+      const payload = getQueueStatus();
+      process.stdout.write(flags.json ? `${JSON.stringify(payload, null, 2)}\n` : `${JSON.stringify(payload)}\n`);
+      return;
+    }
+    if (action === 'drain') {
+      await drainQueue();
+      const payload = getQueueStatus();
+      process.stdout.write(flags.json ? `${JSON.stringify({ drained: true, queue: payload }, null, 2)}\n` : 'Queue drained.\n');
+      return;
+    }
+    if (action === 'worker') {
+      const interval = Number(flags.interval || 5000);
+      const handle = startQueueWorker(interval);
+      process.stdout.write(`Queue worker started (interval=${interval}ms). Press Ctrl+C to stop.\n`);
+      process.on('SIGINT', () => { handle.stop(); process.exit(0); });
+      process.on('SIGTERM', () => { handle.stop(); process.exit(0); });
+      return;
+    }
+    process.stderr.write('Usage: scbe-agent-bus queue status | drain | worker [--interval <ms>] [--json]\n');
+    process.exitCode = 2;
+    return;
+  }
+  if (command === 'plugins') {
+    const action = String(flags._action || process.argv[3] || 'list').trim();
+    if (action === 'list') {
+      const payload = listPlugins().map((p) => ({ name: p.name, hasBeforeRun: typeof p.beforeRun === 'function', hasAfterRun: typeof p.afterRun === 'function' }));
+      process.stdout.write(flags.json ? `${JSON.stringify(payload, null, 2)}\n` : payload.map((p) => `  ${p.name}  beforeRun=${p.hasBeforeRun} afterRun=${p.hasAfterRun}`).join('\n') + '\n');
+      return;
+    }
+    process.stderr.write('Usage: scbe-agent-bus plugins list [--json]\n');
+    process.exitCode = 2;
     return;
   }
   if (command === 'health') {
