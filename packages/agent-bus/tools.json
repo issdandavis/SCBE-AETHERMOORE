@@ -1,0 +1,98 @@
+[
+  {
+    "name": "geoseal-compile",
+    "description": "Compile natural-language intent into a GeoSeal command plan (scbe_command_plan_v1)",
+    "command": "python",
+    "args": ["-m", "src.geoseal_cli", "compile", "--json", "{task}"]
+  },
+  {
+    "name": "geoseal-exec",
+    "description": "Execute a pre-compiled command through the GeoSeal governance gate (max-tier ALLOW)",
+    "command": "python",
+    "args": ["-m", "src.geoseal_cli", "exec", "--json", "--max-tier", "ALLOW", "--", "{task}"]
+  },
+  {
+    "name": "geoseal-seal",
+    "description": "Seal a payload with a governance tier stamp",
+    "command": "python",
+    "args": ["-m", "src.geoseal_cli", "seal", "{task}", "--json"]
+  },
+  {
+    "name": "geoseal-explain-route",
+    "description": "Explain the Sacred Tongue routing for a task or source file",
+    "command": "python",
+    "args": [
+      "-m",
+      "src.geoseal_cli",
+      "explain-route",
+      "--content",
+      "{task}",
+      "--language",
+      "python",
+      "--source-name",
+      "bus_task",
+      "--json"
+    ]
+  },
+  {
+    "name": "geoseal-encode",
+    "description": "Encode payload through Sacred Tongues transport",
+    "command": "python",
+    "args": ["-m", "src.geoseal_cli", "encode-cmd", "--json", "--", "{task}"]
+  },
+  {
+    "name": "geoseal-verify",
+    "description": "Verify a sealed GeoSeal payload",
+    "command": "python",
+    "args": ["-m", "src.geoseal_cli", "verify", "--json", "{task}"]
+  },
+  {
+    "name": "scbe-agentbus",
+    "description": "Route task through the full SCBE Python agentbus (braid + dispatch)",
+    "command": "python",
+    "args": [
+      "scripts/scbe-system-cli.py",
+      "--json",
+      "agentbus",
+      "run",
+      "--task",
+      "{task}",
+      "--task-type",
+      "{taskType}",
+      "--series-id",
+      "{seriesId}",
+      "--privacy",
+      "{privacy}"
+    ]
+  },
+  {
+    "name": "scbe-antivirus",
+    "description": "Run SCBE lightweight static safety scan on the current workspace",
+    "command": "python",
+    "args": ["scripts/scbe-system-cli.py", "--json", "antivirus"]
+  },
+  {
+    "name": "scbe-governance-fuse",
+    "description": "Fuse AV/EDR/SIEM/runtime alerts into a single SCBE governance decision",
+    "command": "python",
+    "args": ["scripts/scbe-system-cli.py", "--json", "antivirus-fuse"]
+  },
+  {
+    "name": "scbe-runtime",
+    "description": "Execute a task through the governed polyglot runtime",
+    "command": "python",
+    "args": ["scripts/scbe-system-cli.py", "--json", "runtime", "run", "--task", "{task}"]
+  },
+  {
+    "name": "scbe-flow",
+    "description": "Run doctrine-backed multi-agent flow planner for a task",
+    "command": "python",
+    "args": ["scripts/scbe-system-cli.py", "--json", "flow", "--task", "{task}"]
+  },
+  {
+    "name": "scbe-tongues",
+    "description": "Six-Tongues toolkit passthrough",
+    "command": "python",
+    "args": ["scripts/scbe-system-cli.py", "--json", "tongues", "{task}"]
+  }
+]
