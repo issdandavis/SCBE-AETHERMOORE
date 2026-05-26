@@ -19,6 +19,8 @@ const {
   getQueueStatus,
   drainQueue,
   startQueueWorker,
+  listTools,
+  autoDiscoverTools,
 } = require('../dist/index.js');
 
 const HOSTED_INTAKE_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html';
@@ -99,11 +101,13 @@ Usage:
   scbe-agent-bus ui --base-url http://127.0.0.1:8787
   scbe-agent-bus send --task "review changed files" --task-type review --json
   scbe-agent-bus send --task "heavy job" --enqueue --json
+  scbe-agent-bus send --task "run linter" --tool lint --json
   scbe-agent-bus health --base-url http://127.0.0.1:8787 --json
   scbe-agent-bus queue status --json
   scbe-agent-bus queue drain
   scbe-agent-bus queue worker
   scbe-agent-bus plugins list --json
+  scbe-agent-bus tools list --json
   scbe-agent-bus workspace new --hint customer-smoke --json
   scbe-agent-bus workspace ingest --workspace-root <path> --source-path <file> --json
   scbe-agent-bus workspace export --workspace-root <path> --json
@@ -122,6 +126,7 @@ Commands:
   health    Check backend health.
   queue     Inspect or run the event queue.
   plugins   List registered bus plugins.
+  tools     List registered CLI tools (set SCBE_BUS_TOOLS=./tools.json to load).
   workspace Create, export, verify, and clean bus workspaces.
   upgrade   Show how to enable hosted runs (intake, credits, top-up).
 
@@ -522,6 +527,7 @@ async function main() {
       dispatchProvider: String(flags['dispatch-provider'] || 'offline'),
       dispatch: flags.dispatch !== 'false',
       enqueue: flags.enqueue === true,
+      ...(flags.tool ? { tool: String(flags.tool) } : {}),
     };
     const result = await postAgentBusEvent(event, { baseUrl });
     process.stdout.write(
@@ -588,6 +594,31 @@ async function main() {
       return;
     }
     process.stderr.write('Usage: scbe-agent-bus plugins list [--json]\n');
+    process.exitCode = 2;
+    return;
+  }
+  if (command === 'tools') {
+    autoDiscoverTools();
+    const action = String(flags._action || process.argv[3] || 'list').trim();
+    if (action === 'list') {
+      const payload = listTools().map((t) => ({
+        name: t.name,
+        command: t.command,
+        args: t.args,
+        description: t.description || '',
+      }));
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+      } else if (payload.length === 0) {
+        process.stdout.write('No tools registered. Set SCBE_BUS_TOOLS=./tools.json to load tools.\n');
+      } else {
+        for (const t of payload) {
+          process.stdout.write(`  ${t.name}  ${t.command} ${t.args.join(' ')}${t.description ? `  — ${t.description}` : ''}\n`);
+        }
+      }
+      return;
+    }
+    process.stderr.write('Usage: scbe-agent-bus tools list [--json]\n');
     process.exitCode = 2;
     return;
   }
