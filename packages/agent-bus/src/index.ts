@@ -31,6 +31,29 @@ export {
   startQueueWorker,
 } from './queue.js';
 
+// GeoSeal intent pipeline
+export {
+  type GeoSealPlan,
+  type GeoSealPlanPolicy,
+  type GeoSealPlanCommand,
+  type PipelineRunResult,
+  compilePlan,
+  execPlan,
+  runPipeline,
+  parseShellTemplate,
+} from './pipeline.js';
+
+// Structured output contracts
+export {
+  type JsonSchema,
+  type ValidatedOutput,
+  validateOutput,
+  SummaryContract,
+  CodeReviewContract,
+  ResearchContract,
+  GovernanceDecisionContract,
+} from './contracts.js';
+
 export {
   type CliTool,
   registerTool,
