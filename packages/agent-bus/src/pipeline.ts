@@ -25,6 +25,12 @@ import { decompose, type DecompositionResult } from './semantic-bridge.js';
 
 const GEOSL_CLI_MARKER = path.join('src', 'geoseal_cli.py');
 
+interface GeoSealInvocation {
+  command: string;
+  argsPrefix: string[];
+  cwd: string;
+}
+
 /**
  * Resolve the SCBE repo root for GeoSeal calls.
  * Priority:
@@ -34,6 +40,10 @@ const GEOSL_CLI_MARKER = path.join('src', 'geoseal_cli.py');
  * Falls back to process.cwd() if nothing found.
  */
 export function resolveRepoRoot(options: RunOptions = {}): string {
+  return findRepoRoot(options) || process.cwd();
+}
+
+function findRepoRoot(options: RunOptions = {}): string | null {
   const candidates: (string | undefined)[] = [options.repoRoot, process.env.SCBE_REPO_ROOT];
   for (const candidate of candidates) {
     if (candidate) {
@@ -53,7 +63,44 @@ export function resolveRepoRoot(options: RunOptions = {}): string {
     if (parent === cwd) break;
     cwd = parent;
   }
-  return process.cwd();
+  return null;
+}
+
+/**
+ * Resolve possible GeoSeal compile entrypoints.
+ *
+ * Repo-local Python is preferred for monorepo development. Installed binaries
+ * make `scbe-agent-bus` usable from a clean consumer project when paired with
+ * `scbe-aethermoore-cli` or a globally available `geoseal` command.
+ */
+function resolveGeoSealInvocations(options: RunOptions = {}): GeoSealInvocation[] {
+  const invocations: GeoSealInvocation[] = [];
+  const repoRoot = findRepoRoot(options);
+  const python = options.python || process.env.PYTHON || 'python';
+
+  if (repoRoot) {
+    invocations.push({
+      command: python,
+      argsPrefix: [path.join(repoRoot, GEOSL_CLI_MARKER)],
+      cwd: repoRoot,
+    });
+  }
+
+  const binaryCandidates = [
+    options.geosealBin,
+    process.env.SCBE_GEOSEAL_BIN,
+    'geoseal',
+    'scbe-geoseal',
+  ].filter((item): item is string => Boolean(item));
+
+  const seen = new Set<string>();
+  for (const command of binaryCandidates) {
+    if (seen.has(command)) continue;
+    seen.add(command);
+    invocations.push({ command, argsPrefix: [], cwd: repoRoot || process.cwd() });
+  }
+
+  return invocations;
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -171,38 +218,37 @@ export function compilePlan(intent: string, options: RunOptions = {}): GeoSealPl
   if (!checkCircuit('geoseal-compile')) {
     return null;
   }
-  const repoRoot = resolveRepoRoot(options);
-  const python = options.python || process.env.PYTHON || 'python';
 
-  const r = spawnSync(
-    python,
-    [path.join(repoRoot, 'src', 'geoseal_cli.py'), 'compile', '--json', intent],
-    {
-      encoding: 'utf-8',
-      cwd: repoRoot,
-      maxBuffer: 1024 * 1024 * 4,
-      timeout: 15000,
-    }
-  );
+  for (const invocation of resolveGeoSealInvocations(options)) {
+    const r = spawnSync(
+      invocation.command,
+      [...invocation.argsPrefix, 'compile', '--json', intent],
+      {
+        encoding: 'utf-8',
+        cwd: invocation.cwd,
+        maxBuffer: 1024 * 1024 * 4,
+        timeout: 15000,
+      }
+    );
 
-  if (r.status !== 0 || !r.stdout) {
-    recordFailure('geoseal-compile');
-    return null;
-  }
-  try {
-    const parsed = JSON.parse(r.stdout) as unknown;
-    if (typeof parsed === 'object' && parsed !== null && 'schema_version' in parsed) {
-      recordSuccess('geoseal-compile');
-      const plan = parsed as GeoSealPlan;
-      const semantic = decompose(intent);
-      return semantic.tokenCount > 0 ? { ...plan, semantic } : plan;
+    if (r.status !== 0 || !r.stdout) {
+      continue;
     }
-    recordFailure('geoseal-compile');
-    return null;
-  } catch {
-    recordFailure('geoseal-compile');
-    return null;
+    try {
+      const parsed = JSON.parse(r.stdout) as unknown;
+      if (typeof parsed === 'object' && parsed !== null && 'schema_version' in parsed) {
+        recordSuccess('geoseal-compile');
+        const plan = parsed as GeoSealPlan;
+        const semantic = decompose(intent);
+        return semantic.tokenCount > 0 ? { ...plan, semantic } : plan;
+      }
+    } catch {
+      continue;
+    }
   }
+
+  recordFailure('geoseal-compile');
+  return null;
 }
 
 /**
