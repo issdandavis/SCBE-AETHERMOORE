@@ -77,7 +77,7 @@ def test_ca_plan_resolves_abs_abs_add_from_table():
     assert payload["source"] == "python.scbe.ca_opcode_table.OP_TABLE"
     assert payload["ops"] == ["abs", "abs", "add"]
     assert payload["hex_sequence"] == ["0x09", "0x09", "0x00"]
-    assert payload["compile_hint"] == 'compile-ca --opcodes "0x09 0x09 0x00"'
+    assert payload["compile_hint"] == 'compile-ca --opcodes "0x09 0x09 0x00" --args a,b'
 
 
 def test_ca_plan_known_abs_add_expression():

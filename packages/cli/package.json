@@ -48,7 +48,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git",
-    "directory": "packages/scbe-aethermoore-cli"
+    "directory": "packages/cli"
   },
   "bugs": {
     "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
