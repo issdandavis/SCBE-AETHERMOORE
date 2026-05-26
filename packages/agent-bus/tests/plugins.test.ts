@@ -69,7 +69,9 @@ describe('plugin system', () => {
     let called = false;
     registerPlugin({
       name: 'logger',
-      afterRun: async () => { called = true; },
+      afterRun: async () => {
+        called = true;
+      },
     });
     const event: AgentBusEvent = { task: 'test' };
     const ctx: BusPluginContext = { event, runId: 'r1', startedAt: new Date().toISOString() };
@@ -80,7 +82,9 @@ describe('plugin system', () => {
   it('afterRun errors are swallowed', async () => {
     registerPlugin({
       name: 'thrower',
-      afterRun: async () => { throw new Error('boom'); },
+      afterRun: async () => {
+        throw new Error('boom');
+      },
     });
     const event: AgentBusEvent = { task: 'test' };
     const ctx: BusPluginContext = { event, runId: 'r1', startedAt: new Date().toISOString() };

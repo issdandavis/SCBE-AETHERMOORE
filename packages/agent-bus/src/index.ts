@@ -1565,7 +1565,12 @@ export async function startAgentBusServer(
     try {
       if (req.method === 'GET' && req.url === '/health') {
         const { getQueueStatus } = await import('./queue.js');
-        sendJson(res, 200, { ok: true, service: 'scbe-agent-bus', version: 1, queue: getQueueStatus() });
+        sendJson(res, 200, {
+          ok: true,
+          service: 'scbe-agent-bus',
+          version: 1,
+          queue: getQueueStatus(),
+        });
         return;
       }
       if (req.method === 'GET' && req.url?.startsWith('/v1/events/')) {
@@ -1598,7 +1603,12 @@ export async function startAgentBusServer(
         const enqueue = !Array.isArray(body) && body.enqueue === true;
         const rows = await runBatch(items, { ...options, enqueue });
         if (enqueue) {
-          sendJson(res, 202, { ok: true, enqueued: true, count: rows.length, run_ids: rows.map((r) => (r.result as Record<string, string>)?.run_id).filter(Boolean) });
+          sendJson(res, 202, {
+            ok: true,
+            enqueued: true,
+            count: rows.length,
+            run_ids: rows.map((r) => (r.result as Record<string, string>)?.run_id).filter(Boolean),
+          });
         } else {
           sendJson(res, rows.every((row) => row.ok) ? 200 : 500, { rows });
         }

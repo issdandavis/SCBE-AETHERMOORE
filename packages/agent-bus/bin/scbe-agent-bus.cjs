@@ -533,32 +533,58 @@ async function main() {
     const action = String(flags._action || process.argv[3] || 'help').trim();
     if (action === 'status') {
       const payload = getQueueStatus();
-      process.stdout.write(flags.json ? `${JSON.stringify(payload, null, 2)}\n` : `${JSON.stringify(payload)}\n`);
+      process.stdout.write(
+        flags.json ? `${JSON.stringify(payload, null, 2)}\n` : `${JSON.stringify(payload)}\n`
+      );
       return;
     }
     if (action === 'drain') {
       await drainQueue();
       const payload = getQueueStatus();
-      process.stdout.write(flags.json ? `${JSON.stringify({ drained: true, queue: payload }, null, 2)}\n` : 'Queue drained.\n');
+      process.stdout.write(
+        flags.json
+          ? `${JSON.stringify({ drained: true, queue: payload }, null, 2)}\n`
+          : 'Queue drained.\n'
+      );
       return;
     }
     if (action === 'worker') {
       const interval = Number(flags.interval || 5000);
       const handle = startQueueWorker(interval);
-      process.stdout.write(`Queue worker started (interval=${interval}ms). Press Ctrl+C to stop.\n`);
-      process.on('SIGINT', () => { handle.stop(); process.exit(0); });
-      process.on('SIGTERM', () => { handle.stop(); process.exit(0); });
+      process.stdout.write(
+        `Queue worker started (interval=${interval}ms). Press Ctrl+C to stop.\n`
+      );
+      process.on('SIGINT', () => {
+        handle.stop();
+        process.exit(0);
+      });
+      process.on('SIGTERM', () => {
+        handle.stop();
+        process.exit(0);
+      });
       return;
     }
-    process.stderr.write('Usage: scbe-agent-bus queue status | drain | worker [--interval <ms>] [--json]\n');
+    process.stderr.write(
+      'Usage: scbe-agent-bus queue status | drain | worker [--interval <ms>] [--json]\n'
+    );
     process.exitCode = 2;
     return;
   }
   if (command === 'plugins') {
     const action = String(flags._action || process.argv[3] || 'list').trim();
     if (action === 'list') {
-      const payload = listPlugins().map((p) => ({ name: p.name, hasBeforeRun: typeof p.beforeRun === 'function', hasAfterRun: typeof p.afterRun === 'function' }));
-      process.stdout.write(flags.json ? `${JSON.stringify(payload, null, 2)}\n` : payload.map((p) => `  ${p.name}  beforeRun=${p.hasBeforeRun} afterRun=${p.hasAfterRun}`).join('\n') + '\n');
+      const payload = listPlugins().map((p) => ({
+        name: p.name,
+        hasBeforeRun: typeof p.beforeRun === 'function',
+        hasAfterRun: typeof p.afterRun === 'function',
+      }));
+      process.stdout.write(
+        flags.json
+          ? `${JSON.stringify(payload, null, 2)}\n`
+          : payload
+              .map((p) => `  ${p.name}  beforeRun=${p.hasBeforeRun} afterRun=${p.hasAfterRun}`)
+              .join('\n') + '\n'
+      );
       return;
     }
     process.stderr.write('Usage: scbe-agent-bus plugins list [--json]\n');
