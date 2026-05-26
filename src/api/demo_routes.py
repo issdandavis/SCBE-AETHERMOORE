@@ -31,8 +31,8 @@ govern_router = APIRouter(prefix="/v1", tags=["governance-demo"])
 # ---------------------------------------------------------------------------
 # Thresholds calibrated to real pipeline risk distribution
 # ---------------------------------------------------------------------------
-_THETA1 = 0.55   # ALLOW / QUARANTINE boundary
-_THETA2 = 0.90   # QUARANTINE / DENY boundary
+_THETA1 = 0.55  # ALLOW / QUARANTINE boundary
+_THETA2 = 0.90  # QUARANTINE / DENY boundary
 
 # ---------------------------------------------------------------------------
 # Semantic pattern tables
@@ -86,9 +86,19 @@ CONTEXTS = {"internal", "external", "untrusted"}
 
 
 class GovernRequest(BaseModel):
-    input: str = Field(..., min_length=1, max_length=8192, description="Text, command, or agent intent to evaluate")
-    context: str = Field(default="external", description="Caller context: internal | external | untrusted")
-    agent: Optional[str] = Field(default=None, max_length=128, description="Optional agent/caller identifier")
+    input: str = Field(
+        ...,
+        min_length=1,
+        max_length=8192,
+        description="Text, command, or agent intent to evaluate",
+    )
+    context: str = Field(
+        default="external",
+        description="Caller context: internal | external | untrusted",
+    )
+    agent: Optional[str] = Field(
+        default=None, max_length=128, description="Optional agent/caller identifier"
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -138,7 +148,10 @@ class GovernBatchResponse(BaseModel):
 # Text → pipeline vector
 # ---------------------------------------------------------------------------
 
-def _text_to_vector(text: str, context: str, deny_hits: int, quar_hits: int) -> np.ndarray:
+
+def _text_to_vector(
+    text: str, context: str, deny_hits: int, quar_hits: int
+) -> np.ndarray:
     """
     Deterministic text → 12-float pipeline input vector (D=6 pipeline).
 
@@ -158,38 +171,38 @@ def _text_to_vector(text: str, context: str, deny_hits: int, quar_hits: int) -> 
     if deny_hits > 0:
         # Push hard toward the boundary
         severity = min(1.0, 0.5 + 0.1 * deny_hits)
-        amps   = [severity * 0.8 + 0.4 * floats[i] for i in range(6)]
+        amps = [severity * 0.8 + 0.4 * floats[i] for i in range(6)]
         phases = [1.0 + 0.5 * floats[i + 6] for i in range(6)]
     elif quar_hits > 0:
         # Push to quarantine zone (amplitudes 0.05–0.20)
         base = min(0.15, 0.05 + 0.025 * quar_hits)
-        amps   = [base + 0.12 * floats[i] for i in range(6)]
+        amps = [base + 0.12 * floats[i] for i in range(6)]
         phases = [0.03 + 0.07 * floats[i + 6] for i in range(6)]
     else:
         # Benign: stay near the origin with coherent phases
-        amps   = [0.001 + 0.015 * floats[i] for i in range(6)]
+        amps = [0.001 + 0.015 * floats[i] for i in range(6)]
         phases = [0.000 + 0.005 * floats[i + 6] for i in range(6)]
 
     # Untrusted context nudges toward higher risk
     if context == "untrusted" and deny_hits == 0 and quar_hits == 0:
-        amps   = [min(1.0, a * 1.5) for a in amps]
+        amps = [min(1.0, a * 1.5) for a in amps]
         phases = [min(1.0, p * 2.0) for p in phases]
 
     return np.array(amps + phases, dtype=float)
 
 
 def _semantic_signals(text: str) -> tuple[list[str], list[str]]:
-    deny_hits  = [p.pattern for p in _COMPILED_DENY      if p.search(text)]
-    quar_hits  = [p.pattern for p in _COMPILED_QUARANTINE if p.search(text)]
+    deny_hits = [p.pattern for p in _COMPILED_DENY if p.search(text)]
+    quar_hits = [p.pattern for p in _COMPILED_QUARANTINE if p.search(text)]
     return deny_hits, quar_hits
 
 
 def _explanation(result: dict, deny_matches: list, quar_matches: list) -> str:
-    d    = result["decision"]
-    rp   = result["risk_prime"]
-    h    = result["H"]
+    d = result["decision"]
+    rp = result["risk_prime"]
+    h = result["H"]
     d_star = result["d_star"]
-    coh  = result["coherence"]
+    coh = result["coherence"]
 
     if d == "ALLOW":
         verdict = f"Input is within safe operating bounds (risk {rp:.3f} < {_THETA1} threshold)."
@@ -198,7 +211,9 @@ def _explanation(result: dict, deny_matches: list, quar_matches: list) -> str:
     else:
         verdict = f"Input exceeds DENY threshold (risk {rp:.3f} ≥ {_THETA2}). Blocked."
 
-    geo = f"Hyperbolic distance from safe realms: {d_star:.4f}. Harmonic wall H={h:.4f}."
+    geo = (
+        f"Hyperbolic distance from safe realms: {d_star:.4f}. Harmonic wall H={h:.4f}."
+    )
 
     if deny_matches:
         sem = f"Semantic scan matched {len(deny_matches)} destructive operation pattern(s): {deny_matches[0]!r}."
@@ -220,7 +235,9 @@ def _explanation(result: dict, deny_matches: list, quar_matches: list) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _evaluate_governance(body: GovernRequest, request: Request | None = None) -> GovernResponse:
+def _evaluate_governance(
+    body: GovernRequest, request: Request | None = None
+) -> GovernResponse:
     context = body.context if body.context in CONTEXTS else "external"
 
     t0 = time.perf_counter()
@@ -236,7 +253,9 @@ def _evaluate_governance(body: GovernRequest, request: Request | None = None) ->
     audit["agent"] = body.agent
     audit["context"] = context
     if request is not None and request.client is not None:
-        audit["client_host_hash"] = hashlib.sha256(request.client.host.encode("utf-8")).hexdigest()[:16]
+        audit["client_host_hash"] = hashlib.sha256(
+            request.client.host.encode("utf-8")
+        ).hexdigest()[:16]
 
     return GovernResponse(
         decision=result["decision"],
@@ -303,7 +322,9 @@ async def govern(body: GovernRequest, request: Request) -> GovernResponse:
     response_model=GovernBatchResponse,
     summary="Evaluate a workflow batch through the SCBE governance pipeline",
 )
-async def govern_batch(body: GovernBatchRequest, request: Request) -> GovernBatchResponse:
+async def govern_batch(
+    body: GovernBatchRequest, request: Request
+) -> GovernBatchResponse:
     """
     Evaluate up to 50 inputs as one workflow batch.
 
@@ -324,7 +345,9 @@ async def govern_batch(body: GovernBatchRequest, request: Request) -> GovernBatc
             "counts": counts,
             "max_risk_score": max((row.risk_score for row in results), default=0.0),
             "block_execution": block_execution,
-            "recommended_action": "BLOCK_WORKFLOW" if block_execution else "REVIEW_OR_EXECUTE",
+            "recommended_action": (
+                "BLOCK_WORKFLOW" if block_execution else "REVIEW_OR_EXECUTE"
+            ),
         },
         results=results,
         duration_ms=round(duration_ms, 2),
