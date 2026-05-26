@@ -111,7 +111,7 @@ function App({ engine }) {
       approvalRef.current = null;
       if (line.trim().toLowerCase() === 'y' || line.trim().toLowerCase() === 'yes') {
         pushMsg('command', '$ ' + proposed);
-        const row = engine.runShellCommand(proposed, { quiet: true, capture: true });
+        const row = engine.runShellCommand(proposed, { quiet: true, capture: true, json: true });
         if (row.stdout_preview?.trim()) pushMsg('command', row.stdout_preview.trim().slice(0, 600));
         if (!row.success && row.failure) {
           pushMsg('error', row.failure.summary);
@@ -138,7 +138,7 @@ function App({ engine }) {
         pushMsg('info', ':help :status :config [:set key val] :search <q> :history :clear :exit');
         return;
       }
-      if (meta === 'clear') { setCompletedMsgs([]); return; }
+      if (meta === 'clear') { process.stdout.write('\x1b[2J\x1b[H'); setCompletedMsgs([]); return; }
       if (meta === 'status') {
         pushMsg('info', `${cfg.provider}:${cfg.model} │ git:${branch || '(none)'}`);
         return;
@@ -195,7 +195,7 @@ function App({ engine }) {
       const cmd = line.replace(/^(!|ps:)\s*/, '').trim();
       if (!cmd) return;
       pushMsg('command', '$ ' + cmd);
-      const row = engine.runShellCommand(cmd, { quiet: true, capture: true });
+      const row = engine.runShellCommand(cmd, { quiet: true, capture: true, json: true });
       if (row.stdout_preview?.trim()) pushMsg('command', row.stdout_preview.trim().slice(0, 600));
       if (!row.success && row.failure) {
         pushMsg('error', row.failure.summary);
