@@ -101,12 +101,12 @@ Add thin adapters, not custom score claims:
 
 ## Immediate Improvements
 
-1. Add `scbe shell --agent-json` for stable machine control.
+1. ~~Add `scbe shell --agent-json` for stable machine control.~~ **DONE** — NDJSON stdin/stdout protocol; `scbe_tb_agent.py` adapter; 11/11 bench (cmd extraction + GeoSeal + done-signal paths verified).
 2. Add `scbe shell --script <file>` to replay workflows deterministically.
 3. Add a repository retrieval primitive: `:files <query>` backed first by ripgrep, later by SCIP/tree-sitter.
 4. Add patch commands: `:patch apply`, `:patch show`, `:patch revert-last`.
 5. Add workflow receipts: each multi-step run should emit `artifacts/benchmarks/scbe-shell/<run>.json`.
-6. Add Terminal-Bench/SWE-bench adapters only after Level 0 and Level 1 are green.
+6. ~~Add Terminal-Bench/SWE-bench adapters only after Level 0 and Level 1 are green.~~ **IN PROGRESS** — `packages/cli/scripts/scbe_tb_agent.py` adapter ready; requires `pip install terminal-bench` + Docker for live runs.
 
 ## Readiness Score
 
@@ -121,17 +121,17 @@ Do not publish the external score until the adapter exists and has run against p
 
 ## Current Local Evidence
 
-Run on branch `feat/ink-tui` after adding the shell benchmark lane:
+Run on branch `feat/agent-bus-pipeline`:
 
 ```bash
 cd packages/cli
 npm run bench:shell
 ```
 
-Result:
+Results:
 
-- Shell ACI smoke: 9/9, 100%
-- Artifact: `artifacts/benchmarks/scbe-shell/2026-05-26T21-21-43-734Z-shell-agentic-benchmark.json`
+- Shell ACI smoke: **11/11** (added cmd-extraction + GeoSeal + done-signal path coverage), 100%
+- Artifact: `artifacts/benchmarks/scbe-shell/2026-05-26T21-56-57-301Z-shell-agentic-benchmark.json`
 
 Agentic route smoke:
 

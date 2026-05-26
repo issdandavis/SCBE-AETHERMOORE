@@ -163,7 +163,72 @@ function main() {
     const files = new Set((payload[0] && payload[0].files || []).map((row) => row.path));
     assert.ok(files.has('bin/scbe.js'));
     assert.ok(files.has('bin/tui.mjs'));
+    assert.ok(!Array.from(files).some((file) => file.includes('__pycache__') || file.endsWith('.pyc')));
     return { entry_count: payload[0].entryCount, files: Array.from(files).sort() };
+  }));
+
+  cases.push(caseResult('agent_json_protocol_ready_signal_and_round_trip', () => {
+    // Spawn --agent-json, verify ready signal, send one instruction, read response
+    const { spawnSync: spawn } = require('node:child_process');
+    const inputLines = [
+      JSON.stringify({ instruction: 'list files in current directory', terminal_state: '$ ' }),
+      '',
+    ].join('\n');
+    const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+      cwd: REPO_ROOT,
+      input: inputLines,
+      encoding: 'utf8',
+      timeout: 20_000,
+      env: { ...process.env, NO_COLOR: '1', SCBE_PROVIDER: 'offline' },
+    });
+    const lines = (r.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    assert.ok(lines.length >= 1, `expected at least 1 output line, got: ${r.stdout}`);
+    const ready = JSON.parse(lines[0]);
+    assert.equal(ready.ready, true, 'first line must be {"ready":true}');
+    if (lines.length >= 2) {
+      const resp = JSON.parse(lines[1]);
+      assert.ok(Array.isArray(resp.commands), 'response must have commands array');
+      assert.ok(typeof resp.done === 'boolean', 'response must have done boolean');
+    }
+    return { ready: ready.ready, lines_received: lines.length, first_response: lines[1] ? JSON.parse(lines[1]) : null };
+  }));
+
+  cases.push(caseResult('agent_json_cmd_extraction_governance_and_done_signal', () => {
+    // Use SCBE_MOCK_RESPONSE to inject a known LLM reply containing <cmd> and done signal.
+    // This exercises: regex extraction, governance spawn, done detection — all previously offline-only.
+    const { spawnSync: spawn } = require('node:child_process');
+    const mockResponse = 'I will list the files. <cmd>ls -la</cmd> task is complete';
+    const inputLines = [
+      JSON.stringify({ instruction: 'list files', terminal_state: '$ ' }),
+      '',
+    ].join('\n');
+    const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+      cwd: REPO_ROOT,
+      input: inputLines,
+      encoding: 'utf8',
+      timeout: 20_000,
+      env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mockResponse },
+    });
+    const lines = (r.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    assert.ok(lines.length >= 2, `expected ready + response lines, got: ${r.stdout}`);
+    const ready = JSON.parse(lines[0]);
+    assert.equal(ready.ready, true, 'first line must be {"ready":true}');
+    const resp = JSON.parse(lines[1]);
+    assert.ok(Array.isArray(resp.commands), 'response must have commands array');
+    assert.ok(typeof resp.done === 'boolean', 'response must have done boolean');
+    // If governance is available, commands should be populated; if not, may be empty due to offline governance
+    // What matters: cmd extraction ran (rationale or commands present), done=true was detected
+    assert.equal(resp.done, true, 'done signal must be detected from mock response');
+    assert.ok(
+      (resp.commands.length > 0 && resp.commands[0].keystrokes === 'ls -la') || resp.blocked === true,
+      `expected keystrokes='ls -la' or governance block, got: ${JSON.stringify(resp)}`
+    );
+    return {
+      commands: resp.commands,
+      done: resp.done,
+      governance: resp.governance || null,
+      rationale_preview: (resp.rationale || '').slice(0, 120),
+    };
   }));
 
   const total = cases.reduce((sum, row) => sum + row.points, 0);
