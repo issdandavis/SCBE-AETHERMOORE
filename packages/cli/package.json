@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "scbe-aethermoore": "^4.1.0",
-    "scbe-agent-bus": "^0.3.10"
+    "scbe-agent-bus": "^0.4.0"
   },
   "keywords": [
     "scbe",
