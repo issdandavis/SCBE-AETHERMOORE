@@ -73,6 +73,7 @@ export {
   execPlan,
   runPipeline,
   parseShellTemplate,
+  resolveRepoRoot,
 } from './pipeline.js';
 
 // Structured output contracts

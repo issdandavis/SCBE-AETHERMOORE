@@ -108,4 +108,20 @@ describe('queue', () => {
     expect(status.pending).toBe(0);
     expect(status.completed + status.failed).toBe(1);
   });
+
+  it('processOneEvent routes pipeline taskType through runPipeline', async () => {
+    // Point to repo root so geoseal CLI is discoverable
+    const repoRoot = process.env.SCBE_REPO_ROOT || process.cwd();
+    const runId = enqueueEvent(
+      { task: 'list files in current directory', taskType: 'pipeline' },
+      { repoRoot }
+    );
+    await processOneEvent();
+
+    const status = getEventStatus(runId);
+    expect(status!.status).toBe('completed');
+    // Pipeline should compile, get ALLOW, and execute successfully
+    expect(status!.result!.ok).toBe(true);
+    expect(status!.result!.result).toBeTruthy();
+  });
 });
