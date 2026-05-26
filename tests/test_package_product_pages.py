@@ -51,7 +51,7 @@ def test_live_package_pages_include_registry_links_and_versions() -> None:
     assert "PyPI: 4.1.3" in core
     assert "governance abacus" in core
     assert "https://www.npmjs.com/package/scbe-aethermoore-cli" in cli
-    assert "scbe-aethermoore-cli 4.3.4" in cli
+    assert "scbe-aethermoore-cli 4.4.0" in cli
     assert "scbe abacus run --d-h 0.1 --pd 0 --json" in cli
     assert "https://www.npmjs.com/package/scbe-agent-bus" in bus
     assert "https://pypi.org/project/scbe-agent-bus/" in bus
