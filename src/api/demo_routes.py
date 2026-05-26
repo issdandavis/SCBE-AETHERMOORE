@@ -96,15 +96,9 @@ class GovernRequest(BaseModel):
         default="external",
         description="Caller context: internal | external | untrusted",
     )
-    agent: Optional[str] = Field(
-        default=None, max_length=128, description="Optional agent/caller identifier"
-    )
+    agent: Optional[str] = Field(default=None, max_length=128, description="Optional agent/caller identifier")
 
-    model_config = {
-        "json_schema_extra": {
-            "example": {"input": "list files in /tmp", "context": "external"}
-        }
-    }
+    model_config = {"json_schema_extra": {"example": {"input": "list files in /tmp", "context": "external"}}}
 
 
 class LayerScores(BaseModel):
@@ -149,9 +143,7 @@ class GovernBatchResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def _text_to_vector(
-    text: str, context: str, deny_hits: int, quar_hits: int
-) -> np.ndarray:
+def _text_to_vector(text: str, context: str, deny_hits: int, quar_hits: int) -> np.ndarray:
     """
     Deterministic text → 12-float pipeline input vector (D=6 pipeline).
 
@@ -211,9 +203,7 @@ def _explanation(result: dict, deny_matches: list, quar_matches: list) -> str:
     else:
         verdict = f"Input exceeds DENY threshold (risk {rp:.3f} ≥ {_THETA2}). Blocked."
 
-    geo = (
-        f"Hyperbolic distance from safe realms: {d_star:.4f}. Harmonic wall H={h:.4f}."
-    )
+    geo = f"Hyperbolic distance from safe realms: {d_star:.4f}. Harmonic wall H={h:.4f}."
 
     if deny_matches:
         sem = f"Semantic scan matched {len(deny_matches)} destructive operation pattern(s): {deny_matches[0]!r}."
@@ -223,8 +213,7 @@ def _explanation(result: dict, deny_matches: list, quar_matches: list) -> str:
         sem = "No high-risk semantic patterns detected."
 
     coherence_line = (
-        f"Coherence — spin: {coh['C_spin']:.3f}, spectral: {coh['S_spec']:.3f}, "
-        f"trust: {coh['tau']:.3f}."
+        f"Coherence — spin: {coh['C_spin']:.3f}, spectral: {coh['S_spec']:.3f}, " f"trust: {coh['tau']:.3f}."
     )
 
     return " ".join([verdict, geo, sem, coherence_line])
@@ -235,9 +224,7 @@ def _explanation(result: dict, deny_matches: list, quar_matches: list) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _evaluate_governance(
-    body: GovernRequest, request: Request | None = None
-) -> GovernResponse:
+def _evaluate_governance(body: GovernRequest, request: Request | None = None) -> GovernResponse:
     context = body.context if body.context in CONTEXTS else "external"
 
     t0 = time.perf_counter()
@@ -253,9 +240,7 @@ def _evaluate_governance(
     audit["agent"] = body.agent
     audit["context"] = context
     if request is not None and request.client is not None:
-        audit["client_host_hash"] = hashlib.sha256(
-            request.client.host.encode("utf-8")
-        ).hexdigest()[:16]
+        audit["client_host_hash"] = hashlib.sha256(request.client.host.encode("utf-8")).hexdigest()[:16]
 
     return GovernResponse(
         decision=result["decision"],
@@ -322,9 +307,7 @@ async def govern(body: GovernRequest, request: Request) -> GovernResponse:
     response_model=GovernBatchResponse,
     summary="Evaluate a workflow batch through the SCBE governance pipeline",
 )
-async def govern_batch(
-    body: GovernBatchRequest, request: Request
-) -> GovernBatchResponse:
+async def govern_batch(body: GovernBatchRequest, request: Request) -> GovernBatchResponse:
     """
     Evaluate up to 50 inputs as one workflow batch.
 
@@ -345,9 +328,7 @@ async def govern_batch(
             "counts": counts,
             "max_risk_score": max((row.risk_score for row in results), default=0.0),
             "block_execution": block_execution,
-            "recommended_action": (
-                "BLOCK_WORKFLOW" if block_execution else "REVIEW_OR_EXECUTE"
-            ),
+            "recommended_action": ("BLOCK_WORKFLOW" if block_execution else "REVIEW_OR_EXECUTE"),
         },
         results=results,
         duration_ms=round(duration_ms, 2),
