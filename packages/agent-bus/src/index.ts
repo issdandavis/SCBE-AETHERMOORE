@@ -6,7 +6,7 @@ import { stdin as input, stdout as output } from 'node:process';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import path from 'node:path';
 import { WorkspaceExportManifestSchema, parseReceipt } from './schemas.js';
-import { detectTaskType, decompose } from './semantic-bridge.js';
+import { detectTaskType, decompose, scoreDialogue } from './semantic-bridge.js';
 
 // Plugin + queue subsystems
 export {
@@ -47,6 +47,8 @@ export {
   type RecompositionResult,
   type DimensionalAnalysis,
   type DiscourseProfile,
+  type DialogueDimension,
+  type DialogueScoreResult,
   decompose,
   recompose,
   analyzeDimensions,
@@ -61,6 +63,8 @@ export {
   scanAtoms,
   detectTaskType,
   buildAtomLedger,
+  // Spoken longform dialogue bridge
+  scoreDialogue,
 } from './semantic-bridge.js';
 
 // GeoSeal intent pipeline
@@ -151,6 +155,8 @@ export interface AgentBusResult {
   semantic?: import('./semantic-bridge.js').DecompositionResult;
   /** Discourse profile from compound atom patterns (null = none detected). */
   discourse_profile?: import('./semantic-bridge.js').DiscourseProfile;
+  /** Spoken longform dialogue score when discourse atoms are detected. */
+  dialogue_score?: import('./semantic-bridge.js').DialogueScoreResult;
 }
 
 export interface AgentBusServerHandle {
@@ -1608,6 +1614,7 @@ export async function runEvent(
     result: payload,
     ...(d.tokenCount > 0 ? { semantic: d } : {}),
     ...(d.discourseProfile ? { discourse_profile: d.discourseProfile } : {}),
+    ...(d.discourseProfile ? { dialogue_score: scoreDialogue(normalized.task) } : {}),
   };
 }
 

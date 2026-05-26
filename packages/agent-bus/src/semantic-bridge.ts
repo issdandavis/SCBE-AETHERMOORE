@@ -667,3 +667,298 @@ export function buildAtomLedger(task: string): AtomLedger {
     atoms: d.atoms.map(({ semanticId, bucketId, count }) => ({ semanticId, bucketId, count })),
   };
 }
+
+// ─── Spoken Longform Dialogue Scoring ─────────────────────────────────────────
+//
+// Bridge: semantic decomposition → spoken-longform-dialogue rubric.
+// Reference: .agents/skills/spoken-longform-dialogue/references/semantic-bus-scoring.md
+
+export interface DialogueDimension {
+  name: string;
+  max: number;
+  score: number;
+  evidence: string[];
+  warning?: string;
+}
+
+export interface DialogueScoreResult {
+  schemaVersion: 'scbe-dialogue-score-v1';
+  total: number;
+  max: number;
+  profile: DiscourseProfile;
+  atoms: Array<{ semanticId: string; count: number }>;
+  dimensions: DialogueDimension[];
+  densityWarnings: string[];
+  strongestFix: string;
+}
+
+/**
+ * Score a spoken dialogue passage using the semantic atom tokenizer.
+ *
+ * Returns a 7-dimension rubric (total 10) with baseline hints from the
+ * discourse profile, plus density warnings and a single strongest fix.
+ */
+export function scoreDialogue(input: string): DialogueScoreResult {
+  const d = decompose(input);
+  const atomMap = new Map(d.atoms.map((a) => [a.semanticId, a.count]));
+  const has = (id: string) => atomMap.has(id);
+  const count = (id: string) => atomMap.get(id) ?? 0;
+
+  // ── Density warnings ──
+  const densityWarnings: string[] = [];
+  if (count('PIVOT') >= 4) {
+    densityWarnings.push('PIVOT >= 4: likely over-steered; add a clean return or cut a branch.');
+  }
+  if (count('EXPAND') >= 4 && !has('CARRY')) {
+    densityWarnings.push('EXPAND >= 4 with no CARRY: examples may feel generic.');
+  }
+  if (count('REQUEST') >= 3) {
+    densityWarnings.push(
+      'REQUEST >= 3: speaker may sound like they are asking permission too often.'
+    );
+  }
+  if (has('ANNOUNCE') && !has('EXPAND')) {
+    densityWarnings.push('ANNOUNCE with no EXPAND: promised a long turn but did not develop it.');
+  }
+  if (!has('HOLD') && !input.match(/silence|paused|looked|glanced|flinched|nodded|shook/i)) {
+    densityWarnings.push(
+      'No HOLD atom and no listener body in prose: the other person may disappear.'
+    );
+  }
+
+  // ── Profile baseline defaults ──
+  const profile = d.discourseProfile;
+
+  // Start from zeros; apply profile baselines, then atom evidence.
+  let reasonToSpeak = 0; // max 2
+  let concreteMemory = 0; // max 2
+  let emotionalPressure = 0; // max 2
+  let listenerReaction = 0; // max 1
+  let physicalAnchor = 0; // max 1 (semantic atoms cannot reliably detect)
+  let controlledDivergence = 0; // max 1
+  let cleanReturn = 0; // max 1 (semantic atoms cannot reliably detect)
+
+  // Profile baselines
+  if (profile === 'long_turn') {
+    reasonToSpeak = Math.max(reasonToSpeak, 1);
+    if (has('EXPAND')) controlledDivergence = Math.max(controlledDivergence, 1);
+  } else if (profile === 'warranted_claim') {
+    concreteMemory = Math.max(concreteMemory, 1);
+    emotionalPressure = Math.max(emotionalPressure, 1);
+  } else if (profile === 'floor_hold') {
+    reasonToSpeak = Math.max(reasonToSpeak, 1);
+    if (input.match(/noticed|looked at|watched|saw them/i)) {
+      listenerReaction = Math.max(listenerReaction, 1);
+    }
+  } else if (profile === 'backchannel') {
+    // Listener-only signal; not scored as a long turn
+    reasonToSpeak = 0;
+  } else if (profile === 'governance_steer') {
+    reasonToSpeak = Math.max(reasonToSpeak, 1);
+    emotionalPressure = Math.max(emotionalPressure, 1);
+  }
+
+  // Atom evidence — reason to speak now (max 2)
+  if (has('ANNOUNCE')) {
+    reasonToSpeak = Math.max(reasonToSpeak, 1);
+    if (count('ANNOUNCE') >= 2 || has('EXPAND')) reasonToSpeak = 2;
+  }
+  if (has('REQUEST')) {
+    reasonToSpeak = Math.max(reasonToSpeak, 1);
+  }
+  if (has('PIVOT')) {
+    reasonToSpeak = Math.max(reasonToSpeak, 1);
+  }
+  if (input.match(/No\.|That is not what happened\.|I can answer that, but not quickly\./i)) {
+    reasonToSpeak = 2; // strong scene trigger
+  }
+
+  // Atom evidence — concrete memory / example (max 2)
+  if (has('CARRY')) {
+    concreteMemory = Math.max(concreteMemory, 1);
+    // Upgrade to 2 only when the memory contains who/where/when/object/stakes
+    if (
+      input.match(
+        /\b(March|April|May|June|July|August|September|October|November|December|January|February|20\d\d|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/i
+      ) &&
+      input.match(/\b(hand|cup|door|car|table|chair|desk|window|street|room|office|kitchen)\b/i)
+    ) {
+      concreteMemory = 2;
+    }
+  }
+  if (has('EXPAND')) {
+    concreteMemory = Math.max(concreteMemory, 1);
+    if (has('CARRY') && count('EXPAND') >= 2) concreteMemory = 2;
+  }
+
+  // Atom evidence — emotional pressure (max 2)
+  if (has('CARRY') || has('PIVOT') || has('BLOCK')) {
+    emotionalPressure = Math.max(emotionalPressure, 1);
+  }
+  // Upgrade to 2 requires wound language in prose
+  if (input.match(/cost|lost|failed|hurt|afraid|ashamed|could not|would not|never did|regret/i)) {
+    emotionalPressure = Math.max(emotionalPressure, 1);
+    if (has('CARRY') || has('BLOCK')) emotionalPressure = 2;
+  }
+
+  // Atom evidence — listener reaction (max 1)
+  if (has('HOLD')) {
+    listenerReaction = 1;
+  }
+  if (has('REQUEST') && input.match(/noticed|looked at|watched|saw them/i)) {
+    listenerReaction = 1;
+  }
+  if (input.match(/silence|paused|looked|glanced|flinched|nodded|shook|turned away/i)) {
+    listenerReaction = 1;
+  }
+
+  // Atom evidence — controlled divergence (max 1)
+  if (has('PIVOT') || has('EXPAND')) {
+    controlledDivergence = Math.max(controlledDivergence, 1);
+  }
+
+  // Clean return / coda (max 1) — mostly manual; weak heuristics only
+  if (
+    input.match(
+      /That is why|So when I say|What I mean is|I am telling you this because|But the point is|And that was before/i
+    )
+  ) {
+    cleanReturn = Math.max(cleanReturn, 1);
+  }
+
+  // ── Build dimensions ──
+  const dimensions: DialogueDimension[] = [
+    {
+      name: 'Reason to speak now',
+      max: 2,
+      score: Math.min(reasonToSpeak, 2),
+      evidence: [
+        ...(has('ANNOUNCE') ? ['ANNOUNCE: forecasts turn structure'] : []),
+        ...(has('REQUEST') ? ['REQUEST: permission token'] : []),
+        ...(has('PIVOT') ? ['PIVOT: resistance or reframing'] : []),
+      ],
+      warning: reasonToSpeak === 0 ? 'No floor marker and no scene trigger detected.' : undefined,
+    },
+    {
+      name: 'Concrete memory or example',
+      max: 2,
+      score: Math.min(concreteMemory, 2),
+      evidence: [
+        ...(has('CARRY') ? ['CARRY: personal-memory warrant'] : []),
+        ...(has('EXPAND') ? ['EXPAND: example chain'] : []),
+      ],
+      warning:
+        has('CARRY') && concreteMemory < 2
+          ? 'CARRY present but memory lacks who/where/when/object/stakes.'
+          : undefined,
+    },
+    {
+      name: 'Emotional pressure',
+      max: 2,
+      score: Math.min(emotionalPressure, 2),
+      evidence: [
+        ...(has('CARRY') ? ['CARRY: memory carries affective residue'] : []),
+        ...(has('PIVOT') ? ['PIVOT: steering against resistance'] : []),
+        ...(has('BLOCK') ? ['BLOCK: constraint or denial'] : []),
+      ],
+      warning:
+        emotionalPressure === 0
+          ? 'Atoms cannot prove wound; inspect prose for cost or fear.'
+          : undefined,
+    },
+    {
+      name: 'Listener reaction',
+      max: 1,
+      score: Math.min(listenerReaction, 1),
+      evidence: [
+        ...(has('HOLD') ? ['HOLD: listener co-construction signal'] : []),
+        ...(has('REQUEST') ? ['REQUEST: speaker notices listener'] : []),
+      ],
+      warning:
+        listenerReaction === 0 ? 'No HOLD atom and no visible listener body in prose.' : undefined,
+    },
+    {
+      name: 'Physical anchor',
+      max: 1,
+      score: Math.min(physicalAnchor, 1),
+      evidence: [],
+      warning: 'Must be manually checked for object, sound, or setting anchor.',
+    },
+    {
+      name: 'Controlled divergence',
+      max: 1,
+      score: Math.min(controlledDivergence, 1),
+      evidence: [
+        ...(has('PIVOT') ? ['PIVOT: branch or redirection'] : []),
+        ...(has('EXPAND') ? ['EXPAND: example development'] : []),
+      ],
+      warning: count('PIVOT') >= 3 ? 'High pivot count without visible return phrase.' : undefined,
+    },
+    {
+      name: 'Clean return / coda',
+      max: 1,
+      score: Math.min(cleanReturn, 1),
+      evidence: cleanReturn > 0 ? ['Steering phrase detected near end.'] : [],
+      warning: 'Must be manually checked: last sentence should change the present scene.',
+    },
+  ];
+
+  const total = dimensions.reduce((s, dim) => s + dim.score, 0);
+  const max = dimensions.reduce((s, dim) => s + dim.max, 0);
+
+  // ── Strongest fix ──
+  let strongestFix = '';
+  if (total < 6) {
+    strongestFix =
+      'This reads as exposition. Add one concrete memory (CARRY) or a scene trigger (ANNOUNCE/REQUEST) to earn the long turn.';
+  } else {
+    const weakest = dimensions
+      .filter((d) => d.score < d.max)
+      .sort((a, b) => a.score / a.max - b.score / b.max)[0];
+    if (weakest) {
+      switch (weakest.name) {
+        case 'Reason to speak now':
+          strongestFix =
+            'Add a trigger line at the start: "No." or "That is not what happened." or "I can answer that, but not quickly."';
+          break;
+        case 'Concrete memory or example':
+          strongestFix =
+            'Insert one specific scene: who was there, what object they touched, what went wrong.';
+          break;
+        case 'Emotional pressure':
+          strongestFix =
+            'Surface the wound: what did the speaker lose, fail, or fear? Make the cost visible.';
+          break;
+        case 'Listener reaction':
+          strongestFix =
+            'Add one silent listener beat after the memory lands: hand on cup, eyes moving to the door, refusal to answer.';
+          break;
+        case 'Physical anchor':
+          strongestFix =
+            'Anchor the speech to one object, sound, or setting detail that the speaker touches or notices.';
+          break;
+        case 'Controlled divergence':
+          strongestFix =
+            'The side path needs a sharper return phrase: "But the point is..." or "That is why..."';
+          break;
+        case 'Clean return / coda':
+          strongestFix =
+            'End by changing the present scene, not summarizing the theme. Return from story-world to the current room.';
+          break;
+      }
+    } else {
+      strongestFix = 'All dimensions strong. The turn can safely run multiple paragraphs.';
+    }
+  }
+
+  return {
+    schemaVersion: 'scbe-dialogue-score-v1',
+    total,
+    max,
+    profile,
+    atoms: d.atoms.map((a) => ({ semanticId: a.semanticId, count: a.count })),
+    dimensions,
+    densityWarnings,
+    strongestFix,
+  };
+}
