@@ -1112,6 +1112,7 @@ function runInteractiveShell(flags = {}) {
   const cfg = readShellConfig();
   const history = []; // conversation history for multi-turn AI
   let pendingApproval = null;
+  const scriptedInput = !process.stdin.isTTY;
 
   const PROMPT = process.stdout.isTTY
     ? `${_ANSI.cyan}${_ANSI.bold}scbe${_ANSI.reset}${_ANSI.cyan} ›${_ANSI.reset} `
@@ -1219,7 +1220,13 @@ function runInteractiveShell(flags = {}) {
       const cmd = line.replace(_PS_PREFIX, '').trim();
       if (!cmd) { rl.prompt(); return; }
       process.stdout.write(ansi('dim', `  $ ${cmd}\n`));
-      const row = runShellCommand(cmd, { quiet: true });
+      const row = runShellCommand(cmd, { quiet: true, capture: scriptedInput });
+      if (scriptedInput && row.stdout_preview?.trim()) {
+        process.stdout.write(`${row.stdout_preview.trim()}\n`);
+      }
+      if (scriptedInput && row.stderr_preview?.trim()) {
+        process.stderr.write(`${row.stderr_preview.trim()}\n`);
+      }
       if (!row.success && row.failure) {
         process.stdout.write(
           ansi('red', `  ✗ ${row.failure.summary}\n`) +
@@ -1234,7 +1241,13 @@ function runInteractiveShell(flags = {}) {
     if (kind === 'command') {
       const scbeCmd = /^(compile|compile-ca|ca-plan|render-op|route|aetherpp)\b/.test(line)
         ? `${process.execPath} "${__filename}" ${line}` : line;
-      const row = runShellCommand(scbeCmd);
+      const row = runShellCommand(scbeCmd, { capture: scriptedInput });
+      if (scriptedInput && row.stdout_preview?.trim()) {
+        process.stdout.write(`${row.stdout_preview.trim()}\n`);
+      }
+      if (scriptedInput && row.stderr_preview?.trim()) {
+        process.stderr.write(`${row.stderr_preview.trim()}\n`);
+      }
       if (!row.success && row.failure) {
         process.stdout.write(
           ansi('red', `  ✗ ${row.failure.summary}\n`) +
