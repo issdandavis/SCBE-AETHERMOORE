@@ -22,11 +22,11 @@ Environment:
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import os
 import re
 import sys
-import tempfile
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -100,7 +100,7 @@ class GateFinding:
 @dataclass
 class ContentGateResult:
     """Aggregate result for a content scan."""
-    decision: str       # PASS, WARN, BLOCK
+    decision: str = "PASS"       # PASS, WARN, BLOCK
     files_checked: int = 0
     words_checked: int = 0
     findings: List[GateFinding] = field(default_factory=list)
@@ -195,8 +195,9 @@ class PangramContentGate:
         api_key: Optional[str] = None,
         block_threshold: float = DEFAULT_BLOCK_THRESHOLD,
         warn_threshold: float = DEFAULT_WARN_THRESHOLD,
+        client: Optional[PangramClient] = None,
     ):
-        self.client = PangramClient(api_key)
+        self.client = client or PangramClient(api_key)
         self.block_threshold = block_threshold
         self.warn_threshold = warn_threshold
 
@@ -205,7 +206,7 @@ class PangramContentGate:
         if pangram_result.fraction_ai > self.block_threshold:
             return GateFinding(
                 severity="BLOCK",
-                category="AI_AUTHorship",
+                category="AI_Authorship",
                 message=(
                     f"High AI fraction ({pangram_result.fraction_ai:.0%}) exceeds "
                     f"block threshold ({self.block_threshold:.0%}). "
@@ -303,17 +304,16 @@ class PangramContentGate:
     def verify_epub(self, epub_path: Path) -> ContentGateResult:
         """Extract text from EPUB and scan chapters individually."""
         result = ContentGateResult()
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with zipfile.ZipFile(epub_path, "r") as zf:
-                zf.extractall(tmpdir)
-            tmp_path = Path(tmpdir)
-            # EPUB XHTML/HTML files live in OEBPS or root
-            html_files = list(tmp_path.rglob("*.xhtml")) + list(tmp_path.rglob("*.html"))
-            for hf in sorted(html_files):
-                text = _strip_html_tags(hf.read_text(encoding="utf-8"))
+        with zipfile.ZipFile(epub_path, "r") as zf:
+            html_files = [
+                name for name in zf.namelist()
+                if name.lower().endswith((".xhtml", ".html"))
+            ]
+            for name in sorted(html_files):
+                text = _strip_html_tags(zf.read(name).decode("utf-8", errors="ignore"))
                 if len(text.split()) < MIN_WORDS_FOR_SCAN:
                     continue
-                sub = self.scan_text(text, source_file=str(hf.name))
+                sub = self.scan_text(text, source_file=Path(name).name)
                 result.files_checked += sub.files_checked
                 result.words_checked += sub.words_checked
                 result.api_calls_used += sub.api_calls_used
@@ -350,7 +350,7 @@ def _strip_markdown(text: str) -> str:
 
 def _strip_html_tags(text: str) -> str:
     """Remove HTML tags."""
-    return re.sub(r"<[^>]+>", "", text)
+    return html.unescape(re.sub(r"<[^>]+>", " ", text))
 
 
 # =============================================================================
@@ -416,6 +416,11 @@ def main():
         "--warn-threshold", type=float, default=DEFAULT_WARN_THRESHOLD,
         help=f"Fraction AI-assisted that triggers WARN (default {DEFAULT_WARN_THRESHOLD})"
     )
+    parser.add_argument(
+        "--allow-missing-key",
+        action="store_true",
+        help="Skip the gate with WARN instead of failing when PANGRAM_API_KEY is absent.",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     # scan-text
@@ -440,10 +445,22 @@ def main():
 
     args = parser.parse_args()
 
-    gate = PangramContentGate(
-        block_threshold=args.block_threshold,
-        warn_threshold=args.warn_threshold,
-    )
+    try:
+        gate = PangramContentGate(
+            block_threshold=args.block_threshold,
+            warn_threshold=args.warn_threshold,
+        )
+    except RuntimeError as exc:
+        if not args.allow_missing_key:
+            raise
+        result = ContentGateResult(decision="WARN")
+        result.add(GateFinding(
+            severity="WARN",
+            category="CONFIG_MISSING",
+            message=str(exc),
+        ))
+        _print_result(result, json_mode=args.json)
+        sys.exit(0)
 
     if args.command == "scan-text":
         result = gate.scan_text(args.text)
