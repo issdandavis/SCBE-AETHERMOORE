@@ -49,3 +49,11 @@ test('rich shell supports config inspection without touching real home config', 
   assert.match(result.stdout, /"provider": "ollama"/);
   assert.match(result.stdout, /"model": "llama3\.2"/);
 });
+
+test('tui.mjs exists and exports launchTui', async () => {
+  const { pathToFileURL } = require('node:url');
+  const tuiPath = path.resolve(__dirname, '..', 'bin', 'tui.mjs');
+  assert.ok(fs.existsSync(tuiPath), 'bin/tui.mjs must exist');
+  const m = await import(pathToFileURL(tuiPath).href);
+  assert.equal(typeof m.launchTui, 'function', 'tui.mjs must export launchTui');
+});
