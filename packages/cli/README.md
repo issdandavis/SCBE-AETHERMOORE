@@ -15,6 +15,7 @@ npm i -g scbe-aethermoore-cli
 ```bash
 scbe --help
 scbe version
+scbe version --json
 scbe demo
 scbe demo --json
 scbe selftest
@@ -25,7 +26,7 @@ scbe run "npm test"
 scbe status
 scbe history --limit 20
 scbe ca-plan --ops "abs abs add" --json
-scbe compile ca --opcodes "0x09 0x09 0x00" --target python
+scbe compile ca --opcodes "0x09 0x09 0x00" --target python --fn score --args a,b
 scbe render-op --op add --target KO --a left --b right
 scbe route --program "encode \"run tests\" in tongue KO"
 ```
@@ -34,7 +35,8 @@ The same binary is also exposed as `geoseal` and `scbe-geoseal`.
 
 ## Tool Surface
 
-- `version`: prints the installed `scbe-aethermoore` package version.
+- `version`: prints the installed CLI package version. `version --json` also
+  reports the backing `scbe-aethermoore` core version.
 - `demo`: runs the 5-minute agent safety demo. It sends a risky AI-agent tool
   request through the GeoSeal execution gate and prints the governed output
   packet: output, decision, reasons, suggested correction, and audit id.

@@ -165,7 +165,7 @@ def cmd_ca_plan(args: argparse.Namespace) -> int:
         "opcodes": opcodes,
         "hex_sequence": hex_sequence,
         "hex": ", ".join(hex_sequence),
-        "compile_hint": f"compile-ca --opcodes \"{' '.join(hex_sequence)}\"",
+        "compile_hint": f"compile-ca --opcodes \"{' '.join(hex_sequence)}\" --args a,b",
         "source": "python.scbe.ca_opcode_table.OP_TABLE",
     }
     print(json.dumps(payload, indent=2) if args.json else payload["hex"])

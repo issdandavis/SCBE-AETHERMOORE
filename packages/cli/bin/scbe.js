@@ -8,6 +8,16 @@ const os = require('node:os');
 const path = require('node:path');
 const readline = require('node:readline');
 
+function readJsonFileSafe(filePath) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (_err) {
+    return {};
+  }
+}
+
+const CLI_PACKAGE_JSON = readJsonFileSafe(path.resolve(__dirname, '..', 'package.json'));
+
 const SERVICE_CREDITS = {
   schema_version: 'scbe_service_credits_v1',
   name: 'SCBE Service Credits',
@@ -26,6 +36,7 @@ Usage:
 
 Core commands:
   scbe version
+  scbe version --json
   scbe demo
   scbe demo --json
   scbe selftest
@@ -80,10 +91,10 @@ Trap-in-good-loops dispatcher (forwards to FREE providers — offline by default
   echo "<prompt>" | scbe trap-dispatch --json
 
 Compiler and routing commands, available from a source checkout:
-  scbe compile-ca --opcodes "0x09 0x09 0x00" --target python
+  scbe compile-ca --opcodes "0x09 0x09 0x00" --target python --fn score --args a,b
   scbe ca-plan --ops "abs abs add" --json
   scbe render-op --op add --target KO --a left --b right
-  scbe compile ca --opcodes "0x09 0x09 0x00" --target typescript
+  scbe compile ca --opcodes "0x09 0x09 0x00" --target typescript --fn score --args a,b
   scbe route --program 'encode "run tests" in tongue KO'
 
 Hosted run path:
@@ -114,6 +125,40 @@ function resolveGeosealBin() {
 
 function repoRoot() {
   return path.resolve(__dirname, '..', '..', '..');
+}
+
+function findPackageJsonFromEntry(entryPath, expectedName) {
+  let current = path.dirname(entryPath);
+  for (let i = 0; i < 8; i += 1) {
+    const candidate = path.join(current, 'package.json');
+    const parsed = readJsonFileSafe(candidate);
+    if (!expectedName || parsed.name === expectedName) return parsed;
+    const next = path.dirname(current);
+    if (next === current) break;
+    current = next;
+  }
+  return {};
+}
+
+function corePackageJson() {
+  try {
+    return findPackageJsonFromEntry(require.resolve('scbe-aethermoore'), 'scbe-aethermoore');
+  } catch (_err) {
+    return readJsonFileSafe(path.resolve(repoRoot(), 'package.json'));
+  }
+}
+
+function versionPacket() {
+  const core = corePackageJson();
+  return {
+    schema_version: 'scbe_aethermoore_cli_version_v1',
+    cli_package: CLI_PACKAGE_JSON.name || 'scbe-aethermoore-cli',
+    cli_version: CLI_PACKAGE_JSON.version || 'unknown',
+    core_package: core.name || 'scbe-aethermoore',
+    core_version: core.version || 'unknown',
+    node: process.version,
+    platform: process.platform,
+  };
 }
 
 function resolveRepoScript(relativePath) {
@@ -163,6 +208,28 @@ function firstLine(text) {
       .split(/\r?\n/)
       .filter(Boolean)[0] || ''
   );
+}
+
+function parseJsonFromText(text) {
+  const raw = String(text || '').trim();
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (_err) {
+    // Some Python/native paths print warnings before the JSON receipt. Try
+    // every line suffix so a leading warning does not turn a DENY into WARN.
+    const lines = raw.split(/\r?\n/);
+    for (let i = 0; i < lines.length; i += 1) {
+      const candidate = lines.slice(i).join('\n').trim();
+      if (!candidate.startsWith('{') && !candidate.startsWith('[')) continue;
+      try {
+        return JSON.parse(candidate);
+      } catch (_innerErr) {
+        // Keep scanning later suffixes.
+      }
+    }
+  }
+  return null;
 }
 
 function appendHistory(row) {
@@ -223,9 +290,9 @@ function gateCommand(command) {
       stderr_preview: String(child.stderr || '').slice(0, 500),
     };
   }
-  try {
-    return JSON.parse(String(child.stdout || '{}'));
-  } catch (_err) {
+  const parsed = parseJsonFromText(child.stdout);
+  if (parsed) return parsed;
+  {
     return {
       allowed: true,
       tier: 'WARN',
@@ -688,9 +755,8 @@ function runLiboqs(args) {
     process.exit(1);
   }
   let payload;
-  try {
-    payload = JSON.parse(result.stdout);
-  } catch (_err) {
+  payload = parseJsonFromText(result.stdout);
+  if (!payload) {
     payload = {
       schema_version: 'scbe_liboqs_receipt_v1',
       receipt: 'SCBE_LIBOQS_PASS=0',
@@ -727,6 +793,68 @@ function runLiboqs(args) {
     );
   }
   process.exit(payload.native_pass ? 0 : 1);
+}
+
+function runVersion(args) {
+  const payload = versionPacket();
+  if (args.includes('--json')) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+  } else {
+    process.stdout.write(`${payload.cli_version}\n`);
+  }
+  process.exit(0);
+}
+
+function runDoctor(args) {
+  const asJson = args.includes('--json');
+  const target = resolveGeosealBin();
+  const child = spawnSync(process.execPath, [target, 'doctor', '--json'], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  const geosealDoctor = parseJsonFromText(child.stdout);
+  const versions = versionPacket();
+  const payload = {
+    schema_version: 'scbe_aethermoore_cli_doctor_v1',
+    ok: child.status === 0 && (!geosealDoctor || geosealDoctor.ok !== false),
+    cli_package: versions.cli_package,
+    cli_version: versions.cli_version,
+    core_package: versions.core_package,
+    core_version: versions.core_version,
+    node: process.version,
+    platform: process.platform,
+    cli_package_bin: CLI_PACKAGE_JSON.bin || {},
+    geoseal_bin: target,
+    geoseal_doctor: geosealDoctor,
+    geoseal_doctor_status: typeof child.status === 'number' ? child.status : 1,
+    stderr_preview: String(child.stderr || '').slice(0, 1000),
+  };
+  if (geosealDoctor && geosealDoctor.package_bin) {
+    payload.core_package_bin = geosealDoctor.package_bin;
+  }
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+  } else {
+    const apiCount =
+      geosealDoctor && Array.isArray(geosealDoctor.api_commands)
+        ? geosealDoctor.api_commands.length
+        : 0;
+    const activeService =
+      geosealDoctor && geosealDoctor.active_service
+        ? geosealDoctor.active_service.api_base
+        : 'none';
+    process.stdout.write(
+      [
+        `SCBE CLI doctor ${payload.cli_version} (core ${payload.core_version})`,
+        `Node: ${payload.node}`,
+        `GeoSeal: ${payload.geoseal_doctor_status === 0 ? 'ok' : 'fail'}`,
+        `Active service: ${activeService}`,
+        `API commands: ${apiCount}`,
+        '',
+      ].join('\n')
+    );
+  }
+  process.exit(payload.ok ? 0 : 1);
 }
 
 function runInteractiveShell() {
@@ -2096,10 +2224,9 @@ function runUpgrade(args) {
 }
 
 function runSelftest() {
-  const target = resolveGeosealBin();
-  const checks = [['version'], ['doctor', '--json']];
+  const checks = [['version', '--json'], ['doctor', '--json']];
   const results = checks.map((args) => {
-    const child = spawnSync(process.execPath, [target, ...args], {
+    const child = spawnSync(process.execPath, [__filename, ...args], {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
     });
@@ -2146,6 +2273,14 @@ if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h' || argv[0] ===
 
 if (argv[0] === 'demo' || argv[0] === 'magic') {
   runMagicDemo(argv.slice(1));
+}
+
+if (argv[0] === 'version') {
+  runVersion(argv.slice(1));
+}
+
+if (argv[0] === 'doctor') {
+  runDoctor(argv.slice(1));
 }
 
 if (argv[0] === 'credits' || argv[0] === 'hosted-run') {
@@ -2252,7 +2387,7 @@ if (argv[0] === 'compile') {
     process.stdout.write(
       [
         'Usage:',
-        '  scbe compile ca --opcodes "0x09 0x09 0x00" --target python',
+        '  scbe compile ca --opcodes "0x09 0x09 0x00" --target python --fn score --args a,b',
         '  scbe compile plan --ops "abs abs add" --json',
         '  scbe compile op --op add --target KO --a left --b right',
         '',
