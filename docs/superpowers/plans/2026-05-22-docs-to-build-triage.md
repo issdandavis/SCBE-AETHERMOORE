@@ -312,9 +312,9 @@ The same source page can produce different artifacts. Do not collapse them.
   "status": "partial",
   "core_claim": "The go-board kernel can map coding to legal state moves: files/tests/contracts become board state; probes and captures become compiler/test outcomes.",
   "repo_anchors": [
-    "src/narrative_combat/go_board/",
-    "docs/superpowers/specs/2026-05-21-go-board-narrative-engine-design.md",
-    "tests/narrative_combat/go_board/"
+    "../book-workshop/src/narrative_combat/go_board/",
+    "../book-workshop/docs/superpowers/specs/2026-05-21-go-board-narrative-engine-design.md",
+    "../book-workshop/tests/narrative_combat/go_board/"
   ],
   "risk_class": "medium",
   "first_slice": {
