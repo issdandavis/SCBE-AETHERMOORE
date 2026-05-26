@@ -261,6 +261,20 @@ export const AgentWorkspaceReportReceiptSchema = z.object({
 
 export type AgentWorkspaceReportReceiptParsed = z.infer<typeof AgentWorkspaceReportReceiptSchema>;
 
+// ─── TmpCleanupReceipt ───────────────────────────────────────────────────────
+
+export const TmpCleanupReceiptSchema = z.object({
+  schema_version: z.literal('aethermoor.bus.tmp_cleanup.v1'),
+  receipt: z.literal('SCBE_WORKSPACE_TMP_CLEANUP=1'),
+  workspace_root: z.string(),
+  deleted_count: nonNegInt,
+  reclaimed_bytes: nonNegInt,
+  dry_run: z.boolean(),
+  cleaned_at: isoTs,
+});
+
+export type TmpCleanupReceiptParsed = z.infer<typeof TmpCleanupReceiptSchema>;
+
 // ─── Boundary helper ─────────────────────────────────────────────────────────
 
 export type ParseResult<T> = { ok: true; data: T } | { ok: false; error: string };
