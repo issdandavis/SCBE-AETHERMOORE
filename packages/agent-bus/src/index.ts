@@ -31,6 +31,17 @@ export {
   startQueueWorker,
 } from './queue.js';
 
+export {
+  type CliTool,
+  registerTool,
+  unregisterTool,
+  listTools,
+  getTool,
+  clearTools,
+  buildToolArgv,
+  autoDiscoverTools,
+} from './tools.js';
+
 export type AgentBusPrivacy = 'local_only' | 'remote_allowed' | string;
 
 export interface AgentBusEvent {
@@ -42,6 +53,8 @@ export interface AgentBusEvent {
   budgetCents?: number;
   dispatch?: boolean;
   dispatchProvider?: string;
+  /** Name of a registered CliTool to dispatch to instead of scbe-system-cli.py. */
+  tool?: string;
 }
 
 export interface RunOptions {
@@ -1407,6 +1420,7 @@ function normalizeEvent(event: AgentBusEvent, index: number): Required<AgentBusE
     budgetCents: Number(event.budgetCents || 0),
     dispatch: event.dispatch !== false,
     dispatchProvider: String(event.dispatchProvider || 'offline').trim(),
+    tool: event.tool ?? '',
   };
 }
 
@@ -1565,7 +1579,12 @@ export async function startAgentBusServer(
     try {
       if (req.method === 'GET' && req.url === '/health') {
         const { getQueueStatus } = await import('./queue.js');
-        sendJson(res, 200, { ok: true, service: 'scbe-agent-bus', version: 1, queue: getQueueStatus() });
+        sendJson(res, 200, {
+          ok: true,
+          service: 'scbe-agent-bus',
+          version: 1,
+          queue: getQueueStatus(),
+        });
         return;
       }
       if (req.method === 'GET' && req.url?.startsWith('/v1/events/')) {
@@ -1598,7 +1617,12 @@ export async function startAgentBusServer(
         const enqueue = !Array.isArray(body) && body.enqueue === true;
         const rows = await runBatch(items, { ...options, enqueue });
         if (enqueue) {
-          sendJson(res, 202, { ok: true, enqueued: true, count: rows.length, run_ids: rows.map((r) => (r.result as Record<string, string>)?.run_id).filter(Boolean) });
+          sendJson(res, 202, {
+            ok: true,
+            enqueued: true,
+            count: rows.length,
+            run_ids: rows.map((r) => (r.result as Record<string, string>)?.run_id).filter(Boolean),
+          });
         } else {
           sendJson(res, rows.every((row) => row.ok) ? 200 : 500, { rows });
         }

@@ -62,7 +62,7 @@ describe('queue', () => {
   it('processOneEvent handles a bad scbe-system-cli.py gracefully', async () => {
     // The event will fail because scbe-system-cli.py doesn't exist in tmpdir,
     // but it should still move to completed/failed.
-    const runId = enqueueEvent({ task: 'hello' }, { repoRoot: process.cwd() });
+    const runId = enqueueEvent({ task: 'hello' }, { repoRoot: process.cwd() }, 0);
     const didWork = await processOneEvent();
     expect(didWork).toBe(true);
 
