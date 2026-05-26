@@ -7,7 +7,6 @@ import sys
 import zipfile
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "security" / "pangram_content_gate.py"
 
