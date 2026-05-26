@@ -1079,6 +1079,7 @@ function runInteractiveShell(flags = {}) {
   // ── Rich shell (default / --ai / --tui) ──────────────────────────────────
   const cfg = readShellConfig();
   const history = []; // conversation history for multi-turn AI
+  let pendingApproval = null;
 
   const PROMPT = process.stdout.isTTY
     ? `${_ANSI.cyan}${_ANSI.bold}scbe${_ANSI.reset}${_ANSI.cyan} ›${_ANSI.reset} `
@@ -1107,6 +1108,19 @@ function runInteractiveShell(flags = {}) {
   rl.on('line', (rawLine) => {
     const line = rawLine.trim();
     if (!line) { rl.prompt(); return; }
+
+    if (pendingApproval) {
+      const proposed = pendingApproval.proposed;
+      pendingApproval = null;
+      if (line.toLowerCase() === 'y' || line.toLowerCase() === 'yes') {
+        process.stdout.write(ansi('dim', `  $ ${proposed}\n`));
+        runShellCommand(proposed);
+      } else {
+        process.stdout.write(ansi('gray', '  skipped.\n'));
+      }
+      rl.prompt();
+      return;
+    }
 
     const kind = classifyShellInput(line);
 
@@ -1248,16 +1262,8 @@ function runInteractiveShell(flags = {}) {
 
         // Ask for approval
         process.stdout.write(ansi('yellow', '\n  execute? ') + ansi('gray', '[y/N] '));
+        pendingApproval = { proposed };
         rl.resume();
-        rl.once('line', (answer) => {
-          if (answer.trim().toLowerCase() === 'y') {
-            process.stdout.write(ansi('dim', `  $ ${proposed}\n`));
-            runShellCommand(proposed);
-          } else {
-            process.stdout.write(ansi('gray', '  skipped.\n'));
-          }
-          rl.prompt();
-        });
       })
       .catch((err) => {
         process.stdout.write(

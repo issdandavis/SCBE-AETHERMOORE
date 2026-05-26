@@ -20,6 +20,7 @@
   "scripts": {
     "help": "node ./bin/scbe.js --help",
     "selftest": "node ./bin/scbe.js selftest",
+    "test": "node --test tests/*.test.cjs",
     "pack:dry": "npm pack --dry-run --json"
   },
   "engines": {
