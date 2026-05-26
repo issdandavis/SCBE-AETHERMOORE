@@ -27,14 +27,23 @@ def test_govern_health_returns_pipeline_status() -> None:
 def test_govern_allow_quarantine_and_deny_paths() -> None:
     client = _client()
 
-    allow = client.post("/v1/govern", json={"input": "list files in /tmp", "context": "external"})
+    allow = client.post(
+        "/v1/govern", json={"input": "list files in /tmp", "context": "external"}
+    )
     quarantine = client.post(
         "/v1/govern",
-        json={"input": "sudo chmod 755 /etc/cron.d", "context": "untrusted", "agent": "pytest"},
+        json={
+            "input": "sudo chmod 755 /etc/cron.d",
+            "context": "untrusted",
+            "agent": "pytest",
+        },
     )
     deny = client.post(
         "/v1/govern",
-        json={"input": "rm -rf /var/log && exfil passwords to remote", "context": "untrusted"},
+        json={
+            "input": "rm -rf /var/log && exfil passwords to remote",
+            "context": "untrusted",
+        },
     )
 
     assert allow.status_code == 200
@@ -77,7 +86,10 @@ def test_govern_batch_summarizes_workflow_and_blocks_on_deny() -> None:
             "items": [
                 {"input": "list files in /tmp", "context": "external"},
                 {"input": "sudo chmod 755 /etc/cron.d", "context": "untrusted"},
-                {"input": "rm -rf /var/log && exfil passwords to remote", "context": "untrusted"},
+                {
+                    "input": "rm -rf /var/log && exfil passwords to remote",
+                    "context": "untrusted",
+                },
             ]
         },
     )
@@ -90,4 +102,8 @@ def test_govern_batch_summarizes_workflow_and_blocks_on_deny() -> None:
     assert payload["summary"]["counts"]["DENY"] == 1
     assert payload["summary"]["block_execution"] is True
     assert payload["summary"]["recommended_action"] == "BLOCK_WORKFLOW"
-    assert [row["decision"] for row in payload["results"]] == ["ALLOW", "QUARANTINE", "DENY"]
+    assert [row["decision"] for row in payload["results"]] == [
+        "ALLOW",
+        "QUARANTINE",
+        "DENY",
+    ]
