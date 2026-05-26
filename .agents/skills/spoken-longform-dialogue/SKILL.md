@@ -91,6 +91,27 @@ Under 6: likely exposition.
 6-7: workable but may feel written.
 8-10: can safely run multiple paragraphs.
 
+## Semantic Bus Integration
+
+When an AgentBusResult, GeoSealPlan, or semantic decomposition is available, use it before manual scoring. Expected fields:
+
+- `semantic.atoms[].semanticId`
+- `semantic.atoms[].count`
+- `semantic.discourseProfile` or top-level `discourse_profile`
+
+Map the bus output into the rubric:
+
+- `long_turn` or `ANNOUNCE + EXPAND`: baseline support for turn management.
+- `CARRY` or `warranted_claim`: memory-backed credibility; raise the concrete example score if the scene actually contains a specific remembered event.
+- `HOLD` or `backchannel`: listener co-construction; if absent from the semantic layer and absent from the prose, mark listener presence weak.
+- `REQUEST` or `floor_hold`: permission token; useful when the speaker knows they are taking space.
+- `PIVOT`: steering move; useful in moderation, confusing when dense without return phrases.
+- `PIVOT + BLOCK` or `governance_steer`: treat as argument/redirection, not ordinary intimate dialogue.
+
+Do not let atom detection override reading judgment. A scene can say "I remember" and still fail if the memory is generic. A scene can lack explicit `HOLD` text and still have listener pressure through silence, gesture, or object movement.
+
+For the full scoring map, read `references/semantic-bus-scoring.md`.
+
 ## Output Rules
 
 When revising:
@@ -111,3 +132,5 @@ When diagnosing:
 ## Reference
 
 For transcript-derived patterns, examples, and anti-patterns, read `references/transcript-patterns.md` when doing a substantial dialogue rewrite or building a craft worksheet.
+
+For tokenizer-assisted scoring from the agent-bus semantic layer, read `references/semantic-bus-scoring.md`.
