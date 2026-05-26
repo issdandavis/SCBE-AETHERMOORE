@@ -1,0 +1,154 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import {
+  registerTool,
+  unregisterTool,
+  listTools,
+  getTool,
+  clearTools,
+  buildToolArgv,
+  type CliTool,
+} from '../src/tools.js';
+import { enqueueEvent, processOneEvent, getEventStatus } from '../src/queue.js';
+import { clearPlugins } from '../src/plugins.js';
+
+describe('tool registry', () => {
+  beforeEach(() => clearTools());
+
+  it('registers and lists tools', () => {
+    const tool: CliTool = { name: 'echo-task', command: 'node', args: ['-e', 'console.log("ok")'] };
+    registerTool(tool);
+    expect(listTools()).toHaveLength(1);
+    expect(listTools()[0].name).toBe('echo-task');
+  });
+
+  it('replaces tools with the same name', () => {
+    registerTool({ name: 'dup', command: 'node', args: ['a.js'] });
+    registerTool({ name: 'dup', command: 'python', args: ['a.py'] });
+    expect(listTools()).toHaveLength(1);
+    expect(listTools()[0].command).toBe('python');
+  });
+
+  it('unregisters a tool', () => {
+    registerTool({ name: 'x', command: 'node', args: [] });
+    expect(unregisterTool('x')).toBe(true);
+    expect(listTools()).toHaveLength(0);
+    expect(unregisterTool('x')).toBe(false);
+  });
+
+  it('getTool returns registered tool', () => {
+    registerTool({ name: 'y', command: 'node', args: ['y.js'] });
+    expect(getTool('y')?.command).toBe('node');
+    expect(getTool('missing')).toBeUndefined();
+  });
+
+  it('buildToolArgv substitutes template variables', () => {
+    const tool: CliTool = {
+      name: 'runner',
+      command: 'node',
+      args: ['run.js', '--task', '{task}', '--series', '{seriesId}', '--root', '{repoRoot}'],
+    };
+    const event = { task: 'hello world', seriesId: 'abc123' };
+    const opts = { repoRoot: '/tmp/repo' };
+    const { command, args } = buildToolArgv(tool, event, opts, 'run-id-1');
+    expect(command).toBe('node');
+    expect(args).toContain('hello world');
+    expect(args).toContain('abc123');
+    expect(args).toContain('/tmp/repo');
+  });
+
+  it('buildToolArgv uses run_id as seriesId when event.seriesId is absent', () => {
+    const tool: CliTool = { name: 'x', command: 'echo', args: ['{seriesId}'] };
+    const { args } = buildToolArgv(tool, { task: 't' }, {}, 'fallback-id');
+    expect(args[0]).toBe('fallback-id');
+  });
+
+  it('buildToolArgv leaves unknown placeholders intact', () => {
+    const tool: CliTool = { name: 'x', command: 'echo', args: ['{unknownVar}'] };
+    const { args } = buildToolArgv(tool, { task: 't' }, {}, 'r1');
+    expect(args[0]).toBe('{unknownVar}');
+  });
+});
+
+describe('queue: tool routing', () => {
+  let queueRoot: string;
+
+  beforeEach(() => {
+    queueRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-bus-tools-test-'));
+    process.env.SCBE_BUS_QUEUE_ROOT = queueRoot;
+    clearTools();
+    clearPlugins();
+  });
+
+  afterEach(() => {
+    try {
+      fs.rmSync(queueRoot, { recursive: true, force: true });
+    } catch {
+      // tolerate
+    }
+    delete process.env.SCBE_BUS_QUEUE_ROOT;
+  });
+
+  it('dispatches to a registered tool and captures stdout', async () => {
+    registerTool({
+      name: 'echo-json',
+      command: 'node',
+      args: ['-e', 'process.stdout.write(JSON.stringify({ok:true,task:{sha256:null}}))'],
+    });
+
+    const runId = enqueueEvent({ task: 'hi', tool: 'echo-json' }, {}, 0);
+    await processOneEvent();
+
+    const status = getEventStatus(runId);
+    expect(status).not.toBeNull();
+    expect(status!.status).toBe('completed');
+    expect(status!.result?.ok).toBe(true);
+  });
+
+  it('returns failed when tool exits with non-zero', async () => {
+    registerTool({
+      name: 'exit-1',
+      command: 'node',
+      args: ['-e', 'process.exit(1)'],
+    });
+
+    const runId = enqueueEvent({ task: 'fail', tool: 'exit-1' }, {}, 0);
+    await processOneEvent();
+
+    const status = getEventStatus(runId);
+    expect(status!.status).toBe('failed');
+    expect(status!.result?.ok).toBe(false);
+  });
+
+  it('returns failed immediately for unknown tool name', async () => {
+    const runId = enqueueEvent({ task: 'hi', tool: 'no-such-tool' }, {}, 0);
+    await processOneEvent();
+
+    const status = getEventStatus(runId);
+    expect(status!.status).toBe('failed');
+    expect(status!.result?.stderr_tail).toMatch(/unknown tool/);
+  });
+
+  it('task template variable is passed to tool args', async () => {
+    // Tool writes its received args to stdout as JSON so we can assert on them
+    registerTool({
+      name: 'echo-task',
+      command: 'node',
+      args: [
+        '-e',
+        'const t=process.argv[1]; process.stdout.write(JSON.stringify({ok:true,task:{sha256:null,echo:t}}))',
+        '{task}',
+      ],
+    });
+
+    const runId = enqueueEvent({ task: 'my-special-task', tool: 'echo-task' }, {}, 0);
+    await processOneEvent();
+
+    const status = getEventStatus(runId);
+    expect(status!.status).toBe('completed');
+    const resultPayload = status!.result?.result as Record<string, unknown> | null;
+    expect((resultPayload?.task as Record<string, unknown>)?.echo).toBe('my-special-task');
+  });
+});

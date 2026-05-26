@@ -20,6 +20,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import type { AgentBusEvent, AgentBusResult, RunOptions } from './index.js';
 import { runBeforeRunPlugins, runAfterRunPlugins } from './plugins.js';
+import { getTool, buildToolArgv } from './tools.js';
 
 export interface QueuedEvent {
   run_id: string;
@@ -151,14 +152,12 @@ export function getEventStatus(runId: string): QueuedEvent | null {
  */
 export function getQueueStatus(): QueueStatus {
   const d = dirs();
+  const completedReceipts = listReceipts(d.completed).map(readReceipt);
   return {
     pending: listReceipts(d.pending).length,
     running: listReceipts(d.running).length,
-    completed: listReceipts(d.completed).length,
-    failed: listReceipts(d.completed).filter((fp) => {
-      const r = readReceipt(fp);
-      return r.status === 'failed';
-    }).length,
+    completed: completedReceipts.filter((r) => r.status === 'completed').length,
+    failed: completedReceipts.filter((r) => r.status === 'failed').length,
   };
 }
 
@@ -178,47 +177,84 @@ function executeEventAsync(
 ): Promise<AgentBusResult> {
   return new Promise((resolve) => {
     const normalized = receipt.event;
-    const cli = path.join(repoRoot, 'scripts', 'scbe-system-cli.py');
-    const argv: string[] = [
-      cli,
-      '--repo-root',
-      repoRoot,
-      'agentbus',
-      'run',
-      '--task',
-      normalized.task,
-      '--task-type',
-      normalized.taskType || 'general',
-      '--series-id',
-      normalized.seriesId || receipt.run_id,
-      '--privacy',
-      normalized.privacy || 'local_only',
-      '--budget-cents',
-      String(normalized.budgetCents || 0),
-      '--dispatch-provider',
-      normalized.dispatchProvider || 'offline',
-      '--json',
-    ];
-    if (normalized.operationCommand) {
-      argv.push('--operation-command', normalized.operationCommand);
-    }
-    if (normalized.dispatch !== false) {
-      argv.push('--dispatch');
+
+    // Route to a registered CLI tool when event.tool is set; fall back to scbe-system-cli.py.
+    let spawnCmd: string;
+    let spawnArgs: string[];
+
+    if (normalized.tool) {
+      const registeredTool = getTool(normalized.tool);
+      if (!registeredTool) {
+        // Unknown tool name — resolve immediately with an error result
+        resolve({
+          schema_version: 'scbe-agentbus-node-result-v1',
+          event_index: 1,
+          started_at: new Date().toISOString(),
+          finished_at: new Date().toISOString(),
+          ok: false,
+          exit_code: null,
+          stderr_tail: `unknown tool: '${normalized.tool}' is not registered`,
+          event: {
+            task_sha256: null,
+            task_chars: normalized.task.length,
+            series_id: normalized.seriesId || receipt.run_id,
+            operation_command_chars: (normalized.operationCommand || '').length,
+          },
+          result: null,
+        });
+        return;
+      }
+      const built = buildToolArgv(registeredTool, normalized, receipt.options, receipt.run_id);
+      spawnCmd = built.command;
+      spawnArgs = built.args;
+    } else {
+      const cli = path.join(repoRoot, 'scripts', 'scbe-system-cli.py');
+      spawnCmd = python;
+      spawnArgs = [
+        cli,
+        '--repo-root',
+        repoRoot,
+        'agentbus',
+        'run',
+        '--task',
+        normalized.task,
+        '--task-type',
+        normalized.taskType || 'general',
+        '--series-id',
+        normalized.seriesId || receipt.run_id,
+        '--privacy',
+        normalized.privacy || 'local_only',
+        '--budget-cents',
+        String(normalized.budgetCents || 0),
+        '--dispatch-provider',
+        normalized.dispatchProvider || 'offline',
+        '--json',
+      ];
+      if (normalized.operationCommand) {
+        spawnArgs.push('--operation-command', normalized.operationCommand);
+      }
+      if (normalized.dispatch !== false) {
+        spawnArgs.push('--dispatch');
+      }
     }
 
     const startedAt = new Date().toISOString();
     let stdout = '';
     let stderr = '';
 
-    const child = spawn(python, argv, {
+    const child = spawn(spawnCmd, spawnArgs, {
       cwd: repoRoot,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
 
     child.stdout.setEncoding('utf-8');
     child.stderr.setEncoding('utf-8');
-    child.stdout.on('data', (chunk) => { stdout += chunk; });
-    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk;
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk;
+    });
 
     child.on('close', (code) => {
       let payload: Record<string, unknown> | null = null;
@@ -343,8 +379,12 @@ export async function processOneEvent(): Promise<boolean> {
     startedAt: receipt.started_at || receipt.created_at,
   });
 
-  // Retry logic
-  if (!result.ok && receipt.retry_count < receipt.max_retries) {
+  // Retry logic — skip retry for plugin-denied events (they won't pass the gate on re-run)
+  const denied =
+    result.exit_code === 403 &&
+    typeof result.result === 'object' &&
+    !!(result.result as Record<string, unknown>)?.denied;
+  if (!result.ok && !denied && receipt.retry_count < receipt.max_retries) {
     receipt.retry_count += 1;
     receipt.status = 'pending';
     receipt.error_message = `retry ${receipt.retry_count}/${receipt.max_retries}: ${result.stderr_tail}`;
@@ -357,7 +397,8 @@ export async function processOneEvent(): Promise<boolean> {
     return true;
   }
 
-  receipt.status = result.ok ? 'completed' : 'failed';
+  // Denied events are completed (bus handled them correctly), not failed (not a transient error)
+  receipt.status = result.ok || denied ? 'completed' : 'failed';
   if (!result.ok && !receipt.error_message) {
     receipt.error_message = result.stderr_tail;
   }
