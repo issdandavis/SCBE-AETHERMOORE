@@ -6,6 +6,7 @@ import { stdin as input, stdout as output } from 'node:process';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import path from 'node:path';
 import { WorkspaceExportManifestSchema, parseReceipt } from './schemas.js';
+import { detectTaskType, buildAtomLedger } from './semantic-bridge.js';
 
 // Plugin + queue subsystems
 export {
@@ -31,6 +32,15 @@ export {
   startQueueWorker,
 } from './queue.js';
 
+// Semantic atom scanner (self-contained — no cross-package imports)
+export {
+  type AtomHit,
+  type AtomLedger,
+  scanAtoms,
+  detectTaskType,
+  buildAtomLedger,
+} from './semantic-bridge.js';
+
 // GeoSeal intent pipeline
 export {
   type GeoSealPlan,
@@ -53,6 +63,19 @@ export {
   ResearchContract,
   GovernanceDecisionContract,
 } from './contracts.js';
+
+// Resilience (circuit breakers)
+export {
+  type CircuitState,
+  type CircuitBreakerOptions,
+  configureCircuitBreaker,
+  resetCircuitBreaker,
+  getCircuitStates,
+  checkCircuit,
+  recordSuccess,
+  recordFailure,
+  withCircuitBreaker,
+} from './resilience.js';
 
 export {
   type CliTool,
@@ -101,6 +124,8 @@ export interface AgentBusResult {
     operation_command_chars: number;
   };
   result: unknown;
+  /** Compact semantic atom scan attached when atoms match the task text. */
+  semantic?: import('./semantic-bridge.js').AtomLedger;
 }
 
 export interface AgentBusServerHandle {
@@ -1437,7 +1462,7 @@ function normalizeEvent(event: AgentBusEvent, index: number): Required<AgentBusE
   return {
     task,
     operationCommand: String(event.operationCommand || '').trim(),
-    taskType: normalizeTaskType(event.taskType),
+    taskType: detectTaskType(task, normalizeTaskType(event.taskType)),
     seriesId: String(event.seriesId || `node-event-${index}`).trim(),
     privacy: normalizePrivacy(event.privacy),
     budgetCents: Number(event.budgetCents || 0),
@@ -1462,6 +1487,8 @@ function parseJson(text: string): unknown {
 export interface RunEventOptions extends RunOptions {
   /** When true, enqueue the event instead of blocking until completion. */
   enqueue?: boolean;
+  /** Fan-out worker count for runFanOut. Default: 4 */
+  concurrency?: number;
 }
 
 /**
@@ -1538,6 +1565,7 @@ export async function runEvent(
   const payload = parseJson(result.stdout || '{}') as Record<string, unknown> | null;
   const taskPayload =
     payload && typeof payload.task === 'object' ? (payload.task as Record<string, unknown>) : null;
+  const ledger = buildAtomLedger(normalized.task);
   return {
     schema_version: 'scbe-agentbus-node-result-v1',
     event_index: 1,
@@ -1553,6 +1581,7 @@ export async function runEvent(
       operation_command_chars: normalized.operationCommand.length,
     },
     result: payload,
+    ...(ledger.tokenCount > 0 ? { semantic: ledger } : {}),
   };
 }
 
@@ -1573,6 +1602,34 @@ export async function runBatch(
     if (!row.ok && !options.continueOnError) break;
   }
   return rows;
+}
+
+/**
+ * Concurrent fan-out execution of events across N workers (round-robin).
+ * Unlike runBatch, this does NOT stop on first failure — all events run.
+ */
+export async function runFanOut(
+  events: AgentBusEvent[],
+  options: RunEventOptions = {}
+): Promise<AgentBusResult[]> {
+  if (!Array.isArray(events) || events.length === 0) {
+    throw new Error('events sequence is empty');
+  }
+  const concurrency = Math.max(1, options.concurrency ?? 4);
+  const results: AgentBusResult[] = new Array(events.length);
+
+  async function worker(offset: number): Promise<void> {
+    for (let i = offset; i < events.length; i += concurrency) {
+      const row = await runEvent(
+        { ...events[i], seriesId: events[i].seriesId || `node-event-${i + 1}` },
+        options
+      );
+      results[i] = { ...row, event_index: i + 1 };
+    }
+  }
+
+  await Promise.all(Array.from({ length: concurrency }, (_, w) => worker(w)));
+  return results;
 }
 
 function readBody(req: IncomingMessage): Promise<string> {
@@ -1602,11 +1659,13 @@ export async function startAgentBusServer(
     try {
       if (req.method === 'GET' && req.url === '/health') {
         const { getQueueStatus } = await import('./queue.js');
+        const { getCircuitStates } = await import('./resilience.js');
         sendJson(res, 200, {
           ok: true,
           service: 'scbe-agent-bus',
           version: 1,
           queue: getQueueStatus(),
+          circuits: getCircuitStates(),
         });
         return;
       }
@@ -1648,6 +1707,57 @@ export async function startAgentBusServer(
           });
         } else {
           sendJson(res, rows.every((row) => row.ok) ? 200 : 500, { rows });
+        }
+        return;
+      }
+      if (req.method === 'POST' && req.url === '/v1/fanout') {
+        const body = JSON.parse(await readBody(req)) as
+          | { items?: AgentBusEvent[]; enqueue?: boolean; concurrency?: number }
+          | AgentBusEvent[];
+        const items = Array.isArray(body) ? body : body.items || [];
+        const enqueue = !Array.isArray(body) && body.enqueue === true;
+        const concurrency = !Array.isArray(body) ? Number(body.concurrency || 4) : 4;
+        if (enqueue) {
+          const { enqueueEvent } = await import('./queue.js');
+          const runIds = items.map((ev, i) => enqueueEvent(normalizeEvent(ev, i), options));
+          sendJson(res, 202, { ok: true, enqueued: true, count: runIds.length, run_ids: runIds });
+        } else {
+          const rows = await runFanOut(items, { ...options, concurrency });
+          sendJson(res, rows.every((row) => row.ok) ? 200 : 500, { rows });
+        }
+        return;
+      }
+      if (req.method === 'POST' && req.url === '/v1/pipeline') {
+        const body = JSON.parse(await readBody(req)) as {
+          intent?: string;
+          options?: RunOptions;
+        };
+        const intent = String(body.intent || '').trim();
+        if (!intent) {
+          sendJson(res, 400, { ok: false, error: 'missing intent' });
+          return;
+        }
+        const { runPipeline } = await import('./pipeline.js');
+        const result = await runPipeline(intent, body.options || options);
+        sendJson(res, result.blocked ? 403 : 200, result);
+        return;
+      }
+      if (req.method === 'POST' && req.url === '/v1/pipeline/compile') {
+        const body = JSON.parse(await readBody(req)) as {
+          intent?: string;
+          options?: RunOptions;
+        };
+        const intent = String(body.intent || '').trim();
+        if (!intent) {
+          sendJson(res, 400, { ok: false, error: 'missing intent' });
+          return;
+        }
+        const { compilePlan } = await import('./pipeline.js');
+        const plan = compilePlan(intent, body.options || options);
+        if (plan) {
+          sendJson(res, 200, { ok: true, plan });
+        } else {
+          sendJson(res, 500, { ok: false, error: 'compile failed' });
         }
         return;
       }
