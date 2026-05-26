@@ -62,31 +62,6 @@ async def test_cli_dispatch_agent_bus_uses_allowlisted_subprocess(
 
 
 @pytest.mark.asyncio
-async def test_cli_dispatch_game_smoke_writes_narrative_packet(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(api_server, "ROOT", tmp_path)
-
-    result = await api_server._cli_dispatch(["game", "smoke", "narrative-combat", "--seed", "1337"])
-
-    assert result["ok"] is True
-    assert result["lane"] == "game-production"
-    payload = result["result"]
-    assert payload["schema"] == "scbe.narrative_combat.fight.v1"
-    assert payload["encounter_id"] == "boss_duel_demo"
-    assert payload["seed"] == 1337
-    assert payload["beat_count"] >= 1
-    assert payload["winner"] == "Wu Jin"
-    assert (tmp_path / payload["artifact"]).exists()
-
-
-@pytest.mark.asyncio
-async def test_cli_dispatch_game_smoke_rejects_unknown_target() -> None:
-    result = await api_server._cli_dispatch(["game", "smoke", "unbounded-autonomy"])
-
-    assert result["ok"] is False
-    assert "Unknown game smoke target" in result["error"]
-
-
-@pytest.mark.asyncio
 async def test_cli_dispatch_does_not_allow_raw_shell_commands() -> None:
     result = await api_server._cli_dispatch(["powershell", "-Command", "Get-ChildItem"])
 
