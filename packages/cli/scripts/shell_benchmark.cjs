@@ -231,6 +231,38 @@ function main() {
     };
   }));
 
+  cases.push(caseResult('agent_json_waits_for_async_response_after_stdin_close', () => {
+    // Regression: piped harness input closes stdin immediately. The process must
+    // still wait for the async model/governance turn before exiting.
+    const { spawnSync: spawn } = require('node:child_process');
+    const mockResponse = '<cmd>git status --short --branch</cmd> task complete';
+    const inputLines = [
+      JSON.stringify({ instruction: 'inspect repo state', terminal_state: '$ ' }),
+      '',
+    ].join('\n');
+    const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+      cwd: REPO_ROOT,
+      input: inputLines,
+      encoding: 'utf8',
+      timeout: 20_000,
+      env: {
+        ...process.env,
+        NO_COLOR: '1',
+        SCBE_MOCK_RESPONSE: mockResponse,
+        SCBE_MOCK_RESPONSE_DELAY_MS: '250',
+      },
+    });
+    assert.equal(r.status, 0, r.stderr || r.stdout);
+    const lines = (r.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    assert.ok(lines.length >= 2, `expected ready + delayed response, got: ${r.stdout}`);
+    const ready = JSON.parse(lines[0]);
+    const resp = JSON.parse(lines[1]);
+    assert.equal(ready.ready, true);
+    assert.equal(resp.done, true);
+    assert.equal(resp.commands[0].keystrokes, 'git status --short --branch');
+    return { lines_received: lines.length, command: resp.commands[0].keystrokes };
+  }));
+
   const total = cases.reduce((sum, row) => sum + row.points, 0);
   const earned = cases.reduce((sum, row) => sum + row.earned, 0);
   const report = {
