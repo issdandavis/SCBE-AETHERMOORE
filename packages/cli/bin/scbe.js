@@ -956,7 +956,10 @@ async function streamLLM(prompt, cfg, history, onToken) {
   let apiUrl, headers;
 
   if (isFireworks) {
-    const base = cfg.url || cfg.fireworks_base_url || FIREWORKS_BASE_URL;
+    const configuredUrl = cfg.url || '';
+    const base =
+      cfg.fireworks_base_url ||
+      (configuredUrl && !/^https?:\/\/localhost:11434\/?$/i.test(configuredUrl) ? configuredUrl : FIREWORKS_BASE_URL);
     apiUrl = `${base.replace(/\/$/, '')}/chat/completions`;
     const key = cfg.fireworks_api_key || cfg.api_key || process.env.FIREWORKS_API_KEY || '';
     headers = { 'content-type': 'application/json', authorization: `Bearer ${key}` };
@@ -1115,6 +1118,7 @@ function runInteractiveShell(flags = {}) {
     const history = [];
     let instruction = null;
     let busy = false;
+    let stdinClosed = false;
 
     process.stdout.write(JSON.stringify({ ready: true }) + '\n');
 
@@ -1143,10 +1147,15 @@ function runInteractiveShell(flags = {}) {
       let full;
       try {
         // SCBE_MOCK_RESPONSE bypasses LLM for testing — never set in production
+        const mockDelayMs = Number(process.env.SCBE_MOCK_RESPONSE_DELAY_MS || 0);
+        if (mockDelayMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, mockDelayMs));
+        }
         full = process.env.SCBE_MOCK_RESPONSE || await streamLLM(prompt, cfg, history, () => {});
       } catch (err) {
         process.stdout.write(JSON.stringify({ error: err.message, done: false, commands: [] }) + '\n');
         busy = false;
+        if (stdinClosed) process.exit(0);
         rl.resume();
         return;
       }
@@ -1161,6 +1170,7 @@ function runInteractiveShell(flags = {}) {
       if (!cmdMatch) {
         process.stdout.write(JSON.stringify({ commands: [], done: doneSignal, rationale: full.slice(0, 500) }) + '\n');
         busy = false;
+        if (stdinClosed) process.exit(0);
         if (!doneSignal) rl.resume();
         return;
       }
@@ -1199,6 +1209,7 @@ function runInteractiveShell(flags = {}) {
           governance,
         }) + '\n');
         busy = false;
+        if (stdinClosed) process.exit(0);
         rl.resume();
         return;
       }
@@ -1212,10 +1223,14 @@ function runInteractiveShell(flags = {}) {
       }) + '\n');
 
       busy = false;
+      if (stdinClosed) process.exit(0);
       if (!doneSignal) rl.resume();
     });
 
-    rl.on('close', () => process.exit(0));
+    rl.on('close', () => {
+      stdinClosed = true;
+      if (!busy) process.exit(0);
+    });
     return;
   }
 
