@@ -7,6 +7,30 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import path from 'node:path';
 import { WorkspaceExportManifestSchema, parseReceipt } from './schemas.js';
 
+// Plugin + queue subsystems
+export {
+  type BusPlugin,
+  type BusPluginContext,
+  registerPlugin,
+  unregisterPlugin,
+  listPlugins,
+  clearPlugins,
+  autoDiscoverPlugins,
+  runBeforeRunPlugins,
+  runAfterRunPlugins,
+} from './plugins.js';
+
+export {
+  type QueuedEvent,
+  type QueueStatus,
+  enqueueEvent,
+  getEventStatus,
+  getQueueStatus,
+  processOneEvent,
+  drainQueue,
+  startQueueWorker,
+} from './queue.js';
+
 export type AgentBusPrivacy = 'local_only' | 'remote_allowed' | string;
 
 export interface AgentBusEvent {
@@ -1101,6 +1125,65 @@ export function reportAgentWorkspace(options: WorkspaceReportOptions): AgentWork
   };
 }
 
+export interface TmpCleanupOptions {
+  workspaceRoot: string;
+  /** Delete files older than this many milliseconds. Default: 7 days. */
+  maxAgeMs?: number;
+  /** If true, only report what would be deleted without removing files. */
+  dryRun?: boolean;
+}
+
+export interface TmpCleanupReceipt {
+  schema_version: 'aethermoor.bus.tmp_cleanup.v1';
+  receipt: 'SCBE_WORKSPACE_TMP_CLEANUP=1';
+  workspace_root: string;
+  deleted_count: number;
+  reclaimed_bytes: number;
+  dry_run: boolean;
+  cleaned_at: string;
+}
+
+/**
+ * Delete files in 90_tmp/ older than `maxAgeMs`.
+ * Default age: 7 days. Set `dryRun: true` to preview without deleting.
+ */
+export function cleanupWorkspaceTmp(options: TmpCleanupOptions): TmpCleanupReceipt {
+  const workspaceRoot = path.resolve(options.workspaceRoot);
+  const tmpDir = path.join(workspaceRoot, '90_tmp');
+  const maxAge = options.maxAgeMs ?? 1000 * 60 * 60 * 24 * 7;
+  const now = Date.now();
+  let deletedCount = 0;
+  let reclaimedBytes = 0;
+
+  if (fs.existsSync(tmpDir)) {
+    for (const rel of walkFiles(tmpDir)) {
+      const abs = path.join(tmpDir, rel);
+      try {
+        const st = fs.statSync(abs);
+        if (st.isFile() && now - st.mtime.getTime() > maxAge) {
+          if (!options.dryRun) {
+            fs.unlinkSync(abs);
+          }
+          deletedCount += 1;
+          reclaimedBytes += st.size;
+        }
+      } catch {
+        // tolerate locked/missing file
+      }
+    }
+  }
+
+  return {
+    schema_version: 'aethermoor.bus.tmp_cleanup.v1',
+    receipt: 'SCBE_WORKSPACE_TMP_CLEANUP=1',
+    workspace_root: workspaceRoot,
+    deleted_count: deletedCount,
+    reclaimed_bytes: reclaimedBytes,
+    dry_run: options.dryRun ?? false,
+    cleaned_at: new Date().toISOString(),
+  };
+}
+
 export interface WorkspaceLineageOptions {
   workspaceRoot: string;
 }
@@ -1339,11 +1422,46 @@ function parseJson(text: string): unknown {
   }
 }
 
+export interface RunEventOptions extends RunOptions {
+  /** When true, enqueue the event instead of blocking until completion. */
+  enqueue?: boolean;
+}
+
+/**
+ * Run a single governed event.
+ *
+ * By default, this blocks until the event completes (backward-compatible).
+ * Pass `{ enqueue: true }` to enqueue it for async execution via the
+ * filesystem queue. Returns a result envelope in both cases.
+ */
 export async function runEvent(
   event: AgentBusEvent,
-  options: RunOptions = {}
-): Promise<AgentBusResult> {
+  options: RunEventOptions = {}
+): Promise<AgentBusResult & { run_id?: string }> {
   const normalized = normalizeEvent(event, 1);
+
+  if (options.enqueue) {
+    const { enqueueEvent } = await import('./queue.js');
+    const runId = enqueueEvent(normalized, options);
+    return {
+      schema_version: 'scbe-agentbus-node-result-v1',
+      event_index: 1,
+      started_at: new Date().toISOString(),
+      finished_at: new Date().toISOString(),
+      ok: true,
+      exit_code: 202,
+      stderr_tail: '',
+      event: {
+        task_sha256: null,
+        task_chars: normalized.task.length,
+        series_id: normalized.seriesId,
+        operation_command_chars: normalized.operationCommand.length,
+      },
+      result: { enqueued: true, run_id: runId },
+      run_id: runId,
+    };
+  }
+
   const repoRoot = path.resolve(options.repoRoot || process.cwd());
   const python = options.python || process.env.PYTHON || 'python';
   const cli = path.join(repoRoot, 'scripts', 'scbe-system-cli.py');
@@ -1403,7 +1521,7 @@ export async function runEvent(
 
 export async function runBatch(
   events: AgentBusEvent[],
-  options: RunOptions = {}
+  options: RunEventOptions = {}
 ): Promise<AgentBusResult[]> {
   if (!Array.isArray(events) || events.length === 0) {
     throw new Error('events sequence is empty');
@@ -1446,22 +1564,44 @@ export async function startAgentBusServer(
   const server = createServer(async (req, res) => {
     try {
       if (req.method === 'GET' && req.url === '/health') {
-        sendJson(res, 200, { ok: true, service: 'scbe-agent-bus', version: 1 });
+        const { getQueueStatus } = await import('./queue.js');
+        sendJson(res, 200, { ok: true, service: 'scbe-agent-bus', version: 1, queue: getQueueStatus() });
+        return;
+      }
+      if (req.method === 'GET' && req.url?.startsWith('/v1/events/')) {
+        const runId = req.url.split('/').pop();
+        const { getEventStatus } = await import('./queue.js');
+        const status = runId ? getEventStatus(runId) : null;
+        if (status) {
+          sendJson(res, 200, status);
+        } else {
+          sendJson(res, 404, { ok: false, error: 'run_id not found' });
+        }
         return;
       }
       if (req.method === 'POST' && req.url === '/v1/events') {
-        const body = JSON.parse(await readBody(req)) as AgentBusEvent;
-        const row = await runEvent(body, options);
-        sendJson(res, row.ok ? 200 : 500, row);
+        const body = JSON.parse(await readBody(req)) as AgentBusEvent & { enqueue?: boolean };
+        const enqueue = body.enqueue === true;
+        const row = await runEvent(body, { ...options, enqueue });
+        if (enqueue && row.run_id) {
+          sendJson(res, 202, { ok: true, enqueued: true, run_id: row.run_id });
+        } else {
+          sendJson(res, row.ok ? 200 : 500, row);
+        }
         return;
       }
       if (req.method === 'POST' && req.url === '/v1/batch') {
         const body = JSON.parse(await readBody(req)) as
-          | { items?: AgentBusEvent[] }
+          | { items?: AgentBusEvent[]; enqueue?: boolean }
           | AgentBusEvent[];
         const items = Array.isArray(body) ? body : body.items || [];
-        const rows = await runBatch(items, options);
-        sendJson(res, rows.every((row) => row.ok) ? 200 : 500, { rows });
+        const enqueue = !Array.isArray(body) && body.enqueue === true;
+        const rows = await runBatch(items, { ...options, enqueue });
+        if (enqueue) {
+          sendJson(res, 202, { ok: true, enqueued: true, count: rows.length, run_ids: rows.map((r) => (r.result as Record<string, string>)?.run_id).filter(Boolean) });
+        } else {
+          sendJson(res, rows.every((row) => row.ok) ? 200 : 500, { rows });
+        }
         return;
       }
       sendJson(res, 404, { ok: false, error: 'not_found' });
