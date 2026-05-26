@@ -95,6 +95,24 @@ describe('compilePlan: semantic attachment', () => {
     expect(plan).toBeNull();
   });
 
+  it('falls back to an installed geoseal binary when repo-local compile fails', () => {
+    mockSpawnSync
+      .mockReturnValueOnce(failResult())
+      .mockReturnValueOnce(successResult(fakePlanJson()));
+    const plan = compilePlan('compile this through installed geoseal', {
+      repoRoot: process.cwd(),
+      geosealBin: 'mock-geoseal',
+    });
+    expect(plan).not.toBeNull();
+    expect(mockSpawnSync).toHaveBeenCalledTimes(2);
+    expect(mockSpawnSync.mock.calls[1]?.[0]).toBe('mock-geoseal');
+    expect(mockSpawnSync.mock.calls[1]?.[1]).toEqual([
+      'compile',
+      '--json',
+      'compile this through installed geoseal',
+    ]);
+  });
+
   it('plan.semantic.atoms includes expected atom IDs for governance intent', () => {
     const intent = 'But the system threw an error. Actually the request was denied.';
     mockSpawnSync.mockReturnValue(successResult(fakePlanJson()));

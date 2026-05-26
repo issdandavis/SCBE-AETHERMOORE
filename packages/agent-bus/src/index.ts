@@ -132,6 +132,7 @@ export interface AgentBusEvent {
 
 export interface RunOptions {
   repoRoot?: string;
+  geosealBin?: string;
   python?: string;
   continueOnError?: boolean;
 }
