@@ -17,6 +17,7 @@ import configparser
 from collections import Counter, defaultdict, deque
 import datetime
 import hashlib
+import hmac
 import json
 import logging
 import math
@@ -35,7 +36,7 @@ from functools import lru_cache
 from pathlib import Path, PurePosixPath
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -162,6 +163,7 @@ def _public_email_result(result: Any) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 _runtime_gate = None
+_gate_eval_counter = 0
 
 
 def _env_flag(name: str, default: bool = False) -> bool:
@@ -214,10 +216,85 @@ def _runtime_gate_kwargs() -> dict[str, Any]:
     return kwargs
 
 
+def _runtime_gate_state_path() -> Optional[Path]:
+    """Where the gate's accumulated state is persisted, if configured.
+
+    Opt-in via SCBE_RUNTIME_GATE_STATE_PATH. There is no default location:
+    immune hashes can fingerprint observed attack patterns, so the operator
+    chooses where state lives (outside the repo by default).
+    """
+    raw = os.environ.get("SCBE_RUNTIME_GATE_STATE_PATH", "").strip()
+    return Path(raw) if raw else None
+
+
+def _restore_gate_state(gate) -> None:
+    """Restore persisted state into a freshly-created gate, if configured.
+
+    Best-effort: a missing or unreadable state file leaves the gate cold
+    rather than failing server start-up.
+    """
+    path = _runtime_gate_state_path()
+    if path is None or not path.exists():
+        return
+    try:
+        gate.load_state(path)
+        logger.info("RuntimeGate state restored from %s", path)
+    except Exception:
+        logger.warning("Failed to restore RuntimeGate state from %s; starting cold", path, exc_info=True)
+
+
+def _persist_gate_state(keep_previous: bool = False) -> bool:
+    """Persist the live gate's accumulated state, if one exists and a path is set.
+
+    Returns True if a save was attempted and succeeded. When ``keep_previous``
+    is set the prior snapshot is rotated to ``<name>.prev`` for rollback.
+    """
+    gate = _runtime_gate
+    path = _runtime_gate_state_path()
+    if gate is None or path is None:
+        return False
+    try:
+        gate.save_state(path, keep_previous=keep_previous)
+        logger.info("RuntimeGate state saved to %s", path)
+        return True
+    except Exception:
+        logger.warning("Failed to save RuntimeGate state to %s", path, exc_info=True)
+        return False
+
+
+def _checkpoint_every() -> int:
+    """How many evaluate() calls between autosaves (0 disables periodic saves)."""
+    raw = os.environ.get("SCBE_RUNTIME_GATE_CHECKPOINT_EVERY", "20").strip()
+    try:
+        return max(0, int(raw))
+    except ValueError:
+        logger.warning("Ignoring invalid SCBE_RUNTIME_GATE_CHECKPOINT_EVERY=%r", raw)
+        return 20
+
+
+def _gate_evaluate(gate, action_text: str):
+    """Single choke point for gate.evaluate() that drives periodic checkpoints.
+
+    Every Nth evaluation (N = SCBE_RUNTIME_GATE_CHECKPOINT_EVERY, default 20)
+    the accumulated drift/immune state is checkpointed atomically with a
+    one-deep ``.prev`` rollback snapshot. No-op when no state path is set.
+    """
+    global _gate_eval_counter
+    result = gate.evaluate(action_text)
+    every = _checkpoint_every()
+    if every and _runtime_gate_state_path() is not None:
+        _gate_eval_counter += 1
+        if _gate_eval_counter >= every:
+            _gate_eval_counter = 0
+            _persist_gate_state(keep_previous=True)
+    return result
+
+
 def _get_gate():
     """Return a shared RuntimeGate instance, initialised on first call."""
-    global _runtime_gate
+    global _runtime_gate, _gate_eval_counter
     if _runtime_gate is None:
+        _gate_eval_counter = 0
         try:
             from governance.runtime_gate import RuntimeGate
 
@@ -230,6 +307,8 @@ def _get_gate():
             except Exception:
                 logger.debug("RuntimeGate unavailable, governance gating disabled")
                 _runtime_gate = None
+        if _runtime_gate is not None:
+            _restore_gate_state(_runtime_gate)
     return _runtime_gate
 
 
@@ -421,6 +500,37 @@ if DOCS_DIR.exists():
     docs_static_dir = DOCS_DIR / "static"
     if docs_static_dir.exists():
         app.mount("/site/static", StaticFiles(directory=str(docs_static_dir)), name="docs-static")
+
+
+@app.on_event("shutdown")
+async def _save_gate_state_on_shutdown() -> None:
+    """Persist accumulated gate state on graceful shutdown (if configured)."""
+    _persist_gate_state(keep_previous=True)
+
+
+@app.post("/runtime-gate/checkpoint")
+async def runtime_gate_checkpoint(request: Request) -> dict:
+    """Force a state checkpoint. Admin-guarded; disabled unless a token is set.
+
+    Requires SCBE_RUNTIME_GATE_ADMIN_TOKEN to be configured and a matching
+    X-Admin-Token header. Returns {ok, path, query_count}. The server has
+    wide-open CORS and no other auth, so this fails closed when no token is set.
+    """
+    admin_token = os.environ.get("SCBE_RUNTIME_GATE_ADMIN_TOKEN", "").strip()
+    if not admin_token:
+        raise HTTPException(status_code=403, detail="checkpoint endpoint disabled (no admin token configured)")
+    if not hmac.compare_digest(request.headers.get("x-admin-token", ""), admin_token):
+        raise HTTPException(status_code=401, detail="invalid or missing X-Admin-Token")
+
+    gate = _get_gate()
+    path = _runtime_gate_state_path()
+    if gate is None:
+        raise HTTPException(status_code=503, detail="RuntimeGate unavailable")
+    if path is None:
+        raise HTTPException(status_code=400, detail="SCBE_RUNTIME_GATE_STATE_PATH not configured")
+    if not _persist_gate_state(keep_previous=True):
+        raise HTTPException(status_code=500, detail="checkpoint failed")
+    return {"ok": True, "path": str(path), "query_count": gate._query_count}
 
 
 # =========================================================================== #
@@ -1998,7 +2108,7 @@ async def arena_compat_chat(req: ArenaCompatChatRequest):
     cost = 0.0
     if gate is not None:
         try:
-            gate_result = gate.evaluate(req.message)
+            gate_result = _gate_evaluate(gate, req.message)
             decision = gate_result.decision.value
             cost = round(gate_result.cost, 4)
         except Exception:
@@ -2289,7 +2399,7 @@ async def chat(req: ChatRequest):
 
     if gate is not None:
         try:
-            gr = gate.evaluate(req.message)
+            gr = _gate_evaluate(gate, req.message)
             decision = gr.decision.value
             trust_level = gr.trust_level
             fib_index = gr.trust_index
@@ -2397,7 +2507,7 @@ async def fact_check(req: FactCheckRequest):
     cost = 0.0
     if gate is not None:
         try:
-            gr = gate.evaluate(question)
+            gr = _gate_evaluate(gate, question)
             decision = gr.decision.value
             trust_level = gr.trust_level
             cost = round(gr.cost, 4)

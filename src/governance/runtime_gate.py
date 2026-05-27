@@ -23,10 +23,12 @@ Dangerous actions are expensive. Impossible actions cost infinity.
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import os
 import re
 import time
+import warnings
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -262,7 +264,9 @@ DEFAULT_REROUTES: List[RerouteRule] = [
     ),
     RerouteRule("delete.*all|drop.*table|rm.*-rf", "soft_delete", "destructive op → soft delete"),
     RerouteRule(
-        "api.*key|client.*secret|secret.*key|access.*token|auth.*token|bearer.*token|oauth.*token|refresh.*token|session.*token|password|credential|seed.*phrase|wallet.*key|private.*key",
+        "api.*key|client.*secret|secret.*key|access.*token|auth.*token|"
+        "bearer.*token|oauth.*token|refresh.*token|session.*token|"
+        "password|credential|seed.*phrase|wallet.*key|private.*key",
         "redact_and_log",
         "credential access → redacted",
     ),
@@ -471,6 +475,10 @@ class RuntimeGate:
         # Fibonacci trust history: aggregate ternary signal per query
         # +1 if spin_magnitude == 0 (clean), 0 if 1-3, -1 if 4+
         self._trust_history: List[int] = []
+
+        # Signals queued by load_state() to surface in the next evaluate()
+        # result (e.g. a config-drift warning), so audit sees the load event.
+        self._pending_load_signals: List[str] = []
 
         # Tongue coordinate backend
         self._coords_backend = (coords_backend or "stats").strip().lower()
@@ -973,6 +981,11 @@ class RuntimeGate:
         ts = time.time()
         action_hash = hashlib.blake2s(action_text.encode("utf-8", errors="replace"), digest_size=8).hexdigest()
 
+        # Drain any signals queued by load_state() (e.g. config-drift warning)
+        # so they land in this action's audit record on every decision path.
+        _carry = self._pending_load_signals
+        self._pending_load_signals = []
+
         # ---- Bijective tamper + identifier canonicality overlays (top-of-evaluate) ----
         # Both signals are monotonic — they can only RAISE severity. We compute
         # them once at the top so calibration / immune / reflex / reroute all see
@@ -1021,7 +1034,7 @@ class RuntimeGate:
         # Catastrophic short-circuit: either overlay recommending DENY ends here.
         if (tamper_decision == Decision.DENY) or (canonicality_decision == Decision.DENY):
             self._immune.add(action_hash)
-            signals_short: List[str] = []
+            signals_short: List[str] = list(_carry)
             if tamper_data is not None:
                 signals_short.append(
                     self._tamper_receipt_signal(
@@ -1135,7 +1148,7 @@ class RuntimeGate:
             self._cumulative_cost += 1.0  # nominal cost during calibration
             self._trust_history.append(1)  # calibration = +1 trust
             fib = fibonacci_trust_level(self._trust_history)
-            calib_signals = ["calibrating"]
+            calib_signals = [*_carry, "calibrating"]
             calib_decision = Decision.ALLOW
             if tamper_data is not None:
                 calib_signals.append(
@@ -1205,7 +1218,7 @@ class RuntimeGate:
 
         # Immune memory: known attack → instant DENY + noise
         if action_hash in self._immune:
-            immune_signals = ["immune_memory_hit"]
+            immune_signals = [*_carry, "immune_memory_hit"]
             if tamper_data is not None:
                 immune_signals.append(
                     self._tamper_receipt_signal(
@@ -1255,7 +1268,7 @@ class RuntimeGate:
         if action_hash in self._reflex and not classifier_quarantine:
             self._trust_history.append(1)  # known-safe = +1 trust
             fib = fibonacci_trust_level(self._trust_history)
-            reflex_signals = ["reflex_hit"]
+            reflex_signals = [*_carry, "reflex_hit"]
             reflex_decision = Decision.ALLOW
             if tamper_data is not None:
                 reflex_signals.append(
@@ -1378,7 +1391,7 @@ class RuntimeGate:
             or classifier_quarantine
             or reroute_high_confidence
         ):
-            reroute_signals = [f"reroute_match({reroute_rule.pattern})"]
+            reroute_signals = [*_carry, f"reroute_match({reroute_rule.pattern})"]
             if reroute_high_confidence:
                 reroute_signals.append("high_confidence_match")
             else:
@@ -1465,7 +1478,7 @@ class RuntimeGate:
         effective_cost_quarantine = self.cost_quarantine * trust_multiplier
         effective_cost_deny = self.cost_deny * trust_multiplier
 
-        signals: List[str] = [f"fib_trust({trust_level},w={trust_weight},idx={trust_index})"]
+        signals: List[str] = [*_carry, f"fib_trust({trust_level},w={trust_weight},idx={trust_index})"]
 
         if _is_high_confidence_override_attempt(full_text):
             signals.append("override_quarantine(high_confidence)")
@@ -2246,3 +2259,138 @@ class RuntimeGate:
             "trust_history_length": len(self._trust_history),
             "trichromatic_enabled": self._trichromatic_enabled,
         }
+
+    # ------------------------------------------------------------------ #
+    #  State persistence — durable home for accumulated session state
+    #
+    #  Persists the full drift trajectory (centroid, cumulative cost, query
+    #  count, trust history) plus immune memory, so a restarted gate continues
+    #  the same session instead of starting cold.
+    #
+    #  Deliberately NOT persisted:
+    #    - _reflex: a runtime-learned fast-path cache; rebuilt empty per
+    #      process so a tightened policy is never bypassed by a stale
+    #      "previously allowed" action.
+    #    - _audit_log: telemetry (durable audit belongs in the HYDRA Ledger).
+    #    - trichromatic engine baseline: known v1.1 gap.
+    # ------------------------------------------------------------------ #
+
+    STATE_SCHEMA = "runtime-gate-state/v1"
+
+    def _policy_fingerprint(self) -> Dict[str, Any]:
+        """Config the persisted state depends on, recorded for drift detection.
+
+        These are NOT restored by load_state (they come from the constructor).
+        They are stored so a snapshot built under one backend/threshold set can
+        be flagged — not refused — when loaded into a differently-configured gate.
+        """
+        return {
+            "coords_backend": self._coords_backend,
+            "cost_allow": self.cost_allow,
+            "cost_quarantine": self.cost_quarantine,
+            "cost_deny": self.cost_deny,
+            "spin_quarantine": self.spin_quarantine,
+            "spin_deny": self.spin_deny,
+            "cumulative_cost_quarantine": self.cumulative_cost_quarantine,
+            "cumulative_cost_deny": self.cumulative_cost_deny,
+        }
+
+    def save_state(self, path: Any, keep_previous: bool = False) -> None:
+        """Persist accumulated session state to a JSON file via an atomic write.
+
+        The caller chooses the path; there is no default location, because immune
+        hashes can fingerprint observed attack patterns and should not be written
+        into the repo by default.
+
+        When ``keep_previous`` is set, the prior good snapshot is copied to a
+        sibling ``<name>.prev`` before the new state is written, so a checkpoint
+        always leaves a one-deep rollback target on disk.
+        """
+        p = Path(path)
+        centroid = self._centroid.tolist() if self._centroid is not None else None
+        snapshot = {
+            "schema": self.STATE_SCHEMA,
+            "saved_at": time.time(),
+            "policy": self._policy_fingerprint(),
+            "state": {
+                "centroid": centroid,
+                "centroid_count": self._centroid_count,
+                "cumulative_cost": self._cumulative_cost,
+                "query_count": self._query_count,
+                "trust_history": list(self._trust_history),
+                "immune": sorted(self._immune),
+            },
+            "derived_not_persisted": ["reflex", "audit_log", "trichromatic_baseline"],
+            "notes": (
+                "reflex is rebuilt per-process; audit_log is telemetry (see HYDRA "
+                "Ledger); trichromatic baseline restore is a v1.1 gap."
+            ),
+        }
+        if p.parent and not p.parent.exists():
+            p.parent.mkdir(parents=True, exist_ok=True)
+        if keep_previous and p.exists():
+            prev = p.with_name(p.name + ".prev")
+            prev_tmp = p.with_name(p.name + ".prev.tmp")
+            try:
+                prev_tmp.write_bytes(p.read_bytes())
+                os.replace(prev_tmp, prev)
+            except OSError:
+                # best-effort rollback snapshot; never block the primary save
+                prev_tmp.unlink(missing_ok=True)
+        tmp = p.with_name(p.name + ".tmp")
+        tmp.write_text(json.dumps(snapshot, indent=2), encoding="utf-8")
+        os.replace(tmp, p)
+
+    def load_state(self, path: Any) -> None:
+        """Restore accumulated state from a save_state() snapshot into this gate.
+
+        Config (thresholds, backend, overlay flags) is NOT restored — it comes
+        from this gate's constructor. If the snapshot's policy fingerprint differs
+        from this gate's, the load still proceeds, but a RuntimeWarning is issued
+        and a ``state_loaded_config_drift`` signal is queued onto the next
+        evaluate() result so the audit trail records the mismatch.
+
+        Raises:
+            FileNotFoundError: the path does not exist.
+            ValueError: the file is empty, not valid JSON, or not a recognized
+                runtime-gate-state snapshot.
+        """
+        p = Path(path)
+        raw = p.read_text(encoding="utf-8")  # FileNotFoundError propagates if missing
+        if not raw.strip():
+            raise ValueError(f"empty runtime-gate state file: {p}")
+        try:
+            snapshot = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"corrupted runtime-gate state file {p}: {exc}") from exc
+        if not isinstance(snapshot, dict) or snapshot.get("schema") != self.STATE_SCHEMA:
+            got = snapshot.get("schema") if isinstance(snapshot, dict) else type(snapshot).__name__
+            raise ValueError(
+                f"unrecognized runtime-gate state in {p}: expected schema {self.STATE_SCHEMA!r}, got {got!r}"
+            )
+
+        state = snapshot.get("state", {})
+        centroid = state.get("centroid")
+        self._centroid = np.array(centroid, dtype=float) if centroid is not None else None
+        self._centroid_count = int(state.get("centroid_count", 0))
+        self._cumulative_cost = float(state.get("cumulative_cost", 0.0))
+        self._query_count = int(state.get("query_count", 0))
+        self._trust_history = [int(x) for x in state.get("trust_history", [])]
+        self._immune = set(state.get("immune", []))
+        # _reflex is a runtime-learned cache; rebuild empty so a tightened policy
+        # is never silently bypassed by a previously-allowed action.
+        self._reflex = {}
+
+        # Config-drift detection: warn (never refuse) and surface in audit.
+        saved_policy = snapshot.get("policy", {})
+        current_policy = self._policy_fingerprint()
+        all_keys = set(saved_policy) | set(current_policy)
+        drift = sorted(k for k in all_keys if saved_policy.get(k) != current_policy.get(k))
+        if drift:
+            warnings.warn(
+                f"runtime-gate state loaded from {p} was saved under different config; "
+                f"drifted fields: {', '.join(drift)}",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            self._pending_load_signals.append(f"state_loaded_config_drift(fields={'|'.join(drift)})")
