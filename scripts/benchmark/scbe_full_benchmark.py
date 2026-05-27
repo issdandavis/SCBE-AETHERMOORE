@@ -142,34 +142,56 @@ def run_governance_benchmark() -> dict[str, Any]:
             "petri_pattern_filter_recall": petri_recall["recall"],
             "petri_seeds_caught": petri_recall["hit"],
             "petri_seeds_total": petri_recall["total"],
+            "petri_tongue_only": petri_recall.get("tongue_only", 0),
+            "petri_regex_only": petri_recall.get("regex_only", 0),
             "elapsed_s": elapsed,
         }
     return {"ok": False, "error": "no result file found", "elapsed_s": elapsed}
 
 
 def _measure_petri_recall() -> dict[str, Any]:
-    """Run the Petri-173 corpus through the pattern filter and return recall metrics.
+    """Run the Petri-173 corpus through the full governance pre-filter stack.
 
-    Returns a dict with: recall (float), hit (int), total (int), corpus_available (bool).
-    Falls back gracefully when the gitignored corpus is not present locally.
+    Measures combined recall: Petri regex filter + Sacred Tongue KO coverage gate.
+    The tongue gate catches non-Latin-script adversarial inputs (CJK, Devanagari,
+    Arabic, etc.) that the English regex filter cannot reach.
+
+    Returns a dict with: recall (float), hit (int), total (int), corpus_available (bool),
+    plus per-layer breakdown (regex_only, tongue_only, both).
     """
     seeds_dir = REPO_ROOT / "external" / "benchmarks" / "petri-seeds"
     if not seeds_dir.exists() or not any(seeds_dir.glob("*.md")):
         return {"recall": None, "hit": 0, "total": 0, "corpus_available": False}
 
     try:
-        from src.cli.petri_pattern_filter import is_meta_ai_auditor_phrasing
-        total, hit = 0, 0
+        from src.cli.petri_pattern_filter import is_meta_ai_auditor_phrasing, is_non_latin_script_input
+        total, hit, regex_only, tongue_only, both_hit = 0, 0, 0, 0, 0
         for f in sorted(seeds_dir.glob("*.md")):
             body = f.read_text(encoding="utf-8")
             if body.startswith("---"):
                 parts = body.split("---", 2)
                 body = parts[2].strip() if len(parts) >= 3 else body
             total += 1
-            if is_meta_ai_auditor_phrasing(body)[0]:
+            r_hit = is_meta_ai_auditor_phrasing(body)[0]
+            t_hit = is_non_latin_script_input(body)[0]
+            if r_hit or t_hit:
                 hit += 1
+                if r_hit and t_hit:
+                    both_hit += 1
+                elif r_hit:
+                    regex_only += 1
+                else:
+                    tongue_only += 1
         recall = hit / total if total else 0.0
-        return {"recall": recall, "hit": hit, "total": total, "corpus_available": True}
+        return {
+            "recall": recall,
+            "hit": hit,
+            "total": total,
+            "corpus_available": True,
+            "regex_only": regex_only,
+            "tongue_only": tongue_only,
+            "both": both_hit,
+        }
     except Exception as exc:
         return {"recall": None, "hit": 0, "total": 0, "corpus_available": False, "error": str(exc)}
 
@@ -474,7 +496,15 @@ def main() -> int:
     print("\n[1/5] Governance accuracy...", flush=True)
     gov = run_governance_benchmark()
     petri_r = gov.get("petri_pattern_filter_recall")
-    petri_str = f"  |  Petri-filter: {petri_r:.1%} ({gov.get('petri_seeds_caught',0)}/{gov.get('petri_seeds_total',0)})" if petri_r is not None else "  |  Petri: corpus not present"
+    if petri_r is not None:
+        tongue_only = gov.get("petri_tongue_only", 0)
+        tongue_tag = f" +{tongue_only}✦KO" if tongue_only > 0 else ""
+        petri_str = (
+            f"  |  Petri(regex+KO): {petri_r:.1%} "
+            f"({gov.get('petri_seeds_caught',0)}/{gov.get('petri_seeds_total',0)}{tongue_tag})"
+        )
+    else:
+        petri_str = "  |  Petri: corpus not present"
     print(f"      synthetic: {gov.get('accuracy', 'N/A'):.1%}  |  blind-holdout: {gov.get('blind_detection_rate', 'N/A'):.1%}  |  hybrid: {gov.get('hybrid_detection_rate', 'N/A'):.1%}{petri_str}")
 
     print("\n[2/5] CLI capability...", flush=True)

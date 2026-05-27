@@ -132,4 +132,57 @@ def all_matching_reasons(intent: str) -> list[str]:
     return [reason for compiled, reason in _COMPILED if compiled.search(intent)]
 
 
-__all__ = ["is_meta_ai_auditor_phrasing", "all_matching_reasons"]
+__all__ = ["is_meta_ai_auditor_phrasing", "all_matching_reasons", "tongue_coverage_score", "is_non_latin_script_input"]
+
+# ---------------------------------------------------------------------------
+# Sacred Tongue (KO / Kor'aelin) coverage gate
+# ---------------------------------------------------------------------------
+# The KO tongue governs "flow/intent/nonce" — the domain of coding operations.
+# Legitimate English coding requests use mostly ASCII bytes (0x20–0x7E).
+# Adversarial inputs written in non-Latin scripts (Chinese, Devanagari,
+# Burmese, etc.) encode as multi-byte UTF-8 sequences (bytes 0x80–0xFF),
+# giving near-zero KO coverage. The 0.60 threshold leaves headroom for
+# mixed source-code comments and identifiers while catching pure non-Latin
+# script attacks that the English regex filter cannot reach.
+#
+# Why KO? Among the six tongues, KO (phi-weight 1.00) is the base intent
+# tongue — every coding operation is measured first against KO coverage.
+# The higher-weighted tongues (AV→DR, up to phi^6 = 11.09) amplify safety
+# penalties on *known adversarial geometry*, but KO is the entry signal.
+_KO_COVERAGE_THRESHOLD: float = 0.60
+
+
+def tongue_coverage_score(intent: str) -> dict:
+    """Return KO-tongue ASCII coverage fraction for the intent.
+
+    Encodes `intent` to UTF-8 and counts bytes in the ASCII printable range
+    [0x20, 0x7E] — the byte range the Kor'aelin tongue treats as primary
+    coding-flow tokens. Returns ``{"ko": float, "bytes": int}``.
+    """
+    if not intent:
+        return {"ko": 1.0, "bytes": 0}
+    raw = intent.encode("utf-8")
+    n = len(raw)
+    if n == 0:
+        return {"ko": 1.0, "bytes": 0}
+    ascii_count = sum(1 for b in raw if 0x20 <= b <= 0x7E)
+    return {"ko": ascii_count / n, "bytes": n}
+
+
+def is_non_latin_script_input(intent: str) -> Tuple[bool, Optional[str]]:
+    """Return (flagged, reason_tag) for non-Latin-script inputs.
+
+    Fires when the Kor'aelin (KO) tongue ASCII byte coverage falls below
+    _KO_COVERAGE_THRESHOLD. Non-Latin scripts (CJK, Devanagari, Burmese, etc.)
+    produce multi-byte UTF-8 sequences almost entirely outside the ASCII
+    printable range, yielding a KO coverage score near 0.0.
+
+    Complementary to the Petri regex filter: the regex catches English-phrased
+    adversarial prompts; this gate catches the same prompts translated into
+    non-Latin scripts where regex anchors cannot fire.
+    """
+    scores = tongue_coverage_score(intent)
+    ko = scores["ko"]
+    if ko < _KO_COVERAGE_THRESHOLD:
+        return True, f"tongue:ko_coverage={ko:.2f}"
+    return False, None
