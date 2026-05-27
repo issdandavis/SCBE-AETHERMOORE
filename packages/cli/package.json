@@ -12,6 +12,10 @@
   },
   "files": [
     "bin",
+    "scripts/scbe_tb_agent.py",
+    "scripts/shell_benchmark.cjs",
+    "scripts/scbe_workflow.cjs",
+    "tests",
     "README.md",
     "LICENSE",
     "LICENSE-APACHE",
@@ -20,14 +24,20 @@
   "scripts": {
     "help": "node ./bin/scbe.js --help",
     "selftest": "node ./bin/scbe.js selftest",
+    "test": "node --test tests/*.test.cjs",
+    "bench:shell": "node scripts/shell_benchmark.cjs",
+    "bench:corpus": "node scripts/bench_task_corpus.cjs",
+    "workflow": "node scripts/scbe_workflow.cjs",
     "pack:dry": "npm pack --dry-run --json"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "dependencies": {
+    "ink": "^4.4.1",
+    "react": "^18.3.1",
     "scbe-aethermoore": "^4.1.0",
-    "scbe-agent-bus": "^0.3.10"
+    "scbe-agent-bus": "^0.4.0"
   },
   "keywords": [
     "scbe",
@@ -48,7 +58,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git",
-    "directory": "packages/scbe-aethermoore-cli"
+    "directory": "packages/cli"
   },
   "bugs": {
     "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"

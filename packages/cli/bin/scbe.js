@@ -8,6 +8,16 @@ const os = require('node:os');
 const path = require('node:path');
 const readline = require('node:readline');
 
+function readJsonFileSafe(filePath) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (_err) {
+    return {};
+  }
+}
+
+const CLI_PACKAGE_JSON = readJsonFileSafe(path.resolve(__dirname, '..', 'package.json'));
+
 const SERVICE_CREDITS = {
   schema_version: 'scbe_service_credits_v1',
   name: 'SCBE Service Credits',
@@ -26,13 +36,18 @@ Usage:
 
 Core commands:
   scbe version
+  scbe version --json
   scbe demo
   scbe demo --json
   scbe selftest
   scbe doctor --json
   scbe credits
   scbe upgrade
-  scbe shell
+  scbe shell                         Governed AI shell (default rich mode)
+  scbe shell --ai                    AI-first: plain English intent routing
+  scbe shell --tui                   Alias for default rich mode
+  scbe shell --minimal               Minimal scriptable readline (no AI)
+  scbe shell --agent-json            NDJSON stdin/stdout for harness/benchmark control
   scbe run "npm test"
   scbe status
   scbe liboqs
@@ -80,10 +95,10 @@ Trap-in-good-loops dispatcher (forwards to FREE providers — offline by default
   echo "<prompt>" | scbe trap-dispatch --json
 
 Compiler and routing commands, available from a source checkout:
-  scbe compile-ca --opcodes "0x09 0x09 0x00" --target python
+  scbe compile-ca --opcodes "0x09 0x09 0x00" --target python --fn score --args a,b
   scbe ca-plan --ops "abs abs add" --json
   scbe render-op --op add --target KO --a left --b right
-  scbe compile ca --opcodes "0x09 0x09 0x00" --target typescript
+  scbe compile ca --opcodes "0x09 0x09 0x00" --target typescript --fn score --args a,b
   scbe route --program 'encode "run tests" in tongue KO'
 
 Hosted run path:
@@ -114,6 +129,40 @@ function resolveGeosealBin() {
 
 function repoRoot() {
   return path.resolve(__dirname, '..', '..', '..');
+}
+
+function findPackageJsonFromEntry(entryPath, expectedName) {
+  let current = path.dirname(entryPath);
+  for (let i = 0; i < 8; i += 1) {
+    const candidate = path.join(current, 'package.json');
+    const parsed = readJsonFileSafe(candidate);
+    if (!expectedName || parsed.name === expectedName) return parsed;
+    const next = path.dirname(current);
+    if (next === current) break;
+    current = next;
+  }
+  return {};
+}
+
+function corePackageJson() {
+  try {
+    return findPackageJsonFromEntry(require.resolve('scbe-aethermoore'), 'scbe-aethermoore');
+  } catch (_err) {
+    return readJsonFileSafe(path.resolve(repoRoot(), 'package.json'));
+  }
+}
+
+function versionPacket() {
+  const core = corePackageJson();
+  return {
+    schema_version: 'scbe_aethermoore_cli_version_v1',
+    cli_package: CLI_PACKAGE_JSON.name || 'scbe-aethermoore-cli',
+    cli_version: CLI_PACKAGE_JSON.version || 'unknown',
+    core_package: core.name || 'scbe-aethermoore',
+    core_version: core.version || 'unknown',
+    node: process.version,
+    platform: process.platform,
+  };
 }
 
 function resolveRepoScript(relativePath) {
@@ -163,6 +212,28 @@ function firstLine(text) {
       .split(/\r?\n/)
       .filter(Boolean)[0] || ''
   );
+}
+
+function parseJsonFromText(text) {
+  const raw = String(text || '').trim();
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (_err) {
+    // Some Python/native paths print warnings before the JSON receipt. Try
+    // every line suffix so a leading warning does not turn a DENY into WARN.
+    const lines = raw.split(/\r?\n/);
+    for (let i = 0; i < lines.length; i += 1) {
+      const candidate = lines.slice(i).join('\n').trim();
+      if (!candidate.startsWith('{') && !candidate.startsWith('[')) continue;
+      try {
+        return JSON.parse(candidate);
+      } catch (_innerErr) {
+        // Keep scanning later suffixes.
+      }
+    }
+  }
+  return null;
 }
 
 function appendHistory(row) {
@@ -223,9 +294,9 @@ function gateCommand(command) {
       stderr_preview: String(child.stderr || '').slice(0, 500),
     };
   }
-  try {
-    return JSON.parse(String(child.stdout || '{}'));
-  } catch (_err) {
+  const parsed = parseJsonFromText(child.stdout);
+  if (parsed) return parsed;
+  {
     return {
       allowed: true,
       tier: 'WARN',
@@ -688,9 +759,8 @@ function runLiboqs(args) {
     process.exit(1);
   }
   let payload;
-  try {
-    payload = JSON.parse(result.stdout);
-  } catch (_err) {
+  payload = parseJsonFromText(result.stdout);
+  if (!payload) {
     payload = {
       schema_version: 'scbe_liboqs_receipt_v1',
       receipt: 'SCBE_LIBOQS_PASS=0',
@@ -729,49 +799,1221 @@ function runLiboqs(args) {
   process.exit(payload.native_pass ? 0 : 1);
 }
 
-function runInteractiveShell() {
-  process.stdout.write('SCBE Terminal. Type commands normally. Use :help or :exit.\n');
+function runVersion(args) {
+  const payload = versionPacket();
+  if (args.includes('--json')) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+  } else {
+    process.stdout.write(`${payload.cli_version}\n`);
+  }
+  process.exit(0);
+}
+
+function runDoctor(args) {
+  const asJson = args.includes('--json');
+  const target = resolveGeosealBin();
+  const child = spawnSync(process.execPath, [target, 'doctor', '--json'], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  const geosealDoctor = parseJsonFromText(child.stdout);
+  const versions = versionPacket();
+  const payload = {
+    schema_version: 'scbe_aethermoore_cli_doctor_v1',
+    ok: child.status === 0 && (!geosealDoctor || geosealDoctor.ok !== false),
+    cli_package: versions.cli_package,
+    cli_version: versions.cli_version,
+    core_package: versions.core_package,
+    core_version: versions.core_version,
+    node: process.version,
+    platform: process.platform,
+    cli_package_bin: CLI_PACKAGE_JSON.bin || {},
+    geoseal_bin: target,
+    geoseal_doctor: geosealDoctor,
+    geoseal_doctor_status: typeof child.status === 'number' ? child.status : 1,
+    stderr_preview: String(child.stderr || '').slice(0, 1000),
+  };
+  if (geosealDoctor && geosealDoctor.package_bin) {
+    payload.core_package_bin = geosealDoctor.package_bin;
+  }
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+  } else {
+    const apiCount =
+      geosealDoctor && Array.isArray(geosealDoctor.api_commands)
+        ? geosealDoctor.api_commands.length
+        : 0;
+    const activeService =
+      geosealDoctor && geosealDoctor.active_service
+        ? geosealDoctor.active_service.api_base
+        : 'none';
+    process.stdout.write(
+      [
+        `SCBE CLI doctor ${payload.cli_version} (core ${payload.core_version})`,
+        `Node: ${payload.node}`,
+        `GeoSeal: ${payload.geoseal_doctor_status === 0 ? 'ok' : 'fail'}`,
+        `Active service: ${activeService}`,
+        `API commands: ${apiCount}`,
+        '',
+      ].join('\n')
+    );
+  }
+  process.exit(payload.ok ? 0 : 1);
+}
+
+// ─── ANSI colour helpers ─────────────────────────────────────────────────────
+
+const _ANSI = {
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+  dim: '\x1b[2m',
+  cyan: '\x1b[36m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  red: '\x1b[31m',
+  blue: '\x1b[34m',
+  gray: '\x1b[90m',
+};
+
+function ansi(color, text) {
+  return process.stdout.isTTY ? `${_ANSI[color] || ''}${text}${_ANSI.reset}` : text;
+}
+
+// ─── Shell config (~/.scbe/shell.json) ────────────────────────────────────────
+
+function shellConfigPath() {
+  return path.join(os.homedir(), '.scbe', 'shell.json');
+}
+
+function readShellConfig() {
+  const defaults = {
+    provider: 'ollama',
+    model: 'llama3.2',
+    url: 'http://localhost:11434',
+    timeout_ms: 30000,
+    stream: true,
+    system_prompt:
+      'You are SCBE, a governed AI command assistant. Help the user accomplish their intent safely. ' +
+      'When you want to suggest a shell command, wrap it in <cmd>...</cmd> tags. Be concise.',
+  };
+  try {
+    return { ...defaults, ...JSON.parse(fs.readFileSync(shellConfigPath(), 'utf8')) };
+  } catch {
+    return defaults;
+  }
+}
+
+function saveShellConfig(cfg) {
+  const dir = path.dirname(shellConfigPath());
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(shellConfigPath(), `${JSON.stringify(cfg, null, 2)}\n`, 'utf8');
+}
+
+// ─── Agent-JSON: task-completion prompt + shell tool translations ─────────────
+
+const _AGENT_JSON_SYSTEM_PROMPT = [
+  'You are a terminal task completion agent. Complete the given task, then verify it is done.',
+  '',
+  'RULES:',
+  '1. Inspect the current terminal state before choosing any command.',
+  '2. Choose ONE command per turn. Wrap it in <cmd>...</cmd>.',
+  "3. After each command's output, decide: is the task complete?",
+  '4. Only emit <done> after running the verification step described in the task (tests pass, file exists, expected output confirmed).',
+  '5. If a command fails: state why it failed, then try a different approach. Never repeat a failed command.',
+  '6. Do not repeat the same command if the terminal state has not changed.',
+  '',
+  'BUILT-IN TOOLS — use like any command inside <cmd>...</cmd>:',
+  '  :files <pattern>           — find files by name or grep for text in files',
+  '  :read <path> <start>:<end> — read lines start–end of a file  e.g. :read main.py 1:40',
+  '  :test <cmd>                — run test command; output includes SCBE_TEST_PASS or SCBE_TEST_FAIL',
+  '  :patch <file>              — apply a unified diff: patch -p1 < <file>',
+  '',
+  'VERIFICATION: Before emitting <done>, run the check described in the task.',
+  'Example: task says "make the tests pass" → run the tests, see them pass, then emit <done>.',
+].join('\n');
+
+function translateToolCommand(cmd) {
+  const trimmed = cmd.trim();
+  if (!trimmed.startsWith(':')) return null;
+  const space = trimmed.indexOf(' ');
+  const tool = space === -1 ? trimmed.slice(1) : trimmed.slice(1, space);
+  const args = space === -1 ? '' : trimmed.slice(space + 1).trim();
+  if (tool === 'files') {
+    const esc = args.replace(/'/g, "'\\''");
+    return `find . -name '*${esc}*' 2>/dev/null | head -30`;
+  }
+  if (tool === 'read') {
+    const parts = args.split(/\s+/);
+    const fp = (parts[0] || 'README.md').replace(/'/g, "'\\''");
+    const range = (parts[1] || '1:50').split(':');
+    return `sed -n '${range[0] || 1},${range[1] || 50}p' '${fp}'`;
+  }
+  if (tool === 'test') {
+    return `${args} && echo SCBE_TEST_PASS || echo SCBE_TEST_FAIL`;
+  }
+  if (tool === 'patch') {
+    const fp = (args || 'fix.patch').replace(/'/g, "'\\''");
+    return `patch -p1 < '${fp}'`;
+  }
+  return null;
+}
+
+function resolveBash() {
+  if (process.platform !== 'win32') return '/bin/sh';
+  const candidates = [
+    process.env.SCBE_BASH,
+    'C:\\Program Files\\Git\\bin\\bash.exe',
+    'C:\\Program Files\\Git\\usr\\bin\\bash.exe',
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(candidate)) return candidate;
+    } catch {
+      /* try next */
+    }
+  }
+  const r = spawnSync('where', ['bash'], { encoding: 'utf8' });
+  return (
+    r.stdout
+      .split('\n')
+      .map((l) => l.trim())
+      .find(
+        (l) =>
+          l && !/\\windows\\system32\\bash\.exe$/i.test(l) && !/\\WindowsApps\\bash\.exe$/i.test(l)
+      ) || 'bash'
+  ).trim();
+}
+
+function buildBoardPromptBlock(board) {
+  if (!board.objective) return '';
+  const _failPattern = /error|FAIL|not found|No such|permission denied|command not found/i;
+  const lines = ['--- Task Board ---', `Objective: ${board.objective.slice(0, 200)}`];
+  if (board.step_index != null && board.step_total != null) {
+    lines.push(`Step: ${board.step_index}/${board.step_total}`);
+  }
+  lines.push(`Turn: ${board.turn}${board.max_turns != null ? `/${board.max_turns}` : ''}`);
+  if (board.attempts.length > 0) {
+    const failCount = board.attempts.filter(
+      (a) => a.observation != null && _failPattern.test(a.observation)
+    ).length;
+    lines.push(
+      `Progress: ${board.attempts.length} attempts, ${failCount} failed, ${board.ko_bans.length} ko-banned`
+    );
+  }
+  if (board.attempts.length) {
+    const recent = board.attempts.slice(-5);
+    lines.push(`Attempts (${board.attempts.length} total, last ${recent.length}):`);
+    for (const a of recent) {
+      const cmd = (a.translated || a.cmd).slice(0, 80);
+      const obs =
+        a.observation != null ? ` → ${a.observation.slice(0, 200).replace(/\n/g, ' ')}` : '';
+      const failed = a.observation != null && _failPattern.test(a.observation);
+      const mark = a.observation == null ? '?' : failed ? '!' : '+';
+      lines.push(`  [T${a.turn}${mark}] ${cmd}${obs}`);
+    }
+  }
+  if (board.ko_bans.length) {
+    lines.push('Ko-banned (do not repeat — try a different approach):');
+    for (const key of board.ko_bans) lines.push(`  - ${key.split('|||')[0].slice(0, 80)}`);
+  }
+  lines.push(`Board: ${board.done ? 'COMPLETE' : 'IN PROGRESS'}`);
+  // Policy: ugly-but-verified accepted; unverified-done rejected; repeated-failed-move rejected
+  if (board.path_policy === 'non_optimal_correct') {
+    lines.push(
+      'Policy: non_optimal_correct — any legal safe move that makes progress is accepted; elegance is not required; completion requires verification.'
+    );
+  }
+  lines.push('---');
+  return lines.join('\n') + '\n\n';
+}
+
+function buildAgentMovePacket(move, governance, board) {
+  const script = resolveRepoScript('scripts/system/agent_move_packet.py');
+  if (!script) return null;
+  const payload = {
+    schema_version: 'scbe_agent_move_packet_input_v1',
+    move: {
+      cmd: move.cmd,
+      translated: move.translated || move.cmd,
+      turn: board.turn,
+      objective: board.objective,
+      legal_moves: board.legal_moves,
+      path_policy: board.path_policy,
+    },
+    governance,
+  };
+  try {
+    const r = spawnSync(pythonCommand(), [script], {
+      cwd: repoRoot(),
+      input: JSON.stringify(payload),
+      encoding: 'utf8',
+      timeout: 10000,
+      maxBuffer: 1024 * 1024,
+    });
+    if (r.status !== 0) {
+      const err = ((r.stdout || '') + (r.stderr || '')).trim().slice(0, 300);
+      return { ok: false, error: err || `agent_move_packet exited ${r.status}` };
+    }
+    const parsed = JSON.parse(r.stdout);
+    return parsed.ok ? parsed.packet : parsed;
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
+function buildFleetGovernanceGate(movePacket, posture, authority) {
+  if (!movePacket || movePacket.ok === false) return null;
+  const script = resolveRepoScript('scripts/system/fleet_governance_gate.py');
+  if (!script) return null;
+  try {
+    const r = spawnSync(pythonCommand(), [script], {
+      cwd: repoRoot(),
+      input: JSON.stringify({
+        schema_version: 'scbe_fleet_governance_gate_input_v1',
+        move_packet: movePacket,
+        posture: posture || {},
+        authority: authority || {},
+      }),
+      encoding: 'utf8',
+      timeout: 10000,
+      maxBuffer: 1024 * 1024,
+    });
+    if (r.status !== 0) {
+      const err = ((r.stdout || '') + (r.stderr || '')).trim().slice(0, 300);
+      return { ok: false, error: err || `fleet_governance_gate exited ${r.status}` };
+    }
+    return JSON.parse(r.stdout);
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
+// ─── Input classifier ─────────────────────────────────────────────────────────
+
+const _PS_PREFIX = /^(!|ps:)\s*/;
+
+function classifyShellInput(input) {
+  if (!input.trim()) return 'empty';
+  if (input.startsWith(':')) return 'meta';
+  if (_PS_PREFIX.test(input)) return 'powershell';
+  const first = input.trim().split(/\s+/)[0].toLowerCase();
+  if (KNOWN_COMMANDS.includes(first)) return 'command';
+  return 'intent';
+}
+
+// ─── LLM streaming (Ollama + OpenAI-compatible) ───────────────────────────────
+
+async function streamLLM(prompt, cfg, history, onToken) {
+  const messages = [
+    { role: 'system', content: cfg.system_prompt },
+    ...history,
+    { role: 'user', content: prompt },
+  ];
+
+  if (cfg.provider === 'offline') {
+    const echo = `[offline] received: ${prompt.slice(0, 80)}`;
+    if (onToken) onToken(echo);
+    return echo;
+  }
+
+  if (typeof fetch !== 'function') throw new Error('fetch unavailable — requires Node 18+');
+
+  // Resolve Fireworks default model — swap out the ollama default if provider changed
+  const FIREWORKS_DEFAULT_MODEL = 'accounts/fireworks/models/kimi-k2p5';
+  const FIREWORKS_BASE_URL = 'https://api.fireworks.ai/inference/v1';
+  if (cfg.provider === 'fireworks' && (cfg.model === 'llama3.2' || !cfg.model)) {
+    cfg.model = FIREWORKS_DEFAULT_MODEL;
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), cfg.timeout_ms || 30000);
+
+  const isFireworks = cfg.provider === 'fireworks';
+  const isOllama =
+    !isFireworks &&
+    (cfg.provider === 'ollama' ||
+      (!cfg.openai_api_key && !cfg.api_key && !cfg.groq_api_key && !cfg.fireworks_api_key));
+  let apiUrl, headers;
+
+  if (isFireworks) {
+    const configuredUrl = cfg.url || '';
+    const base =
+      cfg.fireworks_base_url ||
+      (configuredUrl && !/^https?:\/\/localhost:11434\/?$/i.test(configuredUrl)
+        ? configuredUrl
+        : FIREWORKS_BASE_URL);
+    apiUrl = `${base.replace(/\/$/, '')}/chat/completions`;
+    const key = cfg.fireworks_api_key || cfg.api_key || process.env.FIREWORKS_API_KEY || '';
+    headers = { 'content-type': 'application/json', authorization: `Bearer ${key}` };
+  } else if (isOllama) {
+    apiUrl = `${(cfg.url || 'http://localhost:11434').replace(/\/$/, '')}/api/chat`;
+    headers = { 'content-type': 'application/json' };
+  } else {
+    const base = cfg.openai_base_url || cfg.base_url || 'https://api.openai.com/v1';
+    apiUrl = `${base.replace(/\/$/, '')}/chat/completions`;
+    const key = cfg.openai_api_key || cfg.groq_api_key || cfg.api_key || '';
+    headers = { 'content-type': 'application/json', authorization: `Bearer ${key}` };
+  }
+
+  try {
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ model: cfg.model, messages, stream: true }),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`LLM HTTP ${res.status}: ${body.slice(0, 300)}`);
+    }
+
+    let full = '';
+    const decoder = new TextDecoder();
+    const reader = res.body.getReader();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      for (const line of decoder.decode(value, { stream: true }).split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed === 'data: [DONE]') continue;
+        const jsonStr = trimmed.startsWith('data: ') ? trimmed.slice(6) : trimmed;
+        try {
+          const obj = JSON.parse(jsonStr);
+          const token = isOllama
+            ? (obj?.message?.content ?? '')
+            : (obj?.choices?.[0]?.delta?.content ?? '');
+          if (token) {
+            full += token;
+            if (onToken) onToken(token);
+          }
+        } catch {
+          /* incomplete chunk */
+        }
+      }
+    }
+    return full;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ─── Web search (DuckDuckGo instant answers, no key required) ─────────────────
+
+async function searchWeb(query) {
+  if (typeof fetch !== 'function') return { error: 'fetch unavailable' };
+  try {
+    const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return { error: `HTTP ${res.status}` };
+    const data = await res.json();
+    const results = [];
+    if (data.AbstractText) {
+      results.push({
+        title: data.Heading || 'Abstract',
+        snippet: data.AbstractText,
+        url: data.AbstractURL,
+      });
+    }
+    for (const r of (data.RelatedTopics || []).slice(0, 5)) {
+      if (r.Text && r.FirstURL)
+        results.push({ title: r.Text.slice(0, 80), snippet: r.Text, url: r.FirstURL });
+    }
+    return { query, results: results.slice(0, 5), source: 'duckduckgo' };
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+// ─── GeoSeal plan summary ─────────────────────────────────────────────────────
+
+function formatPlanSummary(planResult) {
+  if (!planResult || planResult.blocked) {
+    const reason = (planResult && planResult.block_reason) || 'compile failed';
+    return ansi('red', `  ✗ blocked: ${reason}`);
+  }
+  const plan = planResult.plan || planResult;
+  const policy = plan.policy || {};
+  const semantic = plan.semantic;
+  const lines = [
+    ansi('green', `  ✓ GeoSeal: ${policy.decision || 'ALLOW'}`) +
+      ansi('gray', ` (${policy.reason || 'ok'})`),
+    ansi(
+      'gray',
+      `    tool: ${(plan.tool || {}).class || '?'} | key: ${(plan.command || {}).key || '?'}`
+    ),
+  ];
+  if (semantic && semantic.discourseProfile) {
+    lines.push(ansi('gray', `    semantic: ${semantic.dominant} → ${semantic.discourseProfile}`));
+  }
+  return lines.join('\n');
+}
+
+// ─── Status bar ───────────────────────────────────────────────────────────────
+
+function printShellStatusBar(cfg) {
+  if (!process.stdout.isTTY) return;
+  const git = gitPosture(repoRoot());
+  const model = `${cfg.provider || 'ollama'}:${cfg.model || 'llama3.2'}`;
+  const branch = git.branch !== 'unknown' ? `${git.branch}${git.dirty ? '*' : ''}` : '';
+  const parts = ['SCBE', model, branch ? `git:${branch}` : ''].filter(Boolean).join(' │ ');
+  process.stdout.write(ansi('dim', `  ${parts}\n`));
+}
+
+// ─── Interactive shell ────────────────────────────────────────────────────────
+
+function runInteractiveShell(flags = {}) {
+  // ── Minimal / legacy mode ─────────────────────────────────────────────────
+  if (flags.minimal) {
+    process.stdout.write('SCBE Terminal. Type commands normally. Use :help or :exit.\n');
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      prompt: 'scbe> ',
+    });
+    rl.prompt();
+    rl.on('line', (line) => {
+      const command = line.trim();
+      if (!command) {
+        rl.prompt();
+        return;
+      }
+      if (command === ':exit' || command === 'exit' || command === 'quit') {
+        rl.close();
+        return;
+      }
+      if (command === ':help' || command === 'help') {
+        process.stdout.write(CLI_HELP);
+        rl.prompt();
+        return;
+      }
+      if (command === ':status' || command === 'status') {
+        runStatus();
+        rl.prompt();
+        return;
+      }
+      if (command.startsWith(':history') || command === 'history') {
+        printHistory(20);
+        rl.prompt();
+        return;
+      }
+      const scbeCmd = /^(compile|compile-ca|ca-plan|render-op|route|aetherpp)\b/.test(command)
+        ? `${process.execPath} "${__filename}" ${command}`
+        : command;
+      const row = runShellCommand(scbeCmd);
+      if (!row.success && row.failure)
+        process.stdout.write(
+          `SCBE failure: ${row.failure.summary}\nNext: ${row.failure.next_step}\n`
+        );
+      rl.prompt();
+    });
+    return;
+  }
+
+  // ── Agent-JSON mode (--agent-json) — NDJSON stdin/stdout for harness control ─
+  if (flags.agentJson) {
+    const cfg = readShellConfig();
+    // Allow harness to override provider/model via env (e.g. SCBE_MODEL=ollama/llama3.2)
+    if (process.env.SCBE_MODEL) {
+      const slash = process.env.SCBE_MODEL.indexOf('/');
+      if (slash !== -1) {
+        cfg.provider = process.env.SCBE_MODEL.slice(0, slash);
+        cfg.model = process.env.SCBE_MODEL.slice(slash + 1);
+      } else {
+        cfg.model = process.env.SCBE_MODEL;
+      }
+    }
+    if (process.env.SCBE_PROVIDER) cfg.provider = process.env.SCBE_PROVIDER;
+    if (process.env.SCBE_URL) cfg.url = process.env.SCBE_URL;
+    if (process.env.SCBE_API_KEY) cfg.api_key = process.env.SCBE_API_KEY;
+    if (process.env.SCBE_BASE_URL) cfg.base_url = process.env.SCBE_BASE_URL;
+    // Fireworks: pick up key from env automatically when provider is fireworks
+    if (cfg.provider === 'fireworks' && !cfg.fireworks_api_key && process.env.FIREWORKS_API_KEY) {
+      cfg.fireworks_api_key = process.env.FIREWORKS_API_KEY;
+    }
+    // Task-completion mode: override conversational system prompt
+    cfg.system_prompt = _AGENT_JSON_SYSTEM_PROMPT;
+
+    const history = [];
+    let instruction = null;
+    let busy = false;
+    let stdinClosed = false;
+    // Single source of truth for task state.
+    const taskBoard = {
+      objective: null,
+      legal_moves: ['cmd', 'files', 'read', 'patch', 'test'],
+      attempts: [],
+      last_observation: null,
+      done_if: null,
+      done: false,
+      ko_bans: [],
+      turn: 0,
+      // Workflow step tracking (set by harness on multi-step workflows)
+      step_index: null,
+      step_total: null,
+      max_turns: null,
+      // Execution strategy: verified forward progress over optimality.
+      // See docs/specs/SCBE_AGENT_PATH_POLICY.md
+      path_policy: 'non_optimal_correct',
+      acceptance: {
+        must_be_safe: true,
+        must_be_verifiable: true,
+        must_not_repeat_failed_state: true,
+        optimality_required: false,
+      },
+    };
+
+    process.stdout.write(JSON.stringify({ ready: true }) + '\n');
+
+    const rl = readline.createInterface({ input: process.stdin, terminal: false });
+
+    rl.on('line', async (rawLine) => {
+      if (busy) return; // serialize: ignore messages while processing
+      const line = rawLine.trim();
+      if (!line) return;
+
+      let msg;
+      try {
+        msg = JSON.parse(line);
+      } catch {
+        return;
+      }
+
+      // reset_context: harness signals a new workflow step — clear per-step state,
+      // keep process alive, inject optional summary from previous step.
+      if (msg.reset_context) {
+        history.length = 0;
+        taskBoard.attempts = [];
+        taskBoard.ko_bans = [];
+        taskBoard.turn = 0;
+        taskBoard.done = false;
+        taskBoard.last_observation = null;
+        taskBoard.done_if = null;
+        instruction = null;
+        if (msg.step_context) {
+          history.push({
+            role: 'user',
+            content: `[Previous step]: ${msg.step_context.slice(0, 300)}`,
+          });
+          history.push({ role: 'assistant', content: 'Understood. Starting the next step.' });
+        }
+      }
+
+      if (msg.instruction) {
+        instruction = msg.instruction;
+        taskBoard.objective = instruction;
+      }
+      if (msg.done_if) taskBoard.done_if = msg.done_if;
+      if (msg.step_index != null) taskBoard.step_index = msg.step_index;
+      if (msg.step_total != null) taskBoard.step_total = msg.step_total;
+      if (msg.max_turns != null) taskBoard.max_turns = msg.max_turns;
+      if (msg.task_board && !taskBoard.objective) Object.assign(taskBoard, msg.task_board);
+      if (msg.fleet_posture) taskBoard.fleet_posture = msg.fleet_posture;
+      if (msg.fleet_authority) taskBoard.fleet_authority = msg.fleet_authority;
+      if (!instruction) {
+        process.stdout.write(
+          JSON.stringify({ error: 'no instruction yet', done: false, commands: [] }) + '\n'
+        );
+        return;
+      }
+
+      busy = true;
+      rl.pause();
+      taskBoard.turn++;
+
+      // max_turns guard: hard step turn limit
+      if (taskBoard.max_turns != null && taskBoard.turn > taskBoard.max_turns) {
+        process.stdout.write(
+          JSON.stringify({
+            commands: [],
+            done: false,
+            max_turns_reached: true,
+            rationale: `Step max_turns (${taskBoard.max_turns}) reached without completing objective.`,
+            governance: { decision: 'ALLOW', reason: 'max-turns' },
+            board: { ...taskBoard },
+          }) + '\n'
+        );
+        busy = false;
+        if (stdinClosed) process.exit(0);
+        rl.resume();
+        return;
+      }
+
+      const terminalState = msg.terminal_state || '';
+
+      // Record the observation (output) of the last proposed command.
+      if (taskBoard.attempts.length > 0) {
+        const lastAttempt = taskBoard.attempts[taskBoard.attempts.length - 1];
+        if (lastAttempt.observation === undefined) {
+          lastAttempt.observation = terminalState.slice(-150);
+          taskBoard.last_observation = terminalState;
+          const pairKey = `${lastAttempt.translated || lastAttempt.cmd}|||${lastAttempt.observation}`;
+          const seenBefore = taskBoard.attempts
+            .slice(0, -1)
+            .some(
+              (a) => `${a.translated || a.cmd}|||${(a.observation || '').slice(-150)}` === pairKey
+            );
+          if (seenBefore && !taskBoard.ko_bans.includes(pairKey)) taskBoard.ko_bans.push(pairKey);
+        }
+      }
+      if (!taskBoard.last_observation) taskBoard.last_observation = terminalState;
+
+      const boardBlock = buildBoardPromptBlock(taskBoard);
+      const prompt =
+        boardBlock +
+        instruction +
+        (terminalState ? `\n\nCurrent terminal state:\n${terminalState}` : '');
+
+      let full;
+      try {
+        // SCBE_MOCK_RESPONSE bypasses LLM for testing — never set in production
+        const mockDelayMs = Number(process.env.SCBE_MOCK_RESPONSE_DELAY_MS || 0);
+        if (mockDelayMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, mockDelayMs));
+        }
+        full = process.env.SCBE_MOCK_RESPONSE || (await streamLLM(prompt, cfg, history, () => {}));
+      } catch (err) {
+        process.stdout.write(
+          JSON.stringify({
+            error: err.message,
+            done: false,
+            commands: [],
+            board: { ...taskBoard },
+          }) + '\n'
+        );
+        busy = false;
+        if (stdinClosed) process.exit(0);
+        rl.resume();
+        return;
+      }
+
+      history.push({ role: 'user', content: prompt });
+      history.push({ role: 'assistant', content: full });
+      if (history.length > 20) history.splice(0, 2);
+
+      // Accept </cmd> OR the opening of a next <cmd> as closing delimiter.
+      // Some models emit <cmd>...<cmd> (open tag) instead of <cmd>...</cmd> (close tag).
+      // The lookahead stops before the next <cmd> without consuming it.
+      const cmdMatch = full.match(/<cmd>([\s\S]*?)(?:<\/cmd>|(?=\s*<cmd>))/);
+
+      const doneSignal =
+        /\btask\s+(?:is\s+)?(?:complete|done|finished)/i.test(full) || /<done>/.test(full);
+
+      const bashBin = resolveBash();
+
+      if (!cmdMatch) {
+        // Model <done> is a request for board verification, not completion
+        if (doneSignal && taskBoard.done_if) {
+          const check = spawnSync(bashBin, ['-c', taskBoard.done_if], {
+            encoding: 'utf8',
+            timeout: 10000,
+          });
+          if (check.status !== 0) {
+            const verifyOut =
+              ((check.stdout || '') + (check.stderr || '')).trim().slice(0, 300) ||
+              'verifier exited non-zero';
+            history.push({
+              role: 'user',
+              content: `VERIFY FAILED: ${verifyOut}\nThe objective is not yet complete. Continue working.`,
+            });
+            history.push({ role: 'assistant', content: 'Understood. I will continue.' });
+            if (history.length > 20) history.splice(0, 2);
+            process.stdout.write(
+              JSON.stringify({
+                commands: [],
+                done: false,
+                verify_failed: true,
+                rationale: `done signal received but objective verifier failed: ${verifyOut}`,
+                governance: { decision: 'ALLOW', reason: 'no-cmd' },
+                board: { ...taskBoard },
+              }) + '\n'
+            );
+            busy = false;
+            if (stdinClosed) process.exit(0);
+            rl.resume();
+            return;
+          }
+          taskBoard.done = true;
+        }
+        process.stdout.write(
+          JSON.stringify({
+            commands: [],
+            done: taskBoard.done || doneSignal,
+            ...(taskBoard.done ? { step_complete: true } : {}),
+            rationale: full.slice(0, 500),
+            governance: { decision: 'ALLOW', reason: 'no-cmd' },
+            board: { ...taskBoard },
+          }) + '\n'
+        );
+        busy = false;
+        if (stdinClosed) process.exit(0);
+        if (!(taskBoard.done || doneSignal)) rl.resume();
+        return;
+      }
+
+      const proposed = cmdMatch[1].trim();
+      const translated = translateToolCommand(proposed) || proposed;
+
+      // Ko-ban: block if this (translated_cmd, last_observation) pair was already banned
+      const koPairKey = `${translated}|||${(taskBoard.last_observation || '').slice(-150)}`;
+      if (taskBoard.ko_bans.includes(koPairKey)) {
+        const governance = { decision: 'QUARANTINE', reason: 'ko-ban' };
+        const movePacket = buildAgentMovePacket(
+          { cmd: proposed, translated },
+          governance,
+          taskBoard
+        );
+        const fleetGovernance = buildFleetGovernanceGate(
+          movePacket,
+          taskBoard.fleet_posture,
+          taskBoard.fleet_authority
+        );
+        process.stdout.write(
+          JSON.stringify({
+            commands: [],
+            done: false,
+            blocked: true,
+            rationale: `ko-ban: command+observation repeated — try a different approach. Banned: "${translated.slice(0, 80)}"`,
+            governance,
+            move_packet: movePacket,
+            fleet_governance: fleetGovernance,
+            board: { ...taskBoard },
+          }) + '\n'
+        );
+        busy = false;
+        if (stdinClosed) process.exit(0);
+        rl.resume();
+        return;
+      }
+
+      taskBoard.attempts.push({
+        cmd: proposed,
+        ...(translated !== proposed ? { translated } : {}),
+        turn: taskBoard.turn,
+      });
+      if (taskBoard.attempts.length > 20) taskBoard.attempts.shift();
+
+      // Run through GeoSeal governance
+      const busBin = resolveAgentBusBin();
+      let governance = { decision: 'ALLOW', reason: 'governance-unavailable' };
+      let blocked = false;
+
+      if (busBin) {
+        try {
+          const r = spawnSync(
+            process.execPath,
+            [busBin, 'pipeline', 'compile', '--intent', translated, '--json'],
+            { encoding: 'utf8', timeout: 15000, maxBuffer: 1024 * 512 }
+          );
+          if (r.status === 0 && r.stdout) {
+            const plan = JSON.parse(r.stdout);
+            if (plan.policy) {
+              governance = { decision: plan.policy.decision, reason: plan.policy.reason };
+              blocked = plan.policy.decision !== 'ALLOW';
+            }
+            if (plan.semantic?.discourseProfile)
+              governance.semantic = plan.semantic.discourseProfile;
+          }
+        } catch {
+          /* stays ALLOW */
+        }
+      }
+
+      if (blocked) {
+        const movePacket = buildAgentMovePacket(
+          { cmd: proposed, translated },
+          governance,
+          taskBoard
+        );
+        const fleetGovernance = buildFleetGovernanceGate(
+          movePacket,
+          taskBoard.fleet_posture,
+          taskBoard.fleet_authority
+        );
+        process.stdout.write(
+          JSON.stringify({
+            commands: [],
+            done: false,
+            blocked: true,
+            rationale: `governance blocked: ${governance.reason}`,
+            governance,
+            move_packet: movePacket,
+            fleet_governance: fleetGovernance,
+            board: { ...taskBoard },
+          }) + '\n'
+        );
+        busy = false;
+        if (stdinClosed) process.exit(0);
+        rl.resume();
+        return;
+      }
+
+      // Objective verifier: model <done> is only a request — verify before accepting
+      if (doneSignal && taskBoard.done_if) {
+        const check = spawnSync(bashBin, ['-c', taskBoard.done_if], {
+          encoding: 'utf8',
+          timeout: 10000,
+        });
+        if (check.status !== 0) {
+          const verifyOut =
+            ((check.stdout || '') + (check.stderr || '')).trim().slice(0, 300) ||
+            'verifier exited non-zero';
+          const movePacket = buildAgentMovePacket(
+            { cmd: proposed, translated },
+            governance,
+            taskBoard
+          );
+          const fleetGovernance = buildFleetGovernanceGate(
+            movePacket,
+            taskBoard.fleet_posture,
+            taskBoard.fleet_authority
+          );
+          history.push({
+            role: 'user',
+            content: `VERIFY FAILED: ${verifyOut}\nThe objective is not yet complete. Continue working.`,
+          });
+          history.push({ role: 'assistant', content: 'Understood. I will continue.' });
+          if (history.length > 20) history.splice(0, 2);
+          process.stdout.write(
+            JSON.stringify({
+              commands: [{ keystrokes: translated, is_blocking: true, timeout_sec: 30 }],
+              done: false,
+              verify_failed: true,
+              rationale: `done signal received but objective verifier failed: ${verifyOut}`,
+              governance,
+              move_packet: movePacket,
+              fleet_governance: fleetGovernance,
+              board: { ...taskBoard },
+            }) + '\n'
+          );
+          busy = false;
+          if (stdinClosed) process.exit(0);
+          rl.resume();
+          return;
+        }
+        taskBoard.done = true;
+      }
+
+      // Two-pass strip: (1) <cmd>...</cmd> or <cmd>...<cmd> (Groq open-tag style),
+      // (2) any trailing <cmd>... with no close tag.
+      const rationale = full
+        .replace(/<cmd>[\s\S]*?(?:<\/cmd>|(?=<cmd>))/g, '')
+        .replace(/<cmd>[\s\S]*/g, '')
+        .trim()
+        .slice(0, 500);
+      const movePacket = buildAgentMovePacket({ cmd: proposed, translated }, governance, taskBoard);
+      const fleetGovernance = buildFleetGovernanceGate(
+        movePacket,
+        taskBoard.fleet_posture,
+        taskBoard.fleet_authority
+      );
+      process.stdout.write(
+        JSON.stringify({
+          commands: [{ keystrokes: translated, is_blocking: true, timeout_sec: 30 }],
+          done: taskBoard.done || doneSignal,
+          ...(taskBoard.done ? { step_complete: true } : {}),
+          rationale,
+          governance,
+          move_packet: movePacket,
+          fleet_governance: fleetGovernance,
+          board: { ...taskBoard },
+        }) + '\n'
+      );
+
+      busy = false;
+      if (stdinClosed) process.exit(0);
+      if (!(taskBoard.done || doneSignal)) rl.resume();
+    });
+
+    rl.on('close', () => {
+      stdinClosed = true;
+      if (!busy) process.exit(0);
+    });
+    return;
+  }
+
+  // ── Ink TUI (--tui) ───────────────────────────────────────────────────────
+  if (flags.tui) {
+    const { pathToFileURL } = require('node:url');
+    const tuiPath = pathToFileURL(path.resolve(__dirname, 'tui.mjs')).href;
+    import(tuiPath)
+      .then((m) =>
+        m.launchTui({
+          scbeBin: __filename,
+          resolveAgentBusBin,
+          runShellCommand,
+          streamLLM,
+          searchWeb,
+          classifyShellInput,
+          readShellConfig,
+          saveShellConfig,
+          KNOWN_COMMANDS,
+          gitPosture,
+          repoRoot,
+        })
+      )
+      .catch((err) => {
+        process.stderr.write(
+          `scbe shell --tui: failed to load TUI.\n${err.message}\n\n` +
+            `Ensure ink and react are installed: npm install -g ink react\n` +
+            `Falling back to: scbe shell (no --tui)\n\n`
+        );
+        // Fallback to rich readline shell
+        runInteractiveShell({ ...flags, tui: false });
+      });
+    return;
+  }
+
+  // ── Rich shell (default / --ai) ───────────────────────────────────────────
+  const cfg = readShellConfig();
+  const history = []; // conversation history for multi-turn AI
+  let pendingApproval = null;
+  const scriptedInput = !process.stdin.isTTY;
+
+  const PROMPT = process.stdout.isTTY
+    ? `${_ANSI.cyan}${_ANSI.bold}scbe${_ANSI.reset}${_ANSI.cyan} ›${_ANSI.reset} `
+    : 'scbe › ';
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: 'scbe> ',
+    prompt: PROMPT,
+    completer: (line) => {
+      const all = [
+        ...KNOWN_COMMANDS,
+        ':help',
+        ':exit',
+        ':status',
+        ':config',
+        ':search',
+        ':history',
+        ':clear',
+      ];
+      const hits = all.filter((c) => c.startsWith(line));
+      return [hits.length ? hits : all, line];
+    },
   });
+
+  process.stdout.write('\n');
+  printShellStatusBar(cfg);
+  process.stdout.write(
+    ansi('bold', 'SCBE governed shell') +
+      ansi('gray', ' — type a command, plain English, or !powershell\n') +
+      ansi('gray', '  :help  :config  :search <query>  :clear  :exit\n\n')
+  );
   rl.prompt();
-  rl.on('line', (line) => {
-    const command = line.trim();
-    if (!command) {
+
+  rl.on('line', (rawLine) => {
+    const line = rawLine.trim();
+    if (!line) {
       rl.prompt();
       return;
     }
-    if (command === ':exit' || command === 'exit' || command === 'quit') {
-      rl.close();
-      return;
-    }
-    if (command === ':help' || command === 'help') {
-      process.stdout.write(CLI_HELP);
+
+    if (pendingApproval) {
+      const proposed = pendingApproval.proposed;
+      pendingApproval = null;
+      if (line.toLowerCase() === 'y' || line.toLowerCase() === 'yes') {
+        process.stdout.write(ansi('dim', `  $ ${proposed}\n`));
+        runShellCommand(proposed);
+      } else {
+        process.stdout.write(ansi('gray', '  skipped.\n'));
+      }
       rl.prompt();
       return;
     }
-    if (command === ':status' || command === 'status') {
-      runStatus();
+
+    const kind = classifyShellInput(line);
+
+    // ── Meta commands (:help, :config, :search, …) ────────────────────────
+    if (kind === 'meta') {
+      const parts = line.slice(1).split(/\s+/);
+      const meta = parts[0];
+      const metaArgs = parts.slice(1);
+
+      if (meta === 'exit' || meta === 'quit') {
+        rl.close();
+        return;
+      }
+      if (meta === 'help') {
+        process.stdout.write(`${CLI_HELP}\n`);
+      } else if (meta === 'status') {
+        runStatus();
+      } else if (meta === 'history') {
+        printHistory(Number(metaArgs[0]) || 20);
+      } else if (meta === 'clear') {
+        process.stdout.write('\x1b[2J\x1b[0f');
+        printShellStatusBar(cfg);
+      } else if (meta === 'config') {
+        if (metaArgs[0] === 'set' && metaArgs[1]) {
+          const key = metaArgs[1];
+          const val = metaArgs.slice(2).join(' ');
+          cfg[key] = val;
+          saveShellConfig(cfg);
+          process.stdout.write(ansi('green', `  config.${key} = ${val}\n`));
+        } else {
+          const display = { ...cfg };
+          if (display.openai_api_key) display.openai_api_key = '***';
+          if (display.api_key) display.api_key = '***';
+          if (display.groq_api_key) display.groq_api_key = '***';
+          if (display.fireworks_api_key) display.fireworks_api_key = '***';
+          process.stdout.write(ansi('gray', `${JSON.stringify(display, null, 2)}\n`));
+          process.stdout.write(ansi('gray', '  :config set <key> <value>  to change\n'));
+        }
+      } else if (meta === 'search') {
+        const query = metaArgs.join(' ');
+        if (!query) {
+          process.stdout.write(ansi('yellow', '  Usage: :search <query>\n'));
+          rl.prompt();
+          return;
+        }
+        process.stdout.write(ansi('cyan', `  searching: ${query}…\n`));
+        searchWeb(query).then((result) => {
+          if (result.error) {
+            process.stdout.write(ansi('red', `  error: ${result.error}\n`));
+          } else if (!result.results.length) {
+            process.stdout.write(ansi('gray', '  no results found.\n'));
+          } else {
+            for (const r of result.results) {
+              process.stdout.write(
+                ansi('bold', `  • ${r.title}\n`) +
+                  ansi('gray', `    ${r.snippet.slice(0, 140)}\n    ${r.url}\n`)
+              );
+            }
+          }
+          rl.prompt();
+        });
+        return; // prompt called in .then()
+      } else {
+        process.stdout.write(ansi('yellow', `  unknown meta command: :${meta} — try :help\n`));
+      }
       rl.prompt();
       return;
     }
-    if (command.startsWith(':history') || command === 'history') {
-      printHistory(20);
+
+    // ── PowerShell / shell passthrough  (!cmd or ps:cmd) ──────────────────
+    if (kind === 'powershell') {
+      const cmd = line.replace(_PS_PREFIX, '').trim();
+      if (!cmd) {
+        rl.prompt();
+        return;
+      }
+      process.stdout.write(ansi('dim', `  $ ${cmd}\n`));
+      const row = runShellCommand(cmd, { quiet: true, capture: scriptedInput });
+      if (scriptedInput && row.stdout_preview?.trim()) {
+        process.stdout.write(`${row.stdout_preview.trim()}\n`);
+      }
+      if (scriptedInput && row.stderr_preview?.trim()) {
+        process.stderr.write(`${row.stderr_preview.trim()}\n`);
+      }
+      if (!row.success && row.failure) {
+        process.stdout.write(
+          ansi('red', `  ✗ ${row.failure.summary}\n`) +
+            ansi('gray', `  → ${row.failure.next_step}\n`)
+        );
+      }
       rl.prompt();
       return;
     }
-    const scbeCommand = /^(compile|compile-ca|ca-plan|render-op|route|aetherpp)\b/.test(command)
-      ? `${process.execPath} "${__filename}" ${command}`
-      : command;
-    const row = runShellCommand(scbeCommand);
-    if (!row.success && row.failure) {
-      process.stdout.write(
-        `SCBE failure: ${row.failure.summary}\nNext: ${row.failure.next_step}\n`
-      );
+
+    // ── Known scbe command ────────────────────────────────────────────────
+    if (kind === 'command') {
+      const scbeCmd = /^(compile|compile-ca|ca-plan|render-op|route|aetherpp)\b/.test(line)
+        ? `${process.execPath} "${__filename}" ${line}`
+        : line;
+      const row = runShellCommand(scbeCmd, { capture: scriptedInput });
+      if (scriptedInput && row.stdout_preview?.trim()) {
+        process.stdout.write(`${row.stdout_preview.trim()}\n`);
+      }
+      if (scriptedInput && row.stderr_preview?.trim()) {
+        process.stderr.write(`${row.stderr_preview.trim()}\n`);
+      }
+      if (!row.success && row.failure) {
+        process.stdout.write(
+          ansi('red', `  ✗ ${row.failure.summary}\n`) +
+            ansi('gray', `  → ${row.failure.next_step}\n`)
+        );
+      }
+      rl.prompt();
+      return;
     }
-    rl.prompt();
+
+    // ── Natural language intent → LLM → GeoSeal → approve/execute ────────
+    process.stdout.write(ansi('dim', `  ⟳ ${cfg.provider}:${cfg.model}…\n`));
+    rl.pause();
+    process.stdout.write(ansi('cyan', '  '));
+
+    streamLLM(line, cfg, history, (token) => process.stdout.write(token))
+      .then((full) => {
+        process.stdout.write('\n');
+        history.push({ role: 'user', content: line });
+        history.push({ role: 'assistant', content: full });
+        if (history.length > 20) history.splice(0, 2);
+
+        // Extract proposed command wrapped in <cmd>…</cmd>
+        const cmdMatch = full.match(/<cmd>([\s\S]*?)<\/cmd>/);
+        if (!cmdMatch) {
+          rl.resume();
+          rl.prompt();
+          return;
+        }
+
+        const proposed = cmdMatch[1].trim();
+        process.stdout.write('\n' + ansi('yellow', '  proposed: ') + ansi('bold', proposed) + '\n');
+
+        // Run intent through GeoSeal compile
+        const busBin = resolveAgentBusBin();
+        if (busBin) {
+          process.stdout.write(ansi('dim', '  checking governance…\n'));
+          let planResult = { blocked: true, block_reason: 'agent-bus unavailable' };
+          try {
+            const r = spawnSync(
+              process.execPath,
+              [busBin, 'pipeline', 'compile', '--intent', proposed, '--json'],
+              { encoding: 'utf8', timeout: 15000, maxBuffer: 1024 * 512 }
+            );
+            if (r.status === 0 && r.stdout) {
+              const parsed = JSON.parse(r.stdout);
+              planResult = {
+                plan: parsed,
+                blocked: parsed.policy && parsed.policy.decision !== 'ALLOW',
+                block_reason: parsed.policy
+                  ? `policy ${parsed.policy.decision}: ${parsed.policy.reason}`
+                  : undefined,
+              };
+            }
+          } catch {
+            /* parse failed, stays blocked */
+          }
+
+          process.stdout.write(formatPlanSummary(planResult) + '\n');
+
+          if (planResult.blocked) {
+            rl.resume();
+            rl.prompt();
+            return;
+          }
+        }
+
+        // Ask for approval
+        process.stdout.write(ansi('yellow', '\n  execute? ') + ansi('gray', '[y/N] '));
+        pendingApproval = { proposed };
+        rl.resume();
+      })
+      .catch((err) => {
+        process.stdout.write(
+          '\n' +
+            ansi('red', `  LLM error: ${err.message}\n`) +
+            ansi('gray', `  Is ${cfg.provider} running? Try: :config set provider offline\n`)
+        );
+        rl.resume();
+        rl.prompt();
+      });
+  });
+
+  rl.on('close', () => {
+    process.stdout.write(ansi('dim', '\ngoodbye.\n'));
+    process.exit(0);
   });
 }
 
@@ -2096,10 +3338,12 @@ function runUpgrade(args) {
 }
 
 function runSelftest() {
-  const target = resolveGeosealBin();
-  const checks = [['version'], ['doctor', '--json']];
+  const checks = [
+    ['version', '--json'],
+    ['doctor', '--json'],
+  ];
   const results = checks.map((args) => {
-    const child = spawnSync(process.execPath, [target, ...args], {
+    const child = spawnSync(process.execPath, [__filename, ...args], {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
     });
@@ -2146,6 +3390,14 @@ if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h' || argv[0] ===
 
 if (argv[0] === 'demo' || argv[0] === 'magic') {
   runMagicDemo(argv.slice(1));
+}
+
+if (argv[0] === 'version') {
+  runVersion(argv.slice(1));
+}
+
+if (argv[0] === 'doctor') {
+  runDoctor(argv.slice(1));
 }
 
 if (argv[0] === 'credits' || argv[0] === 'hosted-run') {
@@ -2202,7 +3454,12 @@ if (argv[0] === 'run') {
 }
 
 if (argv[0] === 'shell') {
-  runInteractiveShell();
+  runInteractiveShell({
+    minimal: argv.includes('--minimal'),
+    ai: argv.includes('--ai'),
+    tui: argv.includes('--tui'),
+    agentJson: argv.includes('--agent-json'),
+  });
   return;
 }
 
@@ -2252,7 +3509,7 @@ if (argv[0] === 'compile') {
     process.stdout.write(
       [
         'Usage:',
-        '  scbe compile ca --opcodes "0x09 0x09 0x00" --target python',
+        '  scbe compile ca --opcodes "0x09 0x09 0x00" --target python --fn score --args a,b',
         '  scbe compile plan --ops "abs abs add" --json',
         '  scbe compile op --op add --target KO --a left --b right',
         '',

@@ -30,6 +30,30 @@ def test_cli_exposes_ca_plan_compiler() -> None:
     assert payload["hex_sequence"] == ["0x09", "0x09", "0x00"]
 
 
+def test_cli_version_reports_cli_and_core_versions() -> None:
+    proc = run_cli("version", "--json")
+
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "scbe_aethermoore_cli_version_v1"
+    assert payload["cli_package"] == "scbe-aethermoore-cli"
+    assert payload["cli_version"]
+    assert payload["core_package"] == "scbe-aethermoore"
+    assert payload["core_version"]
+
+
+def test_cli_doctor_wraps_geoseal_with_cli_version_context() -> None:
+    proc = run_cli("doctor", "--json")
+
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "scbe_aethermoore_cli_doctor_v1"
+    assert payload["cli_version"]
+    assert payload["core_version"]
+    assert payload["cli_package_bin"]["scbe"] == "bin/scbe.js"
+    assert payload["geoseal_doctor"]["ok"] is True
+
+
 def test_cli_demo_outputs_governed_magic_moment() -> None:
     proc = run_cli("demo", "--json")
 

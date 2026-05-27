@@ -6,6 +6,114 @@ import { stdin as input, stdout as output } from 'node:process';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import path from 'node:path';
 import { WorkspaceExportManifestSchema, parseReceipt } from './schemas.js';
+import { detectTaskType, decompose, scoreDialogue } from './semantic-bridge.js';
+
+// Plugin + queue subsystems
+export {
+  type BusPlugin,
+  type BusPluginContext,
+  registerPlugin,
+  unregisterPlugin,
+  listPlugins,
+  clearPlugins,
+  autoDiscoverPlugins,
+  runBeforeRunPlugins,
+  runAfterRunPlugins,
+} from './plugins.js';
+
+export {
+  type QueuedEvent,
+  type QueueStatus,
+  enqueueEvent,
+  getEventStatus,
+  getQueueStatus,
+  processOneEvent,
+  drainQueue,
+  startQueueWorker,
+} from './queue.js';
+
+// Semantic atom scanner + dimensional decomposition engine
+export {
+  // Dimension axis
+  type DimVec,
+  type DimAxis,
+  DIM_AXES,
+  // Atom table (10 atoms: 4 domain + 6 discourse)
+  type AtomEntry,
+  ATOM_TABLE,
+  // Core decomposition / recomposition
+  type AtomHit,
+  type DecompositionResult,
+  type RecompositionResult,
+  type DimensionalAnalysis,
+  type DiscourseProfile,
+  type DialogueDimension,
+  type DialogueScoreResult,
+  decompose,
+  recompose,
+  analyzeDimensions,
+  detectDiscourseProfile,
+  // Binary / hex encoding helpers
+  combineDims,
+  dimsToHex,
+  hexToDims,
+  dimsToBinary,
+  // Legacy thin API (backwards-compat)
+  type AtomLedger,
+  scanAtoms,
+  detectTaskType,
+  buildAtomLedger,
+  // Spoken longform dialogue bridge
+  scoreDialogue,
+} from './semantic-bridge.js';
+
+// GeoSeal intent pipeline
+export {
+  type GeoSealPlan,
+  type GeoSealPlanPolicy,
+  type GeoSealPlanCommand,
+  type PipelineRunResult,
+  compilePlan,
+  execPlan,
+  runPipeline,
+  parseShellTemplate,
+  resolveRepoRoot,
+} from './pipeline.js';
+
+// Structured output contracts
+export {
+  type JsonSchema,
+  type ValidatedOutput,
+  validateOutput,
+  SummaryContract,
+  CodeReviewContract,
+  ResearchContract,
+  GovernanceDecisionContract,
+} from './contracts.js';
+
+// Resilience (circuit breakers)
+export {
+  type CircuitState,
+  type CircuitBreakerOptions,
+  configureCircuitBreaker,
+  resetCircuitBreaker,
+  getCircuitStates,
+  checkCircuit,
+  recordSuccess,
+  recordFailure,
+  withCircuitBreaker,
+} from './resilience.js';
+
+export {
+  type CliTool,
+  registerTool,
+  unregisterTool,
+  listTools,
+  getTool,
+  clearTools,
+  buildToolArgv,
+  autoDiscoverTools,
+} from './tools.js';
 
 export type AgentBusPrivacy = 'local_only' | 'remote_allowed' | string;
 
@@ -18,10 +126,13 @@ export interface AgentBusEvent {
   budgetCents?: number;
   dispatch?: boolean;
   dispatchProvider?: string;
+  /** Name of a registered CliTool to dispatch to instead of scbe-system-cli.py. */
+  tool?: string;
 }
 
 export interface RunOptions {
   repoRoot?: string;
+  geosealBin?: string;
   python?: string;
   continueOnError?: boolean;
 }
@@ -41,6 +152,12 @@ export interface AgentBusResult {
     operation_command_chars: number;
   };
   result: unknown;
+  /** Full dimensional decomposition attached when atoms match the task text. */
+  semantic?: import('./semantic-bridge.js').DecompositionResult;
+  /** Discourse profile from compound atom patterns (null = none detected). */
+  discourse_profile?: import('./semantic-bridge.js').DiscourseProfile;
+  /** Spoken longform dialogue score when discourse atoms are detected. */
+  dialogue_score?: import('./semantic-bridge.js').DialogueScoreResult;
 }
 
 export interface AgentBusServerHandle {
@@ -1101,6 +1218,65 @@ export function reportAgentWorkspace(options: WorkspaceReportOptions): AgentWork
   };
 }
 
+export interface TmpCleanupOptions {
+  workspaceRoot: string;
+  /** Delete files older than this many milliseconds. Default: 7 days. */
+  maxAgeMs?: number;
+  /** If true, only report what would be deleted without removing files. */
+  dryRun?: boolean;
+}
+
+export interface TmpCleanupReceipt {
+  schema_version: 'aethermoor.bus.tmp_cleanup.v1';
+  receipt: 'SCBE_WORKSPACE_TMP_CLEANUP=1';
+  workspace_root: string;
+  deleted_count: number;
+  reclaimed_bytes: number;
+  dry_run: boolean;
+  cleaned_at: string;
+}
+
+/**
+ * Delete files in 90_tmp/ older than `maxAgeMs`.
+ * Default age: 7 days. Set `dryRun: true` to preview without deleting.
+ */
+export function cleanupWorkspaceTmp(options: TmpCleanupOptions): TmpCleanupReceipt {
+  const workspaceRoot = path.resolve(options.workspaceRoot);
+  const tmpDir = path.join(workspaceRoot, '90_tmp');
+  const maxAge = options.maxAgeMs ?? 1000 * 60 * 60 * 24 * 7;
+  const now = Date.now();
+  let deletedCount = 0;
+  let reclaimedBytes = 0;
+
+  if (fs.existsSync(tmpDir)) {
+    for (const rel of walkFiles(tmpDir)) {
+      const abs = path.join(tmpDir, rel);
+      try {
+        const st = fs.statSync(abs);
+        if (st.isFile() && now - st.mtime.getTime() > maxAge) {
+          if (!options.dryRun) {
+            fs.unlinkSync(abs);
+          }
+          deletedCount += 1;
+          reclaimedBytes += st.size;
+        }
+      } catch {
+        // tolerate locked/missing file
+      }
+    }
+  }
+
+  return {
+    schema_version: 'aethermoor.bus.tmp_cleanup.v1',
+    receipt: 'SCBE_WORKSPACE_TMP_CLEANUP=1',
+    workspace_root: workspaceRoot,
+    deleted_count: deletedCount,
+    reclaimed_bytes: reclaimedBytes,
+    dry_run: options.dryRun ?? false,
+    cleaned_at: new Date().toISOString(),
+  };
+}
+
 export interface WorkspaceLineageOptions {
   workspaceRoot: string;
 }
@@ -1318,12 +1494,13 @@ function normalizeEvent(event: AgentBusEvent, index: number): Required<AgentBusE
   return {
     task,
     operationCommand: String(event.operationCommand || '').trim(),
-    taskType: normalizeTaskType(event.taskType),
+    taskType: detectTaskType(task, normalizeTaskType(event.taskType)),
     seriesId: String(event.seriesId || `node-event-${index}`).trim(),
     privacy: normalizePrivacy(event.privacy),
     budgetCents: Number(event.budgetCents || 0),
     dispatch: event.dispatch !== false,
     dispatchProvider: String(event.dispatchProvider || 'offline').trim(),
+    tool: event.tool ?? '',
   };
 }
 
@@ -1339,11 +1516,48 @@ function parseJson(text: string): unknown {
   }
 }
 
+export interface RunEventOptions extends RunOptions {
+  /** When true, enqueue the event instead of blocking until completion. */
+  enqueue?: boolean;
+  /** Fan-out worker count for runFanOut. Default: 4 */
+  concurrency?: number;
+}
+
+/**
+ * Run a single governed event.
+ *
+ * By default, this blocks until the event completes (backward-compatible).
+ * Pass `{ enqueue: true }` to enqueue it for async execution via the
+ * filesystem queue. Returns a result envelope in both cases.
+ */
 export async function runEvent(
   event: AgentBusEvent,
-  options: RunOptions = {}
-): Promise<AgentBusResult> {
+  options: RunEventOptions = {}
+): Promise<AgentBusResult & { run_id?: string }> {
   const normalized = normalizeEvent(event, 1);
+
+  if (options.enqueue) {
+    const { enqueueEvent } = await import('./queue.js');
+    const runId = enqueueEvent(normalized, options);
+    return {
+      schema_version: 'scbe-agentbus-node-result-v1',
+      event_index: 1,
+      started_at: new Date().toISOString(),
+      finished_at: new Date().toISOString(),
+      ok: true,
+      exit_code: 202,
+      stderr_tail: '',
+      event: {
+        task_sha256: null,
+        task_chars: normalized.task.length,
+        series_id: normalized.seriesId,
+        operation_command_chars: normalized.operationCommand.length,
+      },
+      result: { enqueued: true, run_id: runId },
+      run_id: runId,
+    };
+  }
+
   const repoRoot = path.resolve(options.repoRoot || process.cwd());
   const python = options.python || process.env.PYTHON || 'python';
   const cli = path.join(repoRoot, 'scripts', 'scbe-system-cli.py');
@@ -1383,6 +1597,7 @@ export async function runEvent(
   const payload = parseJson(result.stdout || '{}') as Record<string, unknown> | null;
   const taskPayload =
     payload && typeof payload.task === 'object' ? (payload.task as Record<string, unknown>) : null;
+  const d = decompose(normalized.task);
   return {
     schema_version: 'scbe-agentbus-node-result-v1',
     event_index: 1,
@@ -1398,12 +1613,15 @@ export async function runEvent(
       operation_command_chars: normalized.operationCommand.length,
     },
     result: payload,
+    ...(d.tokenCount > 0 ? { semantic: d } : {}),
+    ...(d.discourseProfile ? { discourse_profile: d.discourseProfile } : {}),
+    ...(d.discourseProfile ? { dialogue_score: scoreDialogue(normalized.task) } : {}),
   };
 }
 
 export async function runBatch(
   events: AgentBusEvent[],
-  options: RunOptions = {}
+  options: RunEventOptions = {}
 ): Promise<AgentBusResult[]> {
   if (!Array.isArray(events) || events.length === 0) {
     throw new Error('events sequence is empty');
@@ -1418,6 +1636,34 @@ export async function runBatch(
     if (!row.ok && !options.continueOnError) break;
   }
   return rows;
+}
+
+/**
+ * Concurrent fan-out execution of events across N workers (round-robin).
+ * Unlike runBatch, this does NOT stop on first failure — all events run.
+ */
+export async function runFanOut(
+  events: AgentBusEvent[],
+  options: RunEventOptions = {}
+): Promise<AgentBusResult[]> {
+  if (!Array.isArray(events) || events.length === 0) {
+    throw new Error('events sequence is empty');
+  }
+  const concurrency = Math.max(1, options.concurrency ?? 4);
+  const results: AgentBusResult[] = new Array(events.length);
+
+  async function worker(offset: number): Promise<void> {
+    for (let i = offset; i < events.length; i += concurrency) {
+      const row = await runEvent(
+        { ...events[i], seriesId: events[i].seriesId || `node-event-${i + 1}` },
+        options
+      );
+      results[i] = { ...row, event_index: i + 1 };
+    }
+  }
+
+  await Promise.all(Array.from({ length: concurrency }, (_, w) => worker(w)));
+  return results;
 }
 
 function readBody(req: IncomingMessage): Promise<string> {
@@ -1446,22 +1692,107 @@ export async function startAgentBusServer(
   const server = createServer(async (req, res) => {
     try {
       if (req.method === 'GET' && req.url === '/health') {
-        sendJson(res, 200, { ok: true, service: 'scbe-agent-bus', version: 1 });
+        const { getQueueStatus } = await import('./queue.js');
+        const { getCircuitStates } = await import('./resilience.js');
+        sendJson(res, 200, {
+          ok: true,
+          service: 'scbe-agent-bus',
+          version: 1,
+          queue: getQueueStatus(),
+          circuits: getCircuitStates(),
+        });
+        return;
+      }
+      if (req.method === 'GET' && req.url?.startsWith('/v1/events/')) {
+        const runId = req.url.split('/').pop();
+        const { getEventStatus } = await import('./queue.js');
+        const status = runId ? getEventStatus(runId) : null;
+        if (status) {
+          sendJson(res, 200, status);
+        } else {
+          sendJson(res, 404, { ok: false, error: 'run_id not found' });
+        }
         return;
       }
       if (req.method === 'POST' && req.url === '/v1/events') {
-        const body = JSON.parse(await readBody(req)) as AgentBusEvent;
-        const row = await runEvent(body, options);
-        sendJson(res, row.ok ? 200 : 500, row);
+        const body = JSON.parse(await readBody(req)) as AgentBusEvent & { enqueue?: boolean };
+        const enqueue = body.enqueue === true;
+        const row = await runEvent(body, { ...options, enqueue });
+        if (enqueue && row.run_id) {
+          sendJson(res, 202, { ok: true, enqueued: true, run_id: row.run_id });
+        } else {
+          sendJson(res, row.ok ? 200 : 500, row);
+        }
         return;
       }
       if (req.method === 'POST' && req.url === '/v1/batch') {
         const body = JSON.parse(await readBody(req)) as
-          | { items?: AgentBusEvent[] }
+          | { items?: AgentBusEvent[]; enqueue?: boolean }
           | AgentBusEvent[];
         const items = Array.isArray(body) ? body : body.items || [];
-        const rows = await runBatch(items, options);
-        sendJson(res, rows.every((row) => row.ok) ? 200 : 500, { rows });
+        const enqueue = !Array.isArray(body) && body.enqueue === true;
+        const rows = await runBatch(items, { ...options, enqueue });
+        if (enqueue) {
+          sendJson(res, 202, {
+            ok: true,
+            enqueued: true,
+            count: rows.length,
+            run_ids: rows.map((r) => (r.result as Record<string, string>)?.run_id).filter(Boolean),
+          });
+        } else {
+          sendJson(res, rows.every((row) => row.ok) ? 200 : 500, { rows });
+        }
+        return;
+      }
+      if (req.method === 'POST' && req.url === '/v1/fanout') {
+        const body = JSON.parse(await readBody(req)) as
+          | { items?: AgentBusEvent[]; enqueue?: boolean; concurrency?: number }
+          | AgentBusEvent[];
+        const items = Array.isArray(body) ? body : body.items || [];
+        const enqueue = !Array.isArray(body) && body.enqueue === true;
+        const concurrency = !Array.isArray(body) ? Number(body.concurrency || 4) : 4;
+        if (enqueue) {
+          const { enqueueEvent } = await import('./queue.js');
+          const runIds = items.map((ev, i) => enqueueEvent(normalizeEvent(ev, i), options));
+          sendJson(res, 202, { ok: true, enqueued: true, count: runIds.length, run_ids: runIds });
+        } else {
+          const rows = await runFanOut(items, { ...options, concurrency });
+          sendJson(res, rows.every((row) => row.ok) ? 200 : 500, { rows });
+        }
+        return;
+      }
+      if (req.method === 'POST' && req.url === '/v1/pipeline') {
+        const body = JSON.parse(await readBody(req)) as {
+          intent?: string;
+          options?: RunOptions;
+        };
+        const intent = String(body.intent || '').trim();
+        if (!intent) {
+          sendJson(res, 400, { ok: false, error: 'missing intent' });
+          return;
+        }
+        const { runPipeline } = await import('./pipeline.js');
+        const result = await runPipeline(intent, body.options || options);
+        sendJson(res, result.blocked ? 403 : 200, result);
+        return;
+      }
+      if (req.method === 'POST' && req.url === '/v1/pipeline/compile') {
+        const body = JSON.parse(await readBody(req)) as {
+          intent?: string;
+          options?: RunOptions;
+        };
+        const intent = String(body.intent || '').trim();
+        if (!intent) {
+          sendJson(res, 400, { ok: false, error: 'missing intent' });
+          return;
+        }
+        const { compilePlan } = await import('./pipeline.js');
+        const plan = compilePlan(intent, body.options || options);
+        if (plan) {
+          sendJson(res, 200, { ok: true, plan });
+        } else {
+          sendJson(res, 500, { ok: false, error: 'compile failed' });
+        }
         return;
       }
       sendJson(res, 404, { ok: false, error: 'not_found' });

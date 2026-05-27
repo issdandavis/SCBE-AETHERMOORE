@@ -89,6 +89,7 @@ except ImportError:
 
 
 from src.api.compute_routes import compute_router
+from src.api.demo_routes import govern_router
 from src.api.search_routes import search_router
 from src.api.llm_routes import llm_router
 from src.api.polly_routes import polly_router
@@ -161,6 +162,9 @@ app.include_router(polly_router)
 
 # Free LLM dispatch — Ollama, HuggingFace, offline fallback.
 app.include_router(free_llm_router)
+
+# Governance demo — /v1/govern, no API key required.
+app.include_router(govern_router)
 
 # ============================================================================
 # RATE LIMITING
