@@ -877,4 +877,25 @@ function main() {
   process.exit(report.ready ? 0 : 1);
 }
 
+// --last-artifact: read the most recent bench JSON and exit 0/1 based on score.
+// Used by workflow verifiers so they don't re-run the full suite.
+if (process.argv.includes('--last-artifact')) {
+  if (!fs.existsSync(OUT_DIR)) {
+    process.stderr.write('No bench artifacts found\n');
+    process.exit(1);
+  }
+  const files = fs
+    .readdirSync(OUT_DIR)
+    .filter((f) => f.endsWith('.json'))
+    .sort();
+  if (!files.length) {
+    process.stderr.write('No bench artifacts found\n');
+    process.exit(1);
+  }
+  const last = JSON.parse(fs.readFileSync(path.join(OUT_DIR, files[files.length - 1]), 'utf8'));
+  const { earned = 0, total = 0, percent = 0 } = last.score || {};
+  process.stdout.write(`${earned}/${total} (${percent}%) — ${last.generated_at}\n`);
+  process.exit(percent === 100 ? 0 : 1);
+}
+
 main();

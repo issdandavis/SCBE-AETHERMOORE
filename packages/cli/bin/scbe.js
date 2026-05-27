@@ -1326,6 +1326,7 @@ function runInteractiveShell(flags = {}) {
     if (process.env.SCBE_PROVIDER) cfg.provider = process.env.SCBE_PROVIDER;
     if (process.env.SCBE_URL) cfg.url = process.env.SCBE_URL;
     if (process.env.SCBE_API_KEY) cfg.api_key = process.env.SCBE_API_KEY;
+    if (process.env.SCBE_BASE_URL) cfg.base_url = process.env.SCBE_BASE_URL;
     // Fireworks: pick up key from env automatically when provider is fireworks
     if (cfg.provider === 'fireworks' && !cfg.fireworks_api_key && process.env.FIREWORKS_API_KEY) {
       cfg.fireworks_api_key = process.env.FIREWORKS_API_KEY;

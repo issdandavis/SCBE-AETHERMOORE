@@ -118,11 +118,16 @@ function verifyStep(step) {
   return runShell(step.done_if);
 }
 
-function extractSummary(lastObservation, rationale) {
-  const obs = (lastObservation || '').slice(-300).replace(/\n/g, ' ').trim();
-  const rat = (rationale || '').slice(0, 150).trim();
-  if (obs && rat) return `${rat} | output: ${obs.slice(0, 150)}`;
-  return obs || rat || '(no output)';
+function extractSummary(step, terminalState, lastRationale, completed) {
+  const status = completed ? 'DONE' : 'INCOMPLETE';
+  const goalSnippet = (step.instruction || '').slice(0, 80).replace(/\n/g, ' ');
+  // Find output lines after the last shell prompt in terminal state
+  const stateLines = (terminalState || '').split('\n');
+  const lastPromptIdx = stateLines.reduce((acc, l, i) => (l.startsWith('$ ') ? i : acc), -1);
+  const outputLines = (lastPromptIdx >= 0 ? stateLines.slice(lastPromptIdx + 1) : stateLines).filter(Boolean);
+  const keyOutput = outputLines.slice(0, 4).join(' ').replace(/\s+/g, ' ').slice(0, 150);
+  const contentPart = keyOutput || (lastRationale || '').slice(0, 100).replace(/\n/g, ' ') || '(no output)';
+  return `[${status}] ${step.id}: ${goalSnippet}. Output: ${contentPart}`.slice(0, 300);
 }
 
 function sendLine(proc, obj) {
@@ -260,7 +265,7 @@ async function runStep(proc, step, stepIndex, totalSteps, prevSummary, initialTe
     sendLine(proc, { terminal_state: terminalState });
   }
 
-  const summary = extractSummary(terminalState, lastRationale);
+  const summary = extractSummary(step, terminalState, lastRationale, stepComplete);
   return { step_id: step.id, completed: stepComplete, turns, summary };
 }
 
