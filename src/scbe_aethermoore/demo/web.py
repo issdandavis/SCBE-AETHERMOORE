@@ -22,11 +22,7 @@ PORT = 8765
 
 def _bar(value: float) -> str:
     pct = max(0.0, min(1.0, value)) * 100.0
-    return (
-        '<div class="bar-wrap">'
-        f'<div class="bar-fill" style="width:{pct:.1f}%"></div>'
-        "</div>"
-    )
+    return '<div class="bar-wrap">' f'<div class="bar-fill" style="width:{pct:.1f}%"></div>' "</div>"
 
 
 def _render(text: str) -> bytes:
