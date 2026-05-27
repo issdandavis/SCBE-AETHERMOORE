@@ -263,6 +263,186 @@ function main() {
     return { lines_received: lines.length, command: resp.commands[0].keystrokes };
   }));
 
+  // ── Tool translation cases ────────────────────────────────────────────────
+
+  cases.push(caseResult('agent_json_files_tool_translates_to_find', () => {
+    const { spawnSync: spawn } = require('node:child_process');
+    const mock = 'Let me search. <cmd>:files auth.py</cmd>';
+    const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+      cwd: REPO_ROOT,
+      input: JSON.stringify({ instruction: 'find the auth module', terminal_state: '$ ' }) + '\n\n',
+      encoding: 'utf8', timeout: 20_000,
+      env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mock },
+    });
+    const lines = (r.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    assert.ok(lines.length >= 2, `expected ready + response, got: ${r.stdout}`);
+    const resp = JSON.parse(lines[1]);
+    assert.ok(resp.commands.length > 0 || resp.blocked, 'expected command or governance block');
+    if (resp.commands.length > 0) {
+      const ks = resp.commands[0].keystrokes;
+      assert.ok(ks.includes('find') || ks.includes('grep'), `expected find/grep translation, got: ${ks}`);
+      assert.ok(!ks.startsWith(':'), 'translated command must not start with :');
+    }
+    return { translated: resp.commands[0]?.keystrokes || resp.rationale };
+  }));
+
+  cases.push(caseResult('agent_json_read_tool_translates_to_sed', () => {
+    const { spawnSync: spawn } = require('node:child_process');
+    const mock = 'Reading file. <cmd>:read src/index.ts 1:20</cmd>';
+    const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+      cwd: REPO_ROOT,
+      input: JSON.stringify({ instruction: 'read the index file', terminal_state: '$ ' }) + '\n\n',
+      encoding: 'utf8', timeout: 20_000,
+      env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mock },
+    });
+    const lines = (r.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    assert.ok(lines.length >= 2, `expected ready + response, got: ${r.stdout}`);
+    const resp = JSON.parse(lines[1]);
+    if (resp.commands.length > 0) {
+      const ks = resp.commands[0].keystrokes;
+      assert.ok(ks.includes('sed'), `expected sed translation, got: ${ks}`);
+      assert.ok(!ks.startsWith(':'), 'translated command must not start with :');
+    }
+    return { translated: resp.commands[0]?.keystrokes || resp.rationale };
+  }));
+
+  cases.push(caseResult('agent_json_test_tool_wraps_with_pass_fail_echo', () => {
+    const { spawnSync: spawn } = require('node:child_process');
+    const mock = 'Running tests. <cmd>:test npm test</cmd>';
+    const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+      cwd: REPO_ROOT,
+      input: JSON.stringify({ instruction: 'run the tests', terminal_state: '$ ' }) + '\n\n',
+      encoding: 'utf8', timeout: 20_000,
+      env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mock },
+    });
+    const lines = (r.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    assert.ok(lines.length >= 2, `expected ready + response, got: ${r.stdout}`);
+    const resp = JSON.parse(lines[1]);
+    if (resp.commands.length > 0) {
+      const ks = resp.commands[0].keystrokes;
+      assert.ok(ks.includes('SCBE_TEST_PASS'), `expected SCBE_TEST_PASS echo, got: ${ks}`);
+      assert.ok(ks.includes('npm test'), `expected npm test in command, got: ${ks}`);
+    }
+    return { translated: resp.commands[0]?.keystrokes || resp.rationale };
+  }));
+
+  cases.push(caseResult('agent_json_ko_ban_blocks_repeated_cmd_obs_pair', () => {
+    // Send 3 turns: same command, same observation each turn.
+    // On the 3rd turn the board should ko-ban the move and block it.
+    const { spawnSync: spawn } = require('node:child_process');
+    const mock = '<cmd>ls -la</cmd>';
+    const errorState = '$ ls -la\nls: cannot access: No such file or directory';
+    const inputLines = [
+      JSON.stringify({ instruction: 'list files', terminal_state: '$ ' }),
+      JSON.stringify({ terminal_state: errorState }),
+      JSON.stringify({ terminal_state: errorState }),
+      '',
+    ].join('\n');
+    const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+      cwd: REPO_ROOT,
+      input: inputLines,
+      encoding: 'utf8', timeout: 20_000,
+      env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mock },
+    });
+    const lines = (r.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    const responses = lines.slice(1).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+    assert.ok(responses.length >= 1, `expected at least one response, got: ${r.stdout}`);
+    const last = responses[responses.length - 1];
+    if (responses.length >= 3) {
+      assert.equal(last.blocked, true, `expected blocked=true on 3rd turn, got: ${JSON.stringify(last)}`);
+      assert.equal(last.governance?.reason, 'ko-ban', `expected governance.reason='ko-ban', got: ${last.governance?.reason}`);
+      assert.ok(last.board, `response must include board state`);
+      assert.ok(last.board.ko_bans.length > 0, `board must have at least one ko-ban entry`);
+    }
+    return { response_count: responses.length, last };
+  }));
+
+  cases.push(caseResult('agent_json_board_returned_every_turn', () => {
+    // Every non-error response must include a board object with the expected shape.
+    const { spawnSync: spawn } = require('node:child_process');
+    const mock = 'Listing files now. <cmd>ls</cmd>';
+    const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+      cwd: REPO_ROOT,
+      input: JSON.stringify({ instruction: 'list files', terminal_state: '$ ' }) + '\n\n',
+      encoding: 'utf8', timeout: 20_000,
+      env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mock },
+    });
+    const lines = (r.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    assert.ok(lines.length >= 2, `expected ready + response`);
+    const resp = JSON.parse(lines[1]);
+    assert.ok(resp.board, `response must include board`);
+    assert.ok(typeof resp.board.turn === 'number', `board.turn must be a number`);
+    assert.ok(Array.isArray(resp.board.attempts), `board.attempts must be an array`);
+    assert.ok(Array.isArray(resp.board.ko_bans), `board.ko_bans must be an array`);
+    assert.ok(Array.isArray(resp.board.legal_moves), `board.legal_moves must be an array`);
+    assert.strictEqual(resp.board.done, false, `board.done must be false initially`);
+    assert.strictEqual(resp.board.path_policy, 'non_optimal_correct', `board.path_policy must be 'non_optimal_correct'`);
+    return { board: resp.board };
+  }));
+
+  cases.push(caseResult('agent_json_rationale_strips_cmd_content', () => {
+    // Groq-format response (<cmd>...<cmd> — no </cmd>). Rationale must not include the cmd text.
+    const { spawnSync: spawn } = require('node:child_process');
+    const cmdText = 'echo scbe_rationale_strip_sentinel';
+    const mockResponse = `I will run the command.\n<cmd>${cmdText}<cmd>\n\nLet me check the result.`;
+    const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+      cwd: REPO_ROOT,
+      input: JSON.stringify({ instruction: 'run a test echo', terminal_state: '$ ' }) + '\n\n',
+      encoding: 'utf8', timeout: 20_000,
+      env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mockResponse },
+    });
+    assert.ok((r.stdout || '').length > 0, `no stdout from agent-json`);
+    const lines = (r.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    assert.ok(lines.length >= 2, `expected ready + response, got: ${r.stdout}`);
+    const resp = JSON.parse(lines[1]);
+    assert.ok(resp.rationale != null, `response must have rationale`);
+    assert.ok(
+      !resp.rationale.includes(cmdText),
+      `rationale must not contain cmd text "${cmdText}", got: "${resp.rationale.slice(0, 200)}"`
+    );
+    return { rationale_preview: resp.rationale.slice(0, 120) };
+  }));
+
+  cases.push(caseResult('agent_json_no_cmd_response_includes_governance', () => {
+    // No-cmd path (model explains without a command) must include a governance field for consistency.
+    const { spawnSync: spawn } = require('node:child_process');
+    const mockResponse = 'The task requires more information before I can proceed. Please clarify.';
+    const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+      cwd: REPO_ROOT,
+      input: JSON.stringify({ instruction: 'do something unclear', terminal_state: '$ ' }) + '\n\n',
+      encoding: 'utf8', timeout: 20_000,
+      env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mockResponse },
+    });
+    const lines = (r.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    assert.ok(lines.length >= 2, `expected ready + response`);
+    const resp = JSON.parse(lines[1]);
+    assert.ok(resp.governance, `no-cmd response must include governance field`);
+    assert.ok(resp.governance.decision, `governance must have decision`);
+    assert.strictEqual(resp.commands.length, 0, `no-cmd response must have empty commands`);
+    return { governance: resp.governance };
+  }));
+
+  cases.push(caseResult('agent_json_patch_tool_translates_to_patch_command', () => {
+    const { spawnSync: spawn } = require('node:child_process');
+    const mock = 'Applying patch. <cmd>:patch /tmp/fix.patch</cmd>';
+    const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+      cwd: REPO_ROOT,
+      input: JSON.stringify({ instruction: 'apply the patch file', terminal_state: '$ ' }) + '\n\n',
+      encoding: 'utf8', timeout: 20_000,
+      env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mock },
+    });
+    const lines = (r.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    assert.ok(lines.length >= 2, `expected ready + response, got: ${r.stdout}`);
+    const resp = JSON.parse(lines[1]);
+    if (resp.commands.length > 0) {
+      const ks = resp.commands[0].keystrokes;
+      assert.ok(ks.includes('patch -p1'), `expected patch -p1 in keystrokes, got: ${ks}`);
+      assert.ok(ks.includes('fix.patch'), `expected fix.patch in keystrokes, got: ${ks}`);
+      assert.ok(!ks.startsWith(':'), 'translated command must not start with :');
+    }
+    return { translated: resp.commands[0]?.keystrokes || resp.rationale };
+  }));
+
   const total = cases.reduce((sum, row) => sum + row.points, 0);
   const earned = cases.reduce((sum, row) => sum + row.earned, 0);
   const report = {

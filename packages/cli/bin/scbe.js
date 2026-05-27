@@ -909,6 +909,128 @@ function saveShellConfig(cfg) {
   fs.writeFileSync(shellConfigPath(), `${JSON.stringify(cfg, null, 2)}\n`, 'utf8');
 }
 
+// ─── Agent-JSON: task-completion prompt + shell tool translations ─────────────
+
+const _AGENT_JSON_SYSTEM_PROMPT = [
+  'You are a terminal task completion agent. Complete the given task, then verify it is done.',
+  '',
+  'RULES:',
+  '1. Inspect the current terminal state before choosing any command.',
+  '2. Choose ONE command per turn. Wrap it in <cmd>...</cmd>.',
+  '3. After each command\'s output, decide: is the task complete?',
+  '4. Only emit <done> after running the verification step described in the task (tests pass, file exists, expected output confirmed).',
+  '5. If a command fails: state why it failed, then try a different approach. Never repeat a failed command.',
+  '6. Do not repeat the same command if the terminal state has not changed.',
+  '',
+  'BUILT-IN TOOLS — use like any command inside <cmd>...</cmd>:',
+  '  :files <pattern>           — find files by name or grep for text in files',
+  '  :read <path> <start>:<end> — read lines start–end of a file  e.g. :read main.py 1:40',
+  '  :test <cmd>                — run test command; output includes SCBE_TEST_PASS or SCBE_TEST_FAIL',
+  '  :patch <file>              — apply a unified diff: patch -p1 < <file>',
+  '',
+  'VERIFICATION: Before emitting <done>, run the check described in the task.',
+  'Example: task says "make the tests pass" → run the tests, see them pass, then emit <done>.',
+].join('\n');
+
+function translateToolCommand(cmd) {
+  const trimmed = cmd.trim();
+  if (!trimmed.startsWith(':')) return null;
+  const space = trimmed.indexOf(' ');
+  const tool = space === -1 ? trimmed.slice(1) : trimmed.slice(1, space);
+  const args = space === -1 ? '' : trimmed.slice(space + 1).trim();
+  if (tool === 'files') {
+    const esc = args.replace(/'/g, "'\\''");
+    return `find . -name '*${esc}*' 2>/dev/null | head -30`;
+  }
+  if (tool === 'read') {
+    const parts = args.split(/\s+/);
+    const fp = (parts[0] || 'README.md').replace(/'/g, "'\\''");
+    const range = (parts[1] || '1:50').split(':');
+    return `sed -n '${range[0] || 1},${range[1] || 50}p' '${fp}'`;
+  }
+  if (tool === 'test') {
+    return `${args} && echo SCBE_TEST_PASS || echo SCBE_TEST_FAIL`;
+  }
+  if (tool === 'patch') {
+    const fp = (args || 'fix.patch').replace(/'/g, "'\\''");
+    return `patch -p1 < '${fp}'`;
+  }
+  return null;
+}
+
+function resolveBash() {
+  if (process.platform !== 'win32') return '/bin/sh';
+  const r = spawnSync('where', ['bash'], { encoding: 'utf8' });
+  return (r.stdout.split('\n').find((l) => l.trim()) || 'bash').trim();
+}
+
+function buildBoardPromptBlock(board) {
+  if (!board.objective) return '';
+  const _failPattern = /error|FAIL|not found|No such|permission denied|command not found/i;
+  const lines = ['--- Task Board ---', `Objective: ${board.objective.slice(0, 200)}`];
+  lines.push(`Turn: ${board.turn}`);
+  if (board.attempts.length > 0) {
+    const failCount = board.attempts.filter((a) => a.observation != null && _failPattern.test(a.observation)).length;
+    lines.push(`Progress: ${board.attempts.length} attempts, ${failCount} failed, ${board.ko_bans.length} ko-banned`);
+  }
+  if (board.attempts.length) {
+    const recent = board.attempts.slice(-5);
+    lines.push(`Attempts (${board.attempts.length} total, last ${recent.length}):`);
+    for (const a of recent) {
+      const cmd = (a.translated || a.cmd).slice(0, 80);
+      const obs = a.observation != null ? ` → ${a.observation.slice(0, 200).replace(/\n/g, ' ')}` : '';
+      const failed = a.observation != null && _failPattern.test(a.observation);
+      const mark = a.observation == null ? '?' : (failed ? '!' : '+');
+      lines.push(`  [T${a.turn}${mark}] ${cmd}${obs}`);
+    }
+  }
+  if (board.ko_bans.length) {
+    lines.push('Ko-banned (do not repeat — try a different approach):');
+    for (const key of board.ko_bans) lines.push(`  - ${key.split('|||')[0].slice(0, 80)}`);
+  }
+  lines.push(`Board: ${board.done ? 'COMPLETE' : 'IN PROGRESS'}`);
+  // Policy: ugly-but-verified accepted; unverified-done rejected; repeated-failed-move rejected
+  if (board.path_policy === 'non_optimal_correct') {
+    lines.push('Policy: non_optimal_correct — any legal safe move that makes progress is accepted; elegance is not required; completion requires verification.');
+  }
+  lines.push('---');
+  return lines.join('\n') + '\n\n';
+}
+
+function buildAgentMovePacket(move, governance, board) {
+  const script = resolveRepoScript('scripts/system/agent_move_packet.py');
+  if (!script) return null;
+  const payload = {
+    schema_version: 'scbe_agent_move_packet_input_v1',
+    move: {
+      cmd: move.cmd,
+      translated: move.translated || move.cmd,
+      turn: board.turn,
+      objective: board.objective,
+      legal_moves: board.legal_moves,
+      path_policy: board.path_policy,
+    },
+    governance,
+  };
+  try {
+    const r = spawnSync(pythonCommand(), [script], {
+      cwd: repoRoot(),
+      input: JSON.stringify(payload),
+      encoding: 'utf8',
+      timeout: 10000,
+      maxBuffer: 1024 * 1024,
+    });
+    if (r.status !== 0) {
+      const err = ((r.stdout || '') + (r.stderr || '')).trim().slice(0, 300);
+      return { ok: false, error: err || `agent_move_packet exited ${r.status}` };
+    }
+    const parsed = JSON.parse(r.stdout);
+    return parsed.ok ? parsed.packet : parsed;
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
 // ─── Input classifier ─────────────────────────────────────────────────────────
 
 const _PS_PREFIX = /^(!|ps:)\s*/;
@@ -1114,11 +1236,33 @@ function runInteractiveShell(flags = {}) {
     if (cfg.provider === 'fireworks' && !cfg.fireworks_api_key && process.env.FIREWORKS_API_KEY) {
       cfg.fireworks_api_key = process.env.FIREWORKS_API_KEY;
     }
+    // Task-completion mode: override conversational system prompt
+    cfg.system_prompt = _AGENT_JSON_SYSTEM_PROMPT;
 
     const history = [];
     let instruction = null;
     let busy = false;
     let stdinClosed = false;
+    // Single source of truth for task state.
+    const taskBoard = {
+      objective: null,
+      legal_moves: ['cmd', 'files', 'read', 'patch', 'test'],
+      attempts: [],
+      last_observation: null,
+      done_if: null,
+      done: false,
+      ko_bans: [],
+      turn: 0,
+      // Execution strategy: verified forward progress over optimality.
+      // See docs/specs/SCBE_AGENT_PATH_POLICY.md
+      path_policy: 'non_optimal_correct',
+      acceptance: {
+        must_be_safe: true,
+        must_be_verifiable: true,
+        must_not_repeat_failed_state: true,
+        optimality_required: false,
+      },
+    };
 
     process.stdout.write(JSON.stringify({ ready: true }) + '\n');
 
@@ -1132,7 +1276,12 @@ function runInteractiveShell(flags = {}) {
       let msg;
       try { msg = JSON.parse(line); } catch { return; }
 
-      if (msg.instruction) instruction = msg.instruction;
+      if (msg.instruction) {
+        instruction = msg.instruction;
+        if (!taskBoard.objective) taskBoard.objective = instruction;
+      }
+      if (msg.done_if && !taskBoard.done_if) taskBoard.done_if = msg.done_if;
+      if (msg.task_board && !taskBoard.objective) Object.assign(taskBoard, msg.task_board);
       if (!instruction) {
         process.stdout.write(JSON.stringify({ error: 'no instruction yet', done: false, commands: [] }) + '\n');
         return;
@@ -1140,9 +1289,27 @@ function runInteractiveShell(flags = {}) {
 
       busy = true;
       rl.pause();
+      taskBoard.turn++;
 
       const terminalState = msg.terminal_state || '';
-      const prompt = instruction + (terminalState ? `\n\nCurrent terminal state:\n${terminalState}` : '');
+
+      // Record the observation (output) of the last proposed command.
+      if (taskBoard.attempts.length > 0) {
+        const lastAttempt = taskBoard.attempts[taskBoard.attempts.length - 1];
+        if (lastAttempt.observation === undefined) {
+          lastAttempt.observation = terminalState.slice(-150);
+          taskBoard.last_observation = terminalState;
+          const pairKey = `${lastAttempt.translated || lastAttempt.cmd}|||${lastAttempt.observation}`;
+          const seenBefore = taskBoard.attempts.slice(0, -1).some(
+            (a) => `${a.translated || a.cmd}|||${(a.observation || '').slice(-150)}` === pairKey
+          );
+          if (seenBefore && !taskBoard.ko_bans.includes(pairKey)) taskBoard.ko_bans.push(pairKey);
+        }
+      }
+      if (!taskBoard.last_observation) taskBoard.last_observation = terminalState;
+
+      const boardBlock = buildBoardPromptBlock(taskBoard);
+      const prompt = boardBlock + instruction + (terminalState ? `\n\nCurrent terminal state:\n${terminalState}` : '');
 
       let full;
       try {
@@ -1153,7 +1320,7 @@ function runInteractiveShell(flags = {}) {
         }
         full = process.env.SCBE_MOCK_RESPONSE || await streamLLM(prompt, cfg, history, () => {});
       } catch (err) {
-        process.stdout.write(JSON.stringify({ error: err.message, done: false, commands: [] }) + '\n');
+        process.stdout.write(JSON.stringify({ error: err.message, done: false, commands: [], board: { ...taskBoard } }) + '\n');
         busy = false;
         if (stdinClosed) process.exit(0);
         rl.resume();
@@ -1164,18 +1331,78 @@ function runInteractiveShell(flags = {}) {
       history.push({ role: 'assistant', content: full });
       if (history.length > 20) history.splice(0, 2);
 
-      const cmdMatch = full.match(/<cmd>([\s\S]*?)<\/cmd>/);
-      const doneSignal = /task\s+(?:is\s+)?(?:complete|done|finished)/i.test(full) || /<done>/.test(full);
+      // Accept </cmd> OR the opening of a next <cmd> as closing delimiter.
+      // Some models emit <cmd>...<cmd> (open tag) instead of <cmd>...</cmd> (close tag).
+      // The lookahead stops before the next <cmd> without consuming it.
+      const cmdMatch = full.match(/<cmd>([\s\S]*?)(?:<\/cmd>|(?=\s*<cmd>))/);
+
+      const doneSignal = /\btask\s+(?:is\s+)?(?:complete|done|finished)/i.test(full) || /<done>/.test(full);
+
+      const bashBin = resolveBash();
 
       if (!cmdMatch) {
-        process.stdout.write(JSON.stringify({ commands: [], done: doneSignal, rationale: full.slice(0, 500) }) + '\n');
+        // Model <done> is a request for board verification, not completion
+        if (doneSignal && taskBoard.done_if) {
+          const check = spawnSync(bashBin, ['-c', taskBoard.done_if], { encoding: 'utf8', timeout: 10000 });
+          if (check.status !== 0) {
+            const verifyOut = ((check.stdout || '') + (check.stderr || '')).trim().slice(0, 300) || 'verifier exited non-zero';
+            history.push({ role: 'user', content: `VERIFY FAILED: ${verifyOut}\nThe objective is not yet complete. Continue working.` });
+            history.push({ role: 'assistant', content: 'Understood. I will continue.' });
+            if (history.length > 20) history.splice(0, 2);
+            process.stdout.write(JSON.stringify({
+              commands: [],
+              done: false,
+              verify_failed: true,
+              rationale: `done signal received but objective verifier failed: ${verifyOut}`,
+              governance: { decision: 'ALLOW', reason: 'no-cmd' },
+              board: { ...taskBoard },
+            }) + '\n');
+            busy = false;
+            if (stdinClosed) process.exit(0);
+            rl.resume();
+            return;
+          }
+          taskBoard.done = true;
+        }
+        process.stdout.write(JSON.stringify({
+          commands: [],
+          done: taskBoard.done || doneSignal,
+          rationale: full.slice(0, 500),
+          governance: { decision: 'ALLOW', reason: 'no-cmd' },
+          board: { ...taskBoard },
+        }) + '\n');
         busy = false;
         if (stdinClosed) process.exit(0);
-        if (!doneSignal) rl.resume();
+        if (!(taskBoard.done || doneSignal)) rl.resume();
         return;
       }
 
       const proposed = cmdMatch[1].trim();
+      const translated = translateToolCommand(proposed) || proposed;
+
+      // Ko-ban: block if this (translated_cmd, last_observation) pair was already banned
+      const koPairKey = `${translated}|||${(taskBoard.last_observation || '').slice(-150)}`;
+      if (taskBoard.ko_bans.includes(koPairKey)) {
+        process.stdout.write(JSON.stringify({
+          commands: [],
+          done: false,
+          blocked: true,
+          rationale: `ko-ban: command+observation repeated — try a different approach. Banned: "${translated.slice(0, 80)}"`,
+          governance: { decision: 'QUARANTINE', reason: 'ko-ban' },
+          board: { ...taskBoard },
+        }) + '\n');
+        busy = false;
+        if (stdinClosed) process.exit(0);
+        rl.resume();
+        return;
+      }
+
+      taskBoard.attempts.push({
+        cmd: proposed,
+        ...(translated !== proposed ? { translated } : {}),
+        turn: taskBoard.turn,
+      });
+      if (taskBoard.attempts.length > 20) taskBoard.attempts.shift();
 
       // Run through GeoSeal governance
       const busBin = resolveAgentBusBin();
@@ -1186,7 +1413,7 @@ function runInteractiveShell(flags = {}) {
         try {
           const r = spawnSync(
             process.execPath,
-            [busBin, 'pipeline', 'compile', '--intent', proposed, '--json'],
+            [busBin, 'pipeline', 'compile', '--intent', translated, '--json'],
             { encoding: 'utf8', timeout: 15000, maxBuffer: 1024 * 512 }
           );
           if (r.status === 0 && r.stdout) {
@@ -1207,6 +1434,7 @@ function runInteractiveShell(flags = {}) {
           blocked: true,
           rationale: `governance blocked: ${governance.reason}`,
           governance,
+          board: { ...taskBoard },
         }) + '\n');
         busy = false;
         if (stdinClosed) process.exit(0);
@@ -1214,17 +1442,48 @@ function runInteractiveShell(flags = {}) {
         return;
       }
 
-      const rationale = full.replace(/<cmd>[\s\S]*?<\/cmd>/g, '').trim().slice(0, 500);
+      // Objective verifier: model <done> is only a request — verify before accepting
+      if (doneSignal && taskBoard.done_if) {
+        const check = spawnSync(bashBin, ['-c', taskBoard.done_if], { encoding: 'utf8', timeout: 10000 });
+        if (check.status !== 0) {
+          const verifyOut = ((check.stdout || '') + (check.stderr || '')).trim().slice(0, 300) || 'verifier exited non-zero';
+          history.push({ role: 'user', content: `VERIFY FAILED: ${verifyOut}\nThe objective is not yet complete. Continue working.` });
+          history.push({ role: 'assistant', content: 'Understood. I will continue.' });
+          if (history.length > 20) history.splice(0, 2);
+          process.stdout.write(JSON.stringify({
+            commands: [{ keystrokes: translated, is_blocking: true, timeout_sec: 30 }],
+            done: false,
+            verify_failed: true,
+            rationale: `done signal received but objective verifier failed: ${verifyOut}`,
+            governance,
+            board: { ...taskBoard },
+          }) + '\n');
+          busy = false;
+          if (stdinClosed) process.exit(0);
+          rl.resume();
+          return;
+        }
+        taskBoard.done = true;
+      }
+
+      // Two-pass strip: (1) <cmd>...</cmd> or <cmd>...<cmd> (Groq open-tag style),
+      // (2) any trailing <cmd>... with no close tag.
+      const rationale = full
+        .replace(/<cmd>[\s\S]*?(?:<\/cmd>|(?=<cmd>))/g, '')
+        .replace(/<cmd>[\s\S]*/g, '')
+        .trim()
+        .slice(0, 500);
       process.stdout.write(JSON.stringify({
-        commands: [{ keystrokes: proposed, is_blocking: true, timeout_sec: 30 }],
-        done: doneSignal,
+        commands: [{ keystrokes: translated, is_blocking: true, timeout_sec: 30 }],
+        done: taskBoard.done || doneSignal,
         rationale,
         governance,
+        board: { ...taskBoard },
       }) + '\n');
 
       busy = false;
       if (stdinClosed) process.exit(0);
-      if (!doneSignal) rl.resume();
+      if (!(taskBoard.done || doneSignal)) rl.resume();
     });
 
     rl.on('close', () => {
