@@ -116,8 +116,7 @@ jobs:
           pip install pytest --quiet
           python -m scripts.system.geoseal_llm_verify \
             --json "{\"op\":\"upload\",\"file\":\"${{ github.event.inputs.video_path }}\",\"sha256\":\"${{ steps.verify.outputs.sha256 }}\"}" \
-            --dry-run --quiet || true
-        continue-on-error: true
+            --dry-run --quiet
 
       - name: Upload to YouTube (resumable)
         env:

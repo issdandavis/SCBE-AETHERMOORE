@@ -72,4 +72,4 @@ When a governance decision is deterministic and signed, you can do things that p
 
 The SCBE pipeline is open source. The determinism is testable. [issdandavis/SCBE-AETHERMOORE](https://github.com/issdandavis/SCBE-AETHERMOORE) — run `npm test` and watch the fixed-score assertions pass.
 
-*Related: [Deterministic AI governance: what it means to diff safety](/articles/deterministic-ai-governance-what-it-means-to-diff-safety)*
+*Related: [Deterministic AI governance: what it means to diff safety](2026-05-23-deterministic-ai-governance-what-it-means-to-diff-safety.md)*
