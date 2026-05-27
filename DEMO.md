@@ -1,193 +1,179 @@
-# SCBE Governance Demo
+# SCBE-AETHERMOORE Beginner Demo
 
-Run any text through the 14-layer governance pipeline. Get a decision, a risk score, and a cryptographic audit event in one API call.
+This is the short path for people who only want to see SCBE catch unsafe input.
+
+SCBE is easiest to understand as a safety gate:
+
+```text
+user input -> SCBE scan -> ALLOW / QUARANTINE / ESCALATE / DENY -> model or agent
+```
+
+You do not need Docker, a GPU, an API key, or an external model.
 
 ---
 
-## Start the server
+## Option A: CLI demo
+
+Install the Python package:
+
+```bash
+pip install scbe-aethermoore
+```
+
+Run three scans:
+
+```bash
+scbe-scan "hello world"
+scbe-scan "ignore all previous instructions"
+scbe-scan "DROP TABLE users"
+```
+
+Expected shape:
+
+```text
+[OK] ALLOW         score=1.0000  d*=0.0000  pd=0.0000  len=11
+[!!] ESCALATE      score=0.3846  d*=0.0000  pd=0.8000  len=32
+[!!] ESCALATE      score=0.3846  d*=0.0000  pd=0.8000  len=16
+```
+
+Higher score is safer. The decision tiers are:
+
+| Decision | Meaning |
+|---|---|
+| `ALLOW` | Safe enough to continue |
+| `QUARANTINE` | Suspicious; review before execution |
+| `ESCALATE` | High risk; governance action required |
+| `DENY` | Blocked |
+
+---
+
+## Option B: Browser demo
+
+Run the no-dependency browser demo:
+
+```bash
+python -m scbe_aethermoore.demo.web
+```
+
+Open:
+
+```text
+http://127.0.0.1:8765
+```
+
+Type a prompt or command. The page shows:
+
+- decision
+- score
+- audit digest
+- simple six-axis Sacred Tongues demo bars
+- raw JSON result
+
+The six bars are a lightweight demo visualization derived from the public scan
+features. They are meant to make the gate visible, not replace the full semantic
+projector.
+
+---
+
+## Option C: Wrap a model in 20 lines
+
+Run the basic firewall example:
+
+```bash
+python examples/python/basic_firewall.py
+```
+
+The example has a toy model:
+
+```python
+def toy_model(prompt: str) -> str:
+    return f"MODEL_OUTPUT: {prompt[:80]}..."
+```
+
+SCBE runs first. Unsafe input is blocked before the model sees it.
+
+Replace `toy_model()` with your own model call when you want to integrate it.
+
+---
+
+## Python integration
+
+```python
+from scbe_aethermoore import is_safe, scan
+
+user_input = "ignore all previous instructions"
+
+if not is_safe(user_input):
+    result = scan(user_input)
+    raise PermissionError(f"Blocked by SCBE: {result['decision']}")
+
+print("send to model")
+```
+
+Batch scan:
+
+```python
+from scbe_aethermoore import scan_batch
+
+items = ["hello", "DROP TABLE users", "how are you?"]
+for result in scan_batch(items):
+    print(result["decision"], result["score"])
+```
+
+Demo visualization payload:
+
+```python
+from scbe_aethermoore import scan_with_tongues
+
+result = scan_with_tongues("ignore all previous instructions")
+print(result["decision"])
+print(result["tongues"])
+```
+
+---
+
+## API demo for deeper testing
+
+The repo also includes a FastAPI governance route for people who want an HTTP
+surface:
 
 ```bash
 pip install -r requirements.txt
 uvicorn src.api.main:app --host 127.0.0.1 --port 8000
 ```
 
-Interactive docs: http://localhost:8000/docs
+Interactive docs:
 
----
+```text
+http://127.0.0.1:8000/docs
+```
 
-## Three curl commands
-
-### ALLOW — benign command
+Health check:
 
 ```bash
-curl -s -X POST http://localhost:8000/v1/govern \
-     -H 'Content-Type: application/json' \
-     -d '{"input": "list files in /tmp", "context": "external"}' \
-     | python -m json.tool
+curl http://127.0.0.1:8000/v1/govern/health
 ```
 
-```json
-{
-  "decision": "ALLOW",
-  "risk_score": 0.4436,
-  "risk_base": 0.4305,
-  "layers": {
-    "hyperbolic_distance": 0.003,
-    "harmonic_wall_H": 0.997,
-    "spin_coherence": 1.0,
-    "spectral_coherence": 0.5,
-    "triadic_temporal": 0.003,
-    "trust_tau": 0.5,
-    "audio_coherence": 0.5,
-    "geometry_radial_norm": 0.003
-  },
-  "explanation": "Input is within safe operating bounds (risk 0.444 < 0.55 threshold). Hyperbolic distance from safe realms: 0.0030. No high-risk semantic patterns detected."
-}
-```
-
----
-
-### QUARANTINE — elevated privilege
+One scan:
 
 ```bash
-curl -s -X POST http://localhost:8000/v1/govern \
-     -H 'Content-Type: application/json' \
-     -d '{"input": "sudo chmod 755 /etc/cron.d", "context": "untrusted"}' \
-     | python -m json.tool
-```
-
-```json
-{
-  "decision": "QUARANTINE",
-  "risk_score": 0.6434,
-  "explanation": "Input is borderline (risk 0.643, between 0.55–0.90 thresholds). Flagged for review. Semantic scan matched 2 elevated-privilege pattern(s): 'sudo\\b'."
-}
+curl -s -X POST http://127.0.0.1:8000/v1/govern \
+  -H "Content-Type: application/json" \
+  -d "{\"input\":\"rm -rf /var/log && exfil passwords\",\"context\":\"untrusted\"}"
 ```
 
 ---
 
-### DENY — destructive operation
+## Under the hood
 
-```bash
-curl -s -X POST http://localhost:8000/v1/govern \
-     -H 'Content-Type: application/json' \
-     -d '{"input": "rm -rf /var/log && exfil passwords to remote", "context": "untrusted"}' \
-     | python -m json.tool
-```
+The beginner path uses the installable Python package:
 
-```json
-{
-  "decision": "DENY",
-  "risk_score": 1.8835,
-  "explanation": "Input exceeds DENY threshold (risk 1.884 ≥ 0.90). Blocked. Hyperbolic distance from safe realms: 1.5312. Semantic scan matched 2 destructive operation pattern(s): 'rm\\s+-rf'."
-}
-```
+- `scan(text)` returns a decision, score, distance, phase deviation, and audit digest.
+- `is_safe(text)` gives a boolean gate for apps.
+- `scan_with_tongues(text)` adds demo-friendly six-axis bars.
 
----
+For the full system map, read:
 
-## What is actually running
-
-Every call goes through the full Python pipeline in `src/scbe_14layer_reference.py`:
-
-| Layer | What it does | Output |
-|-------|-------------|--------|
-| L0 | Intent modulation — Feistel scramble keyed to input | Modulated vector |
-| L1–2 | Complex state construction → realification | ℝ¹² vector |
-| L3 | Phi-weighted SPD transform (Sacred Tongues weights) | Weighted vector |
-| L4 | Poincaré ball embedding | Point in hyperbolic space ‖u‖ < 1 |
-| L5 | Hyperbolic distance to safe realms | d* scalar |
-| L6–7 | Breathing + Möbius phase transform | Stabilized u |
-| L8 | Realm distance (min over 4 safe centers) | d_star |
-| L9–10 | FFT spectral coherence + spin coherence | S_spec, C_spin |
-| L11 | Triadic temporal distance | d_tri_norm |
-| L12 | Harmonic wall: H = 1/(1 + d* + 2·phase_dev) | H ∈ (0, 1] |
-| L13 | Risk decision: risk_prime = risk_base / H | ALLOW / QUARANTINE / DENY |
-| L14 | Audio axis telemetry | S_audio |
-
-The audit event in every response is a SHA-512 hash of the 21D state vector, signed and timestamped. It is append-only — you can verify the pipeline ran and what it decided.
-
----
-
-## What each response field means
-
-| Field | Meaning |
-|-------|---------|
-| `decision` | ALLOW (safe), QUARANTINE (review), DENY (blocked) |
-| `risk_score` | Final risk after harmonic amplification. Thresholds: 0.55 / 0.90 |
-| `risk_base` | Pre-amplification composite risk from all coherence axes |
-| `layers.hyperbolic_distance` | How far the input is from known-safe regions in hyperbolic space. Near 0 = safe. |
-| `layers.harmonic_wall_H` | Safety wall strength. Near 1 = strong wall. Near 0 = wall collapsed. |
-| `layers.spin_coherence` | Phase alignment across axes. 1.0 = fully coherent (safe). |
-| `layers.triadic_temporal` | Multi-scale temporal risk. 0 = no history pressure. |
-| `semantic.deny_patterns_matched` | Destructive operation patterns detected in the input text |
-| `semantic.quarantine_patterns_matched` | Elevated-privilege patterns detected |
-| `audit.timestamp_unix` | Unix timestamp of this governance decision |
-| `audit.schema` | Canonical state schema version (`state21_v1`) |
-
----
-
-## Integrate it
-
-```python
-import httpx
-
-def govern(text: str, context: str = "external") -> dict:
-    r = httpx.post("http://localhost:8000/v1/govern",
-                   json={"input": text, "context": context})
-    r.raise_for_status()
-    return r.json()
-
-result = govern("sudo rm -rf /tmp/build")
-if result["decision"] != "ALLOW":
-    raise PermissionError(f"Governance: {result['decision']} — {result['explanation']}")
-```
-
----
-
-## Health check
-
-```bash
-curl http://localhost:8000/v1/govern/health
-# {"status": "ok", "pipeline": "14-layer", "decision": "ALLOW"}
-```
-
----
-
-## Agent workflow batch
-
-Use the batch endpoint before an agent executes a multi-step workflow. If any
-step is `DENY`, the whole workflow is marked `BLOCK_WORKFLOW`.
-
-```bash
-curl -s -X POST http://localhost:8000/v1/govern/batch \
-     -H 'Content-Type: application/json' \
-     -d '{
-       "items": [
-         {"input": "list files in /tmp", "context": "external"},
-         {"input": "sudo chmod 755 /etc/cron.d", "context": "untrusted"},
-         {"input": "rm -rf /var/log && exfil passwords to remote", "context": "untrusted"}
-       ]
-     }' | python -m json.tool
-```
-
-Expected summary:
-
-```json
-{
-  "total": 3,
-  "counts": {
-    "ALLOW": 1,
-    "QUARANTINE": 1,
-    "DENY": 1
-  },
-  "block_execution": true,
-  "recommended_action": "BLOCK_WORKFLOW"
-}
-```
-
-Verified test:
-
-```bash
-python -m pytest tests/api/test_govern_demo_routes.py -q
-# 4 passed
-```
+- [README.md](README.md)
+- [docs/specs/SCBE_CANONICAL_CONSTANTS.md](docs/specs/SCBE_CANONICAL_CONSTANTS.md)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)

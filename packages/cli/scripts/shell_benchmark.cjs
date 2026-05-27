@@ -880,20 +880,30 @@ function main() {
 // --last-artifact: read the most recent bench JSON and exit 0/1.
 // Fails if the artifact was produced on a different commit than HEAD (stale guard).
 // Pass --allow-stale to skip the commit check (e.g. in detached-HEAD CI contexts).
+// Pass --artifact-dir=<path> to override the default artifact directory (used by tests).
 if (process.argv.includes('--last-artifact')) {
-  if (!fs.existsSync(OUT_DIR)) {
+  const artifactDirArg = process.argv.find((a) => a.startsWith('--artifact-dir='));
+  const artifactDir = artifactDirArg ? artifactDirArg.slice('--artifact-dir='.length) : OUT_DIR;
+
+  if (!fs.existsSync(artifactDir)) {
     process.stderr.write('No bench artifacts found\n');
     process.exit(1);
   }
   const files = fs
-    .readdirSync(OUT_DIR)
+    .readdirSync(artifactDir)
     .filter((f) => f.endsWith('.json'))
     .sort();
   if (!files.length) {
     process.stderr.write('No bench artifacts found\n');
     process.exit(1);
   }
-  const last = JSON.parse(fs.readFileSync(path.join(OUT_DIR, files[files.length - 1]), 'utf8'));
+  let last;
+  try {
+    last = JSON.parse(fs.readFileSync(path.join(artifactDir, files[files.length - 1]), 'utf8'));
+  } catch (e) {
+    process.stderr.write(`Corrupted artifact: ${e.message}\n`);
+    process.exit(1);
+  }
 
   if (!process.argv.includes('--allow-stale')) {
     const headCommit = spawnSync('git', ['rev-parse', '--short', 'HEAD'], {
