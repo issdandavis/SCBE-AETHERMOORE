@@ -13,6 +13,7 @@ Layers:
   4. Knowledge accuracy    — 10 factual questions via squad providers [skipped with --skip-live]
   5. Test suite health     — TypeScript vitest pass rate
 """
+
 from __future__ import annotations
 
 import argparse
@@ -37,69 +38,103 @@ sys.path.insert(0, str(REPO_ROOT))
 
 EXTERNAL_BASELINES = {
     "safety_classifiers": [
-        {"name": "WildGuard",       "score": 0.877, "metric": "balanced_accuracy", "source": "arxiv:2406.18495"},
-        {"name": "LlamaGuard-3",    "score": 0.825, "metric": "balanced_accuracy", "source": "Meta AI, 2024"},
-        {"name": "GPT-4-based",     "score": 0.860, "metric": "balanced_accuracy", "source": "OpenAI safety eval, 2024"},
-        {"name": "ShieldLM",        "score": 0.803, "metric": "balanced_accuracy", "source": "arxiv:2402.09571"},
+        {"name": "WildGuard", "score": 0.877, "metric": "balanced_accuracy", "source": "arxiv:2406.18495"},
+        {"name": "LlamaGuard-3", "score": 0.825, "metric": "balanced_accuracy", "source": "Meta AI, 2024"},
+        {"name": "GPT-4-based", "score": 0.860, "metric": "balanced_accuracy", "source": "OpenAI safety eval, 2024"},
+        {"name": "ShieldLM", "score": 0.803, "metric": "balanced_accuracy", "source": "arxiv:2402.09571"},
     ],
     "llm_quality_mmlu": [
-        {"name": "llama-3.3-70b",   "score": 0.832, "metric": "5-shot MMLU",       "source": "Meta AI blog 2024"},
-        {"name": "gpt-4o-mini",     "score": 0.820, "metric": "5-shot MMLU",       "source": "OpenAI evals 2024"},
-        {"name": "gpt-4o",          "score": 0.887, "metric": "5-shot MMLU",       "source": "OpenAI evals 2024"},
-        {"name": "claude-3.5-sonnet","score": 0.889, "metric": "5-shot MMLU",      "source": "Anthropic evals 2024"},
+        {"name": "llama-3.3-70b", "score": 0.832, "metric": "5-shot MMLU", "source": "Meta AI blog 2024"},
+        {"name": "gpt-4o-mini", "score": 0.820, "metric": "5-shot MMLU", "source": "OpenAI evals 2024"},
+        {"name": "gpt-4o", "score": 0.887, "metric": "5-shot MMLU", "source": "OpenAI evals 2024"},
+        {"name": "claude-3.5-sonnet", "score": 0.889, "metric": "5-shot MMLU", "source": "Anthropic evals 2024"},
     ],
     "cli_capability": [
-        {"name": "claude-code",     "score": 1.0,   "metric": "11/11 criteria",    "source": "docs.claude.com"},
-        {"name": "gemini-cli",      "score": 0.909, "metric": "10/11 criteria",    "source": "geminicli.com/docs"},
-        {"name": "codex-cli",       "score": 0.818, "metric": "9/11 criteria",     "source": "help.openai.com"},
-        {"name": "aider",           "score": 0.727, "metric": "8/11 criteria",     "source": "aider.chat/docs"},
+        {"name": "claude-code", "score": 1.0, "metric": "11/11 criteria", "source": "docs.claude.com"},
+        {"name": "gemini-cli", "score": 0.909, "metric": "10/11 criteria", "source": "geminicli.com/docs"},
+        {"name": "codex-cli", "score": 0.818, "metric": "9/11 criteria", "source": "help.openai.com"},
+        {"name": "aider", "score": 0.727, "metric": "8/11 criteria", "source": "aider.chat/docs"},
     ],
     "latency_p50_ms": [
-        {"name": "cerebras llama",  "score": 920,   "metric": "p50 TTFT ms",       "source": "artificialanalysis.ai 2025"},
-        {"name": "groq llama",      "score": 2659,  "metric": "p50 TTFT ms",       "source": "artificialanalysis.ai 2025"},
-        {"name": "openai gpt-4o-mini", "score": 1500, "metric": "p50 TTFT ms",    "source": "artificialanalysis.ai 2025"},
+        {"name": "cerebras llama", "score": 920, "metric": "p50 TTFT ms", "source": "artificialanalysis.ai 2025"},
+        {"name": "groq llama", "score": 2659, "metric": "p50 TTFT ms", "source": "artificialanalysis.ai 2025"},
+        {"name": "openai gpt-4o-mini", "score": 1500, "metric": "p50 TTFT ms", "source": "artificialanalysis.ai 2025"},
     ],
 }
 
 # ── Knowledge accuracy questions (MMLU-style, public-domain) ──────────────────
 
 KNOWLEDGE_QUESTIONS = [
-    {"q": "What is the speed of light in a vacuum (approximate)?",
-     "choices": {"A": "3×10^8 m/s", "B": "3×10^6 m/s", "C": "3×10^10 m/s", "D": "1×10^6 m/s"},
-     "answer": "A", "category": "physics"},
-    {"q": "What is the derivative of x³ with respect to x?",
-     "choices": {"A": "3x", "B": "x²", "C": "3x²", "D": "x³"},
-     "answer": "C", "category": "calculus"},
-    {"q": "In what year did World War II end?",
-     "choices": {"A": "1943", "B": "1944", "C": "1945", "D": "1946"},
-     "answer": "C", "category": "history"},
-    {"q": "What does CPU stand for?",
-     "choices": {"A": "Central Processing Unit", "B": "Computer Processing Unit",
-                 "C": "Central Program Unit", "D": "Core Processing Unit"},
-     "answer": "A", "category": "cs"},
-    {"q": "What is the chemical formula for water?",
-     "choices": {"A": "CO2", "B": "H2O2", "C": "NaCl", "D": "H2O"},
-     "answer": "D", "category": "chemistry"},
-    {"q": "What is the capital of France?",
-     "choices": {"A": "Berlin", "B": "Madrid", "C": "Paris", "D": "Rome"},
-     "answer": "C", "category": "geography"},
-    {"q": "How many chromosomes does a typical human have?",
-     "choices": {"A": "23", "B": "46", "C": "44", "D": "48"},
-     "answer": "B", "category": "biology"},
-    {"q": "What is √144?",
-     "choices": {"A": "12", "B": "14", "C": "11", "D": "13"},
-     "answer": "A", "category": "math"},
-    {"q": "What does HTTP stand for?",
-     "choices": {"A": "HyperText Transfer Protocol", "B": "High Transfer Text Protocol",
-                 "C": "HyperText Transport Protocol", "D": "High Text Transfer Protocol"},
-     "answer": "A", "category": "cs"},
-    {"q": "What is the largest planet in the solar system?",
-     "choices": {"A": "Saturn", "B": "Neptune", "C": "Uranus", "D": "Jupiter"},
-     "answer": "D", "category": "astronomy"},
+    {
+        "q": "What is the speed of light in a vacuum (approximate)?",
+        "choices": {"A": "3×10^8 m/s", "B": "3×10^6 m/s", "C": "3×10^10 m/s", "D": "1×10^6 m/s"},
+        "answer": "A",
+        "category": "physics",
+    },
+    {
+        "q": "What is the derivative of x³ with respect to x?",
+        "choices": {"A": "3x", "B": "x²", "C": "3x²", "D": "x³"},
+        "answer": "C",
+        "category": "calculus",
+    },
+    {
+        "q": "In what year did World War II end?",
+        "choices": {"A": "1943", "B": "1944", "C": "1945", "D": "1946"},
+        "answer": "C",
+        "category": "history",
+    },
+    {
+        "q": "What does CPU stand for?",
+        "choices": {
+            "A": "Central Processing Unit",
+            "B": "Computer Processing Unit",
+            "C": "Central Program Unit",
+            "D": "Core Processing Unit",
+        },
+        "answer": "A",
+        "category": "cs",
+    },
+    {
+        "q": "What is the chemical formula for water?",
+        "choices": {"A": "CO2", "B": "H2O2", "C": "NaCl", "D": "H2O"},
+        "answer": "D",
+        "category": "chemistry",
+    },
+    {
+        "q": "What is the capital of France?",
+        "choices": {"A": "Berlin", "B": "Madrid", "C": "Paris", "D": "Rome"},
+        "answer": "C",
+        "category": "geography",
+    },
+    {
+        "q": "How many chromosomes does a typical human have?",
+        "choices": {"A": "23", "B": "46", "C": "44", "D": "48"},
+        "answer": "B",
+        "category": "biology",
+    },
+    {"q": "What is √144?", "choices": {"A": "12", "B": "14", "C": "11", "D": "13"}, "answer": "A", "category": "math"},
+    {
+        "q": "What does HTTP stand for?",
+        "choices": {
+            "A": "HyperText Transfer Protocol",
+            "B": "High Transfer Text Protocol",
+            "C": "HyperText Transport Protocol",
+            "D": "High Text Transfer Protocol",
+        },
+        "answer": "A",
+        "category": "cs",
+    },
+    {
+        "q": "What is the largest planet in the solar system?",
+        "choices": {"A": "Saturn", "B": "Neptune", "C": "Uranus", "D": "Jupiter"},
+        "answer": "D",
+        "category": "astronomy",
+    },
 ]
 
 
 # ── Layer 1: Governance ───────────────────────────────────────────────────────
+
 
 def run_governance_benchmark() -> dict[str, Any]:
     """Run the standalone governance benchmark via subprocess."""
@@ -165,6 +200,7 @@ def _measure_petri_recall() -> dict[str, Any]:
 
     try:
         from src.cli.petri_pattern_filter import is_meta_ai_auditor_phrasing, is_non_latin_script_input
+
         total, hit, regex_only, tongue_only, both_hit = 0, 0, 0, 0, 0
         for f in sorted(seeds_dir.glob("*.md")):
             body = f.read_text(encoding="utf-8")
@@ -197,6 +233,7 @@ def _measure_petri_recall() -> dict[str, Any]:
 
 
 # ── Layer 2: CLI capability ───────────────────────────────────────────────────
+
 
 def run_cli_benchmark() -> dict[str, Any]:
     script = REPO_ROOT / "scripts" / "benchmark" / "cli_competitive_benchmark.py"
@@ -236,16 +273,21 @@ def run_cli_benchmark() -> dict[str, Any]:
 
 # ── Layer 3: Squad latency probe ─────────────────────────────────────────────
 
-def _openai_chat_request(base_url: str, api_key: str, model: str, prompt: str, timeout: int = 30, max_tokens: int = 500) -> tuple[str, float]:
+
+def _openai_chat_request(
+    base_url: str, api_key: str, model: str, prompt: str, timeout: int = 30, max_tokens: int = 500
+) -> tuple[str, float]:
     """Fire a single chat completion request and return (response_text, latency_ms).
     max_tokens=500 required for reasoning models (zai-glm-4.7, gpt-oss-*) to complete chain-of-thought.
     """
-    body = json.dumps({
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": max_tokens,
-        "stream": False,
-    }).encode()
+    body = json.dumps(
+        {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": max_tokens,
+            "stream": False,
+        }
+    ).encode()
     req = urllib.request.Request(
         f"{base_url.rstrip('/')}/chat/completions",
         data=body,
@@ -281,8 +323,8 @@ def run_squad_latency_benchmark() -> dict[str, Any]:
 
     for name, base_url, api_key, model in [
         # zai-glm-4.7 is a reasoning model available on this account; llama not provisioned
-        ("cerebras", "https://api.cerebras.ai/v1",       cerebras_key, "zai-glm-4.7"),
-        ("groq",     "https://api.groq.com/openai/v1",   groq_key,     "llama-3.3-70b-versatile"),
+        ("cerebras", "https://api.cerebras.ai/v1", cerebras_key, "zai-glm-4.7"),
+        ("groq", "https://api.groq.com/openai/v1", groq_key, "llama-3.3-70b-versatile"),
     ]:
         if not api_key:
             providers.append({"provider": name, "ok": False, "error": "no api key", "latencies_ms": []})
@@ -301,21 +343,32 @@ def run_squad_latency_benchmark() -> dict[str, Any]:
         if latencies:
             latencies_sorted = sorted(latencies)
             p50 = latencies_sorted[len(latencies_sorted) // 2]
-            providers.append({
-                "provider": name,
-                "model": model,
-                "ok": True,
-                "latencies_ms": latencies,
-                "p50_ms": p50,
-                "errors": errors,
-            })
+            providers.append(
+                {
+                    "provider": name,
+                    "model": model,
+                    "ok": True,
+                    "latencies_ms": latencies,
+                    "p50_ms": p50,
+                    "errors": errors,
+                }
+            )
         else:
-            providers.append({"provider": name, "model": model, "ok": False, "error": errors[0] if errors else "unknown", "latencies_ms": []})
+            providers.append(
+                {
+                    "provider": name,
+                    "model": model,
+                    "ok": False,
+                    "error": errors[0] if errors else "unknown",
+                    "latencies_ms": [],
+                }
+            )
 
     return {"providers": providers}
 
 
 # ── Layer 4: Knowledge accuracy ───────────────────────────────────────────────
+
 
 def _extract_answer_letter(response: str) -> str | None:
     """Extract A/B/C/D from a model response."""
@@ -333,7 +386,7 @@ def _extract_answer_letter(response: str) -> str | None:
         if m:
             return m.group(1).upper()
     # Last resort: first standalone letter in first 50 chars
-    m = re.search(r'\b([A-D])\b', response[:80], re.IGNORECASE)
+    m = re.search(r"\b([A-D])\b", response[:80], re.IGNORECASE)
     return m.group(1).upper() if m else None
 
 
@@ -344,8 +397,8 @@ def run_knowledge_benchmark(skip_live: bool = False) -> dict[str, Any]:
     providers_tested = []
 
     for name, base_url, api_key, model in [
-        ("cerebras", "https://api.cerebras.ai/v1",       os.environ.get("CEREBRAS_API_KEY", ""), "zai-glm-4.7"),
-        ("groq",     "https://api.groq.com/openai/v1",   os.environ.get("GROQ_API_KEY", ""),     "llama-3.3-70b-versatile"),
+        ("cerebras", "https://api.cerebras.ai/v1", os.environ.get("CEREBRAS_API_KEY", ""), "zai-glm-4.7"),
+        ("groq", "https://api.groq.com/openai/v1", os.environ.get("GROQ_API_KEY", ""), "llama-3.3-70b-versatile"),
     ]:
         if not api_key:
             providers_tested.append({"provider": name, "ok": False, "error": "no api key"})
@@ -361,30 +414,35 @@ def run_knowledge_benchmark(skip_live: bool = False) -> dict[str, Any]:
             hit = predicted == q["answer"] if predicted else False
             if hit:
                 correct += 1
-            results.append({
-                "category": q["category"],
-                "correct": hit,
-                "predicted": predicted,
-                "expected": q["answer"],
-                "latency_ms": round(ms, 1),
-            })
+            results.append(
+                {
+                    "category": q["category"],
+                    "correct": hit,
+                    "predicted": predicted,
+                    "expected": q["answer"],
+                    "latency_ms": round(ms, 1),
+                }
+            )
             time.sleep(0.2)
 
         accuracy = correct / len(KNOWLEDGE_QUESTIONS)
-        providers_tested.append({
-            "provider": name,
-            "model": model,
-            "ok": True,
-            "correct": correct,
-            "total": len(KNOWLEDGE_QUESTIONS),
-            "accuracy": round(accuracy, 3),
-            "results": results,
-        })
+        providers_tested.append(
+            {
+                "provider": name,
+                "model": model,
+                "ok": True,
+                "correct": correct,
+                "total": len(KNOWLEDGE_QUESTIONS),
+                "accuracy": round(accuracy, 3),
+                "results": results,
+            }
+        )
 
     return {"ok": True, "providers": providers_tested}
 
 
 # ── Layer 5: Test suite health ────────────────────────────────────────────────
+
 
 def run_test_suite_benchmark() -> dict[str, Any]:
     """Run vitest via npm test, parse summary line."""
@@ -401,8 +459,8 @@ def run_test_suite_benchmark() -> dict[str, Any]:
     elapsed = time.time() - t0
     combined = proc.stdout + proc.stderr
 
-    passed_m = re.search(r'(\d+)\s+passed', combined)
-    failed_m = re.search(r'(\d+)\s+failed', combined)
+    passed_m = re.search(r"(\d+)\s+passed", combined)
+    failed_m = re.search(r"(\d+)\s+failed", combined)
     p = int(passed_m.group(1)) if passed_m else 0
     f = int(failed_m.group(1)) if failed_m else 0
     total = p + f
@@ -421,10 +479,10 @@ def run_test_suite_benchmark() -> dict[str, Any]:
 
 WEIGHTS = {
     "governance": 0.35,
-    "cli":        0.20,
-    "latency":    0.15,
-    "knowledge":  0.20,
-    "tests":      0.10,
+    "cli": 0.20,
+    "latency": 0.15,
+    "knowledge": 0.20,
+    "tests": 0.10,
 }
 
 
@@ -456,11 +514,11 @@ def compute_composite(gov, cli, latency, knowledge, tests) -> dict[str, Any]:
     test_score = tests.get("pass_rate", 0) if tests.get("ok") is not None else 0
 
     parts = {
-        "governance": (gov_score,  WEIGHTS["governance"]),
-        "cli":        (cli_score,  WEIGHTS["cli"]),
-        "latency":    (lat_score,  WEIGHTS["latency"]),
-        "knowledge":  (know_score, WEIGHTS["knowledge"]),
-        "tests":      (test_score, WEIGHTS["tests"]),
+        "governance": (gov_score, WEIGHTS["governance"]),
+        "cli": (cli_score, WEIGHTS["cli"]),
+        "latency": (lat_score, WEIGHTS["latency"]),
+        "knowledge": (know_score, WEIGHTS["knowledge"]),
+        "tests": (test_score, WEIGHTS["tests"]),
     }
     effective_weight = sum(w for s, w in parts.values() if s is not None)
     total = sum(s * w for s, w in parts.values() if s is not None)
@@ -475,14 +533,19 @@ def compute_composite(gov, cli, latency, knowledge, tests) -> dict[str, Any]:
 
 
 def _grade(score: float) -> str:
-    if score >= 0.90: return "A"
-    if score >= 0.80: return "B"
-    if score >= 0.70: return "C"
-    if score >= 0.60: return "D"
+    if score >= 0.90:
+        return "A"
+    if score >= 0.80:
+        return "B"
+    if score >= 0.70:
+        return "C"
+    if score >= 0.60:
+        return "D"
     return "F"
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -505,7 +568,9 @@ def main() -> int:
         )
     else:
         petri_str = "  |  Petri: corpus not present"
-    print(f"      synthetic: {gov.get('accuracy', 'N/A'):.1%}  |  blind-holdout: {gov.get('blind_detection_rate', 'N/A'):.1%}  |  hybrid: {gov.get('hybrid_detection_rate', 'N/A'):.1%}{petri_str}")
+    print(
+        f"      synthetic: {gov.get('accuracy', 'N/A'):.1%}  |  blind-holdout: {gov.get('blind_detection_rate', 'N/A'):.1%}  |  hybrid: {gov.get('hybrid_detection_rate', 'N/A'):.1%}{petri_str}"
+    )
 
     print("\n[2/5] CLI capability...", flush=True)
     cli = run_cli_benchmark()
@@ -513,7 +578,9 @@ def main() -> int:
         top = cli["ranking"][0]
         scbe_row = next((r for r in cli["ranking"] if r["name"] == "scbe-geoseal"), None)
         scbe_pos = cli["ranking"].index(scbe_row) + 1 if scbe_row else "?"
-        print(f"      scbe: {scbe_row['score']:.1%} ({scbe_row['passed']}/{scbe_row['total']}) — rank {scbe_pos}/{len(cli['ranking'])}")
+        print(
+            f"      scbe: {scbe_row['score']:.1%} ({scbe_row['passed']}/{scbe_row['total']}) — rank {scbe_pos}/{len(cli['ranking'])}"
+        )
 
     print("\n[3/5] Squad latency probe...", flush=True)
     if args.skip_live:
@@ -540,7 +607,9 @@ def main() -> int:
 
     print("\n[5/5] TypeScript test suite...", flush=True)
     tests = run_test_suite_benchmark()
-    print(f"      {tests.get('passed', '?')}/{tests.get('total', '?')} passed  ({tests.get('pass_rate', 0):.1%})  [{tests.get('elapsed_s', '?')}s]")
+    print(
+        f"      {tests.get('passed', '?')}/{tests.get('total', '?')} passed  ({tests.get('pass_rate', 0):.1%})  [{tests.get('elapsed_s', '?')}s]"
+    )
 
     score = compute_composite(gov, cli, latency, knowledge, tests)
 
