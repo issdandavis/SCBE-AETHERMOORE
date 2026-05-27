@@ -28,8 +28,9 @@
  *   ]
  * }
  *
- * loop: false — advance after first model response regardless of done_if
+ * loop: false — advance after first model response only if done_if passes
  * loop: true  — retry until done_if passes or max_turns hit
+ * allow_unverified: true — explicit escape hatch for observation-only steps
  *
  * Usage:
  *   node scripts/scbe_workflow.cjs path/to/workflow.json
@@ -47,31 +48,74 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
 const CLI = path.resolve(__dirname, '..', 'bin', 'scbe.js');
 const OUT_DIR = path.join(REPO_ROOT, 'artifacts', 'workflow');
 
-const BASH =
-  process.platform === 'win32'
-    ? (() => {
-        const r = spawnSync('where', ['bash'], { encoding: 'utf8' });
-        return (
-          r.stdout
-            .split('\n')
-            .map((l) => l.trim())
-            .find(
-              (l) =>
-                l &&
-                !/\\windows\\system32\\bash\.exe$/i.test(l) &&
-                !/\\WindowsApps\\bash\.exe$/i.test(l)
-            ) || 'bash'
-        ).trim();
-      })()
-    : '/bin/bash';
+function commandExists(name) {
+  const r = spawnSync(process.platform === 'win32' ? 'where.exe' : 'command', [name], {
+    encoding: 'utf8',
+    shell: process.platform !== 'win32',
+  });
+  return r.status === 0;
+}
 
-function runBash(cmd) {
-  const r = spawnSync(BASH, ['-c', cmd], { encoding: 'utf8', timeout: 30000 });
+function detectShell() {
+  if (process.platform !== 'win32') return { kind: 'bash', exe: '/bin/bash', args: ['-c'] };
+
+  const where = spawnSync('where.exe', ['bash.exe'], { encoding: 'utf8' });
+  const gitBash = (where.stdout || '')
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .find(
+      (l) =>
+        l && !/\\windows\\system32\\bash\.exe$/i.test(l) && !/\\WindowsApps\\bash\.exe$/i.test(l)
+    );
+  if (gitBash) return { kind: 'bash', exe: gitBash, args: ['-c'] };
+
+  if (commandExists('pwsh.exe')) {
+    return {
+      kind: 'powershell',
+      exe: 'pwsh.exe',
+      args: ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command'],
+    };
+  }
+  return {
+    kind: 'powershell',
+    exe: 'powershell.exe',
+    args: ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command'],
+  };
+}
+
+const SHELL = detectShell();
+
+function normalizeVerifierCommand(cmd) {
+  const value = String(cmd || '').trim();
+  if (value.startsWith(':test ')) return value.slice(':test '.length).trim();
+  if (value.startsWith(':cmd ')) return value.slice(':cmd '.length).trim();
+  return value;
+}
+
+function runShell(cmd) {
+  const verifier = normalizeVerifierCommand(cmd);
+  const r = spawnSync(SHELL.exe, [...SHELL.args, verifier], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    timeout: 30000,
+  });
   return {
     stdout: (r.stdout || '').trim(),
     stderr: (r.stderr || '').trim(),
     status: r.status ?? 1,
   };
+}
+
+function verifyStep(step) {
+  if (!step.done_if) {
+    return {
+      ok: !!step.allow_unverified,
+      stdout: '',
+      stderr: '',
+      status: step.allow_unverified ? 0 : 1,
+    };
+  }
+  return runShell(step.done_if);
 }
 
 function extractSummary(lastObservation, rationale) {
@@ -165,7 +209,9 @@ async function runStep(proc, step, stepIndex, totalSteps, prevSummary, initialTe
       `  Turn ${turns}: ${cmd ? `cmd=${cmd.slice(0, 70)}` : '(no cmd)'} | done=${resp.done}`
     );
 
-    if (resp.step_complete || resp.done) {
+    const verifier = verifyStep(step);
+
+    if (resp.step_complete || resp.done || verifier.ok || verifier.status === 0) {
       stepComplete = true;
       console.log(`  [COMPLETE] Step ${stepNum} verified complete`);
       break;
@@ -174,18 +220,35 @@ async function runStep(proc, step, stepIndex, totalSteps, prevSummary, initialTe
     if (!step.loop) {
       // Non-loop: capture output and advance immediately
       if (cmd) {
-        const exec = runBash(cmd);
+        const exec = runShell(cmd);
         terminalState = `$ ${cmd}\n${exec.stdout}${exec.stderr ? '\n' + exec.stderr : ''}`;
         console.log(`  Exec: ${exec.stdout.slice(0, 80) || '(empty)'}`);
+      }
+      const postExecVerifier = verifyStep(step);
+      if (postExecVerifier.status === 0) {
+        stepComplete = true;
+        console.log(`  [COMPLETE] Step ${stepNum} verified complete`);
+      } else if (step.allow_unverified) {
+        console.log(`  [UNVERIFIED] Step ${stepNum} allowed to advance by allow_unverified=true`);
+      } else {
+        console.log(
+          `  [VERIFY_FAILED] ${step.done_if ? step.done_if.slice(0, 100) : 'missing done_if'}`
+        );
       }
       break;
     }
 
     // Loop step: execute command and send next turn
     if (cmd) {
-      const exec = runBash(cmd);
+      const exec = runShell(cmd);
       terminalState = `$ ${cmd}\n${exec.stdout}${exec.stderr ? '\n' + exec.stderr : ''}`;
       console.log(`  Exec: ${exec.stdout.slice(0, 80) || '(empty)'}`);
+      const postExecVerifier = verifyStep(step);
+      if (postExecVerifier.status === 0) {
+        stepComplete = true;
+        console.log(`  [COMPLETE] Step ${stepNum} verified complete`);
+        break;
+      }
     }
 
     if (resp.blocked) {
