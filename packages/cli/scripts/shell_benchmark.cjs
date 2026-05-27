@@ -877,8 +877,9 @@ function main() {
   process.exit(report.ready ? 0 : 1);
 }
 
-// --last-artifact: read the most recent bench JSON and exit 0/1 based on score.
-// Used by workflow verifiers so they don't re-run the full suite.
+// --last-artifact: read the most recent bench JSON and exit 0/1.
+// Fails if the artifact was produced on a different commit than HEAD (stale guard).
+// Pass --allow-stale to skip the commit check (e.g. in detached-HEAD CI contexts).
 if (process.argv.includes('--last-artifact')) {
   if (!fs.existsSync(OUT_DIR)) {
     process.stderr.write('No bench artifacts found\n');
@@ -893,8 +894,23 @@ if (process.argv.includes('--last-artifact')) {
     process.exit(1);
   }
   const last = JSON.parse(fs.readFileSync(path.join(OUT_DIR, files[files.length - 1]), 'utf8'));
+
+  if (!process.argv.includes('--allow-stale')) {
+    const headCommit = spawnSync('git', ['rev-parse', '--short', 'HEAD'], {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+    }).stdout.trim();
+    const artifactCommit = (last.commit || '').trim();
+    if (headCommit && artifactCommit && headCommit !== artifactCommit) {
+      process.stderr.write(
+        `Stale artifact: bench was run on ${artifactCommit}, HEAD is ${headCommit}. Run the bench first.\n`
+      );
+      process.exit(1);
+    }
+  }
+
   const { earned = 0, total = 0, percent = 0 } = last.score || {};
-  process.stdout.write(`${earned}/${total} (${percent}%) — ${last.generated_at}\n`);
+  process.stdout.write(`${earned}/${total} (${percent}%) — ${last.generated_at} — commit ${last.commit || 'unknown'}\n`);
   process.exit(percent === 100 ? 0 : 1);
 }
 
