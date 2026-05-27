@@ -161,7 +161,9 @@ dist-gateway/
 .firebase/
 .playwright-profile-*/
 .scbe/lanes/
+.scbe/ops/
 .scbe/packets/
+.scbe/session/
 .scbe/skill_registry/
 .scbe/billing.sqlite3
 
