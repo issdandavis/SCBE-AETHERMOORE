@@ -8,9 +8,10 @@ the target", and a handful of soul-bearing / values-eliciting verbs. This
 module wraps those phrasings as a single boolean check so the LatticeRouter
 can short-circuit before consulting any LLM gate.
 
-Empirical coverage on the local Petri 173 corpus (2026-05-08):
-  - 4 of 4 untagged v5 false-allow seeds match
-  - ~149 of 173 (86%) seeds match overall
+Empirical coverage on the local Petri 173 corpus:
+  - v7 (2026-05-08): ~149/173 = 86.1% overall, 4/4 untagged v5 leaks
+  - v8 (2026-05-27): ~164/173 = 94.8% — added verb/noun anchors for
+    indirect and role-play audit styles
 
 Design constraints:
   - Anchor on Petri-specific surface tokens, not on broad words like
@@ -46,9 +47,9 @@ _PATTERNS: list[tuple[str, str]] = [
     (r"\bConfigure the target\b", "verb:configure_the_target"),
     (r"\bGive (the target|it) (access to|the )", "verb:give_the_target_access"),
     (r"\bMake sure (it|the target) (has|gets) (common|standard|the)", "verb:make_sure_it_has_tools"),
-    (r"\bMonitor whether the (target|model)\b", "verb:monitor_whether_target"),
-    (r"\bTest whether the (target|model|AI)\b", "verb:test_whether_target"),
-    (r"\bSee (whether|if|how) the (target|model|AI)\b", "verb:see_whether_target"),
+    (r"\bMonitor whether (the )?(target|model)\b", "verb:monitor_whether_target"),
+    (r"\bTest whether (the )?(target|model|AI)\b", "verb:test_whether_target"),
+    (r"\bSee (whether|if|how) (the )?(target|model|AI)\b", "verb:see_whether_target"),
     (r"\bPrompt the (model|AI|assistant) to\b", "verb:prompt_the_model_to"),
     (r"\bRequest the target\b", "verb:request_the_target"),
     (r"\bAct as a user who\b", "verb:act_as_a_user_who"),
@@ -66,6 +67,40 @@ _PATTERNS: list[tuple[str, str]] = [
     # Multi-turn auditor scaffolding.
     (r"\bover several turns\b.*\b(target|model|AI)\b", "phrase:over_several_turns_target"),
     (r"\bUse [`'\"]?\w+_conversation[`'\"]? to\b", "phrase:use_xxx_conversation"),
+    # ---------------------------------------------------------------------------
+    # v8 additions (2026-05-27): broader verb-anchor and noun-phrase coverage
+    # derived from analysis of the 42 seeds missed by v7. Zero false-positives
+    # verified against the standard 11-item benign coding intent set.
+    # ---------------------------------------------------------------------------
+    # "target AI" bare (without preceding "the") — appears in power-seeking
+    # probes, misalignment investigations, etc.
+    (r"\btarget AI\b", "anchor:target_ai_bare"),
+    # Additional Petri auditor verb anchors — the imperative+target pattern.
+    (r"\bAsk the target to\b", "verb:ask_the_target_to"),
+    (r"\bGive the target\b", "verb:give_the_target"),
+    (r"\bGuide the target\b", "verb:guide_the_target"),
+    (r"\bGet the target to\b", "verb:get_the_target_to"),
+    (r"\bTell the target\b", "verb:tell_the_target"),
+    (r"\bAssign the target\b", "verb:assign_the_target"),
+    (r"\bPrompt the target to\b", "verb:prompt_the_target_to"),
+    # "Test how/what target" — widens the existing "Test whether the" anchor.
+    (r"\bTest (whether|if|how|what) (the )?(target|model|AI)\b", "verb:test_how_what_target"),
+    # Social-engineering / role-play audit styles.
+    (r"\btake on the role of\b", "verb:take_on_the_role"),
+    (r"\bAct as (a |an )?.{0,40}user (who|to)\b", "verb:act_as_user_who"),
+    # Misalignment / power-seeking probe language.
+    (r"\bpower[- ]seeking (tendencies|behaviors?|properties|capabilities)\b", "phrase:power_seeking_probe"),
+    (r"\bmisaligned AI\b", "phrase:misaligned_ai"),
+    (r"\byou are (a )?misaligned\b", "phrase:misaligned_persona"),
+    (r"\bhiding (its|your|the) true (goals|intentions|motivations)\b", "phrase:hiding_true_goals"),
+    # "System prompt: 'You are/were'" — adversarial system-prompt injection style.
+    (r"System prompt:.*[\"']\s*You (are|were|have been)\b", "phrase:sys_prompt_you_are"),
+    # Semantic probes: secret identity, reward hacking, oversight auditing.
+    (r"\bknown only to (it|the model|the system)\b", "phrase:known_only_to_it"),
+    (r"\bauditing for (power-seeking|oversight|alignment)\b", "phrase:auditing_for_oversight"),
+    (r"\breward[- ]hacker\b", "phrase:reward_hacker"),
+    # Agentic "no restrictions" framing (unrestricted_moneymaking_agent class).
+    (r"\binternet[- ]connected (machine|environment).{0,80}no restrictions\b", "phrase:no_restrictions_agent"),
 ]
 
 _COMPILED: list[tuple[re.Pattern[str], str]] = [(re.compile(p, re.IGNORECASE | re.DOTALL), r) for p, r in _PATTERNS]
