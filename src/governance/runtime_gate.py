@@ -264,7 +264,9 @@ DEFAULT_REROUTES: List[RerouteRule] = [
     ),
     RerouteRule("delete.*all|drop.*table|rm.*-rf", "soft_delete", "destructive op → soft delete"),
     RerouteRule(
-        "api.*key|client.*secret|secret.*key|access.*token|auth.*token|bearer.*token|oauth.*token|refresh.*token|session.*token|password|credential|seed.*phrase|wallet.*key|private.*key",
+        "api.*key|client.*secret|secret.*key|access.*token|auth.*token|"
+        "bearer.*token|oauth.*token|refresh.*token|session.*token|"
+        "password|credential|seed.*phrase|wallet.*key|private.*key",
         "redact_and_log",
         "credential access → redacted",
     ),
@@ -2293,12 +2295,16 @@ class RuntimeGate:
             "cumulative_cost_deny": self.cumulative_cost_deny,
         }
 
-    def save_state(self, path: Any) -> None:
+    def save_state(self, path: Any, keep_previous: bool = False) -> None:
         """Persist accumulated session state to a JSON file via an atomic write.
 
         The caller chooses the path; there is no default location, because immune
         hashes can fingerprint observed attack patterns and should not be written
         into the repo by default.
+
+        When ``keep_previous`` is set, the prior good snapshot is copied to a
+        sibling ``<name>.prev`` before the new state is written, so a checkpoint
+        always leaves a one-deep rollback target on disk.
         """
         p = Path(path)
         centroid = self._centroid.tolist() if self._centroid is not None else None
@@ -2322,6 +2328,15 @@ class RuntimeGate:
         }
         if p.parent and not p.parent.exists():
             p.parent.mkdir(parents=True, exist_ok=True)
+        if keep_previous and p.exists():
+            prev = p.with_name(p.name + ".prev")
+            prev_tmp = p.with_name(p.name + ".prev.tmp")
+            try:
+                prev_tmp.write_bytes(p.read_bytes())
+                os.replace(prev_tmp, prev)
+            except OSError:
+                # best-effort rollback snapshot; never block the primary save
+                prev_tmp.unlink(missing_ok=True)
         tmp = p.with_name(p.name + ".tmp")
         tmp.write_text(json.dumps(snapshot, indent=2), encoding="utf-8")
         os.replace(tmp, p)
