@@ -214,6 +214,46 @@ def _runtime_gate_kwargs() -> dict[str, Any]:
     return kwargs
 
 
+def _runtime_gate_state_path() -> Optional[Path]:
+    """Where the gate's accumulated state is persisted, if configured.
+
+    Opt-in via SCBE_RUNTIME_GATE_STATE_PATH. There is no default location:
+    immune hashes can fingerprint observed attack patterns, so the operator
+    chooses where state lives (outside the repo by default).
+    """
+    raw = os.environ.get("SCBE_RUNTIME_GATE_STATE_PATH", "").strip()
+    return Path(raw) if raw else None
+
+
+def _restore_gate_state(gate) -> None:
+    """Restore persisted state into a freshly-created gate, if configured.
+
+    Best-effort: a missing or unreadable state file leaves the gate cold
+    rather than failing server start-up.
+    """
+    path = _runtime_gate_state_path()
+    if path is None or not path.exists():
+        return
+    try:
+        gate.load_state(path)
+        logger.info("RuntimeGate state restored from %s", path)
+    except Exception:
+        logger.warning("Failed to restore RuntimeGate state from %s; starting cold", path, exc_info=True)
+
+
+def _persist_gate_state() -> None:
+    """Persist the live gate's accumulated state, if one exists and a path is set."""
+    gate = _runtime_gate
+    path = _runtime_gate_state_path()
+    if gate is None or path is None:
+        return
+    try:
+        gate.save_state(path)
+        logger.info("RuntimeGate state saved to %s", path)
+    except Exception:
+        logger.warning("Failed to save RuntimeGate state to %s", path, exc_info=True)
+
+
 def _get_gate():
     """Return a shared RuntimeGate instance, initialised on first call."""
     global _runtime_gate
@@ -230,6 +270,8 @@ def _get_gate():
             except Exception:
                 logger.debug("RuntimeGate unavailable, governance gating disabled")
                 _runtime_gate = None
+        if _runtime_gate is not None:
+            _restore_gate_state(_runtime_gate)
     return _runtime_gate
 
 
@@ -421,6 +463,12 @@ if DOCS_DIR.exists():
     docs_static_dir = DOCS_DIR / "static"
     if docs_static_dir.exists():
         app.mount("/site/static", StaticFiles(directory=str(docs_static_dir)), name="docs-static")
+
+
+@app.on_event("shutdown")
+async def _save_gate_state_on_shutdown() -> None:
+    """Persist accumulated gate state on graceful shutdown (if configured)."""
+    _persist_gate_state()
 
 
 # =========================================================================== #
