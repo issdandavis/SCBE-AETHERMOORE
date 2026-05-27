@@ -1058,6 +1058,33 @@ function buildAgentMovePacket(move, governance, board) {
   }
 }
 
+function buildFleetGovernanceGate(movePacket, posture, authority) {
+  if (!movePacket || movePacket.ok === false) return null;
+  const script = resolveRepoScript('scripts/system/fleet_governance_gate.py');
+  if (!script) return null;
+  try {
+    const r = spawnSync(pythonCommand(), [script], {
+      cwd: repoRoot(),
+      input: JSON.stringify({
+        schema_version: 'scbe_fleet_governance_gate_input_v1',
+        move_packet: movePacket,
+        posture: posture || {},
+        authority: authority || {},
+      }),
+      encoding: 'utf8',
+      timeout: 10000,
+      maxBuffer: 1024 * 1024,
+    });
+    if (r.status !== 0) {
+      const err = ((r.stdout || '') + (r.stderr || '')).trim().slice(0, 300);
+      return { ok: false, error: err || `fleet_governance_gate exited ${r.status}` };
+    }
+    return JSON.parse(r.stdout);
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
 // ─── Input classifier ─────────────────────────────────────────────────────────
 
 const _PS_PREFIX = /^(!|ps:)\s*/;
@@ -1350,6 +1377,8 @@ function runInteractiveShell(flags = {}) {
       }
       if (msg.done_if && !taskBoard.done_if) taskBoard.done_if = msg.done_if;
       if (msg.task_board && !taskBoard.objective) Object.assign(taskBoard, msg.task_board);
+      if (msg.fleet_posture) taskBoard.fleet_posture = msg.fleet_posture;
+      if (msg.fleet_authority) taskBoard.fleet_authority = msg.fleet_authority;
       if (!instruction) {
         process.stdout.write(
           JSON.stringify({ error: 'no instruction yet', done: false, commands: [] }) + '\n'
@@ -1484,6 +1513,11 @@ function runInteractiveShell(flags = {}) {
           governance,
           taskBoard
         );
+        const fleetGovernance = buildFleetGovernanceGate(
+          movePacket,
+          taskBoard.fleet_posture,
+          taskBoard.fleet_authority
+        );
         process.stdout.write(
           JSON.stringify({
             commands: [],
@@ -1492,6 +1526,7 @@ function runInteractiveShell(flags = {}) {
             rationale: `ko-ban: command+observation repeated — try a different approach. Banned: "${translated.slice(0, 80)}"`,
             governance,
             move_packet: movePacket,
+            fleet_governance: fleetGovernance,
             board: { ...taskBoard },
           }) + '\n'
         );
@@ -1540,6 +1575,11 @@ function runInteractiveShell(flags = {}) {
           governance,
           taskBoard
         );
+        const fleetGovernance = buildFleetGovernanceGate(
+          movePacket,
+          taskBoard.fleet_posture,
+          taskBoard.fleet_authority
+        );
         process.stdout.write(
           JSON.stringify({
             commands: [],
@@ -1548,6 +1588,7 @@ function runInteractiveShell(flags = {}) {
             rationale: `governance blocked: ${governance.reason}`,
             governance,
             move_packet: movePacket,
+            fleet_governance: fleetGovernance,
             board: { ...taskBoard },
           }) + '\n'
         );
@@ -1572,6 +1613,11 @@ function runInteractiveShell(flags = {}) {
             governance,
             taskBoard
           );
+          const fleetGovernance = buildFleetGovernanceGate(
+            movePacket,
+            taskBoard.fleet_posture,
+            taskBoard.fleet_authority
+          );
           history.push({
             role: 'user',
             content: `VERIFY FAILED: ${verifyOut}\nThe objective is not yet complete. Continue working.`,
@@ -1586,6 +1632,7 @@ function runInteractiveShell(flags = {}) {
               rationale: `done signal received but objective verifier failed: ${verifyOut}`,
               governance,
               move_packet: movePacket,
+              fleet_governance: fleetGovernance,
               board: { ...taskBoard },
             }) + '\n'
           );
@@ -1605,6 +1652,11 @@ function runInteractiveShell(flags = {}) {
         .trim()
         .slice(0, 500);
       const movePacket = buildAgentMovePacket({ cmd: proposed, translated }, governance, taskBoard);
+      const fleetGovernance = buildFleetGovernanceGate(
+        movePacket,
+        taskBoard.fleet_posture,
+        taskBoard.fleet_authority
+      );
       process.stdout.write(
         JSON.stringify({
           commands: [{ keystrokes: translated, is_blocking: true, timeout_sec: 30 }],
@@ -1612,6 +1664,7 @@ function runInteractiveShell(flags = {}) {
           rationale,
           governance,
           move_packet: movePacket,
+          fleet_governance: fleetGovernance,
           board: { ...taskBoard },
         }) + '\n'
       );

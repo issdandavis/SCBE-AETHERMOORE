@@ -603,6 +603,50 @@ function main() {
     })
   );
 
+  cases.push(
+    caseResult('agent_json_command_includes_fleet_governance_gate', () => {
+      const { spawnSync: spawn } = require('node:child_process');
+      const mock = 'Push to main. <cmd>git push origin main</cmd>';
+      const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+        cwd: REPO_ROOT,
+        input:
+          JSON.stringify({
+            instruction: 'push changes',
+            terminal_state: '$ ',
+            fleet_posture: {
+              posture: 'production',
+              fleet_size: 4,
+              byzantine_faults_tolerated: 1,
+            },
+            fleet_authority: {
+              actor_id: 'bench-agent',
+              clearance: 2,
+              approved_by: ['bench-agent'],
+            },
+          }) + '\n\n',
+        encoding: 'utf8',
+        timeout: 20_000,
+        env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mock },
+      });
+      const lines = (r.stdout || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      assert.ok(lines.length >= 2, `expected ready + response, got: ${r.stdout}`);
+      const resp = JSON.parse(lines[1]);
+      assert.ok(resp.fleet_governance, 'response must include fleet_governance');
+      assert.equal(resp.fleet_governance.ok, true);
+      assert.equal(resp.fleet_governance.state_vector.operation_class, 'deploy');
+      assert.equal(resp.fleet_governance.decision_record.decision, 'ESCALATE');
+      assert.equal(resp.fleet_governance.decision_record.reason, 'quorum_not_met');
+      return {
+        operation_class: resp.fleet_governance.state_vector.operation_class,
+        decision: resp.fleet_governance.decision_record.decision,
+        reason: resp.fleet_governance.decision_record.reason,
+      };
+    })
+  );
+
   const total = cases.reduce((sum, row) => sum + row.points, 0);
   const earned = cases.reduce((sum, row) => sum + row.earned, 0);
   const report = {
