@@ -1,7 +1,7 @@
 # Notes on Large Language Models and Emerging Architectures
 
-Status: research note  
-Source: `C:\Users\issda\Downloads\SCBE Ecosystem Growth.pdf`  
+Status: research note
+Source: `C:\Users\issda\Downloads\SCBE Ecosystem Growth.pdf`
 Purpose: preserve the useful architecture discussion in repo-native Markdown without treating speculative ideas as proven implementation.
 
 ## 1. Autoregressive Language Models
