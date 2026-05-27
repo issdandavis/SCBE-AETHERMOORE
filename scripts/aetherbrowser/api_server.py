@@ -17,6 +17,7 @@ import configparser
 from collections import Counter, defaultdict, deque
 import datetime
 import hashlib
+import hmac
 import json
 import logging
 import math
@@ -518,7 +519,7 @@ async def runtime_gate_checkpoint(request: Request) -> dict:
     admin_token = os.environ.get("SCBE_RUNTIME_GATE_ADMIN_TOKEN", "").strip()
     if not admin_token:
         raise HTTPException(status_code=403, detail="checkpoint endpoint disabled (no admin token configured)")
-    if request.headers.get("x-admin-token", "") != admin_token:
+    if not hmac.compare_digest(request.headers.get("x-admin-token", ""), admin_token):
         raise HTTPException(status_code=401, detail="invalid or missing X-Admin-Token")
 
     gate = _get_gate()
