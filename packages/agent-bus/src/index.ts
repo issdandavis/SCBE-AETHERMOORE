@@ -73,11 +73,21 @@ export {
   type GeoSealPlanPolicy,
   type GeoSealPlanCommand,
   type PipelineRunResult,
+  type GovernedMoveClass,
+  type GovernedMoveRecord,
+  type GovernedPipelineState,
+  type TrajectoryGateResult,
   compilePlan,
   execPlan,
   runPipeline,
   parseShellTemplate,
   resolveRepoRoot,
+  createGovernedPipelineState,
+  loadGovernedPipelineState,
+  saveGovernedPipelineState,
+  classifyGovernedMove,
+  reachableMoveSet,
+  evaluateTrajectoryGate,
 } from './pipeline.js';
 
 // Structured output contracts
@@ -135,6 +145,19 @@ export interface RunOptions {
   geosealBin?: string;
   python?: string;
   continueOnError?: boolean;
+  /**
+   * Optional persisted trajectory gate for GeoSeal pipelines.
+   * When enabled, the pipeline checks whether the compiled plan is reachable
+   * from the session's current governed state before execution.
+   */
+  governedState?:
+    | boolean
+    | {
+        enabled?: boolean;
+        sessionId?: string;
+        statePath?: string;
+        root?: string;
+      };
 }
 
 export interface AgentBusResult {
