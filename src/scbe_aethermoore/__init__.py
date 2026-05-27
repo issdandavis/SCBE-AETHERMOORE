@@ -152,7 +152,14 @@ def _byte_freq(raw: bytes) -> List[int]:
     return freq
 
 
-_PROFILE_KEYS = ("alpha_ratio", "digit_ratio", "space_ratio", "punct_ratio", "control_ratio", "highbyte_ratio")
+_PROFILE_KEYS = (
+    "alpha_ratio",
+    "digit_ratio",
+    "space_ratio",
+    "punct_ratio",
+    "control_ratio",
+    "highbyte_ratio",
+)
 
 
 def _char_profile(raw: bytes) -> Dict[str, float]:
@@ -162,7 +169,11 @@ def _char_profile(raw: bytes) -> Dict[str, float]:
     alpha = sum(1 for b in raw if 65 <= b <= 90 or 97 <= b <= 122)
     digit = sum(1 for b in raw if 48 <= b <= 57)
     space = sum(1 for b in raw if b in (32, 9, 10, 13))
-    punct = sum(1 for b in raw if 33 <= b <= 47 or 58 <= b <= 64 or 91 <= b <= 96 or 123 <= b <= 126)
+    punct = sum(
+        1
+        for b in raw
+        if 33 <= b <= 47 or 58 <= b <= 64 or 91 <= b <= 96 or 123 <= b <= 126
+    )
     control = sum(1 for b in raw if b < 32 and b not in (9, 10, 13))
     highbyte = sum(1 for b in raw if b > 127)
     return {
@@ -201,7 +212,9 @@ def _bigram_entropy(raw: bytes) -> float:
     return h
 
 
-def _hyperbolic_distance(profile: Dict[str, float], freq: List[int], total: int, bigram_h: float) -> float:
+def _hyperbolic_distance(
+    profile: Dict[str, float], freq: List[int], total: int, bigram_h: float
+) -> float:
     """L4-L5: one-sided distance from safe region in Poincaré ball.
 
     Only penalizes deviations toward adversarial features.
@@ -221,7 +234,9 @@ def _hyperbolic_distance(profile: Dict[str, float], freq: List[int], total: int,
     h = _shannon(freq, total)
     entropy_pen = 0.0
     if total > 20:
-        entropy_pen = max(0.0, _ENTROPY_LOW - h) / 3.0 + max(0.0, h - _ENTROPY_HIGH) / 3.0
+        entropy_pen = (
+            max(0.0, _ENTROPY_LOW - h) / 3.0 + max(0.0, h - _ENTROPY_HIGH) / 3.0
+        )
 
     ratio_div = digit_pen + punct_pen + ctrl_pen + hb_pen
     return 3.0 * math.sqrt(ratio_div) + 1.2 * entropy_pen
@@ -238,7 +253,9 @@ def _semantic_penalty(text_lower: str) -> float:
     return min(total, 2.0)
 
 
-def _phase_deviation(profile: Dict[str, float], d_star: float, total: int, text_lower: str = "") -> float:
+def _phase_deviation(
+    profile: Dict[str, float], d_star: float, total: int, text_lower: str = ""
+) -> float:
     """L6-L11: temporal coherence + semantic injection penalty."""
     pd = profile["control_ratio"] * 5.0
     if total == 0:
@@ -353,6 +370,48 @@ def scan_batch(texts: Sequence[str]) -> List[Dict[str, Any]]:
     return [scan(t) for t in texts]
 
 
+def _demo_tongue_profile(text: str, result: Dict[str, Any]) -> Dict[str, float]:
+    """Return lightweight demo bars for the six Sacred Tongue axes.
+
+    This is intentionally not the full semantic projector. It is a dependency-free
+    visualization derived from the same public features used by scan().
+    """
+    raw = text.encode("utf-8")
+    profile = _char_profile(raw)
+    entropy = _shannon(_byte_freq(raw), len(raw)) if raw else 0.0
+    d_star = float(result["d_star"])
+    pd = float(result["phase_deviation"])
+    score = float(result["score"])
+
+    def clamp01(v: float) -> float:
+        return round(max(0.0, min(1.0, v)), 6)
+
+    return {
+        "KO": clamp01(profile["alpha_ratio"] + profile["space_ratio"] * 0.35),
+        "AV": clamp01(entropy / 6.8),
+        "RU": clamp01(1.0 - profile["punct_ratio"] - profile["control_ratio"]),
+        "CA": clamp01(profile["digit_ratio"] + profile["punct_ratio"] * 0.75),
+        "UM": clamp01(pd / 2.0),
+        "DR": clamp01((1.0 - score) + min(d_star, 2.0) / 4.0),
+    }
+
+
+def scan_with_tongues(text: str) -> Dict[str, Any]:
+    """Scan text and include a six-axis demo visualization profile.
+
+    The `tongues` field is designed for approachable demos and UI bars. Use
+    `scan()` for the stable decision contract.
+    """
+    result = scan(text)
+    enriched = dict(result)
+    enriched["tongues"] = _demo_tongue_profile(text, result)
+    enriched["tongues_note"] = (
+        "Demo activation bars derived from lightweight Python scan features; "
+        "not the full semantic projector."
+    )
+    return enriched
+
+
 def is_safe(text: str, threshold: str = QUARANTINE) -> bool:
     """
     Quick boolean safety check.
@@ -419,6 +478,7 @@ from scbe_aethermoore._assistant import explain, Assistant  # noqa: E402
 
 __all__ = [
     "scan",
+    "scan_with_tongues",
     "scan_batch",
     "is_safe",
     "harmonic_wall",

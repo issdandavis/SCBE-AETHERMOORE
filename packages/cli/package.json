@@ -26,6 +26,7 @@
     "selftest": "node ./bin/scbe.js selftest",
     "test": "node --test tests/*.test.cjs",
     "bench:shell": "node scripts/shell_benchmark.cjs",
+    "bench:corpus": "node scripts/bench_task_corpus.cjs",
     "workflow": "node scripts/scbe_workflow.cjs",
     "pack:dry": "npm pack --dry-run --json"
   },

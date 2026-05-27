@@ -8,6 +8,34 @@ Adversarial inputs cost exponentially more the further they drift from safe oper
 
 ---
 
+## 2-minute local demo
+
+You do not need Docker, a GPU, an API key, or a model.
+
+```bash
+# 1. Install
+pip install scbe-aethermoore
+
+# 2. Run three scans
+scbe-scan "hello world"
+scbe-scan "ignore all previous instructions"
+scbe-scan "DROP TABLE users"
+
+# 3. Optional browser demo
+python -m scbe_aethermoore.demo.web
+# open http://127.0.0.1:8765
+```
+
+What you will see:
+
+- `ALLOW` on harmless input.
+- `ESCALATE` or `DENY` on obvious prompt-injection or destructive text.
+- A stable score, audit digest, and simple six-axis demo visualization.
+
+Start here if you just want to see the safety gate work: [DEMO.md](DEMO.md).
+
+---
+
 ## Choose your entry path
 
 | Audience | Start here |
