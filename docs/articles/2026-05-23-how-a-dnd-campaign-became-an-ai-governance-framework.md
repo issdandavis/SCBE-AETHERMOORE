@@ -79,4 +79,4 @@ The game taught me what the dimensions were. The math just named them properly.
 
 ---
 
-*Related: [The Six Sacred Tongues as a coordinate system](/articles/the-six-sacred-tongues-coordinate-system) | [Hyperbolic geometry for AI governance](/articles/hyperbolic-geometry-for-ai-governance)*
+*Related: [The Six Sacred Tongues as a coordinate system](2026-05-23-the-six-sacred-tongues-coordinate-system.md) | [Hyperbolic geometry for AI governance](2026-05-23-hyperbolic-geometry-for-ai-governance.md)*
