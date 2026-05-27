@@ -145,7 +145,7 @@ class GateResult:
 
 def run_cmd(cmd: str) -> str:
     """Run a shell command and return output."""
-    result = subprocess.run(shlex.split(cmd), capture_output=True, text=True, cwd=str(ROOT))
+    result = subprocess.run(shlex.split(cmd), capture_output=True, text=True, encoding="utf-8", cwd=str(ROOT))
     return result.stdout.strip()
 
 
