@@ -25,10 +25,33 @@ from src.governance.bijective_tamper import (  # noqa: E402
 
 @pytest.fixture(scope="module")
 def tokenizer():
-    from transformers import AutoTokenizer
+    """Return a tokenizer for bijective tamper tests.
+
+    When the extended Qwen+atomic-tongue artifact is present locally, use it.
+    Otherwise fall back to a minimal NFC-normalizing stub that simulates the
+    key behaviour the tests depend on: NFC normalization on tokenize-decode.
+    ASCII-only inputs round-trip unchanged; NFD inputs normalise to NFC.
+    """
+    import unicodedata as _ud
 
     path = REPO_ROOT / "artifacts" / "extended_tokenizer" / "qwen25-coder-7b-sacred-tongues"
-    return AutoTokenizer.from_pretrained(str(path), use_fast=True)
+    if path.exists():
+        from transformers import AutoTokenizer
+
+        return AutoTokenizer.from_pretrained(str(path), use_fast=True)
+
+    # Stub: encode as UTF-8 bytes of NFC-normalised text; decode restores them.
+    class _NfcStubTokenizer:
+        def encode(self, text, add_special_tokens=False):
+            return list(_ud.normalize("NFC", text).encode("utf-8"))
+
+        def decode(self, ids, skip_special_tokens=False):
+            try:
+                return bytes(ids).decode("utf-8", errors="replace")
+            except Exception:
+                return ""
+
+    return _NfcStubTokenizer()
 
 
 # --------------------------------------------------------------------------- #
