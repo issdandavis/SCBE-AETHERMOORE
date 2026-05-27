@@ -101,10 +101,10 @@ Add thin adapters, not custom score claims:
 
 ## Immediate Improvements
 
-1. ~~Add `scbe shell --agent-json` for stable machine control.~~ **DONE** — NDJSON stdin/stdout protocol; `scbe_tb_agent.py` adapter; 11/11 bench (cmd extraction + GeoSeal + done-signal paths verified).
+1. ~~Add `scbe shell --agent-json` for stable machine control.~~ **DONE** — NDJSON stdin/stdout protocol; `scbe_tb_agent.py` adapter; 17/17 bench (task-completion prompt + tool translation + loop detector + `:patch` verified). Live smoke with Groq confirmed task-completion prompt reaches LLM; Groq smoke also revealed model emits `<cmd>...<cmd>` (open tag) instead of `<cmd>...</cmd>` (close tag) — regex fix verified in `scripts/smoke_agent_json_e2e.cjs`: both formats extract valid executable commands. Objective verifier (`done_if`) added: `done=true` is gated by a shell check, not model text alone; `scripts/smoke_agent_json_e2e.cjs` proves (1) regex fix, (2) verifier blocks false-done, (3) multi-turn mock loop creates file with correct content.
 2. Add `scbe shell --script <file>` to replay workflows deterministically.
-3. Add a repository retrieval primitive: `:files <query>` backed first by ripgrep, later by SCIP/tree-sitter.
-4. Add patch commands: `:patch apply`, `:patch show`, `:patch revert-last`.
+3. ~~Add a repository retrieval primitive: `:files <query>` backed first by ripgrep, later by SCIP/tree-sitter.~~ **DONE** — `:files <pattern>` → `find`; `:read <path> <start>:<end>` → `sed`; `:test <cmd>` → cmd with SCBE_TEST_PASS/FAIL echo; `:patch <file>` → `patch -p1`; all four translate to portable shell commands in agent-json mode.
+4. ~~Add patch command.~~ **DONE** — `:patch <file>` → `patch -p1 < '<file>'`.
 5. Add workflow receipts: each multi-step run should emit `artifacts/benchmarks/scbe-shell/<run>.json`.
 6. ~~Add Terminal-Bench/SWE-bench adapters only after Level 0 and Level 1 are green.~~ **IN PROGRESS** — `packages/cli/scripts/scbe_tb_agent.py` adapter ready; requires `pip install terminal-bench` + Docker for live runs.
 
@@ -130,8 +130,9 @@ npm run bench:shell
 
 Results:
 
-- Shell ACI smoke: **11/11** (added cmd-extraction + GeoSeal + done-signal path coverage), 100%
-- Artifact: `artifacts/benchmarks/scbe-shell/2026-05-26T21-56-57-301Z-shell-agentic-benchmark.json`
+- Shell ACI smoke: **17/17** (task-completion prompt + tool translations `:files`/`:read`/`:test`/`:patch` + loop detector), 100%
+- E2E smoke (`scripts/smoke_agent_json_e2e.cjs`): regex fix proven — bad-format `<cmd>...<cmd>` and good-format `<cmd>...</cmd>` both extract executable commands; verifier gate proven — `done_if` check prevents false-done when file absent; mock multi-turn loop creates `/tmp/scbe_smoke_e2e.txt` with correct content.
+- Live smoke (Groq llama-3.3-70b-versatile, prior session): task-completion prompt reached LLM; governance returned ALLOW; revealed `<cmd>...<cmd>` tag format which prompted regex fix above.
 
 Agentic route smoke:
 

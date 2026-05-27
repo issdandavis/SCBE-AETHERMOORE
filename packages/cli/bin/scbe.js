@@ -909,6 +909,155 @@ function saveShellConfig(cfg) {
   fs.writeFileSync(shellConfigPath(), `${JSON.stringify(cfg, null, 2)}\n`, 'utf8');
 }
 
+// ─── Agent-JSON: task-completion prompt + shell tool translations ─────────────
+
+const _AGENT_JSON_SYSTEM_PROMPT = [
+  'You are a terminal task completion agent. Complete the given task, then verify it is done.',
+  '',
+  'RULES:',
+  '1. Inspect the current terminal state before choosing any command.',
+  '2. Choose ONE command per turn. Wrap it in <cmd>...</cmd>.',
+  "3. After each command's output, decide: is the task complete?",
+  '4. Only emit <done> after running the verification step described in the task (tests pass, file exists, expected output confirmed).',
+  '5. If a command fails: state why it failed, then try a different approach. Never repeat a failed command.',
+  '6. Do not repeat the same command if the terminal state has not changed.',
+  '',
+  'BUILT-IN TOOLS — use like any command inside <cmd>...</cmd>:',
+  '  :files <pattern>           — find files by name or grep for text in files',
+  '  :read <path> <start>:<end> — read lines start–end of a file  e.g. :read main.py 1:40',
+  '  :test <cmd>                — run test command; output includes SCBE_TEST_PASS or SCBE_TEST_FAIL',
+  '  :patch <file>              — apply a unified diff: patch -p1 < <file>',
+  '',
+  'VERIFICATION: Before emitting <done>, run the check described in the task.',
+  'Example: task says "make the tests pass" → run the tests, see them pass, then emit <done>.',
+].join('\n');
+
+function translateToolCommand(cmd) {
+  const trimmed = cmd.trim();
+  if (!trimmed.startsWith(':')) return null;
+  const space = trimmed.indexOf(' ');
+  const tool = space === -1 ? trimmed.slice(1) : trimmed.slice(1, space);
+  const args = space === -1 ? '' : trimmed.slice(space + 1).trim();
+  if (tool === 'files') {
+    const esc = args.replace(/'/g, "'\\''");
+    return `find . -name '*${esc}*' 2>/dev/null | head -30`;
+  }
+  if (tool === 'read') {
+    const parts = args.split(/\s+/);
+    const fp = (parts[0] || 'README.md').replace(/'/g, "'\\''");
+    const range = (parts[1] || '1:50').split(':');
+    return `sed -n '${range[0] || 1},${range[1] || 50}p' '${fp}'`;
+  }
+  if (tool === 'test') {
+    return `${args} && echo SCBE_TEST_PASS || echo SCBE_TEST_FAIL`;
+  }
+  if (tool === 'patch') {
+    const fp = (args || 'fix.patch').replace(/'/g, "'\\''");
+    return `patch -p1 < '${fp}'`;
+  }
+  return null;
+}
+
+function resolveBash() {
+  if (process.platform !== 'win32') return '/bin/sh';
+  const candidates = [
+    process.env.SCBE_BASH,
+    'C:\\Program Files\\Git\\bin\\bash.exe',
+    'C:\\Program Files\\Git\\usr\\bin\\bash.exe',
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(candidate)) return candidate;
+    } catch {
+      /* try next */
+    }
+  }
+  const r = spawnSync('where', ['bash'], { encoding: 'utf8' });
+  return (
+    r.stdout
+      .split('\n')
+      .map((l) => l.trim())
+      .find(
+        (l) =>
+          l && !/\\windows\\system32\\bash\.exe$/i.test(l) && !/\\WindowsApps\\bash\.exe$/i.test(l)
+      ) || 'bash'
+  ).trim();
+}
+
+function buildBoardPromptBlock(board) {
+  if (!board.objective) return '';
+  const _failPattern = /error|FAIL|not found|No such|permission denied|command not found/i;
+  const lines = ['--- Task Board ---', `Objective: ${board.objective.slice(0, 200)}`];
+  lines.push(`Turn: ${board.turn}`);
+  if (board.attempts.length > 0) {
+    const failCount = board.attempts.filter(
+      (a) => a.observation != null && _failPattern.test(a.observation)
+    ).length;
+    lines.push(
+      `Progress: ${board.attempts.length} attempts, ${failCount} failed, ${board.ko_bans.length} ko-banned`
+    );
+  }
+  if (board.attempts.length) {
+    const recent = board.attempts.slice(-5);
+    lines.push(`Attempts (${board.attempts.length} total, last ${recent.length}):`);
+    for (const a of recent) {
+      const cmd = (a.translated || a.cmd).slice(0, 80);
+      const obs =
+        a.observation != null ? ` → ${a.observation.slice(0, 200).replace(/\n/g, ' ')}` : '';
+      const failed = a.observation != null && _failPattern.test(a.observation);
+      const mark = a.observation == null ? '?' : failed ? '!' : '+';
+      lines.push(`  [T${a.turn}${mark}] ${cmd}${obs}`);
+    }
+  }
+  if (board.ko_bans.length) {
+    lines.push('Ko-banned (do not repeat — try a different approach):');
+    for (const key of board.ko_bans) lines.push(`  - ${key.split('|||')[0].slice(0, 80)}`);
+  }
+  lines.push(`Board: ${board.done ? 'COMPLETE' : 'IN PROGRESS'}`);
+  // Policy: ugly-but-verified accepted; unverified-done rejected; repeated-failed-move rejected
+  if (board.path_policy === 'non_optimal_correct') {
+    lines.push(
+      'Policy: non_optimal_correct — any legal safe move that makes progress is accepted; elegance is not required; completion requires verification.'
+    );
+  }
+  lines.push('---');
+  return lines.join('\n') + '\n\n';
+}
+
+function buildAgentMovePacket(move, governance, board) {
+  const script = resolveRepoScript('scripts/system/agent_move_packet.py');
+  if (!script) return null;
+  const payload = {
+    schema_version: 'scbe_agent_move_packet_input_v1',
+    move: {
+      cmd: move.cmd,
+      translated: move.translated || move.cmd,
+      turn: board.turn,
+      objective: board.objective,
+      legal_moves: board.legal_moves,
+      path_policy: board.path_policy,
+    },
+    governance,
+  };
+  try {
+    const r = spawnSync(pythonCommand(), [script], {
+      cwd: repoRoot(),
+      input: JSON.stringify(payload),
+      encoding: 'utf8',
+      timeout: 10000,
+      maxBuffer: 1024 * 1024,
+    });
+    if (r.status !== 0) {
+      const err = ((r.stdout || '') + (r.stderr || '')).trim().slice(0, 300);
+      return { ok: false, error: err || `agent_move_packet exited ${r.status}` };
+    }
+    const parsed = JSON.parse(r.stdout);
+    return parsed.ok ? parsed.packet : parsed;
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
 // ─── Input classifier ─────────────────────────────────────────────────────────
 
 const _PS_PREFIX = /^(!|ps:)\s*/;
@@ -952,14 +1101,17 @@ async function streamLLM(prompt, cfg, history, onToken) {
   const isFireworks = cfg.provider === 'fireworks';
   const isOllama =
     !isFireworks &&
-    (cfg.provider === 'ollama' || (!cfg.openai_api_key && !cfg.api_key && !cfg.groq_api_key && !cfg.fireworks_api_key));
+    (cfg.provider === 'ollama' ||
+      (!cfg.openai_api_key && !cfg.api_key && !cfg.groq_api_key && !cfg.fireworks_api_key));
   let apiUrl, headers;
 
   if (isFireworks) {
     const configuredUrl = cfg.url || '';
     const base =
       cfg.fireworks_base_url ||
-      (configuredUrl && !/^https?:\/\/localhost:11434\/?$/i.test(configuredUrl) ? configuredUrl : FIREWORKS_BASE_URL);
+      (configuredUrl && !/^https?:\/\/localhost:11434\/?$/i.test(configuredUrl)
+        ? configuredUrl
+        : FIREWORKS_BASE_URL);
     apiUrl = `${base.replace(/\/$/, '')}/chat/completions`;
     const key = cfg.fireworks_api_key || cfg.api_key || process.env.FIREWORKS_API_KEY || '';
     headers = { 'content-type': 'application/json', authorization: `Bearer ${key}` };
@@ -1027,10 +1179,15 @@ async function searchWeb(query) {
     const data = await res.json();
     const results = [];
     if (data.AbstractText) {
-      results.push({ title: data.Heading || 'Abstract', snippet: data.AbstractText, url: data.AbstractURL });
+      results.push({
+        title: data.Heading || 'Abstract',
+        snippet: data.AbstractText,
+        url: data.AbstractURL,
+      });
     }
     for (const r of (data.RelatedTopics || []).slice(0, 5)) {
-      if (r.Text && r.FirstURL) results.push({ title: r.Text.slice(0, 80), snippet: r.Text, url: r.FirstURL });
+      if (r.Text && r.FirstURL)
+        results.push({ title: r.Text.slice(0, 80), snippet: r.Text, url: r.FirstURL });
     }
     return { query, results: results.slice(0, 5), source: 'duckduckgo' };
   } catch (err) {
@@ -1051,7 +1208,10 @@ function formatPlanSummary(planResult) {
   const lines = [
     ansi('green', `  ✓ GeoSeal: ${policy.decision || 'ALLOW'}`) +
       ansi('gray', ` (${policy.reason || 'ok'})`),
-    ansi('gray', `    tool: ${(plan.tool || {}).class || '?'} | key: ${(plan.command || {}).key || '?'}`),
+    ansi(
+      'gray',
+      `    tool: ${(plan.tool || {}).class || '?'} | key: ${(plan.command || {}).key || '?'}`
+    ),
   ];
   if (semantic && semantic.discourseProfile) {
     lines.push(ansi('gray', `    semantic: ${semantic.dominant} → ${semantic.discourseProfile}`));
@@ -1076,19 +1236,45 @@ function runInteractiveShell(flags = {}) {
   // ── Minimal / legacy mode ─────────────────────────────────────────────────
   if (flags.minimal) {
     process.stdout.write('SCBE Terminal. Type commands normally. Use :help or :exit.\n');
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: 'scbe> ' });
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      prompt: 'scbe> ',
+    });
     rl.prompt();
     rl.on('line', (line) => {
       const command = line.trim();
-      if (!command) { rl.prompt(); return; }
-      if (command === ':exit' || command === 'exit' || command === 'quit') { rl.close(); return; }
-      if (command === ':help' || command === 'help') { process.stdout.write(CLI_HELP); rl.prompt(); return; }
-      if (command === ':status' || command === 'status') { runStatus(); rl.prompt(); return; }
-      if (command.startsWith(':history') || command === 'history') { printHistory(20); rl.prompt(); return; }
+      if (!command) {
+        rl.prompt();
+        return;
+      }
+      if (command === ':exit' || command === 'exit' || command === 'quit') {
+        rl.close();
+        return;
+      }
+      if (command === ':help' || command === 'help') {
+        process.stdout.write(CLI_HELP);
+        rl.prompt();
+        return;
+      }
+      if (command === ':status' || command === 'status') {
+        runStatus();
+        rl.prompt();
+        return;
+      }
+      if (command.startsWith(':history') || command === 'history') {
+        printHistory(20);
+        rl.prompt();
+        return;
+      }
       const scbeCmd = /^(compile|compile-ca|ca-plan|render-op|route|aetherpp)\b/.test(command)
-        ? `${process.execPath} "${__filename}" ${command}` : command;
+        ? `${process.execPath} "${__filename}" ${command}`
+        : command;
       const row = runShellCommand(scbeCmd);
-      if (!row.success && row.failure) process.stdout.write(`SCBE failure: ${row.failure.summary}\nNext: ${row.failure.next_step}\n`);
+      if (!row.success && row.failure)
+        process.stdout.write(
+          `SCBE failure: ${row.failure.summary}\nNext: ${row.failure.next_step}\n`
+        );
       rl.prompt();
     });
     return;
@@ -1114,11 +1300,33 @@ function runInteractiveShell(flags = {}) {
     if (cfg.provider === 'fireworks' && !cfg.fireworks_api_key && process.env.FIREWORKS_API_KEY) {
       cfg.fireworks_api_key = process.env.FIREWORKS_API_KEY;
     }
+    // Task-completion mode: override conversational system prompt
+    cfg.system_prompt = _AGENT_JSON_SYSTEM_PROMPT;
 
     const history = [];
     let instruction = null;
     let busy = false;
     let stdinClosed = false;
+    // Single source of truth for task state.
+    const taskBoard = {
+      objective: null,
+      legal_moves: ['cmd', 'files', 'read', 'patch', 'test'],
+      attempts: [],
+      last_observation: null,
+      done_if: null,
+      done: false,
+      ko_bans: [],
+      turn: 0,
+      // Execution strategy: verified forward progress over optimality.
+      // See docs/specs/SCBE_AGENT_PATH_POLICY.md
+      path_policy: 'non_optimal_correct',
+      acceptance: {
+        must_be_safe: true,
+        must_be_verifiable: true,
+        must_not_repeat_failed_state: true,
+        optimality_required: false,
+      },
+    };
 
     process.stdout.write(JSON.stringify({ ready: true }) + '\n');
 
@@ -1130,19 +1338,53 @@ function runInteractiveShell(flags = {}) {
       if (!line) return;
 
       let msg;
-      try { msg = JSON.parse(line); } catch { return; }
+      try {
+        msg = JSON.parse(line);
+      } catch {
+        return;
+      }
 
-      if (msg.instruction) instruction = msg.instruction;
+      if (msg.instruction) {
+        instruction = msg.instruction;
+        if (!taskBoard.objective) taskBoard.objective = instruction;
+      }
+      if (msg.done_if && !taskBoard.done_if) taskBoard.done_if = msg.done_if;
+      if (msg.task_board && !taskBoard.objective) Object.assign(taskBoard, msg.task_board);
       if (!instruction) {
-        process.stdout.write(JSON.stringify({ error: 'no instruction yet', done: false, commands: [] }) + '\n');
+        process.stdout.write(
+          JSON.stringify({ error: 'no instruction yet', done: false, commands: [] }) + '\n'
+        );
         return;
       }
 
       busy = true;
       rl.pause();
+      taskBoard.turn++;
 
       const terminalState = msg.terminal_state || '';
-      const prompt = instruction + (terminalState ? `\n\nCurrent terminal state:\n${terminalState}` : '');
+
+      // Record the observation (output) of the last proposed command.
+      if (taskBoard.attempts.length > 0) {
+        const lastAttempt = taskBoard.attempts[taskBoard.attempts.length - 1];
+        if (lastAttempt.observation === undefined) {
+          lastAttempt.observation = terminalState.slice(-150);
+          taskBoard.last_observation = terminalState;
+          const pairKey = `${lastAttempt.translated || lastAttempt.cmd}|||${lastAttempt.observation}`;
+          const seenBefore = taskBoard.attempts
+            .slice(0, -1)
+            .some(
+              (a) => `${a.translated || a.cmd}|||${(a.observation || '').slice(-150)}` === pairKey
+            );
+          if (seenBefore && !taskBoard.ko_bans.includes(pairKey)) taskBoard.ko_bans.push(pairKey);
+        }
+      }
+      if (!taskBoard.last_observation) taskBoard.last_observation = terminalState;
+
+      const boardBlock = buildBoardPromptBlock(taskBoard);
+      const prompt =
+        boardBlock +
+        instruction +
+        (terminalState ? `\n\nCurrent terminal state:\n${terminalState}` : '');
 
       let full;
       try {
@@ -1151,9 +1393,16 @@ function runInteractiveShell(flags = {}) {
         if (mockDelayMs > 0) {
           await new Promise((resolve) => setTimeout(resolve, mockDelayMs));
         }
-        full = process.env.SCBE_MOCK_RESPONSE || await streamLLM(prompt, cfg, history, () => {});
+        full = process.env.SCBE_MOCK_RESPONSE || (await streamLLM(prompt, cfg, history, () => {}));
       } catch (err) {
-        process.stdout.write(JSON.stringify({ error: err.message, done: false, commands: [] }) + '\n');
+        process.stdout.write(
+          JSON.stringify({
+            error: err.message,
+            done: false,
+            commands: [],
+            board: { ...taskBoard },
+          }) + '\n'
+        );
         busy = false;
         if (stdinClosed) process.exit(0);
         rl.resume();
@@ -1164,18 +1413,100 @@ function runInteractiveShell(flags = {}) {
       history.push({ role: 'assistant', content: full });
       if (history.length > 20) history.splice(0, 2);
 
-      const cmdMatch = full.match(/<cmd>([\s\S]*?)<\/cmd>/);
-      const doneSignal = /task\s+(?:is\s+)?(?:complete|done|finished)/i.test(full) || /<done>/.test(full);
+      // Accept </cmd> OR the opening of a next <cmd> as closing delimiter.
+      // Some models emit <cmd>...<cmd> (open tag) instead of <cmd>...</cmd> (close tag).
+      // The lookahead stops before the next <cmd> without consuming it.
+      const cmdMatch = full.match(/<cmd>([\s\S]*?)(?:<\/cmd>|(?=\s*<cmd>))/);
+
+      const doneSignal =
+        /\btask\s+(?:is\s+)?(?:complete|done|finished)/i.test(full) || /<done>/.test(full);
+
+      const bashBin = resolveBash();
 
       if (!cmdMatch) {
-        process.stdout.write(JSON.stringify({ commands: [], done: doneSignal, rationale: full.slice(0, 500) }) + '\n');
+        // Model <done> is a request for board verification, not completion
+        if (doneSignal && taskBoard.done_if) {
+          const check = spawnSync(bashBin, ['-c', taskBoard.done_if], {
+            encoding: 'utf8',
+            timeout: 10000,
+          });
+          if (check.status !== 0) {
+            const verifyOut =
+              ((check.stdout || '') + (check.stderr || '')).trim().slice(0, 300) ||
+              'verifier exited non-zero';
+            history.push({
+              role: 'user',
+              content: `VERIFY FAILED: ${verifyOut}\nThe objective is not yet complete. Continue working.`,
+            });
+            history.push({ role: 'assistant', content: 'Understood. I will continue.' });
+            if (history.length > 20) history.splice(0, 2);
+            process.stdout.write(
+              JSON.stringify({
+                commands: [],
+                done: false,
+                verify_failed: true,
+                rationale: `done signal received but objective verifier failed: ${verifyOut}`,
+                governance: { decision: 'ALLOW', reason: 'no-cmd' },
+                board: { ...taskBoard },
+              }) + '\n'
+            );
+            busy = false;
+            if (stdinClosed) process.exit(0);
+            rl.resume();
+            return;
+          }
+          taskBoard.done = true;
+        }
+        process.stdout.write(
+          JSON.stringify({
+            commands: [],
+            done: taskBoard.done || doneSignal,
+            rationale: full.slice(0, 500),
+            governance: { decision: 'ALLOW', reason: 'no-cmd' },
+            board: { ...taskBoard },
+          }) + '\n'
+        );
         busy = false;
         if (stdinClosed) process.exit(0);
-        if (!doneSignal) rl.resume();
+        if (!(taskBoard.done || doneSignal)) rl.resume();
         return;
       }
 
       const proposed = cmdMatch[1].trim();
+      const translated = translateToolCommand(proposed) || proposed;
+
+      // Ko-ban: block if this (translated_cmd, last_observation) pair was already banned
+      const koPairKey = `${translated}|||${(taskBoard.last_observation || '').slice(-150)}`;
+      if (taskBoard.ko_bans.includes(koPairKey)) {
+        const governance = { decision: 'QUARANTINE', reason: 'ko-ban' };
+        const movePacket = buildAgentMovePacket(
+          { cmd: proposed, translated },
+          governance,
+          taskBoard
+        );
+        process.stdout.write(
+          JSON.stringify({
+            commands: [],
+            done: false,
+            blocked: true,
+            rationale: `ko-ban: command+observation repeated — try a different approach. Banned: "${translated.slice(0, 80)}"`,
+            governance,
+            move_packet: movePacket,
+            board: { ...taskBoard },
+          }) + '\n'
+        );
+        busy = false;
+        if (stdinClosed) process.exit(0);
+        rl.resume();
+        return;
+      }
+
+      taskBoard.attempts.push({
+        cmd: proposed,
+        ...(translated !== proposed ? { translated } : {}),
+        turn: taskBoard.turn,
+      });
+      if (taskBoard.attempts.length > 20) taskBoard.attempts.shift();
 
       // Run through GeoSeal governance
       const busBin = resolveAgentBusBin();
@@ -1186,7 +1517,7 @@ function runInteractiveShell(flags = {}) {
         try {
           const r = spawnSync(
             process.execPath,
-            [busBin, 'pipeline', 'compile', '--intent', proposed, '--json'],
+            [busBin, 'pipeline', 'compile', '--intent', translated, '--json'],
             { encoding: 'utf8', timeout: 15000, maxBuffer: 1024 * 512 }
           );
           if (r.status === 0 && r.stdout) {
@@ -1195,36 +1526,99 @@ function runInteractiveShell(flags = {}) {
               governance = { decision: plan.policy.decision, reason: plan.policy.reason };
               blocked = plan.policy.decision !== 'ALLOW';
             }
-            if (plan.semantic?.discourseProfile) governance.semantic = plan.semantic.discourseProfile;
+            if (plan.semantic?.discourseProfile)
+              governance.semantic = plan.semantic.discourseProfile;
           }
-        } catch { /* stays ALLOW */ }
+        } catch {
+          /* stays ALLOW */
+        }
       }
 
       if (blocked) {
-        process.stdout.write(JSON.stringify({
-          commands: [],
-          done: false,
-          blocked: true,
-          rationale: `governance blocked: ${governance.reason}`,
+        const movePacket = buildAgentMovePacket(
+          { cmd: proposed, translated },
           governance,
-        }) + '\n');
+          taskBoard
+        );
+        process.stdout.write(
+          JSON.stringify({
+            commands: [],
+            done: false,
+            blocked: true,
+            rationale: `governance blocked: ${governance.reason}`,
+            governance,
+            move_packet: movePacket,
+            board: { ...taskBoard },
+          }) + '\n'
+        );
         busy = false;
         if (stdinClosed) process.exit(0);
         rl.resume();
         return;
       }
 
-      const rationale = full.replace(/<cmd>[\s\S]*?<\/cmd>/g, '').trim().slice(0, 500);
-      process.stdout.write(JSON.stringify({
-        commands: [{ keystrokes: proposed, is_blocking: true, timeout_sec: 30 }],
-        done: doneSignal,
-        rationale,
-        governance,
-      }) + '\n');
+      // Objective verifier: model <done> is only a request — verify before accepting
+      if (doneSignal && taskBoard.done_if) {
+        const check = spawnSync(bashBin, ['-c', taskBoard.done_if], {
+          encoding: 'utf8',
+          timeout: 10000,
+        });
+        if (check.status !== 0) {
+          const verifyOut =
+            ((check.stdout || '') + (check.stderr || '')).trim().slice(0, 300) ||
+            'verifier exited non-zero';
+          const movePacket = buildAgentMovePacket(
+            { cmd: proposed, translated },
+            governance,
+            taskBoard
+          );
+          history.push({
+            role: 'user',
+            content: `VERIFY FAILED: ${verifyOut}\nThe objective is not yet complete. Continue working.`,
+          });
+          history.push({ role: 'assistant', content: 'Understood. I will continue.' });
+          if (history.length > 20) history.splice(0, 2);
+          process.stdout.write(
+            JSON.stringify({
+              commands: [{ keystrokes: translated, is_blocking: true, timeout_sec: 30 }],
+              done: false,
+              verify_failed: true,
+              rationale: `done signal received but objective verifier failed: ${verifyOut}`,
+              governance,
+              move_packet: movePacket,
+              board: { ...taskBoard },
+            }) + '\n'
+          );
+          busy = false;
+          if (stdinClosed) process.exit(0);
+          rl.resume();
+          return;
+        }
+        taskBoard.done = true;
+      }
+
+      // Two-pass strip: (1) <cmd>...</cmd> or <cmd>...<cmd> (Groq open-tag style),
+      // (2) any trailing <cmd>... with no close tag.
+      const rationale = full
+        .replace(/<cmd>[\s\S]*?(?:<\/cmd>|(?=<cmd>))/g, '')
+        .replace(/<cmd>[\s\S]*/g, '')
+        .trim()
+        .slice(0, 500);
+      const movePacket = buildAgentMovePacket({ cmd: proposed, translated }, governance, taskBoard);
+      process.stdout.write(
+        JSON.stringify({
+          commands: [{ keystrokes: translated, is_blocking: true, timeout_sec: 30 }],
+          done: taskBoard.done || doneSignal,
+          rationale,
+          governance,
+          move_packet: movePacket,
+          board: { ...taskBoard },
+        }) + '\n'
+      );
 
       busy = false;
       if (stdinClosed) process.exit(0);
-      if (!doneSignal) rl.resume();
+      if (!(taskBoard.done || doneSignal)) rl.resume();
     });
 
     rl.on('close', () => {
@@ -1257,8 +1651,8 @@ function runInteractiveShell(flags = {}) {
       .catch((err) => {
         process.stderr.write(
           `scbe shell --tui: failed to load TUI.\n${err.message}\n\n` +
-          `Ensure ink and react are installed: npm install -g ink react\n` +
-          `Falling back to: scbe shell (no --tui)\n\n`
+            `Ensure ink and react are installed: npm install -g ink react\n` +
+            `Falling back to: scbe shell (no --tui)\n\n`
         );
         // Fallback to rich readline shell
         runInteractiveShell({ ...flags, tui: false });
@@ -1281,7 +1675,16 @@ function runInteractiveShell(flags = {}) {
     output: process.stdout,
     prompt: PROMPT,
     completer: (line) => {
-      const all = [...KNOWN_COMMANDS, ':help', ':exit', ':status', ':config', ':search', ':history', ':clear'];
+      const all = [
+        ...KNOWN_COMMANDS,
+        ':help',
+        ':exit',
+        ':status',
+        ':config',
+        ':search',
+        ':history',
+        ':clear',
+      ];
       const hits = all.filter((c) => c.startsWith(line));
       return [hits.length ? hits : all, line];
     },
@@ -1298,7 +1701,10 @@ function runInteractiveShell(flags = {}) {
 
   rl.on('line', (rawLine) => {
     const line = rawLine.trim();
-    if (!line) { rl.prompt(); return; }
+    if (!line) {
+      rl.prompt();
+      return;
+    }
 
     if (pendingApproval) {
       const proposed = pendingApproval.proposed;
@@ -1321,15 +1727,20 @@ function runInteractiveShell(flags = {}) {
       const meta = parts[0];
       const metaArgs = parts.slice(1);
 
-      if (meta === 'exit' || meta === 'quit') { rl.close(); return; }
-      if (meta === 'help') { process.stdout.write(`${CLI_HELP}\n`); }
-      else if (meta === 'status') { runStatus(); }
-      else if (meta === 'history') { printHistory(Number(metaArgs[0]) || 20); }
-      else if (meta === 'clear') {
+      if (meta === 'exit' || meta === 'quit') {
+        rl.close();
+        return;
+      }
+      if (meta === 'help') {
+        process.stdout.write(`${CLI_HELP}\n`);
+      } else if (meta === 'status') {
+        runStatus();
+      } else if (meta === 'history') {
+        printHistory(Number(metaArgs[0]) || 20);
+      } else if (meta === 'clear') {
         process.stdout.write('\x1b[2J\x1b[0f');
         printShellStatusBar(cfg);
-      }
-      else if (meta === 'config') {
+      } else if (meta === 'config') {
         if (metaArgs[0] === 'set' && metaArgs[1]) {
           const key = metaArgs[1];
           const val = metaArgs.slice(2).join(' ');
@@ -1345,10 +1756,13 @@ function runInteractiveShell(flags = {}) {
           process.stdout.write(ansi('gray', `${JSON.stringify(display, null, 2)}\n`));
           process.stdout.write(ansi('gray', '  :config set <key> <value>  to change\n'));
         }
-      }
-      else if (meta === 'search') {
+      } else if (meta === 'search') {
         const query = metaArgs.join(' ');
-        if (!query) { process.stdout.write(ansi('yellow', '  Usage: :search <query>\n')); rl.prompt(); return; }
+        if (!query) {
+          process.stdout.write(ansi('yellow', '  Usage: :search <query>\n'));
+          rl.prompt();
+          return;
+        }
         process.stdout.write(ansi('cyan', `  searching: ${query}…\n`));
         searchWeb(query).then((result) => {
           if (result.error) {
@@ -1359,15 +1773,14 @@ function runInteractiveShell(flags = {}) {
             for (const r of result.results) {
               process.stdout.write(
                 ansi('bold', `  • ${r.title}\n`) +
-                ansi('gray', `    ${r.snippet.slice(0, 140)}\n    ${r.url}\n`)
+                  ansi('gray', `    ${r.snippet.slice(0, 140)}\n    ${r.url}\n`)
               );
             }
           }
           rl.prompt();
         });
         return; // prompt called in .then()
-      }
-      else {
+      } else {
         process.stdout.write(ansi('yellow', `  unknown meta command: :${meta} — try :help\n`));
       }
       rl.prompt();
@@ -1377,7 +1790,10 @@ function runInteractiveShell(flags = {}) {
     // ── PowerShell / shell passthrough  (!cmd or ps:cmd) ──────────────────
     if (kind === 'powershell') {
       const cmd = line.replace(_PS_PREFIX, '').trim();
-      if (!cmd) { rl.prompt(); return; }
+      if (!cmd) {
+        rl.prompt();
+        return;
+      }
       process.stdout.write(ansi('dim', `  $ ${cmd}\n`));
       const row = runShellCommand(cmd, { quiet: true, capture: scriptedInput });
       if (scriptedInput && row.stdout_preview?.trim()) {
@@ -1389,7 +1805,7 @@ function runInteractiveShell(flags = {}) {
       if (!row.success && row.failure) {
         process.stdout.write(
           ansi('red', `  ✗ ${row.failure.summary}\n`) +
-          ansi('gray', `  → ${row.failure.next_step}\n`)
+            ansi('gray', `  → ${row.failure.next_step}\n`)
         );
       }
       rl.prompt();
@@ -1399,7 +1815,8 @@ function runInteractiveShell(flags = {}) {
     // ── Known scbe command ────────────────────────────────────────────────
     if (kind === 'command') {
       const scbeCmd = /^(compile|compile-ca|ca-plan|render-op|route|aetherpp)\b/.test(line)
-        ? `${process.execPath} "${__filename}" ${line}` : line;
+        ? `${process.execPath} "${__filename}" ${line}`
+        : line;
       const row = runShellCommand(scbeCmd, { capture: scriptedInput });
       if (scriptedInput && row.stdout_preview?.trim()) {
         process.stdout.write(`${row.stdout_preview.trim()}\n`);
@@ -1410,7 +1827,7 @@ function runInteractiveShell(flags = {}) {
       if (!row.success && row.failure) {
         process.stdout.write(
           ansi('red', `  ✗ ${row.failure.summary}\n`) +
-          ansi('gray', `  → ${row.failure.next_step}\n`)
+            ansi('gray', `  → ${row.failure.next_step}\n`)
         );
       }
       rl.prompt();
@@ -1431,12 +1848,14 @@ function runInteractiveShell(flags = {}) {
 
         // Extract proposed command wrapped in <cmd>…</cmd>
         const cmdMatch = full.match(/<cmd>([\s\S]*?)<\/cmd>/);
-        if (!cmdMatch) { rl.resume(); rl.prompt(); return; }
+        if (!cmdMatch) {
+          rl.resume();
+          rl.prompt();
+          return;
+        }
 
         const proposed = cmdMatch[1].trim();
-        process.stdout.write(
-          '\n' + ansi('yellow', '  proposed: ') + ansi('bold', proposed) + '\n'
-        );
+        process.stdout.write('\n' + ansi('yellow', '  proposed: ') + ansi('bold', proposed) + '\n');
 
         // Run intent through GeoSeal compile
         const busBin = resolveAgentBusBin();
@@ -1454,14 +1873,22 @@ function runInteractiveShell(flags = {}) {
               planResult = {
                 plan: parsed,
                 blocked: parsed.policy && parsed.policy.decision !== 'ALLOW',
-                block_reason: parsed.policy ? `policy ${parsed.policy.decision}: ${parsed.policy.reason}` : undefined,
+                block_reason: parsed.policy
+                  ? `policy ${parsed.policy.decision}: ${parsed.policy.reason}`
+                  : undefined,
               };
             }
-          } catch { /* parse failed, stays blocked */ }
+          } catch {
+            /* parse failed, stays blocked */
+          }
 
           process.stdout.write(formatPlanSummary(planResult) + '\n');
 
-          if (planResult.blocked) { rl.resume(); rl.prompt(); return; }
+          if (planResult.blocked) {
+            rl.resume();
+            rl.prompt();
+            return;
+          }
         }
 
         // Ask for approval
@@ -1471,8 +1898,9 @@ function runInteractiveShell(flags = {}) {
       })
       .catch((err) => {
         process.stdout.write(
-          '\n' + ansi('red', `  LLM error: ${err.message}\n`) +
-          ansi('gray', `  Is ${cfg.provider} running? Try: :config set provider offline\n`)
+          '\n' +
+            ansi('red', `  LLM error: ${err.message}\n`) +
+            ansi('gray', `  Is ${cfg.provider} running? Try: :config set provider offline\n`)
         );
         rl.resume();
         rl.prompt();
@@ -2806,7 +3234,10 @@ function runUpgrade(args) {
 }
 
 function runSelftest() {
-  const checks = [['version', '--json'], ['doctor', '--json']];
+  const checks = [
+    ['version', '--json'],
+    ['doctor', '--json'],
+  ];
   const results = checks.map((args) => {
     const child = spawnSync(process.execPath, [__filename, ...args], {
       encoding: 'utf8',
