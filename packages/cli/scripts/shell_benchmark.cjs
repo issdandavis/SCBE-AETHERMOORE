@@ -847,6 +847,137 @@ function main() {
     })
   );
 
+  cases.push(
+    caseResult('agent_json_offline_scaffold_emits_task_command', () => {
+      const { spawnSync: spawn } = require('node:child_process');
+      const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+        cwd: REPO_ROOT,
+        input:
+          JSON.stringify({
+            instruction:
+              "Run the benchmark artifact freshness test suite at packages/cli/tests/bench_artifact_freshness.test.cjs using Node's built-in test runner (`node --test`). Report how many tests pass.",
+            terminal_state: '$ ',
+          }) + '\n\n',
+        encoding: 'utf8',
+        timeout: 20_000,
+        env: { ...process.env, NO_COLOR: '1', SCBE_PROVIDER: 'offline' },
+      });
+      const lines = (r.stdout || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      assert.ok(lines.length >= 2, `expected ready + response, got: ${r.stdout}`);
+      const resp = JSON.parse(lines[1]);
+      assert.ok(resp.commands.length > 0, 'expected scaffold command');
+      assert.match(resp.commands[0].keystrokes, /node --test/);
+      assert.match(resp.commands[0].keystrokes, /bench_artifact_freshness\.test\.cjs/);
+      return { command: resp.commands[0].keystrokes };
+    })
+  );
+
+  cases.push(
+    caseResult('agent_json_unreachable_model_falls_back_to_scaffold', () => {
+      const { spawnSync: spawn } = require('node:child_process');
+      const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+        cwd: REPO_ROOT,
+        input:
+          JSON.stringify({
+            instruction:
+              'Run a dry-run npm pack for the CLI package at packages/cli and confirm that scripts/scbe_workflow.cjs appears in the file list. Use: npm pack --dry-run --json (run from the packages/cli directory).',
+            terminal_state: '$ ',
+          }) + '\n\n',
+        encoding: 'utf8',
+        timeout: 20_000,
+        env: {
+          ...process.env,
+          NO_COLOR: '1',
+          SCBE_PROVIDER: 'ollama',
+          SCBE_URL: 'http://127.0.0.1:9',
+        },
+      });
+      const lines = (r.stdout || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      assert.ok(lines.length >= 2, `expected ready + response, got: ${r.stdout}`);
+      const resp = JSON.parse(lines[1]);
+      assert.ok(!resp.error, `fallback must not return hard agent error: ${JSON.stringify(resp)}`);
+      assert.ok(resp.commands.length > 0, 'expected fallback command');
+      assert.match(resp.commands[0].keystrokes, /npm pack --dry-run --json/);
+      return { command: resp.commands[0].keystrokes };
+    })
+  );
+
+  cases.push(
+    caseResult('agent_json_board_includes_pazaak_action_cards', () => {
+      const { spawnSync: spawn } = require('node:child_process');
+      const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+        cwd: REPO_ROOT,
+        input:
+          JSON.stringify({
+            instruction:
+              'Find the function named extractSummary in packages/cli/scripts/scbe_workflow.cjs and verify the exact signature.',
+            terminal_state: '$ ',
+            done_if:
+              "node -e \"const fs=require('fs');const t=fs.readFileSync('packages/cli/scripts/scbe_workflow.cjs','utf8');process.exit(t.includes('function extractSummary')?0:1)\"",
+          }) + '\n\n',
+        encoding: 'utf8',
+        timeout: 20_000,
+        env: { ...process.env, NO_COLOR: '1', SCBE_PROVIDER: 'offline' },
+      });
+      const lines = (r.stdout || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      assert.ok(lines.length >= 2, `expected ready + response, got: ${r.stdout}`);
+      const resp = JSON.parse(lines[1]);
+      const ids = (resp.board.pazaak_cards || []).map((card) => card.id);
+      assert.ok(ids.includes('focus_plus'), `expected focus_plus, got ${ids.join(',')}`);
+      assert.ok(
+        ids.includes('verify_minus_risk'),
+        `expected verify_minus_risk, got ${ids.join(',')}`
+      );
+      return { cards: ids };
+    })
+  );
+
+  cases.push(
+    caseResult('agent_json_verifier_accepts_done_after_prior_move', () => {
+      const { spawnSync: spawn } = require('node:child_process');
+      const first = {
+        instruction:
+          'Run a small command, then stop only after the verifier confirms the task is complete.',
+        terminal_state: '$ ',
+        done_if: 'node -e "process.exit(0)"',
+      };
+      const second = { terminal_state: '$ node -e "console.log(1)"\n1' };
+      const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+        cwd: REPO_ROOT,
+        input: `${JSON.stringify(first)}\n${JSON.stringify(second)}\n\n`,
+        encoding: 'utf8',
+        timeout: 20_000,
+        env: {
+          ...process.env,
+          NO_COLOR: '1',
+          SCBE_MOCK_RESPONSE: '<cmd>node -e "console.log(1)"</cmd>',
+        },
+      });
+      const lines = (r.stdout || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      assert.ok(lines.length >= 3, `expected ready + two responses, got: ${r.stdout}`);
+      const firstResp = JSON.parse(lines[1]);
+      const secondResp = JSON.parse(lines[2]);
+      assert.ok(firstResp.commands.length > 0, 'first turn should propose a command');
+      assert.equal(secondResp.done, true);
+      assert.equal(secondResp.step_complete, true);
+      assert.equal(secondResp.verifier_accepted, true);
+      assert.deepEqual(secondResp.commands, []);
+      return { rationale: secondResp.rationale };
+    })
+  );
+
   const total = cases.reduce((sum, row) => sum + row.points, 0);
   const earned = cases.reduce((sum, row) => sum + row.earned, 0);
   const report = {
@@ -920,7 +1051,9 @@ if (process.argv.includes('--last-artifact')) {
   }
 
   const { earned = 0, total = 0, percent = 0 } = last.score || {};
-  process.stdout.write(`${earned}/${total} (${percent}%) — ${last.generated_at} — commit ${last.commit || 'unknown'}\n`);
+  process.stdout.write(
+    `${earned}/${total} (${percent}%) — ${last.generated_at} — commit ${last.commit || 'unknown'}\n`
+  );
   process.exit(percent === 100 ? 0 : 1);
 }
 

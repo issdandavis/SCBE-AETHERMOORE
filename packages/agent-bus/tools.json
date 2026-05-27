@@ -94,5 +94,23 @@
     "description": "Six-Tongues toolkit passthrough",
     "command": "python",
     "args": ["scripts/scbe-system-cli.py", "--json", "tongues", "{task}"]
+  },
+  {
+    "name": "scbe-cli-shell-bench",
+    "description": "Run the SCBE CLI agent-json protocol benchmark (mock/model-independent harness checks)",
+    "command": "node",
+    "args": ["packages/cli/scripts/shell_benchmark.cjs"]
+  },
+  {
+    "name": "scbe-cli-task-corpus",
+    "description": "Run the SCBE CLI real task corpus with verifier-gated completion",
+    "command": "node",
+    "args": ["packages/cli/scripts/bench_task_corpus.cjs", "--max-corpus-turns=40"]
+  },
+  {
+    "name": "scbe-cli-harness-matrix",
+    "description": "Run SCBE CLI harness control matrix: protocol, offline scaffold corpus, and missing-model negative control",
+    "command": "node",
+    "args": ["packages/cli/scripts/bench_harness_matrix.cjs"]
   }
 ]

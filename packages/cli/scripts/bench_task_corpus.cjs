@@ -58,8 +58,16 @@ function detectShell() {
     );
   if (gitBash) return { kind: 'bash', exe: gitBash, args: ['-c'] };
   if (commandExists('pwsh.exe'))
-    return { kind: 'powershell', exe: 'pwsh.exe', args: ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command'] };
-  return { kind: 'powershell', exe: 'powershell.exe', args: ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command'] };
+    return {
+      kind: 'powershell',
+      exe: 'pwsh.exe',
+      args: ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command'],
+    };
+  return {
+    kind: 'powershell',
+    exe: 'powershell.exe',
+    args: ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command'],
+  };
 }
 
 const SHELL = detectShell();
@@ -122,7 +130,7 @@ const TASKS = [
     verifier: 'strong',
     difficulty: 'easy',
     instruction:
-      'Run the benchmark artifact freshness test suite at packages/cli/tests/bench_artifact_freshness.test.cjs using Node\'s built-in test runner (`node --test`). Report how many tests pass.',
+      "Run the benchmark artifact freshness test suite at packages/cli/tests/bench_artifact_freshness.test.cjs using Node's built-in test runner (`node --test`). Report how many tests pass.",
     done_if:
       `node -e "` +
       `const {spawnSync}=require('child_process');` +
@@ -345,7 +353,12 @@ async function runTask(task, opts = {}) {
 
       const cmd = resp.commands && resp.commands[0] ? resp.commands[0].keystrokes : null;
       const blocked = !!(resp.blocked || resp.governance_blocked);
-      const boardKoBans = (resp.board && typeof resp.board.ko_bans === 'number') ? resp.board.ko_bans : prevKoBans;
+      const boardKoBans =
+        resp.board && Array.isArray(resp.board.ko_bans)
+          ? resp.board.ko_bans.length
+          : resp.board && typeof resp.board.ko_bans === 'number'
+            ? resp.board.ko_bans
+            : prevKoBans;
       const newKoBans = Math.max(0, boardKoBans - prevKoBans);
       prevKoBans = boardKoBans;
       result.ko_ban_count += newKoBans;
@@ -401,8 +414,12 @@ async function runTask(task, opts = {}) {
     result.error = e.message;
   } finally {
     if (proc) {
-      try { proc.stdin.end(); } catch (_) {}
-      try { proc.kill(); } catch (_) {}
+      try {
+        proc.stdin.end();
+      } catch (_) {}
+      try {
+        proc.kill();
+      } catch (_) {}
     }
     result.duration_ms = Date.now() - started;
   }
@@ -419,9 +436,13 @@ async function runCorpus(tasks, opts = {}) {
 
   for (const task of tasks) {
     console.log(`\n${'─'.repeat(60)}`);
-    console.log(`Task: ${task.id}  [${task.category} / ${task.difficulty} / verifier:${task.verifier}]`);
+    console.log(
+      `Task: ${task.id}  [${task.category} / ${task.difficulty} / verifier:${task.verifier}]`
+    );
     console.log(`Instruction: ${task.instruction.slice(0, 100)}…`);
-    console.log(`Max turns: ${Math.min(task.max_turns, remainingBudget)}  Budget remaining: ${remainingBudget}`);
+    console.log(
+      `Max turns: ${Math.min(task.max_turns, remainingBudget)}  Budget remaining: ${remainingBudget}`
+    );
 
     const result = await runTask(task, { remainingBudget });
     results.push(result);
@@ -433,7 +454,9 @@ async function runCorpus(tasks, opts = {}) {
       : result.error
         ? `[ERR]  ${result.error.slice(0, 60)}`
         : `[FAIL] ${result.turns} turns, no verify`;
-    console.log(`  → ${status}  false_done=${result.false_done_count}  ko_bans=${result.ko_ban_count}  ${result.duration_ms}ms`);
+    console.log(
+      `  → ${status}  false_done=${result.false_done_count}  ko_bans=${result.ko_ban_count}  ${result.duration_ms}ms`
+    );
 
     if (remainingBudget <= 0) {
       console.log('\n[BUDGET EXHAUSTED] Stopping corpus early.');
@@ -450,12 +473,18 @@ function printSummaryTable(results) {
   const w = { id: 34, cat: 16, result: 22, turns: 8, fd: 6, kb: 6, ms: 8 };
   const hr = '─'.repeat(Object.values(w).reduce((a, b) => a + b + 3, 0));
   const header =
-    pad('Task', w.id) + ' │ ' +
-    pad('Category', w.cat) + ' │ ' +
-    pad('Result', w.result) + ' │ ' +
-    pad('Turns', w.turns) + ' │ ' +
-    pad('FalseDone', w.fd) + ' │ ' +
-    pad('KoBans', w.kb) + ' │ ' +
+    pad('Task', w.id) +
+    ' │ ' +
+    pad('Category', w.cat) +
+    ' │ ' +
+    pad('Result', w.result) +
+    ' │ ' +
+    pad('Turns', w.turns) +
+    ' │ ' +
+    pad('FalseDone', w.fd) +
+    ' │ ' +
+    pad('KoBans', w.kb) +
+    ' │ ' +
     pad('ms', w.ms);
 
   console.log('\n' + '═'.repeat(hr.length));
@@ -471,12 +500,18 @@ function printSummaryTable(results) {
         ? 'ERR: ' + r.error.slice(0, 14)
         : 'FAIL';
     const row =
-      pad(r.id, w.id) + ' │ ' +
-      pad(r.category, w.cat) + ' │ ' +
-      pad(resultStr, w.result) + ' │ ' +
-      pad(String(r.turns), w.turns) + ' │ ' +
-      pad(String(r.false_done_count), w.fd) + ' │ ' +
-      pad(String(r.ko_ban_count), w.kb) + ' │ ' +
+      pad(r.id, w.id) +
+      ' │ ' +
+      pad(r.category, w.cat) +
+      ' │ ' +
+      pad(resultStr, w.result) +
+      ' │ ' +
+      pad(String(r.turns), w.turns) +
+      ' │ ' +
+      pad(String(r.false_done_count), w.fd) +
+      ' │ ' +
+      pad(String(r.ko_ban_count), w.kb) +
+      ' │ ' +
       pad(String(r.duration_ms), w.ms);
     console.log(row);
   }
@@ -492,7 +527,7 @@ function printSummaryTable(results) {
 
   console.log(
     `\nSummary: ${completed}/${total} tasks completed` +
-    `  turns=${totalTurns}  false_done=${totalFD}  ko_bans=${totalKB}  total=${totalMs}ms`
+      `  turns=${totalTurns}  false_done=${totalFD}  ko_bans=${totalKB}  total=${totalMs}ms`
   );
   console.log('═'.repeat(hr.length));
 }
@@ -522,7 +557,7 @@ function writeArtifact(results, model, provider) {
       completed: results.filter((r) => r.completed).length,
       total: results.length,
       completion_rate: results.length
-        ? (results.filter((r) => r.completed).length / results.length)
+        ? results.filter((r) => r.completed).length / results.length
         : 0,
     },
     totals: {
@@ -546,30 +581,38 @@ function writeArtifact(results, model, provider) {
   if (args.includes('--list')) {
     console.log('Task corpus:');
     for (const t of TASKS) {
-      console.log(`  ${t.id.padEnd(36)} [${t.category}] difficulty=${t.difficulty} verifier=${t.verifier}`);
+      console.log(
+        `  ${t.id.padEnd(36)} [${t.category}] difficulty=${t.difficulty} verifier=${t.verifier}`
+      );
     }
     process.exit(0);
   }
 
   if (args.includes('--help') || args.includes('-h')) {
-    console.log([
-      'Usage: node scripts/bench_task_corpus.cjs [options]',
-      '',
-      'Options:',
-      '  --task <id>              Run only a single task by id',
-      '  --list                   Print task corpus and exit',
-      '  --no-artifact            Skip writing the JSON artifact',
-      '  --max-corpus-turns=N     Total turn budget across corpus (default: 80)',
-      '  --help                   This message',
-      '',
-      'Env vars (same as scbe shell):',
-      '  SCBE_PROVIDER  SCBE_MODEL  SCBE_API_KEY  SCBE_BASE_URL',
-    ].join('\n'));
+    console.log(
+      [
+        'Usage: node scripts/bench_task_corpus.cjs [options]',
+        '',
+        'Options:',
+        '  --task <id>              Run only a single task by id',
+        '  --list                   Print task corpus and exit',
+        '  --no-artifact            Skip writing the JSON artifact',
+        '  --max-corpus-turns=N     Total turn budget across corpus (default: 80)',
+        '  --help                   This message',
+        '',
+        'Env vars (same as scbe shell):',
+        '  SCBE_PROVIDER  SCBE_MODEL  SCBE_API_KEY  SCBE_BASE_URL',
+      ].join('\n')
+    );
     process.exit(0);
   }
 
   const taskArg = args.find((a) => a.startsWith('--task'));
-  const taskFilter = taskArg ? (taskArg.includes('=') ? taskArg.split('=')[1] : args[args.indexOf(taskArg) + 1]) : null;
+  const taskFilter = taskArg
+    ? taskArg.includes('=')
+      ? taskArg.split('=')[1]
+      : args[args.indexOf(taskArg) + 1]
+    : null;
   const noArtifact = args.includes('--no-artifact');
   const maxTurnsArg = args.find((a) => a.startsWith('--max-corpus-turns='));
   const maxCorpusTurns = maxTurnsArg ? parseInt(maxTurnsArg.split('=')[1], 10) : 80;
