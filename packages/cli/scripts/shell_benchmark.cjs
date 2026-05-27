@@ -541,6 +541,206 @@ function main() {
   );
 
   cases.push(
+    caseResult('agent_json_reset_context_clears_board', () => {
+      // reset_context: true must wipe attempts, ko_bans, and turn; new instruction takes effect.
+      const { spawnSync: spawn } = require('node:child_process');
+      const mock = 'Working on it. <cmd>echo step</cmd>';
+      const msg1 = JSON.stringify({ instruction: 'first step task', terminal_state: '$ ' });
+      const msg2 = JSON.stringify({
+        reset_context: true,
+        instruction: 'second step task',
+        terminal_state: '$ ',
+        step_context: 'first step completed',
+      });
+      const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+        cwd: REPO_ROOT,
+        input: msg1 + '\n' + msg2 + '\n\n',
+        encoding: 'utf8',
+        timeout: 20_000,
+        env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mock },
+      });
+      const lines = (r.stdout || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      assert.ok(lines.length >= 3, `expected ready + 2 responses, got ${lines.length} lines`);
+      const resp2 = JSON.parse(lines[2]);
+      assert.ok(resp2.board, 'second response must include board');
+      // Reset cleared step-1 state; turn was reset to 0 then incremented, so it must be 1 now.
+      assert.strictEqual(
+        resp2.board.turn,
+        1,
+        `reset_context must reset turn to 1, got ${resp2.board.turn}`
+      );
+      assert.strictEqual(resp2.board.ko_bans.length, 0, 'reset_context must clear ko_bans');
+      // Any attempts present belong to the new step only (turn ≤ 1).
+      const staleAttempts = (resp2.board.attempts || []).filter((a) => a.turn > 1);
+      assert.strictEqual(
+        staleAttempts.length,
+        0,
+        `stale attempts from previous step must be gone, got: ${JSON.stringify(staleAttempts)}`
+      );
+      assert.strictEqual(
+        resp2.board.objective,
+        'second step task',
+        'new instruction must be board objective'
+      );
+      return {
+        turn: resp2.board.turn,
+        attempts: resp2.board.attempts.length,
+        objective: resp2.board.objective,
+      };
+    })
+  );
+
+  cases.push(
+    caseResult('agent_json_step_index_shown_in_board', () => {
+      // step_index + step_total sent in message must appear in the returned board.
+      const { spawnSync: spawn } = require('node:child_process');
+      const mock = 'Processing. <cmd>echo progress</cmd>';
+      const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+        cwd: REPO_ROOT,
+        input:
+          JSON.stringify({
+            instruction: 'workflow step task',
+            terminal_state: '$ ',
+            step_index: 2,
+            step_total: 5,
+          }) + '\n\n',
+        encoding: 'utf8',
+        timeout: 20_000,
+        env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mock },
+      });
+      const lines = (r.stdout || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      assert.ok(lines.length >= 2, `expected ready + response, got ${lines.length}`);
+      const resp = JSON.parse(lines[1]);
+      assert.ok(resp.board, 'response must include board');
+      assert.strictEqual(
+        resp.board.step_index,
+        2,
+        `expected step_index=2, got ${resp.board.step_index}`
+      );
+      assert.strictEqual(
+        resp.board.step_total,
+        5,
+        `expected step_total=5, got ${resp.board.step_total}`
+      );
+      return { step_index: resp.board.step_index, step_total: resp.board.step_total };
+    })
+  );
+
+  cases.push(
+    caseResult('agent_json_max_turns_emits_limit_signal', () => {
+      // After the turn budget is exhausted, the next response must be max_turns_reached=true.
+      const { spawnSync: spawn } = require('node:child_process');
+      const mock = 'Working. <cmd>echo working</cmd>';
+      const msg1 = JSON.stringify({
+        instruction: 'task with tight limit',
+        terminal_state: '$ ',
+        max_turns: 1,
+      });
+      const msg2 = JSON.stringify({ terminal_state: '$ echo working\nworking' });
+      const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+        cwd: REPO_ROOT,
+        input: msg1 + '\n' + msg2 + '\n\n',
+        encoding: 'utf8',
+        timeout: 20_000,
+        env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mock },
+      });
+      const lines = (r.stdout || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      assert.ok(lines.length >= 3, `expected ready + 2 responses, got ${lines.length} lines`);
+      const resp2 = JSON.parse(lines[2]);
+      assert.strictEqual(
+        resp2.max_turns_reached,
+        true,
+        `expected max_turns_reached=true, got: ${JSON.stringify(resp2).slice(0, 200)}`
+      );
+      assert.strictEqual(resp2.done, false, 'max_turns_reached response must have done=false');
+      assert.deepStrictEqual(
+        resp2.commands,
+        [],
+        'max_turns_reached response must have empty commands'
+      );
+      return {
+        max_turns_reached: resp2.max_turns_reached,
+        rationale: resp2.rationale?.slice(0, 60),
+      };
+    })
+  );
+
+  cases.push(
+    caseResult('agent_json_two_step_workflow_passes_context', () => {
+      // Two-step workflow: second step receives reset_context + step_context from step 1.
+      // Board must reflect new objective, empty attempts, and correct step_index.
+      const { spawnSync: spawn } = require('node:child_process');
+      const mock = 'Understood. <cmd>echo ok</cmd>';
+      const msg1 = JSON.stringify({
+        instruction: 'step one: identify issues',
+        terminal_state: '$ ',
+        step_index: 1,
+        step_total: 2,
+      });
+      const msg2 = JSON.stringify({
+        reset_context: true,
+        instruction: 'step two: fix the issues',
+        terminal_state: '$ ',
+        step_context: 'step one identified failing tests',
+        step_index: 2,
+        step_total: 2,
+      });
+      const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+        cwd: REPO_ROOT,
+        input: msg1 + '\n' + msg2 + '\n\n',
+        encoding: 'utf8',
+        timeout: 20_000,
+        env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mock },
+      });
+      const lines = (r.stdout || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      assert.ok(lines.length >= 3, `expected ready + 2 responses, got ${lines.length} lines`);
+      const resp2 = JSON.parse(lines[2]);
+      assert.ok(resp2.board, 'second step response must include board');
+      assert.strictEqual(
+        resp2.board.step_index,
+        2,
+        'board step_index must be 2 after context reset'
+      );
+      assert.strictEqual(resp2.board.step_total, 2, 'board step_total must be 2');
+      assert.strictEqual(
+        resp2.board.objective,
+        'step two: fix the issues',
+        'board objective must be updated'
+      );
+      // Reset cleared step-1 history; turn must be 1 (reset to 0, incremented once for this step).
+      assert.strictEqual(
+        resp2.board.turn,
+        1,
+        `turn must reset to 1 for new step, got ${resp2.board.turn}`
+      );
+      // No stale attempts from step 1.
+      const stale = (resp2.board.attempts || []).filter((a) => a.turn > 1);
+      assert.strictEqual(
+        stale.length,
+        0,
+        `step-1 attempts must not bleed into step-2 board, got: ${JSON.stringify(stale)}`
+      );
+      return {
+        step: `${resp2.board.step_index}/${resp2.board.step_total}`,
+        turn: resp2.board.turn,
+        objective: resp2.board.objective.slice(0, 40),
+      };
+    })
+  );
+
+  cases.push(
     caseResult('agent_json_patch_tool_translates_to_patch_command', () => {
       const { spawnSync: spawn } = require('node:child_process');
       const mock = 'Applying patch. <cmd>:patch /tmp/fix.patch</cmd>';

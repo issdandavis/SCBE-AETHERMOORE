@@ -988,7 +988,10 @@ function buildBoardPromptBlock(board) {
   if (!board.objective) return '';
   const _failPattern = /error|FAIL|not found|No such|permission denied|command not found/i;
   const lines = ['--- Task Board ---', `Objective: ${board.objective.slice(0, 200)}`];
-  lines.push(`Turn: ${board.turn}`);
+  if (board.step_index != null && board.step_total != null) {
+    lines.push(`Step: ${board.step_index}/${board.step_total}`);
+  }
+  lines.push(`Turn: ${board.turn}${board.max_turns != null ? `/${board.max_turns}` : ''}`);
   if (board.attempts.length > 0) {
     const failCount = board.attempts.filter(
       (a) => a.observation != null && _failPattern.test(a.observation)
@@ -1344,6 +1347,10 @@ function runInteractiveShell(flags = {}) {
       done: false,
       ko_bans: [],
       turn: 0,
+      // Workflow step tracking (set by harness on multi-step workflows)
+      step_index: null,
+      step_total: null,
+      max_turns: null,
       // Execution strategy: verified forward progress over optimality.
       // See docs/specs/SCBE_AGENT_PATH_POLICY.md
       path_policy: 'non_optimal_correct',
@@ -1371,11 +1378,34 @@ function runInteractiveShell(flags = {}) {
         return;
       }
 
+      // reset_context: harness signals a new workflow step — clear per-step state,
+      // keep process alive, inject optional summary from previous step.
+      if (msg.reset_context) {
+        history.length = 0;
+        taskBoard.attempts = [];
+        taskBoard.ko_bans = [];
+        taskBoard.turn = 0;
+        taskBoard.done = false;
+        taskBoard.last_observation = null;
+        taskBoard.done_if = null;
+        instruction = null;
+        if (msg.step_context) {
+          history.push({
+            role: 'user',
+            content: `[Previous step]: ${msg.step_context.slice(0, 300)}`,
+          });
+          history.push({ role: 'assistant', content: 'Understood. Starting the next step.' });
+        }
+      }
+
       if (msg.instruction) {
         instruction = msg.instruction;
-        if (!taskBoard.objective) taskBoard.objective = instruction;
+        taskBoard.objective = instruction;
       }
-      if (msg.done_if && !taskBoard.done_if) taskBoard.done_if = msg.done_if;
+      if (msg.done_if) taskBoard.done_if = msg.done_if;
+      if (msg.step_index != null) taskBoard.step_index = msg.step_index;
+      if (msg.step_total != null) taskBoard.step_total = msg.step_total;
+      if (msg.max_turns != null) taskBoard.max_turns = msg.max_turns;
       if (msg.task_board && !taskBoard.objective) Object.assign(taskBoard, msg.task_board);
       if (msg.fleet_posture) taskBoard.fleet_posture = msg.fleet_posture;
       if (msg.fleet_authority) taskBoard.fleet_authority = msg.fleet_authority;
@@ -1389,6 +1419,24 @@ function runInteractiveShell(flags = {}) {
       busy = true;
       rl.pause();
       taskBoard.turn++;
+
+      // max_turns guard: hard step turn limit
+      if (taskBoard.max_turns != null && taskBoard.turn > taskBoard.max_turns) {
+        process.stdout.write(
+          JSON.stringify({
+            commands: [],
+            done: false,
+            max_turns_reached: true,
+            rationale: `Step max_turns (${taskBoard.max_turns}) reached without completing objective.`,
+            governance: { decision: 'ALLOW', reason: 'max-turns' },
+            board: { ...taskBoard },
+          }) + '\n'
+        );
+        busy = false;
+        if (stdinClosed) process.exit(0);
+        rl.resume();
+        return;
+      }
 
       const terminalState = msg.terminal_state || '';
 
@@ -1490,6 +1538,7 @@ function runInteractiveShell(flags = {}) {
           JSON.stringify({
             commands: [],
             done: taskBoard.done || doneSignal,
+            ...(taskBoard.done ? { step_complete: true } : {}),
             rationale: full.slice(0, 500),
             governance: { decision: 'ALLOW', reason: 'no-cmd' },
             board: { ...taskBoard },
@@ -1661,6 +1710,7 @@ function runInteractiveShell(flags = {}) {
         JSON.stringify({
           commands: [{ keystrokes: translated, is_blocking: true, timeout_sec: 30 }],
           done: taskBoard.done || doneSignal,
+          ...(taskBoard.done ? { step_complete: true } : {}),
           rationale,
           governance,
           move_packet: movePacket,
