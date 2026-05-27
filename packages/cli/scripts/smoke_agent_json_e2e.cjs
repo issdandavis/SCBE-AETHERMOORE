@@ -22,10 +22,29 @@ const REPO_ROOT = path.resolve(__dirname, '../../..');
 const CLI = path.resolve(__dirname, '../bin/scbe.js');
 
 // Bash binary for executing commands
-const BASH =
-  process.platform === 'win32'
-    ? (spawnSync('where', ['bash'], { encoding: 'utf8' }).stdout.split('\n').find((l) => l.trim()) || 'bash').trim()
-    : '/bin/bash';
+function resolveBash() {
+  if (process.platform !== 'win32') return '/bin/bash';
+  const candidates = [
+    process.env.SCBE_BASH,
+    'C:\\Program Files\\Git\\bin\\bash.exe',
+    'C:\\Program Files\\Git\\usr\\bin\\bash.exe',
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  const whereOut = spawnSync('where', ['bash'], { encoding: 'utf8' }).stdout || '';
+  return (
+    whereOut
+      .split('\n')
+      .map((l) => l.trim())
+      .find(
+        (l) =>
+          l && !/\\windows\\system32\\bash\.exe$/i.test(l) && !/\\WindowsApps\\bash\.exe$/i.test(l)
+      ) || 'bash'
+  ).trim();
+}
+
+const BASH = resolveBash();
 
 // Use /tmp — Git Bash maps this to a writable temp dir on Windows
 const SMOKE_FILE = '/tmp/scbe_smoke_e2e.txt';
@@ -76,12 +95,18 @@ function recv(proc) {
       if (nl !== -1) {
         proc.stdout.off('data', onData);
         const line = buf.slice(0, nl).trim();
-        try { resolve(JSON.parse(line)); }
-        catch (e) { reject(new Error(`bad JSON: ${line.slice(0, 200)}`)); }
+        try {
+          resolve(JSON.parse(line));
+        } catch (e) {
+          reject(new Error(`bad JSON: ${line.slice(0, 200)}`));
+        }
       }
     };
     proc.stdout.on('data', onData);
-    setTimeout(() => { proc.stdout.off('data', onData); reject(new Error('recv timeout')); }, 15000);
+    setTimeout(() => {
+      proc.stdout.off('data', onData);
+      reject(new Error('recv timeout'));
+    }, 15000);
   });
 }
 
@@ -109,13 +134,21 @@ async function runMockSmoke() {
 
     const r = spawnSync(process.execPath, [CLI, 'shell', '--agent-json'], {
       cwd: REPO_ROOT,
-      input: JSON.stringify({ instruction: INSTRUCTION, terminal_state: terminalState, done_if: DONE_IF }) + '\n\n',
+      input:
+        JSON.stringify({
+          instruction: INSTRUCTION,
+          terminal_state: terminalState,
+          done_if: DONE_IF,
+        }) + '\n\n',
       encoding: 'utf8',
       timeout: 20000,
       env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mockResp },
     });
 
-    const lines = (r.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    const lines = (r.stdout || '')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
     assert.ok(lines.length >= 2, `expected ready + response, got stdout: ${r.stdout}`);
 
     const ready = JSON.parse(lines[0]);
@@ -128,6 +161,17 @@ async function runMockSmoke() {
       const ks = resp.commands[0].keystrokes;
       console.log('Command     :', ks);
       assert.ok(!ks.startsWith(':'), 'translated command must not start with :');
+      assert.ok(resp.move_packet, 'command response must include an SCBE move_packet');
+      assert.strictEqual(resp.move_packet.schema_version, 'scbe_agent_move_packet_v1');
+      assert.strictEqual(
+        resp.move_packet.round_trip_ok,
+        true,
+        'move_packet must prove six-tongue round trip'
+      );
+      assert.ok(
+        resp.move_packet.atomic_units?.[0]?.hex?.length > 0,
+        'move_packet must include byte/hex atomic view'
+      );
 
       const exec = runBash(ks);
       console.log('Exec stdout :', exec.stdout || '(empty)');
@@ -140,7 +184,10 @@ async function runMockSmoke() {
       const fileExists = runBash(`test -f '${SMOKE_FILE}'`).status === 0;
       if (!fileExists) {
         console.log('PASS: file absent after turn 0 — verifier correctly prevented early done');
-        assert.ok(!resp.done, `turn 0 done should be false (file does not exist), got: ${resp.done}`);
+        assert.ok(
+          !resp.done,
+          `turn 0 done should be false (file does not exist), got: ${resp.done}`
+        );
         assert.ok(resp.verify_failed, `turn 0 must have verify_failed=true because file absent`);
       } else {
         console.log('NOTE: file created on turn 0 (regex fix extracted valid command)');
@@ -192,22 +239,46 @@ function testRegexFix() {
   console.log('Bad  (Groq-style):', fromBad);
   console.log('Good (proper)    :', fromGood);
 
-  assert.strictEqual(fromBad, `echo "${SMOKE_CONTENT}" > ${SMOKE_FILE}`, 'regex must extract cmd from <cmd>...<cmd> format');
-  assert.strictEqual(fromGood, `echo "${SMOKE_CONTENT}" > ${SMOKE_FILE}`, 'regex must extract cmd from <cmd>...</cmd> format');
+  assert.strictEqual(
+    fromBad,
+    `echo "${SMOKE_CONTENT}" > ${SMOKE_FILE}`,
+    'regex must extract cmd from <cmd>...<cmd> format'
+  );
+  assert.strictEqual(
+    fromGood,
+    `echo "${SMOKE_CONTENT}" > ${SMOKE_FILE}`,
+    'regex must extract cmd from <cmd>...</cmd> format'
+  );
 
   // Execute bad-format extracted command, verify result, clean up
   cleanUp();
   const r1 = runBash(fromBad);
-  assert.strictEqual(r1.status, 0, `bad-format cmd must execute (status 0), got stderr: ${r1.stderr}`);
+  assert.strictEqual(
+    r1.status,
+    0,
+    `bad-format cmd must execute (status 0), got stderr: ${r1.stderr}`
+  );
   const c1 = runBash(`cat '${SMOKE_FILE}'`);
-  assert.strictEqual(c1.stdout.trim(), SMOKE_CONTENT, `bad-format: file content must equal "${SMOKE_CONTENT}", got: "${c1.stdout.trim()}"`);
+  assert.strictEqual(
+    c1.stdout.trim(),
+    SMOKE_CONTENT,
+    `bad-format: file content must equal "${SMOKE_CONTENT}", got: "${c1.stdout.trim()}"`
+  );
   cleanUp();
 
   // Execute good-format extracted command, verify result, clean up
   const r2 = runBash(fromGood);
-  assert.strictEqual(r2.status, 0, `good-format cmd must execute (status 0), got stderr: ${r2.stderr}`);
+  assert.strictEqual(
+    r2.status,
+    0,
+    `good-format cmd must execute (status 0), got stderr: ${r2.stderr}`
+  );
   const c2 = runBash(`cat '${SMOKE_FILE}'`);
-  assert.strictEqual(c2.stdout.trim(), SMOKE_CONTENT, `good-format: file content must equal "${SMOKE_CONTENT}", got: "${c2.stdout.trim()}"`);
+  assert.strictEqual(
+    c2.stdout.trim(),
+    SMOKE_CONTENT,
+    `good-format: file content must equal "${SMOKE_CONTENT}", got: "${c2.stdout.trim()}"`
+  );
 
   console.log('✓ Regex fix correctly extracts executable commands from both formats');
   cleanUp();
@@ -224,13 +295,17 @@ async function testVerifierGate() {
 
   const r = spawnSync(process.execPath, [CLI, 'shell', '--agent-json'], {
     cwd: REPO_ROOT,
-    input: JSON.stringify({ instruction: INSTRUCTION, terminal_state: '$ ', done_if: DONE_IF }) + '\n\n',
+    input:
+      JSON.stringify({ instruction: INSTRUCTION, terminal_state: '$ ', done_if: DONE_IF }) + '\n\n',
     encoding: 'utf8',
     timeout: 20000,
     env: { ...process.env, NO_COLOR: '1', SCBE_MOCK_RESPONSE: mockDoneEarly },
   });
 
-  const lines = (r.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+  const lines = (r.stdout || '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
   assert.ok(lines.length >= 2, `expected ready + response`);
 
   const resp = JSON.parse(lines[1]);
