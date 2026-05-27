@@ -1,0 +1,315 @@
+#!/usr/bin/env node
+/**
+ * SCBE workflow driver.
+ *
+ * Drives `scbe shell --agent-json` through a multi-step workflow.
+ * The harness owns step transitions — the model only sees the current step.
+ * Each step gets a clean context; only a one-line summary from the previous
+ * step is passed forward. No context clutter across steps.
+ *
+ * Workflow file format (JSON):
+ * {
+ *   "name": "fix failing tests",
+ *   "steps": [
+ *     {
+ *       "id": "read_errors",
+ *       "instruction": "Identify which tests are failing and why",
+ *       "done_if": "test -f /tmp/scbe_errors.txt",
+ *       "loop": false,
+ *       "max_turns": 5
+ *     },
+ *     {
+ *       "id": "fix_code",
+ *       "instruction": "Fix the errors identified in the previous step",
+ *       "done_if": "npm test && echo SCBE_PASS",
+ *       "loop": true,
+ *       "max_turns": 20
+ *     }
+ *   ]
+ * }
+ *
+ * loop: false — advance after first model response regardless of done_if
+ * loop: true  — retry until done_if passes or max_turns hit
+ *
+ * Usage:
+ *   node scripts/scbe_workflow.cjs path/to/workflow.json
+ *   SCBE_MODEL=groq/llama-3.3-70b-versatile node scripts/scbe_workflow.cjs workflow.json
+ *   node scripts/scbe_workflow.cjs --example     # print example workflow and exit
+ */
+
+'use strict';
+
+const { spawnSync, spawn } = require('node:child_process');
+const path = require('node:path');
+const fs = require('node:fs');
+
+const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
+const CLI = path.resolve(__dirname, '..', 'bin', 'scbe.js');
+const OUT_DIR = path.join(REPO_ROOT, 'artifacts', 'workflow');
+
+const BASH =
+  process.platform === 'win32'
+    ? (() => {
+        const r = spawnSync('where', ['bash'], { encoding: 'utf8' });
+        return (
+          r.stdout
+            .split('\n')
+            .map((l) => l.trim())
+            .find(
+              (l) =>
+                l &&
+                !/\\windows\\system32\\bash\.exe$/i.test(l) &&
+                !/\\WindowsApps\\bash\.exe$/i.test(l)
+            ) || 'bash'
+        ).trim();
+      })()
+    : '/bin/bash';
+
+function runBash(cmd) {
+  const r = spawnSync(BASH, ['-c', cmd], { encoding: 'utf8', timeout: 30000 });
+  return {
+    stdout: (r.stdout || '').trim(),
+    stderr: (r.stderr || '').trim(),
+    status: r.status ?? 1,
+  };
+}
+
+function extractSummary(lastObservation, rationale) {
+  const obs = (lastObservation || '').slice(-300).replace(/\n/g, ' ').trim();
+  const rat = (rationale || '').slice(0, 150).trim();
+  if (obs && rat) return `${rat} | output: ${obs.slice(0, 150)}`;
+  return obs || rat || '(no output)';
+}
+
+function sendLine(proc, obj) {
+  proc.stdin.write(JSON.stringify(obj) + '\n');
+}
+
+function recvLine(proc, timeoutMs = 30000) {
+  return new Promise((resolve, reject) => {
+    let buf = '';
+    const timer = setTimeout(() => {
+      proc.stdout.off('data', onData);
+      reject(new Error(`recv timeout after ${timeoutMs}ms`));
+    }, timeoutMs);
+    const onData = (chunk) => {
+      buf += chunk;
+      const nl = buf.indexOf('\n');
+      if (nl !== -1) {
+        clearTimeout(timer);
+        proc.stdout.off('data', onData);
+        const line = buf.slice(0, nl).trim();
+        try {
+          resolve(JSON.parse(line));
+        } catch (e) {
+          reject(new Error(`bad JSON from agent: ${line.slice(0, 200)}`));
+        }
+      }
+    };
+    proc.stdout.on('data', onData);
+  });
+}
+
+async function runStep(proc, step, stepIndex, totalSteps, prevSummary, initialTerminalState) {
+  const stepNum = stepIndex + 1;
+  const isFirst = stepIndex === 0;
+  const maxTurns = step.max_turns ?? (step.loop ? 20 : 5);
+
+  console.log(`\n${'─'.repeat(60)}`);
+  console.log(`Step ${stepNum}/${totalSteps}: ${step.id}`);
+  console.log(`Instruction: ${step.instruction.slice(0, 120)}`);
+  console.log(`Loop: ${step.loop ? 'yes' : 'no'}  Max turns: ${maxTurns}`);
+  if (prevSummary) console.log(`Context from prev: ${prevSummary.slice(0, 100)}`);
+
+  // Send step init message (reset_context for all steps after the first)
+  sendLine(proc, {
+    instruction: step.instruction,
+    terminal_state: initialTerminalState || '$ ',
+    done_if: step.done_if || null,
+    reset_context: !isFirst,
+    step_context: isFirst ? null : prevSummary,
+    step_index: stepNum,
+    step_total: totalSteps,
+    max_turns: maxTurns,
+  });
+
+  let terminalState = initialTerminalState || '$ ';
+  let lastRationale = '';
+  let stepComplete = false;
+  let turns = 0;
+
+  while (turns < maxTurns) {
+    let resp;
+    try {
+      resp = await recvLine(proc, 60000);
+    } catch (e) {
+      console.error(`  [TIMEOUT] ${e.message}`);
+      break;
+    }
+
+    turns++;
+
+    if (resp.error) {
+      console.error(`  [ERROR] ${resp.error}`);
+      break;
+    }
+    if (resp.max_turns_reached) {
+      console.log(`  [MAX_TURNS] Step hit turn limit (${maxTurns})`);
+      break;
+    }
+
+    const cmd = resp.commands && resp.commands[0] ? resp.commands[0].keystrokes : null;
+    lastRationale = resp.rationale || '';
+
+    console.log(
+      `  Turn ${turns}: ${cmd ? `cmd=${cmd.slice(0, 70)}` : '(no cmd)'} | done=${resp.done}`
+    );
+
+    if (resp.step_complete || resp.done) {
+      stepComplete = true;
+      console.log(`  [COMPLETE] Step ${stepNum} verified complete`);
+      break;
+    }
+
+    if (!step.loop) {
+      // Non-loop: capture output and advance immediately
+      if (cmd) {
+        const exec = runBash(cmd);
+        terminalState = `$ ${cmd}\n${exec.stdout}${exec.stderr ? '\n' + exec.stderr : ''}`;
+        console.log(`  Exec: ${exec.stdout.slice(0, 80) || '(empty)'}`);
+      }
+      break;
+    }
+
+    // Loop step: execute command and send next turn
+    if (cmd) {
+      const exec = runBash(cmd);
+      terminalState = `$ ${cmd}\n${exec.stdout}${exec.stderr ? '\n' + exec.stderr : ''}`;
+      console.log(`  Exec: ${exec.stdout.slice(0, 80) || '(empty)'}`);
+    }
+
+    if (resp.blocked) {
+      console.log(
+        `  [BLOCKED] ${resp.rationale ? resp.rationale.slice(0, 80) : 'governance/ko-ban'}`
+      );
+    }
+
+    sendLine(proc, { terminal_state: terminalState });
+  }
+
+  const summary = extractSummary(terminalState, lastRationale);
+  return { step_id: step.id, completed: stepComplete, turns, summary };
+}
+
+async function runWorkflow(workflowPath) {
+  const wf = JSON.parse(fs.readFileSync(workflowPath, 'utf8'));
+  const steps = wf.steps || [];
+  if (!steps.length) throw new Error('Workflow has no steps');
+
+  console.log(`\nWorkflow: ${wf.name || workflowPath}`);
+  console.log(`Steps: ${steps.length}`);
+
+  const proc = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+    stdio: ['pipe', 'pipe', 'inherit'],
+    cwd: REPO_ROOT,
+    env: { ...process.env, NO_COLOR: '1' },
+  });
+
+  // Wait for ready signal
+  const ready = await recvLine(proc, 10000);
+  if (!ready.ready) throw new Error(`Expected ready signal, got: ${JSON.stringify(ready)}`);
+
+  const results = [];
+  let prevSummary = null;
+  let terminalState = wf.initial_terminal_state || '$ ';
+
+  for (let i = 0; i < steps.length; i++) {
+    const result = await runStep(proc, steps[i], i, steps.length, prevSummary, terminalState);
+    results.push(result);
+    prevSummary = result.summary;
+    // Terminal state passes forward (harness owns the environment)
+  }
+
+  proc.stdin.end();
+  proc.kill();
+
+  const completed = results.filter((r) => r.completed).length;
+  console.log(`\n${'═'.repeat(60)}`);
+  console.log(`Workflow complete: ${completed}/${steps.length} steps verified`);
+  for (const r of results) {
+    console.log(`  ${r.completed ? '[OK]' : '[--]'} ${r.step_id} (${r.turns} turns)`);
+  }
+
+  if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const reportPath = path.join(
+    OUT_DIR,
+    `${stamp}-${(wf.name || 'workflow').replace(/\s+/g, '-')}.json`
+  );
+  fs.writeFileSync(
+    reportPath,
+    JSON.stringify(
+      { workflow: wf.name, steps: results, timestamp: new Date().toISOString() },
+      null,
+      2
+    )
+  );
+  console.log(`Receipt: ${reportPath}`);
+
+  return results;
+}
+
+// ── Example workflow output ──────────────────────────────────────────────────
+
+function printExample() {
+  const example = {
+    name: 'fix-failing-tests',
+    steps: [
+      {
+        id: 'identify',
+        instruction: 'Run the tests and write any failures to /tmp/scbe_errors.txt',
+        done_if: 'test -f /tmp/scbe_errors.txt && test -s /tmp/scbe_errors.txt',
+        loop: false,
+        max_turns: 5,
+      },
+      {
+        id: 'fix',
+        instruction: 'Fix the test failures listed in /tmp/scbe_errors.txt',
+        done_if: ':test npm test',
+        loop: true,
+        max_turns: 20,
+      },
+      {
+        id: 'verify',
+        instruction: 'Run the full test suite and confirm all tests pass',
+        done_if: 'npm test',
+        loop: false,
+        max_turns: 3,
+      },
+    ],
+  };
+  console.log(JSON.stringify(example, null, 2));
+}
+
+// ── Main ─────────────────────────────────────────────────────────────────────
+
+(async () => {
+  const arg = process.argv[2];
+  if (!arg || arg === '--help') {
+    console.log('Usage: node scbe_workflow.cjs <workflow.json>');
+    console.log('       node scbe_workflow.cjs --example');
+    process.exit(0);
+  }
+  if (arg === '--example') {
+    printExample();
+    process.exit(0);
+  }
+  try {
+    const results = await runWorkflow(path.resolve(arg));
+    const allDone = results.every((r) => r.completed);
+    process.exit(allDone ? 0 : 1);
+  } catch (e) {
+    console.error('Workflow error:', e.message);
+    process.exit(1);
+  }
+})();
