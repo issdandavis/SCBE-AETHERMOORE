@@ -114,11 +114,7 @@ def build_packet(input_payload: dict[str, Any]) -> dict[str, Any]:
     head = Path(tokens[0]).name.lower() if tokens else ""
     head_role = ROLE_BY_HEAD.get(head, "compute")
     atomic_units = [
-        _compact_unit(
-            build_atomic_workflow_unit(
-                token, explicit_role=_role_for(index, token, head_role)
-            )
-        )
+        _compact_unit(build_atomic_workflow_unit(token, explicit_role=_role_for(index, token, head_role)))
         for index, token in enumerate(tokens)
     ]
 
@@ -129,9 +125,7 @@ def build_packet(input_payload: dict[str, Any]) -> dict[str, Any]:
             "translated": translated,
             "turn": move.get("turn"),
             "path_policy": move.get("path_policy", "non_optimal_correct"),
-            "objective_sha256": hashlib.sha256(
-                str(move.get("objective") or "").encode("utf-8")
-            ).hexdigest(),
+            "objective_sha256": hashlib.sha256(str(move.get("objective") or "").encode("utf-8")).hexdigest(),
         },
         "governance": input_payload.get("governance") or {},
         "tokens": tokens,
@@ -157,11 +151,7 @@ def main() -> int:
     try:
         packet = build_packet(_read_stdin_json())
     except Exception as exc:  # pragma: no cover - exercised via CLI failure path.
-        print(
-            json.dumps(
-                {"schema_version": SCHEMA_VERSION, "ok": False, "error": str(exc)}
-            )
-        )
+        print(json.dumps({"schema_version": SCHEMA_VERSION, "ok": False, "error": str(exc)}))
         return 2
     print(
         json.dumps(

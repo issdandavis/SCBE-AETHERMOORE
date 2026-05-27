@@ -55,9 +55,7 @@ def test_agent_move_packet_layers_shell_move_into_atomic_and_bijective_views() -
     assert packet["tokens"][:2] == ["npm", "test"]
     assert packet["atomic_units"][0]["role"] == "compute"
     assert packet["atomic_units"][0]["hex"]
-    assert packet["boundaries"]["not_claimed"].startswith(
-        "not a source-to-source compiler"
-    )
+    assert packet["boundaries"]["not_claimed"].startswith("not a source-to-source compiler")
 
 
 def test_agent_move_packet_rejects_missing_move() -> None:
