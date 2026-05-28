@@ -618,6 +618,9 @@ def strip_md(text: str) -> str:
 def trim_detailed_description(md_text: str) -> str:
     """Remove legacy drafting appendices that are assembled separately."""
     stop_patterns = [
+        r"^##\s+FILING CLAIMS\s*$",
+        r"^##\s+CLAIM SUPPORT MAP\s*$",
+        r"^##\s+PRIOR ART CITATIONS\s*$",
         r"^###\s+Independent Claims\s*$",
         r"^###\s+Dependent Claims\s*$",
         r"^##\s+Claims\s*$",
