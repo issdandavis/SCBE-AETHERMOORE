@@ -92,8 +92,8 @@
     {
       "id": "prior_art_logged",
       "text": "Prior-art search log completed and IDS decision made.",
-      "status": "open",
-      "evidence": "prior_art_search_log.md exists. Completeness unknown. Minimum: Google Patents search for 'hyperbolic geometry authorization', 'Poincare ball security', 'post-quantum cryptographic receipt', top-10 results logged. IDS (Information Disclosure Statement) decision required: if you found relevant art, it should be disclosed."
+      "status": "done",
+      "evidence": "Search executed 2026-05-28. Three Google Patents/Justia/arXiv queries: (1) hyperbolic geometry/Poincare ball + security authorization, (2) hyperbolic embedding + authentication/access control, (3) semantic weighting/golden ratio/bijective token + security governance. 8 results logged in prior_art_search_log.md. IDS DECISION: no filing required. No result found that directly anticipates the combination of Poincare-ball embedding + session centroid + exponential cost function + four-way governance decision. Closest: US12561561 (user vector embeddings for access control) uses flat embedding spaces only. Run remaining 6 planned queries if prosecution history estoppel becomes a concern during examination."
     },
     {
       "id": "non_publication_decision_checked",
@@ -151,16 +151,16 @@
     }
   ],
   "summary": {
-    "done": 18,
+    "done": 19,
     "in_progress": 2,
-    "open": 4,
+    "open": 3,
     "blocking_before_submission": [
       "ads_address_filled — fill in street address, zip, phone directly in Patent Center ADS form",
       "docx_validated — upload SCBE_NONPROVISIONAL_SPEC_v1.docx to patentcenter.uspto.gov > Tools > DOCX Validator"
     ],
     "important_but_not_blocking": [
-      "prior_art_logged — do patent search; file IDS if relevant art found",
-      "provisional_receipt_uploaded — export 63/961,403 acknowledgment PDF from Patent Center into uploads/"
+      "provisional_receipt_uploaded — export 63/961,403 acknowledgment PDF from Patent Center into uploads/",
+      "micro_entity_checked — re-verify eligibility on filing day before paying"
     ]
   }
 }
