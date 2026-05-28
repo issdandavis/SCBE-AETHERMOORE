@@ -97,9 +97,9 @@
     },
     {
       "id": "non_publication_decision_checked",
-      "text": "Non-publication request decision made (any foreign or PCT filing planned?).",
-      "status": "open",
-      "evidence": "If you file or plan to file abroad or via PCT, you cannot request non-publication. If U.S.-only, you may request non-publication at filing (check box in Patent Center). Default: applications publish ~18 months after earliest priority date (2027-07-15). Decision must be made before submitting."
+      "text": "Non-publication request decision made.",
+      "status": "done",
+      "evidence": "Decision 2026-05-28: NO non-publication request. Application publishes normally ~18 months after earliest priority date (2027-07-15). Rationale: SCBE has international applicability (South Korea, EU); PCT/foreign filing remains possible; requesting non-publication then filing foreign triggers strict USPTO consequences that are easy to mishandle pro se. Do NOT check the non-publication box in Patent Center."
     },
     {
       "id": "benchmark_evidence_packet_ready",
@@ -151,14 +151,13 @@
     }
   ],
   "summary": {
-    "done": 12,
+    "done": 13,
     "in_progress": 4,
-    "open": 8,
+    "open": 7,
     "blocking_before_submission": [
-      "ads_address_filled — fill in street address, zip, phone in ADS draft (you must enter this directly into Patent Center; do not type address in chat)",
-      "non_publication_decision_checked — U.S.-only or foreign/PCT? Must decide before submitting",
-      "docx_validated — run rebuilt SCBE_NONPROVISIONAL_SPEC_v1.docx through Patent Center DOCX validator",
-      "fees_rechecked — verify $600 micro-entity total on filing day at USPTO fee schedule"
+      "ads_address_filled — fill in street address, zip, phone directly in Patent Center ADS form",
+      "docx_validated — upload SCBE_NONPROVISIONAL_SPEC_v1.docx to patentcenter.uspto.gov > Tools > DOCX Validator",
+      "fees_rechecked — verify $600 micro-entity total on USPTO fee schedule on filing day"
     ],
     "important_but_not_blocking": [
       "spec_claim_support_checked — verify Detailed Description covers REROUTE and null-space anomaly by name",
