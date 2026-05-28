@@ -20,7 +20,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import type { AgentBusEvent, AgentBusResult, RunOptions } from './index.js';
 import { runBeforeRunPlugins, runAfterRunPlugins } from './plugins.js';
-import { getTool, buildToolArgv } from './tools.js';
+import { autoDiscoverTools, getTool, buildToolArgv } from './tools.js';
 import { runPipeline } from './pipeline.js';
 
 export interface QueuedEvent {
@@ -184,6 +184,7 @@ function executeEventAsync(
     let spawnArgs: string[];
 
     if (normalized.tool) {
+      autoDiscoverTools();
       const registeredTool = getTool(normalized.tool);
       if (!registeredTool) {
         // Unknown tool name — resolve immediately with an error result

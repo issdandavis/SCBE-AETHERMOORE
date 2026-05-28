@@ -1,0 +1,54 @@
+{
+  "schema": "scbe_patent_official_sources_v1",
+  "generated_at": "2026-05-28T00:51:07.547Z",
+  "sources": [
+    {
+      "id": "uspto_nonprovisional_utility_guide",
+      "title": "USPTO Nonprovisional Utility Patent Application Filing Guide",
+      "url": "https://www.uspto.gov/patents/basics/apply/utility-patent",
+      "use": "Required parts, application order, DOCX and drawing requirements."
+    },
+    {
+      "id": "patent_center",
+      "title": "USPTO Patent Center",
+      "url": "https://patentcenter.uspto.gov",
+      "use": "Electronic filing, application data, receipts, upload validation."
+    },
+    {
+      "id": "uspto_docx",
+      "title": "USPTO DOCX Filing Guidance",
+      "url": "https://www.uspto.gov/patents/docx",
+      "use": "DOCX specification, claims, abstract, and drawing upload guidance."
+    },
+    {
+      "id": "uspto_fee_schedule",
+      "title": "USPTO Fee Schedule",
+      "url": "https://www.uspto.gov/learning-and-resources/fees-and-payment/uspto-fee-schedule",
+      "use": "Current filing, search, examination, excess-claim, and surcharge fees."
+    },
+    {
+      "id": "uspto_forms",
+      "title": "USPTO Patent Forms",
+      "url": "https://www.uspto.gov/patents/apply/forms",
+      "use": "ADS, oath/declaration, transmittal, and micro-entity forms."
+    },
+    {
+      "id": "patent_public_search",
+      "title": "USPTO Patent Public Search",
+      "url": "https://ppubs.uspto.gov/pubwebapp/",
+      "use": "Primary patent and published-application prior-art search."
+    },
+    {
+      "id": "uspto_open_data_search_api",
+      "title": "USPTO Open Data Search API",
+      "url": "https://data.uspto.gov/apis/patent-file-wrapper/search",
+      "use": "Programmatic file-wrapper and application-data discovery where applicable."
+    },
+    {
+      "id": "inventors_assistance_center",
+      "title": "USPTO Inventors Assistance Center",
+      "url": "https://www.uspto.gov/learning-and-resources/support-centers/inventors-assistance-center-iac",
+      "use": "Self-filer support and official procedural help."
+    }
+  ]
+}

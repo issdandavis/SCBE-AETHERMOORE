@@ -1,0 +1,1627 @@
+{
+  "schema": "scbe_patent_claim_support_scan_v1",
+  "generated_at": "2026-05-28T01:29:10.702Z",
+  "families": [
+    {
+      "family": "hyperbolic_governance_gate",
+      "terms": [
+        "hyperbolic",
+        "Poincare",
+        "Poincare",
+        "distance",
+        "governance",
+        "decision"
+      ],
+      "evidence": [
+        {
+          "path": "docs/PATENT_DETAILED_DESCRIPTION.md",
+          "exists": true,
+          "sha256": "254e6065db526d2de0e9681392bb00fddc96f9e7b791a21684871a3e918cfadc",
+          "hit_count": 120,
+          "hits": [
+            {
+              "line": 12,
+              "text": "This application claims priority to U.S. Provisional Application No. 63/961,403, filed January 15, 2026, entitled \"System and Method for Hyperbolic Geometry-Based Authorization with Topological Control-Flow Integrity,\" t"
+            },
+            {
+              "line": 18,
+              "text": "**Hyperbolic Geometry-Based Access Control System with Superexponential Cost Scaling, Semantically-Weighted Key Derivation, Six-Dimensional Linguistic Entropy Encoding, and Cryptographic Deferred Authorization Containers"
+            },
+            {
+              "line": 24,
+              "text": "A computer-implemented security framework comprising a fourteen-layer processing pipeline that embeds computational contexts into a Poincare ball manifold and enforces access control through geometric invariants rather t"
+            },
+            {
+              "line": 38,
+              "text": "Machine learning-based anomaly detection systems have partially addressed this limitation by learning behavioral baselines and flagging statistical outliers. However, such systems suffer from three well-documented weakne"
+            },
+            {
+              "line": 40,
+              "text": "Geometric approaches to security have been explored in limited contexts. Prior art includes the use of hyperbolic space for malware clustering (wherein hyperbolic embeddings organize known malware samples for visualizati"
+            },
+            {
+              "line": 50,
+              "text": "It is a primary object of the present invention to provide an access control system wherein the verification cost imposed on a requesting entity is a superexponential function of its hyperbolic distance from a trusted op"
+            },
+            {
+              "line": 52,
+              "text": "It is a further object to provide a key derivation method wherein structured linguistic inputs from a six-dimensional semantic ontology constrain the available cryptographic derivation paths based on golden-ratio-weighte"
+            },
+            {
+              "line": 66,
+              "text": "**FIG. 1** -- Block diagram of the fourteen-layer processing pipeline showing data flow from Complex Context State (L1) through Decision Gate (L13) and Audio Axis (L14), with layer dependencies indicated."
+            },
+            {
+              "line": 68,
+              "text": "**FIG. 2** -- Harmonic Wall cost function H(d,R) = R^(d^2) plotted as verification cost versus hyperbolic distance d for R = e, showing superexponential growth from H(1) = 2.72 through H(3) = 8,103 to H(5) = 7.2 x 10^10,"
+            },
+            {
+              "line": 70,
+              "text": "**FIG. 3** -- Poincare ball cross-section showing concentric ring boundaries at radii [0.2, 0.4, 0.6, 0.8, 0.95] with five ring levels (0 = core/most trusted, 4 = edge/least trusted), multi-well realm centers (mu_k), and"
+            },
+            {
+              "line": 74,
+              "text": "**FIG. 5** -- Sacred Egg hatch decision flowchart showing the five-predicate conjunction (P_tongue AND P_geo AND P_path AND P_quorum AND P_crypto) with fail-to-noise output on any predicate failure, including Domain Sepa"
+            },
+            {
+              "line": 84,
+              "text": "**FIG. 10** -- Anti-fragile response curve showing shock absorber function Psi(P) = 1 + (max - 1) * tanh(beta * P) with metric expansion under adversarial pressure, demonstrating 1.56x distance amplification at maximum p"
+            },
+            {
+              "line": 86,
+              "text": "**FIG. 11** -- Breathing transform visualization in the Poincare ball showing T_breath(u;t) = tanh(b * artanh(||u||)) / ||u|| * u for b > 1 (containment/push outward) and b < 1 (diffusion/pull inward), illustrating the d"
+            },
+            {
+              "line": 100,
+              "text": "**\"Poincare Ball\"** or **\"B^n\"**: The open unit ball in n-dimensional Euclidean space, B^n = {u in R^n : ||u|| < 1}, equipped with the Riemannian metric tensor g_ij = (2 / (1 - ||u||^2))^2 * delta_ij, where delta_ij is t"
+            },
+            {
+              "line": 102,
+              "text": "**\"Hyperbolic Distance\"**: The distance function d_H(u, v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2))) defined on the Poincare ball, which is the unique distance function satisfying the axioms of hyperbolic geome"
+            },
+            {
+              "line": 104,
+              "text": "**\"Mobius Addition\"**: The binary operation u oplus v = ((1 + 2<u,v> + ||v||^2)u + (1 - ||u||^2)v) / (1 + 2<u,v> + ||u||^2 * ||v||^2), which is the gyrovector addition operation in the Poincare ball model. Mobius additio"
+            },
+            {
+              "line": 106,
+              "text": "**\"Isometry\"**: A transformation T: B^n -> B^n that preserves hyperbolic distances, i.e., d_H(T(u), T(v)) = d_H(u, v) for all u, v in B^n. Isometries of the Poincare ball are compositions of Mobius additions and orthogon"
+            },
+            {
+              "line": 108,
+              "text": "**\"Diffeomorphism\"**: A smooth, invertible transformation of the Poincare ball that is not necessarily distance-preserving. The breathing transform (Layer 6) is a diffeomorphism that changes hyperbolic distances in a con"
+            },
+            {
+              "line": 118,
+              "text": "**\"Harmonic Wall\"** or **\"Harmonic Scaling\"**: The superexponential cost function H(d, R) = R^(d^2) where d is the hyperbolic distance from a trusted center and R > 1 is the base parameter. This function creates a \"verti"
+            },
+            {
+              "line": 128,
+              "text": "**\"Anti-Fragile\"**: The property that the system becomes more secure under adversarial pressure, governed by the shock absorber function Psi(P) = 1 + (max - 1) * tanh(beta * P), which expands the metric tensor (increasin"
+            }
+          ]
+        },
+        {
+          "path": "src/symphonic_cipher/scbe_aethermoore/organic_hyperbolic.py",
+          "exists": true,
+          "sha256": "f6fc439ff82c339143bcf266e831d2f8297b2fa43f773411de0172b8f0073380",
+          "hit_count": 107,
+          "hits": [
+            {
+              "line": 3,
+              "text": "Organic Hyperbolic Embeddings for SCBE-AETHERMOORE"
+            },
+            {
+              "line": 6,
+              "text": "Blueprint implementation making hyperbolic embeddings organic to code structure."
+            },
+            {
+              "line": 11,
+              "text": "Pillar 3: Hyperbolic Module (A4-A7) - embed + breath + phase"
+            },
+            {
+              "line": 12,
+              "text": "Pillar 4: Governance Module (A8-A12) - coherence + risk + decision"
+            },
+            {
+              "line": 15,
+              "text": "input → realify → embed → transforms → realm_distance → coherence → risk → decision"
+            },
+            {
+              "line": 18,
+              "text": "- Organic integration: hyperbolic is backbone, not bolt-on"
+            },
+            {
+              "line": 21,
+              "text": "- Provable: monotonic risk, bounded coherence, preserved distances"
+            },
+            {
+              "line": 141,
+              "text": "x[0:2]  - Hyperbolic coordinates (Poincaré ball)"
+            },
+            {
+              "line": 157,
+              "text": "def hyperbolic(self) -> np.ndarray:"
+            },
+            {
+              "line": 203,
+              "text": "# Hyperbolic dims from command (trust-related)"
+            },
+            {
+              "line": 251,
+              "text": "# Hyperbolic evolution (damped by cos(φ))"
+            },
+            {
+              "line": 269,
+              "text": "# PILLAR 3: HYPERBOLIC MODULE (A4-A7)"
+            },
+            {
+              "line": 273,
+              "text": "class HyperbolicEngine:"
+            },
+            {
+              "line": 275,
+              "text": "Organic hyperbolic embedding and transformations."
+            },
+            {
+              "line": 279,
+              "text": "Key insight: Hyperbolic space naturally handles hierarchical/threat"
+            },
+            {
+              "line": 288,
+              "text": "):  # Hyperbolic curvature (negative)"
+            },
+            {
+              "line": 293,
+              "text": "def poincare_embed(self, x: np.ndarray) -> np.ndarray:"
+            },
+            {
+              "line": 373,
+              "text": "def hyperbolic_distance(self, u: np.ndarray, v: np.ndarray) -> float:"
+            },
+            {
+              "line": 375,
+              "text": "Poincaré ball distance (A8 foundation)."
+            },
+            {
+              "line": 406,
+              "text": "u = self.poincare_embed(x)"
+            }
+          ]
+        },
+        {
+          "path": "packages/kernel/src/hyperbolic.ts",
+          "exists": true,
+          "sha256": "d29d77b2a93008b01664b168b07117b1109c49e8d3b74512f00566da68396654",
+          "hit_count": 21,
+          "hits": [
+            {
+              "line": 2,
+              "text": "* @file hyperbolic.ts"
+            },
+            {
+              "line": 3,
+              "text": "* @module harmonic/hyperbolic"
+            },
+            {
+              "line": 9,
+              "text": "* SCBE Hyperbolic Geometry - Core mathematical operations for the 14-layer pipeline."
+            },
+            {
+              "line": 10,
+              "text": "* The invariant hyperbolic metric NEVER changes - all dynamics come from"
+            },
+            {
+              "line": 70,
+              "text": "// Layer 5: Invariant Hyperbolic Metric"
+            },
+            {
+              "line": 74,
+              "text": "* Hyperbolic distance in the Poincaré ball model (Layer 5)"
+            },
+            {
+              "line": 82,
+              "text": "* @returns Hyperbolic distance"
+            },
+            {
+              "line": 84,
+              "text": "export function hyperbolicDistance(u: number[], v: number[]): number {"
+            },
+            {
+              "line": 105,
+              "text": "* This is the gyrovector addition for hyperbolic geometry."
+            },
+            {
+              "line": 148,
+              "text": "* causes the hyperbolicDistance denominator to go negative, returning Infinity,"
+            },
+            {
+              "line": 479,
+              "text": "// Phase + Distance Scoring (Validated: AUC = 0.9999)"
+            },
+            {
+              "line": 509,
+              "text": "* Phase-augmented distance scoring for adversarial detection."
+            },
+            {
+              "line": 513,
+              "text": "* The key insight: hyperbolic distance alone (AUC = 0.667) ties with cosine"
+            },
+            {
+              "line": 528,
+              "text": "export function phaseDistanceScore("
+            },
+            {
+              "line": 535,
+              "text": "const dH = hyperbolicDistance(u, v);"
+            },
+            {
+              "line": 563,
+              "text": "const score = phaseDistanceScore(qProj, cProj, queryPhase, c.phase, phaseWeight);"
+            },
+            {
+              "line": 587,
+              "text": "export function applyHyperbolicPipeline("
+            },
+            {
+              "line": 593,
+              "text": "): { point: number[]; potential: number; distance: number } {"
+            },
+            {
+              "line": 613,
+              "text": "// L5: Compute distance from origin (for reference)"
+            },
+            {
+              "line": 615,
+              "text": "const distance = hyperbolicDistance(origin, point);"
+            }
+          ]
+        },
+        {
+          "path": "src/governance/runtime_gate.py",
+          "exists": true,
+          "sha256": "a8c85cbf960f22cbd80b845f6c1f69c230bcddab6e604d4bfbefa32921a16eb1",
+          "hit_count": 147,
+          "hits": [
+            {
+              "line": 1,
+              "text": "\"\"\"Runtime Governance Gate — The actual thing between intent and execution."
+            },
+            {
+              "line": 7,
+              "text": "Decisions:"
+            },
+            {
+              "line": 16,
+              "text": "3. Harmonic cost from Poincare distance"
+            },
+            {
+              "line": 17,
+              "text": "4. Cross-check: spin + cost + tongue balance → decision"
+            },
+            {
+              "line": 40,
+              "text": "from .trichromatic_governance import TrichromaticGovernanceEngine"
+            },
+            {
+              "line": 43,
+              "text": "from primitives.phi_poincare import ("
+            },
+            {
+              "line": 47,
+              "text": "from src.primitives.phi_poincare import ("
+            },
+            {
+              "line": 61,
+              "text": "(Path(__file__).resolve().parents[2] / \"artifacts\" / \"training\" / \"governance_classifier_sklearn\")"
+            },
+            {
+              "line": 71,
+              "text": "\"change the system's goals, force a decision, compel behavior.\""
+            },
+            {
+              "line": 78,
+              "text": "\"Policy and rules. Allowed versus forbidden. Compliance, governance, terms, safety \""
+            },
+            {
+              "line": 96,
+              "text": "class Decision(str, Enum):"
+            },
+            {
+              "line": 104,
+              "text": "DECISION_SEVERITY: Dict[Decision, int] = {"
+            },
+            {
+              "line": 105,
+              "text": "Decision.ALLOW: 0,"
+            },
+            {
+              "line": 106,
+              "text": "Decision.REVIEW: 1,"
+            },
+            {
+              "line": 107,
+              "text": "Decision.QUARANTINE: 2,"
+            },
+            {
+              "line": 108,
+              "text": "Decision.DENY: 3,"
+            },
+            {
+              "line": 116,
+              "text": "decision: Decision"
+            },
+            {
+              "line": 162,
+              "text": "def _escalate_decision(current: Decision, proposed: Decision) -> Decision:"
+            },
+            {
+              "line": 163,
+              "text": "\"\"\"Raise decision severity without allowing silent downgrades."
+            },
+            {
+              "line": 167,
+              "text": "if current == Decision.REROUTE or proposed == Decision.REROUTE:"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "family": "harmonic_cost_scaling",
+      "terms": [
+        "harmonic",
+        "wall",
+        "cost",
+        "R^",
+        "distance"
+      ],
+      "evidence": [
+        {
+          "path": "docs/PATENT_DETAILED_DESCRIPTION.md",
+          "exists": true,
+          "sha256": "254e6065db526d2de0e9681392bb00fddc96f9e7b791a21684871a3e918cfadc",
+          "hit_count": 103,
+          "hits": [
+            {
+              "line": 18,
+              "text": "**Hyperbolic Geometry-Based Access Control System with Superexponential Cost Scaling, Semantically-Weighted Key Derivation, Six-Dimensional Linguistic Entropy Encoding, and Cryptographic Deferred Authorization Containers"
+            },
+            {
+              "line": 24,
+              "text": "A computer-implemented security framework comprising a fourteen-layer processing pipeline that embeds computational contexts into a Poincare ball manifold and enforces access control through geometric invariants rather t"
+            },
+            {
+              "line": 36,
+              "text": "Modern access control systems broadly fall into three categories: role-based access control (RBAC), attribute-based access control (ABAC), and capability-based security models. Each relies on policy engines that evaluate"
+            },
+            {
+              "line": 42,
+              "text": "Key derivation functions (KDFs) in existing systems, including HKDF (RFC 5869), PBKDF2, and hierarchical deterministic wallet schemes (BIP-32/44), treat entropy as uniform random input material. While BIP-39 introduces a"
+            },
+            {
+              "line": 46,
+              "text": "There exists a need in the art for a security framework that: (a) enforces access control through mathematical invariants that cannot be circumvented by adversarial optimization; (b) scales the cost of adversarial behavi"
+            },
+            {
+              "line": 50,
+              "text": "It is a primary object of the present invention to provide an access control system wherein the verification cost imposed on a requesting entity is a superexponential function of its hyperbolic distance from a trusted op"
+            },
+            {
+              "line": 68,
+              "text": "**FIG. 2** -- Harmonic Wall cost function H(d,R) = R^(d^2) plotted as verification cost versus hyperbolic distance d for R = e, showing superexponential growth from H(1) = 2.72 through H(3) = 8,103 to H(5) = 7.2 x 10^10,"
+            },
+            {
+              "line": 72,
+              "text": "**FIG. 4** -- Six Sacred Tongues phase relationship diagram showing golden-ratio weights (phi^0 = 1.000 through phi^5 = 11.090) and harmonic frequency ratios (root, major 2nd, major 3rd, perfect 4th, perfect 5th, major 6"
+            },
+            {
+              "line": 84,
+              "text": "**FIG. 10** -- Anti-fragile response curve showing shock absorber function Psi(P) = 1 + (max - 1) * tanh(beta * P) with metric expansion under adversarial pressure, demonstrating 1.56x distance amplification at maximum p"
+            },
+            {
+              "line": 100,
+              "text": "**\"Poincare Ball\"** or **\"B^n\"**: The open unit ball in n-dimensional Euclidean space, B^n = {u in R^n : ||u|| < 1}, equipped with the Riemannian metric tensor g_ij = (2 / (1 - ||u||^2))^2 * delta_ij, where delta_ij is t"
+            },
+            {
+              "line": 102,
+              "text": "**\"Hyperbolic Distance\"**: The distance function d_H(u, v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2))) defined on the Poincare ball, which is the unique distance function satisfying the axioms of hyperbolic geome"
+            },
+            {
+              "line": 106,
+              "text": "**\"Isometry\"**: A transformation T: B^n -> B^n that preserves hyperbolic distances, i.e., d_H(T(u), T(v)) = d_H(u, v) for all u, v in B^n. Isometries of the Poincare ball are compositions of Mobius additions and orthogon"
+            },
+            {
+              "line": 108,
+              "text": "**\"Diffeomorphism\"**: A smooth, invertible transformation of the Poincare ball that is not necessarily distance-preserving. The breathing transform (Layer 6) is a diffeomorphism that changes hyperbolic distances in a con"
+            },
+            {
+              "line": 112,
+              "text": "**\"Langues Metric\"**: The six-dimensional cost function L(x, t) = sum_{l=0}^{5} w_l * exp(beta_l * (d_l + sin(omega_l * t + phi_l))), where w_l is the golden-ratio weight, beta_l is the growth rate, d_l = |x_l - mu_l| is"
+            },
+            {
+              "line": 118,
+              "text": "**\"Harmonic Wall\"** or **\"Harmonic Scaling\"**: The superexponential cost function H(d, R) = R^(d^2) where d is the hyperbolic distance from a trusted center and R > 1 is the base parameter. This function creates a \"verti"
+            },
+            {
+              "line": 128,
+              "text": "**\"Anti-Fragile\"**: The property that the system becomes more secure under adversarial pressure, governed by the shock absorber function Psi(P) = 1 + (max - 1) * tanh(beta * P), which expands the metric tensor (increasin"
+            },
+            {
+              "line": 134,
+              "text": "Referring now to FIG. 1, the preferred embodiment of the present invention comprises a fourteen-layer processing pipeline that transforms a raw authorization context into a binary access decision (ALLOW, QUARANTINE, or D"
+            },
+            {
+              "line": 138,
+              "text": "**Group II: Geometric Core (Layers 5-7)** -- Computes hyperbolic distances and applies isometric and diffeomorphic transforms that modulate the embedded space."
+            },
+            {
+              "line": 142,
+              "text": "**Group IV: Decision (Layers 12-14)** -- Applies the Harmonic Wall cost function, renders the access decision, and produces telemetry on a parallel audio channel."
+            },
+            {
+              "line": 178,
+              "text": "Layer 2 performs an isometric embedding from C^D to R^(2D) by concatenating the real and imaginary parts:"
+            }
+          ]
+        },
+        {
+          "path": "src/symphonic_cipher/scbe_aethermoore/layer_13.py",
+          "exists": true,
+          "sha256": "57f0ecc03adf92fa44e27664d431f80a086f4c9b4a56e3d8991ec2f2d835b3a6",
+          "hit_count": 53,
+          "hits": [
+            {
+              "line": 14,
+              "text": "- 1 ≤ H(d*) ≤ 1 + α  (bounded harmonic)"
+            },
+            {
+              "line": 15,
+              "text": "- Time_Multi ≥ 1  (temporal cost from Layer 11)"
+            },
+            {
+              "line": 16,
+              "text": "- Intent_Multi ≥ 1  (intent-alignment cost, φ-tuned)"
+            },
+            {
+              "line": 56,
+              "text": "# HARMONIC SCALING (Lemma 13.1)"
+            },
+            {
+              "line": 61,
+              "text": "class HarmonicParams:"
+            },
+            {
+              "line": 62,
+              "text": "\"\"\"Parameters for harmonic scaling H(d*).\"\"\""
+            },
+            {
+              "line": 72,
+              "text": "def harmonic_H(d_star: float, params: Optional[HarmonicParams] = None) -> float:"
+            },
+            {
+              "line": 74,
+              "text": "Compute harmonic scaling factor H(d*)."
+            },
+            {
+              "line": 86,
+              "text": "d_star: Realm distance from Layer 8"
+            },
+            {
+              "line": 87,
+              "text": "params: HarmonicParams (default: α=1, β=1)"
+            },
+            {
+              "line": 90,
+              "text": "Harmonic scaling factor H ∈ [1, 1+α]"
+            },
+            {
+              "line": 93,
+              "text": "params = HarmonicParams()"
+            },
+            {
+              "line": 101,
+              "text": "def harmonic_derivative(d_star: float, params: Optional[HarmonicParams] = None) -> float:"
+            },
+            {
+              "line": 108,
+              "text": "params = HarmonicParams()"
+            },
+            {
+              "line": 114,
+              "text": "def harmonic_vertical_wall(d_star: float, max_exp: float = 50.0) -> float:"
+            },
+            {
+              "line": 116,
+              "text": "Alternative: Vertical Wall harmonic (A12 Patent Claim)."
+            },
+            {
+              "line": 134,
+              "text": "Temporal cost multiplier from Layer 11."
+            },
+            {
+              "line": 152,
+              "text": "Intent-alignment cost multiplier."
+            },
+            {
+              "line": 155,
+              "text": "Phase-shifted φ-tuned harmonic."
+            },
+            {
+              "line": 159,
+              "text": "phi_shift: float = 0.0  # Phase shift for emotional cost"
+            }
+          ]
+        },
+        {
+          "path": "src/symphonic_cipher/scbe_aethermoore/layers_9_12.py",
+          "exists": true,
+          "sha256": "def506da844cdf59d40fe2b7f2ed5fa25fb02d6e303eed4303256f7f26bcc69a",
+          "hit_count": 46,
+          "hits": [
+            {
+              "line": 10,
+              "text": "Layer 11: Triadic Distance    - Multi-modal aggregation"
+            },
+            {
+              "line": 11,
+              "text": "Layer 12: Harmonic Scaling    - Risk amplification & normalization"
+            },
+            {
+              "line": 320,
+              "text": "forming the outer bound of the Harmonic Wall."
+            },
+            {
+              "line": 374,
+              "text": "# LAYER 11: TRIADIC TEMPORAL DISTANCE (Axiom A11)"
+            },
+            {
+              "line": 380,
+              "text": "\"\"\"Weights for triadic distance aggregation.\"\"\""
+            },
+            {
+              "line": 382,
+              "text": "lambda_1: float = 0.4  # Hyperbolic distance weight"
+            },
+            {
+              "line": 383,
+              "text": "lambda_2: float = 0.3  # Authentication distance weight"
+            },
+            {
+              "line": 384,
+              "text": "lambda_3: float = 0.3  # Configuration distance weight"
+            },
+            {
+              "line": 397,
+              "text": "\"\"\"Results from triadic distance computation.\"\"\""
+            },
+            {
+              "line": 399,
+              "text": "d_tri: float  # Raw triadic distance"
+            },
+            {
+              "line": 405,
+              "text": "def compute_triadic_distance("
+            },
+            {
+              "line": 413,
+              "text": "Layer 11: Compute triadic temporal distance."
+            },
+            {
+              "line": 418,
+              "text": "d_hyperbolic: Distance from geometric layers (d_H or d*)"
+            },
+            {
+              "line": 419,
+              "text": "d_auth: Authentication/swarm trust distance"
+            },
+            {
+              "line": 420,
+              "text": "d_config: Configuration/topology distance"
+            },
+            {
+              "line": 425,
+              "text": "TriadicAnalysis with distance metrics"
+            },
+            {
+              "line": 456,
+              "text": "Compute gradient of triadic distance w.r.t. each component."
+            },
+            {
+              "line": 465,
+              "text": "analysis = compute_triadic_distance(d_hyperbolic, d_auth, d_config, weights)"
+            },
+            {
+              "line": 478,
+              "text": "# LAYER 12: HARMONIC SCALING & RISK (Axiom A12)"
+            },
+            {
+              "line": 488,
+              "text": "w_triadic: float = 0.25  # Triadic distance weight"
+            }
+          ]
+        },
+        {
+          "path": "src/agent/types.ts",
+          "exists": true,
+          "sha256": "6ee5d683a4ddd9b0fd2954907ff3db3506487a47d6338965f247ddd8213c02c0",
+          "hit_count": 5,
+          "hits": [
+            {
+              "line": 280,
+              "text": "* Calculate hyperbolic distance between two points"
+            },
+            {
+              "line": 282,
+              "text": "export function hyperbolicDistance(u: PoincarePosition, v: PoincarePosition): number {"
+            },
+            {
+              "line": 302,
+              "text": "* Calculate Harmonic Wall cost"
+            },
+            {
+              "line": 305,
+              "text": "export function harmonicWallCost(distance: number, phaseDeviation = 0): number {"
+            },
+            {
+              "line": 306,
+              "text": "return Math.exp(distance + 2 * phaseDeviation);"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "family": "semantic_tongue_weighting",
+      "terms": [
+        "Sacred",
+        "Tongue",
+        "semantic",
+        "weight",
+        "phi"
+      ],
+      "evidence": [
+        {
+          "path": "docs/PATENT_DETAILED_DESCRIPTION.md",
+          "exists": true,
+          "sha256": "254e6065db526d2de0e9681392bb00fddc96f9e7b791a21684871a3e918cfadc",
+          "hit_count": 164,
+          "hits": [
+            {
+              "line": 18,
+              "text": "**Hyperbolic Geometry-Based Access Control System with Superexponential Cost Scaling, Semantically-Weighted Key Derivation, Six-Dimensional Linguistic Entropy Encoding, and Cryptographic Deferred Authorization Containers"
+            },
+            {
+              "line": 24,
+              "text": "A computer-implemented security framework comprising a fourteen-layer processing pipeline that embeds computational contexts into a Poincare ball manifold and enforces access control through geometric invariants rather t"
+            },
+            {
+              "line": 32,
+              "text": "The present invention relates generally to computer security systems and, more particularly, to access control, authorization, and cryptographic key management systems that employ non-Euclidean geometric models to enforc"
+            },
+            {
+              "line": 42,
+              "text": "Key derivation functions (KDFs) in existing systems, including HKDF (RFC 5869), PBKDF2, and hierarchical deterministic wallet schemes (BIP-32/44), treat entropy as uniform random input material. While BIP-39 introduces a"
+            },
+            {
+              "line": 44,
+              "text": "Post-quantum cryptographic schemes based on lattice problems (Module-LWE for key encapsulation and Module-SIS for digital signatures) have been standardized by NIST as ML-KEM (FIPS 203) and ML-DSA (FIPS 204). However, ex"
+            },
+            {
+              "line": 46,
+              "text": "There exists a need in the art for a security framework that: (a) enforces access control through mathematical invariants that cannot be circumvented by adversarial optimization; (b) scales the cost of adversarial behavi"
+            },
+            {
+              "line": 52,
+              "text": "It is a further object to provide a key derivation method wherein structured linguistic inputs from a six-dimensional semantic ontology constrain the available cryptographic derivation paths based on golden-ratio-weighte"
+            },
+            {
+              "line": 54,
+              "text": "It is a further object to provide a cryptographic identity container that implements deferred authorization through a conjunction of five predicates -- tongue membership, geometric ring position, monotone descent path hi"
+            },
+            {
+              "line": 56,
+              "text": "It is a further object to provide post-quantum security through a dual-lattice consensus mechanism requiring simultaneous agreement of ML-KEM-768 (Module-LWE) and ML-DSA-65 (Module-SIS) operations within a temporal synch"
+            },
+            {
+              "line": 72,
+              "text": "**FIG. 4** -- Six Sacred Tongues phase relationship diagram showing golden-ratio weights (phi^0 = 1.000 through phi^5 = 11.090) and harmonic frequency ratios (root, major 2nd, major 3rd, perfect 4th, perfect 5th, major 6"
+            },
+            {
+              "line": 74,
+              "text": "**FIG. 5** -- Sacred Egg hatch decision flowchart showing the five-predicate conjunction (P_tongue AND P_geo AND P_path AND P_quorum AND P_crypto) with fail-to-noise output on any predicate failure, including Domain Sepa"
+            },
+            {
+              "line": 76,
+              "text": "**FIG. 6** -- Dual-lattice settling wave K(t) = sum(C_n * sin(omega_n * t + phi_n)) showing constructive interference peak at t_arrival and destructive interference at all other times, with ML-KEM-768 and ML-DSA-65 conse"
+            },
+            {
+              "line": 80,
+              "text": "**FIG. 8** -- Langues Metric surface plot showing L(x,t) = sum(w_l * exp(beta_l * (d_l + sin(omega_l * t + phi_l)))) across two tongue dimensions, demonstrating exponential growth away from ideal state with bounded oscil"
+            },
+            {
+              "line": 82,
+              "text": "**FIG. 9** -- SpiralSeal SS1 blob format diagram showing byte-to-token bijection across six tongues, with cross-tongue retokenization preserving byte-level identity."
+            },
+            {
+              "line": 86,
+              "text": "**FIG. 11** -- Breathing transform visualization in the Poincare ball showing T_breath(u;t) = tanh(b * artanh(||u||)) / ||u|| * u for b > 1 (containment/push outward) and b < 1 (diffusion/pull inward), illustrating the d"
+            },
+            {
+              "line": 108,
+              "text": "**\"Diffeomorphism\"**: A smooth, invertible transformation of the Poincare ball that is not necessarily distance-preserving. The breathing transform (Layer 6) is a diffeomorphism that changes hyperbolic distances in a con"
+            },
+            {
+              "line": 110,
+              "text": "**\"Sacred Tongue\"**: One of six canonical linguistic basis systems, each identified by a two-letter code (KO, AV, RU, CA, UM, DR), a golden-ratio weight w_l = phi^l for l in {0, 1, 2, 3, 4, 5} where phi = (1 + sqrt(5))/2"
+            },
+            {
+              "line": 112,
+              "text": "**\"Langues Metric\"**: The six-dimensional cost function L(x, t) = sum_{l=0}^{5} w_l * exp(beta_l * (d_l + sin(omega_l * t + phi_l))), where w_l is the golden-ratio weight, beta_l is the growth rate, d_l = |x_l - mu_l| is"
+            },
+            {
+              "line": 114,
+              "text": "**\"Sacred Egg\"**: A cryptographic deferred authorization container E = (hdr, C, tag, policy) comprising an encrypted payload C, an authentication tag, and a policy specifying five predicates that must be simultaneously s"
+            },
+            {
+              "line": 116,
+              "text": "**\"Fail-to-Noise\"**: The security property that any authorization failure produces output that is computationally indistinguishable from a successful authorization output. Specifically, upon failure of any predicate duri"
+            }
+          ]
+        },
+        {
+          "path": "src/tokenizer/ss1.ts",
+          "exists": true,
+          "sha256": "cf35042b0cc9b1ac84616aa059a0dedbd86a2739b0d3d97ba355a28095e6f661",
+          "hit_count": 109,
+          "hits": [
+            {
+              "line": 4,
+              "text": "* A bijective cryptographic encoding system that maps raw bytes to"
+            },
+            {
+              "line": 5,
+              "text": "* phonetically-engineered \"Spell-Text\" using the Six Sacred Tongues."
+            },
+            {
+              "line": 9,
+              "text": "* - Semantic domain separation (different data types use different \"languages\")"
+            },
+            {
+              "line": 23,
+              "text": "/** Sacred Tongue identifier */"
+            },
+            {
+              "line": 24,
+              "text": "export type TongueCode = 'KO' | 'AV' | 'RU' | 'CA' | 'UM' | 'DR';"
+            },
+            {
+              "line": 26,
+              "text": "/** Tongue metadata */"
+            },
+            {
+              "line": 27,
+              "text": "export interface TongueInfo {"
+            },
+            {
+              "line": 28,
+              "text": "code: TongueCode;"
+            },
+            {
+              "line": 32,
+              "text": "weight: number; // φⁿ"
+            },
+            {
+              "line": 38,
+              "text": "fromTongue: TongueCode;"
+            },
+            {
+              "line": 39,
+              "text": "toTongue: TongueCode;"
+            },
+            {
+              "line": 41,
+              "text": "weightRatio: number;"
+            },
+            {
+              "line": 48,
+              "text": "tongue: TongueCode;"
+            },
+            {
+              "line": 57,
+              "text": "const PHI = 1.618033988749895;"
+            },
+            {
+              "line": 62,
+              "text": "/** Tongue configurations */"
+            },
+            {
+              "line": 63,
+              "text": "export const TONGUES: Record<TongueCode, TongueInfo> = {"
+            },
+            {
+              "line": 69,
+              "text": "weight: 1.0,"
+            },
+            {
+              "line": 70,
+              "text": "frequency: BASE_FREQ * Math.pow(PHI, 0),"
+            },
+            {
+              "line": 77,
+              "text": "weight: Math.pow(PHI, 1),"
+            },
+            {
+              "line": 78,
+              "text": "frequency: BASE_FREQ * Math.pow(PHI, 1),"
+            }
+          ]
+        },
+        {
+          "path": "packages/kernel/src/languesMetric.ts",
+          "exists": true,
+          "sha256": "b9b5d57be6603861d858b1c3b890d98967fa1d41f624f1c13aeb4b2d1b266a82",
+          "hit_count": 19,
+          "hits": [
+            {
+              "line": 4,
+              "text": "* 6D phase-shifted exponential cost function with the Six Sacred Tongues."
+            },
+            {
+              "line": 7,
+              "text": "* Tongues: KO, AV, RU, CA, UM, DR"
+            },
+            {
+              "line": 8,
+              "text": "* Weights: wₗ = φˡ (golden ratio progression)"
+            },
+            {
+              "line": 15,
+              "text": "const PHI = (1 + Math.sqrt(5)) / 2;"
+            },
+            {
+              "line": 17,
+              "text": "/** The Six Sacred Tongues */"
+            },
+            {
+              "line": 18,
+              "text": "export const TONGUES = ['KO', 'AV', 'RU', 'CA', 'UM', 'DR'] as const;"
+            },
+            {
+              "line": 19,
+              "text": "export type Tongue = (typeof TONGUES)[number];"
+            },
+            {
+              "line": 74,
+              "text": "/** Golden ratio weights wₗ = φˡ */"
+            },
+            {
+              "line": 75,
+              "text": "readonly weights: number[];"
+            },
+            {
+              "line": 78,
+              "text": "/** Beta values per tongue */"
+            },
+            {
+              "line": 86,
+              "text": "// Initialize weights: wₗ = φˡ"
+            },
+            {
+              "line": 87,
+              "text": "this.weights = TONGUES.map((_, i) => Math.pow(PHI, i));"
+            },
+            {
+              "line": 90,
+              "text": "this.phases = TONGUES.map((_, i) => (2 * Math.PI * i) / 6);"
+            },
+            {
+              "line": 93,
+              "text": "this.betas = TONGUES.map((_, i) => this.betaBase * Math.pow(PHI, i * 0.5));"
+            },
+            {
+              "line": 100,
+              "text": "* @param point - 6D point (distances in each tongue dimension)"
+            },
+            {
+              "line": 112,
+              "text": "L += this.weights[i] * Math.exp(exponent);"
+            },
+            {
+              "line": 142,
+              "text": "grad[i] = this.weights[i] * this.betas[i] * Math.exp(exponent);"
+            },
+            {
+              "line": 161,
+              "text": "TONGUES.map((_, i) => ({"
+            },
+            {
+              "line": 208,
+              "text": "L += nu * this.weights[i] * Math.exp(exponent);"
+            }
+          ]
+        },
+        {
+          "path": "src/agent/types.ts",
+          "exists": true,
+          "sha256": "6ee5d683a4ddd9b0fd2954907ff3db3506487a47d6338965f247ddd8213c02c0",
+          "hit_count": 31,
+          "hits": [
+            {
+              "line": 5,
+              "text": "* - Six Sacred Tongues identity"
+            },
+            {
+              "line": 8,
+              "text": "* - Quantum-safe cryptographic keys"
+            },
+            {
+              "line": 13,
+              "text": "import { TongueCode } from '../tokenizer/ss1.js';"
+            },
+            {
+              "line": 39,
+              "text": "/** Golden ratio for tongue weight calculations */"
+            },
+            {
+              "line": 42,
+              "text": "/** Phase offsets for each tongue (degrees) */"
+            },
+            {
+              "line": 43,
+              "text": "export const TONGUE_PHASES: Record<TongueCode, number> = {"
+            },
+            {
+              "line": 52,
+              "text": "/** Tongue indices for weight calculation (φⁿ) */"
+            },
+            {
+              "line": 53,
+              "text": "export const TONGUE_INDICES: Record<TongueCode, number> = {"
+            },
+            {
+              "line": 62,
+              "text": "/** Default IP tier mapping for tongues */"
+            },
+            {
+              "line": 63,
+              "text": "export const TONGUE_IP_TIERS: Record<TongueCode, IPTier> = {"
+            },
+            {
+              "line": 92,
+              "text": "/** Agent cryptographic keys */"
+            },
+            {
+              "line": 108,
+              "text": "/** Sacred Tongue identity */"
+            },
+            {
+              "line": 109,
+              "text": "tongue: TongueCode;"
+            },
+            {
+              "line": 126,
+              "text": "/** Weight based on tongue (φⁿ) */"
+            },
+            {
+              "line": 127,
+              "text": "weight: number;"
+            },
+            {
+              "line": 134,
+              "text": "/** Cryptographic keys */"
+            },
+            {
+              "line": 145,
+              "text": "tongue: TongueCode;"
+            },
+            {
+              "line": 158,
+              "text": "tongue: TongueCode;"
+            },
+            {
+              "line": 161,
+              "text": "/** Tongue-bound signature */"
+            },
+            {
+              "line": 163,
+              "text": "tongueBinding?: string;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "family": "bijective_tamper_canonicality",
+      "terms": [
+        "bijective",
+        "tamper",
+        "canonical",
+        "normalization",
+        "identifier"
+      ],
+      "evidence": [
+        {
+          "path": "src/governance/bijective_tamper.py",
+          "exists": true,
+          "sha256": "dc216228bb04aecf2d216b8d0aea92b86ee16b34a335cd6ca9c6166789f2c20b",
+          "hit_count": 47,
+          "hits": [
+            {
+              "line": 1,
+              "text": "\"\"\"Bijective Tamper Signal — encoding-level tamper detection for L13."
+            },
+            {
+              "line": 3,
+              "text": "Builds on the bijective compiler substrate (705/705 KO=Python, 335/335 AV=TS):"
+            },
+            {
+              "line": 8,
+              "text": "of encoding-level tampering or unicode trickery. This module turns that"
+            },
+            {
+              "line": 9,
+              "text": "fingerprint into a tamper signal in [0, 1] for the L13 risk decision gate."
+            },
+            {
+              "line": 12,
+              "text": "* NFD/NFC normalization shifts (combining marks rearranged to hide payload)"
+            },
+            {
+              "line": 14,
+              "text": "identifiers that the BPE tokenizer normalizes away"
+            },
+            {
+              "line": 19,
+              "text": "* Homoglyph identifiers (Cyrillic а vs Latin a — both are valid,"
+            },
+            {
+              "line": 20,
+              "text": "single-codepoint identifiers; AST sees them as different but each"
+            },
+            {
+              "line": 25,
+              "text": "Tamper score scale:"
+            },
+            {
+              "line": 36,
+              "text": "tamper signal per se; route to syntax-error handling."
+            },
+            {
+              "line": 40,
+              "text": "from src.governance.bijective_tamper import evaluate_code"
+            },
+            {
+              "line": 43,
+              "text": "def l13_with_tamper_signal(src, language, base_decision):"
+            },
+            {
+              "line": 52,
+              "text": "The fingerprint is a SHA-256 of the canonical AST. Two semantically-equal"
+            },
+            {
+              "line": 73,
+              "text": "class TamperResult:"
+            },
+            {
+              "line": 74,
+              "text": "\"\"\"Outcome of a single bijective-tamper evaluation.\"\"\""
+            },
+            {
+              "line": 78,
+              "text": "semantic_fingerprint: Optional[str]  # SHA-256 of canonical AST, hex"
+            },
+            {
+              "line": 99,
+              "text": "#  Per-language AST canonicalization"
+            },
+            {
+              "line": 103,
+              "text": "def _ast_canonical_python(src: str) -> str:"
+            },
+            {
+              "line": 104,
+              "text": "\"\"\"Canonical AST dump for Python. Raises SyntaxError on bad input.\"\"\""
+            },
+            {
+              "line": 109,
+              "text": "_AST_CANONICAL = {"
+            }
+          ]
+        },
+        {
+          "path": "src/governance/identifier_canonicality.py",
+          "exists": true,
+          "sha256": "b72d668cebb587bdc52c04a7ff19c416edbed807aa5874c1c3759661f3f237c8",
+          "hit_count": 69,
+          "hits": [
+            {
+              "line": 1,
+              "text": "\"\"\"Identifier-Canonicality Signal — sibling gate to bijective_tamper."
+            },
+            {
+              "line": 3,
+              "text": "The bijective tamper signal proves that"
+            },
+            {
+              "line": 7,
+              "text": "holds for clean code. But it does NOT catch homoglyph identifier attacks"
+            },
+            {
+              "line": 10,
+              "text": "as DIFFERENT identifier strings (Cyrillic `а` vs Latin `a` are distinct"
+            },
+            {
+              "line": 13,
+              "text": "This module catches what bijective_tamper explicitly leaves on the table:"
+            },
+            {
+              "line": 15,
+              "text": "1. Mixed-script identifiers (Latin + Cyrillic + Greek in one name) —"
+            },
+            {
+              "line": 17,
+              "text": "2. Identifiers containing only-confusable codepoints (a Cyrillic-only"
+            },
+            {
+              "line": 18,
+              "text": "version of an ASCII identifier name)."
+            },
+            {
+              "line": 19,
+              "text": "3. Invisible characters in identifiers (zero-width joiner, zero-width"
+            },
+            {
+              "line": 25,
+              "text": "* Single-script non-Latin identifiers (e.g., a fully Cyrillic legitimate"
+            },
+            {
+              "line": 26,
+              "text": "identifier). These look weird but are not deceptive."
+            },
+            {
+              "line": 31,
+              "text": "The `confusable` kind fires when EVERY codepoint in an identifier is in"
+            },
+            {
+              "line": 37,
+              "text": "emitted SHA-256 fingerprint. See docs/specs/IDENTIFIER_CANONICALITY_L13.md"
+            },
+            {
+              "line": 41,
+              "text": "0.00          → kind=\"clean\"           — no canonicality issues"
+            },
+            {
+              "line": 57,
+              "text": "input_invalid → no-op (handled by sibling gates / not a tamper signal)"
+            },
+            {
+              "line": 71,
+              "text": "CanonicalityKind = str  # \"clean\" | \"non_ascii\" | \"confusable\" | \"mixed_script\" | \"invisible\" | \"input_invalid\""
+            },
+            {
+              "line": 75,
+              "text": "class IdentifierFinding:"
+            },
+            {
+              "line": 76,
+              "text": "\"\"\"One suspicious identifier from the source.\"\"\""
+            },
+            {
+              "line": 79,
+              "text": "kind: CanonicalityKind"
+            },
+            {
+              "line": 93,
+              "text": "class CanonicalityResult:"
+            }
+          ]
+        },
+        {
+          "path": "src/governance/runtime_gate.py",
+          "exists": true,
+          "sha256": "a8c85cbf960f22cbd80b845f6c1f69c230bcddab6e604d4bfbefa32921a16eb1",
+          "hit_count": 246,
+          "hits": [
+            {
+              "line": 140,
+              "text": "# Optional bijective tamper overlay (encoding-level fingerprint)"
+            },
+            {
+              "line": 141,
+              "text": "bijective_tamper_score: float = 0.0"
+            },
+            {
+              "line": 142,
+              "text": "bijective_tamper_kind: str = \"\""
+            },
+            {
+              "line": 143,
+              "text": "bijective_tamper_action: str = \"\""
+            },
+            {
+              "line": 145,
+              "text": "# Optional identifier-canonicality overlay (homoglyph / mixed-script / invisible char)"
+            },
+            {
+              "line": 146,
+              "text": "identifier_canonicality_score: float = 0.0"
+            },
+            {
+              "line": 147,
+              "text": "identifier_canonicality_kind: str = \"\""
+            },
+            {
+              "line": 148,
+              "text": "identifier_canonicality_action: str = \"\""
+            },
+            {
+              "line": 149,
+              "text": "identifier_canonicality_fingerprint: Optional[str] = None"
+            },
+            {
+              "line": 447,
+              "text": "use_bijective_tamper: Optional[bool] = None,"
+            },
+            {
+              "line": 448,
+              "text": "bijective_tamper_language: str = \"python\","
+            },
+            {
+              "line": 449,
+              "text": "bijective_tamper_tokenizer_dir: Optional[Path] = None,"
+            },
+            {
+              "line": 450,
+              "text": "use_identifier_canonicality: Optional[bool] = None,"
+            },
+            {
+              "line": 451,
+              "text": "identifier_canonicality_language: str = \"python\","
+            },
+            {
+              "line": 522,
+              "text": "# hyperbolic+torus+z metric over a 21D canonical probe."
+            },
+            {
+              "line": 536,
+              "text": "# Bijective tamper overlay (encoding-level fingerprint via"
+            },
+            {
+              "line": 538,
+              "text": "# SCBE_ENABLE_BIJECTIVE_TAMPER_GATE env var so production rollout is"
+            },
+            {
+              "line": 540,
+              "text": "if use_bijective_tamper is None:"
+            },
+            {
+              "line": 541,
+              "text": "env_flag = os.environ.get(\"SCBE_ENABLE_BIJECTIVE_TAMPER_GATE\", \"\").strip()"
+            },
+            {
+              "line": 542,
+              "text": "self._bijective_tamper_enabled = env_flag in (\"1\", \"true\", \"TRUE\", \"yes\", \"on\")"
+            }
+          ]
+        },
+        {
+          "path": "src/tokenizer/ss1.ts",
+          "exists": true,
+          "sha256": "cf35042b0cc9b1ac84616aa059a0dedbd86a2739b0d3d97ba355a28095e6f661",
+          "hit_count": 8,
+          "hits": [
+            {
+              "line": 4,
+              "text": "* A bijective cryptographic encoding system that maps raw bytes to"
+            },
+            {
+              "line": 23,
+              "text": "/** Sacred Tongue identifier */"
+            },
+            {
+              "line": 121,
+              "text": "/** Kor'aelin (KO) - Liquid, flowing, swift (v2.1 — tutorial canonical, TTS-friendly) */"
+            },
+            {
+              "line": 159,
+              "text": "/** Avali (AV) - Bright, diplomatic, clear (v2.1 — tutorial canonical, TTS-friendly) */"
+            },
+            {
+              "line": 197,
+              "text": "/** Runethic (RU) - Heavy, grounded, earthy (v2.1 — tutorial canonical, TTS-friendly) */"
+            },
+            {
+              "line": 235,
+              "text": "/** Cassisivadan (CA) - Staccato, mechanical, digital (v2.1 — tutorial canonical, TTS-friendly) */"
+            },
+            {
+              "line": 273,
+              "text": "/** Umbroth (UM) - Breathy, mysterious, veiled (v2.1 — tutorial canonical, TTS-friendly) */"
+            },
+            {
+              "line": 311,
+              "text": "/** Draumric (DR) - Structural, industrial, heavy (v2.1 — tutorial canonical, TTS-friendly) */"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "family": "quarantine_containment",
+      "terms": [
+        "quarantine",
+        "containment",
+        "lock",
+        "timeout",
+        "restrict"
+      ],
+      "evidence": [
+        {
+          "path": "src/agentic/quarantine_lock.py",
+          "exists": true,
+          "sha256": "8faabf9112bb2afc164d0be1d2768b0dd5706c546f666966fb16fa73c609bbfb",
+          "hit_count": 79,
+          "hits": [
+            {
+              "line": 1,
+              "text": "\"\"\"Canonical quarantine lock for agentic SCBE workcells."
+            },
+            {
+              "line": 3,
+              "text": "The lock is deliberately cheap: confirmed hostile flows get less model, fewer"
+            },
+            {
+              "line": 4,
+              "text": "tools, shorter timeouts, and an audit-ready receipt. It is not a punitive"
+            },
+            {
+              "line": 5,
+              "text": "token drain. It is a containment state that prevents execution while preserving"
+            },
+            {
+              "line": 18,
+              "text": "DecisionTier = Literal[\"ALLOW\", \"REVIEW\", \"QUARANTINE\", \"ESCALATE\", \"DENY\"]"
+            },
+            {
+              "line": 19,
+              "text": "LockMode = Literal[\"normal\", \"review\", \"quarantine_lock\", \"deny_closed\"]"
+            },
+            {
+              "line": 21,
+              "text": "SCHEMA_VERSION = \"scbe.quarantine_lock.v1\""
+            },
+            {
+              "line": 25,
+              "text": "class QuarantineLockPolicy:"
+            },
+            {
+              "line": 26,
+              "text": "\"\"\"Operator tunables for quarantine lock behavior.\"\"\""
+            },
+            {
+              "line": 29,
+              "text": "quarantine_token_budget: int = 128"
+            },
+            {
+              "line": 31,
+              "text": "review_timeout_seconds: int = 60"
+            },
+            {
+              "line": 32,
+              "text": "quarantine_timeout_seconds: int = 15"
+            },
+            {
+              "line": 33,
+              "text": "deny_timeout_seconds: int = 1"
+            },
+            {
+              "line": 34,
+              "text": "quarantine_ttl_seconds: int = 86_400"
+            },
+            {
+              "line": 45,
+              "text": "blocked_tool_classes: tuple[str, ...] = ("
+            },
+            {
+              "line": 58,
+              "text": "class QuarantineLockReceipt:"
+            },
+            {
+              "line": 62,
+              "text": "lock_id: str"
+            },
+            {
+              "line": 65,
+              "text": "mode: LockMode"
+            },
+            {
+              "line": 66,
+              "text": "locked: bool"
+            },
+            {
+              "line": 67,
+              "text": "block_execution: bool"
+            }
+          ]
+        },
+        {
+          "path": "tests/agentic/test_quarantine_lock.py",
+          "exists": true,
+          "sha256": "23bd9679206a76168929ddfb7fdb9949e0a8845439bb4fa0576cd3cec217bfd8",
+          "hit_count": 50,
+          "hits": [
+            {
+              "line": 9,
+              "text": "from src.agentic.quarantine_lock import ("
+            },
+            {
+              "line": 11,
+              "text": "QuarantineLockPolicy,"
+            },
+            {
+              "line": 12,
+              "text": "apply_quarantine_lock_to_dcp,"
+            },
+            {
+              "line": 13,
+              "text": "create_quarantine_lock,"
+            },
+            {
+              "line": 17,
+              "text": "def test_allow_receipt_does_not_lock_or_cap_resources() -> None:"
+            },
+            {
+              "line": 18,
+              "text": "receipt = create_quarantine_lock(\"ALLOW\", suspicion=0.05, harmonic_cost=1.1)"
+            },
+            {
+              "line": 22,
+              "text": "assert receipt.locked is False"
+            },
+            {
+              "line": 23,
+              "text": "assert receipt.block_execution is False"
+            },
+            {
+              "line": 29,
+              "text": "def test_review_is_blocked_inspect_only_without_full_lockout() -> None:"
+            },
+            {
+              "line": 30,
+              "text": "receipt = create_quarantine_lock(\"REVIEW\", suspicion=0.45, harmonic_cost=2.0)"
+            },
+            {
+              "line": 33,
+              "text": "assert receipt.locked is False"
+            },
+            {
+              "line": 34,
+              "text": "assert receipt.block_execution is True"
+            },
+            {
+              "line": 39,
+              "text": "assert \"network\" in receipt.blocked_tool_classes"
+            },
+            {
+              "line": 43,
+              "text": "def test_quarantine_is_lockout_with_short_timeout_and_free_tier() -> None:"
+            },
+            {
+              "line": 44,
+              "text": "receipt = create_quarantine_lock("
+            },
+            {
+              "line": 45,
+              "text": "\"QUARANTINE\","
+            },
+            {
+              "line": 51,
+              "text": "assert receipt.mode == \"quarantine_lock\""
+            },
+            {
+              "line": 52,
+              "text": "assert receipt.locked is True"
+            },
+            {
+              "line": 53,
+              "text": "assert receipt.block_execution is True"
+            },
+            {
+              "line": 57,
+              "text": "assert receipt.timeout_seconds == 15"
+            }
+          ]
+        },
+        {
+          "path": "src/governance/runtime_gate.py",
+          "exists": true,
+          "sha256": "a8c85cbf960f22cbd80b845f6c1f69c230bcddab6e604d4bfbefa32921a16eb1",
+          "hit_count": 92,
+          "hits": [
+            {
+              "line": 9,
+              "text": "DENY      — block, return fail-to-noise"
+            },
+            {
+              "line": 10,
+              "text": "QUARANTINE — hold for review, log, do not execute yet"
+            },
+            {
+              "line": 99,
+              "text": "QUARANTINE = \"QUARANTINE\""
+            },
+            {
+              "line": 107,
+              "text": "Decision.QUARANTINE: 2,"
+            },
+            {
+              "line": 180,
+              "text": "'noise derived from the hash of what was blocked', which is"
+            },
+            {
+              "line": 181,
+              "text": "auditable without revealing the blocked content."
+            },
+            {
+              "line": 185,
+              "text": "block = h"
+            },
+            {
+              "line": 187,
+              "text": "block = hashlib.sha256(block).digest()"
+            },
+            {
+              "line": 188,
+              "text": "noise.extend(block)"
+            },
+            {
+              "line": 254,
+              "text": "RerouteRule(\"file.*read.*/etc/passwd\", \"file_read_denied\", \"system file access blocked\"),"
+            },
+            {
+              "line": 342,
+              "text": "\"without restrictions\","
+            },
+            {
+              "line": 345,
+              "text": "\"no restrictions\","
+            },
+            {
+              "line": 394,
+              "text": "\"unrestricted\","
+            },
+            {
+              "line": 426,
+              "text": "cost_quarantine: float = 25.0,"
+            },
+            {
+              "line": 428,
+              "text": "spin_quarantine: int = 5,"
+            },
+            {
+              "line": 430,
+              "text": "cumulative_cost_quarantine: float = 2000.0,"
+            },
+            {
+              "line": 439,
+              "text": "classifier_quarantine_threshold: float = 0.75,"
+            },
+            {
+              "line": 443,
+              "text": "trichromatic_quarantine_threshold: float = 0.48,"
+            },
+            {
+              "line": 456,
+              "text": "self.cost_quarantine = cost_quarantine"
+            },
+            {
+              "line": 458,
+              "text": "self.spin_quarantine = spin_quarantine"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

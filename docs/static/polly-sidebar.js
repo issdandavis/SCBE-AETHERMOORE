@@ -663,8 +663,8 @@
       }
     };
 
-    sendBtn.addEventListener("click", submit);
-    input.addEventListener("keydown", function (e) {
+    if (sendBtn) sendBtn.addEventListener("click", submit);
+    if (input) input.addEventListener("keydown", function (e) {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         submit();
@@ -676,13 +676,13 @@
     // the prompt as a follow-up message. URL actions render as <a> and
     // navigate normally — they don't carry data-polly-prompt so this handler
     // ignores them.
-    thread.addEventListener("click", function (event) {
+    if (thread) thread.addEventListener("click", function (event) {
       var target = event.target;
       while (target && target !== thread) {
         var prompt = target.getAttribute && target.getAttribute("data-polly-prompt");
         if (prompt) {
-          if (sendBtn.disabled) return;
-          input.value = prompt;
+          if (!sendBtn || sendBtn.disabled) return;
+          if (input) input.value = prompt;
           submit();
           return;
         }

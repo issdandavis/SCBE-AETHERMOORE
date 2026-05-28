@@ -1814,6 +1814,78 @@ def cmd_agent_harness(args: argparse.Namespace) -> int:
     return 0
 
 
+def _load_agent_endurance_example(name: str) -> dict[str, Any]:
+    path = Path("schemas") / "examples" / name
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _write_json_artifact(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
+def cmd_agent_endurance_pack(args: argparse.Namespace) -> int:
+    """Generate a local Agent Endurance v1 artifact bundle."""
+    out_dir = Path(args.output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    round_id = args.round_id
+    regimen = _load_agent_endurance_example("agent_endurance_regimen_v1.example.json")
+    taskset = _load_agent_endurance_example("agent_endurance_taskset_v1.example.json")
+    run_report = _load_agent_endurance_example("agent_endurance_run_report_v1.example.json")
+
+    regimen["created_at_utc"] = now
+    regimen["default_permission_mode"] = args.permission_mode
+    taskset["taskset_id"] = round_id
+    taskset["regimen_id"] = regimen["regimen_id"]
+    taskset["created_at_utc"] = now
+    metadata = dict(taskset.get("metadata") or {})
+    metadata["round_id"] = round_id
+    metadata["generated_by"] = "geoseal agent-endurance-pack"
+    taskset["metadata"] = metadata
+
+    run_report["run_id"] = f"{round_id}-run"
+    run_report["taskset_id"] = taskset["taskset_id"]
+    run_report["regimen_id"] = regimen["regimen_id"]
+    run_report["timestamp_utc"] = now
+    run_report["permission_mode"] = args.permission_mode
+    run_report["candidate_id"] = args.candidate_id
+    run_report["evidence"] = {
+        "history_path": ".scbe/geoseal_calls.jsonl",
+        "task_trace_path": str(out_dir / "task_trace.jsonl"),
+        "stdout_log_path": str(out_dir / "stdout.log"),
+        "raw_report_path": str(out_dir / "raw.json"),
+    }
+
+    paths = {
+        "regimen": out_dir / "agent_endurance_regimen_v1.json",
+        "taskset": out_dir / "agent_endurance_taskset_v1.json",
+        "run_report": out_dir / "agent_endurance_run_report_v1.json",
+        "manifest": out_dir / "agent_endurance_manifest.json",
+    }
+    _write_json_artifact(paths["regimen"], regimen)
+    _write_json_artifact(paths["taskset"], taskset)
+    _write_json_artifact(paths["run_report"], run_report)
+
+    manifest = {
+        "schema_version": "geoseal_agent_endurance_pack_v1",
+        "round_id": round_id,
+        "permission_mode": args.permission_mode,
+        "candidate_id": args.candidate_id,
+        "created_at_utc": now,
+        "paths": {key: str(path) for key, path in paths.items()},
+    }
+    _write_json_artifact(paths["manifest"], manifest)
+
+    if args.json:
+        print(json.dumps(manifest, indent=2))
+    else:
+        print(f"schema={manifest['schema_version']} round_id={round_id}")
+        print(f"output_dir={out_dir}")
+    return 0
+
+
 def cmd_call_switchboard(args: argparse.Namespace) -> int:
     from src.coding_spine.agent_call_switchboard import evaluate_call_request
 
@@ -4816,6 +4888,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_harness.add_argument("--json", action="store_true")
     p_harness.set_defaults(func=cmd_agent_harness)
+
+    p_endurance = sub.add_parser("agent-endurance-pack", help="Generate Agent Endurance v1 spec bundle")
+    p_endurance.add_argument("--round-id", required=True, help="Round/taskset identifier")
+    p_endurance.add_argument(
+        "--permission-mode",
+        default="workspace-write",
+        choices=["observe", "workspace-write", "cloud-dispatch", "maintenance"],
+        dest="permission_mode",
+    )
+    p_endurance.add_argument("--candidate-id", default="geoseal-agent-harness")
+    p_endurance.add_argument("--output-dir", required=True, help="Directory for generated endurance artifacts")
+    p_endurance.add_argument("--json", action="store_true")
+    p_endurance.set_defaults(func=cmd_agent_endurance_pack)
 
     p_switchboard = sub.add_parser("call-switchboard", help="Evaluate a multi-agent call reservation")
     p_switchboard.add_argument("--calls", default=None, help="Existing call reservations JSON array")

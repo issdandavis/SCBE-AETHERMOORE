@@ -1,0 +1,59 @@
+{
+  "schema": "scbe_patent_missing_parts_response_v1",
+  "recorded_at": "2026-05-28",
+  "source": {
+    "gmail_message_id": "19cb262145405494",
+    "subject": "Fw: USPTO Missing Parts Filing Package - Application 63/961,403",
+    "sent_timestamp": "2026-03-03T06:28:14",
+    "attachments_reviewed": [
+      {
+        "filename": "PTO_SB_15A_Micro_Entity_Certification.pdf",
+        "gmail_attachment_slot": "0.2"
+      },
+      {
+        "filename": "Cover_Letter_Missing_Parts.pdf",
+        "gmail_attachment_slot": "0.3"
+      }
+    ]
+  },
+  "application": {
+    "application_number": "63/961,403",
+    "filing_date": "2026-01-15",
+    "first_named_inventor": "Issac Daniel Davis"
+  },
+  "response_package": {
+    "response_date": "2026-03-02",
+    "purpose": "Response to Notice to File Missing Parts of provisional application.",
+    "included_items": [
+      "Certification of Micro Entity Status (PTO/SB/15A)",
+      "Provisional Application Cover Sheet (PTO/SB/16)",
+      "Filing fee payment of $65.00 at micro entity rate via Patent Center electronic payment"
+    ],
+    "micro_entity_basis": "37 CFR 1.29(a) gross income basis",
+    "micro_entity_form_signed": true,
+    "pro_se_applicant": true
+  },
+  "mismatches_to_resolve": [
+    {
+      "field": "title",
+      "missing_parts_package_value": "Context-Bound Cryptographic Authorization System",
+      "current_workbench_value": "System and Method for Hyperbolic Geometry-Based Authorization with Topological Control-Flow Integrity",
+      "action": "Verify official Patent Center bibliographic record and align non-provisional priority/benefit documents to official title."
+    },
+    {
+      "field": "docket",
+      "missing_parts_package_value": "SCBE-2026-001",
+      "current_workbench_value": "SCBE-2026-0001",
+      "action": "Verify which docket is official and normalize workbench references or record alias."
+    }
+  ],
+  "privacy": {
+    "redaction_rule": "Personal street address, telephone number, and email details are present in source PDFs but intentionally omitted from this repo record."
+  },
+  "next_actions": [
+    "Export official Patent Center receipt/acknowledgement for the March 2, 2026 missing-parts response.",
+    "Confirm whether the current application title in Patent Center supersedes the title used in the missing-parts package.",
+    "Confirm whether SCBE-2026-001 is an alias, typo, or predecessor to SCBE-2026-0001.",
+    "Use the official Patent Center bibliographic record as the source of truth in the non-provisional packet."
+  ]
+}

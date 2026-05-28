@@ -1,0 +1,150 @@
+{
+  "schema": "scbe_patent_prior_art_plan_v1",
+  "generated_at": "2026-05-28T00:51:07.551Z",
+  "rows": [
+    {
+      "query": "hyperbolic access control",
+      "tools": [
+        "USPTO Patent Public Search",
+        "Google Patents",
+        "Lens.org",
+        "Semantic Scholar/arXiv"
+      ],
+      "status": "not_started",
+      "relevant_results": [],
+      "notes": ""
+    },
+    {
+      "query": "hyperbolic anomaly detection cybersecurity",
+      "tools": [
+        "USPTO Patent Public Search",
+        "Google Patents",
+        "Lens.org",
+        "Semantic Scholar/arXiv"
+      ],
+      "status": "not_started",
+      "relevant_results": [],
+      "notes": ""
+    },
+    {
+      "query": "Poincare embedding security authorization",
+      "tools": [
+        "USPTO Patent Public Search",
+        "Google Patents",
+        "Lens.org",
+        "Semantic Scholar/arXiv"
+      ],
+      "status": "not_started",
+      "relevant_results": [],
+      "notes": ""
+    },
+    {
+      "query": "AI prompt injection firewall",
+      "tools": [
+        "USPTO Patent Public Search",
+        "Google Patents",
+        "Lens.org",
+        "Semantic Scholar/arXiv"
+      ],
+      "status": "not_started",
+      "relevant_results": [],
+      "notes": ""
+    },
+    {
+      "query": "LLM tool use governance runtime",
+      "tools": [
+        "USPTO Patent Public Search",
+        "Google Patents",
+        "Lens.org",
+        "Semantic Scholar/arXiv"
+      ],
+      "status": "not_started",
+      "relevant_results": [],
+      "notes": ""
+    },
+    {
+      "query": "agentic workflow authorization gate",
+      "tools": [
+        "USPTO Patent Public Search",
+        "Google Patents",
+        "Lens.org",
+        "Semantic Scholar/arXiv"
+      ],
+      "status": "not_started",
+      "relevant_results": [],
+      "notes": ""
+    },
+    {
+      "query": "semantic authorization cryptographic key derivation",
+      "tools": [
+        "USPTO Patent Public Search",
+        "Google Patents",
+        "Lens.org",
+        "Semantic Scholar/arXiv"
+      ],
+      "status": "not_started",
+      "relevant_results": [],
+      "notes": ""
+    },
+    {
+      "query": "Unicode canonicalization tamper detection source code",
+      "tools": [
+        "USPTO Patent Public Search",
+        "Google Patents",
+        "Lens.org",
+        "Semantic Scholar/arXiv"
+      ],
+      "status": "not_started",
+      "relevant_results": [],
+      "notes": ""
+    },
+    {
+      "query": "bijective tokenizer tamper detection",
+      "tools": [
+        "USPTO Patent Public Search",
+        "Google Patents",
+        "Lens.org",
+        "Semantic Scholar/arXiv"
+      ],
+      "status": "not_started",
+      "relevant_results": [],
+      "notes": ""
+    },
+    {
+      "query": "runtime quarantine containment artificial intelligence agent",
+      "tools": [
+        "USPTO Patent Public Search",
+        "Google Patents",
+        "Lens.org",
+        "Semantic Scholar/arXiv"
+      ],
+      "status": "not_started",
+      "relevant_results": [],
+      "notes": ""
+    },
+    {
+      "query": "post quantum authorization gate semantic context",
+      "tools": [
+        "USPTO Patent Public Search",
+        "Google Patents",
+        "Lens.org",
+        "Semantic Scholar/arXiv"
+      ],
+      "status": "not_started",
+      "relevant_results": [],
+      "notes": ""
+    },
+    {
+      "query": "harmonic cost function security distance metric",
+      "tools": [
+        "USPTO Patent Public Search",
+        "Google Patents",
+        "Lens.org",
+        "Semantic Scholar/arXiv"
+      ],
+      "status": "not_started",
+      "relevant_results": [],
+      "notes": ""
+    }
+  ]
+}

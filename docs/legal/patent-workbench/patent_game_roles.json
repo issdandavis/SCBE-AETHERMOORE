@@ -1,0 +1,86 @@
+{
+  "schema": "scbe_patent_game_roles_v1",
+  "purpose": "Role roster for adversarial SCBE patent drafting rounds.",
+  "authority_rule": "Only the umpire rulebook and official sources are authority. Announcer and crowd responses are explanatory/advisory signals only.",
+  "roles": [
+    {
+      "id": "announcer",
+      "type": "narrator",
+      "authority": "none",
+      "job": "Explain the round in plain language, summarize what happened, and keep the patent game readable.",
+      "prompt_contract": "Summarize the claim round for a technical inventor. Do not make legal conclusions. Identify the ball, the pitch, the hit, the call, and the next action."
+    },
+    {
+      "id": "umpire",
+      "type": "rules",
+      "authority": "official_sources",
+      "job": "Apply the rulebook: 101, 102, 103, 112 written description, 112 enablement, definiteness, filing-procedure boundaries.",
+      "prompt_contract": "Call PRIMARY, DEPENDENT, REVIEW, CONTINUATION, DROP, or STRIKE using only the rulebook and cited evidence."
+    },
+    {
+      "id": "pitcher_invention_advocate",
+      "type": "technical_advocate",
+      "authority": "evidence_limited",
+      "job": "Define the feature cleanly, tie it to code/spec support, and prevent unsupported overclaiming.",
+      "prompt_contract": "State what the feature does, what data it receives, what transform it performs, what state it changes, and where support is found."
+    },
+    {
+      "id": "batter_client_advocate",
+      "type": "coverage_advocate",
+      "authority": "evidence_limited",
+      "job": "Broaden claim language while staying inside support, enablement, and practical-application boundaries.",
+      "prompt_contract": "Broaden the feature without relying on unsupported terms, guarantees, or product-only hype."
+    },
+    {
+      "id": "scientist",
+      "type": "implementation_checker",
+      "authority": "code_and_spec",
+      "job": "Check whether the system can be made and used from the current disclosure and implementation evidence.",
+      "prompt_contract": "Identify implemented support, missing support, and whether examples are working or prophetic."
+    },
+    {
+      "id": "mathematician",
+      "type": "formula_checker",
+      "authority": "math_consistency",
+      "job": "Check whether the formulas are bounded, meaningful, and claim-safe.",
+      "prompt_contract": "Flag undefined variables, unbounded claims, unsupported guarantees, and places where the formula needs a fallback embodiment."
+    },
+    {
+      "id": "crowd_small_models",
+      "type": "advisory_panel",
+      "authority": "none",
+      "job": "Provide many cheap outside reactions: confusing language, obvious design-arounds, unclear terms, and naive-reader interpretations.",
+      "prompt_contract": "Give a short opinion only. You are not authority. Look for confusion, overclaiming, missing support, and plain-language design-arounds."
+    }
+  ],
+  "small_model_pool": {
+    "default_provider": "ollama_or_openai_compatible",
+    "temperature": 0.7,
+    "max_tokens_per_fan": 180,
+    "fan_count_default": 8,
+    "candidate_local_models": [
+      "llama3.2:1b",
+      "llama3.2:3b",
+      "qwen2.5:1.5b",
+      "qwen2.5-coder:1.5b",
+      "phi3:mini",
+      "gemma2:2b"
+    ],
+    "candidate_remote_class": "any free or low-cost OpenAI-compatible small model endpoint configured by environment variable"
+  },
+  "round_output_schema": {
+    "ball": "claim element under review",
+    "announcer_summary": "plain-language summary",
+    "pitch": "technical definition and support",
+    "hit": "broadened claim framing",
+    "umpire_call": "PRIMARY | DEPENDENT | REVIEW | CONTINUATION | DROP | STRIKE",
+    "crowd_signals": [
+      {
+        "model": "string",
+        "opinion": "short advisory note",
+        "risk_tag": "confusing | too_broad | unclear_support | design_around | okay"
+      }
+    ],
+    "next_action": "workbench action"
+  }
+}
