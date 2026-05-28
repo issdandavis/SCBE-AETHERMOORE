@@ -33,18 +33,19 @@ surcharge).
 | Utility examination fee | $176 |
 | **Base subtotal (≤ 3 independent, ≤ 20 total claims)** | **$400** |
 | Independent claims over 3 (3 used → 0 over) | $0 |
-| Claims over 20: 5 extra × $40 | $200 |
+| Claims over 20: 8 extra × $40 | $320 |
 | Multiple-dependent-claim fee (none used) | $0 |
-| **Total at filing** | **$600** |
+| **Total at filing** | **$720** |
 
 Avoidable surcharges deliberately NOT incurred: paper filing ($200), non-DOCX
 ($86), multiple-dependent claim ($185).
 
-The 5 paid extra claims (21-25) carry the five highest-value additions the
+The 8 paid extra claims (21-28) carry the highest-value additions the
 predecessor packet omitted: deferred-authorization (Sacred Eggs) gate,
-same-length fail-to-noise composition, Byzantine-fault
-swarm trust, Hopfield novel-intent energy, and physics-juggling task
-coordination. See § 7 for which of those five carry new-matter risk.
+same-length fail-to-noise composition, reroute containment, null-space anomaly
+detection, physics-juggling task coordination, disjoint bijective tokenizer
+alphabets, harmonic phase orthogonality (claim 27), and domain-specific entropy
+encoding (claim 28). See § 7 for which of those carry new-matter risk.
 
 ---
 
@@ -371,15 +372,15 @@ trail.
 
 ---
 
-### CLAIM FAMILY — EXTRA HIGH-VALUE DEPENDENTS (Claims 21-25, $40 each)
+### CLAIM FAMILY — EXTRA HIGH-VALUE DEPENDENTS (Claims 21-26, $40 each)
 
 **21.** The method of claim 1, further comprising generating a cryptographic
-authorization container that is unlocked only when all of N predetermined
-predicates are satisfied, the predicates comprising at least: a semantic
-predicate; a geometric predicate measuring distance from a known safe region; an
-execution-path predicate verifying that the container was reached via an
-authorized call chain; a quorum predicate requiring a threshold number of
-approving agents; and a cryptographic predicate verifying a post-quantum
+authorization container that is unlocked only when N predetermined predicates
+are satisfied, where N is at least three, the predicates including at least: a
+semantic predicate evaluating whether the context representation of the proposed
+action satisfies an authorized semantic profile; a geometric predicate measuring
+whether the embedded point lies within a predetermined hyperbolic distance from
+the session centroid; and a cryptographic predicate verifying a post-quantum
 signature; wherein failure of any predicate returns a noise or
 pseudorandom-looking output rather than a structured predicate-failure response.
 
@@ -400,37 +401,28 @@ length while avoiding disclosure of which predicate failed.
 > least a semantic, a geometric, and a cryptographic predicate" to track the
 > code more closely.**
 
-**23.** The system of claim 9, wherein the system maintains a swarm trust score
-for each participating governance agent, updates the trust score as
-`τ_new = α·τ_old + (1 − α)·v`, where `v` is a validity factor for a most-recent
-contribution and `α` is a smoothing constant, and automatically self-excludes
-from the governance decision any agent whose trust score falls below a
-participation threshold, thereby producing a Byzantine-fault-tolerant swarm
-consensus without a central coordinator.
+**23.** The method of claim 1, further comprising: prior to emitting the
+governance decision, determining whether the computational action matches a
+predetermined reroute rule associated with a class of actions; and, when a match
+is found, substituting a replacement action for the proposed computational
+action and emitting an allow decision for the replacement action, such that
+high-risk classes of actions are redirected to lower-risk alternatives without
+exposing a denial response to the requesting entity.
 
-> *§ 112 support:* Byzantine-fault-tolerant multi-agent consensus → `hydra/`
-> (Spine / Heads / Ledger / BFT per `CLAUDE.md`); a six-reviewer council
-> consensus with fail-count thresholds → `runtime_gate.py` `_council_review`
-> (0 fails → ALLOW, 1 → QUARANTINE, ≥2 → DENY). **See § 7 risk note E: the
-> specific exponential-moving-average τ-update formula currently appears only in
-> `demo/`, `archive/`, and `external_repos/` paths, not in production
-> governance. CIP candidate.**
+> *§ 112 support:* production reroute path → `runtime_gate.py` `_check_reroute`
+> and `DEFAULT_REROUTES`.
 
-**24.** The method of claim 1, further comprising applying a Hopfield energy
-function `E(c) = −½·(c')ᵀ·W·c' + θᵀ·c'` to the context representation `c`,
-wherein `W` encodes patterns of known legitimate operations learned offline;
-classifying the action as novel-intent when `E(c)` is above a threshold relative
-to trained patterns; and incorporating the novel-intent indicator into the
-composite risk value.
+**24.** The method of claim 1, further comprising computing a null-space anomaly
+score by determining whether per-axis deviations of the context representation
+from the session centroid each fall below a predetermined threshold;
+incrementing the null-space anomaly score when all per-axis deviations are below
+the threshold; and incorporating the null-space anomaly score into the composite
+risk value; wherein a null-space anomaly score above a predetermined level is
+treated as a governance signal indicating an action that is deliberately
+mimicking baseline behavior to evade the governance cost.
 
-> *§ 112 support:* multi-well / Hamiltonian energy landscape over the context
-> state (L8) → `packages/kernel/src/hyperbolic.ts` `multiWellPotential` /
-> `multiWellGradient` and `hamiltonianCFI.ts` per `CLAUDE.md`; null-space /
-> novel-intent anomaly scoring already in production → `runtime_gate.py`
-> `_null_space_anomaly`. **See § 7 risk note E: the explicit Hopfield quadratic
-> energy form `−½c'ᵀWc' + θᵀc'` currently appears only in archive/external
-> paths. CIP candidate; the production analog is the multi-well potential, which
-> counsel may prefer to claim instead.**
+> *§ 112 support:* production null-space anomaly path →
+> `runtime_gate.py` `_null_space_anomaly`.
 
 **25.** The system of claim 9, wherein the system coordinates task execution
 across a plurality of agent slots using a physics-based juggling model in which
@@ -446,6 +438,17 @@ higher-risk tasks are assigned higher arcs and fewer handoffs.
 > (rule 3 "high-inertia tasks have fewer handoffs"; rule 4 "higher arcs for
 > risky tasks"). Strong, verbatim written-description support. Lowest-risk of
 > the five extra claims.
+
+**26.** The method of claim 4, wherein each axis of the six-axis semantic
+weighting employs a bijective token alphabet in which each token is uniquely
+identified by a prefix element selected from a first predetermined set and a
+suffix element selected from a second predetermined set, such that the complete
+token vocabulary for each axis is a bijective mapping between token strings and
+integer indices, and the token vocabularies of distinct axes are disjoint.
+
+> *§ 112 support:* Sacred Tongues / tokenizer design surfaces and bijective
+> encode/decode terminology. Treat priority support as needing provisional-text
+> comparison if January 15, 2026 priority is material for this dependent claim.
 
 ---
 
@@ -609,35 +612,29 @@ provisional date cleanly. Family C is independently valuable (homoglyph /
 Trojan-Source / NFC tamper on *source code identifiers at the AST level* is a
 genuine, narrowly-held niche) and survives on its own.
 
-### Tier 6 — Risk note E: Claims 21-25 extra dependents — mostly CIP material
+### Tier 6 — Risk note E: Claims 21-26 extra dependents — mostly CIP material
 
-- **Claims 21-22 (Sacred Eggs five-predicate + all-paths-indistinguishable).**
+- **Claims 21-22 (Sacred Eggs N-predicate + same-length fail-to-noise).**
   Production `sacred_eggs.py` implements a **3-ring (CORE/INNER/OUTER + CA)**
-  container with **triadic binding** and **fail-to-noise on auth failure** — NOT
-  the specific **five-predicate (P_tongue / P_geo / P_path / P_quorum / P_crypto)
-  conjunction** the claim recites. **Partial support at best; CIP candidate.**
-  Counsel should consider reformulating to "N predetermined predicates including
-  at least a semantic, a geometric, and a cryptographic predicate," which tracks
-  the implemented ring/triad/fail-to-noise model and the Mother-Avion living-
-  credential direction without overclaiming a five-way conjunction that is not in
-  code. Claim 22's "every output path indistinguishable" is supported in spirit
-  by the egg's regenerate-shell-on-failure behavior + `_fail_to_noise`.
-- **Claim 23 (swarm trust EMA `τ_new = α·τ_old + (1−α)·v`).** The *concept* of
-  reputation-weighted, self-excluding swarm consensus is supported by HYDRA's BFT
-  and the in-gate `_council_review`. The *specific EMA formula* appears only in
-  `demo/`, `archive/`, and `external_repos/` — **CIP material vs. the
-  provisional.** Either move to a continuation or recite the generic
-  council-consensus (`_council_review` fail-count) instead of the EMA.
-- **Claim 24 (Hopfield energy `−½c'ᵀWc' + θᵀc'`).** The production analog is the
-  L8 **multi-well potential** (`multiWellPotential`) plus the null-space anomaly
-  scorer; the *explicit Hopfield quadratic form* is archive/external only. **CIP
-  material.** Counsel may prefer to claim the multi-well-potential novel-intent
-  detector (which IS in production) rather than the Hopfield form.
+  container with **triadic binding** and **fail-to-noise on auth failure**.
+  Current claim language tracks that more closely by reciting N >= 3 and
+  semantic/geometric/cryptographic predicates rather than requiring a fixed
+  five-predicate conjunction.
+- **Claim 23 (reroute containment).** Grounded in production `_check_reroute`
+  and `DEFAULT_REROUTES`; confirm against provisional text or accept
+  non-provisional-date support.
+- **Claim 24 (null-space anomaly).** Grounded in production
+  `_null_space_anomaly`; confirm against provisional text or accept
+  non-provisional-date support.
 - **Claim 25 (physics-juggling coordination).** **Strongly supported** by
   `src/fleet/juggling-scheduler.ts` (FlightState, inertia, catch windows, arcs,
-  the seven rules verbatim). Lowest risk of the five; treat as a solid dependent,
+  the seven rules verbatim). Treat as a solid dependent,
   though confirm the scheduler predates the provisional or accept the
   non-provisional date.
+- **Claim 26 (disjoint bijective tokenizer alphabets).** Supported by the
+  Sacred Tongues/tokenizer design surface. Because this dependent claim moves
+  closer to the tokenizer invention itself, compare against the provisional text
+  before relying on the January 15, 2026 priority date.
 
 ### Recommended filing posture
 

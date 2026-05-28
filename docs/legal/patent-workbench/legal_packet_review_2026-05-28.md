@@ -23,8 +23,8 @@ engineering and procedural review, not legal representation.
   filed separately.
 - USPTO fee schedule confirms the excess-claim structure: independent claims
   over three and total claims over twenty trigger extra fees. The current packet
-  has three independent claims and twenty-five total claims, meaning five
-  excess total claims.
+  has three independent claims and twenty-eight total claims, meaning eight
+  excess total claims ($720 micro-entity: $400 base + 8 x $40).
 
 ## Packet Structure Review
 
@@ -46,7 +46,7 @@ Local structural extraction found the following section order:
 Local checks:
 
 - Formal claims section appears once.
-- Formal claim numbers are sequential: 1 through 25.
+- Formal claim numbers are sequential: 1 through 26.
 - Independent claims: 1, 9, and 15.
 - Abstract word count: 117 words.
 - Removed from the formal DOCX: old internal claim appendix that was previously
@@ -141,9 +141,10 @@ Diagram changes made in this review:
   cheapest-reject-first stack, post-quantum receipts, audit receipt fields.
 - Medium-to-high risk: claims 15-20, bijective tamper detection, AST
   fingerprint comparison, confusable identifier checks, NFC stub fallback.
-- Higher risk / continuation-style: claims 21-25, especially multi-predicate
-  authorization containers and physics-based juggling coordination. These have
-  implementation and concept support, but should be checked against the
+- Higher risk / continuation-style: claims 21-26, especially multi-predicate
+  authorization containers, physics-based juggling coordination, and the
+  disjoint bijective tokenizer alphabet dependent claim. These have
+  implementation or design support, but should be checked against the
   provisional text before relying on the January 15, 2026 priority date.
 
 ## Remaining Manual Filing Blockers
@@ -155,7 +156,7 @@ Diagram changes made in this review:
   warnings/errors.
 - Fee verification: re-check filing/search/examination and excess-claim fees on
   the USPTO fee schedule on the day of filing.
-- Priority support: compare claims 21-25 against the exact filed provisional
+- Priority support: compare claims 21-26 against the exact filed provisional
   text before filing if preserving the provisional priority date for those
   features matters.
 
@@ -167,4 +168,3 @@ python docs\legal\build_patent_docx.py
 node -e "const fs=require('fs'); JSON.parse(fs.readFileSync('docs/legal/patent-workbench/filing_readiness_checklist.json','utf8')); console.log('json ok')"
 git diff --check -- docs\PATENT_DETAILED_DESCRIPTION.md docs\legal\build_patent_docx.py docs\legal\PATENT_CLAIMS_EXPANDED_v2.md docs\legal\patent-figures\generate_patent_figures.py docs\legal\patent-workbench\filing_readiness_checklist.md docs\legal\patent-workbench\filing_readiness_checklist.json
 ```
-

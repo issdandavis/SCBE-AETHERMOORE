@@ -187,7 +187,7 @@ ABSTRACT = (
 )
 
 # ---------------------------------------------------------------------------
-# 25 Claims
+# 26 Claims
 # ---------------------------------------------------------------------------
 CLAIMS = [
     # --- Independent Claim 1 ---
@@ -243,9 +243,13 @@ CLAIMS = [
     (
         4, False,
         "The method of claim 1, wherein the additional governance signal comprises "
-        "a six-axis semantic weighting in which each axis has a predetermined "
-        "weight equal to a power of the golden ratio, phi^k for k = 0 through 5, "
-        "with phi approximately equal to 1.618."
+        "a six-axis semantic weighting in which each of the six axes corresponds to "
+        "a distinct semantic domain of the context representation and is assigned a "
+        "predetermined weight equal to a power of the golden ratio, phi^k for a "
+        "respective index k from 0 through 5, with phi approximately equal to 1.618, "
+        "such that the weighting applies exponentially increasing emphasis to "
+        "higher-order semantic domains and the combined six-axis score scales the "
+        "governance signal across semantically diverse dimensions of the context."
     ),
     (
         5, False,
@@ -482,13 +486,37 @@ CLAIMS = [
     ),
     (
         26, False,
-        "The method of claim 4, wherein each axis of the six-axis semantic "
-        "weighting employs a bijective token alphabet in which each token is "
-        "uniquely identified by a prefix element selected from a first "
-        "predetermined set and a suffix element selected from a second "
-        "predetermined set, such that the complete token vocabulary for each "
-        "axis is a bijective mapping between token strings and integer indices, "
-        "and the token vocabularies of distinct axes are disjoint."
+        "The method of claim 4, wherein each axis of the semantic weighting "
+        "employs a bijective token alphabet comprising a number of tokens equal "
+        "to the Cartesian product of a first predetermined prefix set and a "
+        "second predetermined suffix set, each token uniquely formed by "
+        "concatenating a prefix element, a predetermined separator character, "
+        "and a suffix element, such that the complete token vocabulary for each "
+        "axis bijects onto a contiguous range of integer byte indices, the token "
+        "vocabularies of distinct axes are pairwise disjoint, and the axis of "
+        "origin of any given token is determinable by set membership alone "
+        "without additional context."
+    ),
+    (
+        27, False,
+        "The method of claim 4, wherein each of the six axes of the semantic "
+        "weighting is associated with a respective harmonic frequency ratio "
+        "selected from integer-ratio musical intervals and a phase offset equal "
+        "to 2*pi*k/6 radians for the respective axis index k, such that the six "
+        "axes are uniformly distributed around the unit circle at sixty-degree "
+        "intervals, and the contribution of each axis to the governance signal "
+        "incorporates a sinusoidal time-varying modulation at the respective "
+        "harmonic frequency and phase offset."
+    ),
+    (
+        28, False,
+        "The method of claim 26, wherein each axis's token vocabulary constitutes "
+        "a domain-specific entropy encoding in which each byte of a context "
+        "representation maps deterministically to a token in that axis's "
+        "vocabulary, the semantic content of the context thereby constraining "
+        "available key derivation paths within the governance system, such that "
+        "key derivation paths obtained from encodings in distinct axis vocabularies "
+        "are mutually independent by the pairwise-disjoint vocabulary property."
     ),
 ]
 

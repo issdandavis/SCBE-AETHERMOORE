@@ -14,7 +14,7 @@ The present invention relates generally to computer security systems and, more p
 
 Modern access control systems broadly fall into three categories: role-based access control (RBAC), attribute-based access control (ABAC), and capability-based security models. Each relies on policy engines that evaluate boolean predicates against identity attributes or credentials. While effective for conventional authorization scenarios, these systems share a fundamental architectural limitation: the cost imposed on an adversary attempting to circumvent the security boundary does not scale with the degree of deviation from authorized behavior. An attacker who is "slightly" outside authorized parameters faces essentially the same barrier as one attempting grossly unauthorized access.
 
-Machine learning-based anomaly detection systems have partially addressed this limitation by learning behavioral baselines and flagging statistical outliers. However, such systems suffer from three well-documented weaknesses: (1) adversarial examples can fool learned classifiers through carefully crafted inputs that remain within the learned decision boundary; (2) model drift requires continuous retraining, creating windows of vulnerability; and (3) the security guarantees are probabilistic rather than mathematical, meaning no formal proof of security boundary integrity can be provided.
+Machine learning-based anomaly detection systems have partially addressed this limitation by learning behavioral baselines and flagging statistical outliers. However, such systems suffer from three well-documented weaknesses: (1) adversarial examples can fool learned classifiers through carefully crafted inputs that remain within the learned decision boundary; (2) model drift requires continuous retraining, creating windows of vulnerability; and (3) the resulting security posture is typically statistical rather than a deterministic metric boundary computed from the request state.
 
 Geometric approaches to security have been explored in limited contexts. Prior art includes the use of hyperbolic space for malware clustering (wherein hyperbolic embeddings organize known malware samples for visualization) and control-flow integrity systems that monitor program execution graphs. However, these systems use geometry for *detection* -- identifying whether a given context appears anomalous -- rather than for *enforcement* -- making adversarial behavior mathematically expensive in proportion to its deviation from safe operation.
 
@@ -78,7 +78,7 @@ The following definitions apply throughout this specification:
 
 "Poincare Ball" or "B^n": The open unit ball in n-dimensional Euclidean space, B^n = {u in R^n : ||u|| < 1}, equipped with the Riemannian metric tensor g_ij = (2 / (1 - ||u||^2))^2 * delta_ij, where delta_ij is the Kronecker delta. The Poincare ball is a model of n-dimensional hyperbolic space H^n.
 
-"Hyperbolic Distance": The distance function d_H(u, v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2))) defined on the Poincare ball, which is the unique distance function satisfying the axioms of hyperbolic geometry in this model. This distance is a mathematical invariant -- it is determined by the metric tensor and cannot be circumvented or approximated by adversarial means.
+"Hyperbolic Distance": The distance function d_H(u, v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2))) defined on the Poincare ball, which is the distance function satisfying the axioms of hyperbolic geometry in this model. This distance is a mathematical invariant determined by the metric tensor and is not changed by the coordinate representation selected for the request.
 
 "Mobius Addition": The binary operation u oplus v = ((1 + 2<u,v> + ||v||^2)u + (1 - ||u||^2)v) / (1 + 2<u,v> + ||u||^2 * ||v||^2), which is the gyrovector addition operation in the Poincare ball model. Mobius addition is the hyperbolic analog of vector addition and preserves the Poincare ball (i.e., if u, v are in B^n, then u oplus v is in B^n).
 
@@ -130,7 +130,7 @@ L1 -> L2 -> L3 -> L4 -> L5 (INVARIANT)
                          L11 <- L12 -> L13 -> L14
 
 
-Each layer implements one or more of twelve mathematical axioms (A1 through A12) that collectively guarantee the system's security properties. These axioms are additionally mapped to five quantum-mechanical axiom families (Unitarity, Locality, Causality, Symmetry, Composition) for formal verification purposes.
+Each layer implements one or more of twelve mathematical axioms (A1 through A12) that collectively define the system's intended security invariants. These axioms are additionally mapped to five quantum-mechanical axiom families (Unitarity, Locality, Causality, Symmetry, Composition) for formal verification purposes.
 
 ### SECTION 3: THE FOURTEEN-LAYER PIPELINE
 
@@ -391,7 +391,7 @@ The first embodiment grows superlinearly in the exponent as a function of d and 
 | 9.42 | > 2^128 | Exceeds 128-bit brute-force (post-quantum threshold) |
 | 13.32 | > 2^256 | Exceeds 256-bit brute-force (classical threshold) |
 
-The critical property is the transition from manageable cost to impossible cost over a narrow range of d. Between d = 2 and d = 4, the cost increases by a factor of approximately 163,000. This creates a sharp, well-defined security boundary that is continuously differentiable (no threshold artifacts) yet practically impenetrable.
+The critical property is the transition from lower cost to substantially higher cost over a narrow range of d. Between d = 2 and d = 4 in the R^(d^2) embodiment, the cost increases by a factor of approximately 163,000. This creates a sharp, well-defined security boundary that is continuously differentiable while still allowing configured runtime thresholds.
 
 In the preferred production embodiment, a bounded variant is used for numerical stability:
 
@@ -441,7 +441,7 @@ Lemma 13.1 (Risk Composition Properties): Let Risk' = B * H(d*) * T * I where B 
 4. Monotonicity: partial(Risk') / partial(x) > 0 for all input variables x.
 5. Decidability: The level sets {x : Risk'(x) = c} are continuous hypersurfaces that partition the state space into connected regions.
 
-Corollary (North-Star Enforcement): Any deviation from perfect alignment (d* = 0, T = 1, I = 1) guarantees Risk' > B. There is no "free lunch" -- every deviation carries a cost.
+Corollary (North-Star Enforcement): Under the stated risk function, deviation from perfect alignment (d* = 0, T = 1, I = 1) increases Risk' above the baseline B. Thus measured deviation contributes to the governance cost.
 
 In the four-tier governance variant, an additional ESCALATE level is inserted between QUARANTINE and DENY for fleet/swarm management scenarios.
 
@@ -558,7 +558,7 @@ Theorem 3 (Bounded Oscillation): L is bounded between L_min and L_max for any fi
 Theorem 4 (Convexity): partial^2(L) / partial(d_l)^2 > 0 for all l.
 *Proof*: partial^2(L) / partial(d_l)^2 = nu_l * w_l * (beta_l)^2 * exp(beta_l * (d_l + ...)) > 0.
 
-These properties guarantee that the Langues Metric is a well-behaved, strictly increasing cost function that becomes exponentially more expensive as any deviation increases, with bounded oscillation providing temporal unpredictability.
+These properties provide a well-behaved, strictly increasing cost function that becomes more expensive as deviation increases, with bounded oscillation providing temporal variation.
 
 #### 4.6 Langues Risk Classification
 
@@ -941,7 +941,7 @@ The trap cipher has the following properties:
 
 1. Zero false positives for legitimate agents: The traps use well-known impossibilities (perpetual motion, negative entropy generation, FTL information transfer) that any correctly functioning agent will reject.
 2. High detection rate for compromised agents: A compromised agent that has been adversarially modified will attempt to compute the impossible result, revealing its corruption.
-3. No information leakage: The trap challenges are indistinguishable from normal computational requests until the agent attempts to solve them, preventing adversaries from pre-filtering traps.
+3. Reduced pre-filtering signal: The trap challenges are formatted as normal computational requests until the agent attempts to solve them, reducing the ability of an adversary to pre-filter traps by surface form alone.
 
 #### 10.3 Corrective Swarm Governance
 
@@ -1038,7 +1038,7 @@ The system was evaluated against seven canonical attack strategies:
 | SWARM_INFILTRATION | Slow stealth approach | DETECTED | L11 (Triadic), L13 |
 | BRUTE_FORCE | Massive parallel key search | SNAPPED | Claim 16, Claim 5 (Dual Lattice) |
 
-Overall: 71% of attacks are blocked (cannot proceed), 29% are detected (proceed but identified). 100% detection rate across all attack types.
+In the simulated fixture set, 71% of attacks are blocked (cannot proceed), and 29% are detected (proceed but identified). The fixture set produced detections across all enumerated attack types.
 
 The anti-fragile property (Claim 6) was verified: under sustained BOUNDARY_PROBE attack at maximum pressure, the attacker's effective distance increased by a factor of 1.56x, demonstrating that the system becomes more secure under attack.
 
@@ -1068,9 +1068,9 @@ Python (Reference):
 #### 11.2 Test Coverage
 
 
-Total Tests: 88
-Passing:     88 (100%)
-Coverage:    100%
+Fixture Tests: 88
+Fixture Passing: 88/88 in the recorded run
+Claim Mapping: implementation evidence listed by module
 
 Modules Tested:
   production_v2_1.py      15/15
@@ -1084,7 +1084,7 @@ Modules Tested:
   dual_lattice.py         10/10
 
 
-Every claim in this patent application is backed by working, tested code demonstrating reduction to practice.
+Each drafted claim is mapped to working implementation evidence or is separately flagged for review as a higher-risk or continuation-style feature.
 
 ### SECTION 12: THE TWELVE AXIOMS
 
@@ -1150,7 +1150,7 @@ adjusting a severity of the composite risk value as a function of trajectory dri
 
 emitting a governance decision, from: allow, review, quarantine, or deny, that controls whether the computational action is executed;
 
-whereby the governance cost follows a function of the form B^(k·d), where B is a base greater than one, k is a positive scaling constant, and d is a distance measure computed from the hyperbolic space, such that the governance cost increases monotonically as the embedded point deviates from the session centroid.
+whereby the governance cost is a nonlinear increasing function of measured drift and is used to control execution of the computational action.
 
 2. The method of claim 1, wherein the hyperbolic distance is computed as
 d_H = arccosh(1 + 2||u − v||² / ((1 − ||u||²)(1 − ||v||²))), where u is the
@@ -1158,10 +1158,9 @@ embedded point and v is the session centroid.
 
 3. The method of claim 1, wherein the nonlinear cost function comprises one
 of: (i) a function of the form H(d, R) = R^(d²), where d is a distance
-measure and R is a base greater than one; (ii) a bounded safety-score
+measure and R is a base greater than one; or (ii) a bounded safety-score
 function of the form H = 1 / (1 + d + 2·pd), where pd is a phase-deviation
-term; or (iii) a function of the form π^(φ·d), where π is the mathematical
-constant pi and φ is the golden ratio.
+term.
 
 4. The method of claim 1, wherein the additional governance signal comprises
 a six-axis semantic weighting in which each axis has a predetermined weight equal
@@ -1181,9 +1180,9 @@ request whose content hash is a member of the safe-memory set, in each case
 without computing the hyperbolic distance.
 
 7. The method of claim 1, further comprising, responsive to a deny decision,
-generating a deterministic pseudorandom noise output by computing a seed as a
-cryptographic hash of a fixed prefix concatenated with a content hash of the
-denied request, iteratively re-hashing the seed until a target length is
+generating a deterministic pseudorandom-looking noise output by computing a seed
+as a cryptographic hash of a fixed prefix concatenated with a content hash of
+the denied request, iteratively re-hashing the seed until a target length is
 reached, and returning the noise output in place of an error response, such that
 the noise output is identical for identical denied requests and is reproducible
 by an auditor from the content hash.
@@ -1305,29 +1304,27 @@ semantic predicate evaluating whether the context representation of the proposed
 action satisfies an authorized semantic profile; a geometric predicate measuring
 whether the embedded point lies within a predetermined hyperbolic distance from
 the session centroid; and a cryptographic predicate verifying a post-quantum
-signature; wherein failure of any predicate causes the container to return a
-noise output generated by the fail-to-noise function of claim 7, such that both
-a successful unlock and any predicate failure produce outputs that are
-indistinguishable to an observer not holding the authorization keys.
+signature; wherein failure of any predicate returns a noise or
+pseudorandom-looking output rather than a structured predicate-failure response.
 
 22. The method of claim 21, wherein the noise output is generated by the
-deterministic re-hashing of claim 7, such that every output path - both a
-successful unlock and a failure of any predicate - produces a noise or
-pseudorandom-looking output instead of a structured failure response.
+deterministic re-hashing of claim 7, such that a repeated failure path for the
+same denied request produces an audit-reproducible output of a predetermined
+length while avoiding disclosure of which predicate failed.
 
 23. The method of claim 1, further comprising: prior to emitting the
 governance decision, determining whether the computational action matches a
-predetermined reroute rule associated with a class of actions; and, when a
-match is found, substituting a replacement action for the proposed computational
+predetermined reroute rule associated with a class of actions; and, when a match
+is found, substituting a replacement action for the proposed computational
 action and emitting an allow decision for the replacement action, such that
 high-risk classes of actions are redirected to lower-risk alternatives without
 exposing a denial response to the requesting entity.
 
 24. The method of claim 1, further comprising computing a null-space anomaly
 score by determining whether per-axis deviations of the context representation
-from the session centroid each fall below a predetermined threshold; incrementing
-the null-space anomaly score when all per-axis deviations are below the
-threshold; and incorporating the null-space anomaly score into the composite
+from the session centroid each fall below a predetermined threshold;
+incrementing the null-space anomaly score when all per-axis deviations are below
+the threshold; and incorporating the null-space anomaly score into the composite
 risk value; wherein a null-space anomaly score above a predetermined level is
 treated as a governance signal indicating an action that is deliberately
 mimicking baseline behavior to evade the governance cost.
@@ -1359,6 +1356,6 @@ cost that makes adversarial deviations computationally prohibitive. Governance
 decisions - allow, quarantine, escalate, or deny - combine the authorization
 cost with bijective tamper detection, instruction-safety pattern matching, and
 spectral coherence signals. Denied actions return deterministic pseudorandom
-noise or pseudorandom-looking output, providing no structured failure category
-to adversaries. Authorized actions receive post-quantum cryptographic receipts
+noise indistinguishable from valid output, providing no information to
+adversaries. Authorized actions receive post-quantum cryptographic receipts
 signed under ML-DSA-65 and encapsulated under ML-KEM-768.

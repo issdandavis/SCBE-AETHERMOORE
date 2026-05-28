@@ -101,10 +101,15 @@ pi and `φ` is the golden ratio.
 ---
 
 **4.** The method of claim 1, wherein the additional governance signal comprises
-a six-axis semantic weighting in which each axis has a predetermined weight equal
-to a power of the golden ratio, `φ^k` for `k = 0..5`, with `φ ≈ 1.618`.
+a six-axis semantic weighting in which each of the six axes corresponds to a
+distinct semantic domain of the context representation and is assigned a
+predetermined weight equal to a power of the golden ratio, `φ^k` for a
+respective index `k` from 0 through 5, with `φ ≈ 1.618`, such that the
+weighting applies exponentially increasing emphasis to higher-order semantic
+domains and the combined six-axis score scales the governance signal across
+semantically diverse dimensions of the context.
 
-> *§ 112:* `languesMetric.ts` `Math.pow(PHI,i)`; `runtime_gate.py` `TONGUE_WEIGHTS = tuple(PHI**k for k in range(6))`. Unchanged from v2.
+> *§ 112:* `languesMetric.ts` `Math.pow(PHI,i)` for each tongue axis; `runtime_gate.py` `TONGUE_WEIGHTS = tuple(PHI**k for k in range(6))`; FIG.4 six-axis diagram in spec with named semantic domains (KO/AV/RU/CA/UM/DR) and phi^k weights. Enriched 2026-05-27: added semantic-domain correspondence and governance-signal scaling consequence.
 
 ---
 
@@ -372,14 +377,41 @@ higher-risk tasks are assigned higher arcs and fewer handoffs.
 
 ---
 
-**26.** The method of claim 4, wherein each axis of the six-axis semantic
-weighting employs a bijective token alphabet in which each token is uniquely
-identified by a prefix element selected from a first predetermined set and a
-suffix element selected from a second predetermined set, such that the complete
-token vocabulary for each axis is a bijective mapping between token strings and
-integer indices, and the token vocabularies of distinct axes are disjoint.
+**26.** The method of claim 4, wherein each axis of the semantic weighting
+employs a bijective token alphabet comprising a number of tokens equal to the
+Cartesian product of a first predetermined prefix set and a second predetermined
+suffix set, each token uniquely formed by concatenating a prefix element, a
+predetermined separator character, and a suffix element, such that the complete
+token vocabulary for each axis bijects onto a contiguous range of integer byte
+indices, the token vocabularies of distinct axes are pairwise disjoint, and the
+axis of origin of any given token is determinable by set membership alone
+without additional context.
 
-> *§ 112:* `packages/sixtongues/` — 6 tongues × 16-prefix × 16-suffix = 256 tokens per tongue; each tongue's 256-token vocabulary is disjoint from the others; encode/decode is bijective by construction. Also supported by `runtime_gate.py` `TONGUE_WEIGHTS` and `src/tokenizer/`. Closes the coverage gap where a competitor implements phi-weighting with a non-bijective or merged-vocabulary tokenizer.
+> *§ 112:* `packages/sixtongues/` — 6 tongues × 16-prefix × 16-suffix = 256 tokens per tongue; `Token(tongue, byte) = prefix[byte/16] + "'" + suffix[byte%16]` (separator is apostrophe `'`); each tongue's 256-token vocabulary is pairwise disjoint from the others; encode/decode is bijective by construction. Spec `PATENT_DETAILED_DESCRIPTION.md` line 532 gives exact formula; line 547-555 states domain separation property. Enriched 2026-05-27: removed "six-axis" inheritance, added Cartesian-product cardinality, separator character, bijection onto byte indices, and axis-of-origin determinability.
+
+---
+
+**27.** The method of claim 4, wherein each of the six axes of the semantic
+weighting is associated with a respective harmonic frequency ratio selected from
+integer-ratio musical intervals and a phase offset equal to 2*pi*k/6 radians for
+the respective axis index k, such that the six axes are uniformly distributed
+around the unit circle at sixty-degree intervals, and the contribution of each
+axis to the governance signal incorporates a sinusoidal time-varying modulation
+at the respective harmonic frequency and phase offset.
+
+> *§ 112:* `PATENT_DETAILED_DESCRIPTION.md` line 499 (`phi_l = 2*pi*l/6`), lines 508-511 tongue table with harmonic ratios (KO=1/1, AV=9/8, RU=5/4, CA=4/3, UM=3/2, DR=5/3), lines 571-572 (`omega_l = 2*pi*f_l`; `phi_l = 2*pi*l/6`), line 24 (Langues Metric with harmonic phase shifts). FIG.4 shows six-axis unit-circle arrangement at 60° intervals. Added 2026-05-28.
+
+---
+
+**28.** The method of claim 26, wherein each axis's token vocabulary constitutes
+a domain-specific entropy encoding in which each byte of a context representation
+maps deterministically to a token in that axis's vocabulary, the semantic content
+of the context thereby constraining available key derivation paths within the
+governance system, such that key derivation paths obtained from encodings in
+distinct axis vocabularies are mutually independent by the pairwise-disjoint
+vocabulary property.
+
+> *§ 112:* `PATENT_DETAILED_DESCRIPTION.md` lines 547-555 — "Domain-Specific Entropy Encoding wherein each byte of input maps deterministically to a tongue-specific token, and the semantic content of the input constrains the available key derivation paths. This constitutes a novel form of entropy source." Disjoint vocabulary property already established by claim 26. Added 2026-05-28.
 
 ---
 
