@@ -1,0 +1,20 @@
+{
+  "schema": "scbe_patent_application_status_v1",
+  "recorded_at": "2026-05-28",
+  "docket": "SCBE-2026-0001",
+  "application_number": "63/961,403",
+  "application_number_compact": "63961403",
+  "title": "System and Method for Hyperbolic Geometry-Based Authorization with Topological Control-Flow Integrity",
+  "filing_date": "2026-01-15",
+  "application_type": "U.S. provisional application",
+  "status": "Application Dispatched from Preexam, Not Yet Docketed",
+  "first_named_inventor": "Issac Daniel Davis",
+  "customer_record": "Inventor/customer address is on the Patent Center record and intentionally not duplicated in this repo workbench.",
+  "next_patent_center_action": "Upload/export filed documents and receipts for local evidence freeze.",
+  "local_upload_drop": "docs/legal/patent-workbench/uploads/",
+  "notes": [
+    "This record captures procedural metadata only.",
+    "Do not store inventor address, credentials, or Patent Center login details in this repository.",
+    "Use official Patent Center documents as the source of truth if any field differs."
+  ]
+}

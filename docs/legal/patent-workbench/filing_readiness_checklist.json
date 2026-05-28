@@ -1,0 +1,72 @@
+{
+  "schema": "scbe_patent_readiness_checklist_v1",
+  "generated_at": "2026-05-28T00:51:07.589Z",
+  "checklist": [
+    {
+      "id": "provisional_exported",
+      "text": "Filed provisional packet and receipt exported from Patent Center.",
+      "status": "in_progress",
+      "evidence": "Patent Center record identified: application 63/961,403, docket SCBE-2026-0001, filed 2026-01-15, status Application Dispatched from Preexam, Not Yet Docketed. Document exports still need to be placed under docs/legal/patent-workbench/uploads/."
+    },
+    {
+      "id": "priority_claim_checked",
+      "text": "ADS will properly claim benefit of provisional application.",
+      "status": "open",
+      "evidence": ""
+    },
+    {
+      "id": "micro_entity_checked",
+      "text": "Micro entity eligibility checked and correct form selected.",
+      "status": "in_progress",
+      "evidence": "Gmail source message 19cb262145405494 includes PTO/SB/15A Micro Entity Certification dated 2026-03-02 under 37 CFR 1.29(a). Official Patent Center receipt/acknowledgement still needs export into uploads."
+    },
+    {
+      "id": "claim_count_checked",
+      "text": "Independent and total claim counts checked for fee impact.",
+      "status": "open",
+      "evidence": ""
+    },
+    {
+      "id": "spec_claim_support_checked",
+      "text": "Every claim element mapped to specification support.",
+      "status": "open",
+      "evidence": ""
+    },
+    {
+      "id": "spec_docx_assembled",
+      "text": "Specification DOCX assembled in USPTO section order for review.",
+      "status": "done",
+      "evidence": "Draft specification assembled at docs/legal/patent-workbench/assembled/SCBE_NONPROVISIONAL_SPEC_DRAFT_v1.docx with Title, Cross-Reference, Background, Summary, Brief Description of Drawings, Detailed Description, Claims, and Abstract. Local manifest reports 25 claims and 9 figures. This is not Patent Center DOCX validation."
+    },
+    {
+      "id": "drawings_complete",
+      "text": "Drawings cover each claimed feature requiring a figure.",
+      "status": "open",
+      "evidence": ""
+    },
+    {
+      "id": "prior_art_logged",
+      "text": "Prior-art search log completed and reviewed.",
+      "status": "open",
+      "evidence": ""
+    },
+    {
+      "id": "docx_validated",
+      "text": "DOCX accepted by Patent Center validation.",
+      "status": "open",
+      "evidence": ""
+    },
+    {
+      "id": "oath_declaration_ready",
+      "text": "Inventor oath/declaration ready.",
+      "status": "open",
+      "evidence": ""
+    },
+    {
+      "id": "fees_rechecked",
+      "text": "USPTO fees checked on filing day.",
+      "status": "open",
+      "evidence": ""
+    }
+  ]
+}
