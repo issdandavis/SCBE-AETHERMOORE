@@ -470,6 +470,8 @@ where theta_1 = 0.33 and theta_2 = 0.67 are default threshold values.
 
 In the four-tier governance variant, an additional ESCALATE level is inserted between QUARANTINE and DENY for fleet/swarm management scenarios.
 
+In the five-tier governance variant, a REROUTE decision mode provides constructive containment as an alternative to outright denial. When the action text matches a pattern in a configurable reroute table AND an elevated geometric or semantic signal -- specifically, a harmonic cost or spin magnitude above a confirmation threshold -- independently corroborates the match, the gate substitutes a safer replacement action rather than blocking and returning fail-to-noise output. The reroute table maps action patterns (regular expressions over the action text) to replacement action identifiers and human-readable rationale strings; representative entries redirect system file access to a logged-denial stub and redirect external network sends to a log-only handler. REROUTE operates on a separate action path outside the numeric severity escalation chain: it does not compete with ALLOW, QUARANTINE, or DENY in severity comparisons, and a REROUTE result is preserved against subsequent overlay signals that would otherwise escalate toward DENY. The two-signal confirmation requirement -- pattern match plus geometric or semantic corroboration -- substantially reduces false-positive reroutes on benign text that incidentally contains common words matching the reroute pattern.
+
 #### 3.14 Layer 14: Audio Axis (Axiom A10)
 
 Layer 14 implements a parallel telemetry channel using Short-Time Fourier Transform (STFT) analysis:
@@ -902,6 +904,13 @@ The context includes sphere/cube projections (HEALPix or Morton codes) that bind
 ### SECTION 9: CHEAPEST REJECT FIRST -- VERIFICATION ORDER OPTIMIZATION
 
 The system implements a "cheapest reject first" strategy that orders verification stages by computational cost:
+
+**Stage 0: Null-Space Anomaly Check -- O(d)**
+- Compute the six-dimensional tongue coordinate vector for the action text.
+- Compare each coordinate against the session centroid (or a fixed default baseline when no centroid has been established).
+- If ALL six coordinates are within a predetermined epsilon of the centroid (all deviations < NULL_SPACE_EPSILON), compute anomaly score = max(0.0, 1 - mean_deviation / NULL_SPACE_EPSILON). An adversarial input that deliberately keeps all tongue activations near the centroid is "hiding in the null space" -- the action appears geometrically normal so that the hyperbolic distance to the centroid remains small, evading the harmonic cost wall while carrying adversarial intent.
+- If the standard deviation of the coordinate vector is below a uniformity threshold (e.g., std < 0.03), return anomaly score 0.5 regardless of centroid proximity. Real text activates tongue dimensions unevenly; a flat, unnaturally uniform activation profile is independently suspicious.
+- A nonzero anomaly score is added to the composite risk value before the main hyperbolic distance computation, so null-space hiding is penalized even when the measured distance to the centroid is small.
 
 **Stage 1: Intent Match** -- O(1)
 - Compare provided intent against expected intent from trajectory

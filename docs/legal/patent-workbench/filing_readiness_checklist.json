@@ -9,7 +9,7 @@
       "id": "spec_docx_assembled",
       "text": "Specification DOCX assembled in USPTO section order for review.",
       "status": "done",
-      "evidence": "docs/legal/SCBE_NONPROVISIONAL_SPEC_v1.docx and patent-workbench/assembled/SCBE_NONPROVISIONAL_SPEC_DRAFT_v1.docx. 399 paragraphs, ~69 KB, 26 claims, 9 figures per local manifest."
+      "evidence": "docs/legal/SCBE_NONPROVISIONAL_SPEC_v1.docx and patent-workbench/assembled/SCBE_NONPROVISIONAL_SPEC_DRAFT_v1.docx. 399 paragraphs, ~70 KB, 28 claims, 9 figures per local manifest."
     },
     {
       "id": "spec_section_order_verified",
@@ -33,7 +33,7 @@
       "id": "claims_fixed_v3_done",
       "text": "Fixed claims v3 produced with all inaccuracies resolved and production-unclaimed features added.",
       "status": "done",
-      "evidence": "PATENT_CLAIMS_FIXED_v3.md created 2026-05-28. Claim 1 whereby clause rewritten (bounded exponential pi^(phi*d*), not superexponential; distance from centroid not proximity to boundary). Claim 3 adds species (iii) pi^(phi*d). Claim 21 reformulated from 5-predicate to N-predicate >=3 tracking actual 3-ring sacred_eggs.py. Claim 23 REPLACED EMA tau formula (archive only) with REROUTE 5th-decision-mode (production _check_reroute + DEFAULT_REROUTES). Claim 24 REPLACED Hopfield quadratic form (archive only) with null-space anomaly detection (production _null_space_anomaly lines 807-835). All other claims retained verbatim. CIP deferred items documented in v3 section 'What Has Been Deferred'. Fee updated to $640 after adding claim 26. NEXT: apply claim 1 whereby-clause fix to spec DOCX claims section before filing."
+      "evidence": "PATENT_CLAIMS_FIXED_v3.md created 2026-05-28. Claim 1 whereby clause rewritten (bounded exponential pi^(phi*d*), not superexponential; distance from centroid not proximity to boundary). Claim 3 adds species (iii) pi^(phi*d). Claim 21 reformulated from 5-predicate to N-predicate >=3 tracking actual 3-ring sacred_eggs.py. Claim 23 REPLACED EMA tau formula (archive only) with REROUTE 5th-decision-mode (production _check_reroute + DEFAULT_REROUTES). Claim 24 REPLACED Hopfield quadratic form (archive only) with null-space anomaly detection (production _null_space_anomaly lines 807-835). All other claims retained verbatim. CIP deferred items documented in v3 section 'What Has Been Deferred'. Fee updated to $720 after adding claims 26-28. NEXT: apply claim 1 whereby-clause fix to spec DOCX claims section before filing."
     },
     {
       "id": "superexponential_formula_verified",
@@ -80,14 +80,14 @@
     {
       "id": "spec_claim_support_checked",
       "text": "Every claim element mapped to written-description support in spec.",
-      "status": "in_progress",
-      "evidence": "Claims v3 support notes: Claims 1-20, 25, and 26 have code-level or design support documented in PATENT_CLAIMS_FIXED_v3.md per-claim notes. Claim 21 (N-predicate, 3-ring sacred_eggs.py) and claim 22 have solid production support. Claim 23 (REROUTE: _check_reroute + DEFAULT_REROUTES) and claim 24 (null-space anomaly: _null_space_anomaly lines 807-835) are newly grounded in production code. Still needed: verify Detailed Description in spec DOCX explicitly describes the reroute decision mode and null-space anomaly detection by name or sufficiently close description, to avoid 112(a) written-description rejection."
+      "status": "done",
+      "evidence": "Claims 1-28 mapped. Claims 1-22 and 25-28 have code-level or design support in PATENT_CLAIMS_FIXED_v3.md. REROUTE (claim 23) and null-space anomaly (claim 24) now explicitly described in PATENT_DETAILED_DESCRIPTION.md: REROUTE added after Layer 13 ESCALATE paragraph (five-tier variant, two-signal confirmation, reroute table, separate severity path); null-space anomaly added as Stage 0 in Section 9 (coordinate clustering check, uniformity threshold, anomaly score fed into composite risk). Both confirmed present in rebuilt SCBE_NONPROVISIONAL_SPEC_v1.docx (REROUTE coverage True, null-space coverage True). Still a risk that provisional 63/961,403 does not cover claims 23/24 -- these receive the non-provisional filing date not Jan 15 2026 priority during examination."
     },
     {
       "id": "new_matter_bucketed",
       "text": "Post-2026-01-15 improvements separated from provisional-supported material.",
       "status": "done",
-      "evidence": "CIP analysis complete in PATENT_CLAIMS_FIXED_v3.md 'What Has Been Deferred to CIP' section. Deferred: EMA swarm trust formula (archive only), Hopfield energy exact form (archive only), trichromatic governance (opt-in only), Tree of Escalation as decider (observational only), full 14-layer ordered composition claim, Sacred Tongues tokenizer (separate invention). Claims 21-26 in the fixed set are grounded in production code/design support or accepted as getting non-provisional date. Decision: include all 26 claims and accept that 21/23/24 receive the non-provisional filing date (not Jan 15, 2026 priority date) unless the provisional covers them — USPTO assigns the earliest supported date per claim during examination."
+      "evidence": "CIP analysis complete in PATENT_CLAIMS_FIXED_v3.md 'What Has Been Deferred to CIP' section. Deferred: EMA swarm trust formula (archive only), Hopfield energy exact form (archive only), trichromatic governance (opt-in only), Tree of Escalation as decider (observational only), full 14-layer ordered composition claim, Sacred Tongues tokenizer (separate invention). Claims 21-28 in the fixed set are grounded in production code/design support or accepted as getting non-provisional date. Decision: include all 28 claims and accept that 21/23/24 receive the non-provisional filing date (not Jan 15, 2026 priority date) unless the provisional covers them — USPTO assigns the earliest supported date per claim during examination."
     },
     {
       "id": "prior_art_logged",
@@ -123,7 +123,7 @@
       "id": "continuation_strategy_checked",
       "text": "Broad claim fallbacks and continuation/CIP strategy identified.",
       "status": "done",
-      "evidence": "Strategy finalized in PATENT_CLAIMS_FIXED_v3.md. Filing all 26 claims now, accepting non-provisional date for claims 21/23/24 (which were reformulated to track production code not in original provisional). CIP candidates documented: EMA tau swarm trust, Hopfield energy exact form, trichromatic 10D governance, Tree of Escalation as decider, broader Sacred Tongues tokenizer family as a possible separate application beyond dependent claim 26. CIP must be filed before this application issues — track USPTO status after filing."
+      "evidence": "Strategy finalized in PATENT_CLAIMS_FIXED_v3.md. Filing all 28 claims now, accepting non-provisional date for claims 21/23/24 (which were reformulated to track production code not in original provisional). CIP candidates documented: EMA tau swarm trust, Hopfield energy exact form, trichromatic 10D governance, Tree of Escalation as decider, broader Sacred Tongues tokenizer family as a possible separate application beyond dependent claims 26-28. CIP must be filed before this application issues — track USPTO status after filing."
     },
     {
       "id": "docx_validated",
@@ -146,8 +146,8 @@
     {
       "id": "fees_rechecked",
       "text": "USPTO fees verified on filing day.",
-      "status": "open",
-      "evidence": "Estimate: $720 micro-entity (28 claims: $400 base + 8 extra x $40 = $320). Verify current rates at USPTO fee schedule on filing day — fees can change. Pay in Patent Center at submission."
+      "status": "done",
+      "evidence": "Verified 2026-05-28 against live USPTO fee schedule (uspto.gov/learning-and-resources/fees-and-payment/uspto-fee-schedule). Confirmed micro-entity rates: basic filing 1.16(a) $70, search 1.16(k) $154, examination 1.16(o) $176, each claim over 20 1.16(i) $40. 28 claims = 8 excess x $40 = $320 extra. Total: $720. Re-verify on actual filing day in case schedule changes."
     }
   ],
   "summary": {
@@ -157,7 +157,7 @@
     "blocking_before_submission": [
       "ads_address_filled — fill in street address, zip, phone directly in Patent Center ADS form",
       "docx_validated — upload SCBE_NONPROVISIONAL_SPEC_v1.docx to patentcenter.uspto.gov > Tools > DOCX Validator",
-      "fees_rechecked — verify $640 micro-entity total (26 claims) on USPTO fee schedule on filing day"
+      "fees_rechecked — verify $720 micro-entity total (28 claims) on USPTO fee schedule on filing day"
     ],
     "important_but_not_blocking": [
       "spec_claim_support_checked — verify Detailed Description covers REROUTE and null-space anomaly by name",
