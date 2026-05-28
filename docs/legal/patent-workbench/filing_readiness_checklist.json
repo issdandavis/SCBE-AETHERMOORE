@@ -1,72 +1,157 @@
 {
   "schema": "scbe_patent_readiness_checklist_v1",
-  "generated_at": "2026-05-28T00:51:07.589Z",
+  "generated_at": "2026-05-28T04:15:00.000Z",
+  "deadline": "2027-01-15",
+  "priority_provisional": "63/961,403",
   "checklist": [
-    {
-      "id": "provisional_exported",
-      "text": "Filed provisional packet and receipt exported from Patent Center.",
-      "status": "in_progress",
-      "evidence": "Patent Center record identified: application 63/961,403, docket SCBE-2026-0001, filed 2026-01-15, status Application Dispatched from Preexam, Not Yet Docketed. Document exports still need to be placed under docs/legal/patent-workbench/uploads/."
-    },
-    {
-      "id": "priority_claim_checked",
-      "text": "ADS will properly claim benefit of provisional application.",
-      "status": "open",
-      "evidence": ""
-    },
-    {
-      "id": "micro_entity_checked",
-      "text": "Micro entity eligibility checked and correct form selected.",
-      "status": "in_progress",
-      "evidence": "Gmail source message 19cb262145405494 includes PTO/SB/15A Micro Entity Certification dated 2026-03-02 under 37 CFR 1.29(a). Official Patent Center receipt/acknowledgement still needs export into uploads."
-    },
-    {
-      "id": "claim_count_checked",
-      "text": "Independent and total claim counts checked for fee impact.",
-      "status": "open",
-      "evidence": ""
-    },
-    {
-      "id": "spec_claim_support_checked",
-      "text": "Every claim element mapped to specification support.",
-      "status": "open",
-      "evidence": ""
-    },
     {
       "id": "spec_docx_assembled",
       "text": "Specification DOCX assembled in USPTO section order for review.",
       "status": "done",
-      "evidence": "Draft specification assembled at docs/legal/patent-workbench/assembled/SCBE_NONPROVISIONAL_SPEC_DRAFT_v1.docx with Title, Cross-Reference, Background, Summary, Brief Description of Drawings, Detailed Description, Claims, and Abstract. Local manifest reports 25 claims and 9 figures. This is not Patent Center DOCX validation."
+      "evidence": "docs/legal/SCBE_NONPROVISIONAL_SPEC_v1.docx and patent-workbench/assembled/SCBE_NONPROVISIONAL_SPEC_DRAFT_v1.docx. 399 paragraphs, ~67 KB, 25 claims, 9 figures per local manifest."
     },
     {
-      "id": "drawings_complete",
-      "text": "Drawings cover each claimed feature requiring a figure.",
-      "status": "open",
-      "evidence": ""
+      "id": "spec_section_order_verified",
+      "text": "Spec section order verified against USPTO 8-section order.",
+      "status": "done",
+      "evidence": "Audited assembled MD 2026-05-28: line 1 Title, line 3 Cross-Reference (63/961,403 cited), line 7 Background, line 41 Summary, line 51 Brief Description of Drawings, line 71 Detailed Description, line 1126 Claims, line 1338 Abstract. All 8 required sections present in correct order."
     },
     {
-      "id": "prior_art_logged",
-      "text": "Prior-art search log completed and reviewed.",
-      "status": "open",
-      "evidence": ""
+      "id": "priority_claim_checked",
+      "text": "Priority claim to provisional 63/961,403 present in spec and ADS draft.",
+      "status": "done",
+      "evidence": "Cross-Reference section in assembled spec (line 3) cites 63/961,403, filed 2026-01-15. ADS draft at patent-workbench/ADS_PTO_AIA_14_DRAFT.md Section 4 contains domestic benefit claim under 35 U.S.C. 119(e). Must be entered in Patent Center ADS fields at filing."
     },
     {
-      "id": "docx_validated",
-      "text": "DOCX accepted by Patent Center validation.",
+      "id": "claim_count_checked",
+      "text": "Independent and total claim counts checked for fee impact.",
+      "status": "done",
+      "evidence": "25 total claims, 3 independent (claims 1, 9, 15), 22 dependent, 0 multiple-dependent. Micro-entity fees: $70 filing + $154 search + $176 exam = $400 base; 5 extra claims (21-25) × $40 = $200; total $600. No paper surcharge, no non-DOCX surcharge, no multiple-dependent surcharge."
+    },
+    {
+      "id": "ads_drafted",
+      "text": "Application Data Sheet (PTO/AIA/14) draft prepared with inventor, title, priority, and entity status.",
+      "status": "done",
+      "evidence": "Draft at patent-workbench/ADS_PTO_AIA_14_DRAFT.md. Inventor: Issac Daniel Davis, Port Angeles, WA, US. Title matches spec. Priority: 63/961,403, 2026-01-15. Entity: Micro Entity. FILL IN required: mailing address, zip, phone. Must be entered in Patent Center — not uploaded as attachment."
+    },
+    {
+      "id": "ads_address_filled",
+      "text": "Mailing address and phone filled into ADS draft before filing.",
       "status": "open",
-      "evidence": ""
+      "evidence": "ADS_PTO_AIA_14_DRAFT.md has [FILL IN] markers for street address, zip code, and phone. Complete these before entering ADS data in Patent Center."
     },
     {
       "id": "oath_declaration_ready",
-      "text": "Inventor oath/declaration ready.",
+      "text": "Inventor oath/declaration (PTO/AIA/01) draft prepared and ready to sign.",
+      "status": "done",
+      "evidence": "Draft at patent-workbench/DECLARATION_PTO_AIA_01_DRAFT.md. Inventor: Issac Daniel Davis. S-signature: /Issac Daniel Davis/. Must be signed in Patent Center at filing (electronically or by PDF upload). Micro Entity Certification (PTO/SB/15A) filed ~2026-03-02; re-verify eligibility on filing day."
+    },
+    {
+      "id": "micro_entity_checked",
+      "text": "Micro entity eligibility re-verified at filing; PTO/SB/15A current.",
+      "status": "in_progress",
+      "evidence": "PTO/SB/15A signed ~2026-03-02 per prior email record (Gmail msg 19cb262145405494). Must re-verify on filing day: ≤4 prior U.S. utility/design/plant apps as inventor, gross income below USPTO threshold (~$258K FY2026), no large-entity assignment obligation. Provisional filings do not count toward the 4-application limit."
+    },
+    {
+      "id": "superexponential_formula_verified",
+      "text": "Claim 1 'superexponentially' verified against actual _harmonic_cost implementation.",
+      "status": "in_progress",
+      "evidence": "PATENT_CLAIMS_EXPANDED_v2.md §7 risk note B flags: claim 1 says 'increases superexponentially' but _harmonic_cost in runtime_gate.py may be a clamped exponential, not superexponential. If the actual formula is H(d) = R^(d^2) or similar, 'superexponentially' may be defensible; if it is R^d (plain exponential), the word needs to be corrected to 'exponentially' or the claim narrowed to the exact formula in claim 3. Audit in progress."
+    },
+    {
+      "id": "drawings_complete",
+      "text": "Drawings FIG 1-9 cover each feature claimed in independent claims.",
+      "status": "in_progress",
+      "evidence": "FIG_1 through FIG_9 exist as PNG + PDF. Brief Description of Drawings section present in spec. Spot-check needed: verify Poincaré embedding, session centroid, hyperbolic distance computation, four-way governance decision, fail-to-noise path, and PQC receipt are each shown in at least one figure. FIG numbers must match figure-reference text in Detailed Description."
+    },
+    {
+      "id": "spec_claim_support_checked",
+      "text": "Every claim element mapped to written-description support in spec.",
+      "status": "in_progress",
+      "evidence": "Component→claim map in PATENT_CLAIMS_EXPANDED_v2.md §2. Claim support scan shows 120+ term hits. High-risk items per §7 of claims v2: fail-to-noise (claim 7) depends on provisional text; bijective tamper (claims 15-20) support uncertain; Sacred Eggs/Byzantine/Hopfield (claims 21-24) are CIP candidates — only get non-provisional filing date unless provisional already covers them."
+    },
+    {
+      "id": "new_matter_bucketed",
+      "text": "Post-2026-01-15 improvements separated from provisional-supported material.",
+      "status": "in_progress",
+      "evidence": "Claims 21-24 (Sacred Eggs, Byzantine swarm trust, Hopfield intent energy) flagged as likely CIP material in PATENT_CLAIMS_EXPANDED_v2.md §7. These may only receive the non-provisional filing date. Decision needed: include in this application (accepting later date for those claims) or file a separate CIP. Claim 25 (juggling scheduler) assessed as having strong support."
+    },
+    {
+      "id": "prior_art_logged",
+      "text": "Prior-art search log completed and IDS decision made.",
       "status": "open",
-      "evidence": ""
+      "evidence": "prior_art_search_log.md exists. Completeness unknown. Minimum: Google Patents search for 'hyperbolic geometry authorization', 'Poincare ball security', 'post-quantum cryptographic receipt', top-10 results logged. IDS (Information Disclosure Statement) decision required: if you found relevant art, it should be disclosed."
+    },
+    {
+      "id": "non_publication_decision_checked",
+      "text": "Non-publication request decision made (any foreign or PCT filing planned?).",
+      "status": "open",
+      "evidence": "If you file or plan to file abroad or via PCT, you cannot request non-publication. If U.S.-only, you may request non-publication at filing (check box in Patent Center). Default: applications publish ~18 months after earliest priority date (2027-07-15). Decision must be made before submitting."
+    },
+    {
+      "id": "benchmark_evidence_packet_ready",
+      "text": "Benchmark/test evidence packet prepared for prosecution support.",
+      "status": "in_progress",
+      "evidence": "resonant_thought_lattice_benchmark.json shows baseline_mean=0.615 vs lattice_mean=0.9163, delta=0.3013, 7/8 improved. This supports utility and non-obviousness arguments. Optional: package Petri gate recall results (97.7% after KO gate) as informal evidence. Not filed with application but used during examination responses."
+    },
+    {
+      "id": "software_appendix_decision_checked",
+      "text": "Source-code appendix/pseudocode decision made.",
+      "status": "open",
+      "evidence": "USPTO permits computer-readable form (CRF) appendix on CD/flash (37 CFR 1.52(e)) but it is rarely filed for software patents. More common: embed pseudocode in the specification. Verify Detailed Description includes enough pseudocode/flowchart description that claims can be fully understood without the source code. Source code itself is not required and creates prior-art publication risk."
+    },
+    {
+      "id": "assignment_ownership_checked",
+      "text": "Inventor/applicant ownership posture confirmed.",
+      "status": "open",
+      "evidence": "SAM.gov registration shows sole proprietor. No employment agreement that would require assignment. Confirm: no university, employer, or funded research contract that claims rights to this invention. If ownership is 100% inventor (Issac Daniel Davis), no assignment record is needed at filing — can record later if needed."
+    },
+    {
+      "id": "continuation_strategy_checked",
+      "text": "Broad claim fallbacks and continuation/CIP strategy identified.",
+      "status": "open",
+      "evidence": "Broad claims (1, 9, 15) identified. Dependent claims 21-24 are CIP candidates. Strategy decision: (a) file all 25 claims in this application and accept that claims 21-24 get the 2026-05-XX filing date; or (b) file claims 1-20/25 now and file a CIP within 12 months for claims 21-24. CIP must be filed before the parent issues."
+    },
+    {
+      "id": "docx_validated",
+      "text": "Spec DOCX accepted by Patent Center DOCX validation tool.",
+      "status": "open",
+      "evidence": "Run SCBE_NONPROVISIONAL_SPEC_v1.docx through Patent Center validator before filing. Common failures: non-Times-New-Roman font, line spacing, margins, page numbers in wrong location. Tool is at patentcenter.uspto.gov → Tools → DOCX Validator."
+    },
+    {
+      "id": "provisional_receipt_uploaded",
+      "text": "Provisional filing receipt saved to patent-workbench/uploads/.",
+      "status": "open",
+      "evidence": "uploads/ is empty. Export acknowledgment PDF for 63/961,403 from Patent Center and save here as evidence freeze. Not required for filing the non-provisional, but good housekeeping."
+    },
+    {
+      "id": "publication_redaction_checked",
+      "text": "Materials reviewed: no credentials, private keys, private addresses, or unrelated personal records in uploads.",
+      "status": "open",
+      "evidence": "uploads/ is currently empty. Before placing any file in uploads/, verify it contains only patent-related material. Do not upload .env files, API keys, personal financial records, or medical records."
     },
     {
       "id": "fees_rechecked",
-      "text": "USPTO fees checked on filing day.",
+      "text": "USPTO fees verified on filing day.",
       "status": "open",
-      "evidence": ""
+      "evidence": "Estimate: $600 micro-entity (see claim_count_checked). Verify current rates at USPTO fee schedule on filing day — fees can change. Pay in Patent Center at submission."
     }
-  ]
+  ],
+  "summary": {
+    "done": 7,
+    "in_progress": 5,
+    "open": 8,
+    "blocking_before_submission": [
+      "ads_address_filled — fill in street address, zip, phone in ADS draft",
+      "superexponential_formula_verified — fix 'superexponentially' in claim 1 if _harmonic_cost is plain exponential",
+      "docx_validated — run DOCX through Patent Center validator",
+      "non_publication_decision_checked — make the call before submitting",
+      "fees_rechecked — verify amount on filing day"
+    ],
+    "important_but_not_blocking": [
+      "prior_art_logged — IDS should be filed if you found relevant art",
+      "continuation_strategy_checked — decide CIP/divisional before filing",
+      "drawings_complete — spot-check FIG coverage of independent claim elements"
+    ]
+  }
 }
