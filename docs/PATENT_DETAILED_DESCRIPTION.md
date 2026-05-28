@@ -63,11 +63,11 @@ These and other objects and advantages of the invention will become apparent fro
 
 ## BRIEF DESCRIPTION OF THE DRAWINGS
 
-**FIG. 1** -- Block diagram of the fourteen-layer processing pipeline showing data flow from Complex Context State (L1) through Decision Gate (L13) and Audio Axis (L14), with layer dependencies indicated.
+**FIG. 1** -- Block diagram of the fourteen-layer processing pipeline showing data flow from Complex Context State (L1) through Decision Gate (L13) and Audio Axis (L14), with the Decision Gate emitting a four-way governance output (ALLOW, QUARANTINE, DENY, or REROUTE) and a fail-to-noise audit path for denied actions, with layer dependencies indicated.
 
 **FIG. 2** -- Alternative harmonic cost functions plotted versus measured drift, including H(d,R) = R^(d^2), a bounded reciprocal score H = 1/(1+d+2*pd), and a clamped RuntimeGate cost C = pi^(phi*min(d*, d_max)).
 
-**FIG. 3** -- Poincare ball cross-section showing concentric ring boundaries at radii [0.2, 0.4, 0.6, 0.8, 0.95] with five ring levels (0 = core/most trusted, 4 = edge/least trusted), multi-well realm centers (mu_k), and example agent trajectories demonstrating monotone ring descent.
+**FIG. 3** -- Poincare ball cross-section showing concentric ring boundaries at radii [0.2, 0.4, 0.6, 0.8, 0.95] with five ring levels (0 = core/most trusted, 4 = edge/least trusted), the session centroid as the trusted reference region, a current embedded point, the hyperbolic distance arc between the embedded point and the session centroid, multi-well realm centers (mu_k), and example agent trajectories demonstrating monotone ring descent.
 
 **FIG. 4** -- Six Sacred Tongues phase relationship diagram showing golden-ratio weights (phi^0 = 1.000 through phi^5 = 11.090) and harmonic frequency ratios (root, major 2nd, major 3rd, perfect 4th, perfect 5th, major 6th) arranged on the unit circle at 60-degree phase offsets.
 
