@@ -44,8 +44,8 @@
     {
       "id": "spec_docx_whereby_updated",
       "text": "Spec DOCX claim 1 whereby clause updated to match fixed claims v3.",
-      "status": "open",
-      "evidence": "PATENT_CLAIMS_FIXED_v3.md has the corrected claim 1 text. Must apply the same whereby-clause fix to the Claims section of SCBE_NONPROVISIONAL_SPEC_v1.docx before filing. Also apply: claim 3 species (iii) addition, claim 21 N-predicate reformulation, claim 23 REROUTE replacement, claim 24 null-space anomaly replacement."
+      "status": "done",
+      "evidence": "Applied 2026-05-28. build_patent_docx.py CLAIMS array updated: claim 1 whereby -> B^(k*d) bounded-exponential language; claim 3 adds species (iii) pi^(phi*d); claim 21 N-predicate >=3 (semantic/geometric/crypto); claim 23 REROUTE replacing EMA tau; claim 24 null-space anomaly replacing Hopfield. SCBE_NONPROVISIONAL_SPEC_v1.docx rebuilt and committed (a4f5167cf). Assembled MD also updated."
     },
     {
       "id": "ads_drafted",
@@ -151,15 +151,14 @@
     }
   ],
   "summary": {
-    "done": 11,
+    "done": 12,
     "in_progress": 4,
-    "open": 9,
+    "open": 8,
     "blocking_before_submission": [
-      "ads_address_filled — fill in street address, zip, phone in ADS draft",
-      "spec_docx_whereby_updated — apply claim 1/3/21/23/24 fixes from PATENT_CLAIMS_FIXED_v3.md to spec DOCX claims section",
-      "docx_validated — run updated DOCX through Patent Center validator after spec edits",
-      "non_publication_decision_checked — make the call before submitting",
-      "fees_rechecked — verify amount on filing day"
+      "ads_address_filled — fill in street address, zip, phone in ADS draft (you must enter this directly into Patent Center; do not type address in chat)",
+      "non_publication_decision_checked — U.S.-only or foreign/PCT? Must decide before submitting",
+      "docx_validated — run rebuilt SCBE_NONPROVISIONAL_SPEC_v1.docx through Patent Center DOCX validator",
+      "fees_rechecked — verify $600 micro-entity total on filing day at USPTO fee schedule"
     ],
     "important_but_not_blocking": [
       "spec_claim_support_checked — verify Detailed Description covers REROUTE and null-space anomaly by name",
