@@ -85,8 +85,8 @@ SUMMARY = (
 
     "Preferred embodiments include: session-adaptive centroid accumulation; a "
     "multi-layer pre-filter stack ordered cheapest-reject-first; a fail-to-noise "
-    "response returning deterministic pseudorandom output indistinguishable from "
-    "valid output upon denial; durable state persistence and rollback across "
+    "response returning deterministic pseudorandom-looking audit output upon "
+    "denial; durable state persistence and rollback across "
     "process restarts; quarantine non-error containment that restricts tool access "
     "and execution resources without terminating the session; post-quantum decision "
     "receipts signed under ML-DSA-65 and encapsulated under ML-KEM-768; six-axis "
@@ -104,10 +104,10 @@ FIGURE_DESCRIPTIONS = [
     ),
     (
         "FIG. 2",
-        "Harmonic wall cost function H(d,R) = R^(d^2) plotted on a log scale "
-        "as verification cost versus hyperbolic distance d for base R = e, "
-        "showing superexponential growth with the critical 128-bit security "
-        "threshold at d_crit approximately equals 9.42.",
+        "Alternative harmonic cost functions plotted against measured drift, "
+        "including H(d,R) = R^(d^2), a bounded reciprocal score "
+        "1/(1+d+2*pd), and a clamped RuntimeGate cost "
+        "pi^(phi*min(d*,d_max)).",
     ),
     (
         "FIG. 3",
@@ -129,8 +129,8 @@ FIGURE_DESCRIPTIONS = [
         "FIG. 5",
         "Sacred Egg five-predicate deferred authorization flowchart showing the "
         "conjunction P_tongue AND P_geo AND P_path AND P_quorum AND P_crypto, "
-        "wherein failure of any predicate branches to a fail-to-noise output "
-        "indistinguishable from a successful decryption output.",
+        "wherein failure of any predicate branches to a fail-to-noise or "
+        "pseudorandom-looking audit output.",
     ),
     (
         "FIG. 6",
@@ -180,7 +180,8 @@ ABSTRACT = (
     "Governance decisions -- allow, quarantine, escalate, or deny -- combine the "
     "authorization cost with bijective tamper detection, instruction-safety "
     "pattern matching, and spectral coherence signals. Denied actions return "
-    "deterministic pseudorandom noise indistinguishable from valid output. "
+    "deterministic pseudorandom-looking audit noise instead of a structured "
+    "failure category. "
     "Authorized actions receive post-quantum cryptographic receipts signed under "
     "ML-DSA-65 and encapsulated under ML-KEM-768."
 )
@@ -219,8 +220,11 @@ CLAIMS = [
         "requests; and\n"
         "    emitting a governance decision, from: allow, review, quarantine, or "
         "deny, that controls whether the computational action is executed;\n"
-        "    whereby the governance cost increases superexponentially as the "
-        "embedded point approaches a boundary of the open unit ball."
+        "    whereby the governance cost follows a function of the form "
+        "B^(k*d), where B is a base greater than one, k is a positive scaling "
+        "constant, and d is a distance measure computed from the hyperbolic "
+        "space, such that the governance cost increases monotonically as the "
+        "embedded point deviates from the session centroid."
     ),
     (
         2, False,
@@ -232,9 +236,10 @@ CLAIMS = [
         3, False,
         "The method of claim 1, wherein the nonlinear cost function comprises "
         "one of: (i) a function of the form H(d, R) = R^(d^2), where d is a "
-        "distance measure and R is a base greater than one; or (ii) a bounded "
+        "distance measure and R is a base greater than one; (ii) a bounded "
         "safety-score function of the form H = 1 / (1 + d + 2*pd), where pd is "
-        "a phase-deviation term."
+        "a phase-deviation term; or (iii) a function of the form pi^(phi*d), "
+        "where pi is the mathematical constant pi and phi is the golden ratio."
     ),
     (
         4, False,
@@ -262,14 +267,13 @@ CLAIMS = [
     (
         7, False,
         "The method of claim 1, further comprising, responsive to a deny "
-        "decision, generating a deterministic pseudorandom noise output by "
+        "decision, generating a deterministic pseudorandom-looking noise output by "
         "computing a seed as a cryptographic hash of a fixed prefix concatenated "
         "with a content hash of the denied request, iteratively re-hashing the "
         "seed until a target length is reached, and returning the noise output "
-        "in place of an error response, such that the noise output is "
-        "indistinguishable from a valid output to an observer not holding the "
-        "governance keys, is identical for identical denied requests, and is "
-        "reproducible by an auditor from the content hash."
+        "in place of an error response, such that the noise output is identical "
+        "for identical denied requests and is reproducible by an auditor from "
+        "the content hash."
     ),
     (
         8, False,
@@ -424,15 +428,17 @@ CLAIMS = [
     (
         21, False,
         "The method of claim 1, further comprising generating a cryptographic "
-        "authorization container that is unlocked only when all of N predetermined "
-        "predicates are satisfied, the predicates comprising at least: a semantic "
-        "predicate; a geometric predicate measuring distance from a known safe "
-        "region; an execution-path predicate verifying that the container was "
-        "reached via an authorized call chain; a quorum predicate requiring a "
-        "threshold number of approving agents; and a cryptographic predicate "
-        "verifying a post-quantum signature; wherein failure of any predicate "
-        "returns a noise output indistinguishable from a successfully-unlocked "
-        "container."
+        "authorization container that is unlocked only when N predetermined "
+        "predicates are satisfied, where N is at least three, the predicates "
+        "including at least: a semantic predicate evaluating whether the context "
+        "representation of the proposed action satisfies an authorized semantic "
+        "profile; a geometric predicate measuring whether the embedded point lies "
+        "within a predetermined hyperbolic distance from the session centroid; "
+        "and a cryptographic predicate verifying a post-quantum signature; "
+        "wherein failure of any predicate causes the container to return a noise "
+        "output generated by the fail-to-noise function of claim 7, such that "
+        "both a successful unlock and any predicate failure produce outputs that "
+        "are indistinguishable to an observer not holding the authorization keys."
     ),
     (
         22, False,
@@ -444,23 +450,26 @@ CLAIMS = [
     ),
     (
         23, False,
-        "The system of claim 9, wherein the system maintains a swarm trust score "
-        "for each participating governance agent, updates the trust score as "
-        "tau_new = alpha * tau_old + (1 - alpha) * v, where v is a validity "
-        "factor for a most-recent contribution and alpha is a smoothing constant, "
-        "and automatically self-excludes from the governance decision any agent "
-        "whose trust score falls below a participation threshold, thereby "
-        "producing a Byzantine-fault-tolerant swarm consensus without a central "
-        "coordinator."
+        "The method of claim 1, further comprising: prior to emitting the "
+        "governance decision, determining whether the computational action matches "
+        "a predetermined reroute rule associated with a class of actions; and, "
+        "when a match is found, substituting a replacement action for the proposed "
+        "computational action and emitting an allow decision for the replacement "
+        "action, such that high-risk classes of actions are redirected to "
+        "lower-risk alternatives without exposing a denial response to the "
+        "requesting entity."
     ),
     (
         24, False,
-        "The method of claim 1, further comprising applying a Hopfield energy "
-        "function E(c) = -1/2 * (c')^T * W * c' + theta^T * c' to the context "
-        "representation c, wherein W encodes patterns of known legitimate "
-        "operations learned offline; classifying the action as novel-intent when "
-        "E(c) is above a threshold relative to trained patterns; and "
-        "incorporating the novel-intent indicator into the composite risk value."
+        "The method of claim 1, further comprising computing a null-space "
+        "anomaly score by determining whether per-axis deviations of the context "
+        "representation from the session centroid each fall below a predetermined "
+        "threshold; incrementing the null-space anomaly score when all per-axis "
+        "deviations are below the threshold; and incorporating the null-space "
+        "anomaly score into the composite risk value; wherein a null-space "
+        "anomaly score above a predetermined level is treated as a governance "
+        "signal indicating an action that is deliberately mimicking baseline "
+        "behavior to evade the governance cost."
     ),
     (
         25, False,
