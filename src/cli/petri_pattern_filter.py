@@ -105,6 +105,33 @@ _PATTERNS: list[tuple[str, str]] = [
 
 _COMPILED: list[tuple[re.Pattern[str], str]] = [(re.compile(p, re.IGNORECASE | re.DOTALL), r) for p, r in _PATTERNS]
 
+_HIGH_RISK_PATTERNS: list[tuple[str, str]] = [
+    (
+        r"\b(ignore|disregard|forget)\b.{0,80}\b(previous|prior|above|earlier)\b.{0,80}\binstructions?\b",
+        "instruction_override:ignore_previous",
+    ),
+    (
+        r"\breveal\b.{0,80}\b(system|developer)\b.{0,40}\b(prompt|instructions?)\b",
+        "instruction_override:reveal_system_prompt",
+    ),
+    (
+        r"\b(system|developer)\b.{0,40}\b(prompt|instructions?)\b.{0,80}\b(reveal|print|output|repeat|show)\b",
+        "instruction_override:system_prompt_extraction",
+    ),
+    (
+        r"\b(no|without)\b.{0,40}\b(restrictions?|constraints?|safety|oversight)\b",
+        "instruction_override:no_restrictions",
+    ),
+    (r"\b(DAN|Do Anything Now|jailbreak)\b", "instruction_override:jailbreak_persona"),
+    (r"\b(execute_shell|read_file|write_file|delete_file)\s*\(", "tool_abuse:dangerous_tool_call"),
+    (r"\brm\s+-rf\b", "tool_abuse:rm_rf"),
+    (r"\b/etc/passwd\b", "tool_abuse:passwd_exfil"),
+]
+
+_HIGH_RISK_COMPILED: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(p, re.IGNORECASE | re.DOTALL), r) for p, r in _HIGH_RISK_PATTERNS
+]
+
 
 def is_meta_ai_auditor_phrasing(intent: str) -> Tuple[bool, Optional[str]]:
     """Return (matched, reason_tag).
@@ -132,7 +159,23 @@ def all_matching_reasons(intent: str) -> list[str]:
     return [reason for compiled, reason in _COMPILED if compiled.search(intent)]
 
 
-__all__ = ["is_meta_ai_auditor_phrasing", "all_matching_reasons", "tongue_coverage_score", "is_non_latin_script_input"]
+def is_high_risk_instruction_input(intent: str) -> Tuple[bool, Optional[str]]:
+    """Return (matched, reason_tag) for direct instruction-override/tool-abuse text."""
+    if not intent:
+        return False, None
+    for compiled, reason in _HIGH_RISK_COMPILED:
+        if compiled.search(intent):
+            return True, reason
+    return False, None
+
+
+__all__ = [
+    "is_meta_ai_auditor_phrasing",
+    "all_matching_reasons",
+    "is_high_risk_instruction_input",
+    "tongue_coverage_score",
+    "is_non_latin_script_input",
+]
 
 # ---------------------------------------------------------------------------
 # Sacred Tongue (KO / Kor'aelin) coverage gate

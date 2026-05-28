@@ -42,7 +42,11 @@ from typing import (
 )
 
 from src.ca_lexicon import LEXICON_BY_NAME, TONGUE_NAMES
-from src.cli.petri_pattern_filter import is_meta_ai_auditor_phrasing, is_non_latin_script_input
+from src.cli.petri_pattern_filter import (
+    is_high_risk_instruction_input,
+    is_meta_ai_auditor_phrasing,
+    is_non_latin_script_input,
+)
 from src.cli.cross_build_ir import (
     LatticeOp,
     QuarantineError,
@@ -596,6 +600,19 @@ class LatticeRouter:
                 reasoning.append(f"petri_pattern_filter:{reason}")
                 raise BandNotApplicable(
                     f"intent matches Petri-style auditor phrasing ({reason}); " f"refusing to route: {intent[:160]!r}"
+                )
+
+        # ----- High-risk instruction/tool-abuse gate ----------------------
+        # Always-on in AUTO mode after Petri attribution. This closes the
+        # known NONE-gap where an SLM forces an obvious attack into a real
+        # band at high confidence.
+        if resolved_mode is Mode.AUTO and op_name is None and band is None:
+            matched, reason = is_high_risk_instruction_input(intent)
+            if matched:
+                reasoning.append(f"instruction_safety_gate:{reason}")
+                raise BandNotApplicable(
+                    f"intent matches high-risk instruction/tool-abuse marker ({reason}); "
+                    f"refusing to route: {intent[:160]!r}"
                 )
 
         # ----- Coding-intent gate (optional, pre-band) --------------------
