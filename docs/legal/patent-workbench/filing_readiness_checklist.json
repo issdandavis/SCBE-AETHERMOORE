@@ -1,6 +1,7 @@
 {
   "schema": "scbe_patent_readiness_checklist_v1",
   "generated_at": "2026-05-28T04:15:00.000Z",
+  "last_updated": "2026-05-28",
   "deadline": "2027-01-15",
   "priority_provisional": "63/961,403",
   "checklist": [
@@ -26,7 +27,25 @@
       "id": "claim_count_checked",
       "text": "Independent and total claim counts checked for fee impact.",
       "status": "done",
-      "evidence": "25 total claims, 3 independent (claims 1, 9, 15), 22 dependent, 0 multiple-dependent. Micro-entity fees: $70 filing + $154 search + $176 exam = $400 base; 5 extra claims (21-25) × $40 = $200; total $600. No paper surcharge, no non-DOCX surcharge, no multiple-dependent surcharge."
+      "evidence": "25 total claims, 3 independent (claims 1, 9, 15), 22 dependent, 0 multiple-dependent. Micro-entity fees: $70 filing + $154 search + $176 exam = $400 base; 5 extra claims (21-25) x $40 = $200; total $600. No paper surcharge, no non-DOCX surcharge, no multiple-dependent surcharge."
+    },
+    {
+      "id": "claims_fixed_v3_done",
+      "text": "Fixed claims v3 produced with all inaccuracies resolved and production-unclaimed features added.",
+      "status": "done",
+      "evidence": "PATENT_CLAIMS_FIXED_v3.md created 2026-05-28. Claim 1 whereby clause rewritten (bounded exponential pi^(phi*d*), not superexponential; distance from centroid not proximity to boundary). Claim 3 adds species (iii) pi^(phi*d). Claim 21 reformulated from 5-predicate to N-predicate >=3 tracking actual 3-ring sacred_eggs.py. Claim 23 REPLACED EMA tau formula (archive only) with REROUTE 5th-decision-mode (production _check_reroute + DEFAULT_REROUTES). Claim 24 REPLACED Hopfield quadratic form (archive only) with null-space anomaly detection (production _null_space_anomaly lines 807-835). All other claims retained verbatim. CIP deferred items documented in v3 section 'What Has Been Deferred'. Fee unchanged: $600. NEXT: apply claim 1 whereby-clause fix to spec DOCX claims section before filing."
+    },
+    {
+      "id": "superexponential_formula_verified",
+      "text": "Claim 1 formula language verified against _harmonic_cost implementation and corrected.",
+      "status": "done",
+      "evidence": "Audited runtime_gate.py _harmonic_cost lines 889-899: cost = PI^(PHI * d_star) where d_star = min(weighted_dist, 5.0), PHI=1.618, PI=pi. This is a BOUNDED EXPONENTIAL (cost at d*=0 is 1.0, at d*=1 is ~5.05, at d*=5 is ~9,070). It is NOT superexponential. Claim 1 'whereby' clause corrected in PATENT_CLAIMS_FIXED_v3.md to read 'follows a function of the form B^(k*d)... increases monotonically as the embedded point deviates from the session centroid'. Spec DOCX claims section must be updated to match before filing (see spec_docx_whereby_updated)."
+    },
+    {
+      "id": "spec_docx_whereby_updated",
+      "text": "Spec DOCX claim 1 whereby clause updated to match fixed claims v3.",
+      "status": "open",
+      "evidence": "PATENT_CLAIMS_FIXED_v3.md has the corrected claim 1 text. Must apply the same whereby-clause fix to the Claims section of SCBE_NONPROVISIONAL_SPEC_v1.docx before filing. Also apply: claim 3 species (iii) addition, claim 21 N-predicate reformulation, claim 23 REROUTE replacement, claim 24 null-space anomaly replacement."
     },
     {
       "id": "ads_drafted",
@@ -50,31 +69,25 @@
       "id": "micro_entity_checked",
       "text": "Micro entity eligibility re-verified at filing; PTO/SB/15A current.",
       "status": "in_progress",
-      "evidence": "PTO/SB/15A signed ~2026-03-02 per prior email record (Gmail msg 19cb262145405494). Must re-verify on filing day: ≤4 prior U.S. utility/design/plant apps as inventor, gross income below USPTO threshold (~$258K FY2026), no large-entity assignment obligation. Provisional filings do not count toward the 4-application limit."
-    },
-    {
-      "id": "superexponential_formula_verified",
-      "text": "Claim 1 'superexponentially' verified against actual _harmonic_cost implementation.",
-      "status": "in_progress",
-      "evidence": "PATENT_CLAIMS_EXPANDED_v2.md §7 risk note B flags: claim 1 says 'increases superexponentially' but _harmonic_cost in runtime_gate.py may be a clamped exponential, not superexponential. If the actual formula is H(d) = R^(d^2) or similar, 'superexponentially' may be defensible; if it is R^d (plain exponential), the word needs to be corrected to 'exponentially' or the claim narrowed to the exact formula in claim 3. Audit in progress."
+      "evidence": "PTO/SB/15A signed ~2026-03-02 per prior email record (Gmail msg 19cb262145405494). Must re-verify on filing day: <=4 prior U.S. utility/design/plant apps as inventor, gross income below USPTO threshold (~$258K FY2026), no large-entity assignment obligation. Provisional filings do not count toward the 4-application limit."
     },
     {
       "id": "drawings_complete",
       "text": "Drawings FIG 1-9 cover each feature claimed in independent claims.",
       "status": "in_progress",
-      "evidence": "FIG_1 through FIG_9 exist as PNG + PDF. Brief Description of Drawings section present in spec. Spot-check needed: verify Poincaré embedding, session centroid, hyperbolic distance computation, four-way governance decision, fail-to-noise path, and PQC receipt are each shown in at least one figure. FIG numbers must match figure-reference text in Detailed Description."
+      "evidence": "FIG_1 through FIG_9 exist as PNG + PDF. Brief Description of Drawings section present in spec. Spot-check needed: verify Poincare embedding, session centroid, hyperbolic distance computation, four-way governance decision, fail-to-noise path, and PQC receipt are each shown in at least one figure. FIG numbers must match figure-reference text in Detailed Description."
     },
     {
       "id": "spec_claim_support_checked",
       "text": "Every claim element mapped to written-description support in spec.",
       "status": "in_progress",
-      "evidence": "Component→claim map in PATENT_CLAIMS_EXPANDED_v2.md §2. Claim support scan shows 120+ term hits. High-risk items per §7 of claims v2: fail-to-noise (claim 7) depends on provisional text; bijective tamper (claims 15-20) support uncertain; Sacred Eggs/Byzantine/Hopfield (claims 21-24) are CIP candidates — only get non-provisional filing date unless provisional already covers them."
+      "evidence": "Claims v3 support notes: Claims 1-20 and 25 have strong code-level support documented in PATENT_CLAIMS_FIXED_v3.md per-claim notes. Claim 21 (N-predicate, 3-ring sacred_eggs.py) and claim 22 have solid production support. Claim 23 (REROUTE: _check_reroute + DEFAULT_REROUTES) and claim 24 (null-space anomaly: _null_space_anomaly lines 807-835) are newly grounded in production code. Still needed: verify Detailed Description in spec DOCX explicitly describes the reroute decision mode and null-space anomaly detection by name or sufficiently close description, to avoid 112(a) written-description rejection."
     },
     {
       "id": "new_matter_bucketed",
       "text": "Post-2026-01-15 improvements separated from provisional-supported material.",
-      "status": "in_progress",
-      "evidence": "Claims 21-24 (Sacred Eggs, Byzantine swarm trust, Hopfield intent energy) flagged as likely CIP material in PATENT_CLAIMS_EXPANDED_v2.md §7. These may only receive the non-provisional filing date. Decision needed: include in this application (accepting later date for those claims) or file a separate CIP. Claim 25 (juggling scheduler) assessed as having strong support."
+      "status": "done",
+      "evidence": "CIP analysis complete in PATENT_CLAIMS_FIXED_v3.md 'What Has Been Deferred to CIP' section. Deferred: EMA swarm trust formula (archive only), Hopfield energy exact form (archive only), trichromatic governance (opt-in only), Tree of Escalation as decider (observational only), full 14-layer ordered composition claim, Sacred Tongues tokenizer (separate invention). Claims 21-25 in the v3 fixed set are grounded in production code or accepted as getting non-provisional date. Decision: include all 25 claims and accept that 21/23/24 receive the non-provisional filing date (not Jan 15, 2026 priority date) unless the provisional covers them — USPTO assigns the earliest supported date per claim during examination."
     },
     {
       "id": "prior_art_logged",
@@ -109,14 +122,14 @@
     {
       "id": "continuation_strategy_checked",
       "text": "Broad claim fallbacks and continuation/CIP strategy identified.",
-      "status": "open",
-      "evidence": "Broad claims (1, 9, 15) identified. Dependent claims 21-24 are CIP candidates. Strategy decision: (a) file all 25 claims in this application and accept that claims 21-24 get the 2026-05-XX filing date; or (b) file claims 1-20/25 now and file a CIP within 12 months for claims 21-24. CIP must be filed before the parent issues."
+      "status": "done",
+      "evidence": "Strategy finalized in PATENT_CLAIMS_FIXED_v3.md. Filing all 25 claims now, accepting non-provisional date for claims 21/23/24 (which were reformulated to track production code not in original provisional). CIP candidates documented: EMA tau swarm trust, Hopfield energy exact form, trichromatic 10D governance, Tree of Escalation as decider, Sacred Tongues tokenizer as separate application. CIP must be filed before this application issues — track USPTO status after filing."
     },
     {
       "id": "docx_validated",
       "text": "Spec DOCX accepted by Patent Center DOCX validation tool.",
       "status": "open",
-      "evidence": "Run SCBE_NONPROVISIONAL_SPEC_v1.docx through Patent Center validator before filing. Common failures: non-Times-New-Roman font, line spacing, margins, page numbers in wrong location. Tool is at patentcenter.uspto.gov → Tools → DOCX Validator."
+      "evidence": "Run SCBE_NONPROVISIONAL_SPEC_v1.docx through Patent Center validator before filing. Common failures: non-Times-New-Roman font, line spacing, margins, page numbers in wrong location. Tool is at patentcenter.uspto.gov > Tools > DOCX Validator. Run AFTER applying spec_docx_whereby_updated fixes."
     },
     {
       "id": "provisional_receipt_uploaded",
@@ -138,19 +151,19 @@
     }
   ],
   "summary": {
-    "done": 7,
-    "in_progress": 5,
-    "open": 8,
+    "done": 11,
+    "in_progress": 4,
+    "open": 9,
     "blocking_before_submission": [
       "ads_address_filled — fill in street address, zip, phone in ADS draft",
-      "superexponential_formula_verified — fix 'superexponentially' in claim 1 if _harmonic_cost is plain exponential",
-      "docx_validated — run DOCX through Patent Center validator",
+      "spec_docx_whereby_updated — apply claim 1/3/21/23/24 fixes from PATENT_CLAIMS_FIXED_v3.md to spec DOCX claims section",
+      "docx_validated — run updated DOCX through Patent Center validator after spec edits",
       "non_publication_decision_checked — make the call before submitting",
       "fees_rechecked — verify amount on filing day"
     ],
     "important_but_not_blocking": [
+      "spec_claim_support_checked — verify Detailed Description covers REROUTE and null-space anomaly by name",
       "prior_art_logged — IDS should be filed if you found relevant art",
-      "continuation_strategy_checked — decide CIP/divisional before filing",
       "drawings_complete — spot-check FIG coverage of independent claim elements"
     ]
   }
