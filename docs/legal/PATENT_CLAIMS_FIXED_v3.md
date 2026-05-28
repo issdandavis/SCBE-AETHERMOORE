@@ -1,13 +1,19 @@
 # Patent Claims — Fixed Set v3
 ## System and Method for Hyperbolic Geometry-Based Authorization with Topological Control-Flow Integrity
 
+> **Superseded drafting artifact.** This file records an earlier 25/26-claim
+> working set and is retained for history only. The current filing packet is
+> generated from `docs/legal/build_patent_docx.py`, mirrored in
+> `docs/legal/PATENT_CLAIMS_EXPANDED_v2.md`, and contains 28 claims with an
+> estimated $720 micro-entity fee before day-of fee verification.
+
 | Field | Value |
 |---|---|
 | **Priority** | U.S. Provisional Application No. 63/961,403, filed January 15, 2026 |
 | **Internal docket** | SCBE-2026-0001 |
 | **Conversion deadline** | January 15, 2027 |
-| **Supersedes** | PATENT_CLAIMS_EXPANDED_v2.md |
-| **Status** | Working draft. NOT legal advice. |
+| **Supersedes** | Nothing; superseded by current generated filing packet |
+| **Status** | Historical working draft. NOT filing-current. NOT legal advice. |
 
 ---
 
@@ -312,7 +318,7 @@ classification, and the content-derived fingerprint are recorded in an audit tra
 
 ---
 
-### CLAIM FAMILY — EXTRA HIGH-VALUE DEPENDENTS (Claims 21-25)
+### CLAIM FAMILY — HISTORICAL EXTRA DEPENDENTS
 
 **21.** The method of claim 1, further comprising generating a cryptographic
 authorization container that is unlocked only when N predetermined predicates are
@@ -393,25 +399,26 @@ without additional context.
 
 **27.** The method of claim 4, wherein each of the six axes of the semantic
 weighting is associated with a respective harmonic frequency ratio selected from
-integer-ratio musical intervals and a phase offset equal to 2*pi*k/6 radians for
-the respective axis index k, such that the six axes are uniformly distributed
-around the unit circle at sixty-degree intervals, and the contribution of each
-axis to the governance signal incorporates a sinusoidal time-varying modulation
-at the respective harmonic frequency and phase offset.
+integer-ratio musical intervals, and a phase offset equal to 2*pi*k/6 radians for
+the respective axis index k from 0 through 5, such that the six axes are uniformly
+distributed around the unit circle at sixty-degree intervals, and the governance
+signal incorporates the phase offset of each axis as a fixed structural parameter
+of the six-axis weighting configuration.
 
-> *§ 112:* `PATENT_DETAILED_DESCRIPTION.md` line 499 (`phi_l = 2*pi*l/6`), lines 508-511 tongue table with harmonic ratios (KO=1/1, AV=9/8, RU=5/4, CA=4/3, UM=3/2, DR=5/3), lines 571-572 (`omega_l = 2*pi*f_l`; `phi_l = 2*pi*l/6`), line 24 (Langues Metric with harmonic phase shifts). FIG.4 shows six-axis unit-circle arrangement at 60° intervals. Added 2026-05-28.
+> *§ 112:* `hydra/color_dimension.py` `TONGUE_PHASES = {t: k * 60.0 for k, t in enumerate(TONGUE_WEIGHTS)}` (60° intervals); `TONGUE_INTERVALS` table (KO=1/1, AV=9/8, RU=5/4, CA=4/3, UM=3/2, DR=5/3); FIG.4 six-axis unit-circle diagram. Fixed 2026-05-28: dropped sinusoidal-modulation clause (no production-code support for time-varying sinusoidal contribution; `runtime_gate.py` does not call the modulation path). Narrowed to structural phase-distribution property.
 
 ---
 
 **28.** The method of claim 26, wherein each axis's token vocabulary constitutes
-a domain-specific entropy encoding in which each byte of a context representation
-maps deterministically to a token in that axis's vocabulary, the semantic content
-of the context thereby constraining available key derivation paths within the
-governance system, such that key derivation paths obtained from encodings in
-distinct axis vocabularies are mutually independent by the pairwise-disjoint
-vocabulary property.
+a domain-specific deterministic byte encoding in which each byte value of a
+context representation maps uniquely to a token in that axis's vocabulary, the
+semantic content of the context thereby constraining the specific tokens produced
+within each axis's vocabulary; and wherein the pairwise-disjoint serialized-vocabulary
+property ensures that the same byte sequence encoded under distinct axes produces
+structurally distinct token sequences, such that axis-specific encodings of the
+same input are mutually distinguishable without decoding.
 
-> *§ 112:* `PATENT_DETAILED_DESCRIPTION.md` lines 547-555 — "Domain-Specific Entropy Encoding wherein each byte of input maps deterministically to a tongue-specific token, and the semantic content of the input constrains the available key derivation paths. This constitutes a novel form of entropy source." Disjoint vocabulary property already established by claim 26. Added 2026-05-28.
+> *§ 112:* `packages/sixtongues/` bijective encode/decode — `Token(tongue, byte) = prefix[byte/16] + "'" + suffix[byte%16]`; same byte value produces different tokens under each tongue by the disjoint-vocabulary property; axis determinable from token by set membership. Fixed 2026-05-28: removed "key derivation paths" language (no KDF in bijective tokenizer code; § 112 gap). Replaced with accurate "structurally distinct token sequences / mutually distinguishable without decoding" framing that tracks the actual implementation.
 
 ---
 
@@ -431,29 +438,28 @@ vocabulary property.
 
 ## What Could Still Be Added (Costs $40 Each, Adds to Fee)
 
-Adding any of these pushes past 25 claims. Each additional claim = $40 more micro-entity fee.
+Historical note: these candidate additions are superseded by the current
+28-claim filing packet. Each additional claim above 20 remains an excess claim
+for fee purposes, but this file is not the current fee authority.
 
 | Candidate | File | Strength | Recommended? |
 |---|---|---|---|
-| **Intent spike boosting** — detecting and amplifying specific intent signals prior to embedding | `runtime_gate.py` `_apply_intent_spike` | Production, unique | ✓ Add if budget allows (+$40 → $640) |
-| **Spin quantization** — computing per-tongue deviation from centroid as a discrete spin vector used in governance decisions | `runtime_gate.py` `_spin` (lines 860-888) | Production, unique | ✓ Add if budget allows (+$40 → $640) |
+| **Intent spike boosting** — detecting and amplifying specific intent signals prior to embedding | `runtime_gate.py` `_apply_intent_spike` | Production, unique | Historical candidate only; not part of the current packet |
+| **Spin quantization** — computing per-tongue deviation from centroid as a discrete spin vector used in governance decisions | `runtime_gate.py` `_spin` (lines 860-888) | Production, unique | Historical candidate only; not part of the current packet |
 | **REROUTE as a 5th decision mode system claim** | Same as new claim 23 but as a system claim dependent of claim 9 | Strong | Low priority; method claim 23 already covers it |
 | **Fibonacci trust level multiplier** | `runtime_gate.py` `fibonacci_trust_level` | Production | Low priority; captured generically by "trajectory drift" in claim 1 |
 
-**Recommended immediate action:** File with 25 claims as written ($600). Reserve intent-spike and spin as a continuation if a competitor introduces a similar evasion-detection mechanism.
+**Superseded recommendation:** Do not use this file for the filing count or fee.
+The current generated packet contains 28 claims and an estimated $720
+micro-entity fee before day-of fee verification.
 
 ---
 
-## Fee Summary (26 claims)
+## Fee Summary (superseded snapshot)
 
-| Item | Micro-entity fee |
-|---|---|
-| Basic utility filing | $70 |
-| Search | $154 |
-| Examination | $176 |
-| **Base subtotal (≤3 independent, ≤20 total)** | **$400** |
-| 6 extra claims × $40 (claims 21-26) | $240 |
-| **Total** | **$640** |
+This old fee table was removed from filing-current use. Use
+`docs/legal/patent-workbench/FILING_CURRENT_README.md` and the rebuilt DOCX
+manifest for the current claim count and fee estimate.
 
 ---
 
