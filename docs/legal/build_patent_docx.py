@@ -480,6 +480,16 @@ CLAIMS = [
         "deviates from a predicted flight arc, such that higher-risk tasks are "
         "assigned higher arcs and fewer handoffs."
     ),
+    (
+        26, False,
+        "The method of claim 4, wherein each axis of the six-axis semantic "
+        "weighting employs a bijective token alphabet in which each token is "
+        "uniquely identified by a prefix element selected from a first "
+        "predetermined set and a suffix element selected from a second "
+        "predetermined set, such that the complete token vocabulary for each "
+        "axis is a bijective mapping between token strings and integer indices, "
+        "and the token vocabularies of distinct axes are disjoint."
+    ),
 ]
 
 

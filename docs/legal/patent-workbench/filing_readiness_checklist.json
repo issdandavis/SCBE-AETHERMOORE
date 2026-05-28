@@ -27,7 +27,7 @@
       "id": "claim_count_checked",
       "text": "Independent and total claim counts checked for fee impact.",
       "status": "done",
-      "evidence": "25 total claims, 3 independent (claims 1, 9, 15), 22 dependent, 0 multiple-dependent. Micro-entity fees: $70 filing + $154 search + $176 exam = $400 base; 5 extra claims (21-25) x $40 = $200; total $600. No paper surcharge, no non-DOCX surcharge, no multiple-dependent surcharge."
+      "evidence": "26 total claims, 3 independent (claims 1, 9, 15), 23 dependent, 0 multiple-dependent. Micro-entity fees: $70 filing + $154 search + $176 exam = $400 base; 6 extra claims (21-26) x $40 = $240; total $640. Claim 26 added 2026-05-28: bijective token alphabet per tongue axis covering Sacred Tongues 16x16 prefix-suffix grid. No paper surcharge, no non-DOCX surcharge, no multiple-dependent surcharge."
     },
     {
       "id": "claims_fixed_v3_done",
@@ -147,7 +147,7 @@
       "id": "fees_rechecked",
       "text": "USPTO fees verified on filing day.",
       "status": "open",
-      "evidence": "Estimate: $600 micro-entity (see claim_count_checked). Verify current rates at USPTO fee schedule on filing day — fees can change. Pay in Patent Center at submission."
+      "evidence": "Estimate: $640 micro-entity (26 claims: $400 base + 6 extra x $40 = $240). Verify current rates at USPTO fee schedule on filing day — fees can change. Pay in Patent Center at submission."
     }
   ],
   "summary": {
@@ -157,7 +157,7 @@
     "blocking_before_submission": [
       "ads_address_filled — fill in street address, zip, phone directly in Patent Center ADS form",
       "docx_validated — upload SCBE_NONPROVISIONAL_SPEC_v1.docx to patentcenter.uspto.gov > Tools > DOCX Validator",
-      "fees_rechecked — verify $600 micro-entity total on USPTO fee schedule on filing day"
+      "fees_rechecked — verify $640 micro-entity total (26 claims) on USPTO fee schedule on filing day"
     ],
     "important_but_not_blocking": [
       "spec_claim_support_checked — verify Detailed Description covers REROUTE and null-space anomaly by name",

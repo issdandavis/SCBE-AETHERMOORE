@@ -22,8 +22,9 @@
 | **23** | REPLACED EMA swarm trust → REROUTE decision | EMA formula (`τ_new = α·τ_old + (1−α)·v`) appears only in archive/demo; REROUTE is production code (`_check_reroute`, `DEFAULT_REROUTES`), unclaimed, commercially valuable |
 | **24** | REPLACED Hopfield energy → null-space anomaly | Explicit Hopfield form only in archive; `_null_space_anomaly` is production code, unique, unclaimed |
 | **25** | Kept verbatim | Strongly supported by `juggling-scheduler.ts` |
+| **26** | NEW — bijective token alphabet per tongue axis | Closes gap: competitor using phi-weights with non-bijective tokenizer would not infringe 4 or 15-20; this claim locks the 16×16 prefix×suffix design |
 
-**Fee impact:** 25 total claims maintained. No change to $600 micro-entity fee.
+**Fee impact:** 26 total claims. Extra claims over 20: 6 × $40 = $240. Total micro-entity: $400 base + $240 = **$640**.
 
 ---
 
@@ -371,6 +372,17 @@ higher-risk tasks are assigned higher arcs and fewer handoffs.
 
 ---
 
+**26.** The method of claim 4, wherein each axis of the six-axis semantic
+weighting employs a bijective token alphabet in which each token is uniquely
+identified by a prefix element selected from a first predetermined set and a
+suffix element selected from a second predetermined set, such that the complete
+token vocabulary for each axis is a bijective mapping between token strings and
+integer indices, and the token vocabularies of distinct axes are disjoint.
+
+> *§ 112:* `packages/sixtongues/` — 6 tongues × 16-prefix × 16-suffix = 256 tokens per tongue; each tongue's 256-token vocabulary is disjoint from the others; encode/decode is bijective by construction. Also supported by `runtime_gate.py` `TONGUE_WEIGHTS` and `src/tokenizer/`. Closes the coverage gap where a competitor implements phi-weighting with a non-bijective or merged-vocabulary tokenizer.
+
+---
+
 ## What Has Been Deferred to CIP
 
 | Feature | Why deferred | CIP readiness |
@@ -381,7 +393,7 @@ higher-risk tasks are assigned higher arcs and fewer handoffs.
 | Trichromatic governance (IR/UV, 10D) | Opt-in, not default; `use_trichromatic_governance=False` | CIP once production-default |
 | Tree of Escalation as decision-maker | Currently observational only (`v1.0` in-code comment) | CIP when ToE v1.1+ contributes to decisions |
 | Full 14-layer pipeline as ordered composition | Risk of § 112 enablement + § 103 aggregation rejection | Optional continuation if competitor copies the specific layer order |
-| Sacred Tongues tokenizer (16×16 grids) | Separate invention; distinct prior-art surface | Separate application if pursued |
+| Sacred Tongues tokenizer deeper architecture (e.g. tongue-specific harmonic frequency ratios, runic/particle dual-layer semantics) | Core grid structure claimed in claim 26; deeper semantic design is separate | Separate application if pursued |
 
 ---
 
@@ -400,7 +412,7 @@ Adding any of these pushes past 25 claims. Each additional claim = $40 more micr
 
 ---
 
-## Fee Summary (25 claims, unchanged)
+## Fee Summary (26 claims)
 
 | Item | Micro-entity fee |
 |---|---|
@@ -408,8 +420,8 @@ Adding any of these pushes past 25 claims. Each additional claim = $40 more micr
 | Search | $154 |
 | Examination | $176 |
 | **Base subtotal (≤3 independent, ≤20 total)** | **$400** |
-| 5 extra claims × $40 (claims 21-25) | $200 |
-| **Total** | **$600** |
+| 6 extra claims × $40 (claims 21-26) | $240 |
+| **Total** | **$640** |
 
 ---
 

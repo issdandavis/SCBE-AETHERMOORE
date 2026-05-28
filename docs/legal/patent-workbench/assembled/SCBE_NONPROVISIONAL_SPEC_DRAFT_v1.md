@@ -1340,6 +1340,13 @@ throws having predicted catch windows, and a governance cost of a task increases
 when a trajectory of the task deviates from a predicted flight arc, such that
 higher-risk tasks are assigned higher arcs and fewer handoffs.
 
+26. The method of claim 4, wherein each axis of the six-axis semantic
+weighting employs a bijective token alphabet in which each token is uniquely
+identified by a prefix element selected from a first predetermined set and a
+suffix element selected from a second predetermined set, such that the complete
+token vocabulary for each axis is a bijective mapping between token strings and
+integer indices, and the token vocabularies of distinct axes are disjoint.
+
 ## ABSTRACT OF THE DISCLOSURE
 
 A computer-implemented system and method govern execution of computational
