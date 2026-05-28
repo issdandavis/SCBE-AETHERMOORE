@@ -179,8 +179,10 @@ export class UnifiedSCBEGateway {
     // Layer 12: Harmonic magnification
     const harmonicMagnification = this.computeHarmonicScaling(realmDistance);
 
-    // Layer 13: Composite risk
+    // Layer 14: Audio telemetry feature (parallel channel)
     const audioStability = this.computeAudioStability(request);
+
+    // Layer 13: Composite risk and access decision
     const compositeRisk = this.computeCompositeRisk({
       hyperbolicDistance,
       spectralCoherence,
@@ -190,7 +192,6 @@ export class UnifiedSCBEGateway {
       harmonicMagnification,
     });
 
-    // Layer 14: Decision
     const decision = this.makeDecision(compositeRisk);
 
     const decisionId = `dec_${Date.now().toString(36)}_${crypto.randomBytes(4).toString('hex')}`;

@@ -11,6 +11,7 @@ import {
   buildToolArgv,
   type CliTool,
 } from '../src/tools.js';
+import { runEvent } from '../src/index.js';
 import { enqueueEvent, processOneEvent, getEventStatus } from '../src/queue.js';
 import { clearPlugins } from '../src/plugins.js';
 
@@ -150,5 +151,40 @@ describe('queue: tool routing', () => {
     expect(status!.status).toBe('completed');
     const resultPayload = status!.result?.result as Record<string, unknown> | null;
     expect((resultPayload?.task as Record<string, unknown>)?.echo).toBe('my-special-task');
+  });
+});
+
+describe('direct runEvent: tool routing', () => {
+  beforeEach(() => {
+    clearTools();
+    clearPlugins();
+  });
+
+  it('dispatches direct events to registered tools', async () => {
+    registerTool({
+      name: 'direct-echo',
+      command: 'node',
+      args: [
+        '-e',
+        'const t=process.argv[1]; process.stdout.write(JSON.stringify({ok:true,echo:t}))',
+        '{task}',
+      ],
+    });
+
+    const result = await runEvent({ task: 'direct-task', tool: 'direct-echo' });
+
+    expect(result.ok).toBe(true);
+    expect(result.exit_code).toBe(0);
+    const payload = result.result as Record<string, unknown>;
+    expect(payload.tool).toBe('direct-echo');
+    expect((payload.parsed as Record<string, unknown>).echo).toBe('direct-task');
+  });
+
+  it('fails direct events with unknown tools without falling through to Python agentbus', async () => {
+    const result = await runEvent({ task: 'direct-task', tool: 'missing-tool' });
+
+    expect(result.ok).toBe(false);
+    expect(result.exit_code).toBeNull();
+    expect(result.stderr_tail).toMatch(/unknown tool/);
   });
 });

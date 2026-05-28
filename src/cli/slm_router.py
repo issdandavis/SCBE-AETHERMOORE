@@ -42,7 +42,11 @@ from typing import (
 )
 
 from src.ca_lexicon import LEXICON_BY_NAME, TONGUE_NAMES
-from src.cli.petri_pattern_filter import is_meta_ai_auditor_phrasing
+from src.cli.petri_pattern_filter import (
+    is_high_risk_instruction_input,
+    is_meta_ai_auditor_phrasing,
+    is_non_latin_script_input,
+)
 from src.cli.cross_build_ir import (
     LatticeOp,
     QuarantineError,
@@ -494,6 +498,7 @@ class LatticeRouter:
         enable_coding_intent_gate: bool = False,
         gate_adapter: Optional[SLMAdapter] = None,
         enable_petri_pattern_filter: bool = False,
+        enable_tongue_coverage_gate: bool = False,
     ) -> None:
         self._adapter = adapter
         self._recent: deque[str] = deque(maxlen=loop_window)
@@ -506,6 +511,12 @@ class LatticeRouter:
         # without consuming an SLM call. Independent of the LLM gate;
         # both can be enabled together (regex first, then LLM).
         self._enable_petri_pattern_filter = enable_petri_pattern_filter
+        # Sacred Tongue (KO) coverage gate. Fires when the Kor'aelin ASCII
+        # byte coverage falls below 0.60 — catches adversarial prompts written
+        # in non-Latin scripts (CJK, Devanagari, Burmese, etc.) that bypass
+        # the English regex filter. Runs before both the regex filter and the
+        # LLM gate; zero-latency byte-level computation, no SLM call needed.
+        self._enable_tongue_coverage_gate = enable_tongue_coverage_gate
         # When set, the coding-intent gate uses a separate adapter (e.g.
         # a non-coder model from a different family). Same-family
         # agreement adds no new signal -- if the band classifier on the
@@ -564,6 +575,19 @@ class LatticeRouter:
         reasoning: List[str] = []
         confidences: List[float] = []  # tracked structurally, not re-parsed
 
+        # ----- Sacred Tongue KO coverage gate (optional, pre-filter) --------
+        # Byte-level check: Kor'aelin ASCII coverage < 0.60 means the intent
+        # is written in a non-Latin script. Catches multilingual adversarial
+        # prompts that bypass the English regex filter. Zero SLM calls.
+        if self._enable_tongue_coverage_gate and resolved_mode is Mode.AUTO and op_name is None and band is None:
+            flagged, reason = is_non_latin_script_input(intent)
+            if flagged:
+                reasoning.append(f"tongue_coverage_gate:{reason}")
+                raise BandNotApplicable(
+                    f"intent has low Kor'aelin (KO) tongue coverage ({reason}); "
+                    f"non-Latin script inputs are not valid coding requests: {intent[:80]!r}"
+                )
+
         # ----- Petri pattern filter (optional, pre-gate) ------------------
         # Deterministic regex match on Petri-corpus auditor phrasings.
         # Cheaper than the LLM gate (no SLM call) and corpus-specific by
@@ -576,6 +600,19 @@ class LatticeRouter:
                 reasoning.append(f"petri_pattern_filter:{reason}")
                 raise BandNotApplicable(
                     f"intent matches Petri-style auditor phrasing ({reason}); " f"refusing to route: {intent[:160]!r}"
+                )
+
+        # ----- High-risk instruction/tool-abuse gate ----------------------
+        # Always-on in AUTO mode after Petri attribution. This closes the
+        # known NONE-gap where an SLM forces an obvious attack into a real
+        # band at high confidence.
+        if resolved_mode is Mode.AUTO and op_name is None and band is None:
+            matched, reason = is_high_risk_instruction_input(intent)
+            if matched:
+                reasoning.append(f"instruction_safety_gate:{reason}")
+                raise BandNotApplicable(
+                    f"intent matches high-risk instruction/tool-abuse marker ({reason}); "
+                    f"refusing to route: {intent[:160]!r}"
                 )
 
         # ----- Coding-intent gate (optional, pre-band) --------------------

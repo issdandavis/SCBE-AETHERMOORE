@@ -92,16 +92,8 @@ training/intake/
 # Training runs (large model artifacts)
 training/runs/
 
-# Generated/combined training data (regeneratable via scripts/merge_and_upload.py)
-training-data/**/*.jsonl
-# ...except the live news-pipeline output (committed by GH Actions hourly)
-!training-data/news-pipeline/records/*.jsonl
-!training-data/news-pipeline/sft/*.jsonl
-!training-data/agentic_coding/*.jsonl
-training-data/**/*.jsonl.gz
-training-data/sft_combined*.jsonl
-training-data/sft_*_regen*.jsonl
-training-data/mega_*.jsonl
+# Training data moved to issdandavis/scbe-aethermoore-training-data on HuggingFace (2026-05-27)
+training-data/
 training/sft_records/sft_combined*
 training/notion_codebase_comparison.json
 training/ingest/doc_chunks.jsonl

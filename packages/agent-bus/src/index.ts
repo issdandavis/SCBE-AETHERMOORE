@@ -7,6 +7,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import path from 'node:path';
 import { WorkspaceExportManifestSchema, parseReceipt } from './schemas.js';
 import { detectTaskType, decompose, scoreDialogue } from './semantic-bridge.js';
+import { autoDiscoverTools, buildToolArgv, getTool } from './tools.js';
 
 // Plugin + queue subsystems
 export {
@@ -1583,6 +1584,71 @@ export async function runEvent(
 
   const repoRoot = path.resolve(options.repoRoot || process.cwd());
   const python = options.python || process.env.PYTHON || 'python';
+  const startedAt = new Date().toISOString();
+
+  if (normalized.tool) {
+    autoDiscoverTools();
+    const registeredTool = getTool(normalized.tool);
+    if (!registeredTool) {
+      const d = decompose(normalized.task);
+      return {
+        schema_version: 'scbe-agentbus-node-result-v1',
+        event_index: 1,
+        started_at: startedAt,
+        finished_at: new Date().toISOString(),
+        ok: false,
+        exit_code: null,
+        stderr_tail: `unknown tool: '${normalized.tool}' is not registered`,
+        event: {
+          task_sha256: null,
+          task_chars: normalized.task.length,
+          series_id: normalized.seriesId,
+          operation_command_chars: normalized.operationCommand.length,
+        },
+        result: null,
+        ...(d.tokenCount > 0 ? { semantic: d } : {}),
+        ...(d.discourseProfile ? { discourse_profile: d.discourseProfile } : {}),
+        ...(d.discourseProfile ? { dialogue_score: scoreDialogue(normalized.task) } : {}),
+      };
+    }
+
+    const built = buildToolArgv(registeredTool, normalized, options, normalized.seriesId);
+    const result = spawnSync(built.command, built.args, {
+      cwd: repoRoot,
+      encoding: 'utf-8',
+      maxBuffer: 1024 * 1024 * 8,
+      env: { ...process.env },
+    });
+    const stdout = result.stdout || '';
+    const payload = parseJson(stdout);
+    const d = decompose(normalized.task);
+    return {
+      schema_version: 'scbe-agentbus-node-result-v1',
+      event_index: 1,
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+      ok: result.status === 0,
+      exit_code: result.status,
+      stderr_tail: tail(result.stderr || ''),
+      event: {
+        task_sha256: null,
+        task_chars: normalized.task.length,
+        series_id: normalized.seriesId,
+        operation_command_chars: normalized.operationCommand.length,
+      },
+      result: {
+        tool: normalized.tool,
+        command: built.command,
+        args: built.args,
+        stdout: stdout.slice(-4000),
+        parsed: payload,
+      },
+      ...(d.tokenCount > 0 ? { semantic: d } : {}),
+      ...(d.discourseProfile ? { discourse_profile: d.discourseProfile } : {}),
+      ...(d.discourseProfile ? { dialogue_score: scoreDialogue(normalized.task) } : {}),
+    };
+  }
+
   const cli = path.join(repoRoot, 'scripts', 'scbe-system-cli.py');
   const argv = [
     cli,
@@ -1611,7 +1677,6 @@ export async function runEvent(
     argv.push('--dispatch');
   }
 
-  const startedAt = new Date().toISOString();
   const result = spawnSync(python, argv, {
     cwd: repoRoot,
     encoding: 'utf-8',
