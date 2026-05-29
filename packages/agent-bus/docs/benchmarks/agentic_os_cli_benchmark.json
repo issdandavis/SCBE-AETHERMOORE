@@ -1,0 +1,313 @@
+{
+  "schema_version": "scbe.agentic_os_cli_benchmark.v1",
+  "generated_at": "2026-05-29T13:52:03.500Z",
+  "repo_root": "C:\\Users\\issda\\SCBE-AETHERMOORE",
+  "benchmark_id": "2d8ab25cc36de274",
+  "summary": {
+    "case_count": 14,
+    "passed": 14,
+    "failed": 0,
+    "pass_rate": 1,
+    "median_ms": 5.509,
+    "p95_ms": 905.552
+  },
+  "lanes": {
+    "agent_harness": "tools audit + governed state CLI",
+    "cross_language_compiler": "geoseal cross-build Tier 1 lexicon-bounded IR",
+    "binary_hexa_interpolation": "agent-bus semantic bridge 6D -> 48-bit binary -> 12-char hex -> recomposition",
+    "hermes_front_door": "task classifier + local/free-tier/paid model lane planner + writing/YouTube route examples",
+    "governance": "durable trajectory start set observe/read/verify"
+  },
+  "best_in_class_gaps": [
+    {
+      "gap": "atomic-tokenizer bus surface is now registered but still only smoke-tests byte bijection",
+      "impact": "patent-ready atomic tokenizer needs a stronger task corpus covering semantic atoms, code slots, and transport packets"
+    },
+    {
+      "gap": "cross-build is Tier 1 lexicon-bounded, not arbitrary AST translation",
+      "impact": "64 ops close cleanly, but best-in-class cross-domain compiler needs Tier 2 parser-backed lift into same LatticeOp schema"
+    },
+    {
+      "gap": "semantic hex recomposition is nearest-atom, not lossless semantic identity",
+      "impact": "good for routing/interpolation, but benchmark should not claim perfect natural-language bijection"
+    },
+    {
+      "gap": "YouTube upload lane is registered but intentionally unlisted-first",
+      "impact": "public publish remains a human approval gate; benchmark validates route availability, not live upload success"
+    }
+  ],
+  "cases": [
+    {
+      "label": "tool_registry_audit_full_surface",
+      "ok": true,
+      "elapsed_ms": 1.383,
+      "result": {
+        "ok": true,
+        "tool_count": 34,
+        "surface_counts": {
+          "hyperbolic-governance": 4,
+          "bijective-transport": 3,
+          "runtime-persistence": 2,
+          "tamper-detection": 1,
+          "agent-harness": 12,
+          "research-evidence": 9,
+          "video-lattice": 1,
+          "atomic-tokenizer": 2,
+          "unknown": 0
+        },
+        "missing_required_env": {
+          "research-sam-gov": ["SAM_GOV_API_KEY"],
+          "research-uspto": ["USPTO_ODP_API_KEY"]
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "semantic_hex_roundtrip:compile add operation across lan",
+      "ok": true,
+      "elapsed_ms": 5.509,
+      "result": {
+        "ok": true,
+        "input_hash": "8fdf5701f5f75ed5",
+        "combined_hex": "80d1c7eb268c",
+        "combined_binary": "10000000 11010001 11000111 11101011 00100110 10001100",
+        "dominant": "TRANSFORM",
+        "recomposed_closest": {
+          "semanticId": "TRANSFORM",
+          "bucketId": "CORE:OPERATION:STATE_CHANGE",
+          "similarity": 0.9999986254005828,
+          "taskType": "coding"
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "semantic_hex_roundtrip:block denied command but preserv",
+      "ok": true,
+      "elapsed_ms": 2.345,
+      "result": {
+        "ok": true,
+        "input_hash": "1409837270b745e0",
+        "combined_hex": "e27d82bfd249",
+        "combined_binary": "11100010 01111101 10000010 10111111 11010010 01001001",
+        "dominant": "BLOCK",
+        "recomposed_closest": {
+          "semanticId": "PIVOT",
+          "bucketId": "DISCOURSE:STEER:REDIRECT",
+          "similarity": 0.9353496120861399,
+          "taskType": "governance"
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "semantic_hex_roundtrip:transform water flow into a comp",
+      "ok": true,
+      "elapsed_ms": 0.276,
+      "result": {
+        "ok": true,
+        "input_hash": "d9184d81c13fcc1b",
+        "combined_hex": "a4e7856163af",
+        "combined_binary": "10100100 11100111 10000101 01100001 01100011 10101111",
+        "dominant": "FLOW",
+        "recomposed_closest": {
+          "semanticId": "FLOW",
+          "bucketId": "CORE:MOTION:DIRECTED_CONTINUITY",
+          "similarity": 0.9927700898874885,
+          "taskType": "research"
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "semantic_hex_roundtrip:convert prompt to tokens then re",
+      "ok": true,
+      "elapsed_ms": 0.209,
+      "result": {
+        "ok": true,
+        "input_hash": "58cb7ed060c5adbf",
+        "combined_hex": "80d1c7eb268c",
+        "combined_binary": "10000000 11010001 11000111 11101011 00100110 10001100",
+        "dominant": "TRANSFORM",
+        "recomposed_closest": {
+          "semanticId": "TRANSFORM",
+          "bucketId": "CORE:OPERATION:STATE_CHANGE",
+          "similarity": 0.9999986254005828,
+          "taskType": "coding"
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "hermes_plan_compiler_cross_domain",
+      "ok": true,
+      "elapsed_ms": 0.614,
+      "result": {
+        "ok": true,
+        "mode": "compiler",
+        "primary_tools": [
+          "geoseal-cross-build",
+          "geoseal-encode",
+          "semantic-hex-bridge",
+          "tokenizer-atomic-selfcheck"
+        ],
+        "model_cost_tiers": [
+          "offline",
+          "local-free-after-install",
+          "remote-free-tier-limited",
+          "paid-remote"
+        ],
+        "blocked_actions": [
+          "public YouTube publish without explicit approval",
+          "remote provider call containing secrets or private manuscript text without approval",
+          "arbitrary cross-language code translation outside Tier 1 LatticeOp coverage"
+        ]
+      },
+      "error": null
+    },
+    {
+      "label": "hermes_plan_youtube_writing_pipeline",
+      "ok": true,
+      "elapsed_ms": 0.08,
+      "result": {
+        "ok": true,
+        "mode": "youtube",
+        "primary_tools": [
+          "youtube-video-review",
+          "youtube-article-dry-run",
+          "youtube-upload-unlisted"
+        ],
+        "model_cost_tiers": [
+          "offline",
+          "local-free-after-install",
+          "remote-free-tier-limited",
+          "paid-remote"
+        ],
+        "blocked_actions": [
+          "public YouTube publish without explicit approval",
+          "remote provider call containing secrets or private manuscript text without approval",
+          "arbitrary cross-language code translation outside Tier 1 LatticeOp coverage"
+        ]
+      },
+      "error": null
+    },
+    {
+      "label": "hermes_plan_model_lanes_free_limits",
+      "ok": true,
+      "elapsed_ms": 0.173,
+      "result": {
+        "ok": true,
+        "mode": "model",
+        "primary_tools": ["ai-router-health", "ai-router-call", "research-hf-models"],
+        "model_cost_tiers": [
+          "offline",
+          "local-free-after-install",
+          "remote-free-tier-limited",
+          "paid-remote"
+        ],
+        "blocked_actions": [
+          "public YouTube publish without explicit approval",
+          "remote provider call containing secrets or private manuscript text without approval",
+          "arbitrary cross-language code translation outside Tier 1 LatticeOp coverage"
+        ]
+      },
+      "error": null
+    },
+    {
+      "label": "cross_build_ko_to_ru_add",
+      "ok": true,
+      "elapsed_ms": 905.552,
+      "result": {
+        "exit_code": 0,
+        "stdout_chars": 388,
+        "parsed_summary": {
+          "mode": "single",
+          "src_tongue": "KO",
+          "dst_tongue": "RU",
+          "dst_code": "x.wrapping_add(y)",
+          "op_name": "add",
+          "op_id": 0
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "cross_build_av_to_dr_xor",
+      "ok": true,
+      "elapsed_ms": 787.962,
+      "result": {
+        "exit_code": 0,
+        "stdout_chars": 383,
+        "parsed_summary": {
+          "mode": "single",
+          "src_tongue": "AV",
+          "dst_tongue": "DR",
+          "dst_code": "(xor p q)",
+          "op_name": "xor",
+          "op_id": 19
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "cross_build_broadcast_add_all_tongues",
+      "ok": true,
+      "elapsed_ms": 795.69,
+      "result": {
+        "exit_code": 0,
+        "stdout_chars": 422,
+        "parsed_summary": {
+          "mode": "broadcast",
+          "src_tongue": "KO",
+          "op_name": "add",
+          "op_id": 0
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "cross_build_list_ops_64",
+      "ok": true,
+      "elapsed_ms": 783.139,
+      "result": {
+        "exit_code": 0,
+        "stdout_chars": 1094,
+        "parsed_summary": {
+          "participating_count": 64,
+          "excluded_count": 0
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "cross_build_quarantine_arbitrary_code",
+      "ok": true,
+      "elapsed_ms": 796.111,
+      "result": {
+        "exit_code": 2,
+        "stdout_chars": 179,
+        "parsed_summary": {
+          "verdict": "QUARANTINE",
+          "error_type": "LiftFailure"
+        }
+      },
+      "error": null
+    },
+    {
+      "label": "pipeline_state_init_governed_lane",
+      "ok": true,
+      "elapsed_ms": 175.996,
+      "result": {
+        "schema_version": "scbe.agent_bus.governed_state_summary.v1",
+        "session_id": "bench-agentic-os",
+        "state_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\.aethermoor-bus\\tmp-bench-governed-state\\bench-agentic-os.json",
+        "accepted_count": 0,
+        "rejected_count": 0,
+        "reachable_set": ["observe", "read", "verify"],
+        "last_accepted": null,
+        "last_rejected": null
+      },
+      "error": null
+    }
+  ]
+}

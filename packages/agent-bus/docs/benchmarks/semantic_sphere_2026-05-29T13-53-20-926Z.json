@@ -1,0 +1,301 @@
+{
+  "schema": "scbe.agent_bus.semantic_sphere_bench.v1",
+  "generated_at": "2026-05-29T13:53:20.926Z",
+  "platform": "win32",
+  "node_version": "v24.11.1",
+  "arch": "x64",
+  "runs_per_surface": 20,
+  "score": {
+    "passed": 26,
+    "failed": 0,
+    "total": 26
+  },
+  "total_benchmark_runs": 505,
+  "semantic_bridge": [
+    {
+      "label": "decompose:governance",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 501,
+      "min_us": 100,
+      "max_us": 4540,
+      "p50_us": 128
+    },
+    {
+      "label": "decompose:code",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 224,
+      "min_us": 96,
+      "max_us": 2308,
+      "p50_us": 112
+    },
+    {
+      "label": "decompose:dialogue",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 136,
+      "min_us": 113,
+      "max_us": 200,
+      "p50_us": 137
+    },
+    {
+      "label": "decompose:numeric",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 135,
+      "min_us": 77,
+      "max_us": 859,
+      "p50_us": 96
+    },
+    {
+      "label": "decompose:empty",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 74,
+      "min_us": 72,
+      "max_us": 83,
+      "p50_us": 73
+    },
+    {
+      "label": "recompose:governance_hex",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 35,
+      "min_us": 7,
+      "max_us": 385,
+      "p50_us": 14
+    },
+    {
+      "label": "analyzeDimensions:BLOCK+FLOW",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 23,
+      "min_us": 5,
+      "max_us": 202,
+      "p50_us": 6
+    },
+    {
+      "label": "analyzeDimensions:TRANSFORM+FLOW",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 6,
+      "min_us": 4,
+      "max_us": 16,
+      "p50_us": 5
+    },
+    {
+      "label": "analyzeDimensions:ANNOUNCE+EXPAND",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 5,
+      "min_us": 4,
+      "max_us": 6,
+      "p50_us": 4
+    },
+    {
+      "label": "analyzeDimensions:PIVOT+BLOCK",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 5,
+      "min_us": 4,
+      "max_us": 14,
+      "p50_us": 5
+    },
+    {
+      "label": "analyzeDimensions:CARRY+EXPAND",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 8,
+      "min_us": 4,
+      "max_us": 14,
+      "p50_us": 8
+    },
+    {
+      "label": "dimsToHex:round_trip",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 12,
+      "min_us": 5,
+      "max_us": 110,
+      "p50_us": 5
+    },
+    {
+      "label": "dimsToBinary:format",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 9,
+      "min_us": 2,
+      "max_us": 117,
+      "p50_us": 2
+    },
+    {
+      "label": "scoreDialogue:governance",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 187,
+      "min_us": 98,
+      "max_us": 840,
+      "p50_us": 135
+    },
+    {
+      "label": "scoreDialogue:code",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 105,
+      "min_us": 87,
+      "max_us": 290,
+      "p50_us": 93
+    },
+    {
+      "label": "scoreDialogue:dialogue",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 171,
+      "min_us": 109,
+      "max_us": 690,
+      "p50_us": 123
+    }
+  ],
+  "quasi_sphere": [
+    {
+      "label": "createQuasiSphere",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 5,
+      "min_us": 1,
+      "max_us": 38,
+      "p50_us": 1
+    },
+    {
+      "label": "computeOverlap",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 12,
+      "min_us": 2,
+      "max_us": 163,
+      "p50_us": 2
+    },
+    {
+      "label": "squadOverlapMatrix:3x3",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 9,
+      "min_us": 5,
+      "max_us": 72,
+      "p50_us": 5
+    },
+    {
+      "label": "sharedContextRadius:3_units",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 7,
+      "min_us": 2,
+      "max_us": 76,
+      "p50_us": 3
+    },
+    {
+      "label": "padAccessibilityMap:sampleCount=20",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 164,
+      "min_us": 46,
+      "max_us": 681,
+      "p50_us": 141
+    },
+    {
+      "label": "consensusGradient:3_units",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 15,
+      "min_us": 3,
+      "max_us": 202,
+      "p50_us": 4
+    },
+    {
+      "label": "gradientAgreement:3_units",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 9,
+      "min_us": 3,
+      "max_us": 119,
+      "p50_us": 3
+    },
+    {
+      "label": "computeSlice:20x20",
+      "ok": true,
+      "error": null,
+      "runs": 5,
+      "mean_us": 738,
+      "min_us": 416,
+      "max_us": 1582,
+      "p50_us": 557
+    },
+    {
+      "label": "extractZeroSets",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 33,
+      "min_us": 17,
+      "max_us": 236,
+      "p50_us": 18
+    },
+    {
+      "label": "simulateDrift2D:10_steps",
+      "ok": true,
+      "error": null,
+      "runs": 20,
+      "mean_us": 46,
+      "min_us": 21,
+      "max_us": 180,
+      "p50_us": 26
+    }
+  ],
+  "gaps": [
+    {
+      "id": "GAP-1",
+      "title": "Atomic-tokenizer tooling",
+      "description": "The semantic bridge uses substring form-matching (greedy overlap). There is no sub-word tokenizer that maps Sacred Tongue atoms to atomic token IDs. The decompose() engine cannot yet participate in a BPE/WordPiece vocabulary — atom boundaries are only detected by regex surface forms, not by model-level token splits. Required: an atomic tokenizer that assigns stable integer IDs to each atom and produces token-level hex fingerprints compatible with the 48-bit encoding.",
+      "status": "open",
+      "priority": "high"
+    },
+    {
+      "id": "GAP-2",
+      "title": "Tier-2 arbitrary AST compilation",
+      "description": "analyzeDimensions() accepts only named atom IDs from ATOM_TABLE. There is no Tier-2 compiler that takes an arbitrary AST (e.g. a TypeScript or Python parse tree) and maps it to a DimVec. The current surface is limited to the 10 named atoms (4 domain + 6 discourse). A Tier-2 compiler would: (1) walk the AST, (2) classify each node as a domain or discourse atom using structural heuristics, (3) aggregate DimVecs with valence-weighted combination, and (4) emit a combinedHex that acts as a semantic fingerprint for the whole file/module. This would enable cross-file similarity search.",
+      "status": "open",
+      "priority": "high"
+    },
+    {
+      "id": "GAP-3",
+      "title": "Sphere ↔ bridge binding layer",
+      "description": "The quasi-sphere (quasiSphereOverlap/Slice) operates on CHSFNState (Poincaré positions). The semantic bridge operates on DimVec (6D Sacred Tongue axes). There is no binding layer that maps a DecompositionResult.combinedDims to a CHSFNState.position, or that uses a sphere overlap result to gate semantic similarity routing. Required: a DimVec → CHSFNState adapter that preserves ball containment (||x|| < 1).",
+      "status": "open",
+      "priority": "medium"
+    }
+  ]
+}
