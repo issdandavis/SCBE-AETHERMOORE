@@ -24,6 +24,11 @@
  *
  * Cost ceiling: --max-corpus-turns=N (default 80 across all tasks combined).
  * Each task also has a per-task wall-time cap (task.timeout_ms, default 120s).
+ *
+ * VERIFIER CONTRACT (v2): every task injects {WORKDIR} — a per-run tmpdir
+ * unique to that invocation. The model writes its answer to {WORKDIR}/answer.txt.
+ * done_if checks that file. This means a verifier can only pass if the model
+ * actually ran and wrote something — no more static-state false positives.
  */
 
 'use strict';
@@ -31,6 +36,7 @@
 const { spawnSync, spawn } = require('node:child_process');
 const path = require('node:path');
 const fs = require('node:fs');
+const os = require('node:os');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
 const CLI = path.resolve(__dirname, '..', 'bin', 'scbe.js');
@@ -116,29 +122,29 @@ function recvLine(proc, timeoutMs = 60000) {
 
 // ── Task Corpus ───────────────────────────────────────────────────────────────
 //
-// Verifier strength legend (used in post-analysis, not runtime):
-//   strong  — verifier re-runs the same command the model must run
-//   medium  — verifier checks expected content exists in repo
-//   weak    — verifier just confirms file existence (always true)
+// {WORKDIR} is substituted at runtime with a per-task tmpdir (forward-slash
+// safe on Windows). The model must write its answer to {WORKDIR}/answer.txt.
+// done_if verifiers read that file — they pass only if the model acted.
 //
-// For calibration runs, even weak verifiers produce useful turns_log data.
+// Verifier strength:
+//   strong  — checks exact content (known ground truth)
+//   medium  — checks presence/shape (model must produce meaningful output)
+//   weak    — checks file non-empty only (smoke-level)
 
 const TASKS = [
+  // ── Execute ────────────────────────────────────────────────────────────────
   {
     id: 'run-freshness-tests',
     category: 'execute',
     verifier: 'strong',
     difficulty: 'easy',
     instruction:
-      "Run the benchmark artifact freshness test suite at packages/cli/tests/bench_artifact_freshness.test.cjs using Node's built-in test runner (`node --test`). Report how many tests pass.",
+      "Run the benchmark artifact freshness test suite at packages/cli/tests/bench_artifact_freshness.test.cjs using Node's built-in test runner (`node --test packages/cli/tests/bench_artifact_freshness.test.cjs`). Count the passing tests from the output. Write the count as a plain integer (e.g. `17`) to `{WORKDIR}/answer.txt`.",
     done_if:
       `node -e "` +
-      `const {spawnSync}=require('child_process');` +
-      `const r=spawnSync(process.execPath,['--test','packages/cli/tests/bench_artifact_freshness.test.cjs'],` +
-      `{encoding:'utf8',cwd:process.cwd()});` +
-      `const out=r.stdout+r.stderr;` +
-      `const m=out.match(/pass\\s+(\\d+)/);` +
-      `if(!m||parseInt(m[1])<15)process.exit(1)` +
+      `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `const n=parseInt(t);` +
+      `if(isNaN(n)||n<15){process.stderr.write('need>=15 got:'+t+'\\n');process.exit(1)}` +
       `"`,
     max_turns: 5,
     timeout_ms: 90000,
@@ -149,47 +155,82 @@ const TASKS = [
     verifier: 'strong',
     difficulty: 'easy',
     instruction:
-      'Run a dry-run npm pack for the CLI package at packages/cli and confirm that scripts/scbe_workflow.cjs appears in the file list. Use: npm pack --dry-run --json (run from the packages/cli directory).',
+      'Run a dry-run npm pack from the packages/cli directory: `npm pack --dry-run --json`. Parse the JSON output and check whether `scripts/scbe_workflow.cjs` appears in the file list. Write exactly `yes` to `{WORKDIR}/answer.txt` if it is present, `no` if absent.',
     done_if:
       `node -e "` +
-      `const {execSync}=require('child_process');` +
-      `const out=execSync('npm pack --dry-run --json',{cwd:'packages/cli',encoding:'utf8'});` +
-      `const files=JSON.parse(out)[0].files.map(f=>f.path);` +
-      `if(!files.some(f=>f.includes('scbe_workflow')))throw new Error('scbe_workflow.cjs missing from pack')` +
+      `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `if(t!=='yes'){process.stderr.write('expected yes got:'+t+'\\n');process.exit(1)}` +
       `"`,
     max_turns: 5,
     timeout_ms: 60000,
   },
+
+  // ── Search + Count ─────────────────────────────────────────────────────────
   {
     id: 'count-bench-cases',
     category: 'search+count',
-    verifier: 'medium',
+    verifier: 'strong',
     difficulty: 'medium',
     instruction:
-      'Count how many test cases are registered in packages/cli/scripts/shell_benchmark.cjs. The cases are added using the pattern `cases.push(`. Report the exact count.',
+      'Count how many test cases are registered in packages/cli/scripts/shell_benchmark.cjs. Cases are added using the pattern `cases.push(`. Write the exact count as a plain integer (e.g. `26`) to `{WORKDIR}/answer.txt`.',
     done_if:
       `node -e "` +
-      `const t=require('fs').readFileSync('packages/cli/scripts/shell_benchmark.cjs','utf8');` +
-      `const n=(t.match(/cases\\.push/g)||[]).length;` +
-      `if(n<20||n>60)process.exit(1);` +
-      `process.stdout.write(n+' cases\\n')` +
+      `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `const n=parseInt(t);` +
+      `const actual=(require('fs').readFileSync('packages/cli/scripts/shell_benchmark.cjs','utf8').match(/cases\\.push/g)||[]).length;` +
+      `if(isNaN(n)||n!==actual){process.stderr.write('expected '+actual+' got '+t+'\\n');process.exit(1)}` +
       `"`,
     max_turns: 5,
     timeout_ms: 60000,
   },
   {
+    id: 'count-harmonic-ts-files',
+    category: 'search+count',
+    verifier: 'strong',
+    difficulty: 'easy',
+    instruction:
+      'Count how many .ts files exist directly in src/harmonic/ (not in subdirectories — only the top level of that directory). Write the count as a plain integer to `{WORKDIR}/answer.txt`.',
+    done_if:
+      `node -e "` +
+      `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `const n=parseInt(t);` +
+      `const actual=require('fs').readdirSync('src/harmonic').filter(f=>f.endsWith('.ts')).length;` +
+      `if(isNaN(n)||n!==actual){process.stderr.write('expected '+actual+' got '+t+'\\n');process.exit(1)}` +
+      `"`,
+    max_turns: 5,
+    timeout_ms: 60000,
+  },
+  {
+    id: 'list-agent-bus-tools',
+    category: 'search+count',
+    verifier: 'strong',
+    difficulty: 'easy',
+    instruction:
+      'Count how many tool entries are defined in packages/agent-bus/tools.json. Write the count as a plain integer to `{WORKDIR}/answer.txt`.',
+    done_if:
+      `node -e "` +
+      `const tools=JSON.parse(require('fs').readFileSync('packages/agent-bus/tools.json','utf8'));` +
+      `const expected=tools.length;` +
+      `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `const n=parseInt(t);` +
+      `if(isNaN(n)||n!==expected){process.stderr.write('expected '+expected+' got '+t+'\\n');process.exit(1)}` +
+      `"`,
+    max_turns: 4,
+    timeout_ms: 60000,
+  },
+
+  // ── Search + Comprehend ────────────────────────────────────────────────────
+  {
     id: 'find-extractsummary-signature',
-    category: 'search',
+    category: 'search+comprehend',
     verifier: 'medium',
     difficulty: 'medium',
     instruction:
-      'Find the function named extractSummary in packages/cli/scripts/scbe_workflow.cjs. Report its exact parameter list (what is inside the parentheses) and briefly describe what each parameter is used for.',
+      'Find the function named `extractSummary` in packages/cli/scripts/scbe_workflow.cjs. Write the exact text inside its parentheses (the parameter list, without the parens) to `{WORKDIR}/answer.txt`.',
     done_if:
       `node -e "` +
-      `const t=require('fs').readFileSync('packages/cli/scripts/scbe_workflow.cjs','utf8');` +
-      `const m=t.match(/function extractSummary\\s*\\([^)]+\\)/);` +
-      `if(!m)process.exit(1);` +
-      `process.stdout.write(m[0]+'\\n')` +
+      `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `if(t.length<3||!/[a-zA-Z]/.test(t)){process.stderr.write('empty or non-alpha: '+t+'\\n');process.exit(1)}` +
       `"`,
     max_turns: 4,
     timeout_ms: 60000,
@@ -197,14 +238,15 @@ const TASKS = [
   {
     id: 'identify-scbe-env-vars',
     category: 'search+enumerate',
-    verifier: 'medium',
+    verifier: 'strong',
     difficulty: 'medium',
     instruction:
-      'List all environment variable names starting with SCBE_ that are read in packages/cli/bin/scbe.js. There are at least four. Report each one and describe what it controls.',
+      'List all environment variable names starting with `SCBE_` that are read in packages/cli/bin/scbe.js. There are at least four. Write each variable name on its own line to `{WORKDIR}/answer.txt`.',
     done_if:
       `node -e "` +
-      `const t=require('fs').readFileSync('packages/cli/bin/scbe.js','utf8');` +
-      `const missing=['SCBE_MODEL','SCBE_BASE_URL','SCBE_API_KEY','SCBE_PROVIDER'].filter(v=>!t.includes(v));` +
+      `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8');` +
+      `const required=['SCBE_MODEL','SCBE_BASE_URL','SCBE_API_KEY','SCBE_PROVIDER'];` +
+      `const missing=required.filter(v=>!t.includes(v));` +
       `if(missing.length){process.stderr.write('missing: '+missing.join(',')+'\\n');process.exit(1)}` +
       `"`,
     max_turns: 5,
@@ -216,13 +258,11 @@ const TASKS = [
     verifier: 'medium',
     difficulty: 'hard',
     instruction:
-      'In packages/cli/bin/scbe.js, find where the ko-ban mechanism is implemented. A ko-ban blocks a command that was already tried with the same result. Identify: (1) where past attempts are stored, (2) the condition that triggers a block. Report both with line context.',
+      'In packages/cli/bin/scbe.js, find where the ko-ban mechanism is implemented. A ko-ban blocks a command that was already tried with the same result. Write to `{WORKDIR}/answer.txt`: (1) the variable name where past attempts are stored, and (2) one sentence describing the condition that triggers a block.',
     done_if:
       `node -e "` +
-      `const t=require('fs').readFileSync('packages/cli/bin/scbe.js','utf8');` +
-      `if(!t.includes('ko_ban'))process.exit(1);` +
-      `const lines=t.split('\\n').filter(l=>l.includes('ko_ban'));` +
-      `if(lines.length<2)process.exit(1)` +
+      `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `if(t.length<20||!t.toLowerCase().includes('ko')){process.stderr.write('too short or missing ko: '+t.slice(0,80)+'\\n');process.exit(1)}` +
       `"`,
     max_turns: 6,
     timeout_ms: 90000,
@@ -233,15 +273,63 @@ const TASKS = [
     verifier: 'medium',
     difficulty: 'hard',
     instruction:
-      'In packages/cli/bin/scbe.js, find where reset_context is handled. Report: (1) what state is cleared when reset_context is true, (2) whether a step_context summary is injected into the conversation history.',
+      'In packages/cli/bin/scbe.js, find where `reset_context` is handled. Write to `{WORKDIR}/answer.txt`: (1) what state is cleared when reset_context is true, and (2) whether a step_context summary is injected into conversation history.',
     done_if:
       `node -e "` +
-      `const t=require('fs').readFileSync('packages/cli/bin/scbe.js','utf8');` +
-      `if(!t.includes('reset_context'))process.exit(1);` +
-      `if(!t.includes('step_context'))process.exit(1)` +
+      `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `if(t.length<20||!t.toLowerCase().includes('reset')){process.stderr.write('too short or missing reset: '+t.slice(0,80)+'\\n');process.exit(1)}` +
       `"`,
     max_turns: 6,
     timeout_ms: 90000,
+  },
+
+  // ── Governance discriminators ──────────────────────────────────────────────
+  {
+    id: 'governance-deny-blocks-destructive',
+    category: 'governance',
+    verifier: 'strong',
+    difficulty: 'medium',
+    instruction:
+      "Run the SCBE governance check on a destructive command: `node packages/cli/bin/scbe.js run 'rm -rf C:/' --json`. The output is a JSON object. Read the `governance.tier` field and write its value to `{WORKDIR}/answer.txt`.",
+    done_if:
+      `node -e "` +
+      `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `if(t!=='DENY'){process.stderr.write('expected DENY got:'+t+'\\n');process.exit(1)}` +
+      `"`,
+    max_turns: 4,
+    timeout_ms: 60000,
+  },
+
+  // ── Agent bus / research discriminators ───────────────────────────────────
+  {
+    id: 'research-bus-arxiv',
+    category: 'agent-bus',
+    verifier: 'medium',
+    difficulty: 'medium',
+    instruction:
+      "Search arXiv using the research API bus: `python scripts/research_api_bus.py --api arxiv --query 'hyperbolic geometry machine learning' --limit 3`. The command prints JSON to stdout. Write the `title` field of the first result to `{WORKDIR}/answer.txt`. If the API call fails (ok=false), write the error string instead.",
+    done_if:
+      `node -e "` +
+      `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `if(t.length<5){process.stderr.write('answer too short: '+t+'\\n');process.exit(1)}` +
+      `"`,
+    max_turns: 4,
+    timeout_ms: 60000,
+  },
+  {
+    id: 'research-bus-hf-models',
+    category: 'agent-bus',
+    verifier: 'medium',
+    difficulty: 'medium',
+    instruction:
+      "Search HuggingFace for text-generation models using the research API bus: `python scripts/research_api_bus.py --api hf_models --query 'llama text generation' --limit 3`. The command prints JSON to stdout. Write the `model_id` of the first result to `{WORKDIR}/answer.txt`. If the API call fails, write the error string instead.",
+    done_if:
+      `node -e "` +
+      `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `if(t.length<3){process.stderr.write('answer too short: '+t+'\\n');process.exit(1)}` +
+      `"`,
+    max_turns: 4,
+    timeout_ms: 60000,
   },
 ];
 
@@ -304,6 +392,14 @@ async function runTask(task, opts = {}) {
     return result;
   }
 
+  // Per-task tmpdir — substituted for {WORKDIR} in instruction + done_if.
+  // Forward-slash conversion makes it safe in shell inline-node snippets on Windows.
+  const workdir = fs.mkdtempSync(path.join(os.tmpdir(), `scbe-bench-${task.id}-`));
+  const safeWorkdir = workdir.split(path.sep).join('/');
+
+  const instruction = task.instruction.replace(/\{WORKDIR\}/g, safeWorkdir);
+  const done_if = task.done_if ? task.done_if.replace(/\{WORKDIR\}/g, safeWorkdir) : null;
+
   const started = Date.now();
   let proc;
 
@@ -323,9 +419,9 @@ async function runTask(task, opts = {}) {
 
     // Send first instruction
     sendLine(proc, {
-      instruction: task.instruction,
+      instruction,
       terminal_state: '$ ',
-      done_if: task.done_if || null,
+      done_if: done_if || null,
       max_turns: effectiveMax,
     });
 
@@ -378,8 +474,8 @@ async function runTask(task, opts = {}) {
 
       // Check verifier after executing the command
       let verified = false;
-      if (task.done_if) {
-        const vr = runShell(task.done_if, 15000);
+      if (done_if) {
+        const vr = runShell(done_if, 15000);
         verified = vr.status === 0;
       }
 
@@ -422,6 +518,10 @@ async function runTask(task, opts = {}) {
       } catch (_) {}
     }
     result.duration_ms = Date.now() - started;
+    // Clean up per-task workdir
+    try {
+      fs.rmSync(workdir, { recursive: true, force: true });
+    } catch (_) {}
   }
 
   return result;
@@ -548,7 +648,7 @@ function writeArtifact(results, model, provider) {
   if (!fs.existsSync(ARTIFACT_DIR)) fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   const artifact = {
-    schema: 'task-corpus/v1',
+    schema: 'task-corpus/v2',
     generated_at: new Date().toISOString(),
     commit: getHeadCommit(),
     provider: provider || process.env.SCBE_PROVIDER || 'unknown',
@@ -602,6 +702,9 @@ function writeArtifact(results, model, provider) {
         '',
         'Env vars (same as scbe shell):',
         '  SCBE_PROVIDER  SCBE_MODEL  SCBE_API_KEY  SCBE_BASE_URL',
+        '',
+        'Tip: smoke-test verifiers without a model:',
+        '  SCBE_PROVIDER=offline node scripts/bench_task_corpus.cjs --task list-agent-bus-tools',
       ].join('\n')
     );
     process.exit(0);
@@ -625,9 +728,9 @@ function writeArtifact(results, model, provider) {
 
   const model = process.env.SCBE_MODEL || '(default)';
   const provider = process.env.SCBE_PROVIDER || 'ollama';
-  console.log(`\nTask Corpus Bench — provider=${provider} model=${model}`);
+  console.log(`\nTask Corpus Bench v2 — provider=${provider} model=${model}`);
   console.log(`Tasks: ${tasksToRun.length}  Corpus turn budget: ${maxCorpusTurns}`);
-  console.log('Note: exit 0 always (calibration phase — no baseline gate yet)\n');
+  console.log('Verifier contract v2: {WORKDIR}/answer.txt per task — no static-state false positives\n');
 
   const results = await runCorpus(tasksToRun, { maxCorpusTurns });
 
