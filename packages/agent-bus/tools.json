@@ -112,5 +112,113 @@
     "description": "Run SCBE CLI harness control matrix: protocol, offline scaffold corpus, and missing-model negative control",
     "command": "node",
     "args": ["packages/cli/scripts/bench_harness_matrix.cjs"]
+  },
+  {
+    "name": "video-pocket-director",
+    "description": "Run the SCBE video lattice pocket-dimension director demo through the local deterministic round-table harness",
+    "command": "python",
+    "args": ["scripts/video_lattice/pocket_director_demo.py", "--roundtable", "{task}"]
+  },
+  {
+    "name": "research-arxiv",
+    "description": "Search arXiv preprints for papers matching a query. Free, no auth required. Returns titles, authors, abstract summaries, and URLs.",
+    "command": "python",
+    "args": ["scripts/research_api_bus.py", "--api", "arxiv", "--query", "{task}", "--limit", "5"]
+  },
+  {
+    "name": "research-semantic-scholar",
+    "description": "Search Semantic Scholar for academic papers with citation counts. Free, no auth required. Good for finding highly-cited work.",
+    "command": "python",
+    "args": [
+      "scripts/research_api_bus.py",
+      "--api",
+      "semantic_scholar",
+      "--query",
+      "{task}",
+      "--limit",
+      "5"
+    ]
+  },
+  {
+    "name": "research-openalex",
+    "description": "Search OpenAlex scholarly works index. Free, no auth required. Covers 250M+ works with open-access flag and citation counts.",
+    "command": "python",
+    "args": [
+      "scripts/research_api_bus.py",
+      "--api",
+      "openalex",
+      "--query",
+      "{task}",
+      "--limit",
+      "5"
+    ]
+  },
+  {
+    "name": "research-crossref",
+    "description": "Search CrossRef for DOI-registered publications. Free, no auth required. Best for finding official citations and publisher metadata.",
+    "command": "python",
+    "args": [
+      "scripts/research_api_bus.py",
+      "--api",
+      "crossref",
+      "--query",
+      "{task}",
+      "--limit",
+      "5"
+    ]
+  },
+  {
+    "name": "research-pubmed",
+    "description": "Search PubMed biomedical literature via NCBI E-utilities. Free, no auth required. Best for medical, biology, and life-sciences queries.",
+    "command": "python",
+    "args": ["scripts/research_api_bus.py", "--api", "pubmed", "--query", "{task}", "--limit", "5"]
+  },
+  {
+    "name": "research-sam-gov",
+    "description": "Search SAM.gov active federal contract and grant opportunities. Requires SAM_GOV_API_KEY env var. Returns NAICS, set-aside, close dates.",
+    "command": "python",
+    "args": [
+      "scripts/research_api_bus.py",
+      "--api",
+      "sam_gov",
+      "--query",
+      "{task}",
+      "--limit",
+      "10"
+    ]
+  },
+  {
+    "name": "research-uspto",
+    "description": "Search USPTO patent applications via the Open Data Portal File Wrapper API. Requires USPTO_ODP_API_KEY env var. Returns application numbers, status, inventors.",
+    "command": "python",
+    "args": ["scripts/research_api_bus.py", "--api", "uspto", "--query", "{task}", "--limit", "5"]
+  },
+  {
+    "name": "research-hf-models",
+    "description": "Search HuggingFace model hub for models matching a query. Free; HF_TOKEN optional for higher rate limits. Returns model IDs, downloads, pipeline tags.",
+    "command": "python",
+    "args": [
+      "scripts/research_api_bus.py",
+      "--api",
+      "hf_models",
+      "--query",
+      "{task}",
+      "--limit",
+      "10"
+    ]
+  },
+  {
+    "name": "research-github-repos",
+    "description": "Search GitHub public repositories by stars and relevance. GITHUB_TOKEN recommended for quota. Returns names, descriptions, stars, languages.",
+    "command": "python",
+    "args": [
+      "scripts/research_api_bus.py",
+      "--api",
+      "github_repos",
+      "--query",
+      "{task}",
+      "--limit",
+      "10"
+    ]
   }
 ]
