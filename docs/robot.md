@@ -13,6 +13,8 @@ Public channel:
 - Channel display: Issac "Izreal" Davis
 - GitHub profile: https://github.com/issdandavis
 - Hugging Face profile: https://huggingface.co/issdandavis
+- Static analysis training dataset (Hugging Face): https://huggingface.co/datasets/issdandavis/scbe-static-analysis-training
+- Static analysis training dataset (Kaggle): https://www.kaggle.com/datasets/issacizrealdavis/scbe-static-analysis-training
 - Ko-fi: https://ko-fi.com/izdandavis
 
 Machine-readable config:

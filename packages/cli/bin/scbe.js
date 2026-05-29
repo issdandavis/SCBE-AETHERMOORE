@@ -237,6 +237,10 @@ Usage:
 ─────────────────────────────────────────────────────────────────────────────
   EXAMPLES
 ─────────────────────────────────────────────────────────────────────────────
+  scbe shell                            # governed rich TUI shell (default)
+  scbe shell --tui                      # alias for rich mode
+  scbe shell --ai                       # plain-English intent routing
+  scbe shell --minimal                  # scriptable readline, CI-safe
   scbe version --json | jq '.version'
   scbe doctor --json | jq '{node:.node,liboqs:.liboqs}'
   scbe liboqs --json | jq '{kem:.kem_algorithm,dsa:.dsa_algorithm}'
