@@ -36,8 +36,12 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+# DSAPI datasets that use form-encoded POST (criteria= Lucene, start=, rows=)
+# vs enriched citations which uses JSON POST (q= Lucene, start=, rows=)
+_DSAPI_FORM_DATASETS = frozenset({"oa_rejections"})
+
 PFW_URL = "https://api.uspto.gov/api/v1/patent/applications/search"
-OA_URL  = "https://api.uspto.gov/api/v1/patent/oa/oa_actions/v1/records"
+OA_URL  = "https://api.uspto.gov/api/v1/patent/oa/oa_rejections/v2/records"
 EC_URL  = "https://api.uspto.gov/api/v1/patent/oa/enriched_cited_reference_metadata/v3/records"
 STATE_DIR = Path(__file__).parent.parent.parent / "artifacts" / "patent_monitor"
 
@@ -133,6 +137,31 @@ def _post_json(
     return None
 
 
+def _post_form(
+    url: str,
+    criteria: str,
+    start: int,
+    rows: int,
+    api_key: Optional[str],
+    _retry: int = 0,
+) -> Optional[Dict]:
+    """DSAPI form-encoded POST: criteria= Lucene query, start=, rows=."""
+    data = urlencode({"criteria": criteria, "start": start, "rows": rows}).encode("utf-8")
+    h = _base_headers(api_key)
+    h["Content-Type"] = "application/x-www-form-urlencoded"
+    try:
+        with urlopen(Request(url, data=data, headers=h), timeout=30) as resp:
+            return json.loads(resp.read().decode())
+    except HTTPError as e:
+        if e.code == 429 and _retry < _RETRY_MAX:
+            time.sleep(_RETRY_SLEEP)
+            return _post_form(url, criteria, start, rows, api_key, _retry + 1)
+        print(f"[ERROR] HTTP {e.code}: {e.reason}  (POST form {url})", file=sys.stderr)
+    except URLError as e:
+        print(f"[ERROR] Network: {e.reason}", file=sys.stderr)
+    return None
+
+
 # ---------------------------------------------------------------------------
 #  Patent File Wrapper fetch
 # ---------------------------------------------------------------------------
@@ -153,7 +182,8 @@ def fetch_file_wrapper(app_number: str, api_key: Optional[str]) -> Optional[Dict
 # ---------------------------------------------------------------------------
 
 def fetch_oa_rejections(app_number: str, api_key: Optional[str]) -> List[Dict]:
-    data = _get_json(OA_URL, {"patentApplicationNumber": app_number, "rows": 50}, api_key)
+    # DSAPI form-encoded POST: criteria= Lucene query (GET /fields, POST /records)
+    data = _post_form(OA_URL, f"patentApplicationNumber:{app_number}", 0, 100, api_key)
     if not data:
         return []
     return data.get("response", {}).get("docs", [])
@@ -172,12 +202,10 @@ def fetch_enriched_citations(app_number: str, api_key: Optional[str]) -> List[Di
     Uses the advanced OpenSearch body format (pagination object) per ODP API syntax docs.
     Paginates automatically if numFound > first-page limit.
     """
+    # Same DSAPI form-encoded pattern as OA rejections: criteria= Lucene, start=, rows=
     limit = 100
-    body = {
-        "patentApplicationNumber": app_number,
-        "pagination": {"offset": 0, "limit": limit},
-    }
-    first = _post_json(EC_URL, body, api_key)
+    criteria = f"patentApplicationNumber:{app_number}"
+    first = _post_form(EC_URL, criteria, 0, limit, api_key)
     if not first:
         return []
     response_block = first.get("response", {})
@@ -185,18 +213,17 @@ def fetch_enriched_citations(app_number: str, api_key: Optional[str]) -> List[Di
     num_found = response_block.get("numFound", len(docs))
 
     # Page through remaining results (burst=1 → sequential; sleep between pages)
-    offset = limit
-    while offset < num_found:
+    start = limit
+    while start < num_found:
         time.sleep(_PAGE_SLEEP)
-        body["pagination"] = {"offset": offset, "limit": limit}
-        page = _post_json(EC_URL, body, api_key)
+        page = _post_form(EC_URL, criteria, start, limit, api_key)
         if not page:
             break
         page_docs = page.get("response", {}).get("docs", [])
         if not page_docs:
             break
         docs.extend(page_docs)
-        offset += limit
+        start += limit
 
     return docs
 
@@ -252,12 +279,17 @@ def _wrapper_key_fields(wrapper: Dict) -> Dict[str, Any]:
     }
 
 
+def _oa_doc_code(doc: Dict) -> str:
+    val = doc.get("legacyDocumentCodeIdentifier", "")
+    return val[0] if isinstance(val, list) else (val or "")
+
+
 def _oa_fingerprint(doc: Dict) -> Tuple:
     return (
-        doc.get("submissionDate", ""),
-        doc.get("legacyDocumentCodeIdentifier", ""),
-        doc.get("legalSectionCode", ""),
-        ",".join(doc.get("claimNumberArrayDocument", [])),
+        (doc.get("submissionDate", "") or "")[:10],
+        _oa_doc_code(doc),
+        doc.get("legalSectionCode", "") or "",
+        ",".join(doc.get("claimNumberArrayDocument", []) or []),
     )
 
 
@@ -381,7 +413,7 @@ def print_summary(
         # Group by submission date + doc code
         grouped: Dict[Tuple, List[Dict]] = {}
         for doc in oa_docs:
-            key = (doc.get("submissionDate","")[:10], doc.get("legacyDocumentCodeIdentifier",""))
+            key = ((doc.get("submissionDate","") or "")[:10], _oa_doc_code(doc))
             grouped.setdefault(key, []).append(doc)
 
         print(f"\nOffice Action rejections ({len(oa_docs)} records):")
@@ -456,6 +488,9 @@ def print_summary(
                 print(ref_line)
                 print(f"         claims: {claims or '—'}  — {label}")
                 if passage:
+                    # passageLocationText is an array in the API schema; join if needed
+                    if isinstance(passage, list):
+                        passage = " | ".join(passage)
                     p = passage[:100] + ("…" if len(passage) > 100 else "")
                     print(f"         passage: {p}")
 
