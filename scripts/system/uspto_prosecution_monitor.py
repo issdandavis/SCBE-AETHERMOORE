@@ -28,6 +28,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -70,36 +71,62 @@ CITATION_CATEGORY_LABELS = {
 
 
 # ---------------------------------------------------------------------------
-#  HTTP helper
+#  HTTP helpers  (header: x-api-key per ODP docs; 429 retry with backoff)
 # ---------------------------------------------------------------------------
 
-def _get_json(url: str, params: Dict, api_key: Optional[str]) -> Optional[Dict]:
-    full = f"{url}?{urlencode(params)}"
-    headers = {"Accept": "application/json"}
+# ODP rate limits (https://developer.uspto.gov/api-catalog/rate-limits):
+#   Burst = 1 (one active request per key; NO parallel calls)
+#   Rate  = 4–15 req/s depending on API type
+#   429 retry: minimum 5 second delay required before retrying
+#   Weekly quota resets Sunday 00:00 UTC
+_RETRY_MAX   = 5
+_RETRY_SLEEP = 5.0   # seconds — ODP strongly discourages < 5s retry delay
+_PAGE_SLEEP  = 0.25  # seconds between pagination hops (burst=1, sequential only)
+
+
+def _base_headers(api_key: Optional[str]) -> Dict[str, str]:
+    h = {"Accept": "application/json"}
     if api_key:
-        headers["X-API-KEY"] = api_key
+        h["x-api-key"] = api_key   # lowercase per ODP API syntax examples
+    return h
+
+
+def _get_json(
+    url: str,
+    params: Dict,
+    api_key: Optional[str],
+    _retry: int = 0,
+) -> Optional[Dict]:
+    full = f"{url}?{urlencode(params)}"
     try:
-        with urlopen(Request(full, headers=headers), timeout=30) as resp:
+        with urlopen(Request(full, headers=_base_headers(api_key)), timeout=30) as resp:
             return json.loads(resp.read().decode())
     except HTTPError as e:
+        if e.code == 429 and _retry < _RETRY_MAX:
+            time.sleep(_RETRY_SLEEP)
+            return _get_json(url, params, api_key, _retry + 1)
         print(f"[ERROR] HTTP {e.code}: {e.reason}  ({full})", file=sys.stderr)
     except URLError as e:
         print(f"[ERROR] Network: {e.reason}", file=sys.stderr)
     return None
 
 
-def _post_json(url: str, body: Dict, api_key: Optional[str]) -> Optional[Dict]:
+def _post_json(
+    url: str,
+    body: Dict,
+    api_key: Optional[str],
+    _retry: int = 0,
+) -> Optional[Dict]:
     data = json.dumps(body).encode("utf-8")
-    headers = {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-    }
-    if api_key:
-        headers["X-API-KEY"] = api_key
+    h = _base_headers(api_key)
+    h["Content-Type"] = "application/json"
     try:
-        with urlopen(Request(url, data=data, headers=headers), timeout=30) as resp:
+        with urlopen(Request(url, data=data, headers=h), timeout=30) as resp:
             return json.loads(resp.read().decode())
     except HTTPError as e:
+        if e.code == 429 and _retry < _RETRY_MAX:
+            time.sleep(_RETRY_SLEEP)
+            return _post_json(url, body, api_key, _retry + 1)
         print(f"[ERROR] HTTP {e.code}: {e.reason}  (POST {url})", file=sys.stderr)
     except URLError as e:
         print(f"[ERROR] Network: {e.reason}", file=sys.stderr)
@@ -141,11 +168,37 @@ def fetch_enriched_citations(app_number: str, api_key: Optional[str]) -> List[Di
       X = anticipates a claim (§102 single-reference rejection — highest threat)
       Y = cited in combination for obviousness (§103)
       A = background / general state of art (informational only)
+
+    Uses the advanced OpenSearch body format (pagination object) per ODP API syntax docs.
+    Paginates automatically if numFound > first-page limit.
     """
-    data = _post_json(EC_URL, {"patentApplicationNumber": app_number, "rows": 100}, api_key)
-    if not data:
+    limit = 100
+    body = {
+        "patentApplicationNumber": app_number,
+        "pagination": {"offset": 0, "limit": limit},
+    }
+    first = _post_json(EC_URL, body, api_key)
+    if not first:
         return []
-    return data.get("response", {}).get("docs", [])
+    response_block = first.get("response", {})
+    docs: List[Dict] = list(response_block.get("docs", []))
+    num_found = response_block.get("numFound", len(docs))
+
+    # Page through remaining results (burst=1 → sequential; sleep between pages)
+    offset = limit
+    while offset < num_found:
+        time.sleep(_PAGE_SLEEP)
+        body["pagination"] = {"offset": offset, "limit": limit}
+        page = _post_json(EC_URL, body, api_key)
+        if not page:
+            break
+        page_docs = page.get("response", {}).get("docs", [])
+        if not page_docs:
+            break
+        docs.extend(page_docs)
+        offset += limit
+
+    return docs
 
 
 # ---------------------------------------------------------------------------
