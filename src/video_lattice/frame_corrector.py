@@ -42,6 +42,10 @@ class CorrectionSignal:
     latent_nudge: Optional[np.ndarray]        # delta for diffusion latent space
     condition_signal: Dict[str, Any]          # structured hint for UE5 / generator
     severity: str                             # "none" | "mild" | "moderate" | "severe"
+    # Trijective audit fields (empty/False when no intent anchor is set)
+    intent_violated: bool = False
+    intent_drift: float = 0.0
+    intent_description: str = ""
 
     def to_ue5_dict(self) -> Dict[str, Any]:
         """Serialize to a flat dict compatible with UE5 Python remote execution."""
@@ -50,6 +54,8 @@ class CorrectionSignal:
             "drift": round(self.aggregate_drift, 4),
             "cost": round(self.cost_signal, 4),
             "severity": self.severity,
+            "intent_violated": self.intent_violated,
+            "intent_drift": round(self.intent_drift, 4),
             **{f"correction_{k}": round(v, 4) for k, v in self.axis_corrections.items()},
         }
 
@@ -128,6 +134,9 @@ class FrameCorrector:
             latent_nudge=latent_nudge,
             condition_signal=condition_signal,
             severity=severity,
+            intent_violated=state.intent_violated,
+            intent_drift=max(state.intent_drift_by_axis.values()) if state.intent_drift_by_axis else 0.0,
+            intent_description=self.tracker.intent_anchor.description if self.tracker.intent_anchor else "",
         )
         self._corrections.append(sig)
         return sig
@@ -180,6 +189,7 @@ class FrameCorrector:
             reverse=True,
         )[:3]
 
+        anchor = self.tracker.intent_anchor
         return {
             "severity": severity,
             "drift": state.aggregate_drift,
@@ -188,6 +198,13 @@ class FrameCorrector:
                 {"axis": name, "drift": round(d, 4)} for name, d in top_drift_axes
             ],
             "axis_corrections": {k: round(v, 4) for k, v in axis_corrections.items()},
+            # Trijective audit: human-intent vs machine-representation leg
+            "intent": {
+                "violated": state.intent_violated,
+                "max_drift": round(max(state.intent_drift_by_axis.values()), 4) if state.intent_drift_by_axis else 0.0,
+                "by_axis": {ax.value: round(d, 4) for ax, d in state.intent_drift_by_axis.items()},
+                "description": anchor.description if anchor else "",
+            },
             # UE5-specific hints
             "ue5": {
                 "suggest_keyframe": severity in ("moderate", "severe"),
@@ -215,8 +232,10 @@ class FrameCorrector:
         if not self._corrections:
             return {"frame_count": 0}
         severities = [c.severity for c in self._corrections]
+        intent_violations = sum(1 for c in self._corrections if c.intent_violated)
         return {
             "frame_count": len(self._corrections),
             "severity_counts": {s: severities.count(s) for s in ("none", "mild", "moderate", "severe")},
+            "intent_violations": intent_violations,
             "tracker_summary": self.tracker.summary(),
         }

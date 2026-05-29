@@ -12,6 +12,7 @@ import numpy as np
 from src.video_lattice import (
     BodyLandmark,
     HandLandmark,
+    IntentAnchor,
     Landmark,
     LatticeAxis,
     LocalVectorIndex,
@@ -608,7 +609,74 @@ def test_pocket_video_gen_writes_animation_and_reduces_drift(tmp_path) -> None:
     assert manifest["frames"][-1]["verdict"] == "pass"
 
 
-def pytest_approx(value: float):
+# ------------------------------------------------------------------
+# Intent anchor — trijective audit triangle tests
+# ------------------------------------------------------------------
+
+
+def test_intent_anchor_no_drift_when_aligned() -> None:
+    tracker = TemporalTracker(MultiLattice(dim=4, correction_threshold=5.0), intent_threshold=0.5)
+    anchor_vec = np.array([0.3, 0.1, -0.2, 0.4])
+    tracker.set_intent_anchor({LatticeAxis.IDENTITY: anchor_vec}, description="test pose")
+    # Observing the same vector as the anchor — intent drift must be zero
+    state = tracker.observe({LatticeAxis.IDENTITY: anchor_vec})
+    assert LatticeAxis.IDENTITY in state.intent_drift_by_axis
+    assert state.intent_drift_by_axis[LatticeAxis.IDENTITY] == pytest_approx(0.0, abs=1e-9)
+    assert state.intent_violated is False
+
+
+def test_intent_anchor_detects_violation_on_large_shift() -> None:
+    tracker = TemporalTracker(MultiLattice(dim=4, correction_threshold=5.0), intent_threshold=0.1)
+    anchor = np.array([0.1, 0.0, 0.0, 0.0])
+    shifted = np.array([5.0, 5.0, 5.0, 5.0])
+    tracker.set_intent_anchor({LatticeAxis.IDENTITY: anchor}, description="closed fist")
+    state = tracker.observe({LatticeAxis.IDENTITY: shifted})
+    assert state.intent_violated is True
+    assert state.intent_drift_by_axis[LatticeAxis.IDENTITY] > 0.1
+    assert len(tracker.intent_violations()) == 1
+    assert tracker.summary()["intent_violations"] == 1
+    assert tracker.summary()["intent_anchor"] == "closed fist"
+
+
+def test_intent_anchor_cleared_stops_reporting() -> None:
+    tracker = TemporalTracker(MultiLattice(dim=4, correction_threshold=5.0), intent_threshold=0.1)
+    anchor = np.array([0.1, 0.0, 0.0, 0.0])
+    tracker.set_intent_anchor({LatticeAxis.IDENTITY: anchor})
+    # Observe a shifted frame while anchor is set — should report drift
+    state_with = tracker.observe({LatticeAxis.IDENTITY: np.array([5.0, 5.0, 5.0, 5.0])})
+    assert LatticeAxis.IDENTITY in state_with.intent_drift_by_axis
+    # Remove anchor
+    tracker.clear_intent_anchor()
+    assert tracker.intent_anchor is None
+    # Next observation must have no intent drift
+    state_without = tracker.observe({LatticeAxis.IDENTITY: np.array([5.0, 5.0, 5.0, 5.0])})
+    assert state_without.intent_drift_by_axis == {}
+    assert state_without.intent_violated is False
+
+
+def test_intent_anchor_surfaced_in_correction_signal() -> None:
+    from src.video_lattice.frame_corrector import FrameCorrector
+
+    tracker = TemporalTracker(MultiLattice(dim=4, correction_threshold=5.0), intent_threshold=0.1)
+    corrector = FrameCorrector(tracker)
+    anchor = np.array([0.1, 0.0, 0.0, 0.0])
+    tracker.set_intent_anchor({LatticeAxis.IDENTITY: anchor}, description="closed fist")
+    state = tracker.observe({LatticeAxis.IDENTITY: np.array([5.0, 5.0, 5.0, 5.0])})
+    sig = corrector.correct(state)
+
+    assert sig.intent_violated is True
+    assert sig.intent_drift > 0.0
+    assert sig.intent_description == "closed fist"
+    assert sig.condition_signal["intent"]["violated"] is True
+    assert sig.condition_signal["intent"]["description"] == "closed fist"
+    assert sig.condition_signal["intent"]["max_drift"] > 0.0
+    # UE5 dict exposes the intent flag
+    ue5 = sig.to_ue5_dict()
+    assert ue5["intent_violated"] is True
+    assert ue5["intent_drift"] > 0.0
+
+
+def pytest_approx(value: float, abs: float = 1e-9):
     import pytest
 
-    return pytest.approx(value, rel=1e-9, abs=1e-9)
+    return pytest.approx(value, rel=1e-9, abs=abs)

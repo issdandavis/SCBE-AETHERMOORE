@@ -25,7 +25,7 @@ Modules:
 """
 from .poincare_lattice import PoincareLattice
 from .multi_lattice import MultiLattice, LatticeAxis
-from .temporal_tracker import TemporalTracker, FrameState
+from .temporal_tracker import TemporalTracker, FrameState, IntentAnchor
 from .perspective_map import PerspectiveMap, PerspectivePoint
 from .frame_corrector import FrameCorrector, CorrectionSignal
 from .pose_polygons import (
@@ -57,6 +57,7 @@ __all__ = [
     "LatticeAxis",
     "TemporalTracker",
     "FrameState",
+    "IntentAnchor",
     "PerspectiveMap",
     "PerspectivePoint",
     "FrameCorrector",
