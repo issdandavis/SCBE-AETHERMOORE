@@ -594,6 +594,20 @@ def test_pocket_drawing_tutor_writes_trace_artifacts(tmp_path) -> None:
     assert "Repair one thing" in payload["repair"]
 
 
+def test_pocket_video_gen_writes_animation_and_reduces_drift(tmp_path) -> None:
+    from scripts.video_lattice.pocket_video_gen import run_generation
+
+    manifest = run_generation("hand", "fist", frames=5, out_dir=Path(tmp_path), duration_ms=20)
+
+    gif_path = Path(manifest["animation_gif"])
+    assert gif_path.exists()
+    assert gif_path.suffix == ".gif"
+    assert manifest["frame_count"] == 5
+    assert len(manifest["frames"]) == 5
+    assert manifest["frames"][0]["drift"] > manifest["frames"][-1]["drift"]
+    assert manifest["frames"][-1]["verdict"] == "pass"
+
+
 def pytest_approx(value: float):
     import pytest
 
