@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-USPTO prosecution monitor — Patent File Wrapper + Office Action Rejections.
+USPTO prosecution monitor — Patent File Wrapper + Office Action Rejections + Enriched Citations.
 
 APIs:
-  Patent File Wrapper  https://api.uspto.gov/api/v1/patent/applications/search
-  OA Rejections        https://api.uspto.gov/api/v1/patent/oa/oa_actions/v1/records
+  Patent File Wrapper  GET  https://api.uspto.gov/api/v1/patent/applications/search
+  OA Rejections        GET  https://api.uspto.gov/api/v1/patent/oa/oa_actions/v1/records
+  Enriched Citations   POST https://api.uspto.gov/api/v1/patent/oa/enriched_cited_reference_metadata/v3/records
 
 Diffs against a saved state snapshot.
 Exit 0 = no changes, 1 = changes found, 2 = fetch error.
@@ -36,6 +37,7 @@ from urllib.request import Request, urlopen
 
 PFW_URL = "https://api.uspto.gov/api/v1/patent/applications/search"
 OA_URL  = "https://api.uspto.gov/api/v1/patent/oa/oa_actions/v1/records"
+EC_URL  = "https://api.uspto.gov/api/v1/patent/oa/enriched_cited_reference_metadata/v3/records"
 STATE_DIR = Path(__file__).parent.parent.parent / "artifacts" / "patent_monitor"
 
 # Document codes → human labels
@@ -49,6 +51,22 @@ DOC_CODE_LABELS = {
 
 # SCBE-specific rejection risk flags
 ALICE_RISK_FIELDS = ("aliceIndicator", "bilskiIndicator", "mayoIndicator", "myriadIndicator")
+
+# SCBE independent claim numbers (claims 1, 9, 15 in the non-provisional spec)
+SCBE_INDEPENDENT_CLAIMS: frozenset = frozenset({"1", "9", "15"})
+
+# Citation category codes (EPO/WIPO IPCR standard, used by USPTO OA examiners)
+CITATION_CATEGORY_LABELS = {
+    "X": "Anticipates claim (§102)",          # single reference — highest threat
+    "Y": "Obviousness combination (§103)",    # used in combination with another Y ref
+    "A": "Background / general state of art",
+    "E": "Earlier-filed document (§102(e))",
+    "O": "Non-written disclosure",
+    "P": "Intermediate publication (priority window)",
+    "T": "Theory / definition",
+    "D": "Patent family member",
+    "L": "Prior art acknowledged by applicant",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -65,6 +83,24 @@ def _get_json(url: str, params: Dict, api_key: Optional[str]) -> Optional[Dict]:
             return json.loads(resp.read().decode())
     except HTTPError as e:
         print(f"[ERROR] HTTP {e.code}: {e.reason}  ({full})", file=sys.stderr)
+    except URLError as e:
+        print(f"[ERROR] Network: {e.reason}", file=sys.stderr)
+    return None
+
+
+def _post_json(url: str, body: Dict, api_key: Optional[str]) -> Optional[Dict]:
+    data = json.dumps(body).encode("utf-8")
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+    }
+    if api_key:
+        headers["X-API-KEY"] = api_key
+    try:
+        with urlopen(Request(url, data=data, headers=headers), timeout=30) as resp:
+            return json.loads(resp.read().decode())
+    except HTTPError as e:
+        print(f"[ERROR] HTTP {e.code}: {e.reason}  (POST {url})", file=sys.stderr)
     except URLError as e:
         print(f"[ERROR] Network: {e.reason}", file=sys.stderr)
     return None
@@ -96,6 +132,22 @@ def fetch_oa_rejections(app_number: str, api_key: Optional[str]) -> List[Dict]:
     return data.get("response", {}).get("docs", [])
 
 
+def fetch_enriched_citations(app_number: str, api_key: Optional[str]) -> List[Dict]:
+    """
+    POST endpoint — returns prior-art citations from examiner OAs with category codes,
+    passage locations, and claim-level targeting data.
+
+    Category codes (EPO/WIPO standard):
+      X = anticipates a claim (§102 single-reference rejection — highest threat)
+      Y = cited in combination for obviousness (§103)
+      A = background / general state of art (informational only)
+    """
+    data = _post_json(EC_URL, {"patentApplicationNumber": app_number, "rows": 100}, api_key)
+    if not data:
+        return []
+    return data.get("response", {}).get("docs", [])
+
+
 # ---------------------------------------------------------------------------
 #  State persistence
 # ---------------------------------------------------------------------------
@@ -110,11 +162,17 @@ def load_state(app_number: str) -> Optional[Dict]:
     return json.loads(p.read_text("utf-8")) if p.exists() else None
 
 
-def save_state(app_number: str, wrapper: Dict, oa_docs: List[Dict]) -> None:
+def save_state(
+    app_number: str,
+    wrapper: Dict,
+    oa_docs: List[Dict],
+    citations: List[Dict],
+) -> None:
     snap = {
         "fetched_at": datetime.now(timezone.utc).isoformat(),
         "wrapper": wrapper,
         "oa_docs": oa_docs,
+        "citations": citations,
     }
     _state_path(app_number).write_text(json.dumps(snap, indent=2, default=str), "utf-8")
 
@@ -150,7 +208,21 @@ def _oa_fingerprint(doc: Dict) -> Tuple:
     )
 
 
-def diff_state(old: Dict, new_wrapper: Dict, new_oa: List[Dict]) -> List[str]:
+def _citation_fingerprint(doc: Dict) -> Tuple:
+    return (
+        doc.get("officeActionDate", "")[:10],
+        doc.get("citedDocumentIdentifier", "") or doc.get("publicationNumber", ""),
+        doc.get("relatedClaimNumberText", ""),
+        doc.get("citationCategoryCode", ""),
+    )
+
+
+def diff_state(
+    old: Dict,
+    new_wrapper: Dict,
+    new_oa: List[Dict],
+    new_citations: List[Dict],
+) -> List[str]:
     changes: List[str] = []
 
     # File wrapper diff
@@ -182,6 +254,17 @@ def diff_state(old: Dict, new_wrapper: Dict, new_oa: List[Dict]) -> List[str]:
         date, code, section, claims = fp
         changes.append(f"  GONE OA    [{date}] {code} § {section}  claims: {claims}")
 
+    # Enriched citations diff
+    old_cite_fps = {_citation_fingerprint(d) for d in old.get("citations", [])}
+    new_cite_fps = {_citation_fingerprint(d) for d in new_citations}
+    for fp in sorted(new_cite_fps - old_cite_fps):
+        date, ref_id, claims, cat = fp
+        label = CITATION_CATEGORY_LABELS.get(cat, cat)
+        changes.append(f"  NEW CITE   [{date}] [{cat}] {ref_id}  claims: {claims}  — {label}")
+    for fp in sorted(old_cite_fps - new_cite_fps):
+        date, ref_id, claims, cat = fp
+        changes.append(f"  GONE CITE  [{date}] [{cat}] {ref_id}  claims: {claims}")
+
     return changes
 
 
@@ -199,9 +282,23 @@ def _rej_flags(doc: Dict) -> str:
     return " ".join(flags) if flags else "—"
 
 
+def _claims_hit(claim_text: str) -> frozenset:
+    """Parse '1,2-5,9' → frozenset of string claim numbers."""
+    result = set()
+    for part in claim_text.replace(" ", "").split(","):
+        if "-" in part:
+            lo, hi = part.split("-", 1)
+            if lo.isdigit() and hi.isdigit():
+                result.update(str(n) for n in range(int(lo), int(hi) + 1))
+        elif part.isdigit():
+            result.add(part)
+    return frozenset(result)
+
+
 def print_summary(
     wrapper: Dict,
     oa_docs: List[Dict],
+    citations: Optional[List[Dict]] = None,
     changes: Optional[List[str]] = None,
 ) -> None:
     meta  = wrapper.get("applicationMetaData", {})
@@ -267,6 +364,64 @@ def print_summary(
     else:
         print("\nNo OA rejection records found.")
 
+    # Enriched citations
+    if citations:
+        # Group by OA date (officeActionDate[:10])
+        cite_groups: Dict[str, List[Dict]] = {}
+        for doc in citations:
+            key = (doc.get("officeActionDate", "") or "")[:10]
+            cite_groups.setdefault(key, []).append(doc)
+
+        print(f"\nEnriched citations ({len(citations)} records):")
+        indep_hits: List[str] = []  # X/Y citations against independent claims
+
+        for oa_date in sorted(cite_groups.keys(), reverse=True):
+            docs = cite_groups[oa_date]
+            # Sort: X first, then Y, then others
+            docs_sorted = sorted(docs, key=lambda d: (
+                {"X": 0, "Y": 1}.get(d.get("citationCategoryCode", ""), 2),
+                d.get("citedDocumentIdentifier", ""),
+            ))
+            print(f"  OA {oa_date}  ({len(docs)} reference(s)):")
+            for doc in docs_sorted:
+                ref_id   = doc.get("citedDocumentIdentifier") or doc.get("publicationNumber") or "?"
+                cat      = doc.get("citationCategoryCode", "?")
+                label    = CITATION_CATEGORY_LABELS.get(cat, cat)
+                inventor = doc.get("inventorNameText", "") or ""
+                claims   = doc.get("relatedClaimNumberText", "") or ""
+                passage  = doc.get("passageLocationText", "") or ""
+                is_npl   = doc.get("nplIndicator") or doc.get("applicantCitedExaminerReferenceIndicator")
+                examiner = doc.get("examinerCitedReferenceIndicator", False)
+
+                src_tag = "[PTO-892]" if examiner else "[IDS]"
+                npl_tag = "[NPL]" if is_npl else ""
+
+                ref_line = f"    [{cat}] {ref_id}"
+                if inventor:
+                    ref_line += f"  ({inventor[:40]})"
+                ref_line += f"  {src_tag}{npl_tag}"
+                print(ref_line)
+                print(f"         claims: {claims or '—'}  — {label}")
+                if passage:
+                    p = passage[:100] + ("…" if len(passage) > 100 else "")
+                    print(f"         passage: {p}")
+
+                # Flag X/Y hits against SCBE independent claims
+                if cat in ("X", "Y") and claims:
+                    hit = _claims_hit(claims) & SCBE_INDEPENDENT_CLAIMS
+                    if hit:
+                        indep_hits.append(
+                            f"[{cat}] {ref_id}  → indep claim(s) {','.join(sorted(hit, key=int))}"
+                        )
+
+        if indep_hits:
+            print(f"\n  ⚑ CRITICAL — prior art cited against independent claim(s):")
+            for h in indep_hits:
+                print(f"    {h}")
+
+    elif citations is not None:
+        print("\nNo enriched citation records found.")
+
     # Continuations
     if children:
         print(f"\nChild applications ({len(children)}):")
@@ -318,18 +473,19 @@ def main() -> int:
     if wrapper is None:
         return 2
 
-    oa_docs = fetch_oa_rejections(app_number, args.api_key)
+    oa_docs   = fetch_oa_rejections(app_number, args.api_key)
+    citations = fetch_enriched_citations(app_number, args.api_key)
 
     old_snap = load_state(app_number)
-    save_state(app_number, wrapper, oa_docs)
+    save_state(app_number, wrapper, oa_docs, citations)
 
     if old_snap is None:
         print("First run — baseline saved.")
-        print_summary(wrapper, oa_docs)
+        print_summary(wrapper, oa_docs, citations=citations)
         return 0
 
-    changes = diff_state(old_snap, wrapper, oa_docs)
-    print_summary(wrapper, oa_docs, changes=changes)
+    changes = diff_state(old_snap, wrapper, oa_docs, citations)
+    print_summary(wrapper, oa_docs, citations=citations, changes=changes)
     return 1 if changes else 0
 
 
