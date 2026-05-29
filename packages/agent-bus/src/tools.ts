@@ -25,6 +25,13 @@ export interface CliTool {
   name: string;
   /** Human-readable description for `tools list`. */
   description?: string;
+  /**
+   * Optional patent-facing surface tag. Used by audits and docs only; dispatch
+   * stays driven by name/command/args.
+   */
+  patentSurface?: ToolPatentSurface;
+  /** Optional environment variables required for live execution. */
+  requiresEnv?: string[];
   /** Executable to spawn (e.g. 'node', 'python', 'npx'). */
   command: string;
   /**
@@ -32,6 +39,39 @@ export interface CliTool {
    * `{privacy}`, or `{repoRoot}` are substituted at dispatch time.
    */
   args: string[];
+}
+
+export type ToolPatentSurface =
+  | 'hyperbolic-governance'
+  | 'bijective-transport'
+  | 'runtime-persistence'
+  | 'tamper-detection'
+  | 'agent-harness'
+  | 'research-evidence'
+  | 'video-lattice'
+  | 'atomic-tokenizer'
+  | 'unknown';
+
+export interface ToolAuditEntry {
+  name: string;
+  ok: boolean;
+  command: string;
+  argCount: number;
+  patentSurface: ToolPatentSurface;
+  missing: string[];
+  requiredEnv: string[];
+  envReady: boolean;
+}
+
+export interface ToolRegistryAudit {
+  schema_version: 'scbe.agent_bus.tool_registry_audit.v1';
+  generated_at: string;
+  tool_count: number;
+  ok: boolean;
+  surface_counts: Record<ToolPatentSurface, number>;
+  missing_description: string[];
+  missing_required_env: Record<string, string[]>;
+  tools: ToolAuditEntry[];
 }
 
 const registry = new Map<string, CliTool>();
@@ -59,6 +99,93 @@ export function getTool(name: string): CliTool | undefined {
 /** Clear all tools. Useful in tests. */
 export function clearTools(): void {
   registry.clear();
+}
+
+function inferPatentSurface(tool: CliTool): ToolPatentSurface {
+  if (tool.patentSurface) return tool.patentSurface;
+  const haystack = `${tool.name} ${tool.description || ''} ${tool.args.join(' ')}`.toLowerCase();
+  if (haystack.includes('research-')) return 'research-evidence';
+  if (haystack.includes('video') || haystack.includes('lattice')) return 'video-lattice';
+  if (haystack.includes('encode') || haystack.includes('tongues')) return 'bijective-transport';
+  if (haystack.includes('verify') || haystack.includes('canonical')) return 'tamper-detection';
+  if (haystack.includes('runtime') || haystack.includes('durable') || haystack.includes('state')) {
+    return 'runtime-persistence';
+  }
+  if (haystack.includes('geoseal') || haystack.includes('governance')) {
+    return 'hyperbolic-governance';
+  }
+  if (haystack.includes('cli') || haystack.includes('harness') || haystack.includes('agentbus')) {
+    return 'agent-harness';
+  }
+  if (haystack.includes('token')) return 'atomic-tokenizer';
+  return 'unknown';
+}
+
+function inferRequiredEnv(tool: CliTool): string[] {
+  if (tool.requiresEnv && tool.requiresEnv.length > 0) return tool.requiresEnv;
+  const haystack = `${tool.name} ${tool.description || ''}`.toLowerCase();
+  if (haystack.includes('sam.gov')) return ['SAM_GOV_API_KEY'];
+  if (haystack.includes('uspto')) return ['USPTO_ODP_API_KEY'];
+  if (haystack.includes('github')) return ['GITHUB_TOKEN'];
+  if (haystack.includes('huggingface') || haystack.includes('hf_')) return [];
+  return [];
+}
+
+export function auditToolRegistry(tools: readonly CliTool[] = listTools()): ToolRegistryAudit {
+  const surfaceCounts: Record<ToolPatentSurface, number> = {
+    'hyperbolic-governance': 0,
+    'bijective-transport': 0,
+    'runtime-persistence': 0,
+    'tamper-detection': 0,
+    'agent-harness': 0,
+    'research-evidence': 0,
+    'video-lattice': 0,
+    'atomic-tokenizer': 0,
+    unknown: 0,
+  };
+  const missingDescription: string[] = [];
+  const missingRequiredEnv: Record<string, string[]> = {};
+
+  const entries = tools.map((tool) => {
+    const missing: string[] = [];
+    if (!tool.name || !tool.name.trim()) missing.push('name');
+    if (!tool.command || !tool.command.trim()) missing.push('command');
+    if (!Array.isArray(tool.args)) missing.push('args');
+    if (!tool.description || !tool.description.trim()) {
+      missing.push('description');
+      missingDescription.push(tool.name || '<unnamed>');
+    }
+
+    const patentSurface = inferPatentSurface(tool);
+    surfaceCounts[patentSurface] += 1;
+    const requiredEnv = inferRequiredEnv(tool);
+    const absentEnv = requiredEnv.filter((name) => !String(process.env[name] || '').trim());
+    if (absentEnv.length > 0) {
+      missingRequiredEnv[tool.name] = absentEnv;
+    }
+
+    return {
+      name: tool.name,
+      ok: missing.length === 0,
+      command: tool.command,
+      argCount: Array.isArray(tool.args) ? tool.args.length : 0,
+      patentSurface,
+      missing,
+      requiredEnv,
+      envReady: absentEnv.length === 0,
+    };
+  });
+
+  return {
+    schema_version: 'scbe.agent_bus.tool_registry_audit.v1',
+    generated_at: new Date().toISOString(),
+    tool_count: entries.length,
+    ok: entries.every((entry) => entry.ok),
+    surface_counts: surfaceCounts,
+    missing_description: missingDescription,
+    missing_required_env: missingRequiredEnv,
+    tools: entries,
+  };
 }
 
 /** Substitute template variables in a single arg string. */

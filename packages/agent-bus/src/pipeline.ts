@@ -214,6 +214,17 @@ export interface TrajectoryGateResult {
   reason: string;
 }
 
+export interface GovernedPipelineStateSummary {
+  schema_version: 'scbe.agent_bus.governed_state_summary.v1';
+  session_id: string;
+  state_path: string;
+  accepted_count: number;
+  rejected_count: number;
+  reachable_set: GovernedMoveClass[];
+  last_accepted: GovernedMoveRecord | null;
+  last_rejected: GovernedMoveRecord | null;
+}
+
 interface GovernedStateConfig {
   enabled: boolean;
   sessionId: string;
@@ -389,6 +400,22 @@ export function reachableMoveSet(state: GovernedPipelineState): GovernedMoveClas
     base.push('deploy');
   }
   return Array.from(new Set(base));
+}
+
+export function summarizeGovernedPipelineState(
+  state: GovernedPipelineState,
+  statePath: string
+): GovernedPipelineStateSummary {
+  return {
+    schema_version: 'scbe.agent_bus.governed_state_summary.v1',
+    session_id: state.session_id,
+    state_path: statePath,
+    accepted_count: state.accepted_moves.length,
+    rejected_count: state.rejected_moves.length,
+    reachable_set: reachableMoveSet(state),
+    last_accepted: state.accepted_moves.at(-1) || null,
+    last_rejected: state.rejected_moves.at(-1) || null,
+  };
 }
 
 export function evaluateTrajectoryGate(

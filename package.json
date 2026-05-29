@@ -110,6 +110,7 @@
     "patent:status": "node bin/scbe-patent.cjs status",
     "patent:support-scan": "node bin/scbe-patent.cjs support-scan",
     "patent:benchmark": "node bin/scbe-patent.cjs benchmark",
+    "patent:governance-benchmark": "python scripts/legal/governance_ordered_stack_benchmark.py",
     "book:test": "python -m pytest tests/book/ -v",
     "book:extract": "python scripts/book/extract_chapter_examples.py",
     "scbe:bootstrap": "node scripts/scbe_bootstrap.mjs",

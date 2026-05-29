@@ -1,43 +1,46 @@
 # Agentic OS CLI Benchmark
 
-Generated: 2026-05-29T13:52:03.500Z
-Benchmark id: 2d8ab25cc36de274
+Generated: 2026-05-29T17:36:17.661Z
+Benchmark id: 328dd1aeaf5839e2
 
 ## Summary
 
-- Cases: 14
-- Passed: 14
+- Cases: 16
+- Passed: 16
 - Failed: 0
 - Pass rate: 1
-- Median ms: 5.509
-- P95 ms: 905.552
+- Median ms: 5.596
+- P95 ms: 872.414
 
 ## Lanes
 
 - agent_harness: tools audit + governed state CLI
 - cross_language_compiler: geoseal cross-build Tier 1 lexicon-bounded IR
 - binary_hexa_interpolation: agent-bus semantic bridge 6D -> 48-bit binary -> 12-char hex -> recomposition
-- hermes_front_door: task classifier + local/free-tier/paid model lane planner + writing/YouTube route examples
+- compass_front_door: SCBE formation classifier + adapter slots + local/free-tier/paid model lane planner + writing/YouTube route examples
+- board_mechanics: Pazaak bitboard planner + coding-board legality probe + octree/chessboard source anchors
 - governance: durable trajectory start set observe/read/verify
 
 ## Cases
 
 | Case                                                    | OK   |      ms | Evidence                                 |
 | ------------------------------------------------------- | ---- | ------: | ---------------------------------------- |
-| tool_registry_audit_full_surface                        | PASS |   1.383 | 34                                       |
-| semantic_hex_roundtrip:compile add operation across lan | PASS |   5.509 | 80d1c7eb268c                             |
-| semantic_hex_roundtrip:block denied command but preserv | PASS |   2.345 | e27d82bfd249                             |
-| semantic_hex_roundtrip:transform water flow into a comp | PASS |   0.276 | a4e7856163af                             |
-| semantic_hex_roundtrip:convert prompt to tokens then re | PASS |   0.209 | 80d1c7eb268c                             |
-| hermes_plan_compiler_cross_domain                       | PASS |   0.614 | compiler                                 |
-| hermes_plan_youtube_writing_pipeline                    | PASS |    0.08 | youtube                                  |
-| hermes_plan_model_lanes_free_limits                     | PASS |   0.173 | model                                    |
-| cross_build_ko_to_ru_add                                | PASS | 905.552 | add                                      |
-| cross_build_av_to_dr_xor                                | PASS | 787.962 | xor                                      |
-| cross_build_broadcast_add_all_tongues                   | PASS |  795.69 | add                                      |
-| cross_build_list_ops_64                                 | PASS | 783.139 |                                          |
-| cross_build_quarantine_arbitrary_code                   | PASS | 796.111 |                                          |
-| pipeline_state_init_governed_lane                       | PASS | 175.996 | scbe.agent_bus.governed_state_summary.v1 |
+| tool_registry_audit_full_surface                        | PASS |   1.328 | 37                                       |
+| semantic_hex_roundtrip:compile add operation across lan | PASS |   5.596 | 80d1c7eb268c                             |
+| semantic_hex_roundtrip:block denied command but preserv | PASS |   3.411 | e27d82bfd249                             |
+| semantic_hex_roundtrip:transform water flow into a comp | PASS |   0.319 | a4e7856163af                             |
+| semantic_hex_roundtrip:convert prompt to tokens then re | PASS |   0.202 | 80d1c7eb268c                             |
+| compass_plan_forge_cross_domain                         | PASS |   0.894 | compiler                                 |
+| compass_plan_broadcast_youtube_pipeline                 | PASS |   0.116 | youtube                                  |
+| compass_plan_council_model_lanes_free_limits            | PASS |   0.223 | model                                    |
+| compass_board_rules_source_anchored                     | PASS |   0.147 |                                          |
+| agentic_pazaak_board_default_moves                      | PASS | 129.024 |                                          |
+| cross_build_ko_to_ru_add                                | PASS | 778.806 | add                                      |
+| cross_build_av_to_dr_xor                                | PASS | 872.414 | xor                                      |
+| cross_build_broadcast_add_all_tongues                   | PASS | 832.906 | add                                      |
+| cross_build_list_ops_64                                 | PASS | 777.213 |                                          |
+| cross_build_quarantine_arbitrary_code                   | PASS |  764.41 |                                          |
+| pipeline_state_init_governed_lane                       | PASS | 163.388 | scbe.agent_bus.governed_state_summary.v1 |
 
 ## Best-In-Class Gaps
 

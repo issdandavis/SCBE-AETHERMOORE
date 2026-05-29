@@ -90,18 +90,23 @@ def test_zero_width_joiner_in_identifier():
     assert recommended_l13_action(r) == "DENY"
 
 
-def test_bidi_control_in_identifier_rejected_by_parser():
-    """Python's parser rejects BiDi controls in identifiers per PEP 3131
-    (only specific Unicode categories are allowed). So BiDi-in-identifier
-    surfaces as input_invalid, not a canonicality finding.
-
-    Genuine Trojan-Source attacks (CVE-2021-42574) target string literals
-    and comments — out of scope for the v1 identifier gate; a sibling
-    source-text BiDi scanner would catch those.
+def test_bidi_control_in_identifier_denied_before_parser():
+    """BiDi controls are caught before AST parsing, including cases Python
+    would reject syntactically and Trojan Source cases hidden in comments.
     """
     src = "def bad‮name(x):\n    return x\n"
     r = evaluate_code(src)
-    assert r.kind == "input_invalid"
+    assert r.kind == "invisible"
+    assert r.score == 1.0
+    assert recommended_l13_action(r) == "DENY"
+
+
+def test_bidi_control_in_comment_denied_before_parser():
+    src = "def safe():\n    return 'ok'  # \u202e hidden control\n"
+    r = evaluate_code(src)
+    assert r.kind == "invisible"
+    assert r.score == 1.0
+    assert recommended_l13_action(r) == "DENY"
 
 
 # --------------------------------------------------------------------------- #

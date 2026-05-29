@@ -1,21 +1,22 @@
 {
   "schema_version": "scbe.agentic_os_cli_benchmark.v1",
-  "generated_at": "2026-05-29T13:52:03.500Z",
+  "generated_at": "2026-05-29T17:36:17.661Z",
   "repo_root": "C:\\Users\\issda\\SCBE-AETHERMOORE",
-  "benchmark_id": "2d8ab25cc36de274",
+  "benchmark_id": "328dd1aeaf5839e2",
   "summary": {
-    "case_count": 14,
-    "passed": 14,
+    "case_count": 16,
+    "passed": 16,
     "failed": 0,
     "pass_rate": 1,
-    "median_ms": 5.509,
-    "p95_ms": 905.552
+    "median_ms": 5.596,
+    "p95_ms": 872.414
   },
   "lanes": {
     "agent_harness": "tools audit + governed state CLI",
     "cross_language_compiler": "geoseal cross-build Tier 1 lexicon-bounded IR",
     "binary_hexa_interpolation": "agent-bus semantic bridge 6D -> 48-bit binary -> 12-char hex -> recomposition",
-    "hermes_front_door": "task classifier + local/free-tier/paid model lane planner + writing/YouTube route examples",
+    "compass_front_door": "SCBE formation classifier + adapter slots + local/free-tier/paid model lane planner + writing/YouTube route examples",
+    "board_mechanics": "Pazaak bitboard planner + coding-board legality probe + octree/chessboard source anchors",
     "governance": "durable trajectory start set observe/read/verify"
   },
   "best_in_class_gaps": [
@@ -40,16 +41,16 @@
     {
       "label": "tool_registry_audit_full_surface",
       "ok": true,
-      "elapsed_ms": 1.383,
+      "elapsed_ms": 1.328,
       "result": {
         "ok": true,
-        "tool_count": 34,
+        "tool_count": 37,
         "surface_counts": {
           "hyperbolic-governance": 4,
           "bijective-transport": 3,
           "runtime-persistence": 2,
           "tamper-detection": 1,
-          "agent-harness": 12,
+          "agent-harness": 15,
           "research-evidence": 9,
           "video-lattice": 1,
           "atomic-tokenizer": 2,
@@ -65,7 +66,7 @@
     {
       "label": "semantic_hex_roundtrip:compile add operation across lan",
       "ok": true,
-      "elapsed_ms": 5.509,
+      "elapsed_ms": 5.596,
       "result": {
         "ok": true,
         "input_hash": "8fdf5701f5f75ed5",
@@ -84,7 +85,7 @@
     {
       "label": "semantic_hex_roundtrip:block denied command but preserv",
       "ok": true,
-      "elapsed_ms": 2.345,
+      "elapsed_ms": 3.411,
       "result": {
         "ok": true,
         "input_hash": "1409837270b745e0",
@@ -103,7 +104,7 @@
     {
       "label": "semantic_hex_roundtrip:transform water flow into a comp",
       "ok": true,
-      "elapsed_ms": 0.276,
+      "elapsed_ms": 0.319,
       "result": {
         "ok": true,
         "input_hash": "d9184d81c13fcc1b",
@@ -122,7 +123,7 @@
     {
       "label": "semantic_hex_roundtrip:convert prompt to tokens then re",
       "ok": true,
-      "elapsed_ms": 0.209,
+      "elapsed_ms": 0.202,
       "result": {
         "ok": true,
         "input_hash": "58cb7ed060c5adbf",
@@ -139,18 +140,35 @@
       "error": null
     },
     {
-      "label": "hermes_plan_compiler_cross_domain",
+      "label": "compass_plan_forge_cross_domain",
       "ok": true,
-      "elapsed_ms": 0.614,
+      "elapsed_ms": 0.894,
       "result": {
         "ok": true,
         "mode": "compiler",
+        "formation": "forge",
+        "command_path": "CA.forge.compiler",
         "primary_tools": [
           "geoseal-cross-build",
           "geoseal-encode",
           "semantic-hex-bridge",
           "tokenizer-atomic-selfcheck"
         ],
+        "octree_surfaces": [
+          "dense local view",
+          "compressed sparse view",
+          "heavily compressed anchor view",
+          "octree spatial / structural retrieval"
+        ],
+        "adapter_slots": [
+          "tool-registry adapter for any CLI with deterministic argv",
+          "model-provider adapter with local/free-tier/paid cost metadata",
+          "receipt adapter for replayable JSON evidence",
+          "benchmark adapter for pass/fail and latency evidence",
+          "parser adapter for Tree-sitter/Babel/other AST front ends",
+          "IR adapter for MLIR-style dialect lowering into LatticeOp",
+          "target-language emitter adapter"
+        ],
         "model_cost_tiers": [
           "offline",
           "local-free-after-install",
@@ -166,17 +184,34 @@
       "error": null
     },
     {
-      "label": "hermes_plan_youtube_writing_pipeline",
+      "label": "compass_plan_broadcast_youtube_pipeline",
       "ok": true,
-      "elapsed_ms": 0.08,
+      "elapsed_ms": 0.116,
       "result": {
         "ok": true,
         "mode": "youtube",
+        "formation": "broadcast",
+        "command_path": "AV.broadcast.youtube",
         "primary_tools": [
           "youtube-video-review",
           "youtube-article-dry-run",
           "youtube-upload-unlisted"
         ],
+        "octree_surfaces": [
+          "dense local view",
+          "compressed sparse view",
+          "heavily compressed anchor view",
+          "octree spatial / structural retrieval"
+        ],
+        "adapter_slots": [
+          "tool-registry adapter for any CLI with deterministic argv",
+          "model-provider adapter with local/free-tier/paid cost metadata",
+          "receipt adapter for replayable JSON evidence",
+          "benchmark adapter for pass/fail and latency evidence",
+          "content-source adapter for articles, transcripts, manuscripts, and notes",
+          "media-render adapter for local renderers or external video APIs",
+          "publisher adapter for unlisted-first YouTube and other channels"
+        ],
         "model_cost_tiers": [
           "offline",
           "local-free-after-install",
@@ -192,13 +227,31 @@
       "error": null
     },
     {
-      "label": "hermes_plan_model_lanes_free_limits",
+      "label": "compass_plan_council_model_lanes_free_limits",
       "ok": true,
-      "elapsed_ms": 0.173,
+      "elapsed_ms": 0.223,
       "result": {
         "ok": true,
         "mode": "model",
+        "formation": "council",
+        "command_path": "KO+DR.architectural-command",
         "primary_tools": ["ai-router-health", "ai-router-call", "research-hf-models"],
+        "octree_surfaces": [
+          "dense local view",
+          "compressed sparse view",
+          "heavily compressed anchor view",
+          "octree spatial / structural retrieval"
+        ],
+        "adapter_slots": [
+          "tool-registry adapter for any CLI with deterministic argv",
+          "model-provider adapter with local/free-tier/paid cost metadata",
+          "receipt adapter for replayable JSON evidence",
+          "benchmark adapter for pass/fail and latency evidence",
+          "OpenAI-compatible chat adapter",
+          "Ollama/local HTTP adapter",
+          "Hugging Face/free-tier adapter",
+          "structured-output validator adapter"
+        ],
         "model_cost_tiers": [
           "offline",
           "local-free-after-install",
@@ -210,13 +263,111 @@
           "remote provider call containing secrets or private manuscript text without approval",
           "arbitrary cross-language code translation outside Tier 1 LatticeOp coverage"
         ]
+      },
+      "error": null
+    },
+    {
+      "label": "compass_board_rules_source_anchored",
+      "ok": true,
+      "elapsed_ms": 0.147,
+      "result": {
+        "ok": true,
+        "mechanic_count": 5,
+        "mechanics": [
+          "octree-sector",
+          "go-board-territory",
+          "pazaak-hand",
+          "chessboard-stack",
+          "go-board-territory"
+        ],
+        "source_paths": [
+          "notes/sphere-grid/Agentic Sphere Grid.md",
+          "notes/round-table/2026-05-01-night-agentic-public-ai-and-runtime-routing.md",
+          "src/crypto/octree.py",
+          "src/ai_brain/quasi-space.ts",
+          "hydra/octree_sphere_grid.py",
+          "src/kernel/context_grid.py",
+          "src/coding_board/pipeline.py",
+          "src/coding_board/probe.py",
+          "src/coding_board/__init__.py",
+          "tests/coding_board/test_coding_board.py",
+          "scripts/system/agentic_pazaak_board.py",
+          "config/eval/agentic_pazaak_cards.v1.json",
+          "tests/system/test_agentic_pazaak_board.py",
+          "scripts/system/chessboard_dev_stack.py",
+          "workflows/momentum/chessboard_dev_stack_train.json",
+          "docs/specs/AGENTIC_DEV_CHESSBOARD_STACK.md",
+          "src/coding_board/pipeline.py",
+          "src/coding_board/probe.py",
+          "tests/coding_board/test_coding_board.py",
+          "src/geoseal_cli.py"
+        ],
+        "schemas": [
+          "scbe.agent_bus.octree_context_pack.v1",
+          "scbe-coding-trial-v1",
+          "scbe_agentic_pazaak_board_report_v1",
+          "scbe_agentic_pazaak_cards_v1",
+          "scbe_chessboard_packets_v1",
+          "scbe-coding-trial-v1",
+          "scbe_command_plan_v1"
+        ]
+      },
+      "error": null
+    },
+    {
+      "label": "agentic_pazaak_board_default_moves",
+      "ok": true,
+      "elapsed_ms": 129.024,
+      "result": {
+        "exit_code": 0,
+        "schema": "scbe_agentic_pazaak_board_report_v1",
+        "top_move": {
+          "lane_id": "integration",
+          "card_id": "claim_territory",
+          "card_name": "Claim Territory",
+          "symbol": "+1",
+          "score": 12.75,
+          "reason": "matched file_conflict, go_influence, multi_agent",
+          "before": {
+            "lane_id": "integration",
+            "value": 5,
+            "risk": 3,
+            "verified": false,
+            "blocked": false,
+            "context_noise": false,
+            "conflict": true,
+            "stalled": false,
+            "owner": ""
+          },
+          "after": {
+            "lane_id": "integration",
+            "value": 7,
+            "risk": 1,
+            "verified": false,
+            "blocked": false,
+            "context_noise": false,
+            "conflict": true,
+            "stalled": false,
+            "owner": "assigned"
+          }
+        },
+        "bitboards": {
+          "high_value": 11,
+          "high_risk": 10,
+          "unverified": 11,
+          "blocked": 0,
+          "context_noise": 1,
+          "conflict": 8,
+          "stalled": 0,
+          "owned": 0
+        }
       },
       "error": null
     },
     {
       "label": "cross_build_ko_to_ru_add",
       "ok": true,
-      "elapsed_ms": 905.552,
+      "elapsed_ms": 778.806,
       "result": {
         "exit_code": 0,
         "stdout_chars": 388,
@@ -234,7 +385,7 @@
     {
       "label": "cross_build_av_to_dr_xor",
       "ok": true,
-      "elapsed_ms": 787.962,
+      "elapsed_ms": 872.414,
       "result": {
         "exit_code": 0,
         "stdout_chars": 383,
@@ -252,7 +403,7 @@
     {
       "label": "cross_build_broadcast_add_all_tongues",
       "ok": true,
-      "elapsed_ms": 795.69,
+      "elapsed_ms": 832.906,
       "result": {
         "exit_code": 0,
         "stdout_chars": 422,
@@ -268,7 +419,7 @@
     {
       "label": "cross_build_list_ops_64",
       "ok": true,
-      "elapsed_ms": 783.139,
+      "elapsed_ms": 777.213,
       "result": {
         "exit_code": 0,
         "stdout_chars": 1094,
@@ -282,7 +433,7 @@
     {
       "label": "cross_build_quarantine_arbitrary_code",
       "ok": true,
-      "elapsed_ms": 796.111,
+      "elapsed_ms": 764.41,
       "result": {
         "exit_code": 2,
         "stdout_chars": 179,
@@ -296,7 +447,7 @@
     {
       "label": "pipeline_state_init_governed_lane",
       "ok": true,
-      "elapsed_ms": 175.996,
+      "elapsed_ms": 163.388,
       "result": {
         "schema_version": "scbe.agent_bus.governed_state_summary.v1",
         "session_id": "bench-agentic-os",

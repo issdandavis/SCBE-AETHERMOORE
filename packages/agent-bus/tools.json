@@ -220,5 +220,119 @@
       "--limit",
       "10"
     ]
+  },
+  {
+    "name": "geoseal-cross-build",
+    "description": "Cross-build Tier 1 lexicon-bounded LatticeOp IR into another Sacred Tongue language surface.",
+    "patentSurface": "bijective-transport",
+    "command": "python",
+    "args": [
+      "src/geoseal_cli.py",
+      "cross-build",
+      "--src-code",
+      "{task}",
+      "--src-tongue",
+      "KO",
+      "--dst-tongue",
+      "RU"
+    ]
+  },
+  {
+    "name": "semantic-hex-bridge",
+    "description": "Encode text through the agent-bus 6D semantic bridge into binary and 12-character hex routing evidence.",
+    "patentSurface": "atomic-tokenizer",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/semantic_hex_bridge.cjs", "{task}"]
+  },
+  {
+    "name": "tokenizer-atomic-selfcheck",
+    "description": "Run Sacred Tongue byte-bijection self-check as the current atomic-tokenizer transport smoke test.",
+    "patentSurface": "atomic-tokenizer",
+    "command": "python",
+    "args": ["scripts/system/sacred_tongue_build_bijection.py", "--self-check"]
+  },
+  {
+    "name": "ai-router-health",
+    "description": "Check configured model provider health without exposing secret values. Free/local lanes are distinguished from quota-limited remote free tiers.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/system/terminal_ai_router.py", "health", "--checks", "huggingface"]
+  },
+  {
+    "name": "ai-router-call",
+    "description": "Route a prompt through the cheap-first terminal AI router. Prefer local/free-tier providers and enforce provider caps.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": [
+      "scripts/system/terminal_ai_router.py",
+      "call",
+      "--prompt",
+      "{task}",
+      "--providers",
+      "huggingface"
+    ]
+  },
+  {
+    "name": "youtube-video-review",
+    "description": "Review uploaded YouTube videos and emit score reports for titles, descriptions, transcripts, and tags.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/apollo/video_review.py", "review-all"]
+  },
+  {
+    "name": "youtube-article-dry-run",
+    "description": "Dry-run article-to-video generation for a provided article path before rendering or upload.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/publish/article_to_video.py", "--file", "{task}", "--dry-run"]
+  },
+  {
+    "name": "youtube-upload-unlisted",
+    "description": "Upload a rendered video to YouTube as unlisted. Public publishing still requires explicit human approval.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/publish/post_to_youtube.py", "--file", "{task}", "--privacy", "unlisted"]
+  },
+  {
+    "name": "writing-roundtable-review",
+    "description": "Run the existing longform round-table review pipeline for writing/manuscript quality checks.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/publish/roundtable_review.py", "--phase", "synthesize"]
+  },
+  {
+    "name": "agentic-pazaak-board",
+    "description": "Run the deterministic Pazaak-style bitboard planner for bounded agentic task routing moves.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/system/agentic_pazaak_board.py", "--limit", "5"]
+  },
+  {
+    "name": "coding-board-trial",
+    "description": "Run the non-destructive coding-board legality probe through GeoSeal legitimacy before execution.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": [
+      "-m",
+      "src.geoseal_cli",
+      "coding-trial",
+      "--goal",
+      "{task}",
+      "--tool",
+      "git.status",
+      "--json",
+      "--",
+      "python",
+      "-m",
+      "py_compile",
+      "src/coding_board/__init__.py"
+    ]
+  },
+  {
+    "name": "chessboard-dev-stack",
+    "description": "Generate Spec Kit/BMAD/GSD/Superpowers chessboard packets for an agentic development goal.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/system/chessboard_dev_stack.py", "--goal", "{task}"]
   }
 ]

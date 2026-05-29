@@ -9,6 +9,7 @@ import {
   getTool,
   clearTools,
   buildToolArgv,
+  auditToolRegistry,
   type CliTool,
 } from '../src/tools.js';
 import { runEvent } from '../src/index.js';
@@ -70,6 +71,29 @@ describe('tool registry', () => {
     const tool: CliTool = { name: 'x', command: 'echo', args: ['{unknownVar}'] };
     const { args } = buildToolArgv(tool, { task: 't' }, {}, 'r1');
     expect(args[0]).toBe('{unknownVar}');
+  });
+
+  it('audits tools into patent-facing surfaces and env readiness', () => {
+    const audit = auditToolRegistry([
+      {
+        name: 'geoseal-compile',
+        description: 'Compile natural-language intent into a GeoSeal command plan',
+        command: 'python',
+        args: ['-m', 'src.geoseal_cli', 'compile', '{task}'],
+      },
+      {
+        name: 'research-uspto',
+        description: 'Search USPTO patent applications. Requires USPTO_ODP_API_KEY env var.',
+        command: 'python',
+        args: ['scripts/research_api_bus.py', '--api', 'uspto', '--query', '{task}'],
+      },
+    ]);
+
+    expect(audit.schema_version).toBe('scbe.agent_bus.tool_registry_audit.v1');
+    expect(audit.tool_count).toBe(2);
+    expect(audit.surface_counts['hyperbolic-governance']).toBe(1);
+    expect(audit.surface_counts['research-evidence']).toBe(1);
+    expect(audit.missing_required_env['research-uspto']).toContain('USPTO_ODP_API_KEY');
   });
 });
 

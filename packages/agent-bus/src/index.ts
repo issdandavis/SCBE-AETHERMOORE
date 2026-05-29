@@ -77,6 +77,7 @@ export {
   type GovernedMoveClass,
   type GovernedMoveRecord,
   type GovernedPipelineState,
+  type GovernedPipelineStateSummary,
   type TrajectoryGateResult,
   compilePlan,
   execPlan,
@@ -86,6 +87,7 @@ export {
   createGovernedPipelineState,
   loadGovernedPipelineState,
   saveGovernedPipelineState,
+  summarizeGovernedPipelineState,
   classifyGovernedMove,
   reachableMoveSet,
   evaluateTrajectoryGate,
@@ -117,6 +119,9 @@ export {
 
 export {
   type CliTool,
+  type ToolPatentSurface,
+  type ToolAuditEntry,
+  type ToolRegistryAudit,
   registerTool,
   unregisterTool,
   listTools,
@@ -124,7 +129,33 @@ export {
   clearTools,
   buildToolArgv,
   autoDiscoverTools,
+  auditToolRegistry,
 } from './tools.js';
+
+export {
+  type HermesTaskMode,
+  type ScbeCompassMode,
+  type ScbeFormation,
+  type ScbeTongueDomain,
+  type ScbeBoardMechanic,
+  type HermesModelLane,
+  type HermesRoutePlan,
+  type ScbeFormationStep,
+  type ScbeCommandNode,
+  type ScbeOctreeContextPack,
+  type ScbeCliParityTarget,
+  type ScbeBoardRule,
+  type ScbeCompassRoutePlan,
+  classifyHermesTask,
+  classifyScbeCompassTask,
+  hermesModelLanes,
+  scbeCompassModelLanes,
+  planHermesRoute,
+  planScbeCompassRoute,
+  scbeCompassCommandTree,
+  scbeCompassParityTargets,
+  scbeCompassBoardRules,
+} from './hermes.js';
 
 export type AgentBusPrivacy = 'local_only' | 'remote_allowed' | string;
 

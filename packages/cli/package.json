@@ -1,7 +1,7 @@
 {
   "name": "scbe-aethermoore-cli",
   "version": "4.4.0",
-  "description": "Standalone CLI for SCBE-AETHERMOORE: natural-language command resolver with autocorrect ledger, GeoSeal tools, flow operator loop, liboqs proof receipts, bus workspace suite, agent-bus passthrough, tokenizer lanes, governance abacus (BigInt L12+L13), SCONE-class Solidity contract scanner, trap-in-good-loops dispatcher.",
+  "description": "SCBE Aethermoor CLI — governed AI operations platform with 30 commands: 14-layer harmonic pipeline, Sacred Tongues tokenizer, post-quantum receipts (ML-KEM-768 + ML-DSA-65), multi-agent bus with audit-chain workspaces, deterministic BigInt governance abacus, SCONE-class Solidity contract scanner, adversarial prompt inspector, squad routing with multi-provider cross-validation, flow operator loop, and AI-first governed shell.",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT OR Apache-2.0",
   "type": "commonjs",
