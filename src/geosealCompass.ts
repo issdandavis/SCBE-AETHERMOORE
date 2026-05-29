@@ -33,6 +33,7 @@
  * @axiom Symmetry — Compass rose is symmetric under tongue rotation
  */
 
+import { createHash } from 'crypto';
 import {
   hyperbolicDistance,
   exponentialMap,
@@ -726,6 +727,51 @@ export interface CompassRosePoint {
   position: [number, number];
 }
 
+/** Perception axes used by experimental constellation anchor layouts. */
+export type PerceptionAxis =
+  | 'identity'
+  | 'motion'
+  | 'depth'
+  | 'structure'
+  | 'intent'
+  | 'security';
+
+/** Architectural layer used to shape the constellation point. */
+export type ArchitectureTier = 'foundation' | 'column' | 'arch' | 'spire';
+
+export interface PyramidConstellationOptions {
+  /** Cryptographic seed used to deterministically rotate/lift points. */
+  seed?: string;
+  /** Architectural role for the point cluster. */
+  tier?: ArchitectureTier;
+}
+
+/** A 3D/ND constellation anchor projected into the Poincare ball. */
+export interface PyramidConstellationPoint {
+  tongue: string;
+  perceptionAxis: PerceptionAxis;
+  depth: number;
+  angle: number;
+  ringRadius: number;
+  pyramidHeight: number;
+  position: number[];
+}
+
+export interface ConstellationMapEdge {
+  from: number;
+  to: number;
+  kind: 'tongue-bearing' | 'depth-line' | 'axis-ring';
+  distance: number;
+}
+
+export interface PyramidConstellationStarMap {
+  projection: 'pyramid_constellation';
+  seed?: string;
+  points: PyramidConstellationPoint[];
+  edges: ConstellationMapEdge[];
+  legend: Record<string, string>;
+}
+
 /**
  * Generate the compass rose as plottable data.
  *
@@ -743,6 +789,291 @@ export function generateCompassRose(): CompassRosePoint[] {
       position: [Math.cos(angle), Math.sin(angle)] as [number, number],
     };
   });
+}
+
+const PERCEPTION_AXES: PerceptionAxis[] = [
+  'identity',
+  'motion',
+  'depth',
+  'structure',
+  'intent',
+  'security',
+];
+
+const PERCEPTION_AXIS_OFFSETS: Record<PerceptionAxis, number> = {
+  identity: 0,
+  motion: Math.PI / 9,
+  depth: (2 * Math.PI) / 9,
+  structure: Math.PI / 3,
+  intent: (4 * Math.PI) / 9,
+  security: (5 * Math.PI) / 9,
+};
+
+/**
+ * Experimental depth/perception offset for constellation layouts.
+ *
+ * The canonical compass is a flat six-point wheel. This generator keeps the
+ * same tongue order but adds:
+ * - circular base points in dimensions 0/1,
+ * - depth strata in dimension 2,
+ * - perception-axis offsets in dimension 3,
+ * - pyramid height in dimension 4.
+ *
+ * The result is a constellation of starting points: same tongue manifold, but
+ * not constrained to a purely symmetric 60-degree circle.
+ */
+export function pyramidConstellationPosition(
+  tongue: string,
+  depth: number,
+  perceptionAxis: PerceptionAxis,
+  dimension: number = 6,
+  baseRadius: number = 0.22,
+  options: PyramidConstellationOptions = {}
+): number[] {
+  const bearing = COMPASS_BEARINGS[tongue];
+  if (bearing === undefined) throw new Error(`Unknown tongue: ${tongue}`);
+  if (!Number.isFinite(depth) || depth < 0) throw new Error('depth must be a non-negative number');
+  if (!PERCEPTION_AXES.includes(perceptionAxis)) {
+    throw new Error(`Unknown perception axis: ${perceptionAxis}`);
+  }
+  if (dimension < 5) throw new Error('pyramid constellation requires dimension >= 5');
+
+  const tier = options.tier ?? architectureTierForDepth(depth);
+  const tierProfile = architectureTierProfile(tier);
+  const cryptoOffset = options.seed
+    ? seededConstellationOffset(options.seed, tongue, depth, perceptionAxis, tier)
+    : { angle: 0, radius: 0, lift: 0 };
+  const depthNorm = depth / (depth + PHI);
+  const axisIndex = PERCEPTION_AXES.indexOf(perceptionAxis);
+  const axisNorm = axisIndex / Math.max(1, PERCEPTION_AXES.length - 1);
+  const angle = normalizeAngle(
+    bearing +
+      PERCEPTION_AXIS_OFFSETS[perceptionAxis] +
+      depthNorm * Math.PI / 12 +
+      cryptoOffset.angle
+  );
+  const ringRadius = Math.min(
+    0.72,
+    (baseRadius + 0.08 * depthNorm + 0.025 * axisIndex + cryptoOffset.radius) *
+      tierProfile.radiusScale
+  );
+  const pyramidHeight = 0.05 + 0.25 * depthNorm + tierProfile.heightLift + cryptoOffset.lift;
+  const axisLift = (axisNorm - 0.5) * 0.22 + tierProfile.axisBrace;
+
+  const pos = new Array(dimension).fill(0);
+  pos[0] = ringRadius * Math.cos(angle);
+  pos[1] = ringRadius * Math.sin(angle);
+  pos[2] = pyramidHeight;
+  pos[3] = axisLift;
+  pos[4] = (1 - depthNorm) * 0.08;
+  return clampToBall(pos, 0.95);
+}
+
+/**
+ * Generate a manifold constellation: tongues x perception axes x depth strata.
+ */
+export function generatePyramidConstellation(
+  depths: number[] = [0, 1, 2],
+  axes: PerceptionAxis[] = PERCEPTION_AXES,
+  dimension: number = 6,
+  options: PyramidConstellationOptions = {}
+): PyramidConstellationPoint[] {
+  const points: PyramidConstellationPoint[] = [];
+  for (const tongue of TONGUES) {
+    for (const depth of depths) {
+      for (const perceptionAxis of axes) {
+        const tier = options.tier ?? architectureTierForDepth(depth);
+        const position = pyramidConstellationPosition(
+          tongue,
+          depth,
+          perceptionAxis,
+          dimension,
+          0.22,
+          { ...options, tier }
+        );
+        const cryptoOffset = options.seed
+          ? seededConstellationOffset(options.seed, tongue, depth, perceptionAxis, tier)
+          : { angle: 0, radius: 0, lift: 0 };
+        const angle = normalizeAngle(
+          COMPASS_BEARINGS[tongue] +
+            PERCEPTION_AXIS_OFFSETS[perceptionAxis] +
+            (depth / (depth + PHI)) * Math.PI / 12 +
+            cryptoOffset.angle
+        );
+        points.push({
+          tongue,
+          perceptionAxis,
+          depth,
+          angle,
+          ringRadius: Math.sqrt(position[0] * position[0] + position[1] * position[1]),
+          pyramidHeight: position[2],
+          position,
+        });
+      }
+    }
+  }
+  return points;
+}
+
+/**
+ * Generate a cartographic star map for the constellation layout.
+ *
+ * This is the Lewis-and-Clark / explorer layer: fixed anchors become stars,
+ * edge classes become trails, and the manifold can be navigated by bearings
+ * instead of raw coordinates alone.
+ */
+export function generatePyramidConstellationStarMap(
+  depths: number[] = [0, 1, 2],
+  axes: PerceptionAxis[] = PERCEPTION_AXES,
+  dimension: number = 6,
+  options: PyramidConstellationOptions = {}
+): PyramidConstellationStarMap {
+  const points = generatePyramidConstellation(depths, axes, dimension, options);
+  const edges: ConstellationMapEdge[] = [];
+  const indexFor = new Map<string, number>();
+
+  points.forEach((point, index) => {
+    indexFor.set(pointKey(point.tongue, point.depth, point.perceptionAxis), index);
+  });
+
+  for (const tongue of TONGUES) {
+    for (const axis of axes) {
+      for (let i = 0; i < depths.length - 1; i++) {
+        addEdge(indexFor, points, edges, tongue, depths[i], axis, tongue, depths[i + 1], axis, 'depth-line');
+      }
+    }
+  }
+
+  for (const tongue of TONGUES) {
+    for (const depth of depths) {
+      for (let i = 0; i < axes.length; i++) {
+        addEdge(
+          indexFor,
+          points,
+          edges,
+          tongue,
+          depth,
+          axes[i],
+          tongue,
+          depth,
+          axes[(i + 1) % axes.length],
+          'axis-ring'
+        );
+      }
+    }
+  }
+
+  for (const depth of depths) {
+    for (const axis of axes) {
+      for (let i = 0; i < TONGUES.length; i++) {
+        addEdge(
+          indexFor,
+          points,
+          edges,
+          TONGUES[i],
+          depth,
+          axis,
+          TONGUES[(i + 1) % TONGUES.length],
+          depth,
+          axis,
+          'tongue-bearing'
+        );
+      }
+    }
+  }
+
+  return {
+    projection: 'pyramid_constellation',
+    seed: options.seed,
+    points,
+    edges,
+    legend: {
+      'tongue-bearing': 'neighboring tongue stars around a depth/perception ring',
+      'depth-line': 'same tongue and perception axis descending into deeper strata',
+      'axis-ring': 'same tongue and depth rotating through perception axes',
+    },
+  };
+}
+
+function architectureTierForDepth(depth: number): ArchitectureTier {
+  if (depth <= 0) return 'foundation';
+  if (depth <= 1) return 'column';
+  if (depth <= 2) return 'arch';
+  return 'spire';
+}
+
+function architectureTierProfile(tier: ArchitectureTier): {
+  radiusScale: number;
+  heightLift: number;
+  axisBrace: number;
+} {
+  switch (tier) {
+    case 'foundation':
+      return { radiusScale: 1.08, heightLift: 0.0, axisBrace: -0.03 };
+    case 'column':
+      return { radiusScale: 1.0, heightLift: 0.03, axisBrace: 0.0 };
+    case 'arch':
+      return { radiusScale: 0.92, heightLift: 0.06, axisBrace: 0.02 };
+    case 'spire':
+      return { radiusScale: 0.84, heightLift: 0.09, axisBrace: 0.04 };
+  }
+}
+
+function seededConstellationOffset(
+  seed: string,
+  tongue: string,
+  depth: number,
+  perceptionAxis: PerceptionAxis,
+  tier: ArchitectureTier
+): { angle: number; radius: number; lift: number } {
+  const digest = createHash('sha256')
+    .update(`${seed}|${tongue}|${depth}|${perceptionAxis}|${tier}`)
+    .digest();
+  const a = digest.readUInt32BE(0) / 0xffffffff;
+  const r = digest.readUInt32BE(4) / 0xffffffff;
+  const l = digest.readUInt32BE(8) / 0xffffffff;
+  return {
+    angle: (a - 0.5) * (Math.PI / 18),
+    radius: (r - 0.5) * 0.025,
+    lift: (l - 0.5) * 0.018,
+  };
+}
+
+function pointKey(tongue: string, depth: number, axis: PerceptionAxis): string {
+  return `${tongue}|${depth}|${axis}`;
+}
+
+function addEdge(
+  indexFor: Map<string, number>,
+  points: PyramidConstellationPoint[],
+  edges: ConstellationMapEdge[],
+  fromTongue: string,
+  fromDepth: number,
+  fromAxis: PerceptionAxis,
+  toTongue: string,
+  toDepth: number,
+  toAxis: PerceptionAxis,
+  kind: ConstellationMapEdge['kind']
+): void {
+  const from = indexFor.get(pointKey(fromTongue, fromDepth, fromAxis));
+  const to = indexFor.get(pointKey(toTongue, toDepth, toAxis));
+  if (from === undefined || to === undefined || from === to) return;
+  edges.push({
+    from,
+    to,
+    kind,
+    distance: euclideanDistance(points[from].position, points[to].position),
+  });
+}
+
+function euclideanDistance(a: number[], b: number[]): number {
+  const n = Math.max(a.length, b.length);
+  let sum = 0;
+  for (let i = 0; i < n; i++) {
+    const d = (a[i] ?? 0) - (b[i] ?? 0);
+    sum += d * d;
+  }
+  return Math.sqrt(sum);
 }
 
 /**

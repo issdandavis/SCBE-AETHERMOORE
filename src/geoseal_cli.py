@@ -4709,6 +4709,528 @@ def cmd_workflow(args: argparse.Namespace) -> int:
     return 2
 
 
+# ---------------------------------------------------------------------------
+# api-graph: self-describing skill tree of the GeoSeal CLI
+# ---------------------------------------------------------------------------
+
+_SKILL_TIER_LABELS: Dict[str, str] = {
+    "L1": "inspect",
+    "L2": "analyze",
+    "L3": "route",
+    "L4": "execute",
+    "L5": "govern",
+    "L6": "orchestrate",
+}
+
+# (tier, tongue, band, deps, description)
+_SKILL_TREE_META: Dict[str, Tuple[str, str, str, List[str], str]] = {
+    "ops":                   ("L1", "KO", "LEXICON",       [],                             "List all 64 lexicon ops"),
+    "atomic":                ("L1", "KO", "LEXICON",       ["ops"],                        "Inspect atomic substrate row for an op"),
+    "emit":                  ("L1", "KO", "LEXICON",       ["ops"],                        "Emit code for an op in any tongue"),
+    "encode-cmd":            ("L1", "KO", "TOKENIZER",     [],                             "Encode payload via Sacred Tongue tokenizer"),
+    "decode-cmd":            ("L1", "KO", "TOKENIZER",     ["encode-cmd"],                 "Decode Sacred Tongue token stream to plaintext"),
+    "xlate-cmd":             ("L1", "AV", "TOKENIZER",     ["encode-cmd", "decode-cmd"],   "Translate token stream across tongues"),
+    "binary-to-tokenizer":   ("L1", "KO", "TOKENIZER",     ["encode-cmd"],                 "Map binary bytes to Sacred Tongue token rows"),
+    "yin-yang-dual":         ("L2", "DR", "TOKENIZER",     ["encode-cmd", "decode-cmd"],   "Build KO/DR yin-yang dual token packet"),
+    "tongue-compile":        ("L2", "KO", "TOOLCHAIN",     ["encode-cmd"],                 "Compile Sacred Tongues .sts assembly to VM bytecode"),
+    "tongue-run":            ("L4", "KO", "TOOLCHAIN",     ["tongue-compile"],             "Run Sacred Tongues .sts program in bounded VM"),
+    "code-packet":           ("L2", "KO", "ANALYSIS",      ["emit"],                       "Build SCBE weighted code packet from source"),
+    "braille-lane":          ("L2", "KO", "ANALYSIS",      ["code-packet"],                "Build braille/polyhedral cell lane from source"),
+    "interaction-graph":     ("L2", "AV", "ANALYSIS",      ["code-packet"],                "Build source/token/STISA/atomic interaction graph"),
+    "topology-view":         ("L2", "AV", "ANALYSIS",      ["interaction-graph"],          "Build topology view with polygons and leylines"),
+    "cluster-graph":         ("L2", "RU", "ANALYSIS",      ["topology-view"],              "Build cross-lattice cluster graph"),
+    "formation-graph":       ("L2", "RU", "ANALYSIS",      ["cluster-graph"],              "Build cross-lattice formation graph"),
+    "cross-domain-sequence": ("L2", "CA", "ANALYSIS",      ["topology-view"],              "Build cross-domain route sequence"),
+    "honeycomb-analysis":    ("L2", "CA", "ANALYSIS",      ["topology-view"],              "Analyze route cell execution stability"),
+    "cognition-map":         ("L2", "UM", "ANALYSIS",      ["topology-view"],              "Build cognitive well/ternary overlay map"),
+    "mars-mission":          ("L2", "KO", "ANALYSIS",      ["topology-view"],              "Build Mars mission compass/minimap packet"),
+    "api-graph":             ("L2", "DR", "ANALYSIS",      [],                             "Self-describing skill tree of the GeoSeal CLI"),
+    "seal":                  ("L3", "KO", "GOVERNANCE",    ["emit"],                       "Apply GeoSeal phase signature to a payload"),
+    "verify":                ("L3", "KO", "GOVERNANCE",    ["seal"],                       "Verify a GeoSeal signature"),
+    "seal-here":             ("L3", "KO", "GOVERNANCE",    ["seal"],                       "Geo-fence seal (PowerShell parameter-bound)"),
+    "backend-registry":      ("L3", "KO", "ROUTING",       [],                             "List backend providers and lane support"),
+    "portal-box":            ("L3", "KO", "ROUTING",       ["code-packet"],                "Build local portal-box route packet"),
+    "stream-wheel":          ("L3", "AV", "ROUTING",       ["portal-box"],                 "Build local stream-wheel route packet"),
+    "code-roundtrip":        ("L3", "RU", "TOOLCHAIN",     ["encode-cmd", "decode-cmd"],   "Encode/decode/execute code roundtrip through tongue"),
+    "explain-route":         ("L3", "KO", "ROUTING",       ["backend-registry"],           "Explain route IR and backend chain for a source"),
+    "route":                 ("L3", "KO", "ROUTING",       ["explain-route"],              "Route intent via SLM (auto or manual)"),
+    "run":                   ("L4", "KO", "EXECUTION",     ["emit", "seal"],               "Run lexicon op in one tongue subprocess"),
+    "swarm":                 ("L4", "KO", "EXECUTION",     ["run"],                        "Dispatch op to swarm of tongue bots with BFT consensus"),
+    "cross-build":           ("L4", "RU", "EXECUTION",     ["emit"],                       "Bijective A→lattice IR→B tongue translation"),
+    "swarm-exec":            ("L4", "RU", "EXECUTION",     ["swarm", "cross-build"],       "Meet-in-the-middle codegen through bijective seam"),
+    "exec":                  ("L4", "CA", "EXECUTION",     ["seal"],                       "Run command through GeoSeal execution gate"),
+    "shell":                 ("L4", "CA", "EXECUTION",     ["exec"],                       "Run nested GeoSeal command string"),
+    "arc":                   ("L4", "UM", "EXECUTION",     ["run"],                        "Synthesize + apply ARC task program"),
+    "agent":                 ("L4", "KO", "AGENT",         ["route", "backend-registry"],  "Route coding task via Polly → GeoSeal stamp"),
+    "cursor":                ("L4", "DR", "AGENT",         ["agent"],                      "Delegate bounded repo task to Cursor Agent"),
+    "testing-cli":           ("L4", "KO", "TESTING",       ["run", "seal"],                "Build testing playback packet and execute"),
+    "project-scaffold":      ("L4", "KO", "SCAFFOLD",      ["agent", "route"],             "Create lightweight project scaffold from intent"),
+    "legitimacy-trial":      ("L5", "KO", "GOVERNANCE",    ["seal", "exec"],               "Evaluate time/location/workspace/intent context"),
+    "coding-trial":          ("L5", "KO", "GOVERNANCE",    ["legitimacy-trial"],           "Legitimacy trial plus compiler/test probe"),
+    "validate-line":         ("L5", "KO", "GOVERNANCE",    ["exec"],                       "Preflight command line — PSReadLine-style verdict"),
+    "history":               ("L5", "KO", "AUDIT",         ["run", "swarm"],               "Show execution history from ledger"),
+    "replay":                ("L5", "KO", "AUDIT",         ["history"],                    "Replay a previous ledger record"),
+    "workflow":              ("L5", "DR", "GOVERNANCE",    ["agent", "seal"],              "Declarative .geoseal.yaml workflow runner"),
+    "promotions":            ("L5", "KO", "PROMOTION",     ["route"],                      "List dispatch patterns above promotion threshold"),
+    "promote":               ("L5", "KO", "PROMOTION",     ["promotions"],                 "Register recurring dispatch as a named alias"),
+    "aliases":               ("L5", "KO", "PROMOTION",     ["promote"],                    "List registered alias names and dispatch shape"),
+    "alias":                 ("L5", "KO", "PROMOTION",     ["promote"],                    "Invoke a registered alias deterministically"),
+    "unpromote":             ("L5", "KO", "PROMOTION",     ["promote"],                    "Remove a registered alias"),
+    "compile":               ("L6", "AV", "ORCHESTRATION", ["route", "agent-harness"],     "Compile intent into agent-bus command plan"),
+    "agent-harness":         ("L6", "KO", "ORCHESTRATION", ["route", "backend-registry"],  "Emit model-neutral agent harness manifest"),
+    "agent-endurance-pack":  ("L6", "KO", "ORCHESTRATION", ["agent-harness"],              "Generate Agent Endurance v1 spec bundle"),
+    "call-switchboard":      ("L6", "CA", "ORCHESTRATION", ["route", "seal"],              "Evaluate multi-agent call reservation"),
+    "lightning-indexer":     ("L6", "RU", "ORCHESTRATION", ["call-switchboard"],           "Select sparse agent context candidates"),
+    "loop-dispatch":         ("L6", "AV", "ORCHESTRATION", ["agent", "legitimacy-trial"],  "Policy-gated external agent loop dispatch"),
+    "assist":                ("L6", "KO", "ORCHESTRATION", ["route", "compile"],           "Local micro-assist for terminal agents"),
+    "domino":                ("L6", "DR", "ORCHESTRATION", ["workflow"],                   "Arrange domino workflow tiles with contact transfer"),
+    "terminus-training":     ("L6", "UM", "TRAINING",      ["swarm", "agent"],             "Run Terminus guild agent training"),
+    "pair-agent-training":   ("L6", "KO", "TRAINING",      ["agent", "workflow"],          "Build GeoShell pair-agent SFT dataset"),
+}
+
+
+def _build_api_skill_tree(
+    *,
+    tier_filter: Optional[str] = None,
+    tongue_filter: Optional[str] = None,
+    band_filter: Optional[str] = None,
+    cmd_filter: Optional[str] = None,
+    show_params: bool = False,
+) -> Dict[str, Any]:
+    # Build forward (cmd→what it unlocks) and reverse (cmd→what requires it) maps
+    # over the full meta before filtering so depth and unlock counts are global.
+    fwd: Dict[str, List[str]] = {c: [] for c in _SKILL_TREE_META}
+    for cmd_name, (_, _, _, deps, _) in _SKILL_TREE_META.items():
+        for dep in deps:
+            if dep in fwd:
+                fwd[dep].append(cmd_name)
+
+    # BFS depth from entry points (commands with no deps in the full graph)
+    entry_points = {c for c, (_, _, _, deps, _) in _SKILL_TREE_META.items() if not deps}
+    depth_map: Dict[str, int] = {c: 0 for c in entry_points}
+    queue = list(entry_points)
+    while queue:
+        cur = queue.pop(0)
+        for child in fwd.get(cur, []):
+            new_depth = depth_map[cur] + 1
+            if child not in depth_map or depth_map[child] < new_depth:
+                depth_map[child] = new_depth
+                queue.append(child)
+
+    param_counts: Dict[str, int] = {}
+    if show_params:
+        try:
+            p = build_parser()
+            for action_group in p._subparsers._group_actions:
+                for name, sub_p in action_group.choices.items():
+                    param_counts[name] = sum(
+                        1 for a in sub_p._actions if a.dest not in ("help",)
+                    )
+        except Exception:
+            pass
+
+    # If --cmd is set, include only that command and its full dep chain + what it unlocks
+    if cmd_filter and cmd_filter in _SKILL_TREE_META:
+        focus: set = {cmd_filter}
+        # ancestors
+        stack = list(_SKILL_TREE_META[cmd_filter][3])
+        while stack:
+            c = stack.pop()
+            if c in _SKILL_TREE_META and c not in focus:
+                focus.add(c)
+                stack.extend(_SKILL_TREE_META[c][3])
+        # direct children
+        for child in fwd.get(cmd_filter, []):
+            focus.add(child)
+        active = focus
+    else:
+        active = set()
+        for cmd_name, (tier, tongue, band, deps, desc) in _SKILL_TREE_META.items():
+            if tier_filter and tier != tier_filter:
+                continue
+            if tongue_filter and tongue != tongue_filter:
+                continue
+            if band_filter and band != band_filter:
+                continue
+            active.add(cmd_name)
+
+    nodes: List[Dict[str, Any]] = []
+    edges: List[Dict[str, Any]] = []
+
+    for cmd_name in sorted(active):
+        tier, tongue, band, deps, desc = _SKILL_TREE_META[cmd_name]
+        phi_tier = phi_wall_tier(phi_wall_cost(0.2, tongue))
+        unlocks_global = fwd.get(cmd_name, [])
+        unlocks_visible = [c for c in unlocks_global if c in active]
+        requires_visible = [d for d in deps if d in active]
+        node: Dict[str, Any] = {
+            "id": f"cmd:{cmd_name}",
+            "cmd": cmd_name,
+            "label": cmd_name,
+            "tier": tier,
+            "tier_label": _SKILL_TIER_LABELS.get(tier, tier),
+            "tongue": tongue,
+            "conlang": CONLANG_NAME_MAP.get(tongue, tongue),
+            "band": band,
+            "phi_tier": phi_tier,
+            "phi_weight": TONGUE_PHI_WEIGHTS.get(tongue, 1.0),
+            "description": desc,
+            "depth": depth_map.get(cmd_name, 0),
+            "entry_point": cmd_name in entry_points,
+            "requires": deps,
+            "unlocks": unlocks_global,
+            "unlocks_count": len(unlocks_global),
+        }
+        if show_params and cmd_name in param_counts:
+            node["param_count"] = param_counts[cmd_name]
+        nodes.append(node)
+        for dep in deps:
+            if dep in active:
+                edges.append({
+                    "source": f"cmd:{dep}",
+                    "target": f"cmd:{cmd_name}",
+                    "relation": "unlocks",
+                })
+
+    by_tier: Dict[str, List[str]] = {}
+    by_band: Dict[str, List[str]] = {}
+    by_tongue: Dict[str, List[str]] = {}
+    for n in nodes:
+        by_tier.setdefault(n["tier"], []).append(n["cmd"])
+        by_band.setdefault(n["band"], []).append(n["cmd"])
+        by_tongue.setdefault(n["tongue"], []).append(n["cmd"])
+
+    # Top commands by unlock count (most powerful)
+    top_unlocks = sorted(nodes, key=lambda n: n["unlocks_count"], reverse=True)[:5]
+    all_entries = [n["cmd"] for n in nodes if n["entry_point"]]
+    max_depth = max((n["depth"] for n in nodes), default=0)
+
+    return {
+        "version": "geoseal-api-skill-tree-v2",
+        "summary": {
+            "total_commands": len(nodes),
+            "total_edges": len(edges),
+            "entry_points": all_entries,
+            "max_depth": max_depth,
+            "top_unlocking": [{"cmd": n["cmd"], "unlocks": n["unlocks_count"]} for n in top_unlocks],
+            "tiers": {t: len(c) for t, c in sorted(by_tier.items())},
+            "bands": {b: len(c) for b, c in sorted(by_band.items())},
+            "tongues": {t: len(c) for t, c in sorted(by_tongue.items())},
+        },
+        "tier_labels": _SKILL_TIER_LABELS,
+        "nodes": nodes,
+        "edges": edges,
+        "by_tier": by_tier,
+        "by_band": by_band,
+        "by_tongue": by_tongue,
+    }
+
+
+def _skill_tree_to_mermaid(tree: Dict[str, Any], *, direction: str = "LR") -> str:
+    lines = [
+        f"flowchart {direction}",
+        "  classDef L1 fill:#e0f2fe,stroke:#0ea5e9",
+        "  classDef L2 fill:#dbeafe,stroke:#3b82f6",
+        "  classDef L3 fill:#ede9fe,stroke:#8b5cf6",
+        "  classDef L4 fill:#fce7f3,stroke:#ec4899",
+        "  classDef L5 fill:#fee2e2,stroke:#ef4444",
+        "  classDef L6 fill:#fef3c7,stroke:#f59e0b",
+    ]
+    for tier in sorted(set(n["tier"] for n in tree["nodes"])):
+        tier_label = _SKILL_TIER_LABELS.get(tier, tier)
+        tier_nodes = [n for n in tree["nodes"] if n["tier"] == tier]
+        lines.append(f"  subgraph {tier}[\"{tier}: {tier_label}\"]")
+        for n in tier_nodes:
+            nid = re.sub(r"[^A-Za-z0-9_]", "_", n["id"])
+            entry_mark = " ★" if n["entry_point"] else ""
+            unlock_mark = f" +{n['unlocks_count']}" if n["unlocks_count"] else ""
+            lines.append(f'    {nid}["{n["cmd"]}{entry_mark}{unlock_mark}<br/>{n["tongue"]} {n["band"]}"]:::{tier}')
+        lines.append("  end")
+    for edge in tree["edges"]:
+        src = re.sub(r"[^A-Za-z0-9_]", "_", edge["source"])
+        dst = re.sub(r"[^A-Za-z0-9_]", "_", edge["target"])
+        lines.append(f"  {src} --> {dst}")
+    return "\n".join(lines) + "\n"
+
+
+def _skill_tree_to_dot(tree: Dict[str, Any]) -> str:
+    tier_colors = {
+        "L1": "#e0f2fe", "L2": "#dbeafe", "L3": "#ede9fe",
+        "L4": "#fce7f3", "L5": "#fee2e2", "L6": "#fef3c7",
+    }
+    tier_borders = {
+        "L1": "#0ea5e9", "L2": "#3b82f6", "L3": "#8b5cf6",
+        "L4": "#ec4899", "L5": "#ef4444", "L6": "#f59e0b",
+    }
+    lines = [
+        "digraph GeoSealSkillTree {",
+        '  rankdir=LR;',
+        '  graph [fontname="Courier" fontsize=11];',
+        '  node [shape=box fontname="Courier" fontsize=10 style=filled];',
+        '  edge [fontname="Courier" fontsize=9];',
+    ]
+    for tier in sorted(set(n["tier"] for n in tree["nodes"])):
+        tier_label = _SKILL_TIER_LABELS.get(tier, tier)
+        tier_nodes = [n for n in tree["nodes"] if n["tier"] == tier]
+        fill = tier_colors.get(tier, "#ffffff")
+        border = tier_borders.get(tier, "#999999")
+        lines.append(f'  subgraph cluster_{tier} {{')
+        lines.append(f'    label="{tier}: {tier_label}";')
+        lines.append(f'    style=filled; fillcolor="{fill}"; color="{border}"; penwidth=2;')
+        for n in tier_nodes:
+            nid = re.sub(r"[^A-Za-z0-9_]", "_", n["id"])
+            entry = "★ " if n["entry_point"] else ""
+            unlock = f" +{n['unlocks_count']}" if n["unlocks_count"] else ""
+            label = f"{entry}{n['cmd']}{unlock}\\n{n['tongue']} | {n['band']}\\nd={n['depth']}"
+            border_c = border if not n["entry_point"] else "#f97316"
+            lines.append(f'    {nid} [label="{label}" color="{border_c}"];')
+        lines.append("  }")
+    for edge in tree["edges"]:
+        src = re.sub(r"[^A-Za-z0-9_]", "_", edge["source"])
+        dst = re.sub(r"[^A-Za-z0-9_]", "_", edge["target"])
+        lines.append(f"  {src} -> {dst} [color=\"#94a3b8\"];")
+    lines.append("}")
+    return "\n".join(lines) + "\n"
+
+
+def _skill_tree_to_ascii(tree: Dict[str, Any]) -> str:
+    _TIER_ORDER = ["L1", "L2", "L3", "L4", "L5", "L6"]
+    W = 80
+    lines: List[str] = [
+        "GeoSeal API Skill Tree",
+        "─" * W,
+    ]
+    by_tier = tree["by_tier"]
+    node_map = {n["cmd"]: n for n in tree["nodes"]}
+    s = tree["summary"]
+
+    # Header stats
+    entries = ", ".join(s["entry_points"][:6]) + ("…" if len(s["entry_points"]) > 6 else "")
+    lines.append(f"  {s['total_commands']} commands  {s['total_edges']} edges  depth={s['max_depth']}  entries: {entries}")
+    top = "  top: " + "  ".join(f"{r['cmd']}(+{r['unlocks']})" for r in s["top_unlocking"][:5])
+    lines.append(top)
+    lines.append("─" * W)
+
+    for tier in _TIER_ORDER:
+        cmds = by_tier.get(tier, [])
+        if not cmds:
+            continue
+        tier_label = _SKILL_TIER_LABELS.get(tier, tier)
+        tier_count = len(cmds)
+        lines.append(f"\n  {tier}  {tier_label.upper()}  ({tier_count})")
+        lines.append("  " + "─" * (W - 2))
+
+        bands: Dict[str, List[str]] = {}
+        for cmd in sorted(cmds):
+            bands.setdefault(node_map[cmd]["band"], []).append(cmd)
+
+        for band, band_cmds in sorted(bands.items()):
+            lines.append(f"    ▸ {band}")
+            band_cmds_sorted = sorted(band_cmds)
+            for i, cmd in enumerate(band_cmds_sorted):
+                n = node_map[cmd]
+                is_last = (i == len(band_cmds_sorted) - 1)
+                branch = "└─" if is_last else "├─"
+                entry_star = "★ " if n["entry_point"] else "  "
+                unlock_tag = f"+{n['unlocks_count']}" if n["unlocks_count"] else "  "
+                # requires summary (only names, no tier prefix)
+                req_s = ""
+                if n["requires"]:
+                    reqs = ", ".join(n["requires"][:3])
+                    req_s = f"  ← {reqs}"
+                    if len(n["requires"]) > 3:
+                        req_s += f" +{len(n['requires'])-3}"
+                # description: wrap at terminal width
+                desc = n["description"]
+                lines.append(
+                    f"      {branch} {entry_star}{cmd:<26} {n['tongue']} d={n['depth']} "
+                    f"[{unlock_tag:>3}] {desc}"
+                    + req_s
+                )
+
+    lines.append("\n" + "─" * W)
+    lines.append("  ★ = entry point (no prerequisites)   [+N] = commands this unlocks")
+    lines.append("  d=N = depth from nearest entry point  ← = requires these commands")
+    return "\n".join(lines) + "\n"
+
+
+def _skill_tree_cmd_focus(tree: Dict[str, Any], cmd: str) -> str:
+    """Single-command focus: show what it needs and what it unlocks."""
+    node_map = {n["cmd"]: n for n in tree["nodes"]}
+    if cmd not in node_map:
+        return f"command not found in tree: {cmd}\n"
+    n = node_map[cmd]
+    lines = [
+        f"  {cmd}",
+        f"  {'─' * (len(cmd) + 2)}",
+        f"  tier:    {n['tier']} ({n['tier_label']})",
+        f"  tongue:  {n['tongue']} ({n['conlang']})",
+        f"  band:    {n['band']}",
+        f"  depth:   {n['depth']}",
+        f"  phi:     φ{n['phi_weight']:.3f}  ({n['phi_tier']})",
+        f"  entry:   {'yes ★' if n['entry_point'] else 'no'}",
+        f"",
+        f"  {n['description']}",
+    ]
+    if n["requires"]:
+        lines += ["", "  REQUIRES:"]
+        for dep in n["requires"]:
+            dep_n = node_map.get(dep)
+            if dep_n:
+                lines.append(f"    ← {dep:<28} {dep_n['tier']} {dep_n['tongue']}  {dep_n['description'][:40]}")
+            else:
+                lines.append(f"    ← {dep}  (outside current filter)")
+    if n["unlocks"]:
+        lines += ["", "  UNLOCKS:"]
+        for child in sorted(n["unlocks"]):
+            child_n = node_map.get(child)
+            if child_n:
+                lines.append(f"    → {child:<28} {child_n['tier']} {child_n['tongue']}  {child_n['description'][:40]}")
+            else:
+                lines.append(f"    → {child}")
+    return "\n".join(lines) + "\n"
+
+
+def cmd_bench_api(args: argparse.Namespace) -> int:
+    """Benchmark api-graph build + render across all format/filter variants."""
+    import time
+
+    N = int(getattr(args, "runs", 5))
+    verbose = bool(getattr(args, "verbose", False))
+
+    formats = ["json", "mermaid", "dot", "tree"]
+    tier_filters = [None, "L1", "L2", "L3", "L4", "L5", "L6"]
+    tongue_filters = [None, "KO", "AV", "RU", "CA", "UM", "DR"]
+
+    def _time_n(fn, n: int) -> Dict[str, float]:
+        times = []
+        for _ in range(n):
+            t0 = time.perf_counter()
+            fn()
+            times.append((time.perf_counter() - t0) * 1000)
+        times.sort()
+        return {
+            "min_ms": round(times[0], 2),
+            "med_ms": round(times[len(times) // 2], 2),
+            "max_ms": round(times[-1], 2),
+            "mean_ms": round(sum(times) / len(times), 2),
+        }
+
+    results: List[Dict[str, Any]] = []
+
+    # --- build phase ---
+    def _build_full():
+        _build_api_skill_tree()
+
+    r = _time_n(_build_full, N)
+    results.append({"label": "build (62 cmd, no filter)", **r})
+    if verbose:
+        print(f"  build          min={r['min_ms']}ms  med={r['med_ms']}ms  max={r['max_ms']}ms")
+
+    # --- format rendering ---
+    tree_full = _build_api_skill_tree()
+    for fmt in formats:
+        def _render(f=fmt, t=tree_full):
+            if f == "mermaid":
+                _skill_tree_to_mermaid(t)
+            elif f == "dot":
+                _skill_tree_to_dot(t)
+            elif f == "tree":
+                _skill_tree_to_ascii(t)
+            else:
+                json.dumps(t)
+
+        r = _time_n(_render, N)
+        results.append({"label": f"render:{fmt}", **r})
+        if verbose:
+            print(f"  render:{fmt:<8} min={r['min_ms']}ms  med={r['med_ms']}ms  max={r['max_ms']}ms")
+
+    # --- tier filters ---
+    for tf in ["L1", "L3", "L6"]:
+        def _build_tier(t=tf):
+            _build_api_skill_tree(tier_filter=t)
+
+        r = _time_n(_build_tier, N)
+        results.append({"label": f"build:tier={tf}", **r})
+        if verbose:
+            print(f"  tier={tf}          min={r['min_ms']}ms  med={r['med_ms']}ms")
+
+    # --- tongue filters ---
+    for tng in ["KO", "DR"]:
+        def _build_tongue(tn=tng):
+            _build_api_skill_tree(tongue_filter=tn)
+
+        r = _time_n(_build_tongue, N)
+        results.append({"label": f"build:tongue={tng}", **r})
+        if verbose:
+            print(f"  tongue={tng}        min={r['min_ms']}ms  med={r['med_ms']}ms")
+
+    # --- cmd focus ---
+    def _build_focus():
+        _build_api_skill_tree(cmd_filter="seal")
+
+    r = _time_n(_build_focus, N)
+    results.append({"label": "build:cmd=seal", **r})
+
+    # --- summary ---
+    all_means = [r2["mean_ms"] for r2 in results]
+    summary = {
+        "version": "geoseal-bench-api-v1",
+        "runs_per_variant": N,
+        "variants": len(results),
+        "overall_mean_ms": round(sum(all_means) / len(all_means), 2),
+        "slowest": max(results, key=lambda x: x["med_ms"])["label"],
+        "fastest": min(results, key=lambda x: x["med_ms"])["label"],
+    }
+    out = {"summary": summary, "results": results}
+    if getattr(args, "json", False):
+        print(json.dumps(out, indent=2))
+    else:
+        W = 72
+        print(f"{'─' * W}")
+        print(f"  bench-api  {N} runs/variant  {len(results)} variants")
+        print(f"{'─' * W}")
+        for row in results:
+            bar_fill = int(min(row["med_ms"] / 5, 20))
+            bar = "█" * bar_fill + "░" * (20 - bar_fill)
+            print(f"  {row['label']:<34} {bar}  med={row['med_ms']}ms")
+        print(f"{'─' * W}")
+        print(f"  overall mean: {summary['overall_mean_ms']}ms")
+        print(f"  slowest: {summary['slowest']}")
+        print(f"  fastest: {summary['fastest']}")
+    return 0
+
+
+def cmd_api_graph(args: argparse.Namespace) -> int:
+    tier_filter = (getattr(args, "tier", None) or "").upper() or None
+    tongue_filter = (getattr(args, "tongue", None) or "").upper() or None
+    band_filter = (getattr(args, "band", None) or "").upper() or None
+    cmd_filter = (getattr(args, "cmd_focus", None) or "").lower() or None
+    show_params = bool(getattr(args, "show_params", False))
+
+    tree = _build_api_skill_tree(
+        tier_filter=tier_filter,
+        tongue_filter=tongue_filter,
+        band_filter=band_filter,
+        cmd_filter=cmd_filter,
+        show_params=show_params,
+    )
+
+    fmt = (getattr(args, "format", None) or "json").lower()
+    if fmt == "mermaid":
+        print(_skill_tree_to_mermaid(tree, direction="LR"), end="")
+    elif fmt == "dot":
+        print(_skill_tree_to_dot(tree), end="")
+    elif fmt == "tree":
+        if cmd_filter:
+            print(_skill_tree_cmd_focus(tree, cmd_filter), end="")
+        else:
+            print(_skill_tree_to_ascii(tree), end="")
+    else:
+        print(json.dumps(tree, indent=2 if getattr(args, "json", False) else None))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="geoseal", description="GeoSeal swarm CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -5518,6 +6040,41 @@ def build_parser() -> argparse.ArgumentParser:
     p_pair.add_argument("--event-path", default="artifacts/geoshell/pair_agent/latest_events.json")
     p_pair.add_argument("--json", action="store_true")
     p_pair.set_defaults(func=cmd_pair_agent_training)
+
+    p_api_graph = sub.add_parser(
+        "api-graph",
+        help="Show the GeoSeal CLI skill tree (API graph of all subcommands)",
+    )
+    p_api_graph.add_argument(
+        "--format",
+        default="json",
+        choices=["json", "mermaid", "dot", "tree"],
+        help="Output format: json | mermaid | dot | tree (ASCII)",
+    )
+    p_api_graph.add_argument("--tier", default=None, help="Filter by skill tier L1-L6")
+    p_api_graph.add_argument("--tongue", default=None, help="Filter by tongue KO|AV|RU|CA|UM|DR")
+    p_api_graph.add_argument("--band", default=None, help="Filter by band e.g. LEXICON|ANALYSIS|ROUTING|EXECUTION|GOVERNANCE|ORCHESTRATION")
+    p_api_graph.add_argument(
+        "--show-params",
+        action="store_true",
+        dest="show_params",
+        help="Attach parser param counts to each node",
+    )
+    p_api_graph.add_argument(
+        "--cmd",
+        default=None,
+        dest="cmd_focus",
+        metavar="CMD",
+        help="Focus on a single command: show its deps, what it unlocks, and all metadata",
+    )
+    p_api_graph.add_argument("--json", action="store_true")
+    p_api_graph.set_defaults(func=cmd_api_graph)
+
+    p_bench_api = sub.add_parser("bench-api", help="Benchmark api-graph build + render performance")
+    p_bench_api.add_argument("--runs", type=int, default=5, help="Iterations per variant (default 5)")
+    p_bench_api.add_argument("--verbose", action="store_true", help="Print each variant as it runs")
+    p_bench_api.add_argument("--json", action="store_true", help="Emit JSON report")
+    p_bench_api.set_defaults(func=cmd_bench_api)
 
     return p
 
