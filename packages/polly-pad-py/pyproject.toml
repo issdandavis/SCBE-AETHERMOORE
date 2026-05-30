@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scbe-polly-pad"
+version = "0.1.0"
+description = "Polly Pad agent workspace interface for SCBE squad pads, governance decisions, and tri-directional traces."
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+license-files = ["LICENSE", "LICENSE-APACHE"]
+requires-python = ">=3.11"
+authors = [
+    {name = "Issac Daniel Davis", email = "issdandavis@gmail.com"},
+]
+keywords = [
+    "scbe",
+    "polly-pad",
+    "agent-workspace",
+    "agent-orchestration",
+    "governance",
+    "path-planning",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/packages/polly-pad-py"
+Repository = "https://github.com/issdandavis/SCBE-AETHERMOORE"
+Issues = "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+
+[project.scripts]
+scbe-polly-pad = "scbe_polly_pad.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["scbe_polly_pad*"]
+
+[tool.setuptools.package-data]
+scbe_polly_pad = ["py.typed"]
