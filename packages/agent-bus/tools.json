@@ -296,7 +296,7 @@
   },
   {
     "name": "vector-field-nav-benchmark",
-    "description": "Run seeded multi-lattice and ensemble-beam vector-field navigation against A*, greedy, and random baselines with receipt-chain scoring, ablations, security tiers, importance depth, 3x3 kernel convolution, fluidic heat maps, and pressure sensing.",
+    "description": "Run seeded multi-lattice, depth-first, and ensemble-beam vector-field navigation against A*, greedy, and random baselines with receipt-chain scoring, ablations, security tiers, importance depth, 3x3 kernel convolution, fluidic heat maps, and pressure sensing.",
     "patentSurface": "agent-harness",
     "command": "node",
     "args": ["packages/agent-bus/scripts/vector_field_bench.cjs"]

@@ -42,8 +42,8 @@ Result:
   "ok": true,
   "evidence_failed": 0,
   "benchmark_process_failures": 0,
-  "avg_primary_score": 0.75,
-  "max_p95_ms": 34
+  "avg_primary_score": 0.8125,
+  "max_p95_ms": 33
 }
 ```
 
@@ -54,12 +54,15 @@ Breakdown:
   primary score 0.25. This is intentionally honest: the lane measures depth of
   penetration and loop behavior under local sensing, not guaranteed success.
 - Projection board: 4/4 evidence passed, solved rate 1.00, primary score 1.00.
-- Vector-field nav: 24/24 receipt chains complete, multi-lattice solve rate
-  0.75, ensemble-beam solve rate 0.75, ensemble-beam average efficiency 0.393,
-  random solve rate 0.00.
+- Vector-field nav: 28/28 receipt chains complete, multi-lattice baseline solve
+  rate 0.75, ensemble-beam solve rate 1.00, ensemble-beam average efficiency
+  0.9881, random solve rate 0.00.
 - Random solve sweep: 12 deterministic randomized trials produced 2 random
   solves, random solve rate 0.1667, average heat peak 48.5833, and average
   pressure -10.2232.
+- Ensemble-beam randomized sweep: the same 12 deterministic randomized trials
+  produced 12 ensemble-beam solves, solve rate 1.00, average heat peak 1.1667,
+  and average pressure -4.4314.
 
 ## Kernel Convolution Lattice
 
@@ -96,10 +99,14 @@ The `no-kernel` ablation keeps this measurable.
 
 ## Ensemble Beam
 
-The vector-field lane now includes `ensemble-beam`, a non-oracle planner that
-takes the broad heat/pressure/vector map and collapses it into one ranked
-movement beam. It combines:
+The vector-field lane now includes `depth-first` and `ensemble-beam` non-oracle
+planners. `depth-first` is a local breadcrumb explorer: it uses only adjacent
+passability, the receipt trail, and vector scoring for unvisited neighbor
+selection. `ensemble-beam` promotes that explorer as the route spine, then keeps
+the broad heat/pressure/vector map available as the measurable beam-shaping
+surface. The combined lane includes:
 
+- local breadcrumb/depth-first exploration
 - multi-lattice vector scoring
 - local A\* on known cells only
 - greedy goal alignment
@@ -109,9 +116,8 @@ movement beam. It combines:
 - frontier pull
 
 `astar-full` remains an oracle ceiling and is not used by the ensemble. The
-current focused comparison keeps the same solve rate and efficiency as
-multi-lattice on the default mazes while preserving a separate measurable path
-for future advisor weighting:
+current focused comparison moved the executable non-oracle result from the
+multi-lattice baseline to the ensemble-beam path:
 
 ```bash
 npm run benchmark:vector-field-nav -- --skip-ablation --show-comparison
@@ -123,8 +129,8 @@ Current result:
 {
   "multi_lattice_solve_rate": 0.75,
   "multi_lattice_avg_efficiency": 0.393,
-  "ensemble_beam_solve_rate": 0.75,
-  "ensemble_beam_avg_efficiency": 0.393,
+  "ensemble_beam_solve_rate": 1,
+  "ensemble_beam_avg_efficiency": 0.9881,
   "astar_full_solve_rate": 1,
   "random_solve_rate": 0
 }
@@ -146,7 +152,8 @@ npm run benchmark:vector-field-nav -- --maze tiny --alg multi-lattice --show-hea
 Randomized baseline sweep:
 
 ```bash
-npm run benchmark:vector-field-nav -- --random-solve-sweep --runs 12 --seed 4242
+npm run benchmark:vector-field-nav -- --random-solve-sweep --runs 12 --seed 4242 --alg random
+npm run benchmark:vector-field-nav -- --random-solve-sweep --runs 12 --seed 4242 --alg ensemble-beam
 ```
 
 ## Caveat

@@ -294,6 +294,13 @@ describe('runMission', () => {
     expect(agent.pos).toEqual(m.goal);
   });
 
+  it('depth-first agent reaches goal on tiny maze', () => {
+    const m = generateMaze(TINY);
+    const path = oracleBFS(m)!;
+    const agent = runMission(m, TINY, 'depth-first', DEFAULT_WEIGHTS, path);
+    expect(agent.pos).toEqual(m.goal);
+  });
+
   it('receipts count equals steps', () => {
     const m = generateMaze(TINY);
     const path = oracleBFS(m)!;
@@ -469,7 +476,7 @@ describe('runNavBench', () => {
   });
 
   it('comparison contains all requested algorithms', () => {
-    const algs = ['multi-lattice', 'ensemble-beam', 'greedy', 'random'] as const;
+    const algs = ['multi-lattice', 'ensemble-beam', 'depth-first', 'greedy', 'random'] as const;
     const result = runNavBench({ mazes: [TINY], algorithms: [...algs], skip_ablation: true });
     for (const alg of algs) {
       expect(result.comparison).toHaveProperty(alg);
@@ -522,7 +529,17 @@ describe('runNavBench', () => {
     expect(result.schema_version).toBe('scbe.agent_bus.vector_field_nav.random_solve_sweep.v1');
     expect(result.summary.trials).toBe(5);
     expect(result.runs).toHaveLength(5);
+    expect(result.summary.algorithm).toBe('random');
+    expect(typeof result.summary.solve_rate).toBe('number');
+    expect(typeof result.summary.solve_successes).toBe('number');
     expect(result.summary.random_solve_successes).toBeGreaterThanOrEqual(0);
     expect(typeof result.summary.avg_pressure).toBe('number');
+  });
+
+  it('runRandomSolveSweep can run ensemble-beam as the selected policy', () => {
+    const result = runRandomSolveSweep({ trials: 3, seed: 321, algorithm: 'ensemble-beam' });
+    expect(result.summary.algorithm).toBe('ensemble-beam');
+    expect(result.summary.solve_successes).toBeGreaterThanOrEqual(0);
+    expect(result.runs.every((run) => run.alg === 'ensemble-beam')).toBe(true);
   });
 });

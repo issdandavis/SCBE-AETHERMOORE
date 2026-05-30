@@ -60,6 +60,7 @@ export type SecurityTier = 'ALLOW' | 'QUARANTINE' | 'ESCALATE' | 'DENY';
 export type NavAlgorithm =
   | 'multi-lattice'
   | 'ensemble-beam'
+  | 'depth-first'
   | 'astar-full'
   | 'astar-limited'
   | 'greedy'
@@ -224,6 +225,9 @@ export interface RandomSolveSweepResult {
   runs: BenchmarkScore[];
   summary: {
     trials: number;
+    algorithm: NavAlgorithm;
+    solve_rate: number;
+    solve_successes: number;
     random_solve_rate: number;
     random_solve_successes: number;
     avg_heat_peak: number;
@@ -656,6 +660,68 @@ function heatPenalty(candidate: [number, number], agent: AgentState): number {
   return -(agent.heat_map.get(posKey(candidate[0], candidate[1])) ?? 0);
 }
 
+function pathStackFromReceipts(agent: AgentState, start: [number, number]): [number, number][] {
+  const stack: [number, number][] = [[start[0], start[1]]];
+  for (const receipt of agent.receipts) {
+    const next = receipt.to;
+    const existingIdx = stack.findIndex(([x, y]) => x === next[0] && y === next[1]);
+    if (existingIdx >= 0) {
+      stack.splice(existingIdx + 1);
+    } else {
+      stack.push([next[0], next[1]]);
+    }
+  }
+  return stack;
+}
+
+function pickMoveDepthFirstExplorer(
+  agent: AgentState,
+  maze: MazeGrid,
+  weights: LatticeWeights,
+  sensor_r: number
+): [number, number] | null {
+  const nbrs = neighbors4(maze, agent.pos[0], agent.pos[1]);
+  if (nbrs.length === 0) return null;
+
+  const unvisited = nbrs.filter(([nx, ny]) => (agent.visit_counts.get(posKey(nx, ny)) ?? 0) === 0);
+  if (unvisited.length > 0) {
+    let best = unvisited[0]!;
+    let bestScore = -Infinity;
+    for (const candidate of unvisited) {
+      const vector = computeVTotal(candidate, maze, agent, weights, sensor_r);
+      const score =
+        vector.frontier * 1.75 +
+        vector.importance * 1.2 +
+        goalBeamField(candidate, agent, maze) * 0.8 +
+        vector.security * 0.8 +
+        vector.pressure_sense * 0.35 -
+        stableTieBreak(candidate);
+      if (score > bestScore) {
+        bestScore = score;
+        best = candidate;
+      }
+    }
+    return best;
+  }
+
+  const stack = pathStackFromReceipts(agent, maze.start);
+  if (stack.length > 1) {
+    const backtrack = stack[stack.length - 2]!;
+    if (nbrs.some(([nx, ny]) => nx === backtrack[0] && ny === backtrack[1])) return backtrack;
+  }
+
+  let leastVisited = nbrs[0]!;
+  let leastVisits = Infinity;
+  for (const candidate of nbrs) {
+    const visits = agent.visit_counts.get(posKey(candidate[0], candidate[1])) ?? 0;
+    if (visits < leastVisits) {
+      leastVisits = visits;
+      leastVisited = candidate;
+    }
+  }
+  return leastVisited;
+}
+
 function stableTieBreak(candidate: [number, number]): number {
   return candidate[1] * 0.0001 + candidate[0] * 0.00001;
 }
@@ -671,6 +737,8 @@ function pickMoveEnsembleBeam(
   if (nbrs.length === 0) return null;
 
   const multiLattice = pickMoveMultiLattice(agent, maze, weights, sensor_r);
+  const explorer = pickMoveDepthFirstExplorer(agent, maze, weights, sensor_r);
+  if (explorer !== null) return explorer;
   const astarLimited = pickMoveAStarLimited(agent, maze);
   const greedy = pickMoveGreedy(agent, maze);
   const random = pickMoveRandom(agent, maze, rng);
@@ -681,7 +749,8 @@ function pickMoveEnsembleBeam(
   for (const candidate of nbrs) {
     const vector = computeVTotal(candidate, maze, agent, weights, sensor_r);
     let advisorVote = 0;
-    if (samePos(multiLattice, candidate)) advisorVote += 3.2;
+    if (samePos(explorer, candidate)) advisorVote += 4.0;
+    if (samePos(multiLattice, candidate)) advisorVote += 1.5;
     if (samePos(astarLimited, candidate)) advisorVote += 0.8;
     if (samePos(greedy, candidate)) advisorVote += 0.35;
     if (samePos(random, candidate)) advisorVote += 0.08;
@@ -922,6 +991,9 @@ export function runMission(
       case 'ensemble-beam':
         move = pickMoveEnsembleBeam(agent, maze, weights, sensorR, rng);
         break;
+      case 'depth-first':
+        move = pickMoveDepthFirstExplorer(agent, maze, weights, sensorR);
+        break;
       case 'greedy':
         move = pickMoveGreedy(agent, maze);
         break;
@@ -1080,6 +1152,7 @@ export function runNavBench(options?: {
   const algorithms: NavAlgorithm[] = options?.algorithms ?? [
     'multi-lattice',
     'ensemble-beam',
+    'depth-first',
     'astar-full',
     'astar-limited',
     'greedy',
@@ -1227,6 +1300,9 @@ export function runRandomSolveSweep(options?: {
     runs,
     summary: {
       trials: runs.length,
+      algorithm,
+      solve_rate: avg(runs.map((run) => (run.solved ? 1 : 0))),
+      solve_successes: successes,
       random_solve_rate: avg(runs.map((run) => (run.solved ? 1 : 0))),
       random_solve_successes: successes,
       avg_heat_peak: avg(runs.map((run) => run.heat_peak)),

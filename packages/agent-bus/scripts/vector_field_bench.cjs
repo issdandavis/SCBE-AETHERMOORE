@@ -22,8 +22,8 @@
  *   node ... --skip-ablation
  *       Run only the non-ablation algorithms (no ablation, faster).
  *
- *   node ... --random-solve-sweep --runs 24
- *       Run deterministic randomized mazes with the random policy.
+ *   node ... --random-solve-sweep --runs 24 --alg ensemble-beam
+ *       Run deterministic randomized mazes with the selected policy.
  *
  *   node ... --maze tiny --alg multi-lattice --show-heat-map
  *       Include fluidic heat-map and pressure samples for a single run.
@@ -66,11 +66,13 @@ const showHeatMap = flag('show-heat-map');
 if (randomSweep) {
   const runs = Number.parseInt(opt('runs') ?? '24', 10);
   const seed = Number.parseInt(opt('seed') ?? '9001', 10);
+  const algorithm = opt('alg') ?? 'random';
   console.log(
     JSON.stringify(
       runRandomSolveSweep({
         trials: Number.isFinite(runs) ? runs : 24,
         seed: Number.isFinite(seed) ? seed : 9001,
+        algorithm,
       }),
       null,
       2
