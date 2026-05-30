@@ -99,6 +99,11 @@ Usage:
   bench rubix-browser    Run permission-hypercube browser-control fixture
     [--json]
     [--open-report]
+  bench list             List registered evidence lanes
+  bench latest [lane]    Show latest artifact summary
+    [--json]
+  bench prove [lane]     Emit claim-safe proof packet
+    [--json]
 ─────────────────────────────────────────────────────────────────────────────
   FLOW LOOP — operator workflow (source checkout required for plan/packetize)
 ─────────────────────────────────────────────────────────────────────────────
@@ -4024,20 +4029,144 @@ function runSelftest() {
 const BENCH_TARGETS = {
   'hard-agentic': {
     script: 'scripts/benchmark/hard_agentic_benchmark_pretest.py',
+    latestJson: 'artifacts/benchmarks/hard_agentic_pretest/latest_report.json',
     latestMarkdown: 'artifacts/benchmarks/hard_agentic_pretest/LATEST.md',
     description: 'hard agentic pretest matrix',
+    claimBoundary: 'local readiness/pretest matrix; not a public benchmark leaderboard score',
   },
   research: {
     script: 'scripts/benchmark/research_agent_fixture_benchmark.py',
+    latestJson: 'artifacts/benchmarks/research_agent_fixtures/latest_report.json',
     latestMarkdown: 'artifacts/benchmarks/research_agent_fixtures/LATEST.md',
     description: 'BrowseComp/GAIA-style local research fixtures',
+    claimBoundary: 'local BrowseComp/GAIA-style fixtures; not public BrowseComp or GAIA scores',
   },
   'rubix-browser': {
     script: 'scripts/benchmark/rubix_browser_hypercube_benchmark.py',
+    latestJson: 'artifacts/benchmarks/rubix_browser_hypercube/latest_report.json',
     latestMarkdown: 'artifacts/benchmarks/rubix_browser_hypercube/LATEST.md',
     description: 'permission-hypercube browser-control fixture',
+    claimBoundary:
+      'local browser-control geometry fixture; not WebArena, BrowserGym, OSWorld, or VisualWebArena score',
   },
 };
+function benchLaneRows() {
+  return Object.entries(BENCH_TARGETS).map(([id, target]) => {
+    const latestJson = path.resolve(repoRoot(), target.latestJson);
+    const latestMarkdown = path.resolve(repoRoot(), target.latestMarkdown);
+    return {
+      id,
+      description: target.description,
+      command: `scbe bench ${id}`,
+      script: target.script,
+      latest_json: target.latestJson,
+      latest_markdown: target.latestMarkdown,
+      latest_json_exists: fs.existsSync(latestJson),
+      latest_markdown_exists: fs.existsSync(latestMarkdown),
+      claim_boundary: target.claimBoundary,
+    };
+  });
+}
+
+function summarizeBenchReport(report) {
+  const summary = report && typeof report.summary === 'object' ? report.summary : {};
+  return {
+    schema_version: report.schema_version || null,
+    generated_at_utc: report.generated_at_utc || null,
+    run_id: report.run_id || null,
+    decision: summary.decision || null,
+    summary,
+    claim_boundary: report.claim_boundary || null,
+    proof_goal_split: report.proof_goal_split || null,
+    patent_provenance: report.patent_provenance || null,
+  };
+}
+
+function latestBenchPacket(id, target) {
+  const absolute = path.resolve(repoRoot(), target.latestJson);
+  const exists = fs.existsSync(absolute);
+  const report = exists ? readJsonFileSafe(absolute) : {};
+  return {
+    id,
+    description: target.description,
+    command: `scbe bench ${id}`,
+    latest_json: target.latestJson,
+    latest_markdown: target.latestMarkdown,
+    exists,
+    claim_boundary: target.claimBoundary,
+    report: exists ? summarizeBenchReport(report) : null,
+  };
+}
+
+function printBenchList(asJson) {
+  const rows = benchLaneRows();
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify({ schema_version: 'scbe_bench_lane_list_v1', lanes: rows }, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write('SCBE benchmark evidence lanes\n\n');
+  for (const row of rows) {
+    const artifact = row.latest_json_exists ? 'artifact:yes' : 'artifact:no';
+    process.stdout.write(`- ${row.id}: ${row.description} (${artifact})\n`);
+    process.stdout.write(`  ${row.command} --json\n`);
+  }
+}
+
+function printBenchLatest(args) {
+  const asJson = args.includes('--json');
+  const lane = args.find((arg) => !arg.startsWith('--'));
+  const entries = lane ? [[lane, BENCH_TARGETS[lane]]] : Object.entries(BENCH_TARGETS);
+  if (entries.some(([, target]) => !target)) {
+    process.stderr.write(`scbe bench latest: unknown lane '${lane}'. Run 'scbe bench list'.\n`);
+    process.exit(2);
+  }
+  const packets = entries.map(([id, target]) => latestBenchPacket(id, target));
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify({ schema_version: 'scbe_bench_latest_v1', lanes: packets }, null, 2)}\n`);
+    return;
+  }
+  for (const packet of packets) {
+    const report = packet.report || {};
+    const summary = report.summary || {};
+    process.stdout.write(`${packet.id}: ${packet.exists ? 'artifact found' : 'missing latest artifact'}\n`);
+    if (report.generated_at_utc) process.stdout.write(`  generated: ${report.generated_at_utc}\n`);
+    if (report.decision) process.stdout.write(`  decision: ${report.decision}\n`);
+    if (Object.keys(summary).length) process.stdout.write(`  summary: ${JSON.stringify(summary)}\n`);
+    process.stdout.write(`  boundary: ${packet.claim_boundary}\n`);
+  }
+}
+
+function buildBenchProof(args) {
+  const lane = args.find((arg) => !arg.startsWith('--'));
+  const entries = lane ? [[lane, BENCH_TARGETS[lane]]] : Object.entries(BENCH_TARGETS);
+  if (entries.some(([, target]) => !target)) {
+    process.stderr.write(`scbe bench prove: unknown lane '${lane}'. Run 'scbe bench list'.\n`);
+    process.exit(2);
+  }
+  return {
+    schema_version: 'scbe_bench_proof_packet_v1',
+    generated_at_utc: nowIso(),
+    repo_root: repoRoot(),
+    git: gitPosture(repoRoot()),
+    proof_rule: 'Website claims must cite command, artifact, commit, and claim boundary.',
+    lanes: entries.map(([id, target]) => latestBenchPacket(id, target)),
+  };
+}
+
+function printBenchProof(args) {
+  const payload = buildBenchProof(args);
+  if (args.includes('--json')) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write(`SCBE benchmark proof packet (${payload.git.commit})\n\n`);
+  for (const lane of payload.lanes) {
+    process.stdout.write(`- ${lane.id}: ${lane.exists ? 'evidence present' : 'missing evidence'}\n`);
+    process.stdout.write(`  command: ${lane.command} --json\n`);
+    process.stdout.write(`  artifact: ${lane.latest_json}\n`);
+    process.stdout.write(`  boundary: ${lane.claim_boundary}\n`);
+  }
+}
 
 function openFileBestEffort(targetPath) {
   const absolute = path.resolve(repoRoot(), targetPath);
@@ -4061,6 +4190,9 @@ function printBenchHelp() {
       '  scbe bench hard-agentic [--timeout N] [--filter <id>] [--json] [--open-report]',
       '  scbe bench research [--style BrowseComp-style|GAIA-style] [--json] [--open-report]',
       '  scbe bench rubix-browser [--json] [--open-report]',
+      '  scbe bench list [--json]',
+      '  scbe bench latest [lane] [--json]',
+      '  scbe bench prove [lane] [--json]',
       '',
       'These are local executable evidence lanes, not public leaderboard scores.',
       '',
@@ -4072,6 +4204,18 @@ function runBench(args) {
   const sub = args[0] || 'help';
   if (sub === 'help' || sub === '--help' || sub === '-h') {
     printBenchHelp();
+    process.exit(0);
+  }
+  if (sub === 'list') {
+    printBenchList(args.includes('--json'));
+    process.exit(0);
+  }
+  if (sub === 'latest') {
+    printBenchLatest(args.slice(1));
+    process.exit(0);
+  }
+  if (sub === 'prove') {
+    printBenchProof(args.slice(1));
     process.exit(0);
   }
   const target = BENCH_TARGETS[sub];

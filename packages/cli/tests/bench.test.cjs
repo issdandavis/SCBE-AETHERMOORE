@@ -30,6 +30,9 @@ test('help documents benchmark evidence lanes', () => {
   assert.match(result.stdout, /bench hard-agentic/);
   assert.match(result.stdout, /bench research/);
   assert.match(result.stdout, /bench rubix-browser/);
+  assert.match(result.stdout, /bench list/);
+  assert.match(result.stdout, /bench latest/);
+  assert.match(result.stdout, /bench prove/);
 });
 
 test('bench help prints local evidence boundary', () => {
@@ -50,4 +53,41 @@ test('bench rubix-browser forwards to Python fixture and emits JSON', () => {
   assert.equal(payload.summary.baseline_completed, 0);
   assert.equal(payload.summary.hypercube_completed, payload.summary.task_count);
   assert.ok(fs.existsSync(path.join(outDir, 'latest_report.json')));
+});
+
+test('bench list emits registered evidence lanes as JSON', () => {
+  const result = runCli(['bench', 'list', '--json']);
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_bench_lane_list_v1');
+  assert.ok(payload.lanes.some((lane) => lane.id === 'hard-agentic'));
+  assert.ok(payload.lanes.some((lane) => lane.id === 'research'));
+  assert.ok(payload.lanes.some((lane) => lane.id === 'rubix-browser'));
+});
+
+test('bench latest reads latest lane artifact summary', () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-rubix-latest-'));
+  const warmup = runCli(['bench', 'rubix-browser', '--out-dir', outDir, '--json'], { timeout: 60_000 });
+  assert.equal(warmup.status, 0, warmup.stderr);
+
+  const result = runCli(['bench', 'latest', 'rubix-browser', '--json']);
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_bench_latest_v1');
+  assert.equal(payload.lanes.length, 1);
+  assert.equal(payload.lanes[0].id, 'rubix-browser');
+  assert.equal(payload.lanes[0].report.schema_version, 'scbe_rubix_browser_hypercube_benchmark_v1');
+});
+
+test('bench prove emits claim-safe proof packet', () => {
+  const result = runCli(['bench', 'prove', 'rubix-browser', '--json']);
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_bench_proof_packet_v1');
+  assert.match(payload.proof_rule, /command, artifact, commit, and claim boundary/);
+  assert.equal(payload.lanes.length, 1);
+  assert.equal(payload.lanes[0].id, 'rubix-browser');
+  assert.match(payload.lanes[0].claim_boundary, /not WebArena/);
 });
