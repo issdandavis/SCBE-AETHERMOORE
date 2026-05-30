@@ -16,6 +16,8 @@ polly task add "first task"
 polly ask "what should I start with?"
 polly run plan --dry-run "ship a website"
 polly audit verify
+polly cross pack --text "def add(x, y): return x + y" --lang python
+polly cross op add --json
 polly shell
 ```
 
@@ -39,6 +41,19 @@ polly audit export --json
 ```
 
 If a receipt is edited after it is written, `polly audit verify` exits non-zero and reports the first broken receipt.
+
+## Cross-Language Packets
+
+Polly can decompose text or source files into lossless UTF-8 hex/binary packets with SHA-256 receipts and lightweight semantic route evidence.
+
+```bash
+polly cross pack --file src/index.ts
+polly cross pack --text "const result = x + y;" --lang javascript
+polly cross unpack --hex 636f6e737420726573756c74203d2078202b20793b
+polly cross op add --json
+```
+
+`cross pack` is lossless at the byte layer. `cross op` is intentionally bounded to known operation templates; it is not advertised as arbitrary AST translation.
 
 ## Model Routing
 
