@@ -274,6 +274,13 @@
     "args": ["packages/agent-bus/scripts/bench_roll_stack_maze.cjs"]
   },
   {
+    "name": "worm-environment-adapter-benchmark",
+    "description": "Run a local-sensing worm/pathfinding benchmark with touch, chemo-gradient, frontier, edge-channel, and memory sensors. Scores depth of penetration, loop rate, greedy-baseline delta, and receipt hashes instead of only solved/failed.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/bench_worm_environment_adapter.cjs"]
+  },
+  {
     "name": "semantic-hex-bridge",
     "description": "Encode text through the agent-bus 6D semantic bridge into binary and 12-character hex routing evidence.",
     "patentSurface": "atomic-tokenizer",
@@ -419,5 +426,17 @@
     "patentSurface": "agent-harness",
     "command": "node",
     "args": ["packages/agent-bus/scripts/toolsmith.cjs", "list", "--filter", "{task}"]
+  },
+  {
+    "name": "star-path-bench",
+    "description": "Benchmark the tool graph as a star-navigation mission planner (BFS, Dijkstra, A*). Returns galaxy map, hub tools, delta-V stats, and six canonical mission trajectories.",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/star_path_bench.cjs"]
+  },
+  {
+    "name": "life-ledger-encounter",
+    "description": "Record an encounter in an agent life ledger. Detects known vs new persons, tracks alignment and interaction history. Provide {task} as --ledger <path> --agent-id <id> [--alignment <float>].",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/life_ledger_cli.cjs", "encounter", "--ledger", "{task}"]
   }
 ]

@@ -150,6 +150,49 @@ export {
 } from './tool-factory.js';
 
 export {
+  type Tongue,
+  type TraversalType,
+  type Algorithm,
+  type StarNode,
+  type StarEdge,
+  type StarGraph,
+  type MissionPhase,
+  type MissionTrajectory,
+  type GalaxyMap,
+  type StarPathBenchResult,
+  buildStarGraph,
+  buildGalaxyMap,
+  bfs,
+  dijkstra,
+  aStar,
+  runStarPathBench,
+} from './star-path.js';
+
+export {
+  type AgentIdentity,
+  type SkillLevel,
+  type CareerEntry,
+  type AgentLifeRecord,
+  type EncounterResult,
+  type LifeSummary,
+  createLifeRecord,
+  encounter,
+  gainSkillXP,
+  startCareer,
+  endCareer,
+  completeTask,
+  joinGroup,
+  leaveGroup,
+  isKnown,
+  getAlignmentScore,
+  getKnownAgents,
+  getCurrentRole,
+  summarize,
+  serializeLifeRecord,
+  deserializeLifeRecord,
+} from './life-ledger.js';
+
+export {
   type HermesTaskMode,
   type ScbeCompassMode,
   type ScbeFormation,
