@@ -16,6 +16,8 @@ const SCHEMA_PAD = 'polly_pad_v1';
 const SCHEMA_RUN = 'polly_run_v1';
 const SCHEMA_AUDIT = 'polly_audit_receipt_v1';
 const SCHEMA_CROSS_PACKET = 'polly_cross_packet_v1';
+const SCHEMA_CROSS_PATCH = 'polly_cross_patch_v1';
+const SCHEMA_CROSS_BUNDLE = 'polly_cross_bundle_v1';
 const GENESIS_HASH = '0'.repeat(64);
 
 // ---------------------------------------------------------------------------
@@ -303,6 +305,17 @@ function detectLanguage(text) {
   return best;
 }
 
+function languageFromPath(filePath) {
+  const ext = path.extname(String(filePath || '')).toLowerCase();
+  if (ext === '.py') return 'python';
+  if (ext === '.js' || ext === '.mjs' || ext === '.cjs') return 'javascript';
+  if (ext === '.ts' || ext === '.tsx') return 'typescript';
+  if (ext === '.rs') return 'rust';
+  if (ext === '.go') return 'go';
+  if (ext === '.sh' || ext === '.bash') return 'shell';
+  return null;
+}
+
 function semanticDims(text, language) {
   const lower = text.toLowerCase();
   const dims = SEMANTIC_AXES.map((axis) => {
@@ -347,6 +360,105 @@ function textFromHex(hex) {
     throw new Error('hex input must contain an even number of hexadecimal characters');
   }
   return Buffer.from(cleaned, 'hex').toString('utf8');
+}
+
+function splitLines(text) {
+  return String(text || '').split(/\r?\n/);
+}
+
+function joinLines(lines) {
+  return lines.join('\n');
+}
+
+function buildLinePatch(beforeText, afterText) {
+  const beforeLines = splitLines(beforeText);
+  const afterLines = splitLines(afterText);
+  let prefix = 0;
+  while (prefix < beforeLines.length && prefix < afterLines.length && beforeLines[prefix] === afterLines[prefix]) {
+    prefix++;
+  }
+  let suffix = 0;
+  while (
+    suffix < beforeLines.length - prefix &&
+    suffix < afterLines.length - prefix &&
+    beforeLines[beforeLines.length - 1 - suffix] === afterLines[afterLines.length - 1 - suffix]
+  ) {
+    suffix++;
+  }
+  return {
+    start_line: prefix + 1,
+    delete_count: beforeLines.length - prefix - suffix,
+    insert_lines: afterLines.slice(prefix, afterLines.length - suffix),
+  };
+}
+
+function applyLinePatch(beforeText, patch) {
+  const lines = splitLines(beforeText);
+  const startIdx = Math.max(0, Number(patch.start_line || 1) - 1);
+  const deleteCount = Math.max(0, Number(patch.delete_count || 0));
+  const insertLines = Array.isArray(patch.insert_lines) ? patch.insert_lines : [];
+  return joinLines([...lines.slice(0, startIdx), ...insertLines, ...lines.slice(startIdx + deleteCount)]);
+}
+
+function buildPatchPacket(filePath, afterText) {
+  const resolved = path.resolve(String(filePath));
+  const beforeText = fs.readFileSync(resolved, 'utf8');
+  const before = packetFromText(beforeText, { language: languageFromPath(resolved) || detectLanguage(beforeText).language });
+  const after = packetFromText(afterText, { language: before.language });
+  const patch = buildLinePatch(beforeText, afterText);
+  const inverse_patch = buildLinePatch(afterText, beforeText);
+  const patch_hash = crypto
+    .createHash('sha256')
+    .update(canonicalJson({ source_path: resolved, before_sha256: before.sha256, after_sha256: after.sha256, patch }))
+    .digest('hex');
+  return {
+    schema_version: SCHEMA_CROSS_PATCH,
+    source_path: resolved,
+    language: before.language,
+    before_sha256: before.sha256,
+    after_sha256: after.sha256,
+    before_semantic_hex: before.semantic_hex,
+    after_semantic_hex: after.semantic_hex,
+    patch,
+    inverse_patch,
+    patch_hash,
+  };
+}
+
+function filesFromArgs(rest, flags) {
+  const values = [];
+  if (flags.files) values.push(...String(flags.files).split(','));
+  if (flags.file) values.push(String(flags.file));
+  values.push(...rest);
+  return values.map((value) => value.trim()).filter(Boolean);
+}
+
+function buildBundlePacket(files) {
+  const entries = files.map((filePath) => {
+    const resolved = path.resolve(filePath);
+    const text = fs.readFileSync(resolved, 'utf8');
+    const packet = packetFromText(text, { language: languageFromPath(resolved) || detectLanguage(text).language });
+    packet.source = resolved;
+    return {
+      path: resolved,
+      language: packet.language,
+      bytes: packet.bytes,
+      sha256: packet.sha256,
+      semantic_hex: packet.semantic_hex,
+      packet,
+    };
+  });
+  const aggregate_hash = crypto
+    .createHash('sha256')
+    .update(canonicalJson(entries.map((entry) => ({ path: entry.path, sha256: entry.sha256 }))))
+    .digest('hex');
+  return {
+    schema_version: SCHEMA_CROSS_BUNDLE,
+    bundle_id: 'cross-' + aggregate_hash.slice(0, 16),
+    created_at: new Date().toISOString(),
+    aggregate_hash,
+    files: entries,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -1498,13 +1610,15 @@ const COMMANDS = {
     const ws = findWorkspaceRoot(process.cwd());
 
     if (!sub || sub === 'help') {
-      console.log('Usage: polly cross <pack|unpack|op|langs|ops> [options]');
+      console.log('Usage: polly cross <pack|unpack|op|patch|bundle|langs|ops> [options]');
       console.log('');
       console.log('Examples:');
       console.log('  polly cross pack --text "def add(x, y): return x + y" --lang python');
       console.log('  polly cross pack --file src/index.ts');
       console.log('  polly cross unpack --hex 64656620');
       console.log('  polly cross op add --json');
+      console.log('  polly cross patch --file src/index.py --text "result = x + y"');
+      console.log('  polly cross bundle --files src/index.py,src/index.js --out bundle.json');
       return;
     }
 
@@ -1608,7 +1722,62 @@ const COMMANDS = {
       return;
     }
 
-    console.error('Unknown cross subcommand: ' + sub + '. Use: pack, unpack, op, langs, ops');
+    if (sub === 'patch') {
+      if (!flags.file || !flags.text) {
+        console.error('Usage: polly cross patch --file <path> --text <new content> [--apply]');
+        process.exit(1);
+      }
+      const patchPacket = buildPatchPacket(flags.file, String(flags.text));
+      const currentText = fs.readFileSync(patchPacket.source_path, 'utf8');
+      const appliedText = applyLinePatch(currentText, patchPacket.patch);
+      const appliedPacket = packetFromText(appliedText, { language: patchPacket.language });
+      const result = Object.assign({}, patchPacket, {
+        verified_apply: appliedPacket.sha256 === patchPacket.after_sha256,
+        applied: Boolean(flags.apply),
+      });
+      if (!result.verified_apply) {
+        console.error('Patch verification failed before write.');
+        process.exit(2);
+      }
+      if (flags.apply) {
+        fs.writeFileSync(patchPacket.source_path, appliedText, 'utf8');
+      }
+      if (ws) {
+        appendAudit(ws, flags.apply ? 'cross.patch.applied' : 'cross.patch', patchPacket.patch_hash.slice(0, 16), {
+          source_path: patchPacket.source_path,
+          before_sha256: patchPacket.before_sha256,
+          after_sha256: patchPacket.after_sha256,
+          applied: Boolean(flags.apply),
+        });
+      }
+      out(result, true);
+      return;
+    }
+
+    if (sub === 'bundle') {
+      const files = filesFromArgs(rest, flags);
+      if (!files.length) {
+        console.error('Usage: polly cross bundle --files <a.py,b.js> [--out bundle.json]');
+        process.exit(1);
+      }
+      const bundle = buildBundlePacket(files);
+      if (flags.out) {
+        const outPath = path.resolve(String(flags.out));
+        fs.writeFileSync(outPath, JSON.stringify(bundle, null, 2) + '\n', 'utf8');
+        bundle.written_to = outPath;
+      }
+      if (ws) {
+        appendAudit(ws, 'cross.bundle', bundle.bundle_id, {
+          aggregate_hash: bundle.aggregate_hash,
+          files: bundle.files.map((entry) => ({ path: entry.path, sha256: entry.sha256 })),
+          written_to: bundle.written_to || null,
+        });
+      }
+      out(bundle, true);
+      return;
+    }
+
+    console.error('Unknown cross subcommand: ' + sub + '. Use: pack, unpack, op, patch, bundle, langs, ops');
     process.exit(1);
   },
 
@@ -1717,6 +1886,8 @@ Commands:
   cross pack               Decompose text/file into UTF-8 hex/binary packet
   cross unpack             Rehydrate text from packet hex
   cross op                 Render bounded ops across supported languages
+  cross patch              Build/apply reversible line patch packet
+  cross bundle             Bundle multiple files into deployable hex packets
   doctor                   Check environment (Node, Ollama, API keys, git)
   tools list               List governed tools (tools.json) + built-in recipes
   tools inspect <name>     Show tool details, parameters, and example
@@ -1761,6 +1932,8 @@ Examples:
   polly audit verify
   polly cross pack --text "def add(x, y): return x + y" --lang python
   polly cross op add --json
+  polly cross patch --file src/index.py --text "result = x + y" --json
+  polly cross bundle --files src/index.py,src/index.js --out bundle.json
   polly runs --json
   polly handoff | pbcopy
 `;
