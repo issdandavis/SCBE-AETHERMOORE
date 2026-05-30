@@ -108,6 +108,12 @@ Usage:
     [--json] [--write <path>]
 
 ─────────────────────────────────────────────────────────────────────────────
+  CREATOR TOOLS — local-first content utility gates
+─────────────────────────────────────────────────────────────────────────────
+  youtube review <file>  Review a YouTube package JSON before upload;
+    [--json]              checks title, description, tags, privacy, and script
+
+─────────────────────────────────────────────────────────────────────────────
   FLOW LOOP — operator workflow (source checkout required for plan/packetize)
 ─────────────────────────────────────────────────────────────────────────────
   flow plan               Decompose a task into governed flow packets;
@@ -3513,6 +3519,7 @@ const KNOWN_COMMANDS = [
   'history',
   'bench',
   'benchmark',
+  'youtube',
   'flow',
   'workspace',
   'agent-bus',
@@ -4372,6 +4379,126 @@ function runBench(args) {
   process.exit(1);
 }
 
+function parseYoutubeTags(raw) {
+  if (Array.isArray(raw)) return raw.map((tag) => String(tag).trim()).filter(Boolean);
+  if (typeof raw === 'string') return raw.split(',').map((tag) => tag.trim()).filter(Boolean);
+  return [];
+}
+
+function loadYoutubePackage(packagePath) {
+  const absolute = path.resolve(process.cwd(), packagePath);
+  const data = JSON.parse(fs.readFileSync(absolute, 'utf8'));
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error('video package must be a JSON object');
+  }
+  return {
+    path: absolute,
+    title: String(data.title || '').trim(),
+    description: String(data.description || '').trim(),
+    tags: parseYoutubeTags(data.tags),
+    script: String(data.script || '').trim(),
+    privacy: String(data.privacy || 'unlisted').trim() || 'unlisted',
+  };
+}
+
+function reviewYoutubePackage(pkg) {
+  const findings = [];
+  let score = 100;
+  const titleLen = pkg.title.length;
+  if (titleLen < 25) {
+    findings.push({ severity: 'warn', field: 'title', message: 'Title is probably too short.' });
+    score -= 10;
+  }
+  if (titleLen > 100) {
+    findings.push({ severity: 'warn', field: 'title', message: 'Title may be truncated by YouTube.' });
+    score -= 10;
+  }
+  if (!pkg.description) {
+    findings.push({ severity: 'fail', field: 'description', message: 'Description is empty.' });
+    score -= 25;
+  } else if (pkg.description.length < 80) {
+    findings.push({ severity: 'warn', field: 'description', message: 'Description is thin.' });
+    score -= 10;
+  }
+  if (pkg.tags.length < 3) {
+    findings.push({ severity: 'warn', field: 'tags', message: 'Use at least three useful tags.' });
+    score -= 8;
+  }
+  if (!['private', 'unlisted', 'public'].includes(pkg.privacy)) {
+    findings.push({ severity: 'fail', field: 'privacy', message: 'Privacy must be private, unlisted, or public.' });
+    score -= 25;
+  }
+  if (pkg.privacy === 'public') {
+    findings.push({ severity: 'warn', field: 'privacy', message: 'Public uploads should require manual approval.' });
+    score -= 5;
+  }
+  if (pkg.script && pkg.script.split(/\s+/).filter(Boolean).length < 40) {
+    findings.push({ severity: 'warn', field: 'script', message: 'Script is very short for a standalone video.' });
+    score -= 8;
+  }
+  return {
+    schema_version: 'scbe_youtube_package_review_v1',
+    source: 'ported_from_aethermoore_youtube_automation',
+    package: {
+      path: pkg.path,
+      title: pkg.title,
+      privacy: pkg.privacy,
+      tag_count: pkg.tags.length,
+      script_words: pkg.script ? pkg.script.split(/\s+/).filter(Boolean).length : 0,
+    },
+    score: Math.max(0, score),
+    decision: findings.some((finding) => finding.severity === 'fail') ? 'FAIL' : 'PASS',
+    findings,
+  };
+}
+
+function printYoutubeHelp() {
+  process.stdout.write(
+    [
+      'Usage:',
+      '  scbe youtube review <package.json> [--json]',
+      '',
+      'Package fields: title, description, tags, privacy, script.',
+      'This is a local readiness gate; it does not upload to YouTube.',
+      '',
+    ].join('\n')
+  );
+}
+
+function runYoutube(args) {
+  const sub = args[0] || 'help';
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    printYoutubeHelp();
+    process.exit(0);
+  }
+  if (sub !== 'review') {
+    process.stderr.write(`scbe youtube: unknown subcommand '${sub}'. Run 'scbe youtube help'.\n`);
+    process.exit(2);
+  }
+  const packagePath = args.find((arg, index) => index > 0 && !arg.startsWith('--'));
+  if (!packagePath) {
+    process.stderr.write('Usage: scbe youtube review <package.json> [--json]\n');
+    process.exit(2);
+  }
+  let report;
+  try {
+    report = reviewYoutubePackage(loadYoutubePackage(packagePath));
+  } catch (err) {
+    process.stderr.write(`scbe youtube review: ${err.message}\n`);
+    process.exit(2);
+  }
+  if (args.includes('--json')) {
+    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  } else {
+    process.stdout.write(`YouTube package review: ${report.decision} (${report.score}/100)\n`);
+    for (const finding of report.findings) {
+      process.stdout.write(`- ${finding.severity.toUpperCase()} ${finding.field}: ${finding.message}\n`);
+    }
+    if (report.findings.length === 0) process.stdout.write('- no findings\n');
+  }
+  process.exit(report.decision === 'FAIL' ? 1 : 0);
+}
+
 const argv = process.argv.slice(2);
 if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h' || argv[0] === 'help') {
   process.stdout.write(CLI_HELP);
@@ -4427,6 +4554,10 @@ if (argv[0] === 'liboqs') {
 
 if (argv[0] === 'bench' || argv[0] === 'benchmark') {
   runBench(argv.slice(1));
+}
+
+if (argv[0] === 'youtube') {
+  runYoutube(argv.slice(1));
 }
 
 if (argv[0] === 'history') {
