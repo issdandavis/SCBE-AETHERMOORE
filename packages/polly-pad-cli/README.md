@@ -51,6 +51,8 @@ polly cross pack --file src/index.ts
 polly cross pack --text "const result = x + y;" --lang javascript
 polly cross unpack --hex 636f6e737420726573756c74203d2078202b20793b
 polly cross op add --json
+polly cross exec add --x 5 --y 3 --lang javascript --json
+polly cross bench pathfinding --json
 polly cross patch --file src/index.py --text "result = x + y" --json
 polly cross bundle --files src/index.py,src/index.js --out bundle.json
 ```
@@ -58,6 +60,8 @@ polly cross bundle --files src/index.py,src/index.js --out bundle.json
 `cross pack` is lossless at the byte layer. `cross op` is intentionally bounded to known operation templates; it is not advertised as arbitrary AST translation.
 
 `cross patch` creates a reversible line patch packet with before/after SHA-256 hashes and can apply the patch only after verifying the reconstructed target. `cross bundle` packages multiple source files as per-file hex packets plus an aggregate deployment hash.
+
+`cross exec` runs bounded operation templates through available runtimes and compares outputs. `cross bench pathfinding` scores Dijkstra, A*, and a semantic/geometric compass A* over the same multi-field map so route changes can be evaluated by behavior.
 
 ## Model Routing
 

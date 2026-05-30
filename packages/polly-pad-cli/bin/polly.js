@@ -291,6 +291,217 @@ const OP_TEMPLATES = {
   },
 };
 
+// ── Cross-language execution ──────────────────────────────────────────────────
+
+const CROSS_EXEC_RUNTIMES = {
+  python: {
+    command: 'python3',
+    wrap: function (code, x, y) {
+      return 'x=' + JSON.stringify(x) + '; y=' + JSON.stringify(y) + '; ' + code + '; print(result)';
+    },
+    args: function (code, x, y) {
+      return ['-c', CROSS_EXEC_RUNTIMES.python.wrap(code, x, y)];
+    },
+  },
+  javascript: {
+    command: 'node',
+    wrap: function (code, x, y) {
+      return 'const x=' + JSON.stringify(x) + '; const y=' + JSON.stringify(y) + '; ' + code + '; console.log(result);';
+    },
+    args: function (code, x, y) {
+      return ['-e', CROSS_EXEC_RUNTIMES.javascript.wrap(code, x, y)];
+    },
+  },
+  typescript: {
+    command: 'node',
+    wrap: function (code, x, y) {
+      // strip TS type annotation: `const result: number = x + y;` → `const result = x + y;`
+      const stripped = code.replace(/:\s*\w+\s*=/g, ' =');
+      return 'const x=' + JSON.stringify(x) + '; const y=' + JSON.stringify(y) + '; ' + stripped + '; console.log(result);';
+    },
+    args: function (code, x, y) {
+      return ['-e', CROSS_EXEC_RUNTIMES.typescript.wrap(code, x, y)];
+    },
+  },
+  // rust/go/shell require compiler or shell-dialect adapters. They stay packetized in this tier.
+};
+
+function execCrossOp(op, lang, x, y) {
+  const template = OP_TEMPLATES[op] && OP_TEMPLATES[op][lang];
+  if (!template) return { lang, ok: false, reason: 'no template for ' + lang };
+
+  const runtime = CROSS_EXEC_RUNTIMES[lang];
+  if (!runtime) {
+    // rust/go need a real compiler — report as skipped (not failed)
+    return { lang, ok: null, reason: 'compiler-required, skipped in exec tier', skipped: true };
+  }
+
+  const execArgs = runtime.args(template, x, y);
+  const spawnResult = spawnSync(runtime.command, execArgs, {
+    encoding: 'utf8',
+    timeout: 10000,
+    env: process.env,
+  });
+
+  if (spawnResult.status !== 0 || spawnResult.error) {
+    return {
+      lang,
+      ok: false,
+      exit_code: spawnResult.status,
+      reason: ((spawnResult.stderr || (spawnResult.error && spawnResult.error.message) || 'non-zero exit').trim()).slice(0, 200),
+    };
+  }
+
+  const output = (spawnResult.stdout || '').trim();
+  return { lang, ok: true, output, exit_code: 0 };
+}
+
+function checkConsistency(results) {
+  // Only compare results from langs that actually ran (ok === true)
+  const ran = results.filter(function (r) {
+    return r.ok === true;
+  });
+  if (ran.length < 2) return { consensus: ran.length === 1 ? 'single' : 'none', match: null };
+  const outputs = [...new Set(ran.map(function (r) { return r.output; }))];
+  return { consensus: outputs.length === 1 ? 'full' : 'mismatch', match: outputs.length === 1, outputs };
+}
+
+// ---------------------------------------------------------------------------
+// Pathfinding benchmark: Dijkstra, A*, and semantic/geometric compass A*
+// ---------------------------------------------------------------------------
+
+const ROUTE_BENCH_GRID = [
+  'S..#...',
+  '.#.#.#.',
+  '.#...#.',
+  '..##...',
+  '.M..H#.',
+  '.#S....',
+  '...#..G',
+];
+
+const ROUTE_BENCH_FIELDS = {
+  '.': { terrain: 1, security: 0, altitude: 0, semantic: 'clear' },
+  S: { terrain: 1, security: 0, altitude: 0, semantic: 'start' },
+  G: { terrain: 1, security: 0, altitude: 0, semantic: 'goal' },
+  M: { terrain: 4, security: 0, altitude: 0, semantic: 'mud' },
+  H: { terrain: 2, security: 1, altitude: 2, semantic: 'height-change' },
+};
+
+function routeBenchCell(grid, point) {
+  return grid[point.y][point.x];
+}
+
+function routeBenchKey(point) {
+  return point.x + ',' + point.y;
+}
+
+function routeBenchPoint(key) {
+  const parts = key.split(',').map(Number);
+  return { x: parts[0], y: parts[1] };
+}
+
+function routeBenchFind(grid, token) {
+  for (let y = 0; y < grid.length; y++) {
+    const x = grid[y].indexOf(token);
+    if (x !== -1) return { x, y };
+  }
+  return null;
+}
+
+function routeBenchNeighbors(grid, point) {
+  const moves = [
+    { x: 1, y: 0 },
+    { x: -1, y: 0 },
+    { x: 0, y: 1 },
+    { x: 0, y: -1 },
+  ];
+  return moves
+    .map((move) => ({ x: point.x + move.x, y: point.y + move.y }))
+    .filter((next) => next.y >= 0 && next.y < grid.length && next.x >= 0 && next.x < grid[0].length)
+    .filter((next) => routeBenchCell(grid, next) !== '#');
+}
+
+function routeBenchStepCost(grid, point, mode) {
+  const token = routeBenchCell(grid, point);
+  const field = ROUTE_BENCH_FIELDS[token] || ROUTE_BENCH_FIELDS['.'];
+  const securityWeight = mode === 'compass' ? 4 : 2;
+  const altitudeWeight = mode === 'compass' ? 2 : 1;
+  return field.terrain + field.security * securityWeight + field.altitude * altitudeWeight;
+}
+
+function routeBenchHeuristic(point, goal, mode) {
+  const manhattan = Math.abs(point.x - goal.x) + Math.abs(point.y - goal.y);
+  if (mode === 'dijkstra') return 0;
+  if (mode === 'astar') return manhattan;
+  const goalVector = goal.x - point.x + (goal.y - point.y);
+  const directionalGravity = goalVector >= 0 ? 0 : 0.25;
+  return manhattan + directionalGravity;
+}
+
+function routeBenchSearch(mode) {
+  const grid = ROUTE_BENCH_GRID;
+  const start = routeBenchFind(grid, 'S');
+  const goal = routeBenchFind(grid, 'G');
+  const startKey = routeBenchKey(start);
+  const goalKey = routeBenchKey(goal);
+  const frontier = [{ key: startKey, priority: 0 }];
+  const cameFrom = new Map([[startKey, null]]);
+  const costSoFar = new Map([[startKey, 0]]);
+  let expansions = 0;
+
+  while (frontier.length) {
+    frontier.sort((a, b) => a.priority - b.priority || a.key.localeCompare(b.key));
+    const current = frontier.shift();
+    expansions++;
+    if (current.key === goalKey) break;
+    const currentPoint = routeBenchPoint(current.key);
+    for (const next of routeBenchNeighbors(grid, currentPoint)) {
+      const nextKey = routeBenchKey(next);
+      const nextCost = costSoFar.get(current.key) + routeBenchStepCost(grid, next, mode);
+      if (!costSoFar.has(nextKey) || nextCost < costSoFar.get(nextKey)) {
+        costSoFar.set(nextKey, nextCost);
+        const priority = nextCost + routeBenchHeuristic(next, goal, mode);
+        frontier.push({ key: nextKey, priority });
+        cameFrom.set(nextKey, current.key);
+      }
+    }
+  }
+
+  const path = [];
+  let cursor = goalKey;
+  while (cursor) {
+    path.unshift(routeBenchPoint(cursor));
+    cursor = cameFrom.get(cursor);
+  }
+  return {
+    mode,
+    ok: path.length > 1 && routeBenchKey(path[0]) === startKey && routeBenchKey(path[path.length - 1]) === goalKey,
+    cost: costSoFar.get(goalKey),
+    expansions,
+    path,
+  };
+}
+
+function routeBenchReport() {
+  const algorithms = ['dijkstra', 'astar', 'compass'].map(routeBenchSearch);
+  return {
+    schema_version: 'polly_route_bench_v1',
+    benchmark: 'multi_field_pathfinding',
+    grid: ROUTE_BENCH_GRID,
+    start: routeBenchFind(ROUTE_BENCH_GRID, 'S'),
+    goal: routeBenchFind(ROUTE_BENCH_GRID, 'G'),
+    fields: {
+      geometric: ['x', 'y'],
+      semantic: ['clear', 'mud', 'height-change', 'start', 'goal'],
+      security: 'per-cell security penalty',
+      altitude: 'height-change penalty for air/depth routing analogs',
+      hierarchy: ['dijkstra-baseline', 'astar-goal-heuristic', 'compass-field-biased-astar'],
+    },
+    algorithms,
+  };
+}
+
 function normalizeLanguage(raw) {
   if (!raw) return null;
   return LANGUAGE_ALIASES[String(raw).toLowerCase()] || null;
@@ -1610,7 +1821,7 @@ const COMMANDS = {
     const ws = findWorkspaceRoot(process.cwd());
 
     if (!sub || sub === 'help') {
-      console.log('Usage: polly cross <pack|unpack|op|patch|bundle|langs|ops> [options]');
+      console.log('Usage: polly cross <pack|unpack|op|exec|bench|patch|bundle|langs|ops> [options]');
       console.log('');
       console.log('Examples:');
       console.log('  polly cross pack --text "def add(x, y): return x + y" --lang python');
@@ -1619,6 +1830,9 @@ const COMMANDS = {
       console.log('  polly cross op add --json');
       console.log('  polly cross patch --file src/index.py --text "result = x + y"');
       console.log('  polly cross bundle --files src/index.py,src/index.js --out bundle.json');
+      console.log('  polly cross exec add --x 5 --y 3 --lang javascript --json');
+      console.log('  polly cross exec mul --x 4 --y 7 --langs all --json');
+      console.log('  polly cross bench pathfinding --json');
       return;
     }
 
@@ -1722,6 +1936,95 @@ const COMMANDS = {
       return;
     }
 
+    if (sub === 'exec') {
+      const op = rest[0];
+      if (!op || !OP_TEMPLATES[op]) {
+        console.error('Usage: polly cross exec <' + Object.keys(OP_TEMPLATES).join('|') + '> --x <num> --y <num> [--lang <lang>] [--langs all] [--dry-run] [--json]');
+        process.exit(1);
+      }
+
+      const rawX = flags.x !== undefined ? Number(flags.x) : undefined;
+      const rawY = flags.y !== undefined ? Number(flags.y) : undefined;
+      if (rawX === undefined || rawY === undefined || isNaN(rawX) || isNaN(rawY)) {
+        console.error('cross exec requires --x <number> and --y <number>');
+        process.exit(1);
+      }
+
+      const x = rawX;
+      const y = rawY;
+      const allLangs = Object.keys(OP_TEMPLATES[op]);
+      let targetLangs;
+      if (flags.langs === 'all' || flags['langs-all']) {
+        targetLangs = allLangs;
+      } else if (flags.lang || flags.language) {
+        const norm = normalizeLanguage(flags.lang || flags.language);
+        if (!norm || !OP_TEMPLATES[op][norm]) {
+          console.error('Unsupported language: ' + (flags.lang || flags.language) + '. Supported: ' + allLangs.join(', '));
+          process.exit(1);
+        }
+        targetLangs = [norm];
+      } else {
+        targetLangs = allLangs;
+      }
+
+      if (flags['dry-run'] || flags.dryRun) {
+        const dryResult = {
+          dry_run: true,
+          op,
+          x,
+          y,
+          langs: targetLangs,
+          templates: Object.fromEntries(targetLangs.map(function (l) { return [l, OP_TEMPLATES[op][l]]; })),
+        };
+        out(dryResult, true);
+        return;
+      }
+
+      const results = targetLangs.map(function (lang) { return execCrossOp(op, lang, x, y); });
+      const consistency = checkConsistency(results);
+      const payload = {
+        schema_version: 'polly_cross_exec_v1',
+        op,
+        x,
+        y,
+        results,
+        consistency,
+      };
+
+      if (ws) {
+        appendAudit(ws, 'cross.exec', op, {
+          x,
+          y,
+          langs: targetLangs,
+          consensus: consistency.consensus,
+        });
+      }
+
+      out(payload, true);
+      return;
+    }
+
+    if (sub === 'bench') {
+      const bench = rest[0] || 'pathfinding';
+      if (bench !== 'pathfinding' && bench !== 'routes') {
+        console.error('Usage: polly cross bench <pathfinding|routes> [--json]');
+        process.exit(1);
+      }
+      const report = routeBenchReport();
+      if (ws) {
+        appendAudit(ws, 'cross.bench.pathfinding', report.benchmark, {
+          algorithms: report.algorithms.map((entry) => ({
+            mode: entry.mode,
+            ok: entry.ok,
+            cost: entry.cost,
+            expansions: entry.expansions,
+          })),
+        });
+      }
+      out(report, true);
+      return;
+    }
+
     if (sub === 'patch') {
       if (!flags.file || !flags.text) {
         console.error('Usage: polly cross patch --file <path> --text <new content> [--apply]');
@@ -1777,7 +2080,7 @@ const COMMANDS = {
       return;
     }
 
-    console.error('Unknown cross subcommand: ' + sub + '. Use: pack, unpack, op, patch, bundle, langs, ops');
+    console.error('Unknown cross subcommand: ' + sub + '. Use: pack, unpack, op, exec, bench, patch, bundle, langs, ops');
     process.exit(1);
   },
 
@@ -1886,6 +2189,8 @@ Commands:
   cross pack               Decompose text/file into UTF-8 hex/binary packet
   cross unpack             Rehydrate text from packet hex
   cross op                 Render bounded ops across supported languages
+  cross exec               Execute bounded op templates through real runtimes and compare outputs
+  cross bench              Run route benchmarks over Dijkstra, A*, and compass A*
   cross patch              Build/apply reversible line patch packet
   cross bundle             Bundle multiple files into deployable hex packets
   doctor                   Check environment (Node, Ollama, API keys, git)
@@ -1932,6 +2237,8 @@ Examples:
   polly audit verify
   polly cross pack --text "def add(x, y): return x + y" --lang python
   polly cross op add --json
+  polly cross exec add --x 5 --y 3 --lang javascript --json
+  polly cross bench pathfinding --json
   polly cross patch --file src/index.py --text "result = x + y" --json
   polly cross bundle --files src/index.py,src/index.js --out bundle.json
   polly runs --json
