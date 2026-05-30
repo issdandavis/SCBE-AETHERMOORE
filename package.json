@@ -164,6 +164,8 @@
     "benchmark:coding-agents:geoseal-receipts": "python scripts/eval/geoseal_functional_receipts.py",
     "benchmark:coding-agents:compare": "python scripts/eval/compare_functional_benchmark_reports.py",
     "benchmark:coding-agents:gate": "python scripts/eval/gate_functional_benchmark.py",
+    "benchmark:swe-local": "python scripts/benchmark/swe_local_benchmark.py",
+    "benchmark:swe-verified:readiness": "python scripts/benchmark/swe_verified_readiness.py",
     "benchmark:cli": "python scripts/benchmark/cli_competitive_benchmark.py",
     "benchmark:mobile-fleet-llm": "python scripts/benchmark/mobile_fleet_llm_benchmark.py",
     "benchmark:kaggle:roundtrip:build": "python scripts/benchmarks/scbe_bijective_round_trip/build_kaggle_assets.py",
