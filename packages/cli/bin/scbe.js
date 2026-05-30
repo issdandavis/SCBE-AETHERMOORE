@@ -3804,6 +3804,13 @@ const BENCH_TARGETS = {
     description: 'AI provider health matrix (local > free > paid free-first policy)',
     claimBoundary: 'local provider reachability check; not an API reliability guarantee',
   },
+  longform: {
+    script: 'scripts/benchmark/longform_cli_benchmark.py',
+    latestJson: 'artifacts/benchmarks/longform_cli_benchmark_latest.json',
+    latestMarkdown: 'artifacts/benchmarks/longform_cli_benchmark_latest.md',
+    description: 'Longform Bridge durable CLI workflow with squad dispatch receipts',
+    claimBoundary: 'local durable-workflow CLI fixture; not a guarantee of autonomous task completion',
+  },
 };
 
 // Patterns whose presence in a claim implies overclaiming.
@@ -4826,19 +4833,22 @@ if (argv[0] === 'selftest') {
 }
 
 if (argv[0] === 'do') {
-  runLongformDo(argv.slice(1));
+  runPythonScript('src/longform/longform_cli.py', ['do', ...argv.slice(1)]);
 }
 
 if (argv[0] === 'work') {
-  runLongformWork(argv.slice(1));
+  runPythonScript('src/longform/longform_cli.py', ['work', ...argv.slice(1)]);
 }
 
 if (argv[0] === 'agent') {
-  runLongformAgent(argv.slice(1));
+  const longformAgentCommands = new Set(['spawn', 'list']);
+  if (longformAgentCommands.has(argv[1] || '')) {
+    runPythonScript('src/longform/longform_cli.py', ['agent', ...argv.slice(1)]);
+  }
 }
 
 if (argv[0] === 'land') {
-  runLongformLand(argv.slice(1));
+  runPythonScript('src/longform/longform_cli.py', ['land', ...argv.slice(1)]);
 }
 
 if (argv[0] === 'status') {

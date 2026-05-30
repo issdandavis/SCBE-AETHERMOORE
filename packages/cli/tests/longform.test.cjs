@@ -54,19 +54,18 @@ test('scbe do creates a durable squad landing with a valid hash chain', () => {
   );
   const body = parseJson(result);
 
-  assert.equal(body.schema_version, 'scbe.longform.do.v1');
-  assert.equal(body.status, 'landed');
-  assert.equal(body.squad, true);
-  assert.equal(body.spawned.length, 4);
-  assert.equal(body.ledger.ok, true);
-  assert.equal(body.ledger.count, 6);
+  assert.equal(body.kind, 'do_complete');
+  assert.equal(body.objective, 'build the browser benchmark adapter and prove it');
+  assert.equal(body.loops_run, 6);
   assert.match(body.landing_hash, /^[a-f0-9]{64}$/);
-  assert.ok(fs.existsSync(body.ledger_path));
+  assert.ok(fs.existsSync(path.join(cwd, '.scbe-longform', 'ledger.jsonl')));
 
   const status = parseJson(runCli(['work', 'status', '--workflow', body.workflow_id, '--json'], { cwd }));
-  assert.equal(status.ledger.ok, true);
-  assert.equal(status.ledger.count, 6);
-  assert.equal(status.ledger.head_hash, body.landing_hash);
+  assert.equal(status.kind, 'work_status');
+  assert.equal(status.chain_valid, true);
+  assert.equal(status.event_count, 32);
+  assert.ok(status.last_landing);
+  assert.equal(status.last_landing.hash, body.landing_hash);
 });
 
 test('work init, agent spawn, and land create share one workflow ledger', () => {
@@ -76,8 +75,9 @@ test('work init, agent spawn, and land create share one workflow ledger', () => 
       cwd,
     })
   );
-  assert.equal(init.workflow_id, 'wf-cross');
-  assert.match(init.event_hash, /^[a-f0-9]{64}$/);
+  assert.equal(init.kind, 'work_init');
+  assert.equal(init.mission, 'cross language compile lane');
+  assert.equal(init.status, 'initialized');
 
   const agent = parseJson(
     runCli(
@@ -120,9 +120,10 @@ test('work init, agent spawn, and land create share one workflow ledger', () => 
   assert.match(landing.landing_hash, /^[a-f0-9]{64}$/);
 
   const status = parseJson(runCli(['work', 'status', '--workflow', 'wf-cross', '--json'], { cwd }));
-  assert.equal(status.ledger.ok, true);
-  assert.equal(status.ledger.count, 3);
-  assert.equal(status.ledger.head_hash, landing.landing_hash);
+  assert.equal(status.chain_valid, true);
+  assert.equal(status.event_count, 3);
+  assert.ok(status.last_landing);
+  assert.equal(status.last_landing.hash, landing.landing_hash);
 });
 
 test('work status reports empty state without creating files', () => {
@@ -130,6 +131,6 @@ test('work status reports empty state without creating files', () => {
   const status = parseJson(runCli(['work', 'status', '--json'], { cwd }));
 
   assert.equal(status.status, 'empty');
-  assert.equal(status.workflow_id, null);
-  assert.equal(fs.existsSync(path.join(cwd, '.scbe', 'longform')), false);
+  assert.equal(status.event_count, 0);
+  assert.equal(fs.existsSync(path.join(cwd, '.scbe-longform')), false);
 });
