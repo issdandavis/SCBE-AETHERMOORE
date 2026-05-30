@@ -374,7 +374,114 @@ test('polly cross op can target one language', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test 17: polly cross patch builds and applies a verified line patch
+// Test 17: polly cross exec dry-run emits templates without executing
+// ---------------------------------------------------------------------------
+test('polly cross exec dry-run emits templates without executing', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossExecDryTest']);
+    const result = run(dir, ['cross', 'exec', 'add', '--x', '5', '--y', '3', '--dry-run', '--json']);
+    assert.strictEqual(result.status, 0, 'cross exec --dry-run should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.dry_run, true);
+    assert.strictEqual(payload.op, 'add');
+    assert.strictEqual(payload.x, 5);
+    assert.strictEqual(payload.y, 3);
+    assert.ok(Array.isArray(payload.langs), 'langs should be an array');
+    assert.ok(payload.langs.includes('javascript'), 'langs should include javascript');
+    assert.ok(typeof payload.templates === 'object', 'templates should be present');
+    assert.ok(payload.templates.python, 'python template should be present');
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 18: polly cross exec runs javascript and returns output 17
+// ---------------------------------------------------------------------------
+test('polly cross exec runs javascript and returns output 17', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossExecJSTest']);
+    const result = run(dir, ['cross', 'exec', 'add', '--x', '10', '--y', '7', '--lang', 'javascript', '--json']);
+    assert.strictEqual(result.status, 0, 'cross exec javascript should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.schema_version, 'polly_cross_exec_v1');
+    assert.strictEqual(payload.op, 'add');
+    assert.strictEqual(payload.x, 10);
+    assert.strictEqual(payload.y, 7);
+    assert.ok(Array.isArray(payload.results), 'results should be an array');
+    const jsResult = payload.results.find((r) => r.lang === 'javascript');
+    assert.ok(jsResult, 'javascript result should exist');
+    assert.strictEqual(jsResult.ok, true, 'javascript should succeed');
+    assert.strictEqual(jsResult.output, '17', 'javascript add(10,7) should output 17');
+    assert.ok(payload.consistency, 'consistency should be present');
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 19: polly cross exec python and javascript agree on xor when python exists
+// ---------------------------------------------------------------------------
+test('polly cross exec python and javascript agree on xor when python exists', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossExecConsistencyTest']);
+    const result = run(dir, ['cross', 'exec', 'xor', '--x', '12', '--y', '10', '--langs', 'all', '--json']);
+    assert.strictEqual(result.status, 0, 'cross exec xor should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.schema_version, 'polly_cross_exec_v1');
+    assert.strictEqual(payload.op, 'xor');
+    assert.ok(Array.isArray(payload.results));
+
+    const jsResult = payload.results.find((r) => r.lang === 'javascript');
+    assert.ok(jsResult && jsResult.ok, 'javascript xor should succeed');
+    assert.strictEqual(jsResult.output, '6', 'javascript xor(12,10) should be 6');
+
+    const pyResult = payload.results.find((r) => r.lang === 'python');
+    if (pyResult && pyResult.ok) {
+      assert.strictEqual(pyResult.output, '6', 'python xor(12,10) should be 6');
+      assert.strictEqual(payload.consistency.consensus, 'full', 'python and javascript should agree on xor');
+    }
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 20: polly cross bench pathfinding compares Dijkstra, A*, and compass
+// ---------------------------------------------------------------------------
+test('polly cross bench pathfinding compares Dijkstra, A*, and compass', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossBenchPathTest']);
+    const result = run(dir, ['cross', 'bench', 'pathfinding', '--json']);
+    assert.strictEqual(result.status, 0, 'cross bench pathfinding should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.schema_version, 'polly_route_bench_v1');
+    assert.strictEqual(payload.benchmark, 'multi_field_pathfinding');
+    assert.deepStrictEqual(payload.algorithms.map((entry) => entry.mode), ['dijkstra', 'astar', 'compass']);
+    assert.ok(payload.algorithms.every((entry) => entry.ok), 'all algorithms should find a route');
+
+    const dijkstra = payload.algorithms.find((entry) => entry.mode === 'dijkstra');
+    const astar = payload.algorithms.find((entry) => entry.mode === 'astar');
+    const compass = payload.algorithms.find((entry) => entry.mode === 'compass');
+    assert.ok(dijkstra.expansions >= astar.expansions, 'A* should expand no more nodes than Dijkstra');
+    assert.ok(compass.expansions <= dijkstra.expansions, 'compass route should not expand more than Dijkstra');
+    assert.ok(payload.fields.geometric.includes('x'));
+    assert.ok(payload.fields.semantic.includes('height-change'));
+
+    const auditResult = run(dir, ['audit', 'list', '--json']);
+    const events = JSON.parse(auditResult.stdout);
+    assert.ok(events.some((event) => event.action === 'cross.bench.pathfinding'));
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 21: polly cross patch builds and applies a verified line patch
 // ---------------------------------------------------------------------------
 test('polly cross patch builds and applies a verified line patch', () => {
   const dir = mktemp();
@@ -401,7 +508,7 @@ test('polly cross patch builds and applies a verified line patch', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test 18: polly cross bundle packages multiple language files
+// Test 22: polly cross bundle packages multiple language files
 // ---------------------------------------------------------------------------
 test('polly cross bundle packages multiple language files', () => {
   const dir = mktemp();
