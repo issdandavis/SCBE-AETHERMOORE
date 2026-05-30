@@ -100,10 +100,13 @@ Usage:
     [--json]
     [--open-report]
   bench list             List registered evidence lanes
+  bench status           Compact readiness/status view
+    [--json]
   bench latest [lane]    Show latest artifact summary
     [--json]
   bench prove [lane]     Emit claim-safe proof packet
-    [--json]
+    [--json] [--write <path>]
+
 ─────────────────────────────────────────────────────────────────────────────
   FLOW LOOP — operator workflow (source checkout required for plan/packetize)
 ─────────────────────────────────────────────────────────────────────────────
@@ -1539,13 +1542,29 @@ function formatPlanSummary(planResult) {
 
 // ─── Status bar ───────────────────────────────────────────────────────────────
 
-function printShellStatusBar(cfg) {
+function printShellStatusBar(cfg, squadMode) {
   if (!process.stdout.isTTY) return;
   const git = gitPosture(repoRoot());
-  const model = `${cfg.provider || 'ollama'}:${cfg.model || 'llama3.2'}`;
   const branch = git.branch !== 'unknown' ? `${git.branch}${git.dirty ? '*' : ''}` : '';
-  const parts = ['SCBE', model, branch ? `git:${branch}` : ''].filter(Boolean).join(' │ ');
-  process.stdout.write(ansi('dim', `  ${parts}\n`));
+
+  if (squadMode) {
+    // Show all three slots with reachability
+    const slots = [
+      { name: 'ollama',    label: 'local/free',    reach: true },
+      { name: 'cerebras',  label: 'fast-ops',       reach: unitReachable('cerebras') },
+      { name: 'groq',      label: 'policy/safety',  reach: unitReachable('groq') },
+    ];
+    const slotStr = slots.map((s) => {
+      const mark = s.reach ? ansi('green', '●') : ansi('red', '○');
+      return `${mark} ${s.name}(${s.label})`;
+    }).join('  ');
+    const parts = ['SCBE squad', slotStr, branch ? `git:${branch}` : ''].filter(Boolean).join(' │ ');
+    process.stdout.write(ansi('dim', `  ${parts}\n`));
+  } else {
+    const model = `${cfg.provider || 'ollama'}:${cfg.model || 'llama3.2'}`;
+    const parts = ['SCBE', model, branch ? `git:${branch}` : ''].filter(Boolean).join(' │ ');
+    process.stdout.write(ansi('dim', `  ${parts}\n`));
+  }
 }
 
 // ─── Interactive shell ────────────────────────────────────────────────────────
@@ -2123,12 +2142,21 @@ function runInteractiveShell(flags = {}) {
   });
 
   process.stdout.write('\n');
-  printShellStatusBar(cfg);
-  process.stdout.write(
-    ansi('bold', 'SCBE governed shell') +
-      ansi('gray', ' — type a command, plain English, or !powershell\n') +
-      ansi('gray', '  :help  :config  :search <query>  :clear  :exit\n\n')
-  );
+  printShellStatusBar(cfg, flags.squad);
+  if (flags.squad) {
+    process.stdout.write(
+      ansi('bold', 'SCBE squad shell') +
+        ansi('gray', ' — plain English routes to the right slot automatically\n') +
+        ansi('gray', '  ollama=local/free  cerebras=fast-ops  groq=policy/safety\n') +
+        ansi('gray', '  :help  :config  :squad  :clear  :exit\n\n')
+    );
+  } else {
+    process.stdout.write(
+      ansi('bold', 'SCBE governed shell') +
+        ansi('gray', ' — type a command, plain English, or !powershell\n') +
+        ansi('gray', '  :help  :config  :search <query>  :clear  :exit\n\n')
+    );
+  }
   rl.prompt();
 
   rl.on('line', (rawLine) => {
@@ -2171,7 +2199,7 @@ function runInteractiveShell(flags = {}) {
         printHistory(Number(metaArgs[0]) || 20);
       } else if (meta === 'clear') {
         process.stdout.write('\x1b[2J\x1b[0f');
-        printShellStatusBar(cfg);
+        printShellStatusBar(cfg, flags.squad);
       } else if (meta === 'config') {
         if (metaArgs[0] === 'set' && metaArgs[1]) {
           const key = metaArgs[1];
@@ -2269,9 +2297,13 @@ function runInteractiveShell(flags = {}) {
     // ── Natural language intent → LLM → GeoSeal → approve/execute ────────
     if (flags.squad) {
       const unit = detectSquadUnit(line);
-      cfg = { ...unitToCfg(unit), system_prompt: cfg.system_prompt };
+      const slotCfg = unitToCfg(unit);
+      cfg = { ...slotCfg, system_prompt: slotCfg.system_prompt || cfg.system_prompt };
+      const reason = _SQUAD_REASON[unit] || unit;
+      process.stdout.write(ansi('dim', `  [${unit} · ${reason}] ⟳ ${cfg.provider}:${cfg.model}…\n`));
+    } else {
+      process.stdout.write(ansi('dim', `  ⟳ ${cfg.provider}:${cfg.model}…\n`));
     }
-    process.stdout.write(ansi('dim', `  ⟳ ${cfg.provider}:${cfg.model}…\n`));
     rl.pause();
     process.stdout.write(ansi('cyan', '  '));
 
@@ -3159,6 +3191,20 @@ function unitToCfg(unitName) {
         fireworks_api_key: env.FIREWORKS_API_KEY || '',
         timeout_ms: 30000,
       };
+    case 'ollama':
+      return {
+        ...base,
+        provider: 'ollama',
+        model: env.OLLAMA_MODEL || base.model || 'llama3.2',
+        url: env.OLLAMA_URL || base.url || 'http://localhost:11434',
+        timeout_ms: 20000,
+        system_prompt:
+          'You are a PowerShell system operations expert running on Windows. ' +
+          'When the user asks about files, disks, processes, network, registry, or installed packages, ' +
+          'output a single correct PowerShell command wrapped in <cmd>...</cmd> tags. ' +
+          'Use built-in PS cmdlets where possible (Get-ChildItem, Get-Process, Test-Path, etc.). ' +
+          'No explanations unless asked. Free to run — this slot has zero API cost.',
+      };
     case 'offline':
       return { ...base, provider: 'offline', model: 'offline' };
     default:
@@ -3166,14 +3212,37 @@ function unitToCfg(unitName) {
   }
 }
 
+// Slot routing reasons — shown in footer so the user can see WHY a slot fired.
+const _SQUAD_REASON = {
+  groq:     'policy/safety',
+  cerebras: 'fast ops',
+  ollama:   'local/free',
+  fireworks:'general',
+};
+
 function detectSquadUnit(task) {
   const lower = String(task || '').toLowerCase();
-  if (/\b(safe|security|auth|credential|token|policy|govern|allow|deny|block|risk|compliance|permission)\b/.test(lower)) {
+  // Policy/safety → groq (paid but explicit)
+  if (/\b(safe|security|auth|credential|token|policy|govern|allow|deny|block|risk|compliance|permission|secret|key|cert)\b/.test(lower)) {
     return 'groq';
   }
-  if (/\b(run|exec|test|build|deploy|next.?step|quick|triage|code|fix|bug|error|fail|command)\b/.test(lower)) {
+  // Code/architecture queries → cerebras even if they mention "file" or "locate"
+  if (/\b(codebase|source.?code|module|function|class|interface|import|export|wire|router|runtime|pipeline|kernel|repo|git|commit|branch|pr|pull.?request)\b/.test(lower)) {
     return 'cerebras';
   }
+  // System-level movements → ollama (free, local, no API cost)
+  if (/\b(files?|folders?|dir(ectory|ectories)?|disk|drive|space|free.?space|ls|list|find|copy|move|delet|remov|mkdir|rename|path|exist)\b/.test(lower) ||
+      /\b(process|proc|pid|kill|start|stop|restart|service|task.?manager|cpu|memory|ram|usage|monitor|perf)\b/.test(lower) ||
+      /\b(network|netstat|ping|ip.?config|dns|port|socket|interface|adapter|firewall|route)\b/.test(lower) ||
+      /\b(registry|regedit|hklm|hkcu|env.?var|environment|path.?var|system.?var)\b/.test(lower) ||
+      /\b(install|uninstall|package|chocolatey|winget|scoop|upgrade|update|module)\b/.test(lower)) {
+    return 'ollama';
+  }
+  // Fast ops / code decisions → cerebras (~920ms)
+  if (/\b(run|exec|test|build|deploy|next.?step|quick|triage|code|fix|bug|error|fail|command|script|compile|lint|format)\b/.test(lower)) {
+    return 'cerebras';
+  }
+  // Default: cerebras (fast, good enough for triage)
   return 'cerebras';
 }
 
@@ -4025,7 +4094,6 @@ function runSelftest() {
   process.exit(payload.ok ? 0 : 1);
 }
 
-
 const BENCH_TARGETS = {
   'hard-agentic': {
     script: 'scripts/benchmark/hard_agentic_benchmark_pretest.py',
@@ -4050,6 +4118,7 @@ const BENCH_TARGETS = {
       'local browser-control geometry fixture; not WebArena, BrowserGym, OSWorld, or VisualWebArena score',
   },
 };
+
 function benchLaneRows() {
   return Object.entries(BENCH_TARGETS).map(([id, target]) => {
     const latestJson = path.resolve(repoRoot(), target.latestJson);
@@ -4112,6 +4181,45 @@ function printBenchList(asJson) {
   }
 }
 
+function benchStatusPayload() {
+  const lanes = Object.entries(BENCH_TARGETS).map(([id, target]) => {
+    const packet = latestBenchPacket(id, target);
+    const summary = packet.report ? packet.report.summary || {} : {};
+    return {
+      id,
+      exists: packet.exists,
+      decision: packet.report ? packet.report.decision : null,
+      generated_at_utc: packet.report ? packet.report.generated_at_utc : null,
+      command: packet.command,
+      latest_json: packet.latest_json,
+      claim_boundary: packet.claim_boundary,
+      summary,
+    };
+  });
+  const evidenceReady = lanes.filter((lane) => lane.exists).length;
+  return {
+    schema_version: 'scbe_bench_status_v1',
+    generated_at_utc: nowIso(),
+    evidence_ready: evidenceReady,
+    evidence_total: lanes.length,
+    lanes,
+  };
+}
+
+function printBenchStatus(asJson) {
+  const payload = benchStatusPayload();
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write(`SCBE bench status: ${payload.evidence_ready}/${payload.evidence_total} lanes have artifacts\n\n`);
+  for (const lane of payload.lanes) {
+    const state = lane.exists ? lane.decision || 'artifact' : 'missing';
+    process.stdout.write(`- ${lane.id}: ${state}\n`);
+    process.stdout.write(`  ${lane.command} --json\n`);
+  }
+}
+
 function printBenchLatest(args) {
   const asJson = args.includes('--json');
   const lane = args.find((arg) => !arg.startsWith('--'));
@@ -4137,7 +4245,7 @@ function printBenchLatest(args) {
 }
 
 function buildBenchProof(args) {
-  const lane = args.find((arg) => !arg.startsWith('--'));
+  const lane = args.find((arg, index) => !arg.startsWith('--') && args[index - 1] !== '--write');
   const entries = lane ? [[lane, BENCH_TARGETS[lane]]] : Object.entries(BENCH_TARGETS);
   if (entries.some(([, target]) => !target)) {
     process.stderr.write(`scbe bench prove: unknown lane '${lane}'. Run 'scbe bench list'.\n`);
@@ -4155,6 +4263,21 @@ function buildBenchProof(args) {
 
 function printBenchProof(args) {
   const payload = buildBenchProof(args);
+  const writeIndex = args.indexOf('--write');
+  const writePath = writeIndex >= 0 ? args[writeIndex + 1] : null;
+  if (writeIndex >= 0 && !writePath) {
+    process.stderr.write('scbe bench prove: --write requires a path.\n');
+    process.exit(2);
+  }
+  if (writePath) {
+    const absolute = path.resolve(process.cwd(), writePath);
+    fs.mkdirSync(path.dirname(absolute), { recursive: true });
+    fs.writeFileSync(absolute, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+    if (!args.includes('--json')) {
+      process.stdout.write(`wrote ${absolute}\n`);
+      return;
+    }
+  }
   if (args.includes('--json')) {
     process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
     return;
@@ -4191,8 +4314,9 @@ function printBenchHelp() {
       '  scbe bench research [--style BrowseComp-style|GAIA-style] [--json] [--open-report]',
       '  scbe bench rubix-browser [--json] [--open-report]',
       '  scbe bench list [--json]',
+      '  scbe bench status [--json]',
       '  scbe bench latest [lane] [--json]',
-      '  scbe bench prove [lane] [--json]',
+      '  scbe bench prove [lane] [--json] [--write <path>]',
       '',
       'These are local executable evidence lanes, not public leaderboard scores.',
       '',
@@ -4208,6 +4332,10 @@ function runBench(args) {
   }
   if (sub === 'list') {
     printBenchList(args.includes('--json'));
+    process.exit(0);
+  }
+  if (sub === 'status') {
+    printBenchStatus(args.includes('--json'));
     process.exit(0);
   }
   if (sub === 'latest') {
@@ -4243,6 +4371,7 @@ function runBench(args) {
   if (typeof child.status === 'number') process.exit(child.status);
   process.exit(1);
 }
+
 const argv = process.argv.slice(2);
 if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h' || argv[0] === 'help') {
   process.stdout.write(CLI_HELP);

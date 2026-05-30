@@ -22,9 +22,14 @@ scbe selftest
 scbe doctor --json
 scbe credits
 scbe shell
+scbe shell --squad
 scbe run "npm test"
 scbe status
 scbe history --limit 20
+scbe bench status
+scbe bench list --json
+scbe bench rubix-browser --json
+scbe bench prove rubix-browser --write proof.json
 scbe ca-plan --ops "abs abs add" --json
 scbe compile ca --opcodes "0x09 0x09 0x00" --target python --fn score --args a,b
 scbe render-op --op add --target KO --a left --b right
@@ -45,11 +50,18 @@ The same binary is also exposed as `geoseal` and `scbe-geoseal`.
 - `selftest`: runs the npm-installable smoke test (`version` + `doctor`).
 - `credits`: prints the hosted-run intake, service-credit policy, and top-up
   links for paid hosted work.
-- `shell`: opens the SCBE terminal wrapper.
+- `shell`: opens the SCBE terminal wrapper. `shell --squad` routes plain
+  English turns across local/free Ollama, fast Cerebras, and Groq policy/safety
+  lanes based on the task text.
 - `run`: executes a normal shell command with Compass metadata, Clock metadata,
   GeoSeal governance, exit-code preservation, and JSONL history.
 - `status`: prints local terminal/compiler/router capability status.
 - `history`: prints recent SCBE terminal runs.
+- `bench`: runs and inspects local executable evidence lanes. Use
+  `bench status` for a compact operator view, `bench list` to see available
+  lanes, `bench latest <lane>` to inspect the latest artifact, and
+  `bench prove <lane> --write proof.json` to create a portable proof packet
+  with command, artifact, commit, and claim boundary.
 - `ca-plan`: resolves Cassisivadan operation names into canonical opcode bytes.
 - `compile ca`: compiles CA opcode bytes into target source (`python`,
   `typescript`, or `go`) with a round-trip trace.
@@ -161,6 +173,22 @@ Each run records:
 
 Use `scbe shell` to stay inside that wrapper while typing normal terminal
 commands.
+
+## Benchmark Evidence Lane
+
+Use `scbe bench` when you need proof you can run, not just a status claim:
+
+```bash
+scbe bench status
+scbe bench list --json
+scbe bench rubix-browser --json
+scbe bench latest rubix-browser
+scbe bench prove rubix-browser --write proof.json
+```
+
+The proof packet is designed for website and release notes. It records the
+command, latest artifact path, current commit, and claim boundary so local
+evidence does not get overstated as a public leaderboard result.
 
 ## Free Local Use + Paid Hosted Runs
 
