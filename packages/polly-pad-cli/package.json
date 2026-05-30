@@ -4,7 +4,7 @@
   "description": "Polly — governed terminal workpad for AI operators. Persistent workspace, task state, LLM routing, tool recipes, and audit receipts.",
   "type": "commonjs",
   "bin": { "polly": "bin/polly.js" },
-  "files": ["bin", "tests", "README.md", "LICENSE"],
+  "files": ["bin", "tests", "README.md", "LICENSE", "LICENSE-APACHE"],
   "scripts": {
     "help": "node ./bin/polly.js --help",
     "doctor": "node ./bin/polly.js doctor",
