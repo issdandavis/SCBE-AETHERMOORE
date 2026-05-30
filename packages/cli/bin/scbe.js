@@ -114,6 +114,35 @@ Usage:
     [--json]              checks title, description, tags, privacy, and script
 
 ─────────────────────────────────────────────────────────────────────────────
+  LONGFORM — durable multi-session agentic workflows (Longform Bridge)
+─────────────────────────────────────────────────────────────────────────────
+  do "<objective>"        Run a durable governed agentic workflow.
+    [--loops N]             Stage iterations (default 6)
+    [--land-every-stage]    Create a verified landing after each stage
+    [--squad]               Route each stage to multi-agent squad (phase 2)
+    [--backend local|temporal]  Execution backend (default: local)
+    [--json]                Emit JSON output
+    Example: scbe do "prove browser benchmark" --loops 6 --land-every-stage
+
+  work init               Initialize a new longform workflow workspace
+    [--mission "<text>"]    Mission statement
+    [--invariant "<inv>"]   Add an invariant (repeatable)
+    [--workspace <dir>]     Workspace directory (default: cwd)
+  work status [--json]    Show workspace: bricks, landings, open questions
+  work resume [--hash H]  Resume from latest (or specified) landing
+
+  land create             Create a verified context landing (resume contract)
+  land list [--json]      List all landings with hash + timestamp
+  land verify <hash>      Verify a landing's cryptographic integrity
+  land show <hash>        Show full landing content
+
+  agent spawn <role>      Spawn a governed agent with a role contract
+    --mandate "<text>"      Agent objective (required)
+    [--tools t1,t2]         Allowed tools (comma-separated)
+    [--budget N]            Max invocations before escalation (default 20)
+  agent list [--json]     List all agents registered in current workflow
+
+─────────────────────────────────────────────────────────────────────────────
   FLOW LOOP — operator workflow (source checkout required for plan/packetize)
 ─────────────────────────────────────────────────────────────────────────────
   flow plan               Decompose a task into governed flow packets;
@@ -2411,6 +2440,11 @@ function runCompiler(args) {
   runPythonScript('scripts/agents/scbe_code.py', args);
 }
 
+function runLongform(subcmd, extraArgs) {
+  // Bridge to src/longform/longform_cli.py — same source-checkout pattern.
+  runPythonScript('src/longform/longform_cli.py', [subcmd, ...extraArgs]);
+}
+
 function runRouteCompiler(args) {
   runPythonScript('scripts/aetherpp/cli.py', args);
 }
@@ -3536,6 +3570,11 @@ const KNOWN_COMMANDS = [
   'aetherpp',
   'squad',
   'xval',
+  // Longform Bridge
+  'do',
+  'work',
+  'land',
+  'agent',
 ];
 
 function levenshtein(a, b) {
@@ -4588,6 +4627,35 @@ if (argv[0] === 'shell') {
   });
   return;
 }
+
+// ── Longform Bridge commands ──────────────────────────────────────────────────
+
+if (argv[0] === 'do') {
+  // scbe do "<objective>" [--loops N] [--land-every-stage] [--json] ...
+  runLongform('do', argv.slice(1));
+  return;
+}
+
+if (argv[0] === 'work') {
+  // scbe work init | status | resume
+  runLongform('work', argv.slice(1));
+  return;
+}
+
+if (argv[0] === 'land') {
+  // scbe land create | list | verify <hash> | show <hash>
+  runLongform('land', argv.slice(1));
+  return;
+}
+
+if (argv[0] === 'agent' && argv[1] && ['spawn', 'list', 'status'].includes(argv[1])) {
+  // scbe agent spawn <role> | agent list
+  // Note: 'agent-bus' is handled separately; 'agent' subcommand routes here.
+  runLongform('agent', argv.slice(1));
+  return;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 if (argv[0] === 'flow') {
   runFlow(argv.slice(1));
