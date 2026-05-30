@@ -1,6 +1,9 @@
 {
-  "version": "2026-03-04",
+  "version": "2026-05-30",
   "provider_order": [
+    "cerebras",
+    "groq",
+    "huggingface",
     "openai",
     "anthropic",
     "xai"
@@ -104,6 +107,40 @@
       ],
       "health_endpoint": "https://huggingface.co/api/whoami-v2",
       "daily_cap_usd": 2.0
+    },
+    "cerebras": {
+      "enabled": true,
+      "env_keys": [
+        "CEREBRAS_API_KEY"
+      ],
+      "health_endpoint": "https://api.cerebras.ai/v1/models",
+      "chat_endpoint": "https://api.cerebras.ai/v1/chat/completions",
+      "daily_cap_usd": 2.0,
+      "timeout_sec": 15,
+      "note": "Squad fast-ops unit (~920ms). Free tier; use for triage.",
+      "tiers": {
+        "cheap": {
+          "model": "llama-3.3-70b",
+          "estimated_cents": 0.0
+        }
+      }
+    },
+    "groq": {
+      "enabled": true,
+      "env_keys": [
+        "GROQ_API_KEY"
+      ],
+      "health_endpoint": "https://api.groq.com/openai/v1/models",
+      "chat_endpoint": "https://api.groq.com/openai/v1/chat/completions",
+      "daily_cap_usd": 2.0,
+      "timeout_sec": 20,
+      "note": "Squad safety/auth/policy unit. Free tier; use for policy decisions.",
+      "tiers": {
+        "cheap": {
+          "model": "llama-3.3-70b-versatile",
+          "estimated_cents": 0.0
+        }
+      }
     }
   },
   "default_system_prompt": "You are an SCBE terminal assistant. Keep answers short, practical, and evidence-aware."

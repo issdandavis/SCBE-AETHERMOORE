@@ -223,7 +223,7 @@
   },
   {
     "name": "geoseal-cross-build",
-    "description": "Cross-build Tier 1 lexicon-bounded LatticeOp IR into another Sacred Tongue language surface.",
+    "description": "Cross-build a rendered Tier 1 lexicon template from one Sacred Tongue to another. Input must be a rendered template string, e.g. \"(x + y)\" (KO/python add). Returns src/dst code, language names, and the lattice IR. Run geoseal-cross-build with --list-ops to see all 64 ops and their templates per tongue.",
     "patentSurface": "bijective-transport",
     "command": "python",
     "args": [
@@ -236,6 +236,35 @@
       "--dst-tongue",
       "RU"
     ]
+  },
+  {
+    "name": "geoseal-cross-build-broadcast",
+    "description": "Broadcast a rendered Tier 1 lexicon template from one Sacred Tongue into ALL other five tongues simultaneously. Returns a translation map: {KO,AV,RU,CA,UM,DR}→rendered_code. Input format: same as geoseal-cross-build.",
+    "patentSurface": "bijective-transport",
+    "command": "python",
+    "args": [
+      "src/geoseal_cli.py",
+      "cross-build",
+      "--src-code",
+      "{task}",
+      "--src-tongue",
+      "KO",
+      "--all-tongues"
+    ]
+  },
+  {
+    "name": "scbe-compass",
+    "description": "SCBE Compass governed route planner — classify a task and emit a native ScbeCompassRoutePlan with formation, command path, board rules, adapter slots, and governance constraints (local_only, budget_cents=0 by default).",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/compass.cjs", "{task}"]
+  },
+  {
+    "name": "scbe-hermes",
+    "description": "Hermes compatibility alias over SCBE Compass — same planning logic, emits HermesRoutePlan schema (hermes_route_plan.v1) for backward-compatible bus integrations.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/compass.cjs", "--hermes", "{task}"]
   },
   {
     "name": "semantic-hex-bridge",
@@ -253,14 +282,14 @@
   },
   {
     "name": "ai-router-health",
-    "description": "Check configured model provider health without exposing secret values. Free/local lanes are distinguished from quota-limited remote free tiers.",
+    "description": "Check all configured model provider health (cerebras, groq, huggingface, openai, xai, anthropic). Free/local lanes are distinguished from quota-limited remote free tiers. No secrets are exposed in output.",
     "patentSurface": "agent-harness",
     "command": "python",
-    "args": ["scripts/system/terminal_ai_router.py", "health", "--checks", "huggingface"]
+    "args": ["scripts/system/terminal_ai_router.py", "health", "--checks", "all"]
   },
   {
     "name": "ai-router-call",
-    "description": "Route a prompt through the cheap-first terminal AI router. Prefer local/free-tier providers and enforce provider caps.",
+    "description": "Route a prompt through the squad cheap-first terminal AI router. Tries cerebras (~920ms free tier) first, then groq, then huggingface. Provider caps and daily budget limits are enforced. Requires at least one of: CEREBRAS_API_KEY, GROQ_API_KEY, HF_TOKEN.",
     "patentSurface": "agent-harness",
     "command": "python",
     "args": [
@@ -269,7 +298,7 @@
       "--prompt",
       "{task}",
       "--providers",
-      "huggingface"
+      "cerebras,groq,huggingface"
     ]
   },
   {

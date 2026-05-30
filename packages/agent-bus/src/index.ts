@@ -138,6 +138,7 @@ export {
   type ScbeFormation,
   type ScbeTongueDomain,
   type ScbeBoardMechanic,
+  type ScbeRollKind,
   type HermesModelLane,
   type HermesRoutePlan,
   type ScbeFormationStep,
@@ -145,6 +146,7 @@ export {
   type ScbeOctreeContextPack,
   type ScbeCliParityTarget,
   type ScbeBoardRule,
+  type ScbeRollCard,
   type ScbeCompassRoutePlan,
   classifyHermesTask,
   classifyScbeCompassTask,
@@ -155,6 +157,7 @@ export {
   scbeCompassCommandTree,
   scbeCompassParityTargets,
   scbeCompassBoardRules,
+  scbeCompassRollCards,
 } from './hermes.js';
 
 export type AgentBusPrivacy = 'local_only' | 'remote_allowed' | string;
