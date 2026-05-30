@@ -7,9 +7,13 @@ describe('scbe-patent workbench CLI', () => {
   it('initializes a complete patent workbench packet', () => {
     const workdir = mkdtempSync(join(tmpdir(), 'scbe-patent-'));
 
-    const raw = execFileSync('node', ['bin/scbe-patent.cjs', 'init', '--workdir', workdir, '--json'], {
-      encoding: 'utf8',
-    });
+    const raw = execFileSync(
+      'node',
+      ['bin/scbe-patent.cjs', 'init', '--workdir', workdir, '--json'],
+      {
+        encoding: 'utf8',
+      }
+    );
     const payload = JSON.parse(raw);
 
     expect(payload.schema).toBe('scbe_patent_workbench_manifest_v1');
@@ -28,9 +32,13 @@ describe('scbe-patent workbench CLI', () => {
     execFileSync('node', ['bin/scbe-patent.cjs', 'init', '--workdir', workdir], {
       encoding: 'utf8',
     });
-    const raw = execFileSync('node', ['bin/scbe-patent.cjs', 'benchmark', '--workdir', workdir, '--json'], {
-      encoding: 'utf8',
-    });
+    const raw = execFileSync(
+      'node',
+      ['bin/scbe-patent.cjs', 'benchmark', '--workdir', workdir, '--json'],
+      {
+        encoding: 'utf8',
+      }
+    );
     const payload = JSON.parse(raw);
 
     expect(payload.schema).toBe('scbe_patent_benchmark_command_v1');
@@ -39,8 +47,12 @@ describe('scbe-patent workbench CLI', () => {
     expect(payload.title).toContain('Hyperbolic Geometry-Based Authorization');
     expect(payload.counts.cases).toBe(8);
     expect(payload.metrics.lattice_mean).toBeGreaterThan(payload.metrics.baseline_mean);
-    expect(existsSync(join(workdir, 'benchmarks', 'resonant_thought_lattice_benchmark.json'))).toBe(true);
-    expect(existsSync(join(workdir, 'benchmarks', 'resonant_thought_lattice_benchmark.md'))).toBe(true);
+    expect(existsSync(join(workdir, 'benchmarks', 'resonant_thought_lattice_benchmark.json'))).toBe(
+      true
+    );
+    expect(existsSync(join(workdir, 'benchmarks', 'resonant_thought_lattice_benchmark.md'))).toBe(
+      true
+    );
   });
 
   it('writes official USPTO source URLs and support evidence', () => {
@@ -55,8 +67,10 @@ describe('scbe-patent workbench CLI', () => {
 
     expect(sources).toContain('https://www.uspto.gov/patents/basics/apply/utility-patent');
     expect(sources).toContain('https://patentcenter.uspto.gov');
-    expect(support.families.some((family: { family: string }) => family.family === 'bijective_tamper_canonicality')).toBe(
-      true
-    );
+    expect(
+      support.families.some(
+        (family: { family: string }) => family.family === 'bijective_tamper_canonicality'
+      )
+    ).toBe(true);
   });
 });
