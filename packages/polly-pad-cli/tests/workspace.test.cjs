@@ -189,7 +189,30 @@ test('polly snapshot creates snapshot file', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test 9: polly audit verify validates receipt chain
+// Test 9: polly ask can force free/local-only routing before template fallback
+// ---------------------------------------------------------------------------
+test('polly ask respects POLLY_DISABLE_PAID_APIS fallback', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'FreeOnlyAskTest']);
+    const result = run(dir, ['ask', 'make a short checklist', '--json'], {
+      POLLY_DISABLE_TERMINAL_ROUTER: '1',
+      POLLY_DISABLE_OLLAMA: '1',
+      POLLY_DISABLE_PAID_APIS: '1',
+      ANTHROPIC_API_KEY: '',
+      OPENAI_API_KEY: '',
+    });
+    assert.strictEqual(result.status, 0, 'ask should succeed\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.model_used, 'template');
+    assert.strictEqual(payload.source, 'fallback');
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 10: polly audit verify validates receipt chain
 // ---------------------------------------------------------------------------
 test('polly audit verify validates receipt chain', () => {
   const dir = mktemp();
@@ -221,7 +244,7 @@ test('polly audit verify validates receipt chain', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test 10: polly audit verify fails on tampered receipt
+// Test 11: polly audit verify fails on tampered receipt
 // ---------------------------------------------------------------------------
 test('polly audit verify fails on tampered receipt', () => {
   const dir = mktemp();

@@ -106,7 +106,16 @@
         "HUGGING_FACE_HUB_TOKEN"
       ],
       "health_endpoint": "https://huggingface.co/api/whoami-v2",
-      "daily_cap_usd": 2.0
+      "chat_endpoint": "https://router.huggingface.co/v1/chat/completions",
+      "daily_cap_usd": 0.0,
+      "timeout_sec": 45,
+      "note": "Included-credit fallback through HuggingFace Router when Cerebras/Groq are unavailable.",
+      "tiers": {
+        "cheap": {
+          "model": "Qwen/Qwen2.5-Coder-32B-Instruct",
+          "estimated_cents": 0.0
+        }
+      }
     },
     "cerebras": {
       "enabled": true,
