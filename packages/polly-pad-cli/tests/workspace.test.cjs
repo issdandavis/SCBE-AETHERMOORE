@@ -39,6 +39,12 @@ test('polly init creates .polly/pad.json', () => {
     const pad = JSON.parse(fs.readFileSync(padPath, 'utf8'));
     assert.strictEqual(pad.name, 'TestPad', 'pad.name should be TestPad');
     assert.strictEqual(pad.schema_version, 'polly_pad_v1', 'schema_version should be polly_pad_v1');
+    const auditPath = path.join(dir, '.polly', 'audit.jsonl');
+    assert.ok(fs.existsSync(auditPath), '.polly/audit.jsonl should exist');
+    const firstReceipt = JSON.parse(fs.readFileSync(auditPath, 'utf8').trim());
+    assert.strictEqual(firstReceipt.action, 'workspace.init');
+    assert.strictEqual(firstReceipt.prev_hash, '0'.repeat(64));
+    assert.match(firstReceipt.event_hash, /^[a-f0-9]{64}$/);
   } finally {
     cleanup(dir);
   }
@@ -176,6 +182,61 @@ test('polly snapshot creates snapshot file', () => {
     assert.ok(fs.existsSync(snapsDir), '.polly/snapshots should exist');
     const files = fs.readdirSync(snapsDir).filter((f) => f.endsWith('.json'));
     assert.ok(files.length > 0, 'should have at least one snapshot file');
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 9: polly audit verify validates receipt chain
+// ---------------------------------------------------------------------------
+test('polly audit verify validates receipt chain', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'AuditTest']);
+    run(dir, ['task', 'add', 'audit this']);
+    run(dir, ['task', 'done', 'task-001']);
+
+    const verifyResult = run(dir, ['audit', 'verify', '--json']);
+    assert.strictEqual(
+      verifyResult.status,
+      0,
+      'audit verify should succeed\nstdout: ' + verifyResult.stdout + '\nstderr: ' + verifyResult.stderr
+    );
+    const verified = JSON.parse(verifyResult.stdout);
+    assert.strictEqual(verified.ok, true);
+    assert.strictEqual(verified.count, 3);
+
+    const listResult = run(dir, ['audit', 'list', '--json']);
+    assert.strictEqual(listResult.status, 0, 'audit list should succeed');
+    const events = JSON.parse(listResult.stdout);
+    assert.deepStrictEqual(
+      events.map((event) => event.action),
+      ['workspace.init', 'task.add', 'task.done']
+    );
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 10: polly audit verify fails on tampered receipt
+// ---------------------------------------------------------------------------
+test('polly audit verify fails on tampered receipt', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'TamperTest']);
+    const auditPath = path.join(dir, '.polly', 'audit.jsonl');
+    const event = JSON.parse(fs.readFileSync(auditPath, 'utf8').trim());
+    event.subject = 'tampered';
+    fs.writeFileSync(auditPath, JSON.stringify(event) + '\n', 'utf8');
+
+    const verifyResult = run(dir, ['audit', 'verify', '--json']);
+    assert.strictEqual(verifyResult.status, 2, 'tampered audit should exit 2');
+    const verified = JSON.parse(verifyResult.stdout);
+    assert.strictEqual(verified.ok, false);
+    assert.strictEqual(verified.broken_at, 1);
+    assert.strictEqual(verified.reason, 'event hash mismatch');
   } finally {
     cleanup(dir);
   }
