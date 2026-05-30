@@ -554,7 +554,26 @@ test('polly cross bench translate returns correct schema', async () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test 24: polly cross translate --dry-run shows prompt
+// Test 24: polly cross bench translate --dry-run verifies fixture translations
+// ---------------------------------------------------------------------------
+test('polly cross bench translate --dry-run verifies fixture translations', async () => {
+  const result = spawnSync('node', [BIN, 'cross', 'bench', 'translate', '--dry-run', '--json'], {
+    encoding: 'utf8',
+    timeout: 60000,
+    env: { ...process.env, POLLY_DISABLE_TERMINAL_ROUTER: '1' },
+  });
+  assert.strictEqual(result.status, 0, 'bench translate dry-run should exit 0\n' + result.stderr);
+  const data = JSON.parse(result.stdout);
+  assert.strictEqual(data.schema_version, 'polly_cross_bench_v1');
+  assert.strictEqual(data.execution_match_rate, 1);
+  const palindrome = data.results.find((entry) => entry.id === 'bench_palindrome');
+  assert.ok(palindrome, 'palindrome bench result should exist');
+  assert.strictEqual(palindrome.model, 'fixture');
+  assert.strictEqual(palindrome.exec_match, true);
+});
+
+// ---------------------------------------------------------------------------
+// Test 25: polly cross translate --dry-run shows prompt
 // ---------------------------------------------------------------------------
 test('polly cross translate --dry-run shows prompt', () => {
   const result = spawnSync(
