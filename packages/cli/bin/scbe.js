@@ -43,6 +43,11 @@ Core commands:
   scbe doctor --json
   scbe credits
   scbe upgrade
+  scbe do "build the browser benchmark adapter" --squad --loops 6 --land every-stage --json
+  scbe work init --objective "browser benchmark adapter" --json
+  scbe work status --workflow <id> --json
+  scbe agent spawn --workflow <id> --role architect --mandate "plan the work" --json
+  scbe land create --workflow <id> --summary "stage landed" --json
   scbe shell                         Governed AI shell (default rich mode)
   scbe shell --ai                    AI-first: plain English intent routing
   scbe shell --tui                   Alias for default rich mode
@@ -2209,6 +2214,492 @@ function runFlow(args) {
   runPythonScript('scripts/scbe-system-cli.py', ['flow', ...args]);
 }
 
+function hasFlag(args, name) {
+  return args.includes(name);
+}
+
+function flagValue(args, name, fallback = '') {
+  const index = args.indexOf(name);
+  if (index < 0) return fallback;
+  const value = args[index + 1];
+  if (!value || value.startsWith('--')) return fallback;
+  return value;
+}
+
+function positionalArgs(args) {
+  const out = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const token = args[i];
+    if (token.startsWith('--')) {
+      const next = args[i + 1];
+      if (next && !next.startsWith('--')) i += 1;
+      continue;
+    }
+    out.push(token);
+  }
+  return out;
+}
+
+function canonicalLongformJson(payload) {
+  if (payload === null || typeof payload !== 'object') return JSON.stringify(payload);
+  if (Array.isArray(payload)) return `[${payload.map((item) => canonicalLongformJson(item)).join(',')}]`;
+  return `{${Object.keys(payload)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${canonicalLongformJson(payload[key])}`)
+    .join(',')}}`;
+}
+
+function sha256Hex(text) {
+  return crypto.createHash('sha256').update(String(text), 'utf8').digest('hex');
+}
+
+function safeWorkflowId(seed) {
+  const cleaned = String(seed || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48);
+  return cleaned || `wf-${Date.now().toString(36)}`;
+}
+
+function longformBaseDir(workspaceRoot) {
+  return path.resolve(workspaceRoot || process.cwd(), '.scbe', 'longform');
+}
+
+function longformIndexPath(workspaceRoot) {
+  return path.join(longformBaseDir(workspaceRoot), 'index.json');
+}
+
+function workflowDir(workspaceRoot, workflowId) {
+  return path.join(longformBaseDir(workspaceRoot), 'workflows', workflowId);
+}
+
+function workflowLedgerPath(workspaceRoot, workflowId) {
+  return path.join(workflowDir(workspaceRoot, workflowId), 'ledger.jsonl');
+}
+
+function readJsonlEvents(filePath) {
+  if (!fs.existsSync(filePath)) return [];
+  const raw = fs.readFileSync(filePath, 'utf8');
+  return raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line, index) => {
+      try {
+        return JSON.parse(line);
+      } catch (err) {
+        throw new Error(`invalid JSONL at line ${index + 1}: ${err.message}`);
+      }
+    });
+}
+
+function loadLongformIndex(workspaceRoot) {
+  const target = longformIndexPath(workspaceRoot);
+  const parsed = readJsonFileSafe(target);
+  if (parsed && parsed.schema_version === 'scbe.longform.index.v1') return parsed;
+  return {
+    schema_version: 'scbe.longform.index.v1',
+    workflows: {},
+    latest_workflow: null,
+  };
+}
+
+function writeLongformIndex(workspaceRoot, index) {
+  const target = longformIndexPath(workspaceRoot);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, `${JSON.stringify(index, null, 2)}\n`, 'utf8');
+}
+
+function updateLongformIndex(workspaceRoot, workflowId, patch) {
+  const index = loadLongformIndex(workspaceRoot);
+  const prior = index.workflows[workflowId] || {};
+  index.workflows[workflowId] = {
+    workflow_id: workflowId,
+    ...prior,
+    ...patch,
+    updated_at: nowIso(),
+  };
+  index.latest_workflow = workflowId;
+  writeLongformIndex(workspaceRoot, index);
+  return index.workflows[workflowId];
+}
+
+function resolveWorkflowId(workspaceRoot, requested) {
+  if (requested) return requested;
+  const index = loadLongformIndex(workspaceRoot);
+  if (index.latest_workflow) return index.latest_workflow;
+  const ids = Object.keys(index.workflows || {});
+  if (ids.length > 0) return ids[ids.length - 1];
+  return '';
+}
+
+function appendLongformEvent(workspaceRoot, workflowId, kind, payload = {}) {
+  const ledgerPath = workflowLedgerPath(workspaceRoot, workflowId);
+  const events = readJsonlEvents(ledgerPath);
+  const previousHash = events.length ? String(events[events.length - 1].event_hash || '') : '0'.repeat(64);
+  const event = {
+    schema_version: 'scbe.longform.event.v1',
+    event_id: `evt-${crypto.randomUUID()}`,
+    workflow_id: workflowId,
+    ts: nowIso(),
+    kind,
+    payload,
+    previous_hash: previousHash,
+  };
+  event.event_hash = sha256Hex(canonicalLongformJson(event));
+  fs.mkdirSync(path.dirname(ledgerPath), { recursive: true });
+  fs.appendFileSync(ledgerPath, `${canonicalLongformJson(event)}\n`, 'utf8');
+  fs.writeFileSync(
+    path.join(workflowDir(workspaceRoot, workflowId), 'latest-event.json'),
+    `${JSON.stringify(event, null, 2)}\n`,
+    'utf8'
+  );
+  return { event, ledger_path: ledgerPath, event_count: events.length + 1 };
+}
+
+function verifyLongformLedger(workspaceRoot, workflowId) {
+  const ledgerPath = workflowLedgerPath(workspaceRoot, workflowId);
+  let events;
+  try {
+    events = readJsonlEvents(ledgerPath);
+  } catch (err) {
+    return { ok: false, count: 0, head_hash: '0'.repeat(64), reason: err.message };
+  }
+  let previousHash = '0'.repeat(64);
+  for (let i = 0; i < events.length; i += 1) {
+    const event = events[i];
+    if (event.previous_hash !== previousHash) {
+      return {
+        ok: false,
+        count: events.length,
+        head_hash: previousHash,
+        broken_at: i + 1,
+        reason: 'previous hash mismatch',
+      };
+    }
+    const expectedHash = sha256Hex(
+      canonicalLongformJson(Object.fromEntries(Object.entries(event).filter(([key]) => key !== 'event_hash')))
+    );
+    if (event.event_hash !== expectedHash) {
+      return {
+        ok: false,
+        count: events.length,
+        head_hash: previousHash,
+        broken_at: i + 1,
+        reason: 'event hash mismatch',
+      };
+    }
+    previousHash = event.event_hash;
+  }
+  return { ok: true, count: events.length, head_hash: previousHash, ledger_path: ledgerPath };
+}
+
+function printLongform(payload, asJson) {
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+  const lines = [
+    `SCBE Longform Bridge: ${payload.command}`,
+    `workflow: ${payload.workflow_id || '<none>'}`,
+    `status:   ${payload.status || '<unknown>'}`,
+  ];
+  if (payload.objective) lines.push(`objective: ${payload.objective}`);
+  if (payload.landing_hash) lines.push(`landing:  ${payload.landing_hash}`);
+  if (payload.ledger && payload.ledger.head_hash) lines.push(`head:     ${payload.ledger.head_hash}`);
+  if (payload.ledger_path) lines.push(`ledger:   ${payload.ledger_path}`);
+  process.stdout.write(`${lines.join('\n')}\n`);
+}
+
+function runLongformWork(args) {
+  const sub = args[0] || 'status';
+  const rest = args.slice(1);
+  const asJson = hasFlag(rest, '--json');
+  const workspaceRoot = path.resolve(flagValue(rest, '--workspace-root', process.cwd()));
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    process.stdout.write(
+      [
+        'Usage:',
+        '  scbe work init --objective "..." [--workflow <id>] [--json]',
+        '  scbe work status [--workflow <id>] [--json]',
+        '  scbe work list [--json]',
+        '',
+      ].join('\n')
+    );
+    process.exit(0);
+  }
+  if (sub === 'init' || sub === 'new') {
+    const objective =
+      flagValue(rest, '--objective') || flagValue(rest, '--task') || positionalArgs(rest).join(' ');
+    if (!objective) {
+      process.stderr.write('scbe work init: missing --objective "..."\\n');
+      process.exit(2);
+    }
+    const workflowId = flagValue(rest, '--workflow') || safeWorkflowId(objective);
+    const created = appendLongformEvent(workspaceRoot, workflowId, 'workflow.initialized', {
+      objective,
+      backend: flagValue(rest, '--backend', 'local-jsonl'),
+      resume_policy: flagValue(rest, '--resume-policy', 'latest-safe'),
+    });
+    updateLongformIndex(workspaceRoot, workflowId, {
+      objective,
+      status: 'active',
+      created_at: created.event.ts,
+      ledger_path: created.ledger_path,
+      head_hash: created.event.event_hash,
+    });
+    printLongform(
+      {
+        command: 'work init',
+        status: 'active',
+        workflow_id: workflowId,
+        objective,
+        event_hash: created.event.event_hash,
+        ledger_path: created.ledger_path,
+      },
+      asJson
+    );
+    process.exit(0);
+  }
+  if (sub === 'list') {
+    const index = loadLongformIndex(workspaceRoot);
+    const payload = {
+      command: 'work list',
+      schema_version: 'scbe.longform.work_list.v1',
+      workspace_root: workspaceRoot,
+      latest_workflow: index.latest_workflow,
+      workflows: Object.values(index.workflows || {}),
+    };
+    if (asJson) process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    else {
+      const rows = payload.workflows.map((wf) => `${wf.workflow_id}  ${wf.status || '?'}  ${wf.objective || ''}`);
+      process.stdout.write(`${rows.join('\n') || 'No longform workflows found.'}\n`);
+    }
+    process.exit(0);
+  }
+  if (sub === 'status') {
+    const workflowId = resolveWorkflowId(workspaceRoot, flagValue(rest, '--workflow'));
+    if (!workflowId) {
+      const payload = {
+        command: 'work status',
+        schema_version: 'scbe.longform.work_status.v1',
+        status: 'empty',
+        workflow_id: null,
+        workspace_root: workspaceRoot,
+      };
+      printLongform(payload, asJson);
+      process.exit(0);
+    }
+    const index = loadLongformIndex(workspaceRoot);
+    const wf = (index.workflows || {})[workflowId] || { workflow_id: workflowId };
+    const verification = verifyLongformLedger(workspaceRoot, workflowId);
+    const payload = {
+      command: 'work status',
+      schema_version: 'scbe.longform.work_status.v1',
+      status: wf.status || 'unknown',
+      workflow_id: workflowId,
+      objective: wf.objective || '',
+      workspace_root: workspaceRoot,
+      ledger: verification,
+      ledger_path: verification.ledger_path,
+    };
+    printLongform(payload, asJson);
+    process.exit(verification.ok ? 0 : 1);
+  }
+  process.stderr.write(`scbe work: unknown subcommand ${sub}\n`);
+  process.exit(2);
+}
+
+function runLongformLand(args) {
+  const sub = args[0] || '';
+  const rest = sub === 'create' ? args.slice(1) : args;
+  if (sub && !['create', 'help', '--help', '-h'].includes(sub)) {
+    process.stderr.write(`scbe land: unknown subcommand ${sub}\n`);
+    process.exit(2);
+  }
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    process.stdout.write('Usage:\n  scbe land create --workflow <id> --summary "..." [--json]\n');
+    process.exit(0);
+  }
+  const asJson = hasFlag(rest, '--json');
+  const workspaceRoot = path.resolve(flagValue(rest, '--workspace-root', process.cwd()));
+  const workflowId = resolveWorkflowId(workspaceRoot, flagValue(rest, '--workflow'));
+  const summary = flagValue(rest, '--summary') || positionalArgs(rest).join(' ');
+  if (!workflowId || !summary) {
+    process.stderr.write('scbe land create: requires an existing --workflow and --summary "..."\n');
+    process.exit(2);
+  }
+  const stage = flagValue(rest, '--stage', 'manual');
+  const created = appendLongformEvent(workspaceRoot, workflowId, 'landing.created', {
+    summary,
+    stage,
+    protected_fields: ['mission', 'invariants', 'claim_boundaries', 'open_questions', 'next_foothold'],
+  });
+  const landing = {
+    schema_version: 'scbe.longform.landing.v1',
+    workflow_id: workflowId,
+    summary,
+    stage,
+    landing_hash: created.event.event_hash,
+    created_at: created.event.ts,
+    ledger_path: created.ledger_path,
+  };
+  fs.writeFileSync(
+    path.join(workflowDir(workspaceRoot, workflowId), 'latest-landing.json'),
+    `${JSON.stringify(landing, null, 2)}\n`,
+    'utf8'
+  );
+  updateLongformIndex(workspaceRoot, workflowId, {
+    status: 'landed',
+    latest_landing_hash: landing.landing_hash,
+    latest_landing_summary: summary,
+    ledger_path: created.ledger_path,
+    head_hash: created.event.event_hash,
+  });
+  printLongform(
+    {
+      command: 'land create',
+      status: 'landed',
+      workflow_id: workflowId,
+      landing_hash: landing.landing_hash,
+      ledger_path: created.ledger_path,
+      landing,
+    },
+    asJson
+  );
+  process.exit(0);
+}
+
+function runLongformAgent(args) {
+  const sub = args[0] || '';
+  const rest = sub === 'spawn' ? args.slice(1) : args;
+  if (sub && !['spawn', 'help', '--help', '-h'].includes(sub)) {
+    process.stderr.write(`scbe agent: unknown subcommand ${sub}\n`);
+    process.exit(2);
+  }
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    process.stdout.write(
+      'Usage:\n  scbe agent spawn --workflow <id> --role architect --mandate "..." [--allowed-tools a,b] [--json]\n'
+    );
+    process.exit(0);
+  }
+  const asJson = hasFlag(rest, '--json');
+  const workspaceRoot = path.resolve(flagValue(rest, '--workspace-root', process.cwd()));
+  const workflowId = resolveWorkflowId(workspaceRoot, flagValue(rest, '--workflow'));
+  const role = flagValue(rest, '--role', 'worker');
+  const mandate = flagValue(rest, '--mandate') || positionalArgs(rest).join(' ');
+  if (!workflowId || !mandate) {
+    process.stderr.write('scbe agent spawn: requires an existing --workflow and --mandate "..."\n');
+    process.exit(2);
+  }
+  const allowedTools = String(flagValue(rest, '--allowed-tools', 'read,search,run,edit,test'))
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const created = appendLongformEvent(workspaceRoot, workflowId, 'agent.spawned', {
+    role,
+    mandate,
+    allowed_tools: allowedTools,
+    model_tier: flagValue(rest, '--model-tier', 'free-first'),
+    contract: {
+      must_emit_receipts: true,
+      must_land_before_compaction: true,
+      raw_ledger_authoritative: true,
+    },
+  });
+  updateLongformIndex(workspaceRoot, workflowId, {
+    status: 'active',
+    ledger_path: created.ledger_path,
+    head_hash: created.event.event_hash,
+  });
+  printLongform(
+    {
+      command: 'agent spawn',
+      status: 'spawned',
+      workflow_id: workflowId,
+      role,
+      mandate,
+      allowed_tools: allowedTools,
+      event_hash: created.event.event_hash,
+      ledger_path: created.ledger_path,
+    },
+    asJson
+  );
+  process.exit(0);
+}
+
+function runLongformDo(args) {
+  const asJson = hasFlag(args, '--json');
+  const workspaceRoot = path.resolve(flagValue(args, '--workspace-root', process.cwd()));
+  const objective =
+    flagValue(args, '--objective') || flagValue(args, '--task') || positionalArgs(args).join(' ');
+  if (!objective) {
+    process.stderr.write('Usage: scbe do "objective" [--squad] [--loops 6] [--land every-stage] [--json]\n');
+    process.exit(2);
+  }
+  const workflowId = flagValue(args, '--workflow') || safeWorkflowId(objective);
+  const loops = Number(flagValue(args, '--loops', '1'));
+  const squad = hasFlag(args, '--squad');
+  const backend = flagValue(args, '--backend', 'local-jsonl');
+  const resumePolicy = flagValue(args, '--resume-policy', 'latest-safe');
+  const landPolicy = flagValue(args, '--land', 'final');
+  const init = appendLongformEvent(workspaceRoot, workflowId, 'objective.accepted', {
+    objective,
+    loops: Number.isFinite(loops) && loops > 0 ? loops : 1,
+    squad,
+    backend,
+    resume_policy: resumePolicy,
+    land_policy: landPolicy,
+  });
+  const spawned = [];
+  if (squad) {
+    for (const role of ['architect', 'builder', 'tester', 'prover']) {
+      const ev = appendLongformEvent(workspaceRoot, workflowId, 'agent.spawned', {
+        role,
+        mandate: `${role} lane for: ${objective}`,
+        allowed_tools: role === 'prover' ? ['read', 'test', 'verify'] : ['read', 'search', 'run', 'edit', 'test'],
+        model_tier: 'free-first',
+      });
+      spawned.push({ role, event_hash: ev.event.event_hash });
+    }
+  }
+  const landing = appendLongformEvent(workspaceRoot, workflowId, 'landing.created', {
+    summary: `Durable command surface initialized for: ${objective}`,
+    stage: landPolicy,
+    next_foothold: 'execute queued stages through scbe work status / agent receipts',
+    protected_fields: ['mission', 'invariants', 'claim_boundaries', 'open_questions', 'next_foothold'],
+  });
+  updateLongformIndex(workspaceRoot, workflowId, {
+    objective,
+    status: 'landed',
+    created_at: init.event.ts,
+    latest_landing_hash: landing.event.event_hash,
+    latest_landing_summary: landing.event.payload.summary,
+    ledger_path: landing.ledger_path,
+    head_hash: landing.event.event_hash,
+  });
+  printLongform(
+    {
+      command: 'do',
+      schema_version: 'scbe.longform.do.v1',
+      status: 'landed',
+      workflow_id: workflowId,
+      objective,
+      backend,
+      resume_policy: resumePolicy,
+      squad,
+      loops: Number.isFinite(loops) && loops > 0 ? loops : 1,
+      spawned,
+      landing_hash: landing.event.event_hash,
+      ledger_path: landing.ledger_path,
+      ledger: verifyLongformLedger(workspaceRoot, workflowId),
+    },
+    asJson
+  );
+  process.exit(0);
+}
+
 function runTrapRedirect(args) {
   // scbe trap-redirect — input-side companion to `scbe contract scan
   // --emit-redirect-prompt`. Takes prompt text via --input, --file, or
@@ -3698,6 +4189,10 @@ const KNOWN_COMMANDS = [
   'credits',
   'hosted-run',
   'upgrade',
+  'do',
+  'work',
+  'agent',
+  'land',
   'shell',
   'run',
   'status',
@@ -4328,6 +4823,22 @@ if (argv[0] === 'credits' || argv[0] === 'hosted-run') {
 
 if (argv[0] === 'selftest') {
   runSelftest();
+}
+
+if (argv[0] === 'do') {
+  runLongformDo(argv.slice(1));
+}
+
+if (argv[0] === 'work') {
+  runLongformWork(argv.slice(1));
+}
+
+if (argv[0] === 'agent') {
+  runLongformAgent(argv.slice(1));
+}
+
+if (argv[0] === 'land') {
+  runLongformLand(argv.slice(1));
 }
 
 if (argv[0] === 'status') {
