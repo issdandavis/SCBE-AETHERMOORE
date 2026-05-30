@@ -2236,3 +2236,24 @@ export {
   buildPollyOperatorBrief,
   renderPollyOperatorBrief,
 } from './polly-operator.js';
+
+export {
+  type HandoffFlightState,
+  type HandoffAuthority,
+  type HandoffPriority,
+  type HandoffMission,
+  type HandoffReceipt,
+  type HandoffPacket,
+  type HandoffOptions,
+  type HandoffValidation,
+  type HandoffSummary,
+  createHandoff,
+  throwHandoff,
+  catchHandoff,
+  validateHandoff,
+  completeHandoff,
+  dropHandoff,
+  isHandoffExpired,
+  getReceipts,
+  summarizeHandoff,
+} from './handoff-packet.js';
