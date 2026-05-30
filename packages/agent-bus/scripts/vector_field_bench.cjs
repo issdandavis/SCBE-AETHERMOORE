@@ -21,6 +21,12 @@
  *
  *   node ... --skip-ablation
  *       Run only the 5 algorithms (no ablation, faster).
+ *
+ *   node ... --random-solve-sweep --runs 24
+ *       Run deterministic randomized mazes with the random policy.
+ *
+ *   node ... --maze tiny --alg multi-lattice --show-heat-map
+ *       Include fluidic heat-map and pressure samples for a single run.
  */
 
 const {
@@ -29,6 +35,8 @@ const {
   oracleBFS,
   runMission,
   scoreRun,
+  runRandomSolveSweep,
+  buildFluidHeatMap,
   DEFAULT_WEIGHTS,
   BENCHMARK_MAZES,
 } = require('../dist/index.js');
@@ -52,6 +60,24 @@ if (flag('list-mazes')) {
 
 const mazeName = opt('maze');
 const algName = opt('alg');
+const randomSweep = flag('random-solve-sweep');
+const showHeatMap = flag('show-heat-map');
+
+if (randomSweep) {
+  const runs = Number.parseInt(opt('runs') ?? '24', 10);
+  const seed = Number.parseInt(opt('seed') ?? '9001', 10);
+  console.log(
+    JSON.stringify(
+      runRandomSolveSweep({
+        trials: Number.isFinite(runs) ? runs : 24,
+        seed: Number.isFinite(seed) ? seed : 9001,
+      }),
+      null,
+      2
+    )
+  );
+  process.exit(0);
+}
 
 if (mazeName && algName) {
   const cfg = BENCHMARK_MAZES.find((m) => m.id === mazeName);
@@ -64,7 +90,10 @@ if (mazeName && algName) {
   const t0 = Date.now();
   const agent = runMission(maze, cfg, algName, DEFAULT_WEIGHTS, oraclePath);
   const score = scoreRun(agent, maze, cfg, algName, oraclePath, Date.now() - t0);
-  console.log(JSON.stringify(score, null, 2));
+  const output = showHeatMap
+    ? { score, fluid_heat_map: buildFluidHeatMap(agent).slice(0, 32) }
+    : score;
+  console.log(JSON.stringify(output, null, 2));
   process.exit(0);
 }
 

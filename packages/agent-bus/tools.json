@@ -296,10 +296,17 @@
   },
   {
     "name": "vector-field-nav-benchmark",
-    "description": "Run seeded multi-lattice vector-field navigation against A*, greedy, and random baselines with receipt-chain scoring, ablations, security tiers, importance depth, and 3x3 kernel convolution.",
+    "description": "Run seeded multi-lattice vector-field navigation against A*, greedy, and random baselines with receipt-chain scoring, ablations, security tiers, importance depth, 3x3 kernel convolution, fluidic heat maps, and pressure sensing.",
     "patentSurface": "agent-harness",
     "command": "node",
     "args": ["packages/agent-bus/scripts/vector_field_bench.cjs"]
+  },
+  {
+    "name": "vector-field-random-solve-sweep",
+    "description": "Run deterministic randomized maze solves using the random baseline and report solve rate, receipt chains, fluidic heat peaks, and pressure averages.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/vector_field_bench.cjs", "--random-solve-sweep"]
   },
   {
     "name": "semantic-hex-bridge",

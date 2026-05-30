@@ -19,13 +19,13 @@ machine-checkable evidence for the path policy under test.
 
 ## Current Lanes
 
-| Lane             | Command                               | Evidence target                                                                 |
-| ---------------- | ------------------------------------- | ------------------------------------------------------------------------------- |
-| Roll-stack maze  | `npm run benchmark:roll-stack-maze`   | BFS execution, output contract, receipt hashes                                  |
-| Worm adapter     | `npm run benchmark:worm-adapter`      | Local sensing, penetration ratio, loop rate, greedy delta                       |
-| Projection board | `npm run benchmark:projection-board`  | Fog-of-war board, hidden lattice fields, 3x3 kernel convolution, spin coherence |
-| Vector-field nav | `npm run benchmark:vector-field-nav`  | Seeded mazes, A\*/greedy/random baselines, receipt chain, ablations             |
-| Suite            | `npm run benchmark:pathfinding-suite` | Combined scorecard across all current lanes                                     |
+| Lane             | Command                               | Evidence target                                                                    |
+| ---------------- | ------------------------------------- | ---------------------------------------------------------------------------------- |
+| Roll-stack maze  | `npm run benchmark:roll-stack-maze`   | BFS execution, output contract, receipt hashes                                     |
+| Worm adapter     | `npm run benchmark:worm-adapter`      | Local sensing, penetration ratio, loop rate, greedy delta                          |
+| Projection board | `npm run benchmark:projection-board`  | Fog-of-war board, hidden lattice fields, 3x3 kernel convolution, spin coherence    |
+| Vector-field nav | `npm run benchmark:vector-field-nav`  | Seeded mazes, A\*/greedy/random baselines, receipt chain, ablations, heat/pressure |
+| Suite            | `npm run benchmark:pathfinding-suite` | Combined scorecard across all current lanes                                        |
 
 ## Latest Focused Result
 
@@ -43,7 +43,7 @@ Result:
   "evidence_failed": 0,
   "benchmark_process_failures": 0,
   "avg_primary_score": 0.75,
-  "max_p95_ms": 41
+  "max_p95_ms": 71
 }
 ```
 
@@ -56,6 +56,9 @@ Breakdown:
 - Projection board: 4/4 evidence passed, solved rate 1.00, primary score 1.00.
 - Vector-field nav: 20/20 receipt chains complete, multi-lattice solve rate
   0.75, random solve rate 0.00.
+- Random solve sweep: 12 deterministic randomized trials produced 2 random
+  solves, random solve rate 0.1667, average heat peak 48.5833, and average
+  pressure -10.2232.
 
 ## Kernel Convolution Lattice
 
@@ -89,6 +92,25 @@ The benchmark records spin coherence as `|sum_i S_i| / n` and spin disorder as
 The TypeScript vector-field navigation module also exposes the same 3x3 kernel
 as `VECTOR_KERNEL_3X3` and uses it as an eighth local field in `computeVTotal`.
 The `no-kernel` ablation keeps this measurable.
+
+## Fluidic Heat Map And Pressure Sense
+
+The vector-field lane now records a visit heat map and pressure samples for each
+mission. Pressure is a local scalar computed from nearby walls, unknown cells,
+security tiers, and revisit load. More negative pressure means the candidate
+cell is locally more constrained.
+
+Single-run inspection:
+
+```bash
+npm run benchmark:vector-field-nav -- --maze tiny --alg multi-lattice --show-heat-map
+```
+
+Randomized baseline sweep:
+
+```bash
+npm run benchmark:vector-field-nav -- --random-solve-sweep --runs 12 --seed 4242
+```
 
 ## Caveat
 

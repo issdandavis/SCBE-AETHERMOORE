@@ -209,6 +209,8 @@ export {
   type AlgorithmSummary,
   type AblationEntry,
   type NavBenchResult,
+  type FluidHeatCell,
+  type RandomSolveSweepResult,
   DEFAULT_WEIGHTS,
   VECTOR_KERNEL_3X3,
   BENCHMARK_MAZES,
@@ -218,6 +220,9 @@ export {
   computeVTotal,
   runMission,
   scoreRun,
+  buildFluidHeatMap,
+  buildRandomMazeConfigs,
+  runRandomSolveSweep,
   verifyReceiptChain,
   runNavBench,
 } from './vector-field-nav.js';

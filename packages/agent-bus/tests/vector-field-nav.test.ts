@@ -16,6 +16,9 @@ import {
   computeVTotal,
   runMission,
   scoreRun,
+  buildFluidHeatMap,
+  buildRandomMazeConfigs,
+  runRandomSolveSweep,
   verifyReceiptChain,
   runNavBench,
   DEFAULT_WEIGHTS,
@@ -159,6 +162,7 @@ describe('computeVTotal', () => {
     expect(typeof bd.memory).toBe('number');
     expect(typeof bd.edge_channel).toBe('number');
     expect(typeof bd.kernel_convolution).toBe('number');
+    expect(typeof bd.pressure_sense).toBe('number');
     expect(typeof bd.total).toBe('number');
   });
 
@@ -231,6 +235,7 @@ describe('computeVTotal', () => {
       memory: 0,
       edge_channel: 0,
       kernel_convolution: 0,
+      pressure_sense: 0,
     };
     const bd = computeVTotal(m.start, m, agent, zeroWeights, TINY.sensor_radius);
     expect(bd.total).toBe(0);
@@ -294,6 +299,16 @@ describe('runMission', () => {
     const path = oracleBFS(m)!;
     const agent = runMission(m, TINY, 'multi-lattice', DEFAULT_WEIGHTS, path);
     expect(agent.security_score).toBeGreaterThanOrEqual(0);
+  });
+
+  it('records a fluidic heat map and pressure samples during a mission', () => {
+    const m = generateMaze(TINY);
+    const path = oracleBFS(m)!;
+    const agent = runMission(m, TINY, 'multi-lattice', DEFAULT_WEIGHTS, path);
+    const heatMap = buildFluidHeatMap(agent);
+    expect(heatMap.length).toBeGreaterThan(0);
+    expect(heatMap[0]!.visits).toBeGreaterThanOrEqual(1);
+    expect(typeof heatMap[0]!.pressure).toBe('number');
   });
 });
 
@@ -383,6 +398,16 @@ describe('scoreRun', () => {
     const score = scoreRun(agent, m, TINY, 'greedy', path, 10);
     expect(score.penetration_depth).toBeGreaterThanOrEqual(0);
   });
+
+  it('score includes heat and pressure fields', () => {
+    const m = generateMaze(TINY);
+    const path = oracleBFS(m)!;
+    const agent = runMission(m, TINY, 'multi-lattice', DEFAULT_WEIGHTS, path);
+    const score = scoreRun(agent, m, TINY, 'multi-lattice', path, 10);
+    expect(score.heat_peak).toBeGreaterThanOrEqual(1);
+    expect(score.heat_coverage).toBeGreaterThan(0);
+    expect(typeof score.avg_pressure).toBe('number');
+  });
 });
 
 // ─── runNavBench ──────────────────────────────────────────────────────────────
@@ -406,13 +431,13 @@ describe('runNavBench', () => {
     expect(result.runs.length).toBe(2);
   });
 
-  it('ablation table has 8 entries', () => {
+  it('ablation table has 9 entries', () => {
     const result = runNavBench({
       mazes: [TINY],
       algorithms: ['multi-lattice'],
       skip_ablation: false,
     });
-    expect(Object.keys(result.ablation_table).length).toBe(8);
+    expect(Object.keys(result.ablation_table).length).toBe(9);
   });
 
   it('all ablation tags present', () => {
@@ -430,6 +455,7 @@ describe('runNavBench', () => {
       'no-memory',
       'no-edge',
       'no-kernel',
+      'no-pressure',
     ]) {
       expect(result.ablation_table).toHaveProperty(tag);
     }
@@ -472,5 +498,22 @@ describe('runNavBench', () => {
     expect(result.summary.multi_lattice_solve_rate).toBeGreaterThanOrEqual(
       result.summary.random_solve_rate
     );
+  });
+
+  it('buildRandomMazeConfigs returns deterministic randomized maze configs', () => {
+    const a = buildRandomMazeConfigs(4, 123);
+    const b = buildRandomMazeConfigs(4, 123);
+    expect(a).toEqual(b);
+    expect(a).toHaveLength(4);
+    expect(new Set(a.map((cfg) => cfg.seed)).size).toBeGreaterThan(1);
+  });
+
+  it('runRandomSolveSweep reports random solve trials and heat/pressure summary', () => {
+    const result = runRandomSolveSweep({ trials: 5, seed: 321 });
+    expect(result.schema_version).toBe('scbe.agent_bus.vector_field_nav.random_solve_sweep.v1');
+    expect(result.summary.trials).toBe(5);
+    expect(result.runs).toHaveLength(5);
+    expect(result.summary.random_solve_successes).toBeGreaterThanOrEqual(0);
+    expect(typeof result.summary.avg_pressure).toBe('number');
   });
 });

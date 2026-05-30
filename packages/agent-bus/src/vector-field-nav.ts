@@ -10,6 +10,7 @@
  *              + w_security*security + w_importance*importance
  *              + w_memory*memory + w_edge*edge_channel
  *              + w_kernel*kernel_convolution
+ *              + w_pressure*pressure_sense
  *
  * State  = position + known map + security score + depth tier + goal pressure.
  * Move   = local vector decision (no global plan).
@@ -65,7 +66,8 @@ export type AblationTag =
   | 'no-importance'
   | 'no-memory'
   | 'no-edge'
-  | 'no-kernel';
+  | 'no-kernel'
+  | 'no-pressure';
 export type RunLabel = NavAlgorithm | `multi-lattice+${AblationTag}`;
 
 export interface MazeCell {
@@ -101,6 +103,7 @@ export interface LatticeWeights {
   memory: number;
   edge_channel: number;
   kernel_convolution: number;
+  pressure_sense: number;
 }
 
 export interface VectorBreakdown {
@@ -112,6 +115,7 @@ export interface VectorBreakdown {
   memory: number;
   edge_channel: number;
   kernel_convolution: number;
+  pressure_sense: number;
   total: number;
 }
 
@@ -135,6 +139,8 @@ export interface AgentState {
   max_depth_reached: number;
   receipts: MoveReceipt[];
   steps: number;
+  heat_map: Map<string, number>;
+  pressure_map: Map<string, number>;
 }
 
 export interface BenchmarkScore {
@@ -154,6 +160,9 @@ export interface BenchmarkScore {
   stuck_loops: number;
   oracle_path_length: number;
   efficiency: number;
+  heat_peak: number;
+  heat_coverage: number;
+  avg_pressure: number;
   total_ms: number;
 }
 
@@ -165,6 +174,8 @@ export interface AlgorithmSummary {
   avg_security_violations: number;
   avg_stuck_loops: number;
   avg_receipt_completeness: number;
+  avg_heat_peak: number;
+  avg_pressure: number;
 }
 
 export interface AblationEntry {
@@ -187,6 +198,28 @@ export interface NavBenchResult {
     astar_full_solve_rate: number;
     random_solve_rate: number;
     multi_lattice_avg_efficiency: number;
+    random_solve_trials: number;
+    random_solve_successes: number;
+    total_ms: number;
+  };
+}
+
+export interface FluidHeatCell {
+  x: number;
+  y: number;
+  visits: number;
+  pressure: number;
+}
+
+export interface RandomSolveSweepResult {
+  schema_version: 'scbe.agent_bus.vector_field_nav.random_solve_sweep.v1';
+  runs: BenchmarkScore[];
+  summary: {
+    trials: number;
+    random_solve_rate: number;
+    random_solve_successes: number;
+    avg_heat_peak: number;
+    avg_pressure: number;
     total_ms: number;
   };
 }
@@ -202,6 +235,7 @@ export const DEFAULT_WEIGHTS: LatticeWeights = {
   memory: 1.2,
   edge_channel: 0.5,
   kernel_convolution: 0.65,
+  pressure_sense: 0.9,
 };
 
 const SECURITY_COST: Record<SecurityTier, number> = {
@@ -477,6 +511,32 @@ function edgeChannelField(pos: [number, number], maze: MazeGrid): number {
   return neighbors4(maze, pos[0], pos[1]).length;
 }
 
+function pressureSenseField(
+  pos: [number, number],
+  maze: MazeGrid,
+  agent: AgentState,
+  sensor_r: number
+): number {
+  const [x, y] = pos;
+  let pressure = 0;
+  for (let dy = -sensor_r; dy <= sensor_r; dy++) {
+    for (let dx = -sensor_r; dx <= sensor_r; dx++) {
+      const nx = x + dx;
+      const ny = y + dy;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d === 0 || d > sensor_r) continue;
+      const falloff = 1 / (1 + d);
+      const cell = getCell(maze, nx, ny);
+      const known = agent.known.has(posKey(nx, ny));
+      if (!cell || cell.type === 'wall') pressure += 1.1 * falloff;
+      if (!known) pressure += 0.25 * falloff;
+      if (cell) pressure += SECURITY_COST[cell.security_tier] * 0.4 * falloff;
+      pressure += (agent.visit_counts.get(posKey(nx, ny)) ?? 0) * 0.18 * falloff;
+    }
+  }
+  return -pressure;
+}
+
 function kernelConvolutionField(pos: [number, number], maze: MazeGrid, agent: AgentState): number {
   const [x, y] = pos;
   let weighted = 0;
@@ -518,6 +578,7 @@ export function computeVTotal(
   const m = memoryField(pos, agent.visit_counts);
   const e = edgeChannelField(pos, maze);
   const k = kernelConvolutionField(pos, maze, agent);
+  const p = pressureSenseField(pos, maze, agent, sensor_r);
 
   const total =
     weights.goal * g +
@@ -527,7 +588,8 @@ export function computeVTotal(
     weights.importance * imp +
     weights.memory * m +
     weights.edge_channel * e +
-    weights.kernel_convolution * k;
+    weights.kernel_convolution * k +
+    weights.pressure_sense * p;
 
   return {
     goal: g,
@@ -538,6 +600,7 @@ export function computeVTotal(
     memory: m,
     edge_channel: e,
     kernel_convolution: k,
+    pressure_sense: p,
     total,
   };
 }
@@ -678,8 +741,12 @@ export function createAgent(maze: MazeGrid, sensor_radius: number): AgentState {
     max_depth_reached: 0,
     receipts: [],
     steps: 0,
+    heat_map: new Map(),
+    pressure_map: new Map(),
   };
   agent.visit_counts.set(posKey(maze.start[0], maze.start[1]), 1);
+  agent.heat_map.set(posKey(maze.start[0], maze.start[1]), 1);
+  agent.pressure_map.set(posKey(maze.start[0], maze.start[1]), 0);
   reveal(agent, maze, sensor_radius);
   return agent;
 }
@@ -697,12 +764,14 @@ function agentStep(
   const [tx, ty] = move;
 
   const vector = computeVTotal(move, maze, agent, weights, sensor_r);
+  agent.pressure_map.set(posKey(tx, ty), vector.pressure_sense);
 
   agent.pos = move;
   agent.steps++;
 
   const vc = agent.visit_counts.get(posKey(tx, ty)) ?? 0;
   agent.visit_counts.set(posKey(tx, ty), vc + 1);
+  agent.heat_map.set(posKey(tx, ty), vc + 1);
 
   const c = maze.cells[ty]![tx]!;
   agent.security_score += SECURITY_COST[c.security_tier];
@@ -748,6 +817,7 @@ function makeAblationWeights(tag: AblationTag): LatticeWeights {
   else if (tag === 'no-memory') w.memory = 0;
   else if (tag === 'no-edge') w.edge_channel = 0;
   else if (tag === 'no-kernel') w.kernel_convolution = 0;
+  else if (tag === 'no-pressure') w.pressure_sense = 0;
   return w;
 }
 
@@ -801,6 +871,20 @@ export function runMission(
 
 function countReachable(maze: MazeGrid): number {
   return maze.cells.flat().filter((c) => c.type !== 'wall').length;
+}
+
+export function buildFluidHeatMap(agent: AgentState): FluidHeatCell[] {
+  return Array.from(agent.heat_map.entries())
+    .map(([point, visits]) => {
+      const [x, y] = point.split(',').map(Number) as [number, number];
+      return {
+        x,
+        y,
+        visits,
+        pressure: parseFloat((agent.pressure_map.get(point) ?? 0).toFixed(4)),
+      };
+    })
+    .sort((a, b) => b.visits - a.visits || b.pressure - a.pressure || a.y - b.y || a.x - b.x);
 }
 
 export function verifyReceiptChain(receipts: MoveReceipt[]): number {
@@ -857,6 +941,14 @@ export function scoreRun(
   ).length;
 
   const receipt_completeness = verifyReceiptChain(agent.receipts);
+  const heatMap = buildFluidHeatMap(agent);
+  const heat_peak = heatMap.length > 0 ? Math.max(...heatMap.map((cell) => cell.visits)) : 0;
+  const heat_coverage = reachable > 0 ? heatMap.length / reachable : 0;
+  const avg_pressure =
+    agent.pressure_map.size > 0
+      ? Array.from(agent.pressure_map.values()).reduce((total, value) => total + value, 0) /
+        agent.pressure_map.size
+      : 0;
 
   let stuck_loops = 0;
   for (let i = 2; i < agent.receipts.length; i++) {
@@ -886,6 +978,9 @@ export function scoreRun(
     stuck_loops,
     oracle_path_length,
     efficiency: parseFloat(efficiency.toFixed(4)),
+    heat_peak,
+    heat_coverage: parseFloat(heat_coverage.toFixed(4)),
+    avg_pressure: parseFloat(avg_pressure.toFixed(4)),
     total_ms,
   };
 }
@@ -921,6 +1016,7 @@ export function runNavBench(options?: {
     'no-memory',
     'no-edge',
     'no-kernel',
+    'no-pressure',
   ];
   const skipAblation = options?.skip_ablation ?? false;
 
@@ -965,6 +1061,8 @@ export function runNavBench(options?: {
       avg_security_violations: avg(algRuns.map((r) => r.security_violations)),
       avg_stuck_loops: avg(algRuns.map((r) => r.stuck_loops)),
       avg_receipt_completeness: avg(algRuns.map((r) => r.receipt_completeness)),
+      avg_heat_peak: avg(algRuns.map((r) => r.heat_peak)),
+      avg_pressure: avg(algRuns.map((r) => r.avg_pressure)),
     };
   }
 
@@ -1001,7 +1099,57 @@ export function runNavBench(options?: {
       astar_full_solve_rate: avg(allFull.map((r) => (r.solved ? 1 : 0))),
       random_solve_rate: avg(allRandom.map((r) => (r.solved ? 1 : 0))),
       multi_lattice_avg_efficiency: avg(allML.map((r) => r.efficiency)),
+      random_solve_trials: allRandom.length,
+      random_solve_successes: allRandom.filter((r) => r.solved).length,
       total_ms: Date.now() - startAll,
+    },
+  };
+}
+
+export function buildRandomMazeConfigs(count: number, seed = 9001): MazeConfig[] {
+  const rng = mulberry32(seed);
+  const sizes = [9, 11, 15, 17, 21, 25];
+  return Array.from({ length: Math.max(0, count) }, (_, index) => {
+    const size = sizes[Math.floor(rng() * sizes.length)]!;
+    return {
+      id: `random-solve-${index}`,
+      width: size,
+      height: size,
+      seed: Math.floor(rng() * 1_000_000),
+      sensor_radius: size <= 11 ? 3 : 2,
+      max_steps: size * size * 2,
+    };
+  });
+}
+
+export function runRandomSolveSweep(options?: {
+  trials?: number;
+  seed?: number;
+  algorithm?: NavAlgorithm;
+}): RandomSolveSweepResult {
+  const started = Date.now();
+  const trials = options?.trials ?? 24;
+  const algorithm = options?.algorithm ?? 'random';
+  const mazes = buildRandomMazeConfigs(trials, options?.seed ?? 9001);
+  const runs: BenchmarkScore[] = [];
+  for (const cfg of mazes) {
+    const maze = generateMaze(cfg);
+    const oraclePath = oracleBFS(maze) ?? [];
+    const t0 = Date.now();
+    const agent = runMission(maze, cfg, algorithm, DEFAULT_WEIGHTS, oraclePath);
+    runs.push(scoreRun(agent, maze, cfg, algorithm, oraclePath, Date.now() - t0));
+  }
+  const successes = runs.filter((run) => run.solved).length;
+  return {
+    schema_version: 'scbe.agent_bus.vector_field_nav.random_solve_sweep.v1',
+    runs,
+    summary: {
+      trials: runs.length,
+      random_solve_rate: avg(runs.map((run) => (run.solved ? 1 : 0))),
+      random_solve_successes: successes,
+      avg_heat_peak: avg(runs.map((run) => run.heat_peak)),
+      avg_pressure: avg(runs.map((run) => run.avg_pressure)),
+      total_ms: Date.now() - started,
     },
   };
 }
