@@ -506,6 +506,10 @@ def render_markdown(payload: dict[str, Any]) -> str:
         lines.append(
             f"| {row['display_name']} | {row['domain']} | `{row['status']}` | `{score}` | {blockers} |"
         )
+    cb = payload.get("claim_boundary", [])
+    if isinstance(cb, list) and cb:
+        lines.extend(["", "## Claim Boundary", ""])
+        lines.extend([f"- {item}" for item in cb])
     lines.extend(["", "## Task Defender Analysis", ""])
     for row in payload["results"]:
         lines.extend(
@@ -537,7 +541,13 @@ def build_report(out_dir: Path, timeout: int, filter_ids: set[str] | None = None
     payload = {
         "schema_version": "scbe_hard_agentic_benchmark_pretest_v1",
         "generated_at_utc": utc_now(),
-        "claim_boundary": "pretest_matrix_not_public_leaderboard_score",
+        "claim_boundary": [
+            "Local pretest matrix; not a score on any public benchmark leaderboard.",
+            "12/14 readiness lanes pass; remaining 2 require official or Linux harness surfaces.",
+            "SWE-bench Verified blocked by Linux-only harness (resource module) -- not a SCBE logic failure.",
+            "Terminal-Bench blocked by tb CLI unavailability; docker check passes via Podman/WSL2.",
+            "Readiness-lane result separates SCBE system capability from external harness access requirements.",
+        ],
         "summary": {
             "target_count": len(results),
             "executed": sum(1 for result in results if result.command is not None),
