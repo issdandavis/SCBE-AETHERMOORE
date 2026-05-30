@@ -2,6 +2,7 @@
 'use strict';
 
 const { spawnSync, execSync } = require('node:child_process');
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -13,6 +14,8 @@ const readline = require('node:readline');
 const VERSION = '0.1.0';
 const SCHEMA_PAD = 'polly_pad_v1';
 const SCHEMA_RUN = 'polly_run_v1';
+const SCHEMA_AUDIT = 'polly_audit_receipt_v1';
+const GENESIS_HASH = '0'.repeat(64);
 
 // ---------------------------------------------------------------------------
 // Workspace management
@@ -71,6 +74,130 @@ function initPad(name, ws) {
     run_counter: 0,
     config: {},
   };
+}
+
+// ---------------------------------------------------------------------------
+// Audit receipts
+// ---------------------------------------------------------------------------
+
+function auditPath(ws) {
+  return path.join(ws, '.polly', 'audit.jsonl');
+}
+
+function sortCanonical(value) {
+  if (Array.isArray(value)) return value.map(sortCanonical);
+  if (value && typeof value === 'object') {
+    return Object.keys(value)
+      .sort()
+      .reduce((outObj, key) => {
+        outObj[key] = sortCanonical(value[key]);
+        return outObj;
+      }, {});
+  }
+  return value;
+}
+
+function canonicalJson(value) {
+  return JSON.stringify(sortCanonical(value));
+}
+
+function computeAuditHash(receipt) {
+  const material = Object.assign({}, receipt);
+  delete material.event_hash;
+  return crypto.createHash('sha256').update(canonicalJson(material), 'utf8').digest('hex');
+}
+
+function readAuditEvents(ws) {
+  const filePath = auditPath(ws);
+  if (!fs.existsSync(filePath)) return [];
+  const lines = fs.readFileSync(filePath, 'utf8').split(/\r?\n/).filter((line) => line.trim());
+  return lines.map((line, idx) => {
+    try {
+      return JSON.parse(line);
+    } catch (err) {
+      const wrapped = new Error('Invalid JSON in audit ledger at line ' + (idx + 1) + ': ' + err.message);
+      wrapped.auditLine = idx + 1;
+      throw wrapped;
+    }
+  });
+}
+
+function appendAudit(ws, action, subject, payload) {
+  const events = readAuditEvents(ws);
+  const prevHash = events.length ? events[events.length - 1].event_hash : GENESIS_HASH;
+  const receipt = {
+    schema_version: SCHEMA_AUDIT,
+    event_id: 'evt-' + Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex'),
+    ts: new Date().toISOString(),
+    actor: 'polly',
+    action,
+    subject,
+    payload: payload || {},
+    prev_hash: prevHash,
+  };
+  receipt.event_hash = computeAuditHash(receipt);
+  const filePath = auditPath(ws);
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.appendFileSync(filePath, canonicalJson(receipt) + '\n', 'utf8');
+  return receipt;
+}
+
+function verifyAudit(ws) {
+  let events;
+  try {
+    events = readAuditEvents(ws);
+  } catch (err) {
+    return {
+      ok: false,
+      count: 0,
+      head_hash: GENESIS_HASH,
+      broken_at: err.auditLine || 1,
+      reason: err.message,
+    };
+  }
+
+  let prevHash = GENESIS_HASH;
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i];
+    if (event.prev_hash !== prevHash) {
+      return {
+        ok: false,
+        count: events.length,
+        head_hash: prevHash,
+        broken_at: i + 1,
+        reason: 'previous hash mismatch',
+      };
+    }
+    const expected = computeAuditHash(event);
+    if (event.event_hash !== expected) {
+      return {
+        ok: false,
+        count: events.length,
+        head_hash: prevHash,
+        broken_at: i + 1,
+        reason: 'event hash mismatch',
+      };
+    }
+    prevHash = event.event_hash;
+  }
+  return {
+    ok: true,
+    count: events.length,
+    head_hash: prevHash,
+    broken_at: null,
+    reason: null,
+  };
+}
+
+function exportAudit(ws) {
+  const verified = verifyAudit(ws);
+  return Object.assign(
+    {
+      ledger: auditPath(ws),
+      events: verified.ok ? readAuditEvents(ws) : [],
+    },
+    verified
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -421,6 +548,7 @@ const COMMANDS = {
 
     const pad = initPad(name, ws);
     writePad(ws, pad);
+    appendAudit(ws, 'workspace.init', pad.pad_id, { name: pad.name, attached_repo: pad.attached_repo });
 
     if (flags.json) {
       out({ status: 'created', pad }, true);
@@ -470,6 +598,7 @@ const COMMANDS = {
     const pad = initPad(name, ws);
     pad.run_counter = old && old.run_counter ? old.run_counter : 0;
     writePad(ws, pad);
+    appendAudit(ws, 'workspace.new', pad.pad_id, { name: pad.name, previous_pad_id: old ? old.pad_id : null });
     if (flags.json) {
       out({ status: 'replaced', pad }, true);
     } else {
@@ -501,6 +630,7 @@ const COMMANDS = {
       pad = addTask(pad, text);
       writePad(ws, pad);
       const added = pad.tasks[pad.tasks.length - 1];
+      appendAudit(ws, 'task.add', added.id, { text: added.text, state: added.state });
       if (flags.json) {
         out(added, true);
       } else {
@@ -523,6 +653,7 @@ const COMMANDS = {
       }
       pad = updateTask(pad, id, 'done');
       writePad(ws, pad);
+      appendAudit(ws, 'task.done', id, { text: exists.text });
       if (flags.json) {
         out({ status: 'done', id }, true);
       } else {
@@ -545,6 +676,7 @@ const COMMANDS = {
         process.exit(1);
       }
       writePad(ws, pad);
+      appendAudit(ws, 'task.remove', id, {});
       if (flags.json) {
         out({ status: 'removed', id }, true);
       } else {
@@ -587,6 +719,12 @@ const COMMANDS = {
     saveRun(ws, run);
     pad = Object.assign({}, pad, { run_counter: (pad.run_counter || 0) + 1 });
     writePad(ws, pad);
+    appendAudit(ws, 'run.ask', run_id, {
+      source: result.source,
+      model_used: result.model_used,
+      prompt_chars: prompt.length,
+      result_chars: result.text.length,
+    });
 
     if (flags.json) {
       out(run, true);
@@ -649,6 +787,13 @@ const COMMANDS = {
     saveRun(ws, run);
     pad = Object.assign({}, pad, { run_counter: (pad.run_counter || 0) + 1 });
     writePad(ws, pad);
+    appendAudit(ws, 'run.recipe', run_id, {
+      recipe,
+      source: result.source,
+      model_used: result.model_used,
+      prompt_chars: prompt.length,
+      result_chars: result.text.length,
+    });
 
     if (flags.json) {
       out(run, true);
@@ -742,6 +887,7 @@ const COMMANDS = {
       runs: allRuns,
     };
     fs.writeFileSync(snapPath, JSON.stringify(snap, null, 2), 'utf8');
+    appendAudit(ws, 'snapshot.create', snapId, { path: snapPath, run_count: allRuns.length });
     if (flags.json) {
       out({ status: 'saved', snap_id: snapId, path: snapPath }, true);
     } else {
@@ -760,6 +906,7 @@ const COMMANDS = {
     let pad = readPad(ws);
     pad = Object.assign({}, pad, { attached_repo: gitRoot });
     writePad(ws, pad);
+    appendAudit(ws, 'repo.attach', gitRoot, {});
     if (flags.json) {
       out({ status: 'attached', attached_repo: gitRoot }, true);
     } else {
@@ -772,6 +919,7 @@ const COMMANDS = {
     let pad = readPad(ws);
     pad = Object.assign({}, pad, { attached_repo: null });
     writePad(ws, pad);
+    appendAudit(ws, 'repo.detach', 'workspace', {});
     if (flags.json) {
       out({ status: 'detached' }, true);
     } else {
@@ -884,6 +1032,51 @@ const COMMANDS = {
     process.exit(1);
   },
 
+  async audit(args, flags) {
+    const ws = requireWorkspace();
+    const [sub] = args;
+
+    if (!sub || sub === 'verify') {
+      const result = verifyAudit(ws);
+      if (flags.json) {
+        out(result, true);
+      } else if (result.ok) {
+        console.log('Audit OK: ' + result.count + ' receipts, head=' + result.head_hash);
+      } else {
+        console.log('Audit FAILED at receipt ' + result.broken_at + ': ' + result.reason);
+        console.log('Head before failure: ' + result.head_hash);
+      }
+      process.exit(result.ok ? 0 : 2);
+    }
+
+    if (sub === 'list') {
+      const events = readAuditEvents(ws);
+      if (flags.json) {
+        out(events, true);
+        return;
+      }
+      if (!events.length) {
+        console.log('No audit receipts yet.');
+        return;
+      }
+      const col = (s, w) => String(s || '').padEnd(w).slice(0, w);
+      console.log(col('event', 16) + '  ' + col('action', 18) + '  ' + col('subject', 22) + '  ' + 'time');
+      console.log('-'.repeat(82));
+      for (const event of events) {
+        console.log(col(event.event_id, 16) + '  ' + col(event.action, 18) + '  ' + col(event.subject, 22) + '  ' + event.ts);
+      }
+      return;
+    }
+
+    if (sub === 'export') {
+      out(exportAudit(ws), true);
+      return;
+    }
+
+    console.error('Unknown audit subcommand: ' + sub + '. Use: verify, list, export');
+    process.exit(1);
+  },
+
   async shell(args, flags) {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: 'polly> ' });
     console.log('Polly shell v' + VERSION + '. Type .exit to quit, .help for commands.');
@@ -983,6 +1176,9 @@ Commands:
   attach [path]            Attach workspace to a git repo
   detach                   Detach from git repo
   handoff                  Export handoff packet (always JSON)
+  audit verify             Verify hash-chained audit receipts
+  audit list               List audit receipts
+  audit export             Export audit receipts as JSON
   doctor                   Check environment (Node, Ollama, API keys, git)
   tools list               List available recipes
   tools run <name> [args]  Run a recipe
@@ -1018,6 +1214,7 @@ Examples:
   polly run research "hyperbolic geometry in AI safety"
   polly run review src/index.ts
   polly run plan --dry-run "migrate to new API"
+  polly audit verify
   polly runs --json
   polly handoff | pbcopy
 `;
