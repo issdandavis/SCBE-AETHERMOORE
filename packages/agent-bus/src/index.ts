@@ -2221,6 +2221,23 @@ export {
 } from './control-intent.js';
 
 export {
+  type PollySourceRef,
+  type PollyOperatorMode,
+  type PollySeverity,
+  type PollyOperatorAlert,
+  type PollyOperatorAction,
+  type PollyOperatorBrief,
+  type PollyOperatorBriefOptions,
+  POLLY_OPERATOR_SOURCE_REFS,
+  buildPollyOperatorAlerts,
+  buildPollyOperatorActions,
+  buildPollyOperatorHeadline,
+  renderPollyOperatorCliLines,
+  buildPollyOperatorBrief,
+  renderPollyOperatorBrief,
+} from './polly-operator.js';
+
+export {
   type EvaMode,
   type EvaSeverity,
   type EvaAlert,

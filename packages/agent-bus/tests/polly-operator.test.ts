@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   addZone,
-  buildEvaActions,
-  buildEvaAlerts,
-  buildEvaBrief,
+  buildPollyOperatorActions,
+  buildPollyOperatorAlerts,
+  buildPollyOperatorBrief,
   createKeeper,
   createStation,
   defaultGravityFrame,
   observeZone,
+  POLLY_OPERATOR_SOURCE_REFS,
   renderEvaBrief,
+  renderPollyOperatorBrief,
   reportDamage,
   runSweep,
   type StationZone,
@@ -33,25 +35,27 @@ function makeZone(id: string, overrides: Partial<StationZone> = {}): StationZone
   };
 }
 
-describe('buildEvaBrief', () => {
+describe('buildPollyOperatorBrief', () => {
   it('renders a green operator brief with watch as the next action', () => {
-    let station = createStation('STATION-EVA', { now: NOW });
+    let station = createStation('STATION-POLLY', { now: NOW });
     station = addZone(station, makeZone('hub', { linked_zones: ['ops'] }), { now: NOW });
     station = addZone(station, makeZone('ops', { linked_zones: ['hub'] }), { now: NOW });
     station = observeZone(observeZone(station, 'hub', { now: NOW }), 'ops', { now: NOW });
 
-    const brief = buildEvaBrief(station, { now: NOW });
-    const rendered = renderEvaBrief(brief);
+    const brief = buildPollyOperatorBrief(station, { now: NOW });
+    const rendered = renderPollyOperatorBrief(brief);
 
-    expect(brief.schema_version).toBe('scbe_eva_brief_v1');
+    expect(brief.schema_version).toBe('scbe_polly_operator_brief_v1');
     expect(brief.health).toBe('green');
-    expect(brief.headline).toBe('Station STATION-EVA is green');
-    expect(brief.actions[0].command).toBe('scbe eva watch');
-    expect(rendered).toContain('EVA status: Station STATION-EVA is green');
+    expect(brief.headline).toBe('Station STATION-POLLY is green');
+    expect(brief.actions[0].command).toBe('scbe polly watch');
+    expect(brief.source_refs.map((ref) => ref.path)).toContain('src/fleet/polly-pad.ts');
+    expect(brief.source_refs.map((ref) => ref.path)).toContain('kindle-app/www/polly-pad.html');
+    expect(rendered).toContain('Polly status: Station STATION-POLLY is green');
   });
 
   it('prioritizes security and critical-zone actions over passive observation', () => {
-    let station = createStation('STATION-EVA', { now: NOW });
+    let station = createStation('STATION-POLLY', { now: NOW });
     station = addZone(
       station,
       makeZone('security-core', {
@@ -73,7 +77,7 @@ describe('buildEvaBrief', () => {
       },
     };
 
-    const brief = buildEvaBrief(station, { now: NOW, mode: 'damage' });
+    const brief = buildPollyOperatorBrief(station, { now: NOW, mode: 'damage' });
 
     expect(brief.health).toBe('critical');
     expect(brief.alerts.map((alert) => alert.id)).toContain('damage.security-breaches');
@@ -83,7 +87,7 @@ describe('buildEvaBrief', () => {
   });
 
   it('turns keeper sweep results into repaired and escalation status lines', () => {
-    let station = createStation('STATION-EVA', { now: NOW });
+    let station = createStation('STATION-POLLY', { now: NOW });
     station = addZone(
       station,
       makeZone('stale-zone', {
@@ -102,27 +106,27 @@ describe('buildEvaBrief', () => {
       { now: NOW }
     );
 
-    const keeper = createKeeper('keeper-eva', { stale_threshold_ms: 1 });
+    const keeper = createKeeper('keeper-polly', { stale_threshold_ms: 1 });
     const run = runSweep(keeper, station, { now: STALE });
-    const brief = buildEvaBrief(run.manifest, {
+    const brief = buildPollyOperatorBrief(run.manifest, {
       now: STALE,
       keeperRun: run.result,
     });
 
-    expect(brief.keeper?.keeper_id).toBe('keeper-eva');
+    expect(brief.keeper?.keeper_id).toBe('keeper-polly');
     expect(brief.keeper?.zones_repaired).toBe(2);
     expect(brief.keeper?.zones_escalated).toBe(1);
     expect(brief.alerts.map((a) => a.id)).toContain('keeper.escalations');
     expect(brief.alerts.map((a) => a.id)).toContain('keeper.repairs-applied');
-    expect(brief.cli_lines.join('\n')).toContain('keeper=keeper-eva repaired=2 escalated=1');
+    expect(brief.cli_lines.join('\n')).toContain('keeper=keeper-polly repaired=2 escalated=1');
   });
 
   it('caps alerts and actions for compact CLI output', () => {
-    let station = createStation('STATION-EVA', { now: NOW });
+    let station = createStation('STATION-POLLY', { now: NOW });
     station = addZone(station, makeZone('a', { state: 'quarantined' }), { now: NOW });
     station = addZone(station, makeZone('b', { linked_zones: [] }), { now: NOW });
 
-    const brief = buildEvaBrief(station, {
+    const brief = buildPollyOperatorBrief(station, {
       now: NOW,
       maxAlerts: 1,
       maxActions: 1,
@@ -133,18 +137,31 @@ describe('buildEvaBrief', () => {
   });
 });
 
-describe('buildEvaAlerts / buildEvaActions', () => {
+describe('buildPollyOperatorAlerts / buildPollyOperatorActions', () => {
   it('keeps alert/action builders deterministic from supplied reports', () => {
-    let station = createStation('STATION-EVA', { now: NOW });
+    let station = createStation('STATION-POLLY', { now: NOW });
     station = addZone(station, makeZone('isolated', { linked_zones: [] }), { now: NOW });
 
-    const brief = buildEvaBrief(station, { now: NOW });
+    const brief = buildPollyOperatorBrief(station, { now: NOW });
     const damage = reportDamage(station, { now: NOW });
-    const alerts = buildEvaAlerts(brief.summary, damage);
-    const actions = buildEvaActions(brief.summary, damage);
+    const alerts = buildPollyOperatorAlerts(brief.summary, damage);
+    const actions = buildPollyOperatorActions(brief.summary, damage);
 
     expect(alerts.map((a) => a.id)).toEqual(['damage.overall-health', 'station.fog-of-war']);
     expect(actions.map((a) => a.id)).toContain('action.add-transit');
     expect(actions.map((a) => a.id)).toContain('action.observe-fog');
+  });
+
+  it('publishes Polly source refs and keeps EVA as a compatibility alias only', () => {
+    let station = createStation('STATION-POLLY', { now: NOW });
+    station = addZone(station, makeZone('hub', { linked_zones: ['ops'] }), { now: NOW });
+    station = observeZone(station, 'hub', { now: NOW });
+
+    const brief = buildPollyOperatorBrief(station, { now: NOW });
+
+    expect(POLLY_OPERATOR_SOURCE_REFS.map((ref) => ref.path)).toContain(
+      'src/fleet/polly-pad-runtime.ts'
+    );
+    expect(renderEvaBrief(brief)).toBe(renderPollyOperatorBrief(brief));
   });
 });
