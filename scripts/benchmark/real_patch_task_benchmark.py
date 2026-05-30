@@ -32,7 +32,7 @@ DEFAULT_OUT = REPO_ROOT / "artifacts" / "benchmarks" / "real_patch_tasks"
 PROVIDERS: dict[str, dict[str, str]] = {
     "cerebras": {
         "base_url": "https://api.cerebras.ai/v1",
-        "model": "llama-3.3-70b",
+        "model": "gpt-oss-120b",
         "env_var": "CEREBRAS_API_KEY",
     },
     "groq": {

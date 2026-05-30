@@ -63,7 +63,7 @@ def test_agent_lane_structure_with_mocked_api(tmp_path: Path, monkeypatch) -> No
 
     ag = report["agent_summary"]
     assert ag["provider"] == "cerebras"
-    assert ag["model"] == "llama-3.3-70b"
+    assert ag["model"] == "gpt-oss-120b"
     assert "agent_test_passes" in ag
     assert "agent_avg" in ag
     assert "agent_wins" in ag
@@ -138,5 +138,5 @@ def test_providers_have_required_keys() -> None:
         assert "model" in cfg, f"{name} missing model"
         assert "env_var" in cfg, f"{name} missing env_var"
 
-    assert module.PROVIDERS["cerebras"]["model"] == "llama-3.3-70b"
+    assert module.PROVIDERS["cerebras"]["model"] == "gpt-oss-120b"
     assert module.PROVIDERS["groq"]["model"] == "llama-3.3-70b-versatile"
