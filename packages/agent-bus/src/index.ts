@@ -1978,6 +1978,30 @@ export {
 } from './board-fields.js';
 
 export {
+  type AgentIdentity,
+  type SkillLevel,
+  type CareerEntry,
+  type AgentLifeRecord,
+  type EncounterResult,
+  type LifeSummary,
+  createLifeRecord,
+  encounter,
+  gainSkillXP,
+  startCareer,
+  endCareer,
+  completeTask,
+  joinGroup,
+  leaveGroup,
+  isKnown,
+  getAlignmentScore,
+  getKnownAgents,
+  getCurrentRole,
+  summarize,
+  serializeLifeRecord,
+  deserializeLifeRecord,
+} from './life-ledger.js';
+
+export {
   type ReactionSpec,
   type ReactionChain,
   type ReactionStepStatus,
