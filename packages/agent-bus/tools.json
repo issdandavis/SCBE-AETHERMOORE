@@ -398,5 +398,19 @@
     "patentSurface": "agent-harness",
     "command": "node",
     "args": ["packages/agent-bus/scripts/toolsmith.cjs", "clock", "--tasks", "{task}"]
+  },
+  {
+    "name": "tool-validate",
+    "description": "Validate a tool spec JSON without registering it. Input is a JSON object with the proposed spec (name, description, command, args, optional patentSurface). Returns ok=true/false with a list of schema errors. Use as a dry-run before calling scbe-tool-register.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/toolsmith.cjs", "validate", "--spec", "{task}"]
+  },
+  {
+    "name": "tool-list",
+    "description": "List all registered agent-bus tools. Input is an optional name filter substring (pass empty string to list all, or a partial name to filter). Returns tools_count and a per-tool summary: name, command, patentSurface, description_head.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/toolsmith.cjs", "list", "--filter", "{task}"]
   }
 ]

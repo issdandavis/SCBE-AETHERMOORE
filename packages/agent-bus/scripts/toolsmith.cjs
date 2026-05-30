@@ -171,7 +171,8 @@ function printHelp() {
   process.stdout.write(`SCBE Toolsmith
 
 Usage:
-  node packages/agent-bus/scripts/toolsmith.cjs list [--tools-json <path>]
+  node packages/agent-bus/scripts/toolsmith.cjs list [--filter <substring>] [--tools-json <path>]
+  node packages/agent-bus/scripts/toolsmith.cjs validate --spec '{"name":"x","description":"...","command":"node","args":["script.cjs","{task}"]}'
   node packages/agent-bus/scripts/toolsmith.cjs register --spec '{"name":"x","description":"...","command":"node","args":["script.cjs","{task}"]}'
   node packages/agent-bus/scripts/toolsmith.cjs unregister --name <tool-name>
   node packages/agent-bus/scripts/toolsmith.cjs binary-hex "text to compile"
@@ -192,7 +193,24 @@ function main() {
     return;
   }
   if (command === 'list') {
-    printJson(listToolSpecsFromFile(toolsJsonPath(flags)));
+    const filter = String(flags.filter || positionals[0] || '');
+    const result = listToolSpecsFromFile(toolsJsonPath(flags));
+    const filtered = filter
+      ? { ...result, tools: result.tools.filter((t) => t.name.includes(filter)) }
+      : result;
+    printJson(filtered);
+    return;
+  }
+  if (command === 'validate') {
+    const raw = parseSpec(flags, positionals);
+    const result = validateToolSpec(raw);
+    printJson({
+      schema_version: 'scbe.agent_bus.tool_factory.validate.v1',
+      ok: result.ok,
+      errors: result.errors,
+      ...(result.spec && { spec: result.spec }),
+    });
+    process.exitCode = result.ok ? 0 : 1;
     return;
   }
   if (command === 'register') {
