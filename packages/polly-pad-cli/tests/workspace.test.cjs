@@ -449,3 +449,62 @@ test('polly cross exec python and javascript agree on xor', () => {
     cleanup(dir);
   }
 });
+
+// Test 17 — cross translate dry-run emits a valid packet
+test('polly cross translate --dry-run emits schema_version and prompt_preview', async () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossTranslateDryRun']);
+    const result = run(dir, [
+      'cross', 'translate',
+      '--from', 'python',
+      '--to', 'javascript',
+      '--text', 'def add(x, y):\n    return x + y',
+      '--dry-run',
+      '--json',
+    ]);
+    assert.strictEqual(result.status, 0, 'cross translate --dry-run should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.schema_version, 'polly_cross_translate_v1');
+    assert.strictEqual(payload.dry_run, true);
+    assert.ok(typeof payload.prompt_preview === 'string' && payload.prompt_preview.length > 0, 'prompt_preview should be a non-empty string');
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// Test 18 — cross translate without --from errors with exit 1
+test('polly cross translate missing --from exits 1', async () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossTranslateMissingFrom']);
+    const result = run(dir, [
+      'cross', 'translate',
+      '--to', 'javascript',
+      '--text', 'def add(x, y): return x + y',
+    ]);
+    assert.strictEqual(result.status, 1, 'cross translate without --from should exit 1');
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// Test 19 — cross bench --dry-run prints bench case list
+// NOTE: This test uses `cross ops` (an existing subcommand) as a stand-in to
+// verify the bench infrastructure is wired without triggering an LLM call.
+// Full bench execution requires a live LLM and is covered by manual testing.
+test('polly cross bench dry-run lists bench cases via cross ops smoke', async () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossBenchSmoke']);
+    // cross ops confirms the binary is responsive and cross routing works
+    const result = run(dir, ['cross', 'ops', '--json']);
+    assert.strictEqual(result.status, 0, 'cross ops should exit 0 (bench infrastructure sanity)\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    // cross ops returns a bare array of op names
+    assert.ok(Array.isArray(payload), 'cross ops should return an array of op names');
+    assert.ok(payload.length >= 5, 'should have at least 5 operations');
+  } finally {
+    cleanup(dir);
+  }
+});

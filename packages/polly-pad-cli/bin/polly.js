@@ -373,6 +373,178 @@ function checkConsistency(results) {
   return { consensus: outputs.length === 1 ? 'full' : 'mismatch', match: outputs.length === 1, outputs };
 }
 
+// ---------------------------------------------------------------------------
+// Cross-translate helpers (AST translation tier)
+// ---------------------------------------------------------------------------
+
+// 5 embedded benchmark cases: Python → JavaScript
+// Baselines: TransCoder 74% (Lachaux 2020), AVATAR 88% (Ahmad 2021),
+//            CodeXGLUE 87% (Lu 2021), GPT-4/Claude ~95%
+const TRANSLATE_BENCH = [
+  {
+    id: 'bench_add',
+    from: 'python',
+    to: 'javascript',
+    source: 'def add(x, y):\n    return x + y',
+    expected_output: '3',
+    driver: 'console.log(add(1, 2));',
+    description: 'Simple addition function',
+  },
+  {
+    id: 'bench_factorial',
+    from: 'python',
+    to: 'javascript',
+    source: 'def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)',
+    expected_output: '120',
+    driver: 'console.log(factorial(5));',
+    description: 'Recursive factorial',
+  },
+  {
+    id: 'bench_fizzbuzz',
+    from: 'python',
+    to: 'javascript',
+    source: 'def fizzbuzz(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append("FizzBuzz")\n        elif i % 3 == 0:\n            result.append("Fizz")\n        elif i % 5 == 0:\n            result.append("Buzz")\n        else:\n            result.append(str(i))\n    return result',
+    expected_output: '1,2,Fizz,4,Buzz,Fizz,7,8,Fizz,Buzz,11,Fizz,13,14,FizzBuzz',
+    driver: 'console.log(fizzbuzz(15).join(","));',
+    description: 'FizzBuzz list builder',
+  },
+  {
+    id: 'bench_palindrome',
+    from: 'python',
+    to: 'javascript',
+    source: 'def is_palindrome(s):\n    s = s.lower().replace(" ", "")\n    return s == s[::-1]',
+    expected_output: 'true',
+    driver: 'console.log(is_palindrome("racecar"));',
+    description: 'Palindrome check',
+  },
+  {
+    id: 'bench_flatten',
+    from: 'python',
+    to: 'javascript',
+    source: 'def flatten(lst):\n    result = []\n    for item in lst:\n        if isinstance(item, list):\n            result.extend(flatten(item))\n        else:\n            result.append(item)\n    return result',
+    expected_output: '1,2,3,4,5',
+    driver: 'console.log(flatten([1, [2, [3, [4]], 5]]).join(","));',
+    description: 'Recursive list flattening',
+  },
+];
+
+function buildTranslatePrompt(fromLang, toLang, sourceCode) {
+  return (
+    'You are a precise code translator. Translate the following ' +
+    fromLang +
+    ' code to ' +
+    toLang +
+    '.\n\n' +
+    'Rules:\n' +
+    '1. Output ONLY the translated ' +
+    toLang +
+    ' code — no explanation, no markdown fences, no commentary.\n' +
+    '2. Preserve the exact function name(s) and parameter names.\n' +
+    '3. Preserve semantics exactly — same inputs must produce same outputs.\n' +
+    '4. Use idiomatic ' +
+    toLang +
+    ' style.\n\n' +
+    'Source (' +
+    fromLang +
+    '):\n' +
+    sourceCode
+  );
+}
+
+async function translateCode(fromLang, toLang, sourceCode) {
+  const prompt = buildTranslatePrompt(fromLang, toLang, sourceCode);
+  const result = await routeToModel(prompt);
+  // Strip markdown fences if the model wrapped its output
+  let code = result.text || result || '';
+  code = String(code)
+    .replace(/^```[a-zA-Z]*\n?/m, '')
+    .replace(/```\s*$/m, '')
+    .trim();
+  return { code, model: result.model || 'unknown', raw: result };
+}
+
+function makeTranslatePacket(fromLang, toLang, source, translation, model) {
+  return {
+    schema_version: 'polly_cross_translate_v1',
+    ts: new Date().toISOString(),
+    from: fromLang,
+    to: toLang,
+    source,
+    translation,
+    model,
+    id: crypto.randomUUID(),
+  };
+}
+
+async function runTranslateBench(opts) {
+  const cases = opts.cases || TRANSLATE_BENCH;
+  const results = [];
+  let passed = 0;
+
+  for (const c of cases) {
+    const start = Date.now();
+    let translated = null;
+    let model = 'unknown';
+    let error = null;
+    let exec_match = false;
+    let actual_output = null;
+
+    try {
+      const res = await translateCode(c.from, c.to, c.source);
+      translated = res.code;
+      model = res.model;
+
+      // Attempt execution verification for JS→JS bench cases
+      if (c.to === 'javascript' && c.driver) {
+        const fullCode = translated + '\n' + c.driver;
+        const execResult = spawnSync(process.execPath, ['-e', fullCode], {
+          timeout: 8000,
+          encoding: 'utf8',
+        });
+        actual_output = (execResult.stdout || '').trim();
+        exec_match = actual_output === c.expected_output;
+        if (exec_match) passed++;
+      }
+    } catch (e) {
+      error = e.message || String(e);
+    }
+
+    results.push({
+      id: c.id,
+      description: c.description,
+      from: c.from,
+      to: c.to,
+      model,
+      translated,
+      expected_output: c.expected_output,
+      actual_output,
+      exec_match,
+      error,
+      elapsed_ms: Date.now() - start,
+    });
+  }
+
+  const total = cases.length;
+  const execution_match_rate = total > 0 ? passed / total : 0;
+
+  return {
+    schema_version: 'polly_cross_bench_v1',
+    ts: new Date().toISOString(),
+    total,
+    passed,
+    execution_match_rate,
+    baselines: {
+      TransCoder_Lachaux2020: 0.74,
+      AVATAR_Ahmad2021: 0.88,
+      CodeXGLUE_Lu2021: 0.87,
+      GPT4_Claude_approx: 0.95,
+    },
+    target: 0.8,
+    above_target: execution_match_rate >= 0.8,
+    results,
+  };
+}
+
 function normalizeLanguage(raw) {
   if (!raw) return null;
   return LANGUAGE_ALIASES[String(raw).toLowerCase()] || null;
@@ -1765,7 +1937,47 @@ const COMMANDS = {
       return;
     }
 
-    console.error('Unknown cross subcommand: ' + sub + '. Use: pack, unpack, op, exec, langs, ops');
+    if (sub === 'translate') {
+      // polly cross translate --from <lang> --to <lang> (--text <code> | --file <path>) [--dry-run] [--json]
+      const fromLang = normalizeLanguage(flags.from);
+      const toLang = normalizeLanguage(flags.to);
+      if (!fromLang) { console.error('--from <language> is required'); process.exit(1); }
+      if (!toLang) { console.error('--to <language> is required'); process.exit(1); }
+
+      let sourceCode = flags.text || null;
+      if (!sourceCode && flags.file) {
+        try { sourceCode = fs.readFileSync(flags.file, 'utf8'); }
+        catch (e) { console.error('Cannot read file: ' + flags.file + '\n' + e.message); process.exit(1); }
+      }
+      if (!sourceCode) { console.error('Provide source code via --text <code> or --file <path>'); process.exit(1); }
+
+      if (flags['dry-run']) {
+        const preview = buildTranslatePrompt(fromLang, toLang, sourceCode);
+        out({ schema_version: 'polly_cross_translate_v1', dry_run: true, from: fromLang, to: toLang, prompt_preview: preview }, flags.json);
+        return;
+      }
+
+      const { code, model } = await translateCode(fromLang, toLang, sourceCode);
+      const packet = makeTranslatePacket(fromLang, toLang, sourceCode, code, model);
+
+      if (ws) appendAudit(ws, 'cross.translate', fromLang + '->' + toLang, { from: fromLang, to: toLang, model });
+      out(packet, flags.json);
+      return;
+    }
+
+    if (sub === 'bench') {
+      // polly cross bench [--json]
+      const benchResult = await runTranslateBench({});
+      if (ws) appendAudit(ws, 'cross.bench', 'translate-bench', {
+        total: benchResult.total,
+        passed: benchResult.passed,
+        execution_match_rate: benchResult.execution_match_rate,
+      });
+      out(benchResult, flags.json || true);
+      return;
+    }
+
+    console.error('Unknown cross subcommand: ' + sub + '. Use: pack, unpack, op, exec, langs, ops, translate, bench');
     process.exit(1);
   },
 
@@ -1875,6 +2087,15 @@ Commands:
   cross unpack             Rehydrate text from packet hex
   cross op                 Render bounded ops across supported languages
   cross exec               Execute bounded op templates through real runtimes and compare outputs
+  cross translate          LLM-driven translation of code between languages
+    --from <lang>          Source language (required)
+    --to <lang>            Target language (required)
+    --text <code>          Inline source code
+    --file <path>          Read source code from file
+    --dry-run              Preview prompt without calling model
+  cross bench              Run 5-case translation benchmark; report execution-match rate
+                           Baselines: TransCoder 74%, AVATAR 88%, CodeXGLUE 87%, GPT-4/Claude ~95%
+                           Target: ≥80%
   doctor                   Check environment (Node, Ollama, API keys, git)
   tools list               List governed tools (tools.json) + built-in recipes
   tools inspect <name>     Show tool details, parameters, and example
@@ -1920,6 +2141,8 @@ Examples:
   polly cross pack --text "def add(x, y): return x + y" --lang python
   polly cross op add --json
   polly cross exec add --x 5 --y 3 --lang javascript --json
+  polly cross translate --from python --to javascript --text "def add(x,y): return x+y" --json
+  polly cross bench --json
   polly runs --json
   polly handoff | pbcopy
 `;
