@@ -267,6 +267,13 @@
     "args": ["packages/agent-bus/scripts/compass.cjs", "--hermes", "{task}"]
   },
   {
+    "name": "roll-stack-maze-benchmark",
+    "description": "Run the SCBE Compass roll-stack execution benchmark on deterministic maze pathfinding fixtures. Requires a real local BFS execution, output-contract validation, and receipt hashes; plan-only results fail the lane.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/bench_roll_stack_maze.cjs"]
+  },
+  {
     "name": "semantic-hex-bridge",
     "description": "Encode text through the agent-bus 6D semantic bridge into binary and 12-character hex routing evidence.",
     "patentSurface": "atomic-tokenizer",

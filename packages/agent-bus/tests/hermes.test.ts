@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   classifyHermesTask,
   classifyScbeCompassTask,
+  buildScbeRollStack,
   hermesModelLanes,
   planHermesRoute,
   planScbeCompassRoute,
@@ -99,6 +100,7 @@ describe('Hermes agentic CLI planner', () => {
     const uploadCard = cards.find((card) => card.id === 'roll.youtube-upload-prep');
 
     expect(cards.map((card) => card.id)).toContain('roll.collect-human-input');
+    expect(cards.map((card) => card.id)).toContain('roll.execute-bounded-local-tool');
     expect(cards.map((card) => card.id)).toContain('roll.verify-output-contract');
     expect(uploadCard?.model_policy.free_first).toBe(true);
     expect(uploadCard?.model_policy.allowed_lanes).toContain('ollama');
@@ -106,6 +108,18 @@ describe('Hermes agentic CLI planner', () => {
     expect(uploadCard?.human_gate).toMatch(/Approve/);
     expect(uploadCard?.expected_output.required_fields).toContain('visibility');
     expect(uploadCard?.expected_output.acceptance).toContain('visibility is unlisted or draft');
+  });
+
+  it('builds an executable roll stack with explicit next-roll links and receipt requirements', () => {
+    const stack = buildScbeRollStack('solve maze pathfinding benchmark');
+
+    expect(stack.schema_version).toBe('scbe.agent_bus.roll_stack_plan.v1');
+    expect(stack.acceptance.requires_execution_receipt).toBe(true);
+    expect(stack.steps.map((step) => step.roll_id)).toContain('roll.execute-bounded-local-tool');
+    expect(stack.steps[0].roll_id).toBe('roll.collect-human-input');
+    expect(stack.steps[0].next_roll).toBe('roll.execute-bounded-local-tool');
+    expect(stack.steps[1].expected_output.required_fields).toContain('receipt_hash');
+    expect(stack.steps[stack.steps.length - 1].next_roll).toBeNull();
   });
 
   it('exposes roll cards as a standalone API by mode', () => {

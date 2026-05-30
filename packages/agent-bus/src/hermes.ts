@@ -115,6 +115,35 @@ export interface ScbeRollCard {
   human_gate?: string;
 }
 
+export interface ScbeRollStackStep {
+  index: number;
+  roll_id: string;
+  kind: ScbeRollKind;
+  title: string;
+  instruction: string;
+  inputs: string[];
+  expected_output: ScbeRollCard['expected_output'];
+  tools: string[];
+  human_gate?: string;
+  next_roll: string | null;
+}
+
+export interface ScbeRollStackPlan {
+  schema_version: 'scbe.agent_bus.roll_stack_plan.v1';
+  generated_at: string;
+  task: string;
+  mode: ScbeCompassMode;
+  command_path: string;
+  formation: ScbeFormation;
+  steps: ScbeRollStackStep[];
+  acceptance: {
+    requires_execution_receipt: boolean;
+    no_remote_private_without_approval: boolean;
+    no_public_publish_without_approval: boolean;
+    output_contracts: string[];
+  };
+}
+
 export interface ScbeCompassRoutePlan {
   schema_version: 'scbe.agent_bus.compass_route_plan.v1';
   command_surface: 'scbe-compass';
@@ -394,6 +423,47 @@ export function scbeCompassRollCards(mode: HermesTaskMode = 'general'): readonly
   return rollCardsForMode(mode);
 }
 
+export function buildScbeRollStack(task: string): ScbeRollStackPlan {
+  const route = planScbeCompassRoute(task);
+  const steps = route.roll_cards.map((card, index, cards): ScbeRollStackStep => {
+    const nextCard = cards[index + 1];
+    return {
+      index,
+      roll_id: card.id,
+      kind: card.kind,
+      title: card.title,
+      instruction: card.instruction,
+      inputs: [...card.inputs],
+      expected_output: {
+        format: card.expected_output.format,
+        required_fields: [...card.expected_output.required_fields],
+        acceptance: [...card.expected_output.acceptance],
+      },
+      tools: [...card.tools],
+      ...(card.human_gate ? { human_gate: card.human_gate } : {}),
+      next_roll: nextCard ? nextCard.id : null,
+    };
+  });
+
+  return {
+    schema_version: 'scbe.agent_bus.roll_stack_plan.v1',
+    generated_at: new Date().toISOString(),
+    task: route.task,
+    mode: route.mode,
+    command_path: route.command_path,
+    formation: route.formation,
+    steps,
+    acceptance: {
+      requires_execution_receipt: true,
+      no_remote_private_without_approval: true,
+      no_public_publish_without_approval: true,
+      output_contracts: route.roll_cards.map(
+        (card) => `${card.id}:${card.expected_output.required_fields.join(',')}`
+      ),
+    },
+  };
+}
+
 function commandNodeForMode(mode: HermesTaskMode): ScbeCommandNode {
   if (mode === 'compiler') return COMMAND_TREE.find((n) => n.path === 'CA.forge.compiler')!;
   if (mode === 'writing') return COMMAND_TREE.find((n) => n.path === 'DR.scribe.structure')!;
@@ -562,6 +632,46 @@ function baseRollCards(): ScbeRollCard[] {
         minimum_capability: 'offline-template',
         free_first: true,
         allowed_lanes: ['offline', 'ollama', 'huggingface'],
+      },
+    },
+    {
+      id: 'roll.execute-bounded-local-tool',
+      kind: 'automation',
+      title: 'Execute bounded local tool and capture receipt',
+      instruction:
+        'Run the selected local/offline tool with bounded inputs. Capture stdout, stderr tail, exit code, runtime, and a receipt hash. Do not mutate files, publish, spend money, or call remote providers unless the prior roll granted that gate.',
+      inputs: ['validated_input_packet', 'tool_name', 'expected_output', 'governance'],
+      next_steps: [
+        'Resolve the local tool from the registry.',
+        'Run it with bounded arguments and a timeout.',
+        'Capture execution evidence, including exit_code, duration_ms, and receipt_hash.',
+        'Send the execution packet to the verifier roll.',
+      ],
+      examples: [
+        'Run roll-stack-maze-benchmark locally and capture the JSON report.',
+        'Run geoseal-cross-build-broadcast after the input contract passes.',
+      ],
+      expected_output: {
+        format: 'json',
+        required_fields: [
+          'tool',
+          'exit_code',
+          'duration_ms',
+          'stdout',
+          'stderr_tail',
+          'receipt_hash',
+        ],
+        acceptance: [
+          'exit_code is numeric',
+          'receipt_hash is derived from executed input and output',
+          'No blocked action occurred without a human gate',
+        ],
+      },
+      tools: ['scbe-agentbus'],
+      model_policy: {
+        minimum_capability: 'offline-template',
+        free_first: true,
+        allowed_lanes: ['offline'],
       },
     },
     {

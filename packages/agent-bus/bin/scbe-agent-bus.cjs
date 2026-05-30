@@ -30,10 +30,12 @@ const {
   summarizeGovernedPipelineState,
   hermesModelLanes,
   planHermesRoute,
+  buildScbeRollStack,
   scbeCompassModelLanes,
   planScbeCompassRoute,
   scbeCompassCommandTree,
   scbeCompassBoardRules,
+  scbeCompassRollCards,
 } = require('../dist/index.js');
 
 const HOSTED_INTAKE_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html';
@@ -128,6 +130,8 @@ Usage:
   scbe-agent-bus compass models --json
   scbe-agent-bus compass tree --json
   scbe-agent-bus compass board --task "cross-language compiler" --json
+  scbe-agent-bus compass rolls --task "solve maze pathfinding benchmark" --json
+  scbe-agent-bus compass stack --task "solve maze pathfinding benchmark" --json
   scbe-agent-bus hermes plan --task "draft and review a YouTube script" --json
   scbe-agent-bus workspace new --hint customer-smoke --json
   scbe-agent-bus workspace ingest --workspace-root <path> --source-path <file> --json
@@ -755,6 +759,50 @@ async function main() {
       }
       return;
     }
+    if (action === 'rolls') {
+      const task = String(flags.task || flags.intent || '').trim();
+      const plan = task ? planScbeCompassRoute(task) : null;
+      const mode = plan?.mode || 'general';
+      const payload = {
+        schema_version: 'scbe.agent_bus.compass_roll_cards.v1',
+        command_surface: isHermesAlias ? 'hermes-alias' : 'scbe-compass',
+        generated_at: new Date().toISOString(),
+        task,
+        mode,
+        command_path: plan?.command_path || 'KO.command',
+        cards: scbeCompassRollCards(mode),
+      };
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+      } else {
+        process.stdout.write('SCBE Compass roll cards:\n');
+        for (const card of payload.cards) {
+          process.stdout.write(`  ${card.id}: ${card.title} (${card.kind})\n`);
+          process.stdout.write(`    expects: ${card.expected_output.required_fields.join(', ')}\n`);
+        }
+      }
+      return;
+    }
+    if (action === 'stack') {
+      const task = String(flags.task || flags.intent || '').trim();
+      if (!task) {
+        process.stderr.write(`Usage: scbe-agent-bus ${command} stack --task "..." [--json]\n`);
+        process.exitCode = 2;
+        return;
+      }
+      const payload = buildScbeRollStack(task);
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+      } else {
+        process.stdout.write('SCBE Compass roll stack:\n');
+        for (const step of payload.steps) {
+          process.stdout.write(
+            `  ${step.index}. ${step.roll_id} -> ${step.next_roll || '<done>'}\n`
+          );
+        }
+      }
+      return;
+    }
     if (action === 'plan') {
       const task = String(flags.task || flags.intent || '').trim();
       if (!task) {
@@ -786,7 +834,7 @@ async function main() {
       return;
     }
     process.stderr.write(
-      `Usage: scbe-agent-bus ${command} plan|models|tree|board [--task "..."] [--json]\n`
+      `Usage: scbe-agent-bus ${command} plan|models|tree|board|rolls|stack [--task "..."] [--json]\n`
     );
     process.exitCode = 2;
     return;
