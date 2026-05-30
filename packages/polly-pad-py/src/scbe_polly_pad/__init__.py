@@ -1,5 +1,16 @@
 """Public Polly Pad Python interface."""
 
+from .audit import (
+    GENESIS_HASH,
+    AuditReceipt,
+    AuditVerification,
+    append_event,
+    compute_event_hash,
+    default_ledger_path,
+    export_ledger,
+    iter_events,
+    verify_ledger,
+)
 from .runtime import (
     LANGS,
     MODE_TOOLS,
@@ -43,6 +54,7 @@ __all__ = [
     "CodeZone",
     "DIRECTION_WEIGHTS",
     "Decision",
+    "GENESIS_HASH",
     "LANGS",
     "Lang",
     "MODE_TOOLS",
@@ -65,15 +77,23 @@ __all__ = [
     "Voxel6",
     "VoxelRecord",
     "access_cost",
+    "append_event",
     "cube_id",
     "cymatic_field_6d",
+    "default_ledger_path",
     "dist",
+    "export_ledger",
     "harmonic_cost",
     "hyperbolic_distance_6d",
+    "iter_events",
     "pad_namespace_key",
     "plan_trace",
     "plan_tri_directional",
     "quasi_sphere_volume",
     "scbe_decide",
     "triadic_temporal_distance",
+    "verify_ledger",
+    "AuditReceipt",
+    "AuditVerification",
+    "compute_event_hash",
 ]
