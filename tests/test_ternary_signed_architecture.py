@@ -95,7 +95,8 @@ class TestTritVector:
 
     def test_double_negation_identity(self):
         tv = TritVector.from_list([1, -1, 0, 1, -1, 0])
-        assert (-(-tv)).values == tv.values
+        negated = -tv
+        assert (-negated).values == tv.values
 
     def test_repr(self):
         tv = TritVector.from_list([1, 0, -1])

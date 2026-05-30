@@ -15,10 +15,6 @@ def test_packaged_product_sources_exist():
         if not (repo_root / src_rel).exists():
             missing.append(src_rel)
 
-    for src_rel in package_products.VAULT_SFT_FILES:
-        if not (repo_root / src_rel).exists():
-            missing.append(src_rel)
-
     for src_rel, _dst_rel in package_products.VAULT_EXTRA_FILES:
         if not (repo_root / src_rel).exists():
             missing.append(src_rel)
@@ -55,8 +51,23 @@ def test_toolkit_zip_contains_promised_buyer_templates(tmp_path: Path):
         "templates/threshold-worksheet.md",
         "templates/pilot-checklist.md",
         "templates/review-notes-template.md",
+        "templates/training_schema.json",
         "quickstart/README.md",
     }.issubset(names)
+
+
+def test_vault_zip_contains_external_dataset_pointer_and_schema(tmp_path: Path):
+    vault = package_products.package_vault(tmp_path)
+
+    with ZipFile(vault) as zf:
+        names = set(zf.namelist())
+        dataset_notice = zf.read("DATASET_LOCATION.md").decode("utf-8")
+        schema = json.loads(zf.read("schemas/training_schema.json").decode("utf-8"))
+
+    assert "DATASET_LOCATION.md" in names
+    assert "schemas/training_schema.json" in names
+    assert package_products.TRAINING_DATASET_URL in dataset_notice
+    assert schema["schema"] == "scbe_training_record_v1"
 
 
 def test_making_of_zip_excludes_manuscripts_and_includes_process_guides(tmp_path: Path):

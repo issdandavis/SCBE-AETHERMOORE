@@ -1,10 +1,11 @@
 """Tests for bench_scorer.py normalizer (Lane 10)."""
+
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from scripts.benchmark.bench_scorer import BenchScore, score_report
+from scripts.benchmark.bench_scorer import score_report
 
 
 def _report(schema: str, summary: dict, **kwargs) -> dict:
@@ -81,5 +82,3 @@ def test_list_claim_boundary_flattened():
     )
     s = score_report(report)
     assert s.boundary == "first line"
-
-
