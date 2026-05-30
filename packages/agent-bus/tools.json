@@ -363,5 +363,40 @@
     "patentSurface": "agent-harness",
     "command": "python",
     "args": ["scripts/system/chessboard_dev_stack.py", "--goal", "{task}"]
+  },
+  {
+    "name": "scbe-tool-register",
+    "description": "Register a new agent-bus tool from a validated JSON ToolSpec. Writes tools.json atomically after command-target verification. Input is the JSON spec.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": [
+      "packages/agent-bus/scripts/toolsmith.cjs",
+      "register",
+      "--tools-json",
+      "packages/agent-bus/tools.json",
+      "--spec",
+      "{task}"
+    ]
+  },
+  {
+    "name": "binary-hex-compiler",
+    "description": "Compile text into lossless UTF-8 byte hex/binary plus SCBE semantic hex routing evidence.",
+    "patentSurface": "atomic-tokenizer",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/toolsmith.cjs", "binary-hex", "{task}"]
+  },
+  {
+    "name": "auto-abridge",
+    "description": "Deterministically abridge long text into a compact bounded packet with omitted-character accounting.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/toolsmith.cjs", "abridge", "{task}"]
+  },
+  {
+    "name": "scbe-clock-ticker",
+    "description": "Emit compact ISS/UTC time, local time, system time, and an optional task ticker. ISS time is UTC/GMT.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/toolsmith.cjs", "clock", "--tasks", "{task}"]
   }
 ]

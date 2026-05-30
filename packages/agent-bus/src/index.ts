@@ -133,6 +133,23 @@ export {
 } from './tools.js';
 
 export {
+  type ToolCommand,
+  type ToolSpec,
+  type KnownPatentSurface,
+  type ValidationResult,
+  type VerificationResult,
+  type RegistrationResult,
+  type ListResult,
+  ALLOWED_COMMANDS,
+  KNOWN_PATENT_SURFACES,
+  validateToolSpec,
+  verifyToolSpec,
+  registerTool as registerToolSpecInFile,
+  unregisterTool as unregisterToolSpecInFile,
+  listTools as listToolSpecsFromFile,
+} from './tool-factory.js';
+
+export {
   type HermesTaskMode,
   type ScbeCompassMode,
   type ScbeFormation,
