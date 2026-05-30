@@ -50,10 +50,7 @@ def build_html() -> str:
         abbr = orbital["abbr"]
         y_base = index * row_height
         line = _polyline(profiles[abbr], width, row_height, max_density)
-        label = (
-            f"{abbr} / {orbital['orbital_type']}-shell / "
-            f"r={orbital['poincare_r']} / m={orbital['m_states']}"
-        )
+        label = f"{abbr} / {orbital['orbital_type']}-shell / " f"r={orbital['poincare_r']} / m={orbital['m_states']}"
         rows.append(
             "\n".join(
                 [
