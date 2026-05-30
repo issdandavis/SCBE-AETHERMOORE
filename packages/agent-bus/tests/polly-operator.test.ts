@@ -9,7 +9,6 @@ import {
   defaultGravityFrame,
   observeZone,
   POLLY_OPERATOR_SOURCE_REFS,
-  renderEvaBrief,
   renderPollyOperatorBrief,
   reportDamage,
   runSweep,
@@ -152,7 +151,7 @@ describe('buildPollyOperatorAlerts / buildPollyOperatorActions', () => {
     expect(actions.map((a) => a.id)).toContain('action.observe-fog');
   });
 
-  it('publishes Polly source refs and keeps EVA as a compatibility alias only', () => {
+  it('publishes Polly source refs as the only operator narrator surface', () => {
     let station = createStation('STATION-POLLY', { now: NOW });
     station = addZone(station, makeZone('hub', { linked_zones: ['ops'] }), { now: NOW });
     station = observeZone(station, 'hub', { now: NOW });
@@ -162,6 +161,6 @@ describe('buildPollyOperatorAlerts / buildPollyOperatorActions', () => {
     expect(POLLY_OPERATOR_SOURCE_REFS.map((ref) => ref.path)).toContain(
       'src/fleet/polly-pad-runtime.ts'
     );
-    expect(renderEvaBrief(brief)).toBe(renderPollyOperatorBrief(brief));
+    expect(renderPollyOperatorBrief(brief)).toContain('Polly status:');
   });
 });

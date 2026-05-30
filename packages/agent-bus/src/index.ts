@@ -2236,18 +2236,3 @@ export {
   buildPollyOperatorBrief,
   renderPollyOperatorBrief,
 } from './polly-operator.js';
-
-export {
-  type EvaMode,
-  type EvaSeverity,
-  type EvaAlert,
-  type EvaAction,
-  type EvaBrief,
-  type EvaBriefOptions,
-  buildEvaAlerts,
-  buildEvaActions,
-  buildEvaHeadline,
-  renderEvaCliLines,
-  buildEvaBrief,
-  renderEvaBrief,
-} from './eva.js';
