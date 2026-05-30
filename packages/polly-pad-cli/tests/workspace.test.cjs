@@ -535,3 +535,35 @@ test('polly cross bundle packages multiple language files', () => {
     cleanup(dir);
   }
 });
+
+// ---------------------------------------------------------------------------
+// Test 23: polly cross bench translate returns correct schema
+// ---------------------------------------------------------------------------
+test('polly cross bench translate returns correct schema', async () => {
+  const result = spawnSync('node', [BIN, 'cross', 'bench', 'translate', '--json'], {
+    encoding: 'utf8',
+    timeout: 180000,
+    env: { ...process.env },
+  });
+  assert.strictEqual(result.status, 0, 'bench translate should exit 0\n' + result.stderr);
+  const data = JSON.parse(result.stdout);
+  assert.strictEqual(data.schema_version, 'polly_cross_bench_v1');
+  assert.ok(typeof data.execution_match_rate === 'number');
+  assert.ok(Array.isArray(data.results));
+  assert.ok(data.results.length >= 5);
+});
+
+// ---------------------------------------------------------------------------
+// Test 24: polly cross translate --dry-run shows prompt
+// ---------------------------------------------------------------------------
+test('polly cross translate --dry-run shows prompt', () => {
+  const result = spawnSync(
+    'node',
+    [BIN, 'cross', 'translate', '--from', 'python', '--to', 'javascript', '--text', 'def add(x, y): return x + y', '--dry-run', '--json'],
+    { encoding: 'utf8' }
+  );
+  assert.strictEqual(result.status, 0);
+  const data = JSON.parse(result.stdout);
+  assert.strictEqual(data.dry_run, true);
+  assert.ok(data.prompt && data.prompt.length > 0);
+});
