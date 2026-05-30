@@ -10,6 +10,10 @@ readme = "README.md"
 license = "MIT OR Apache-2.0"
 license-files = ["LICENSE", "LICENSE-APACHE"]
 requires-python = ">=3.11"
+dependencies = [
+    # Keep Dependabot's Python dependency graph on a patched uv release.
+    "uv>=0.11.17",
+]
 authors = [
     {name = "Issac Daniel Davis", email = "issdandavis@gmail.com"},
 ]
