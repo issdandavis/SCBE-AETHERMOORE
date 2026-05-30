@@ -2263,3 +2263,27 @@ export {
   type StationCycleResult,
   runStationCycle,
 } from './station-cycle.js';
+
+export {
+  type SearchPlane,
+  type SearchNodeState,
+  type SearchColorGrade,
+  type SearchSector,
+  type SearchSpaceNode,
+  type SearchAbridgement,
+  type SearchContractionResult,
+  type SearchLaneAgent,
+  type SearchLane,
+  type SearchLaneAllocation,
+  type SearchResult,
+  type MergedSearchResult,
+  type SearchResultMerge,
+  createSearchNode,
+  gradeSearchNode,
+  reorderSearchQueries,
+  expandSearchNode,
+  contractSearchSpace,
+  repositionSearchNode,
+  allocateParallelSearchLanes,
+  mergeSearchResults,
+} from './search-space-router.js';
