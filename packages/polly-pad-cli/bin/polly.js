@@ -15,6 +15,7 @@ const VERSION = '0.1.0';
 const SCHEMA_PAD = 'polly_pad_v1';
 const SCHEMA_RUN = 'polly_run_v1';
 const SCHEMA_AUDIT = 'polly_audit_receipt_v1';
+const SCHEMA_CROSS_PACKET = 'polly_cross_packet_v1';
 const GENESIS_HASH = '0'.repeat(64);
 
 // ---------------------------------------------------------------------------
@@ -198,6 +199,154 @@ function exportAudit(ws) {
     },
     verified
   );
+}
+
+// ---------------------------------------------------------------------------
+// Cross-language binary/hex packets
+// ---------------------------------------------------------------------------
+
+const LANGUAGE_ALIASES = {
+  py: 'python',
+  python: 'python',
+  js: 'javascript',
+  javascript: 'javascript',
+  ts: 'typescript',
+  typescript: 'typescript',
+  rs: 'rust',
+  rust: 'rust',
+  go: 'go',
+  sh: 'shell',
+  shell: 'shell',
+  bash: 'shell',
+};
+
+const LANG_HINTS = {
+  python: ['def ', 'import ', 'print(', 'self', 'elif ', 'None', 'True', 'False'],
+  javascript: ['function ', 'const ', 'let ', 'console.log', '=>', 'require('],
+  typescript: ['interface ', 'type ', ': string', ': number', 'Promise<', 'export '],
+  rust: ['fn ', 'let mut', 'println!', 'Result<', 'pub ', '::'],
+  go: ['func ', 'package ', 'fmt.', ':=', 'defer '],
+  shell: ['#!/', 'echo ', '$(', '&&', 'fi', 'then'],
+};
+
+const SEMANTIC_AXES = [
+  ['intent', 'task', 'goal', 'plan', 'ask', 'prompt', 'result'],
+  ['code', 'compile', 'function', 'class', 'module', 'patch', 'def ', 'const ', 'let ', 'func ', 'fn '],
+  ['security', 'audit', 'verify', 'deny', 'allow', 'policy'],
+  ['data', 'binary', 'hex', 'json', 'packet', 'token', '=', '+', '^', '&', '|'],
+  ['deploy', 'run', 'shell', 'system', 'process', 'command', ';', '$('],
+  ['language', 'python', 'javascript', 'typescript', 'rust', 'go'],
+];
+
+const OP_TEMPLATES = {
+  add: {
+    python: 'result = x + y',
+    javascript: 'const result = x + y;',
+    typescript: 'const result: number = x + y;',
+    rust: 'let result = x + y;',
+    go: 'result := x + y',
+    shell: 'result=$((x + y))',
+  },
+  sub: {
+    python: 'result = x - y',
+    javascript: 'const result = x - y;',
+    typescript: 'const result: number = x - y;',
+    rust: 'let result = x - y;',
+    go: 'result := x - y',
+    shell: 'result=$((x - y))',
+  },
+  mul: {
+    python: 'result = x * y',
+    javascript: 'const result = x * y;',
+    typescript: 'const result: number = x * y;',
+    rust: 'let result = x * y;',
+    go: 'result := x * y',
+    shell: 'result=$((x * y))',
+  },
+  xor: {
+    python: 'result = x ^ y',
+    javascript: 'const result = x ^ y;',
+    typescript: 'const result: number = x ^ y;',
+    rust: 'let result = x ^ y;',
+    go: 'result := x ^ y',
+    shell: 'result=$((x ^ y))',
+  },
+  and: {
+    python: 'result = x & y',
+    javascript: 'const result = x & y;',
+    typescript: 'const result: number = x & y;',
+    rust: 'let result = x & y;',
+    go: 'result := x & y',
+    shell: 'result=$((x & y))',
+  },
+  or: {
+    python: 'result = x | y',
+    javascript: 'const result = x | y;',
+    typescript: 'const result: number = x | y;',
+    rust: 'let result = x | y;',
+    go: 'result := x | y',
+    shell: 'result=$((x | y))',
+  },
+};
+
+function normalizeLanguage(raw) {
+  if (!raw) return null;
+  return LANGUAGE_ALIASES[String(raw).toLowerCase()] || null;
+}
+
+function detectLanguage(text) {
+  let best = { language: 'text', score: 0 };
+  for (const [language, hints] of Object.entries(LANG_HINTS)) {
+    const score = hints.reduce((total, hint) => total + (text.includes(hint) ? 1 : 0), 0);
+    if (score > best.score) best = { language, score };
+  }
+  return best;
+}
+
+function semanticDims(text, language) {
+  const lower = text.toLowerCase();
+  const dims = SEMANTIC_AXES.map((axis) => {
+    const hits = axis.reduce((total, term) => total + (lower.includes(term) ? 1 : 0), 0);
+    return Math.min(255, Math.round((hits / Math.max(axis.length, 1)) * 255));
+  });
+  if (language && language !== 'text') dims[5] = Math.max(dims[5], 64);
+  return dims;
+}
+
+function dimsToHex(dims) {
+  return dims.map((value) => value.toString(16).padStart(2, '0')).join('');
+}
+
+function toBinaryGroups(buffer) {
+  return Array.from(buffer)
+    .map((byte) => byte.toString(2).padStart(8, '0'))
+    .join(' ');
+}
+
+function packetFromText(text, opts) {
+  const buffer = Buffer.from(text, 'utf8');
+  const language = normalizeLanguage(opts.language) || detectLanguage(text).language;
+  const dims = semanticDims(text, language);
+  return {
+    schema_version: SCHEMA_CROSS_PACKET,
+    encoding: 'utf8',
+    language,
+    bytes: buffer.length,
+    sha256: crypto.createHash('sha256').update(buffer).digest('hex'),
+    hex: buffer.toString('hex'),
+    binary: toBinaryGroups(buffer),
+    semantic_dims: dims,
+    semantic_hex: dimsToHex(dims),
+    text_preview: text.slice(0, 160),
+  };
+}
+
+function textFromHex(hex) {
+  const cleaned = String(hex || '').replace(/\s+/g, '').toLowerCase();
+  if (!cleaned || cleaned.length % 2 !== 0 || /[^0-9a-f]/.test(cleaned)) {
+    throw new Error('hex input must contain an even number of hexadecimal characters');
+  }
+  return Buffer.from(cleaned, 'hex').toString('utf8');
 }
 
 // ---------------------------------------------------------------------------
@@ -1344,6 +1493,125 @@ const COMMANDS = {
     process.exit(1);
   },
 
+  async cross(args, flags) {
+    const [sub, ...rest] = args;
+    const ws = findWorkspaceRoot(process.cwd());
+
+    if (!sub || sub === 'help') {
+      console.log('Usage: polly cross <pack|unpack|op|langs|ops> [options]');
+      console.log('');
+      console.log('Examples:');
+      console.log('  polly cross pack --text "def add(x, y): return x + y" --lang python');
+      console.log('  polly cross pack --file src/index.ts');
+      console.log('  polly cross unpack --hex 64656620');
+      console.log('  polly cross op add --json');
+      return;
+    }
+
+    if (sub === 'langs') {
+      out(Object.keys(LANG_HINTS), flags.json);
+      return;
+    }
+
+    if (sub === 'ops') {
+      out(Object.keys(OP_TEMPLATES), flags.json);
+      return;
+    }
+
+    if (sub === 'pack') {
+      let text = '';
+      let source = 'args';
+      if (flags.file) {
+        text = fs.readFileSync(path.resolve(String(flags.file)), 'utf8');
+        source = path.resolve(String(flags.file));
+      } else if (flags.text) {
+        text = String(flags.text);
+        source = '--text';
+      } else {
+        text = rest.join(' ');
+      }
+      if (!text) {
+        console.error('Usage: polly cross pack --text <text> [--lang python]');
+        process.exit(1);
+      }
+      const packet = packetFromText(text, { language: flags.lang || flags.language });
+      packet.source = source;
+      if (ws) {
+        appendAudit(ws, 'cross.pack', packet.sha256.slice(0, 16), {
+          source,
+          language: packet.language,
+          bytes: packet.bytes,
+          semantic_hex: packet.semantic_hex,
+        });
+      }
+      out(packet, true);
+      return;
+    }
+
+    if (sub === 'unpack') {
+      const hex = flags.hex || rest.join('');
+      let text;
+      try {
+        text = textFromHex(hex);
+      } catch (err) {
+        console.error('Invalid packet hex: ' + err.message);
+        process.exit(1);
+      }
+      const packet = packetFromText(text, { language: flags.lang || flags.language });
+      const result = {
+        schema_version: 'polly_cross_unpacked_v1',
+        text,
+        verified_sha256: packet.sha256,
+        bytes: packet.bytes,
+        language: packet.language,
+        semantic_hex: packet.semantic_hex,
+      };
+      if (ws) {
+        appendAudit(ws, 'cross.unpack', packet.sha256.slice(0, 16), {
+          bytes: packet.bytes,
+          language: packet.language,
+          semantic_hex: packet.semantic_hex,
+        });
+      }
+      out(result, flags.json);
+      return;
+    }
+
+    if (sub === 'op') {
+      const op = rest[0];
+      if (!op || !OP_TEMPLATES[op]) {
+        console.error('Usage: polly cross op <' + Object.keys(OP_TEMPLATES).join('|') + '> [--to python]');
+        process.exit(1);
+      }
+      const to = normalizeLanguage(flags.to || flags.lang || flags.language);
+      const translations = to ? { [to]: OP_TEMPLATES[op][to] } : OP_TEMPLATES[op];
+      if (to && !translations[to]) {
+        console.error('Unsupported target language: ' + (flags.to || flags.lang || flags.language));
+        process.exit(1);
+      }
+      const packets = Object.fromEntries(
+        Object.entries(translations).map(([language, code]) => [language, packetFromText(code, { language })])
+      );
+      const result = {
+        schema_version: 'polly_cross_op_v1',
+        op,
+        translations,
+        packets,
+      };
+      if (ws) {
+        appendAudit(ws, 'cross.op', op, {
+          targets: Object.keys(translations),
+          packet_heads: Object.fromEntries(Object.entries(packets).map(([k, v]) => [k, v.sha256.slice(0, 16)])),
+        });
+      }
+      out(result, true);
+      return;
+    }
+
+    console.error('Unknown cross subcommand: ' + sub + '. Use: pack, unpack, op, langs, ops');
+    process.exit(1);
+  },
+
   async shell(args, flags) {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: 'polly> ' });
     console.log('Polly shell v' + VERSION + '. Type .exit to quit, .help for commands.');
@@ -1446,6 +1714,9 @@ Commands:
   audit verify             Verify hash-chained audit receipts
   audit list               List audit receipts
   audit export             Export audit receipts as JSON
+  cross pack               Decompose text/file into UTF-8 hex/binary packet
+  cross unpack             Rehydrate text from packet hex
+  cross op                 Render bounded ops across supported languages
   doctor                   Check environment (Node, Ollama, API keys, git)
   tools list               List governed tools (tools.json) + built-in recipes
   tools inspect <name>     Show tool details, parameters, and example
@@ -1488,6 +1759,8 @@ Examples:
   polly run review src/index.ts
   polly run plan --dry-run "migrate to new API"
   polly audit verify
+  polly cross pack --text "def add(x, y): return x + y" --lang python
+  polly cross op add --json
   polly runs --json
   polly handoff | pbcopy
 `;
