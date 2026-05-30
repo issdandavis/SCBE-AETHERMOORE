@@ -34,10 +34,20 @@ Geometric derivation (why ±2 must appear from H³):
   two-observable field.  The curvature/LB face is a separate observable
   that the lab instrument does not directly report.
 
-Three objects exported:
+Four objects exported:
   ShellDuality    — dual pair + invariant + coupling ratio + 2D state
   PerturbationTest — invariant flatness under noise, re-indexing, rescaling
   ShellStateField — full 2D field over the shell ladder
+  RelationTerm    — coupling φ_k between bind and curv (Compton deviation)
+
+Clean API (all importable at top level):
+  compute_invariant(bind_ev, curv_ev)   → float
+  shell_state(k, A)                     → (float, float)
+  fit_binding_law(shells, values)       → (A, delta, p, rms)
+  fit_curvature_law(shells, values)     → (B, delta, q, rms)
+  perturbation_sweep(seed)              → PerturbationTest
+  plot_duality(out_dir)                 → str (path to PNG)
+  export_duality_artifact(out_dir)      → str (path to JSON)
 """
 
 import math
@@ -421,6 +431,311 @@ def build_shell_state_field(anchor_ev: Optional[float] = None) -> ShellStateFiel
     return ShellStateField(duality=build_shell_duality(anchor_ev))
 
 
+# ── RelationTerm ──────────────────────────────────────────────────────────────
+
+@dataclass
+class RelationTerm:
+    """
+    Coupling between the Compton orbital model and the algebraic dual-law.
+
+    The Compton model predicts E_compton(k) = A / φ^(k-1).
+    The dual law predicts E_bind(k) = A / k².
+
+    Coupling ratio ρ(k) = E_compton / E_bind = k² / φ^(k-1) tells us how
+    far the standing-wave interpretation sits from the geometric dual-law
+    interpretation at each shell.
+
+    Key observations (Rydberg anchor):
+      KO (k=1): ρ = 1.000  — exact resonance, ground state balanced
+      AV (k=2): ρ = 2.472
+      RU (k=3): ρ = 3.438
+      CA (k=4): ρ = 3.779  ← peak — f-orbital maximally off-axis
+      UM (k=5): ρ = 3.648
+      DR (k=6): ρ = 3.246
+
+    The phase angle θ_phase(k) = atan2(E_compton, E_bind) in the
+    (bind, compton) plane gives the direction of the Compton model relative
+    to the algebraic bind direction.
+    """
+    A: float
+    shell_k: List[int]
+    tongue_labels: List[str]
+
+    def compton_ev(self, k: int) -> float:
+        """E_compton(k) = A / φ^(k-1)"""
+        return self.A / (PHI ** (k - 1))
+
+    def coupling_ratio(self, k: int) -> float:
+        """ρ(k) = E_compton(k) / E_bind(k) = k² / φ^(k-1)"""
+        return (k * k) / (PHI ** (k - 1))
+
+    def deviation(self, k: int) -> float:
+        """|ρ(k) − 1| — fractional deviation from resonance"""
+        return abs(self.coupling_ratio(k) - 1.0)
+
+    def phase_angle_deg(self, k: int) -> float:
+        """Angle of (E_bind, E_compton) state in degrees."""
+        b = self.A / (k * k)
+        c = self.compton_ev(k)
+        return math.degrees(math.atan2(c, b))
+
+    def resonance_shell(self) -> Tuple[int, float]:
+        """Shell where ρ is closest to 1 (most resonant with algebraic dual)."""
+        devs = [self.deviation(k) for k in self.shell_k]
+        idx = min(range(len(self.shell_k)), key=lambda i: devs[i])
+        return self.shell_k[idx], devs[idx]
+
+    def peak_coupling_shell(self) -> Tuple[int, float]:
+        """Shell with the largest ρ (most diverged from algebraic dual)."""
+        ratios = [self.coupling_ratio(k) for k in self.shell_k]
+        idx = max(range(len(self.shell_k)), key=lambda i: ratios[i])
+        return self.shell_k[idx], ratios[idx]
+
+    def to_dict(self) -> dict:
+        res_k, res_dev = self.resonance_shell()
+        peak_k, peak_rho = self.peak_coupling_shell()
+        return {
+            "schema_version": "geoseed_relation_term_v1",
+            "anchor_A_ev": round(self.A, 9),
+            "resonance_shell_k": res_k,
+            "resonance_tongue": self.tongue_labels[res_k - 1],
+            "resonance_deviation": round(res_dev, 9),
+            "peak_coupling_shell_k": peak_k,
+            "peak_coupling_tongue": self.tongue_labels[peak_k - 1],
+            "peak_coupling_rho": round(peak_rho, 6),
+            "shells": [
+                {
+                    "k": k,
+                    "tongue": self.tongue_labels[k - 1],
+                    "bind_ev": round(self.A / (k * k), 6),
+                    "compton_ev": round(self.compton_ev(k), 6),
+                    "coupling_rho": round(self.coupling_ratio(k), 6),
+                    "deviation": round(self.deviation(k), 6),
+                    "phase_angle_deg": round(self.phase_angle_deg(k), 4),
+                }
+                for k in self.shell_k
+            ],
+        }
+
+
+def build_relation_term(anchor_ev: Optional[float] = None) -> RelationTerm:
+    """Build the RelationTerm coupling object for the six GeoSeed shells."""
+    if anchor_ev is None:
+        from src.geoseed.theory_comparison import RYDBERG_EV
+        anchor_ev = RYDBERG_EV
+    return RelationTerm(
+        A=anchor_ev,
+        shell_k=list(range(1, 7)),
+        tongue_labels=["KO", "AV", "RU", "CA", "UM", "DR"],
+    )
+
+
+# ── Clean top-level API ───────────────────────────────────────────────────────
+
+def compute_invariant(bind_ev: float, curv_ev: float) -> float:
+    """Shell invariant I = E_bind × E_curv. Constant at A² for all k."""
+    return bind_ev * curv_ev
+
+
+def shell_state_at(k: int, A: Optional[float] = None) -> Tuple[float, float]:
+    """(E_bind, E_curv) at shell k with anchor A (default: Rydberg)."""
+    if A is None:
+        from src.geoseed.theory_comparison import RYDBERG_EV
+        A = RYDBERG_EV
+    return A / (k * k), A * (k * k)
+
+
+def fit_binding_law(
+    shells: List[float], values: List[float]
+) -> Tuple[float, float, float, float]:
+    """
+    Fit E = A / (k+δ)^p to binding energy values.
+    Returns (A, delta, p, rms).
+    """
+    from src.geoseed.theory_fit import fit_power_law
+    return fit_power_law(values, ns=shells)
+
+
+def fit_curvature_law(
+    shells: List[float], values: List[float]
+) -> Tuple[float, float, float, float]:
+    """
+    Fit E = B · (k+δ)^q to curvature energy values.
+    Returns (B, delta, q, rms).
+    """
+    from src.geoseed.theory_fit import _fit_growth_law
+    return _fit_growth_law(values, ns=shells)
+
+
+def perturbation_sweep(seed: int = 42) -> "PerturbationTest":
+    """7-scenario perturbation test of invariant robustness. Returns PerturbationTest."""
+    return run_perturbation_tests(seed=seed)
+
+
+# ── Visualization ─────────────────────────────────────────────────────────────
+
+def plot_duality(out_dir: Optional[str] = None) -> str:
+    """
+    3-panel plot of the shell duality field.
+
+    Panel 1: E_bind and E_curv on log scale (the reciprocal dual curves)
+    Panel 2: I(k) = E_bind × E_curv flatness (constant line at A²)
+    Panel 3: Coupling ratio ρ(k) = k²/φ^(k-1) (Compton deviation per shell)
+
+    Returns the path to the saved PNG, or a fallback message if matplotlib
+    is not available.
+    """
+    import os
+
+    if out_dir is None:
+        out_dir = "artifacts/geoseed"
+    os.makedirs(out_dir, exist_ok=True)
+
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except ImportError:
+        return "<matplotlib not installed — plot skipped>"
+
+    dual = build_shell_duality()
+    rel = build_relation_term()
+    ks = dual.shell_k
+    xlabels = ["KO(s)", "AV(p)", "RU(d)", "CA(f)", "UM(g)", "DR(h)"]
+
+    bind_vals = [dual.bind(k) for k in ks]
+    curv_vals = [dual.curv(k) for k in ks]
+    inv_vals = [dual.invariant(k) for k in ks]
+    rho_vals = [rel.coupling_ratio(k) for k in ks]
+
+    fig, axes = plt.subplots(3, 1, figsize=(8, 10))
+    fig.suptitle(
+        "GeoSeed Shell Duality Field\n"
+        f"I(k) = E_bind × E_curv = A² = {dual.A ** 2:.4f} eV²  (constant for all k)",
+        fontsize=11, fontweight="bold",
+    )
+
+    # ── Panel 1: dual energy curves ──
+    ax = axes[0]
+    ax.semilogy(ks, bind_vals, "o-", color="#2196F3", lw=2,
+                label="E_bind(k) = A/k²  (decays)")
+    ax.semilogy(ks, curv_vals, "s-", color="#F44336", lw=2,
+                label="E_curv(k) = A·k²  (grows)")
+    ax.axhline(dual.A, ls="--", color="#888888", lw=1.2,
+               label=f"Rydberg A = {dual.A:.4f} eV")
+    ax.set_xticks(ks)
+    ax.set_xticklabels(xlabels, fontsize=9)
+    ax.set_ylabel("Energy (eV, log scale)")
+    ax.set_title("Dual Observables — Binding (↓) vs Curvature (↑)")
+    ax.legend(fontsize=9)
+    ax.grid(True, alpha=0.3, which="both")
+
+    # ── Panel 2: invariant flatness ──
+    ax = axes[1]
+    ax.plot(ks, inv_vals, "D-", color="#4CAF50", lw=2,
+            ms=8, label="I(k) = E_bind × E_curv")
+    ax.axhline(dual.A ** 2, ls="--", color="#888888", lw=1.5,
+               label=f"A² = {dual.A ** 2:.4f} eV²  (constant)")
+    ax.set_xticks(ks)
+    ax.set_xticklabels(xlabels, fontsize=9)
+    ax.set_ylabel("Invariant I(k)  (eV²)")
+    ax.set_title("Shell Invariant — Constant at A² Across All Shells")
+    ax.legend(fontsize=9)
+    ax.grid(True, alpha=0.3)
+    ax.text(0.98, 0.06, f"CV = {dual.invariant_cv():.2e}",
+            ha="right", va="bottom", transform=ax.transAxes,
+            fontsize=10, color="#4CAF50",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.85))
+
+    # ── Panel 3: Compton coupling ratio ──
+    ax = axes[2]
+    ax.bar(ks, rho_vals, color="#FF9800", alpha=0.82,
+           label="ρ(k) = k²/φ^(k−1)  (Compton/dual ratio)")
+    ax.axhline(1.0, ls="--", color="#555555", lw=1.5,
+               label="ρ = 1  (ground-state resonance)")
+    ax.set_xticks(ks)
+    ax.set_xticklabels(xlabels, fontsize=9)
+    ax.set_ylabel("Coupling ratio ρ(k)")
+    ax.set_title("Compton–Dual Coupling  (peaks at CA, resonant at KO)")
+    ax.legend(fontsize=9)
+    ax.grid(True, alpha=0.3, axis="y")
+    peak_k, peak_rho = rel.peak_coupling_shell()
+    ax.annotate(
+        f"peak k={peak_k}\nρ = {peak_rho:.2f}",
+        xy=(peak_k, peak_rho), xytext=(peak_k + 0.5, peak_rho - 0.4),
+        fontsize=8, arrowprops=dict(arrowstyle="->", color="gray"),
+        bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.85),
+    )
+
+    plt.tight_layout()
+    out_path = os.path.join(out_dir, "shell_duality.png")
+    plt.savefig(out_path, dpi=120, bbox_inches="tight")
+    plt.close(fig)
+    return out_path
+
+
+# ── JSON artifact ─────────────────────────────────────────────────────────────
+
+def export_duality_artifact(out_dir: Optional[str] = None) -> str:
+    """
+    Write a complete duality summary to a JSON file.
+
+    Sections:
+      summary  — top-level invariants at a glance
+      duality  — ShellDuality per-shell table
+      field    — ShellStateField trajectory + angles
+      perturbation — 7-scenario robustness test
+      relation — RelationTerm Compton coupling per shell
+
+    Returns the path to the saved JSON file.
+    """
+    import json
+    import os
+
+    if out_dir is None:
+        out_dir = "artifacts/geoseed"
+    os.makedirs(out_dir, exist_ok=True)
+
+    dual = build_shell_duality()
+    field_obj = build_shell_state_field()
+    pert = run_perturbation_tests()
+    rel = build_relation_term()
+
+    res_k, _ = rel.resonance_shell()
+    peak_k, peak_rho = rel.peak_coupling_shell()
+
+    artifact: Dict = {
+        "schema_version": "geoseed_shell_duality_artifact_v1",
+        "generated_by": "shell_duality.export_duality_artifact",
+        "summary": {
+            "anchor_A_ev": round(dual.A, 9),
+            "A_squared_ev2": round(dual.A ** 2, 9),
+            "invariant_cv": dual.invariant_cv(),
+            "is_invariant_flat": dual.is_invariant_flat(),
+            "all_perturbations_survived": pert.all_survived(),
+            "resonance_shell_k": res_k,
+            "resonance_tongue": dual.tongue_labels[res_k - 1],
+            "peak_coupling_shell_k": peak_k,
+            "peak_coupling_tongue": dual.tongue_labels[peak_k - 1],
+            "peak_coupling_rho": round(peak_rho, 6),
+            "derivation": (
+                "E_bind(k)=A/k² from H³ radial kinetic depth (1/sinh²(ρ_k)); "
+                "E_curv(k)=A·k² from Laplace-Beltrami angular stiffness (l+1)²; "
+                "product I(k)=A² is algebraically constant — not a fit."
+            ),
+        },
+        "duality": dual.to_dict(),
+        "field": field_obj.to_dict(),
+        "perturbation": pert.to_dict(),
+        "relation": rel.to_dict(),
+    }
+
+    out_path = os.path.join(out_dir, "shell_duality_report.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(artifact, f, indent=2)
+    return out_path
+
+
 # ── ASCII summary ─────────────────────────────────────────────────────────────
 
 def duality_field_report() -> str:
@@ -477,19 +792,11 @@ def duality_field_report() -> str:
 
 
 def main():
-    import json
     print(duality_field_report())
-    dual = build_shell_duality()
-    field = build_shell_state_field()
-    pert = run_perturbation_tests()
-    summary = {
-        "schema_version": "geoseed_shell_duality_full_v1",
-        "duality": dual.to_dict(),
-        "field": field.to_dict(),
-        "perturbation": pert.to_dict(),
-    }
-    print()
-    print(json.dumps(summary, indent=2))
+    json_path = export_duality_artifact()
+    print(f"\nArtifact written: {json_path}")
+    png_path = plot_duality()
+    print(f"Plot written:     {png_path}")
 
 
 if __name__ == "__main__":

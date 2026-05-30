@@ -269,3 +269,161 @@ def test_duality_field_report_non_empty():
     assert "SHELL DUALITY FIELD" in report
     assert "PERTURBATION TEST" in report
     assert "geometric_center" in report or "Geometric center" in report
+
+
+# ── RelationTerm ──────────────────────────────────────────────────────────────
+
+@pytest.fixture(scope="module")
+def rel():
+    from src.geoseed.shell_duality import build_relation_term
+    return build_relation_term()
+
+
+def test_rel_ko_coupling_is_one(rel):
+    """At KO (k=1): ρ = 1²/φ⁰ = 1 exactly — ground-state resonance."""
+    rho = rel.coupling_ratio(1)
+    assert abs(rho - 1.0) < 1e-12, f"KO coupling ρ={rho} ≠ 1"
+
+
+def test_rel_compton_ko_equals_rydberg(rel, rydberg):
+    """KO Compton energy = A/φ⁰ = A = Rydberg."""
+    assert abs(rel.compton_ev(1) - rydberg) < 1e-9
+
+
+def test_rel_compton_phi_scaling(rel, rydberg):
+    """Each successive Compton shell is 1/φ of the previous."""
+    for k in range(1, 6):
+        ratio = rel.compton_ev(k) / rel.compton_ev(k + 1)
+        assert abs(ratio - PHI) < 1e-9, (
+            f"Compton k={k}→{k+1} ratio {ratio} ≠ φ"
+        )
+
+
+def test_rel_coupling_formula(rel):
+    """ρ(k) = k²/φ^(k-1) exactly."""
+    for k in range(1, 7):
+        expected = (k * k) / (PHI ** (k - 1))
+        actual = rel.coupling_ratio(k)
+        assert abs(actual - expected) < 1e-12, (
+            f"k={k}: ρ={actual:.12f} ≠ k²/φ^(k-1)={expected:.12f}"
+        )
+
+
+def test_rel_resonance_shell_is_ko(rel):
+    """Ground state (k=1) is the resonance shell where ρ is closest to 1."""
+    res_k, dev = rel.resonance_shell()
+    assert res_k == 1, f"Resonance shell expected k=1, got k={res_k}"
+    assert dev < 1e-12
+
+
+def test_rel_peak_coupling_shell_is_4(rel):
+    """Peak coupling (max ρ) is at k=4 (CA, f-orbital)."""
+    peak_k, peak_rho = rel.peak_coupling_shell()
+    assert peak_k == 4, f"Peak coupling expected k=4, got k={peak_k}"
+    assert peak_rho > 3.5, f"Peak ρ={peak_rho} unexpectedly low"
+
+
+def test_rel_peak_coupling_above_3(rel):
+    """The peak coupling ratio must exceed 3 (crossover analysis agrees)."""
+    _, peak_rho = rel.peak_coupling_shell()
+    assert peak_rho > 3.0, f"Peak ρ={peak_rho:.4f}"
+
+
+def test_rel_all_outer_coupling_above_one(rel):
+    """For k > 1, Compton always exceeds the dual-law bind (ρ > 1)."""
+    for k in range(2, 7):
+        assert rel.coupling_ratio(k) > 1.0, (
+            f"k={k}: coupling ρ={rel.coupling_ratio(k):.4f} ≤ 1"
+        )
+
+
+def test_rel_phase_angles_positive(rel):
+    """All phase angles must be in (0°, 90°)."""
+    for k in range(1, 7):
+        angle = rel.phase_angle_deg(k)
+        assert 0.0 < angle < 90.0, f"k={k}: phase={angle:.2f}°"
+
+
+def test_rel_ko_phase_is_45(rel):
+    """At KO (k=1): bind=compton → angle = 45°."""
+    angle = rel.phase_angle_deg(1)
+    assert abs(angle - 45.0) < 1e-6, f"KO phase={angle:.6f}° ≠ 45°"
+
+
+def test_rel_to_dict_schema(rel):
+    d = rel.to_dict()
+    assert d["schema_version"] == "geoseed_relation_term_v1"
+    assert d["resonance_shell_k"] == 1
+    assert d["peak_coupling_shell_k"] == 4
+    assert len(d["shells"]) == 6
+
+
+def test_rel_to_dict_ko_deviation_zero(rel):
+    d = rel.to_dict()
+    ko = d["shells"][0]
+    assert ko["k"] == 1
+    assert abs(ko["coupling_rho"] - 1.0) < 1e-9
+    assert abs(ko["deviation"]) < 1e-9
+
+
+# ── Clean API ─────────────────────────────────────────────────────────────────
+
+def test_compute_invariant_returns_product():
+    from src.geoseed.shell_duality import compute_invariant
+    assert abs(compute_invariant(5.0, 20.0) - 100.0) < 1e-12
+
+
+def test_compute_invariant_rydberg_shells(rydberg):
+    from src.geoseed.shell_duality import compute_invariant, shell_state_at
+    for k in range(1, 7):
+        b, c = shell_state_at(k)
+        inv = compute_invariant(b, c)
+        assert abs(inv - rydberg ** 2) < 1e-9, (
+            f"k={k}: compute_invariant={inv:.9f} ≠ Rydberg²"
+        )
+
+
+def test_shell_state_at_ko_balanced(rydberg):
+    from src.geoseed.shell_duality import shell_state_at
+    b, c = shell_state_at(1)
+    assert abs(b - rydberg) < 1e-9
+    assert abs(c - rydberg) < 1e-9
+
+
+def test_fit_binding_law_recovers_p2(rydberg):
+    from src.geoseed.shell_duality import fit_binding_law
+    shells = [float(k) for k in range(1, 7)]
+    values = [rydberg / (k * k) for k in range(1, 7)]
+    A, delta, p, rms = fit_binding_law(shells, values)
+    assert abs(p - 2.0) < 0.05, f"fit_binding_law p={p:.4f} ≠ 2"
+    assert rms < 0.01
+
+
+def test_perturbation_sweep_returns_7(rydberg):
+    from src.geoseed.shell_duality import perturbation_sweep
+    pt = perturbation_sweep(seed=0)
+    assert len(pt.scenarios) == 7
+    assert pt.all_survived()
+
+
+# ── export_duality_artifact ───────────────────────────────────────────────────
+
+def test_export_artifact_creates_file(tmp_path, rydberg):
+    from src.geoseed.shell_duality import export_duality_artifact
+    import json
+    out = str(tmp_path)
+    path = export_duality_artifact(out_dir=out)
+    assert path.endswith(".json")
+    import os
+    assert os.path.isfile(path)
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    assert data["schema_version"] == "geoseed_shell_duality_artifact_v1"
+    assert data["summary"]["is_invariant_flat"] is True
+    assert data["summary"]["all_perturbations_survived"] is True
+    assert abs(data["summary"]["A_squared_ev2"] - rydberg ** 2) < 1e-6
+    assert data["summary"]["resonance_shell_k"] == 1
+    assert data["summary"]["peak_coupling_shell_k"] == 4
+    # all four sections present
+    for key in ("duality", "field", "perturbation", "relation"):
+        assert key in data, f"Missing section: {key}"
