@@ -21,6 +21,8 @@ Usage (via scbe.js):
 import argparse
 import json
 import os
+import re
+import subprocess
 import sys
 import uuid
 from datetime import datetime, timezone
@@ -52,6 +54,87 @@ def _emit(data, as_json: bool) -> None:
         print(json.dumps(data, indent=2))
     else:
         _print_human(data)
+
+
+def _slug(value: str, fallback: str = "task") -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+    return (slug or fallback)[:48]
+
+
+def _extract_json(text: str) -> dict:
+    raw = (text or "").strip()
+    if not raw:
+        return {}
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        start = raw.find("{")
+        end = raw.rfind("}")
+        if start >= 0 and end > start:
+            try:
+                return json.loads(raw[start:end + 1])
+            except json.JSONDecodeError:
+                return {}
+    return {}
+
+
+def _run_agent_bus_stage(ws: str, objective: str, loop_n: int, args) -> dict:
+    """Dispatch one stage through the existing SCBE agent-bus command path."""
+
+    stage_task = f"{objective} [longform stage {loop_n}]"
+    provider = getattr(args, "dispatch_provider", "offline") or "offline"
+    series_id = f"longform-{_slug(objective)}-{loop_n}"
+    cmd = [
+        sys.executable,
+        os.path.join(_ROOT, "scripts", "scbe-system-cli.py"),
+        "--repo-root",
+        _ROOT,
+        "agentbus",
+        "run",
+        "--task",
+        stage_task,
+        "--task-type",
+        "general",
+        "--series-id",
+        series_id,
+        "--privacy",
+        "local_only",
+        "--budget-cents",
+        "0",
+        "--dispatch-provider",
+        provider,
+        "--dispatch",
+        "--json",
+    ]
+    started = datetime.now(timezone.utc)
+    proc = subprocess.run(
+        cmd,
+        cwd=ws,
+        text=True,
+        encoding="utf-8",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=int(getattr(args, "dispatch_timeout", 120) or 120),
+    )
+    finished = datetime.now(timezone.utc)
+    parsed = _extract_json(proc.stdout)
+    dispatch = parsed.get("dispatch") if isinstance(parsed, dict) else {}
+    return {
+        "status": "dispatched" if proc.returncode == 0 and dispatch else "dispatch_failed",
+        "ok": proc.returncode == 0 and bool(dispatch),
+        "loop": loop_n,
+        "series_id": series_id,
+        "provider": provider,
+        "started_at": started.isoformat().replace("+00:00", "Z"),
+        "finished_at": finished.isoformat().replace("+00:00", "Z"),
+        "exit_code": proc.returncode,
+        "stdout_sha256": __import__("hashlib").sha256(proc.stdout.encode("utf-8")).hexdigest(),
+        "stderr_tail": proc.stderr[-1200:],
+        "dispatch": dispatch or {"enabled": False},
+        "artifacts": parsed.get("artifacts", {}) if isinstance(parsed, dict) else {},
+        "selected_provider": parsed.get("selected_provider") if isinstance(parsed, dict) else None,
+        "task_sha256": parsed.get("task", {}).get("sha256") if isinstance(parsed.get("task"), dict) else None,
+    }
 
 
 def _print_human(data: dict) -> None:
@@ -463,16 +546,27 @@ def cmd_do(args) -> None:
             "phase": "execute",
         })
 
-        # Stage execution stub — in phase 1, records the intent.
-        # Wire actual squad execution here in phase 2.
-        ledger.append("stage_complete", {
-            "loop": loop_n,
-            "status": "stub",
-            "note": (
-                "Phase 1: execution stub. "
-                "Wire squad routing in phase 2 (`--squad` flag activates bus dispatch)."
-            ),
-        })
+        if args.squad:
+            dispatch_result = _run_agent_bus_stage(ws, objective, loop_n, args)
+            ledger.append("agentbus_dispatch", dispatch_result)
+            ledger.append("stage_complete", {
+                "loop": loop_n,
+                "status": dispatch_result["status"],
+                "squad": True,
+                "dispatch_enabled": bool(dispatch_result.get("dispatch", {}).get("enabled")),
+                "selected_provider": dispatch_result.get("selected_provider"),
+                "series_id": dispatch_result.get("series_id"),
+                "artifact_summary": dispatch_result.get("artifacts", {}),
+            })
+        else:
+            ledger.append("stage_complete", {
+                "loop": loop_n,
+                "status": "stub",
+                "squad": False,
+                "note": (
+                    "Execution stub. Pass `--squad` to dispatch through the SCBE agent bus."
+                ),
+            })
 
         # Audit: validate principles
         audit_ok = True  # in phase 1, always passes (stub)
@@ -541,6 +635,10 @@ def build_parser() -> argparse.ArgumentParser:
                       help="Create a landing after each stage")
     p_do.add_argument("--squad", action="store_true",
                       help="Route each stage to the multi-agent squad (phase 2)")
+    p_do.add_argument("--dispatch-provider", default="offline",
+                      help="Agent-bus dispatch provider for --squad (default offline)")
+    p_do.add_argument("--dispatch-timeout", type=int, default=120,
+                      help="Seconds before a squad dispatch stage times out")
     p_do.add_argument("--resume-policy", default="latest-safe",
                       choices=["latest-safe", "explicit-hash"],
                       help="Resume policy (default latest-safe)")

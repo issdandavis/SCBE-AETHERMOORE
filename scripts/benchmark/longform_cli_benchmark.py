@@ -132,7 +132,9 @@ def score(report: dict[str, Any]) -> dict[str, Any]:
         "landing_resume": weights["landing_resume"] if checks["landing_resume"]["ok"] else 0,
         "tamper_detection": weights["tamper_detection"] if checks["tamper_detection"]["ok"] else 0,
         "latency": weights["latency"] if checks["latency"]["p95_ms"] < 1000 else 5 if checks["latency"]["p95_ms"] < 3000 else 0,
-        "execution_depth": 0 if checks["execution_depth"]["stubbed_stage_count"] else weights["execution_depth"],
+        "execution_depth": weights["execution_depth"]
+        if checks["execution_depth"]["actual_tool_or_bus_dispatch"]
+        else 0,
     }
     total = sum(weights.values())
     got = sum(earned.values())
@@ -229,11 +231,15 @@ def run_benchmark(keep_workspace: bool = False) -> dict[str, Any]:
     landing_tamper_body = landing_tamper_list.json_body() if landing_tamper_list.ok else {}
 
     status_latencies = [item.elapsed_ms for item in status_runs]
-    stage_complete = [
-        line for line in (workspace / ".scbe-longform" / "ledger.jsonl").read_text(encoding="utf-8").splitlines()
-        if '"kind": "stage_complete"' in line or '"kind":"stage_complete"' in line
-    ]
-    stubbed_stage_count = sum("execution stub" in line.lower() or '"status": "stub"' in line for line in stage_complete)
+    ledger_lines = (workspace / ".scbe-longform" / "ledger.jsonl").read_text(encoding="utf-8").splitlines()
+    ledger_events = [json.loads(line) for line in ledger_lines if line.strip()]
+    stage_events = [event for event in ledger_events if event.get("kind") == "stage_complete"]
+    dispatch_events = [event for event in ledger_events if event.get("kind") == "agentbus_dispatch"]
+    stubbed_stage_count = sum(event.get("payload", {}).get("status") == "stub" for event in stage_events)
+    dispatched_stage_count = sum(event.get("payload", {}).get("status") == "dispatched" for event in stage_events)
+    dispatch_enabled_count = sum(
+        event.get("payload", {}).get("dispatch", {}).get("enabled") is True for event in dispatch_events
+    )
 
     checks = {
         "command_surface": {
@@ -269,9 +275,14 @@ def run_benchmark(keep_workspace: bool = False) -> dict[str, Any]:
             "max_ms": round(max(status_latencies), 3),
         },
         "execution_depth": {
-            "stage_complete_count": len(stage_complete),
+            "stage_complete_count": len(stage_events),
+            "agentbus_dispatch_count": len(dispatch_events),
             "stubbed_stage_count": stubbed_stage_count,
-            "actual_tool_or_bus_dispatch": False,
+            "dispatched_stage_count": dispatched_stage_count,
+            "dispatch_enabled_count": dispatch_enabled_count,
+            "actual_tool_or_bus_dispatch": dispatched_stage_count == len(stage_events)
+            and dispatch_enabled_count == len(stage_events)
+            and len(stage_events) > 0,
         },
     }
 
@@ -307,7 +318,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"| Landing/resume | {checks['landing_resume']['ok']} | landings={checks['landing_resume']['landing_count']} |",
         f"| Tamper detection | {checks['tamper_detection']['ok']} | chain_after_tamper={checks['tamper_detection']['chain_valid_after_ledger_mutation']}, landing_verified={checks['tamper_detection']['landing_verified_values']} |",
         f"| Latency | p95 {checks['latency']['p95_ms']} ms | median={checks['latency']['median_ms']} ms, max={checks['latency']['max_ms']} ms |",
-        f"| Execution depth | {checks['execution_depth']['actual_tool_or_bus_dispatch']} | stubbed_stage_count={checks['execution_depth']['stubbed_stage_count']} |",
+        f"| Execution depth | {checks['execution_depth']['actual_tool_or_bus_dispatch']} | dispatched={checks['execution_depth']['dispatched_stage_count']}, dispatch_receipts={checks['execution_depth']['agentbus_dispatch_count']}, stubbed={checks['execution_depth']['stubbed_stage_count']} |",
         "",
         "## Blockers",
         "",
