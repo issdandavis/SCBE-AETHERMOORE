@@ -128,11 +128,16 @@ export {
 
 export {
   type RubixBrowserFace,
+  type RubixBrowserBenchmarkCase,
+  type RubixBrowserBenchmarkReport,
+  type RubixBrowserBenchmarkRow,
   type RubixBrowserMove,
   type RubixBrowserPermission,
   type RubixBrowserPlan,
+  RUBIX_BROWSER_BENCHMARK_CASES,
   RUBIX_BROWSER_FACES,
   buildRubixBrowserPlan,
+  runRubixBrowserBenchmark,
 } from './rubix-browser.js';
 
 export type AgentBusPrivacy = 'local_only' | 'remote_allowed' | string;

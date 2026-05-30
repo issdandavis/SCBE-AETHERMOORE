@@ -24,6 +24,7 @@ const {
   compilePlan,
   runPipeline,
   buildRubixBrowserPlan,
+  runRubixBrowserBenchmark,
 } = require('../dist/index.js');
 
 const HOSTED_INTAKE_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html';
@@ -114,6 +115,7 @@ Usage:
   scbe-agent-bus plugins list --json
   scbe-agent-bus tools list --json
   scbe-agent-bus rubix-browser plan --task "open docs and click download" --permissions visual.read,dom.read,tool.call --json
+  scbe-agent-bus rubix-browser bench --headless --json
   scbe-agent-bus workspace new --hint customer-smoke --json
   scbe-agent-bus workspace ingest --workspace-root <path> --source-path <file> --json
   scbe-agent-bus workspace export --workspace-root <path> --json
@@ -667,8 +669,29 @@ async function main() {
       process.exitCode = payload.audit.verdict === 'PASS' ? 0 : 1;
       return;
     }
+    if (action === 'bench') {
+      const mode = flags.headed === true ? 'headed' : 'headless';
+      const payload = runRubixBrowserBenchmark({ mode });
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+      } else {
+        process.stdout.write(
+          [
+            `Rubix browser benchmark: ${payload.pass_count}/${payload.case_count}`,
+            `Mode: ${payload.mode}`,
+            `Score: ${payload.score.toFixed(4)}`,
+            payload.recommendation,
+            '',
+          ].join('\n')
+        );
+      }
+      process.exitCode = payload.pass_count === payload.case_count ? 0 : 1;
+      return;
+    }
     process.stderr.write(
-      'Usage: scbe-agent-bus rubix-browser plan --task "..." [--permissions visual.read,dom.read] [--json]\n'
+      'Usage:\n' +
+        '  scbe-agent-bus rubix-browser plan --task "..." [--permissions visual.read,dom.read] [--json]\n' +
+        '  scbe-agent-bus rubix-browser bench [--headless|--headed] [--json]\n'
     );
     process.exitCode = 2;
     return;
