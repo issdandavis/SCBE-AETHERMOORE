@@ -282,6 +282,233 @@ def plot_poincare_disk(orbitals, out_dir: str = ".") -> str:
     return path
 
 
+# ── Theory comparison plot ────────────────────────────────────────────────────
+
+_THEORY_COLORS = {
+    "compton_orbital": "#FF6B6B",   # warm red
+    "bohr":            "#4ECDC4",   # teal (reference)
+    "de_broglie":      "#45B7D1",   # sky blue
+    "geoseed_lb":      "#96CEB4",   # sage green
+    "harmonic":        "#FFEAA7",   # yellow
+    "pilot_wave":      "#DDA0DD",   # plum
+}
+_THEORY_LABELS = {
+    "compton_orbital": "Compton-as-orbital (φ-ladder)",
+    "bohr":            "Bohr / measured H  [reference]",
+    "de_broglie":      "de Broglie standing wave",
+    "geoseed_lb":      "GeoSeed LB eigenvalues",
+    "harmonic":        "QM harmonic oscillator",
+    "pilot_wave":      "Bohm pilot wave (Q-potential)",
+}
+
+THEORY_COMPARISON_CAPTION = (
+    "Multi-perspective comparison of electron orbital energy predictions\n"
+    "across 6 GeoSeed shells (KO=s … DR=h).  All theories normalised to Bohr n=1.\n"
+    "Bohr = measured hydrogen reference.  Top: energy (eV, log).  "
+    "Middle: frequency (Hz, log).  Bottom: residual vs measured."
+)
+
+
+def ascii_theory_comparison() -> str:
+    """
+    Print an ASCII multi-row comparison chart.
+    No external dependencies required.
+    """
+    try:
+        from src.geoseed.theory_comparison import run_all, HYDROGEN_MEASURED_EV
+    except ImportError:
+        return "(theory_comparison module not available — skipped)"
+
+    results = run_all()
+    tongues = ["KO", "AV", "RU", "CA", "UM", "DR"]
+    col_w = 10
+
+    lines = []
+    lines.append("=" * 76)
+    lines.append("  MULTI-THEORY ORBITAL ENERGY COMPARISON  (binding energy, eV)")
+    lines.append("  Each theory normalised so KO shell = Bohr n=1 = 13.606 eV")
+    lines.append("=" * 76)
+    header = f"  {'Theory':<22}" + "".join(f"{t:>{col_w}}" for t in tongues) + f"{'RMS Δ':>{col_w}}"
+    lines.append(header)
+    lines.append("  " + "-" * (len(header) - 2))
+
+    # Sort: bohr first, then by RMS
+    order = ["bohr", "compton_orbital", "de_broglie", "geoseed_lb", "harmonic", "pilot_wave"]
+    for name in order:
+        if name not in results:
+            continue
+        r = results[name]
+        tag = " ← REF" if name == "bohr" else ""
+        row = f"  {(name + tag):<22}" + "".join(
+            f"{e:>{col_w}.3f}" for e in r.energies_ev()
+        ) + f"{r.rms_residual_ev:>{col_w}.3f}"
+        lines.append(row)
+
+    lines.append("  " + "-" * (len(header) - 2))
+    lines.append(f"  {'H measured':<22}" + "".join(
+        f"{e:>{col_w}.3f}" for e in HYDROGEN_MEASURED_EV
+    ))
+    lines.append("")
+
+    # Log10 frequency row
+    lines.append("  FREQUENCY  (log₁₀ Hz)")
+    lines.append("  " + "-" * (len(header) - 2))
+    for name in order:
+        if name not in results:
+            continue
+        r = results[name]
+        row = f"  {name:<22}" + "".join(
+            f"{math.log10(f):>{col_w}.2f}" for f in r.frequencies_hz()
+        )
+        lines.append(row)
+    lines.append("")
+
+    # Residual bar chart per theory (vs bohr)
+    lines.append("  RESIDUAL vs MEASURED  (eV)  ▐ = +1 eV  █ = -1 eV  (capped at ±20)")
+    lines.append("  " + "-" * 60)
+    measured = HYDROGEN_MEASURED_EV
+    for name in order:
+        if name == "bohr":
+            continue
+        r = results[name]
+        bars = []
+        for i, shell in enumerate(r.shells):
+            resid = shell.energy_ev - measured[i]
+            mag = min(abs(resid), 20)
+            bar_len = max(int(mag * 1.5), 0)
+            bars.append(("+" if resid >= 0 else "-") + f"{abs(resid):.1f}")
+        lines.append(f"  {name:<22} " + "  ".join(f"{b:>7}" for b in bars))
+
+    lines.append("=" * 76)
+    return "\n".join(lines)
+
+
+def plot_theory_comparison(out_dir: str = ".") -> str:
+    """
+    Save a 3-panel theory comparison chart as PNG.
+
+    Panel 1: Energy (eV, log scale) vs shell index — all 6 theories
+    Panel 2: Frequency (Hz, log scale) vs shell index
+    Panel 3: Residual (theory − measured, eV) vs shell index as bar clusters
+    """
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        import numpy as np
+        from src.geoseed.theory_comparison import run_all, HYDROGEN_MEASURED_EV
+    except ImportError:
+        return "(matplotlib or theory_comparison not available — skipped)"
+
+    results = run_all()
+    x = np.arange(6)
+    tongue_labels = ["KO\n(s)", "AV\n(p)", "RU\n(d)", "CA\n(f)", "UM\n(g)", "DR\n(h)"]
+    order = ["bohr", "compton_orbital", "de_broglie", "geoseed_lb", "harmonic", "pilot_wave"]
+
+    fig, axes = plt.subplots(3, 1, figsize=(12, 14))
+    fig.suptitle(THEORY_COMPARISON_CAPTION, fontsize=10, y=0.98)
+
+    # ── Panel 1: Energy (log) ─────────────────────────────────────────────
+    ax1 = axes[0]
+    measured = np.array(HYDROGEN_MEASURED_EV)
+    ax1.semilogy(x, measured, "k--", linewidth=2.5, label="Measured hydrogen", zorder=10)
+
+    for name in order:
+        if name not in results:
+            continue
+        r = results[name]
+        evs = np.array(r.energies_ev())
+        ls = "-" if name != "bohr" else "-"
+        lw = 2.5 if name == "bohr" else 1.5
+        alpha = 1.0 if name in ("bohr", "compton_orbital") else 0.75
+        ax1.semilogy(
+            x, evs,
+            color=_THEORY_COLORS.get(name, "grey"),
+            linestyle=ls, linewidth=lw, alpha=alpha,
+            marker="o", markersize=5,
+            label=_THEORY_LABELS.get(name, name),
+        )
+
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(tongue_labels, fontsize=9)
+    ax1.set_ylabel("Binding energy (eV, log scale)")
+    ax1.set_title("Panel 1 — Binding Energy")
+    ax1.legend(fontsize=8, loc="upper right")
+    ax1.grid(True, which="both", alpha=0.3)
+    ax1.set_xlim(-0.3, 5.3)
+
+    # ── Panel 2: Frequency (log) ──────────────────────────────────────────
+    ax2 = axes[1]
+    for name in order:
+        if name not in results:
+            continue
+        r = results[name]
+        freqs = np.log10(np.array(r.frequencies_hz()))
+        lw = 2.5 if name == "bohr" else 1.5
+        alpha = 1.0 if name in ("bohr", "compton_orbital") else 0.75
+        ax2.plot(
+            x, freqs,
+            color=_THEORY_COLORS.get(name, "grey"),
+            linewidth=lw, alpha=alpha,
+            marker="s", markersize=5,
+            label=_THEORY_LABELS.get(name, name),
+        )
+
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(tongue_labels, fontsize=9)
+    ax2.set_ylabel("log₁₀(Frequency / Hz)")
+    ax2.set_title("Panel 2 — Characteristic Frequency")
+    ax2.legend(fontsize=8, loc="upper right")
+    ax2.grid(True, alpha=0.3)
+    ax2.set_xlim(-0.3, 5.3)
+
+    # Annotate Compton frequency line
+    compton_log = math.log10(1.2356e20)
+    ax2.axhline(compton_log, color="#FF6B6B", linestyle=":", linewidth=1, alpha=0.5)
+    ax2.annotate(f"f_Compton ≈ 10^{compton_log:.1f} Hz",
+                 xy=(0.01, compton_log + 0.3),
+                 xycoords=("axes fraction", "data"),
+                 fontsize=7, color="#FF6B6B", alpha=0.8)
+
+    # ── Panel 3: Residuals as grouped bars ────────────────────────────────
+    ax3 = axes[2]
+    non_bohr = [n for n in order if n != "bohr"]
+    n_theories = len(non_bohr)
+    bar_width = 0.12
+    offsets = np.linspace(-(n_theories - 1) / 2 * bar_width,
+                          (n_theories - 1) / 2 * bar_width,
+                          n_theories)
+
+    for idx, name in enumerate(non_bohr):
+        r = results[name]
+        residuals = np.array([
+            r.shells[i].energy_ev - measured[i]
+            for i in range(6)
+        ])
+        ax3.bar(
+            x + offsets[idx], residuals,
+            width=bar_width,
+            color=_THEORY_COLORS.get(name, "grey"),
+            alpha=0.8,
+            label=_THEORY_LABELS.get(name, name),
+        )
+
+    ax3.axhline(0, color="black", linewidth=1.5)
+    ax3.set_xticks(x)
+    ax3.set_xticklabels(tongue_labels, fontsize=9)
+    ax3.set_ylabel("Residual: theory − measured (eV)")
+    ax3.set_title("Panel 3 — Residual vs Measured Hydrogen (Bohr = 0 line)")
+    ax3.legend(fontsize=7, loc="upper left")
+    ax3.grid(True, alpha=0.3, axis="y")
+    ax3.set_xlim(-0.5, 5.5)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    path = os.path.join(_ensure_artifacts_dir(out_dir), "theory_comparison.png")
+    plt.savefig(path, dpi=150)
+    plt.close()
+    return path
+
+
 # ── CLI entrypoint ────────────────────────────────────────────────────────────
 
 def main(out_dir: str = "."):
@@ -306,6 +533,13 @@ def main(out_dir: str = "."):
     print(f"Shell positions PNG : {p1}")
     print(f"Radial profiles PNG : {p2}")
     print(f"Poincaré disk PNG   : {p3}")
+
+    # Theory comparison
+    print()
+    print(ascii_theory_comparison())
+    print()
+    p4 = plot_theory_comparison(out_dir)
+    print(f"Theory comparison PNG: {p4}")
 
 
 if __name__ == "__main__":
