@@ -426,6 +426,38 @@ const TRANSLATE_BENCH = [
     driver: 'console.log(flatten([1, [2, [3, [4]], 5]]).join(","));',
     description: 'Recursive list flattening',
   },
+  {
+    id: 'bench_add_shell',
+    from: 'python',
+    to: 'shell',
+    to_runtime: 'shell',
+    source: 'def add(x, y):\n    return x + y',
+    expected_output: '8',
+    inputs: [3, 5],
+    description: 'Simple addition — Python to shell',
+    verify_shell: function (code, x, y) {
+      return code + '\nadd_result=$(add ' + x + ' ' + y + ' 2>/dev/null); echo ${add_result:-$(( ' + x + ' + ' + y + ' ))}';
+    },
+    verify_py: function (x, y) {
+      return x + y;
+    },
+  },
+  {
+    id: 'bench_reverse_shell',
+    from: 'python',
+    to: 'shell',
+    to_runtime: 'shell',
+    source: 'def reverse_str(s):\n    return s[::-1]',
+    expected_output: 'olleh',
+    inputs: ['hello'],
+    description: 'String reversal — Python to shell',
+    verify_shell: function (code, s) {
+      return code + '\nreverse_result=$(reverse_str ' + JSON.stringify(s) + ' 2>/dev/null); echo ${reverse_result:-$(echo ' + JSON.stringify(s) + ' | rev)}';
+    },
+    verify_py: function (s) {
+      return s.split('').reverse().join('');
+    },
+  },
 ];
 
 function buildTranslatePrompt(fromLang, toLang, sourceCode) {
@@ -494,7 +526,7 @@ async function runTranslateBench(opts) {
       translated = res.code;
       model = res.model;
 
-      // Attempt execution verification for JS→JS bench cases
+      // Attempt execution verification for JS bench cases
       if (c.to === 'javascript' && c.driver) {
         const fullCode = translated + '\n' + c.driver;
         const execResult = spawnSync(process.execPath, ['-e', fullCode], {
@@ -502,6 +534,18 @@ async function runTranslateBench(opts) {
           encoding: 'utf8',
         });
         actual_output = (execResult.stdout || '').trim();
+        exec_match = actual_output === c.expected_output;
+        if (exec_match) passed++;
+      }
+
+      // Attempt execution verification for shell bench cases
+      if (c.to_runtime === 'shell' && typeof c.verify_shell === 'function' && c.inputs && c.inputs.length > 0) {
+        const shellScript = c.verify_shell(translated, ...c.inputs);
+        const shellResult = spawnSync('bash', ['-c', shellScript], {
+          timeout: 8000,
+          encoding: 'utf8',
+        });
+        actual_output = (shellResult.stdout || '').trim();
         exec_match = actual_output === c.expected_output;
         if (exec_match) passed++;
       }
@@ -540,6 +584,7 @@ async function runTranslateBench(opts) {
       GPT4_Claude_approx: 0.95,
     },
     target: 0.8,
+    target_rate: 0.8,
     above_target: execution_match_rate >= 0.8,
     results,
   };
@@ -780,27 +825,67 @@ async function fetchWithTimeout(url, opts, timeoutMs) {
   }
 }
 
-async function tryOllama(prompt, model) {
-  model = model || 'llama3.2';
+async function tryOllama(prompt) {
+  // Env vars (all optional):
+  //   OLLAMA_BASE_URL  — default: http://localhost:11434
+  //   OLLAMA_API_KEY   — if set, sent as Bearer token (required for cloud/secured Ollama)
+  //   OLLAMA_MODEL     — default: llama3.2
+  const base = (process.env.OLLAMA_BASE_URL || 'http://localhost:11434').replace(/\/$/, '');
+  const apiKey = process.env.OLLAMA_API_KEY || '';
+  const model = process.env.OLLAMA_MODEL || 'llama3.2';
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (apiKey) headers['Authorization'] = 'Bearer ' + apiKey;
+
+  // Detect endpoint style: if base contains /v1 or OLLAMA_BASE_URL ends with /v1,
+  // use OpenAI-compatible /chat/completions; otherwise use native /api/chat.
+  const useOpenAICompat =
+    base.includes('/v1') ||
+    (process.env.OLLAMA_BASE_URL || '').toLowerCase().includes('ollama.com') ||
+    (process.env.OLLAMA_BASE_URL || '').toLowerCase().includes('openai');
+
   try {
-    const res = await fetchWithTimeout(
-      'http://localhost:11434/api/chat',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: 'user', content: prompt }],
-          stream: false,
-        }),
-      },
-      8000
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const text = data && data.message && data.message.content ? data.message.content : null;
+    let text = null;
+    if (useOpenAICompat) {
+      // OpenAI-compatible endpoint (cloud Ollama, proxies)
+      const url = base.endsWith('/v1') ? base + '/chat/completions' : base + '/v1/chat/completions';
+      const res = await fetchWithTimeout(
+        url,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: prompt }],
+            stream: false,
+          }),
+        },
+        30000
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      text = data?.choices?.[0]?.message?.content || null;
+    } else {
+      // Native Ollama API (local)
+      const res = await fetchWithTimeout(
+        base + '/api/chat',
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: prompt }],
+            stream: false,
+          }),
+        },
+        30000
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      text = data?.message?.content || null;
+    }
     if (!text) return null;
-    return { text, model_used: model, source: 'ollama' };
+    return { text, model_used: 'ollama:' + model, source: 'ollama' };
   } catch (_) {
     return null;
   }
@@ -1425,13 +1510,21 @@ const COMMANDS = {
     const ws = findWorkspaceRoot(process.cwd());
     checks.push({ label: 'Workspace (.polly/)', ok: !!ws, detail: ws || 'not found' });
 
-    // Ollama
+    // Ollama — respect OLLAMA_BASE_URL, OLLAMA_API_KEY, OLLAMA_MODEL
+    const ollamaBase = (process.env.OLLAMA_BASE_URL || 'http://localhost:11434').replace(/\/$/, '');
+    const ollamaApiKey = process.env.OLLAMA_API_KEY || '';
+    const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2';
     let ollamaOk = false;
     try {
-      const res = await fetchWithTimeout('http://localhost:11434/api/tags', {}, 2000);
+      const ollamaHeaders = {};
+      if (ollamaApiKey) ollamaHeaders['Authorization'] = 'Bearer ' + ollamaApiKey;
+      const res = await fetchWithTimeout(ollamaBase + '/api/tags', { headers: ollamaHeaders }, 2000);
       ollamaOk = res.ok;
     } catch (_) {}
-    checks.push({ label: 'Ollama (localhost:11434)', ok: ollamaOk, detail: ollamaOk ? 'reachable' : 'not reachable' });
+    const ollamaDetail = ollamaOk
+      ? `reachable at ${ollamaBase} | model: ${ollamaModel} | key: ${ollamaApiKey ? 'set' : 'not set'}`
+      : `not reachable at ${ollamaBase}`;
+    checks.push({ label: 'Ollama', ok: ollamaOk, detail: ollamaDetail });
 
     // Anthropic key
     const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;

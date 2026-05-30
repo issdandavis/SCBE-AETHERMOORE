@@ -508,3 +508,50 @@ test('polly cross bench dry-run lists bench cases via cross ops smoke', async ()
     cleanup(dir);
   }
 });
+
+// Test 20 — polly doctor --json with OLLAMA_BASE_URL reflects custom URL
+test('polly doctor --json with OLLAMA_BASE_URL reflects custom URL in detail', async () => {
+  const dir = mktemp();
+  try {
+    const result = run(dir, ['doctor', '--json'], {
+      OLLAMA_BASE_URL: 'http://custom-ollama:11434',
+    });
+    assert.strictEqual(result.status, 0, 'doctor --json should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const data = JSON.parse(result.stdout);
+    // doctor --json returns a bare array of {label, ok, detail} checks
+    assert.ok(Array.isArray(data), 'doctor --json should return an array');
+    const ollamaCheck = data.find((c) => c.label === 'Ollama');
+    assert.ok(ollamaCheck !== undefined, 'should have an Ollama check');
+    assert.ok(
+      typeof ollamaCheck.detail === 'string' && ollamaCheck.detail.includes('custom-ollama:11434'),
+      'detail should include custom-ollama:11434, got: ' + (ollamaCheck && ollamaCheck.detail)
+    );
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// Test 21 — cross bench --json returns correct schema shape
+test('polly cross bench --json returns polly_cross_bench_v1 schema', async () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossBenchSchema']);
+    // cross bench requires LLM; without one the result still returns the schema
+    // (execution_match_rate = 0, results = [] or template-fallback rows)
+    const result = run(dir, ['cross', 'bench', '--json'], {
+      ANTHROPIC_API_KEY: '',
+      OPENAI_API_KEY: '',
+      OLLAMA_BASE_URL: 'http://127.0.0.1:1', // unreachable → template fallback
+    });
+    // bench always exits 0 (result quality varies; schema must be stable)
+    assert.strictEqual(result.status, 0, 'cross bench --json should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const data = JSON.parse(result.stdout);
+    assert.strictEqual(data.schema_version, 'polly_cross_bench_v1', 'schema_version must be polly_cross_bench_v1');
+    assert.ok(typeof data.execution_match_rate === 'number', 'execution_match_rate must be a number');
+    assert.ok(typeof data.target_rate === 'number', 'target_rate must be a number');
+    assert.ok(Array.isArray(data.results), 'results must be an array');
+    assert.ok(data.results.length >= 5, 'results must have at least 5 entries (one per bench case)');
+  } finally {
+    cleanup(dir);
+  }
+});
