@@ -3252,6 +3252,422 @@ async function runXval(args) {
   process.exit(good.length > 0 ? 0 : 1);
 }
 
+// =============================================================================
+// bench — local evidence lanes (Lanes 91, 98, 40, 100)
+// =============================================================================
+
+const BENCH_TARGETS = {
+  'hard-agentic': {
+    script: 'scripts/benchmark/hard_agentic_benchmark_pretest.py',
+    latestJson: 'artifacts/benchmarks/hard_agentic_pretest/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/hard_agentic_pretest/LATEST.md',
+    description: 'hard agentic pretest matrix (12/14 readiness lanes)',
+    claimBoundary: 'local readiness/pretest matrix; not a public benchmark leaderboard score',
+  },
+  research: {
+    script: 'scripts/benchmark/research_agent_fixture_benchmark.py',
+    latestJson: 'artifacts/benchmarks/research_agent_fixtures/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/research_agent_fixtures/LATEST.md',
+    description: 'BrowseComp/GAIA-style local research fixtures',
+    claimBoundary: 'local BrowseComp/GAIA-style fixtures; not public BrowseComp or GAIA scores',
+  },
+  'rubix-browser': {
+    script: 'scripts/benchmark/rubix_browser_hypercube_benchmark.py',
+    latestJson: 'artifacts/benchmarks/rubix_browser_hypercube/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/rubix_browser_hypercube/LATEST.md',
+    description: 'permission-hypercube browser-control geometry fixture',
+    claimBoundary: 'local browser-control geometry fixture; not WebArena, BrowserGym, OSWorld, or VisualWebArena score',
+  },
+  'arc-agi2': {
+    script: 'scripts/benchmark/arc_agi2_local_benchmark.py',
+    latestJson: 'artifacts/benchmarks/arc_agi2_local/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/arc_agi2_local/LATEST.md',
+    description: 'ARC-AGI-2 local baseline (rule-free strategies, lower bound)',
+    claimBoundary: 'rule-free lower-bound baselines on public ARC-AGI-2 data; not a competitive ARC-AGI-2 submission score',
+  },
+  'arc-style-grid': {
+    script: 'scripts/benchmark/arc_style_grid_benchmark.py',
+    latestJson: 'artifacts/benchmarks/arc_style_grid/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/arc_style_grid/LATEST.md',
+    description: 'ARC-style grid reasoning fixture (SCBE sensor outputs)',
+    claimBoundary: 'local ARC-style grid fixture using SCBE sensor outputs; not a public ARC score',
+  },
+  'swe-local': {
+    script: 'scripts/benchmark/swe_local_benchmark.py',
+    latestJson: 'artifacts/benchmarks/swe_local/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/swe_local/LATEST.md',
+    description: 'SWE-style local real-patch repair fixtures',
+    claimBoundary: 'local real-patch fixtures; not SWE-bench Verified or SWEbench.com leaderboard score',
+  },
+  'cli-competitive': {
+    script: 'scripts/benchmark/cli_competitive_benchmark.py',
+    latestJson: 'artifacts/benchmarks/cli_competitive/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/cli_competitive/LATEST.md',
+    description: 'CLI command accuracy vs Codex/Claude-Code-style baselines',
+    claimBoundary: 'local CLI command accuracy fixture; not a published competitive benchmark score',
+  },
+};
+
+// Patterns whose presence in a claim implies overclaiming.
+const FORBIDDEN_CLAIM_PATTERNS = [
+  { pattern: /\bleaderboard\b/i, flag: 'leaderboard-reference' },
+  { pattern: /\bSOTA\b|\bstate.of.the.art\b/i, flag: 'sota-claim' },
+  { pattern: /\bbeats?\b.{0,30}\b(GPT|Claude|Gemini|Codex)\b/i, flag: 'beats-named-model' },
+  { pattern: /\branked? #\d/i, flag: 'rank-claim' },
+  { pattern: /\bscore[sd]?\s+\d+(\.\d+)?%/i, flag: 'percent-score-without-boundary' },
+  { pattern: /\bstate-of-the-art\b/i, flag: 'sota-claim' },
+];
+
+function checkClaimHardening(text) {
+  const flags = [];
+  for (const { pattern, flag } of FORBIDDEN_CLAIM_PATTERNS) {
+    if (pattern.test(text)) flags.push(flag);
+  }
+  return flags;
+}
+
+function benchLaneRows() {
+  return Object.entries(BENCH_TARGETS).map(([id, target]) => {
+    const latestJson = path.resolve(repoRoot(), target.latestJson);
+    const latestMarkdown = path.resolve(repoRoot(), target.latestMarkdown);
+    return {
+      id,
+      description: target.description,
+      command: `scbe bench ${id}`,
+      script: target.script,
+      latest_json: target.latestJson,
+      latest_markdown: target.latestMarkdown,
+      latest_json_exists: fs.existsSync(latestJson),
+      latest_markdown_exists: fs.existsSync(latestMarkdown),
+      claim_boundary: target.claimBoundary,
+    };
+  });
+}
+
+function summarizeBenchReport(report) {
+  const summary = report && typeof report.summary === 'object' ? report.summary : {};
+  return {
+    schema_version: report.schema_version || null,
+    generated_at_utc: report.generated_at_utc || null,
+    run_id: report.run_id || null,
+    decision: summary.decision || null,
+    summary,
+    claim_boundary: report.claim_boundary || null,
+  };
+}
+
+function latestBenchPacket(id, target) {
+  const absolute = path.resolve(repoRoot(), target.latestJson);
+  const exists = fs.existsSync(absolute);
+  const report = exists ? readJsonFileSafe(absolute) : {};
+  return {
+    id,
+    description: target.description,
+    command: `scbe bench ${id}`,
+    latest_json: target.latestJson,
+    latest_markdown: target.latestMarkdown,
+    exists,
+    claim_boundary: target.claimBoundary,
+    report: exists ? summarizeBenchReport(report) : null,
+  };
+}
+
+function printBenchList(asJson) {
+  const rows = benchLaneRows();
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify({ schema_version: 'scbe_bench_lane_list_v1', lanes: rows }, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write('SCBE benchmark evidence lanes\n\n');
+  for (const row of rows) {
+    const artifact = row.latest_json_exists ? 'artifact:yes' : 'artifact:no';
+    process.stdout.write(`- ${row.id}: ${row.description} (${artifact})\n`);
+    process.stdout.write(`  run: ${row.command} --json\n`);
+  }
+}
+
+function benchStatusPayload() {
+  const lanes = Object.entries(BENCH_TARGETS).map(([id, target]) => {
+    const packet = latestBenchPacket(id, target);
+    const summary = packet.report ? packet.report.summary || {} : {};
+    return {
+      id,
+      exists: packet.exists,
+      decision: packet.report ? packet.report.decision : null,
+      generated_at_utc: packet.report ? packet.report.generated_at_utc : null,
+      command: packet.command,
+      latest_json: packet.latest_json,
+      claim_boundary: packet.claim_boundary,
+      summary,
+    };
+  });
+  const evidenceReady = lanes.filter((lane) => lane.exists).length;
+  return {
+    schema_version: 'scbe_bench_status_v1',
+    generated_at_utc: nowIso(),
+    evidence_ready: evidenceReady,
+    evidence_total: lanes.length,
+    lanes,
+  };
+}
+
+function printBenchStatus(asJson) {
+  const payload = benchStatusPayload();
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write(`SCBE bench status: ${payload.evidence_ready}/${payload.evidence_total} lanes have artifacts\n\n`);
+  for (const lane of payload.lanes) {
+    const state = lane.exists ? lane.decision || 'artifact' : 'missing';
+    process.stdout.write(`- ${lane.id}: ${state}\n`);
+    process.stdout.write(`  ${lane.command} --json\n`);
+  }
+}
+
+function printBenchLatest(args) {
+  const asJson = args.includes('--json');
+  const lane = args.find((arg) => !arg.startsWith('--'));
+  const entries = lane ? [[lane, BENCH_TARGETS[lane]]] : Object.entries(BENCH_TARGETS);
+  if (entries.some(([, target]) => !target)) {
+    process.stderr.write(`scbe bench latest: unknown lane '${lane}'. Run 'scbe bench list'.\n`);
+    process.exit(2);
+  }
+  const packets = entries.map(([id, target]) => latestBenchPacket(id, target));
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify({ schema_version: 'scbe_bench_latest_v1', lanes: packets }, null, 2)}\n`);
+    return;
+  }
+  for (const packet of packets) {
+    const report = packet.report || {};
+    const summary = report.summary || {};
+    process.stdout.write(`${packet.id}: ${packet.exists ? 'artifact found' : 'missing latest artifact'}\n`);
+    if (report.generated_at_utc) process.stdout.write(`  generated: ${report.generated_at_utc}\n`);
+    if (report.decision) process.stdout.write(`  decision: ${report.decision}\n`);
+    if (Object.keys(summary).length) process.stdout.write(`  summary: ${JSON.stringify(summary)}\n`);
+    process.stdout.write(`  boundary: ${packet.claim_boundary}\n`);
+  }
+}
+
+// Lane 98: public artifact index with commit hashes
+function buildBenchIndex() {
+  const git = gitPosture(repoRoot());
+  const lanes = Object.entries(BENCH_TARGETS).map(([id, target]) => {
+    const packet = latestBenchPacket(id, target);
+    const artifactAbsolute = path.resolve(repoRoot(), target.latestJson);
+    let artifact_hash = null;
+    if (packet.exists) {
+      const raw = fs.readFileSync(artifactAbsolute, 'utf8');
+      // Simple 8-char djb2 hash — no crypto dep needed for a human-readable index.
+      let h = 5381;
+      for (let i = 0; i < raw.length; i++) h = ((h << 5) + h + raw.charCodeAt(i)) >>> 0;
+      artifact_hash = h.toString(16).padStart(8, '0');
+    }
+    return {
+      id,
+      description: target.description,
+      command: `scbe bench ${id} --json`,
+      script: target.script,
+      latest_json: target.latestJson,
+      latest_markdown: target.latestMarkdown,
+      artifact_exists: packet.exists,
+      artifact_hash,
+      claim_boundary: target.claimBoundary,
+      report_summary: packet.report ? packet.report.summary : null,
+      generated_at_utc: packet.report ? packet.report.generated_at_utc : null,
+    };
+  });
+  return {
+    schema_version: 'scbe_bench_index_v1',
+    generated_at_utc: nowIso(),
+    commit: git.commit,
+    branch: git.branch,
+    evidence_ready: lanes.filter((l) => l.artifact_exists).length,
+    evidence_total: lanes.length,
+    proof_rule: 'Every public claim must cite: command, artifact path, commit hash, and claim boundary.',
+    lanes,
+  };
+}
+
+function printBenchIndex(args) {
+  const asJson = args.includes('--json');
+  const writeIndex = args.indexOf('--write');
+  const writePath = writeIndex >= 0 ? args[writeIndex + 1] : null;
+
+  const payload = buildBenchIndex();
+
+  if (writePath) {
+    const absolute = path.resolve(process.cwd(), writePath);
+    fs.mkdirSync(path.dirname(absolute), { recursive: true });
+    fs.writeFileSync(absolute, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+    if (!asJson) {
+      process.stdout.write(`wrote ${absolute}\n`);
+      return;
+    }
+  }
+
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+
+  process.stdout.write(`SCBE bench index (commit ${payload.commit})\n`);
+  process.stdout.write(`evidence: ${payload.evidence_ready}/${payload.evidence_total} lanes\n\n`);
+  for (const lane of payload.lanes) {
+    const status = lane.artifact_exists ? `hash:${lane.artifact_hash}` : 'missing';
+    process.stdout.write(`- ${lane.id}: ${status}\n`);
+    process.stdout.write(`  boundary: ${lane.claim_boundary}\n`);
+  }
+}
+
+// Lanes 40/100: claim-hardened proof packet
+function buildBenchProof(args) {
+  const lane = args.find((arg, index) => !arg.startsWith('--') && args[index - 1] !== '--write');
+  const entries = lane ? [[lane, BENCH_TARGETS[lane]]] : Object.entries(BENCH_TARGETS);
+  if (entries.some(([, target]) => !target)) {
+    process.stderr.write(`scbe bench prove: unknown lane '${lane}'. Run 'scbe bench list'.\n`);
+    process.exit(2);
+  }
+  const lanes = entries.map(([id, target]) => latestBenchPacket(id, target));
+
+  // Claim hardening: scan all boundary strings for forbidden patterns.
+  const overclaim_warnings = [];
+  for (const l of lanes) {
+    const flags = checkClaimHardening(l.claim_boundary || '');
+    const reportText = JSON.stringify(l.report || '');
+    const reportFlags = checkClaimHardening(reportText);
+    const all = [...new Set([...flags, ...reportFlags])];
+    if (all.length) overclaim_warnings.push({ lane: l.id, flags: all });
+  }
+
+  return {
+    schema_version: 'scbe_bench_proof_packet_v1',
+    generated_at_utc: nowIso(),
+    repo_root: repoRoot(),
+    git: gitPosture(repoRoot()),
+    proof_rule: 'Website claims must cite command, artifact, commit, and claim boundary.',
+    overclaim_check: {
+      clean: overclaim_warnings.length === 0,
+      warnings: overclaim_warnings,
+    },
+    lanes,
+  };
+}
+
+function printBenchProof(args) {
+  const payload = buildBenchProof(args);
+  const writeIndex = args.indexOf('--write');
+  const writePath = writeIndex >= 0 ? args[writeIndex + 1] : null;
+  if (writeIndex >= 0 && !writePath) {
+    process.stderr.write('scbe bench prove: --write requires a path.\n');
+    process.exit(2);
+  }
+  if (writePath) {
+    const absolute = path.resolve(process.cwd(), writePath);
+    fs.mkdirSync(path.dirname(absolute), { recursive: true });
+    fs.writeFileSync(absolute, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+    if (!args.includes('--json')) {
+      process.stdout.write(`wrote ${absolute}\n`);
+      return;
+    }
+  }
+  if (args.includes('--json')) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write(`SCBE benchmark proof packet (${payload.git.commit})\n\n`);
+  if (!payload.overclaim_check.clean) {
+    process.stderr.write(`warning: overclaim flags detected:\n`);
+    for (const w of payload.overclaim_check.warnings) {
+      process.stderr.write(`  ${w.lane}: ${w.flags.join(', ')}\n`);
+    }
+  }
+  for (const lane of payload.lanes) {
+    process.stdout.write(`- ${lane.id}: ${lane.exists ? 'evidence present' : 'missing evidence'}\n`);
+    process.stdout.write(`  command: ${lane.command} --json\n`);
+    process.stdout.write(`  artifact: ${lane.latest_json}\n`);
+    process.stdout.write(`  boundary: ${lane.claim_boundary}\n`);
+  }
+}
+
+function openFileBestEffort(targetPath) {
+  const absolute = path.resolve(repoRoot(), targetPath);
+  if (!fs.existsSync(absolute)) {
+    process.stderr.write(`scbe bench: report not found: ${absolute}\n`);
+    return;
+  }
+  if (process.platform === 'win32') {
+    spawnSync('cmd', ['/c', 'start', '', absolute], { stdio: 'ignore' });
+  } else if (process.platform === 'darwin') {
+    spawnSync('open', [absolute], { stdio: 'ignore' });
+  } else {
+    spawnSync('xdg-open', [absolute], { stdio: 'ignore' });
+  }
+}
+
+function printBenchHelp() {
+  process.stdout.write(
+    [
+      'Usage:',
+      '  scbe bench <lane> [--json] [--open-report]',
+      '  scbe bench list [--json]',
+      '  scbe bench status [--json]',
+      '  scbe bench latest [lane] [--json]',
+      '  scbe bench prove [lane] [--json] [--write <path>]',
+      '  scbe bench index [--json] [--write <path>]',
+      '',
+      'Lanes: ' + Object.keys(BENCH_TARGETS).join(', '),
+      '',
+      'These are local executable evidence lanes, not public leaderboard scores.',
+      '',
+    ].join('\n')
+  );
+}
+
+function runBench(args) {
+  const sub = args[0] || 'help';
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    printBenchHelp();
+    process.exit(0);
+  }
+  if (sub === 'list') {
+    printBenchList(args.includes('--json'));
+    process.exit(0);
+  }
+  if (sub === 'status') {
+    printBenchStatus(args.includes('--json'));
+    process.exit(0);
+  }
+  if (sub === 'latest') {
+    printBenchLatest(args.slice(1));
+    process.exit(0);
+  }
+  if (sub === 'prove') {
+    printBenchProof(args.slice(1));
+    process.exit(0);
+  }
+  if (sub === 'index') {
+    printBenchIndex(args.slice(1));
+    process.exit(0);
+  }
+  const target = BENCH_TARGETS[sub];
+  if (!target) {
+    process.stderr.write(`scbe bench: unknown lane '${sub}'. Run 'scbe bench list'.\n`);
+    process.exit(2);
+  }
+  const scriptAbs = path.resolve(repoRoot(), target.script);
+  const passArgs = args.slice(1).filter((a) => a !== '--open-report');
+  const pyResult = spawnSync(
+    process.platform === 'win32' ? 'python' : 'python3',
+    [scriptAbs, ...passArgs],
+    { stdio: 'inherit', cwd: repoRoot() }
+  );
+  if (args.includes('--open-report') && target.latestMarkdown) {
+    openFileBestEffort(target.latestMarkdown);
+  }
+  process.exit(typeof pyResult.status === 'number' ? pyResult.status : 1);
+}
+
 // Top-level commands scbe handles directly. Used by the typo-suggestion guard.
 // Order doesn't matter; this list is the complete set of scbe-owned verbs.
 const KNOWN_COMMANDS = [
@@ -3285,6 +3701,8 @@ const KNOWN_COMMANDS = [
   'aetherpp',
   'squad',
   'xval',
+  'bench',
+  'benchmark',
 ];
 
 function levenshtein(a, b) {
@@ -4002,6 +4420,10 @@ if (argv[0] === 'compile') {
     process.exit(2);
   }
   runCompiler([compilerMode, ...rest]);
+}
+
+if (argv[0] === 'bench' || argv[0] === 'benchmark') {
+  runBench(argv.slice(1));
 }
 
 if (argv[0] === 'route' || argv[0] === 'aetherpp') {
