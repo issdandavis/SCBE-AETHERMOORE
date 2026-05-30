@@ -62,10 +62,46 @@ export interface RubixBrowserPlan {
   };
 }
 
+export interface RubixBrowserBenchmarkCase {
+  id: string;
+  task: string;
+  permissions: RubixBrowserPermission[];
+  expected_verdict: 'PASS' | 'HOLD';
+  expected_blocked_faces?: string[];
+}
+
+export interface RubixBrowserBenchmarkRow {
+  id: string;
+  task: string;
+  verdict: 'PASS' | 'HOLD';
+  expected_verdict: 'PASS' | 'HOLD';
+  ok: boolean;
+  blocked_faces: string[];
+  expected_blocked_faces: string[];
+  route_sha256: string;
+}
+
+export interface RubixBrowserBenchmarkReport {
+  schema_version: 'scbe.rubix_browser_benchmark.v1';
+  mode: 'headless' | 'headed';
+  generated_at: string;
+  case_count: number;
+  pass_count: number;
+  score: number;
+  rows: RubixBrowserBenchmarkRow[];
+  recommendation: string;
+}
+
 export interface BuildRubixBrowserPlanOptions {
   task: string;
   permissions?: Iterable<RubixBrowserPermission>;
   generatedAt?: string;
+}
+
+export interface RunRubixBrowserBenchmarkOptions {
+  mode?: 'headless' | 'headed';
+  generatedAt?: string;
+  cases?: readonly RubixBrowserBenchmarkCase[];
 }
 
 export const RUBIX_BROWSER_FACES: readonly RubixBrowserFace[] = [
@@ -131,6 +167,43 @@ export const RUBIX_BROWSER_FACES: readonly RubixBrowserFace[] = [
     required_permission: 'observe',
     risk: 'low',
     description: 'Deferred work, task ticker state, receipts, and loop context.',
+  },
+];
+
+export const RUBIX_BROWSER_BENCHMARK_CASES: readonly RubixBrowserBenchmarkCase[] = [
+  {
+    id: 'read-visible-labels',
+    task: 'inspect the pricing page and summarize visible labels',
+    permissions: ['observe', 'visual.read', 'dom.read'],
+    expected_verdict: 'PASS',
+  },
+  {
+    id: 'submit-without-tool',
+    task: 'open the upload page, fill the form, and submit the video',
+    permissions: ['observe', 'visual.read', 'dom.read'],
+    expected_verdict: 'HOLD',
+    expected_blocked_faces: ['tool'],
+  },
+  {
+    id: 'api-without-network',
+    task: 'read the dashboard and call the API URL for account status',
+    permissions: ['observe', 'visual.read', 'dom.read'],
+    expected_verdict: 'HOLD',
+    expected_blocked_faces: ['network'],
+  },
+  {
+    id: 'stateful-auth-tool-route',
+    task: 'login, read session storage, call the API URL, then click save',
+    permissions: [
+      'observe',
+      'visual.read',
+      'dom.read',
+      'auth.read',
+      'storage.read',
+      'network.read',
+      'tool.call',
+    ],
+    expected_verdict: 'PASS',
   },
 ];
 
@@ -287,5 +360,53 @@ export function buildRubixBrowserPlan(options: BuildRubixBrowserPlanOptions): Ru
         ? 'closed browser-control route is permission-complete'
         : 'route has blocked faces; add permissions or lower task scope',
     },
+  };
+}
+
+export function runRubixBrowserBenchmark(
+  options: RunRubixBrowserBenchmarkOptions = {}
+): RubixBrowserBenchmarkReport {
+  const mode = options.mode || 'headless';
+  const generatedAt = options.generatedAt || new Date().toISOString();
+  const cases = options.cases || RUBIX_BROWSER_BENCHMARK_CASES;
+  const rows = cases.map((benchCase): RubixBrowserBenchmarkRow => {
+    const plan = buildRubixBrowserPlan({
+      task: benchCase.task,
+      permissions: benchCase.permissions,
+      generatedAt,
+    });
+    const blockedFaces = plan.blocked_moves.map((move) => move.to);
+    const expectedBlockedFaces = benchCase.expected_blocked_faces || [];
+    const expectedBlocksOk =
+      expectedBlockedFaces.length === 0
+        ? blockedFaces.length === 0
+        : expectedBlockedFaces.every((face) => blockedFaces.includes(face));
+    const ok = plan.audit.verdict === benchCase.expected_verdict && expectedBlocksOk;
+    return {
+      id: benchCase.id,
+      task: benchCase.task,
+      verdict: plan.audit.verdict,
+      expected_verdict: benchCase.expected_verdict,
+      ok,
+      blocked_faces: blockedFaces,
+      expected_blocked_faces: expectedBlockedFaces,
+      route_sha256: plan.audit.route_sha256,
+    };
+  });
+  const passCount = rows.filter((row) => row.ok).length;
+  const score = rows.length === 0 ? 0 : passCount / rows.length;
+
+  return {
+    schema_version: 'scbe.rubix_browser_benchmark.v1',
+    mode,
+    generated_at: generatedAt,
+    case_count: rows.length,
+    pass_count: passCount,
+    score,
+    rows,
+    recommendation:
+      mode === 'headless'
+        ? 'Use headless mode for CI and benchmark proof; rerun selected failures with headed replay.'
+        : 'Use headed mode only for visual diagnosis and demo replay.',
   };
 }

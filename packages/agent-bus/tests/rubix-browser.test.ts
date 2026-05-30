@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildRubixBrowserPlan, RUBIX_BROWSER_FACES } from '../src/rubix-browser.js';
+import {
+  buildRubixBrowserPlan,
+  RUBIX_BROWSER_FACES,
+  runRubixBrowserBenchmark,
+} from '../src/rubix-browser.js';
 
 describe('rubix browser adapter', () => {
   it('builds a closed read-only browser route for inspection tasks', () => {
@@ -76,5 +80,37 @@ describe('rubix browser adapter', () => {
 
   it('rejects empty tasks instead of producing ambiguous routes', () => {
     expect(() => buildRubixBrowserPlan({ task: '   ' })).toThrow(/non-empty task/);
+  });
+
+  it('runs the headless benchmark as a CI-safe browser-control preflight', () => {
+    const report = runRubixBrowserBenchmark({
+      mode: 'headless',
+      generatedAt: '2026-05-30T00:00:00.000Z',
+    });
+
+    expect(report.schema_version).toBe('scbe.rubix_browser_benchmark.v1');
+    expect(report.mode).toBe('headless');
+    expect(report.pass_count).toBe(report.case_count);
+    expect(report.score).toBe(1);
+    expect(report.rows.map((row) => row.id)).toEqual([
+      'read-visible-labels',
+      'submit-without-tool',
+      'api-without-network',
+      'stateful-auth-tool-route',
+    ]);
+    expect(report.rows.find((row) => row.id === 'submit-without-tool')?.blocked_faces).toContain(
+      'tool'
+    );
+  });
+
+  it('keeps headed mode as a replay/debug label over the same deterministic cases', () => {
+    const report = runRubixBrowserBenchmark({
+      mode: 'headed',
+      generatedAt: '2026-05-30T00:00:00.000Z',
+    });
+
+    expect(report.mode).toBe('headed');
+    expect(report.score).toBe(1);
+    expect(report.recommendation).toMatch(/visual diagnosis/);
   });
 });
