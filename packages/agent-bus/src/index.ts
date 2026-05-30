@@ -1958,3 +1958,23 @@ export async function runAgentBusTerminalUi(options: AgentBusClientOptions = {})
     rl.close();
   }
 }
+
+export {
+  type ReactionSpec,
+  type ReactionChain,
+  type ReactionStepStatus,
+  type ReactionStepState,
+  type ChainRunStatus,
+  type ReactionChainState,
+  type ChainStartResult,
+  type ChainAdvanceResult,
+  type ReactionRunnerFn,
+  type ReactionChainRunOptions,
+  type ReactionChainRunResult,
+  startChain,
+  getReadyReactions,
+  advanceChain,
+  renderTask,
+  buildReactionEvent,
+  runReactionChain,
+} from './reaction-chain.js';
