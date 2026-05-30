@@ -3306,6 +3306,13 @@ const BENCH_TARGETS = {
     description: 'CLI command accuracy vs Codex/Claude-Code-style baselines',
     claimBoundary: 'local CLI command accuracy fixture; not a published competitive benchmark score',
   },
+  providers: {
+    script: 'scripts/benchmark/provider_health_matrix.py',
+    latestJson: 'artifacts/benchmarks/provider_health/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/provider_health/LATEST.md',
+    description: 'AI provider health matrix (local > free > paid free-first policy)',
+    claimBoundary: 'local provider reachability check; not an API reliability guarantee',
+  },
 };
 
 // Patterns whose presence in a claim implies overclaiming.
@@ -3649,6 +3656,17 @@ function runBench(args) {
   if (sub === 'index') {
     printBenchIndex(args.slice(1));
     process.exit(0);
+  }
+  // Lane 42: free-first policy — `scbe bench providers` or `scbe bench router`
+  if (sub === 'providers' || sub === 'router' || sub === 'provider-health') {
+    const target = BENCH_TARGETS['providers'];
+    const passArgs = args.slice(1).filter((a) => a !== '--open-report');
+    const pyResult = spawnSync(
+      process.platform === 'win32' ? 'python' : 'python3',
+      [path.resolve(repoRoot(), target.script), ...passArgs],
+      { stdio: 'inherit', cwd: repoRoot() }
+    );
+    process.exit(typeof pyResult.status === 'number' ? pyResult.status : 1);
   }
   const target = BENCH_TARGETS[sub];
   if (!target) {
