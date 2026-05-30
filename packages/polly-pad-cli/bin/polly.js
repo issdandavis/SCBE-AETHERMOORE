@@ -930,6 +930,149 @@ function unresolvedPlaceholders(resolvedArgs) {
 }
 
 // ---------------------------------------------------------------------------
+// PowerShell script surface
+// ---------------------------------------------------------------------------
+
+function findPowerShellRoot(repoRoot) {
+  if (process.env.POLLY_PS_ROOT) {
+    const configured = path.resolve(process.env.POLLY_PS_ROOT);
+    return fs.existsSync(configured) ? configured : null;
+  }
+  return repoRoot || detectGitRoot(process.cwd()) || process.cwd();
+}
+
+function walkFiles(root, predicate, limit) {
+  const results = [];
+  const stack = [root];
+  const ignored = new Set(['.git', 'node_modules', 'dist', 'artifacts', 'target', '.pytest_cache']);
+  while (stack.length && results.length < limit) {
+    const dir = stack.pop();
+    let entries = [];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch (_) {
+      continue;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (!ignored.has(entry.name)) stack.push(fullPath);
+      } else if (predicate(fullPath)) {
+        results.push(fullPath);
+        if (results.length >= limit) break;
+      }
+    }
+  }
+  return results.sort();
+}
+
+function parsePowerShellParams(text) {
+  const params = [];
+  const block = text.match(/param\s*\(([\s\S]*?)\)\s*/i);
+  if (!block) return params;
+  const regex = /\[([^\]]+)\]\s*\$([A-Za-z_]\w*)/g;
+  let match;
+  while ((match = regex.exec(block[1])) !== null) {
+    params.push({ name: match[2], type: match[1].trim() });
+  }
+  return params;
+}
+
+function describePowerShellScript(filePath, root) {
+  const text = fs.readFileSync(filePath, 'utf8');
+  const relativePath = path.relative(root, filePath).replace(/\\/g, '/');
+  const stat = fs.statSync(filePath);
+  return {
+    name: path.basename(filePath, path.extname(filePath)),
+    path: relativePath,
+    full_path: filePath,
+    bytes: stat.size,
+    sha256: crypto.createHash('sha256').update(text, 'utf8').digest('hex'),
+    params: parsePowerShellParams(text),
+    first_comment: ((text.match(/^\s*#\s*(.+)$/m) || [])[1] || '').trim() || null,
+  };
+}
+
+function discoverPowerShellScripts(root, filter) {
+  if (!root || !fs.existsSync(root)) return [];
+  const normalizedFilter = filter ? String(filter).toLowerCase() : '';
+  const candidates = walkFiles(
+    root,
+    function (filePath) {
+      return ['.ps1', '.psm1', '.psd1'].includes(path.extname(filePath).toLowerCase());
+    },
+    500
+  );
+  return candidates
+    .map(function (filePath) {
+      return describePowerShellScript(filePath, root);
+    })
+    .filter(function (script) {
+      if (!normalizedFilter) return true;
+      return (
+        script.name.toLowerCase().includes(normalizedFilter) ||
+        script.path.toLowerCase().includes(normalizedFilter) ||
+        script.params.some(function (param) {
+          return param.name.toLowerCase().includes(normalizedFilter);
+        })
+      );
+    });
+}
+
+function resolvePowerShellScript(scripts, query) {
+  if (!query) return { error: 'missing script name or path' };
+  const normalized = String(query).replace(/\\/g, '/').toLowerCase();
+  const matches = scripts.filter(function (script) {
+    return (
+      script.path.toLowerCase() === normalized ||
+      script.path.toLowerCase().endsWith('/' + normalized) ||
+      script.name.toLowerCase() === normalized ||
+      path.basename(script.path).toLowerCase() === normalized
+    );
+  });
+  if (matches.length === 1) return { script: matches[0] };
+  if (matches.length > 1) return { error: 'ambiguous script', matches };
+  return { error: 'script not found' };
+}
+
+function parseJsonObjectFlag(value, flagName) {
+  if (!value) return {};
+  try {
+    const parsed = JSON.parse(String(value));
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('expected object');
+    }
+    return parsed;
+  } catch (err) {
+    throw new Error(flagName + ' must be a JSON object: ' + err.message);
+  }
+}
+
+function buildPowerShellArgs(namedParams, positionalArgs) {
+  const resolved = [];
+  for (const key of Object.keys(namedParams).sort()) {
+    const value = namedParams[key];
+    if (value === false || value === null || value === undefined) continue;
+    resolved.push('-' + key);
+    if (value !== true) resolved.push(String(value));
+  }
+  return resolved.concat(positionalArgs || []);
+}
+
+function findPowerShellExecutable() {
+  if (process.env.POLLY_POWERSHELL) return process.env.POLLY_POWERSHELL;
+  const candidates = process.platform === 'win32' ? ['pwsh.exe', 'powershell.exe'] : ['pwsh'];
+  for (const candidate of candidates) {
+    const probe = spawnSync(candidate, ['-NoProfile', '-Command', '$PSVersionTable.PSVersion.ToString()'], {
+      encoding: 'utf8',
+      timeout: 5000,
+    });
+    if (!probe.error && probe.status === 0) return candidate;
+  }
+  return candidates[0];
+}
+
+// ---------------------------------------------------------------------------
 // Task helpers
 // ---------------------------------------------------------------------------
 
@@ -2012,6 +2155,164 @@ const COMMANDS = {
     process.exit(1);
   },
 
+  async ps(args, flags) {
+    const repoRoot = detectGitRoot(process.cwd());
+    const root = findPowerShellRoot(repoRoot);
+    const ws = findWorkspaceRoot(process.cwd());
+    const [sub, scriptQuery, ...rest] = args;
+
+    if (!root) {
+      console.error('PowerShell root not found. Set POLLY_PS_ROOT or run from a repository.');
+      process.exit(1);
+    }
+
+    const scripts = discoverPowerShellScripts(root, flags.filter);
+
+    if (!sub || sub === 'list') {
+      const payload = {
+        schema_version: 'polly_powershell_surface_v1',
+        root,
+        count: scripts.length,
+        scripts: scripts.map(function (script) {
+          return {
+            name: script.name,
+            path: script.path,
+            params: script.params,
+            sha256: script.sha256,
+          };
+        }),
+      };
+      if (flags.json) {
+        out(payload, true);
+        return;
+      }
+      console.log('PowerShell scripts: ' + scripts.length);
+      console.log('Root: ' + root);
+      console.log('');
+      for (const script of scripts.slice(0, flags.limit ? parseInt(flags.limit, 10) : 80)) {
+        const params = script.params.length
+          ? ' (' +
+            script.params
+              .map(function (param) {
+                return '-' + param.name;
+              })
+              .join(' ') +
+            ')'
+          : '';
+        console.log('  ' + script.path + params);
+      }
+      if (scripts.length > 80 && !flags.limit) {
+        console.log('');
+        console.log('Showing first 80. Use --filter <text> or --json for the full list.');
+      }
+      return;
+    }
+
+    if (sub === 'inspect') {
+      const resolved = resolvePowerShellScript(scripts, scriptQuery);
+      if (resolved.error) {
+        console.error(resolved.error + (scriptQuery ? ': ' + scriptQuery : ''));
+        if (resolved.matches) {
+          for (const match of resolved.matches.slice(0, 20)) console.error('  ' + match.path);
+        }
+        process.exit(1);
+      }
+      if (ws) appendAudit(ws, 'ps.inspect', resolved.script.path, { sha256: resolved.script.sha256 });
+      if (flags.json) {
+        out(resolved.script, true);
+        return;
+      }
+      console.log('Name:    ' + resolved.script.name);
+      console.log('Path:    ' + resolved.script.path);
+      console.log('SHA256:  ' + resolved.script.sha256);
+      if (resolved.script.first_comment) console.log('Comment: ' + resolved.script.first_comment);
+      if (resolved.script.params.length) {
+        console.log('Params:');
+        for (const param of resolved.script.params) console.log('  -' + param.name + ' [' + param.type + ']');
+      } else {
+        console.log('Params:  none detected');
+      }
+      return;
+    }
+
+    if (sub === 'run') {
+      const resolved = resolvePowerShellScript(scripts, scriptQuery);
+      if (resolved.error) {
+        console.error(resolved.error + (scriptQuery ? ': ' + scriptQuery : ''));
+        if (resolved.matches) {
+          for (const match of resolved.matches.slice(0, 20)) console.error('  ' + match.path);
+        }
+        process.exit(1);
+      }
+      const namedParams = parseJsonObjectFlag(flags.params, '--params');
+      const resolvedArgs = buildPowerShellArgs(namedParams, rest);
+      const executable = findPowerShellExecutable();
+      const commandArgs = ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', resolved.script.full_path].concat(resolvedArgs);
+      const dryRun = flags['dry-run'] || flags.dryRun || !flags.yes;
+      const payload = {
+        schema_version: 'polly_powershell_run_v1',
+        dry_run: !!dryRun,
+        script: resolved.script.path,
+        sha256: resolved.script.sha256,
+        executable,
+        args: commandArgs,
+        named_params: namedParams,
+      };
+
+      if (ws) appendAudit(ws, 'ps.run.requested', resolved.script.path, payload);
+
+      if (dryRun) {
+        if (flags.json) {
+          out(payload, true);
+        } else {
+          console.log('[dry-run] Would execute:');
+          console.log('  ' + executable + ' ' + commandArgs.map((arg) => JSON.stringify(arg)).join(' '));
+          console.log('');
+          console.log('Add --yes to execute.');
+        }
+        return;
+      }
+
+      const timeoutMs = flags.timeout ? parseInt(flags.timeout, 10) : 120000;
+      const runAt = new Date().toISOString();
+      const spawnResult = spawnSync(executable, commandArgs, {
+        cwd: root,
+        encoding: 'utf8',
+        timeout: timeoutMs,
+        env: process.env,
+        shell: false,
+      });
+      const result = Object.assign({}, payload, {
+        dry_run: false,
+        ok: spawnResult.status === 0,
+        exit_code: spawnResult.status,
+        stdout: spawnResult.stdout || '',
+        stderr: spawnResult.stderr || '',
+        run_at: runAt,
+        finished_at: new Date().toISOString(),
+      });
+      if (ws) {
+        appendAudit(ws, result.ok ? 'ps.run.completed' : 'ps.run.failed', resolved.script.path, {
+          exit_code: result.exit_code,
+          stdout_chars: result.stdout.length,
+          stderr_chars: result.stderr.length,
+          stderr_tail: result.stderr.slice(-500),
+        });
+      }
+      if (flags.json) {
+        out(result, true);
+      } else {
+        if (result.stdout) console.log(result.stdout.trimEnd());
+        if (result.stderr) console.error(result.stderr.trimEnd());
+      }
+      if (!result.ok) process.exit(1);
+      return;
+    }
+
+    console.error('Unknown ps subcommand: ' + sub + '. Use: list, inspect, run');
+    process.exit(1);
+  },
+
   async audit(args, flags) {
     const ws = requireWorkspace();
     const [sub] = args;
@@ -2492,6 +2793,12 @@ Commands:
     --dry-run              Show resolved command without executing
     --cwd <path>           Working directory (default: repo root or cwd)
     --timeout <ms>         Execution timeout in ms (default: 60000)
+  ps list                  List discovered PowerShell scripts
+  ps inspect <script>      Show script path, params, and hash
+  ps run <script>          Dry-run a PowerShell script; add --yes to execute
+    --filter <text>        Filter ps list by name/path/parameter
+    --params '{...}'       Named PowerShell parameters as JSON
+    --yes                  Required for real PowerShell execution
   shell                    Interactive REPL
 
 Recipes (use with \`polly run <recipe> <args>\`):
@@ -2535,6 +2842,9 @@ Examples:
   polly cross bench pathfinding --json
   polly cross patch --file src/index.py --text "result = x + y" --json
   polly cross bundle --files src/index.py,src/index.js --out bundle.json
+  polly ps list --filter hydra
+  polly ps inspect scripts/system/scbe_nav.ps1
+  polly ps run scripts/system/scbe_nav.ps1 --params '{"Target":"docs"}' --dry-run
   polly runs --json
   polly handoff | pbcopy
 `;
