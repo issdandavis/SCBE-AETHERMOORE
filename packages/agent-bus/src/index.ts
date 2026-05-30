@@ -2002,6 +2002,25 @@ export {
 } from './life-ledger.js';
 
 export {
+  type Tongue,
+  type TraversalType,
+  type Algorithm,
+  type StarNode,
+  type StarEdge,
+  type StarGraph,
+  type MissionPhase,
+  type MissionTrajectory,
+  type GalaxyMap,
+  type StarPathBenchResult,
+  buildStarGraph,
+  buildGalaxyMap,
+  bfs,
+  dijkstra,
+  aStar,
+  runStarPathBench,
+} from './star-path.js';
+
+export {
   type ReactionSpec,
   type ReactionChain,
   type ReactionStepStatus,
