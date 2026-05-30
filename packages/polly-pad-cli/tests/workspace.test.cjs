@@ -370,4 +370,61 @@ test('polly cross op can target one language', () => {
     assert.strictEqual(payload.translations.go, 'result := x ^ y');
   } finally {
     cleanup(dir);
-  }});
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 17: polly cross patch builds and applies a verified line patch
+// ---------------------------------------------------------------------------
+test('polly cross patch builds and applies a verified line patch', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossPatchTest']);
+    const filePath = path.join(dir, 'calc.py');
+    fs.writeFileSync(filePath, 'result = x - y\nprint(result)', 'utf8');
+
+    const result = run(dir, ['cross', 'patch', '--file', filePath, '--text', 'result = x + y\nprint(result)', '--apply']);
+    assert.strictEqual(result.status, 0, 'cross patch should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.schema_version, 'polly_cross_patch_v1');
+    assert.strictEqual(payload.verified_apply, true);
+    assert.strictEqual(payload.applied, true);
+    assert.strictEqual(payload.patch.start_line, 1);
+    assert.strictEqual(fs.readFileSync(filePath, 'utf8'), 'result = x + y\nprint(result)');
+
+    const auditResult = run(dir, ['audit', 'list', '--json']);
+    const events = JSON.parse(auditResult.stdout);
+    assert.ok(events.some((event) => event.action === 'cross.patch.applied'));
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 18: polly cross bundle packages multiple language files
+// ---------------------------------------------------------------------------
+test('polly cross bundle packages multiple language files', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossBundleTest']);
+    const pyPath = path.join(dir, 'calc.py');
+    const jsPath = path.join(dir, 'calc.js');
+    const outPath = path.join(dir, 'bundle.json');
+    fs.writeFileSync(pyPath, 'result = x + y', 'utf8');
+    fs.writeFileSync(jsPath, 'const result = x + y;', 'utf8');
+
+    const result = run(dir, ['cross', 'bundle', '--files', pyPath + ',' + jsPath, '--out', outPath]);
+    assert.strictEqual(result.status, 0, 'cross bundle should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.schema_version, 'polly_cross_bundle_v1');
+    assert.strictEqual(payload.files.length, 2);
+    assert.match(payload.aggregate_hash, /^[a-f0-9]{64}$/);
+    assert.ok(fs.existsSync(outPath), 'bundle should be written to --out path');
+    assert.strictEqual(JSON.parse(fs.readFileSync(outPath, 'utf8')).aggregate_hash, payload.aggregate_hash);
+
+    const langs = payload.files.map((entry) => entry.language).sort();
+    assert.deepStrictEqual(langs, ['javascript', 'python']);
+  } finally {
+    cleanup(dir);
+  }
+});
