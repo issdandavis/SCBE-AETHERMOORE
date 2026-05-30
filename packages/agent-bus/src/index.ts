@@ -2221,6 +2221,19 @@ export {
 } from './control-intent.js';
 
 export {
+  type PollyBriefMode,
+  type PollyBriefSeverity,
+  type PollyAlert,
+  type PollyAction,
+  type PollyBrief,
+  type PollyBriefOptions,
+  buildPollyAlerts,
+  buildPollyActions,
+  buildPollyHeadline,
+  renderPollyCliLines,
+  buildPollyBrief,
+  renderPollyBrief,
+  // EVA compatibility aliases
   type EvaMode,
   type EvaSeverity,
   type EvaAlert,
@@ -2233,4 +2246,4 @@ export {
   renderEvaCliLines,
   buildEvaBrief,
   renderEvaBrief,
-} from './eva.js';
+} from './polly-brief.js';
