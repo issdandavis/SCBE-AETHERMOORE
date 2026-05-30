@@ -80,6 +80,9 @@ Thumbs.db
 artifacts/pytest_tmp/
 artifacts/test_swarm_hub/
 
+# External benchmark datasets (cloned separately, not committed)
+artifacts/arc-data/
+
 # Local caches & databases
 .npm-cache-local/
 .npm-pack-dryrun.txt

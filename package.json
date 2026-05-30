@@ -166,6 +166,8 @@
     "benchmark:coding-agents:gate": "python scripts/eval/gate_functional_benchmark.py",
     "benchmark:swe-local": "python scripts/benchmark/swe_local_benchmark.py",
     "benchmark:swe-local-fixtures": "python scripts/benchmark/real_patch_task_benchmark.py",
+    "benchmark:arc-agi2": "python scripts/benchmark/arc_agi2_local_benchmark.py --split evaluation",
+    "benchmark:arc-agi2:training": "python scripts/benchmark/arc_agi2_local_benchmark.py --split training",
     "benchmark:swe-local-fixtures:cerebras": "python scripts/benchmark/real_patch_task_benchmark.py --provider cerebras",
     "benchmark:swe-local-fixtures:groq": "python scripts/benchmark/real_patch_task_benchmark.py --provider groq",
     "benchmark:swe-verified:readiness": "python scripts/benchmark/swe_verified_readiness.py",
