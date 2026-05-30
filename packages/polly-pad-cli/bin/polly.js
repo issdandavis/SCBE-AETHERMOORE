@@ -837,12 +837,9 @@ async function tryOllama(prompt) {
   const headers = { 'Content-Type': 'application/json' };
   if (apiKey) headers['Authorization'] = 'Bearer ' + apiKey;
 
-  // Detect endpoint style: if base contains /v1 or OLLAMA_BASE_URL ends with /v1,
-  // use OpenAI-compatible /chat/completions; otherwise use native /api/chat.
-  const useOpenAICompat =
-    base.includes('/v1') ||
-    (process.env.OLLAMA_BASE_URL || '').toLowerCase().includes('ollama.com') ||
-    (process.env.OLLAMA_BASE_URL || '').toLowerCase().includes('openai');
+  // Detect endpoint style: only an explicit /v1 in the URL triggers OpenAI-compat mode.
+  // ollama.com uses the SAME native format as local Ollama (/api/chat, native request body).
+  const useOpenAICompat = base.includes('/v1');
 
   try {
     let text = null;
@@ -866,9 +863,12 @@ async function tryOllama(prompt) {
       const data = await res.json();
       text = data?.choices?.[0]?.message?.content || null;
     } else {
-      // Native Ollama API (local)
+      // Native Ollama API (local or cloud).
+      // Smart path: if base already ends with /api (e.g. https://ollama.com/api),
+      // append /chat only — otherwise append /api/chat to avoid double /api/.
+      const chatUrl = base.endsWith('/api') ? base + '/chat' : base + '/api/chat';
       const res = await fetchWithTimeout(
-        base + '/api/chat',
+        chatUrl,
         {
           method: 'POST',
           headers,
