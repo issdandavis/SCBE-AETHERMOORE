@@ -14,9 +14,6 @@ from __future__ import annotations
 import asyncio
 import base64
 import logging
-import os
-import platform
-import shutil
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -127,27 +124,8 @@ class PlaywrightWrapper:
         """Async context manager exit."""
         await self.close()
 
-    def _resolve_linux_chrome_path(self) -> Optional[str]:
-        """Resolve a Linux Chrome/Chromium executable if available."""
-        env_path = os.environ.get("SCBE_CHROME_PATH")
-        if env_path:
-            return env_path
-
-        candidates = [
-            "google-chrome-stable",
-            "google-chrome",
-            "chromium-browser",
-            "chromium",
-            "chrome",
-        ]
-        for candidate in candidates:
-            path = shutil.which(candidate)
-            if path:
-                return path
-        return None
-
     def _build_launch_options(self) -> Dict[str, Any]:
-        """Build Playwright launch options with Linux Chrome support."""
+        """Build Playwright launch options using the shared binary resolver."""
         options: Dict[str, Any] = {"headless": self.config.headless}
 
         if self.config.executable_path:
@@ -158,11 +136,9 @@ class PlaywrightWrapper:
             options["channel"] = self.config.browser_channel
             return options
 
-        if platform.system() == "Linux":
-            linux_path = self._resolve_linux_chrome_path()
-            if linux_path:
-                options["executable_path"] = linux_path
-
+        from agents.browser.binary_resolver import resolve_browser_binary
+        resolved_path, _ = resolve_browser_binary()
+        options["executable_path"] = resolved_path
         return options
 
     async def initialize(self):
