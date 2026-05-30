@@ -281,6 +281,27 @@
     "args": ["packages/agent-bus/scripts/bench_worm_environment_adapter.cjs"]
   },
   {
+    "name": "projection-board-pathfinding-benchmark",
+    "description": "Run a fog-of-war projection-board benchmark where visible x,y movement is projected from hidden goal, frontier, permission, security, importance-depth, memory, spin-coherence, and 3x3 kernel-convolution lattice fields.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/bench_projection_board_pathfinding.cjs"]
+  },
+  {
+    "name": "pathfinding-suite-benchmark",
+    "description": "Run every current agent-bus pathfinding benchmark: roll-stack maze, worm environmental adapter, projection-board hidden-lattice navigation, and vector-field navigation. Emits one combined evidence scorecard.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/bench_pathfinding_suite.cjs"]
+  },
+  {
+    "name": "vector-field-nav-benchmark",
+    "description": "Run seeded multi-lattice vector-field navigation against A*, greedy, and random baselines with receipt-chain scoring, ablations, security tiers, importance depth, and 3x3 kernel convolution.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/vector_field_bench.cjs"]
+  },
+  {
     "name": "semantic-hex-bridge",
     "description": "Encode text through the agent-bus 6D semantic bridge into binary and 12-character hex routing evidence.",
     "patentSurface": "atomic-tokenizer",

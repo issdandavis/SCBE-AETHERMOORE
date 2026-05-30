@@ -193,6 +193,36 @@ export {
 } from './life-ledger.js';
 
 export {
+  type CellType,
+  type SecurityTier,
+  type NavAlgorithm,
+  type AblationTag,
+  type RunLabel,
+  type MazeCell,
+  type MazeConfig,
+  type MazeGrid,
+  type LatticeWeights,
+  type VectorBreakdown,
+  type MoveReceipt,
+  type AgentState,
+  type BenchmarkScore,
+  type AlgorithmSummary,
+  type AblationEntry,
+  type NavBenchResult,
+  DEFAULT_WEIGHTS,
+  VECTOR_KERNEL_3X3,
+  BENCHMARK_MAZES,
+  generateMaze,
+  oracleBFS,
+  createAgent,
+  computeVTotal,
+  runMission,
+  scoreRun,
+  verifyReceiptChain,
+  runNavBench,
+} from './vector-field-nav.js';
+
+export {
   type HermesTaskMode,
   type ScbeCompassMode,
   type ScbeFormation,
