@@ -371,6 +371,20 @@ def test_terminal_ai_router_guards_endpoint_and_output_path():
     )
     assert validated == "https://api.openai.com/v1/models"
 
+    cerebras = terminal_ai_router._validate_provider_endpoint(
+        "https://api.cerebras.ai/v1/models",
+        "cerebras",
+        {},
+    )
+    assert cerebras == "https://api.cerebras.ai/v1/models"
+
+    groq = terminal_ai_router._validate_provider_endpoint(
+        "https://api.groq.com/openai/v1/models",
+        "groq",
+        {},
+    )
+    assert groq == "https://api.groq.com/openai/v1/models"
+
     try:
         terminal_ai_router._validate_provider_endpoint("http://localhost:8000", "openai", {})
     except ValueError as exc:

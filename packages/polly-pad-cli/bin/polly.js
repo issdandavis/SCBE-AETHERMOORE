@@ -509,6 +509,7 @@ const TRANSLATE_BENCH = [
     from: 'python',
     to: 'javascript',
     source: 'def add(x, y):\n    return x + y',
+    fixture_translation: 'function add(x, y) {\n  return x + y;\n}',
     verify_js: function(translation, x, y) {
       return translation + '\nconsole.log(add(' + x + ', ' + y + '));';
     },
@@ -521,6 +522,7 @@ const TRANSLATE_BENCH = [
     from: 'python',
     to: 'javascript',
     source: 'def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)',
+    fixture_translation: 'function factorial(n) {\n  if (n <= 1) return 1;\n  return n * factorial(n - 1);\n}',
     verify_js: function(translation, n) {
       return translation + '\nconsole.log(factorial(' + n + '));';
     },
@@ -533,6 +535,8 @@ const TRANSLATE_BENCH = [
     from: 'python',
     to: 'javascript',
     source: 'def fizzbuzz(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append("FizzBuzz")\n        elif i % 3 == 0:\n            result.append("Fizz")\n        elif i % 5 == 0:\n            result.append("Buzz")\n        else:\n            result.append(str(i))\n    return result',
+    fixture_translation:
+      'function fizzbuzz(n) {\n  const result = [];\n  for (let i = 1; i <= n; i++) {\n    if (i % 15 === 0) result.push("FizzBuzz");\n    else if (i % 3 === 0) result.push("Fizz");\n    else if (i % 5 === 0) result.push("Buzz");\n    else result.push(String(i));\n  }\n  return result;\n}',
     verify_js: function(translation, n) {
       return translation + '\nconsole.log(fizzbuzz(' + n + ').join(","));';
     },
@@ -545,8 +549,11 @@ const TRANSLATE_BENCH = [
     from: 'python',
     to: 'javascript',
     source: 'def is_palindrome(s):\n    s = s.lower().replace(" ", "")\n    return s == s[::-1]',
+    fixture_translation:
+      'function isPalindrome(s) {\n  s = s.toLowerCase().replace(/ /g, "");\n  return s === s.split("").reverse().join("");\n}',
     verify_js: function(translation, s) {
-      return translation + '\nconsole.log(is_palindrome(' + JSON.stringify(s) + ').toString());';
+      const fn = resolveJsFunctionName(translation, ['is_palindrome', 'isPalindrome']);
+      return translation + '\nconsole.log(' + fn + '(' + JSON.stringify(s) + ').toString());';
     },
     inputs: ['racecar'],
     expected: 'true',
@@ -561,6 +568,17 @@ const TRANSLATE_BENCH = [
     expected: '5',
   },
 ];
+
+function resolveJsFunctionName(source, candidates) {
+  for (const candidate of candidates) {
+    const escaped = candidate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(
+      '(function\\s+' + escaped + '\\s*\\(|(?:const|let|var)\\s+' + escaped + '\\s*=|' + escaped + '\\s*=\\s*function)'
+    );
+    if (pattern.test(source)) return candidate;
+  }
+  return candidates[0];
+}
 
 function buildTranslatePrompt(fromLang, toLang, sourceCode) {
   return (
@@ -606,9 +624,14 @@ async function runTranslateBench(opts) {
         translated = '(direct source run — no translation needed for baseline)';
         if (execMatch) passed++;
       } else {
-        const llmResult = await translateCode(bench.from, bench.to, bench.source);
-        translated = llmResult ? llmResult.text : '';
-        modelUsed = llmResult ? (llmResult.model_used || 'unknown') : 'none';
+        if (opts.dryRun && bench.fixture_translation) {
+          translated = bench.fixture_translation;
+          modelUsed = 'fixture';
+        } else {
+          const llmResult = await translateCode(bench.from, bench.to, bench.source);
+          translated = llmResult ? llmResult.text : '';
+          modelUsed = llmResult ? (llmResult.model_used || 'unknown') : 'none';
+        }
         // Strip markdown fences if model wrapped the code
         translated = translated.replace(/^```[a-zA-Z]*\n?/, '').replace(/\n?```$/, '').trim();
         if (bench.to === 'javascript' && bench.verify_js && translated && bench.inputs.length > 0) {
@@ -1072,6 +1095,53 @@ async function tryAnthropic(prompt) {
   }
 }
 
+function hasAnyEnv(names) {
+  return names.some((name) => Boolean(process.env[name]));
+}
+
+function findRepoRootForRouter() {
+  return detectGitRoot(process.cwd()) || detectGitRoot(__dirname);
+}
+
+async function tryTerminalAiRouter(prompt) {
+  if (process.env.POLLY_DISABLE_TERMINAL_ROUTER === '1') return null;
+  if (!hasAnyEnv(['CEREBRAS_API_KEY', 'GROQ_API_KEY', 'HF_TOKEN'])) return null;
+
+  const repoRoot = findRepoRootForRouter();
+  if (!repoRoot) return null;
+  const routerPath = path.join(repoRoot, 'scripts', 'system', 'terminal_ai_router.py');
+  if (!fs.existsSync(routerPath)) return null;
+
+  try {
+    const result = spawnSync(
+      process.env.PYTHON || 'python',
+      [
+        routerPath,
+        'call',
+        '--prompt',
+        prompt,
+        '--providers',
+        'cerebras,groq,huggingface',
+        '--max-output-tokens',
+        '2048',
+        '--response-only',
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        timeout: 45000,
+        maxBuffer: 1024 * 1024 * 4,
+        env: Object.assign({}, process.env),
+      }
+    );
+    const text = String(result.stdout || '').trim();
+    if (result.status !== 0 || !text) return null;
+    return { text, model_used: 'terminal-ai-router', source: 'free-first-router' };
+  } catch (_) {
+    return null;
+  }
+}
+
 async function tryOpenAI(prompt) {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return null;
@@ -1130,6 +1200,8 @@ function templateFallback(prompt) {
 async function routeToModel(prompt) {
   const ollama = await tryOllama(prompt);
   if (ollama && ollama.text) return ollama;
+  const terminalRouter = await tryTerminalAiRouter(prompt);
+  if (terminalRouter && terminalRouter.text) return terminalRouter;
   const anthropic = await tryAnthropic(prompt);
   if (anthropic && anthropic.text) return anthropic;
   const openai = await tryOpenAI(prompt);
