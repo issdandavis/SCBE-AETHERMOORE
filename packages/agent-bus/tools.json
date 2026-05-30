@@ -112,5 +112,18 @@
     "description": "Run SCBE CLI harness control matrix: protocol, offline scaffold corpus, and missing-model negative control",
     "command": "node",
     "args": ["packages/cli/scripts/bench_harness_matrix.cjs"]
+  },
+  {
+    "name": "rubix-browser-plan",
+    "description": "Plan a browser-control route as permission-defined Rubix/tesseract faces with blocked-move audit evidence",
+    "command": "node",
+    "args": [
+      "packages/agent-bus/bin/scbe-agent-bus.cjs",
+      "rubix-browser",
+      "plan",
+      "--task",
+      "{task}",
+      "--json"
+    ]
   }
 ]

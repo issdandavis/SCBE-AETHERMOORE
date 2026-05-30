@@ -126,6 +126,15 @@ export {
   autoDiscoverTools,
 } from './tools.js';
 
+export {
+  type RubixBrowserFace,
+  type RubixBrowserMove,
+  type RubixBrowserPermission,
+  type RubixBrowserPlan,
+  RUBIX_BROWSER_FACES,
+  buildRubixBrowserPlan,
+} from './rubix-browser.js';
+
 export type AgentBusPrivacy = 'local_only' | 'remote_allowed' | string;
 
 export interface AgentBusEvent {

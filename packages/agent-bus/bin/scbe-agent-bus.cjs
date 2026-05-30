@@ -23,6 +23,7 @@ const {
   autoDiscoverTools,
   compilePlan,
   runPipeline,
+  buildRubixBrowserPlan,
 } = require('../dist/index.js');
 
 const HOSTED_INTAKE_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html';
@@ -112,6 +113,7 @@ Usage:
   scbe-agent-bus queue worker
   scbe-agent-bus plugins list --json
   scbe-agent-bus tools list --json
+  scbe-agent-bus rubix-browser plan --task "open docs and click download" --permissions visual.read,dom.read,tool.call --json
   scbe-agent-bus workspace new --hint customer-smoke --json
   scbe-agent-bus workspace ingest --workspace-root <path> --source-path <file> --json
   scbe-agent-bus workspace export --workspace-root <path> --json
@@ -131,6 +133,7 @@ Commands:
   queue     Inspect or run the event queue.
   plugins   List registered bus plugins.
   tools     List registered CLI tools (set SCBE_BUS_TOOLS=./tools.json to load).
+  rubix-browser Plan browser-control routes as permission-defined cube/tesseract faces.
   pipeline  Compile and run natural-language intents through GeoSeal governance.
   workspace Create, export, verify, and clean bus workspaces.
   upgrade   Show how to enable hosted runs (intake, credits, top-up).
@@ -628,6 +631,45 @@ async function main() {
       return;
     }
     process.stderr.write('Usage: scbe-agent-bus tools list [--json]\n');
+    process.exitCode = 2;
+    return;
+  }
+  if (command === 'rubix-browser') {
+    const action = String(flags._action || process.argv[3] || 'plan').trim();
+    if (action === 'plan') {
+      const task = String(flags.task || '').trim();
+      if (!task) {
+        process.stderr.write(
+          'Usage: scbe-agent-bus rubix-browser plan --task "..." [--permissions visual.read,dom.read] [--json]\n'
+        );
+        process.exitCode = 2;
+        return;
+      }
+      const permissions = String(flags.permissions || 'observe,visual.read,dom.read')
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+      const payload = buildRubixBrowserPlan({ task, permissions });
+      if (flags.json) {
+        process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+      } else {
+        process.stdout.write(
+          [
+            `Rubix browser plan: ${payload.audit.verdict}`,
+            `Route: ${payload.route.map((move) => `${move.from}->${move.to}`).join(' | ')}`,
+            `Blocked moves: ${payload.blocked_moves.length}`,
+            `Route sha256: ${payload.audit.route_sha256}`,
+            payload.audit.reason,
+            '',
+          ].join('\n')
+        );
+      }
+      process.exitCode = payload.audit.verdict === 'PASS' ? 0 : 1;
+      return;
+    }
+    process.stderr.write(
+      'Usage: scbe-agent-bus rubix-browser plan --task "..." [--permissions visual.read,dom.read] [--json]\n'
+    );
     process.exitCode = 2;
     return;
   }
