@@ -43,11 +43,12 @@ test('bench list emits registered evidence lanes as JSON', () => {
   assert.ok(payload.lanes.some((lane) => lane.id === 'cli-competitive'));
 });
 
-test('bench list has 7 lanes', () => {
+test('bench list has 8 lanes', () => {
   const result = runCli(['bench', 'list', '--json']);
   assert.equal(result.status, 0, result.stderr);
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.lanes.length, 7);
+  assert.equal(payload.lanes.length, 8);
+  assert.ok(payload.lanes.some((lane) => lane.id === 'providers'));
 });
 
 test('bench list plain text shows artifact status', () => {
@@ -71,7 +72,7 @@ test('bench latest with no args returns all lanes', () => {
   assert.equal(result.status, 0, result.stderr);
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.schema_version, 'scbe_bench_latest_v1');
-  assert.equal(payload.lanes.length, 7);
+  assert.equal(payload.lanes.length, 8);
 });
 
 test('bench prove emits claim-safe proof packet with overclaim check', () => {
@@ -87,11 +88,11 @@ test('bench prove emits claim-safe proof packet with overclaim check', () => {
   assert.equal(payload.lanes[0].id, 'rubix-browser');
 });
 
-test('bench prove all-lanes proof packet has 7 lanes', () => {
+test('bench prove all-lanes proof packet has 8 lanes', () => {
   const result = runCli(['bench', 'prove', '--json']);
   assert.equal(result.status, 0, result.stderr);
   const payload = JSON.parse(result.stdout);
-  assert.equal(payload.lanes.length, 7);
+  assert.equal(payload.lanes.length, 8);
 });
 
 test('bench prove can write a portable proof packet', () => {
@@ -112,7 +113,7 @@ test('bench index emits public artifact catalog with commit hash', () => {
   assert.equal(payload.schema_version, 'scbe_bench_index_v1');
   assert.ok(typeof payload.commit === 'string');
   assert.ok(typeof payload.evidence_ready === 'number');
-  assert.equal(payload.evidence_total, 7);
+  assert.equal(payload.evidence_total, 8);
   assert.match(payload.proof_rule, /claim/);
   assert.ok(payload.lanes.every((l) => typeof l.claim_boundary === 'string'));
 });
