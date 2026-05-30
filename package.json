@@ -165,6 +165,7 @@
     "benchmark:coding-agents:compare": "python scripts/eval/compare_functional_benchmark_reports.py",
     "benchmark:coding-agents:gate": "python scripts/eval/gate_functional_benchmark.py",
     "benchmark:swe-local": "python scripts/benchmark/swe_local_benchmark.py",
+    "benchmark:swe-local-fixtures": "python scripts/benchmark/real_patch_task_benchmark.py",
     "benchmark:swe-verified:readiness": "python scripts/benchmark/swe_verified_readiness.py",
     "benchmark:cli": "python scripts/benchmark/cli_competitive_benchmark.py",
     "benchmark:mobile-fleet-llm": "python scripts/benchmark/mobile_fleet_llm_benchmark.py",

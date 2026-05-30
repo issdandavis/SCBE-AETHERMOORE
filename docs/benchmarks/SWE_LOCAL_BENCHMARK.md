@@ -11,6 +11,7 @@ control behavior through executable TypeScript `evaluate(input, state)` tasks.
 
 ```bash
 npm run benchmark:swe-local
+npm run benchmark:swe-local-fixtures
 npm run benchmark:swe-verified:readiness
 ```
 
@@ -51,6 +52,30 @@ Report artifacts:
 - `artifacts/swe_local_benchmark/latest/report.md`
 - `artifacts/swe_local_benchmark/latest_summary.json`
 - `artifacts/swe_local_benchmark/latest_summary.md`
+
+## Local Real-Patch Fixture Lane
+
+Command:
+
+```bash
+npm run benchmark:swe-local-fixtures
+```
+
+This lane creates isolated broken mini-repositories, executes a no-repair
+baseline, applies the SCBE repair harness, runs task-local pytest suites, and
+records unified patch receipts plus edit-scope checks.
+
+Current expected bracket:
+
+```text
+direct no-repair baseline: 0 / 5 tests pass
+SCBE repair harness: 5 / 5 tests pass
+```
+
+Report artifacts:
+
+- `artifacts/benchmarks/real_patch_tasks/latest_report.json`
+- `artifacts/benchmarks/real_patch_tasks/LATEST.md`
 
 ## Official SWE-bench Verified Readiness
 

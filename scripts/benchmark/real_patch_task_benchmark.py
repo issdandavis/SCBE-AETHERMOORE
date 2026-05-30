@@ -167,6 +167,96 @@ def test_verify_manifest_rejects_missing_or_wrong_hash():
         allowed_commands=("python -m pytest -q",),
         pass_criteria=("pytest passes", "only src/manifest.py changed"),
     ),
+    PatchTask(
+        task_id="config_loader_defaults_and_bounds",
+        issue=(
+            "Fix load_config so it preserves caller overrides, fills deterministic "
+            "defaults, rejects invalid retry bounds, and does not mutate input."
+        ),
+        files={
+            "src/config_loader.py": """\
+DEFAULTS = {"timeout": 30, "retries": 3, "mode": "safe"}
+
+
+def load_config(raw: dict) -> dict:
+    DEFAULTS.update(raw)
+    return DEFAULTS
+""",
+        },
+        tests={
+            "tests/test_config_loader.py": """\
+import pytest
+
+from src.config_loader import load_config
+
+
+def test_load_config_merges_defaults_without_mutating_input():
+    raw = {"timeout": 10}
+    loaded = load_config(raw)
+
+    assert loaded == {"timeout": 10, "retries": 3, "mode": "safe"}
+    assert raw == {"timeout": 10}
+
+
+def test_load_config_rejects_invalid_retries():
+    with pytest.raises(ValueError, match="retries"):
+        load_config({"retries": -1})
+
+    with pytest.raises(ValueError, match="retries"):
+        load_config({"retries": 11})
+
+
+def test_load_config_calls_are_isolated():
+    assert load_config({"mode": "fast"}) == {"timeout": 30, "retries": 3, "mode": "fast"}
+    assert load_config({}) == {"timeout": 30, "retries": 3, "mode": "safe"}
+""",
+        },
+        expected_files=("src/config_loader.py",),
+        allowed_commands=("python -m pytest -q",),
+        pass_criteria=("pytest passes", "only src/config_loader.py changed"),
+    ),
+    PatchTask(
+        task_id="router_priority_scope_regression",
+        issue=(
+            "Fix route_task so explicit security policy outranks generic code "
+            "routing, local filesystem work stays local, and unknown tasks use "
+            "the default free-first lane."
+        ),
+        files={
+            "src/router.py": """\
+def route_task(text: str) -> str:
+    lower = text.lower()
+    if "code" in lower or "module" in lower or "pipeline" in lower:
+        return "cerebras"
+    if "security" in lower or "policy" in lower or "token" in lower:
+        return "groq"
+    if "file" in lower or "disk" in lower or "process" in lower:
+        return "ollama"
+    return "huggingface"
+""",
+        },
+        tests={
+            "tests/test_router.py": """\
+from src.router import route_task
+
+
+def test_security_policy_overrides_code_words():
+    assert route_task("review code token security policy") == "groq"
+
+
+def test_local_filesystem_lane_stays_local():
+    assert route_task("read disk files and process logs") == "ollama"
+
+
+def test_code_lane_and_default_lane():
+    assert route_task("fix module router pipeline") == "cerebras"
+    assert route_task("summarize the idea") == "cerebras"
+""",
+        },
+        expected_files=("src/router.py",),
+        allowed_commands=("python -m pytest -q",),
+        pass_criteria=("pytest passes", "only src/router.py changed"),
+    ),
 )
 
 
@@ -341,6 +431,40 @@ def verify_manifest(manifest: dict) -> bool:
         return False
     actual = hashlib.sha256(payload.encode("utf-8")).hexdigest()
     return actual == expected
+""",
+        )
+        return
+    if task.task_id == "config_loader_defaults_and_bounds":
+        _replace(
+            root,
+            "src/config_loader.py",
+            """\
+DEFAULTS = {"timeout": 30, "retries": 3, "mode": "safe"}
+
+
+def load_config(raw: dict) -> dict:
+    loaded = {**DEFAULTS, **raw}
+    retries = loaded["retries"]
+    if not isinstance(retries, int) or retries < 0 or retries > 10:
+        raise ValueError("retries must be an integer between 0 and 10")
+    return loaded
+""",
+        )
+        return
+    if task.task_id == "router_priority_scope_regression":
+        _replace(
+            root,
+            "src/router.py",
+            """\
+def route_task(text: str) -> str:
+    lower = text.lower()
+    if "security" in lower or "policy" in lower or "token" in lower:
+        return "groq"
+    if "file" in lower or "disk" in lower or "process" in lower or "network" in lower:
+        return "ollama"
+    if "code" in lower or "module" in lower or "router" in lower or "pipeline" in lower:
+        return "cerebras"
+    return "cerebras"
 """,
         )
         return
