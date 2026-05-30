@@ -31,6 +31,8 @@ ALIAS_SYNC_MAP: dict[str, list[str]] = {
     "ANTHROPIC_API_KEY": ["CLAUDE_API_KEY"],
     "XAI_API_KEY": ["GROK_API_KEY"],
     "HF_TOKEN": ["HUGGINGFACE_TOKEN", "HUGGING_FACE_HUB_TOKEN"],
+    "CEREBRAS_API_KEY": [],
+    "GROQ_API_KEY": [],
 }
 
 DEFAULT_PROVIDER_KEYS: dict[str, list[str]] = {
@@ -38,9 +40,11 @@ DEFAULT_PROVIDER_KEYS: dict[str, list[str]] = {
     "anthropic": ["ANTHROPIC_API_KEY", "CLAUDE_API_KEY"],
     "xai": ["XAI_API_KEY", "GROK_API_KEY"],
     "huggingface": ["HF_TOKEN", "HUGGINGFACE_TOKEN", "HUGGING_FACE_HUB_TOKEN"],
+    "cerebras": ["CEREBRAS_API_KEY"],
+    "groq": ["GROQ_API_KEY"],
 }
 
-DEFAULT_PROVIDER_ORDER = ["openai", "anthropic", "xai"]
+DEFAULT_PROVIDER_ORDER = ["cerebras", "groq", "huggingface", "openai", "anthropic", "xai"]
 DEFAULT_COMPLEXITY_TIERS = {
     "easy": ["cheap"],
     "medium": ["cheap", "standard"],
@@ -53,6 +57,8 @@ DEFAULT_PROVIDER_HOSTS: dict[str, set[str]] = {
     "xai": {"api.x.ai"},
     "huggingface": {"huggingface.co"},
     "hf": {"huggingface.co"},
+    "cerebras": {"api.cerebras.ai"},
+    "groq": {"api.groq.com"},
 }
 
 
@@ -324,15 +330,15 @@ def _status_from_http(http_status: int | None) -> str:
     return "degraded"
 
 
-def _health_openai(provider_cfg: dict[str, Any]) -> dict[str, Any]:
-    env_keys = _provider_env_keys("openai", provider_cfg)
+def _health_openai_like(provider: str, provider_cfg: dict[str, Any], default_endpoint: str) -> dict[str, Any]:
+    env_keys = _provider_env_keys(provider, provider_cfg)
     key_name, key_value, key_source = _pick_secret_value(env_keys)
     if not key_value:
         return {"status": "requires_auth", "detail": {"reason": "missing_key", "accepted_keys": env_keys}}
 
     url = _validate_provider_endpoint(
-        str(provider_cfg.get("health_endpoint") or "https://api.openai.com/v1/models").strip(),
-        "openai",
+        str(provider_cfg.get("health_endpoint") or default_endpoint).strip(),
+        provider,
         provider_cfg,
     )
     status, body, error = _request_json(url, headers={"Authorization": f"Bearer {key_value}"}, timeout=20)
@@ -351,6 +357,10 @@ def _health_openai(provider_cfg: dict[str, Any]) -> dict[str, Any]:
     else:
         _attach_response_summary(detail, body)
     return {"status": _status_from_http(status), "detail": detail}
+
+
+def _health_openai(provider_cfg: dict[str, Any]) -> dict[str, Any]:
+    return _health_openai_like("openai", provider_cfg, "https://api.openai.com/v1/models")
 
 
 def _health_anthropic(provider_cfg: dict[str, Any]) -> dict[str, Any]:
@@ -387,32 +397,15 @@ def _health_anthropic(provider_cfg: dict[str, Any]) -> dict[str, Any]:
 
 
 def _health_xai(provider_cfg: dict[str, Any]) -> dict[str, Any]:
-    env_keys = _provider_env_keys("xai", provider_cfg)
-    key_name, key_value, key_source = _pick_secret_value(env_keys)
-    if not key_value:
-        return {"status": "requires_auth", "detail": {"reason": "missing_key", "accepted_keys": env_keys}}
+    return _health_openai_like("xai", provider_cfg, "https://api.x.ai/v1/models")
 
-    url = _validate_provider_endpoint(
-        str(provider_cfg.get("health_endpoint") or "https://api.x.ai/v1/models").strip(),
-        "xai",
-        provider_cfg,
-    )
-    status, body, error = _request_json(url, headers={"Authorization": f"Bearer {key_value}"}, timeout=20)
-    detail = {
-        "http_status": status,
-        "key_preview": _mask_value(key_value),
-        "key_source": key_source,
-        "error": error,
-    }
-    if isinstance(body, dict):
-        data = body.get("data")
-        if isinstance(data, list):
-            detail["sample_models"] = [str(item.get("id", "")) for item in data[:8] if isinstance(item, dict)]
-        else:
-            _attach_response_summary(detail, body)
-    else:
-        _attach_response_summary(detail, body)
-    return {"status": _status_from_http(status), "detail": detail}
+
+def _health_cerebras(provider_cfg: dict[str, Any]) -> dict[str, Any]:
+    return _health_openai_like("cerebras", provider_cfg, "https://api.cerebras.ai/v1/models")
+
+
+def _health_groq(provider_cfg: dict[str, Any]) -> dict[str, Any]:
+    return _health_openai_like("groq", provider_cfg, "https://api.groq.com/openai/v1/models")
 
 
 def _health_hf(provider_cfg: dict[str, Any]) -> dict[str, Any]:
@@ -472,6 +465,10 @@ def run_health(args: argparse.Namespace) -> int:
             status_map[provider] = _health_xai(provider_cfg)
         elif provider in {"huggingface", "hf"}:
             status_map["huggingface"] = _health_hf(provider_cfg)
+        elif provider == "cerebras":
+            status_map[provider] = _health_cerebras(provider_cfg)
+        elif provider == "groq":
+            status_map[provider] = _health_groq(provider_cfg)
         else:
             status_map[provider] = {
                 "status": "degraded",
@@ -803,7 +800,7 @@ def run_call(args: argparse.Namespace) -> int:
                 )
                 continue
 
-            if provider in {"openai", "xai"}:
+            if provider in {"openai", "xai", "cerebras", "groq"}:
                 ok, text, http_status, body, error = _call_openai_like(
                     endpoint=endpoint,
                     api_key=api_key,
@@ -890,11 +887,16 @@ def run_call(args: argparse.Namespace) -> int:
         "ledger_path": str(ledger_path.resolve()),
     }
     _write_json(output_path, result)
+    if args.response_only:
+        if final_text:
+            print(final_text)
+        return 0 if selected else 1
+
     print(json.dumps(_sanitize_for_report({**result, "output_path": str(output_path)}), indent=2))
 
     if args.print_response and final_text:
         print("")
-        print(json.dumps({"response_metadata": _response_metadata(final_text)}, indent=2))
+        print(final_text)
 
     return 0 if selected else 1
 
@@ -911,7 +913,7 @@ def build_parser() -> argparse.ArgumentParser:
     health = sub.add_parser("health", help="Run provider health checks.")
     health.add_argument(
         "--checks",
-        default="openai,anthropic,xai,huggingface",
+        default="cerebras,groq,huggingface,openai,anthropic,xai",
         help="Comma-separated checks.",
     )
     health.add_argument(
@@ -946,6 +948,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     call.add_argument("--sync-aliases", action="store_true", help="Sync alias keys into canonical names first.")
     call.add_argument("--print-response", action="store_true", help="Print final response text to stdout.")
+    call.add_argument("--response-only", action="store_true", help="Print only final response text to stdout.")
     call.set_defaults(func=run_call)
 
     return parser
