@@ -287,6 +287,13 @@ describe('runMission', () => {
     expect(agent.steps).toBeGreaterThan(0);
   });
 
+  it('ensemble-beam agent reaches goal on tiny maze', () => {
+    const m = generateMaze(TINY);
+    const path = oracleBFS(m)!;
+    const agent = runMission(m, TINY, 'ensemble-beam', DEFAULT_WEIGHTS, path);
+    expect(agent.pos).toEqual(m.goal);
+  });
+
   it('receipts count equals steps', () => {
     const m = generateMaze(TINY);
     const path = oracleBFS(m)!;
@@ -462,7 +469,7 @@ describe('runNavBench', () => {
   });
 
   it('comparison contains all requested algorithms', () => {
-    const algs = ['multi-lattice', 'greedy', 'random'] as const;
+    const algs = ['multi-lattice', 'ensemble-beam', 'greedy', 'random'] as const;
     const result = runNavBench({ mazes: [TINY], algorithms: [...algs], skip_ablation: true });
     for (const alg of algs) {
       expect(result.comparison).toHaveProperty(alg);
@@ -487,6 +494,8 @@ describe('runNavBench', () => {
     expect(typeof result.summary.total_mazes).toBe('number');
     expect(typeof result.summary.total_runs).toBe('number');
     expect(typeof result.summary.total_ms).toBe('number');
+    expect(typeof result.summary.ensemble_beam_solve_rate).toBe('number');
+    expect(typeof result.summary.ensemble_beam_avg_efficiency).toBe('number');
   });
 
   it('full bench with all default mazes and algorithms completes without throwing', () => {

@@ -54,6 +54,8 @@ const BENCHMARKS = [
         evidence_failed: report.runs.filter((run) => run.receipt_completeness !== 1).length,
         primary_score: report.summary.multi_lattice_solve_rate,
         solved_rate: report.summary.multi_lattice_solve_rate,
+        ensemble_beam_solve_rate: report.summary.ensemble_beam_solve_rate,
+        ensemble_beam_avg_efficiency: report.summary.ensemble_beam_avg_efficiency,
         random_solve_rate: report.summary.random_solve_rate,
         p95_ms: Math.max(...report.runs.map((run) => run.total_ms || 0)),
       };

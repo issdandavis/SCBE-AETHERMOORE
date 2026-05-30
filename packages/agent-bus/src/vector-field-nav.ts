@@ -57,7 +57,13 @@ function mulberry32(seed: number): () => number {
 
 export type CellType = 'empty' | 'wall' | 'goal' | 'start';
 export type SecurityTier = 'ALLOW' | 'QUARANTINE' | 'ESCALATE' | 'DENY';
-export type NavAlgorithm = 'multi-lattice' | 'astar-full' | 'astar-limited' | 'greedy' | 'random';
+export type NavAlgorithm =
+  | 'multi-lattice'
+  | 'ensemble-beam'
+  | 'astar-full'
+  | 'astar-limited'
+  | 'greedy'
+  | 'random';
 export type AblationTag =
   | 'no-goal'
   | 'no-obstacle'
@@ -195,9 +201,11 @@ export interface NavBenchResult {
     total_mazes: number;
     total_runs: number;
     multi_lattice_solve_rate: number;
+    ensemble_beam_solve_rate: number;
     astar_full_solve_rate: number;
     random_solve_rate: number;
     multi_lattice_avg_efficiency: number;
+    ensemble_beam_avg_efficiency: number;
     random_solve_trials: number;
     random_solve_successes: number;
     total_ms: number;
@@ -629,6 +637,73 @@ function pickMoveMultiLattice(
   return best;
 }
 
+function samePos(a: [number, number] | null, b: [number, number]): boolean {
+  return a !== null && a[0] === b[0] && a[1] === b[1];
+}
+
+function goalBeamField(candidate: [number, number], agent: AgentState, maze: MazeGrid): number {
+  const [ax, ay] = agent.pos;
+  const [gx, gy] = maze.goal;
+  const toGoal: [number, number] = [gx - ax, gy - ay];
+  const toCandidate: [number, number] = [candidate[0] - ax, candidate[1] - ay];
+  const goalNorm = Math.hypot(toGoal[0], toGoal[1]);
+  const candidateNorm = Math.hypot(toCandidate[0], toCandidate[1]);
+  if (goalNorm === 0 || candidateNorm === 0) return 0;
+  return (toGoal[0] * toCandidate[0] + toGoal[1] * toCandidate[1]) / (goalNorm * candidateNorm);
+}
+
+function heatPenalty(candidate: [number, number], agent: AgentState): number {
+  return -(agent.heat_map.get(posKey(candidate[0], candidate[1])) ?? 0);
+}
+
+function stableTieBreak(candidate: [number, number]): number {
+  return candidate[1] * 0.0001 + candidate[0] * 0.00001;
+}
+
+function pickMoveEnsembleBeam(
+  agent: AgentState,
+  maze: MazeGrid,
+  weights: LatticeWeights,
+  sensor_r: number,
+  rng: () => number
+): [number, number] | null {
+  const nbrs = neighbors4(maze, agent.pos[0], agent.pos[1]);
+  if (nbrs.length === 0) return null;
+
+  const multiLattice = pickMoveMultiLattice(agent, maze, weights, sensor_r);
+  const astarLimited = pickMoveAStarLimited(agent, maze);
+  const greedy = pickMoveGreedy(agent, maze);
+  const random = pickMoveRandom(agent, maze, rng);
+
+  let best = nbrs[0]!;
+  let bestScore = -Infinity;
+
+  for (const candidate of nbrs) {
+    const vector = computeVTotal(candidate, maze, agent, weights, sensor_r);
+    let advisorVote = 0;
+    if (samePos(multiLattice, candidate)) advisorVote += 3.2;
+    if (samePos(astarLimited, candidate)) advisorVote += 0.8;
+    if (samePos(greedy, candidate)) advisorVote += 0.35;
+    if (samePos(random, candidate)) advisorVote += 0.08;
+
+    const score =
+      vector.total +
+      advisorVote +
+      goalBeamField(candidate, agent, maze) * 0.75 +
+      heatPenalty(candidate, agent) * 0.45 +
+      vector.frontier * 0.35 +
+      vector.pressure_sense * 0.4 -
+      stableTieBreak(candidate);
+
+    if (score > bestScore) {
+      bestScore = score;
+      best = candidate;
+    }
+  }
+
+  return best;
+}
+
 function pickMoveGreedy(agent: AgentState, maze: MazeGrid): [number, number] | null {
   const nbrs = neighbors4(maze, agent.pos[0], agent.pos[1]);
   if (nbrs.length === 0) return null;
@@ -844,6 +919,9 @@ export function runMission(
       case 'multi-lattice':
         move = pickMoveMultiLattice(agent, maze, weights, sensorR);
         break;
+      case 'ensemble-beam':
+        move = pickMoveEnsembleBeam(agent, maze, weights, sensorR, rng);
+        break;
       case 'greedy':
         move = pickMoveGreedy(agent, maze);
         break;
@@ -1001,6 +1079,7 @@ export function runNavBench(options?: {
   const mazes = options?.mazes ?? BENCHMARK_MAZES;
   const algorithms: NavAlgorithm[] = options?.algorithms ?? [
     'multi-lattice',
+    'ensemble-beam',
     'astar-full',
     'astar-limited',
     'greedy',
@@ -1084,6 +1163,7 @@ export function runNavBench(options?: {
   }
 
   const allML = algGroups.get('multi-lattice') ?? [];
+  const allEnsemble = algGroups.get('ensemble-beam') ?? [];
   const allFull = algGroups.get('astar-full') ?? [];
   const allRandom = algGroups.get('random') ?? [];
 
@@ -1096,9 +1176,11 @@ export function runNavBench(options?: {
       total_mazes: mazes.length,
       total_runs: runs.length,
       multi_lattice_solve_rate: avg(allML.map((r) => (r.solved ? 1 : 0))),
+      ensemble_beam_solve_rate: avg(allEnsemble.map((r) => (r.solved ? 1 : 0))),
       astar_full_solve_rate: avg(allFull.map((r) => (r.solved ? 1 : 0))),
       random_solve_rate: avg(allRandom.map((r) => (r.solved ? 1 : 0))),
       multi_lattice_avg_efficiency: avg(allML.map((r) => r.efficiency)),
+      ensemble_beam_avg_efficiency: avg(allEnsemble.map((r) => r.efficiency)),
       random_solve_trials: allRandom.length,
       random_solve_successes: allRandom.filter((r) => r.solved).length,
       total_ms: Date.now() - startAll,

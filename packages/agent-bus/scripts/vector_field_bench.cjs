@@ -20,7 +20,7 @@
  *       Output ablation table only.
  *
  *   node ... --skip-ablation
- *       Run only the 5 algorithms (no ablation, faster).
+ *       Run only the non-ablation algorithms (no ablation, faster).
  *
  *   node ... --random-solve-sweep --runs 24
  *       Run deterministic randomized mazes with the random policy.

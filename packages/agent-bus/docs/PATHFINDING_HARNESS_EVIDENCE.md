@@ -19,13 +19,13 @@ machine-checkable evidence for the path policy under test.
 
 ## Current Lanes
 
-| Lane             | Command                               | Evidence target                                                                    |
-| ---------------- | ------------------------------------- | ---------------------------------------------------------------------------------- |
-| Roll-stack maze  | `npm run benchmark:roll-stack-maze`   | BFS execution, output contract, receipt hashes                                     |
-| Worm adapter     | `npm run benchmark:worm-adapter`      | Local sensing, penetration ratio, loop rate, greedy delta                          |
-| Projection board | `npm run benchmark:projection-board`  | Fog-of-war board, hidden lattice fields, 3x3 kernel convolution, spin coherence    |
-| Vector-field nav | `npm run benchmark:vector-field-nav`  | Seeded mazes, A\*/greedy/random baselines, receipt chain, ablations, heat/pressure |
-| Suite            | `npm run benchmark:pathfinding-suite` | Combined scorecard across all current lanes                                        |
+| Lane             | Command                               | Evidence target                                                                                   |
+| ---------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Roll-stack maze  | `npm run benchmark:roll-stack-maze`   | BFS execution, output contract, receipt hashes                                                    |
+| Worm adapter     | `npm run benchmark:worm-adapter`      | Local sensing, penetration ratio, loop rate, greedy delta                                         |
+| Projection board | `npm run benchmark:projection-board`  | Fog-of-war board, hidden lattice fields, 3x3 kernel convolution, spin coherence                   |
+| Vector-field nav | `npm run benchmark:vector-field-nav`  | Seeded mazes, A\*/greedy/random baselines, ensemble-beam, receipt chain, ablations, heat/pressure |
+| Suite            | `npm run benchmark:pathfinding-suite` | Combined scorecard across all current lanes                                                       |
 
 ## Latest Focused Result
 
@@ -43,7 +43,7 @@ Result:
   "evidence_failed": 0,
   "benchmark_process_failures": 0,
   "avg_primary_score": 0.75,
-  "max_p95_ms": 71
+  "max_p95_ms": 34
 }
 ```
 
@@ -54,8 +54,9 @@ Breakdown:
   primary score 0.25. This is intentionally honest: the lane measures depth of
   penetration and loop behavior under local sensing, not guaranteed success.
 - Projection board: 4/4 evidence passed, solved rate 1.00, primary score 1.00.
-- Vector-field nav: 20/20 receipt chains complete, multi-lattice solve rate
-  0.75, random solve rate 0.00.
+- Vector-field nav: 24/24 receipt chains complete, multi-lattice solve rate
+  0.75, ensemble-beam solve rate 0.75, ensemble-beam average efficiency 0.393,
+  random solve rate 0.00.
 - Random solve sweep: 12 deterministic randomized trials produced 2 random
   solves, random solve rate 0.1667, average heat peak 48.5833, and average
   pressure -10.2232.
@@ -92,6 +93,42 @@ The benchmark records spin coherence as `|sum_i S_i| / n` and spin disorder as
 The TypeScript vector-field navigation module also exposes the same 3x3 kernel
 as `VECTOR_KERNEL_3X3` and uses it as an eighth local field in `computeVTotal`.
 The `no-kernel` ablation keeps this measurable.
+
+## Ensemble Beam
+
+The vector-field lane now includes `ensemble-beam`, a non-oracle planner that
+takes the broad heat/pressure/vector map and collapses it into one ranked
+movement beam. It combines:
+
+- multi-lattice vector scoring
+- local A\* on known cells only
+- greedy goal alignment
+- seeded random exploration
+- fluidic heat-map revisit pressure
+- pressure-sense constraint load
+- frontier pull
+
+`astar-full` remains an oracle ceiling and is not used by the ensemble. The
+current focused comparison keeps the same solve rate and efficiency as
+multi-lattice on the default mazes while preserving a separate measurable path
+for future advisor weighting:
+
+```bash
+npm run benchmark:vector-field-nav -- --skip-ablation --show-comparison
+```
+
+Current result:
+
+```json
+{
+  "multi_lattice_solve_rate": 0.75,
+  "multi_lattice_avg_efficiency": 0.393,
+  "ensemble_beam_solve_rate": 0.75,
+  "ensemble_beam_avg_efficiency": 0.393,
+  "astar_full_solve_rate": 1,
+  "random_solve_rate": 0
+}
+```
 
 ## Fluidic Heat Map And Pressure Sense
 
