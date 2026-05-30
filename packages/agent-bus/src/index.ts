@@ -2166,3 +2166,21 @@ export {
   summarizeStation,
   reportDamage,
 } from './station-manifest.js';
+
+export {
+  type KeeperConfig,
+  type KeeperEscalation,
+  type KeeperAgent,
+  type KeeperRepairResult,
+  type KeeperRunResult,
+  type KeeperStatus,
+  createKeeper,
+  queueRepair,
+  clearRepairQueue,
+  escalate as escalateToKeeper,
+  resolveEscalation,
+  applyRepair as applyKeeperRepair,
+  drainRepairQueue,
+  runSweep,
+  getKeeperStatus,
+} from './keeper-agent.js';
