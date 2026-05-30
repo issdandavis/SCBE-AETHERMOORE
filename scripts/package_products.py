@@ -61,10 +61,19 @@ TOOLKIT_FILES = [
     ("docs/specs/LAYER_MATH_COMPRESSED.md", "docs/LAYER_MATH_COMPRESSED.md"),
     # Governance templates
     ("config/scbe_core_axioms_v1.yaml", "templates/scbe_core_axioms.yaml"),
-    ("training-data/schemas/training_schema.json", "templates/training_schema.json"),
     # Quickstart
     ("docs/PRODUCT_QUICKSTART.md", "quickstart/PRODUCT_QUICKSTART.md"),
 ]
+
+TRAINING_SCHEMA_JSON = json.dumps(
+    {
+        "schema": "scbe_training_record_v1",
+        "required": ["instruction", "response"],
+        "optional": ["metadata", "source", "source_type", "quality", "track"],
+        "note": "Full training-data files live in the external Hugging Face dataset referenced by DATASET_LOCATION.md.",
+    },
+    indent=2,
+)
 
 TOOLKIT_README = """# SCBE AI Governance Toolkit
 
@@ -103,7 +112,9 @@ MIT License — use commercially, modify freely, attribution appreciated.
 
 # ---- Product: AI Security Training Vault ----
 
-# We include a curated subset of SFT data (not the massive claude exports)
+# Local SFT data was moved out of the public repository to the external
+# training-data dataset. If these ignored local files exist, package them; CI
+# and clean public checkouts should still produce a usable vault with pointers.
 VAULT_SFT_FILES = [
     "training-data/sft/aetherbrowser_commands_v1.jsonl",
     "training-data/sft/api_usage_pairs.jsonl",
@@ -116,8 +127,6 @@ VAULT_SFT_FILES = [
 ]
 
 VAULT_EXTRA_FILES = [
-    # Schema
-    ("training-data/schemas/training_schema.json", "schemas/training_schema.json"),
     # Benchmark scripts
     ("scripts/benchmark/scbe_vs_baseline.py", "benchmark/scbe_vs_baseline.py"),
     ("scripts/benchmark/scbe_vs_industry.py", "benchmark/scbe_vs_industry.py"),
@@ -131,6 +140,25 @@ VAULT_EXTRA_FILES = [
     ("docs/specs/LAYER_MATH_COMPRESSED.md", "docs/LAYER_MATH_COMPRESSED.md"),
 ]
 
+TRAINING_DATASET_URL = "https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data"
+
+TRAINING_DATASET_NOTICE = f"""# SCBE Training Dataset Location
+
+The full SFT dataset is intentionally not stored in this public checkout.
+
+Dataset:
+{TRAINING_DATASET_URL}
+
+Why:
+- keeps the Git repository small
+- avoids committing local/generated training artifacts
+- gives buyers a stable dataset location that can be updated independently
+
+If local files under `training-data/sft/` are present when this pack is built,
+`scripts/package_products.py` includes them in `sft/`. In a clean checkout, this
+pack includes the schema, benchmark scripts, and this dataset pointer.
+"""
+
 VAULT_README = """# SCBE AI Security Training Vault
 
 Thank you for purchasing the AI Security Training Vault from AetherMoore.
@@ -138,6 +166,7 @@ Thank you for purchasing the AI Security Training Vault from AetherMoore.
 ## What's Inside
 
 - `sft/` — Curated supervised fine-tuning pairs for AI safety tasks
+- `DATASET_LOCATION.md` — Link to the full external SFT dataset
 - `benchmark/` — Benchmark scripts to evaluate your fine-tuned model
 - `schemas/` — Data format documentation
 - `docs/` — Architecture reference
@@ -145,13 +174,14 @@ Thank you for purchasing the AI Security Training Vault from AetherMoore.
 ## Quick Start
 
 1. Install dependencies: `pip install transformers datasets`
-2. Load the data:
+2. Download or mount the dataset listed in `DATASET_LOCATION.md`
+3. Load the data:
    ```python
    from datasets import load_dataset
-   ds = load_dataset("json", data_files="sft/*.jsonl")
+   ds = load_dataset("json", data_files="/path/to/sft/*.jsonl")
    ```
-3. Fine-tune with any framework (HuggingFace, Axolotl, OpenAI API)
-4. Benchmark: `python benchmark/scbe_vs_baseline.py`
+4. Fine-tune with any framework (HuggingFace, Axolotl, OpenAI API)
+5. Benchmark: `python benchmark/scbe_vs_baseline.py`
 
 ## Data Format
 
@@ -264,11 +294,10 @@ def package_toolkit(output_dir: Path) -> Path:
 
     with ZipFile(zip_path, "w", ZIP_DEFLATED) as zf:
         zf.writestr("README.md", TOOLKIT_README)
-        zf.writestr(
-            "LICENSE", "MIT License\n\nCopyright (c) 2026 Issac Davis / AetherMoore\n"
-        )
+        zf.writestr("LICENSE", "MIT License\n\nCopyright (c) 2026 Issac Davis / AetherMoore\n")
         zf.write(REPO_ROOT / "LICENSE-APACHE", "LICENSE-APACHE")
         zf.write(REPO_ROOT / "LICENSE-NOTICE.md", "LICENSE-NOTICE.md")
+        zf.writestr("templates/training_schema.json", TRAINING_SCHEMA_JSON)
 
         for src_rel, dst_rel in TOOLKIT_FILES:
             src = REPO_ROOT / src_rel
@@ -292,11 +321,11 @@ def package_vault(output_dir: Path) -> Path:
 
     with ZipFile(zip_path, "w", ZIP_DEFLATED) as zf:
         zf.writestr("README.md", VAULT_README)
-        zf.writestr(
-            "LICENSE", "MIT License\n\nCopyright (c) 2026 Issac Davis / AetherMoore\n"
-        )
+        zf.writestr("LICENSE", "MIT License\n\nCopyright (c) 2026 Issac Davis / AetherMoore\n")
         zf.write(REPO_ROOT / "LICENSE-APACHE", "LICENSE-APACHE")
         zf.write(REPO_ROOT / "LICENSE-NOTICE.md", "LICENSE-NOTICE.md")
+        zf.writestr("DATASET_LOCATION.md", TRAINING_DATASET_NOTICE)
+        zf.writestr("schemas/training_schema.json", TRAINING_SCHEMA_JSON)
 
         # SFT data files
         for sft_rel in VAULT_SFT_FILES:
@@ -331,9 +360,7 @@ def package_vault(output_dir: Path) -> Path:
         zf.writestr("metadata.json", json.dumps(metadata, indent=2))
 
     size_mb = zip_path.stat().st_size / (1024 * 1024)
-    print(
-        f"\nVault packaged: {zip_path} ({size_mb:.1f} MB, {total_records} SFT records)"
-    )
+    print(f"\nVault packaged: {zip_path} ({size_mb:.1f} MB, {total_records} SFT records)")
     return zip_path
 
 
@@ -345,9 +372,7 @@ def package_making_of(output_dir: Path) -> Path:
     with ZipFile(zip_path, "w", ZIP_DEFLATED) as zf:
         zf.writestr("README.md", MAKING_OF_README)
         zf.writestr("PROCESS_NOTES.txt", MAKING_OF_PROCESS_NOTES)
-        zf.writestr(
-            "LICENSE", "Copyright (c) 2026 Issac Davis / AetherMoore. Personal reader/writer use allowed.\n"
-        )
+        zf.writestr("LICENSE", "Copyright (c) 2026 Issac Davis / AetherMoore. Personal reader/writer use allowed.\n")
 
         for src_rel, dst_rel in MAKING_OF_FILES:
             src = REPO_ROOT / src_rel
@@ -399,9 +424,7 @@ def main() -> None:
         package_making_of(args.output_dir)
         print()
 
-    print(
-        "Done. Upload these ZIPs to your delivery system (GitHub Releases, S3, or direct email)."
-    )
+    print("Done. Upload these ZIPs to your delivery system (GitHub Releases, S3, or direct email).")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 """Tests for the ARC-AGI-2 local baseline benchmark."""
+
 from __future__ import annotations
 
 import importlib.util
@@ -71,9 +72,7 @@ def test_claim_boundary_present() -> None:
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
-        report = module.build_report(
-            split="evaluation", limit=5, out_dir=Path(tmp), run_id="pytest-claim"
-        )
+        report = module.build_report(split="evaluation", limit=5, out_dir=Path(tmp), run_id="pytest-claim")
     boundary = report["claim_boundary"]
     assert len(boundary) >= 3
     assert any("not a submission" in item.lower() or "leaderboard" in item.lower() for item in boundary)
