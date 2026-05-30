@@ -497,18 +497,431 @@ def fit_report() -> str:
     return "\n".join(lines)
 
 
+# ── Independent dual fit ──────────────────────────────────────────────────────
+
+@dataclass
+class DualFitResult:
+    """
+    Fit E_bind and E_curv with fully independent parameters.
+    E_bind = A / (n + delta_b)^p
+    E_curv = B * (n + delta_c)^q    (positive q = grows outward)
+    """
+    # Binding fit
+    bind_A: float
+    bind_delta: float
+    bind_p: float
+    bind_rms: float
+    # Curvature fit
+    curv_B: float
+    curv_delta: float
+    curv_q: float
+    curv_rms: float
+    # Dual check
+    p_near_2: bool          # bind exponent converges to 2
+    q_near_2: bool          # curv exponent converges to 2
+    product_constant: bool  # I(l) = E_bind(l) * E_curv(l) is flat
+    product_values: List[float]
+    product_cv: float       # coefficient of variation (std/mean), near 0 = flat
+
+    def predicted_bind(self, n: int) -> float:
+        return _power_law(n, self.bind_A, self.bind_delta, self.bind_p)
+
+    def predicted_curv(self, n: int) -> float:
+        base = n + self.curv_delta
+        if base <= 0:
+            return 0.0
+        return self.curv_B * (base ** self.curv_q)
+
+    def to_dict(self) -> dict:
+        return {
+            "schema_version": "geoseed_dual_fit_v1",
+            "binding": {
+                "formula": f"E_bind = {self.bind_A:.4f} / (n + {self.bind_delta:.4f})^{self.bind_p:.4f}",
+                "A": round(self.bind_A, 6),
+                "delta": round(self.bind_delta, 6),
+                "p": round(self.bind_p, 6),
+                "rms": round(self.bind_rms, 6),
+                "p_near_2": self.p_near_2,
+            },
+            "curvature": {
+                "formula": f"E_curv = {self.curv_B:.4f} * (n + {self.curv_delta:.4f})^{self.curv_q:.4f}",
+                "B": round(self.curv_B, 6),
+                "delta": round(self.curv_delta, 6),
+                "q": round(self.curv_q, 6),
+                "rms": round(self.curv_rms, 6),
+                "q_near_2": self.q_near_2,
+            },
+            "product_invariant": {
+                "constant": self.product_constant,
+                "values": [round(v, 4) for v in self.product_values],
+                "cv": round(self.product_cv, 6),
+            },
+        }
+
+
+def _fit_growth_law(energies: List[float], ns: Optional[List[int]] = None
+                    ) -> Tuple[float, float, float, float]:
+    """
+    Fit E_n = B * (n + delta)^q  (positive exponent, grows outward).
+    Returns (B, delta, q, rms).
+    """
+    if ns is None:
+        ns = list(range(len(energies)))
+    n_pts = len(ns)
+
+    def residual(params):
+        B, delta, q = params
+        total = 0.0
+        for i, n in enumerate(ns):
+            base = n + delta
+            if base <= 0 or B <= 0:
+                return 1e18
+            pred = B * (base ** q)
+            if not math.isfinite(pred):
+                return 1e18
+            total += (pred - energies[i]) ** 2
+        return total / n_pts
+
+    x0 = [energies[0], 1.0, 2.0]
+    params = _nelder_mead(residual, x0)
+    B, delta, q = params
+    rms = math.sqrt(residual(params))
+    return B, delta, q, rms
+
+
+def independent_dual_fit() -> DualFitResult:
+    """
+    Fit E_bind (Bohr = measured hydrogen) and E_curv (GeoSeed LB) with
+    completely independent prefactors and exponents.
+
+    Checks whether the exponents converge to ±2 without being told to,
+    and whether I(l) = E_bind(l) * E_curv(l) is flat across shells.
+    """
+    from src.geoseed.theory_comparison import (
+        HYDROGEN_MEASURED_EV, theory_geoseed_lb
+    )
+
+    bind_evs = HYDROGEN_MEASURED_EV          # measured hydrogen — source of truth
+    curv_evs = theory_geoseed_lb().energies_ev()
+
+    # Fit binding (decay law)
+    b_A, b_delta, b_p, b_rms = fit_power_law(bind_evs)
+    # Fit curvature (growth law)
+    c_B, c_delta, c_q, c_rms = _fit_growth_law(curv_evs)
+
+    # Product invariant
+    product = [
+        _power_law(n, b_A, b_delta, b_p) * (c_B * max(n + c_delta, 1e-10) ** c_q)
+        for n in range(6)
+    ]
+    mean_p = sum(product) / len(product)
+    var_p = sum((v - mean_p) ** 2 for v in product) / len(product)
+    cv = math.sqrt(var_p) / mean_p if mean_p > 0 else float("inf")
+
+    return DualFitResult(
+        bind_A=b_A, bind_delta=b_delta, bind_p=b_p, bind_rms=b_rms,
+        curv_B=c_B, curv_delta=c_delta, curv_q=c_q, curv_rms=c_rms,
+        p_near_2=abs(b_p - 2.0) < 0.15,
+        q_near_2=abs(c_q - 2.0) < 0.15,
+        product_constant=cv < 0.05,
+        product_values=product,
+        product_cv=cv,
+    )
+
+
+# ── Product invariant ─────────────────────────────────────────────────────────
+
+@dataclass
+class ProductInvariant:
+    """
+    I(l) = E_bind(l) * E_curv(l) per shell.
+    Measures how flat the product is — flatness = dual law is structural.
+    """
+    shell_values: List[float]   # I(l) per shell
+    mean: float
+    std: float
+    cv: float                   # coefficient of variation: std/mean
+    is_flat: bool               # cv < 0.02 (2% variation)
+    bohr_evs: List[float]
+    lb_evs: List[float]
+    rydberg_sq: float           # theoretical prediction: I = RYDBERG²
+
+    def to_dict(self) -> dict:
+        return {
+            "schema_version": "geoseed_product_invariant_v1",
+            "description": "I(l) = E_bind(l) * E_curv(l) — tests dual-law flatness",
+            "shells": [
+                {
+                    "shell": i, "tongue": ["KO", "AV", "RU", "CA", "UM", "DR"][i],
+                    "bind_ev": round(self.bohr_evs[i], 6),
+                    "curv_ev": round(self.lb_evs[i], 6),
+                    "product": round(self.shell_values[i], 6),
+                    "deviation_from_mean_pct": round(
+                        (self.shell_values[i] - self.mean) / self.mean * 100, 4
+                    ),
+                }
+                for i in range(6)
+            ],
+            "mean": round(self.mean, 6),
+            "std": round(self.std, 6),
+            "cv": round(self.cv, 9),
+            "is_flat": self.is_flat,
+            "rydberg_sq": round(self.rydberg_sq, 6),
+            "product_equals_rydberg_sq": abs(self.mean - self.rydberg_sq) < 1.0,
+        }
+
+
+def compute_product_invariant() -> ProductInvariant:
+    """
+    Compute I(l) = E_bind(l) * E_curv(l) for the Bohr and GeoSeed-LB pair.
+    Both use the same anchor (RYDBERG_EV), so the product should equal
+    RYDBERG_EV² = 185.11 eV² exactly.
+    """
+    from src.geoseed.theory_comparison import (
+        theory_bohr, theory_geoseed_lb, RYDBERG_EV
+    )
+
+    bind_evs = theory_bohr().energies_ev()
+    curv_evs = theory_geoseed_lb().energies_ev()
+
+    products = [bind_evs[i] * curv_evs[i] for i in range(6)]
+    mean_v = sum(products) / 6
+    std_v = math.sqrt(sum((v - mean_v) ** 2 for v in products) / 6)
+    cv = std_v / mean_v if mean_v > 0 else float("inf")
+
+    return ProductInvariant(
+        shell_values=products,
+        mean=mean_v,
+        std=std_v,
+        cv=cv,
+        is_flat=cv < 1e-6,      # exact by construction if both normalised the same
+        bohr_evs=bind_evs,
+        lb_evs=curv_evs,
+        rydberg_sq=RYDBERG_EV ** 2,
+    )
+
+
+# ── Weighted-sum fit ──────────────────────────────────────────────────────────
+
+@dataclass
+class WeightedSumFit:
+    """
+    Fits E_target = α * E_bind + β * E_curv  (linear)
+    and  log(E_target) = α' * log(E_bind) + β' * log(E_curv)  (log-additive / geometric)
+    to find the best combination weights.
+    """
+    target: str              # what we're fitting against (e.g. "measured_hydrogen")
+    # Linear fit
+    alpha_lin: float
+    beta_lin: float
+    lin_rms: float
+    # Log-additive fit
+    alpha_log: float
+    beta_log: float
+    log_rms: float           # rms in log space
+    log_rms_ev: float        # rms back in eV space
+    # Which form wins?
+    better_form: str         # "linear" or "log_additive"
+    # Predictions
+    linear_predictions: List[float]
+    logadd_predictions: List[float]
+    target_evs: List[float]
+
+    def to_dict(self) -> dict:
+        return {
+            "schema_version": "geoseed_weighted_sum_v1",
+            "target": self.target,
+            "linear": {
+                "formula": f"E = {self.alpha_lin:.4f}*E_bind + {self.beta_lin:.4f}*E_curv",
+                "alpha": round(self.alpha_lin, 6),
+                "beta": round(self.beta_lin, 6),
+                "rms_ev": round(self.lin_rms, 6),
+            },
+            "log_additive": {
+                "formula": (
+                    f"log(E) = {self.alpha_log:.4f}*log(E_bind) + "
+                    f"{self.beta_log:.4f}*log(E_curv)"
+                ),
+                "alpha": round(self.alpha_log, 6),
+                "beta": round(self.beta_log, 6),
+                "rms_log": round(self.log_rms, 6),
+                "rms_ev": round(self.log_rms_ev, 6),
+            },
+            "better_form": self.better_form,
+            "shells": [
+                {
+                    "shell": i,
+                    "tongue": ["KO", "AV", "RU", "CA", "UM", "DR"][i],
+                    "target_ev": round(self.target_evs[i], 6),
+                    "linear_pred_ev": round(self.linear_predictions[i], 6),
+                    "logadd_pred_ev": round(self.logadd_predictions[i], 6),
+                }
+                for i in range(6)
+            ],
+        }
+
+
+def weighted_sum_fit(target: str = "measured_hydrogen") -> WeightedSumFit:
+    """
+    Fit E_total = α·E_bind + β·E_curv  (Compton bind + GeoSeed LB curv)
+    to the measured hydrogen energies.  Also fit log-additive form.
+
+    This tests whether the decomposition is physically useful or just convenient.
+    """
+    from src.geoseed.theory_comparison import (
+        theory_compton_orbital, theory_geoseed_lb,
+        HYDROGEN_MEASURED_EV
+    )
+
+    bind_evs = theory_compton_orbital().energies_ev()
+    curv_evs = theory_geoseed_lb().energies_ev()
+    target_evs = HYDROGEN_MEASURED_EV
+
+    # ── Linear fit: E = α*bind + β*curv ──────────────────────────────
+    def lin_residual(params):
+        alpha, beta = params
+        total = sum(
+            (alpha * bind_evs[i] + beta * curv_evs[i] - target_evs[i]) ** 2
+            for i in range(6)
+        )
+        return total / 6
+
+    lin_params = _nelder_mead(lin_residual, [1.0, 0.0])
+    al, bl = lin_params
+    lin_rms = math.sqrt(lin_residual(lin_params))
+    lin_preds = [al * bind_evs[i] + bl * curv_evs[i] for i in range(6)]
+
+    # ── Log-additive fit: log(E) = α*log(Ebind) + β*log(Ecurv) ──────
+    log_bind = [math.log(e) for e in bind_evs]
+    log_curv = [math.log(e) for e in curv_evs]
+    log_target = [math.log(e) for e in target_evs]
+
+    def log_residual(params):
+        alpha, beta = params
+        total = sum(
+            (alpha * log_bind[i] + beta * log_curv[i] - log_target[i]) ** 2
+            for i in range(6)
+        )
+        return total / 6
+
+    log_params = _nelder_mead(log_residual, [0.5, 0.5])
+    alo, blo = log_params
+    log_rms = math.sqrt(log_residual(log_params))
+    logadd_preds = [
+        math.exp(alo * log_bind[i] + blo * log_curv[i])
+        for i in range(6)
+    ]
+    log_rms_ev = math.sqrt(
+        sum((logadd_preds[i] - target_evs[i]) ** 2 for i in range(6)) / 6
+    )
+
+    better = "linear" if lin_rms <= log_rms_ev else "log_additive"
+
+    return WeightedSumFit(
+        target=target,
+        alpha_lin=al, beta_lin=bl, lin_rms=lin_rms,
+        alpha_log=alo, beta_log=blo, log_rms=log_rms, log_rms_ev=log_rms_ev,
+        better_form=better,
+        linear_predictions=lin_preds,
+        logadd_predictions=logadd_preds,
+        target_evs=list(target_evs),
+    )
+
+
+# ── Extended report ───────────────────────────────────────────────────────────
+
+def duality_report() -> str:
+    """Full report: independent dual fit + product invariant + weighted sum."""
+    dual = independent_dual_fit()
+    inv = compute_product_invariant()
+    ws = weighted_sum_fit()
+    tongues = ["KO(s)", "AV(p)", "RU(d)", "CA(f)", "UM(g)", "DR(h)"]
+
+    lines = []
+    lines.append("=" * 72)
+    lines.append("  INDEPENDENT DUAL FIT (free prefactors + exponents)")
+    lines.append("  Binding fit against measured hydrogen; Curvature fit against GeoSeed-LB")
+    lines.append("=" * 72)
+    lines.append(
+        f"  E_bind = {dual.bind_A:.4f} / (n + {dual.bind_delta:.4f})^{dual.bind_p:.4f}"
+        f"   rms={dual.bind_rms:.6f}  p_near_2={dual.p_near_2}"
+    )
+    lines.append(
+        f"  E_curv = {dual.curv_B:.4f} * (n + {dual.curv_delta:.4f})^{dual.curv_q:.4f}"
+        f"   rms={dual.curv_rms:.6f}  q_near_2={dual.q_near_2}"
+    )
+    lines.append(
+        f"  Product CV = {dual.product_cv:.6f}  (near 0 = flat invariant)"
+    )
+    lines.append("")
+
+    lines.append("=" * 72)
+    lines.append("  PRODUCT INVARIANT  I(l) = E_bind(l) × E_curv(l)")
+    lines.append("  Using Bohr (measured hydrogen) × GeoSeed-LB (same anchor)")
+    lines.append("=" * 72)
+    lines.append(f"  Rydberg² = {inv.rydberg_sq:.6f} eV²")
+    lines.append(f"  Product mean = {inv.mean:.6f} eV²   std = {inv.std:.6f}   CV = {inv.cv:.2e}")
+    lines.append(f"  Is flat (CV < 1e-6): {inv.is_flat}")
+    lines.append("")
+    lines.append(f"  {'Shell':<10}  {'E_bind':>12}  {'E_curv':>12}  {'I(l)':>14}  {'Δ from mean':>12}")
+    lines.append("  " + "-" * 64)
+    for i, t in enumerate(tongues):
+        delta = (inv.shell_values[i] - inv.mean) / inv.mean * 100
+        lines.append(
+            f"  {t:<10}  {inv.bohr_evs[i]:>12.4f}  {inv.lb_evs[i]:>12.4f}"
+            f"  {inv.shell_values[i]:>14.6f}  {delta:>+10.4f}%"
+        )
+    lines.append("")
+
+    lines.append("=" * 72)
+    lines.append("  WEIGHTED-SUM FIT  E_total = α·E_bind + β·E_curv")
+    lines.append("  (fitting against measured hydrogen; bind=Compton, curv=GeoSeed-LB)")
+    lines.append("=" * 72)
+    lines.append(
+        f"  Linear:      α={ws.alpha_lin:.6f}  β={ws.beta_lin:.6f}  rms={ws.lin_rms:.6f} eV"
+    )
+    lines.append(
+        f"  Log-additive: α={ws.alpha_log:.6f}  β={ws.beta_log:.6f}  "
+        f"rms={ws.log_rms_ev:.6f} eV"
+    )
+    lines.append(f"  Better form: {ws.better_form}")
+    lines.append("")
+    lines.append(
+        f"  {'Shell':<10}  {'Target':>10}  {'Linear':>10}  {'LogAdd':>10}  "
+        f"{'LinErr':>10}  {'LogErr':>10}"
+    )
+    lines.append("  " + "-" * 64)
+    for i, t in enumerate(tongues):
+        lines.append(
+            f"  {t:<10}  {ws.target_evs[i]:>10.4f}  {ws.linear_predictions[i]:>10.4f}"
+            f"  {ws.logadd_predictions[i]:>10.4f}"
+            f"  {ws.linear_predictions[i]-ws.target_evs[i]:>+10.4f}"
+            f"  {ws.logadd_predictions[i]-ws.target_evs[i]:>+10.4f}"
+        )
+    lines.append("=" * 72)
+    return "\n".join(lines)
+
+
 def main():
     import json
     print(fit_report())
+    print()
+    print(duality_report())
     fits = fit_all_theories()
     cx = crossover_analysis()
     comb = combined_energy_model()
+    dual = independent_dual_fit()
+    inv = compute_product_invariant()
+    ws = weighted_sum_fit()
     summary = {
         "schema_version": "geoseed_theory_fit_v1",
         "phi": PHI,
         "fits": {k: v.to_dict() for k, v in fits.items()},
         "crossover": cx.to_dict(),
         "combined_energy": comb.to_dict(),
+        "dual_fit": dual.to_dict(),
+        "product_invariant": inv.to_dict(),
+        "weighted_sum": ws.to_dict(),
     }
     print()
     print(json.dumps(summary, indent=2))

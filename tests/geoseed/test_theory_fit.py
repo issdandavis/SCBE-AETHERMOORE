@@ -253,3 +253,108 @@ def test_fit_report_non_empty(mod):
     assert "PARAMETRIC FIT" in report
     assert "CROSSOVER" in report
     assert "COMBINED" in report
+
+
+# ── Independent dual fit ──────────────────────────────────────────────────────
+
+@pytest.fixture(scope="module")
+def dual(mod):
+    from src.geoseed.theory_fit import independent_dual_fit
+    return independent_dual_fit()
+
+def test_dual_bind_p_near_2(dual):
+    """Binding fit must converge to p ≈ 2 without being told (1/n²)."""
+    assert dual.p_near_2, f"bind_p={dual.bind_p:.4f} not near 2"
+
+def test_dual_curv_q_near_2(dual):
+    """Curvature fit must converge to q ≈ 2 without being told ((l+1)²)."""
+    assert dual.q_near_2, f"curv_q={dual.curv_q:.4f} not near 2"
+
+def test_dual_product_cv_low(dual):
+    """Product I(l) should be near-flat after independent fit."""
+    assert dual.product_cv < 0.5, (
+        f"Product CV={dual.product_cv:.4f}; not a clean invariant"
+    )
+
+def test_dual_bind_rms_small(dual):
+    assert dual.bind_rms < 0.05, f"bind rms={dual.bind_rms:.6f} too high"
+
+def test_dual_curv_rms_small(dual):
+    assert dual.curv_rms < 0.05, f"curv rms={dual.curv_rms:.6f} too high"
+
+def test_dual_to_dict_has_schema(dual):
+    d = dual.to_dict()
+    assert d["schema_version"] == "geoseed_dual_fit_v1"
+    assert "binding" in d and "curvature" in d and "product_invariant" in d
+
+
+# ── Product invariant ─────────────────────────────────────────────────────────
+
+@pytest.fixture(scope="module")
+def inv():
+    from src.geoseed.theory_fit import compute_product_invariant
+    return compute_product_invariant()
+
+def test_invariant_has_six_shells(inv):
+    assert len(inv.shell_values) == 6
+
+def test_invariant_is_flat(inv):
+    """I(l) = E_bind * E_curv should be exactly flat when both use same anchor."""
+    assert inv.is_flat, f"Product invariant CV={inv.cv:.2e} not flat"
+
+def test_invariant_equals_rydberg_sq(inv):
+    """Product must equal RYDBERG² ≈ 185.11 eV² when both anchored the same."""
+    from src.geoseed.theory_comparison import RYDBERG_EV
+    for i, v in enumerate(inv.shell_values):
+        assert abs(v - RYDBERG_EV**2) < 1e-6, (
+            f"Shell {i}: I(l)={v:.6f} ≠ Rydberg²={RYDBERG_EV**2:.6f}"
+        )
+
+def test_invariant_to_dict(inv):
+    d = inv.to_dict()
+    assert d["schema_version"] == "geoseed_product_invariant_v1"
+    assert d["is_flat"] is True
+    assert d["product_equals_rydberg_sq"] is True
+    assert len(d["shells"]) == 6
+
+
+# ── Weighted sum fit ──────────────────────────────────────────────────────────
+
+@pytest.fixture(scope="module")
+def ws():
+    from src.geoseed.theory_fit import weighted_sum_fit
+    return weighted_sum_fit()
+
+def test_ws_better_form_is_valid(ws):
+    assert ws.better_form in ("linear", "log_additive")
+
+def test_ws_lin_rms_finite(ws):
+    assert math.isfinite(ws.lin_rms) and ws.lin_rms >= 0
+
+def test_ws_log_rms_finite(ws):
+    assert math.isfinite(ws.log_rms_ev) and ws.log_rms_ev >= 0
+
+def test_ws_six_shells(ws):
+    assert len(ws.linear_predictions) == 6
+    assert len(ws.logadd_predictions) == 6
+
+def test_ws_to_dict_schema(ws):
+    d = ws.to_dict()
+    assert d["schema_version"] == "geoseed_weighted_sum_v1"
+    assert "linear" in d and "log_additive" in d
+    assert d["better_form"] in ("linear", "log_additive")
+
+def test_ws_alpha_beta_finite(ws):
+    assert math.isfinite(ws.alpha_lin) and math.isfinite(ws.beta_lin)
+    assert math.isfinite(ws.alpha_log) and math.isfinite(ws.beta_log)
+
+
+# ── Duality report ────────────────────────────────────────────────────────────
+
+def test_duality_report_non_empty():
+    from src.geoseed.theory_fit import duality_report
+    report = duality_report()
+    assert len(report) > 400
+    assert "INDEPENDENT DUAL FIT" in report
+    assert "PRODUCT INVARIANT" in report
+    assert "WEIGHTED-SUM FIT" in report
