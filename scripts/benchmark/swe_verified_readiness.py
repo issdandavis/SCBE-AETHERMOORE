@@ -20,15 +20,21 @@ def _probe(cmd: list[str], timeout: int = 30) -> dict[str, Any]:
     exe = shutil.which(cmd[0])
     if exe is None:
         return {"ok": False, "command": cmd, "reason": "missing_executable"}
-    proc = subprocess.run(
-        cmd,
-        cwd=REPO_ROOT,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=timeout,
-        check=False,
-    )
+    run_cmd = cmd
+    if sys.platform == "win32" and exe.lower().endswith((".bat", ".cmd")):
+        run_cmd = ["cmd", "/c"] + cmd
+    try:
+        proc = subprocess.run(
+            run_cmd,
+            cwd=REPO_ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=timeout,
+            check=False,
+        )
+    except FileNotFoundError as exc:
+        return {"ok": False, "command": cmd, "reason": "missing_executable", "error": str(exc)}
     return {
         "ok": proc.returncode == 0,
         "command": cmd,

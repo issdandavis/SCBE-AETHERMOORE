@@ -214,7 +214,7 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
             "Force source-backed candidate answers.",
             "Use best-of-N verification over independent search paths.",
         ),
-        setup_checks=(("python", "-c", "import requests; print('requests ok')"), ("git", "--version")),
+        pretest_command=("python", "scripts/benchmark/research_agent_fixture_benchmark.py", "--style", "BrowseComp-style"),
         source_refs=("https://openai.com/index/browsecomp/", "https://github.com/openai/simple-evals"),
     ),
     BenchmarkTarget(
@@ -230,9 +230,36 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
             "Require each answer to cite retrieval or file evidence.",
             "Track unresolved subgoals and formatting constraints.",
         ),
-        setup_checks=(("python", "-c", "import datasets; print('datasets ok')"),),
-        expected_blockers=("huggingface_datasets_or_gaia_access",),
+        pretest_command=("python", "scripts/benchmark/research_agent_fixture_benchmark.py", "--style", "GAIA-style"),
         source_refs=("https://huggingface.co/learn/agents-course/unit4/what-is-gaia",),
+    ),
+    BenchmarkTarget(
+        benchmark_id="rubix_browser_hypercube",
+        display_name="Rubix Browser Hypercube",
+        domain="browser-control pathfinding",
+        official_url="docs/benchmarks/RUBIX_BROWSER_HYPERCUBE_BENCHMARK.md",
+        public_context=(
+            "Local permission-defined browser manifold fixture; bridge target for WebArena, VisualWebArena, "
+            "BrowserGym, and OSWorld adapters."
+        ),
+        why_hard=(
+            "Flat DOM clickers treat visually nearby controls as equivalent instead of routing through "
+            "permission, reversibility, identity, and risk faces."
+        ),
+        defender_view="The task blocks routes that touch denied faces even when they look shorter in DOM order.",
+        non_leaky_assist=(
+            "Expose available permission faces and denied-face categories.",
+            "Emit reversible action receipts for each browser rotation.",
+            "Score route safety separately from raw click distance.",
+        ),
+        pretest_command=("python", "scripts/benchmark/rubix_browser_hypercube_benchmark.py"),
+        source_refs=(
+            "docs/benchmarks/RUBIX_BROWSER_HYPERCUBE_BENCHMARK.md",
+            "https://webarena.dev/",
+            "https://arxiv.org/abs/2401.13649",
+            "https://github.com/ServiceNow/BrowserGym",
+            "https://os-world.github.io/",
+        ),
     ),
     BenchmarkTarget(
         benchmark_id="webarena_visualwebarena",
@@ -295,8 +322,15 @@ def utc_now() -> str:
 def run_command(command: tuple[str, ...], cwd: Path, timeout: int) -> tuple[int, str, str, int]:
     started = datetime.now()
     try:
+        cmd = list(command)
+        # On Windows, .bat/.cmd wrappers cannot be spawned directly by CreateProcess.
+        # Detect them via shutil.which and prepend cmd /c so they execute correctly.
+        if sys.platform == "win32":
+            resolved = shutil.which(cmd[0])
+            if resolved and resolved.lower().endswith((".bat", ".cmd")):
+                cmd = ["cmd", "/c"] + cmd
         proc = subprocess.run(
-            list(command),
+            cmd,
             cwd=cwd,
             text=True,
             stdout=subprocess.PIPE,
@@ -318,6 +352,17 @@ def run_command(command: tuple[str, ...], cwd: Path, timeout: int) -> tuple[int,
 
 def tail(value: str, limit: int = 2200) -> str:
     return value[-limit:] if len(value) > limit else value
+
+
+def extract_blockers(stdout: str) -> list[str]:
+    try:
+        payload = json.loads(stdout)
+    except Exception:
+        return []
+    missing = payload.get("missing_or_failed")
+    if not isinstance(missing, list):
+        return []
+    return [str(item) for item in missing if str(item)]
 
 
 def extract_score(target: BenchmarkTarget, returncode: int, stdout: str) -> float | None:
@@ -394,7 +439,10 @@ def run_target(target: BenchmarkTarget, timeout: int) -> PretestResult:
         score = extract_score(target, returncode, stdout)
         blockers: list[str] = []
         if returncode != 0:
-            if target.expected_blockers:
+            parsed_blockers = extract_blockers(stdout)
+            if parsed_blockers:
+                blockers.extend(parsed_blockers)
+            elif target.expected_blockers:
                 blockers.extend(target.expected_blockers)
             else:
                 blockers.append("pretest_command_failed")
