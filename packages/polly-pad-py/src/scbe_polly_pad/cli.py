@@ -6,6 +6,7 @@ import argparse
 import json
 from typing import Sequence
 
+from .audit import append_event, default_ledger_path, export_ledger, iter_events, verify_ledger
 from .runtime import (
     LANGS,
     MODE_TOOLS,
@@ -56,6 +57,25 @@ def build_parser() -> argparse.ArgumentParser:
     trace = sub.add_parser("trace", help="Run tri-directional trace planning.")
     trace.add_argument("--state", type=_parse_state, required=True)
     trace.add_argument("--d-star", type=float, required=True)
+
+    audit = sub.add_parser("audit", help="Manage Polly Pad audit receipts.")
+    audit_sub = audit.add_subparsers(dest="audit_command", required=True)
+
+    audit_append = audit_sub.add_parser("append", help="Append one audit receipt.")
+    audit_append.add_argument("--ledger", default=str(default_ledger_path()))
+    audit_append.add_argument("--actor", required=True)
+    audit_append.add_argument("--action", required=True)
+    audit_append.add_argument("--subject", required=True)
+    audit_append.add_argument("--payload-json", default="{}")
+
+    audit_list = audit_sub.add_parser("list", help="List audit receipts.")
+    audit_list.add_argument("--ledger", default=str(default_ledger_path()))
+
+    audit_verify = audit_sub.add_parser("verify", help="Verify audit hash continuity.")
+    audit_verify.add_argument("--ledger", default=str(default_ledger_path()))
+
+    audit_export = audit_sub.add_parser("export", help="Export audit ledger as JSON.")
+    audit_export.add_argument("--ledger", default=str(default_ledger_path()))
 
     return parser
 
@@ -121,5 +141,36 @@ def main(argv: Sequence[str] | None = None) -> int:
             }
         )
         return 0
+
+    if args.command == "audit":
+        if args.audit_command == "append":
+            try:
+                payload = json.loads(args.payload_json)
+            except json.JSONDecodeError as exc:
+                raise SystemExit(f"invalid --payload-json: {exc}") from exc
+            if not isinstance(payload, dict):
+                raise SystemExit("--payload-json must decode to a JSON object")
+            receipt = append_event(
+                args.ledger,
+                actor=args.actor,
+                action=args.action,
+                subject=args.subject,
+                payload=payload,
+            )
+            _print_json(receipt.__dict__)
+            return 0
+
+        if args.audit_command == "list":
+            _print_json([receipt.__dict__ for receipt in iter_events(args.ledger)])
+            return 0
+
+        if args.audit_command == "verify":
+            result = verify_ledger(args.ledger)
+            _print_json(result.__dict__)
+            return 0 if result.ok else 2
+
+        if args.audit_command == "export":
+            _print_json(export_ledger(args.ledger))
+            return 0
 
     raise AssertionError(f"unhandled command: {args.command}")
