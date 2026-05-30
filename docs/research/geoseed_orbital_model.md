@@ -75,3 +75,22 @@ Render:
 ```bash
 python scripts/research/render_geoseed_orbitals.py
 ```
+
+## Transfer recorder stub
+
+`src/geoseed/transfer_recorder.py` adds an audit scaffold for symbolic atom
+transfer. It records `(from_tongue, to_tongue, token)` triples, accumulates a
+6x6 transfer matrix, and prices each shell hop as `n * ln(phi)`.
+
+The future tokenizer wiring point is intentionally one call:
+
+```python
+from src.geoseed.transfer_recorder import AtomTransferRecorder
+
+rec = AtomTransferRecorder(session_id="tokenizer-run")
+for token, from_tongue, to_tongue in tokenizer.route_tokens(text):
+    rec.record(from_tongue, to_tongue, token)
+```
+
+The recorder is deterministic and standard-library only. It tracks route
+provenance without claiming physical atom transfer.

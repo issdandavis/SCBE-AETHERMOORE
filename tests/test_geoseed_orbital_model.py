@@ -23,10 +23,7 @@ def test_ca_shell_sits_at_inverse_phi_checkpoint() -> None:
 def test_adjacent_shells_have_uniform_hyperbolic_gap() -> None:
     orbitals = build_geoseed_orbitals()
     expected = math.log(PHI)
-    distances = [
-        hyperbolic_distance(left.poincare_r, right.poincare_r)
-        for left, right in zip(orbitals, orbitals[1:])
-    ]
+    distances = [hyperbolic_distance(left.poincare_r, right.poincare_r) for left, right in zip(orbitals, orbitals[1:])]
     assert distances == pytest.approx([expected] * 5, abs=1e-12)
 
 
