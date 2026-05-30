@@ -42,12 +42,6 @@ jobs:
         if: env.skip_pypi != 'true'
         run: python -m build
 
-      - name: Publish to PyPI (Trusted Publisher or API token fallback)
+      - name: Publish to PyPI via Trusted Publisher (OIDC)
         if: env.skip_pypi != 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          # When PYPI_API_TOKEN is set on the repo, the action authenticates with the
-          # token; otherwise it falls back to OIDC Trusted Publishing. The token path
-          # is in place because the project does not yet have a PyPI Trusted Publisher
-          # entry configured for scbe-aethermoore.
-          password: ${{ secrets.PYPI_API_TOKEN }}
