@@ -58,14 +58,38 @@ Report artifacts:
 Command:
 
 ```bash
+# Deterministic harness only (default, no API key required)
 npm run benchmark:swe-local-fixtures
+
+# Live agent lane — Cerebras llama-3.3-70b (requires CEREBRAS_API_KEY)
+npm run benchmark:swe-local-fixtures:cerebras
+
+# Live agent lane — Groq llama-3.3-70b-versatile (requires GROQ_API_KEY)
+npm run benchmark:swe-local-fixtures:groq
+```
+
+Or directly with `--provider`:
+
+```bash
+python scripts/benchmark/real_patch_task_benchmark.py --provider cerebras
+python scripts/benchmark/real_patch_task_benchmark.py --provider groq
 ```
 
 This lane creates isolated broken mini-repositories, executes a no-repair
-baseline, applies the SCBE repair harness, runs task-local pytest suites, and
+baseline, applies the repair harness, runs task-local pytest suites, and
 records unified patch receipts plus edit-scope checks.
 
-Current expected bracket:
+There are two repair modes:
+
+| Mode | Description | Requires |
+|---|---|---|
+| `scbe_repair` (default) | Deterministic harness — hardcoded correct fixes for each task. Proves the harness wiring works. | Nothing |
+| `agent_repair` (`--provider`) | Live AI model call via OpenAI-compatible API. The model is given the issue, broken source, and test content and asked to return the repaired file. | `CEREBRAS_API_KEY` or `GROQ_API_KEY` |
+
+**Note**: The agent lane provides test content in the prompt. Pass rate may overstate
+generalization to held-out tests where test expectations are not visible.
+
+Current expected bracket (deterministic lane):
 
 ```text
 direct no-repair baseline: 0 / 5 tests pass
