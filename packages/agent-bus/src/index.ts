@@ -140,6 +140,16 @@ export {
   runRubixBrowserBenchmark,
 } from './rubix-browser.js';
 
+export {
+  type ResumePacket,
+  type ResumePacketOptions,
+  type ToolCallRecord,
+  type ToolLoopDetection,
+  type ToolLoopDetectorOptions,
+  createResumePacket,
+  createToolLoopDetector,
+} from './task-ledger.js';
+
 export type AgentBusPrivacy = 'local_only' | 'remote_allowed' | string;
 
 export interface AgentBusEvent {
