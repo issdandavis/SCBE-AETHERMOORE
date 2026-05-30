@@ -2056,6 +2056,37 @@ export {
 } from './vector-field-nav.js';
 
 export {
+  type HermesTaskMode,
+  type ScbeCompassMode,
+  type ScbeFormation,
+  type ScbeTongueDomain,
+  type ScbeBoardMechanic,
+  type ScbeRollKind,
+  type HermesModelLane,
+  type HermesRoutePlan,
+  type ScbeFormationStep,
+  type ScbeCommandNode,
+  type ScbeOctreeContextPack,
+  type ScbeCliParityTarget,
+  type ScbeBoardRule,
+  type ScbeRollCard,
+  type ScbeRollStackStep,
+  type ScbeRollStackPlan,
+  type ScbeCompassRoutePlan,
+  classifyHermesTask,
+  classifyScbeCompassTask,
+  hermesModelLanes,
+  scbeCompassModelLanes,
+  planHermesRoute,
+  planScbeCompassRoute,
+  scbeCompassCommandTree,
+  scbeCompassParityTargets,
+  scbeCompassBoardRules,
+  scbeCompassRollCards,
+  buildScbeRollStack,
+} from './hermes.js';
+
+export {
   type ReactionSpec,
   type ReactionChain,
   type ReactionStepStatus,
