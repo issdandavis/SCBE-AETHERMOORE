@@ -289,6 +289,90 @@ const OP_TEMPLATES = {
   },
 };
 
+// ── Cross-language execution ──────────────────────────────────────────────────
+
+const CROSS_EXEC_RUNTIMES = {
+  python: {
+    command: 'python3',
+    wrap: function (code, x, y) {
+      return 'x=' + JSON.stringify(x) + '; y=' + JSON.stringify(y) + '; ' + code + '; print(result)';
+    },
+    args: function (code, x, y) {
+      return ['-c', CROSS_EXEC_RUNTIMES.python.wrap(code, x, y)];
+    },
+  },
+  javascript: {
+    command: 'node',
+    wrap: function (code, x, y) {
+      return 'const x=' + JSON.stringify(x) + '; const y=' + JSON.stringify(y) + '; ' + code + '; console.log(result);';
+    },
+    args: function (code, x, y) {
+      return ['-e', CROSS_EXEC_RUNTIMES.javascript.wrap(code, x, y)];
+    },
+  },
+  typescript: {
+    command: 'node',
+    wrap: function (code, x, y) {
+      // strip TS type annotation: `const result: number = x + y;` → `const result = x + y;`
+      const stripped = code.replace(/:\s*\w+\s*=/g, ' =');
+      return 'const x=' + JSON.stringify(x) + '; const y=' + JSON.stringify(y) + '; ' + stripped + '; console.log(result);';
+    },
+    args: function (code, x, y) {
+      return ['-e', CROSS_EXEC_RUNTIMES.typescript.wrap(code, x, y)];
+    },
+  },
+  shell: {
+    command: 'bash',
+    wrap: function (code, x, y) {
+      return 'x=' + JSON.stringify(x) + '; y=' + JSON.stringify(y) + '; ' + code + '; echo $result';
+    },
+    args: function (code, x, y) {
+      return ['-c', CROSS_EXEC_RUNTIMES.shell.wrap(code, x, y)];
+    },
+  },
+  // rust and go require file compilation — skip in exec tier, mark as 'needs-compiler'
+};
+
+function execCrossOp(op, lang, x, y) {
+  const template = OP_TEMPLATES[op] && OP_TEMPLATES[op][lang];
+  if (!template) return { lang, ok: false, reason: 'no template for ' + lang };
+
+  const runtime = CROSS_EXEC_RUNTIMES[lang];
+  if (!runtime) {
+    // rust/go need a real compiler — report as skipped (not failed)
+    return { lang, ok: null, reason: 'compiler-required, skipped in exec tier', skipped: true };
+  }
+
+  const execArgs = runtime.args(template, x, y);
+  const spawnResult = spawnSync(runtime.command, execArgs, {
+    encoding: 'utf8',
+    timeout: 10000,
+    env: process.env,
+  });
+
+  if (spawnResult.status !== 0 || spawnResult.error) {
+    return {
+      lang,
+      ok: false,
+      exit_code: spawnResult.status,
+      reason: ((spawnResult.stderr || (spawnResult.error && spawnResult.error.message) || 'non-zero exit').trim()).slice(0, 200),
+    };
+  }
+
+  const output = (spawnResult.stdout || '').trim();
+  return { lang, ok: true, output, exit_code: 0 };
+}
+
+function checkConsistency(results) {
+  // Only compare results from langs that actually ran (ok === true)
+  const ran = results.filter(function (r) {
+    return r.ok === true;
+  });
+  if (ran.length < 2) return { consensus: ran.length === 1 ? 'single' : 'none', match: null };
+  const outputs = [...new Set(ran.map(function (r) { return r.output; }))];
+  return { consensus: outputs.length === 1 ? 'full' : 'mismatch', match: outputs.length === 1, outputs };
+}
+
 function normalizeLanguage(raw) {
   if (!raw) return null;
   return LANGUAGE_ALIASES[String(raw).toLowerCase()] || null;
@@ -1505,6 +1589,8 @@ const COMMANDS = {
       console.log('  polly cross pack --file src/index.ts');
       console.log('  polly cross unpack --hex 64656620');
       console.log('  polly cross op add --json');
+      console.log('  polly cross exec add --x 5 --y 3 --lang javascript --json');
+      console.log('  polly cross exec mul --x 4 --y 7 --langs all --json');
       return;
     }
 
@@ -1608,7 +1694,78 @@ const COMMANDS = {
       return;
     }
 
-    console.error('Unknown cross subcommand: ' + sub + '. Use: pack, unpack, op, langs, ops');
+    if (sub === 'exec') {
+      const op = rest[0];
+      if (!op || !OP_TEMPLATES[op]) {
+        console.error('Usage: polly cross exec <' + Object.keys(OP_TEMPLATES).join('|') + '> --x <num> --y <num> [--lang <lang>] [--langs all] [--dry-run] [--json]');
+        process.exit(1);
+      }
+
+      const rawX = flags.x !== undefined ? Number(flags.x) : undefined;
+      const rawY = flags.y !== undefined ? Number(flags.y) : undefined;
+      if (rawX === undefined || rawY === undefined || isNaN(rawX) || isNaN(rawY)) {
+        console.error('cross exec requires --x <number> and --y <number>');
+        process.exit(1);
+      }
+
+      const x = rawX;
+      const y = rawY;
+
+      // determine which languages to run
+      const allLangs = Object.keys(OP_TEMPLATES[op]);
+      let targetLangs;
+      if (flags.langs === 'all' || flags['langs-all']) {
+        targetLangs = allLangs;
+      } else if (flags.lang || flags.language) {
+        const norm = normalizeLanguage(flags.lang || flags.language);
+        if (!norm || !OP_TEMPLATES[op][norm]) {
+          console.error('Unsupported language: ' + (flags.lang || flags.language) + '. Supported: ' + allLangs.join(', '));
+          process.exit(1);
+        }
+        targetLangs = [norm];
+      } else {
+        // default: run all languages
+        targetLangs = allLangs;
+      }
+
+      if (flags['dry-run'] || flags.dryRun) {
+        const dryResult = {
+          dry_run: true,
+          op,
+          x,
+          y,
+          langs: targetLangs,
+          templates: Object.fromEntries(targetLangs.map(function (l) { return [l, OP_TEMPLATES[op][l]]; })),
+        };
+        out(dryResult, true);
+        return;
+      }
+
+      const results = targetLangs.map(function (lang) { return execCrossOp(op, lang, x, y); });
+      const consistency = checkConsistency(results);
+      const payload = {
+        schema_version: 'polly_cross_exec_v1',
+        op,
+        x,
+        y,
+        results,
+        consistency,
+      };
+
+      if (ws) {
+        appendAudit(ws, 'cross.exec', op, {
+          x,
+          y,
+          langs: targetLangs,
+          consensus: consistency.consensus,
+        });
+      }
+
+      out(payload, flags.json || true);
+      return;
+    }
+
+    console.error('Unknown cross subcommand: ' + sub + '. Use: pack, unpack, op, exec, langs, ops');
     process.exit(1);
   },
 
@@ -1717,6 +1874,7 @@ Commands:
   cross pack               Decompose text/file into UTF-8 hex/binary packet
   cross unpack             Rehydrate text from packet hex
   cross op                 Render bounded ops across supported languages
+  cross exec               Execute bounded op templates through real runtimes and compare outputs
   doctor                   Check environment (Node, Ollama, API keys, git)
   tools list               List governed tools (tools.json) + built-in recipes
   tools inspect <name>     Show tool details, parameters, and example
@@ -1761,6 +1919,7 @@ Examples:
   polly audit verify
   polly cross pack --text "def add(x, y): return x + y" --lang python
   polly cross op add --json
+  polly cross exec add --x 5 --y 3 --lang javascript --json
   polly runs --json
   polly handoff | pbcopy
 `;

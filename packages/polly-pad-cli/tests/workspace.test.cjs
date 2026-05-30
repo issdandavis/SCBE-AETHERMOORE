@@ -370,4 +370,82 @@ test('polly cross op can target one language', () => {
     assert.strictEqual(payload.translations.go, 'result := x ^ y');
   } finally {
     cleanup(dir);
-  }});
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 14: polly cross exec dry-run emits templates without executing
+// ---------------------------------------------------------------------------
+test('polly cross exec dry-run emits templates without executing', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossExecDryTest']);
+    const result = run(dir, ['cross', 'exec', 'add', '--x', '5', '--y', '3', '--dry-run', '--json']);
+    assert.strictEqual(result.status, 0, 'cross exec --dry-run should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.dry_run, true);
+    assert.strictEqual(payload.op, 'add');
+    assert.strictEqual(payload.x, 5);
+    assert.strictEqual(payload.y, 3);
+    assert.ok(Array.isArray(payload.langs), 'langs should be an array');
+    assert.ok(payload.langs.includes('javascript'), 'langs should include javascript');
+    assert.ok(typeof payload.templates === 'object', 'templates should be present');
+    assert.ok(payload.templates.python, 'python template should be present');
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 15: polly cross exec runs javascript and returns output 17
+// ---------------------------------------------------------------------------
+test('polly cross exec runs javascript and returns output 17', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossExecJSTest']);
+    const result = run(dir, ['cross', 'exec', 'add', '--x', '10', '--y', '7', '--lang', 'javascript', '--json']);
+    assert.strictEqual(result.status, 0, 'cross exec javascript should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.schema_version, 'polly_cross_exec_v1');
+    assert.strictEqual(payload.op, 'add');
+    assert.strictEqual(payload.x, 10);
+    assert.strictEqual(payload.y, 7);
+    assert.ok(Array.isArray(payload.results), 'results should be an array');
+    const jsResult = payload.results.find((r) => r.lang === 'javascript');
+    assert.ok(jsResult, 'javascript result should exist');
+    assert.strictEqual(jsResult.ok, true, 'javascript should succeed');
+    assert.strictEqual(jsResult.output, '17', 'javascript add(10,7) should output 17');
+    assert.ok(payload.consistency, 'consistency should be present');
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 16: polly cross exec python and javascript agree on xor
+// ---------------------------------------------------------------------------
+test('polly cross exec python and javascript agree on xor', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossExecConsistencyTest']);
+    const result = run(dir, ['cross', 'exec', 'xor', '--x', '12', '--y', '10', '--langs', 'all', '--json']);
+    assert.strictEqual(result.status, 0, 'cross exec xor should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.schema_version, 'polly_cross_exec_v1');
+    assert.strictEqual(payload.op, 'xor');
+    assert.ok(Array.isArray(payload.results));
+
+    const pyResult = payload.results.find((r) => r.lang === 'python');
+    const jsResult = payload.results.find((r) => r.lang === 'javascript');
+    assert.ok(pyResult && pyResult.ok, 'python xor should succeed');
+    assert.ok(jsResult && jsResult.ok, 'javascript xor should succeed');
+    // 12 XOR 10 = 6
+    assert.strictEqual(pyResult.output, '6', 'python xor(12,10) should be 6');
+    assert.strictEqual(jsResult.output, '6', 'javascript xor(12,10) should be 6');
+
+    // consensus should be 'full' since both agree (at minimum)
+    assert.strictEqual(payload.consistency.consensus, 'full', 'python and javascript should agree on xor');
+  } finally {
+    cleanup(dir);
+  }
+});
