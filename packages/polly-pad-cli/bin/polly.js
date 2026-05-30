@@ -229,6 +229,55 @@ function getGitInfo(dir) {
 }
 
 // ---------------------------------------------------------------------------
+// Tool registry
+// ---------------------------------------------------------------------------
+
+function findToolsJson(repoRoot) {
+  // Priority: env var → repo root → __dirname proximity → null
+  if (process.env.POLLY_TOOLS_JSON) {
+    const p = path.resolve(process.env.POLLY_TOOLS_JSON);
+    return fs.existsSync(p) ? p : null;
+  }
+  if (repoRoot) {
+    const p = path.join(repoRoot, 'packages', 'agent-bus', 'tools.json');
+    if (fs.existsSync(p)) return p;
+  }
+  // Walk up from __dirname looking for packages/agent-bus/tools.json
+  let dir = __dirname;
+  for (let i = 0; i < 6; i++) {
+    const p = path.join(dir, 'packages', 'agent-bus', 'tools.json');
+    if (fs.existsSync(p)) return p;
+    dir = path.dirname(dir);
+  }
+  return null;
+}
+
+function loadToolsRegistry(repoRoot) {
+  const toolsPath = findToolsJson(repoRoot);
+  if (!toolsPath) return { tools: [], source: 'none', path: null };
+  try {
+    const tools = JSON.parse(fs.readFileSync(toolsPath, 'utf8'));
+    return { tools: Array.isArray(tools) ? tools : [], source: 'file', path: toolsPath };
+  } catch (_) {
+    return { tools: [], source: 'error', path: toolsPath };
+  }
+}
+
+function substituteArgs(args, vars) {
+  return args.map(function (arg) {
+    return arg.replace(/\{(\w+)\}/g, function (_, key) {
+      return vars[key] !== undefined ? String(vars[key]) : '{' + key + '}';
+    });
+  });
+}
+
+function unresolvedPlaceholders(resolvedArgs) {
+  const all = resolvedArgs.join(' ');
+  const matches = all.match(/\{[a-zA-Z]\w*\}/g);
+  return matches ? [...new Set(matches)] : [];
+}
+
+// ---------------------------------------------------------------------------
 // Task helpers
 // ---------------------------------------------------------------------------
 
@@ -1011,24 +1060,242 @@ const COMMANDS = {
   },
 
   async tools(args, flags) {
-    const [sub, ...rest] = args;
+    const repoRoot = detectGitRoot(process.cwd());
+    const registry = loadToolsRegistry(repoRoot);
+    const ws = findWorkspaceRoot(process.cwd());
+    const [sub, toolName, ...rest] = args;
+
+    // ── list ──────────────────────────────────────────────────────────────────
     if (!sub || sub === 'list') {
+      const governedTools = registry.tools.map(function (t) {
+        return { name: t.name, description: t.description, kind: 'governed', command: t.command };
+      });
+      const recipeTools = Object.keys(RECIPES).map(function (k) {
+        return { name: k, description: RECIPES[k].description, kind: 'recipe', command: 'polly run' };
+      });
+      const all = governedTools.concat(recipeTools);
+
       if (flags.json) {
-        const list = Object.entries(RECIPES).map(([k, v]) => ({ name: k, description: v.description }));
-        out(list, true);
+        out({ tools: all, registry_source: registry.source, registry_path: registry.path }, true);
         return;
       }
-      console.log('Available recipes:');
-      for (const [k, v] of Object.entries(RECIPES)) {
-        console.log('  ' + k.padEnd(12) + v.description);
+
+      if (registry.source === 'none') {
+        console.log('Note: tools.json not found — showing built-in recipes only.');
+        console.log('Set POLLY_TOOLS_JSON or run from within SCBE-AETHERMOORE.');
+        console.log('');
+      }
+
+      if (governedTools.length > 0) {
+        console.log('Governed tools (polly tools run <name>):');
+        for (const t of governedTools) {
+          console.log('  ' + t.name.padEnd(30) + t.description);
+        }
+        console.log('');
+      }
+
+      console.log('Recipes (polly run <name>):');
+      for (const t of recipeTools) {
+        console.log('  ' + t.name.padEnd(30) + t.description);
       }
       return;
     }
-    if (sub === 'run') {
-      await COMMANDS.run(rest, flags);
+
+    // ── inspect ───────────────────────────────────────────────────────────────
+    if (sub === 'inspect') {
+      if (!toolName) {
+        console.error('Usage: polly tools inspect <tool-name>');
+        process.exit(1);
+      }
+      const tool = registry.tools.find(function (t) {
+        return t.name === toolName;
+      });
+      if (!tool) {
+        console.error('Tool not found: ' + toolName);
+        console.error('Run `polly tools list` to see available tools.');
+        process.exit(1);
+      }
+      if (ws) appendAudit(ws, 'tool.inspect', toolName, { tool_name: toolName });
+      if (flags.json) {
+        out(tool, true);
+        return;
+      }
+      console.log('Name:        ' + tool.name);
+      console.log('Description: ' + tool.description);
+      console.log('Command:     ' + tool.command);
+      console.log('Args:        ' + JSON.stringify(tool.args));
+      const placeholders = tool.args.join(' ').match(/\{[a-zA-Z]\w*\}/g) || [];
+      if (placeholders.length) {
+        console.log('Parameters:  ' + [...new Set(placeholders)].join(', '));
+        console.log('');
+        console.log('Example:');
+        console.log('  polly tools run ' + tool.name + ' --input "your task here"');
+      }
       return;
     }
-    console.error('Unknown tools subcommand: ' + sub + '. Use: list, run');
+
+    // ── run ───────────────────────────────────────────────────────────────────
+    if (sub === 'run') {
+      if (!toolName) {
+        console.error(
+          "Usage: polly tools run <tool-name> [--input <task>] [--params '{\"key\":\"val\"}'] [--dry-run]"
+        );
+        process.exit(1);
+      }
+      const tool = registry.tools.find(function (t) {
+        return t.name === toolName;
+      });
+      if (!tool) {
+        console.error('Tool not found: ' + toolName);
+        console.error('Run `polly tools list` to see available tools.');
+        process.exit(1);
+      }
+
+      // Build template vars from --input and --params
+      let vars = {};
+      if (flags.input) vars.task = flags.input;
+      if (flags.params) {
+        try {
+          const parsed = JSON.parse(flags.params);
+          Object.assign(vars, parsed);
+        } catch (_) {
+          console.error("--params must be valid JSON. Example: --params '{\"task\":\"my task\"}'");
+          process.exit(1);
+        }
+      }
+      // Positional args after tool name also fill {task}
+      if (rest.length > 0 && !vars.task) vars.task = rest.join(' ');
+
+      const resolvedArgs = substituteArgs(tool.args, vars);
+      const unresolved = unresolvedPlaceholders(resolvedArgs);
+      const runAt = new Date().toISOString();
+
+      // Dry run
+      if (flags['dry-run'] || flags.dryRun) {
+        const dryResult = {
+          dry_run: true,
+          tool: toolName,
+          command: tool.command,
+          args: resolvedArgs,
+          unresolved_placeholders: unresolved,
+          vars_provided: vars,
+        };
+        if (ws) appendAudit(ws, 'tool.run.requested', toolName, Object.assign({ dry_run: true }, dryResult));
+        if (flags.json) {
+          out(dryResult, true);
+        } else {
+          console.log('[dry-run] Would execute:');
+          console.log(
+            '  ' +
+              tool.command +
+              ' ' +
+              resolvedArgs
+                .map(function (a) {
+                  return JSON.stringify(a);
+                })
+                .join(' ')
+          );
+          if (unresolved.length) {
+            console.log('  Warning: unresolved placeholders: ' + unresolved.join(', '));
+          }
+        }
+        return;
+      }
+
+      // Warn on unresolved placeholders
+      if (unresolved.length) {
+        console.error('Unresolved template placeholders: ' + unresolved.join(', '));
+        console.error(
+          'Provide values via --input <text> or --params \'{"' + unresolved[0].slice(1, -1) + '":"..."}\''
+        );
+        process.exit(1);
+      }
+
+      // Audit: requested
+      if (ws)
+        appendAudit(ws, 'tool.run.requested', toolName, {
+          tool_name: toolName,
+          command: tool.command,
+          args: resolvedArgs,
+          vars: vars,
+          run_at: runAt,
+        });
+
+      if (!flags.json) {
+        process.stdout.write('Running ' + toolName + '...');
+      }
+
+      // Execute
+      const cwd = flags.cwd ? path.resolve(flags.cwd) : repoRoot || process.cwd();
+      const timeoutMs = flags.timeout ? parseInt(flags.timeout, 10) : 60000;
+
+      let spawnResult;
+      try {
+        spawnResult = require('node:child_process').spawnSync(tool.command, resolvedArgs, {
+          cwd,
+          encoding: 'utf8',
+          timeout: timeoutMs,
+          env: process.env,
+          shell: false,
+        });
+      } catch (spawnErr) {
+        if (ws) appendAudit(ws, 'tool.run.failed', toolName, { error: spawnErr.message });
+        if (!flags.json) process.stdout.write('\r\x1b[K');
+        console.error('Failed to spawn ' + tool.command + ': ' + spawnErr.message);
+        process.exit(1);
+      }
+
+      if (!flags.json) process.stdout.write('\r\x1b[K');
+
+      const ok = spawnResult.status === 0;
+      const stdoutText = spawnResult.stdout || '';
+      const stderrText = spawnResult.stderr || '';
+
+      if (ok) {
+        if (ws)
+          appendAudit(ws, 'tool.run.completed', toolName, {
+            tool_name: toolName,
+            exit_code: spawnResult.status,
+            stdout_chars: stdoutText.length,
+            stderr_chars: stderrText.length,
+            run_at: runAt,
+            finished_at: new Date().toISOString(),
+          });
+      } else {
+        if (ws)
+          appendAudit(ws, 'tool.run.failed', toolName, {
+            tool_name: toolName,
+            exit_code: spawnResult.status,
+            stderr_tail: stderrText.slice(-500),
+            run_at: runAt,
+            finished_at: new Date().toISOString(),
+          });
+      }
+
+      if (flags.json) {
+        out(
+          {
+            ok,
+            tool: toolName,
+            exit_code: spawnResult.status,
+            stdout: stdoutText,
+            stderr: stderrText,
+            run_at: runAt,
+            finished_at: new Date().toISOString(),
+          },
+          true
+        );
+        if (!ok) process.exit(1);
+        return;
+      }
+
+      if (stdoutText) console.log(stdoutText);
+      if (!ok && stderrText) console.error(stderrText.trimEnd());
+      if (!ok) process.exit(1);
+      return;
+    }
+
+    console.error('Unknown tools subcommand: ' + sub + '. Use: list, inspect, run');
     process.exit(1);
   },
 
@@ -1180,8 +1447,14 @@ Commands:
   audit list               List audit receipts
   audit export             Export audit receipts as JSON
   doctor                   Check environment (Node, Ollama, API keys, git)
-  tools list               List available recipes
-  tools run <name> [args]  Run a recipe
+  tools list               List governed tools (tools.json) + built-in recipes
+  tools inspect <name>     Show tool details, parameters, and example
+  tools run <name>         Execute a governed tool
+    --input <text>         Fill {task} template variable
+    --params '{...}'       Fill all template variables (JSON)
+    --dry-run              Show resolved command without executing
+    --cwd <path>           Working directory (default: repo root or cwd)
+    --timeout <ms>         Execution timeout in ms (default: 60000)
   shell                    Interactive REPL
 
 Recipes (use with \`polly run <recipe> <args>\`):
