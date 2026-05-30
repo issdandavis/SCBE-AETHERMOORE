@@ -85,6 +85,21 @@ Usage:
                           with timing; confirms liboqs C bindings are live
 
 ─────────────────────────────────────────────────────────────────────────────
+  BENCH — executable evidence lanes
+─────────────────────────────────────────────────────────────────────────────
+  bench hard-agentic      Run hard agentic pretest matrix
+    [--timeout N]           Default: script default
+    [--filter <id>]         Run one benchmark_id; repeatable
+    [--json]
+    [--open-report]         Open latest Markdown report after execution
+  bench research         Run BrowseComp/GAIA-style local research fixtures
+    [--style <style>]       BrowseComp-style | GAIA-style
+    [--json]
+    [--open-report]
+  bench rubix-browser    Run permission-hypercube browser-control fixture
+    [--json]
+    [--open-report]
+─────────────────────────────────────────────────────────────────────────────
   FLOW LOOP — operator workflow (source checkout required for plan/packetize)
 ─────────────────────────────────────────────────────────────────────────────
   flow plan               Decompose a task into governed flow packets;
@@ -244,6 +259,9 @@ Usage:
   scbe version --json | jq '.version'
   scbe doctor --json | jq '{node:.node,liboqs:.liboqs}'
   scbe liboqs --json | jq '{kem:.kem_algorithm,dsa:.dsa_algorithm}'
+  scbe bench hard-agentic --filter rubix_browser_hypercube --json
+  scbe bench research --style GAIA-style --json
+  scbe bench rubix-browser --open-report
   scbe abacus run --d-h 0.6 --pd 0.2 --json
   scbe flow plan --task "fix the flaky integration test in pipeline14"
   scbe flow continue --max-iter 5
@@ -3419,6 +3437,8 @@ const KNOWN_COMMANDS = [
   'status',
   'liboqs',
   'history',
+  'bench',
+  'benchmark',
   'flow',
   'workspace',
   'agent-bus',
@@ -4000,6 +4020,85 @@ function runSelftest() {
   process.exit(payload.ok ? 0 : 1);
 }
 
+
+const BENCH_TARGETS = {
+  'hard-agentic': {
+    script: 'scripts/benchmark/hard_agentic_benchmark_pretest.py',
+    latestMarkdown: 'artifacts/benchmarks/hard_agentic_pretest/LATEST.md',
+    description: 'hard agentic pretest matrix',
+  },
+  research: {
+    script: 'scripts/benchmark/research_agent_fixture_benchmark.py',
+    latestMarkdown: 'artifacts/benchmarks/research_agent_fixtures/LATEST.md',
+    description: 'BrowseComp/GAIA-style local research fixtures',
+  },
+  'rubix-browser': {
+    script: 'scripts/benchmark/rubix_browser_hypercube_benchmark.py',
+    latestMarkdown: 'artifacts/benchmarks/rubix_browser_hypercube/LATEST.md',
+    description: 'permission-hypercube browser-control fixture',
+  },
+};
+
+function openFileBestEffort(targetPath) {
+  const absolute = path.resolve(repoRoot(), targetPath);
+  if (!fs.existsSync(absolute)) {
+    process.stderr.write(`scbe bench: report not found: ${absolute}\n`);
+    return;
+  }
+  if (process.platform === 'win32') {
+    spawnSync('cmd', ['/c', 'start', '', absolute], { stdio: 'ignore' });
+  } else if (process.platform === 'darwin') {
+    spawnSync('open', [absolute], { stdio: 'ignore' });
+  } else {
+    spawnSync('xdg-open', [absolute], { stdio: 'ignore' });
+  }
+}
+
+function printBenchHelp() {
+  process.stdout.write(
+    [
+      'Usage:',
+      '  scbe bench hard-agentic [--timeout N] [--filter <id>] [--json] [--open-report]',
+      '  scbe bench research [--style BrowseComp-style|GAIA-style] [--json] [--open-report]',
+      '  scbe bench rubix-browser [--json] [--open-report]',
+      '',
+      'These are local executable evidence lanes, not public leaderboard scores.',
+      '',
+    ].join('\n')
+  );
+}
+
+function runBench(args) {
+  const sub = args[0] || 'help';
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    printBenchHelp();
+    process.exit(0);
+  }
+  const target = BENCH_TARGETS[sub];
+  if (!target) {
+    process.stderr.write(`scbe bench: unknown lane '${sub}'. Run 'scbe bench help'.\n`);
+    process.exit(2);
+  }
+  const scriptPath = resolveRepoScript(target.script);
+  if (!scriptPath) {
+    process.stderr.write(`scbe bench: missing script ${target.script}\n`);
+    process.exit(2);
+  }
+  const openReport = args.includes('--open-report');
+  const forwarded = args.slice(1).filter((arg) => arg !== '--open-report');
+  const child = spawnSync(pythonCommand(), [scriptPath, ...forwarded], {
+    cwd: repoRoot(),
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  if (child.stdout) process.stdout.write(child.stdout);
+  if (child.stderr) process.stderr.write(child.stderr);
+  if (openReport) {
+    openFileBestEffort(target.latestMarkdown);
+  }
+  if (typeof child.status === 'number') process.exit(child.status);
+  process.exit(1);
+}
 const argv = process.argv.slice(2);
 if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h' || argv[0] === 'help') {
   process.stdout.write(CLI_HELP);
@@ -4051,6 +4150,10 @@ if (argv[0] === 'status') {
 
 if (argv[0] === 'liboqs') {
   runLiboqs(argv.slice(1));
+}
+
+if (argv[0] === 'bench' || argv[0] === 'benchmark') {
+  runBench(argv.slice(1));
 }
 
 if (argv[0] === 'history') {
