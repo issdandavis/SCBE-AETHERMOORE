@@ -1028,6 +1028,7 @@ async function fetchWithTimeout(url, opts, timeoutMs) {
 }
 
 async function tryOllama(prompt) {
+  if (process.env.POLLY_DISABLE_OLLAMA === '1') return null;
   const base = (process.env.OLLAMA_BASE_URL || 'http://localhost:11434').replace(/\/$/, '');
   const apiKey = process.env.OLLAMA_API_KEY || '';
   const model = process.env.OLLAMA_MODEL || 'llama3.2';
@@ -1192,7 +1193,7 @@ function templateFallback(prompt) {
     '- [ ] Assign priorities',
     '- [ ] Set success criteria',
     '',
-    '_Configure Ollama (localhost:11434), ANTHROPIC_API_KEY, or OPENAI_API_KEY to get real model responses._',
+    '_Configure Ollama (localhost:11434), free router keys, ANTHROPIC_API_KEY, or OPENAI_API_KEY to get real model responses._',
   ].join('\n');
   return { text, model_used: 'template', source: 'fallback' };
 }
@@ -1202,6 +1203,7 @@ async function routeToModel(prompt) {
   if (ollama && ollama.text) return ollama;
   const terminalRouter = await tryTerminalAiRouter(prompt);
   if (terminalRouter && terminalRouter.text) return terminalRouter;
+  if (process.env.POLLY_DISABLE_PAID_APIS === '1') return templateFallback(prompt);
   const anthropic = await tryAnthropic(prompt);
   if (anthropic && anthropic.text) return anthropic;
   const openai = await tryOpenAI(prompt);
@@ -2510,9 +2512,13 @@ Global flags:
 
 LLM routing priority:
   1. Ollama (localhost:11434, llama3.2, 8s timeout)
-  2. Anthropic (ANTHROPIC_API_KEY, claude-haiku-4-5-20251001, 30s)
-  3. OpenAI   (OPENAI_API_KEY, gpt-4o-mini, 30s)
-  4. Template fallback (no model required)
+  2. Free-first terminal router (Cerebras -> Groq -> HuggingFace)
+  3. Anthropic (ANTHROPIC_API_KEY, claude-haiku-4-5-20251001, 30s)
+  4. OpenAI   (OPENAI_API_KEY, gpt-4o-mini, 30s)
+  5. Template fallback (no model required)
+
+Set POLLY_DISABLE_PAID_APIS=1 to stop after Ollama/free-router attempts.
+Set POLLY_DISABLE_OLLAMA=1 to skip local/Ollama-cloud routing.
 
 Examples:
   polly init MyProject

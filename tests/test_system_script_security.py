@@ -385,6 +385,13 @@ def test_terminal_ai_router_guards_endpoint_and_output_path():
     )
     assert groq == "https://api.groq.com/openai/v1/models"
 
+    huggingface_router = terminal_ai_router._validate_provider_endpoint(
+        "https://router.huggingface.co/v1/chat/completions",
+        "huggingface",
+        {},
+    )
+    assert huggingface_router == "https://router.huggingface.co/v1/chat/completions"
+
     try:
         terminal_ai_router._validate_provider_endpoint("http://localhost:8000", "openai", {})
     except ValueError as exc:
