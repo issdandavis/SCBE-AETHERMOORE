@@ -41,6 +41,18 @@ node packages/agent-bus/bin/scbe-agent-bus.cjs rubix-browser plan `
   --json
 ```
 
+Run the CI-safe headless preflight benchmark:
+
+```powershell
+node packages/agent-bus/bin/scbe-agent-bus.cjs rubix-browser bench --headless --json
+```
+
+Use headed mode only for replay/debug labels over the same deterministic cases:
+
+```powershell
+node packages/agent-bus/bin/scbe-agent-bus.cjs rubix-browser bench --headed --json
+```
+
 ## Bus Tool
 
 `packages/agent-bus/tools.json` registers:
@@ -49,6 +61,15 @@ node packages/agent-bus/bin/scbe-agent-bus.cjs rubix-browser plan `
 {
   "name": "rubix-browser-plan",
   "description": "Plan a browser-control route as permission-defined Rubix/tesseract faces with blocked-move audit evidence"
+}
+```
+
+and:
+
+```json
+{
+  "name": "rubix-browser-bench",
+  "description": "Run the headless Rubix browser permission-geometry benchmark for CI-safe browser-control preflight"
 }
 ```
 
