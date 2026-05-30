@@ -3,6 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
+const { tmpdir } = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
@@ -240,4 +241,63 @@ test('polly audit verify fails on tampered receipt', () => {
   } finally {
     cleanup(dir);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Test 11: polly tools list shows governed tools when POLLY_TOOLS_JSON is set
+// ---------------------------------------------------------------------------
+test('polly tools list shows governed tools when POLLY_TOOLS_JSON is set', async (t) => {
+  // Create a minimal tools.json in temp dir
+  const tmpTools = path.join(tmpdir(), 'polly-tools-test-' + Date.now() + '.json');
+  fs.writeFileSync(
+    tmpTools,
+    JSON.stringify([{ name: 'test-tool', description: 'A test governed tool', command: 'echo', args: ['hello', '{task}'] }])
+  );
+
+  const result = spawnSync('node', [BIN, 'tools', 'list', '--json'], {
+    encoding: 'utf8',
+    env: Object.assign({}, process.env, { POLLY_TOOLS_JSON: tmpTools }),
+  });
+
+  fs.unlinkSync(tmpTools);
+
+  assert.strictEqual(result.status, 0);
+  const data = JSON.parse(result.stdout);
+  assert.ok(Array.isArray(data.tools));
+  assert.ok(data.tools.some((t) => t.name === 'test-tool'));
+  assert.ok(data.tools.some((t) => t.kind === 'governed'));
+});
+
+// ---------------------------------------------------------------------------
+// Test 12: polly tools inspect unknown tool exits 1
+// ---------------------------------------------------------------------------
+test('polly tools inspect unknown tool exits 1', async (t) => {
+  const result = spawnSync('node', [BIN, 'tools', 'inspect', 'no-such-tool-xyz'], {
+    encoding: 'utf8',
+  });
+  assert.strictEqual(result.status, 1);
+});
+
+// ---------------------------------------------------------------------------
+// Test 13: polly tools run dry-run shows command without executing
+// ---------------------------------------------------------------------------
+test('polly tools run dry-run shows command without executing', async (t) => {
+  const tmpTools = path.join(tmpdir(), 'polly-tools-dry-' + Date.now() + '.json');
+  fs.writeFileSync(
+    tmpTools,
+    JSON.stringify([{ name: 'echo-tool', description: 'Echo test', command: 'echo', args: ['hello', '{task}'] }])
+  );
+
+  const result = spawnSync('node', [BIN, 'tools', 'run', 'echo-tool', '--dry-run', '--input', 'world', '--json'], {
+    encoding: 'utf8',
+    env: Object.assign({}, process.env, { POLLY_TOOLS_JSON: tmpTools }),
+  });
+
+  fs.unlinkSync(tmpTools);
+
+  assert.strictEqual(result.status, 0);
+  const data = JSON.parse(result.stdout);
+  assert.strictEqual(data.dry_run, true);
+  assert.deepStrictEqual(data.args, ['hello', 'world']);
+  assert.strictEqual(data.unresolved_placeholders.length, 0);
 });
