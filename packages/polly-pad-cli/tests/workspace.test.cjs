@@ -301,3 +301,73 @@ test('polly tools run dry-run shows command without executing', async (t) => {
   assert.deepStrictEqual(data.args, ['hello', 'world']);
   assert.strictEqual(data.unresolved_placeholders.length, 0);
 });
+
+// ---------------------------------------------------------------------------
+// Test 11: polly cross pack/unpack round-trips UTF-8 through hex
+// ---------------------------------------------------------------------------
+test('polly cross pack/unpack round-trips UTF-8 through hex', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossPackTest']);
+    const source = 'def add(x, y): return x + y';
+    const packResult = run(dir, ['cross', 'pack', '--text', source, '--lang', 'python']);
+    assert.strictEqual(packResult.status, 0, 'cross pack should exit 0\nstdout: ' + packResult.stdout + '\nstderr: ' + packResult.stderr);
+    const packet = JSON.parse(packResult.stdout);
+    assert.strictEqual(packet.schema_version, 'polly_cross_packet_v1');
+    assert.strictEqual(packet.language, 'python');
+    assert.strictEqual(Buffer.from(packet.hex, 'hex').toString('utf8'), source);
+    assert.match(packet.sha256, /^[a-f0-9]{64}$/);
+    assert.match(packet.semantic_hex, /^[a-f0-9]{12}$/);
+    assert.notStrictEqual(packet.semantic_hex, '000000000000');
+
+    const unpackResult = run(dir, ['cross', 'unpack', '--hex', packet.hex, '--json']);
+    assert.strictEqual(unpackResult.status, 0, 'cross unpack should exit 0');
+    const unpacked = JSON.parse(unpackResult.stdout);
+    assert.strictEqual(unpacked.text, source);
+    assert.strictEqual(unpacked.verified_sha256, packet.sha256);
+
+    const auditResult = run(dir, ['audit', 'list', '--json']);
+    const events = JSON.parse(auditResult.stdout);
+    assert.ok(events.some((event) => event.action === 'cross.pack'));
+    assert.ok(events.some((event) => event.action === 'cross.unpack'));
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 12: polly cross op broadcasts bounded operation templates
+// ---------------------------------------------------------------------------
+test('polly cross op broadcasts bounded operation templates', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossOpTest']);
+    const result = run(dir, ['cross', 'op', 'add', '--json']);
+    assert.strictEqual(result.status, 0, 'cross op should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.schema_version, 'polly_cross_op_v1');
+    assert.strictEqual(payload.translations.python, 'result = x + y');
+    assert.strictEqual(payload.translations.rust, 'let result = x + y;');
+    assert.strictEqual(Buffer.from(payload.packets.python.hex, 'hex').toString('utf8'), payload.translations.python);
+    assert.match(payload.packets.typescript.semantic_hex, /^[a-f0-9]{12}$/);
+    assert.notStrictEqual(payload.packets.typescript.semantic_hex, '000000000000');
+  } finally {
+    cleanup(dir);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Test 13: polly cross op can target one language
+// ---------------------------------------------------------------------------
+test('polly cross op can target one language', () => {
+  const dir = mktemp();
+  try {
+    run(dir, ['init', 'CrossTargetTest']);
+    const result = run(dir, ['cross', 'op', 'xor', '--to', 'go', '--json']);
+    assert.strictEqual(result.status, 0, 'cross op --to should exit 0');
+    const payload = JSON.parse(result.stdout);
+    assert.deepStrictEqual(Object.keys(payload.translations), ['go']);
+    assert.strictEqual(payload.translations.go, 'result := x ^ y');
+  } finally {
+    cleanup(dir);
+  }});
