@@ -1960,6 +1960,24 @@ export async function runAgentBusTerminalUi(options: AgentBusClientOptions = {})
 }
 
 export {
+  type BoardDomain,
+  type BoardOccupancy,
+  type BoardKnownState,
+  type ClearanceLevel,
+  type BoardCell,
+  type BoardState,
+  type BoardPlacement,
+  type BoardedChain,
+  type BoardedChainRunResult,
+  createBoard,
+  getCell,
+  setCell,
+  canEnter,
+  measureTickDistance,
+  runBoardedChain,
+} from './board-fields.js';
+
+export {
   type ReactionSpec,
   type ReactionChain,
   type ReactionStepStatus,
