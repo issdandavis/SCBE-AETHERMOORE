@@ -100,11 +100,18 @@ describe('queue', () => {
     enqueueEvent({ task: 'a' }, { repoRoot: process.cwd() });
     const handle = startQueueWorker(100);
 
-    // Wait for worker to pick it up
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Wait for worker to pick it up. Full-suite Windows runs can starve this
+    // timeout briefly, so poll the queue state instead of relying on one sleep.
+    const deadline = Date.now() + 2_000;
+    let status = getQueueStatus();
+    while (Date.now() < deadline) {
+      status = getQueueStatus();
+      if (status.pending === 0 && status.completed + status.failed === 1) break;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+
     handle.stop();
 
-    const status = getQueueStatus();
     expect(status.pending).toBe(0);
     expect(status.completed + status.failed).toBe(1);
   });
