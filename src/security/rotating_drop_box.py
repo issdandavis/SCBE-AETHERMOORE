@@ -30,7 +30,9 @@ def _fingerprint(value: str | bytes, salt: bytes) -> str:
 
 
 def _derive_next_key(current: bytes, lease_id: str, returned_at: datetime, nonce: bytes) -> bytes:
-    payload = b"|".join([b"SCBE_DROP_BOX_ROTATE_V1", lease_id.encode("utf-8"), _iso(returned_at).encode("utf-8"), nonce])
+    payload = b"|".join(
+        [b"SCBE_DROP_BOX_ROTATE_V1", lease_id.encode("utf-8"), _iso(returned_at).encode("utf-8"), nonce]
+    )
     return hmac.new(current, payload, hashlib.sha256).digest()
 
 

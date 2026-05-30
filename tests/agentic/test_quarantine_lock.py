@@ -86,12 +86,8 @@ def test_deny_is_terminal_closed_state_with_no_tools() -> None:
 
 def test_time_dilation_is_bounded_and_deterministic_by_pressure() -> None:
     policy = QuarantineLockPolicy(max_time_dilation_factor=9)
-    low = create_quarantine_lock(
-        "QUARANTINE", suspicion=0.1, harmonic_cost=1.0, policy=policy
-    )
-    high = create_quarantine_lock(
-        "QUARANTINE", suspicion=0.9, harmonic_cost=8.0, policy=policy
-    )
+    low = create_quarantine_lock("QUARANTINE", suspicion=0.1, harmonic_cost=1.0, policy=policy)
+    high = create_quarantine_lock("QUARANTINE", suspicion=0.9, harmonic_cost=8.0, policy=policy)
     malicious = create_quarantine_lock(
         "QUARANTINE",
         suspicion=0.1,
@@ -114,11 +110,7 @@ def test_apply_quarantine_lock_restricts_dcp_tools_and_timeouts() -> None:
         ToolEntry(name="shell"),
         ToolEntry(name="deploy"),
     ]
-    dcp.completion_gates = [
-        CompletionGate(
-            id="unit", description="unit tests", command="pytest", timeout_seconds=120
-        )
-    ]
+    dcp.completion_gates = [CompletionGate(id="unit", description="unit tests", command="pytest", timeout_seconds=120)]
     receipt = create_quarantine_lock("QUARANTINE", suspicion=0.8, harmonic_cost=4.0)
 
     apply_quarantine_lock_to_dcp(dcp, receipt)
@@ -135,11 +127,7 @@ def test_apply_quarantine_lock_restricts_dcp_tools_and_timeouts() -> None:
 def test_apply_deny_lock_denies_every_dcp_tool() -> None:
     dcp = create_dcp("deny all", GoalSpec(description="closed state"))
     dcp.tools = [ToolEntry(name="read"), ToolEntry(name="verify")]
-    dcp.completion_gates = [
-        CompletionGate(
-            id="unit", description="unit tests", command="pytest", timeout_seconds=120
-        )
-    ]
+    dcp.completion_gates = [CompletionGate(id="unit", description="unit tests", command="pytest", timeout_seconds=120)]
 
     apply_quarantine_lock_to_dcp(dcp, create_quarantine_lock("DENY"))
 

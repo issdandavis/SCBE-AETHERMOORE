@@ -4,6 +4,7 @@ All tests use a monkeypatched _call_agent stub so they run in CI without
 any API keys. The stub delegates to scbe_repair (the known-good reference)
 to produce correct responses for each task.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -47,9 +48,7 @@ def test_agent_lane_structure_with_mocked_api(tmp_path: Path, monkeypatch) -> No
     module = _load_module()
     monkeypatch.setattr(module, "_call_agent", _make_stub_call_agent(module))
 
-    report = module.build_report(
-        out_dir=tmp_path, run_id="pytest-agent", agent_provider="cerebras"
-    )
+    report = module.build_report(out_dir=tmp_path, run_id="pytest-agent", agent_provider="cerebras")
 
     # Existing summary keys must be present and unaffected
     assert report["summary"]["decision"] == "PASS"
@@ -97,9 +96,7 @@ def test_agent_lane_passes_all_tasks_with_correct_stub(tmp_path: Path, monkeypat
     module = _load_module()
     monkeypatch.setattr(module, "_call_agent", _make_stub_call_agent(module))
 
-    report = module.build_report(
-        out_dir=tmp_path, run_id="pytest-agent-pass", agent_provider="cerebras"
-    )
+    report = module.build_report(out_dir=tmp_path, run_id="pytest-agent-pass", agent_provider="cerebras")
 
     ag = report["agent_summary"]
     assert ag["agent_test_passes"] == report["summary"]["task_count"]
