@@ -80,6 +80,8 @@ Provider-neutral language:
 
 > The Secretary of Commerce may establish one or more commercial satellite or terrestrial connectivity agreements for Circular Compute Nodes, provided that each provider operates as a transport layer only and complies with program data-sovereignty, privacy, uptime, and audit requirements.
 
+Implementation appendix: `docs/policy/CIRCULAR_COMPUTE_CONNECTIVITY_MOU_DRAFT_2026-05-31.md`.
+
 ### Governance and Runtime Controls
 
 All nodes should include approved governance frameworks for safe and auditable AI inference. Minimum controls:
@@ -178,6 +180,7 @@ Assumptions requiring further validation:
 - Node throughput, concurrency, and cost-per-token.
 - Starlink or other provider bandwidth guarantees, data-sovereignty terms, and federal pricing.
 - Legal viability of voter-linked access and equal-protection boundaries.
+- Current public Starlink GSA pricing is materially higher than the low-cost draft MOU numbers: the current planning zone is about $2,600 hardware plus $3,100-$18,200/year for fixed Priority service, depending on data tier. Lower numbers should be treated as bulk-negotiation targets, not public-market baselines.
 
 ## SCBE Product Hook
 
@@ -198,7 +201,7 @@ Near-term product surfaces:
 1. Build a source-backed fact matrix with official sources and dated access notes.
 2. Replace placeholder costs with quote-backed ranges.
 3. Produce one technical node spec with conservative low, expected, and high capacity bands.
-4. Draft a provider-neutral connectivity MOU.
+4. Validate the provider-neutral connectivity MOU against real procurement and service pricing.
 5. Draft a one-page policymaker brief and a two-page university partner brief.
 6. Map SCBE modules to the governance and runtime sections without overclaiming exclusivity.
 
