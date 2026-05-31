@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "scbe-govern"
+version = "0.1.0"
+description = "SCBE L12 harmonic wall governance SDK — drop-in safety layer for any AI agent framework"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+langchain = ["langchain-core>=0.1"]
+dev = ["pytest>=7", "black>=24", "flake8>=6"]
+
+[project.urls]
+Homepage = "https://github.com/issdandavis/SCBE-AETHERMOORE"
+Repository = "https://github.com/issdandavis/SCBE-AETHERMOORE"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["scbe_govern*"]

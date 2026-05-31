@@ -4,6 +4,8 @@ SCBE n8n Bridge — FastAPI service connecting n8n workflows to SCBE Web Agent
 
 Endpoints:
   POST /v1/governance/scan        — Semantic antivirus scan
+  POST /v1/govern/check           — L12 harmonic wall: single command → tier+score
+  POST /v1/govern/batch           — L12 harmonic wall: list of commands in one call
   GET  /v1/automations/health     — Self-hosted automation hub health
   GET  /v1/automations/rules      — List local automation rules
   POST /v1/automations/rules      — Register local automation rule
@@ -66,6 +68,19 @@ try:
 except ImportError:
     print("pip install fastapi uvicorn  # required for n8n bridge")
     raise
+
+try:
+    from scripts.benchmark.scbe_governance_core import (
+        semantic_distance as _gov_d_H,
+        danger_drift as _gov_pd,
+        harmonic_score as _gov_score,
+        risk_tier as _gov_tier,
+        atomic_role_for_command as _gov_role,
+    )
+
+    _GOV_CORE_AVAILABLE = True
+except Exception:
+    _GOV_CORE_AVAILABLE = False
 
 from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent import (
     SemanticAntivirus,
@@ -240,6 +255,27 @@ class ScanRequest(BaseModel):
     content: str
     platforms: Optional[List[str]] = None
     scan_mode: str = "full"
+
+
+class GoverCheckRequest(BaseModel):
+    command: str = Field(..., description="Shell command or agent action to score")
+    context: Optional[str] = Field(None, description="Optional surrounding context")
+    agent_id: Optional[str] = Field(None, description="Optional agent identifier for audit log")
+
+
+class GoverCheckResponse(BaseModel):
+    tier: str
+    score: float
+    d_H: float
+    pd: float
+    role: str
+    command: str
+    agent_id: Optional[str]
+
+
+class GoverBatchRequest(BaseModel):
+    commands: List[str] = Field(..., description="List of commands to score")
+    agent_id: Optional[str] = Field(None)
 
 
 class TongueEncodeRequest(BaseModel):
@@ -1054,6 +1090,60 @@ async def governance_scan(req: ScanRequest, x_api_key: Optional[str] = Header(No
     _check_key(x_api_key)
     profile = _antivirus.scan(req.content)
     return profile.to_dict()
+
+
+@app.post("/v1/govern/check", response_model=GoverCheckResponse)
+async def govern_check(req: GoverCheckRequest, x_api_key: Optional[str] = Header(None)):
+    """L12 harmonic wall score for a single command or agent action.
+
+    Returns tier (ALLOW / QUARANTINE / DENY), score ∈ (0,1], and the
+    component distances so callers can log full governance provenance.
+    No API key required in dev mode (SCBE_API_KEYS not set); required in prod.
+    """
+    if _API_KEYS - {"scbe-dev-key", "test-key"}:
+        _check_key(x_api_key)
+    if not _GOV_CORE_AVAILABLE:
+        raise HTTPException(status_code=503, detail="scbe_governance_core not importable")
+    d_H = _gov_d_H(req.command)
+    pd = _gov_pd(req.command)
+    score = _gov_score(d_H, pd)
+    tier = _gov_tier(score)
+    role, _ = _gov_role(req.command)
+    return GoverCheckResponse(
+        tier=tier,
+        score=round(score, 4),
+        d_H=round(d_H, 4),
+        pd=round(pd, 4),
+        role=role,
+        command=req.command,
+        agent_id=req.agent_id,
+    )
+
+
+@app.post("/v1/govern/batch")
+async def govern_batch(req: GoverBatchRequest, x_api_key: Optional[str] = Header(None)):
+    """Score a list of commands in one call. Returns list in same order."""
+    if _API_KEYS - {"scbe-dev-key", "test-key"}:
+        _check_key(x_api_key)
+    if not _GOV_CORE_AVAILABLE:
+        raise HTTPException(status_code=503, detail="scbe_governance_core not importable")
+    results = []
+    for cmd in req.commands:
+        d_H = _gov_d_H(cmd)
+        pd = _gov_pd(cmd)
+        score = _gov_score(d_H, pd)
+        role, _ = _gov_role(cmd)
+        results.append(
+            {
+                "command": cmd,
+                "tier": _gov_tier(score),
+                "score": round(score, 4),
+                "d_H": round(d_H, 4),
+                "pd": round(pd, 4),
+                "role": role,
+            }
+        )
+    return {"results": results, "agent_id": req.agent_id, "count": len(results)}
 
 
 @app.post("/v1/tongue/encode")
