@@ -466,5 +466,28 @@
     "description": "Record an encounter in an agent life ledger. Detects known vs new persons, tracks alignment and interaction history. Provide {task} as --ledger <path> --agent-id <id> [--alignment <float>].",
     "command": "node",
     "args": ["packages/agent-bus/scripts/life_ledger_cli.cjs", "encounter", "--ledger", "{task}"]
+    "name": "rubix-browser-plan",
+    "description": "Plan a browser-control route as permission-defined Rubix/tesseract faces with blocked-move audit evidence",
+    "command": "node",
+    "args": [
+      "packages/agent-bus/bin/scbe-agent-bus.cjs",
+      "rubix-browser",
+      "plan",
+      "--task",
+      "{task}",
+      "--json"
+    ]
+  },
+  {
+    "name": "rubix-browser-bench",
+    "description": "Run the headless Rubix browser permission-geometry benchmark for CI-safe browser-control preflight",
+    "command": "node",
+    "args": [
+      "packages/agent-bus/bin/scbe-agent-bus.cjs",
+      "rubix-browser",
+      "bench",
+      "--headless",
+      "--json"
+    ]
   }
 ]

@@ -21,6 +21,10 @@ scbe demo --json
 scbe selftest
 scbe doctor --json
 scbe credits
+scbe do "build the browser benchmark adapter and prove it" --squad --loops 6 --land every-stage --json
+scbe work init --objective "cross language compile lane" --json
+scbe agent spawn --workflow <id> --role tester --mandate "prove fixtures" --json
+scbe land create --workflow <id> --summary "stage verified" --json
 scbe shell
 scbe shell --squad
 scbe run "npm test"
@@ -54,6 +58,15 @@ The same binary is also exposed as `geoseal` and `scbe-geoseal`.
 - `shell`: opens the SCBE terminal wrapper. `shell --squad` routes plain
   English turns across local/free Ollama, fast Cerebras, and Groq policy/safety
   lanes based on the task text.
+- `do`: creates or resumes a durable Longform Bridge workflow, records the
+  objective, optionally spawns a governed squad contract, and emits a verified
+  landing receipt.
+- `work`: initializes, lists, and verifies local Longform Bridge workflows.
+- `agent spawn`: records an agent role, mandate, allowed-tool contract, and
+  receipt into the workflow ledger.
+- `land create`: writes a protected context landing with mission/invariant/
+  claim-boundary/open-question fields preserved for later resume packs.
+- `shell`: opens the SCBE terminal wrapper.
 - `run`: executes a normal shell command with Compass metadata, Clock metadata,
   GeoSeal governance, exit-code preservation, and JSONL history.
 - `status`: prints local terminal/compiler/router capability status.
@@ -95,6 +108,31 @@ placed between an AI agent and its tools:
 
 This is the buyer-facing promise: put SCBE in front of an AI agent and see what
 it catches, why it caught it, and what audit trail it leaves behind.
+
+## Durable Longform Bridge Lane
+
+The Longform Bridge commands are the CLI-first durable spine for later MCP and
+Temporal wrappers. They are local-first and write a hash-chained JSONL ledger
+under `.scbe/longform/workflows/<workflow_id>/ledger.jsonl`; the raw ledger
+remains the authoritative record.
+
+```bash
+scbe do "build the browser benchmark adapter and prove it" \
+  --squad --loops 6 --land every-stage --resume-policy latest-safe --json
+
+scbe work status --workflow build-the-browser-benchmark-adapter-and-prove-it --json
+```
+
+For manual staged work:
+
+```bash
+scbe work init --objective "cross-language compile lane" --workflow wf-cross --json
+scbe agent spawn --workflow wf-cross --role tester --mandate "prove fixtures" --json
+scbe land create --workflow wf-cross --stage verify --summary "fixtures verified" --json
+```
+
+Each event stores `previous_hash` and `event_hash`, so `scbe work status --json`
+can detect tampering before a future resume or MCP tool call trusts the state.
 
 ## Local Compiler Lane
 

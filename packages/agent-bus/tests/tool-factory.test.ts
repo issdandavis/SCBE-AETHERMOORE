@@ -202,7 +202,7 @@ describe('verifyToolSpec', () => {
     const repoRoot = path.resolve(__dirname, '..', '..', '..');
     const spec: ToolSpec = {
       ...GOOD_NODE_SPEC,
-      args: ['packages/agent-bus/scripts/compass.cjs', '{task}'],
+      args: ['packages/agent-bus/bin/scbe-agent-bus.cjs', '{task}'],
     };
     const r = verifyToolSpec(spec, repoRoot);
     expect(r.ok).toBe(true);

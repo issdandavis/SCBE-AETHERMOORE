@@ -335,6 +335,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", default=str(ARTIFACT_DIR))
     parser.add_argument("--keep-workspace", action="store_true")
+    parser.add_argument("--json", action="store_true", help="Accepted for scbe bench compatibility; output is JSON by default")
     args = parser.parse_args()
 
     report = run_benchmark(keep_workspace=args.keep_workspace)

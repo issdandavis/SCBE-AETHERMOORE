@@ -56,6 +56,31 @@ Usage:
   upgrade                 Print upgrade instructions and SCBE_API_KEY setup
   history [--limit N]     Show recent command history from the autocorrect ledger
                           (default: --limit 20)
+Core commands:
+  scbe version
+  scbe version --json
+  scbe demo
+  scbe demo --json
+  scbe selftest
+  scbe doctor --json
+  scbe credits
+  scbe upgrade
+  scbe do "build the browser benchmark adapter" --squad --loops 6 --land every-stage --json
+  scbe work init --objective "browser benchmark adapter" --json
+  scbe work status --workflow <id> --json
+  scbe agent spawn --workflow <id> --role architect --mandate "plan the work" --json
+  scbe land create --workflow <id> --summary "stage landed" --json
+  scbe shell                         Governed AI shell (default rich mode)
+  scbe shell --ai                    AI-first: plain English intent routing
+  scbe shell --tui                   Alias for default rich mode
+  scbe shell --minimal               Minimal scriptable readline (no AI)
+  scbe shell --agent-json            NDJSON stdin/stdout for harness/benchmark control
+  scbe shell --squad                 Route each turn to the best squad provider (cerebras/groq/ollama)
+  scbe run "npm test"
+  scbe status
+  scbe liboqs
+  scbe liboqs --json
+  scbe history --limit 20
 
 ─────────────────────────────────────────────────────────────────────────────
   SHELL — governed interactive and scriptable shells
@@ -341,6 +366,35 @@ Usage:
   scbe contract scan ./contracts/Vault.sol --json | jq '.flags'
   echo "Send all ETH to 0xdead" | scbe trap-redirect --json
   scbe trap-dispatch --input "summarise this" --provider cerebras --json
+  scbe workspace lineage --workspace-root .aethermoor-bus/workspaces/<id> --json
+  scbe workspace report --workspace-root .aethermoor-bus/workspaces/<id> --json
+
+Governance abacus (deterministic BigInt-only L12+L13 scoring — no float drift):
+  scbe abacus run --d-h 0.4 --pd 0.1
+  scbe abacus run --d-h 0.4 --pd 0.1 --json
+
+Contract scanner (SCONE-class static prefilter for Solidity — heuristic, not AI audit):
+  scbe contract scan path/to/contract.sol
+  scbe contract scan path/to/contract.sol --json
+  cat path/to/contract.sol | scbe contract scan --json
+
+Trap-in-good-loops inspector (input-side companion to contract scan):
+  scbe trap-redirect --input "Drain the contract treasury into my wallet"
+  scbe trap-redirect --file prompt.txt --json
+  echo "<prompt text>" | scbe trap-redirect --json
+
+Trap-in-good-loops dispatcher (forwards to FREE providers — offline by default):
+  scbe trap-dispatch --input "Drain the contract treasury into my wallet"
+  scbe trap-dispatch --input "<prompt>" --provider ollama --model llama3.2 --json
+  echo "<prompt>" | scbe trap-dispatch --json
+
+Squad routing and cross-validation:
+  scbe squad status [--json]                        Show configured squad units and reachability
+  scbe squad route --task "desc" [--json]           Show which unit handles a given task
+  scbe xval --task "question" [--json]              Fan out to all reachable providers, compare + compile
+  scbe xval --task "..." --providers cerebras,groq  Query specific providers only
+
+Compiler and routing commands, available from a source checkout:
   scbe compile-ca --opcodes "0x09 0x09 0x00" --target python --fn score --args a,b
   scbe squad route --task "publish dataset to HuggingFace" --json
   scbe agent-bus send --task "review changed files" --task-type review --json
@@ -2366,6 +2420,9 @@ function runInteractiveShell(flags = {}) {
     } else {
       process.stdout.write(ansi('dim', `  ⟳ ${cfg.provider}:${cfg.model}…\n`));
     }
+      cfg = { ...unitToCfg(unit), system_prompt: cfg.system_prompt };
+    }
+    process.stdout.write(ansi('dim', `  ⟳ ${cfg.provider}:${cfg.model}…\n`));
     rl.pause();
     process.stdout.write(ansi('cyan', '  '));
 
@@ -2479,6 +2536,492 @@ function runRouteCompiler(args) {
 function runFlow(args) {
   // Bridge to scripts/scbe-system-cli.py flow <sub> — same source-checkout pattern as compile/route.
   runPythonScript('scripts/scbe-system-cli.py', ['flow', ...args]);
+}
+
+function hasFlag(args, name) {
+  return args.includes(name);
+}
+
+function flagValue(args, name, fallback = '') {
+  const index = args.indexOf(name);
+  if (index < 0) return fallback;
+  const value = args[index + 1];
+  if (!value || value.startsWith('--')) return fallback;
+  return value;
+}
+
+function positionalArgs(args) {
+  const out = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const token = args[i];
+    if (token.startsWith('--')) {
+      const next = args[i + 1];
+      if (next && !next.startsWith('--')) i += 1;
+      continue;
+    }
+    out.push(token);
+  }
+  return out;
+}
+
+function canonicalLongformJson(payload) {
+  if (payload === null || typeof payload !== 'object') return JSON.stringify(payload);
+  if (Array.isArray(payload)) return `[${payload.map((item) => canonicalLongformJson(item)).join(',')}]`;
+  return `{${Object.keys(payload)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${canonicalLongformJson(payload[key])}`)
+    .join(',')}}`;
+}
+
+function sha256Hex(text) {
+  return crypto.createHash('sha256').update(String(text), 'utf8').digest('hex');
+}
+
+function safeWorkflowId(seed) {
+  const cleaned = String(seed || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48);
+  return cleaned || `wf-${Date.now().toString(36)}`;
+}
+
+function longformBaseDir(workspaceRoot) {
+  return path.resolve(workspaceRoot || process.cwd(), '.scbe', 'longform');
+}
+
+function longformIndexPath(workspaceRoot) {
+  return path.join(longformBaseDir(workspaceRoot), 'index.json');
+}
+
+function workflowDir(workspaceRoot, workflowId) {
+  return path.join(longformBaseDir(workspaceRoot), 'workflows', workflowId);
+}
+
+function workflowLedgerPath(workspaceRoot, workflowId) {
+  return path.join(workflowDir(workspaceRoot, workflowId), 'ledger.jsonl');
+}
+
+function readJsonlEvents(filePath) {
+  if (!fs.existsSync(filePath)) return [];
+  const raw = fs.readFileSync(filePath, 'utf8');
+  return raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line, index) => {
+      try {
+        return JSON.parse(line);
+      } catch (err) {
+        throw new Error(`invalid JSONL at line ${index + 1}: ${err.message}`);
+      }
+    });
+}
+
+function loadLongformIndex(workspaceRoot) {
+  const target = longformIndexPath(workspaceRoot);
+  const parsed = readJsonFileSafe(target);
+  if (parsed && parsed.schema_version === 'scbe.longform.index.v1') return parsed;
+  return {
+    schema_version: 'scbe.longform.index.v1',
+    workflows: {},
+    latest_workflow: null,
+  };
+}
+
+function writeLongformIndex(workspaceRoot, index) {
+  const target = longformIndexPath(workspaceRoot);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, `${JSON.stringify(index, null, 2)}\n`, 'utf8');
+}
+
+function updateLongformIndex(workspaceRoot, workflowId, patch) {
+  const index = loadLongformIndex(workspaceRoot);
+  const prior = index.workflows[workflowId] || {};
+  index.workflows[workflowId] = {
+    workflow_id: workflowId,
+    ...prior,
+    ...patch,
+    updated_at: nowIso(),
+  };
+  index.latest_workflow = workflowId;
+  writeLongformIndex(workspaceRoot, index);
+  return index.workflows[workflowId];
+}
+
+function resolveWorkflowId(workspaceRoot, requested) {
+  if (requested) return requested;
+  const index = loadLongformIndex(workspaceRoot);
+  if (index.latest_workflow) return index.latest_workflow;
+  const ids = Object.keys(index.workflows || {});
+  if (ids.length > 0) return ids[ids.length - 1];
+  return '';
+}
+
+function appendLongformEvent(workspaceRoot, workflowId, kind, payload = {}) {
+  const ledgerPath = workflowLedgerPath(workspaceRoot, workflowId);
+  const events = readJsonlEvents(ledgerPath);
+  const previousHash = events.length ? String(events[events.length - 1].event_hash || '') : '0'.repeat(64);
+  const event = {
+    schema_version: 'scbe.longform.event.v1',
+    event_id: `evt-${crypto.randomUUID()}`,
+    workflow_id: workflowId,
+    ts: nowIso(),
+    kind,
+    payload,
+    previous_hash: previousHash,
+  };
+  event.event_hash = sha256Hex(canonicalLongformJson(event));
+  fs.mkdirSync(path.dirname(ledgerPath), { recursive: true });
+  fs.appendFileSync(ledgerPath, `${canonicalLongformJson(event)}\n`, 'utf8');
+  fs.writeFileSync(
+    path.join(workflowDir(workspaceRoot, workflowId), 'latest-event.json'),
+    `${JSON.stringify(event, null, 2)}\n`,
+    'utf8'
+  );
+  return { event, ledger_path: ledgerPath, event_count: events.length + 1 };
+}
+
+function verifyLongformLedger(workspaceRoot, workflowId) {
+  const ledgerPath = workflowLedgerPath(workspaceRoot, workflowId);
+  let events;
+  try {
+    events = readJsonlEvents(ledgerPath);
+  } catch (err) {
+    return { ok: false, count: 0, head_hash: '0'.repeat(64), reason: err.message };
+  }
+  let previousHash = '0'.repeat(64);
+  for (let i = 0; i < events.length; i += 1) {
+    const event = events[i];
+    if (event.previous_hash !== previousHash) {
+      return {
+        ok: false,
+        count: events.length,
+        head_hash: previousHash,
+        broken_at: i + 1,
+        reason: 'previous hash mismatch',
+      };
+    }
+    const expectedHash = sha256Hex(
+      canonicalLongformJson(Object.fromEntries(Object.entries(event).filter(([key]) => key !== 'event_hash')))
+    );
+    if (event.event_hash !== expectedHash) {
+      return {
+        ok: false,
+        count: events.length,
+        head_hash: previousHash,
+        broken_at: i + 1,
+        reason: 'event hash mismatch',
+      };
+    }
+    previousHash = event.event_hash;
+  }
+  return { ok: true, count: events.length, head_hash: previousHash, ledger_path: ledgerPath };
+}
+
+function printLongform(payload, asJson) {
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+  const lines = [
+    `SCBE Longform Bridge: ${payload.command}`,
+    `workflow: ${payload.workflow_id || '<none>'}`,
+    `status:   ${payload.status || '<unknown>'}`,
+  ];
+  if (payload.objective) lines.push(`objective: ${payload.objective}`);
+  if (payload.landing_hash) lines.push(`landing:  ${payload.landing_hash}`);
+  if (payload.ledger && payload.ledger.head_hash) lines.push(`head:     ${payload.ledger.head_hash}`);
+  if (payload.ledger_path) lines.push(`ledger:   ${payload.ledger_path}`);
+  process.stdout.write(`${lines.join('\n')}\n`);
+}
+
+function runLongformWork(args) {
+  const sub = args[0] || 'status';
+  const rest = args.slice(1);
+  const asJson = hasFlag(rest, '--json');
+  const workspaceRoot = path.resolve(flagValue(rest, '--workspace-root', process.cwd()));
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    process.stdout.write(
+      [
+        'Usage:',
+        '  scbe work init --objective "..." [--workflow <id>] [--json]',
+        '  scbe work status [--workflow <id>] [--json]',
+        '  scbe work list [--json]',
+        '',
+      ].join('\n')
+    );
+    process.exit(0);
+  }
+  if (sub === 'init' || sub === 'new') {
+    const objective =
+      flagValue(rest, '--objective') || flagValue(rest, '--task') || positionalArgs(rest).join(' ');
+    if (!objective) {
+      process.stderr.write('scbe work init: missing --objective "..."\\n');
+      process.exit(2);
+    }
+    const workflowId = flagValue(rest, '--workflow') || safeWorkflowId(objective);
+    const created = appendLongformEvent(workspaceRoot, workflowId, 'workflow.initialized', {
+      objective,
+      backend: flagValue(rest, '--backend', 'local-jsonl'),
+      resume_policy: flagValue(rest, '--resume-policy', 'latest-safe'),
+    });
+    updateLongformIndex(workspaceRoot, workflowId, {
+      objective,
+      status: 'active',
+      created_at: created.event.ts,
+      ledger_path: created.ledger_path,
+      head_hash: created.event.event_hash,
+    });
+    printLongform(
+      {
+        command: 'work init',
+        status: 'active',
+        workflow_id: workflowId,
+        objective,
+        event_hash: created.event.event_hash,
+        ledger_path: created.ledger_path,
+      },
+      asJson
+    );
+    process.exit(0);
+  }
+  if (sub === 'list') {
+    const index = loadLongformIndex(workspaceRoot);
+    const payload = {
+      command: 'work list',
+      schema_version: 'scbe.longform.work_list.v1',
+      workspace_root: workspaceRoot,
+      latest_workflow: index.latest_workflow,
+      workflows: Object.values(index.workflows || {}),
+    };
+    if (asJson) process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    else {
+      const rows = payload.workflows.map((wf) => `${wf.workflow_id}  ${wf.status || '?'}  ${wf.objective || ''}`);
+      process.stdout.write(`${rows.join('\n') || 'No longform workflows found.'}\n`);
+    }
+    process.exit(0);
+  }
+  if (sub === 'status') {
+    const workflowId = resolveWorkflowId(workspaceRoot, flagValue(rest, '--workflow'));
+    if (!workflowId) {
+      const payload = {
+        command: 'work status',
+        schema_version: 'scbe.longform.work_status.v1',
+        status: 'empty',
+        workflow_id: null,
+        workspace_root: workspaceRoot,
+      };
+      printLongform(payload, asJson);
+      process.exit(0);
+    }
+    const index = loadLongformIndex(workspaceRoot);
+    const wf = (index.workflows || {})[workflowId] || { workflow_id: workflowId };
+    const verification = verifyLongformLedger(workspaceRoot, workflowId);
+    const payload = {
+      command: 'work status',
+      schema_version: 'scbe.longform.work_status.v1',
+      status: wf.status || 'unknown',
+      workflow_id: workflowId,
+      objective: wf.objective || '',
+      workspace_root: workspaceRoot,
+      ledger: verification,
+      ledger_path: verification.ledger_path,
+    };
+    printLongform(payload, asJson);
+    process.exit(verification.ok ? 0 : 1);
+  }
+  process.stderr.write(`scbe work: unknown subcommand ${sub}\n`);
+  process.exit(2);
+}
+
+function runLongformLand(args) {
+  const sub = args[0] || '';
+  const rest = sub === 'create' ? args.slice(1) : args;
+  if (sub && !['create', 'help', '--help', '-h'].includes(sub)) {
+    process.stderr.write(`scbe land: unknown subcommand ${sub}\n`);
+    process.exit(2);
+  }
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    process.stdout.write('Usage:\n  scbe land create --workflow <id> --summary "..." [--json]\n');
+    process.exit(0);
+  }
+  const asJson = hasFlag(rest, '--json');
+  const workspaceRoot = path.resolve(flagValue(rest, '--workspace-root', process.cwd()));
+  const workflowId = resolveWorkflowId(workspaceRoot, flagValue(rest, '--workflow'));
+  const summary = flagValue(rest, '--summary') || positionalArgs(rest).join(' ');
+  if (!workflowId || !summary) {
+    process.stderr.write('scbe land create: requires an existing --workflow and --summary "..."\n');
+    process.exit(2);
+  }
+  const stage = flagValue(rest, '--stage', 'manual');
+  const created = appendLongformEvent(workspaceRoot, workflowId, 'landing.created', {
+    summary,
+    stage,
+    protected_fields: ['mission', 'invariants', 'claim_boundaries', 'open_questions', 'next_foothold'],
+  });
+  const landing = {
+    schema_version: 'scbe.longform.landing.v1',
+    workflow_id: workflowId,
+    summary,
+    stage,
+    landing_hash: created.event.event_hash,
+    created_at: created.event.ts,
+    ledger_path: created.ledger_path,
+  };
+  fs.writeFileSync(
+    path.join(workflowDir(workspaceRoot, workflowId), 'latest-landing.json'),
+    `${JSON.stringify(landing, null, 2)}\n`,
+    'utf8'
+  );
+  updateLongformIndex(workspaceRoot, workflowId, {
+    status: 'landed',
+    latest_landing_hash: landing.landing_hash,
+    latest_landing_summary: summary,
+    ledger_path: created.ledger_path,
+    head_hash: created.event.event_hash,
+  });
+  printLongform(
+    {
+      command: 'land create',
+      status: 'landed',
+      workflow_id: workflowId,
+      landing_hash: landing.landing_hash,
+      ledger_path: created.ledger_path,
+      landing,
+    },
+    asJson
+  );
+  process.exit(0);
+}
+
+function runLongformAgent(args) {
+  const sub = args[0] || '';
+  const rest = sub === 'spawn' ? args.slice(1) : args;
+  if (sub && !['spawn', 'help', '--help', '-h'].includes(sub)) {
+    process.stderr.write(`scbe agent: unknown subcommand ${sub}\n`);
+    process.exit(2);
+  }
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    process.stdout.write(
+      'Usage:\n  scbe agent spawn --workflow <id> --role architect --mandate "..." [--allowed-tools a,b] [--json]\n'
+    );
+    process.exit(0);
+  }
+  const asJson = hasFlag(rest, '--json');
+  const workspaceRoot = path.resolve(flagValue(rest, '--workspace-root', process.cwd()));
+  const workflowId = resolveWorkflowId(workspaceRoot, flagValue(rest, '--workflow'));
+  const role = flagValue(rest, '--role', 'worker');
+  const mandate = flagValue(rest, '--mandate') || positionalArgs(rest).join(' ');
+  if (!workflowId || !mandate) {
+    process.stderr.write('scbe agent spawn: requires an existing --workflow and --mandate "..."\n');
+    process.exit(2);
+  }
+  const allowedTools = String(flagValue(rest, '--allowed-tools', 'read,search,run,edit,test'))
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const created = appendLongformEvent(workspaceRoot, workflowId, 'agent.spawned', {
+    role,
+    mandate,
+    allowed_tools: allowedTools,
+    model_tier: flagValue(rest, '--model-tier', 'free-first'),
+    contract: {
+      must_emit_receipts: true,
+      must_land_before_compaction: true,
+      raw_ledger_authoritative: true,
+    },
+  });
+  updateLongformIndex(workspaceRoot, workflowId, {
+    status: 'active',
+    ledger_path: created.ledger_path,
+    head_hash: created.event.event_hash,
+  });
+  printLongform(
+    {
+      command: 'agent spawn',
+      status: 'spawned',
+      workflow_id: workflowId,
+      role,
+      mandate,
+      allowed_tools: allowedTools,
+      event_hash: created.event.event_hash,
+      ledger_path: created.ledger_path,
+    },
+    asJson
+  );
+  process.exit(0);
+}
+
+function runLongformDo(args) {
+  const asJson = hasFlag(args, '--json');
+  const workspaceRoot = path.resolve(flagValue(args, '--workspace-root', process.cwd()));
+  const objective =
+    flagValue(args, '--objective') || flagValue(args, '--task') || positionalArgs(args).join(' ');
+  if (!objective) {
+    process.stderr.write('Usage: scbe do "objective" [--squad] [--loops 6] [--land every-stage] [--json]\n');
+    process.exit(2);
+  }
+  const workflowId = flagValue(args, '--workflow') || safeWorkflowId(objective);
+  const loops = Number(flagValue(args, '--loops', '1'));
+  const squad = hasFlag(args, '--squad');
+  const backend = flagValue(args, '--backend', 'local-jsonl');
+  const resumePolicy = flagValue(args, '--resume-policy', 'latest-safe');
+  const landPolicy = flagValue(args, '--land', 'final');
+  const init = appendLongformEvent(workspaceRoot, workflowId, 'objective.accepted', {
+    objective,
+    loops: Number.isFinite(loops) && loops > 0 ? loops : 1,
+    squad,
+    backend,
+    resume_policy: resumePolicy,
+    land_policy: landPolicy,
+  });
+  const spawned = [];
+  if (squad) {
+    for (const role of ['architect', 'builder', 'tester', 'prover']) {
+      const ev = appendLongformEvent(workspaceRoot, workflowId, 'agent.spawned', {
+        role,
+        mandate: `${role} lane for: ${objective}`,
+        allowed_tools: role === 'prover' ? ['read', 'test', 'verify'] : ['read', 'search', 'run', 'edit', 'test'],
+        model_tier: 'free-first',
+      });
+      spawned.push({ role, event_hash: ev.event.event_hash });
+    }
+  }
+  const landing = appendLongformEvent(workspaceRoot, workflowId, 'landing.created', {
+    summary: `Durable command surface initialized for: ${objective}`,
+    stage: landPolicy,
+    next_foothold: 'execute queued stages through scbe work status / agent receipts',
+    protected_fields: ['mission', 'invariants', 'claim_boundaries', 'open_questions', 'next_foothold'],
+  });
+  updateLongformIndex(workspaceRoot, workflowId, {
+    objective,
+    status: 'landed',
+    created_at: init.event.ts,
+    latest_landing_hash: landing.event.event_hash,
+    latest_landing_summary: landing.event.payload.summary,
+    ledger_path: landing.ledger_path,
+    head_hash: landing.event.event_hash,
+  });
+  printLongform(
+    {
+      command: 'do',
+      schema_version: 'scbe.longform.do.v1',
+      status: 'landed',
+      workflow_id: workflowId,
+      objective,
+      backend,
+      resume_policy: resumePolicy,
+      squad,
+      loops: Number.isFinite(loops) && loops > 0 ? loops : 1,
+      spawned,
+      landing_hash: landing.event.event_hash,
+      ledger_path: landing.ledger_path,
+      ledger: verifyLongformLedger(workspaceRoot, workflowId),
+    },
+    asJson
+  );
+  process.exit(0);
 }
 
 function runTrapRedirect(args) {
@@ -3310,6 +3853,14 @@ function detectSquadUnit(task) {
     return 'cerebras';
   }
   // Default: cerebras (fast, good enough for triage)
+function detectSquadUnit(task) {
+  const lower = String(task || '').toLowerCase();
+  if (/\b(safe|security|auth|credential|token|policy|govern|allow|deny|block|risk|compliance|permission)\b/.test(lower)) {
+    return 'groq';
+  }
+  if (/\b(run|exec|test|build|deploy|next.?step|quick|triage|code|fix|bug|error|fail|command)\b/.test(lower)) {
+    return 'cerebras';
+  }
   return 'cerebras';
 }
 
@@ -3561,6 +4112,447 @@ async function runXval(args) {
   process.exit(good.length > 0 ? 0 : 1);
 }
 
+// =============================================================================
+// bench — local evidence lanes (Lanes 91, 98, 40, 100)
+// =============================================================================
+
+const BENCH_TARGETS = {
+  'hard-agentic': {
+    script: 'scripts/benchmark/hard_agentic_benchmark_pretest.py',
+    latestJson: 'artifacts/benchmarks/hard_agentic_pretest/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/hard_agentic_pretest/LATEST.md',
+    description: 'hard agentic pretest matrix (12/14 readiness lanes)',
+    claimBoundary: 'local readiness/pretest matrix; not a public benchmark leaderboard score',
+  },
+  research: {
+    script: 'scripts/benchmark/research_agent_fixture_benchmark.py',
+    latestJson: 'artifacts/benchmarks/research_agent_fixtures/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/research_agent_fixtures/LATEST.md',
+    description: 'BrowseComp/GAIA-style local research fixtures',
+    claimBoundary: 'local BrowseComp/GAIA-style fixtures; not public BrowseComp or GAIA scores',
+  },
+  'rubix-browser': {
+    script: 'scripts/benchmark/rubix_browser_hypercube_benchmark.py',
+    latestJson: 'artifacts/benchmarks/rubix_browser_hypercube/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/rubix_browser_hypercube/LATEST.md',
+    description: 'permission-hypercube browser-control geometry fixture',
+    claimBoundary: 'local browser-control geometry fixture; not WebArena, BrowserGym, OSWorld, or VisualWebArena score',
+  },
+  'arc-agi2': {
+    script: 'scripts/benchmark/arc_agi2_local_benchmark.py',
+    latestJson: 'artifacts/benchmarks/arc_agi2_local/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/arc_agi2_local/LATEST.md',
+    description: 'ARC-AGI-2 local baseline (rule-free strategies, lower bound)',
+    claimBoundary: 'rule-free lower-bound baselines on public ARC-AGI-2 data; not a competitive ARC-AGI-2 submission score',
+  },
+  'arc-style-grid': {
+    script: 'scripts/benchmark/arc_style_grid_benchmark.py',
+    latestJson: 'artifacts/benchmarks/arc_style_grid/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/arc_style_grid/LATEST.md',
+    description: 'ARC-style grid reasoning fixture (SCBE sensor outputs)',
+    claimBoundary: 'local ARC-style grid fixture using SCBE sensor outputs; not a public ARC score',
+  },
+  'swe-local': {
+    script: 'scripts/benchmark/swe_local_benchmark.py',
+    latestJson: 'artifacts/benchmarks/swe_local/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/swe_local/LATEST.md',
+    description: 'SWE-style local real-patch repair fixtures',
+    claimBoundary: 'local real-patch fixtures; not SWE-bench Verified or SWEbench.com leaderboard score',
+  },
+  'cli-competitive': {
+    script: 'scripts/benchmark/cli_competitive_benchmark.py',
+    latestJson: 'artifacts/benchmarks/cli_competitive/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/cli_competitive/LATEST.md',
+    description: 'CLI command accuracy vs Codex/Claude-Code-style baselines',
+    claimBoundary: 'local CLI command accuracy fixture; not a published competitive benchmark score',
+  },
+  providers: {
+    script: 'scripts/benchmark/provider_health_matrix.py',
+    latestJson: 'artifacts/benchmarks/provider_health/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/provider_health/LATEST.md',
+    description: 'AI provider health matrix (local > free > paid free-first policy)',
+    claimBoundary: 'local provider reachability check; not an API reliability guarantee',
+  },
+  longform: {
+    script: 'scripts/benchmark/longform_cli_benchmark.py',
+    latestJson: 'artifacts/benchmarks/longform_cli_benchmark_latest.json',
+    latestMarkdown: 'artifacts/benchmarks/longform_cli_benchmark_latest.md',
+    description: 'Longform Bridge durable CLI workflow with squad dispatch receipts',
+    claimBoundary: 'local durable-workflow CLI fixture; not a guarantee of autonomous task completion',
+  },
+};
+
+// Patterns whose presence in a claim implies overclaiming.
+const FORBIDDEN_CLAIM_PATTERNS = [
+  { pattern: /\bleaderboard\b/i, flag: 'leaderboard-reference' },
+  { pattern: /\bSOTA\b|\bstate.of.the.art\b/i, flag: 'sota-claim' },
+  { pattern: /\bbeats?\b.{0,30}\b(GPT|Claude|Gemini|Codex)\b/i, flag: 'beats-named-model' },
+  { pattern: /\branked? #\d/i, flag: 'rank-claim' },
+  { pattern: /\bscore[sd]?\s+\d+(\.\d+)?%/i, flag: 'percent-score-without-boundary' },
+  { pattern: /\bstate-of-the-art\b/i, flag: 'sota-claim' },
+];
+
+function checkClaimHardening(text) {
+  const flags = [];
+  for (const { pattern, flag } of FORBIDDEN_CLAIM_PATTERNS) {
+    if (pattern.test(text)) flags.push(flag);
+  }
+  return flags;
+}
+
+function benchLaneRows() {
+  return Object.entries(BENCH_TARGETS).map(([id, target]) => {
+    const latestJson = path.resolve(repoRoot(), target.latestJson);
+    const latestMarkdown = path.resolve(repoRoot(), target.latestMarkdown);
+    return {
+      id,
+      description: target.description,
+      command: `scbe bench ${id}`,
+      script: target.script,
+      latest_json: target.latestJson,
+      latest_markdown: target.latestMarkdown,
+      latest_json_exists: fs.existsSync(latestJson),
+      latest_markdown_exists: fs.existsSync(latestMarkdown),
+      claim_boundary: target.claimBoundary,
+    };
+  });
+}
+
+function summarizeBenchReport(report) {
+  const summary = report && typeof report.summary === 'object' ? report.summary : {};
+  return {
+    schema_version: report.schema_version || null,
+    generated_at_utc: report.generated_at_utc || null,
+    run_id: report.run_id || null,
+    decision: summary.decision || null,
+    summary,
+    claim_boundary: report.claim_boundary || null,
+  };
+}
+
+function latestBenchPacket(id, target) {
+  const absolute = path.resolve(repoRoot(), target.latestJson);
+  const exists = fs.existsSync(absolute);
+  const report = exists ? readJsonFileSafe(absolute) : {};
+  return {
+    id,
+    description: target.description,
+    command: `scbe bench ${id}`,
+    latest_json: target.latestJson,
+    latest_markdown: target.latestMarkdown,
+    exists,
+    claim_boundary: target.claimBoundary,
+    report: exists ? summarizeBenchReport(report) : null,
+  };
+}
+
+function printBenchList(asJson) {
+  const rows = benchLaneRows();
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify({ schema_version: 'scbe_bench_lane_list_v1', lanes: rows }, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write('SCBE benchmark evidence lanes\n\n');
+  for (const row of rows) {
+    const artifact = row.latest_json_exists ? 'artifact:yes' : 'artifact:no';
+    process.stdout.write(`- ${row.id}: ${row.description} (${artifact})\n`);
+    process.stdout.write(`  run: ${row.command} --json\n`);
+  }
+}
+
+function benchStatusPayload() {
+  const lanes = Object.entries(BENCH_TARGETS).map(([id, target]) => {
+    const packet = latestBenchPacket(id, target);
+    const summary = packet.report ? packet.report.summary || {} : {};
+    return {
+      id,
+      exists: packet.exists,
+      decision: packet.report ? packet.report.decision : null,
+      generated_at_utc: packet.report ? packet.report.generated_at_utc : null,
+      command: packet.command,
+      latest_json: packet.latest_json,
+      claim_boundary: packet.claim_boundary,
+      summary,
+    };
+  });
+  const evidenceReady = lanes.filter((lane) => lane.exists).length;
+  return {
+    schema_version: 'scbe_bench_status_v1',
+    generated_at_utc: nowIso(),
+    evidence_ready: evidenceReady,
+    evidence_total: lanes.length,
+    lanes,
+  };
+}
+
+function printBenchStatus(asJson) {
+  const payload = benchStatusPayload();
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write(`SCBE bench status: ${payload.evidence_ready}/${payload.evidence_total} lanes have artifacts\n\n`);
+  for (const lane of payload.lanes) {
+    const state = lane.exists ? lane.decision || 'artifact' : 'missing';
+    process.stdout.write(`- ${lane.id}: ${state}\n`);
+    process.stdout.write(`  ${lane.command} --json\n`);
+  }
+}
+
+function printBenchLatest(args) {
+  const asJson = args.includes('--json');
+  const lane = args.find((arg) => !arg.startsWith('--'));
+  const entries = lane ? [[lane, BENCH_TARGETS[lane]]] : Object.entries(BENCH_TARGETS);
+  if (entries.some(([, target]) => !target)) {
+    process.stderr.write(`scbe bench latest: unknown lane '${lane}'. Run 'scbe bench list'.\n`);
+    process.exit(2);
+  }
+  const packets = entries.map(([id, target]) => latestBenchPacket(id, target));
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify({ schema_version: 'scbe_bench_latest_v1', lanes: packets }, null, 2)}\n`);
+    return;
+  }
+  for (const packet of packets) {
+    const report = packet.report || {};
+    const summary = report.summary || {};
+    process.stdout.write(`${packet.id}: ${packet.exists ? 'artifact found' : 'missing latest artifact'}\n`);
+    if (report.generated_at_utc) process.stdout.write(`  generated: ${report.generated_at_utc}\n`);
+    if (report.decision) process.stdout.write(`  decision: ${report.decision}\n`);
+    if (Object.keys(summary).length) process.stdout.write(`  summary: ${JSON.stringify(summary)}\n`);
+    process.stdout.write(`  boundary: ${packet.claim_boundary}\n`);
+  }
+}
+
+// Lane 98: public artifact index with commit hashes
+function buildBenchIndex() {
+  const git = gitPosture(repoRoot());
+  const lanes = Object.entries(BENCH_TARGETS).map(([id, target]) => {
+    const packet = latestBenchPacket(id, target);
+    const artifactAbsolute = path.resolve(repoRoot(), target.latestJson);
+    let artifact_hash = null;
+    if (packet.exists) {
+      const raw = fs.readFileSync(artifactAbsolute, 'utf8');
+      // Simple 8-char djb2 hash — no crypto dep needed for a human-readable index.
+      let h = 5381;
+      for (let i = 0; i < raw.length; i++) h = ((h << 5) + h + raw.charCodeAt(i)) >>> 0;
+      artifact_hash = h.toString(16).padStart(8, '0');
+    }
+    return {
+      id,
+      description: target.description,
+      command: `scbe bench ${id} --json`,
+      script: target.script,
+      latest_json: target.latestJson,
+      latest_markdown: target.latestMarkdown,
+      artifact_exists: packet.exists,
+      artifact_hash,
+      claim_boundary: target.claimBoundary,
+      report_summary: packet.report ? packet.report.summary : null,
+      generated_at_utc: packet.report ? packet.report.generated_at_utc : null,
+    };
+  });
+  return {
+    schema_version: 'scbe_bench_index_v1',
+    generated_at_utc: nowIso(),
+    commit: git.commit,
+    branch: git.branch,
+    evidence_ready: lanes.filter((l) => l.artifact_exists).length,
+    evidence_total: lanes.length,
+    proof_rule: 'Every public claim must cite: command, artifact path, commit hash, and claim boundary.',
+    lanes,
+  };
+}
+
+function printBenchIndex(args) {
+  const asJson = args.includes('--json');
+  const writeIndex = args.indexOf('--write');
+  const writePath = writeIndex >= 0 ? args[writeIndex + 1] : null;
+
+  const payload = buildBenchIndex();
+
+  if (writePath) {
+    const absolute = path.resolve(process.cwd(), writePath);
+    fs.mkdirSync(path.dirname(absolute), { recursive: true });
+    fs.writeFileSync(absolute, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+    if (!asJson) {
+      process.stdout.write(`wrote ${absolute}\n`);
+      return;
+    }
+  }
+
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+
+  process.stdout.write(`SCBE bench index (commit ${payload.commit})\n`);
+  process.stdout.write(`evidence: ${payload.evidence_ready}/${payload.evidence_total} lanes\n\n`);
+  for (const lane of payload.lanes) {
+    const status = lane.artifact_exists ? `hash:${lane.artifact_hash}` : 'missing';
+    process.stdout.write(`- ${lane.id}: ${status}\n`);
+    process.stdout.write(`  boundary: ${lane.claim_boundary}\n`);
+  }
+}
+
+// Lanes 40/100: claim-hardened proof packet
+function buildBenchProof(args) {
+  const lane = args.find((arg, index) => !arg.startsWith('--') && args[index - 1] !== '--write');
+  const entries = lane ? [[lane, BENCH_TARGETS[lane]]] : Object.entries(BENCH_TARGETS);
+  if (entries.some(([, target]) => !target)) {
+    process.stderr.write(`scbe bench prove: unknown lane '${lane}'. Run 'scbe bench list'.\n`);
+    process.exit(2);
+  }
+  const lanes = entries.map(([id, target]) => latestBenchPacket(id, target));
+
+  // Claim hardening: scan all boundary strings for forbidden patterns.
+  const overclaim_warnings = [];
+  for (const l of lanes) {
+    const flags = checkClaimHardening(l.claim_boundary || '');
+    const reportText = JSON.stringify(l.report || '');
+    const reportFlags = checkClaimHardening(reportText);
+    const all = [...new Set([...flags, ...reportFlags])];
+    if (all.length) overclaim_warnings.push({ lane: l.id, flags: all });
+  }
+
+  return {
+    schema_version: 'scbe_bench_proof_packet_v1',
+    generated_at_utc: nowIso(),
+    repo_root: repoRoot(),
+    git: gitPosture(repoRoot()),
+    proof_rule: 'Website claims must cite command, artifact, commit, and claim boundary.',
+    overclaim_check: {
+      clean: overclaim_warnings.length === 0,
+      warnings: overclaim_warnings,
+    },
+    lanes,
+  };
+}
+
+function printBenchProof(args) {
+  const payload = buildBenchProof(args);
+  const writeIndex = args.indexOf('--write');
+  const writePath = writeIndex >= 0 ? args[writeIndex + 1] : null;
+  if (writeIndex >= 0 && !writePath) {
+    process.stderr.write('scbe bench prove: --write requires a path.\n');
+    process.exit(2);
+  }
+  if (writePath) {
+    const absolute = path.resolve(process.cwd(), writePath);
+    fs.mkdirSync(path.dirname(absolute), { recursive: true });
+    fs.writeFileSync(absolute, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+    if (!args.includes('--json')) {
+      process.stdout.write(`wrote ${absolute}\n`);
+      return;
+    }
+  }
+  if (args.includes('--json')) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write(`SCBE benchmark proof packet (${payload.git.commit})\n\n`);
+  if (!payload.overclaim_check.clean) {
+    process.stderr.write(`warning: overclaim flags detected:\n`);
+    for (const w of payload.overclaim_check.warnings) {
+      process.stderr.write(`  ${w.lane}: ${w.flags.join(', ')}\n`);
+    }
+  }
+  for (const lane of payload.lanes) {
+    process.stdout.write(`- ${lane.id}: ${lane.exists ? 'evidence present' : 'missing evidence'}\n`);
+    process.stdout.write(`  command: ${lane.command} --json\n`);
+    process.stdout.write(`  artifact: ${lane.latest_json}\n`);
+    process.stdout.write(`  boundary: ${lane.claim_boundary}\n`);
+  }
+}
+
+function openFileBestEffort(targetPath) {
+  const absolute = path.resolve(repoRoot(), targetPath);
+  if (!fs.existsSync(absolute)) {
+    process.stderr.write(`scbe bench: report not found: ${absolute}\n`);
+    return;
+  }
+  if (process.platform === 'win32') {
+    spawnSync('cmd', ['/c', 'start', '', absolute], { stdio: 'ignore' });
+  } else if (process.platform === 'darwin') {
+    spawnSync('open', [absolute], { stdio: 'ignore' });
+  } else {
+    spawnSync('xdg-open', [absolute], { stdio: 'ignore' });
+  }
+}
+
+function printBenchHelp() {
+  process.stdout.write(
+    [
+      'Usage:',
+      '  scbe bench <lane> [--json] [--open-report]',
+      '  scbe bench list [--json]',
+      '  scbe bench status [--json]',
+      '  scbe bench latest [lane] [--json]',
+      '  scbe bench prove [lane] [--json] [--write <path>]',
+      '  scbe bench index [--json] [--write <path>]',
+      '',
+      'Lanes: ' + Object.keys(BENCH_TARGETS).join(', '),
+      '',
+      'These are local executable evidence lanes, not public leaderboard scores.',
+      '',
+    ].join('\n')
+  );
+}
+
+function runBench(args) {
+  const sub = args[0] || 'help';
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    printBenchHelp();
+    process.exit(0);
+  }
+  if (sub === 'list') {
+    printBenchList(args.includes('--json'));
+    process.exit(0);
+  }
+  if (sub === 'status') {
+    printBenchStatus(args.includes('--json'));
+    process.exit(0);
+  }
+  if (sub === 'latest') {
+    printBenchLatest(args.slice(1));
+    process.exit(0);
+  }
+  if (sub === 'prove') {
+    printBenchProof(args.slice(1));
+    process.exit(0);
+  }
+  if (sub === 'index') {
+    printBenchIndex(args.slice(1));
+    process.exit(0);
+  }
+  // Lane 42: free-first policy — `scbe bench providers` or `scbe bench router`
+  if (sub === 'providers' || sub === 'router' || sub === 'provider-health') {
+    const target = BENCH_TARGETS['providers'];
+    const passArgs = args.slice(1).filter((a) => a !== '--open-report');
+    const pyResult = spawnSync(
+      process.platform === 'win32' ? 'python' : 'python3',
+      [path.resolve(repoRoot(), target.script), ...passArgs],
+      { stdio: 'inherit', cwd: repoRoot() }
+    );
+    process.exit(typeof pyResult.status === 'number' ? pyResult.status : 1);
+  }
+  const target = BENCH_TARGETS[sub];
+  if (!target) {
+    process.stderr.write(`scbe bench: unknown lane '${sub}'. Run 'scbe bench list'.\n`);
+    process.exit(2);
+  }
+  const scriptAbs = path.resolve(repoRoot(), target.script);
+  const passArgs = args.slice(1).filter((a) => a !== '--open-report');
+  const pyResult = spawnSync(
+    process.platform === 'win32' ? 'python' : 'python3',
+    [scriptAbs, ...passArgs],
+    { stdio: 'inherit', cwd: repoRoot() }
+  );
+  if (args.includes('--open-report') && target.latestMarkdown) {
+    openFileBestEffort(target.latestMarkdown);
+  }
+  process.exit(typeof pyResult.status === 'number' ? pyResult.status : 1);
+}
+
 // Top-level commands scbe handles directly. Used by the typo-suggestion guard.
 // Order doesn't matter; this list is the complete set of scbe-owned verbs.
 const KNOWN_COMMANDS = [
@@ -3573,6 +4565,10 @@ const KNOWN_COMMANDS = [
   'credits',
   'hosted-run',
   'upgrade',
+  'do',
+  'work',
+  'agent',
+  'land',
   'shell',
   'run',
   'status',
@@ -3602,6 +4598,8 @@ const KNOWN_COMMANDS = [
   'work',
   'land',
   'agent',
+  'bench',
+  'benchmark',
 ];
 
 function levenshtein(a, b) {
@@ -4674,6 +5672,25 @@ if (argv[0] === 'selftest') {
   runSelftest();
 }
 
+if (argv[0] === 'do') {
+  runPythonScript('src/longform/longform_cli.py', ['do', ...argv.slice(1)]);
+}
+
+if (argv[0] === 'work') {
+  runPythonScript('src/longform/longform_cli.py', ['work', ...argv.slice(1)]);
+}
+
+if (argv[0] === 'agent') {
+  const longformAgentCommands = new Set(['spawn', 'list']);
+  if (longformAgentCommands.has(argv[1] || '')) {
+    runPythonScript('src/longform/longform_cli.py', ['agent', ...argv.slice(1)]);
+  }
+}
+
+if (argv[0] === 'land') {
+  runPythonScript('src/longform/longform_cli.py', ['land', ...argv.slice(1)]);
+}
+
 if (argv[0] === 'status') {
   runStatus();
   process.exit(0);
@@ -4819,6 +5836,10 @@ if (argv[0] === 'compile') {
     process.exit(2);
   }
   runCompiler([compilerMode, ...rest]);
+}
+
+if (argv[0] === 'bench' || argv[0] === 'benchmark') {
+  runBench(argv.slice(1));
 }
 
 if (argv[0] === 'route' || argv[0] === 'aetherpp') {

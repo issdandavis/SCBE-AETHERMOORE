@@ -140,6 +140,7 @@ const TASKS = [
     difficulty: 'easy',
     instruction:
       "Run the benchmark artifact freshness test suite at packages/cli/tests/bench_artifact_freshness.test.cjs using Node's built-in test runner (`node --test packages/cli/tests/bench_artifact_freshness.test.cjs`). Count the passing tests from the output. Write the count as a plain integer (e.g. `17`) to `{WORKDIR}/answer.txt`.",
+      "Run the benchmark artifact freshness test suite at packages/cli/tests/bench_artifact_freshness.test.cjs using Node's built-in test runner (`node --test`). Report how many tests pass.",
     done_if:
       `node -e "` +
       `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +

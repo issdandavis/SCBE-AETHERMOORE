@@ -250,7 +250,7 @@ def _print_do_complete(d: dict) -> None:
 
 def cmd_work_init(args) -> None:
     ws = _workspace(args)
-    mission = args.mission or "Accomplish the objective."
+    mission = args.mission or getattr(args, "objective", "") or "Accomplish the objective."
     invariants = list(args.invariant) if args.invariant else []
     claim_boundaries = list(args.claim) if hasattr(args, "claim") and args.claim else []
 
@@ -272,6 +272,23 @@ def cmd_work_status(args) -> None:
     try:
         ledger = load_ledger(ws)
     except FileNotFoundError as e:
+        if args.json:
+            _emit(
+                {
+                    "kind": "work_status",
+                    "status": "empty",
+                    "workspace_dir": os.path.join(ws, ".scbe-longform"),
+                    "brick_count": 0,
+                    "event_count": 0,
+                    "chain_valid": False,
+                    "principles": {},
+                    "open_questions": [],
+                    "next_footholds": [],
+                    "last_landing": None,
+                },
+                True,
+            )
+            return
         sys.stderr.write(f"Error: {e}\n")
         sys.exit(1)
 
@@ -351,6 +368,7 @@ def cmd_land_create(args) -> None:
     landing = create_landing(ledger, principles)
     result = {
         "kind": "land_create",
+        "status": "landed",
         "landing_id": landing.landing_id,
         "landing_hash": landing.landing_hash,
         "ts": landing.ts,
@@ -452,11 +470,13 @@ def cmd_agent_spawn(args) -> None:
         sys.exit(1)
 
     agent_id = str(uuid.uuid4())
-    allowed_tools = [t.strip() for t in (args.tools or "").split(",") if t.strip()]
+    role = args.role or getattr(args, "role_flag", "") or "worker"
+    tools_arg = args.tools or getattr(args, "allowed_tools", "")
+    allowed_tools = [t.strip() for t in (tools_arg or "").split(",") if t.strip()]
     budget = int(args.budget) if args.budget else 20
     contract = {
         "agent_id": agent_id,
-        "role": args.role,
+        "role": role,
         "mandate": args.mandate,
         "allowed_tools": allowed_tools,
         "budget": budget,
@@ -466,7 +486,7 @@ def cmd_agent_spawn(args) -> None:
     ledger.save_agent(agent_id, contract)
     ledger.append("agent_spawn", {
         "agent_id": agent_id,
-        "role": args.role,
+        "role": role,
         "mandate": args.mandate,
         "allowed_tools": allowed_tools,
         "budget": budget,
@@ -475,7 +495,7 @@ def cmd_agent_spawn(args) -> None:
     result = {"kind": "agent_spawn", **contract}
     _emit(result, args.json)
     if not args.json:
-        print(f"  Agent spawned: [{args.role}]  {agent_id[:12]}…")
+        print(f"  Agent spawned: [{role}]  {agent_id[:12]}…")
         print(f"  Mandate: {args.mandate[:60]}")
         print(f"  Tools:   {', '.join(allowed_tools) or '(all)'}")
         print(f"  Budget:  {budget} invocations")
@@ -508,7 +528,7 @@ def cmd_do(args) -> None:
     ws = _workspace(args)
     objective = args.objective
     loops = int(args.loops)
-    land_every = args.land_every_stage
+    land_every = args.land_every_stage or getattr(args, "land", "") == "every-stage"
     emit_json = args.json
 
     # Orient: load or create workspace
@@ -631,6 +651,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_do = sub.add_parser("do", help="Run a durable governed agentic workflow")
     p_do.add_argument("objective", help="The objective to accomplish")
     p_do.add_argument("--loops", default="6", help="Max stage iterations (default 6)")
+    p_do.add_argument("--land", default="",
+                      help="Compatibility alias; use 'every-stage' to land every stage")
     p_do.add_argument("--land-every-stage", action="store_true",
                       help="Create a landing after each stage")
     p_do.add_argument("--squad", action="store_true",
@@ -643,7 +665,7 @@ def build_parser() -> argparse.ArgumentParser:
                       choices=["latest-safe", "explicit-hash"],
                       help="Resume policy (default latest-safe)")
     p_do.add_argument("--backend", default="local",
-                      choices=["local", "temporal"],
+                      choices=["local", "local-jsonl", "temporal"],
                       help="Execution backend (default local)")
     _ws_arg(p_do)
     _json_arg(p_do)
@@ -654,6 +676,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_init = ws_sub.add_parser("init", help="Initialize a new workspace")
     p_init.add_argument("--mission", "-m", default="", help="Mission statement")
+    p_init.add_argument("--objective", default="", help="Compatibility alias for --mission")
+    p_init.add_argument("--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger")
     p_init.add_argument("--invariant", "-i", action="append", default=[],
                         help="Add an invariant (repeatable)")
     p_init.add_argument("--claim", "-c", action="append", default=[],
@@ -662,10 +686,12 @@ def build_parser() -> argparse.ArgumentParser:
     _json_arg(p_init)
 
     p_status = ws_sub.add_parser("status", help="Show workspace status")
+    p_status.add_argument("--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger")
     _ws_arg(p_status)
     _json_arg(p_status)
 
     p_resume = ws_sub.add_parser("resume", help="Resume from a landing")
+    p_resume.add_argument("--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger")
     p_resume.add_argument("--hash", default=None,
                           help="Landing hash prefix (default: latest)")
     _ws_arg(p_resume)
@@ -676,6 +702,9 @@ def build_parser() -> argparse.ArgumentParser:
     land_sub = p_land.add_subparsers(dest="land_cmd")
 
     p_lc = land_sub.add_parser("create", help="Create a verified context landing")
+    p_lc.add_argument("--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger")
+    p_lc.add_argument("--summary", default="", help="Compatibility summary; landing content is captured from the ledger")
+    p_lc.add_argument("--stage", default="", help="Compatibility stage label")
     _ws_arg(p_lc)
     _json_arg(p_lc)
 
@@ -698,10 +727,14 @@ def build_parser() -> argparse.ArgumentParser:
     agent_sub = p_agent.add_subparsers(dest="agent_cmd")
 
     p_asp = agent_sub.add_parser("spawn", help="Spawn a governed agent")
-    p_asp.add_argument("role", help="Agent role (architect/tester/prover/etc.)")
+    p_asp.add_argument("role", nargs="?", help="Agent role (architect/tester/prover/etc.)")
+    p_asp.add_argument("--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger")
+    p_asp.add_argument("--role", dest="role_flag", default="", help="Compatibility alias for positional role")
     p_asp.add_argument("--mandate", required=True, help="Agent mandate/objective")
     p_asp.add_argument("--tools", default="",
                        help="Comma-separated allowed tools")
+    p_asp.add_argument("--allowed-tools", default="",
+                       help="Compatibility alias for --tools")
     p_asp.add_argument("--budget", default="20",
                        help="Max invocations before escalation (default 20)")
     _ws_arg(p_asp)

@@ -96,7 +96,7 @@ export interface StarPathBenchResult {
     orbital: number;
     gravity_assist: number;
   };
-  /** Six canonical mission arcs run through all three algorithms. */
+  /** Canonical mission arcs, or a live-registry fallback arc, run through all three algorithms. */
   missions: MissionTrajectory[];
   all_pairs_summary: {
     bfs_avg_hops: number;
@@ -464,6 +464,7 @@ export function runStarPathBench(toolsJsonPath: string): StarPathBenchResult {
   let reachable = 0,
     unreachable = 0;
   let diameter = 0;
+  let fallbackMission: { start: string; goal: string; cost: number } | undefined;
   const travDistrib: StarPathBenchResult['traversal_distribution'] = {
     hyperspace: 0,
     orbital: 0,
@@ -482,6 +483,9 @@ export function runStarPathBench(toolsJsonPath: string): StarPathBenchResult {
         if (dijR) {
           dijkTotalCost += dijR.total_delta_v;
           diameter = Math.max(diameter, dijR.total_delta_v);
+          if (!fallbackMission || dijR.total_delta_v > fallbackMission.cost) {
+            fallbackMission = { start, goal, cost: dijR.total_delta_v };
+          }
         }
         if (asR) astarTotalCost += asR.total_delta_v;
         const key = (
@@ -503,6 +507,13 @@ export function runStarPathBench(toolsJsonPath: string): StarPathBenchResult {
         const r = fn(graph, m.start, m.goal);
         if (r) missions.push({ ...r, mission: m.name });
       }
+    }
+  }
+  if (missions.length === 0 && fallbackMission) {
+    for (const algo of ['bfs', 'dijkstra', 'astar'] as Algorithm[]) {
+      const fn = algo === 'bfs' ? bfs : algo === 'dijkstra' ? dijkstra : aStar;
+      const r = fn(graph, fallbackMission.start, fallbackMission.goal);
+      if (r) missions.push({ ...r, mission: 'Live Registry Fallback' });
     }
   }
 
