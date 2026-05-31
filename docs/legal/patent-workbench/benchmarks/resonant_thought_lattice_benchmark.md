@@ -1,6 +1,6 @@
 # Resonant Thought Lattice Benchmark
 
-- Application: 63/961,403
+- Application: 19/691,526
 - Docket: SCBE-2026-0001
 - Title: System and Method for Hyperbolic Geometry-Based Authorization with Topological Control-Flow Integrity
 - Mechanism: Resonant Thought Lattice / ringed retrieval-verifier controller

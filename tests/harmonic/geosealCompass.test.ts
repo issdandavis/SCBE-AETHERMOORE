@@ -28,6 +28,9 @@ import {
   applyTemporalWindows,
   triadicTemporalDistance,
   generateCompassRose,
+  generatePyramidConstellation,
+  generatePyramidConstellationStarMap,
+  pyramidConstellationPosition,
   bearingToString,
 } from '../../src/geosealCompass.js';
 
@@ -75,6 +78,59 @@ describe('GeoSeal Compass — Smoke', () => {
     for (let i = 1; i < bearings.length; i++) {
       expect(bearings[i] - bearings[i - 1]).toBeCloseTo(Math.PI / 3, 8);
     }
+  });
+
+  it('generates pyramid constellation points across depth and perception axes', () => {
+    const points = generatePyramidConstellation([0, 1], ['identity', 'depth'], DIM);
+    expect(points).toHaveLength(6 * 2 * 2);
+    for (const point of points) {
+      expect(point.position).toHaveLength(DIM);
+      expect(vecNorm(point.position)).toBeLessThan(1.0);
+      expect(point.ringRadius).toBeGreaterThan(0);
+      expect(point.pyramidHeight).toBeGreaterThan(0);
+    }
+  });
+
+  it('pyramid constellation offsets same tongue by depth and perception axis', () => {
+    const base = pyramidConstellationPosition('KO', 0, 'identity', DIM);
+    const deeper = pyramidConstellationPosition('KO', 3, 'identity', DIM);
+    const perceptual = pyramidConstellationPosition('KO', 0, 'security', DIM);
+
+    expect(deeper[2]).toBeGreaterThan(base[2]);
+    expect(perceptual[3]).not.toBeCloseTo(base[3], 8);
+    expect(vecNorm(base)).toBeLessThan(1.0);
+    expect(vecNorm(deeper)).toBeLessThan(1.0);
+    expect(vecNorm(perceptual)).toBeLessThan(1.0);
+  });
+
+  it('cryptographic seed makes constellation deterministic but distinct', () => {
+    const a = pyramidConstellationPosition('KO', 2, 'depth', DIM, 0.22, {
+      seed: 'survey-key-alpha',
+    });
+    const b = pyramidConstellationPosition('KO', 2, 'depth', DIM, 0.22, {
+      seed: 'survey-key-alpha',
+    });
+    const c = pyramidConstellationPosition('KO', 2, 'depth', DIM, 0.22, {
+      seed: 'survey-key-beta',
+    });
+
+    expect(a).toEqual(b);
+    expect(c).not.toEqual(a);
+  });
+
+  it('generates a navigable star map with map-making edge classes', () => {
+    const map = generatePyramidConstellationStarMap([0, 1], ['identity', 'depth'], DIM, {
+      seed: 'lewis-clark-survey',
+    });
+    const edgeKinds = new Set(map.edges.map((edge) => edge.kind));
+
+    expect(map.projection).toBe('pyramid_constellation');
+    expect(map.points).toHaveLength(24);
+    expect(map.edges.length).toBeGreaterThan(map.points.length);
+    expect(edgeKinds.has('tongue-bearing')).toBe(true);
+    expect(edgeKinds.has('depth-line')).toBe(true);
+    expect(edgeKinds.has('axis-ring')).toBe(true);
+    expect(map.edges.every((edge) => edge.distance > 0)).toBe(true);
   });
 });
 

@@ -1153,6 +1153,58 @@ function listRuns(ws) {
     .sort((a, b) => (a.run_id < b.run_id ? -1 : 1));
 }
 
+function buildOperatorPacket(ws, pad) {
+  const tasks = pad.tasks || [];
+  const pending = tasks.filter((t) => t.state !== 'done');
+  const done = tasks.filter((t) => t.state === 'done');
+  const runs = listRuns(ws);
+  const lastRun = runs.length ? runs[runs.length - 1] : null;
+  const audit = verifyAudit(ws);
+  const nextTask = pending.length ? pending[0] : null;
+  const suggested = nextTask
+    ? [
+        'polly ask "plan the next concrete step for ' + nextTask.id + ': ' + nextTask.text + '"',
+        'polly task done ' + nextTask.id,
+        'polly snapshot',
+        'polly audit verify',
+      ]
+    : ['polly task add "<next task>"', 'polly ask "what should this workspace do next?"', 'polly audit verify'];
+
+  return {
+    schema_version: 'polly_operator_packet_v1',
+    created_at: new Date().toISOString(),
+    workspace: ws,
+    pad: {
+      pad_id: pad.pad_id,
+      name: pad.name,
+      pending_count: pending.length,
+      done_count: done.length,
+      run_count: pad.run_counter || 0,
+      updated_at: pad.updated_at,
+    },
+    next_task: nextTask,
+    last_run: lastRun
+      ? {
+          run_id: lastRun.run_id,
+          command: lastRun.command,
+          recipe: lastRun.recipe || null,
+          started_at: lastRun.started_at,
+          model: lastRun.model || null,
+          ok: lastRun.ok !== false,
+        }
+      : null,
+    git: getGitInfo(ws),
+    audit: {
+      ok: audit.ok,
+      count: audit.count || 0,
+      head_hash: audit.head_hash || null,
+      broken_at: audit.broken_at || null,
+      reason: audit.reason || null,
+    },
+    suggested_commands: suggested,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // LLM router
 // ---------------------------------------------------------------------------
@@ -1463,6 +1515,7 @@ const COMMANDS = {
       console.log('');
       console.log('Quick start:');
       console.log('  polly status          # see workspace state');
+      console.log('  polly next            # get the next operator packet');
       console.log('  polly task add <text> # add a task');
       console.log('  polly ask <prompt>    # ask a model');
       console.log('  polly run research <topic> # use a recipe');
@@ -1494,6 +1547,32 @@ const COMMANDS = {
     if (lastRun) console.log('Last run    : ' + lastRun.run_id + ' (' + lastRun.started_at + ')');
     if (gitInfo) console.log('Git         : ' + gitInfo.branch + ' @ ' + gitInfo.sha);
     console.log('Updated     : ' + pad.updated_at);
+  },
+
+  async next(args, flags) {
+    const ws = requireWorkspace();
+    const pad = readPad(ws);
+    if (!pad) {
+      console.error('pad.json not found — workspace may be corrupted.');
+      process.exit(1);
+    }
+    const packet = buildOperatorPacket(ws, pad);
+    if (flags.json) {
+      out(packet, true);
+      return;
+    }
+    console.log('Polly operator packet');
+    console.log('Pad         : ' + packet.pad.name + ' (' + packet.pad.pending_count + ' pending, ' + packet.pad.done_count + ' done)');
+    if (packet.next_task) {
+      console.log('Next task   : ' + packet.next_task.id + ' - ' + packet.next_task.text);
+    } else {
+      console.log('Next task   : none');
+    }
+    if (packet.last_run) console.log('Last run    : ' + packet.last_run.run_id + ' (' + packet.last_run.command + ')');
+    if (packet.git) console.log('Git         : ' + packet.git.branch + ' @ ' + packet.git.sha);
+    console.log('Audit       : ' + (packet.audit.ok ? 'ok' : 'failed') + ' (' + packet.audit.count + ' receipts)');
+    console.log('Suggested:');
+    packet.suggested_commands.forEach((cmd) => console.log('  ' + cmd));
   },
 
   async new(args, flags) {
@@ -2759,6 +2838,7 @@ Usage:
 Commands:
   init [name]              Create a new .polly workspace in the current directory
   status                   Show workspace state (--json for full JSON)
+  next                     Show next task, audit health, and suggested commands
   new [name]               Replace pad with a fresh one (keeps run counter)
   task add <text>          Add a task
   task list                List tasks (default subcommand)

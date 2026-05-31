@@ -31,9 +31,31 @@ const SERVICE_CREDITS = {
 
 const CLI_HELP = `scbe-aethermoore-cli
 
-Usage:
-  scbe <command> [options]
+Governed AI operations platform — 14-layer harmonic pipeline, Sacred Tongues
+tokenization, post-quantum cryptography, multi-agent bus, and governed shells.
 
+Usage:
+  scbe <command> [subcommand] [options]
+  scbe --help | -h
+  scbe --version | -v
+
+─────────────────────────────────────────────────────────────────────────────
+  CORE
+─────────────────────────────────────────────────────────────────────────────
+  version [--json]        Print version + build metadata (pkg, node, platform,
+                          liboqs status, provider availability)
+  demo [--json]           Run governance safety demo: L12 harmonic wall scoring
+                          + L13 risk decision (ALLOW/QUARANTINE/ESCALATE/DENY)
+  magic [--json]          Alias for demo
+  selftest                Verify CLI wiring end-to-end; exits 0 on pass,
+                          non-zero on any broken component
+  doctor [--json]         Full health check: node version, liboqs PQC bindings,
+                          provider API keys, agent-bus connectivity, GeoSeal
+  credits                 Print service-credit policy and hosted-run intake links
+  hosted-run              Alias for credits
+  upgrade                 Print upgrade instructions and SCBE_API_KEY setup
+  history [--limit N]     Show recent command history from the autocorrect ledger
+                          (default: --limit 20)
 Core commands:
   scbe version
   scbe version --json
@@ -60,24 +82,327 @@ Core commands:
   scbe liboqs --json
   scbe history --limit 20
 
-Flow loop (operator workflow — source checkout required for plan/packetize):
-  scbe flow plan --task "fix this repo issue"
-  scbe flow packetize
-  scbe flow status
-  scbe flow run-next
-  scbe flow continue --max-iter 10
-  scbe flow report
+─────────────────────────────────────────────────────────────────────────────
+  SHELL — governed interactive and scriptable shells
+─────────────────────────────────────────────────────────────────────────────
+  shell                   Rich TUI shell with autocorrect ledger (default mode)
+  shell --tui             Alias for default rich mode
+  shell --ai              AI-first: plain-English intent routing to squad
+                          providers; shows routing decision in footer
+  shell --minimal         Minimal scriptable readline; no AI, CI-safe, pipes
+                          cleanly, no colour output
+  shell --agent-json      NDJSON stdin/stdout protocol for harness + benchmark
+                          control; each input line: {"cmd":"...","id":"..."}
+                          each output line: {"id":"...","result":"..."}
+  shell --squad           Route each turn to the best squad provider by task
+                          class (cerebras=fast-ops, groq=safety/policy,
+                          ollama=local); shows provider + token usage in footer
 
-Agent bus (governed event routing — works against any scbe-agent-bus backend):
-  scbe agent-bus serve --port 8787
-  scbe agent-bus send --task "review changed files" --task-type review
-  scbe agent-bus upgrade
-  scbe workspace new --hint customer-smoke --json
-  scbe workspace ingest --workspace-root .aethermoor-bus/workspaces/<id> --source-path /path/to/file --json
-  scbe workspace export --workspace-root .aethermoor-bus/workspaces/<id> --json
-  scbe workspace import --export-path .aethermoor-bus/workspaces/<id>/30_exports/<eid> --json
-  scbe workspace verify --export-path .aethermoor-bus/workspaces/<id>/30_exports/<eid> --json
+─────────────────────────────────────────────────────────────────────────────
+  RUN / STATUS / LIBOQS
+─────────────────────────────────────────────────────────────────────────────
+  run "<command>"         Execute a shell command inside the governed harness;
+                          wraps stdout/stderr with L13 risk tagging
+                          Example: scbe run "npm test"
+  status [--json]         Print current workspace, bus, and provider status
+  liboqs [--json]         Emit post-quantum proof receipt:
+                          ML-KEM-768 encap/decap + ML-DSA-65 sign/verify
+                          with timing; confirms liboqs C bindings are live
+
+─────────────────────────────────────────────────────────────────────────────
+  BENCH — executable evidence lanes
+─────────────────────────────────────────────────────────────────────────────
+  bench hard-agentic      Run hard agentic pretest matrix
+    [--timeout N]           Default: script default
+    [--filter <id>]         Run one benchmark_id; repeatable
+    [--json]
+    [--open-report]         Open latest Markdown report after execution
+  bench research         Run BrowseComp/GAIA-style local research fixtures
+    [--style <style>]       BrowseComp-style | GAIA-style
+    [--json]
+    [--open-report]
+  bench rubix-browser    Run permission-hypercube browser-control fixture
+    [--json]
+    [--open-report]
+  bench terminal-adapter Run local Terminal-Bench-style adapter contract
+    [--json]              setup, shell exec, answer.txt, verifier, receipts
+    [--open-report]
+  bench chemistry        Run chemistry/STISTA capability lane
+    [--json]              atomic tokenizer, chemical fusion, orbital invariants,
+    [--inventory-only]    and private-proof-safe hash inventory
+    [--open-report]
+  bench compound-decompose
+    [--json]              RDKit long-form compound decomposition/recomposition
+    [--open-report]       through atom mud, descriptors, fragments, receipts
+  bench full             Aggregate full-system evidence matrix:
+    [--json]              local artifacts, external targets, blockers, and
+    [--run-local]          claim boundaries for website/patent-safe claims
+    [--quick]
+    [--open-report]
+  bench circuit          Ordered improve/cross-test benchmark circuit
+    [--json]              surfaces next lane, obstacle, fix target, and
+    [--open-report]        cross-test target
+  bench bfcl             BFCL tool-call adapter: schema export + model eval
+    [--export-only]        Schema export + AST validation only (offline)
+    [--endpoint <url>]     OpenAI-compat endpoint (default: Ollama localhost)
+  bench tau-bench        tau-bench policy microbench: SCBE governance compliance
+    [--fixture-only]       Validate fixtures only (offline, no model)
+    [--endpoint <url>]     OpenAI-compat endpoint (default: Ollama localhost)
+    [--model <name>]       Model name (default: llama3.2)
+    [--auth-env <VAR>]     Env var holding Bearer token (e.g. CEREBRAS_API_KEY)
+    [--open-report]
+  bench list             List registered evidence lanes
+  bench status           Compact readiness/status view
+    [--json]
+  bench latest [lane]    Show latest artifact summary
+    [--json]
+  bench dashboard        Emit a website/operator dashboard from evidence lanes
+    [--json] [--write <path>]
+  bench prove [lane]     Emit claim-safe proof packet
+    [--json] [--write <path>]
+
+─────────────────────────────────────────────────────────────────────────────
+  REACT — bounded reaction-state packets
+─────────────────────────────────────────────────────────────────────────────
+  react audit            Audit a reaction packet or benchmark report
+    --packet <file>        Verifies packet hashes and classifications
+    [--json]
+  react compare          Compare two reaction packet/report files
+    --left <file>
+    --right <file>
+    [--json]
+  react code             Emit a code/file transform reaction packet
+    --source <file>
+    --target <file>
+    [--json]
+  react audio            Emit an audio-field observable reaction packet
+    [--frequency Hz]       Default: 440
+    [--model generic|magnetoelastic|magnetosonic]
+    [--sound-speed N] [--alfven-speed N]
+    [--json]
+
+─────────────────────────────────────────────────────────────────────────────
+  BUNDLE — polyglot reaction bundles
+─────────────────────────────────────────────────────────────────────────────
+  bundle <file|text>      Auto-create a bundle from uploaded input or text
+  bundle create           Create a bundle
+    [--input <file>] [--intent "..."] [--out <file>] [--json]
+  bundle add              Add a file to an existing bundle
+    --bundle <file> --file <file> [--role KO|AV|RU|CA|UM|DR] [--out <file>]
+  bundle verify           Verify bundle hashes and current source files
+    --bundle <file> [--json]
+  bundle translate        Emit a receiver-ready projection
+    --bundle <file> --to binary-hex [--json]
+  bundle reconstruct      Emit receiver reconstruction notes
+    --bundle <file> [--receiver <id>] [--json]
+
+─────────────────────────────────────────────────────────────────────────────
+  CREATOR TOOLS — local-first content utility gates
+─────────────────────────────────────────────────────────────────────────────
+  youtube review <file>  Review a YouTube package JSON before upload;
+    [--json]              checks title, description, tags, privacy, and script
+
+─────────────────────────────────────────────────────────────────────────────
+  LONGFORM — durable multi-session agentic workflows (Longform Bridge)
+─────────────────────────────────────────────────────────────────────────────
+  do "<objective>"        Run a durable governed agentic workflow.
+    [--loops N]             Stage iterations (default 6)
+    [--land-every-stage]    Create a verified landing after each stage
+    [--squad]               Route each stage to multi-agent squad (phase 2)
+    [--backend local|temporal]  Execution backend (default: local)
+    [--json]                Emit JSON output
+    Example: scbe do "prove browser benchmark" --loops 6 --land-every-stage
+
+  work init               Initialize a new longform workflow workspace
+    [--mission "<text>"]    Mission statement
+    [--invariant "<inv>"]   Add an invariant (repeatable)
+    [--workspace <dir>]     Workspace directory (default: cwd)
+  work status [--json]    Show workspace: bricks, landings, open questions
+  work resume [--hash H]  Resume from latest (or specified) landing
+
+  land create             Create a verified context landing (resume contract)
+  land list [--json]      List all landings with hash + timestamp
+  land verify <hash>      Verify a landing's cryptographic integrity
+  land show <hash>        Show full landing content
+
+  agent spawn <role>      Spawn a governed agent with a role contract
+    --mandate "<text>"      Agent objective (required)
+    [--tools t1,t2]         Allowed tools (comma-separated)
+    [--budget N]            Max invocations before escalation (default 20)
+  agent list [--json]     List all agents registered in current workflow
+
+─────────────────────────────────────────────────────────────────────────────
+  FLOW LOOP — operator workflow (source checkout required for plan/packetize)
+─────────────────────────────────────────────────────────────────────────────
+  flow plan               Decompose a task into governed flow packets;
+    --task "..."            writes .aethermoor-flow/packets/*.json
+    [--json]              Example: scbe flow plan --task "fix flaky test"
+  flow packetize          Rescan the current checkout and re-emit packets
+  flow status [--json]    Show pending / running / done packets with scores
+  flow run-next [--json]  Execute the next pending flow packet
+  flow continue           Run all pending packets sequentially;
+    [--max-iter N]          stop after N iterations (default: unlimited)
+  flow report [--json]    Emit full governance summary for completed run
+
+─────────────────────────────────────────────────────────────────────────────
+  AGENT BUS — governed event routing against scbe-agent-bus backend
+─────────────────────────────────────────────────────────────────────────────
+  agent-bus serve         Start local governed bus server
+    [--port N]              Port (default: 8787)
+  agent-bus send          Dispatch a governed task envelope to the bus
+    --task "..."            Task description (required)
+    --task-type <type>      review | research | code | governance
+    [--json]
+  agent-bus upgrade       Check for bus package updates and print upgrade cmd
+  agentbus <...>          Alias for agent-bus (short form)
+
+─────────────────────────────────────────────────────────────────────────────
+  WORKSPACE — audit-chain file bus workspaces
+─────────────────────────────────────────────────────────────────────────────
+  workspace new           Create a new governed workspace with audit chain
+    [--hint <label>]        Short label embedded in workspace ID
+    [--json]
+  workspace ingest        Ingest a file into an existing workspace
+    --workspace-root <p>    Path to workspace directory (required)
+    --source-path <file>    File to ingest (required)
+    [--json]
+  workspace export        Export workspace state as a versioned snapshot
+    --workspace-root <p>
+    [--json]
+  workspace import        Import a previously exported workspace snapshot
+    --export-path <p>
+    [--json]
+  workspace verify        Verify export integrity (hash + signature chain)
+    --export-path <p>       Verify single export  OR
+    --all                   Verify all exports in workspace (use with --workspace-root)
+    --workspace-root <p>
+    [--json]
+  workspace lineage       Print the full audit lineage of a workspace
+    --workspace-root <p>
+    [--json]
+  workspace report        Emit governance summary report for a workspace
+    --workspace-root <p>
+    [--json]
+
+─────────────────────────────────────────────────────────────────────────────
+  GOVERNANCE ABACUS — deterministic BigInt L12+L13 scoring (no float drift)
+─────────────────────────────────────────────────────────────────────────────
+  abacus run              Compute harmonic-wall score H(d,pd) and L13 tier
+    --d-h <float>           Hyperbolic distance in [0,1) (required)
+    --pd <float>            Poincaré drift in [0,1) (required)
+    [--json]                Output: {score, tier, d_h, pd, formula}
+                          Tiers: ALLOW < 0.3  QUARANTINE < 0.6
+                                 ESCALATE < 0.85  DENY >= 0.85
+                          Example: scbe abacus run --d-h 0.4 --pd 0.1 --json
+
+─────────────────────────────────────────────────────────────────────────────
+  CONTRACT SCANNER — SCONE-class static prefilter for Solidity (heuristic)
+─────────────────────────────────────────────────────────────────────────────
+  contract scan <file>    Scan Solidity source for governance red-flags:
+    [--json]                reentrancy, unchecked-send, delegatecall patterns,
+                          selfdestruct, tx.origin auth, unprotected withdraw.
+                          Heuristic only — not a full audit.
+                          Pipe: cat Vault.sol | scbe contract scan --json
+
+─────────────────────────────────────────────────────────────────────────────
+  TRAP-IN-GOOD-LOOPS — adversarial prompt inspector + free-provider dispatcher
+─────────────────────────────────────────────────────────────────────────────
+  trap-redirect           Inspect a prompt for adversarial redirect / jailbreak
+    --input "<text>"        Inline text (or pipe from stdin)
+    --file <path>           Read from file
+    [--json]
+
+  trap-dispatch           Forward a prompt to a FREE provider for evaluation
+    --input "<text>"        Inline text (or pipe from stdin)
+    --provider <name>       ollama (default) | cerebras | groq
+    --model <id>            Model ID (provider-dependent)
+    [--json]                Always free — no SCBE service credits consumed
+
+─────────────────────────────────────────────────────────────────────────────
+  SQUAD — provider routing and multi-provider cross-validation
+─────────────────────────────────────────────────────────────────────────────
+  squad status [--json]   Show configured squad units, roles, and reachability
+                          Roles: cerebras=fast-ops (~920 ms) | groq=safety/auth
+                          | ollama=local-free | anthropic=planner/overwatch
+  squad route             Determine which unit handles a given task class
+    --task "..."            Task description (required)
+    [--json]
+  xval                    Fan out a question to all reachable providers,
+    --task "..."            compile responses, highlight agreement/divergence
+    [--providers a,b,c]     Limit to specific providers (comma-separated)
+    [--json]
+
+─────────────────────────────────────────────────────────────────────────────
+  COMPILER + ROUTING — source checkout required
+─────────────────────────────────────────────────────────────────────────────
+  compile-ca              Compile Sacred Tongue opcodes → target function body
+    --opcodes "0x09 ..."    Space-separated hex opcode string
+    --target <lang>         python | typescript | rust | ko | av | ru | ca | um | dr
+    --fn <name>             Output function name
+    --args <a,b,...>        Argument names (comma-separated)
+
+  ca-plan                 Emit opcode execution plan with Sacred Tongue mapping
+    --ops "<op op op>"      Space-separated op names: abs add mul div min max …
+    [--json]
+
+  render-op               Render a single op in a given Sacred Tongue surface
+    --op <name>             Op name (add | mul | abs | div | …)
+    --target <tongue>       Kor'aelin | Avali | Runethic | Cassisivadan | Umbroth | Draumric
+    --a <left>              Left operand name
+    --b <right>             Right operand name
+
+  compile ca [options]    Long-form alias for compile-ca
+    --opcodes "..."
+    --target <lang>
+
+  route "<program>"       Route a plain-English program description to the best
+                          Sacred Tongue and emit a routing + compilation plan
+  aetherpp "<program>"    Alias for route
+
+─────────────────────────────────────────────────────────────────────────────
+  GLOBAL FLAGS
+─────────────────────────────────────────────────────────────────────────────
+  --json                  Emit structured JSON instead of styled text output.
+                          Safe for piping: scbe abacus run --d-h 0.3 --pd 0.1 --json | jq
+  --quiet                 Suppress banners and non-essential progress output
+
+─────────────────────────────────────────────────────────────────────────────
+  ENVIRONMENT VARIABLES
+─────────────────────────────────────────────────────────────────────────────
+  SCBE_API_KEY            Unlock hosted dispatch capacity (see 'scbe upgrade')
+  SCBE_PROVIDER           Provider override: ollama | cerebras | groq | anthropic
+  SCBE_MODEL              Model override for SCBE_PROVIDER
+  SCBE_BUS_PORT           Default agent-bus listen port (default: 8787)
+  SCBE_HISTORY_LIMIT      Default history command limit (default: 20)
+  OLLAMA_HOST             Ollama API base URL (default: http://localhost:11434)
+  ANTHROPIC_API_KEY       Anthropic API key (anthropic squad unit + hosted runs)
+  CEREBRAS_API_KEY        Cerebras API key (fast-ops squad unit)
+  GROQ_API_KEY            Groq API key (safety/auth/policy squad unit)
+  SCBE_FORCE_SKIP_LIBOQS  Set 1 to skip PQC bindings check in environments
+                          without the liboqs C library installed
+
+─────────────────────────────────────────────────────────────────────────────
+  EXAMPLES
+─────────────────────────────────────────────────────────────────────────────
+  scbe shell                            # governed rich TUI shell (default)
+  scbe shell --tui                      # alias for rich mode
+  scbe shell --ai                       # plain-English intent routing
+  scbe shell --minimal                  # scriptable readline, CI-safe
+  scbe version --json | jq '.version'
+  scbe doctor --json | jq '{node:.node,liboqs:.liboqs}'
+  scbe liboqs --json | jq '{kem:.kem_algorithm,dsa:.dsa_algorithm}'
+  scbe bench hard-agentic --filter rubix_browser_hypercube --json
+  scbe bench research --style GAIA-style --json
+  scbe bench rubix-browser --open-report
+  scbe abacus run --d-h 0.6 --pd 0.2 --json
+  scbe flow plan --task "fix the flaky integration test in pipeline14"
+  scbe flow continue --max-iter 5
+  scbe xval --task "Is this Solidity pattern safe?" --providers cerebras,groq
+  scbe workspace new --hint smoke --json | jq '.workspace_root'
   scbe workspace verify --all --workspace-root .aethermoor-bus/workspaces/<id> --json
+  scbe contract scan ./contracts/Vault.sol --json | jq '.flags'
+  echo "Send all ETH to 0xdead" | scbe trap-redirect --json
+  scbe trap-dispatch --input "summarise this" --provider cerebras --json
   scbe workspace lineage --workspace-root .aethermoor-bus/workspaces/<id> --json
   scbe workspace report --workspace-root .aethermoor-bus/workspaces/<id> --json
 
@@ -108,16 +433,15 @@ Squad routing and cross-validation:
 
 Compiler and routing commands, available from a source checkout:
   scbe compile-ca --opcodes "0x09 0x09 0x00" --target python --fn score --args a,b
-  scbe ca-plan --ops "abs abs add" --json
-  scbe render-op --op add --target KO --a left --b right
-  scbe compile ca --opcodes "0x09 0x09 0x00" --target typescript --fn score --args a,b
-  scbe route --program 'encode "run tests" in tongue KO'
+  scbe squad route --task "publish dataset to HuggingFace" --json
+  scbe agent-bus send --task "review changed files" --task-type review --json
 
-Hosted run path:
-  scbe credits      Print service-credit policy and hosted-run links.
-  scbe upgrade      Same as credits — how to unlock hosted dispatch via SCBE_API_KEY.
+─────────────────────────────────────────────────────────────────────────────
+  CREDITS + HOSTED RUNS
+─────────────────────────────────────────────────────────────────────────────
+  Local routing is free.  Hosted dispatch, report delivery, and storage consume
+  SCBE service credits.  See: scbe credits  or  https://aethermoore.com
 
-Local routing is free. Hosted runs require credits (see 'scbe upgrade').
 Unknown commands are forwarded to the GeoSeal shell from scbe-aethermoore.
 `;
 
@@ -1371,13 +1695,29 @@ function formatPlanSummary(planResult) {
 
 // ─── Status bar ───────────────────────────────────────────────────────────────
 
-function printShellStatusBar(cfg) {
+function printShellStatusBar(cfg, squadMode) {
   if (!process.stdout.isTTY) return;
   const git = gitPosture(repoRoot());
-  const model = `${cfg.provider || 'ollama'}:${cfg.model || 'llama3.2'}`;
   const branch = git.branch !== 'unknown' ? `${git.branch}${git.dirty ? '*' : ''}` : '';
-  const parts = ['SCBE', model, branch ? `git:${branch}` : ''].filter(Boolean).join(' │ ');
-  process.stdout.write(ansi('dim', `  ${parts}\n`));
+
+  if (squadMode) {
+    // Show all three slots with reachability
+    const slots = [
+      { name: 'ollama',    label: 'local/free',    reach: true },
+      { name: 'cerebras',  label: 'fast-ops',       reach: unitReachable('cerebras') },
+      { name: 'groq',      label: 'policy/safety',  reach: unitReachable('groq') },
+    ];
+    const slotStr = slots.map((s) => {
+      const mark = s.reach ? ansi('green', '●') : ansi('red', '○');
+      return `${mark} ${s.name}(${s.label})`;
+    }).join('  ');
+    const parts = ['SCBE squad', slotStr, branch ? `git:${branch}` : ''].filter(Boolean).join(' │ ');
+    process.stdout.write(ansi('dim', `  ${parts}\n`));
+  } else {
+    const model = `${cfg.provider || 'ollama'}:${cfg.model || 'llama3.2'}`;
+    const parts = ['SCBE', model, branch ? `git:${branch}` : ''].filter(Boolean).join(' │ ');
+    process.stdout.write(ansi('dim', `  ${parts}\n`));
+  }
 }
 
 // ─── Interactive shell ────────────────────────────────────────────────────────
@@ -1955,12 +2295,21 @@ function runInteractiveShell(flags = {}) {
   });
 
   process.stdout.write('\n');
-  printShellStatusBar(cfg);
-  process.stdout.write(
-    ansi('bold', 'SCBE governed shell') +
-      ansi('gray', ' — type a command, plain English, or !powershell\n') +
-      ansi('gray', '  :help  :config  :search <query>  :clear  :exit\n\n')
-  );
+  printShellStatusBar(cfg, flags.squad);
+  if (flags.squad) {
+    process.stdout.write(
+      ansi('bold', 'SCBE squad shell') +
+        ansi('gray', ' — plain English routes to the right slot automatically\n') +
+        ansi('gray', '  ollama=local/free  cerebras=fast-ops  groq=policy/safety\n') +
+        ansi('gray', '  :help  :config  :squad  :clear  :exit\n\n')
+    );
+  } else {
+    process.stdout.write(
+      ansi('bold', 'SCBE governed shell') +
+        ansi('gray', ' — type a command, plain English, or !powershell\n') +
+        ansi('gray', '  :help  :config  :search <query>  :clear  :exit\n\n')
+    );
+  }
   rl.prompt();
 
   rl.on('line', (rawLine) => {
@@ -2003,7 +2352,7 @@ function runInteractiveShell(flags = {}) {
         printHistory(Number(metaArgs[0]) || 20);
       } else if (meta === 'clear') {
         process.stdout.write('\x1b[2J\x1b[0f');
-        printShellStatusBar(cfg);
+        printShellStatusBar(cfg, flags.squad);
       } else if (meta === 'config') {
         if (metaArgs[0] === 'set' && metaArgs[1]) {
           const key = metaArgs[1];
@@ -2101,9 +2450,13 @@ function runInteractiveShell(flags = {}) {
     // ── Natural language intent → LLM → GeoSeal → approve/execute ────────
     if (flags.squad) {
       const unit = detectSquadUnit(line);
-      cfg = { ...unitToCfg(unit), system_prompt: cfg.system_prompt };
+      const slotCfg = unitToCfg(unit);
+      cfg = { ...slotCfg, system_prompt: slotCfg.system_prompt || cfg.system_prompt };
+      const reason = _SQUAD_REASON[unit] || unit;
+      process.stdout.write(ansi('dim', `  [${unit} · ${reason}] ⟳ ${cfg.provider}:${cfg.model}…\n`));
+    } else {
+      process.stdout.write(ansi('dim', `  ⟳ ${cfg.provider}:${cfg.model}…\n`));
     }
-    process.stdout.write(ansi('dim', `  ⟳ ${cfg.provider}:${cfg.model}…\n`));
     rl.pause();
     process.stdout.write(ansi('cyan', '  '));
 
@@ -2203,6 +2556,11 @@ function runPythonScript(relativePath, args) {
 
 function runCompiler(args) {
   runPythonScript('scripts/agents/scbe_code.py', args);
+}
+
+function runLongform(subcmd, extraArgs) {
+  // Bridge to src/longform/longform_cli.py — same source-checkout pattern.
+  runPythonScript('src/longform/longform_cli.py', [subcmd, ...extraArgs]);
 }
 
 function runRouteCompiler(args) {
@@ -3477,6 +3835,20 @@ function unitToCfg(unitName) {
         fireworks_api_key: env.FIREWORKS_API_KEY || '',
         timeout_ms: 30000,
       };
+    case 'ollama':
+      return {
+        ...base,
+        provider: 'ollama',
+        model: env.OLLAMA_MODEL || base.model || 'llama3.2',
+        url: env.OLLAMA_URL || base.url || 'http://localhost:11434',
+        timeout_ms: 20000,
+        system_prompt:
+          'You are a PowerShell system operations expert running on Windows. ' +
+          'When the user asks about files, disks, processes, network, registry, or installed packages, ' +
+          'output a single correct PowerShell command wrapped in <cmd>...</cmd> tags. ' +
+          'Use built-in PS cmdlets where possible (Get-ChildItem, Get-Process, Test-Path, etc.). ' +
+          'No explanations unless asked. Free to run — this slot has zero API cost.',
+      };
     case 'offline':
       return { ...base, provider: 'offline', model: 'offline' };
     default:
@@ -3484,14 +3856,37 @@ function unitToCfg(unitName) {
   }
 }
 
+// Slot routing reasons — shown in footer so the user can see WHY a slot fired.
+const _SQUAD_REASON = {
+  groq:     'policy/safety',
+  cerebras: 'fast ops',
+  ollama:   'local/free',
+  fireworks:'general',
+};
+
 function detectSquadUnit(task) {
   const lower = String(task || '').toLowerCase();
-  if (/\b(safe|security|auth|credential|token|policy|govern|allow|deny|block|risk|compliance|permission)\b/.test(lower)) {
+  // Policy/safety → groq (paid but explicit)
+  if (/\b(safe|security|auth|credential|token|policy|govern|allow|deny|block|risk|compliance|permission|secret|key|cert)\b/.test(lower)) {
     return 'groq';
   }
-  if (/\b(run|exec|test|build|deploy|next.?step|quick|triage|code|fix|bug|error|fail|command)\b/.test(lower)) {
+  // Code/architecture queries → cerebras even if they mention "file" or "locate"
+  if (/\b(codebase|source.?code|module|function|class|interface|import|export|wire|router|runtime|pipeline|kernel|repo|git|commit|branch|pr|pull.?request)\b/.test(lower)) {
     return 'cerebras';
   }
+  // System-level movements → ollama (free, local, no API cost)
+  if (/\b(files?|folders?|dir(ectory|ectories)?|disk|drive|space|free.?space|ls|list|find|copy|move|delet|remov|mkdir|rename|path|exist)\b/.test(lower) ||
+      /\b(process|proc|pid|kill|start|stop|restart|service|task.?manager|cpu|memory|ram|usage|monitor|perf)\b/.test(lower) ||
+      /\b(network|netstat|ping|ip.?config|dns|port|socket|interface|adapter|firewall|route)\b/.test(lower) ||
+      /\b(registry|regedit|hklm|hkcu|env.?var|environment|path.?var|system.?var)\b/.test(lower) ||
+      /\b(install|uninstall|package|chocolatey|winget|scoop|upgrade|update|module)\b/.test(lower)) {
+    return 'ollama';
+  }
+  // Fast ops / code decisions → cerebras (~920ms)
+  if (/\b(run|exec|test|build|deploy|next.?step|quick|triage|code|fix|bug|error|fail|command|script|compile|lint|format)\b/.test(lower)) {
+    return 'cerebras';
+  }
+  // Default: cerebras (fast, good enough for triage)
   return 'cerebras';
 }
 
@@ -3792,10 +4187,18 @@ const BENCH_TARGETS = {
   },
   'cli-competitive': {
     script: 'scripts/benchmark/cli_competitive_benchmark.py',
-    latestJson: 'artifacts/benchmarks/cli_competitive/latest_report.json',
-    latestMarkdown: 'artifacts/benchmarks/cli_competitive/LATEST.md',
+    latestJson: 'artifacts/benchmarks/cli_competitive/cli_competitive_benchmark_latest.json',
+    latestMarkdown: 'artifacts/benchmarks/cli_competitive/cli_competitive_benchmark_latest.md',
     description: 'CLI command accuracy vs Codex/Claude-Code-style baselines',
     claimBoundary: 'local CLI command accuracy fixture; not a published competitive benchmark score',
+  },
+  'compound-decompose': {
+    script: 'scripts/benchmark/compound_decomposition_recomposition.py',
+    latestJson: 'artifacts/benchmarks/compound_decomposition_recomposition/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/compound_decomposition_recomposition/LATEST.md',
+    description: 'RDKit compound decomposition/recomposition through atom mud',
+    claimBoundary:
+      'computational compound decomposition/recomposition benchmark; not wet-lab synthesis, biological efficacy proof, dosing guidance, or medical advice',
   },
   providers: {
     script: 'scripts/benchmark/provider_health_matrix.py',
@@ -4025,6 +4428,139 @@ function printBenchIndex(args) {
   }
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function buildBenchDashboardPayload() {
+  const index = buildBenchIndex();
+  const ready = index.lanes.filter((lane) => lane.artifact_exists);
+  const missing = index.lanes.filter((lane) => !lane.artifact_exists);
+  return {
+    schema_version: 'scbe_bench_dashboard_v1',
+    generated_at_utc: nowIso(),
+    title: 'SCBE Benchmark Evidence Dashboard',
+    commit: index.commit,
+    branch: index.branch,
+    evidence_ready: index.evidence_ready,
+    evidence_total: index.evidence_total,
+    readiness_ratio: index.evidence_total ? index.evidence_ready / index.evidence_total : 0,
+    proof_rule: index.proof_rule,
+    summary: {
+      ready_lanes: ready.map((lane) => lane.id),
+      missing_lanes: missing.map((lane) => lane.id),
+      website_claim_boundary:
+        'Public copy may say evidence-backed local benchmark lanes only when it cites command, artifact path, commit, and claim boundary.',
+    },
+    lanes: index.lanes.map((lane) => ({
+      id: lane.id,
+      description: lane.description,
+      status: lane.artifact_exists ? 'evidence-ready' : 'missing-artifact',
+      command: lane.command,
+      script: lane.script,
+      latest_json: lane.latest_json,
+      latest_markdown: lane.latest_markdown,
+      artifact_hash: lane.artifact_hash,
+      generated_at_utc: lane.generated_at_utc,
+      summary: lane.report_summary || null,
+      claim_boundary: lane.claim_boundary,
+    })),
+  };
+}
+
+function benchDashboardHtml(payload) {
+  const rows = payload.lanes
+    .map((lane) => {
+      const summary = lane.summary ? escapeHtml(JSON.stringify(lane.summary)) : 'No latest artifact yet';
+      return [
+        '<tr>',
+        `<td><strong>${escapeHtml(lane.id)}</strong><br><span>${escapeHtml(lane.description)}</span></td>`,
+        `<td>${escapeHtml(lane.status)}</td>`,
+        `<td><code>${escapeHtml(lane.command)}</code><br><small>${escapeHtml(lane.latest_json)}</small></td>`,
+        `<td>${escapeHtml(lane.artifact_hash || 'missing')}</td>`,
+        `<td>${summary}<br><small>${escapeHtml(lane.claim_boundary)}</small></td>`,
+        '</tr>',
+      ].join('');
+    })
+    .join('\n');
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(payload.title)}</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 32px; color: #15171a; background: #f7f8fa; }
+    main { max-width: 1180px; margin: 0 auto; }
+    h1 { margin-bottom: 6px; }
+    .meta { color: #515861; margin-bottom: 24px; }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .card { background: white; border: 1px solid #dfe3e8; border-radius: 8px; padding: 14px; }
+    .value { font-size: 28px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #dfe3e8; }
+    th, td { padding: 10px; border-bottom: 1px solid #e7eaee; text-align: left; vertical-align: top; font-size: 14px; }
+    th { background: #eef2f6; }
+    code { font-size: 12px; }
+    small, span { color: #59616b; }
+    @media (max-width: 760px) { body { margin: 14px; } .cards { grid-template-columns: 1fr; } table { display: block; overflow-x: auto; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>${escapeHtml(payload.title)}</h1>
+    <div class="meta">Generated ${escapeHtml(payload.generated_at_utc)} from ${escapeHtml(payload.branch)} @ ${escapeHtml(payload.commit)}</div>
+    <section class="cards">
+      <div class="card"><div>Evidence lanes</div><div class="value">${payload.evidence_ready}/${payload.evidence_total}</div></div>
+      <div class="card"><div>Readiness</div><div class="value">${Math.round(payload.readiness_ratio * 100)}%</div></div>
+      <div class="card"><div>Proof rule</div><small>${escapeHtml(payload.proof_rule)}</small></div>
+    </section>
+    <table>
+      <thead><tr><th>Lane</th><th>Status</th><th>Command / Artifact</th><th>Hash</th><th>Summary / Boundary</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </main>
+</body>
+</html>
+`;
+}
+
+function printBenchDashboard(args) {
+  const asJson = args.includes('--json');
+  const writeIndex = args.indexOf('--write');
+  const writePath = writeIndex >= 0 ? args[writeIndex + 1] : null;
+  if (writeIndex >= 0 && !writePath) {
+    process.stderr.write('scbe bench dashboard: --write requires a path.\n');
+    process.exit(2);
+  }
+  const payload = buildBenchDashboardPayload();
+  if (writePath) {
+    const absolute = path.resolve(process.cwd(), writePath);
+    fs.mkdirSync(path.dirname(absolute), { recursive: true });
+    const content = asJson ? `${JSON.stringify(payload, null, 2)}\n` : benchDashboardHtml(payload);
+    fs.writeFileSync(absolute, content, 'utf8');
+    if (!asJson) {
+      process.stdout.write(`wrote ${absolute}\n`);
+      return;
+    }
+  }
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write(`SCBE benchmark dashboard: ${payload.evidence_ready}/${payload.evidence_total} lanes ready\n`);
+  process.stdout.write(`commit: ${payload.commit}\n`);
+  process.stdout.write(`proof: ${payload.proof_rule}\n\n`);
+  for (const lane of payload.lanes) {
+    process.stdout.write(`- ${lane.id}: ${lane.status}\n`);
+    process.stdout.write(`  ${lane.command}\n`);
+  }
+}
+
 // Lanes 40/100: claim-hardened proof packet
 function buildBenchProof(args) {
   const lane = args.find((arg, index) => !arg.startsWith('--') && args[index - 1] !== '--write');
@@ -4118,6 +4654,7 @@ function printBenchHelp() {
       '  scbe bench list [--json]',
       '  scbe bench status [--json]',
       '  scbe bench latest [lane] [--json]',
+      '  scbe bench dashboard [--json] [--write <path>]',
       '  scbe bench prove [lane] [--json] [--write <path>]',
       '  scbe bench index [--json] [--write <path>]',
       '',
@@ -4145,6 +4682,10 @@ function runBench(args) {
   }
   if (sub === 'latest') {
     printBenchLatest(args.slice(1));
+    process.exit(0);
+  }
+  if (sub === 'dashboard') {
+    printBenchDashboard(args.slice(1));
     process.exit(0);
   }
   if (sub === 'prove') {
@@ -4184,6 +4725,469 @@ function runBench(args) {
   process.exit(typeof pyResult.status === 'number' ? pyResult.status : 1);
 }
 
+function runReactionCli(args) {
+  if (!args.length || args[0] === 'help' || args[0] === '--help' || args[0] === '-h') {
+    process.stdout.write(
+      [
+        'Usage:',
+        '  scbe react audit --packet <file> [--json]',
+        '  scbe react compare --left <file> --right <file> [--json]',
+        '  scbe react code --source <file> --target <file> [--json]',
+        '  scbe react audio [--frequency Hz] [--model generic|magnetoelastic|magnetosonic] [--json]',
+        '',
+        'Reaction packets classify bounded transforms as BIJECTIVE, LOSSY_RECOVERABLE,',
+        'LOSSY_AMBIGUOUS, or INVALID under a declared representation.',
+        '',
+      ].join('\n')
+    );
+    process.exit(0);
+  }
+  const scriptPath = resolveRepoScript('scripts/reaction_cli.py');
+  if (!scriptPath) {
+    process.stderr.write('scbe react: missing scripts/reaction_cli.py\n');
+    process.exit(2);
+  }
+  const child = spawnSync(pythonCommand(), [scriptPath, ...args], {
+    cwd: repoRoot(),
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  if (child.stdout) process.stdout.write(child.stdout);
+  if (child.stderr) process.stderr.write(child.stderr);
+  if (typeof child.status === 'number') process.exit(child.status);
+  process.exit(1);
+}
+
+const BUNDLE_SCHEMA_VERSION = 'scbe_polyglot_reaction_bundle_v1';
+const BUNDLE_ENTRY_SCHEMA_VERSION = 'scbe_polyglot_bundle_entry_v1';
+const BUNDLE_TONGUE_MAP = {
+  KO: 'identity / original signal',
+  AV: 'observable features / descriptive transport',
+  RU: 'operation / transformation',
+  CA: 'constraint / law / rule block',
+  UM: 'uncertainty / loss / shadow state',
+  DR: 'resolution / proof / receiver landing',
+};
+
+function printBundleHelp() {
+  process.stdout.write(
+    [
+      'Usage:',
+      '  scbe bundle <file|text>',
+      '  scbe bundle create [--input <file>] [--intent "..."] [--out <file>] [--json]',
+      '  scbe bundle add --bundle <file> --file <file> [--role KO|AV|RU|CA|UM|DR] [--out <file>] [--json]',
+      '  scbe bundle verify --bundle <file> [--json]',
+      '  scbe bundle translate --bundle <file> --to binary-hex [--json]',
+      '  scbe bundle reconstruct --bundle <file> [--receiver <id>] [--json]',
+      '',
+      'A bundle preserves one main idea through multiple tubes: text, code, chemistry,',
+      'image/blob metadata, binary/hex exactness, Sacred Tongue roles, and proof hashes.',
+      'If the first argument is a real file, SCBE reads it. Otherwise it is treated as',
+      'intent text.',
+      '',
+    ].join('\n')
+  );
+}
+
+function bundleLanguageFromPath(filePath) {
+  const ext = path.extname(String(filePath || '')).toLowerCase();
+  if (ext === '.py') return 'python';
+  if (ext === '.js' || ext === '.mjs' || ext === '.cjs') return 'javascript';
+  if (ext === '.ts' || ext === '.tsx') return 'typescript';
+  if (ext === '.rs') return 'rust';
+  if (ext === '.go') return 'go';
+  if (ext === '.sh' || ext === '.bash') return 'shell';
+  if (ext === '.ps1') return 'powershell';
+  if (ext === '.json') return 'json';
+  if (ext === '.smi' || ext === '.smiles') return 'smiles';
+  if (ext === '.md') return 'markdown';
+  if (ext === '.txt') return 'text';
+  return null;
+}
+
+function looksLikeSmiles(text) {
+  const raw = String(text || '').trim();
+  if (!raw || raw.length > 240 || /\s{2,}/.test(raw)) return false;
+  if (!/[CONSHFPSIBrclnops\[\]\(\)=#@+\-0-9]/.test(raw)) return false;
+  return /^[A-Za-z0-9@+\-\[\]\(\)=#$\\\/.%]+$/.test(raw) && /[CONFPSIBrcnos]/.test(raw);
+}
+
+function detectBundleKind({ filePath, buffer, forcedKind }) {
+  if (forcedKind) return forcedKind;
+  const ext = path.extname(String(filePath || '')).toLowerCase();
+  if (['.py', '.js', '.mjs', '.cjs', '.ts', '.tsx', '.rs', '.go', '.sh', '.bash', '.ps1'].includes(ext)) return 'code';
+  if (['.smi', '.smiles', '.mol', '.sdf'].includes(ext)) return 'chem';
+  if (['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'].includes(ext)) return 'image';
+  if (ext === '.json') return 'json';
+  if (ext === '.bin' || ext === '.wasm' || ext === '.exe' || ext === '.dll') return 'binary';
+  const text = buffer ? buffer.toString('utf8') : '';
+  if (looksLikeSmiles(text)) return 'chem';
+  if (/\b(function|class|def|import|export|const|let|fn|package|SELECT)\b/.test(text)) return 'code';
+  return 'text';
+}
+
+function detectBundleLanguage({ kind, filePath, text }) {
+  const fromPath = bundleLanguageFromPath(filePath);
+  if (fromPath) return fromPath;
+  if (kind === 'chem') return 'smiles';
+  if (kind === 'binary') return 'binary';
+  if (kind === 'image') return 'image';
+  if (kind === 'json') return 'json';
+  const sample = String(text || '');
+  if (/\bdef\s+\w+\(|\bimport\s+\w+/.test(sample)) return 'python';
+  if (/\bfunction\s+\w+\(|\bconst\s+\w+\s*=|\bexport\s+/.test(sample)) return 'javascript';
+  if (/\bfn\s+\w+\(|\blet\s+mut\b/.test(sample)) return 'rust';
+  return 'text';
+}
+
+function defaultBundleRole(kind) {
+  if (kind === 'code') return 'RU';
+  if (kind === 'chem' || kind === 'json') return 'CA';
+  if (kind === 'image') return 'AV';
+  if (kind === 'binary') return 'DR';
+  return 'KO';
+}
+
+function bundleSemanticDims(text, kind, language) {
+  const lower = String(text || '').toLowerCase();
+  const axes = [
+    ['identity', 'source', 'same', 'exact', 'hash', 'main', 'intent'],
+    ['feature', 'observe', 'color', 'image', 'shape', 'chemistry', 'audio'],
+    ['run', 'transform', 'compile', 'release', 'parse', 'react', 'code'],
+    ['constraint', 'law', 'verify', 'test', 'rule', 'chemical', 'chem'],
+    ['loss', 'uncertain', 'unknown', 'fallback', 'ambiguous', 'gap'],
+    ['proof', 'resolve', 'receipt', 'landing', 'output', 'binary', 'hex'],
+  ];
+  const dims = axes.map((axis) => {
+    const hits = axis.reduce((total, word) => total + (lower.includes(word) ? 1 : 0), 0);
+    return Math.min(255, Math.round((hits / axis.length) * 255));
+  });
+  if (kind === 'code') dims[2] = Math.max(dims[2], 96);
+  if (kind === 'chem') dims[3] = Math.max(dims[3], 96);
+  if (kind === 'image') dims[1] = Math.max(dims[1], 96);
+  if (language && language !== 'text') dims[5] = Math.max(dims[5], 64);
+  return dims;
+}
+
+function bundleDimsToHex(dims) {
+  return dims.map((value) => Number(value || 0).toString(16).padStart(2, '0')).join('');
+}
+
+function bundleBinaryPreview(buffer, limit = 24) {
+  return Array.from(buffer.subarray(0, limit))
+    .map((byte) => byte.toString(2).padStart(8, '0'))
+    .join(' ');
+}
+
+function bundleEntryFromBuffer(buffer, opts = {}) {
+  const sourcePath = opts.sourcePath ? path.resolve(opts.sourcePath) : null;
+  const kind = detectBundleKind({ filePath: sourcePath, buffer, forcedKind: opts.kind });
+  const text = kind === 'binary' || kind === 'image' ? '' : buffer.toString('utf8');
+  const language = opts.language || detectBundleLanguage({ kind, filePath: sourcePath, text });
+  const dims = bundleSemanticDims(text, kind, language);
+  const sha = crypto.createHash('sha256').update(buffer).digest('hex');
+  const lossNotes = [];
+  if (!opts.kind && kind === 'text' && sourcePath) lossNotes.push('kind inferred from extension/content');
+  if (kind === 'image' || kind === 'binary') lossNotes.push('semantic layer stores metadata; exact bytes preserved by sha256/hex preview');
+  return {
+    schema_version: BUNDLE_ENTRY_SCHEMA_VERSION,
+    entry_id: opts.entryId || `entry_${String(opts.index || 1).padStart(3, '0')}`,
+    kind,
+    role: opts.role || defaultBundleRole(kind),
+    language,
+    source_path: sourcePath,
+    bytes: buffer.length,
+    sha256: sha,
+    hex_preview: buffer.toString('hex').slice(0, 96),
+    binary_preview: bundleBinaryPreview(buffer),
+    semantic_dims: dims,
+    semantic_hex: bundleDimsToHex(dims),
+    text_preview: text ? text.slice(0, 240) : '',
+    loss_notes: lossNotes,
+    metadata: {
+      basename: sourcePath ? path.basename(sourcePath) : null,
+      extension: sourcePath ? path.extname(sourcePath).toLowerCase() : null,
+    },
+  };
+}
+
+function bundleEntryFromText(text, opts = {}) {
+  return bundleEntryFromBuffer(Buffer.from(String(text || ''), 'utf8'), {
+    ...opts,
+    sourcePath: null,
+    kind: opts.kind || (looksLikeSmiles(text) ? 'chem' : 'text'),
+  });
+}
+
+function bundleWithoutHash(bundle) {
+  const clean = { ...bundle };
+  delete clean.bundle_hash;
+  delete clean.bundle_id;
+  return clean;
+}
+
+function sealBundle(bundle) {
+  const normalized = {
+    schema_version: BUNDLE_SCHEMA_VERSION,
+    created_at_utc: bundle.created_at_utc || new Date().toISOString(),
+    intent: bundle.intent || '',
+    entries: bundle.entries || [],
+    tongue_map: BUNDLE_TONGUE_MAP,
+    classification: bundle.classification || classifyBundle(bundle.entries || []),
+    loss_notes: bundle.loss_notes || [],
+  };
+  const hash = sha256Hex(canonicalLongformJson(normalized));
+  return {
+    ...normalized,
+    bundle_id: bundle.bundle_id || `bundle_${hash.slice(0, 12)}`,
+    bundle_hash: hash,
+  };
+}
+
+function classifyBundle(entries) {
+  if (!entries.length) return 'INVALID';
+  if (entries.some((entry) => !entry.sha256 || !entry.bytes)) return 'INVALID';
+  if (entries.some((entry) => Array.isArray(entry.loss_notes) && entry.loss_notes.length)) return 'LOSSY_RECOVERABLE';
+  return 'BIJECTIVE';
+}
+
+function loadBundle(filePath) {
+  const absolute = path.resolve(process.cwd(), filePath);
+  const payload = JSON.parse(fs.readFileSync(absolute, 'utf8'));
+  return { absolute, payload };
+}
+
+function printBundle(payload, asJson) {
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+  const bundle = payload.bundle || payload;
+  process.stdout.write(`SCBE bundle: ${bundle.bundle_id || '<unsealed>'}\n`);
+  process.stdout.write(`classification: ${bundle.classification || '<unknown>'}\n`);
+  process.stdout.write(`entries: ${Array.isArray(bundle.entries) ? bundle.entries.length : 0}\n`);
+  if (bundle.bundle_hash) process.stdout.write(`hash: ${bundle.bundle_hash}\n`);
+  if (payload.wrote) process.stdout.write(`wrote: ${payload.wrote}\n`);
+}
+
+function writeBundleIfRequested(bundle, outPath) {
+  if (!outPath) return null;
+  const absolute = path.resolve(process.cwd(), outPath);
+  fs.mkdirSync(path.dirname(absolute), { recursive: true });
+  fs.writeFileSync(absolute, `${JSON.stringify(bundle, null, 2)}\n`, 'utf8');
+  return absolute;
+}
+
+function createBundleFromArgs(args) {
+  const asJson = hasFlag(args, '--json');
+  const outPath = flagValue(args, '--out') || flagValue(args, '--output');
+  const forcedKind = flagValue(args, '--kind') || '';
+  const forcedRole = flagValue(args, '--role') || '';
+  const explicitInput = flagValue(args, '--input') || flagValue(args, '--file');
+  const positional = positionalArgs(args);
+  const candidate = explicitInput || positional[0] || '';
+  const candidatePath = candidate ? path.resolve(process.cwd(), candidate) : '';
+  const intent =
+    flagValue(args, '--intent') ||
+    flagValue(args, '--text') ||
+    (!explicitInput && candidate && !fs.existsSync(candidatePath) ? positional.join(' ') : '');
+  let entry;
+  if (explicitInput || (candidate && fs.existsSync(candidatePath))) {
+    if (!fs.existsSync(candidatePath)) {
+      process.stderr.write(`scbe bundle: input not found: ${candidate}\n`);
+      process.exit(2);
+    }
+    entry = bundleEntryFromBuffer(fs.readFileSync(candidatePath), {
+      sourcePath: candidatePath,
+      index: 1,
+      kind: forcedKind,
+      role: forcedRole,
+    });
+  } else {
+    const text = intent || '';
+    if (!text) {
+      process.stderr.write('Usage: scbe bundle <file|text> or scbe bundle create --input <file>\n');
+      process.exit(2);
+    }
+    entry = bundleEntryFromText(text, { index: 1, kind: forcedKind, role: forcedRole });
+  }
+  const bundle = sealBundle({
+    intent: intent || `bundle input: ${entry.source_path ? path.basename(entry.source_path) : entry.text_preview}`,
+    entries: [entry],
+  });
+  const wrote = writeBundleIfRequested(bundle, outPath);
+  printBundle({ ok: true, command: 'bundle create', bundle, wrote }, asJson);
+  process.exit(0);
+}
+
+function addBundleEntry(args) {
+  const asJson = hasFlag(args, '--json');
+  const bundlePath = flagValue(args, '--bundle');
+  const filePath = flagValue(args, '--file') || flagValue(args, '--input') || positionalArgs(args)[0];
+  if (!bundlePath || !filePath) {
+    process.stderr.write('Usage: scbe bundle add --bundle <file> --file <file>\n');
+    process.exit(2);
+  }
+  const { absolute, payload } = loadBundle(bundlePath);
+  const sourcePath = path.resolve(process.cwd(), filePath);
+  if (!fs.existsSync(sourcePath)) {
+    process.stderr.write(`scbe bundle add: file not found: ${filePath}\n`);
+    process.exit(2);
+  }
+  const entries = Array.isArray(payload.entries) ? payload.entries.slice() : [];
+  entries.push(
+    bundleEntryFromBuffer(fs.readFileSync(sourcePath), {
+      sourcePath,
+      index: entries.length + 1,
+      kind: flagValue(args, '--kind') || '',
+      role: flagValue(args, '--role') || '',
+    })
+  );
+  const bundle = sealBundle({ ...payload, entries, classification: classifyBundle(entries) });
+  const wrote = writeBundleIfRequested(bundle, flagValue(args, '--out') || absolute);
+  printBundle({ ok: true, command: 'bundle add', bundle, wrote }, asJson);
+  process.exit(0);
+}
+
+function verifyBundle(args) {
+  const asJson = hasFlag(args, '--json');
+  const bundlePath = flagValue(args, '--bundle') || positionalArgs(args)[0];
+  if (!bundlePath) {
+    process.stderr.write('Usage: scbe bundle verify --bundle <file>\n');
+    process.exit(2);
+  }
+  const { payload } = loadBundle(bundlePath);
+  const expectedHash = sha256Hex(canonicalLongformJson(bundleWithoutHash(payload)));
+  const bundleHashOk = expectedHash === payload.bundle_hash;
+  const entries = Array.isArray(payload.entries) ? payload.entries : [];
+  const entry_checks = entries.map((entry) => {
+    if (!entry.source_path) return { entry_id: entry.entry_id, source_path: null, ok: true, reason: 'embedded/text entry' };
+    if (!fs.existsSync(entry.source_path)) {
+      return { entry_id: entry.entry_id, source_path: entry.source_path, ok: false, reason: 'source missing' };
+    }
+    const actual = crypto.createHash('sha256').update(fs.readFileSync(entry.source_path)).digest('hex');
+    return {
+      entry_id: entry.entry_id,
+      source_path: entry.source_path,
+      ok: actual === entry.sha256,
+      expected_sha256: entry.sha256,
+      actual_sha256: actual,
+    };
+  });
+  const ok = bundleHashOk && entry_checks.every((entry) => entry.ok);
+  const report = {
+    schema_version: 'scbe_polyglot_bundle_verify_v1',
+    ok,
+    bundle_id: payload.bundle_id || null,
+    bundle_hash_ok: bundleHashOk,
+    expected_bundle_hash: expectedHash,
+    actual_bundle_hash: payload.bundle_hash || null,
+    entry_checks,
+  };
+  if (asJson) process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  else {
+    process.stdout.write(`SCBE bundle verify: ${ok ? 'PASS' : 'FAIL'}\n`);
+    process.stdout.write(`bundle hash: ${bundleHashOk ? 'ok' : 'mismatch'}\n`);
+    for (const entry of entry_checks) {
+      process.stdout.write(`- ${entry.entry_id}: ${entry.ok ? 'ok' : entry.reason || 'mismatch'}\n`);
+    }
+  }
+  process.exit(ok ? 0 : 1);
+}
+
+function translateBundle(args) {
+  const asJson = hasFlag(args, '--json');
+  const bundlePath = flagValue(args, '--bundle') || positionalArgs(args)[0];
+  const target = flagValue(args, '--to', 'binary-hex');
+  if (!bundlePath) {
+    process.stderr.write('Usage: scbe bundle translate --bundle <file> --to binary-hex\n');
+    process.exit(2);
+  }
+  const { payload } = loadBundle(bundlePath);
+  const projection = {
+    schema_version: 'scbe_polyglot_bundle_projection_v1',
+    bundle_id: payload.bundle_id || null,
+    target,
+    classification: payload.classification || null,
+    entries: (payload.entries || []).map((entry) => ({
+      entry_id: entry.entry_id,
+      kind: entry.kind,
+      role: entry.role,
+      language: entry.language,
+      sha256: entry.sha256,
+      hex_preview: entry.hex_preview,
+      binary_preview: entry.binary_preview,
+      semantic_hex: entry.semantic_hex,
+      receiver_note: 'Exact reconstruction requires original bytes or source file; preview is for routing and inspection.',
+    })),
+  };
+  if (asJson) process.stdout.write(`${JSON.stringify(projection, null, 2)}\n`);
+  else {
+    process.stdout.write(`SCBE bundle projection: ${target}\n`);
+    for (const entry of projection.entries) {
+      process.stdout.write(`- ${entry.entry_id} ${entry.role}/${entry.kind}: ${entry.semantic_hex} ${entry.sha256.slice(0, 12)}\n`);
+    }
+  }
+  process.exit(0);
+}
+
+function reconstructBundle(args) {
+  const asJson = hasFlag(args, '--json');
+  const bundlePath = flagValue(args, '--bundle') || positionalArgs(args)[0];
+  const receiver = flagValue(args, '--receiver', 'generic-agent');
+  if (!bundlePath) {
+    process.stderr.write('Usage: scbe bundle reconstruct --bundle <file> [--receiver <id>]\n');
+    process.exit(2);
+  }
+  const { payload } = loadBundle(bundlePath);
+  const packet = {
+    schema_version: 'scbe_polyglot_bundle_reconstruct_v1',
+    receiver,
+    bundle_id: payload.bundle_id || null,
+    intent: payload.intent || '',
+    classification: payload.classification || null,
+    steps: [
+      'verify bundle_hash before use',
+      'verify each source_path sha256 when available',
+      'use KO entries as identity anchors',
+      'use RU/CA entries as operation and constraint tubes',
+      'use UM loss_notes as explicit uncertainty, not hidden context',
+      'land DR/proof outputs after reconstruction',
+    ],
+    entries: (payload.entries || []).map((entry) => ({
+      entry_id: entry.entry_id,
+      role: entry.role,
+      kind: entry.kind,
+      language: entry.language,
+      source_path: entry.source_path,
+      sha256: entry.sha256,
+      semantic_hex: entry.semantic_hex,
+      loss_notes: entry.loss_notes || [],
+    })),
+  };
+  if (asJson) process.stdout.write(`${JSON.stringify(packet, null, 2)}\n`);
+  else {
+    process.stdout.write(`SCBE bundle reconstruct for ${receiver}\n`);
+    process.stdout.write(`bundle: ${packet.bundle_id || '<unknown>'}\n`);
+    process.stdout.write(`steps:\n${packet.steps.map((step) => `- ${step}`).join('\n')}\n`);
+  }
+  process.exit(0);
+}
+
+function runBundleCli(args) {
+  const sub = args[0] || 'help';
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    printBundleHelp();
+    process.exit(0);
+  }
+  if (sub === 'create' || sub === 'new') createBundleFromArgs(args.slice(1));
+  if (sub === 'add') addBundleEntry(args.slice(1));
+  if (sub === 'verify') verifyBundle(args.slice(1));
+  if (sub === 'translate' || sub === 'project') translateBundle(args.slice(1));
+  if (sub === 'reconstruct' || sub === 'receive') reconstructBundle(args.slice(1));
+  createBundleFromArgs(args);
+}
+
 // Top-level commands scbe handles directly. Used by the typo-suggestion guard.
 // Order doesn't matter; this list is the complete set of scbe-owned verbs.
 const KNOWN_COMMANDS = [
@@ -4205,6 +5209,10 @@ const KNOWN_COMMANDS = [
   'status',
   'liboqs',
   'history',
+  'bench',
+  'benchmark',
+  'bundle',
+  'youtube',
   'flow',
   'workspace',
   'agent-bus',
@@ -4221,6 +5229,11 @@ const KNOWN_COMMANDS = [
   'aetherpp',
   'squad',
   'xval',
+  // Longform Bridge
+  'do',
+  'work',
+  'land',
+  'agent',
   'bench',
   'benchmark',
 ];
@@ -4788,6 +5801,126 @@ function runSelftest() {
   process.exit(payload.ok ? 0 : 1);
 }
 
+function parseYoutubeTags(raw) {
+  if (Array.isArray(raw)) return raw.map((tag) => String(tag).trim()).filter(Boolean);
+  if (typeof raw === 'string') return raw.split(',').map((tag) => tag.trim()).filter(Boolean);
+  return [];
+}
+
+function loadYoutubePackage(packagePath) {
+  const absolute = path.resolve(process.cwd(), packagePath);
+  const data = JSON.parse(fs.readFileSync(absolute, 'utf8'));
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error('video package must be a JSON object');
+  }
+  return {
+    path: absolute,
+    title: String(data.title || '').trim(),
+    description: String(data.description || '').trim(),
+    tags: parseYoutubeTags(data.tags),
+    script: String(data.script || '').trim(),
+    privacy: String(data.privacy || 'unlisted').trim() || 'unlisted',
+  };
+}
+
+function reviewYoutubePackage(pkg) {
+  const findings = [];
+  let score = 100;
+  const titleLen = pkg.title.length;
+  if (titleLen < 25) {
+    findings.push({ severity: 'warn', field: 'title', message: 'Title is probably too short.' });
+    score -= 10;
+  }
+  if (titleLen > 100) {
+    findings.push({ severity: 'warn', field: 'title', message: 'Title may be truncated by YouTube.' });
+    score -= 10;
+  }
+  if (!pkg.description) {
+    findings.push({ severity: 'fail', field: 'description', message: 'Description is empty.' });
+    score -= 25;
+  } else if (pkg.description.length < 80) {
+    findings.push({ severity: 'warn', field: 'description', message: 'Description is thin.' });
+    score -= 10;
+  }
+  if (pkg.tags.length < 3) {
+    findings.push({ severity: 'warn', field: 'tags', message: 'Use at least three useful tags.' });
+    score -= 8;
+  }
+  if (!['private', 'unlisted', 'public'].includes(pkg.privacy)) {
+    findings.push({ severity: 'fail', field: 'privacy', message: 'Privacy must be private, unlisted, or public.' });
+    score -= 25;
+  }
+  if (pkg.privacy === 'public') {
+    findings.push({ severity: 'warn', field: 'privacy', message: 'Public uploads should require manual approval.' });
+    score -= 5;
+  }
+  if (pkg.script && pkg.script.split(/\s+/).filter(Boolean).length < 40) {
+    findings.push({ severity: 'warn', field: 'script', message: 'Script is very short for a standalone video.' });
+    score -= 8;
+  }
+  return {
+    schema_version: 'scbe_youtube_package_review_v1',
+    source: 'ported_from_aethermoore_youtube_automation',
+    package: {
+      path: pkg.path,
+      title: pkg.title,
+      privacy: pkg.privacy,
+      tag_count: pkg.tags.length,
+      script_words: pkg.script ? pkg.script.split(/\s+/).filter(Boolean).length : 0,
+    },
+    score: Math.max(0, score),
+    decision: findings.some((finding) => finding.severity === 'fail') ? 'FAIL' : 'PASS',
+    findings,
+  };
+}
+
+function printYoutubeHelp() {
+  process.stdout.write(
+    [
+      'Usage:',
+      '  scbe youtube review <package.json> [--json]',
+      '',
+      'Package fields: title, description, tags, privacy, script.',
+      'This is a local readiness gate; it does not upload to YouTube.',
+      '',
+    ].join('\n')
+  );
+}
+
+function runYoutube(args) {
+  const sub = args[0] || 'help';
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    printYoutubeHelp();
+    process.exit(0);
+  }
+  if (sub !== 'review') {
+    process.stderr.write(`scbe youtube: unknown subcommand '${sub}'. Run 'scbe youtube help'.\n`);
+    process.exit(2);
+  }
+  const packagePath = args.find((arg, index) => index > 0 && !arg.startsWith('--'));
+  if (!packagePath) {
+    process.stderr.write('Usage: scbe youtube review <package.json> [--json]\n');
+    process.exit(2);
+  }
+  let report;
+  try {
+    report = reviewYoutubePackage(loadYoutubePackage(packagePath));
+  } catch (err) {
+    process.stderr.write(`scbe youtube review: ${err.message}\n`);
+    process.exit(2);
+  }
+  if (args.includes('--json')) {
+    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  } else {
+    process.stdout.write(`YouTube package review: ${report.decision} (${report.score}/100)\n`);
+    for (const finding of report.findings) {
+      process.stdout.write(`- ${finding.severity.toUpperCase()} ${finding.field}: ${finding.message}\n`);
+    }
+    if (report.findings.length === 0) process.stdout.write('- no findings\n');
+  }
+  process.exit(report.decision === 'FAIL' ? 1 : 0);
+}
+
 const argv = process.argv.slice(2);
 if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h' || argv[0] === 'help') {
   process.stdout.write(CLI_HELP);
@@ -4860,6 +5993,22 @@ if (argv[0] === 'liboqs') {
   runLiboqs(argv.slice(1));
 }
 
+if (argv[0] === 'bench' || argv[0] === 'benchmark') {
+  runBench(argv.slice(1));
+}
+
+if (argv[0] === 'react') {
+  runReactionCli(argv.slice(1));
+}
+
+if (argv[0] === 'bundle') {
+  runBundleCli(argv.slice(1));
+}
+
+if (argv[0] === 'youtube') {
+  runYoutube(argv.slice(1));
+}
+
 if (argv[0] === 'history') {
   const limitIndex = argv.indexOf('--limit');
   const limit = limitIndex >= 0 ? Number(argv[limitIndex + 1] || 20) : 20;
@@ -4888,6 +6037,35 @@ if (argv[0] === 'shell') {
   });
   return;
 }
+
+// ── Longform Bridge commands ──────────────────────────────────────────────────
+
+if (argv[0] === 'do') {
+  // scbe do "<objective>" [--loops N] [--land-every-stage] [--json] ...
+  runLongform('do', argv.slice(1));
+  return;
+}
+
+if (argv[0] === 'work') {
+  // scbe work init | status | resume
+  runLongform('work', argv.slice(1));
+  return;
+}
+
+if (argv[0] === 'land') {
+  // scbe land create | list | verify <hash> | show <hash>
+  runLongform('land', argv.slice(1));
+  return;
+}
+
+if (argv[0] === 'agent' && argv[1] && ['spawn', 'list', 'status'].includes(argv[1])) {
+  // scbe agent spawn <role> | agent list
+  // Note: 'agent-bus' is handled separately; 'agent' subcommand routes here.
+  runLongform('agent', argv.slice(1));
+  return;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 if (argv[0] === 'flow') {
   runFlow(argv.slice(1));

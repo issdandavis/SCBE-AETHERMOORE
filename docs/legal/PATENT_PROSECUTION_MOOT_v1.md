@@ -30,7 +30,7 @@
 
 ## Round 2 — Applicant's Response
 
-**JORDAN REYES:** Two answers on § 101. *Enfish v. Microsoft*: a claim directed to a *specific improvement in computer functionality* is not abstract at step one. Ours is concrete — adversarial inputs become computationally prohibitive because hyperbolic distance diverges to infinity at the ball boundary, so cost scales superexponentially. No allow-list or classifier has that security property.
+**JORDAN REYES:** Two answers on § 101. *Enfish v. Microsoft*: a claim directed to a *specific improvement in computer functionality* is not abstract at step one. Ours is concrete: adversarial inputs receive increasing governance cost as measured hyperbolic distance increases toward the ball boundary. No allow-list or classifier uses that same session-stateful geometric enforcement mechanism.
 
 But our closer case is *McRO v. Bandai Namco*: using a *specific* mathematical relationship to reach a result not previously achieved is not abstract. We disclose the exact arcosh metric feeding a harmonic wall, combined with a *running session reference* that updates across requests. No prior authorization system used this mechanism. *Diamond v. Diehr* is the anchor — a formula applied to a specific technological process is eligible.
 
@@ -58,7 +58,16 @@ But our closer case is *McRO v. Bandai Namco*: using a *specific* mathematical r
 
 **DAE-JUNG PARK:** Purpose and downstream signal — and it's in the code. BPE round-trip is a quality metric, does the tokenizer reconstruct the bytes, with no consumer. Our medium computes `parse(decode(encode(src))) ≡ parse(src)`, hashes the *canonical AST* with SHA-256, and *escalates a governance decision* when the fingerprint diverges or the decoded source fails to parse. We amend Claim 15 to recite the AST-canonical comparison and the escalation loop. A tokenizer evaluator never compiles an AST and never gates an action.
 
-**PROF. VANCE:** Assessment. Claim 1 survives § 101 as amended — *Enfish* plus *McRO*, the session-centroid limitation separating you from Nickel/Kiela and Ganea on § 102/103. To survive § 112, recite the Poincaré ball up top and demote "bounded non-Euclidean manifold" and the two cost-function species to dependents — your *Ariad* fallback. Omit the `π^(φ·d*)` weighted-Euclidean runtime formula or file it as a CIP; it is not in the provisional and claiming it risks your January 15, 2026 priority date. Lead with Claim 15 — the AST-hash-plus-escalation mechanism is genuinely distinct from tokenizer literature. Narrow the independents, bank the breadth in dependents, preserve priority. The core is patentable.
+**PROF. VANCE:** Assessment. Claim 1 has the strongest posture when tied to
+*Enfish* plus *McRO*, with the session-centroid limitation separating it from
+Nickel/Kiela and Ganea on § 102/103. To reduce § 112 risk, recite the Poincaré
+ball up top and demote "bounded non-Euclidean manifold" and the two
+cost-function species to dependents as *Ariad* fallbacks. Omit the `π^(φ·d*)`
+weighted-Euclidean runtime formula or file it as a CIP; it is not in the
+provisional and claiming it risks your January 15, 2026 priority date. Lead with
+Claim 15 where useful because the AST-hash-plus-escalation mechanism is distinct
+from tokenizer round-trip testing. Narrow the independents, bank the breadth in
+dependents, preserve priority.
 
 ---
 
@@ -88,7 +97,7 @@ But our closer case is *McRO v. Bandai Namco*: using a *specific* mathematical r
 
 &nbsp;&nbsp;&nbsp;&nbsp;emitting a governance decision, selected from allow, review, quarantine, and deny, that controls whether the computational action is executed,
 
-&nbsp;&nbsp;&nbsp;&nbsp;whereby the governance cost increases superexponentially as the embedded point approaches a boundary of the open unit ball, rendering adversarial deviation from the session centroid computationally prohibitive.
+&nbsp;&nbsp;&nbsp;&nbsp;whereby the governance cost increases as the embedded point approaches a boundary of the open unit ball and the governance decision controls execution of the computational action.
 
 2. The method of claim 1, wherein the bounded hyperbolic space comprises a bounded non-Euclidean manifold other than a Poincaré ball.
 

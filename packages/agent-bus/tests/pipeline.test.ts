@@ -11,6 +11,7 @@ import {
   classifyGovernedMove,
   reachableMoveSet,
   evaluateTrajectoryGate,
+  summarizeGovernedPipelineState,
   type GeoSealPlan,
 } from '../src/pipeline.js';
 
@@ -243,5 +244,25 @@ describe('governed trajectory gate', () => {
     const restored = loadGovernedPipelineState(statePath, 'lane');
     expect(restored.rejected_moves[0]?.move_class).toBe('deploy');
     expect(restored.schema_version).toBe('scbe.agent_bus.governed_state.v1');
+  });
+
+  it('summarizes governed state for CLI inspection', () => {
+    const state = createGovernedPipelineState('patent lane');
+    state.accepted_moves.push({
+      at: new Date().toISOString(),
+      intent_sha256: 'intent-read',
+      plan_sha256: 'plan-read',
+      command_key: 'inspect',
+      move_class: 'read',
+      decision: 'ACCEPT',
+      reason: 'read accepted',
+    });
+
+    const summary = summarizeGovernedPipelineState(state, 'state.json');
+    expect(summary.schema_version).toBe('scbe.agent_bus.governed_state_summary.v1');
+    expect(summary.session_id).toBe('patent-lane');
+    expect(summary.accepted_count).toBe(1);
+    expect(summary.reachable_set).toContain('write');
+    expect(summary.last_accepted?.command_key).toBe('inspect');
   });
 });

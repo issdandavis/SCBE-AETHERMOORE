@@ -99,44 +99,33 @@ def fig1():
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# FIG. 2  —  Harmonic Wall Cost Function H(d,R) = R^(d²)
+# FIG. 2  —  Alternative Harmonic Cost / Safety Functions
 # ─────────────────────────────────────────────────────────────────────────────
 def fig2():
     fig, ax = plt.subplots(figsize=(6.5, 5))
 
     d = np.linspace(0, 4.5, 500)
     PHI = (1 + math.sqrt(5)) / 2
-    E = math.e
+    d_star = np.minimum(d, 3.0)
+    h_exp = PHI ** (d**2)
+    h_recip = 1 / (1 + d + 2 * (0.25 * d))
+    h_clamped = math.pi ** (PHI * d_star)
 
-    H_phi = PHI ** (d**2)
-    H_e = E ** (d**2)
+    ax.semilogy(d, h_exp, "k-", lw=1.7, label="H(d,R) = R^(d^2), R = phi")
+    ax.semilogy(d, h_clamped, "k--", lw=1.5, label="C = pi^(phi*min(d*, d_max))")
+    ax.plot(d, h_recip, "k:", lw=1.8, label="Safety score = 1/(1+d+2*pd)")
 
-    ax.semilogy(d, H_phi, "k-", lw=1.8, label=f"R = φ ≈ {PHI:.3f} (golden ratio)")
-    ax.semilogy(d, H_e, "k--", lw=1.4, label=f"R = e ≈ {E:.3f}")
-
-    # security threshold lines
-    ax.axhline(2**128, color="black", lw=0.8, ls=":")
-    ax.axhline(2**256, color="black", lw=0.8, ls=":")
-    ax.text(4.55, 2**128 * 1.5, "128-bit\nthreshold", fontsize=7, va="bottom", ha="right")
-    ax.text(4.55, 2**256 * 1.5, "256-bit\nthreshold", fontsize=7, va="bottom", ha="right")
-
-    # critical distance markers
-    for R, label in [(PHI, "φ"), (E, "e")]:
-        d_128 = math.sqrt(128 * math.log(2) / math.log(R))
-        ax.axvline(d_128, color="black", lw=0.6, ls=":")
-
-    ax.set_xlabel("Hyperbolic distance  d", fontsize=9)
-    ax.set_ylabel("Verification cost  H(d, R)", fontsize=9)
-    ax.set_title("FIG. 2 — Harmonic Wall: H(d, R) = R^(d²)", fontsize=10, fontweight="bold")
-    ax.legend(fontsize=8, loc="upper left")
+    ax.set_xlabel("Measured drift or hyperbolic distance  d", fontsize=9)
+    ax.set_ylabel("Cost or safety score (log scale for cost)", fontsize=9)
+    ax.set_title("FIG. 2 — Alternative Harmonic Cost / Safety Functions", fontsize=10, fontweight="bold")
+    ax.legend(fontsize=7.5, loc="upper left")
     ax.set_xlim(0, 4.5)
     ax.grid(True, which="both", lw=0.4, color="gray", alpha=0.5)
 
-    # annotations
     ax.annotate(
-        "Adversarial cost\ngrows superexponentially",
-        xy=(3.2, PHI ** (3.2**2)),
-        xytext=(1.5, 1e15),
+        "Higher drift produces\nhigher cost or lower score",
+        xy=(2.7, h_clamped[np.searchsorted(d, 2.7)]),
+        xytext=(1.2, 1e3),
         fontsize=7.5,
         arrowprops=dict(arrowstyle="->", lw=0.9),
     )
@@ -395,7 +384,7 @@ def fig5():
     ax.text(5, final_y + 0.15, "ALLOW + Authorization Receipt", ha="center", va="center", fontsize=8.5, fontweight="bold")
 
     # note at bottom
-    ax.text(5, final_y - 0.35, "Noise output is cryptographically indistinguishable from valid ciphertext.", ha="center", fontsize=7, style="italic")
+    ax.text(5, final_y - 0.35, "Failure returns same-length noise or pseudorandom-looking audit output.", ha="center", fontsize=7, style="italic")
 
     # reference numerals
     ax.text(9.5, 9.4, "400", fontsize=7)
@@ -415,7 +404,7 @@ def fig6():
         ("Stage 3", "Petri Pattern Filter", "Adversarial intent regex corpus (173 seeds)", "O(n·p)", "Known attack signatures"),
         ("Stage 4", "Semantic SLM Routing", "Small language model: classify intent band", "O(model)", "Band assignment / NONE escape"),
         ("Stage 5", "Hyperbolic Distance Gate", "Session centroid + arcosh formula", "O(1)", "Session drift attacks"),
-        ("Stage 6", "Harmonic Wall", "H(d,R) = R^(d²) threshold check", "O(1)", "Boundary adversaries"),
+        ("Stage 6", "Harmonic Wall", "Nonlinear cost / safety-score threshold check", "O(1)", "Boundary adversaries"),
         ("Stage 7", "Risk Decision (L13)", "ALLOW / QUARANTINE / ESCALATE / DENY", "O(1)", "Final governance decision"),
     ]
 
@@ -532,7 +521,7 @@ def fig7():
         (1.0,  4.2, 2.1, "Centroid updated\nPQC receipt issued\nAction executed", "#f0fff0"),
         (3.6,  4.2, 2.1, "Quarantine lock applied\nTool / resource restriction\nAudit trail written", "#fffbdd"),
         (6.2,  4.2, 2.1, "Swarm quorum triggered\nGovernance review queue\nAction suspended", "#fff3e0"),
-        (8.8,  4.2, 2.1, "SHA-256 fail-to-noise\nResponse indistinguishable\nfrom random bytes", "#fff0f0"),
+        (8.8,  4.2, 2.1, "SHA-256 fail-to-noise\nSame-length audit\nnoise output", "#fff0f0"),
     ]
     for xo, yo, w, desc, color in effects:
         ax.annotate("", xy=(xo + w / 2, yo + 0.75), xytext=(xo + w / 2, 6.5),

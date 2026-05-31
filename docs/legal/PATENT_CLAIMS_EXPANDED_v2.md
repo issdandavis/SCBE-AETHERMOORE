@@ -29,22 +29,24 @@ surcharge).
 | Item | Micro-entity fee |
 |---|---|
 | Basic utility filing fee | $70 |
-| Utility search fee | $154 |
-| Utility examination fee | $176 |
-| **Base subtotal (≤ 3 independent, ≤ 20 total claims)** | **$400** |
+| Utility search fee | $165 |
+| Utility examination fee | $200 |
+| **Base subtotal (≤ 3 independent, ≤ 20 total claims)** | **$435** |
 | Independent claims over 3 (3 used → 0 over) | $0 |
-| Claims over 20: 5 extra × $40 | $200 |
+| Claims over 20: 8 extra × $40 | $320 |
 | Multiple-dependent-claim fee (none used) | $0 |
-| **Total at filing** | **$600** |
+| **Total at filing** | **$755** |
 
 Avoidable surcharges deliberately NOT incurred: paper filing ($200), non-DOCX
 ($86), multiple-dependent claim ($185).
 
-The 5 paid extra claims (21-25) carry the five highest-value additions the
+The 8 paid extra claims (21-28) carry the highest-value additions the
 predecessor packet omitted: deferred-authorization (Sacred Eggs) gate,
-all-paths-indistinguishable composition with fail-to-noise, Byzantine-fault
-swarm trust, Hopfield novel-intent energy, and physics-juggling task
-coordination. See § 7 for which of those five carry new-matter risk.
+same-length fail-to-noise composition, reroute containment, null-space anomaly
+detection, physics-juggling task coordination, disjoint bijective tokenizer
+alphabets, harmonic phase orthogonality (claim 27), and domain-specific entropy
+encoding (claim 28). See § 7 for which of those carry new-matter risk.
+Re-check the USPTO fee schedule in Patent Center on the actual filing day.
 
 ---
 
@@ -96,7 +98,7 @@ action, comprising:
 
 &nbsp;&nbsp;&nbsp;&nbsp;emitting a governance decision, from: allow, review, quarantine, or deny, that controls whether the computational action is executed;
 
-&nbsp;&nbsp;&nbsp;&nbsp;whereby the governance cost increases superexponentially as the embedded point approaches a boundary of the open unit ball.
+&nbsp;&nbsp;&nbsp;&nbsp;whereby the governance cost is a nonlinear increasing function of measured drift and is used to control execution of the computational action.
 
 > *§ 101 survival:* Claim 1 is directed to a technological improvement in
 > controlling machine execution — it *changes runtime behavior* (allows,
@@ -114,8 +116,8 @@ action, comprising:
 > `_update_centroid`; `hyperbolic distance` → `hyperbolic.ts`
 > `hyperbolicDistance`; `nonlinear cost function` → `runtime_gate.py`
 > `_harmonic_cost`; `trajectory drift` → `_cumulative_cost` accumulation +
-> `cumulative_cost_quarantine/_deny` thresholds. **See § 7 risk note B on the
-> word "superexponentially."**
+> `cumulative_cost_quarantine/_deny` thresholds. **See § 7 risk note B on
+> reconciling the disclosed cost-function embodiments.**
 
 **2.** The method of claim 1, wherein the hyperbolic distance is computed as
 `d_H = arccosh(1 + 2‖u − v‖² / ((1 − ‖u‖²)(1 − ‖v‖²)))`, where `u` is the
@@ -157,13 +159,12 @@ without computing the hyperbolic distance.
 > before the full pipeline (lines 1219-1330).
 
 **7.** The method of claim 1, further comprising, responsive to a deny decision,
-generating a deterministic pseudorandom noise output by computing a seed as a
-cryptographic hash of a fixed prefix concatenated with a content hash of the
-denied request, iteratively re-hashing the seed until a target length is
+generating a deterministic pseudorandom-looking noise output by computing a seed
+as a cryptographic hash of a fixed prefix concatenated with a content hash of
+the denied request, iteratively re-hashing the seed until a target length is
 reached, and returning the noise output in place of an error response, such that
-the noise output is indistinguishable from a valid output to an observer not
-holding the governance keys, is identical for identical denied requests, and is
-reproducible by an auditor from the content hash.
+the noise output is identical for identical denied requests and is reproducible
+by an auditor from the content hash.
 
 > *§ 112 support:* `runtime_gate.py` `_fail_to_noise(action_hash, length=32)`
 > — `h = sha256("fail-to-noise:" + action_hash)`, then `while len < length:
@@ -372,23 +373,22 @@ trail.
 
 ---
 
-### CLAIM FAMILY — EXTRA HIGH-VALUE DEPENDENTS (Claims 21-25, $40 each)
+### CLAIM FAMILY — EXTRA HIGH-VALUE DEPENDENTS (Claims 21-28, $40 each)
 
 **21.** The method of claim 1, further comprising generating a cryptographic
-authorization container that is unlocked only when all of N predetermined
-predicates are satisfied, the predicates comprising at least: a semantic
-predicate; a geometric predicate measuring distance from a known safe region; an
-execution-path predicate verifying that the container was reached via an
-authorized call chain; a quorum predicate requiring a threshold number of
-approving agents; and a cryptographic predicate verifying a post-quantum
-signature; wherein failure of any predicate returns a noise output
-indistinguishable from a successfully-unlocked container.
+authorization container that is unlocked only when N predetermined predicates
+are satisfied, where N is at least three, the predicates including at least: a
+semantic predicate evaluating whether the context representation of the proposed
+action satisfies an authorized semantic profile; a geometric predicate measuring
+whether the embedded point lies within a predetermined hyperbolic distance from
+the session centroid; and a cryptographic predicate verifying a post-quantum
+signature; wherein failure of any predicate returns a noise or
+pseudorandom-looking output rather than a structured predicate-failure response.
 
 **22.** The method of claim 21, wherein the noise output is generated by the
-deterministic re-hashing of claim 7, such that every output path — both a
-successful unlock and a failure of any predicate — produces an output
-indistinguishable, to an observer not holding the keys for all of the
-predicates, from any other output path.
+deterministic re-hashing of claim 7, such that a repeated failure path for the
+same denied request produces an audit-reproducible output of a predetermined
+length while avoiding disclosure of which predicate failed.
 
 > *§ 112 support, claims 21-22:* deferred-unlock cryptographic container with
 > ring-gated access and fail-to-noise-on-failure → `src/crypto/sacred_eggs.py`
@@ -402,37 +402,28 @@ predicates, from any other output path.
 > least a semantic, a geometric, and a cryptographic predicate" to track the
 > code more closely.**
 
-**23.** The system of claim 9, wherein the system maintains a swarm trust score
-for each participating governance agent, updates the trust score as
-`τ_new = α·τ_old + (1 − α)·v`, where `v` is a validity factor for a most-recent
-contribution and `α` is a smoothing constant, and automatically self-excludes
-from the governance decision any agent whose trust score falls below a
-participation threshold, thereby producing a Byzantine-fault-tolerant swarm
-consensus without a central coordinator.
+**23.** The method of claim 1, further comprising: prior to emitting the
+governance decision, determining whether the computational action matches a
+predetermined reroute rule associated with a class of actions; and, when a match
+is found, substituting a replacement action for the proposed computational
+action and emitting an allow decision for the replacement action, such that
+high-risk classes of actions are redirected to lower-risk alternatives without
+exposing a denial response to the requesting entity.
 
-> *§ 112 support:* Byzantine-fault-tolerant multi-agent consensus → `hydra/`
-> (Spine / Heads / Ledger / BFT per `CLAUDE.md`); a six-reviewer council
-> consensus with fail-count thresholds → `runtime_gate.py` `_council_review`
-> (0 fails → ALLOW, 1 → QUARANTINE, ≥2 → DENY). **See § 7 risk note E: the
-> specific exponential-moving-average τ-update formula currently appears only in
-> `demo/`, `archive/`, and `external_repos/` paths, not in production
-> governance. CIP candidate.**
+> *§ 112 support:* production reroute path → `runtime_gate.py` `_check_reroute`
+> and `DEFAULT_REROUTES`.
 
-**24.** The method of claim 1, further comprising applying a Hopfield energy
-function `E(c) = −½·(c')ᵀ·W·c' + θᵀ·c'` to the context representation `c`,
-wherein `W` encodes patterns of known legitimate operations learned offline;
-classifying the action as novel-intent when `E(c)` is above a threshold relative
-to trained patterns; and incorporating the novel-intent indicator into the
-composite risk value.
+**24.** The method of claim 1, further comprising computing a null-space anomaly
+score by determining whether per-axis deviations of the context representation
+from the session centroid each fall below a predetermined threshold;
+incrementing the null-space anomaly score when all per-axis deviations are below
+the threshold; and incorporating the null-space anomaly score into the composite
+risk value; wherein a null-space anomaly score above a predetermined level is
+treated as a governance signal indicating an action that is deliberately
+mimicking baseline behavior to evade the governance cost.
 
-> *§ 112 support:* multi-well / Hamiltonian energy landscape over the context
-> state (L8) → `packages/kernel/src/hyperbolic.ts` `multiWellPotential` /
-> `multiWellGradient` and `hamiltonianCFI.ts` per `CLAUDE.md`; null-space /
-> novel-intent anomaly scoring already in production → `runtime_gate.py`
-> `_null_space_anomaly`. **See § 7 risk note E: the explicit Hopfield quadratic
-> energy form `−½c'ᵀWc' + θᵀc'` currently appears only in archive/external
-> paths. CIP candidate; the production analog is the multi-well potential, which
-> counsel may prefer to claim instead.**
+> *§ 112 support:* production null-space anomaly path →
+> `runtime_gate.py` `_null_space_anomaly`.
 
 **25.** The system of claim 9, wherein the system coordinates task execution
 across a plurality of agent slots using a physics-based juggling model in which
@@ -448,6 +439,46 @@ higher-risk tasks are assigned higher arcs and fewer handoffs.
 > (rule 3 "high-inertia tasks have fewer handoffs"; rule 4 "higher arcs for
 > risky tasks"). Strong, verbatim written-description support. Lowest-risk of
 > the five extra claims.
+
+**26.** The method of claim 4, wherein each axis of the semantic weighting
+employs a bijective token alphabet comprising a number of tokens equal to the
+Cartesian product of a first predetermined prefix set and a second predetermined
+suffix set, each token uniquely formed by concatenating a prefix element, a
+predetermined separator character, and a suffix element, such that the complete
+token vocabulary for each axis bijects onto a contiguous range of integer byte
+indices, and wherein a serialized token form includes an axis designator that
+makes serialized token vocabularies of distinct axes pairwise disjoint and makes
+the axis of origin of any serialized token determinable from the serialized token
+without additional context.
+
+> *§ 112 support:* Sacred Tongues / tokenizer design surfaces, SS1 16x16
+> prefix-suffix grid, bijective encode/decode terminology, and serialized
+> axis-designator vocabulary construction. Treat priority support as needing provisional-text
+> comparison if January 15, 2026 priority is material for this dependent claim.
+
+**27.** The method of claim 4, wherein each of the six axes of the semantic
+weighting is associated with a respective harmonic frequency ratio selected from
+integer-ratio musical intervals and a phase offset equal to 2*pi*k/6 radians for
+the respective axis index k, such that the six axes are uniformly distributed
+around the unit circle at sixty-degree intervals, and the contribution of each
+axis to the governance signal incorporates a sinusoidal time-varying modulation
+at the respective harmonic frequency and phase offset.
+
+> *§ 112 support:* Sacred Tongues fixed parameters and Langues Metric phase
+> terms: phase offsets `2*pi*l/6`, harmonic frequency ratios derived from
+> musical intervals, and sinusoidal modulation in the six-axis metric.
+
+**28.** The method of claim 26, wherein each axis's token vocabulary constitutes
+a domain-specific entropy encoding in which each byte of a context representation
+maps deterministically to a token in that axis's vocabulary, the semantic content
+of the context thereby constraining available key derivation paths within the
+governance system, such that key derivation paths obtained from serialized
+encodings in distinct axis vocabularies are separated by the pairwise-disjoint
+serialized-vocabulary property.
+
+> *§ 112 support:* Domain-Specific Entropy Encoding section, Visible Seed/key
+> derivation-path discussion, Sacred Tongues token vocabularies, and claim 26's
+> pairwise-disjoint serialized-vocabulary limitation.
 
 ---
 
@@ -495,7 +526,7 @@ higher-risk tasks are assigned higher arcs and fewer handoffs.
 | **Negative Tongue Lattice; Council Manifold; Tree of Escalation (as decision-makers)** | `negative_tongue_lattice.py`; `council_manifold_backend.py`; `tree_of_escalation.py` | All are opt-in and, for ToE, expressly *observational only at v1.0* (does not veto decisions per the in-code comment). Claiming a decision contribution they do not yet make would be unsupported. | CIP once they contribute to decisions (ToE v1.1+). |
 | **Fibonacci trust levels / trust-multiplier headroom** | `runtime_gate.py` `fibonacci_trust_level`; `primitives/phi_poincare.py` | Captured generically by claim 1's "trajectory drift" severity adjustment and claim 9's "trust history" state. A Fibonacci-specific claim adds narrowness without clear competitive value. | Low priority. |
 | **Reroute (REROUTE) decision path** | `runtime_gate.py` `_check_reroute`, `DEFAULT_REROUTES` | A fifth decision mode (redirect-to-safer-action). Deliberately left out of the independent claims' four-way decision recitation to keep them clean; could be a dependent. | Add as a cheap dependent in a continuation if reroute proves commercially central. |
-| **Sacred Tongues token grids / tokenizer** | `src/tokenizer/`; `packages/sixtongues/` | The 16×16 grids and bijective byte↔token map support claims 4 and 15-16 as embodiments; a standalone tokenizer claim is a separate invention with its own prior-art surface. | Separate application if pursued. |
+| **Broader Sacred Tongues tokenizer family** | `src/tokenizer/`; `packages/sixtongues/` | Claim 26 now captures bijective token alphabets plus disjoint serialized axis-designated vocabularies, and claim 28 captures domain-specific entropy encoding. Broader tokenizer-training and cross-language compiler claims remain a separate invention with their own prior-art surface. | Separate application if pursued. |
 | **Red/Blue adversarial arena** | `src/security-engine/redblue-arena.ts` | A test/simulation harness, not the governed runtime path; not a product claim. | No. |
 
 **Honest overall:** the independent claims intentionally absorb most omitted
@@ -527,8 +558,9 @@ protect:
 - **Claims 1, 2, 3, 4, 5, 9 — Risk note A (core spine, low risk).** Poincaré
   embedding, arcosh distance, nonlinear cost, golden-ratio semantic weights,
   centroid drift, four-way decision, system architecture. This is the invention
-  spine; strongest priority posture. The only seam within the spine is the word
-  "superexponentially" in claim 1 — carried separately as risk note B below.
+  spine; strongest priority posture. The main seam within the spine is
+  cost-function consistency across the Python RuntimeGate, TypeScript kernel,
+  and older `R^(d²)` embodiments — carried separately as risk note B below.
 - **Claim 6** (immune/reflex fast-path) and **claim 13** (audit receipt) — basic
   gate mechanics consistent with the original disclosure.
 
@@ -558,22 +590,20 @@ protect:
   *specific four-layer composition* is at material risk of taking the
   non-provisional date. Strong candidate to keep but flag.
 
-### Tier 3 — Risk note B: § 112 enablement seam in Claim 1's "superexponentially"
+### Tier 3 — Risk note B: § 112 enablement seam in cost-function embodiments
 
-The moot-court amended Claim 1 (used verbatim per instruction) closes with
-"whereby the governance cost increases **superexponentially** as the embedded
-point approaches a boundary." The implemented `_harmonic_cost` returns
+The amended Claim 1 now closes with a broader and safer execution-control clause
+instead of requiring all embodiments to be superexponential. This change avoids
+forcing the Python RuntimeGate embodiment into a formula it does not implement.
+The implemented `_harmonic_cost` returns
 `π^(φ·d*)` with `d* = min(weighted_dist, 5.0)` — a **bounded exponential**
 (base ≈ 4.06; saturates near `π^8.09 ≈ 9.0 × 10³` because `d*` is clamped at
 5.0), not a superexponential or unbounded function. The TS langues metric
 (`R^(d²)` form) IS superexponential in `d`, but the Python gate that the rest of
-the claims describe is not. **Recommendation:** keep the text as instructed, but
-counsel should weigh (a) amending "superexponentially" to "exponentially, with a
-base greater than e," (b) adding a dependent reciting the clamped/saturating
-embodiment so the claim is enabled across both the `π^(φd*)` and `R^(d²)`
-species, or (c) adding the broader predecessor language from the 2026-05-28
-packet ("R raised to a power dependent on the hyperbolic distance") as a fallback
-dependent. This is the single most likely § 112 enablement objection in the set.
+the claims describe is not. **Recommendation:** preserve dependent alternatives
+for all three disclosed cost species: (a) `R^(d²)`, (b) bounded reciprocal
+`1/(1+d+2·pd)`, and (c) clamped RuntimeGate cost
+`π^(φ·min(d*, d_max))`. This is still a key § 112 review point.
 
 ### Tier 4 — Risk note C: Claim 12 PQC receipt — supported in combination, integration partial
 
@@ -612,35 +642,35 @@ provisional date cleanly. Family C is independently valuable (homoglyph /
 Trojan-Source / NFC tamper on *source code identifiers at the AST level* is a
 genuine, narrowly-held niche) and survives on its own.
 
-### Tier 6 — Risk note E: Claims 21-25 extra dependents — mostly CIP material
+### Tier 6 — Risk note E: Claims 21-28 extra dependents — mostly CIP material
 
-- **Claims 21-22 (Sacred Eggs five-predicate + all-paths-indistinguishable).**
+- **Claims 21-22 (Sacred Eggs N-predicate + same-length fail-to-noise).**
   Production `sacred_eggs.py` implements a **3-ring (CORE/INNER/OUTER + CA)**
-  container with **triadic binding** and **fail-to-noise on auth failure** — NOT
-  the specific **five-predicate (P_tongue / P_geo / P_path / P_quorum / P_crypto)
-  conjunction** the claim recites. **Partial support at best; CIP candidate.**
-  Counsel should consider reformulating to "N predetermined predicates including
-  at least a semantic, a geometric, and a cryptographic predicate," which tracks
-  the implemented ring/triad/fail-to-noise model and the Mother-Avion living-
-  credential direction without overclaiming a five-way conjunction that is not in
-  code. Claim 22's "every output path indistinguishable" is supported in spirit
-  by the egg's regenerate-shell-on-failure behavior + `_fail_to_noise`.
-- **Claim 23 (swarm trust EMA `τ_new = α·τ_old + (1−α)·v`).** The *concept* of
-  reputation-weighted, self-excluding swarm consensus is supported by HYDRA's BFT
-  and the in-gate `_council_review`. The *specific EMA formula* appears only in
-  `demo/`, `archive/`, and `external_repos/` — **CIP material vs. the
-  provisional.** Either move to a continuation or recite the generic
-  council-consensus (`_council_review` fail-count) instead of the EMA.
-- **Claim 24 (Hopfield energy `−½c'ᵀWc' + θᵀc'`).** The production analog is the
-  L8 **multi-well potential** (`multiWellPotential`) plus the null-space anomaly
-  scorer; the *explicit Hopfield quadratic form* is archive/external only. **CIP
-  material.** Counsel may prefer to claim the multi-well-potential novel-intent
-  detector (which IS in production) rather than the Hopfield form.
+  container with **triadic binding** and **fail-to-noise on auth failure**.
+  Current claim language tracks that more closely by reciting N >= 3 and
+  semantic/geometric/cryptographic predicates rather than requiring a fixed
+  five-predicate conjunction.
+- **Claim 23 (reroute containment).** Grounded in production `_check_reroute`
+  and `DEFAULT_REROUTES`; confirm against provisional text or accept
+  non-provisional-date support.
+- **Claim 24 (null-space anomaly).** Grounded in production
+  `_null_space_anomaly`; confirm against provisional text or accept
+  non-provisional-date support.
 - **Claim 25 (physics-juggling coordination).** **Strongly supported** by
   `src/fleet/juggling-scheduler.ts` (FlightState, inertia, catch windows, arcs,
-  the seven rules verbatim). Lowest risk of the five; treat as a solid dependent,
+  the seven rules verbatim). Treat as a solid dependent,
   though confirm the scheduler predates the provisional or accept the
   non-provisional date.
+- **Claim 26 (bijective tokenizer alphabets with disjoint serialized forms).** Supported by the
+  Sacred Tongues/tokenizer design surface. Because this dependent claim moves
+  closer to the tokenizer invention itself, compare against the provisional text
+  before relying on the January 15, 2026 priority date.
+- **Claim 27 (harmonic phase orthogonality).** Supported by the six-axis Sacred
+  Tongues metric, phase offsets, musical-interval ratios, and sinusoidal
+  modulation. Compare against the provisional text if priority date matters.
+- **Claim 28 (domain-specific entropy encoding).** Supported by the
+  Domain-Specific Entropy Encoding and key-derivation path discussion. Compare
+  against the provisional text if priority date matters.
 
 ### Recommended filing posture
 
@@ -649,9 +679,9 @@ genuine, narrowly-held niche) and survives on its own.
    10, 11, 12, 14 — verify each against the filed provisional; most are likely
    supportable, claim 11's specific composition and claim 12's gate-integration
    are the two to scrutinize.
-3. **Amend before filing (§ 112 seam):** address claim 1's "superexponentially"
-   per risk note B — add the saturating/`R^(d²)` dependent embodiment to the
-   specification regardless of whether the claim word changes.
+3. **Confirm before filing (§ 112 seam):** keep the specification explicit that
+   `R^(d²)`, bounded reciprocal scoring, and the clamped RuntimeGate cost are
+   alternative embodiments, not one mandatory formula.
 4. **Decide: include vs. CIP** for Family C (claims 15-20) — strong invention,
    but new-matter risk; a CIP cleanly preserves the Tier-1 priority date.
 5. **Reserve for CIP / reformulate:** claims 21 (reformulate to 3-predicate),
@@ -666,8 +696,8 @@ genuine, narrowly-held niche) and survives on its own.
    limits) — re-verify, do not assume.
 2. Run the filed-provisional vs. this-set diff (Tiers 2-6) and reclassify each
    moderate/CIP claim as priority-supported or non-provisional-dated.
-3. Decide the "superexponentially" amendment (risk note B) — this is the most
-   examinable § 112 phrase in the set.
+3. Confirm the cost-function embodiment language (risk note B) — this is the
+   most examinable § 112 math issue in the set.
 4. Decide Family C inclusion vs. CIP (risk note D).
 5. Reformulate claims 21, 23, 24 to track production code, or move to a
    continuation (risk note E).

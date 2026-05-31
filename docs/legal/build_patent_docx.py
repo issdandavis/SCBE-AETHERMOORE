@@ -52,8 +52,8 @@ SUMMARY = (
     "and agentic systems. The system embeds input actions into a Poincare ball "
     "model of bounded hyperbolic space, measures hyperbolic distance from a "
     "session-adaptive centroid representing prior authorized behavior, and applies "
-    "a nonlinear governance cost function that makes adversarial deviations "
-    "computationally prohibitive. A four-tier decision gate routes proposed "
+    "a nonlinear governance cost function that increases governance severity "
+    "as measured deviation increases. A four-tier decision gate routes proposed "
     "actions to allow, review, quarantine, or deny outcomes.\n\n"
 
     "In one aspect, the invention provides a method comprising: receiving a "
@@ -85,8 +85,8 @@ SUMMARY = (
 
     "Preferred embodiments include: session-adaptive centroid accumulation; a "
     "multi-layer pre-filter stack ordered cheapest-reject-first; a fail-to-noise "
-    "response returning deterministic pseudorandom output indistinguishable from "
-    "valid output upon denial; durable state persistence and rollback across "
+    "response returning deterministic pseudorandom-looking audit output upon "
+    "denial; durable state persistence and rollback across "
     "process restarts; quarantine non-error containment that restricts tool access "
     "and execution resources without terminating the session; post-quantum decision "
     "receipts signed under ML-DSA-65 and encapsulated under ML-KEM-768; six-axis "
@@ -104,10 +104,10 @@ FIGURE_DESCRIPTIONS = [
     ),
     (
         "FIG. 2",
-        "Harmonic wall cost function H(d,R) = R^(d^2) plotted on a log scale "
-        "as verification cost versus hyperbolic distance d for base R = e, "
-        "showing superexponential growth with the critical 128-bit security "
-        "threshold at d_crit approximately equals 9.42.",
+        "Alternative harmonic cost functions plotted against measured drift, "
+        "including H(d,R) = R^(d^2), a bounded reciprocal score "
+        "1/(1+d+2*pd), and a clamped RuntimeGate cost "
+        "pi^(phi*min(d*,d_max)).",
     ),
     (
         "FIG. 3",
@@ -129,8 +129,8 @@ FIGURE_DESCRIPTIONS = [
         "FIG. 5",
         "Sacred Egg five-predicate deferred authorization flowchart showing the "
         "conjunction P_tongue AND P_geo AND P_path AND P_quorum AND P_crypto, "
-        "wherein failure of any predicate branches to a fail-to-noise output "
-        "indistinguishable from a successful decryption output.",
+        "wherein failure of any predicate branches to a fail-to-noise or "
+        "pseudorandom-looking audit output.",
     ),
     (
         "FIG. 6",
@@ -175,18 +175,19 @@ ABSTRACT = (
     "encoded as six-dimensional context vectors weighted by successive powers of "
     "the golden ratio and embedded into a Poincare ball model of hyperbolic space. "
     "Hyperbolic distance between the embedded point and a session centroid "
-    "representing prior authorized behavior drives an exponential authorization "
-    "cost that makes adversarial deviations computationally prohibitive. "
-    "Governance decisions -- allow, quarantine, escalate, or deny -- combine the "
+    "representing prior authorized behavior drives a nonlinear authorization "
+    "cost or safety score used to control execution. "
+    "Governance decisions -- allow, review, quarantine, or deny -- combine the "
     "authorization cost with bijective tamper detection, instruction-safety "
     "pattern matching, and spectral coherence signals. Denied actions return "
-    "deterministic pseudorandom noise indistinguishable from valid output. "
+    "deterministic pseudorandom-looking audit noise instead of a structured "
+    "failure category. "
     "Authorized actions receive post-quantum cryptographic receipts signed under "
     "ML-DSA-65 and encapsulated under ML-KEM-768."
 )
 
 # ---------------------------------------------------------------------------
-# 25 Claims
+# 28 Claims
 # ---------------------------------------------------------------------------
 CLAIMS = [
     # --- Independent Claim 1 ---
@@ -219,8 +220,10 @@ CLAIMS = [
         "requests; and\n"
         "    emitting a governance decision, from: allow, review, quarantine, or "
         "deny, that controls whether the computational action is executed;\n"
-        "    whereby the governance cost increases superexponentially as the "
-        "embedded point approaches a boundary of the open unit ball."
+        "    whereby the governance cost is a nonlinear increasing function of "
+        "measured drift from the session centroid and is used to control "
+        "execution of the computational action through the emitted governance "
+        "decision."
     ),
     (
         2, False,
@@ -232,16 +235,21 @@ CLAIMS = [
         3, False,
         "The method of claim 1, wherein the nonlinear cost function comprises "
         "one of: (i) a function of the form H(d, R) = R^(d^2), where d is a "
-        "distance measure and R is a base greater than one; or (ii) a bounded "
+        "distance measure and R is a base greater than one; (ii) a bounded "
         "safety-score function of the form H = 1 / (1 + d + 2*pd), where pd is "
-        "a phase-deviation term."
+        "a phase-deviation term; or (iii) a function of the form pi^(phi*d), "
+        "where pi is the mathematical constant pi and phi is the golden ratio."
     ),
     (
         4, False,
         "The method of claim 1, wherein the additional governance signal comprises "
-        "a six-axis semantic weighting in which each axis has a predetermined "
-        "weight equal to a power of the golden ratio, phi^k for k = 0 through 5, "
-        "with phi approximately equal to 1.618."
+        "a six-axis semantic weighting in which each of the six axes corresponds to "
+        "a distinct semantic domain of the context representation and is assigned a "
+        "predetermined weight equal to a power of the golden ratio, phi^k for a "
+        "respective index k from 0 through 5, with phi approximately equal to 1.618, "
+        "such that the weighting applies exponentially increasing emphasis to "
+        "higher-order semantic domains and the combined six-axis score scales the "
+        "governance signal across semantically diverse dimensions of the context."
     ),
     (
         5, False,
@@ -253,30 +261,30 @@ CLAIMS = [
     (
         6, False,
         "The method of claim 1, further comprising maintaining a hash-indexed "
-        "adversarial-memory set and a hash-indexed safe-memory set, and, prior "
-        "to said transforming, returning a deny decision for a request whose "
-        "content hash is a member of the adversarial-memory set, and returning "
+        "adversarial-memory set and a hash-indexed safe-memory set, and returning "
+        "a deny decision for a request whose content hash is a member of the "
+        "hash-indexed adversarial-memory set without computing a hyperbolic distance, and returning "
         "an allow decision for a request whose content hash is a member of the "
-        "safe-memory set, in each case without computing the hyperbolic distance."
+        "hash-indexed safe-memory set without computing a hyperbolic distance."
     ),
     (
         7, False,
         "The method of claim 1, further comprising, responsive to a deny "
-        "decision, generating a deterministic pseudorandom noise output by "
+        "decision, generating a deterministic pseudorandom-looking noise output by "
         "computing a seed as a cryptographic hash of a fixed prefix concatenated "
-        "with a content hash of the denied request, iteratively re-hashing the "
+        "with a content hash of the request, iteratively re-hashing the "
         "seed until a target length is reached, and returning the noise output "
-        "in place of an error response, such that the noise output is "
-        "indistinguishable from a valid output to an observer not holding the "
-        "governance keys, is identical for identical denied requests, and is "
-        "reproducible by an auditor from the content hash."
+        "in place of an error response, such that the noise output is identical "
+        "for the same request and is reproducible by an auditor from "
+        "the content hash."
     ),
     (
         8, False,
-        "The method of claim 1, further comprising periodically persisting, to "
+        "The method of claim 6, further comprising periodically persisting, to "
         "a durable store, at least the session centroid, a cumulative governance "
-        "cost, a query count, a trust history, and the adversarial-memory set of "
-        "claim 6; and, after a process restart, restoring the persisted values "
+        "cost, a query count, a trust history, and the hash-indexed adversarial-memory set, "
+        "collectively referred to as the persisted values; "
+        "and, after a process restart, restoring the persisted values "
         "so that the session continues from the restored trajectory rather than "
         "from a cold start."
     ),
@@ -298,9 +306,9 @@ CLAIMS = [
         "        calculate a harmonic governance cost from the measured drift "
         "using a nonlinear cost function that increases as the drift increases;\n"
         "        apply a decision gate to the harmonic governance cost and one or "
-        "more auxiliary signals; and\n"
-        "        route the proposed action according to allow, review, quarantine, "
-        "or deny;\n"
+        "more auxiliary signals to produce a governance decision; and\n"
+        "        route the proposed action according to the governance decision, "
+        "which is one of allow, review, quarantine, or deny;\n"
         "    wherein the session centroid is updated from prior proposed actions "
         "within a session, and the persistent runtime state is restored after a "
         "process restart."
@@ -332,22 +340,23 @@ CLAIMS = [
         12, False,
         "The system of claim 9, wherein, responsive to an allow decision, the "
         "system computes a content-addressed identifier of the proposed action as "
-        "a cryptographic hash of a canonical representation, signs the identifier "
-        "together with an authorization score and a timestamp using a post-quantum "
-        "digital signature algorithm in accordance with FIPS 204 (ML-DSA-65), "
-        "encapsulates a session key using a post-quantum key-encapsulation "
-        "mechanism in accordance with FIPS 203 (ML-KEM-768), and returns a "
-        "structured receipt comprising the decision, the score, signal "
-        "identifiers, the timestamp, the signature, and a key-encapsulation "
-        "ciphertext; and wherein a downstream executor verifies the signature "
-        "before executing the allowed action."
+        "a cryptographic hash of a canonical representation, produces a digital "
+        "signature by signing the identifier together with an authorization score "
+        "and a timestamp under a post-quantum digital signature algorithm in "
+        "accordance with FIPS 204 (ML-DSA-65), encapsulates a session key using "
+        "a post-quantum key-encapsulation mechanism in accordance with FIPS 203 "
+        "(ML-KEM-768) to produce a key-encapsulation ciphertext, and returns a "
+        "structured receipt comprising the governance decision, the authorization "
+        "score, one or more signal identifiers, the timestamp, the digital "
+        "signature, and the key-encapsulation ciphertext; and wherein a downstream "
+        "executor verifies the digital signature before executing the proposed action."
     ),
     (
         13, False,
         "The system of claim 9, wherein the system emits an audit receipt "
-        "comprising at least the decision, the harmonic governance cost, signal "
-        "identifiers, and decision-relevant metadata including a session query "
-        "count and a cumulative cost."
+        "comprising at least the governance decision, the harmonic governance cost, "
+        "one or more signal identifiers, and decision-relevant metadata including "
+        "a session query count and a cumulative cost."
     ),
     (
         14, False,
@@ -377,8 +386,8 @@ CLAIMS = [
         "threshold;\n"
         "    wherein the tamper signal is distinct from a tokenizer "
         "reconstruction-quality measure in that it is derived from a comparison "
-        "of abstract syntax tree representations and gates execution of a "
-        "proposed action."
+        "of abstract syntax tree representations and gates execution of the "
+        "proposed computational action."
     ),
     (
         16, False,
@@ -424,43 +433,50 @@ CLAIMS = [
     (
         21, False,
         "The method of claim 1, further comprising generating a cryptographic "
-        "authorization container that is unlocked only when all of N predetermined "
-        "predicates are satisfied, the predicates comprising at least: a semantic "
-        "predicate; a geometric predicate measuring distance from a known safe "
-        "region; an execution-path predicate verifying that the container was "
-        "reached via an authorized call chain; a quorum predicate requiring a "
-        "threshold number of approving agents; and a cryptographic predicate "
-        "verifying a post-quantum signature; wherein failure of any predicate "
-        "returns a noise output indistinguishable from a successfully-unlocked "
-        "container."
+        "authorization container that is unlocked only when N predetermined "
+        "predicates are satisfied, where N is at least three, the predicates "
+        "including at least: a semantic predicate evaluating whether the context "
+        "representation of the computational action satisfies an authorized semantic "
+        "profile; a geometric predicate measuring whether the embedded point lies "
+        "within a predetermined hyperbolic distance from the session centroid; "
+        "and a cryptographic predicate verifying a post-quantum signature; "
+        "wherein failure of any predicate causes the container to return a noise "
+        "or pseudorandom-looking output generated by computing a cryptographic "
+        "hash over a fixed prefix and a content hash of the computational action and "
+        "iteratively re-hashing the result until a predetermined output length "
+        "is reached, rather than a structured predicate-failure response."
     ),
     (
         22, False,
-        "The method of claim 21, wherein the noise output is generated by the "
-        "deterministic re-hashing of claim 7, such that every output path -- "
-        "both a successful unlock and a failure of any predicate -- produces an "
-        "output indistinguishable, to an observer not holding the keys for all "
-        "of the predicates, from any other output path."
+        "The method of claim 21, wherein the noise or pseudorandom-looking "
+        "output is generated by a deterministic re-hashing sequence seeded by "
+        "the content hash of the computational action, such that a repeated "
+        "failure path for the same computational action produces an audit-"
+        "reproducible output of the predetermined output length while avoiding "
+        "disclosure of which predicate failed."
     ),
     (
         23, False,
-        "The system of claim 9, wherein the system maintains a swarm trust score "
-        "for each participating governance agent, updates the trust score as "
-        "tau_new = alpha * tau_old + (1 - alpha) * v, where v is a validity "
-        "factor for a most-recent contribution and alpha is a smoothing constant, "
-        "and automatically self-excludes from the governance decision any agent "
-        "whose trust score falls below a participation threshold, thereby "
-        "producing a Byzantine-fault-tolerant swarm consensus without a central "
-        "coordinator."
+        "The method of claim 1, further comprising: prior to emitting the "
+        "governance decision, determining whether the computational action matches "
+        "a predetermined reroute rule associated with a class of actions; and, "
+        "when a match is found, substituting a replacement action for the "
+        "computational action and emitting an allow decision for the replacement "
+        "action, such that high-risk classes of actions are redirected to "
+        "lower-risk alternatives without exposing a denial response to the "
+        "requesting entity."
     ),
     (
         24, False,
-        "The method of claim 1, further comprising applying a Hopfield energy "
-        "function E(c) = -1/2 * (c')^T * W * c' + theta^T * c' to the context "
-        "representation c, wherein W encodes patterns of known legitimate "
-        "operations learned offline; classifying the action as novel-intent when "
-        "E(c) is above a threshold relative to trained patterns; and "
-        "incorporating the novel-intent indicator into the composite risk value."
+        "The method of claim 1, further comprising computing a null-space "
+        "anomaly score by determining whether per-axis deviations of the context "
+        "representation from the session centroid each fall below a predetermined "
+        "threshold; incrementing the null-space anomaly score when all per-axis "
+        "deviations are below the threshold; and incorporating the null-space "
+        "anomaly score into the composite risk value; wherein a null-space "
+        "anomaly score above a predetermined level is treated as a governance "
+        "signal indicating an action that is deliberately mimicking baseline "
+        "behavior to evade the governance cost."
     ),
     (
         25, False,
@@ -473,7 +489,61 @@ CLAIMS = [
         "deviates from a predicted flight arc, such that higher-risk tasks are "
         "assigned higher arcs and fewer handoffs."
     ),
+    (
+        26, False,
+        "The method of claim 4, wherein each axis of the semantic weighting "
+        "employs a bijective token alphabet comprising a number of tokens equal "
+        "to the Cartesian product of a first predetermined prefix set and a "
+        "second predetermined suffix set, each token uniquely formed by "
+        "concatenating a prefix element, a predetermined separator character, "
+        "and a suffix element, such that the complete token vocabulary for each "
+        "axis bijects onto a contiguous range of integer byte indices, and wherein "
+        "a serialized token form includes an axis designator "
+        "that makes serialized token vocabularies of distinct axes pairwise "
+        "disjoint and makes the axis of origin of any serialized token determinable "
+        "from the serialized token without additional context."
+    ),
+    (
+        27, False,
+        "The method of claim 4, wherein each of the six axes of the semantic "
+        "weighting is associated with a respective harmonic frequency ratio "
+        "selected from integer-ratio musical intervals, and a phase offset equal "
+        "to 2*pi*k/6 radians for the respective axis index k from 0 through 5, "
+        "such that the six axes are uniformly distributed around the unit circle "
+        "at sixty-degree intervals, and the governance signal incorporates the "
+        "phase offset of each axis as a fixed structural parameter of the "
+        "six-axis weighting configuration."
+    ),
+    (
+        28, False,
+        "The method of claim 26, wherein each axis's token vocabulary constitutes "
+        "a domain-specific deterministic byte encoding in which each byte value "
+        "of a context representation maps uniquely to a token in that axis's "
+        "vocabulary, the semantic content of the context thereby constraining the "
+        "specific tokens produced within each axis's vocabulary; and wherein the "
+        "pairwise-disjoint arrangement of the serialized vocabularies ensures "
+        "that the same byte sequence encoded under distinct axes produces "
+        "structurally distinct token sequences, such that axis-specific encodings "
+        "of the same input are mutually distinguishable without decoding."
+    ),
 ]
+
+
+# ---------------------------------------------------------------------------
+# Paragraph numbering (USPTO [0001] format)
+# ---------------------------------------------------------------------------
+_para_counter = 0
+
+
+def _reset_para_counter() -> None:
+    global _para_counter
+    _para_counter = 0
+
+
+def _next_para_num() -> str:
+    global _para_counter
+    _para_counter += 1
+    return f"[{_para_counter:04d}]"
 
 
 # ---------------------------------------------------------------------------
@@ -536,15 +606,21 @@ def sub_heading(doc: Document, text: str) -> None:
     _fmt_run(r, bold=True, size=12)
 
 
-def body(doc: Document, text: str) -> None:
+def body(doc: Document, text: str, numbered: bool = True) -> None:
     for block in text.split("\n\n"):
         block = block.strip()
         if not block:
             continue
         p = doc.add_paragraph()
         _set_spacing(p, before=0, after=6)
-        p.paragraph_format.first_line_indent = Inches(0.5)
-        r = p.add_run(block)
+        if numbered:
+            p.paragraph_format.first_line_indent = Pt(0)
+            num_run = p.add_run(_next_para_num() + "    ")
+            _fmt_run(num_run, bold=True)
+            r = p.add_run(block)
+        else:
+            p.paragraph_format.first_line_indent = Inches(0.5)
+            r = p.add_run(block)
         _fmt_run(r)
 
 
@@ -565,6 +641,28 @@ def strip_md(text: str) -> str:
     text = re.sub(r"^---+$", "", text, flags=re.MULTILINE)
     text = text.replace("&nbsp;", " ")
     return text.strip()
+
+
+def trim_detailed_description(md_text: str) -> str:
+    """Remove legacy drafting appendices that are assembled separately."""
+    stop_patterns = [
+        r"^##\s+FILING CLAIMS\s*$",
+        r"^##\s+CLAIM SUPPORT MAP\s*$",
+        r"^##\s+PRIOR ART CITATIONS\s*$",
+        r"^###\s+Independent Claims\s*$",
+        r"^###\s+Dependent Claims\s*$",
+        r"^##\s+Claims\s*$",
+        r"^#\s+Claims\s*$",
+        r"^CLAIMS\s*$",
+        r"^##\s+Abstract\s*$",
+        r"^#\s+Abstract\s*$",
+        r"^ABSTRACT\s*$",
+    ]
+    for pattern in stop_patterns:
+        match = re.search(pattern, md_text, flags=re.IGNORECASE | re.MULTILINE)
+        if match:
+            return md_text[:match.start()].rstrip()
+    return md_text
 
 
 def extract_section(md_text: str, start_header: str, stop_headers: list) -> str:
@@ -624,6 +722,7 @@ def build() -> None:
 
     doc = Document()
     setup_document(doc)
+    _reset_para_counter()
 
     # ---- 1. TITLE --------------------------------------------------------
     p = doc.add_paragraph()
@@ -667,6 +766,9 @@ def build() -> None:
         p = doc.add_paragraph()
         _set_spacing(p, before=3, after=3)
         p.paragraph_format.left_indent = Inches(0.0)
+        p.paragraph_format.first_line_indent = Pt(0)
+        num_run = p.add_run(_next_para_num() + "    ")
+        _fmt_run(num_run, bold=True)
         r1 = p.add_run(f"{fig_label}—")
         _fmt_run(r1, bold=True)
         r2 = p.add_run(fig_desc)
@@ -681,6 +783,7 @@ def build() -> None:
         # Stop at nothing — take to end (no further patent section in this file)
         ["## CLAIMS", "## ABSTRACT"],
     )
+    dd_raw = trim_detailed_description(dd_raw)
     dd_clean = strip_md(dd_raw)
 
     # Parse into section/sub-section headings vs body paragraphs.
@@ -728,7 +831,7 @@ def build() -> None:
     # ---- 8. ABSTRACT (last page) -----------------------------------------
     page_break(doc)
     section_heading(doc, "ABSTRACT")
-    body(doc, ABSTRACT)
+    body(doc, ABSTRACT, numbered=False)
 
     # ---- Save ------------------------------------------------------------
     doc.save(str(OUTPUT))

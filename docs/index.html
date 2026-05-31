@@ -844,6 +844,7 @@
         <a class="brand" href="index.html">AetherMoore</a>
         <nav class="nav" aria-label="Primary">
           <a href="start-here.html">Start Here</a>
+          <a href="guard.html" style="color:#17c6cf;font-weight:700;">AetherGuard</a>
           <a href="products.html">Products</a>
           <a href="https://scbe-agent-bridge-vercel.vercel.app/console" target="_blank" rel="noopener"
             >Hosted Tools</a
@@ -1117,6 +1118,25 @@
                     >The bus turns agent work into bounded packets with verification receipts: task
                     in, local/private route first, test or artifact out. It is the coordination
                     layer behind the training and delivery workflow.</span
+                  >
+                </div>
+                <div class="proof-cell" style="border-color: rgba(45,211,166,0.3)">
+                  <strong>scbe shell --squad &middot; 3-slot AI routing live</strong>
+                  <span
+                    >Agentic PowerShell shell with deterministic per-task routing: policy/safety
+                    goes to Groq, code &amp; architecture to Cerebras, disk/system ops to Ollama
+                    (free/local). No config. Status bar shows which slot is active on every
+                    turn.</span
+                  >
+                </div>
+                <div class="proof-cell" style="border-color: rgba(140,180,255,0.25)">
+                  <strong>Governed pathfinding &middot; ensemble-beam 100% / multi-lattice 75% / oracle 100%</strong>
+                  <span
+                    >8-field multi-lattice APF under partial observation: 75% baseline. Ensemble-beam
+                    search: 100% solve / 0.988 efficiency (12/12). Oracle BFS upper bound: 100%.
+                    SHA-256 receipt chain per step. Memory field is load-bearing (−0.75 without it).
+                    415 tests green. Commit <code style="font-size:11px">33266f0f5</code> —
+                    <code style="font-size:11px">npm run benchmark:vector-field-nav -- --skip-ablation --show-comparison</code></span
                   >
                 </div>
               </div>
@@ -1888,9 +1908,10 @@
               <span>31% code improvement</span>
               <span>14% chat improvement</span>
               <span>25/25 constrained gate</span>
-              <span>operator agent bus</span>
+              <span>operator agent bus · 54 tools</span>
+              <span>squad shell · 3-slot routing</span>
+              <span>ensemble-beam 100% pathfinding / 0.988 efficiency</span>
               <span>7.9% mixed L0+vault improvement</span>
-              <span>3/3 dataset types beaten</span>
               <span>Patent pending (USPTO #63/961,403)</span>
             </div>
           </div>
@@ -1970,10 +1991,131 @@
         </div>
       </section>
 
+      <!-- Numbers strip — real counts from the repo + public registries -->
+      <section
+        id="numbers"
+        aria-label="By the numbers"
+        style="
+          padding: 28px 0;
+          border-top: 1px solid rgba(255,255,255,0.06);
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          background: rgba(0,0,0,0.18);
+        "
+      >
+        <div class="section-inner">
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+              gap: 0;
+            "
+          >
+            <div style="padding: 12px 18px; text-align: center; border-right: 1px solid rgba(255,255,255,0.06)">
+              <div style="font-size: 28px; font-weight: 800; color: #2dd3a6; line-height: 1">859+</div>
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #5a6578; margin-top: 4px">Tests</div>
+            </div>
+            <div style="padding: 12px 18px; text-align: center; border-right: 1px solid rgba(255,255,255,0.06)">
+              <div style="font-size: 28px; font-weight: 800; color: #2dd3a6; line-height: 1">14</div>
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #5a6578; margin-top: 4px">Security Layers</div>
+            </div>
+            <div style="padding: 12px 18px; text-align: center; border-right: 1px solid rgba(255,255,255,0.06)">
+              <div style="font-size: 28px; font-weight: 800; color: #2dd3a6; line-height: 1">6</div>
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #5a6578; margin-top: 4px">Sacred Tongues</div>
+            </div>
+            <div style="padding: 12px 18px; text-align: center; border-right: 1px solid rgba(255,255,255,0.06)">
+              <div style="font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1">60</div>
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #5a6578; margin-top: 4px">HF Models</div>
+            </div>
+            <div style="padding: 12px 18px; text-align: center; border-right: 1px solid rgba(255,255,255,0.06)">
+              <div style="font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1">21</div>
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #5a6578; margin-top: 4px">Datasets</div>
+            </div>
+            <div style="padding: 12px 18px; text-align: center; border-right: 1px solid rgba(255,255,255,0.06)">
+              <div style="font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1">3.5K</div>
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #5a6578; margin-top: 4px">npm / mo</div>
+            </div>
+            <div style="padding: 12px 18px; text-align: center; border-right: 1px solid rgba(255,255,255,0.06)">
+              <div style="font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1">12K+</div>
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #5a6578; margin-top: 4px">Dataset pulls</div>
+            </div>
+            <div style="padding: 12px 18px; text-align: center; border-right: 1px solid rgba(255,255,255,0.06)">
+              <div style="font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1">54</div>
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #5a6578; margin-top: 4px">Bus Tools</div>
+            </div>
+            <div style="padding: 12px 18px; text-align: center">
+              <div style="font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1">372K</div>
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #5a6578; margin-top: 4px">Lines of Code</div>
+            </div>
+          </div>
+          <div style="text-align: center; font-size: 11px; color: #3a4050; margin-top: 10px">
+            Counts from <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener" style="color: #4a5568">GitHub</a>, <a href="https://www.npmjs.com/package/scbe-aethermoore" target="_blank" rel="noopener" style="color: #4a5568">npm</a> &amp; <a href="https://huggingface.co/issdandavis" target="_blank" rel="noopener" style="color: #4a5568">HuggingFace</a> &middot; updated periodically
+          </div>
+        </div>
+      </section>
+
+      <section id="use-today" style="padding: 48px 0; border-top: 1px solid var(--line); background: rgba(45,211,166,0.02)">
+        <div class="section-inner">
+          <div class="section-head">
+            <div class="eyebrow">Open source &middot; run today</div>
+            <h2>Four things you can use right now — no checkout required.</h2>
+            <p>
+              The paid products are the packaged starter lane. These are the working tools underneath —
+              free, open-source, and running today.
+            </p>
+          </div>
+          <div class="split" style="grid-template-columns: repeat(2, 1fr)">
+            <article class="slab" style="border-color: rgba(45,211,166,0.35)">
+              <div style="font-size: 11px; color: #2dd3a6; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px">CLI &middot; Free</div>
+              <h3>scbe shell --squad</h3>
+              <p>
+                Agentic PowerShell with three named AI slots. Every task auto-routes:
+                <strong>policy/safety → Groq</strong>, <strong>code &amp; architecture → Cerebras</strong>,
+                <strong>disk/system ops → Ollama</strong> (free/local). Status bar shows which slot is
+                live on every turn. No configuration needed.
+              </p>
+              <pre style="background: rgba(0,0,0,0.4); border-radius: 8px; padding: 12px; font-size: 12px; color: #d6a756; margin: 14px 0; overflow: auto; white-space: pre-wrap">git clone https://github.com/issdandavis/SCBE-AETHERMOORE
+npm install &amp;&amp; npm run build
+node packages/cli/bin/scbe.js shell --squad</pre>
+              <a class="btn btn-soft" href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener">Open repo &rarr;</a>
+            </article>
+            <article class="slab" style="border-color: rgba(214,167,86,0.35)">
+              <div style="font-size: 11px; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px">NPM &middot; Free</div>
+              <h3>Agent Bus (54 governed tools)</h3>
+              <p>
+                Bounded task packets with verification receipts before every dispatch. 54 tools registered.
+                Use as a library in your own project or run the benchmark harness directly from the repo.
+              </p>
+              <pre style="background: rgba(0,0,0,0.4); border-radius: 8px; padding: 12px; font-size: 12px; color: #d6a756; margin: 14px 0; overflow: auto">npm install scbe-agent-bus</pre>
+              <a class="btn btn-soft" href="https://www.npmjs.com/package/scbe-agent-bus" target="_blank" rel="noopener">Open on npm &rarr;</a>
+            </article>
+            <article class="slab">
+              <div style="font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px">Benchmark &middot; Free</div>
+              <h3>Governed pathfinding harness</h3>
+              <p>
+                Ensemble-beam: <strong>100% solve / 0.988 efficiency</strong>. Multi-lattice baseline: 75%.
+                Oracle: 100%. SHA-256 receipt chain per step. 8-field ablation table. 415 tests green.
+              </p>
+              <pre style="background: rgba(0,0,0,0.4); border-radius: 8px; padding: 10px; font-size: 11px; color: #d6a756; margin: 12px 0; overflow: auto; white-space: pre-wrap">npm run benchmark:vector-field-nav -- --skip-ablation --show-comparison</pre>
+              <a class="btn btn-soft" href="https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/packages/agent-bus" target="_blank" rel="noopener">View benchmark code &rarr;</a>
+            </article>
+            <article class="slab">
+              <div style="font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px">Browser &middot; Free</div>
+              <h3>Live governance demo</h3>
+              <p>
+                Type any AI task into the panel above. The preflight checks it through the 14-layer
+                pipeline and returns ALLOW / QUARANTINE / ESCALATE / DENY with full rationale and a
+                SHA-256 receipt. No login, no account.
+              </p>
+              <a class="btn btn-soft" href="#governance-demo">Try the demo &rarr;</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section id="recent-milestones">
         <div class="section-inner">
           <div class="section-head">
-            <div class="eyebrow">Recent milestones &middot; April 2026</div>
+            <div class="eyebrow">Recent milestones &middot; May 2026</div>
             <h2>What shipped since the toolkit launch.</h2>
             <p>
               Every item below is a primary source you can verify: a formal proposal, a training
@@ -2057,6 +2199,25 @@
                   >Local constrained decoding gate passed 25/25 across the five tested tongues on
                   CPU. The failure catalog is now closed for this contract; remaining work is
                   broader schema coverage, not this gate.</span
+                >
+              </div>
+              <div class="proof-cell" style="border-color: rgba(45,211,166,0.3)">
+                <strong>scbe shell --squad &middot; 3-slot agentic CLI shipped (May 2026)</strong>
+                <span
+                  >Deterministic per-task AI routing: policy/safety → Groq, code/architecture →
+                  Cerebras, disk/system ops → Ollama (free/local). Status bar shows the active slot
+                  every turn. Squad routing wired into the agent bus via tools.json. Runs from
+                  the repo today.</span
+                >
+              </div>
+              <div class="proof-cell" style="border-color: rgba(140,180,255,0.2)">
+                <strong>Governed pathfinding &middot; ensemble-beam 100% / multi-lattice 75% / oracle 100% (May 2026)</strong>
+                <span
+                  >8-field APF (goal, obstacle, frontier, security, importance, memory, edge-channel,
+                  kernel-convolution) with SHA-256 receipt chain per step. Ensemble-beam: 100% solve /
+                  0.988 efficiency (12/12). Multi-lattice baseline: 75%. Oracle BFS upper bound: 100%.
+                  Memory field ablation: −0.75 without it. 415 tests green. Commit <code style="font-size:11px">33266f0f5</code>.
+                  Run: <code style="font-size:11px">npm run benchmark:vector-field-nav -- --skip-ablation --show-comparison</code></span
                 >
               </div>
             </div>
@@ -2675,6 +2836,21 @@
             </p>
           </div>
           <div class="split split-3">
+            <article class="slab" style="border-color: rgba(45, 211, 166, 0.35)">
+              <div style="font-size: 12px; color: #2dd3a6; margin-bottom: 8px">May 2026</div>
+              <h3>Squad shell + governed pathfinding</h3>
+              <p>
+                <code style="font-size:12px">scbe shell --squad</code> ships with deterministic
+                3-slot routing. Vector-field-nav harness: ensemble-beam 100% / 0.988 efficiency,
+                multi-lattice 75%, oracle 100%. SHA-256 receipt chain per step. 415 tests green.
+                Commit <code style="font-size:11px">33266f0f5</code>.
+              </p>
+              <a
+                href="#use-today"
+                style="color: #2dd3a6; font-size: 14px; display: block; margin-top: 12px"
+                >Try the tools &rarr;</a
+              >
+            </article>
             <article class="slab" style="border-color: rgba(45, 211, 166, 0.25)">
               <div style="font-size: 12px; color: #2dd3a6; margin-bottom: 8px">April 5, 2026</div>
               <h3>Canonical Formula Lock</h3>
@@ -3113,6 +3289,7 @@
               <h3>Technical proof surfaces</h3>
               <ul>
                 <li><a href="#recent-milestones">Recent milestones and proof</a></li>
+                <li><a href="benchmarks/dashboard.html">Benchmark evidence dashboard</a></li>
                 <li><a href="chat.html">Polly chat (ask the system)</a></li>
                 <li>
                   <a

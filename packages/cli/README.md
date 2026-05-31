@@ -26,9 +26,15 @@ scbe work init --objective "cross language compile lane" --json
 scbe agent spawn --workflow <id> --role tester --mandate "prove fixtures" --json
 scbe land create --workflow <id> --summary "stage verified" --json
 scbe shell
+scbe shell --squad
 scbe run "npm test"
 scbe status
 scbe history --limit 20
+scbe bench status
+scbe bench list --json
+scbe bench rubix-browser --json
+scbe bench prove rubix-browser --write proof.json
+scbe youtube review video-package.json --json
 scbe ca-plan --ops "abs abs add" --json
 scbe compile ca --opcodes "0x09 0x09 0x00" --target python --fn score --args a,b
 scbe render-op --op add --target KO --a left --b right
@@ -49,6 +55,9 @@ The same binary is also exposed as `geoseal` and `scbe-geoseal`.
 - `selftest`: runs the npm-installable smoke test (`version` + `doctor`).
 - `credits`: prints the hosted-run intake, service-credit policy, and top-up
   links for paid hosted work.
+- `shell`: opens the SCBE terminal wrapper. `shell --squad` routes plain
+  English turns across local/free Ollama, fast Cerebras, and Groq policy/safety
+  lanes based on the task text.
 - `do`: creates or resumes a durable Longform Bridge workflow, records the
   objective, optionally spawns a governed squad contract, and emits a verified
   landing receipt.
@@ -62,6 +71,13 @@ The same binary is also exposed as `geoseal` and `scbe-geoseal`.
   GeoSeal governance, exit-code preservation, and JSONL history.
 - `status`: prints local terminal/compiler/router capability status.
 - `history`: prints recent SCBE terminal runs.
+- `bench`: runs and inspects local executable evidence lanes. Use
+  `bench status` for a compact operator view, `bench list` to see available
+  lanes, `bench latest <lane>` to inspect the latest artifact, and
+  `bench prove <lane> --write proof.json` to create a portable proof packet
+  with command, artifact, commit, and claim boundary.
+- `youtube`: local-first creator utility gates. `youtube review <package.json>`
+  checks title, description, tags, privacy, and script length before upload.
 - `ca-plan`: resolves Cassisivadan operation names into canonical opcode bytes.
 - `compile ca`: compiles CA opcode bytes into target source (`python`,
   `typescript`, or `go`) with a round-trip trace.
@@ -198,6 +214,47 @@ Each run records:
 
 Use `scbe shell` to stay inside that wrapper while typing normal terminal
 commands.
+
+## Benchmark Evidence Lane
+
+Use `scbe bench` when you need proof you can run, not just a status claim:
+
+```bash
+scbe bench status
+scbe bench list --json
+scbe bench rubix-browser --json
+scbe bench latest rubix-browser
+scbe bench prove rubix-browser --write proof.json
+```
+
+The proof packet is designed for website and release notes. It records the
+command, latest artifact path, current commit, and claim boundary so local
+evidence does not get overstated as a public leaderboard result.
+
+## YouTube Package Review
+
+Use `scbe youtube review` before publishing or handing a video package to an
+upload workflow:
+
+```bash
+scbe youtube review video-package.json
+scbe youtube review video-package.json --json
+```
+
+The package is plain JSON:
+
+```json
+{
+  "title": "How I Automate My YouTube Workflow Without Losing Control",
+  "description": "A practical walkthrough of a local-first workflow for creators with review gates and manual approval.",
+  "tags": ["youtube automation", "creator tools", "workflow"],
+  "privacy": "unlisted",
+  "script": "..."
+}
+```
+
+This command is a local readiness gate only. It does not upload or change a
+YouTube account.
 
 ## Free Local Use + Paid Hosted Runs
 

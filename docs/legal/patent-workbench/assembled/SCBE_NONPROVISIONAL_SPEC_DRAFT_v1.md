@@ -14,7 +14,7 @@ The present invention relates generally to computer security systems and, more p
 
 Modern access control systems broadly fall into three categories: role-based access control (RBAC), attribute-based access control (ABAC), and capability-based security models. Each relies on policy engines that evaluate boolean predicates against identity attributes or credentials. While effective for conventional authorization scenarios, these systems share a fundamental architectural limitation: the cost imposed on an adversary attempting to circumvent the security boundary does not scale with the degree of deviation from authorized behavior. An attacker who is "slightly" outside authorized parameters faces essentially the same barrier as one attempting grossly unauthorized access.
 
-Machine learning-based anomaly detection systems have partially addressed this limitation by learning behavioral baselines and flagging statistical outliers. However, such systems suffer from three well-documented weaknesses: (1) adversarial examples can fool learned classifiers through carefully crafted inputs that remain within the learned decision boundary; (2) model drift requires continuous retraining, creating windows of vulnerability; and (3) the security guarantees are probabilistic rather than mathematical, meaning no formal proof of security boundary integrity can be provided.
+Machine learning-based anomaly detection systems have partially addressed this limitation by learning behavioral baselines and flagging statistical outliers. However, such systems suffer from three well-documented weaknesses: (1) adversarial examples can fool learned classifiers through carefully crafted inputs that remain within the learned decision boundary; (2) model drift requires continuous retraining, creating windows of vulnerability; and (3) the resulting security posture is typically statistical rather than a deterministic metric boundary computed from the request state.
 
 Geometric approaches to security have been explored in limited contexts. Prior art includes the use of hyperbolic space for malware clustering (wherein hyperbolic embeddings organize known malware samples for visualization) and control-flow integrity systems that monitor program execution graphs. However, these systems use geometry for *detection* -- identifying whether a given context appears anomalous -- rather than for *enforcement* -- making adversarial behavior mathematically expensive in proportion to its deviation from safe operation.
 
@@ -22,15 +22,15 @@ Key derivation functions (KDFs) in existing systems, including HKDF (RFC 5869), 
 
 Post-quantum cryptographic schemes based on lattice problems (Module-LWE for key encapsulation and Module-SIS for digital signatures) have been standardized by NIST as ML-KEM (FIPS 203) and ML-DSA (FIPS 204). However, existing deployments use these primitives independently, without a dual-consensus mechanism that requires both lattice problems to agree within a temporal synchronization window to produce a valid authorization.
 
-There exists a need in the art for a security framework that: (a) enforces access control through mathematical invariants that cannot be circumvented by adversarial optimization; (b) scales the cost of adversarial behavior superexponentially with the degree of deviation from trusted operation; (c) derives cryptographic keys from structured semantic inputs that constrain the available derivation paths; (d) binds authorization to geometric position, path history, and domain membership simultaneously; and (e) provides post-quantum security through dual-lattice consensus with temporal synchronization.
+There exists a need in the art for a security framework that: (a) enforces access control through measured geometric state rather than pattern matching alone; (b) scales the cost or risk assigned to adversarial behavior as a nonlinear function of the degree of deviation from trusted operation; (c) derives cryptographic keys from structured semantic inputs that constrain the available derivation paths; (d) binds authorization to geometric position, path history, and domain membership simultaneously; and (e) provides post-quantum security through dual-lattice consensus with temporal synchronization.
 
 ### Objects and Advantages
 
-It is a primary object of the present invention to provide an access control system wherein the verification cost imposed on a requesting entity is a superexponential function of its hyperbolic distance from a trusted operational center, thereby creating a geometric enforcement barrier that renders adversarial operation computationally infeasible as the entity approaches the manifold boundary.
+It is a primary object of the present invention to provide an access control system wherein the verification cost or risk imposed on a requesting entity is a nonlinear increasing function of its measured drift from a trusted operational center, thereby creating a geometric enforcement barrier that makes adversarial operation increasingly costly as the entity moves away from trusted behavior.
 
 It is a further object to provide a key derivation method wherein structured linguistic inputs from a six-dimensional semantic ontology constrain the available cryptographic derivation paths based on golden-ratio-weighted domain membership analysis, such that a key derived from an authentication-domain input cannot produce governance-domain child keys.
 
-It is a further object to provide a cryptographic identity container that implements deferred authorization through a conjunction of five predicates -- tongue membership, geometric ring position, monotone descent path history, quorum approval, and AEAD cryptographic verification -- wherein failure of any predicate produces cryptographically random output of identical length to a successful decryption, rendering the failure mode indistinguishable from success to an external observer.
+It is a further object to provide a cryptographic identity container that implements deferred authorization through a plurality of predicates -- including semantic, geometric, path-history, quorum, or AEAD cryptographic verification predicates -- wherein failure of any predicate may produce noise or pseudorandom-looking output of identical length to a successful decryption.
 
 It is a further object to provide post-quantum security through a dual-lattice consensus mechanism requiring simultaneous agreement of ML-KEM-768 (Module-LWE) and ML-DSA-65 (Module-SIS) operations within a temporal synchronization window, combined with a settling wave mechanism that materializes cryptographic key material only at a predetermined arrival time through constructive interference of sinusoidal components.
 
@@ -78,7 +78,7 @@ The following definitions apply throughout this specification:
 
 "Poincare Ball" or "B^n": The open unit ball in n-dimensional Euclidean space, B^n = {u in R^n : ||u|| < 1}, equipped with the Riemannian metric tensor g_ij = (2 / (1 - ||u||^2))^2 * delta_ij, where delta_ij is the Kronecker delta. The Poincare ball is a model of n-dimensional hyperbolic space H^n.
 
-"Hyperbolic Distance": The distance function d_H(u, v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2))) defined on the Poincare ball, which is the unique distance function satisfying the axioms of hyperbolic geometry in this model. This distance is a mathematical invariant -- it is determined by the metric tensor and cannot be circumvented or approximated by adversarial means.
+"Hyperbolic Distance": The distance function d_H(u, v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2))) defined on the Poincare ball, which is the distance function satisfying the axioms of hyperbolic geometry in this model. This distance is a mathematical invariant determined by the metric tensor and is not changed by the coordinate representation selected for the request.
 
 "Mobius Addition": The binary operation u oplus v = ((1 + 2<u,v> + ||v||^2)u + (1 - ||u||^2)v) / (1 + 2<u,v> + ||u||^2 * ||v||^2), which is the gyrovector addition operation in the Poincare ball model. Mobius addition is the hyperbolic analog of vector addition and preserves the Poincare ball (i.e., if u, v are in B^n, then u oplus v is in B^n).
 
@@ -92,9 +92,9 @@ The following definitions apply throughout this specification:
 
 "Sacred Egg": A cryptographic deferred authorization container E = (hdr, C, tag, policy) comprising an encrypted payload C, an authentication tag, and a policy specifying five predicates that must be simultaneously satisfied for decryption to succeed. The five predicates are: tongue membership (P_tongue), geometric position (P_geo), path history (P_path), quorum approval (P_quorum), and cryptographic verification (P_crypto).
 
-"Fail-to-Noise": The security property that any authorization failure produces output that is computationally indistinguishable from a successful authorization output. Specifically, upon failure of any predicate during Sacred Egg hatching, the system generates cryptographically random bytes of identical length to the true plaintext, using crypto.getRandomValues() or equivalent CSPRNG.
+"Fail-to-Noise": A failure-handling property in which an authorization failure returns a noise or pseudorandom-looking output rather than a structured error message. In some embodiments the noise is deterministic and audit-reproducible from a content hash; in other embodiments the noise is generated by a keyed or cryptographic random generator.
 
-"Harmonic Wall" or "Harmonic Scaling": The superexponential cost function H(d, R) = R^(d^2) where d is the hyperbolic distance from a trusted center and R > 1 is the base parameter. This function creates a "vertical wall" effect: the cost is modest for small d (H(1) = 2.72 for R = e) but becomes computationally infeasible for large d (H(5) = 7.2 x 10^10 for R = e), with the critical 128-bit security threshold at d_crit = sqrt(128 * ln(2)) approximately equals 9.42.
+"Harmonic Wall" or "Harmonic Scaling": A nonlinear cost or score function that maps measured drift to governance risk or safety score. Embodiments include H(d, R) = R^(d^2) where R > 1, a bounded reciprocal safety score H = 1/(1+d+2*pd), and a clamped RuntimeGate cost C = pi^(phi*min(d*, d_max)). The selected embodiment depends on runtime stability, auditability, and numerical constraints.
 
 "Fractional Dimension Flux": The ODE system nu_dot_i = kappa_i * (nu_bar_i - nu_i) + sigma_i * sin(Omega_i * t) governing the fractional participation nu_i in [0, 1] of each dimension i, where kappa_i is the relaxation rate, nu_bar_i is the mean attractor, sigma_i is the oscillation amplitude, and Omega_i is the oscillation frequency. The effective dimension D_f(t) = sum(nu_i) varies continuously and may assume non-integer values.
 
@@ -130,7 +130,7 @@ L1 -> L2 -> L3 -> L4 -> L5 (INVARIANT)
                          L11 <- L12 -> L13 -> L14
 
 
-Each layer implements one or more of twelve mathematical axioms (A1 through A12) that collectively guarantee the system's security properties. These axioms are additionally mapped to five quantum-mechanical axiom families (Unitarity, Locality, Causality, Symmetry, Composition) for formal verification purposes.
+Each layer implements one or more of twelve mathematical axioms (A1 through A12) that collectively define the system's intended security invariants. These axioms are additionally mapped to five quantum-mechanical axiom families (Unitarity, Locality, Causality, Symmetry, Composition) for formal verification purposes.
 
 ### SECTION 3: THE FOURTEEN-LAYER PIPELINE
 
@@ -202,7 +202,7 @@ Pi_epsilon(u) = (1 - epsilon) * u / ||u||  if ||u|| > 1 - epsilon
 
 where epsilon > 0 is the clamping margin (default epsilon = 0.01). This ensures that all embedded points remain strictly within the open ball, preventing numerical singularities in subsequent hyperbolic distance computations (which diverge to infinity at the boundary).
 
-The clamping is essential for computational stability but does not affect the security properties: the Harmonic Wall (Layer 12) already imposes superexponential cost for points approaching the boundary.
+The clamping is essential for computational stability. Layer 12 then maps the resulting measured drift to a governance cost or safety score using one of the disclosed nonlinear cost embodiments.
 
 Implementation: The function layer4PoincareEmbedding(xG, alpha, epsBall) computes the tanh-normalized projection and applies epsilon-clamping.
 
@@ -276,7 +276,10 @@ The phase transform is an isometry: it preserves all hyperbolic distances exactl
 d_H(T_phase(u), T_phase(v)) = d_H(u, v)    for all u, v in B^n
 
 
-This preservation is guaranteed by the theory of gyrovector spaces (Ungar, 2008). The isometry property means that the phase transform moves points within the Poincare ball without changing their relative distances -- it is a "rigid motion" of hyperbolic space.
+This preservation follows from the standard gyrovector-space formulation of
+Poincare-ball isometries (Ungar, 2008). The isometry property means that the
+phase transform moves points within the Poincare ball without changing their
+relative distances under the stated metric.
 
 The purpose of the phase transform is to implement secure key rotation and session management: by continuously rotating and translating the embedded space, the system ensures that the same context vector maps to different absolute positions at different times, while the *relative* security assessment (based on distances) remains unchanged.
 
@@ -365,15 +368,17 @@ The triadic structure ensures that the system considers not just current behavio
 
 The weighted quadrature form sqrt(sum lambda_i * d_i^2) ensures that the triadic distance is always non-negative and satisfies the triangle inequality, preserving the metric structure.
 
-#### 3.12 Layer 12: Harmonic Scaling -- THE VERTICAL WALL (Axiom A12)
+#### 3.12 Layer 12: Harmonic Scaling -- NONLINEAR GOVERNANCE COST (Axiom A12)
 
-Layer 12 applies the Harmonic Wall function to convert hyperbolic distance into verification cost:
-
-
-H(d, R) = R^(d^2)    where R > 1
+Layer 12 applies a harmonic scaling function to convert measured drift or hyperbolic distance into verification cost or safety score. Several embodiments are supported:
 
 
-This is the central enforcement mechanism of the invention. The superexponential growth of R^(d^2) as a function of d creates a "vertical wall" effect:
+H_wall(d, R) = R^(d^2)    where R > 1
+H_score(d, pd) = 1 / (1 + d + 2*pd)
+C_gate(d*) = pi^(phi * min(d*, d_max))
+
+
+The first embodiment grows superlinearly in the exponent as a function of d and creates a "vertical wall" effect:
 
 | Hyperbolic Distance d | H(d, e) = e^(d^2) | Security Interpretation |
 |---|---|---|
@@ -389,7 +394,7 @@ This is the central enforcement mechanism of the invention. The superexponential
 | 9.42 | > 2^128 | Exceeds 128-bit brute-force (post-quantum threshold) |
 | 13.32 | > 2^256 | Exceeds 256-bit brute-force (classical threshold) |
 
-The critical property is the transition from manageable cost to impossible cost over a narrow range of d. Between d = 2 and d = 4, the cost increases by a factor of approximately 163,000. This creates a sharp, well-defined security boundary that is continuously differentiable (no threshold artifacts) yet practically impenetrable.
+The critical property is the transition from lower cost to substantially higher cost over a narrow range of d. Between d = 2 and d = 4 in the R^(d^2) embodiment, the cost increases by a factor of approximately 163,000. This creates a sharp, well-defined security boundary that is continuously differentiable while still allowing configured runtime thresholds.
 
 In the preferred production embodiment, a bounded variant is used for numerical stability:
 
@@ -403,7 +408,7 @@ where pd is the phase deviation. The risk amplification is then computed as:
 Risk' = Risk_base / H_score
 
 
-This bounded form maps the superexponential wall into a reciprocal form suitable for IEEE 754 floating-point arithmetic while preserving the qualitative property that large distances produce large risk amplification.
+The bounded reciprocal form maps larger distances to lower safety scores in a manner suitable for IEEE 754 floating-point arithmetic. The clamped RuntimeGate form uses a bounded exponent to avoid overflow while preserving monotonic cost growth up to a configured cap.
 
 An additional security-bits formulation is provided:
 
@@ -439,9 +444,11 @@ Lemma 13.1 (Risk Composition Properties): Let Risk' = B * H(d*) * T * I where B 
 4. Monotonicity: partial(Risk') / partial(x) > 0 for all input variables x.
 5. Decidability: The level sets {x : Risk'(x) = c} are continuous hypersurfaces that partition the state space into connected regions.
 
-Corollary (North-Star Enforcement): Any deviation from perfect alignment (d* = 0, T = 1, I = 1) guarantees Risk' > B. There is no "free lunch" -- every deviation carries a cost.
+Corollary (North-Star Enforcement): Under the stated risk function, deviation from perfect alignment (d* = 0, T = 1, I = 1) increases Risk' above the baseline B. Thus measured deviation contributes to the governance cost.
 
 In the four-tier governance variant, an additional ESCALATE level is inserted between QUARANTINE and DENY for fleet/swarm management scenarios.
+
+In the five-tier governance variant, a REROUTE decision mode provides constructive containment as an alternative to outright denial. When the action text matches a pattern in a configurable reroute table AND an elevated geometric or semantic signal -- specifically, a harmonic cost or spin magnitude above a confirmation threshold -- independently corroborates the match, the gate substitutes a safer replacement action rather than blocking and returning fail-to-noise output. The reroute table maps action patterns (regular expressions over the action text) to replacement action identifiers and human-readable rationale strings; representative entries redirect system file access to a logged-denial stub and redirect external network sends to a log-only handler. REROUTE operates on a separate action path outside the numeric severity escalation chain: it does not compete with ALLOW, QUARANTINE, or DENY in severity comparisons, and a REROUTE result is preserved against subsequent overlay signals that would otherwise escalate toward DENY. The two-signal confirmation requirement -- pattern match plus geometric or semantic corroboration -- substantially reduces false-positive reroutes on benign text that incidentally contains common words matching the reroute pattern.
 
 #### 3.14 Layer 14: Audio Axis (Axiom A10)
 
@@ -556,7 +563,7 @@ Theorem 3 (Bounded Oscillation): L is bounded between L_min and L_max for any fi
 Theorem 4 (Convexity): partial^2(L) / partial(d_l)^2 > 0 for all l.
 *Proof*: partial^2(L) / partial(d_l)^2 = nu_l * w_l * (beta_l)^2 * exp(beta_l * (d_l + ...)) > 0.
 
-These properties guarantee that the Langues Metric is a well-behaved, strictly increasing cost function that becomes exponentially more expensive as any deviation increases, with bounded oscillation providing temporal unpredictability.
+These properties provide a well-behaved, strictly increasing cost function that becomes more expensive as deviation increases, with bounded oscillation providing temporal variation.
 
 #### 4.6 Langues Risk Classification
 
@@ -652,7 +659,7 @@ The Domain Separation Tag (DST) encodes the entire authorization context: tongue
 
 #### 5.3 Fail-to-Noise Output
 
-When any predicate fails, the Sacred Egg produces cryptographically random output of the same length as the true plaintext:
+When any predicate fails, the Sacred Egg may produce random, keyed, or deterministic pseudorandom-looking output of the same length as the true plaintext:
 
 
 function generateFailureOutput(length):
@@ -666,7 +673,7 @@ This ensures that an attacker cannot distinguish between:
 - A "distant" failure (zero predicates satisfied)
 - A successful hatch (all predicates satisfied, but the attacker does not know the plaintext)
 
-The fail-to-noise property is essential because it eliminates the information-theoretic side channel that traditional error messages create. An attacker who can distinguish "wrong password" from "wrong username" gains information that reduces the search space; fail-to-noise provides zero bits of distinguishing information.
+The fail-to-noise property reduces the side channel that traditional error messages create. An attacker who can distinguish "wrong password" from "wrong username" gains information that reduces the search space; fail-to-noise avoids returning such structured failure categories.
 
 #### 5.4 Sacred Eggs Genesis Gate
 
@@ -863,6 +870,13 @@ The context includes sphere/cube projections (HEALPix or Morton codes) that bind
 
 The system implements a "cheapest reject first" strategy that orders verification stages by computational cost:
 
+Stage 0: Null-Space Anomaly Check -- O(d)
+- Compute the six-dimensional tongue coordinate vector for the action text.
+- Compare each coordinate against the session centroid (or a fixed default baseline when no centroid has been established).
+- If ALL six coordinates are within a predetermined epsilon of the centroid (all deviations < NULL_SPACE_EPSILON), compute anomaly score = max(0.0, 1 - mean_deviation / NULL_SPACE_EPSILON). An adversarial input that deliberately keeps all tongue activations near the centroid is "hiding in the null space" -- the action appears geometrically normal so that the hyperbolic distance to the centroid remains small, evading the harmonic cost wall while carrying adversarial intent.
+- If the standard deviation of the coordinate vector is below a uniformity threshold (e.g., std < 0.03), return anomaly score 0.5 regardless of centroid proximity. Real text activates tongue dimensions unevenly; a flat, unnaturally uniform activation profile is independently suspicious.
+- A nonzero anomaly score is added to the composite risk value before the main hyperbolic distance computation, so null-space hiding is penalized even when the measured distance to the centroid is small.
+
 Stage 1: Intent Match -- O(1)
 - Compare provided intent against expected intent from trajectory
 - Reject if primary or modifier mismatch
@@ -933,13 +947,20 @@ Authorization is granted only when the agent's vector intersects the correct coo
 
 The system implements honeypot challenges using physics-based traps to distinguish legitimate agents from rogue actors:
 
-Variable Swap Trap: The system periodically presents challenges containing swapped or impossible physical variables (e.g., a thermodynamic equation with entropy and enthalpy swapped, or a gravitational calculation with imaginary mass). Legitimate agents, having been trained on correct physics, recognize the impossibility and respond with a diagnostic rejection. Rogue agents, attempting to compute the result naively, produce an output that reveals their compromised state.
+Variable Swap Trap: The system periodically presents challenges containing
+swapped or physically inconsistent variables (e.g., a thermodynamic equation
+with entropy and enthalpy swapped, or a gravitational calculation with imaginary
+mass). A governed agent may recognize the inconsistency and respond with a
+diagnostic rejection, while a compromised agent may attempt to compute the result
+naively and thereby produce a detectable governance signal.
 
 The trap cipher has the following properties:
 
 1. Zero false positives for legitimate agents: The traps use well-known impossibilities (perpetual motion, negative entropy generation, FTL information transfer) that any correctly functioning agent will reject.
-2. High detection rate for compromised agents: A compromised agent that has been adversarially modified will attempt to compute the impossible result, revealing its corruption.
-3. No information leakage: The trap challenges are indistinguishable from normal computational requests until the agent attempts to solve them, preventing adversaries from pre-filtering traps.
+2. Detection support for compromised agents: A compromised agent that has
+been adversarially modified may attempt to compute the inconsistent result,
+producing a signal that can contribute to a governance decision.
+3. Reduced pre-filtering signal: The trap challenges are formatted as normal computational requests until the agent attempts to solve them, reducing the ability of an adversary to pre-filter traps by surface form alone.
 
 #### 10.3 Corrective Swarm Governance
 
@@ -1036,7 +1057,7 @@ The system was evaluated against seven canonical attack strategies:
 | SWARM_INFILTRATION | Slow stealth approach | DETECTED | L11 (Triadic), L13 |
 | BRUTE_FORCE | Massive parallel key search | SNAPPED | Claim 16, Claim 5 (Dual Lattice) |
 
-Overall: 71% of attacks are blocked (cannot proceed), 29% are detected (proceed but identified). 100% detection rate across all attack types.
+In the simulated fixture set, 71% of attacks are blocked (cannot proceed), and 29% are detected (proceed but identified). The fixture set produced detections across all enumerated attack types.
 
 The anti-fragile property (Claim 6) was verified: under sustained BOUNDARY_PROBE attack at maximum pressure, the attacker's effective distance increased by a factor of 1.56x, demonstrating that the system becomes more secure under attack.
 
@@ -1066,9 +1087,9 @@ Python (Reference):
 #### 11.2 Test Coverage
 
 
-Total Tests: 88
-Passing:     88 (100%)
-Coverage:    100%
+Fixture Tests: 88
+Fixture Passing: 88/88 in the recorded run
+Claim Mapping: implementation evidence listed by module
 
 Modules Tested:
   production_v2_1.py      15/15
@@ -1082,7 +1103,7 @@ Modules Tested:
   dual_lattice.py         10/10
 
 
-Every claim in this patent application is backed by working, tested code demonstrating reduction to practice.
+Each drafted claim is mapped to working implementation evidence or is separately flagged for review as a higher-risk or continuation-style feature.
 
 ### SECTION 12: THE TWELVE AXIOMS
 
@@ -1101,7 +1122,7 @@ The following twelve axioms constitute the mathematical foundation of the fourte
 | A9 | Realm distance 1-Lipschitz: d*(u) = min_k d_H(u, mu_k) | L8 |
 | A10 | Coherence bounds: S_spec, C_spin, S_audio in [0, 1] | L9, L10, L14 |
 | A11 | Triadic distance: d_tri = sqrt(lambda_1*d_1^2 + lambda_2*d_2^2 + lambda_3*d_G^2) | L11 |
-| A12 | Harmonic scaling: H(d, R) = R^(d^2) | L12 |
+| A12 | Harmonic scaling: nonlinear drift-to-cost or drift-to-score mapping | L12 |
 
 These axioms are additionally validated against five quantum axiom families: Unitarity (L2, L4, L7), Locality (L3, L8), Causality (L6, L11, L13), Symmetry (L5, L9, L10, L12), and Composition (L1, L14).
 
@@ -1148,7 +1169,7 @@ adjusting a severity of the composite risk value as a function of trajectory dri
 
 emitting a governance decision, from: allow, review, quarantine, or deny, that controls whether the computational action is executed;
 
-whereby the governance cost increases superexponentially as the embedded point approaches a boundary of the open unit ball.
+whereby the governance cost is a nonlinear increasing function of measured drift and is used to control execution of the computational action.
 
 2. The method of claim 1, wherein the hyperbolic distance is computed as
 d_H = arccosh(1 + 2||u − v||² / ((1 − ||u||²)(1 − ||v||²))), where u is the
@@ -1178,13 +1199,12 @@ request whose content hash is a member of the safe-memory set, in each case
 without computing the hyperbolic distance.
 
 7. The method of claim 1, further comprising, responsive to a deny decision,
-generating a deterministic pseudorandom noise output by computing a seed as a
-cryptographic hash of a fixed prefix concatenated with a content hash of the
-denied request, iteratively re-hashing the seed until a target length is
+generating a deterministic pseudorandom-looking noise output by computing a seed
+as a cryptographic hash of a fixed prefix concatenated with a content hash of
+the denied request, iteratively re-hashing the seed until a target length is
 reached, and returning the noise output in place of an error response, such that
-the noise output is indistinguishable from a valid output to an observer not
-holding the governance keys, is identical for identical denied requests, and is
-reproducible by an auditor from the content hash.
+the noise output is identical for identical denied requests and is reproducible
+by an auditor from the content hash.
 
 8. The method of claim 1, further comprising periodically persisting, to a
 durable store, at least the session centroid, a cumulative governance cost, a
@@ -1297,35 +1317,36 @@ classification, and the content-derived fingerprint are recorded in an audit
 trail.
 
 21. The method of claim 1, further comprising generating a cryptographic
-authorization container that is unlocked only when all of N predetermined
-predicates are satisfied, the predicates comprising at least: a semantic
-predicate; a geometric predicate measuring distance from a known safe region; an
-execution-path predicate verifying that the container was reached via an
-authorized call chain; a quorum predicate requiring a threshold number of
-approving agents; and a cryptographic predicate verifying a post-quantum
-signature; wherein failure of any predicate returns a noise output
-indistinguishable from a successfully-unlocked container.
+authorization container that is unlocked only when N predetermined predicates
+are satisfied, where N is at least three, the predicates including at least: a
+semantic predicate evaluating whether the context representation of the proposed
+action satisfies an authorized semantic profile; a geometric predicate measuring
+whether the embedded point lies within a predetermined hyperbolic distance from
+the session centroid; and a cryptographic predicate verifying a post-quantum
+signature; wherein failure of any predicate returns a noise or
+pseudorandom-looking output rather than a structured predicate-failure response.
 
 22. The method of claim 21, wherein the noise output is generated by the
-deterministic re-hashing of claim 7, such that every output path - both a
-successful unlock and a failure of any predicate - produces an output
-indistinguishable, to an observer not holding the keys for all of the
-predicates, from any other output path.
+deterministic re-hashing of claim 7, such that a repeated failure path for the
+same denied request produces an audit-reproducible output of a predetermined
+length while avoiding disclosure of which predicate failed.
 
-23. The system of claim 9, wherein the system maintains a swarm trust score
-for each participating governance agent, updates the trust score as
-τ_new = α·τ_old + (1 − α)·v, where v is a validity factor for a most-recent
-contribution and α is a smoothing constant, and automatically self-excludes
-from the governance decision any agent whose trust score falls below a
-participation threshold, thereby producing a Byzantine-fault-tolerant swarm
-consensus without a central coordinator.
+23. The method of claim 1, further comprising: prior to emitting the
+governance decision, determining whether the computational action matches a
+predetermined reroute rule associated with a class of actions; and, when a match
+is found, substituting a replacement action for the proposed computational
+action and emitting an allow decision for the replacement action, such that
+high-risk classes of actions are redirected to lower-risk alternatives without
+exposing a denial response to the requesting entity.
 
-24. The method of claim 1, further comprising applying a Hopfield energy
-function E(c) = −½·(c')ᵀ·W·c' + θᵀ·c' to the context representation c,
-wherein W encodes patterns of known legitimate operations learned offline;
-classifying the action as novel-intent when E(c) is above a threshold relative
-to trained patterns; and incorporating the novel-intent indicator into the
-composite risk value.
+24. The method of claim 1, further comprising computing a null-space anomaly
+score by determining whether per-axis deviations of the context representation
+from the session centroid each fall below a predetermined threshold;
+incrementing the null-space anomaly score when all per-axis deviations are below
+the threshold; and incorporating the null-space anomaly score into the composite
+risk value; wherein a null-space anomaly score above a predetermined level is
+treated as a governance signal indicating an action that is deliberately
+mimicking baseline behavior to evade the governance cost.
 
 25. The system of claim 9, wherein the system coordinates task execution
 across a plurality of agent slots using a physics-based juggling model in which
@@ -1335,6 +1356,33 @@ throws having predicted catch windows, and a governance cost of a task increases
 when a trajectory of the task deviates from a predicted flight arc, such that
 higher-risk tasks are assigned higher arcs and fewer handoffs.
 
+26. The method of claim 4, wherein each axis of the semantic weighting
+employs a bijective token alphabet comprising a number of tokens equal to the
+Cartesian product of a first predetermined prefix set and a second predetermined
+suffix set, each token uniquely formed by concatenating a prefix element, a
+predetermined separator character, and a suffix element, such that the complete
+token vocabulary for each axis bijects onto a contiguous range of integer byte
+indices, and wherein a serialized token form includes an axis designator that
+makes serialized token vocabularies of distinct axes pairwise disjoint and makes
+the axis of origin of any serialized token determinable from the serialized token
+without additional context.
+
+27. The method of claim 4, wherein each of the six axes of the semantic
+weighting is associated with a respective harmonic frequency ratio selected from
+integer-ratio musical intervals and a phase offset equal to 2*pi*k/6 radians for
+the respective axis index k, such that the six axes are uniformly distributed
+around the unit circle at sixty-degree intervals, and the contribution of each
+axis to the governance signal incorporates a sinusoidal time-varying modulation
+at the respective harmonic frequency and phase offset.
+
+28. The method of claim 26, wherein each axis's token vocabulary constitutes
+a domain-specific entropy encoding in which each byte of a context representation
+maps deterministically to a token in that axis's vocabulary, the semantic content
+of the context thereby constraining available key derivation paths within the
+governance system, such that key derivation paths obtained from serialized
+encodings in distinct axis vocabularies are separated by the pairwise-disjoint
+serialized-vocabulary property.
+
 ## ABSTRACT OF THE DISCLOSURE
 
 A computer-implemented system and method govern execution of computational
@@ -1343,10 +1391,10 @@ encoded as six-dimensional context vectors, weighted by successive powers of
 the golden ratio, and embedded into a Poincaré ball model of hyperbolic
 space. Hyperbolic distance between the embedded point and a session centroid
 representing prior authorized behavior drives an exponential authorization
-cost that makes adversarial deviations computationally prohibitive. Governance
+cost that increases as adversarial deviations increase. Governance
 decisions - allow, quarantine, escalate, or deny - combine the authorization
 cost with bijective tamper detection, instruction-safety pattern matching, and
 spectral coherence signals. Denied actions return deterministic pseudorandom
-noise indistinguishable from valid output, providing no information to
-adversaries. Authorized actions receive post-quantum cryptographic receipts
+noise or pseudorandom-looking output rather than a structured denial response.
+Authorized actions receive post-quantum cryptographic receipts
 signed under ML-DSA-65 and encapsulated under ML-KEM-768.
