@@ -1,6 +1,6 @@
 {
   "schema": "scbe_patent_workbench_manifest_v1",
-  "generated_at": "2026-05-28T00:51:07.590Z",
+  "generated_at": "2026-05-30T00:00:00.000Z",
   "workdir": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\legal\\patent-workbench",
   "files": [
     "application_status.json",
@@ -27,7 +27,14 @@
     "assembled/SCBE_NONPROVISIONAL_SPEC_DRAFT_v1.md",
     "assembled/SCBE_NONPROVISIONAL_SPEC_DRAFT_v1.manifest.json",
     "benchmarks/resonant_thought_lattice_benchmark.json",
-    "benchmarks/resonant_thought_lattice_benchmark.md"
+    "benchmarks/resonant_thought_lattice_benchmark.md",
+    "post_filing_docket_2026-05-30.md",
+    "../filing-packet-scbe-2026-0001/POST_FILING_NEXT_STEPS.md",
+    "../filing-packet-scbe-2026-0001/04_FILED_RECEIPTS/FILING_RECEIPT_SNAPSHOT_APP_19-691526.md",
+    "PATENT_TRACKER.md",
+    "patent_tracker.json",
+    "rejection_likelihood_and_fallbacks_2026-05-30.md",
+    "value_position_evidence_2026-05-30.md"
   ],
   "counts": {
     "official_sources": 8,
@@ -35,6 +42,11 @@
     "support_families": 5,
     "readiness_items": 11,
     "benchmark_results": 1,
-    "application_status_records": 1
+    "application_status_records": 1,
+    "post_filing_docket_records": 1,
+    "nonprovisional_application_records": 1,
+    "tracker_records": 2,
+    "rejection_fallback_memos": 1,
+    "value_position_memos": 1
   }
 }

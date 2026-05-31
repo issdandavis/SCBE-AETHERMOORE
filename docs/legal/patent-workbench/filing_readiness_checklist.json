@@ -1,7 +1,7 @@
 {
   "schema": "scbe_patent_readiness_checklist_v1",
   "generated_at": "2026-05-28T04:15:00.000Z",
-  "last_updated": "2026-05-28",
+  "last_updated": "2026-05-30",
   "deadline": "2027-01-15",
   "priority_provisional": "63/961,403",
   "checklist": [
@@ -21,61 +21,61 @@
       "id": "priority_claim_checked",
       "text": "Priority claim to provisional 63/961,403 present in spec and ADS draft.",
       "status": "done",
-      "evidence": "Cross-Reference section in assembled spec (line 3) cites 63/961,403, filed 2026-01-15. ADS draft at patent-workbench/ADS_PTO_AIA_14_DRAFT.md Section 4 contains domestic benefit claim under 35 U.S.C. 119(e). Must be entered in Patent Center ADS fields at filing."
+      "evidence": "Filed application 19/691,526 locally records provisional priority claim to 63/961,403, filed 2026-01-15. Confirm again against the formal filing receipt when Patent Center posts it."
     },
     {
       "id": "claim_count_checked",
       "text": "Independent and total claim counts checked for fee impact.",
       "status": "done",
-      "evidence": "28 total claims, 3 independent (claims 1, 9, 15), 25 dependent, 0 multiple-dependent. Micro-entity fees: $70 filing + $154 search + $176 exam = $400 base; 8 extra claims (21-28) x $40 = $320; total $720. Claims 27-28 added 2026-05-28: claim 27 (harmonic phase orthogonality, depends on 4), claim 28 (domain-specific entropy encoding, depends on 26). Claims 4 and 26 also enriched with semantic-domain and Cartesian-product language. No paper surcharge, no non-DOCX surcharge, no multiple-dependent surcharge."
+      "evidence": "28 total claims, 3 independent (claims 1, 9, 15), 25 dependent, 0 multiple-dependent. Micro-entity fees checked 2026-05-28 against the current USPTO fee schedule: $70 filing + $165 search + $200 exam = $435 base; 8 extra claims (21-28) x $40 = $320; total $755. Claims 27-28 added 2026-05-28: claim 27 (harmonic phase orthogonality, depends on 4), claim 28 (domain-specific entropy encoding, depends on 26). Claims 4 and 26 also enriched with semantic-domain and Cartesian-product language. No paper surcharge, no non-DOCX surcharge, no multiple-dependent surcharge. Re-check in Patent Center on filing day."
     },
     {
       "id": "claims_fixed_v3_done",
       "text": "Fixed claims v3 produced with all inaccuracies resolved and production-unclaimed features added.",
       "status": "done",
-      "evidence": "PATENT_CLAIMS_FIXED_v3.md created 2026-05-28. Claim 1 whereby clause rewritten (bounded exponential pi^(phi*d*), not superexponential; distance from centroid not proximity to boundary). Claim 3 adds species (iii) pi^(phi*d). Claim 21 reformulated from 5-predicate to N-predicate >=3 tracking actual 3-ring sacred_eggs.py. Claim 23 REPLACED EMA tau formula (archive only) with REROUTE 5th-decision-mode (production _check_reroute + DEFAULT_REROUTES). Claim 24 REPLACED Hopfield quadratic form (archive only) with null-space anomaly detection (production _null_space_anomaly lines 807-835). All other claims retained verbatim. CIP deferred items documented in v3 section 'What Has Been Deferred'. Fee updated to $720 after adding claims 26-28. NEXT: apply claim 1 whereby-clause fix to spec DOCX claims section before filing."
+      "evidence": "PATENT_CLAIMS_FIXED_v3.md created 2026-05-28. Claim 1 whereby clause rewritten (bounded exponential pi^(phi*d*), not superexponential; distance from centroid not proximity to boundary). Claim 3 adds species (iii) pi^(phi*d). Claim 21 reformulated from 5-predicate to N-predicate >=3 tracking actual 3-ring sacred_eggs.py. Claim 23 REPLACED EMA tau formula (archive only) with REROUTE 5th-decision-mode (production _check_reroute + DEFAULT_REROUTES). Claim 24 REPLACED Hopfield quadratic form (archive only) with null-space anomaly detection (production _null_space_anomaly lines 807-835). All other claims retained verbatim. CIP deferred items documented in v3 section 'What Has Been Deferred'. Fee estimate updated to $755 after adding claims 26-28 and checking the current USPTO fee schedule. Current filing packet is generated from build_patent_docx.py and contains 28 claims; PATENT_CLAIMS_FIXED_v3.md is superseded by PATENT_CLAIMS_EXPANDED_v2.md plus the generated DOCX."
     },
     {
       "id": "superexponential_formula_verified",
       "text": "Claim 1 formula language verified against _harmonic_cost implementation and corrected.",
       "status": "done",
-      "evidence": "Audited runtime_gate.py _harmonic_cost lines 889-899: cost = PI^(PHI * d_star) where d_star = min(weighted_dist, 5.0), PHI=1.618, PI=pi. This is a BOUNDED EXPONENTIAL (cost at d*=0 is 1.0, at d*=1 is ~5.05, at d*=5 is ~9,070). It is NOT superexponential. Claim 1 'whereby' clause corrected in PATENT_CLAIMS_FIXED_v3.md to read 'follows a function of the form B^(k*d)... increases monotonically as the embedded point deviates from the session centroid'. Spec DOCX claims section must be updated to match before filing (see spec_docx_whereby_updated)."
+      "evidence": "Audited runtime_gate.py _harmonic_cost lines 889-899: cost = PI^(PHI * d_star) where d_star = min(weighted_dist, 5.0), PHI=1.618, PI=pi. This is a BOUNDED EXPONENTIAL (cost at d*=0 is 1.0, at d*=1 is ~5.05, at d*=5 is ~9,070). It is NOT superexponential. Claim 1 filing-language now frames the governance cost as a nonlinear increasing function of measured drift from the session centroid and avoids locking the independent claim to a single B^(k*d) species. Spec DOCX has been rebuilt from build_patent_docx.py."
     },
     {
       "id": "spec_docx_whereby_updated",
       "text": "Spec DOCX claim 1 whereby clause updated to match fixed claims v3.",
       "status": "done",
-      "evidence": "Applied 2026-05-28. build_patent_docx.py CLAIMS array updated: claim 1 whereby -> B^(k*d) bounded-exponential language; claim 3 adds species (iii) pi^(phi*d); claim 21 N-predicate >=3 (semantic/geometric/crypto); claim 23 REROUTE replacing EMA tau; claim 24 null-space anomaly replacing Hopfield. SCBE_NONPROVISIONAL_SPEC_v1.docx rebuilt and committed (a4f5167cf). Assembled MD also updated."
+      "evidence": "Applied 2026-05-28. build_patent_docx.py CLAIMS array updated: claim 1 whereby -> nonlinear measured-drift governance-cost language; claim 3 adds species (iii) pi^(phi*d); claim 21 N-predicate >=3 (semantic/geometric/crypto); claim 23 REROUTE replacing EMA tau; claim 24 null-space anomaly replacing Hopfield. SCBE_NONPROVISIONAL_SPEC_v1.docx rebuilt locally. Assembled MD also updated."
     },
     {
       "id": "ads_drafted",
       "text": "Application Data Sheet (PTO/AIA/14) draft prepared with inventor, title, priority, and entity status.",
       "status": "done",
-      "evidence": "Draft at patent-workbench/ADS_PTO_AIA_14_DRAFT.md. Inventor: Issac Daniel Davis, Port Angeles, WA, US. Title matches spec. Priority: 63/961,403, 2026-01-15. Entity: Micro Entity. FILL IN required: mailing address, zip, phone. Must be entered in Patent Center — not uploaded as attachment."
+      "evidence": "Draft at patent-workbench/ADS_PTO_AIA_14_DRAFT.md. Inventor: Issac Daniel Davis, Port Angeles, WA, US. Title matches spec. Priority: 63/961,403, 2026-01-15. Entity: Micro Entity. FILL IN required: mailing address, zip, phone. Must be entered in Patent Center \u2014 not uploaded as attachment."
     },
     {
       "id": "ads_address_filled",
       "text": "Mailing address and phone filled into ADS draft before filing.",
-      "status": "open",
-      "evidence": "ADS_PTO_AIA_14_DRAFT.md has [FILL IN] markers for street address, zip code, and phone. Complete these before entering ADS data in Patent Center."
+      "status": "done",
+      "evidence": "Filing/payment completed on 2026-05-28. Do not duplicate private address details in this repo; official Patent Center record is source of truth."
     },
     {
       "id": "oath_declaration_ready",
       "text": "Inventor oath/declaration (PTO/AIA/01) draft prepared and ready to sign.",
       "status": "done",
-      "evidence": "Draft at patent-workbench/DECLARATION_PTO_AIA_01_DRAFT.md. Inventor: Issac Daniel Davis. S-signature: /Issac Daniel Davis/. Must be signed in Patent Center at filing (electronically or by PDF upload). Micro Entity Certification (PTO/SB/15A) filed ~2026-03-02; re-verify eligibility on filing day."
+      "evidence": "Signed PTO/AIA/01 declaration preserved in docs/legal/filing-packet-scbe-2026-0001/03_SIGNATURE_FORMS_REVIEW/."
     },
     {
       "id": "micro_entity_checked",
       "text": "Micro entity eligibility re-verified at filing; PTO/SB/15A current.",
-      "status": "in_progress",
-      "evidence": "PTO/SB/15A signed ~2026-03-02 per prior email record (Gmail msg 19cb262145405494). Must re-verify on filing day: <=4 prior U.S. utility/design/plant apps as inventor, gross income below USPTO threshold (~$258K FY2026), no large-entity assignment obligation. Provisional filings do not count toward the 4-application limit."
+      "status": "done",
+      "evidence": "Signed PTO/SB/15A preserved in docs/legal/filing-packet-scbe-2026-0001/03_SIGNATURE_FORMS_REVIEW/. Filing/payment completed at micro-entity rates per local receipt snapshot."
     },
     {
       "id": "drawings_complete",
       "text": "Drawings FIG 1-9 cover each feature claimed in independent claims.",
       "status": "done",
-      "evidence": "FIG_1 through FIG_9 PNG files confirmed present 2026-05-28. Brief Description updated: FIG.1 now explicitly mentions four-way ALLOW/QUARANTINE/DENY/REROUTE output and fail-to-noise path; FIG.3 now explicitly mentions session centroid as trusted reference region and hyperbolic distance arc. Coverage map: Poincare embedding → FIG.3; session centroid → FIG.3; hyperbolic distance → FIG.3; nonlinear cost variants → FIG.2; four-way decision → FIG.1; fail-to-noise → FIG.1; Sacred Egg predicates → FIG.5; tongue weights + harmonic ratios + phase offsets → FIG.4; PQC dual-lattice consensus → FIG.6. Gap noted: bijective tamper detection (claims 15-20) lacks a dedicated figure but is covered by detailed pseudocode in the spec body — not a fatal defect."
+      "evidence": "FIG_1 through FIG_9 PNG files confirmed present 2026-05-28. Brief Description updated: FIG.1 now explicitly mentions four-way ALLOW/QUARANTINE/DENY/REROUTE output and fail-to-noise path; FIG.3 now explicitly mentions session centroid as trusted reference region and hyperbolic distance arc. Coverage map: Poincare embedding \u2192 FIG.3; session centroid \u2192 FIG.3; hyperbolic distance \u2192 FIG.3; nonlinear cost variants \u2192 FIG.2; four-way decision \u2192 FIG.1; fail-to-noise \u2192 FIG.1; Sacred Egg predicates \u2192 FIG.5; tongue weights + harmonic ratios + phase offsets \u2192 FIG.4; PQC dual-lattice consensus \u2192 FIG.6. Gap noted: bijective tamper detection (claims 15-20) lacks a dedicated figure but is covered by detailed pseudocode in the spec body \u2014 not a fatal defect."
     },
     {
       "id": "spec_claim_support_checked",
@@ -87,13 +87,13 @@
       "id": "new_matter_bucketed",
       "text": "Post-2026-01-15 improvements separated from provisional-supported material.",
       "status": "done",
-      "evidence": "CIP analysis complete in PATENT_CLAIMS_FIXED_v3.md 'What Has Been Deferred to CIP' section. Deferred: EMA swarm trust formula (archive only), Hopfield energy exact form (archive only), trichromatic governance (opt-in only), Tree of Escalation as decider (observational only), full 14-layer ordered composition claim, Sacred Tongues tokenizer (separate invention). Claims 21-28 in the fixed set are grounded in production code/design support or accepted as getting non-provisional date. Decision: include all 28 claims and accept that 21/23/24 receive the non-provisional filing date (not Jan 15, 2026 priority date) unless the provisional covers them — USPTO assigns the earliest supported date per claim during examination."
+      "evidence": "CIP analysis complete in PATENT_CLAIMS_FIXED_v3.md 'What Has Been Deferred to CIP' section. Deferred: EMA swarm trust formula (archive only), Hopfield energy exact form (archive only), trichromatic governance (opt-in only), Tree of Escalation as decider (observational only), full 14-layer ordered composition claim, Sacred Tongues tokenizer (separate invention). Claims 21-28 in the fixed set are grounded in production code/design support or accepted as getting non-provisional date. Decision: include all 28 claims and accept that 21/23/24 receive the non-provisional filing date (not Jan 15, 2026 priority date) unless the provisional covers them \u2014 USPTO assigns the earliest supported date per claim during examination."
     },
     {
       "id": "prior_art_logged",
       "text": "Prior-art search log completed and IDS decision made.",
       "status": "done",
-      "evidence": "Search executed 2026-05-28. Three Google Patents/Justia/arXiv queries: (1) hyperbolic geometry/Poincare ball + security authorization, (2) hyperbolic embedding + authentication/access control, (3) semantic weighting/golden ratio/bijective token + security governance. 8 results logged in prior_art_search_log.md. IDS DECISION: no filing required. No result found that directly anticipates the combination of Poincare-ball embedding + session centroid + exponential cost function + four-way governance decision. Closest: US12561561 (user vector embeddings for access control) uses flat embedding spaces only. Run remaining 6 planned queries if prosecution history estoppel becomes a concern during examination."
+      "evidence": "Search executed 2026-05-28. Three Google Patents/Justia/arXiv queries logged: (1) hyperbolic geometry/Poincare ball + security authorization, (2) hyperbolic embedding + authentication/access control, (3) semantic weighting/golden ratio/bijective token + security governance. 8 results logged in prior_art_search_log.md. IDS posture: no IDS obligation identified from searches performed so far; no result found teaching the full claimed combination. If additional references become known and are material to patentability under 37 CFR 1.56, prepare an IDS. This avoids the unsafe absolute phrasing 'no IDS required'."
     },
     {
       "id": "non_publication_decision_checked",
@@ -105,7 +105,7 @@
       "id": "benchmark_evidence_packet_ready",
       "text": "Benchmark/test evidence packet prepared for prosecution support.",
       "status": "in_progress",
-      "evidence": "resonant_thought_lattice_benchmark.json shows baseline_mean=0.615 vs lattice_mean=0.9163, delta=0.3013, 7/8 improved. This supports utility and non-obviousness arguments. Optional: package Petri gate recall results (97.7% after KO gate) as informal evidence. Not filed with application but used during examination responses."
+      "evidence": "Keep benchmark evidence as prosecution support only. Do not add post-filing benchmark material to the filed case; track it for response evidence or continuation/CIP candidates."
     },
     {
       "id": "software_appendix_decision_checked",
@@ -117,50 +117,91 @@
       "id": "assignment_ownership_checked",
       "text": "Inventor/applicant ownership posture confirmed.",
       "status": "done",
-      "evidence": "Decision 2026-05-28: Ownership 100% inventor (Issac Daniel Davis). SAM.gov UEI J4NXHM6N5F59 shows sole proprietor. No university affiliation, no employer, no funded research contract. No assignment record required at filing — can be recorded later if an investor or acquirer needs it. No assignment document to prepare."
+      "evidence": "Decision 2026-05-28: Ownership 100% inventor (Issac Daniel Davis). SAM.gov UEI J4NXHM6N5F59 shows sole proprietor. No university affiliation, no employer, no funded research contract. No assignment record required at filing \u2014 can be recorded later if an investor or acquirer needs it. No assignment document to prepare."
     },
     {
       "id": "continuation_strategy_checked",
       "text": "Broad claim fallbacks and continuation/CIP strategy identified.",
-      "status": "done",
-      "evidence": "Strategy finalized in PATENT_CLAIMS_FIXED_v3.md. Filing all 28 claims now, accepting non-provisional date for claims 21/23/24 (which were reformulated to track production code not in original provisional). CIP candidates documented: EMA tau swarm trust, Hopfield energy exact form, trichromatic 10D governance, Tree of Escalation as decider, broader Sacred Tongues tokenizer family as a possible separate application beyond dependent claims 26-28. CIP must be filed before this application issues — track USPTO status after filing."
+      "status": "in_progress",
+      "evidence": "Pre-filing continuation candidates identified. Maintain post-filing continuation/CIP log for new Longform Bridge, Polly Pad, GeoSeed, and later agent-bus improvements."
     },
     {
       "id": "docx_validated",
       "text": "Spec DOCX accepted by Patent Center DOCX validation tool.",
-      "status": "open",
-      "evidence": "Run SCBE_NONPROVISIONAL_SPEC_v1.docx through Patent Center validator before filing. Common failures: non-Times-New-Roman font, line spacing, margins, page numbers in wrong location. Tool is at patentcenter.uspto.gov > Tools > DOCX Validator. Run AFTER applying spec_docx_whereby_updated fixes."
+      "status": "done",
+      "evidence": "Filed DOCX preserved at docs/legal/filing-packet-scbe-2026-0001/01_SUBMIT_THESE_TO_PATENT_CENTER/SCBE_NONPROVISIONAL_SPEC_v1.docx. Treat official Patent Center record as source of truth for validation/acceptance."
     },
     {
       "id": "provisional_receipt_uploaded",
       "text": "Provisional filing receipt saved to patent-workbench/uploads/.",
-      "status": "open",
-      "evidence": "uploads/ is empty. Export acknowledgment PDF for 63/961,403 from Patent Center and save here as evidence freeze. Not required for filing the non-provisional, but good housekeeping."
+      "status": "in_progress",
+      "evidence": "Provisional 63/961,403 remains the priority evidence item to export when convenient. Non-provisional filing/payment evidence for 19/691,526 is preserved under docs/legal/filing-packet-scbe-2026-0001/04_FILED_RECEIPTS/."
     },
     {
       "id": "publication_redaction_checked",
       "text": "Materials reviewed: no credentials, private keys, private addresses, or unrelated personal records in uploads.",
       "status": "done",
-      "evidence": "Verified 2026-05-28: uploads/ contains only README.md (placeholder). No .env files, API keys, personal financial records, private keys, or unrelated records present. README.md itself only contains instructions about what to place here. Clean."
+      "evidence": "Filed packet evidence is local. Do not add private address copies, credentials, card details, or unrelated personal records to the repo."
     },
     {
       "id": "fees_rechecked",
       "text": "USPTO fees verified on filing day.",
       "status": "done",
-      "evidence": "Verified 2026-05-28 against live USPTO fee schedule (uspto.gov/learning-and-resources/fees-and-payment/uspto-fee-schedule). Confirmed micro-entity rates: basic filing 1.16(a) $70, search 1.16(k) $154, examination 1.16(o) $176, each claim over 20 1.16(i) $40. 28 claims = 8 excess x $40 = $320 extra. Total: $720. Re-verify on actual filing day in case schedule changes."
+      "evidence": "Verified 2026-05-28 against live USPTO fee schedule (uspto.gov/learning-and-resources/fees-and-payment/uspto-fee-schedule). Confirmed micro-entity rates: basic filing 1.16(a) $70, search 1.16(k) $165, examination 1.16(o) $200, each claim over 20 1.16(i) $40. 28 claims = 8 excess x $40 = $320 extra. Total: $755. Re-verify on actual filing day in case schedule changes."
+    },
+    {
+      "id": "nonprovisional_filed_paid",
+      "text": "Non-provisional application filed and paid.",
+      "status": "done",
+      "evidence": "Application 19/691,526 filed/paid on 2026-05-28. Evidence preserved in docs/legal/filing-packet-scbe-2026-0001/04_FILED_RECEIPTS/."
+    },
+    {
+      "id": "formal_filing_receipt_saved",
+      "text": "Formal filing receipt saved from Patent Center.",
+      "status": "open",
+      "evidence": "Save the formal filing receipt when Patent Center posts it; compare title, inventor, entity status, priority claim, and correspondence data."
+    },
+    {
+      "id": "opap_notice_checked",
+      "text": "Office of Patent Application Processing notice checked.",
+      "status": "open",
+      "evidence": "Check Patent Center for any OPAP notice. If a notice appears, calendar the stated response deadline immediately."
+    },
+    {
+      "id": "ids_window_calendar_checked",
+      "text": "IDS timing window calendared.",
+      "status": "open",
+      "evidence": "MPEP 609.04(b): national application IDS can be considered without fee/statement if filed within three months of filing or before first Office Action on the merits, whichever is later."
+    },
+    {
+      "id": "foreign_filing_license_checked",
+      "text": "Foreign filing license status checked before any foreign/PCT step.",
+      "status": "open",
+      "evidence": "Confirm foreign filing license status on the formal filing receipt or Patent Center record before any non-US/PCT action."
+    },
+    {
+      "id": "office_action_response_bench_started",
+      "text": "Office Action response bench started.",
+      "status": "open",
+      "evidence": "Prepare response shells for likely 101, 102, 103, and 112 issues using filed claims/spec only."
     }
   ],
   "summary": {
-    "done": 19,
-    "in_progress": 2,
-    "open": 3,
-    "blocking_before_submission": [
-      "ads_address_filled — fill in street address, zip, phone directly in Patent Center ADS form",
-      "docx_validated — upload SCBE_NONPROVISIONAL_SPEC_v1.docx to patentcenter.uspto.gov > Tools > DOCX Validator"
-    ],
-    "important_but_not_blocking": [
-      "provisional_receipt_uploaded — export 63/961,403 acknowledgment PDF from Patent Center into uploads/",
-      "micro_entity_checked — re-verify eligibility on filing day before paying"
+    "done": 22,
+    "in_progress": 3,
+    "open": 5,
+    "post_filing_status": "Application 19/691,526 filed and paid; awaiting formal filing receipt / next USPTO notice.",
+    "blocking_before_submission": [],
+    "next_docket_actions": [
+      "formal_filing_receipt_saved \u2014 save and compare formal filing receipt when posted",
+      "opap_notice_checked \u2014 check Patent Center for formality notices and calendar any deadline",
+      "ids_window_calendar_checked \u2014 calendar IDS review window under MPEP 609.04(b)",
+      "foreign_filing_license_checked \u2014 confirm before any PCT/non-US step",
+      "office_action_response_bench_started \u2014 prepare response shells for 101/102/103/112"
     ]
-  }
+  },
+  "nonprovisional_application": "19/691,526",
+  "nonprovisional_filing_date": "2026-05-28",
+  "confirmation_number": "1177",
+  "patent_center_number": "76776451"
 }

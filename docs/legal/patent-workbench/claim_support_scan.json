@@ -1,6 +1,6 @@
 {
   "schema": "scbe_patent_claim_support_scan_v1",
-  "generated_at": "2026-05-28T01:29:10.702Z",
+  "generated_at": "2026-05-29T03:38:22.917Z",
   "families": [
     {
       "family": "hyperbolic_governance_gate",
@@ -16,8 +16,8 @@
         {
           "path": "docs/PATENT_DETAILED_DESCRIPTION.md",
           "exists": true,
-          "sha256": "254e6065db526d2de0e9681392bb00fddc96f9e7b791a21684871a3e918cfadc",
-          "hit_count": 120,
+          "sha256": "a8b1889890ea268032595bc108a41747fb71db1f2742b7aa1de6488569ca92e0",
+          "hit_count": 106,
           "hits": [
             {
               "line": 12,
@@ -25,11 +25,11 @@
             },
             {
               "line": 18,
-              "text": "**Hyperbolic Geometry-Based Access Control System with Superexponential Cost Scaling, Semantically-Weighted Key Derivation, Six-Dimensional Linguistic Entropy Encoding, and Cryptographic Deferred Authorization Containers"
+              "text": "**Hyperbolic Geometry-Based Access Control System with Nonlinear Cost Scaling, Semantically-Weighted Key Derivation, Six-Dimensional Linguistic Entropy Encoding, and Cryptographic Deferred Authorization Containers**"
             },
             {
               "line": 24,
-              "text": "A computer-implemented security framework comprising a fourteen-layer processing pipeline that embeds computational contexts into a Poincare ball manifold and enforces access control through geometric invariants rather t"
+              "text": "A computer-implemented security framework comprising a fourteen-layer processing pipeline that embeds computational contexts into a Poincare ball manifold and enforces access control through measured geometric state rath"
             },
             {
               "line": 38,
@@ -40,64 +40,64 @@
               "text": "Geometric approaches to security have been explored in limited contexts. Prior art includes the use of hyperbolic space for malware clustering (wherein hyperbolic embeddings organize known malware samples for visualizati"
             },
             {
-              "line": 50,
-              "text": "It is a primary object of the present invention to provide an access control system wherein the verification cost imposed on a requesting entity is a superexponential function of its hyperbolic distance from a trusted op"
-            },
-            {
               "line": 52,
               "text": "It is a further object to provide a key derivation method wherein structured linguistic inputs from a six-dimensional semantic ontology constrain the available cryptographic derivation paths based on golden-ratio-weighte"
             },
             {
               "line": 66,
-              "text": "**FIG. 1** -- Block diagram of the fourteen-layer processing pipeline showing data flow from Complex Context State (L1) through Decision Gate (L13) and Audio Axis (L14), with layer dependencies indicated."
-            },
-            {
-              "line": 68,
-              "text": "**FIG. 2** -- Harmonic Wall cost function H(d,R) = R^(d^2) plotted as verification cost versus hyperbolic distance d for R = e, showing superexponential growth from H(1) = 2.72 through H(3) = 8,103 to H(5) = 7.2 x 10^10,"
+              "text": "**FIG. 1** -- Block diagram of the fourteen-layer processing pipeline showing data flow from Complex Context State (L1) through Decision Gate (L13) and Audio Axis (L14), with the Decision Gate emitting a four-way governa"
             },
             {
               "line": 70,
-              "text": "**FIG. 3** -- Poincare ball cross-section showing concentric ring boundaries at radii [0.2, 0.4, 0.6, 0.8, 0.95] with five ring levels (0 = core/most trusted, 4 = edge/least trusted), multi-well realm centers (mu_k), and"
+              "text": "**FIG. 3** -- Poincare ball cross-section showing concentric ring boundaries at radii [0.2, 0.4, 0.6, 0.8, 0.95] with five ring levels (0 = core/most trusted, 4 = edge/least trusted), the session centroid as the trusted "
             },
             {
               "line": 74,
               "text": "**FIG. 5** -- Sacred Egg hatch decision flowchart showing the five-predicate conjunction (P_tongue AND P_geo AND P_path AND P_quorum AND P_crypto) with fail-to-noise output on any predicate failure, including Domain Sepa"
             },
             {
-              "line": 84,
-              "text": "**FIG. 10** -- Anti-fragile response curve showing shock absorber function Psi(P) = 1 + (max - 1) * tanh(beta * P) with metric expansion under adversarial pressure, demonstrating 1.56x distance amplification at maximum p"
+              "line": 80,
+              "text": "**FIG. 8** -- Bijective tamper detection flow diagram showing input source code processed by encode, decode, AST parse, canonical AST fingerprint, and governance escalation stages."
             },
             {
-              "line": 86,
-              "text": "**FIG. 11** -- Breathing transform visualization in the Poincare ball showing T_breath(u;t) = tanh(b * artanh(||u||)) / ||u|| * u for b > 1 (containment/push outward) and b < 1 (diffusion/pull inward), illustrating the d"
-            },
-            {
-              "line": 100,
+              "line": 96,
               "text": "**\"Poincare Ball\"** or **\"B^n\"**: The open unit ball in n-dimensional Euclidean space, B^n = {u in R^n : ||u|| < 1}, equipped with the Riemannian metric tensor g_ij = (2 / (1 - ||u||^2))^2 * delta_ij, where delta_ij is t"
             },
             {
-              "line": 102,
-              "text": "**\"Hyperbolic Distance\"**: The distance function d_H(u, v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2))) defined on the Poincare ball, which is the unique distance function satisfying the axioms of hyperbolic geome"
+              "line": 98,
+              "text": "**\"Hyperbolic Distance\"**: The distance function d_H(u, v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2))) defined on the Poincare ball, which is the distance function satisfying the axioms of hyperbolic geometry in "
             },
             {
-              "line": 104,
+              "line": 100,
               "text": "**\"Mobius Addition\"**: The binary operation u oplus v = ((1 + 2<u,v> + ||v||^2)u + (1 - ||u||^2)v) / (1 + 2<u,v> + ||u||^2 * ||v||^2), which is the gyrovector addition operation in the Poincare ball model. Mobius additio"
             },
             {
-              "line": 106,
+              "line": 102,
               "text": "**\"Isometry\"**: A transformation T: B^n -> B^n that preserves hyperbolic distances, i.e., d_H(T(u), T(v)) = d_H(u, v) for all u, v in B^n. Isometries of the Poincare ball are compositions of Mobius additions and orthogon"
             },
             {
-              "line": 108,
+              "line": 104,
               "text": "**\"Diffeomorphism\"**: A smooth, invertible transformation of the Poincare ball that is not necessarily distance-preserving. The breathing transform (Layer 6) is a diffeomorphism that changes hyperbolic distances in a con"
             },
             {
-              "line": 118,
-              "text": "**\"Harmonic Wall\"** or **\"Harmonic Scaling\"**: The superexponential cost function H(d, R) = R^(d^2) where d is the hyperbolic distance from a trusted center and R > 1 is the base parameter. This function creates a \"verti"
+              "line": 114,
+              "text": "**\"Harmonic Wall\"** or **\"Harmonic Scaling\"**: A nonlinear cost or score function that maps measured drift to governance risk or safety score. Embodiments include H(d, R) = R^(d^2) where R > 1, a bounded reciprocal safet"
             },
             {
-              "line": 128,
+              "line": 124,
               "text": "**\"Anti-Fragile\"**: The property that the system becomes more secure under adversarial pressure, governed by the shock absorber function Psi(P) = 1 + (max - 1) * tanh(beta * P), which expands the metric tensor (increasin"
+            },
+            {
+              "line": 130,
+              "text": "Referring now to FIG. 1, the preferred embodiment of the present invention comprises a fourteen-layer processing pipeline that transforms a raw authorization context into a binary access decision (ALLOW, QUARANTINE, or D"
+            },
+            {
+              "line": 132,
+              "text": "**Group I: Preparation (Layers 1-4)** -- Transforms the raw context from complex-valued features through realification and weighting into a point in the Poincare ball."
+            },
+            {
+              "line": 134,
+              "text": "**Group II: Geometric Core (Layers 5-7)** -- Computes hyperbolic distances and applies isometric and diffeomorphic transforms that modulate the embedded space."
             }
           ]
         },
@@ -380,16 +380,16 @@
         {
           "path": "docs/PATENT_DETAILED_DESCRIPTION.md",
           "exists": true,
-          "sha256": "254e6065db526d2de0e9681392bb00fddc96f9e7b791a21684871a3e918cfadc",
-          "hit_count": 103,
+          "sha256": "a8b1889890ea268032595bc108a41747fb71db1f2742b7aa1de6488569ca92e0",
+          "hit_count": 93,
           "hits": [
             {
               "line": 18,
-              "text": "**Hyperbolic Geometry-Based Access Control System with Superexponential Cost Scaling, Semantically-Weighted Key Derivation, Six-Dimensional Linguistic Entropy Encoding, and Cryptographic Deferred Authorization Containers"
+              "text": "**Hyperbolic Geometry-Based Access Control System with Nonlinear Cost Scaling, Semantically-Weighted Key Derivation, Six-Dimensional Linguistic Entropy Encoding, and Cryptographic Deferred Authorization Containers**"
             },
             {
               "line": 24,
-              "text": "A computer-implemented security framework comprising a fourteen-layer processing pipeline that embeds computational contexts into a Poincare ball manifold and enforces access control through geometric invariants rather t"
+              "text": "A computer-implemented security framework comprising a fourteen-layer processing pipeline that embeds computational contexts into a Poincare ball manifold and enforces access control through measured geometric state rath"
             },
             {
               "line": 36,
@@ -401,66 +401,66 @@
             },
             {
               "line": 46,
-              "text": "There exists a need in the art for a security framework that: (a) enforces access control through mathematical invariants that cannot be circumvented by adversarial optimization; (b) scales the cost of adversarial behavi"
+              "text": "There exists a need in the art for a security framework that: (a) enforces access control through measured geometric state rather than pattern matching alone; (b) scales the cost or risk assigned to adversarial behavior "
             },
             {
               "line": 50,
-              "text": "It is a primary object of the present invention to provide an access control system wherein the verification cost imposed on a requesting entity is a superexponential function of its hyperbolic distance from a trusted op"
+              "text": "It is a primary object of the present invention to provide an access control system wherein the verification cost or risk imposed on a requesting entity is a nonlinear increasing function of its measured drift from a tru"
             },
             {
               "line": 68,
-              "text": "**FIG. 2** -- Harmonic Wall cost function H(d,R) = R^(d^2) plotted as verification cost versus hyperbolic distance d for R = e, showing superexponential growth from H(1) = 2.72 through H(3) = 8,103 to H(5) = 7.2 x 10^10,"
+              "text": "**FIG. 2** -- Alternative harmonic cost functions plotted versus measured drift, including H(d,R) = R^(d^2), a bounded reciprocal score H = 1/(1+d+2*pd), and a clamped RuntimeGate cost C = pi^(phi*min(d*, d_max))."
+            },
+            {
+              "line": 70,
+              "text": "**FIG. 3** -- Poincare ball cross-section showing concentric ring boundaries at radii [0.2, 0.4, 0.6, 0.8, 0.95] with five ring levels (0 = core/most trusted, 4 = edge/least trusted), the session centroid as the trusted "
             },
             {
               "line": 72,
               "text": "**FIG. 4** -- Six Sacred Tongues phase relationship diagram showing golden-ratio weights (phi^0 = 1.000 through phi^5 = 11.090) and harmonic frequency ratios (root, major 2nd, major 3rd, perfect 4th, perfect 5th, major 6"
             },
             {
-              "line": 84,
-              "text": "**FIG. 10** -- Anti-fragile response curve showing shock absorber function Psi(P) = 1 + (max - 1) * tanh(beta * P) with metric expansion under adversarial pressure, demonstrating 1.56x distance amplification at maximum p"
-            },
-            {
-              "line": 100,
+              "line": 96,
               "text": "**\"Poincare Ball\"** or **\"B^n\"**: The open unit ball in n-dimensional Euclidean space, B^n = {u in R^n : ||u|| < 1}, equipped with the Riemannian metric tensor g_ij = (2 / (1 - ||u||^2))^2 * delta_ij, where delta_ij is t"
             },
             {
-              "line": 102,
-              "text": "**\"Hyperbolic Distance\"**: The distance function d_H(u, v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2))) defined on the Poincare ball, which is the unique distance function satisfying the axioms of hyperbolic geome"
+              "line": 98,
+              "text": "**\"Hyperbolic Distance\"**: The distance function d_H(u, v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2))) defined on the Poincare ball, which is the distance function satisfying the axioms of hyperbolic geometry in "
             },
             {
-              "line": 106,
+              "line": 102,
               "text": "**\"Isometry\"**: A transformation T: B^n -> B^n that preserves hyperbolic distances, i.e., d_H(T(u), T(v)) = d_H(u, v) for all u, v in B^n. Isometries of the Poincare ball are compositions of Mobius additions and orthogon"
             },
             {
-              "line": 108,
+              "line": 104,
               "text": "**\"Diffeomorphism\"**: A smooth, invertible transformation of the Poincare ball that is not necessarily distance-preserving. The breathing transform (Layer 6) is a diffeomorphism that changes hyperbolic distances in a con"
             },
             {
-              "line": 112,
+              "line": 108,
               "text": "**\"Langues Metric\"**: The six-dimensional cost function L(x, t) = sum_{l=0}^{5} w_l * exp(beta_l * (d_l + sin(omega_l * t + phi_l))), where w_l is the golden-ratio weight, beta_l is the growth rate, d_l = |x_l - mu_l| is"
             },
             {
-              "line": 118,
-              "text": "**\"Harmonic Wall\"** or **\"Harmonic Scaling\"**: The superexponential cost function H(d, R) = R^(d^2) where d is the hyperbolic distance from a trusted center and R > 1 is the base parameter. This function creates a \"verti"
+              "line": 114,
+              "text": "**\"Harmonic Wall\"** or **\"Harmonic Scaling\"**: A nonlinear cost or score function that maps measured drift to governance risk or safety score. Embodiments include H(d, R) = R^(d^2) where R > 1, a bounded reciprocal safet"
             },
             {
-              "line": 128,
+              "line": 124,
               "text": "**\"Anti-Fragile\"**: The property that the system becomes more secure under adversarial pressure, governed by the shock absorber function Psi(P) = 1 + (max - 1) * tanh(beta * P), which expands the metric tensor (increasin"
             },
             {
-              "line": 134,
+              "line": 130,
               "text": "Referring now to FIG. 1, the preferred embodiment of the present invention comprises a fourteen-layer processing pipeline that transforms a raw authorization context into a binary access decision (ALLOW, QUARANTINE, or D"
             },
             {
-              "line": 138,
+              "line": 134,
               "text": "**Group II: Geometric Core (Layers 5-7)** -- Computes hyperbolic distances and applies isometric and diffeomorphic transforms that modulate the embedded space."
             },
             {
-              "line": 142,
+              "line": 138,
               "text": "**Group IV: Decision (Layers 12-14)** -- Applies the Harmonic Wall cost function, renders the access decision, and produces telemetry on a parallel audio channel."
             },
             {
-              "line": 178,
+              "line": 174,
               "text": "Layer 2 performs an isometric embedding from C^D to R^(2D) by concatenating the real and imaginary parts:"
             }
           ]
@@ -684,16 +684,16 @@
         {
           "path": "docs/PATENT_DETAILED_DESCRIPTION.md",
           "exists": true,
-          "sha256": "254e6065db526d2de0e9681392bb00fddc96f9e7b791a21684871a3e918cfadc",
-          "hit_count": 164,
+          "sha256": "a8b1889890ea268032595bc108a41747fb71db1f2742b7aa1de6488569ca92e0",
+          "hit_count": 136,
           "hits": [
             {
               "line": 18,
-              "text": "**Hyperbolic Geometry-Based Access Control System with Superexponential Cost Scaling, Semantically-Weighted Key Derivation, Six-Dimensional Linguistic Entropy Encoding, and Cryptographic Deferred Authorization Containers"
+              "text": "**Hyperbolic Geometry-Based Access Control System with Nonlinear Cost Scaling, Semantically-Weighted Key Derivation, Six-Dimensional Linguistic Entropy Encoding, and Cryptographic Deferred Authorization Containers**"
             },
             {
               "line": 24,
-              "text": "A computer-implemented security framework comprising a fourteen-layer processing pipeline that embeds computational contexts into a Poincare ball manifold and enforces access control through geometric invariants rather t"
+              "text": "A computer-implemented security framework comprising a fourteen-layer processing pipeline that embeds computational contexts into a Poincare ball manifold and enforces access control through measured geometric state rath"
             },
             {
               "line": 32,
@@ -709,7 +709,7 @@
             },
             {
               "line": 46,
-              "text": "There exists a need in the art for a security framework that: (a) enforces access control through mathematical invariants that cannot be circumvented by adversarial optimization; (b) scales the cost of adversarial behavi"
+              "text": "There exists a need in the art for a security framework that: (a) enforces access control through measured geometric state rather than pattern matching alone; (b) scales the cost or risk assigned to adversarial behavior "
             },
             {
               "line": 52,
@@ -717,11 +717,15 @@
             },
             {
               "line": 54,
-              "text": "It is a further object to provide a cryptographic identity container that implements deferred authorization through a conjunction of five predicates -- tongue membership, geometric ring position, monotone descent path hi"
+              "text": "It is a further object to provide a cryptographic identity container that implements deferred authorization through a plurality of predicates -- including semantic, geometric, path-history, quorum, or AEAD cryptographic "
             },
             {
               "line": 56,
               "text": "It is a further object to provide post-quantum security through a dual-lattice consensus mechanism requiring simultaneous agreement of ML-KEM-768 (Module-LWE) and ML-DSA-65 (Module-SIS) operations within a temporal synch"
+            },
+            {
+              "line": 68,
+              "text": "**FIG. 2** -- Alternative harmonic cost functions plotted versus measured drift, including H(d,R) = R^(d^2), a bounded reciprocal score H = 1/(1+d+2*pd), and a clamped RuntimeGate cost C = pi^(phi*min(d*, d_max))."
             },
             {
               "line": 72,
@@ -736,36 +740,32 @@
               "text": "**FIG. 6** -- Dual-lattice settling wave K(t) = sum(C_n * sin(omega_n * t + phi_n)) showing constructive interference peak at t_arrival and destructive interference at all other times, with ML-KEM-768 and ML-DSA-65 conse"
             },
             {
-              "line": 80,
-              "text": "**FIG. 8** -- Langues Metric surface plot showing L(x,t) = sum(w_l * exp(beta_l * (d_l + sin(omega_l * t + phi_l)))) across two tongue dimensions, demonstrating exponential growth away from ideal state with bounded oscil"
-            },
-            {
-              "line": 82,
-              "text": "**FIG. 9** -- SpiralSeal SS1 blob format diagram showing byte-to-token bijection across six tongues, with cross-tongue retokenization preserving byte-level identity."
-            },
-            {
-              "line": 86,
-              "text": "**FIG. 11** -- Breathing transform visualization in the Poincare ball showing T_breath(u;t) = tanh(b * artanh(||u||)) / ||u|| * u for b > 1 (containment/push outward) and b < 1 (diffusion/pull inward), illustrating the d"
-            },
-            {
-              "line": 108,
+              "line": 104,
               "text": "**\"Diffeomorphism\"**: A smooth, invertible transformation of the Poincare ball that is not necessarily distance-preserving. The breathing transform (Layer 6) is a diffeomorphism that changes hyperbolic distances in a con"
             },
             {
-              "line": 110,
+              "line": 106,
               "text": "**\"Sacred Tongue\"**: One of six canonical linguistic basis systems, each identified by a two-letter code (KO, AV, RU, CA, UM, DR), a golden-ratio weight w_l = phi^l for l in {0, 1, 2, 3, 4, 5} where phi = (1 + sqrt(5))/2"
             },
             {
-              "line": 112,
+              "line": 108,
               "text": "**\"Langues Metric\"**: The six-dimensional cost function L(x, t) = sum_{l=0}^{5} w_l * exp(beta_l * (d_l + sin(omega_l * t + phi_l))), where w_l is the golden-ratio weight, beta_l is the growth rate, d_l = |x_l - mu_l| is"
             },
             {
-              "line": 114,
+              "line": 110,
               "text": "**\"Sacred Egg\"**: A cryptographic deferred authorization container E = (hdr, C, tag, policy) comprising an encrypted payload C, an authentication tag, and a policy specifying five predicates that must be simultaneously s"
             },
             {
-              "line": 116,
-              "text": "**\"Fail-to-Noise\"**: The security property that any authorization failure produces output that is computationally indistinguishable from a successful authorization output. Specifically, upon failure of any predicate duri"
+              "line": 112,
+              "text": "**\"Fail-to-Noise\"**: A failure-handling property in which an authorization failure returns a noise or pseudorandom-looking output rather than a structured error message. In some embodiments the noise is deterministic and"
+            },
+            {
+              "line": 114,
+              "text": "**\"Harmonic Wall\"** or **\"Harmonic Scaling\"**: A nonlinear cost or score function that maps measured drift to governance risk or safety score. Embodiments include H(d, R) = R^(d^2) where R > 1, a bounded reciprocal safet"
+            },
+            {
+              "line": 118,
+              "text": "**\"Settling Wave\"**: The key materialization function K(t) = sum_{n} C_n * sin(omega_n * t + phi_n) where phi_n = pi/2 - omega_n * t_arrival, designed so that all sinusoidal components constructively interfere at t = t_a"
             }
           ]
         },
@@ -1044,7 +1044,7 @@
         {
           "path": "src/governance/bijective_tamper.py",
           "exists": true,
-          "sha256": "dc216228bb04aecf2d216b8d0aea92b86ee16b34a335cd6ca9c6166789f2c20b",
+          "sha256": "a7e70886aec69a7f7c0599216346c96859b446ecdf86dd01873c03bdff30b820",
           "hit_count": 47,
           "hits": [
             {

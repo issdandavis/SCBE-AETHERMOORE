@@ -92,10 +92,11 @@ Hardware/interface wording to avoid unless implemented:
 
 ## Document Consistency Issues
 
-1. `docs/PATENT_DETAILED_DESCRIPTION.md` is older than the current claims and
-   still describes 12 figures, including FIG. 10-12. The generated figure set in
-   `docs/legal/patent-figures/` currently has FIG. 1-9. The assembled draft uses
-   FIG. 1-9, but the source detailed description still contains FIG. 10-12 text.
+1. Resolved: `docs/PATENT_DETAILED_DESCRIPTION.md` now describes the current
+   FIG. 1-9 drawing set and no longer contains orphan FIG. 10-12 references in
+   the brief-description section. Anti-fragile, breathing-transform,
+   phase-transform, Langues Metric, and SpiralSeal embodiments remain described
+   in prose rather than as missing drawing figures.
 2. First-pass formula cleanup has been applied to reconcile the active claims,
    detailed-description source, assembled markdown draft, and DOCX builder. The
    spec should continue to present all three cost forms as alternative

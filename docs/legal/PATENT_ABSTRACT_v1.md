@@ -11,12 +11,12 @@ encoded as six-dimensional context vectors, weighted by successive powers of
 the golden ratio, and embedded into a Poincaré ball model of hyperbolic
 space. Hyperbolic distance between the embedded point and a session centroid
 representing prior authorized behavior drives an exponential authorization
-cost that makes adversarial deviations computationally prohibitive. Governance
+cost that increases as adversarial deviations increase. Governance
 decisions — allow, quarantine, escalate, or deny — combine the authorization
 cost with bijective tamper detection, instruction-safety pattern matching, and
 spectral coherence signals. Denied actions return deterministic pseudorandom
-noise indistinguishable from valid output, providing no information to
-adversaries. Authorized actions receive post-quantum cryptographic receipts
+noise or pseudorandom-looking output rather than a structured denial response.
+Authorized actions receive post-quantum cryptographic receipts
 signed under ML-DSA-65 and encapsulated under ML-KEM-768.
 
 ---

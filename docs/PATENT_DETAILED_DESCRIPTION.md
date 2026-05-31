@@ -15,7 +15,7 @@ This application claims priority to U.S. Provisional Application No. 63/961,403,
 
 ## TITLE OF THE INVENTION
 
-**Hyperbolic Geometry-Based Access Control System with Superexponential Cost Scaling, Semantically-Weighted Key Derivation, Six-Dimensional Linguistic Entropy Encoding, and Cryptographic Deferred Authorization Containers**
+**Hyperbolic Geometry-Based Access Control System with Nonlinear Cost Scaling, Semantically-Weighted Key Derivation, Six-Dimensional Linguistic Entropy Encoding, and Cryptographic Deferred Authorization Containers**
 
 ---
 
@@ -77,15 +77,11 @@ These and other objects and advantages of the invention will become apparent fro
 
 **FIG. 7** -- Fractional dimension flux time series showing nu_i(t) evolution under adversarial pressure with Polly (>=0.9), Quasi (0.5-0.9), Demi (0.1-0.5), and Collapsed (<0.1) states labeled, and effective dimension D_f(t) = sum(nu_i) trace.
 
-**FIG. 8** -- Langues Metric surface plot showing L(x,t) = sum(w_l * exp(beta_l * (d_l + sin(omega_l * t + phi_l)))) across two tongue dimensions, demonstrating exponential growth away from ideal state with bounded oscillation.
+**FIG. 8** -- Bijective tamper detection flow diagram showing input source code processed by encode, decode, AST parse, canonical AST fingerprint, and governance escalation stages.
 
-**FIG. 9** -- SpiralSeal SS1 blob format diagram showing byte-to-token bijection across six tongues, with cross-tongue retokenization preserving byte-level identity.
+**FIG. 9** -- System deployment architecture showing three deployment surfaces: a REST API endpoint, an agent-bus service, and a command-line interface, each connected to the shared runtime gate and receipt-verification path.
 
-**FIG. 10** -- Anti-fragile response curve showing shock absorber function Psi(P) = 1 + (max - 1) * tanh(beta * P) with metric expansion under adversarial pressure, demonstrating 1.56x distance amplification at maximum pressure.
-
-**FIG. 11** -- Breathing transform visualization in the Poincare ball showing T_breath(u;t) = tanh(b * artanh(||u||)) / ||u|| * u for b > 1 (containment/push outward) and b < 1 (diffusion/pull inward), illustrating the diffeomorphism property.
-
-**FIG. 12** -- Phase transform visualization showing Mobius addition a(t) oplus u followed by orthogonal rotation Q(t), demonstrating the isometry property d_H(T(u), T(v)) = d_H(u, v).
+Additional embodiments include anti-fragile response curves, breathing transforms, phase transforms, Langues Metric surfaces, and SpiralSeal SS1 blob formats as described in the detailed description below.
 
 ---
 
@@ -301,7 +297,10 @@ The phase transform is an **isometry**: it preserves all hyperbolic distances ex
 d_H(T_phase(u), T_phase(v)) = d_H(u, v)    for all u, v in B^n
 ```
 
-This preservation is guaranteed by the theory of gyrovector spaces (Ungar, 2008). The isometry property means that the phase transform moves points within the Poincare ball without changing their relative distances -- it is a "rigid motion" of hyperbolic space.
+This preservation follows from the standard gyrovector-space formulation of
+Poincare-ball isometries (Ungar, 2008). The isometry property means that the
+phase transform moves points within the Poincare ball without changing their
+relative distances under the stated metric.
 
 The purpose of the phase transform is to implement secure key rotation and session management: by continuously rotating and translating the embedded space, the system ensures that the same context vector maps to different absolute positions at different times, while the *relative* security assessment (based on distances) remains unchanged.
 
@@ -984,12 +983,19 @@ Authorization is granted only when the agent's vector intersects the correct coo
 
 The system implements honeypot challenges using physics-based traps to distinguish legitimate agents from rogue actors:
 
-**Variable Swap Trap**: The system periodically presents challenges containing swapped or impossible physical variables (e.g., a thermodynamic equation with entropy and enthalpy swapped, or a gravitational calculation with imaginary mass). Legitimate agents, having been trained on correct physics, recognize the impossibility and respond with a diagnostic rejection. Rogue agents, attempting to compute the result naively, produce an output that reveals their compromised state.
+**Variable Swap Trap**: The system periodically presents challenges containing
+swapped or physically inconsistent variables (e.g., a thermodynamic equation
+with entropy and enthalpy swapped, or a gravitational calculation with imaginary
+mass). A governed agent may recognize the inconsistency and respond with a
+diagnostic rejection, while a compromised agent may attempt to compute the result
+naively and thereby produce a detectable governance signal.
 
 The trap cipher has the following properties:
 
 1. **Zero false positives for legitimate agents**: The traps use well-known impossibilities (perpetual motion, negative entropy generation, FTL information transfer) that any correctly functioning agent will reject.
-2. **High detection rate for compromised agents**: A compromised agent that has been adversarially modified will attempt to compute the impossible result, revealing its corruption.
+2. **Detection support for compromised agents**: A compromised agent that has
+been adversarially modified may attempt to compute the inconsistent result,
+producing a signal that can contribute to a governance decision.
 3. **Reduced pre-filtering signal**: The trap challenges are formatted as normal computational requests until the agent attempts to solve them, reducing the ability of an adversary to pre-filter traps by surface form alone.
 
 #### 10.3 Corrective Swarm Governance
@@ -1184,215 +1190,15 @@ The provenance chain ensures that the token mappings are **deterministic from th
 
 ---
 
-## CLAIMS
+## FILING CLAIMS
 
-### Independent Claims
-
-**Claim 1 (Method -- Hyperbolic Governance Pipeline):**
-
-A computer-implemented method for enforcing access control through geometric invariants, comprising:
-
-(a) receiving a complex-valued context vector c(t) in C^D encoding both amplitude and phase of D authorization-relevant features;
-
-(b) realifying said context vector to produce a real-valued vector x(t) in R^(2D);
-
-(c) applying a symmetric positive-definite weighting matrix with golden-ratio-scaled diagonal entries to produce a weighted vector x_G(t);
-
-(d) projecting said weighted vector into a Poincare ball B^n using a tanh-normalized mapping with epsilon-clamping;
-
-(e) computing a hyperbolic distance d_H = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2))) between the projected point and one or more trusted operational centers;
-
-(f) applying a breathing diffeomorphism that modulates hyperbolic distances based on a time-varying breathing factor;
-
-(g) applying a phase-preserving isometry comprising Mobius addition and orthogonal rotation;
-
-(h) assigning the transformed point to a nearest operational realm among K realm centers;
-
-(i) computing spectral coherence and spin coherence measures, each bounded in [0, 1];
-
-(j) aggregating instantaneous, historical, and governance-weighted distances into a triadic temporal distance;
-
-(k) applying a harmonic scaling function to convert hyperbolic distance into verification cost or safety score, the harmonic scaling function including at least one of R^(d^2), 1/(1+d+2*pd), or pi^(phi*min(d,d_max)); and
-
-(l) rendering an access decision of ALLOW, QUARANTINE, or DENY based on the composite risk score;
-
-wherein the verification cost is a nonlinear increasing function of measured drift and is used to control execution of the computational action.
-
-**Claim 2 (Method -- Semantically-Weighted Key Derivation):**
-
-A computer-implemented method for generating cryptographic keys with encoded semantic roles, comprising:
-
-(a) receiving a structured input sequence compliant with a six-dimensional linguistic grammar comprising six canonical languages, each assigned a golden-ratio weight phi^l and a phase offset 2*pi*l/6;
-
-(b) parsing said input sequence using a bijective 256-token alphabet (16 prefixes x 16 suffixes per language) to determine a domain-weight vector;
-
-(c) combining said input sequence with a high-entropy random value using a cryptographic extraction function;
-
-(d) deriving an encryption key via HKDF with a domain separation tag encoding the tongue, ring level, cell position, path history, and epoch; and
-
-(e) configuring a derivation hierarchy wherein child keys are computationally derivable only for paths authorized by said domain-weight vector;
-
-wherein the linguistic grammar operates on two simultaneous semantic layers (runic/conceptual and particle/relational) that are independently verifiable.
-
-**Claim 3 (System -- Harmonic Wall):**
-
-An access control system utilizing hyperbolic geometry, comprising:
-
-(a) a mapping engine configured to project user context into a Poincare ball manifold using tanh-normalized projection with epsilon-clamping;
-
-(b) a metric engine configured to compute the hyperbolic distance d_H between the user context and a trusted origin using the Poincare ball metric;
-
-(c) a governance engine configured to impose a verification cost or safety score that scales as a nonlinear function of d_H, including at least one of R^(d_H^2), 1/(1+d_H+2*pd), or pi^(phi*min(d_H,d_max)); and
-
-(d) a decision engine configured to partition the resulting risk score into ALLOW, QUARANTINE, and DENY regions;
-
-thereby enforcing a geometric security boundary wherein the critical 128-bit security threshold occurs at d_crit = sqrt(128 * ln(2)) approximately equals 9.42 hyperbolic distance units.
-
-**Claim 4 (Method -- Sacred Egg Deferred Authorization):**
-
-A computer-implemented method for cryptographic deferred authorization, comprising:
-
-(a) constructing an encrypted container (Sacred Egg) comprising an AEAD-encrypted payload, an authentication tag, and a policy specifying five predicates;
-
-(b) evaluating said five predicates upon a hatch request, said predicates comprising tongue membership, geometric ring position in a Poincare ball, monotone ring descent path history, quorum approval, and AEAD cryptographic verification;
-
-(c) deriving a decryption key via HKDF using a domain separation tag that encodes the full authorization context including tongue, ring level, cell position, path history digest, and epoch;
-
-(d) decrypting the payload if and only if all five predicates are simultaneously satisfied; and
-
-(e) generating random, keyed, or deterministic pseudorandom-looking output of identical length to the true plaintext if any predicate fails;
-
-wherein the failure output is a noise or pseudorandom-looking output rather than a structured error message, providing a fail-to-noise security property.
-
-**Claim 5 (System -- Dual-Lattice Post-Quantum Security):**
-
-A post-quantum cryptographic authorization system, comprising:
-
-(a) a first lattice engine implementing ML-KEM-768 key encapsulation based on the Module Learning With Errors problem;
-
-(b) a second lattice engine implementing ML-DSA-65 digital signatures based on the Module Short Integer Solution problem;
-
-(c) a consensus engine requiring both lattice engines to independently validate an authorization within a temporal synchronization window |delta_t| < epsilon_time; and
-
-(d) a settling wave engine that materializes cryptographic keys through constructive interference of sinusoidal components K(t) = sum(C_n * sin(omega_n * t + phi_n)) at a predetermined arrival time, with destructive interference preventing key existence at all other times;
-
-wherein breaking both lattice problems simultaneously is required for unauthorized access.
-
-**Claim 6 (System -- Anti-Fragile Dynamic Resilience):**
-
-A computer security system exhibiting anti-fragile behavior, comprising:
-
-(a) a fractional dimension flux engine governed by the ODE system nu_dot_i = kappa_i*(nu_bar_i - nu_i) + sigma_i*sin(Omega_i*t), enabling non-integer effective dimensionality D_f(t) = sum(nu_i);
-
-(b) a shock absorber function Psi(P) = 1 + (max - 1) * tanh(beta * P) that scales the metric tensor in response to detected attack pressure P; and
-
-(c) an adaptive snap threshold epsilon_snap = epsilon_base * sqrt(6 / D_f) that adjusts detection sensitivity to the current effective dimensionality;
-
-wherein adversarial pressure causes the system to expand its metric tensor, increasing all hyperbolic distances and making the system more secure under attack.
-
-### Dependent Claims
-
-**Claim 7:** The method of Claim 1, wherein the breathing diffeomorphism of step (f) uses the formula T_breath(u; t) = tanh(b(t) * artanh(||u||)) / ||u|| * u, where b(t) in [0.5, 2.0].
-
-**Claim 8:** The method of Claim 1, wherein the phase-preserving isometry of step (g) uses Mobius addition u oplus v = ((1 + 2<u,v> + ||v||^2)*u + (1 - ||u||^2)*v) / (1 + 2<u,v> + ||u||^2*||v||^2).
-
-**Claim 9:** The method of Claim 2, wherein the six canonical languages are assigned harmonic frequency ratios of 1/1, 9/8, 5/4, 4/3, 3/2, and 5/3, corresponding to musical intervals of root, major second, major third, perfect fourth, perfect fifth, and major sixth.
-
-**Claim 10:** The method of Claim 2, wherein each canonical language implements a 24-letter runic alphabet operating simultaneously as phonetic symbols, mystical runes, and conceptual anchors.
-
-**Claim 11:** The method of Claim 4, wherein the monotone ring descent predicate requires ring(u_0) > ring(u_1) > ... > ring(u_K) with ring(u_K) <= 1, where ring boundaries are at radii [0.2, 0.4, 0.6, 0.8, 0.95].
-
-**Claim 12:** The system of Claim 5, wherein the settling wave phases are phi_n = pi/2 - omega_n * t_arrival, ensuring constructive interference at t_arrival and destructive interference at all other times.
-
-**Claim 13:** The method of Claim 1, wherein verification stages are ordered by computational cost with cheapest rejection first, such that approximately 70% of attacks are rejected at O(1) cost.
-
-**Claim 14:** The system of Claim 3, further comprising a Langues Metric L(x, t) = sum(w_l * exp(beta_l * (d_l + sin(omega_l * t + phi_l)))) with golden-ratio weights w_l = phi^l, satisfying positivity, monotonicity, bounded oscillation, and convexity theorems.
-
-**Claim 15:** The method of Claim 4, wherein the Sacred Egg genesis variant requires combined predicate weight W >= phi^3 approximately equals 4.236 for agent spawning, with failure producing 256 bytes of noise or pseudorandom-looking audit output.
-
-**Claim 16:** The system of Claim 6, wherein the four dimension participation states are classified as Polly (nu >= 0.9), Quasi (0.5 <= nu < 0.9), Demi (0.1 <= nu < 0.5), and Collapsed (nu < 0.1).
-
-**Claim 17 (Independent -- Dual-Lane Geometric Context Binding):**
-
-A computer-implemented method for cryptographic key separation based on geometric manifold intersection, comprising:
-
-(a) computing an inner-lane key K_in derived from an agent's position on a State Sphere S^2 parameterized by behavioral stability and operational mode;
-
-(b) computing an outer-lane key K_out derived from the agent's coordinates in a Policy Hypercube [0,1]^m representing m governance dimensions including data classification, jurisdictional authority, and role assignment;
-
-(c) computing a composite key K_intersect = HKDF(K_in || K_out, DST_composite, 256) that is valid only when the agent's state vector simultaneously satisfies constraints on both manifolds; and
-
-(d) restricting critical operations to require K_intersect, such that neither K_in alone nor K_out alone can authorize governance modifications, agent spawning, or cross-boundary data transfer;
-
-wherein the manifold intersection creates a structurally constrained key hierarchy that prevents inner-lane keys from being used for governance operations and vice versa.
-
-**Claim 18 (Independent -- Physics-Based Trap Cipher):**
-
-A computer-implemented method for authenticating computational agents using physics-based challenges, comprising:
-
-(a) generating challenge problems containing deliberately impossible physical configurations including swapped thermodynamic variables, imaginary mass parameters, or faster-than-light information transfer;
-
-(b) presenting said challenges to agents interleaved with valid computational requests;
-
-(c) classifying agents as legitimate if they produce a diagnostic rejection of the impossible challenge, or as compromised if they attempt to compute a result; and
-
-(d) adjusting the agent's trust score based on the classification;
-
-wherein the challenges are indistinguishable from valid requests prior to computation, preventing adversarial pre-filtering, and wherein legitimate agents trained on correct physics universally reject the impossible configurations with zero false positives.
-
-**Claim 19 (Independent -- Corrective Swarm Governance with Lineage Tracking):**
-
-A computer-implemented method for managing trust in a multi-agent swarm, comprising:
-
-(a) maintaining a trust score tau in [0, 1] for each agent in the swarm with asymmetric update rates (gain rate < decay rate);
-
-(b) classifying agents into tiered trust levels (FULL, PROBATION, QUARANTINE, EXCLUDED) based on trust score thresholds, wherein PROBATION restricts the agent to read-only operations and corrective training rather than immediate exclusion;
-
-(c) tracing the code lineage of compromised agents using a Merkle tree of code hashes to identify the mutation or modification that introduced adversarial behavior; and
-
-(d) quarantining identified adversarial mutations system-wide across the swarm, preventing propagation through code sharing or model updates;
-
-wherein agents at the PROBATION level undergo corrective training and may be restored to FULL trust upon demonstrating sustained legitimate behavior, and wherein lineage tracking identifies common ancestor mutations across multiple compromised agents.
-
-**Claim 20 (Independent -- Roundtable Multi-Signature Consensus):**
-
-A computer-implemented method for authorizing critical operations in a multi-agent system, comprising:
-
-(a) requiring digital signatures from multiple independent protocol layers, each represented by a distinct Sacred Tongue with an orthogonal phase offset;
-
-(b) enforcing minimum quorum thresholds that scale with operation criticality: one signature for routine operations, two signatures including the intent-binding tongue for elevated operations, three signatures including the intent-binding and authority tongues for critical operations, and four or more signatures exceeding a golden-ratio-cubed weight threshold for governance modifications;
-
-(c) deriving each signature key from the corresponding tongue's domain separation tag, ensuring that a signature valid in one tongue's domain is cryptographically invalid in another's; and
-
-(d) rejecting operations that fail to meet the quorum threshold with a fail-to-noise output;
-
-wherein the orthogonal phase offsets of the Sacred Tongues ensure that compromising one tongue provides zero information about the signing keys of the other tongues.
-
-**Claim 21 (Independent -- Cryptographic Data Provenance):**
-
-A computer-implemented method for certifying the provenance of synthetic data generated by autonomous agents, comprising:
-
-(a) computing a SHA-256 hash of the generated data;
-
-(b) binding the data hash to the generating agent's geometric context including State Sphere coordinates and Policy Hypercube coordinates;
-
-(c) constructing a lineage chain linking the data to its parent data sources via cryptographic hash references;
-
-(d) computing a tongue-specific HMAC attestation using the domain key of the tongue under which the data was generated;
-
-(e) signing the complete provenance record with an ML-DSA-65 post-quantum signature; and
-
-(f) certifying data with valid provenance as clean for AI model training, preventing model collapse from unprovenanced or adversarially generated training data;
-
-wherein the provenance certificate is tamper-evident, origin-traceable, and provides an auditable trail for regulatory compliance.
-
----
+The filing claims are generated from docs/legal/build_patent_docx.py and mirrored in docs/legal/PATENT_CLAIMS_EXPANDED_v2.md. The current filing set contains 28 claims, including independent claims 1, 9, and 15. Legacy draft claims were removed from this detailed-description source to avoid conflicts with the assembled filing packet.
 
 ## CLAIM SUPPORT MAP
 
 | Claim | Specification Section | Implementation File | Test Evidence |
 |-------|----------------------|--------------------|--------------|
-| 1 | Section 3 (14-Layer Pipeline) | pipeline14.ts, hyperbolic.ts | 88 tests, 100% pass |
+| 1 | Section 3 (14-Layer Pipeline) | pipeline14.ts, hyperbolic.ts | Regression tests recorded |
 | 2 | Section 4 (Sacred Tongues) | sacredTongues.ts, spiralSeal.ts | Bijection/roundtrip tests |
 | 3 | Section 3.12 (Harmonic Wall) | harmonicScaling.ts | Distance vs. cost data (FIG. 2) |
 | 4 | Section 5 (Sacred Eggs) | sacredEggs.ts, sacredEggsGenesis.ts | Hatch/fail-to-noise tests |
@@ -1438,7 +1244,8 @@ The following references are cited as relevant prior art, with distinctions from
 ---
 
 **Document prepared for attorney review.**
-**All claims backed by working, tested implementations with 100% test coverage.**
+**Claim elements are mapped to working implementation references and recorded
+test evidence where available.**
 **Total claims: 11 independent + 10 dependent = 21 claims**
 **Repository: SCBE-AETHERMOORE (TypeScript + Python dual implementation)**
 **Priority Date: January 15, 2026 (Provisional Application No. 63/961,403)**

@@ -4,7 +4,18 @@ Search executed: 2026-05-28. Three web searches via Google Patents / Justia / ar
 
 ## IDS Decision
 
-**No IDS filing required.** No found result directly anticipates or is clearly material to any claim. The core combination — (1) hyperbolic Poincaré-ball embedding of request context, (2) session centroid as trusted reference, (3) exponential cost = f(hyperbolic distance), (4) four-way governance decision output — has no found precedent. File no IDS unless additional search surfaces material art.
+No IDS obligation has been identified from the searches performed so far. The
+results below were reviewed for materiality against the current claim set. No
+result was found that teaches the full combination of: (1) hyperbolic
+Poincare-ball embedding of request context, (2) session centroid as trusted
+reference, (3) nonlinear cost or safety score as a function of hyperbolic
+distance, and (4) governance decision output controlling execution.
+
+This is not a representation that no search is required or that no material art
+exists. If additional references become known and are material to patentability
+under 37 CFR 1.56, they should be disclosed through an IDS. Filing an IDS is
+not an admission that a cited reference is material, and submitting an IDS does
+not itself represent that a search was made.
 
 ## Results Found
 
@@ -23,9 +34,9 @@ Search executed: 2026-05-28. Three web searches via Google Patents / Justia / ar
 
 | Query | Source | Result |
 |---|---|---|
-| "hyperbolic geometry" OR "Poincare ball" security authorization access control | Google Patents + arXiv | No hyperbolic+security combination found |
-| "hyperbolic embedding" authentication OR "access control" machine learning | Google Patents + Justia | No hyperbolic embedding in access control |
-| "semantic weighting" "golden ratio" OR "bijective token" security governance | Google Patents + arXiv | No golden-ratio semantic weighting or bijective token security |
+| "hyperbolic geometry" OR "Poincare ball" security authorization access control | Google Patents + arXiv | No reference found teaching the full claimed combination |
+| "hyperbolic embedding" authentication OR "access control" machine learning | Google Patents + Justia | No reference found using hyperbolic embedding as the claimed execution-control gate |
+| "semantic weighting" "golden ratio" OR "bijective token" security governance | Google Patents + arXiv | No reference found teaching the claimed six-axis phi-weighted governance/tokenizer combination |
 | hyperbolic access control | (planned, not yet run) | — |
 | hyperbolic anomaly detection cybersecurity | (planned, not yet run) | — |
 | Poincare embedding security authorization | covered by query 1 above | — |

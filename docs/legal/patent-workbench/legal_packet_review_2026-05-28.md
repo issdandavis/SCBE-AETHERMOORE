@@ -24,7 +24,7 @@ engineering and procedural review, not legal representation.
 - USPTO fee schedule confirms the excess-claim structure: independent claims
   over three and total claims over twenty trigger extra fees. The current packet
   has three independent claims and twenty-eight total claims, meaning eight
-  excess total claims ($720 micro-entity: $400 base + 8 x $40).
+  excess total claims ($755 micro-entity estimate: $435 base + 8 x $40).
 
 ## Packet Structure Review
 
@@ -46,7 +46,7 @@ Local structural extraction found the following section order:
 Local checks:
 
 - Formal claims section appears once.
-- Formal claim numbers are sequential: 1 through 26.
+- Formal claim numbers are sequential: 1 through 28.
 - Independent claims: 1, 9, and 15.
 - Abstract word count: 117 words.
 - Removed from the formal DOCX: old internal claim appendix that was previously
@@ -141,11 +141,12 @@ Diagram changes made in this review:
   cheapest-reject-first stack, post-quantum receipts, audit receipt fields.
 - Medium-to-high risk: claims 15-20, bijective tamper detection, AST
   fingerprint comparison, confusable identifier checks, NFC stub fallback.
-- Higher risk / continuation-style: claims 21-26, especially multi-predicate
-  authorization containers, physics-based juggling coordination, and the
-  disjoint bijective tokenizer alphabet dependent claim. These have
-  implementation or design support, but should be checked against the
-  provisional text before relying on the January 15, 2026 priority date.
+- Higher risk / continuation-style: claims 21-28, especially multi-predicate
+  authorization containers, physics-based juggling coordination, disjoint
+  bijective tokenizer alphabets, harmonic phase orthogonality, and
+  domain-specific entropy encoding. These have implementation or design support,
+  but should be checked against the provisional text before relying on the
+  January 15, 2026 priority date.
 
 ## Remaining Manual Filing Blockers
 
@@ -156,7 +157,7 @@ Diagram changes made in this review:
   warnings/errors.
 - Fee verification: re-check filing/search/examination and excess-claim fees on
   the USPTO fee schedule on the day of filing.
-- Priority support: compare claims 21-26 against the exact filed provisional
+- Priority support: compare claims 21-28 against the exact filed provisional
   text before filing if preserving the provisional priority date for those
   features matters.
 
