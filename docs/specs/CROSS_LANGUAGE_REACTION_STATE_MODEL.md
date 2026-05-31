@@ -152,6 +152,22 @@ result = evaluate_bijective_reaction(
 
 That result is `LOSSY_RECOVERABLE`: topology was lost, but the required identity was restored through a declared recovery lane. Without the recovery lane, the same atom bag becomes `LOSSY_AMBIGUOUS`.
 
+### Polymerization Extension
+
+Polymerization fits the same packet model as a repeated bounded reaction, but it
+needs different identity fields than a small molecule:
+
+- monomer identity and repeat-unit identity;
+- chain length or distribution model;
+- end-group state;
+- tacticity/stereochemistry when relevant;
+- catalyst/initiator context as metadata, not procedural instructions;
+- allowed-loss notes for distribution approximations.
+
+The first implementation should be computational and non-procedural: prove that
+a declared monomer/repeat-unit relationship can be decomposed, stepped, and
+recalculated without giving wet-lab synthesis instructions.
+
 ## Multi-Language Chemical Composition Analogy
 
 Coding languages are like different atomic families in this model:

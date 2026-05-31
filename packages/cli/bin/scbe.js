@@ -135,6 +135,17 @@ Usage:
     [--json] [--write <path>]
 
 ─────────────────────────────────────────────────────────────────────────────
+  REACT — bounded reaction-state packets
+─────────────────────────────────────────────────────────────────────────────
+  react audit            Audit a reaction packet or benchmark report
+    --packet <file>        Verifies packet hashes and classifications
+    [--json]
+  react compare          Compare two reaction packet/report files
+    --left <file>
+    --right <file>
+    [--json]
+
+─────────────────────────────────────────────────────────────────────────────
   CREATOR TOOLS — local-first content utility gates
 ─────────────────────────────────────────────────────────────────────────────
   youtube review <file>  Review a YouTube package JSON before upload;
@@ -4453,11 +4464,44 @@ function printBenchHelp() {
       '  scbe bench status [--json]',
       '  scbe bench latest [lane] [--json]',
       '  scbe bench prove [lane] [--json] [--write <path>]',
+      '  scbe react audit --packet <file> [--json]',
+      '  scbe react compare --left <file> --right <file> [--json]',
       '',
       'These are local executable evidence lanes, not public leaderboard scores.',
       '',
     ].join('\n')
   );
+}
+
+function runReactionCli(args) {
+  if (!args.length || args[0] === 'help' || args[0] === '--help' || args[0] === '-h') {
+    process.stdout.write(
+      [
+        'Usage:',
+        '  scbe react audit --packet <file> [--json]',
+        '  scbe react compare --left <file> --right <file> [--json]',
+        '',
+        'Reaction packets classify bounded transforms as BIJECTIVE, LOSSY_RECOVERABLE,',
+        'LOSSY_AMBIGUOUS, or INVALID under a declared representation.',
+        '',
+      ].join('\n')
+    );
+    process.exit(0);
+  }
+  const scriptPath = resolveRepoScript('scripts/reaction_cli.py');
+  if (!scriptPath) {
+    process.stderr.write('scbe react: missing scripts/reaction_cli.py\n');
+    process.exit(2);
+  }
+  const child = spawnSync(pythonCommand(), [scriptPath, ...args], {
+    cwd: repoRoot(),
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  if (child.stdout) process.stdout.write(child.stdout);
+  if (child.stderr) process.stderr.write(child.stderr);
+  if (typeof child.status === 'number') process.exit(child.status);
+  process.exit(1);
 }
 
 function runBench(args) {
@@ -4493,9 +4537,7 @@ function runBench(args) {
     process.exit(2);
   }
   const openReport = args.includes('--open-report');
-  const forwarded = args.slice(1).filter(
-    (arg) => arg !== '--open-report' && arg !== '--json',
-  );
+  const forwarded = args.slice(1).filter((arg) => arg !== '--open-report');
   const child = spawnSync(pythonCommand(), [scriptPath, ...forwarded], {
     cwd: repoRoot(),
     encoding: 'utf8',
@@ -4685,6 +4727,10 @@ if (argv[0] === 'liboqs') {
 
 if (argv[0] === 'bench' || argv[0] === 'benchmark') {
   runBench(argv.slice(1));
+}
+
+if (argv[0] === 'react') {
+  runReactionCli(argv.slice(1));
 }
 
 if (argv[0] === 'youtube') {

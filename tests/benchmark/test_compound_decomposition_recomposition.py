@@ -27,6 +27,7 @@ def test_compound_recomposition_recovers_known_solutions(tmp_path: Path) -> None
 
     assert report["schema_version"] == "scbe_compound_decomposition_recomposition_v1"
     assert report["summary"]["decision"] == "PASS"
+    assert report["summary"]["case_count"] >= 25
     assert report["summary"]["passed"] == report["summary"]["case_count"]
     for case in report["cases"]:
         packet = case["reaction_state_packet"]
@@ -54,6 +55,20 @@ def test_atom_only_mud_step_exposes_ambiguity() -> None:
         result["reaction_state_packet"]["recalculation"]["extra"]["atom_only_ambiguous"]
         is True
     )
+
+
+def test_expanded_corpus_covers_multiple_functional_families() -> None:
+    module = _load_module()
+
+    case_names = {case.name for case in module.CASES}
+
+    assert "ethanol" in case_names
+    assert "acetone" in case_names
+    assert "propanal" in case_names
+    assert "benzene" in case_names
+    assert "glycine" in case_names
+    assert "caffeine" in case_names
+    assert "glucose" in case_names
 
 
 def test_compound_recomposition_cli_smoke(tmp_path: Path) -> None:

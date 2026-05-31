@@ -77,18 +77,28 @@ test('bench list emits registered evidence lanes as JSON', () => {
   assert.ok(payload.lanes.some((lane) => lane.id === 'circuit'));
 });
 
+test('bench compound-decompose forwards JSON flag', () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-compound-json-'));
+  const result = runCli(['bench', 'compound-decompose', '--out-dir', outDir, '--json'], { timeout: 90_000 });
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_compound_decomposition_recomposition_v1');
+  assert.equal(payload.summary.decision, 'PASS');
+  assert.equal(payload.summary.case_count, 30);
+});
+
 test('bench latest reads latest lane artifact summary', () => {
-  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-rubix-latest-'));
-  const warmup = runCli(['bench', 'rubix-browser', '--out-dir', outDir, '--json'], { timeout: 60_000 });
+  const warmup = runCli(['bench', 'compound-decompose', '--json'], { timeout: 90_000 });
   assert.equal(warmup.status, 0, warmup.stderr);
 
-  const result = runCli(['bench', 'latest', 'rubix-browser', '--json']);
+  const result = runCli(['bench', 'latest', 'compound-decompose', '--json']);
   assert.equal(result.status, 0, result.stderr);
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.schema_version, 'scbe_bench_latest_v1');
   assert.equal(payload.lanes.length, 1);
-  assert.equal(payload.lanes[0].id, 'rubix-browser');
-  assert.equal(payload.lanes[0].report.schema_version, 'scbe_rubix_browser_hypercube_benchmark_v1');
+  assert.equal(payload.lanes[0].id, 'compound-decompose');
+  assert.equal(payload.lanes[0].report.schema_version, 'scbe_compound_decomposition_recomposition_v1');
 });
 
 test('bench status emits compact utility view', () => {
