@@ -102,6 +102,10 @@ Usage:
   bench terminal-adapter Run local Terminal-Bench-style adapter contract
     [--json]              setup, shell exec, answer.txt, verifier, receipts
     [--open-report]
+  bench chemistry        Run chemistry/STISTA capability lane
+    [--json]              atomic tokenizer, chemical fusion, orbital invariants,
+    [--inventory-only]    and private-proof-safe hash inventory
+    [--open-report]
   bench full             Aggregate full-system evidence matrix:
     [--json]              local artifacts, external targets, blockers, and
     [--run-local]          claim boundaries for website/patent-safe claims
@@ -4182,6 +4186,14 @@ const BENCH_TARGETS = {
     claimBoundary:
       'local answer-file terminal adapter contract; not an official Terminal-Bench score',
   },
+  chemistry: {
+    script: 'scripts/benchmark/chemistry_cli_capability.py',
+    latestJson: 'artifacts/benchmarks/chemistry_cli_capability/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/chemistry_cli_capability/LATEST.md',
+    description: 'chemistry/STISTA symbolic chemistry and atomic-tokenizer capability lane',
+    claimBoundary:
+      'local symbolic chemistry, STISTA atomic-tokenizer, and GeoSeed orbital evidence; not a wet-lab chemistry planner score',
+  },
   full: {
     script: 'scripts/benchmark/scbe_full_system_benchmark.py',
     latestJson: 'artifacts/benchmarks/scbe_full_system/latest_report.json',
@@ -4395,6 +4407,7 @@ function printBenchHelp() {
       '  scbe bench research [--style BrowseComp-style|GAIA-style] [--json] [--open-report]',
       '  scbe bench rubix-browser [--json] [--open-report]',
       '  scbe bench terminal-adapter [--json] [--open-report]',
+      '  scbe bench chemistry [--json] [--inventory-only] [--open-report]',
       '  scbe bench full [--json] [--run-local] [--quick] [--open-report]',
       '  scbe bench circuit [--json] [--open-report]',
       '  scbe bench list [--json]',

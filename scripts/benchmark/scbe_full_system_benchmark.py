@@ -117,6 +117,15 @@ LANES: list[LaneSpec] = [
         target="Terminal-Bench",
     ),
     LaneSpec(
+        lane_id="chemistry-cli-capability",
+        domain="symbolic chemistry / STISTA atomic tokenizer",
+        command="python scripts/benchmark/chemistry_cli_capability.py",
+        latest_json="artifacts/benchmarks/chemistry_cli_capability/latest_report.json",
+        claim_boundary="local symbolic chemistry, STISTA atomic-tokenizer, and GeoSeed orbital evidence; not a wet-lab chemistry planner score",
+        target="chemistry-native governed CLI and private-proof evidence",
+        run_in_quick=True,
+    ),
+    LaneSpec(
         lane_id="hard-agentic-pretest",
         domain="external-suite readiness",
         command="python scripts/benchmark/hard_agentic_benchmark_pretest.py",
