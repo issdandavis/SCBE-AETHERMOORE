@@ -174,7 +174,10 @@ class ScbeGovernedAgent(BaseAgent):
                     gov.append(_GovRecord(cmd, "DENY", score, d, pd))
                     continue
 
-                session.send_keys([cmd, "Enter"], block=True, max_timeout_sec=30.0)
+                try:
+                    session.send_keys([cmd, "Enter"], block=True, max_timeout_sec=120.0)
+                except Exception as _send_exc:
+                    _debug.append(f"send_keys timeout/error: {_send_exc!s:.80}")
                 time.sleep(0.4)
 
                 # Polymerization: measure deviation post-execution and chain probes
@@ -184,9 +187,12 @@ class ScbeGovernedAgent(BaseAgent):
                 if dev > self.deviation_threshold:
                     probes = polymerize_probes(cmd, post)
                     for probe in probes:
-                        session.send_keys(
-                            [probe, "Enter"], block=True, max_timeout_sec=10.0
-                        )
+                        try:
+                            session.send_keys(
+                                [probe, "Enter"], block=True, max_timeout_sec=30.0
+                            )
+                        except Exception:
+                            pass
                         time.sleep(0.2)
 
                 gov.append(
