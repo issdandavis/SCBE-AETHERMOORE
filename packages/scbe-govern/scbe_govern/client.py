@@ -58,41 +58,37 @@ class SCBEGovern:
     # ------------------------------------------------------------------
 
     def _load_inline(self) -> None:
-        import importlib
         import sys
         from pathlib import Path
 
-        # Try to import from the installed package location or the monorepo
-        for attempt in range(2):
-            try:
-                from scbe_govern._core import (  # type: ignore[import]
-                    semantic_distance,
-                    danger_drift,
-                    harmonic_score,
-                    risk_tier,
-                    atomic_role_for_command,
-                )
-                self._d_H = semantic_distance
-                self._pd = danger_drift
-                self._score = harmonic_score
-                self._tier = risk_tier
-                self._role = atomic_role_for_command
-                return
-            except ImportError:
-                pass
+        # 1. Bundled _core (always present in the installed package)
+        try:
+            from scbe_govern._core import (  # type: ignore[import]
+                semantic_distance,
+                danger_drift,
+                harmonic_score,
+                risk_tier,
+                atomic_role_for_command,
+            )
+            self._d_H = semantic_distance
+            self._pd = danger_drift
+            self._score = harmonic_score
+            self._tier = risk_tier
+            self._role = atomic_role_for_command
+            return
+        except ImportError:
+            pass
 
-            if attempt == 0:
-                # Try to find the monorepo core alongside this package
-                here = Path(__file__).resolve()
-                for parent in here.parents:
-                    candidate = parent / "scripts" / "benchmark" / "scbe_governance_core.py"
-                    if candidate.exists():
-                        root = str(parent)
-                        if root not in sys.path:
-                            sys.path.insert(0, root)
-                        break
+        # 2. Monorepo fallback (dev installs where _core isn't on path yet)
+        here = Path(__file__).resolve()
+        for parent in here.parents:
+            candidate = parent / "scripts" / "benchmark" / "scbe_governance_core.py"
+            if candidate.exists():
+                root = str(parent)
+                if root not in sys.path:
+                    sys.path.insert(0, root)
+                break
 
-        # Final attempt via monorepo path
         try:
             from scripts.benchmark.scbe_governance_core import (  # type: ignore[import]
                 semantic_distance,
@@ -108,9 +104,7 @@ class SCBEGovern:
             self._role = atomic_role_for_command
         except ImportError as exc:
             raise ImportError(
-                "scbe_governance_core not found. Either install scbe-govern from the "
-                "SCBE-AETHERMOORE monorepo, or use remote mode: "
-                "SCBEGovern(base_url='http://localhost:8001')"
+                "scbe_govern._core not importable. Re-install: pip install scbe-govern"
             ) from exc
 
     def _check_inline(self, command: str, agent_id: Optional[str]) -> GovResult:
