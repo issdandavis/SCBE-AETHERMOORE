@@ -7,7 +7,7 @@ name = "scbe-govern"
 version = "0.1.0"
 description = "SCBE L12 harmonic wall governance SDK — drop-in safety layer for any AI agent framework"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 requires-python = ">=3.9"
 dependencies = []
 
