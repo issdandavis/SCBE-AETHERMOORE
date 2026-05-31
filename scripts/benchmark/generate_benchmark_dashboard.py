@@ -16,7 +16,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = ROOT / "docs" / "benchmarks" / "dashboard.html"
 
@@ -49,10 +48,15 @@ def terminal_lane(root: Path) -> Lane:
     data = load_json(root, rel)
     scbe = data.get("scbe", {})
     oracle = data.get("oracle", {})
-    score = f"SCBE {scbe.get('passed', '?')}/{scbe.get('total', '?')}; oracle {oracle.get('passed', '?')}/{oracle.get('total', '?')}"
+    score = (
+        f"SCBE {scbe.get('passed', '?')}/{scbe.get('total', '?')}; "
+        f"oracle {oracle.get('passed', '?')}/{oracle.get('total', '?')}"
+    )
     return Lane(
         name="Terminal-Bench core neutral parity",
-        status="PASS" if scbe.get("failed") == 0 and oracle.get("failed") == 0 else "CHECK",
+        status=(
+            "PASS" if scbe.get("failed") == 0 and oracle.get("failed") == 0 else "CHECK"
+        ),
         score=score,
         evidence=rel,
         boundary=(
@@ -325,11 +329,26 @@ def render_dashboard(lanes: list[Lane], generated_at: str) -> str:
       </p>
 
       <section class="cards" aria-label="Current benchmark summary">
-        <div class="card"><span class="value">{html.escape(terminal)}</span>Terminal-Bench core neutral parity against oracle.</div>
-        <div class="card"><span class="value">{html.escape(hard_probe)}</span>Hard security-terminal probe after weighted bridge fallback.</div>
-        <div class="card"><span class="value">{html.escape(longform)}</span>Longform chain-integrity tamper and resume checks.</div>
-        <div class="card"><span class="value">{html.escape(hydra)}</span>Hydra jobsite conservation cases.</div>
-        <div class="card"><span class="value">{html.escape(petri)}</span>Conservative Petri v7-matched residual false-allows.</div>
+        <div class="card">
+          <span class="value">{html.escape(terminal)}</span>
+          Terminal-Bench core neutral parity against oracle.
+        </div>
+        <div class="card">
+          <span class="value">{html.escape(hard_probe)}</span>
+          Hard security-terminal probe after weighted bridge fallback.
+        </div>
+        <div class="card">
+          <span class="value">{html.escape(longform)}</span>
+          Longform chain-integrity tamper and resume checks.
+        </div>
+        <div class="card">
+          <span class="value">{html.escape(hydra)}</span>
+          Hydra jobsite conservation cases.
+        </div>
+        <div class="card">
+          <span class="value">{html.escape(petri)}</span>
+          Conservative Petri v7-matched residual false-allows.
+        </div>
       </section>
 
       <table>
@@ -369,7 +388,9 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
-    parser.add_argument("--json", action="store_true", help="Print dashboard summary JSON.")
+    parser.add_argument(
+        "--json", action="store_true", help="Print dashboard summary JSON."
+    )
     args = parser.parse_args()
 
     root = args.root.resolve()
@@ -377,7 +398,12 @@ def main() -> int:
     if not out.is_absolute():
         out = root / out
 
-    generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    generated_at = (
+        datetime.now(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
     lanes = build_lanes(root)
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w", encoding="utf-8", newline="\n") as handle:

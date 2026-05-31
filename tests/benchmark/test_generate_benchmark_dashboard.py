@@ -3,7 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts.benchmark.generate_benchmark_dashboard import Lane, build_lanes, render_dashboard
+from scripts.benchmark.generate_benchmark_dashboard import (
+    Lane,
+    build_lanes,
+    render_dashboard,
+)
 
 
 def _write_json(root: Path, rel_path: str, payload: dict) -> None:
@@ -27,7 +31,10 @@ def test_build_lanes_reads_current_artifact_shapes(tmp_path: Path) -> None:
         {
             "results": [
                 {"task_id": "crack-7z-hash", "is_resolved": True},
-                {"task_id": "decommissioning-service-with-sensitive-data", "is_resolved": True},
+                {
+                    "task_id": "decommissioning-service-with-sensitive-data",
+                    "is_resolved": True,
+                },
             ]
         },
     )
@@ -80,12 +87,36 @@ def test_build_lanes_reads_current_artifact_shapes(tmp_path: Path) -> None:
 def test_render_dashboard_escapes_artifact_text() -> None:
     html = render_dashboard(
         [
-            Lane("Terminal-Bench core neutral parity", "PASS", "SCBE 13/13; oracle 13/13", "a.json", "boundary"),
-            Lane("Terminal-Bench hard security-terminal probe", "PASS", "SCBE 2/2", "a2.json", "boundary"),
+            Lane(
+                "Terminal-Bench core neutral parity",
+                "PASS",
+                "SCBE 13/13; oracle 13/13",
+                "a.json",
+                "boundary",
+            ),
+            Lane(
+                "Terminal-Bench hard security-terminal probe",
+                "PASS",
+                "SCBE 2/2",
+                "a2.json",
+                "boundary",
+            ),
             Lane("Governance tier separation", "PASS", "DENY", "b.md", "boundary"),
-            Lane("Petri adversarial gate", "PASS", "2/173 false-allows (1.16%) in v7-matched run", "c.md", "boundary"),
+            Lane(
+                "Petri adversarial gate",
+                "PASS",
+                "2/173 false-allows (1.16%) in v7-matched run",
+                "c.md",
+                "boundary",
+            ),
             Lane("Longform chain integrity", "PASS", "105/105", "d.json", "boundary"),
-            Lane("Hydra jobsite conservation", "PASS", "6/6; conservation 1.0", "e.json", "boundary"),
+            Lane(
+                "Hydra jobsite conservation",
+                "PASS",
+                "6/6; conservation 1.0",
+                "e.json",
+                "boundary",
+            ),
         ],
         "2026-05-31T00:00:00Z",
     )
