@@ -30,7 +30,7 @@ Recommended duration:
 
 Proposed cost:
 
-`TBD` — must match Attachment E/F. Do not guess in BAAT.
+Working recommendation: `$839,000` — use only if Attachment E/F are built from the 2026-05-31 cost analysis and match exactly.
 
 ## Required Attachments
 
@@ -38,8 +38,8 @@ Proposed cost:
 | --- | --- | --- | --- | --- |
 | Attachment C | `Attachment_C_Proposal_Summary_Slide.pdf` | `03_attachment_c_summary_slide/` | none found | MISSING |
 | Attachment D | `Attachment_D_Volume_I_Technical_Management.pdf` | `04_attachment_d_vol_i_technical_management/` | `vol_i_technical_approach_draft_v1.md`; `vol_i_section_4_technical_approach_skeleton.md` | DRAFT |
-| Attachment E | `Attachment_E_Volume_II_Price.pdf` | `05_attachment_e_vol_ii_price/` | none found | MISSING |
-| Attachment F | `Attachment_F_Streamlined_Cost_Buildup.xlsx` | `06_attachment_f_cost_workbook/` | none found | MISSING |
+| Attachment E | `Attachment_E_Volume_II_Price.pdf` | `05_attachment_e_vol_ii_price/` | `PRICE_COST_ANALYSIS_RESEARCH_2026-05-31.md` | DRAFT SOURCE |
+| Attachment F | `Attachment_F_Streamlined_Cost_Buildup.xlsx` | `06_attachment_f_cost_workbook/` | `COST_BUILDUP_DRAFT_2026-05-31.csv`; `MILESTONE_PAYMENT_DRAFT_2026-05-31.csv` | DRAFT SOURCE |
 | Attachment G | `Attachment_G_Model_OT_for_Research.pdf` | `07_attachment_g_model_ot/` | none found | MISSING |
 | Attachment H | `Attachment_H_Task_Description_Document.pdf` | `08_attachment_h_tdd/` | milestone requirements in `pa_26_05_compliance_checklist.md` | MISSING |
 | Attachment I | `Attachment_I_OT_Reps_and_Certs.pdf` | `09_attachment_i_reps_certs/` | none found | MISSING |

@@ -1,0 +1,14 @@
+category,line_item,hours,rate,amount,notes
+Prime Direct Labor,Prime PI / Technical Lead,1536,115,176640,Issac / SCBE prime lead and technical authority
+Prime Direct Labor,Research Software / Benchmark Engineering,1024,105,107520,SCBE benchmark harness software suite protocol graph and evaluation work
+Prime Direct Labor,Data / IV&V / Reporting,640,85,54400,IV&V bundles metrics reporting quarterly and final reports
+Prime Direct Labor,Project Admin / Compliance,320,70,22400,BAAT award reporting coordination and compliance support
+Prime Direct Labor,Prime direct labor subtotal,,,360960,
+Subcontract,Hoags Inc. supporting subcontract,,,120000,Bounded DAVA IP telemetry and corroborating support only
+Compute,Commercial GPU / HF endpoint / storage / benchmark compute,,,72000,Intermittent commercial GPU compute and storage buffer
+Travel,Three required PI meetings plus limited contingency,,,18000,Two DC-area and one SF Bay-area meeting
+Other Direct Costs,Data storage tools compliance artifact prep accounting support,,,54000,Non-subcontract ODCs
+Indirect / G&A,30 percent on prime base excluding subcontract,,,151488,30% * (labor + compute + travel + ODC)
+Subtotal Cost,Before fixed fee,,,776448,
+Fixed Fee,8 percent fixed fee,,,62116,8% of subtotal cost rounded
+Total Proposed Price,Recommended BAAT proposed cost,,,839000,Rounded total; must match Attachment E and F

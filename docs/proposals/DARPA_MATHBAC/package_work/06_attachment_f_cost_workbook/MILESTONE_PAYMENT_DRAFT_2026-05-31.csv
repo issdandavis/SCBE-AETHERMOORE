@@ -1,0 +1,9 @@
+month,milestone,payment,notes
+1,"Kickoff: theory/model/baseline plan and personnel assignment",84000,"Required M1 milestone"
+3,"Initial successes/failures and initial mathematical framework",109000,"Required M3 milestone"
+6,"PI meeting; framework description; IV&V data-pipeline demo",151000,"Required M6 milestone"
+9,"Initial software-suite report; ROMs; IV&V challenge progress",151000,"Required M9 milestone"
+13,"PI meeting; side-by-side baseline comparison; superior protocol set",151000,"Required M13 milestone"
+14,"Computational design tool demo and IV&V test results",84000,"Required M14 milestone"
+16,"Final report; protocol catalog; Phase II plan",109000,"Required M16 milestone"
+total,"Total proposed price",839000,"Must match BAAT Attachment E and Attachment F"

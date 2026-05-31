@@ -6,6 +6,11 @@ Final target:
 
 `Attachment_E_Volume_II_Price.pdf`
 
+Working source:
+
+- `PRICE_COST_ANALYSIS_RESEARCH_2026-05-31.md`
+- Recommended BAAT proposed cost if this build is used: `$839,000`
+
 Needed action:
 
 Download official Attachment E template, write price narrative, ensure it matches Attachment F and BAAT proposed cost, export to PDF.
