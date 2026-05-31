@@ -160,6 +160,17 @@ Core commands:
     [--json] [--write <path>]
 
 ─────────────────────────────────────────────────────────────────────────────
+  REACT — bounded reaction-state packets
+─────────────────────────────────────────────────────────────────────────────
+  react audit            Audit a reaction packet or benchmark report
+    --packet <file>        Verifies packet hashes and classifications
+    [--json]
+  react compare          Compare two reaction packet/report files
+    --left <file>
+    --right <file>
+    [--json]
+
+─────────────────────────────────────────────────────────────────────────────
   CREATOR TOOLS — local-first content utility gates
 ─────────────────────────────────────────────────────────────────────────────
   youtube review <file>  Review a YouTube package JSON before upload;
@@ -2420,9 +2431,6 @@ function runInteractiveShell(flags = {}) {
     } else {
       process.stdout.write(ansi('dim', `  ⟳ ${cfg.provider}:${cfg.model}…\n`));
     }
-      cfg = { ...unitToCfg(unit), system_prompt: cfg.system_prompt };
-    }
-    process.stdout.write(ansi('dim', `  ⟳ ${cfg.provider}:${cfg.model}…\n`));
     rl.pause();
     process.stdout.write(ansi('cyan', '  '));
 
@@ -3853,14 +3861,6 @@ function detectSquadUnit(task) {
     return 'cerebras';
   }
   // Default: cerebras (fast, good enough for triage)
-function detectSquadUnit(task) {
-  const lower = String(task || '').toLowerCase();
-  if (/\b(safe|security|auth|credential|token|policy|govern|allow|deny|block|risk|compliance|permission)\b/.test(lower)) {
-    return 'groq';
-  }
-  if (/\b(run|exec|test|build|deploy|next.?step|quick|triage|code|fix|bug|error|fail|command)\b/.test(lower)) {
-    return 'cerebras';
-  }
   return 'cerebras';
 }
 
@@ -4165,6 +4165,14 @@ const BENCH_TARGETS = {
     latestMarkdown: 'artifacts/benchmarks/cli_competitive/LATEST.md',
     description: 'CLI command accuracy vs Codex/Claude-Code-style baselines',
     claimBoundary: 'local CLI command accuracy fixture; not a published competitive benchmark score',
+  },
+  'compound-decompose': {
+    script: 'scripts/benchmark/compound_decomposition_recomposition.py',
+    latestJson: 'artifacts/benchmarks/compound_decomposition_recomposition/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/compound_decomposition_recomposition/LATEST.md',
+    description: 'RDKit compound decomposition/recomposition through atom mud',
+    claimBoundary:
+      'computational compound decomposition/recomposition benchmark; not wet-lab synthesis, biological efficacy proof, dosing guidance, or medical advice',
   },
   providers: {
     script: 'scripts/benchmark/provider_health_matrix.py',
@@ -4551,6 +4559,37 @@ function runBench(args) {
     openFileBestEffort(target.latestMarkdown);
   }
   process.exit(typeof pyResult.status === 'number' ? pyResult.status : 1);
+}
+
+function runReactionCli(args) {
+  if (!args.length || args[0] === 'help' || args[0] === '--help' || args[0] === '-h') {
+    process.stdout.write(
+      [
+        'Usage:',
+        '  scbe react audit --packet <file> [--json]',
+        '  scbe react compare --left <file> --right <file> [--json]',
+        '',
+        'Reaction packets classify bounded transforms as BIJECTIVE, LOSSY_RECOVERABLE,',
+        'LOSSY_AMBIGUOUS, or INVALID under a declared representation.',
+        '',
+      ].join('\n')
+    );
+    process.exit(0);
+  }
+  const scriptPath = resolveRepoScript('scripts/reaction_cli.py');
+  if (!scriptPath) {
+    process.stderr.write('scbe react: missing scripts/reaction_cli.py\n');
+    process.exit(2);
+  }
+  const child = spawnSync(pythonCommand(), [scriptPath, ...args], {
+    cwd: repoRoot(),
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  if (child.stdout) process.stdout.write(child.stdout);
+  if (child.stderr) process.stderr.write(child.stderr);
+  if (typeof child.status === 'number') process.exit(child.status);
+  process.exit(1);
 }
 
 // Top-level commands scbe handles directly. Used by the typo-suggestion guard.
@@ -5165,349 +5204,6 @@ function runSelftest() {
   process.exit(payload.ok ? 0 : 1);
 }
 
-const BENCH_TARGETS = {
-  'hard-agentic': {
-    script: 'scripts/benchmark/hard_agentic_benchmark_pretest.py',
-    latestJson: 'artifacts/benchmarks/hard_agentic_pretest/latest_report.json',
-    latestMarkdown: 'artifacts/benchmarks/hard_agentic_pretest/LATEST.md',
-    description: 'hard agentic pretest matrix',
-    claimBoundary: 'local readiness/pretest matrix; not a public benchmark leaderboard score',
-  },
-  research: {
-    script: 'scripts/benchmark/research_agent_fixture_benchmark.py',
-    latestJson: 'artifacts/benchmarks/research_agent_fixtures/latest_report.json',
-    latestMarkdown: 'artifacts/benchmarks/research_agent_fixtures/LATEST.md',
-    description: 'BrowseComp/GAIA-style local research fixtures',
-    claimBoundary: 'local BrowseComp/GAIA-style fixtures; not public BrowseComp or GAIA scores',
-  },
-  'rubix-browser': {
-    script: 'scripts/benchmark/rubix_browser_hypercube_benchmark.py',
-    latestJson: 'artifacts/benchmarks/rubix_browser_hypercube/latest_report.json',
-    latestMarkdown: 'artifacts/benchmarks/rubix_browser_hypercube/LATEST.md',
-    description: 'permission-hypercube browser-control fixture',
-    claimBoundary:
-      'local browser-control geometry fixture; not WebArena, BrowserGym, OSWorld, or VisualWebArena score',
-  },
-  'terminal-adapter': {
-    script: 'scripts/benchmark/terminal_bench_adapter.py',
-    latestJson: 'artifacts/benchmarks/terminal_bench_adapter/latest_report.json',
-    latestMarkdown: 'artifacts/benchmarks/terminal_bench_adapter/LATEST.md',
-    description: 'local Terminal-Bench-style adapter contract',
-    claimBoundary:
-      'local answer-file terminal adapter contract; not an official Terminal-Bench score',
-  },
-  chemistry: {
-    script: 'scripts/benchmark/chemistry_cli_capability.py',
-    latestJson: 'artifacts/benchmarks/chemistry_cli_capability/latest_report.json',
-    latestMarkdown: 'artifacts/benchmarks/chemistry_cli_capability/LATEST.md',
-    description: 'chemistry/STISTA symbolic chemistry and atomic-tokenizer capability lane',
-    claimBoundary:
-      'local symbolic chemistry, STISTA atomic-tokenizer, and GeoSeed orbital evidence; not a wet-lab chemistry planner score',
-  },
-  'compound-decompose': {
-    script: 'scripts/benchmark/compound_decomposition_recomposition.py',
-    latestJson: 'artifacts/benchmarks/compound_decomposition_recomposition/latest_report.json',
-    latestMarkdown: 'artifacts/benchmarks/compound_decomposition_recomposition/LATEST.md',
-    description: 'RDKit long-form compound decomposition/recomposition through atom mud',
-    claimBoundary:
-      'computational compound decomposition/recomposition benchmark; not wet-lab synthesis, biological efficacy proof, dosing guidance, or medical advice',
-  },
-  full: {
-    script: 'scripts/benchmark/scbe_full_system_benchmark.py',
-    latestJson: 'artifacts/benchmarks/scbe_full_system/latest_report.json',
-    latestMarkdown: 'artifacts/benchmarks/scbe_full_system/LATEST.md',
-    description: 'full-system evidence matrix across local lanes and external benchmark targets',
-    claimBoundary:
-      'artifact-backed local evidence matrix; not a single public leaderboard aggregate score',
-  },
-  circuit: {
-    script: 'scripts/benchmark/scbe_benchmark_circuit.py',
-    latestJson: 'artifacts/benchmarks/scbe_benchmark_circuit/latest_report.json',
-    latestMarkdown: 'artifacts/benchmarks/scbe_benchmark_circuit/LATEST.md',
-    description: 'ordered test/improve/cross-test circuit for high-grade benchmark targets',
-    claimBoundary:
-      'engineering improvement circuit; not a public leaderboard score or official benchmark result',
-  },
-  bfcl: {
-    script: 'scripts/benchmark/bfcl_tool_call_adapter.py',
-    latestJson: 'artifacts/benchmarks/bfcl_tool_call_adapter_latest.json',
-    latestMarkdown: 'artifacts/benchmarks/bfcl_tool_call_adapter_latest.md',
-    description: 'BFCL-compatible tool-call schema export + optional model eval (pass --auth-env)',
-    claimBoundary:
-      'schema export 100% AST-valid; model eval is description-clarity probe against hand-authored cases, not an official BFCL leaderboard score',
-  },
-  'tau-bench': {
-    script: 'scripts/benchmark/tau_bench_policy_adapter.py',
-    latestJson: 'artifacts/benchmarks/tau_bench_policy_latest.json',
-    latestMarkdown: 'artifacts/benchmarks/tau_bench_policy_latest.md',
-    description: 'tau-bench-inspired policy microbench: SCBE governance tool selection + ALLOW/QUARANTINE/ESCALATE/DENY compliance (pass --auth-env for model eval)',
-    claimBoundary:
-      '15 hand-authored SCBE governance fixtures with pre-scripted tool responses; measures instruction-following and policy compliance — NOT an official tau-bench leaderboard score',
-  },
-};
-
-function benchLaneRows() {
-  return Object.entries(BENCH_TARGETS).map(([id, target]) => {
-    const latestJson = path.resolve(repoRoot(), target.latestJson);
-    const latestMarkdown = path.resolve(repoRoot(), target.latestMarkdown);
-    return {
-      id,
-      description: target.description,
-      command: `scbe bench ${id}`,
-      script: target.script,
-      latest_json: target.latestJson,
-      latest_markdown: target.latestMarkdown,
-      latest_json_exists: fs.existsSync(latestJson),
-      latest_markdown_exists: fs.existsSync(latestMarkdown),
-      claim_boundary: target.claimBoundary,
-    };
-  });
-}
-
-function summarizeBenchReport(report) {
-  const summary = report && typeof report.summary === 'object' ? report.summary : {};
-  return {
-    schema_version: report.schema_version || null,
-    generated_at_utc: report.generated_at_utc || null,
-    run_id: report.run_id || null,
-    decision: summary.decision || null,
-    summary,
-    claim_boundary: report.claim_boundary || null,
-    proof_goal_split: report.proof_goal_split || null,
-    patent_provenance: report.patent_provenance || null,
-  };
-}
-
-function latestBenchPacket(id, target) {
-  const absolute = path.resolve(repoRoot(), target.latestJson);
-  const exists = fs.existsSync(absolute);
-  const report = exists ? readJsonFileSafe(absolute) : {};
-  return {
-    id,
-    description: target.description,
-    command: `scbe bench ${id}`,
-    latest_json: target.latestJson,
-    latest_markdown: target.latestMarkdown,
-    exists,
-    claim_boundary: target.claimBoundary,
-    report: exists ? summarizeBenchReport(report) : null,
-  };
-}
-
-function printBenchList(asJson) {
-  const rows = benchLaneRows();
-  if (asJson) {
-    process.stdout.write(`${JSON.stringify({ schema_version: 'scbe_bench_lane_list_v1', lanes: rows }, null, 2)}\n`);
-    return;
-  }
-  process.stdout.write('SCBE benchmark evidence lanes\n\n');
-  for (const row of rows) {
-    const artifact = row.latest_json_exists ? 'artifact:yes' : 'artifact:no';
-    process.stdout.write(`- ${row.id}: ${row.description} (${artifact})\n`);
-    process.stdout.write(`  ${row.command} --json\n`);
-  }
-}
-
-function benchStatusPayload() {
-  const lanes = Object.entries(BENCH_TARGETS).map(([id, target]) => {
-    const packet = latestBenchPacket(id, target);
-    const summary = packet.report ? packet.report.summary || {} : {};
-    return {
-      id,
-      exists: packet.exists,
-      decision: packet.report ? packet.report.decision : null,
-      generated_at_utc: packet.report ? packet.report.generated_at_utc : null,
-      command: packet.command,
-      latest_json: packet.latest_json,
-      claim_boundary: packet.claim_boundary,
-      summary,
-    };
-  });
-  const evidenceReady = lanes.filter((lane) => lane.exists).length;
-  return {
-    schema_version: 'scbe_bench_status_v1',
-    generated_at_utc: nowIso(),
-    evidence_ready: evidenceReady,
-    evidence_total: lanes.length,
-    lanes,
-  };
-}
-
-function printBenchStatus(asJson) {
-  const payload = benchStatusPayload();
-  if (asJson) {
-    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
-    return;
-  }
-  process.stdout.write(`SCBE bench status: ${payload.evidence_ready}/${payload.evidence_total} lanes have artifacts\n\n`);
-  for (const lane of payload.lanes) {
-    const state = lane.exists ? lane.decision || 'artifact' : 'missing';
-    process.stdout.write(`- ${lane.id}: ${state}\n`);
-    process.stdout.write(`  ${lane.command} --json\n`);
-  }
-}
-
-function printBenchLatest(args) {
-  const asJson = args.includes('--json');
-  const lane = args.find((arg) => !arg.startsWith('--'));
-  const entries = lane ? [[lane, BENCH_TARGETS[lane]]] : Object.entries(BENCH_TARGETS);
-  if (entries.some(([, target]) => !target)) {
-    process.stderr.write(`scbe bench latest: unknown lane '${lane}'. Run 'scbe bench list'.\n`);
-    process.exit(2);
-  }
-  const packets = entries.map(([id, target]) => latestBenchPacket(id, target));
-  if (asJson) {
-    process.stdout.write(`${JSON.stringify({ schema_version: 'scbe_bench_latest_v1', lanes: packets }, null, 2)}\n`);
-    return;
-  }
-  for (const packet of packets) {
-    const report = packet.report || {};
-    const summary = report.summary || {};
-    process.stdout.write(`${packet.id}: ${packet.exists ? 'artifact found' : 'missing latest artifact'}\n`);
-    if (report.generated_at_utc) process.stdout.write(`  generated: ${report.generated_at_utc}\n`);
-    if (report.decision) process.stdout.write(`  decision: ${report.decision}\n`);
-    if (Object.keys(summary).length) process.stdout.write(`  summary: ${JSON.stringify(summary)}\n`);
-    process.stdout.write(`  boundary: ${packet.claim_boundary}\n`);
-  }
-}
-
-function buildBenchProof(args) {
-  const lane = args.find((arg, index) => !arg.startsWith('--') && args[index - 1] !== '--write');
-  const entries = lane ? [[lane, BENCH_TARGETS[lane]]] : Object.entries(BENCH_TARGETS);
-  if (entries.some(([, target]) => !target)) {
-    process.stderr.write(`scbe bench prove: unknown lane '${lane}'. Run 'scbe bench list'.\n`);
-    process.exit(2);
-  }
-  return {
-    schema_version: 'scbe_bench_proof_packet_v1',
-    generated_at_utc: nowIso(),
-    repo_root: repoRoot(),
-    git: gitPosture(repoRoot()),
-    proof_rule: 'Website claims must cite command, artifact, commit, and claim boundary.',
-    lanes: entries.map(([id, target]) => latestBenchPacket(id, target)),
-  };
-}
-
-function printBenchProof(args) {
-  const payload = buildBenchProof(args);
-  const writeIndex = args.indexOf('--write');
-  const writePath = writeIndex >= 0 ? args[writeIndex + 1] : null;
-  if (writeIndex >= 0 && !writePath) {
-    process.stderr.write('scbe bench prove: --write requires a path.\n');
-    process.exit(2);
-  }
-  if (writePath) {
-    const absolute = path.resolve(process.cwd(), writePath);
-    fs.mkdirSync(path.dirname(absolute), { recursive: true });
-    fs.writeFileSync(absolute, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
-    if (!args.includes('--json')) {
-      process.stdout.write(`wrote ${absolute}\n`);
-      return;
-    }
-  }
-  if (args.includes('--json')) {
-    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
-    return;
-  }
-  process.stdout.write(`SCBE benchmark proof packet (${payload.git.commit})\n\n`);
-  for (const lane of payload.lanes) {
-    process.stdout.write(`- ${lane.id}: ${lane.exists ? 'evidence present' : 'missing evidence'}\n`);
-    process.stdout.write(`  command: ${lane.command} --json\n`);
-    process.stdout.write(`  artifact: ${lane.latest_json}\n`);
-    process.stdout.write(`  boundary: ${lane.claim_boundary}\n`);
-  }
-}
-
-function openFileBestEffort(targetPath) {
-  const absolute = path.resolve(repoRoot(), targetPath);
-  if (!fs.existsSync(absolute)) {
-    process.stderr.write(`scbe bench: report not found: ${absolute}\n`);
-    return;
-  }
-  if (process.platform === 'win32') {
-    spawnSync('cmd', ['/c', 'start', '', absolute], { stdio: 'ignore' });
-  } else if (process.platform === 'darwin') {
-    spawnSync('open', [absolute], { stdio: 'ignore' });
-  } else {
-    spawnSync('xdg-open', [absolute], { stdio: 'ignore' });
-  }
-}
-
-function printBenchHelp() {
-  process.stdout.write(
-    [
-      'Usage:',
-      '  scbe bench hard-agentic [--timeout N] [--filter <id>] [--json] [--open-report]',
-      '  scbe bench research [--style BrowseComp-style|GAIA-style] [--json] [--open-report]',
-      '  scbe bench rubix-browser [--json] [--open-report]',
-      '  scbe bench terminal-adapter [--json] [--open-report]',
-      '  scbe bench chemistry [--json] [--inventory-only] [--open-report]',
-      '  scbe bench compound-decompose [--json] [--open-report]',
-      '  scbe bench full [--json] [--run-local] [--quick] [--open-report]',
-      '  scbe bench circuit [--json] [--open-report]',
-      '  scbe bench bfcl [--export-only] [--endpoint <url>] [--model <name>] [--auth-env <VAR>] [--open-report]',
-      '  scbe bench tau-bench [--fixture-only] [--endpoint <url>] [--model <name>] [--auth-env <VAR>] [--open-report]',
-      '  scbe bench list [--json]',
-      '  scbe bench status [--json]',
-      '  scbe bench latest [lane] [--json]',
-      '  scbe bench prove [lane] [--json] [--write <path>]',
-      '',
-      'These are local executable evidence lanes, not public leaderboard scores.',
-      '',
-    ].join('\n')
-  );
-}
-
-function runBench(args) {
-  const sub = args[0] || 'help';
-  if (sub === 'help' || sub === '--help' || sub === '-h') {
-    printBenchHelp();
-    process.exit(0);
-  }
-  if (sub === 'list') {
-    printBenchList(args.includes('--json'));
-    process.exit(0);
-  }
-  if (sub === 'status') {
-    printBenchStatus(args.includes('--json'));
-    process.exit(0);
-  }
-  if (sub === 'latest') {
-    printBenchLatest(args.slice(1));
-    process.exit(0);
-  }
-  if (sub === 'prove') {
-    printBenchProof(args.slice(1));
-    process.exit(0);
-  }
-  const target = BENCH_TARGETS[sub];
-  if (!target) {
-    process.stderr.write(`scbe bench: unknown lane '${sub}'. Run 'scbe bench help'.\n`);
-    process.exit(2);
-  }
-  const scriptPath = resolveRepoScript(target.script);
-  if (!scriptPath) {
-    process.stderr.write(`scbe bench: missing script ${target.script}\n`);
-    process.exit(2);
-  }
-  const openReport = args.includes('--open-report');
-  const forwarded = args.slice(1).filter(
-    (arg) => arg !== '--open-report' && arg !== '--json',
-  );
-  const child = spawnSync(pythonCommand(), [scriptPath, ...forwarded], {
-    cwd: repoRoot(),
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-  if (child.stdout) process.stdout.write(child.stdout);
-  if (child.stderr) process.stderr.write(child.stderr);
-  if (openReport) {
-    openFileBestEffort(target.latestMarkdown);
-  }
-  if (typeof child.status === 'number') process.exit(child.status);
-  process.exit(1);
-}
-
 function parseYoutubeTags(raw) {
   if (Array.isArray(raw)) return raw.map((tag) => String(tag).trim()).filter(Boolean);
   if (typeof raw === 'string') return raw.split(',').map((tag) => tag.trim()).filter(Boolean);
@@ -5702,6 +5398,10 @@ if (argv[0] === 'liboqs') {
 
 if (argv[0] === 'bench' || argv[0] === 'benchmark') {
   runBench(argv.slice(1));
+}
+
+if (argv[0] === 'react') {
+  runReactionCli(argv.slice(1));
 }
 
 if (argv[0] === 'youtube') {
