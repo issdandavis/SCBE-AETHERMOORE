@@ -27,6 +27,9 @@ import uuid
 
 # Add examples/ to path for spiralverse_core/spiralverse_sdk imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "examples"))
+_AGENT_BUS_PY_SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "packages", "agent-bus-py", "src"))
+if _AGENT_BUS_PY_SRC not in sys.path:
+    sys.path.insert(0, _AGENT_BUS_PY_SRC)
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -44,6 +47,7 @@ from api.metering import (
 )
 from api.audit_export import build_signed_bundle, canonical_json, filter_records_by_range, sha256_hex
 from api.validation import run_nextgen_action_validation
+from scbe_agent_bus import scan_agent_request
 
 try:
     from src.api.mesh_routes import mesh_router
@@ -215,6 +219,32 @@ class AgentRegisterRequest(BaseModel):
     role: str
     initial_trust: float = Field(default=0.5, ge=0.0, le=1.0)
     metadata: Optional[Dict[str, Any]] = {}
+
+
+class GovernanceScanRequest(BaseModel):
+    agent_id: str = Field(default="agent", description="Agent or workflow identifier")
+    action: str = Field(default="EXECUTE", description="Framework action, tool call, or command verb")
+    target: str = Field(default="", description="Resource or business object being touched")
+    command: str = Field(default="", description="Concrete command/tool input when available")
+    observed: str = Field(default="", description="Optional observed output for drift/error scoring")
+    context: Dict[str, Any] = Field(default_factory=dict, description="Optional caller metadata")
+
+
+class GovernanceScanResponse(BaseModel):
+    schema_version: str
+    decision: Decision
+    tier: Decision
+    score: float
+    d_H: float
+    pattern_drift: float
+    role: str
+    action: str
+    target: str
+    command: str
+    policy_version: str
+    receipt_hash: str
+    scanned_at: str
+    explanation: Dict[str, Any]
 
 
 class AgentResponse(BaseModel):
@@ -587,6 +617,24 @@ async def authorize(
         token=token,
         expires_at=expires_at
     )
+
+
+@app.post("/v1/governance/scan", response_model=GovernanceScanResponse, tags=["Governance"])
+async def governance_scan(
+    request: GovernanceScanRequest,
+    tenant: str = Depends(verify_api_key),
+):
+    """Lightweight SDK-compatible governance scan for existing agent frameworks."""
+    receipt = scan_agent_request(
+        action=request.action,
+        target=request.target,
+        command=request.command,
+        observed=request.observed,
+        context={**(request.context or {}), "tenant": tenant, "agent_id": request.agent_id},
+        policy_version=POLICY_VERSION,
+    )
+    metering_store.increment_metric(tenant_id=tenant, metric_name=GOVERNANCE_EVALUATIONS)
+    return GovernanceScanResponse(**receipt)
 
 
 @app.post("/v1/agents", response_model=AgentResponse, tags=["Agents"])

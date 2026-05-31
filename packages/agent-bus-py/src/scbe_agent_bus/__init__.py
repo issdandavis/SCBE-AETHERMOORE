@@ -28,6 +28,13 @@ from pathlib import Path
 from typing import Any, Iterable, Literal, Optional, TypedDict
 
 from .companions import COMPANION_PACKAGES, recommend_companion_packages
+from .governance import (
+    GovernanceScan,
+    harmonic_score,
+    risk_tier,
+    scan_agent_request,
+    scan_command,
+)
 from .lineage import (
     LINEAGE_SCHEMA,
     REPORT_SCHEMA,
@@ -66,6 +73,12 @@ __all__ = [
     "AgentBusError",
     "COMPANION_PACKAGES",
     "recommend_companion_packages",
+    # governance SDK
+    "GovernanceScan",
+    "scan_command",
+    "scan_agent_request",
+    "harmonic_score",
+    "risk_tier",
     # workspace audit chain
     "WorkspaceError",
     "workspace_new",
