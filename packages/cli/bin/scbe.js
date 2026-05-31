@@ -99,6 +99,11 @@ Usage:
   bench rubix-browser    Run permission-hypercube browser-control fixture
     [--json]
     [--open-report]
+  bench full             Aggregate full-system evidence matrix:
+    [--json]              local artifacts, external targets, blockers, and
+    [--run-local]          claim boundaries for website/patent-safe claims
+    [--quick]
+    [--open-report]
   bench list             List registered evidence lanes
   bench status           Compact readiness/status view
     [--json]
@@ -4163,6 +4168,14 @@ const BENCH_TARGETS = {
     claimBoundary:
       'local browser-control geometry fixture; not WebArena, BrowserGym, OSWorld, or VisualWebArena score',
   },
+  full: {
+    script: 'scripts/benchmark/scbe_full_system_benchmark.py',
+    latestJson: 'artifacts/benchmarks/scbe_full_system/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/scbe_full_system/LATEST.md',
+    description: 'full-system evidence matrix across local lanes and external benchmark targets',
+    claimBoundary:
+      'artifact-backed local evidence matrix; not a single public leaderboard aggregate score',
+  },
 };
 
 function benchLaneRows() {
@@ -4359,6 +4372,7 @@ function printBenchHelp() {
       '  scbe bench hard-agentic [--timeout N] [--filter <id>] [--json] [--open-report]',
       '  scbe bench research [--style BrowseComp-style|GAIA-style] [--json] [--open-report]',
       '  scbe bench rubix-browser [--json] [--open-report]',
+      '  scbe bench full [--json] [--run-local] [--quick] [--open-report]',
       '  scbe bench list [--json]',
       '  scbe bench status [--json]',
       '  scbe bench latest [lane] [--json]',
