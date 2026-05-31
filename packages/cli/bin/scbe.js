@@ -114,6 +114,12 @@ Usage:
   bench circuit          Ordered improve/cross-test benchmark circuit
     [--json]              surfaces next lane, obstacle, fix target, and
     [--open-report]        cross-test target
+  bench bfcl             BFCL tool-call adapter: schema export + model eval
+    [--export-only]        Schema export + AST validation only (offline)
+    [--endpoint <url>]     OpenAI-compat endpoint (default: Ollama localhost)
+    [--model <name>]       Model name (default: llama3.2)
+    [--auth-env <VAR>]     Env var holding Bearer token (e.g. CEREBRAS_API_KEY)
+    [--open-report]
   bench list             List registered evidence lanes
   bench status           Compact readiness/status view
     [--json]
@@ -4210,6 +4216,14 @@ const BENCH_TARGETS = {
     claimBoundary:
       'engineering improvement circuit; not a public leaderboard score or official benchmark result',
   },
+  bfcl: {
+    script: 'scripts/benchmark/bfcl_tool_call_adapter.py',
+    latestJson: 'artifacts/benchmarks/bfcl_tool_call_adapter_latest.json',
+    latestMarkdown: 'artifacts/benchmarks/bfcl_tool_call_adapter_latest.md',
+    description: 'BFCL-compatible tool-call schema export + optional model eval (pass --auth-env)',
+    claimBoundary:
+      'schema export 100% AST-valid; model eval is description-clarity probe against hand-authored cases, not an official BFCL leaderboard score',
+  },
 };
 
 function benchLaneRows() {
@@ -4410,6 +4424,7 @@ function printBenchHelp() {
       '  scbe bench chemistry [--json] [--inventory-only] [--open-report]',
       '  scbe bench full [--json] [--run-local] [--quick] [--open-report]',
       '  scbe bench circuit [--json] [--open-report]',
+      '  scbe bench bfcl [--export-only] [--endpoint <url>] [--model <name>] [--auth-env <VAR>] [--open-report]',
       '  scbe bench list [--json]',
       '  scbe bench status [--json]',
       '  scbe bench latest [lane] [--json]',
