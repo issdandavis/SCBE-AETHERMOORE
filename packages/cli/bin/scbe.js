@@ -134,6 +134,9 @@ Core commands:
   bench compound-decompose
     [--json]              RDKit long-form compound decomposition/recomposition
     [--open-report]       through atom mud, descriptors, fragments, receipts
+  bench hydra-jobsite     Multi-agent project-conservation benchmark
+    [--json]              cross-team obligations across code, finance,
+    [--open-report]       security, inspection, docs, transport, owner calls
   bench full             Aggregate full-system evidence matrix:
     [--json]              local artifacts, external targets, blockers, and
     [--run-local]          claim boundaries for website/patent-safe claims
@@ -4199,6 +4202,14 @@ const BENCH_TARGETS = {
     description: 'RDKit compound decomposition/recomposition through atom mud',
     claimBoundary:
       'computational compound decomposition/recomposition benchmark; not wet-lab synthesis, biological efficacy proof, dosing guidance, or medical advice',
+  },
+  'hydra-jobsite': {
+    script: 'scripts/benchmark/hydra_jobsite_conservation_benchmark.py',
+    latestJson: 'artifacts/benchmarks/hydra_jobsite_conservation/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/hydra_jobsite_conservation/LATEST.md',
+    description: 'Hydra multi-agent project-conservation benchmark',
+    claimBoundary:
+      'local deterministic project-conservation benchmark; not a public leaderboard score or live comparison with named company agents',
   },
   providers: {
     script: 'scripts/benchmark/provider_health_matrix.py',
