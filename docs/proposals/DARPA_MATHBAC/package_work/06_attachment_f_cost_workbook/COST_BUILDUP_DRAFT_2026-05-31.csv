@@ -7,7 +7,8 @@ Prime Direct Labor,Prime direct labor subtotal,,,360960,
 Subcontract,Hoags Inc. supporting subcontract,,,120000,Bounded DAVA IP telemetry and corroborating support only
 Compute,Commercial GPU / HF endpoint / storage / benchmark compute,,,72000,Intermittent commercial GPU compute and storage buffer
 Travel,Three required PI meetings plus limited contingency,,,18000,Two DC-area and one SF Bay-area meeting
-Other Direct Costs,Data storage tools compliance artifact prep accounting support,,,54000,Non-subcontract ODCs
+Other Direct Costs,Linux SCBE AI workstation,,,6500,Prime-owned RTX 4090-class Linux workstation for local CUDA benchmark and artifact work
+Other Direct Costs,Data storage tools compliance artifact prep accounting support,,,47500,Non-subcontract ODCs net of explicit workstation line
 Indirect / G&A,30 percent on prime base excluding subcontract,,,151488,30% * (labor + compute + travel + ODC)
 Subtotal Cost,Before fixed fee,,,776448,
 Fixed Fee,8 percent fixed fee,,,62116,8% of subtotal cost rounded

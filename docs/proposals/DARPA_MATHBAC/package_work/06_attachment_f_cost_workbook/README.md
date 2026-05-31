@@ -10,6 +10,7 @@ Working sources:
 
 - `COST_BUILDUP_DRAFT_2026-05-31.csv`
 - `MILESTONE_PAYMENT_DRAFT_2026-05-31.csv`
+- `WORKSTATION_HARDWARE_COST_ANALYSIS_2026-05-31.md`
 - Source narrative: `../05_attachment_e_vol_ii_price/PRICE_COST_ANALYSIS_RESEARCH_2026-05-31.md`
 - Recommended BAAT proposed cost if this build is used: `$839,000`
 

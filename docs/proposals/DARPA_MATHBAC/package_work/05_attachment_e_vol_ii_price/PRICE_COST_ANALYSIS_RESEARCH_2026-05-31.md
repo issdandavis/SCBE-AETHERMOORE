@@ -29,7 +29,7 @@ This is well below the MATHBAC Phase I cap of `$2,000,000`, but still large enou
 | Hoags supporting subcontract | Bounded DAVA/IP/telemetry support only; not a 35% co-lead share. | `$120,000` |
 | Compute | Intermittent HF/GPU endpoint use, local model runs, storage, dataset staging, and benchmark reruns. | `$72,000` |
 | Travel | Three required 3-day meetings: two DC-area, one SF Bay-area; primarily Issac, with limited sub travel only if needed. | `$18,000` |
-| Other direct costs | Data, storage, secure backup, publication/artifact prep, accounting/compliance support, software services. | `$54,000` |
+| Other direct costs | Linux SCBE AI workstation, data, storage, secure backup, publication/artifact prep, accounting/compliance support, software services. | `$54,000` |
 | Provisional G&A / indirect | 30% applied to prime base excluding subcontract: labor + compute + travel + ODC. | `$151,488` |
 | Subtotal cost | Before fee. | `$776,448` |
 | Fixed fee | 8% of subtotal cost, conservative for low-capital R&D. | `$62,116` |
@@ -81,6 +81,18 @@ The recommended `$72,000` compute line is intentionally conservative. It covers:
 - failed-run buffer.
 
 It does not assume sustained 24/7 frontier-model hosting.
+
+## Linux Workstation Hardware Basis
+
+The ODC line includes one prime-owned Linux AI workstation at **`$6,500`**. Recommended configuration is an RTX 4090-class or sanely-priced RTX 5090-class NVIDIA GPU, Ryzen 9 workstation CPU, 128GB DDR5 RAM, 8TB total NVMe storage, 1200W PSU, adequate cooling, and UPS support.
+
+Preferred OS is Pop!_OS NVIDIA Edition or Ubuntu 24.04 LTS. Linux is preferred over Windows for this proposal because it supports native CUDA/PyTorch workflows, NVIDIA container tooling, reproducible Docker-based execution, and avoids a Windows Pro license cost.
+
+Cost placement:
+
+- `$6,500`: Linux SCBE AI workstation.
+- `$47,500`: remaining ODC/software/storage/compliance artifact support.
+- Total ODC remains `$54,000`, so the recommended `$839,000` proposed price does not change.
 
 ## Travel Basis
 
@@ -143,4 +155,4 @@ Attachment F requires fixed payable milestones. Use the required MATHBAC milesto
 - GSA per diem page/API documentation: official CONUS travel rate source and lookup method.
 - GSA MAS IT schedule example: comparable ceiling labor rates for software engineering, data science, systems engineering, technical writing, and project management.
 - DCAA provisional billing rate guide: provisional indirect rates as interim approximations before final indirect-rate settlement.
-
+- NVIDIA CUDA Linux installation guide, NVIDIA Container Toolkit docs, System76 Pop!_OS NVIDIA download page, and PyTorch Linux/CUDA install guidance for the Linux workstation basis.
