@@ -58,6 +58,10 @@ If submitting solo, final Attachment D/E/F/H/I/X must not imply Hoags Inc., Coll
 1. Hoags Inc. is restored as a team member/subcontractor in BAAT and the Annex is countersigned; or
 2. The Annex is rewritten into a solo-SCBE pre-existing-IP assertion table with all Sub/Joint references removed or clearly marked out of scope.
 
+Current solo-safe source: `../12_ip_and_data_rights/annex_a_solo_scbe_draft.md`.
+
+Decision gate: `TEAMING_DECISION_GATE.md`.
+
 ## Supporting Source Files
 
 | Branch | Source |

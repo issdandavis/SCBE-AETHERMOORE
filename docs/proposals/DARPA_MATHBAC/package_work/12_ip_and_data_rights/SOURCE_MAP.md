@@ -5,6 +5,7 @@ Status: draft.
 Current sources:
 
 - `../../annex_a_revision_2_draft.md`
+- `annex_a_solo_scbe_draft.md`
 - `../../ip_carveout_v1.md`
 - `../../abstract_three_stacks_compare.md`
 
@@ -33,3 +34,5 @@ Implication:
 - joint-IP demarcation.
 
 This makes it unsuitable for a solo BAAT upload in its current form.
+
+Use `annex_a_solo_scbe_draft.md` for a solo submission path.
