@@ -104,6 +104,13 @@ from .tongue_code_lanes import (
     default_code_lane_profile,
     expected_code_lanes,
 )
+from .reaction_state import (
+    ReactionEndpoint,
+    ReactionRecalculation,
+    ReactionStatePacket,
+    build_reaction_state_packet,
+    classify_reaction,
+)
 
 __all__ += [
     "AtomicElement",
@@ -143,4 +150,9 @@ __all__ += [
     "SemanticBlendPolicy",
     "SemanticGateRecord",
     "evaluate_semantic_gate",
+    "ReactionEndpoint",
+    "ReactionRecalculation",
+    "ReactionStatePacket",
+    "build_reaction_state_packet",
+    "classify_reaction",
 ]
