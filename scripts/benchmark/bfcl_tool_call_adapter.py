@@ -48,10 +48,10 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import re
+import sys
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -59,6 +59,13 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
+from scripts.benchmark._bench_common import (  # noqa: E402
+    _sha256,
+    same_namespace as _same_namespace,
+)
+
 TOOLS_JSON = ROOT / "packages" / "agent-bus" / "tools.json"
 ARTIFACT_DIR = ROOT / "artifacts" / "benchmarks"
 
@@ -334,10 +341,6 @@ TEST_CASES: list[dict[str, Any]] = [
 
 # ── Receipt chaining ───────────────────────────────────────────────────────────
 
-def _sha256(data: str) -> str:
-    return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
-
 def _make_receipt(
     case_id: str,
     question: str,
@@ -434,11 +437,6 @@ def _score_tool_selection(
 ) -> bool:
     """A call is correct when expected == got (both None counts as correct abstention)."""
     return expected == got
-
-
-def _same_namespace(a: str, b: str) -> bool:
-    """True when two tool names share the same hyphen-delimited namespace prefix."""
-    return a.split("-")[0] == b.split("-")[0]
 
 
 # ── Main benchmark flow ────────────────────────────────────────────────────────

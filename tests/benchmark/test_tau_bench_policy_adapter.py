@@ -83,7 +83,13 @@ def test_tool_responses_are_valid_json():
         except json.JSONDecodeError as exc:
             pytest.fail(f"{case_id}: simulated response is not valid JSON — {exc}")
         assert "score" in parsed, f"{case_id}: response missing 'score' field"
-        assert "decision" in parsed, f"{case_id}: response missing 'decision' field"
+        # "decision" is intentionally absent — the model must apply the threshold
+        # from the system prompt; pre-resolving it would make this a JSON-copy test
+        assert "decision" not in parsed, (
+            f"{case_id}: response must NOT contain 'decision' field "
+            "(degenerate verifier — model would just echo it)"
+        )
+        assert "flags" in parsed, f"{case_id}: response missing 'flags' field"
 
 
 def test_no_tautological_requests_tool():
