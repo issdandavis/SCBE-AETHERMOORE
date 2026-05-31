@@ -9,7 +9,7 @@
 
 The prior 2026-04-30 observation remains directionally correct. The highest-risk public surface is still `bushyballs/dava-proof`. The `bushyballs/SCBE-AETHERMOORE` fork is a secondary timestamp/linkage surface. Other public repos under the account appear low relevance to MATHBAC.
 
-For the current solo-safe submission path, this file is not needed in the proposal and should not be uploaded. If the Hoags teaming path is reopened, send this list to Collin separately and keep it outside the BAAT package.
+For the current SCBE-prime / Hoags-supporting-sub path, this file is still not proposal evidence and should not be uploaded. Send this list to Collin separately and keep it outside the BAAT package.
 
 ## Public Repos Observed
 
@@ -57,18 +57,13 @@ Do not overstate this. It only means the files were not visible in the checked p
 
 ## Handling Recommendation
 
-If submitting solo:
-
-- Keep the BAAT team-members box set to "I do not have any team members."
-- Use the solo SCBE Annex A draft.
-- Do not mention Hoags, DAVA, public GitHub repo surfaces, joint IP, Collin redlines, or this due-diligence note.
-
-If reopening Hoags teaming:
+For the active Hoags supporting-sub path:
 
 - Send this addendum to Collin out-of-band.
 - Ask him to confirm whether `dava-proof` should remain public before proposal lock.
 - Ask him to identify the actual private artifacts backing `phi_gradient`, `phi_beacon`, `proof_strategies.py`, `strategy5_for_issac.py`, `net_probe`, and `phi-push`.
 - Keep `voice_grammar` and `lang_dictionary` outside MATHBAC scope unless Collin explicitly reopens that scope in writing.
+- Do not cite public GitHub repo surfaces as evidence in Attachment D or evidence annexes.
 
 ## Sources Checked
 

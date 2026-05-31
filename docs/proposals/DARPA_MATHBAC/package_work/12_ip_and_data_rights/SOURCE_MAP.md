@@ -13,17 +13,19 @@ Current sources:
 
 Needed action:
 
-Decide whether this is solo SCBE or includes any team/sub. If solo, remove team/sub claims from final proposal attachments. Ensure DFARS/IP assertions are accurate for submitted materials.
+Finalize prime/sub data-rights separation. Ensure DFARS/IP assertions are accurate for submitted materials.
 
 ## Current Decision
 
-User direction in BAAT flow: no Collin/team members.
+User direction: submit with Hoags Inc. / Collin as supporting subcontractor, while preserving Issac / SCBE as lead.
 
 Implication:
 
-- Do not upload `annex_a_revision_2_draft.md` as-is.
-- Treat it as source material for SCBE-only IP assertions.
-- If a final Attachment D/Attachment I needs data-rights language, extract only the Prime/SCBE rows and remove Sub/Joint commitments unless Hoags Inc. is restored as a formal team member.
+- Do not upload `annex_a_revision_2_draft.md` as-is while it contains placeholders or unresolved claims.
+- Use it as source material for a final separated Annex A.
+- Final Annex A must have distinct sections for Prime Background IP, Sub Background IP, and Joint Prior Work.
+- Public-repo due diligence remains internal only.
+- The 5-of-6 / 6th-surface claim remains excluded unless the divergent surface and artifact are confirmed.
 
 ## Annex A Revision 2 Status
 
@@ -35,9 +37,9 @@ Implication:
 - Sub/Hoags background-IP rows.
 - joint-IP demarcation.
 
-This makes it unsuitable for a solo BAAT upload in its current form.
+This makes it unsuitable for BAAT upload in its current form, even though the active proposal path includes Hoags as a supporting sub.
 
-Use `annex_a_solo_scbe_draft.md` for a solo submission path.
+Use `annex_a_solo_scbe_draft.md` only as a Prime/SCBE row source, not as the final team submission annex.
 
 ## Collin Public Repo Due Diligence Status
 
@@ -45,4 +47,4 @@ Use `annex_a_solo_scbe_draft.md` for a solo submission path.
 
 ## Collin Item 2 / 6th Surface Status
 
-`collin_item2_surface_status_2026-05-31.md` records the current evidence gap. The repo does not identify the divergent 6th surface or contain the named `binary_protocol_harness_with_atomic_v2` artifact. Do not use the 5-of-6 claim in the solo proposal package.
+`collin_item2_surface_status_2026-05-31.md` records the current evidence gap. The repo does not identify the divergent 6th surface or contain the named `binary_protocol_harness_with_atomic_v2` artifact. Do not use the 5-of-6 claim in the final proposal package unless this is closed with evidence.

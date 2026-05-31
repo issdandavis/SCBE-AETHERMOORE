@@ -14,13 +14,13 @@ What is known:
 - `annex_a_revision_2_draft.md` contains `[SIXTH_SURFACE_NAME]` as an unresolved placeholder.
 - Local proposal files repeatedly state "5-of-6 surface agreement" but do not name the disagreeing surface.
 - No local file named `binary_protocol_harness_with_atomic_v2` was found in the repo file list.
-- The current solo-safe Annex A explicitly excludes unresolved 5-of-6 / 6th-surface claims.
+- The current package guard explicitly excludes unresolved 5-of-6 / 6th-surface claims unless evidence is supplied.
 
 ## Decision
 
 Do not guess which surface is the 6th.
 
-For the solo BAAT path, this issue is moot because Hoags/DAVA/joint convergence claims are excluded from the upload. For any reopened Hoags teaming path, Item 2 remains blocking until the actual artifact and divergent surface name are confirmed in writing.
+For the active SCBE-prime / Hoags-supporting-sub path, this issue remains blocking only for the 5-of-6 claim itself. Hoags can remain a supporting subcontractor, but the final proposal should exclude this specific claim unless the actual artifact and divergent surface name are confirmed in writing.
 
 ## Required Evidence to Reopen Path B
 
@@ -36,5 +36,4 @@ To make the 5-of-6 claim proposal-safe, collect:
 
 Until confirmed:
 
-> The previously discussed 5-of-6 surface result remains an internal, unresolved collaboration note. The repo does not currently identify the divergent 6th surface or the named harness artifact, so the claim is excluded from the solo MATHBAC submission package.
-
+> The previously discussed 5-of-6 surface result remains an internal, unresolved collaboration note. The repo does not currently identify the divergent 6th surface or the named harness artifact, so the claim is excluded from the MATHBAC submission package unless closed with evidence before final upload.

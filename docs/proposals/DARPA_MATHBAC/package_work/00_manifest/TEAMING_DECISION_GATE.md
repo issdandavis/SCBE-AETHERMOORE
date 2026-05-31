@@ -6,11 +6,11 @@ This gate prevents accidental submission of a proposal that depends on a collabo
 
 ## Current User Posture
 
-The proposal should not be structured around others unless their contribution is explicit, signed, budgeted, and required.
+The proposal will include Hoags Inc. / Collin Hoag as a supporting subcontractor only. Issac / SCBE is the lead, Prime PI, technical authority, proposal owner, management owner, and final decision maker. Hoags/DAVA content is tag-along support: bounded subcontract scope, background IP, and optional corroborating evidence.
 
-Default BAAT selection:
+BAAT selection:
 
-`I do not have any team members.`
+Add Hoags Inc. as a team member/subcontractor.
 
 ## Collin Email Interpretation
 
@@ -22,11 +22,11 @@ Collin's email is useful and constructive, but it is not a clean final lock. It 
 - revise Annex A Part 2 and send final text for countersignature;
 - Phase II continuity sentence requested.
 
-That means the Hoags path remains conditional.
+That means the Hoags path is active, but the unresolved items must be isolated and closed before final upload.
 
 ## Path A — Solo SCBE Submission
 
-Use this if BAAT says no team members.
+Inactive. Use only if the user explicitly removes Hoags Inc. before final submission.
 
 Rules:
 
@@ -43,18 +43,19 @@ Recommended framing:
 
 ## Path B — SCBE Prime + Hoags Sub
 
-Use this only if all are true:
+Active path. Submit under this structure:
 
-1. Hoags Inc. is added as a BAAT team member.
-2. Attachment E/F includes the subcontract budget.
-3. Attachment H assigns specific Hoags deliverables.
-4. Attachment D names roles accurately.
-5. Annex A Revision 2 is finalized.
-6. Collin countersigns or explicitly approves the final language.
-7. Items 1-3 from Collin's email are closed in writing.
+1. BAAT lists Hoags Inc. as a team member/subcontractor.
+2. Attachment D names Issac / SCBE as Prime PI and lead; Hoags / Collin is a supporting subcontract technical contributor, not co-PI unless the user explicitly changes that.
+3. Attachment E/F includes a separate Hoags subcontract line.
+4. Attachment H assigns bounded Hoags tasks only.
+5. Annex A separates Prime Background IP, Sub Background IP, and Joint Prior Work.
+6. Public repo due diligence stays internal/out-of-band.
+7. The 5-of-6 / 6th-surface claim is either closed with evidence or removed from final prose.
+8. Collin countersigns or explicitly approves final Annex A Part 2 and subcontract language.
 
-Until then, Path B is not upload-ready.
+Until items 5-8 are closed, Path B is the target structure but not final-upload ready.
 
 ## Decision
 
-As of this workspace snapshot, package staging should proceed on Path A unless the user explicitly reopens Path B.
+As of this workspace snapshot, package staging proceeds on Path B: SCBE Prime Lead + Hoags Supporting Sub, with strict section separation.

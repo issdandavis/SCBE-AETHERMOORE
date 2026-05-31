@@ -18,7 +18,7 @@ Use current SAM/BAAT entity values:
 - CAGE: `1EXD5`
 - Address: `2361 E 5th Ave, Port Angeles, WA 98362-9014`
 - Number of employees: `1`
-- Team members: none, unless a signed current team/subcontract package is re-added.
+- Team members: Hoags Inc. as supporting subcontractor, if current subcontract package and Annex A language are finalized before upload.
 
 Recommended BAAT title:
 
@@ -47,20 +47,28 @@ Proposed cost:
 | Disclosure | `Common_Disclosure_Form_Issac_Davis.pdf` | `11_disclosure_forms/` | none found | MISSING |
 | Disclosure | `Current_and_Pending_Support_Issac_Davis.pdf` | `11_disclosure_forms/` | none found | MISSING |
 
-## Solo Submission Guard
+## Prime/Sub Submission Guard
 
-The current BAAT form should use `I do not have any team members` unless a current signed teaming package is restored before final submission.
+The current BAAT form should include Hoags Inc. as a supporting subcontractor only if the final package also includes separated subcontract scope, subcontract budget, and finalized data-rights language.
 
-If submitting solo, final Attachment D/E/F/H/I/X must not imply Hoags Inc., Collin Hoag, DAVA, or any subcontracted work is committed to this proposal. Collin-related materials can remain in `12_ip_and_data_rights/` and source history as due-diligence/supporting records, but they should not be uploaded as operative proposal commitments unless reauthorized and countersigned.
+Final Attachment D/E/F/H/I/X must preserve this structure:
 
-`annex_a_revision_2_draft.md` is therefore classified as **supporting/IP source material**, not final upload material, until one of these is true:
+- Issac / SCBE is Prime PI, technical lead, management lead, and final proposal authority.
+- Hoags Inc. / Collin is a supporting subcontractor only.
+- DAVA content is bounded to subcontract tasks, Sub Background IP, and optional corroborating evidence.
+- Public repo due diligence stays internal and is not uploaded.
+- Unresolved 5-of-6 / 6th-surface language is excluded unless closed with evidence.
 
-1. Hoags Inc. is restored as a team member/subcontractor in BAAT and the Annex is countersigned; or
-2. The Annex is rewritten into a solo-SCBE pre-existing-IP assertion table with all Sub/Joint references removed or clearly marked out of scope.
+`annex_a_revision_2_draft.md` is classified as **source material**, not final upload material, until:
 
-Current solo-safe source: `../12_ip_and_data_rights/annex_a_solo_scbe_draft.md`.
+1. Hoags Inc. is listed as a BAAT team member/subcontractor;
+2. Annex A Part 2 is finalized and approved/countersigned by Collin;
+3. Prime/Sub/Joint IP rows are cleanly separated; and
+4. unresolved placeholders are removed.
 
 Decision gate: `TEAMING_DECISION_GATE.md`.
+
+Prime/sub structure guide: `PRIME_SUB_SECTION_SEPARATION.md`.
 
 ## Supporting Source Files
 
