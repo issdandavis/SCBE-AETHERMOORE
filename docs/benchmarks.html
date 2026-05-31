@@ -49,6 +49,27 @@
         gap: 14px;
         margin: 28px 0;
       }
+      .summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 12px;
+        margin: 30px 0 18px;
+      }
+      .metric {
+        border-top: 3px solid #15171a;
+        background: white;
+        padding: 16px;
+      }
+      .metric strong {
+        display: block;
+        font-size: 30px;
+        line-height: 1;
+        margin-bottom: 6px;
+      }
+      .metric span {
+        color: #59616b;
+        font-size: 14px;
+      }
       .card {
         border: 1px solid #dfe3e8;
         border-radius: 8px;
@@ -62,6 +83,29 @@
       .card p {
         margin: 0;
         color: #59616b;
+      }
+      .band {
+        border: 1px solid #dfe3e8;
+        border-radius: 8px;
+        background: white;
+        padding: 22px;
+        margin: 22px 0;
+      }
+      .band h2 {
+        margin: 0 0 10px;
+        font-size: 22px;
+      }
+      .band p {
+        margin: 0 0 12px;
+        color: #59616b;
+      }
+      .lane-list {
+        margin: 12px 0 0;
+        padding-left: 20px;
+        color: #33383f;
+      }
+      .lane-list li {
+        margin-bottom: 8px;
       }
       .actions {
         display: flex;
@@ -100,27 +144,78 @@
       </nav>
       <h1>Benchmark evidence, not leaderboard theater.</h1>
       <p class="lead">
-        SCBE benchmark claims should point to a command, an artifact path, a commit, and a boundary.
-        This page is the stable public entry point for those evidence lanes.
+        SCBE benchmark claims point to commands, artifact paths, commits, and boundaries.
+        The current packet is strong local and harness evidence; public leaderboard claims
+        stay separate until an unchanged upstream harness produces the score.
       </p>
+
+      <section class="summary" aria-label="Current benchmark highlights">
+        <div class="metric">
+          <strong>13/13</strong>
+          <span>Terminal-Bench core neutral task parity against the oracle, governance enabled.</span>
+        </div>
+        <div class="metric">
+          <strong>105/105</strong>
+          <span>Longform chain-integrity points across tamper and cold-start resume checks.</span>
+        </div>
+        <div class="metric">
+          <strong>6/6</strong>
+          <span>Hydra jobsite conservation cases preserved across project roles and obligations.</span>
+        </div>
+        <div class="metric">
+          <strong>1.16%</strong>
+          <span>Conservative Petri v7-matched false-allow rate: 2/173 residuals.</span>
+        </div>
+      </section>
 
       <section class="grid" aria-label="Evidence lanes">
         <article class="card">
           <h2>Governance parity</h2>
-          <p>Terminal-bench neutral tasks show governance adding audit without completion friction.</p>
+          <p>Terminal-Bench core neutral tasks show governance adding audit without completion friction.</p>
         </article>
         <article class="card">
           <h2>Adversarial tiers</h2>
           <p>Dangerous command lanes are tiered by deterministic harmonic-wall math, not a prompt-only guess.</p>
         </article>
         <article class="card">
-          <h2>Chemistry/tokenizer</h2>
-          <p>Compound decomposition and recomposition lanes exercise the atomic tokenizer and reaction state model.</p>
+          <h2>Longform ledger</h2>
+          <p>Chain integrity and Hydra jobsite tests exercise the multi-agent ledger across long-running work.</p>
         </article>
+      </section>
+
+      <section class="band">
+        <h2>What is strong enough to show now</h2>
+        <p>
+          The defensible public story is narrow: SCBE preserves useful task completion while attaching
+          governance decisions to actions, blocks clear adversarial shell actions, and detects ledger
+          tampering in longform workflows. Local fixtures are labeled as local fixtures.
+        </p>
+        <ul class="lane-list">
+          <li><strong>Terminal-Bench core parity:</strong> 13/13 SCBE and 13/13 oracle on the current neutral packet.</li>
+          <li><strong>Governance separation:</strong> reverse shell, disk wipe, and bulk destructive delete land in DENY.</li>
+          <li><strong>Longform integrity:</strong> byte flip, hash edit, event insert/delete/swap, recompute drift, truncation, and cold resume are covered.</li>
+          <li><strong>Hydra conservation:</strong> multi-role project obligations are retained better than simple local baselines.</li>
+        </ul>
+      </section>
+
+      <section class="band">
+        <h2>Next public leaderboard path</h2>
+        <p>
+          The next step is one unchanged external harness run. Terminal-Bench 2.x is first because it is
+          closest to the current agent surface. AgentDojo and tau-bench follow because they test the
+          governance problem directly: tool attacks, policy compliance, multi-turn state, and action safety.
+        </p>
+        <ul class="lane-list">
+          <li><strong>1. Terminal-Bench 2.x:</strong> publish official per-task completion artifacts with SCBE governance logs.</li>
+          <li><strong>2. AgentDojo:</strong> add SCBE as a defense around tool calls and tool results.</li>
+          <li><strong>3. tau-bench / tau2-bench:</strong> evaluate multi-turn policy-following agents with database-state scoring.</li>
+          <li><strong>4. WorkArena / BrowserGym / OSWorld:</strong> move from shell governance into browser and desktop action governance.</li>
+        </ul>
       </section>
 
       <div class="actions">
         <a class="btn btn-primary" href="benchmarks/dashboard.html">Open evidence dashboard</a>
+        <a class="btn" href="benchmarks/PUBLIC_LEADERBOARD_RUNBOOK_2026-05-31.md">Public leaderboard runbook</a>
         <a class="btn" href="governance-sdk.html">Use the SDK</a>
         <a class="btn" href="system/SCBE_FULL_SYSTEM_INVENTORY_2026-05-31.md">Read system inventory</a>
       </div>
