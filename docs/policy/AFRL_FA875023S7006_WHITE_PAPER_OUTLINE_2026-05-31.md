@@ -195,6 +195,7 @@ Items to avoid in final prose to keep the white paper credible and safe:
 - **Do not claim** AFRL-specific hardware access, cleared facility, or existing DoD relationships
 - **Do frame** SCBE as a software governance layer — the same role as a trusted operating system or audit daemon, not a C2 system itself
 - **Do cite** reproducible benchmark numbers only (13/13, 0.58% Petri false-allow) — no inflated claims
+- **Before submission**, reconcile every metric against current artifacts and public-facing benchmark docs. If the public dashboard reports a conservative v7-matched Petri value, use the conservative number unless a newer artifact is attached and clearly dated.
 - **Do cite** NIST AI RMF 1.0 and NIST AI 600-1 as the standards context SCBE maps to
 
 ---

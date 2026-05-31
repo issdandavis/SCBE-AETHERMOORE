@@ -45,6 +45,8 @@ Recommended next action:
 
 Draft a 5-8 page white paper positioning SCBE as a governance and runtime authorization layer for distributed AI/C2 nodes. Keep the pitch technical and bounded: runtime safety, auditability, operator trust, cross-agent coordination, and low-overhead governance.
 
+Working outline: `docs/policy/AFRL_FA875023S7006_WHITE_PAPER_OUTLINE_2026-05-31.md`.
+
 Risk:
 
 - Defense relevance must be written carefully. Avoid claiming operational C2 authority, weapons integration, or classified capability.
