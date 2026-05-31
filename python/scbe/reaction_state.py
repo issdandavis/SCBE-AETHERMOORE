@@ -18,7 +18,7 @@ from typing import Any, Literal
 ReactionClassification = Literal[
     "BIJECTIVE", "LOSSY_RECOVERABLE", "LOSSY_AMBIGUOUS", "INVALID"
 ]
-ReactionDomain = Literal["code", "chem", "agent", "data", "mixed"]
+ReactionDomain = Literal["code", "chem", "audio", "agent", "data", "mixed"]
 
 TONGUE_COLUMNS = {
     "KO": "identity",

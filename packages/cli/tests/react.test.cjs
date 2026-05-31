@@ -29,11 +29,15 @@ test('react help documents audit and compare commands', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /scbe react audit/);
   assert.match(result.stdout, /scbe react compare/);
+  assert.match(result.stdout, /scbe react code/);
+  assert.match(result.stdout, /scbe react audio/);
 });
 
 test('react audit verifies packets from compound benchmark reports', () => {
   const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-compound-react-'));
-  const bench = runCli(['bench', 'compound-decompose', '--out-dir', outDir, '--json'], { timeout: 90_000 });
+  const bench = runCli(['bench', 'compound-decompose', '--out-dir', outDir, '--json'], {
+    timeout: 90_000,
+  });
   assert.equal(bench.status, 0, bench.stderr);
 
   const reportPath = path.join(outDir, 'latest_report.json');
@@ -49,11 +53,21 @@ test('react audit verifies packets from compound benchmark reports', () => {
 
 test('react compare reports shared packet hashes for identical reports', () => {
   const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-compound-compare-'));
-  const bench = runCli(['bench', 'compound-decompose', '--out-dir', outDir, '--json'], { timeout: 90_000 });
+  const bench = runCli(['bench', 'compound-decompose', '--out-dir', outDir, '--json'], {
+    timeout: 90_000,
+  });
   assert.equal(bench.status, 0, bench.stderr);
 
   const reportPath = path.join(outDir, 'latest_report.json');
-  const result = runCli(['react', 'compare', '--left', reportPath, '--right', reportPath, '--json']);
+  const result = runCli([
+    'react',
+    'compare',
+    '--left',
+    reportPath,
+    '--right',
+    reportPath,
+    '--json',
+  ]);
   assert.equal(result.status, 0, result.stderr);
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.schema_version, 'scbe_reaction_compare_v1');
@@ -61,4 +75,39 @@ test('react compare reports shared packet hashes for identical reports', () => {
   assert.equal(payload.right_packet_count, 30);
   assert.equal(payload.classification_changed, false);
   assert.equal(payload.shared_packet_hashes.length, 30);
+});
+
+test('react code emits a bijective packet for identical files', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-react-code-'));
+  const source = path.join(dir, 'source.py');
+  const target = path.join(dir, 'target.py');
+  fs.writeFileSync(source, 'print("same")\n');
+  fs.writeFileSync(target, 'print("same")\n');
+
+  const result = runCli(['react', 'code', '--source', source, '--target', target, '--json']);
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_react_code_v1');
+  assert.equal(payload.ok, true);
+  assert.equal(payload.reaction_state_packet.domain, 'code');
+  assert.equal(payload.reaction_state_packet.classification, 'BIJECTIVE');
+});
+
+test('react audio emits an observable packet with declared magnetoelastic model', () => {
+  const result = runCli([
+    'react',
+    'audio',
+    '--frequency',
+    '440',
+    '--model',
+    'magnetoelastic',
+    '--json',
+  ]);
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_react_audio_v1');
+  assert.equal(payload.ok, true);
+  assert.equal(payload.reaction_state_packet.domain, 'audio');
+  assert.equal(payload.observables.field_relationship, 'strain-magnetization coupling proxy');
+  assert.equal(typeof payload.observables.stability, 'number');
 });

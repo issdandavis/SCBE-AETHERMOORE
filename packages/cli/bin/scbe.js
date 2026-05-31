@@ -169,6 +169,15 @@ Core commands:
     --left <file>
     --right <file>
     [--json]
+  react code             Emit a code/file transform reaction packet
+    --source <file>
+    --target <file>
+    [--json]
+  react audio            Emit an audio-field observable reaction packet
+    [--frequency Hz]       Default: 440
+    [--model generic|magnetoelastic|magnetosonic]
+    [--sound-speed N] [--alfven-speed N]
+    [--json]
 
 ─────────────────────────────────────────────────────────────────────────────
   CREATOR TOOLS — local-first content utility gates
@@ -4568,6 +4577,8 @@ function runReactionCli(args) {
         'Usage:',
         '  scbe react audit --packet <file> [--json]',
         '  scbe react compare --left <file> --right <file> [--json]',
+        '  scbe react code --source <file> --target <file> [--json]',
+        '  scbe react audio [--frequency Hz] [--model generic|magnetoelastic|magnetosonic] [--json]',
         '',
         'Reaction packets classify bounded transforms as BIJECTIVE, LOSSY_RECOVERABLE,',
         'LOSSY_AMBIGUOUS, or INVALID under a declared representation.',
