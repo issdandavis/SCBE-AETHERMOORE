@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from python.scbe.reaction_harness import evaluate_bijective_reaction
 from python.scbe.reaction_state import ReactionEndpoint, ReactionRecalculation
+from python.scbe.quasi_integer_recoupling import recouple_bond_order
 
 
 def endpoint(identity: str, representation: str = "field-map") -> ReactionEndpoint:
@@ -104,3 +105,24 @@ def test_failed_recalculation_marks_result_invalid() -> None:
     assert result.ok is False
     assert result.packet.classification == "INVALID"
     assert result.preserved_fields == ["behavior_hash"]
+
+
+def test_recoupled_fractional_fields_can_preserve_identity() -> None:
+    result = evaluate_bijective_reaction(
+        domain="chem",
+        bounded_operation="fractional_bond_order_to_symbolic_state",
+        source=endpoint("aromatic-fragment", "field-map"),
+        target=endpoint("aromatic-fragment", "field-map"),
+        source_fields={
+            "bond_order_state": recouple_bond_order(1.49, tolerance=0.1),
+        },
+        target_fields={
+            "bond_order_state": 1.5,
+        },
+        required_identity_fields=("bond_order_state",),
+        generated_at_utc="2026-05-31T00:00:00Z",
+    )
+
+    assert result.ok is True
+    assert result.packet.classification == "BIJECTIVE"
+    assert result.field_checks[0].source_value["label"] == "aromatic-or-resonance-like"

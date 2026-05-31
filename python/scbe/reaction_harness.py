@@ -18,6 +18,7 @@ from .reaction_state import (
     ReactionStatePacket,
     build_reaction_state_packet,
 )
+from .quasi_integer_recoupling import QuasiIntegerRecoupling
 
 FieldStatus = Literal["preserved", "recovered", "lost", "changed", "ignored_loss"]
 
@@ -72,6 +73,20 @@ def _field_present(fields: dict[str, Any], name: str) -> bool:
     return name in fields and fields[name] is not None
 
 
+def _field_value(fields: dict[str, Any], name: str) -> Any:
+    value = fields.get(name)
+    if isinstance(value, QuasiIntegerRecoupling):
+        return value.recoupled_value if value.ok else None
+    return value
+
+
+def _field_raw(fields: dict[str, Any], name: str) -> Any:
+    value = fields.get(name)
+    if isinstance(value, QuasiIntegerRecoupling):
+        return value.to_dict()
+    return value
+
+
 def evaluate_bijective_reaction(
     *,
     domain: ReactionDomain,
@@ -110,10 +125,10 @@ def evaluate_bijective_reaction(
     ignored_loss: list[str] = []
 
     for field_name in required_identity_fields:
-        source_value = source_fields.get(field_name)
+        source_value = _field_value(source_fields, field_name)
         target_has_value = _field_present(target_fields, field_name)
-        target_value = target_fields.get(field_name)
-        recovered_value = recoverable_fields.get(field_name)
+        target_value = _field_value(target_fields, field_name)
+        recovered_value = _field_value(recoverable_fields, field_name)
 
         if target_has_value and target_value == source_value:
             preserved.append(field_name)
@@ -121,8 +136,8 @@ def evaluate_bijective_reaction(
                 ReactionFieldCheck(
                     field=field_name,
                     status="preserved",
-                    source_value=source_value,
-                    target_value=target_value,
+                    source_value=_field_raw(source_fields, field_name),
+                    target_value=_field_raw(target_fields, field_name),
                 )
             )
         elif field_name in recoverable_fields and recovered_value == source_value:
@@ -131,9 +146,9 @@ def evaluate_bijective_reaction(
                 ReactionFieldCheck(
                     field=field_name,
                     status="recovered",
-                    source_value=source_value,
-                    target_value=target_value,
-                    recovered_value=recovered_value,
+                    source_value=_field_raw(source_fields, field_name),
+                    target_value=_field_raw(target_fields, field_name),
+                    recovered_value=_field_raw(recoverable_fields, field_name),
                     note="identity restored from recovery lane",
                 )
             )
@@ -143,7 +158,7 @@ def evaluate_bijective_reaction(
                 ReactionFieldCheck(
                     field=field_name,
                     status="lost",
-                    source_value=source_value,
+                    source_value=_field_raw(source_fields, field_name),
                     note="required identity field absent from target and recovery lanes",
                 )
             )
@@ -153,8 +168,8 @@ def evaluate_bijective_reaction(
                 ReactionFieldCheck(
                     field=field_name,
                     status="changed",
-                    source_value=source_value,
-                    target_value=target_value,
+                    source_value=_field_raw(source_fields, field_name),
+                    target_value=_field_raw(target_fields, field_name),
                     note="required identity field changed without matching recovery evidence",
                 )
             )
@@ -168,7 +183,7 @@ def evaluate_bijective_reaction(
                 ReactionFieldCheck(
                     field=field_name,
                     status="ignored_loss",
-                    source_value=source_fields.get(field_name),
+                    source_value=_field_raw(source_fields, field_name),
                     note="allowed loss recorded for audit; not identity-breaking",
                 )
             )
