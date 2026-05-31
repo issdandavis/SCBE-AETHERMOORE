@@ -461,6 +461,7 @@ def run_policy_eval(
         first_tool_args: dict[str, Any] = {}
         detected_decision: str | None = None
         assistant_text: str | None = None
+        assistant_text_t1: str | None = None
 
         # ── Turn 1: user request ───────────────────────────────────────────────
         messages: list[dict[str, Any]] = [
