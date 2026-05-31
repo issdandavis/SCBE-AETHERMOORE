@@ -12,7 +12,7 @@ aws-cdk-lib==2.257.0
 aws-cdk.asset-awscli-v1==2.2.278
 aws-cdk.asset-node-proxy-agent-v6==2.1.2
 aws-cdk.cloud-assembly-schema==53.24.0
-aws-opentelemetry-distro==0.16.0
+aws-opentelemetry-distro==0.17.1
 aws-requests-auth==0.4.3
 beautifulsoup4==4.14.3
 bedrock-agentcore==1.6.0
