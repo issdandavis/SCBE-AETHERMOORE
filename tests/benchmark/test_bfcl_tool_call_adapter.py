@@ -1,7 +1,7 @@
 """Tests for the BFCL tool-call adapter (offline / export-only lane).
 
 These tests run without Ollama or any API key. They verify:
-- All 54 tools are exported as BFCL-compatible schemas
+- All 54 tools are exported as OpenAI function-calling schemas (BFCL-adjacent format)
 - AST validation passes 100%
 - Multi-param and no-param tools are exported correctly
 - Irrelevance test cases produce ground_truth_tool = None
@@ -27,6 +27,7 @@ from scripts.benchmark.bfcl_tool_call_adapter import (
     TEST_CASES,
     _extract_params,
     _make_receipt,
+    _same_namespace,
     tools_to_bfcl_schemas,
     validate_all_schemas,
     validate_bfcl_schema,
@@ -235,3 +236,37 @@ def test_receipt_hash_is_sha256_length():
     ts = "2026-01-01T00:00:00Z"
     r = _make_receipt("tc_01", "q", "a", "a", {}, True, "0" * 64, ts)
     assert len(r["receipt_hash"]) == 64
+
+
+def test_receipt_near_miss_field_present():
+    ts = "2026-01-01T00:00:00Z"
+    r = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-seal", {}, False,
+                      "0" * 64, ts, near_miss=True)
+    assert r["near_miss"] is True
+
+
+def test_receipt_near_miss_default_false():
+    ts = "2026-01-01T00:00:00Z"
+    r = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-compile", {}, True,
+                      "0" * 64, ts)
+    assert r["near_miss"] is False
+
+
+# ── Near-miss namespace detection ─────────────────────────────────────────────
+
+def test_same_namespace_true():
+    assert _same_namespace("geoseal-compile", "geoseal-seal") is True
+
+
+def test_same_namespace_false():
+    assert _same_namespace("geoseal-compile", "scbe-compass") is False
+
+
+def test_same_namespace_research():
+    assert _same_namespace("research-arxiv", "research-uspto") is True
+
+
+def test_same_namespace_single_segment():
+    # Tools with no hyphen — each is its own namespace
+    assert _same_namespace("mytools", "mytools") is True
+    assert _same_namespace("toolA", "toolB") is False

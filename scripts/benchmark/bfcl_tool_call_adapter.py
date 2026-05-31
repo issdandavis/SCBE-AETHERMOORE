@@ -4,11 +4,11 @@
 Two lanes:
 
 1. **Schema export** (always runs, offline):
-   Reads packages/agent-bus/tools.json and emits BFCL-compatible OpenAI
-   function schemas (name, description, parameters with extracted {param}
-   placeholders).  Each schema is AST-validated for structural correctness.
-   This is the primary deliverable — any BFCL-compliant evaluator can consume
-   the exported schemas directly.
+   Reads packages/agent-bus/tools.json and emits OpenAI function-calling
+   schemas in BFCL-adjacent format (name, description, parameters with extracted
+   {param} placeholders).  Each schema is AST-validated for structural correctness.
+   The format is compatible with the OpenAI tool-calling spec; use the exported
+   schemas with the official BFCL dataset for leaderboard-comparable evaluation.
 
 2. **Description-clarity probe** (optional, requires Ollama):
    Sends 20 hand-authored test cases to a local model via the OpenAI-compatible
@@ -89,7 +89,7 @@ def _extract_params(args: list[str]) -> list[str]:
 # ── Schema export ──────────────────────────────────────────────────────────────
 
 def tools_to_bfcl_schemas(tools_path: Path) -> list[dict[str, Any]]:
-    """Convert tools.json → list of BFCL-compatible OpenAI function schemas."""
+    """Convert tools.json → list of OpenAI function-calling schemas (BFCL-adjacent format)."""
     tools: list[dict[str, Any]] = json.loads(tools_path.read_text(encoding="utf-8"))
     schemas: list[dict[str, Any]] = []
     for tool in tools:
@@ -126,7 +126,7 @@ class SchemaValidationResult:
 
 
 def validate_bfcl_schema(schema: dict[str, Any]) -> SchemaValidationResult:
-    """Structural AST check: verify schema is BFCL/OpenAI-compatible."""
+    """Structural AST check: verify schema is OpenAI function-calling format."""
     errors: list[str] = []
     name = schema.get("name", "<unnamed>")
 
@@ -347,6 +347,7 @@ def _make_receipt(
     correct: bool,
     prev_hash: str,
     ts: str,
+    near_miss: bool = False,
 ) -> dict[str, Any]:
     payload = json.dumps(
         {
@@ -366,6 +367,7 @@ def _make_receipt(
         "model_tool": model_tool,
         "model_args": model_args,
         "correct": correct,
+        "near_miss": near_miss,
         "ts": ts,
         "prev_hash": prev_hash,
         "receipt_hash": receipt_hash,
@@ -434,6 +436,11 @@ def _score_tool_selection(
     return expected == got
 
 
+def _same_namespace(a: str, b: str) -> bool:
+    """True when two tool names share the same hyphen-delimited namespace prefix."""
+    return a.split("-")[0] == b.split("-")[0]
+
+
 # ── Main benchmark flow ────────────────────────────────────────────────────────
 
 def run_export_and_validate(
@@ -488,30 +495,42 @@ def run_model_eval(
         if is_correct:
             correct += 1
 
+        # Near-miss: wrong tool but same namespace prefix (signal about description quality).
+        expected_gt = case["ground_truth_tool"]
+        is_near_miss = (
+            not is_correct
+            and expected_gt is not None
+            and model_tool is not None
+            and _same_namespace(expected_gt, model_tool)
+        )
+
         cat = case.get("category", "other")
         category_scores.setdefault(cat, []).append(is_correct)
 
         receipt = _make_receipt(
             case_id=case["id"],
             question=case["question"],
-            expected_tool=case["ground_truth_tool"],
+            expected_tool=expected_gt,
             model_tool=model_tool,
             model_args=model_args,
             correct=is_correct,
             prev_hash=prev_hash,
             ts=ts,
+            near_miss=is_near_miss,
         )
         receipts.append(receipt)
         prev_hash = receipt["receipt_hash"]
         time.sleep(0.05)  # rate-limit courtesy
 
     total_run = len(receipts)
+    near_miss_count = sum(1 for r in receipts if r["near_miss"])
     return {
         "model": model,
         "endpoint": endpoint,
         "cases_run": total_run,
         "cases_total": len(TEST_CASES),
         "correct": correct,
+        "near_misses": near_miss_count,
         "accuracy": round(correct / total_run, 4) if total_run else 0.0,
         "category_accuracy": {
             cat: round(sum(v) / len(v), 4) for cat, v in category_scores.items()
@@ -611,6 +630,14 @@ def render_markdown(report: dict[str, Any]) -> str:
             lines.append("")
     else:
         acc = model_eval.get("accuracy", 0.0)
+        near_misses = model_eval.get("near_misses", 0)
+        cases_run = model_eval.get("cases_run", 0)
+        correct = model_eval.get("correct", 0)
+        wrong = cases_run - correct
+        nm_note = (
+            f" ({near_misses} near-miss — wrong tool, same namespace)"
+            if near_misses else ""
+        )
         lines += [
             "## Model Eval",
             "",
@@ -618,9 +645,9 @@ def render_markdown(report: dict[str, Any]) -> str:
             "",
             f"- Model: `{model_eval.get('model')}`",
             f"- Endpoint: `{model_eval.get('endpoint')}`",
-            f"- Cases run: {model_eval.get('cases_run')} / {model_eval.get('cases_total')}",
-            f"- **Accuracy: {acc * 100:.1f}%** "
-            f"({model_eval.get('correct')}/{model_eval.get('cases_run')})",
+            f"- Cases run: {cases_run} / {model_eval.get('cases_total')}",
+            f"- **Accuracy: {acc * 100:.1f}%** ({correct}/{cases_run})",
+            f"- Clear misses: {wrong - near_misses}{nm_note}",
             "",
             "### Category Breakdown",
             "",
@@ -643,14 +670,15 @@ def render_markdown(report: dict[str, Any]) -> str:
         lines += [
             "### Per-Case Results",
             "",
-            "| ID | Expected | Got | Correct |",
-            "|---|---|---|---|",
+            "| ID | Expected | Got | Correct | Note |",
+            "|---|---|---|---|---|",
         ]
         for r in model_eval.get("receipts", []):
             ok_mark = "✓" if r["correct"] else "✗"
             exp = r["expected_tool"] or "*(none)*"
             got = r["model_tool"] or "*(none)*"
-            lines.append(f"| {r['case_id']} | `{exp}` | `{got}` | {ok_mark} |")
+            note = "near-miss" if r.get("near_miss") else ""
+            lines.append(f"| {r['case_id']} | `{exp}` | `{got}` | {ok_mark} | {note} |")
         lines.append("")
 
     return "\n".join(lines)
