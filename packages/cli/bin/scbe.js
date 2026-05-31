@@ -4172,8 +4172,8 @@ const BENCH_TARGETS = {
   },
   'cli-competitive': {
     script: 'scripts/benchmark/cli_competitive_benchmark.py',
-    latestJson: 'artifacts/benchmarks/cli_competitive/latest_report.json',
-    latestMarkdown: 'artifacts/benchmarks/cli_competitive/LATEST.md',
+    latestJson: 'artifacts/benchmarks/cli_competitive/cli_competitive_benchmark_latest.json',
+    latestMarkdown: 'artifacts/benchmarks/cli_competitive/cli_competitive_benchmark_latest.md',
     description: 'CLI command accuracy vs Codex/Claude-Code-style baselines',
     claimBoundary: 'local CLI command accuracy fixture; not a published competitive benchmark score',
   },
