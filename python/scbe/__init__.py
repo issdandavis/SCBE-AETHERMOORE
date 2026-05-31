@@ -117,6 +117,18 @@ from .reaction_harness import (
     ReactionFieldCheck,
     evaluate_bijective_reaction,
 )
+from .quasi_integer_recoupling import (
+    CHEMICAL_BOND_ORDER_STATES,
+    FORMAL_CHARGE_STATES,
+    QuasiIntegerRecoupling,
+    RecouplingState,
+    half_integer_states,
+    integer_states,
+    recouple_bond_order,
+    recouple_formal_charge,
+    recouple_to_integer,
+    recouple_to_states,
+)
 
 __all__ += [
     "AtomicElement",
@@ -165,4 +177,14 @@ __all__ += [
     "ReactionFieldCheck",
     "BijectiveReactionResult",
     "evaluate_bijective_reaction",
+    "RecouplingState",
+    "QuasiIntegerRecoupling",
+    "CHEMICAL_BOND_ORDER_STATES",
+    "FORMAL_CHARGE_STATES",
+    "integer_states",
+    "half_integer_states",
+    "recouple_to_states",
+    "recouple_to_integer",
+    "recouple_bond_order",
+    "recouple_formal_charge",
 ]
