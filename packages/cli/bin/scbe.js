@@ -104,6 +104,9 @@ Usage:
     [--run-local]          claim boundaries for website/patent-safe claims
     [--quick]
     [--open-report]
+  bench circuit          Ordered improve/cross-test benchmark circuit
+    [--json]              surfaces next lane, obstacle, fix target, and
+    [--open-report]        cross-test target
   bench list             List registered evidence lanes
   bench status           Compact readiness/status view
     [--json]
@@ -4176,6 +4179,14 @@ const BENCH_TARGETS = {
     claimBoundary:
       'artifact-backed local evidence matrix; not a single public leaderboard aggregate score',
   },
+  circuit: {
+    script: 'scripts/benchmark/scbe_benchmark_circuit.py',
+    latestJson: 'artifacts/benchmarks/scbe_benchmark_circuit/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/scbe_benchmark_circuit/LATEST.md',
+    description: 'ordered test/improve/cross-test circuit for high-grade benchmark targets',
+    claimBoundary:
+      'engineering improvement circuit; not a public leaderboard score or official benchmark result',
+  },
 };
 
 function benchLaneRows() {
@@ -4373,6 +4384,7 @@ function printBenchHelp() {
       '  scbe bench research [--style BrowseComp-style|GAIA-style] [--json] [--open-report]',
       '  scbe bench rubix-browser [--json] [--open-report]',
       '  scbe bench full [--json] [--run-local] [--quick] [--open-report]',
+      '  scbe bench circuit [--json] [--open-report]',
       '  scbe bench list [--json]',
       '  scbe bench status [--json]',
       '  scbe bench latest [lane] [--json]',

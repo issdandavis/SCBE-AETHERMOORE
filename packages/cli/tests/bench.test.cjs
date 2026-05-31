@@ -31,6 +31,7 @@ test('help documents benchmark evidence lanes', () => {
   assert.match(result.stdout, /bench research/);
   assert.match(result.stdout, /bench rubix-browser/);
   assert.match(result.stdout, /bench full/);
+  assert.match(result.stdout, /bench circuit/);
   assert.match(result.stdout, /bench list/);
   assert.match(result.stdout, /bench status/);
   assert.match(result.stdout, /bench latest/);
@@ -67,6 +68,7 @@ test('bench list emits registered evidence lanes as JSON', () => {
   assert.ok(payload.lanes.some((lane) => lane.id === 'research'));
   assert.ok(payload.lanes.some((lane) => lane.id === 'rubix-browser'));
   assert.ok(payload.lanes.some((lane) => lane.id === 'full'));
+  assert.ok(payload.lanes.some((lane) => lane.id === 'circuit'));
 });
 
 test('bench latest reads latest lane artifact summary', () => {
