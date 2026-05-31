@@ -165,6 +165,35 @@ class ContextLanding:
         expected = hashlib.sha256(content.encode()).hexdigest()
         return expected == self.landing_hash
 
+    def verify_semantic(self, ledger: "JsonlWorkflowLedger") -> tuple:
+        """Verify the semantic anchor against the current ledger state.
+
+        Returns (ok: bool, reason: str).
+
+        Detects A7 (payload mutation + full hash recompute) and A8 (tail
+        truncation) — both pass verify_chain() but fail here.
+        Pre-v2 landings with no anchor pass trivially with a note.
+
+        Uses self.last_sequence as the boundary: only events that existed
+        when the anchor was computed (sequence <= last_sequence) are checked.
+        This excludes the landing event itself, which is appended after the
+        anchor is computed.
+        """
+        anchor = self.metadata.get("semantic_anchor", "")
+        if not anchor:
+            return (True, "no anchor committed (pre-semantic landing)")
+        scoped = [e for e in ledger.read_all() if e.sequence <= self.last_sequence]
+        expected_count = self.metadata.get("event_count")
+        if expected_count is not None and len(scoped) != expected_count:
+            return (
+                False,
+                f"event count mismatch: expected {expected_count}, got {len(scoped)}",
+            )
+        actual = _compute_semantic_anchor(scoped)
+        if actual != anchor:
+            return (False, "semantic anchor mismatch: payload corpus has changed")
+        return (True, "ok")
+
 
 @dataclass
 class ResumePack:
@@ -388,6 +417,23 @@ class JsonlWorkflowLedger:
             return ResumePack.from_dict(json.load(f))
 
 
+# ── Semantic anchor ───────────────────────────────────────────────────────────
+
+def _compute_semantic_anchor(events: List[LedgerEvent]) -> str:
+    """SHA-256 of the ordered payload corpus — committed at landing time.
+
+    Detects content mutation (A7: full recompute) and tail truncation (A8):
+    both alter the payload sequence even when verify_chain() passes.
+    Uses a NUL byte delimiter that cannot appear inside JSON output.
+    """
+    parts = [
+        json.dumps(ev.payload, sort_keys=True, separators=(",", ":"))
+        for ev in events
+    ]
+    corpus = "\x00".join(parts)
+    return hashlib.sha256(corpus.encode()).hexdigest()
+
+
 # ── Factory functions ─────────────────────────────────────────────────────────
 
 def _longform_dir(workspace_dir: str) -> str:
@@ -451,6 +497,13 @@ def create_landing(
     bc = sum(1 for e in all_events if e.kind == "brick")
     last_seq = all_events[-1].sequence if all_events else 0
 
+    # Semantic anchor: committed payload fingerprint + event count.
+    # Detects A7 (full recompute) and A8 (tail truncation) which bypass
+    # verify_chain() alone.  Stored in metadata so old landings stay valid.
+    meta = dict(metadata or {})
+    meta["event_count"] = len(all_events)
+    meta["semantic_anchor"] = _compute_semantic_anchor(all_events)
+
     landing_id = str(uuid.uuid4())
     ts = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     landing_data = {
@@ -461,7 +514,7 @@ def create_landing(
         "last_sequence": last_seq,
         "principles_validated": True,
         "principles": principles.to_dict(),
-        "metadata": metadata or {},
+        "metadata": meta,
     }
     content = json.dumps(
         {k: v for k, v in landing_data.items() if k != "landing_hash"},

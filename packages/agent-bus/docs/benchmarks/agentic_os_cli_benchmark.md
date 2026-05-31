@@ -1,6 +1,6 @@
 # Agentic OS CLI Benchmark
 
-Generated: 2026-05-29T22:56:56.652Z
+Generated: 2026-05-30T01:41:12.674Z
 Benchmark id: 328dd1aeaf5839e2
 
 ## Summary
@@ -9,8 +9,8 @@ Benchmark id: 328dd1aeaf5839e2
 - Passed: 16
 - Failed: 0
 - Pass rate: 1
-- Median ms: 12.409
-- P95 ms: 3822.292
+- Median ms: 4.605
+- P95 ms: 804.733
 - Internal hardening candidates: 11
 - Hardening passed: 10
 - Hardening failed: 1
@@ -28,24 +28,24 @@ Benchmark id: 328dd1aeaf5839e2
 
 ## Cases
 
-| Case                                                    | OK   |       ms | Evidence                                 |
-| ------------------------------------------------------- | ---- | -------: | ---------------------------------------- |
-| tool_registry_audit_full_surface                        | PASS |    2.739 | 37                                       |
-| semantic_hex_roundtrip:compile add operation across lan | PASS |   12.409 | 80d1c7eb268c                             |
-| semantic_hex_roundtrip:block denied command but preserv | PASS |    5.055 | e27d82bfd249                             |
-| semantic_hex_roundtrip:transform water flow into a comp | PASS |    0.593 | a4e7856163af                             |
-| semantic_hex_roundtrip:convert prompt to tokens then re | PASS |    0.442 | 80d1c7eb268c                             |
-| compass_plan_forge_cross_domain                         | PASS |    1.417 | compiler                                 |
-| compass_plan_broadcast_youtube_pipeline                 | PASS |    0.175 | youtube                                  |
-| compass_plan_council_model_lanes_free_limits            | PASS |     0.35 | model                                    |
-| compass_board_rules_source_anchored                     | PASS |    0.253 |                                          |
-| agentic_pazaak_board_default_moves                      | PASS |  371.573 |                                          |
-| cross_build_ko_to_ru_add                                | PASS | 2871.213 | add                                      |
-| cross_build_av_to_dr_xor                                | PASS | 3030.093 | xor                                      |
-| cross_build_broadcast_add_all_tongues                   | PASS | 3822.292 | add                                      |
-| cross_build_list_ops_64                                 | PASS |  1536.12 |                                          |
-| cross_build_quarantine_arbitrary_code                   | PASS | 1313.773 |                                          |
-| pipeline_state_init_governed_lane                       | PASS |  245.705 | scbe.agent_bus.governed_state_summary.v1 |
+| Case                                                    | OK   |      ms | Evidence                                 |
+| ------------------------------------------------------- | ---- | ------: | ---------------------------------------- |
+| tool_registry_audit_full_surface                        | PASS |   1.412 | 52                                       |
+| semantic_hex_roundtrip:compile add operation across lan | PASS |   4.605 | 80d1c7eb268c                             |
+| semantic_hex_roundtrip:block denied command but preserv | PASS |   3.893 | e27d82bfd249                             |
+| semantic_hex_roundtrip:transform water flow into a comp | PASS |   0.583 | a4e7856163af                             |
+| semantic_hex_roundtrip:convert prompt to tokens then re | PASS |   0.314 | 80d1c7eb268c                             |
+| compass_plan_forge_cross_domain                         | PASS |   1.279 | compiler                                 |
+| compass_plan_broadcast_youtube_pipeline                 | PASS |   0.124 | youtube                                  |
+| compass_plan_council_model_lanes_free_limits            | PASS |   0.283 | model                                    |
+| compass_board_rules_source_anchored                     | PASS |   0.172 |                                          |
+| agentic_pazaak_board_default_moves                      | PASS | 154.615 |                                          |
+| cross_build_ko_to_ru_add                                | PASS | 797.531 | add                                      |
+| cross_build_av_to_dr_xor                                | PASS | 798.836 | xor                                      |
+| cross_build_broadcast_add_all_tongues                   | PASS | 804.733 | add                                      |
+| cross_build_list_ops_64                                 | PASS | 798.366 |                                          |
+| cross_build_quarantine_arbitrary_code                   | PASS | 791.466 |                                          |
+| pipeline_state_init_governed_lane                       | PASS | 171.901 | scbe.agent_bus.governed_state_summary.v1 |
 
 ## Internal Hardening Candidates
 

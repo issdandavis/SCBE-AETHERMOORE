@@ -1,10 +1,11 @@
-"""Daily USPTO patent linkage check — zero cost, runs locally.
+"""Daily USPTO patent prosecution check — zero cost, runs locally.
 
 Usage:
     python scripts/system/daily_patent_check.py
     python scripts/system/daily_patent_check.py --check-email
 
-Checks Patent Center status and optionally ProtonMail via Bridge IMAP.
+Checks the filed SCBE nonprovisional status reminders and optionally ProtonMail
+via Bridge IMAP.
 """
 
 import argparse
@@ -12,50 +13,67 @@ import datetime
 import os
 
 PATENT_INFO = {
-    "application_number": "63/961,403",
-    "filing_date": "2025-11-12",
-    "customer_number": "228194",
-    "form_submitted": "2026-03-26",
-    "receipt_number": "75020326",
-    "follow_up_date": "2026-04-02",
+    "application_number": "19/691,526",
+    "application_number_digits": "19691526",
+    "provisional_priority": "63/961,403",
+    "filing_date": "2026-05-28",
+    "receipt_datetime": "2026-05-28 10:54:51 PM Z ET",
+    "patent_center_number": "76776451",
+    "confirmation_number": "1177",
+    "docket": "SCBE-2026-0001",
+    "fees_paid": "$720.00",
+    "receipt_path": (
+        "docs/legal/filing-packet-scbe-2026-0001/04_FILED_RECEIPTS/"
+        "USPTO_ELECTRONIC_PAYMENT_RECEIPT_APP_19-691526_2026-05-28.pdf"
+    ),
+    "follow_up_date": "2026-06-04",
     "follow_up_phone": "888-786-0101",
     "follow_up_email": "HelpAAU@uspto.gov",
     "ebc_email": "ebc@uspto.gov",
-    "agent": "Jessica Smith, Agent 81",
 }
 
 
 def check_patent_center():
-    """Check if Patent Center shows the application (manual reminder)."""
+    """Print manual reminders for Patent Center status checks."""
     today = datetime.date.today()
-    submitted = datetime.date(2026, 3, 26)
-    follow_up = datetime.date(2026, 4, 2)
+    submitted = datetime.date(2026, 5, 28)
+    follow_up = datetime.date(2026, 6, 4)
     days_since = (today - submitted).days
     days_until_followup = (follow_up - today).days
 
     print("=" * 60)
-    print("USPTO PATENT LINKAGE — DAILY CHECK")
+    print("USPTO PATENT PROSECUTION — DAILY CHECK")
     print("=" * 60)
     print(f"  Application:    {PATENT_INFO['application_number']}")
-    print(f"  Customer #:     {PATENT_INFO['customer_number']}")
-    print(f"  Form submitted: {PATENT_INFO['form_submitted']} (receipt #{PATENT_INFO['receipt_number']})")
+    print(f"  Docket:         {PATENT_INFO['docket']}")
+    print(f"  Provisional:    {PATENT_INFO['provisional_priority']}")
+    print(f"  Filed:          {PATENT_INFO['receipt_datetime']}")
+    print(f"  Patent Center:  {PATENT_INFO['patent_center_number']}")
+    print(f"  Confirmation:   {PATENT_INFO['confirmation_number']}")
+    print(f"  Fees paid:      {PATENT_INFO['fees_paid']}")
     print(f"  Days since:     {days_since}")
+    print(f"  Receipt saved:  {PATENT_INFO['receipt_path']}")
     print()
 
     if today < follow_up:
         print(f"  STATUS: Waiting. {days_until_followup} business days until follow-up date.")
-        print(f"  ACTION: Check Patent Center — can you see the application?")
+        print("  ACTION: Check Patent Center for the formal Filing Receipt and new IFW documents.")
         print(f"          https://patentcenter.uspto.gov/")
     elif today == follow_up:
         print(f"  STATUS: FOLLOW-UP DAY.")
-        print(f"  ACTION: If app is NOT visible in Patent Center, CALL NOW:")
+        print("  ACTION: If the formal Filing Receipt or application record is NOT visible, call:")
         print(f"          {PATENT_INFO['follow_up_phone']} (Applications Assistance Unit)")
         print(f"          Reference: application {PATENT_INFO['application_number']}")
-        print(f"          Receipt: #{PATENT_INFO['receipt_number']}")
+        print(f"          Confirmation: {PATENT_INFO['confirmation_number']}")
     else:
-        print(f"  STATUS: OVERDUE — {days_since - 5} days past follow-up window.")
+        print(f"  STATUS: FOLLOW-UP WINDOW PASSED — {days_since - 7} days past target.")
         print(f"  ACTION: Call {PATENT_INFO['follow_up_phone']} immediately.")
         print(f"          Or email: {PATENT_INFO['follow_up_email']}")
+
+    print()
+    print("  ODP MONITOR:")
+    print("    Set USPTO_ODP_API_KEY, then run:")
+    print(f"    python scripts/system/uspto_prosecution_monitor.py --app {PATENT_INFO['application_number_digits']}")
 
     print()
     return days_since
@@ -90,8 +108,17 @@ def check_protonmail():
         mail.login(username, password)
         mail.select("INBOX")
 
-        # Search for USPTO-related emails
-        for search_term in ["FROM ebc@uspto.gov", "FROM HelpAAU@uspto.gov", "SUBJECT patent"]:
+        # Search for USPTO-related emails.
+        for search_term in [
+            "FROM ebc@uspto.gov",
+            "FROM HelpAAU@uspto.gov",
+            "FROM donotreply@uspto.gov",
+            "FROM noreply@uspto.gov",
+            "SUBJECT USPTO",
+            "SUBJECT patent",
+            "SUBJECT Filing Receipt",
+            "SUBJECT Office Action",
+        ]:
             _, msg_ids = mail.search(None, f'({search_term})')
             if msg_ids[0]:
                 ids = msg_ids[0].split()
@@ -122,7 +149,7 @@ def main():
         print("Checking ProtonMail via Bridge...")
         check_protonmail()
 
-    print("Done. Run this daily until linkage is confirmed.")
+    print("Done. Run this daily until the formal filing receipt and monitor baseline are confirmed.")
 
 
 if __name__ == "__main__":

@@ -29,13 +29,13 @@ surcharge).
 | Item | Micro-entity fee |
 |---|---|
 | Basic utility filing fee | $70 |
-| Utility search fee | $154 |
-| Utility examination fee | $176 |
-| **Base subtotal (≤ 3 independent, ≤ 20 total claims)** | **$400** |
+| Utility search fee | $165 |
+| Utility examination fee | $200 |
+| **Base subtotal (≤ 3 independent, ≤ 20 total claims)** | **$435** |
 | Independent claims over 3 (3 used → 0 over) | $0 |
 | Claims over 20: 8 extra × $40 | $320 |
 | Multiple-dependent-claim fee (none used) | $0 |
-| **Total at filing** | **$720** |
+| **Total at filing** | **$755** |
 
 Avoidable surcharges deliberately NOT incurred: paper filing ($200), non-DOCX
 ($86), multiple-dependent claim ($185).
@@ -46,6 +46,7 @@ same-length fail-to-noise composition, reroute containment, null-space anomaly
 detection, physics-juggling task coordination, disjoint bijective tokenizer
 alphabets, harmonic phase orthogonality (claim 27), and domain-specific entropy
 encoding (claim 28). See § 7 for which of those carry new-matter risk.
+Re-check the USPTO fee schedule in Patent Center on the actual filing day.
 
 ---
 
@@ -372,7 +373,7 @@ trail.
 
 ---
 
-### CLAIM FAMILY — EXTRA HIGH-VALUE DEPENDENTS (Claims 21-26, $40 each)
+### CLAIM FAMILY — EXTRA HIGH-VALUE DEPENDENTS (Claims 21-28, $40 each)
 
 **21.** The method of claim 1, further comprising generating a cryptographic
 authorization container that is unlocked only when N predetermined predicates
@@ -439,16 +440,45 @@ higher-risk tasks are assigned higher arcs and fewer handoffs.
 > risky tasks"). Strong, verbatim written-description support. Lowest-risk of
 > the five extra claims.
 
-**26.** The method of claim 4, wherein each axis of the six-axis semantic
-weighting employs a bijective token alphabet in which each token is uniquely
-identified by a prefix element selected from a first predetermined set and a
-suffix element selected from a second predetermined set, such that the complete
-token vocabulary for each axis is a bijective mapping between token strings and
-integer indices, and the token vocabularies of distinct axes are disjoint.
+**26.** The method of claim 4, wherein each axis of the semantic weighting
+employs a bijective token alphabet comprising a number of tokens equal to the
+Cartesian product of a first predetermined prefix set and a second predetermined
+suffix set, each token uniquely formed by concatenating a prefix element, a
+predetermined separator character, and a suffix element, such that the complete
+token vocabulary for each axis bijects onto a contiguous range of integer byte
+indices, and wherein a serialized token form includes an axis designator that
+makes serialized token vocabularies of distinct axes pairwise disjoint and makes
+the axis of origin of any serialized token determinable from the serialized token
+without additional context.
 
-> *§ 112 support:* Sacred Tongues / tokenizer design surfaces and bijective
-> encode/decode terminology. Treat priority support as needing provisional-text
+> *§ 112 support:* Sacred Tongues / tokenizer design surfaces, SS1 16x16
+> prefix-suffix grid, bijective encode/decode terminology, and serialized
+> axis-designator vocabulary construction. Treat priority support as needing provisional-text
 > comparison if January 15, 2026 priority is material for this dependent claim.
+
+**27.** The method of claim 4, wherein each of the six axes of the semantic
+weighting is associated with a respective harmonic frequency ratio selected from
+integer-ratio musical intervals and a phase offset equal to 2*pi*k/6 radians for
+the respective axis index k, such that the six axes are uniformly distributed
+around the unit circle at sixty-degree intervals, and the contribution of each
+axis to the governance signal incorporates a sinusoidal time-varying modulation
+at the respective harmonic frequency and phase offset.
+
+> *§ 112 support:* Sacred Tongues fixed parameters and Langues Metric phase
+> terms: phase offsets `2*pi*l/6`, harmonic frequency ratios derived from
+> musical intervals, and sinusoidal modulation in the six-axis metric.
+
+**28.** The method of claim 26, wherein each axis's token vocabulary constitutes
+a domain-specific entropy encoding in which each byte of a context representation
+maps deterministically to a token in that axis's vocabulary, the semantic content
+of the context thereby constraining available key derivation paths within the
+governance system, such that key derivation paths obtained from serialized
+encodings in distinct axis vocabularies are separated by the pairwise-disjoint
+serialized-vocabulary property.
+
+> *§ 112 support:* Domain-Specific Entropy Encoding section, Visible Seed/key
+> derivation-path discussion, Sacred Tongues token vocabularies, and claim 26's
+> pairwise-disjoint serialized-vocabulary limitation.
 
 ---
 
@@ -496,7 +526,7 @@ integer indices, and the token vocabularies of distinct axes are disjoint.
 | **Negative Tongue Lattice; Council Manifold; Tree of Escalation (as decision-makers)** | `negative_tongue_lattice.py`; `council_manifold_backend.py`; `tree_of_escalation.py` | All are opt-in and, for ToE, expressly *observational only at v1.0* (does not veto decisions per the in-code comment). Claiming a decision contribution they do not yet make would be unsupported. | CIP once they contribute to decisions (ToE v1.1+). |
 | **Fibonacci trust levels / trust-multiplier headroom** | `runtime_gate.py` `fibonacci_trust_level`; `primitives/phi_poincare.py` | Captured generically by claim 1's "trajectory drift" severity adjustment and claim 9's "trust history" state. A Fibonacci-specific claim adds narrowness without clear competitive value. | Low priority. |
 | **Reroute (REROUTE) decision path** | `runtime_gate.py` `_check_reroute`, `DEFAULT_REROUTES` | A fifth decision mode (redirect-to-safer-action). Deliberately left out of the independent claims' four-way decision recitation to keep them clean; could be a dependent. | Add as a cheap dependent in a continuation if reroute proves commercially central. |
-| **Sacred Tongues token grids / tokenizer** | `src/tokenizer/`; `packages/sixtongues/` | The 16×16 grids and bijective byte↔token map support claims 4 and 15-16 as embodiments; a standalone tokenizer claim is a separate invention with its own prior-art surface. | Separate application if pursued. |
+| **Broader Sacred Tongues tokenizer family** | `src/tokenizer/`; `packages/sixtongues/` | Claim 26 now captures bijective token alphabets plus disjoint serialized axis-designated vocabularies, and claim 28 captures domain-specific entropy encoding. Broader tokenizer-training and cross-language compiler claims remain a separate invention with their own prior-art surface. | Separate application if pursued. |
 | **Red/Blue adversarial arena** | `src/security-engine/redblue-arena.ts` | A test/simulation harness, not the governed runtime path; not a product claim. | No. |
 
 **Honest overall:** the independent claims intentionally absorb most omitted
@@ -612,7 +642,7 @@ provisional date cleanly. Family C is independently valuable (homoglyph /
 Trojan-Source / NFC tamper on *source code identifiers at the AST level* is a
 genuine, narrowly-held niche) and survives on its own.
 
-### Tier 6 — Risk note E: Claims 21-26 extra dependents — mostly CIP material
+### Tier 6 — Risk note E: Claims 21-28 extra dependents — mostly CIP material
 
 - **Claims 21-22 (Sacred Eggs N-predicate + same-length fail-to-noise).**
   Production `sacred_eggs.py` implements a **3-ring (CORE/INNER/OUTER + CA)**
@@ -631,10 +661,16 @@ genuine, narrowly-held niche) and survives on its own.
   the seven rules verbatim). Treat as a solid dependent,
   though confirm the scheduler predates the provisional or accept the
   non-provisional date.
-- **Claim 26 (disjoint bijective tokenizer alphabets).** Supported by the
+- **Claim 26 (bijective tokenizer alphabets with disjoint serialized forms).** Supported by the
   Sacred Tongues/tokenizer design surface. Because this dependent claim moves
   closer to the tokenizer invention itself, compare against the provisional text
   before relying on the January 15, 2026 priority date.
+- **Claim 27 (harmonic phase orthogonality).** Supported by the six-axis Sacred
+  Tongues metric, phase offsets, musical-interval ratios, and sinusoidal
+  modulation. Compare against the provisional text if priority date matters.
+- **Claim 28 (domain-specific entropy encoding).** Supported by the
+  Domain-Specific Entropy Encoding and key-derivation path discussion. Compare
+  against the provisional text if priority date matters.
 
 ### Recommended filing posture
 

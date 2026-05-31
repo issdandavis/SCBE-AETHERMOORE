@@ -25,7 +25,18 @@ DEFAULT_REVIEW_DIR = REPO_ROOT / "artifacts" / "youtube" / "reviews"
 DEFAULT_WORDS_PER_SECOND = 2.6
 DEFAULT_TAIL_SECONDS = 8.0
 DEFAULT_MIN_SCORE = 80
-CTA_PATTERN = re.compile(r"\b(subscribe|notification|bell|like|comment|share)\b", re.IGNORECASE)
+CTA_PATTERN = re.compile(
+    r"\b(subscribe|notification|bell|like|comment|share)\b", re.IGNORECASE
+)
+RECAP_PATTERN = re.compile(
+    r"\b(previously|last time|before this|what happened before)\b", re.IGNORECASE
+)
+CHAPTER_SETUP_PATTERN = re.compile(
+    r"\b(in this chapter|today|this episode|this part|we follow)\b", re.IGNORECASE
+)
+NEXT_LEAD_PATTERN = re.compile(
+    r"\b(next chapter|next episode|next time|sets up next|continues)\b", re.IGNORECASE
+)
 
 
 @dataclass(frozen=True)
@@ -93,6 +104,17 @@ class YouTubeTreatment:
 
 
 @dataclass(frozen=True)
+class ChapterPackage:
+    """Viewer-facing chapter package checks for serialized videos."""
+
+    recap_present: bool
+    chapter_setup_present: bool
+    outro_present: bool
+    next_lead_present: bool
+    required: bool = False
+
+
+@dataclass(frozen=True)
 class InspectionReport:
     """Complete upload-readiness report."""
 
@@ -111,14 +133,34 @@ class InspectionReport:
     understandings: dict[str, Any]
 
 
+def build_chapter_package(
+    package_text: str,
+    script: ScriptPlan,
+    *,
+    require_chapter_package: bool = False,
+) -> ChapterPackage:
+    """Detect whether a video has the viewer context expected for chapter uploads."""
+
+    text = " ".join(part for part in [package_text, script.final_words] if part).strip()
+    return ChapterPackage(
+        recap_present=bool(RECAP_PATTERN.search(text)),
+        chapter_setup_present=bool(CHAPTER_SETUP_PATTERN.search(text)),
+        outro_present=bool(CTA_PATTERN.search(text)),
+        next_lead_present=bool(NEXT_LEAD_PATTERN.search(text)),
+        required=require_chapter_package,
+    )
+
+
 def run(cmd: list[str], *, timeout: int = 120) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, check=False)
+    return subprocess.run(
+        cmd, capture_output=True, text=True, timeout=timeout, check=False
+    )
 
 
 def parse_float(value: Any) -> float | None:
     try:
         parsed = float(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None
     if math.isnan(parsed) or math.isinf(parsed):
         return None
@@ -138,11 +180,17 @@ def parse_frame_rate(rate: str | None) -> float | None:
     return numerator / denominator
 
 
-def media_probe_from_ffprobe(path: Path, payload: dict[str, Any], error: str | None = None) -> MediaProbe:
+def media_probe_from_ffprobe(
+    path: Path, payload: dict[str, Any], error: str | None = None
+) -> MediaProbe:
     streams = payload.get("streams", []) if isinstance(payload, dict) else []
     fmt = payload.get("format", {}) if isinstance(payload, dict) else {}
-    video_streams = [stream for stream in streams if stream.get("codec_type") == "video"]
-    audio_streams = [stream for stream in streams if stream.get("codec_type") == "audio"]
+    video_streams = [
+        stream for stream in streams if stream.get("codec_type") == "video"
+    ]
+    audio_streams = [
+        stream for stream in streams if stream.get("codec_type") == "audio"
+    ]
     duration = parse_float(fmt.get("duration")) or 0.0
 
     def stream_duration(stream_list: list[dict[str, Any]]) -> float | None:
@@ -166,7 +214,9 @@ def media_probe_from_ffprobe(path: Path, payload: dict[str, Any], error: str | N
         audio_codec=first_audio.get("codec_name"),
         width=first_video.get("width"),
         height=first_video.get("height"),
-        frame_rate=parse_frame_rate(first_video.get("avg_frame_rate") or first_video.get("r_frame_rate")),
+        frame_rate=parse_frame_rate(
+            first_video.get("avg_frame_rate") or first_video.get("r_frame_rate")
+        ),
         video_streams=len(video_streams),
         audio_streams=len(audio_streams),
         probe_error=error,
@@ -175,7 +225,9 @@ def media_probe_from_ffprobe(path: Path, payload: dict[str, Any], error: str | N
 
 def probe_media(path: Path) -> MediaProbe:
     if not path.exists():
-        return MediaProbe(file=str(path), exists=False, probe_error="file does not exist")
+        return MediaProbe(
+            file=str(path), exists=False, probe_error="file does not exist"
+        )
     result = run(
         [
             "ffprobe",
@@ -189,7 +241,9 @@ def probe_media(path: Path) -> MediaProbe:
         ]
     )
     if result.returncode != 0:
-        return media_probe_from_ffprobe(path, {}, result.stderr.strip() or result.stdout.strip())
+        return media_probe_from_ffprobe(
+            path, {}, result.stderr.strip() or result.stdout.strip()
+        )
     try:
         payload = json.loads(result.stdout)
     except json.JSONDecodeError as exc:
@@ -210,7 +264,9 @@ def words(text: str) -> list[str]:
     return re.findall(r"[A-Za-z0-9']+", strip_markdown(text))
 
 
-def read_script_plan(path: Path | None, words_per_second: float = DEFAULT_WORDS_PER_SECOND) -> ScriptPlan:
+def read_script_plan(
+    path: Path | None, words_per_second: float = DEFAULT_WORDS_PER_SECOND
+) -> ScriptPlan:
     if not path:
         return ScriptPlan(path=None, available=False)
     if not path.exists():
@@ -220,7 +276,11 @@ def read_script_plan(path: Path | None, words_per_second: float = DEFAULT_WORDS_
     final_words = " ".join(tokens[-16:])
     expected = len(tokens) / words_per_second if words_per_second > 0 else None
     return ScriptPlan(
-        path=str(path), available=True, word_count=len(tokens), expected_seconds=expected, final_words=final_words
+        path=str(path),
+        available=True,
+        word_count=len(tokens),
+        expected_seconds=expected,
+        final_words=final_words,
     )
 
 
@@ -232,24 +292,41 @@ def parse_silencedetect(stderr: str, tail_seconds: float) -> TailSignal:
         if start_match:
             current_start = float(start_match.group(1))
             continue
-        end_match = re.search(r"silence_end:\s*([0-9.]+).*silence_duration:\s*([0-9.]+)", line)
+        end_match = re.search(
+            r"silence_end:\s*([0-9.]+).*silence_duration:\s*([0-9.]+)", line
+        )
         if end_match:
             start = (
                 current_start
                 if current_start is not None
                 else max(0.0, float(end_match.group(1)) - float(end_match.group(2)))
             )
-            events.append({"start": start, "end": float(end_match.group(1)), "duration": float(end_match.group(2))})
+            events.append(
+                {
+                    "start": start,
+                    "end": float(end_match.group(1)),
+                    "duration": float(end_match.group(2)),
+                }
+            )
             current_start = None
 
     silent_seconds = sum(event["duration"] for event in events)
     mostly_silent = silent_seconds >= max(2.0, tail_seconds * 0.65)
-    return TailSignal(checked=True, seconds=tail_seconds, mostly_silent=mostly_silent, silence_events=events)
+    return TailSignal(
+        checked=True,
+        seconds=tail_seconds,
+        mostly_silent=mostly_silent,
+        silence_events=events,
+    )
 
 
-def check_tail_signal(path: Path, tail_seconds: float = DEFAULT_TAIL_SECONDS) -> TailSignal:
+def check_tail_signal(
+    path: Path, tail_seconds: float = DEFAULT_TAIL_SECONDS
+) -> TailSignal:
     if not path.exists():
-        return TailSignal(checked=False, seconds=tail_seconds, error="file does not exist")
+        return TailSignal(
+            checked=False, seconds=tail_seconds, error="file does not exist"
+        )
     result = run(
         [
             "ffmpeg",
@@ -267,23 +344,39 @@ def check_tail_signal(path: Path, tail_seconds: float = DEFAULT_TAIL_SECONDS) ->
         ]
     )
     if result.returncode != 0 and "silence_" not in result.stderr:
-        return TailSignal(checked=False, seconds=tail_seconds, error=result.stderr.strip()[-500:])
+        return TailSignal(
+            checked=False, seconds=tail_seconds, error=result.stderr.strip()[-500:]
+        )
     return parse_silencedetect(result.stderr, tail_seconds)
 
 
-def align_transcript(transcript_path: Path | None, script: ScriptPlan) -> TranscriptAlignment:
+def align_transcript(
+    transcript_path: Path | None, script: ScriptPlan
+) -> TranscriptAlignment:
     if not transcript_path:
         return TranscriptAlignment(checked=False)
     if not transcript_path.exists():
-        return TranscriptAlignment(checked=False, path=str(transcript_path), error="transcript file does not exist")
+        return TranscriptAlignment(
+            checked=False,
+            path=str(transcript_path),
+            error="transcript file does not exist",
+        )
     if not script.final_words:
-        return TranscriptAlignment(checked=False, path=str(transcript_path), error="no script ending to compare")
-    transcript_words = " ".join(words(transcript_path.read_text(encoding="utf-8", errors="replace"))).lower()
+        return TranscriptAlignment(
+            checked=False,
+            path=str(transcript_path),
+            error="no script ending to compare",
+        )
+    transcript_words = " ".join(
+        words(transcript_path.read_text(encoding="utf-8", errors="replace"))
+    ).lower()
     final_tokens = script.final_words.lower().split()
     if len(final_tokens) > 8:
         final_tokens = final_tokens[-8:]
     final_words_found = " ".join(final_tokens) in transcript_words
-    return TranscriptAlignment(checked=True, path=str(transcript_path), final_words_found=final_words_found)
+    return TranscriptAlignment(
+        checked=True, path=str(transcript_path), final_words_found=final_words_found
+    )
 
 
 def load_text_argument(text: str | None, path: Path | None) -> str:
@@ -315,7 +408,10 @@ def build_treatment(
 
 
 def build_upload_command(
-    video_file: Path, title: str | None, article: Path | None = None, description_text: str = ""
+    video_file: Path,
+    title: str | None,
+    article: Path | None = None,
+    description_text: str = "",
 ) -> list[str] | None:
     if not title:
         return None
@@ -351,7 +447,12 @@ def score_inspection(
     suggestions: list[str] = []
 
     if not media.exists:
-        return 0, False, ["Video file does not exist"], ["Render the video before upload."]
+        return (
+            0,
+            False,
+            ["Video file does not exist"],
+            ["Render the video before upload."],
+        )
     if media.probe_error:
         score -= 40
         issues.append(f"ffprobe could not fully inspect the file: {media.probe_error}")
@@ -378,41 +479,59 @@ def score_inspection(
     if not script.available:
         score -= 8
         issues.append("No script/source text was provided for runtime comparison")
-        suggestions.append("Pass --script to detect cut endings against the intended narration.")
+        suggestions.append(
+            "Pass --script to detect cut endings against the intended narration."
+        )
     elif script.expected_seconds is not None:
         allowed_gap = max(12.0, script.expected_seconds * 0.12)
         if script.expected_seconds > media.duration_seconds + allowed_gap:
             gap = script.expected_seconds - media.duration_seconds
             score -= min(35, 12 + round(gap / 3))
             issues.append(f"Script runtime estimate exceeds video by {gap:.1f}s")
-            suggestions.append("The render may be cut short; inspect the tail and append/rerender the ending.")
+            suggestions.append(
+                "The render may be cut short; inspect the tail and append/rerender the ending."
+            )
 
     if tail.checked and tail.mostly_silent is True:
         score -= 18
         issues.append(f"Final {tail.seconds:g}s are mostly silent")
-        suggestions.append("Check whether the narration ended early or the outro is dead air.")
+        suggestions.append(
+            "Check whether the narration ended early or the outro is dead air."
+        )
     elif not tail.checked:
         score -= 4
-        suggestions.append("Tail audio could not be checked; run on a machine with ffmpeg available.")
+        suggestions.append(
+            "Tail audio could not be checked; run on a machine with ffmpeg available."
+        )
 
     if transcript.checked and transcript.final_words_found is False:
         score -= 22
         issues.append("Transcript does not include the script ending")
-        suggestions.append("The spoken/rendered ending likely does not match the source script.")
+        suggestions.append(
+            "The spoken/rendered ending likely does not match the source script."
+        )
 
     if treatment:
         if require_youtube_treatment and not treatment.description_present:
             score -= 10
             issues.append("YouTube description/treatment text is missing")
-            suggestions.append("Provide --description or --description-file before upload planning.")
+            suggestions.append(
+                "Provide --description or --description-file before upload planning."
+            )
         if require_youtube_treatment and not treatment.cta_present:
             score -= 8
-            issues.append("YouTube treatment lacks subscribe/notification-bell CTA language")
-            suggestions.append("Add a short subscribe/bell CTA to the description or closing script.")
+            issues.append(
+                "YouTube treatment lacks subscribe/notification-bell CTA language"
+            )
+            suggestions.append(
+                "Add a short subscribe/bell CTA to the description or closing script."
+            )
         if require_youtube_treatment and not treatment.captions_present:
             score -= 15
             issues.append("Caption/transcript artifact is missing")
-            suggestions.append("Pass --captions or --transcript so the upload has a caption source.")
+            suggestions.append(
+                "Pass --captions or --transcript so the upload has a caption source."
+            )
         if require_youtube_treatment and not treatment.multilingual_ready:
             suggestions.append(
                 "Multilingual captions are a Phase 2 gate; current requirement is source-language captions."
@@ -420,10 +539,14 @@ def score_inspection(
 
     score = max(0, min(100, score))
     ready = score >= min_score and not any(
-        marker in issue.lower() for issue in issues for marker in ("does not exist", "no video stream", "zero")
+        marker in issue.lower()
+        for issue in issues
+        for marker in ("does not exist", "no video stream", "zero")
     )
     if ready:
-        suggestions.append("Upload as unlisted first, then review on YouTube before making public.")
+        suggestions.append(
+            "Upload as unlisted first, then review on YouTube before making public."
+        )
     return score, ready, issues, suggestions
 
 
@@ -465,13 +588,21 @@ def inspect_video(
         min_score=min_score,
         require_youtube_treatment=require_youtube_treatment,
     )
-    upload_command = build_upload_command(video_file, title, script_path, description_text) if ready else None
+    upload_command = (
+        build_upload_command(video_file, title, script_path, description_text)
+        if ready
+        else None
+    )
     understandings = {
         "container_probe": {
             "duration_seconds": media.duration_seconds,
             "video_streams": media.video_streams,
             "audio_streams": media.audio_streams,
-            "resolution": f"{media.width}x{media.height}" if media.width and media.height else None,
+            "resolution": (
+                f"{media.width}x{media.height}"
+                if media.width and media.height
+                else None
+            ),
         },
         "script_plan": asdict(script),
         "audio_tail": asdict(tail),
@@ -519,7 +650,19 @@ def write_report(report: InspectionReport, output_path: Path | None) -> Path:
 
 def export_tail(video_file: Path, output_file: Path, seconds: float) -> int:
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    result = run(["ffmpeg", "-y", "-sseof", f"-{seconds:g}", "-i", str(video_file), "-c", "copy", str(output_file)])
+    result = run(
+        [
+            "ffmpeg",
+            "-y",
+            "-sseof",
+            f"-{seconds:g}",
+            "-i",
+            str(video_file),
+            "-c",
+            "copy",
+            str(output_file),
+        ]
+    )
     if result.returncode == 0:
         return 0
     fallback = run(
@@ -544,7 +687,9 @@ def export_tail(video_file: Path, output_file: Path, seconds: float) -> int:
     return fallback.returncode
 
 
-def export_frames(video_file: Path, output_dir: Path, *, fps: float = 1.0, every_frame: bool = False) -> int:
+def export_frames(
+    video_file: Path, output_dir: Path, *, fps: float = 1.0, every_frame: bool = False
+) -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
     pattern = output_dir / "frame_%06d.jpg"
     vf = "fps=1" if every_frame else f"fps={fps:g}"
@@ -565,7 +710,9 @@ def export_frames(video_file: Path, output_dir: Path, *, fps: float = 1.0, every
         "frame_count": len(frames),
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
-    (output_dir / "frames_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    (output_dir / "frames_manifest.json").write_text(
+        json.dumps(manifest, indent=2), encoding="utf-8"
+    )
     print(f"Frames: {len(frames)}")
     print(f"Manifest: {output_dir / 'frames_manifest.json'}")
     return 0
@@ -576,16 +723,22 @@ def concat_line(path: Path) -> str:
     return f"file '{escaped}'\n"
 
 
-def append_ending(video_file: Path, ending_file: Path, output_file: Path, *, reencode: bool = False) -> int:
+def append_ending(
+    video_file: Path, ending_file: Path, output_file: Path, *, reencode: bool = False
+) -> int:
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".txt", delete=False) as handle:
+    with tempfile.NamedTemporaryFile(
+        "w", encoding="utf-8", suffix=".txt", delete=False
+    ) as handle:
         concat_path = Path(handle.name)
         handle.write(concat_line(video_file))
         handle.write(concat_line(ending_file))
     try:
         command = ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_path)]
         if reencode:
-            command.extend(["-c:v", "libx264", "-c:a", "aac", "-movflags", "+faststart"])
+            command.extend(
+                ["-c:v", "libx264", "-c:a", "aac", "-movflags", "+faststart"]
+            )
         else:
             command.extend(["-c", "copy"])
         command.append(str(output_file))
@@ -593,13 +746,18 @@ def append_ending(video_file: Path, ending_file: Path, output_file: Path, *, ree
         if result.returncode != 0:
             print(result.stderr, file=sys.stderr)
             if not reencode:
-                print("Concat copy failed. Retry with --reencode if the clips use different codecs.", file=sys.stderr)
+                print(
+                    "Concat copy failed. Retry with --reencode if the clips use different codecs.",
+                    file=sys.stderr,
+                )
         return result.returncode
     finally:
         concat_path.unlink(missing_ok=True)
 
 
-def print_report_summary(report: InspectionReport, report_path: Path | None = None) -> None:
+def print_report_summary(
+    report: InspectionReport, report_path: Path | None = None
+) -> None:
     print(f"Video: {report.file}")
     print(f"Readiness: {report.readiness_score}/100")
     print(f"Ready for upload: {'YES' if report.ready_for_upload else 'NO'}")
@@ -615,19 +773,40 @@ def print_report_summary(report: InspectionReport, report_path: Path | None = No
             print(f"- {suggestion}")
     if report.upload_command:
         print("\nUpload command:")
-        print(" ".join(f'"{item}"' if " " in item else item for item in report.upload_command))
+        print(
+            " ".join(
+                f'"{item}"' if " " in item else item for item in report.upload_command
+            )
+        )
 
 
 def add_common_inspect_args(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--file", required=True, type=Path, help="Rendered video file to inspect")
-    parser.add_argument("--script", type=Path, help="Original script/article text used to render narration")
     parser.add_argument(
-        "--transcript", type=Path, help="Optional transcript/caption text to compare against the script"
+        "--file", required=True, type=Path, help="Rendered video file to inspect"
     )
-    parser.add_argument("--captions", type=Path, help="Caption/subtitle artifact intended for upload")
+    parser.add_argument(
+        "--script",
+        type=Path,
+        help="Original script/article text used to render narration",
+    )
+    parser.add_argument(
+        "--transcript",
+        type=Path,
+        help="Optional transcript/caption text to compare against the script",
+    )
+    parser.add_argument(
+        "--captions", type=Path, help="Caption/subtitle artifact intended for upload"
+    )
     parser.add_argument("--description", help="YouTube description/treatment text")
-    parser.add_argument("--description-file", type=Path, help="File containing YouTube description/treatment text")
-    parser.add_argument("--title", help="YouTube title; enables upload command planning when the gate passes")
+    parser.add_argument(
+        "--description-file",
+        type=Path,
+        help="File containing YouTube description/treatment text",
+    )
+    parser.add_argument(
+        "--title",
+        help="YouTube title; enables upload command planning when the gate passes",
+    )
     parser.add_argument(
         "--require-youtube-treatment",
         action="store_true",
@@ -639,48 +818,75 @@ def add_common_inspect_args(parser: argparse.ArgumentParser) -> None:
         help="Reserve the multilingual caption gate for Phase 2 reports",
     )
     parser.add_argument(
-        "--min-score", type=int, default=DEFAULT_MIN_SCORE, help="Minimum readiness score to plan upload"
+        "--min-score",
+        type=int,
+        default=DEFAULT_MIN_SCORE,
+        help="Minimum readiness score to plan upload",
     )
     parser.add_argument(
-        "--tail-seconds", type=float, default=DEFAULT_TAIL_SECONDS, help="Final seconds to scan for silence"
+        "--tail-seconds",
+        type=float,
+        default=DEFAULT_TAIL_SECONDS,
+        help="Final seconds to scan for silence",
     )
     parser.add_argument(
-        "--words-per-second", type=float, default=DEFAULT_WORDS_PER_SECOND, help="Narration speed estimate"
+        "--words-per-second",
+        type=float,
+        default=DEFAULT_WORDS_PER_SECOND,
+        help="Narration speed estimate",
     )
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Inspect, repair, and plan YouTube uploads for rendered videos.")
+    parser = argparse.ArgumentParser(
+        description="Inspect, repair, and plan YouTube uploads for rendered videos."
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    inspect_parser = subparsers.add_parser("inspect", help="Inspect media and write an upload-readiness report")
+    inspect_parser = subparsers.add_parser(
+        "inspect", help="Inspect media and write an upload-readiness report"
+    )
     add_common_inspect_args(inspect_parser)
     inspect_parser.add_argument("--out", type=Path, help="Inspection JSON path")
 
     plan_parser = subparsers.add_parser(
-        "plan-upload", help="Inspect media and print an unlisted upload command if ready"
+        "plan-upload",
+        help="Inspect media and print an unlisted upload command if ready",
     )
     add_common_inspect_args(plan_parser)
     plan_parser.add_argument("--out", type=Path, help="Inspection JSON path")
 
-    tail_parser = subparsers.add_parser("tail", help="Export the final seconds of a video for quick review")
+    tail_parser = subparsers.add_parser(
+        "tail", help="Export the final seconds of a video for quick review"
+    )
     tail_parser.add_argument("--file", required=True, type=Path)
     tail_parser.add_argument("--seconds", type=float, default=12.0)
     tail_parser.add_argument("--out", required=True, type=Path)
 
-    frames_parser = subparsers.add_parser("frames", help="Export video frames for AI/human visual review")
+    frames_parser = subparsers.add_parser(
+        "frames", help="Export video frames for AI/human visual review"
+    )
     frames_parser.add_argument("--file", required=True, type=Path)
     frames_parser.add_argument("--out-dir", required=True, type=Path)
-    frames_parser.add_argument("--fps", type=float, default=1.0, help="Sampled frames per second")
-    frames_parser.add_argument("--every-frame", action="store_true", help="Export every frame; can be large")
+    frames_parser.add_argument(
+        "--fps", type=float, default=1.0, help="Sampled frames per second"
+    )
+    frames_parser.add_argument(
+        "--every-frame", action="store_true", help="Export every frame; can be large"
+    )
 
     append_parser = subparsers.add_parser(
-        "append-ending", help="Append a fixed ending clip without regenerating the full video"
+        "append-ending",
+        help="Append a fixed ending clip without regenerating the full video",
     )
     append_parser.add_argument("--file", required=True, type=Path)
     append_parser.add_argument("--ending", required=True, type=Path)
     append_parser.add_argument("--out", required=True, type=Path)
-    append_parser.add_argument("--reencode", action="store_true", help="Use when the original and ending codecs differ")
+    append_parser.add_argument(
+        "--reencode",
+        action="store_true",
+        help="Use when the original and ending codecs differ",
+    )
     return parser
 
 
@@ -707,7 +913,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "tail":
         return export_tail(args.file, args.out, args.seconds)
     if args.command == "frames":
-        return export_frames(args.file, args.out_dir, fps=args.fps, every_frame=args.every_frame)
+        return export_frames(
+            args.file, args.out_dir, fps=args.fps, every_frame=args.every_frame
+        )
     if args.command == "append-ending":
         return append_ending(args.file, args.ending, args.out, reencode=args.reencode)
     return 1

@@ -119,7 +119,11 @@ def extract_background(detailed: str) -> str:
 
 
 def extract_detailed_description(detailed: str) -> str:
-    return section(detailed, "DETAILED DESCRIPTION OF PREFERRED EMBODIMENTS", ["CLAIMS"])
+    return section(
+        detailed,
+        "DETAILED DESCRIPTION OF PREFERRED EMBODIMENTS",
+        ["FILING CLAIMS", "CLAIM SUPPORT MAP", "PRIOR ART CITATIONS", "CLAIMS"],
+    )
 
 
 def extract_abstract(abstract_md: str) -> str:
@@ -265,7 +269,7 @@ def build() -> dict:
     abstract = extract_abstract(read(SOURCE_ABSTRACT))
     claims, claim_count = extract_claims(read(SOURCE_CLAIMS))
     assembled_md = make_markdown(background, detailed_description, claims, abstract)
-    OUT_MD.write_text(assembled_md, encoding="utf-8")
+    OUT_MD.write_text(assembled_md, encoding="utf-8", newline="\n")
 
     doc = Document()
     configure_doc(doc)
@@ -334,7 +338,7 @@ def build() -> dict:
             "Drawings remain separate files in docs/legal/patent-figures/.",
         ],
     }
-    OUT_JSON.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    OUT_JSON.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
     return manifest
 
 

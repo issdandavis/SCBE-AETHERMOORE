@@ -651,6 +651,40 @@ def cmd_docs_attest(args: argparse.Namespace) -> int:
     ).returncode
 
 
+def cmd_bench_full(args: argparse.Namespace) -> int:
+    """SCBE Full System Bench v1 — aggregate the project's local lane capabilities."""
+    try:
+        from src.bench.full_bench import run_full_bench
+    except Exception as exc:  # pragma: no cover - import guard
+        print(f"Error: could not load bench harness: {exc}")
+        return 1
+
+    report = run_full_bench()
+
+    if getattr(args, "json_output", False):
+        print(json.dumps(report, indent=2))
+        return 0
+
+    print(f"SCBE Full System Bench v1  ({report['schema_version']})")
+    print(f"  Completed lanes:        {report['completed_lanes']}/10")
+    print(f"  External-ready lanes:   {report['external_ready_lanes']}/10")
+    print(f"  Reproducible artifacts: {report['reproducible_artifacts']}")
+    print(f"  Aggregate local pass:   {report['local_pass_rate'] * 100:.1f}%")
+    print()
+    header = f"  {'LANE':<20} {'STATUS':<17} {'RATE':>5}  {'FIRST TARGET':<26} MEASURES"
+    print(header)
+    print("  " + "-" * (len(header) - 2))
+    for lane in report["lanes"]:
+        rate = lane["local_pass_rate"]
+        rate_s = f"{rate * 100:.0f}%" if isinstance(rate, (int, float)) else "-"
+        print(f"  {lane['lane']:<20} {lane['status']:<17} {rate_s:>5}  "
+              f"{lane['first_target']:<26} {lane['measures']}")
+    print()
+    print(f"  Blocked / not-yet-wired external suites: "
+          f"{', '.join(report['blocked_external_suites'])}")
+    return 0
+
+
 def cmd_selftest(_args: argparse.Namespace) -> int:
     errors = 0
     print("=== SCBE Unified CLI Self-Test ===\n")
@@ -957,6 +991,14 @@ Legacy (backward compat):
     da.add_argument("members", help="Comma-separated: claude,gpt,sonar,grok,gemini")
     da.add_argument("--out", default="training/doc_manifest.json")
     da.set_defaults(func=cmd_docs_attest)
+
+    # ─── bench ───
+    bench = sub.add_parser("bench", help="SCBE Full System Bench v1 — aggregate local lane scorecard")
+    bench_sub = bench.add_subparsers(dest="bench_cmd")
+
+    bf = bench_sub.add_parser("full", help="Run the 10-lane full system bench")
+    bf.add_argument("--json", dest="json_output", action="store_true", help="Emit raw JSON scorecard")
+    bf.set_defaults(func=cmd_bench_full)
 
     # ─── top-level ───
     sub.add_parser("status", help="Project status").set_defaults(func=cmd_status)

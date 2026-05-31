@@ -27,7 +27,7 @@ test('help documents governed shell modes', () => {
   const result = runCli(['--help']);
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /scbe shell\s+Governed AI shell/);
+  assert.match(result.stdout, /shell\s+Rich TUI shell/);
   assert.match(result.stdout, /scbe shell --ai/);
   assert.match(result.stdout, /scbe shell --tui/);
   assert.match(result.stdout, /scbe shell --minimal/);

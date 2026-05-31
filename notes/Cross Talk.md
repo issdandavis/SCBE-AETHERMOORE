@@ -948,3 +948,29 @@
 **Next**: Use artifact path for replay or handoff.
 **Packet ID**: cross-talk-agent-codex-colab-worker-zero-cost-local-0p5b-20260501T014728172190Z
 **Integrity**: d396d0dbf94f9def
+
+## 2026-05-27T21:13:18Z | Codex | XTALK-MANUAL-20260527211318
+
+**Status**: in_progress
+**Packet Class**: internal
+**Intent**: sync
+**Mission**: XTALK-MANUAL-20260527211318
+**Worker**: agent-codex
+**Summary**: command-center smoke packet
+**Proof**: none
+**Next**: review packet
+**Packet ID**: cross-talk-agent-codex-xtalk-manual-20260527211318-20260527T211318160814Z
+**Integrity**: bfcda8def46f5be8
+
+## 2026-05-27T23:45:15Z | Codex | XTALK-MANUAL-20260527234515
+
+**Status**: in_progress
+**Packet Class**: internal
+**Intent**: sync
+**Mission**: XTALK-MANUAL-20260527234515
+**Worker**: agent-codex
+**Summary**: command-center smoke packet
+**Proof**: none
+**Next**: review packet
+**Packet ID**: cross-talk-agent-codex-xtalk-manual-20260527234515-20260527T234515139209Z
+**Integrity**: 6f0ae89107312990

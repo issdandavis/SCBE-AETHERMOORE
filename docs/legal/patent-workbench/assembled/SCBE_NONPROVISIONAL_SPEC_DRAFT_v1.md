@@ -276,7 +276,10 @@ The phase transform is an isometry: it preserves all hyperbolic distances exactl
 d_H(T_phase(u), T_phase(v)) = d_H(u, v)    for all u, v in B^n
 
 
-This preservation is guaranteed by the theory of gyrovector spaces (Ungar, 2008). The isometry property means that the phase transform moves points within the Poincare ball without changing their relative distances -- it is a "rigid motion" of hyperbolic space.
+This preservation follows from the standard gyrovector-space formulation of
+Poincare-ball isometries (Ungar, 2008). The isometry property means that the
+phase transform moves points within the Poincare ball without changing their
+relative distances under the stated metric.
 
 The purpose of the phase transform is to implement secure key rotation and session management: by continuously rotating and translating the embedded space, the system ensures that the same context vector maps to different absolute positions at different times, while the *relative* security assessment (based on distances) remains unchanged.
 
@@ -444,6 +447,8 @@ Lemma 13.1 (Risk Composition Properties): Let Risk' = B * H(d*) * T * I where B 
 Corollary (North-Star Enforcement): Under the stated risk function, deviation from perfect alignment (d* = 0, T = 1, I = 1) increases Risk' above the baseline B. Thus measured deviation contributes to the governance cost.
 
 In the four-tier governance variant, an additional ESCALATE level is inserted between QUARANTINE and DENY for fleet/swarm management scenarios.
+
+In the five-tier governance variant, a REROUTE decision mode provides constructive containment as an alternative to outright denial. When the action text matches a pattern in a configurable reroute table AND an elevated geometric or semantic signal -- specifically, a harmonic cost or spin magnitude above a confirmation threshold -- independently corroborates the match, the gate substitutes a safer replacement action rather than blocking and returning fail-to-noise output. The reroute table maps action patterns (regular expressions over the action text) to replacement action identifiers and human-readable rationale strings; representative entries redirect system file access to a logged-denial stub and redirect external network sends to a log-only handler. REROUTE operates on a separate action path outside the numeric severity escalation chain: it does not compete with ALLOW, QUARANTINE, or DENY in severity comparisons, and a REROUTE result is preserved against subsequent overlay signals that would otherwise escalate toward DENY. The two-signal confirmation requirement -- pattern match plus geometric or semantic corroboration -- substantially reduces false-positive reroutes on benign text that incidentally contains common words matching the reroute pattern.
 
 #### 3.14 Layer 14: Audio Axis (Axiom A10)
 
@@ -865,6 +870,13 @@ The context includes sphere/cube projections (HEALPix or Morton codes) that bind
 
 The system implements a "cheapest reject first" strategy that orders verification stages by computational cost:
 
+Stage 0: Null-Space Anomaly Check -- O(d)
+- Compute the six-dimensional tongue coordinate vector for the action text.
+- Compare each coordinate against the session centroid (or a fixed default baseline when no centroid has been established).
+- If ALL six coordinates are within a predetermined epsilon of the centroid (all deviations < NULL_SPACE_EPSILON), compute anomaly score = max(0.0, 1 - mean_deviation / NULL_SPACE_EPSILON). An adversarial input that deliberately keeps all tongue activations near the centroid is "hiding in the null space" -- the action appears geometrically normal so that the hyperbolic distance to the centroid remains small, evading the harmonic cost wall while carrying adversarial intent.
+- If the standard deviation of the coordinate vector is below a uniformity threshold (e.g., std < 0.03), return anomaly score 0.5 regardless of centroid proximity. Real text activates tongue dimensions unevenly; a flat, unnaturally uniform activation profile is independently suspicious.
+- A nonzero anomaly score is added to the composite risk value before the main hyperbolic distance computation, so null-space hiding is penalized even when the measured distance to the centroid is small.
+
 Stage 1: Intent Match -- O(1)
 - Compare provided intent against expected intent from trajectory
 - Reject if primary or modifier mismatch
@@ -935,12 +947,19 @@ Authorization is granted only when the agent's vector intersects the correct coo
 
 The system implements honeypot challenges using physics-based traps to distinguish legitimate agents from rogue actors:
 
-Variable Swap Trap: The system periodically presents challenges containing swapped or impossible physical variables (e.g., a thermodynamic equation with entropy and enthalpy swapped, or a gravitational calculation with imaginary mass). Legitimate agents, having been trained on correct physics, recognize the impossibility and respond with a diagnostic rejection. Rogue agents, attempting to compute the result naively, produce an output that reveals their compromised state.
+Variable Swap Trap: The system periodically presents challenges containing
+swapped or physically inconsistent variables (e.g., a thermodynamic equation
+with entropy and enthalpy swapped, or a gravitational calculation with imaginary
+mass). A governed agent may recognize the inconsistency and respond with a
+diagnostic rejection, while a compromised agent may attempt to compute the result
+naively and thereby produce a detectable governance signal.
 
 The trap cipher has the following properties:
 
 1. Zero false positives for legitimate agents: The traps use well-known impossibilities (perpetual motion, negative entropy generation, FTL information transfer) that any correctly functioning agent will reject.
-2. High detection rate for compromised agents: A compromised agent that has been adversarially modified will attempt to compute the impossible result, revealing its corruption.
+2. Detection support for compromised agents: A compromised agent that has
+been adversarially modified may attempt to compute the inconsistent result,
+producing a signal that can contribute to a governance decision.
 3. Reduced pre-filtering signal: The trap challenges are formatted as normal computational requests until the agent attempts to solve them, reducing the ability of an adversary to pre-filter traps by surface form alone.
 
 #### 10.3 Corrective Swarm Governance
@@ -1337,12 +1356,32 @@ throws having predicted catch windows, and a governance cost of a task increases
 when a trajectory of the task deviates from a predicted flight arc, such that
 higher-risk tasks are assigned higher arcs and fewer handoffs.
 
-26. The method of claim 4, wherein each axis of the six-axis semantic
-weighting employs a bijective token alphabet in which each token is uniquely
-identified by a prefix element selected from a first predetermined set and a
-suffix element selected from a second predetermined set, such that the complete
-token vocabulary for each axis is a bijective mapping between token strings and
-integer indices, and the token vocabularies of distinct axes are disjoint.
+26. The method of claim 4, wherein each axis of the semantic weighting
+employs a bijective token alphabet comprising a number of tokens equal to the
+Cartesian product of a first predetermined prefix set and a second predetermined
+suffix set, each token uniquely formed by concatenating a prefix element, a
+predetermined separator character, and a suffix element, such that the complete
+token vocabulary for each axis bijects onto a contiguous range of integer byte
+indices, and wherein a serialized token form includes an axis designator that
+makes serialized token vocabularies of distinct axes pairwise disjoint and makes
+the axis of origin of any serialized token determinable from the serialized token
+without additional context.
+
+27. The method of claim 4, wherein each of the six axes of the semantic
+weighting is associated with a respective harmonic frequency ratio selected from
+integer-ratio musical intervals and a phase offset equal to 2*pi*k/6 radians for
+the respective axis index k, such that the six axes are uniformly distributed
+around the unit circle at sixty-degree intervals, and the contribution of each
+axis to the governance signal incorporates a sinusoidal time-varying modulation
+at the respective harmonic frequency and phase offset.
+
+28. The method of claim 26, wherein each axis's token vocabulary constitutes
+a domain-specific entropy encoding in which each byte of a context representation
+maps deterministically to a token in that axis's vocabulary, the semantic content
+of the context thereby constraining available key derivation paths within the
+governance system, such that key derivation paths obtained from serialized
+encodings in distinct axis vocabularies are separated by the pairwise-disjoint
+serialized-vocabulary property.
 
 ## ABSTRACT OF THE DISCLOSURE
 
@@ -1352,10 +1391,10 @@ encoded as six-dimensional context vectors, weighted by successive powers of
 the golden ratio, and embedded into a Poincaré ball model of hyperbolic
 space. Hyperbolic distance between the embedded point and a session centroid
 representing prior authorized behavior drives an exponential authorization
-cost that makes adversarial deviations computationally prohibitive. Governance
+cost that increases as adversarial deviations increase. Governance
 decisions - allow, quarantine, escalate, or deny - combine the authorization
 cost with bijective tamper detection, instruction-safety pattern matching, and
 spectral coherence signals. Denied actions return deterministic pseudorandom
-noise indistinguishable from valid output, providing no information to
-adversaries. Authorized actions receive post-quantum cryptographic receipts
+noise or pseudorandom-looking output rather than a structured denial response.
+Authorized actions receive post-quantum cryptographic receipts
 signed under ML-DSA-65 and encapsulated under ML-KEM-768.

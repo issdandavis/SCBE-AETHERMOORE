@@ -1,0 +1,1079 @@
+If you learned math any time in the last
+few centuries, you probably did a lot of
+this. Pushing around numbers and letters
+inside an equation until an answer pops
+out. It's math with the alphabet, the
+bane of every high schooler's existence.
+But solving for X the way we know it has
+a complicated history. And to see where
+it all began, we can follow the trail of
+written progress backwards
+until that trail ends
+here with this scholar.
+He's writing a practical manual of
+arithmetic for judges and merchants.
+But then he goes further, laying a
+foundation that would be passed down for
+centuries and would one day make the
+modern world possible. The scholar is
+Muhammad Iben Musa alqarazzmi
+and his book was known for short as
+alabra
+algebra. But all those symbols that we
+take for granted would have been
+considered absurd 1200 years ago.
+>> It's a semiodic monstrosity which nobody
+would have ever thought of.
+>> So where did this first algebra book in
+history come from? And why does it look
+so strange to us today?
+This is a story in three parts and it
+begins during a time of lavish
+government funding for science.
+By the turn of the 9th century, the
+Abbasad Caliphate was arguably the
+largest empire in the world and its
+leaders had started a massive project to
+collect and translate the great works of
+ancient wisdom from within its borders
+and beyond.
+literature and philosophy from Persia in
+the northeast of the empire, astronomy
+and arithmetic brought by visiting
+scholars from India east of the empire,
+and Greek philosophy and mathematics
+from ancient texts, some of which had
+long been held by Christian scholars
+within the caliphate. In the middle of
+this sprawling multithnic empire were
+the Tigris and Euphrates rivers. And
+between these rivers on the banks of the
+Tigris was Madinat As Salam, the city of
+peace, also known as Baghdad.
+This capital of the empire was only a
+few decades old, but it was already the
+largest and richest city in the world.
+Protected by a giant moat and a massive
+circular brick wall, the architects of
+the city of peace must have known that
+Baghdad's future wouldn't always be
+peaceful. While some claim that the
+circular layout of the city was a
+tribute to Uklid, the great Greek
+geometer, that is unlikely because even
+though Uklid's work was already a
+thousand years old, the first Arabic
+translation of the elements didn't
+appear until at least a decade after
+Baghdad's founding.
+But this landmark work from the ancient
+Greeks would cast a long shadow over the
+emerging discipline of algebra. See,
+today we know basic algebra as a
+powerful general system for finding
+answers to a wide range of problem types
+using the efficient manipulation of
+symbols which represent variables and
+undetermined values. Because we can do
+things like writing and solving general
+formulas and graphing functions, we use
+basic high school algebra all the time
+to model all sorts of phenomena from
+physics to economics. But for most of
+algebra's history, it was just a way to
+find unknown numbers. And every other
+part of what we think of as algebra came
+together gradually across different
+times and places.
+But all the while lingering in the
+background was the ideal of mathematical
+rigor set out in Uklid's elements and
+its approach to axiomatic deductive
+reasoning. This is the idea that you can
+start with a few simple assumptions and
+build absolute knowledge bit by bit
+using proofs constructed in a series of
+logically undeniable steps. As long as
+you can accept the starting assumptions
+and you give a proof with no logical
+flaws, then a mathematical theorem is
+absolutely true. This approach made math
+and specifically geometry different from
+other branches of science and
+philosophy. But for algebra whose focus
+for many years would be solving problems
+involving numbers, reaching this
+standard would face major hurdles.
+Within Uklid's elements, books 1 through
+6 and 10 through 13 deal with geometry,
+while books 7, 8, and 9 are about number
+theory. The categories are kept separate
+from one another because the rules for
+shapes and magnitudes are completely
+different from the rules for numbers.
+Geometric magnitudes are continuous
+while numbers are made of discrete
+indivisible units. So they don't allow
+for things like irrational values or
+even fractions. And a proof that works
+within geometry doesn't necessarily also
+work for numbers. So in Uklid's
+geometry, he never gives anything in
+numerical measurement. This separation
+between the study of numbers and the
+study of geometry was a key pillar of
+ancient Greek mathematical philosophy.
+But if you wanted to build a house or
+calculate a financial transaction, picky
+theoretical distinctions between numbers
+and magnitudes don't really matter. This
+tension between being useful in the real
+world and meeting this idea of
+theoretical rigor would hang over
+algebra for centuries to come. But the
+scholars of the Abbasid translation
+movement would have also known about
+another tradition of far older math
+whose origins were much closer to home.
+And this tradition would ultimately give
+Alqurzmi an intuitive way to demonstrate
+some of his algebra. Because scattered
+everywhere in the region, mixed in with
+the ruins of past cities from ancient
+Mesopotamia, were indestructible clay
+tablets that revealed the rich legacy of
+Babylonian math. These tablets were dug
+up and translated in the 19th century.
+But it's thought that these traditions
+survived into medieval Baghdad. This
+math revealed powerful techniques for
+solving complex problems, including
+those that we'd described today, using
+quadratic equations. Here's how it
+works. Let's say you've got a rectangle
+and you want to find its dimensions. You
+know it has an area of 39 and you know
+that its width is 10 units longer than
+its length. This tablet gives a problem
+with this exact setup, but I've changed
+the numbers to simpler ones. We start
+with a big rectangle whose area is equal
+to 39. And we break it into two pieces.
+A square with sides equal to the unknown
+length and a rectangle which is 10 units
+wide by that same unknown length. And
+then we break the rectangle into two
+equal pieces like this. So now we've got
+two rectangles which each have one side
+with the unknown length and the other
+side with a length of five. And if we
+rearrange them so they're attached to
+the sides of the square, then we get
+this L shape. And we can think of this
+shape as being like a bigger square
+which has a chunk missing. Because we'd
+split the rectangle in half, we know
+that that missing part is itself also a
+square with sides of length 5. And
+filling that in means we're adding 5 * 5
+= 25 to the total area. In other words,
+we've completed the square.
+Since 39 + 25 gives us a total area of
+64, this is an 8x8 square. And since we
+know that the sides of this square are
+equal to our unknown value + 5, then the
+length of the unknown side is three.
+This approach to problem solving is
+sometimes known as Babylonian cut and
+paste geometry.
+Today we solve problems like this using
+modern algebraic notation which can
+represent a general quadratic equation
+in the form ax^2 + bx + c= 0. Following
+this Babylonian completing the square
+method with our notation gives us the
+modern quadratic formula.
+Except we allow for negative numbers and
+the Babylonians didn't. But it would be
+a mistake to say that we can understand
+much of anything about how the
+Babylonians thought about their math by
+writing it that way because for them
+this really was about cutting up shapes
+and moving them around to solve
+problems. Each tablet describes a
+different ad hoc solution to a different
+problem. And the idea that these
+relationships could be represented by
+general equations and that these
+equations could then be solved by
+applying some kind of unified method is
+nowhere to be found here. Not only that,
+but the Babylonians didn't write about
+practical uses for quadratics. There's
+no textual evidence here or within Greek
+mathematics of quadratic relationships
+being used to solve any real world
+problems.
+One historian thinks that the
+Babylonians mostly studied problems like
+this to help the educated elite train
+their minds and develop problems solving
+skills. Turns out that math teachers
+really have been saying the same things
+for 4,000 years. But we know that math
+is good for more than just mental
+exercise. And in Baghdad, if you knew
+where to look, you would find people
+doing practical math, too.
+As difficult as it was for Abbasid
+scholars to track down ancient wisdom,
+these days it seems like you can find
+out anything about anyone online. My
+partner and I Googled our names recently
+and we instantly found all kinds of
+personal data about our family. Phone
+numbers, past and current addresses,
+phone numbers and addresses of extended
+family, you name it. And that was just
+from a quick search. I'd never tried to
+scrub my data from the internet before
+and I thought it would be a complicated
+process. So, I was amazed by how simple
+it turned out to be with the help of
+this video's sponsor, Incogn. Incogn
+automatically and simultaneously
+searches hundreds of known data brokers,
+online directories, people search sites,
+and more for your personal information
+and sends takedown requests on your
+behalf. Then, they stay with it over
+time, sending follow-up requests to
+ensure that removals stick and
+continuously monitoring for new
+exposures so your information doesn't
+resurface. It's a hands-off system that
+takes care of everything for you. But if
+you do happen to find something that
+Incogn missed, then with the Incogn
+unlimited plan, all you have to do is
+copy the link, drop it in the dashboard,
+and click submit, and the team will
+start working on getting rid of that
+data immediately. It can't take things
+down from government sites or social
+media, but this is the perfect solution
+for easily getting your information out
+of the hands of data brokers. They can't
+harm you if they can't find you. Use
+code cyverson at the link below and get
+60% off an annual plan. Back in 9th
+century Baghdad, the theoretical math
+used by Uklid and the Babylonians wasn't
+the kind of math that would be useful
+for people's daily life. If you wanted
+to find math like that, you'd have to
+look somewhere else entirely. Because as
+goods flowed into the city, merchants
+calculated prices for their wares,
+architects worked out dimensions for new
+constructions, and judges divvied up
+estates according to mathematical rules
+dictated by the Islamic laws of
+inheritance. And the practitioners of
+these time-honored trades were experts
+at the calculations required for their
+daily work. Skilled trades people could
+do powerful mental math. And when they
+needed to keep track of intermediate
+values for larger computations, they
+would have either used a technique
+called finger reckoning to record the
+big numbers. Or they might have used
+Indian notation on an erasable
+dustboard.
+But the only reason we know about this
+stuff at all is because later scholars
+wrote about it. But the field of
+practical arithmetic included more than
+just the basic operations that we think
+of today. It also included problems
+solving techniques that were used to
+find unknown values. One of these was
+called the method of false position.
+Let's say we know that a heap and its
+fourth is 15 and we want to find out the
+size of the original heap.
+We can start by choosing a convenient
+guess. Maybe we guess that the heap has
+four units in it. then the heap plus a
+fourth of itself gives us 5 units. Now,
+that's the wrong answer to our question
+because the number we're looking for is
+15 units.
+But scaling up our heap by a factor of
+three scales the five up to the 15 that
+we're looking for. And that same scaling
+would mean the original value of 4
+becomes 4 * 3 = 12, which is the correct
+answer.
+Of course, in many cases, you'd need to
+scale by a fractional value depending on
+the profession. fractions and even
+irrational numbers like square roots
+were all fair game for computation and
+had been since before ancient Greek
+times. These things obviously show up
+when you're trying to get stuff done in
+the real world. And there's no sense in
+getting hung up here with picky
+philosophical distinctions between
+numbers and magnitudes. These
+practitioners had other methods too,
+like another more sophisticated
+technique called double false position.
+This one originated in ancient China and
+used interpolation of two guesses to
+effectively solve any linear equation.
+And then for dealing with proportions,
+there was also a method known as the
+rule of three. This one is basically the
+same as what you get today when you
+solve an equation using cross
+multiplication.
+But these methods all start with a known
+number or numbers and proceed forward
+from there. None of them actually
+involved naming and manipulating unknown
+values. This is what makes them
+arithmetic procedures instead of
+algebraic.
+But naming unknown numbers and then
+doing math to them would be the key
+first step towards what we think of as
+solving for x. And alongside these
+arithmetic traditions, there were
+methods for this too. As simple as they
+might seem to us today, these versatile
+building blocks will give algebra its
+power to solve a wide variety of
+different types of problems. Start with
+a balancing scale. Let's say that on one
+side we have an unknown quantity which
+has had five units taken out of it and
+we know that what's left is equal to
+three units. By naming one or more
+unknowns that I'm going to do
+mathematical operations with, I've left
+the realm of arithmetic and entered the
+realm of algebra.
+I can restore the full value of this
+unknown by adding the five units back.
+And when I maintain the balance with the
+other side of the scale, I get my
+answer. I can also bring quantities of
+the same type to the same side of an
+equation to simplify. This is what's
+best translated as confrontation. Let's
+pretend we have two unknown things on
+this side and that they're equal to one
+unknown thing plus four coins on the
+other. If we confront the like terms on
+opposite sides of the equation to remove
+them, then we get our solution. These
+operations of restoration and
+confrontation were known as aljabra and
+al mukabella.
+Even though these ideas weren't new,
+they'd surely been floating around for
+millennia. The rules had never been
+explicitly named and written down in a
+book. Books were still the domain of
+scholars, and these methods had been
+passed down through the centuries within
+oral traditions by trades people
+teaching the skills of their profession
+to the next generation.
+But oral traditions are fragile. If the
+practitioners of these methods were to
+dwindle in number or if the lines of
+transmission were to somehow break then
+these practices could be lost forever
+and in 812 civil war came to the city of
+peace. The caiff Harun al-Rashid who had
+ruled the empire for over 20 years
+during a golden age of prosperity and
+culture had died 4 years earlier and he
+left the caliphate to one of his sons
+Alamin. But Alamin was a weak ruler who
+felt threatened by his half-brother
+Al-Mamoon, who was next in line for the
+throne.
+So when Alamin tried to remove Al-Mamoon
+from the line of succession, the ensuing
+conflict spiraled into a civil war,
+culminating in a year-long siege of
+Baghdad.
+By September of 813, Al-Mamoon's army
+penetrated the city's walls, executing
+Al Amin and taking the throne.
+But this wasn't the end of the city's
+troubles. The war had devastated the
+civilian population, many of whom lived
+outside of the circular walls, and
+Alamoon's newfound hold on power was
+initially fragile. Parts of Baghdad were
+in ruins, and the instability meant that
+the caliphate was beginning to lose its
+centralized authority over its sprawling
+empire. But gradually, Al-Mamoon
+consolidated his power. And once he did,
+he sought to finish what his father had
+started, setting the empire on a renewed
+path of scientific inquiry. He
+accelerated the translation initiative,
+and he encouraged new scientific work to
+flourish. In doing so, he brought some
+of the empire's best and brightest
+scholars to Baghdad. This central role
+of Baghdad in Abbasid intellectual life
+is often credited to the house of
+wisdom. Though the implication that this
+was some kind of translation bureau or
+university is now thought to be a myth
+that was created later in Europe. But in
+any case, one scholar who worked in
+Baghdad was Muhammad Iban Musa Al
+Korasmi.
+Very little is known about Al Korasmi's
+life. We do know that he was of Persian
+descent and either he or his ancestors
+came from Quarism, a remote but
+prosperous region which is now part of
+Turk Manistan and Usuzbekiststan.
+He was Muslim but it's possible that he
+converted from Zoroastrianism.
+In any case, Alurasmi soon found himself
+working in Baghdad at the forefront of
+geography, astronomy and astrology, not
+to mention mathematics. So when the
+caiff wanted to codify the practical
+oral math that already existed in the
+streets and marketplaces of the city, he
+turned to Al Horazmi. And while Al
+Porzmi would do what Al-Mamoon asked to
+make clear what was impenetrable and
+make easy what was difficult, he had his
+own plans too. Because in writing his
+manual of algebra, Al Corazmi would
+bring together the practical oral
+traditions of solving linear equations
+with the ancient theoretical techniques
+of solving quadratics into a single
+flexible framework. And while this
+framework would give the template for
+teaching basic algebra for centuries,
+its emphasis on practicality also meant
+that Uklitian style rigor would be
+forever out of reach.
+Let's take a look at the book itself and
+use modern language for a minute to talk
+about what's inside. Alorazmi's book is
+a textbook for solving linear and
+quadratic equations. Negative numbers
+and zero weren't acceptable as solutions
+at the time. And while terms could be
+subtracted from each other, Alcorasmi
+catalogs his equations into six
+canonical types where the only
+operations being used are addition.
+Three are simple equations like this
+which only have two terms each and are
+straightforward to solve. Each one gives
+a single solution that's greater than
+zero. Then there are three compound
+equations which have three terms each.
+Here the terms are moved around so that
+there's no subtraction and he only
+considers versions that can give a
+positive solution. For each of these he
+gives an algorithm to solve the equation
+followed by a geometric demonstration to
+show that his steps work. The next part
+of the book has a bunch of
+simplification rules like how to expand
+binomials and how to do things like
+simplify square roots. But weirdly,
+despite the title of the book, he never
+directly explains the alljabra and all
+mukabola procedures in here. You have to
+pick that up from context, I guess. But
+that's not the only strange thing about
+this book. The structure itself is
+weird, too. He puts the six equation
+types first and then waits till later to
+explain the more basic simplification
+rules, even though you need those to get
+your equation into one of the six types.
+It's backwards from how anyone would
+ever teach it. Other later algebra books
+do present things in what we would call
+the proper order. You introduce the
+names of the unknown. You explain how
+operations work on them. You explain
+equations and how to simplify them. And
+then you get to the six equations and
+their solutions. Alorasmi doesn't do
+that. He starts with the six equations.
+And my guess and and the guess of some
+other people also is that that was
+really his baby. He's very likely the
+person who classified those equations
+and came up with those proofs. So he
+wanted to put that in the forefront and
+he put that right in the beginning.
+>> This pattern of classifying equations
+and then giving the solution method for
+each one would become a template for
+centuries of later authors even after
+they extended their methods to higher
+degree polomials. Next, like any good
+textbook, he's got a bunch of example
+problems. These are set up so that you
+can use the simplification rules to
+reduce each equation down to one of the
+six types. and then you go to the
+beginning of the book and follow the
+steps for solving that type to get the
+solution. He starts with a bunch of
+general equation solving problems and
+contrived sounding word problems
+involving quadratics. And then he has
+chapters with applied problems from
+different disciplines like commerce,
+geometry, and the math involved with
+complex Islamic inheritance scenarios.
+But all of these applied problems are
+solvable with linear equations. He
+doesn't actually give any examples of
+applied quadratics problems. As useful
+as quadratics are for us today, even in
+Alorazmi's time, they were still
+basically just a theoretical exercise.
+Now, to Alorazmi, the way I've been
+describing everything here, using
+equations with variables and general
+coefficients like a, b, and c would have
+made no sense. His book cataloges a
+series of rules and justifications for
+solving different equation types. But
+this algebra is still miles away from
+the algebra that we know where letters
+are used to represent either variables
+or unknown constants which gives us
+everything from a way to express general
+formulas to the ability to work with
+things like functions. In fact, those
+things would have been impossible in
+Alorazmi's time for two very specific
+reasons.
+The first was the nature of books
+themselves.
+>> People had a different relationship with
+books back then. That's what that's what
+it is. Books for transcriptions of
+lectures and you can have illustrations
+in the books like in Nucleus Elements
+you have diagrams that but the diagrams
+are not part of the running text. Well,
+today a math book can use abstract
+notation to efficiently convey complex
+ideas that are difficult to recite out
+loud. At this time, aside from a few
+simple diagrams, everything in a book
+was written out in words, even the
+numbers. But this isn't to say that
+Arabic mathematicians never wrote down
+math in symbols
+>> because they were using the symbols on a
+dustboard to work things out. But then
+if you wanted to communicate that
+calculation in a book, you have to write
+everything out in words. You have to
+describe it. That's what Alarasmi does.
+He describes the processes.
+>> But the differences between medieval
+algebra and the algebra that we know run
+much deeper than just words versus
+symbols. Alorasmi would have considered
+it impossible to write a general
+quadratic equation because of something
+even more fundamental. Numbers. Remember
+the Greeks and their careful separation
+of numbers from geometry? Well, part of
+that was because numbers in preodern
+mathematics didn't mean the same thing
+that they mean to us today.
+At this time, numbers weren't abstract
+things that just existed in and of
+themselves. There's no number three
+that's just out there floating around in
+the universe or existing on a number
+line. Instead, three is an adjective
+which needs to modify a noun. You can
+have three rugs or three vases, but you
+can't just have three on its own.
+And you can't have a negative number of
+a tangible thing either. It's a little
+bit like how we use a word like dozen
+today. You could have a dozen eggs or a
+dozen bagels, but you would never say,
+"Think of the number dozen." So,
+medieval numbers come in what's called
+quantity species pairs. And you need
+both parts for the syntax to make sense.
+This means that when it comes time to
+define our unknown numbers, what we call
+variables, they have to follow the same
+quantity species syntax.
+For us, when we write something like 3x,
+the x stands for a number. The three is
+a number. And the three and the x are
+understood to be multiplied together.
+Right? Well, in Arabic, when they said
+three things, things is not a number.
+Things is a kind of number. If I say
+three dollars, that's not three
+multiplied by dollars. Three is just how
+many dollars you have. Instead of just
+having some abstract number X floating
+in the ether, the unknown is a species,
+a specific unknown thing where you can
+then have some quantity of those unknown
+things.
+Alorazmi refers to his constant numbers
+using the unit of durhams which was a
+type of money but here it just meant
+sort of a generic unit. Then he called
+his unknowns she meaning thing and
+sometimes he also used the word jer
+meaning root. But then squared unknown
+values were a different species of
+thing. So he gave these the term maul.
+Then the relationship between these
+three items becomes a little bit like
+the relationship between different
+denominations of currency. Just like you
+can have eight pennies, three nickels
+and two quarters. You have some number
+of Durham Shay and Maul.
+The unknown sheay works a bit like a
+mystery denomination where we don't know
+its value. And then the mall is like a
+different denomination whose worth is
+equal to the sheay multiplied by itself.
+And for this reason they could not have
+undetermined coefficients. This this is
+a major consequence of this because well
+for us if you look at the bx the b and
+the x are both numbers right. Well if
+you're thinking about it in Arabic terms
+like how many things do you have? You
+you can't there's no word or or symbol
+to designate an unknown amount.
+>> Remember the unknown sheay is a species
+not a quantity. So the notation allows
+for describing an unknown species but
+not an unknown quantity.
+>> It's not just their notation. It's the
+whole way they conceived of monomials
+and polomials. Their notation reflects
+their understanding. So if you wanted to
+say bx, you'd have to have a way to
+represent just the quantity and not the
+whole quantity species pair because you
+can't have 10 units things. That's like
+saying 10° dollars. It's a semiotic
+monstrosity which nobody would have ever
+thought of. So instead of writing
+symbolic formulas using undetermined
+coefficients like we do, Alorazmi leads
+by example, giving specific sample
+problems that the reader would
+extrapolate to other situations.
+>> It's very clear from examples that he
+has a general rule and he's explaining
+the general rule in terms of a
+particular example.
+>> Alorazmi's case number four is amal plus
+a root equal to a constant. For this
+one, he uses the example that we would
+write as x^2 + 10 x = 39. Here's a look
+at the procedure as he describes it.
+After he gives these steps, he gives two
+geometric demonstrations, one of which
+we've seen before,
+because it's exactly the same as the
+procedure that's described on that
+ancient Babylonian clay tablet.
+But Alorasmi can't just demonstrate
+completing the square once for this one
+example. His classification system has
+three different compound quadratic
+equations and the first demonstration
+only works for the first case. So each
+of the other cases needs a new
+demonstration. Here's one more for case
+number five when the square and the
+constant are on one side and the unknown
+is on the other. Let's say we have a
+square + 21= 10 * the unknown root.
+First, we'll construct a square whose
+sides are equal to the unknown. And then
+we can add onto it a rectangle with an
+area of 21.
+We don't know this rectangle's exact
+width since the length of it is the
+unknown value. But what we do know is
+that since the length of this big
+rectangle is the unknown value, its
+total width must be 10. The next step is
+to divide this long rectangle in half.
+So each piece is five by the unknown
+length. Then we get this little margin,
+a piece of the rectangle that's been cut
+off and is on the same side as the
+square. Let's copy that little piece and
+move it up here to the top. The area of
+this L-shaped region is still 21. And
+the little missing region is a square
+whose side length is the same as this
+length down here. If we could find that
+length, then we'd be able to find our
+unknown. We know that this big shape is
+a square with an area of 25 because we
+know that this length plus the unknown
+is once again five. That means that the
+area of the little square has to be 25 -
+21 = 4. So this is a 2x two square. If
+that bit has a length of 2, then we can
+find that our unknown value must be
+three.
+Now you might want to go through this
+demonstration using modern notation. If
+you do that, you'll see that in the end
+we get the quadratic formula just like
+we did with the demonstration of case 4.
+But you might also notice a problem
+because unlike the other example, this
+equation has two positive solutions. In
+fact, at the start, we assumed that the
+rectangle with the area of 21 would be
+wider than the side length of the
+square, meaning that splitting the
+figure in half would split the rectangle
+like this. But if we assume the other
+scenario instead, now the width of the
+rectangle is smaller than the side
+length of the square. So splitting the
+figure in half splits the square
+instead. With this setup, we can also
+get a valid demonstration and the
+correct second solution.
+While Alorasmi notes that you can get a
+second solution, it was up to other
+authors around the same time to actually
+write out the full demonstration for all
+cases. Now to Alurasmi, the point of
+these demonstrations was to convince a
+practitioner, not a theoretical
+mathematician that his techniques work.
+So the rigorous and complicated style of
+Uklid's elements didn't serve his
+purposes and he used the more intuitive
+cut and paste methods of the Babylonians
+instead. After all, Uklid needed 30
+propositions, four definitions, five
+postulates and five common notions just
+to build a square. Not only that, but
+Alurasmi is freely switching back and
+forth between the world of numbers and
+the world of geometry here. Remember
+that for the Greeks, the distinction
+between numbers and magnitudes was a
+foundational idea. Mixing discrete
+numbers with continuous magnitudes
+breaks everything. Later mathematicians
+would try for centuries to close the gap
+between uklitian rigor and algebraic
+practicality. But in the end, this
+fundamental structural divide would be
+impossible to overcome.
+In the years that followed, Arabic
+algebra flourished and subsequent
+generations of mathematicians made major
+breakthroughs. Abu Kamill expanded on
+Alcorasmi's work. His book demonstrated
+examples using irrational coefficients
+and solutions where Alurazmi's examples
+only used integers and fractions. Abu
+Kamill also tried to ground some of his
+rules in Uklid's elements, but the
+tensions were apparent. Later, Alcaraji
+wrote Uklitian style proofs for his
+algebra, but then he had to follow that
+book up with another shorter one that
+was more practical because the Uklitian
+theory was too complicated for
+practitioners.
+Alcaraji also started a movement towards
+what we'd call the arithmetization of
+algebra. The idea that you can do the
+same arithmetic operations on unknowns
+that you can do with numbers. Not only
+that, but he laid out what we now know
+as the binomial theorem and what we call
+Pascal's triangle. Much later, Al Samoal
+expanded on Alcaraji's project. For
+example, he gave a rule for taking the
+square root of a polomial with
+subtracted terms. And separately, Omar
+Cayam used geometric methods to expand
+algebra, including classifying the 14
+forms of cubic equations and using the
+intersections of conic sections to find
+their solutions. In all, the lineage of
+Arabic algebra formed a rich tradition
+that continued for the next 600 years
+after Al Korasmi. But other than Al
+Kurasmi and Abu Kamill, none of this
+work would be known outside of the
+Arabic world until the 1800s.
+While the Abbasa translation movement
+led to a golden age of mathematical and
+scientific progress for the centuries to
+come, the early 9th century ended up
+being the high watermark for the Abbasid
+caliphate itself.
+The end of Almoon's reign marked the
+beginning of a slow decline of the power
+and reach of the empire. Less than a 100
+years after Alorazmi wrote his algebra
+book, the circular walls of Baghdad were
+completely destroyed. Today, no remnants
+of the ancient circular city remain.
+Modern historians can't even agree on
+exactly where it was located. But during
+the 10th century, the rival Umiad caiffs
+in Spain had built one of the largest
+libraries in the world. And they had
+sent emissaries east to buy books from
+within the Abbasid caliphate, including
+the works of Alurazmi and Abu Kamill.
+After the fall of the Umiads, 12th
+century Europeans discovered these books
+and Alcarasmi's algebra would be
+translated into Latin by Robert of
+Chester in 1145 and then later by Gerard
+of Cremona around 1170. By then, this
+math was totally outdated within the
+Abbasid caliphate. But it would take
+Europe another few centuries to catch up
+to what Abbasid mathematicians had
+already accomplished. In 1202, Fibonacci
+wrote Liber Abachi, the first major
+European text on algebra and arithmetic.
+He had picked up this Arabic math in his
+travels, and his book used example
+problems from Abu Kamill. But his book
+didn't explicitly credit any Arabic
+mathematicians. At this time, algebra
+wasn't taught in the medieval
+universities because it was a practical
+tool for trades people as exemplified by
+the Italian abbisonist tradition.
+Sometimes called the last of the
+abbists, Luca Pacioli published his suma
+de arithmetica in 1494. It was a
+comprehensive volume covering the six
+equation types from alqurzmi via
+fibonacci along with the methods of
+Italian abbcists. Pacioli famously
+declared that the general cubic equation
+was unsolvable.
+But soon mathematicians like Tartaglia,
+Cardano and Bombelly found solutions to
+cubic and even cordic equations using
+novel methods like imaginary numbers.
+Throughout these years numbers and
+monomials still referred to quantity
+species pairs and different degrees of
+unknowns had names like kosa, chenzo and
+kubo. So writing a polomial still
+involved writing complicated partially
+rhetorical expressions. And even though
+algebra was useful for finding the right
+answer, finding rigorous mathematical
+truth still meant doing uklitian style
+proofs with axiomatic deductive
+reasoning. That ancient division from
+the Greeks holding that numbers and
+magnitudes were completely separate from
+each other meant that numerical algebra
+would never meet the standards of
+uklitian rigor. For example, geometric
+constructions were still the only way to
+rigorously handle things like irrational
+values. So in 1591, Francois Viet
+introduced the idea of making an algebra
+for geometry. He said that algebra had
+been spoiled and defiled by the
+barbarians, meaning Arabic
+mathematicians. He even tried to get rid
+of the name, calling it the analytic art
+instead of algebra. By tying his
+unknowns to geometric magnitudes instead
+of numbers, he was able to move algebra
+towards the status of a theoretical
+science rather than a practical art. But
+it still didn't resolve the fundamental
+issue of numbers versus magnitudes.
+In the process, Viet introduced the use
+of letters for both unknown and general
+coefficients. His work would set the
+stage for Renee Deart, who first used
+superscripts for exponents, A, B, and C
+for known constants, and X, Y, and Z for
+unknown values. By the second half of
+the 18th century, Leonard Oiler's work
+expanded the capabilities of algebra and
+in the process gave us the standardized
+notation that we still would recognize
+today.
+Although by today's standards, even
+Oilers's algebra falls short of what we
+consider to be fully rigorous.
+Ultimately, Uklid's elements would have
+to be abandoned altogether as the
+arbiter of rigor in favor of a new
+foundation based on abstract axioms that
+aren't grounded in the tangible world.
+But working our way forward through
+history like this doesn't really give us
+the full picture. We might be tempted to
+infer transmission and influence at
+times where none actually occurred. For
+example, Alurasmi was not the first
+person to ever write about doing
+algebra.
+Sometime around the mid200s AD lived the
+Greek mathematician Daphantis.
+Not only could he solve quadratic
+relationships like the Babylonians did,
+but he had devised methods to work with
+indeterminate equations going up to the
+9th degree. And for this reason, some
+consider him to be the founder of
+algebra.
+A few centuries after Daphantis over in
+India in the 600s lived Brahmagupta. He
+used quadratic equations to solve
+problems related to astronomy. And even
+though he wrote out his methods in
+verse, his technique for solving a
+quadratic is essentially identical to
+today's quadratic formula. There's no
+evidence that Brahmagupta made any
+attempt to justify his rules with
+anything that looks like a proof. In
+fact, it's clear that both Daphantis and
+Brahmagupta were doing math that was
+more sophisticated than Alorasmi's math.
+But to understand the textual tradition,
+we shouldn't just look at a
+chronological series of events across
+the world and say that's how things
+happened. Instead, we should take a more
+forensic approach and try to reconstruct
+a chain of transmission.
+If we put a pin at someone like Oiler,
+whose work looks basically like modern
+algebra and trace our way backwards,
+we'll get a different picture. Many
+books during these years attributed the
+birth of algebra to Alqurasmi. But
+sometimes they were confused about when
+he lived, even imagining that he
+preceded the ancient Greeks. Others said
+that Alcarasmi shares credit with
+Daphantis as well as a third guy named
+Jebber, sometimes Jebber the Arab. It
+turns out that Jebber was actually just
+a mistransation of the word algebra. But
+when we actually trace which books
+influenced which the paths all point
+back to Alurasmi where the trail
+abruptly stops. Because within these
+lines of transmission, no book of
+algebra precedes Alqurasmi's condensed
+book on calculation by restoration and
+confrontation. When we look at it this
+way, even Daphantis comes after Al
+Korasmi. Because even though Daphantis
+lived about 600 years earlier, his work
+wasn't translated and read by Arabic
+mathematicians until about 870, a
+generation after Alurasmi. And Daphantis
+wasn't known to Europeans until much
+later than that when the German
+mathematician Reomantis discovered the
+work around 1463.
+And even though Arabic scholars did
+receive astronomical texts from India
+and they learned what we now call Arabic
+numerals from India, Brahma Gupta's
+algebraic work wasn't translated into
+this lineage until later. Still Indian
+mathematics continued to develop
+independently into the 16th century with
+mathematicians finding things like the
+power series for s cosine and arc
+tangent over a century before calculus
+emerged in Europe. But this tradition
+never spread out of southwestern India
+and it seemed to abruptly die out when
+the chain of transmission from teacher
+to student atrophied.
+So what do we make of Alorazmi the
+person? Besides the handful of his books
+that have survived and that went on to
+plant the seeds of algebra in Europe
+centuries later, almost everything about
+his life is completely lost to history.
+It's vanished alongside the remains of
+medieval Baghdad.
+But yet Al Porasmi's name and work has
+lived on even beyond what I've described
+in this story. In fact, if anything, his
+name has grown in importance over the
+years to the point where today it's
+hiding in plain sight, constantly at the
+tip of everyone's tongue.
+Because algebra wasn't Alurasmi's only
+important work, he also wrote another
+book on Indian arithmetic which codified
+Indian numerals and methods of
+calculation for the Arab world.
+When this book was translated into
+Latin, it gave Europe what they later
+called Arabic numerals.
+The book opens with the phrase so said
+alorasmi
+in Latin. That's dixit algorism.
+>> The algorithm.
+>> The algorithm. The algorithm.
+>> The algorithm.
+>> The algorithm. The algorithm. The
+algorithm. The algorithm. Algorithm. The
+algorithm. The algorithm.
+>> The algorithm.

@@ -1,0 +1,88 @@
+{
+  "app_number": "19691526",
+  "docket": "SCBE-2026-0001",
+  "corpus_adversarial": 36,
+  "corpus_benign": 17,
+  "conditions": [
+    {
+      "condition": "raw",
+      "false_allow_count": 36,
+      "false_allow_rate": 1.0,
+      "false_block_count": 0,
+      "false_block_rate": 0.0,
+      "mean_latency_ms": 0.0,
+      "p95_latency_ms": 0.0,
+      "geometry_reached_pct": 0.0,
+      "audit_complete_pct": 0.0,
+      "decisions": {
+        "ALLOW": 53
+      }
+    },
+    {
+      "condition": "regex",
+      "false_allow_count": 25,
+      "false_allow_rate": 0.6944,
+      "false_block_count": 0,
+      "false_block_rate": 0.0,
+      "mean_latency_ms": 0.01,
+      "p95_latency_ms": 0.04,
+      "geometry_reached_pct": 0.0,
+      "audit_complete_pct": 0.0,
+      "decisions": {
+        "DENY": 8,
+        "REROUTE": 3,
+        "ALLOW": 42
+      }
+    },
+    {
+      "condition": "tongue_gate",
+      "false_allow_count": 27,
+      "false_allow_rate": 0.75,
+      "false_block_count": 0,
+      "false_block_rate": 0.0,
+      "mean_latency_ms": 0.14,
+      "p95_latency_ms": 0.21,
+      "geometry_reached_pct": 1.0,
+      "audit_complete_pct": 1.0,
+      "decisions": {
+        "ALLOW": 44,
+        "REROUTE": 7,
+        "QUARANTINE": 2
+      }
+    },
+    {
+      "condition": "runtime_gate",
+      "false_allow_count": 19,
+      "false_allow_rate": 0.5278,
+      "false_block_count": 4,
+      "false_block_rate": 0.2353,
+      "mean_latency_ms": 0.22,
+      "p95_latency_ms": 0.36,
+      "geometry_reached_pct": 1.0,
+      "audit_complete_pct": 1.0,
+      "decisions": {
+        "ALLOW": 32,
+        "REROUTE": 7,
+        "DENY": 5,
+        "QUARANTINE": 9
+      }
+    },
+    {
+      "condition": "full_route",
+      "false_allow_count": 18,
+      "false_allow_rate": 0.5,
+      "false_block_count": 4,
+      "false_block_rate": 0.2353,
+      "mean_latency_ms": 0.42,
+      "p95_latency_ms": 0.74,
+      "geometry_reached_pct": 1.0,
+      "audit_complete_pct": 1.0,
+      "decisions": {
+        "ALLOW": 31,
+        "REROUTE": 7,
+        "DENY": 6,
+        "QUARANTINE": 9
+      }
+    }
+  ]
+}

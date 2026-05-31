@@ -1,6 +1,6 @@
 {
   "schema_version": "scbe.agentic_os_cli_benchmark.v1",
-  "generated_at": "2026-05-29T22:56:56.652Z",
+  "generated_at": "2026-05-30T01:41:12.674Z",
   "repo_root": "C:\\Users\\issda\\SCBE-AETHERMOORE",
   "benchmark_id": "328dd1aeaf5839e2",
   "summary": {
@@ -8,8 +8,8 @@
     "passed": 16,
     "failed": 0,
     "pass_rate": 1,
-    "median_ms": 12.409,
-    "p95_ms": 3822.292,
+    "median_ms": 4.605,
+    "p95_ms": 804.733,
     "hardening_candidate_count": 11,
     "hardening_passed": 10,
     "hardening_failed": 1,
@@ -46,19 +46,19 @@
     {
       "label": "tool_registry_audit_full_surface",
       "ok": true,
-      "elapsed_ms": 2.739,
+      "elapsed_ms": 1.412,
       "result": {
         "ok": true,
-        "tool_count": 37,
+        "tool_count": 52,
         "surface_counts": {
           "hyperbolic-governance": 4,
-          "bijective-transport": 3,
+          "bijective-transport": 4,
           "runtime-persistence": 2,
-          "tamper-detection": 1,
-          "agent-harness": 15,
+          "tamper-detection": 2,
+          "agent-harness": 27,
           "research-evidence": 9,
           "video-lattice": 1,
-          "atomic-tokenizer": 2,
+          "atomic-tokenizer": 3,
           "unknown": 0
         },
         "missing_required_env": {
@@ -71,7 +71,7 @@
     {
       "label": "semantic_hex_roundtrip:compile add operation across lan",
       "ok": true,
-      "elapsed_ms": 12.409,
+      "elapsed_ms": 4.605,
       "result": {
         "ok": true,
         "input_hash": "8fdf5701f5f75ed5",
@@ -90,7 +90,7 @@
     {
       "label": "semantic_hex_roundtrip:block denied command but preserv",
       "ok": true,
-      "elapsed_ms": 5.055,
+      "elapsed_ms": 3.893,
       "result": {
         "ok": true,
         "input_hash": "1409837270b745e0",
@@ -109,7 +109,7 @@
     {
       "label": "semantic_hex_roundtrip:transform water flow into a comp",
       "ok": true,
-      "elapsed_ms": 0.593,
+      "elapsed_ms": 0.583,
       "result": {
         "ok": true,
         "input_hash": "d9184d81c13fcc1b",
@@ -128,7 +128,7 @@
     {
       "label": "semantic_hex_roundtrip:convert prompt to tokens then re",
       "ok": true,
-      "elapsed_ms": 0.442,
+      "elapsed_ms": 0.314,
       "result": {
         "ok": true,
         "input_hash": "58cb7ed060c5adbf",
@@ -147,7 +147,7 @@
     {
       "label": "compass_plan_forge_cross_domain",
       "ok": true,
-      "elapsed_ms": 1.417,
+      "elapsed_ms": 1.279,
       "result": {
         "ok": true,
         "mode": "compiler",
@@ -191,7 +191,7 @@
     {
       "label": "compass_plan_broadcast_youtube_pipeline",
       "ok": true,
-      "elapsed_ms": 0.175,
+      "elapsed_ms": 0.124,
       "result": {
         "ok": true,
         "mode": "youtube",
@@ -234,7 +234,7 @@
     {
       "label": "compass_plan_council_model_lanes_free_limits",
       "ok": true,
-      "elapsed_ms": 0.35,
+      "elapsed_ms": 0.283,
       "result": {
         "ok": true,
         "mode": "model",
@@ -274,7 +274,7 @@
     {
       "label": "compass_board_rules_source_anchored",
       "ok": true,
-      "elapsed_ms": 0.253,
+      "elapsed_ms": 0.172,
       "result": {
         "ok": true,
         "mechanic_count": 5,
@@ -322,7 +322,7 @@
     {
       "label": "agentic_pazaak_board_default_moves",
       "ok": true,
-      "elapsed_ms": 371.573,
+      "elapsed_ms": 154.615,
       "result": {
         "exit_code": 0,
         "schema": "scbe_agentic_pazaak_board_report_v1",
@@ -372,7 +372,7 @@
     {
       "label": "cross_build_ko_to_ru_add",
       "ok": true,
-      "elapsed_ms": 2871.213,
+      "elapsed_ms": 797.531,
       "result": {
         "exit_code": 0,
         "stdout_chars": 388,
@@ -390,7 +390,7 @@
     {
       "label": "cross_build_av_to_dr_xor",
       "ok": true,
-      "elapsed_ms": 3030.093,
+      "elapsed_ms": 798.836,
       "result": {
         "exit_code": 0,
         "stdout_chars": 383,
@@ -408,7 +408,7 @@
     {
       "label": "cross_build_broadcast_add_all_tongues",
       "ok": true,
-      "elapsed_ms": 3822.292,
+      "elapsed_ms": 804.733,
       "result": {
         "exit_code": 0,
         "stdout_chars": 422,
@@ -424,7 +424,7 @@
     {
       "label": "cross_build_list_ops_64",
       "ok": true,
-      "elapsed_ms": 1536.12,
+      "elapsed_ms": 798.366,
       "result": {
         "exit_code": 0,
         "stdout_chars": 1094,
@@ -438,7 +438,7 @@
     {
       "label": "cross_build_quarantine_arbitrary_code",
       "ok": true,
-      "elapsed_ms": 1313.773,
+      "elapsed_ms": 791.466,
       "result": {
         "exit_code": 2,
         "stdout_chars": 179,
@@ -452,7 +452,7 @@
     {
       "label": "pipeline_state_init_governed_lane",
       "ok": true,
-      "elapsed_ms": 245.705,
+      "elapsed_ms": 171.901,
       "result": {
         "schema_version": "scbe.agent_bus.governed_state_summary.v1",
         "session_id": "bench-agentic-os",
@@ -473,7 +473,7 @@
       "source_paths": ["src/geoseal_cli.py", "src/tokenizer/ss1.ts"],
       "ok": true,
       "maturity": "hold-internal",
-      "elapsed_ms": 2923.863,
+      "elapsed_ms": 1273.716,
       "exit_code": 0,
       "result": {
         "version": "geoseal-binary-tokenizer-map-v1",
@@ -496,7 +496,7 @@
       ],
       "ok": true,
       "maturity": "hold-internal",
-      "elapsed_ms": 3078.822,
+      "elapsed_ms": 964.925,
       "exit_code": 0,
       "result": {
         "schema_version": "scbe_lightning_indexer_v1",
@@ -513,7 +513,7 @@
       "source_paths": ["src/symphonic/multipath/op_binary.py"],
       "ok": true,
       "maturity": "hold-internal",
-      "elapsed_ms": 1056.657,
+      "elapsed_ms": 264.558,
       "exit_code": 0,
       "result": {
         "stdout_chars": 805,
@@ -529,7 +529,7 @@
       "source_paths": ["scripts/probe_attention_fft.py", "src/minimal/mirror_problem_fft.py"],
       "ok": true,
       "maturity": "hold-internal",
-      "elapsed_ms": 1501.87,
+      "elapsed_ms": 393.73,
       "exit_code": 0,
       "result": {
         "record_type": "attention_fft_probe_v1",
@@ -546,7 +546,7 @@
       "source_paths": ["scripts/system/storage_compaction_lab.py", "src/crypto/octree.py"],
       "ok": true,
       "maturity": "candidate-ready-internal",
-      "elapsed_ms": 835.646,
+      "elapsed_ms": 294.1,
       "exit_code": 0,
       "result": {
         "experiment": "storage_compaction_lab",
@@ -566,7 +566,7 @@
       ],
       "ok": true,
       "maturity": "candidate-ready-internal",
-      "elapsed_ms": 1334.547,
+      "elapsed_ms": 319.268,
       "exit_code": 0,
       "result": {
         "experiment": "storage_interaction_mesh",
@@ -583,7 +583,7 @@
       "source_paths": ["scripts/system/run_core_python_checks.py"],
       "ok": true,
       "maturity": "candidate-ready-internal",
-      "elapsed_ms": 283.31,
+      "elapsed_ms": 131.398,
       "exit_code": 0,
       "result": {
         "command_count": 33,
@@ -599,7 +599,7 @@
       "source_paths": ["scripts/system/system_card_deck.py"],
       "ok": false,
       "maturity": "flag-for-hardening",
-      "elapsed_ms": 294.856,
+      "elapsed_ms": 145.402,
       "exit_code": 1,
       "result": {
         "exit_code": 1
@@ -617,7 +617,7 @@
       ],
       "ok": true,
       "maturity": "candidate-ready-internal",
-      "elapsed_ms": 0.989,
+      "elapsed_ms": 1.662,
       "exit_code": 0,
       "result": {
         "relation": "space commerce origin for SCBE fleet/governance concepts",
@@ -639,7 +639,7 @@
       ],
       "ok": true,
       "maturity": "candidate-ready-internal",
-      "elapsed_ms": 1.579,
+      "elapsed_ms": 1.931,
       "exit_code": 0,
       "result": {
         "relation": "Polly Pads and grade-level governance predate SCBE Sacred Tongue tiers",
@@ -662,7 +662,7 @@
       ],
       "ok": true,
       "maturity": "flag-for-sync-review",
-      "elapsed_ms": 1.762,
+      "elapsed_ms": 2.212,
       "exit_code": 0,
       "result": {
         "relation": "older Spiralverse IP packet should stay synced but not merged blindly",

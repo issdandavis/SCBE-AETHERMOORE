@@ -1,0 +1,13 @@
+{
+  "id": "issacizrealdavis/scbe-chain-integrity-bench",
+  "title": "SCBE Aethermoore — Chain Integrity Benchmark",
+  "code_file": "scbe_chain_integrity_bench.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": "true",
+  "enable_gpu": "false",
+  "enable_internet": "false",
+  "dataset_sources": [],
+  "competition_sources": [],
+  "kernel_sources": []
+}

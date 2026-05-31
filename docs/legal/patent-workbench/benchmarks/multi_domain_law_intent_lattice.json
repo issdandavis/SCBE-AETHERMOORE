@@ -1,0 +1,477 @@
+{
+  "axes": [
+    "volition",
+    "knowledge",
+    "foreseeability",
+    "risk_disregard",
+    "preparation",
+    "concealment",
+    "harm_link",
+    "repair_response"
+  ],
+  "case_count": 4,
+  "cases": [
+    {
+      "axis_values": {
+        "concealment": 0.78,
+        "foreseeability": 0.8,
+        "harm_link": 0.82,
+        "knowledge": 0.85,
+        "preparation": 0.88,
+        "repair_response": 0.1,
+        "risk_disregard": 0.65,
+        "volition": 0.9
+      },
+      "domains": [
+        {
+          "basis": "Intent and knowledge: means to engage in conduct or is aware consequence will occur ordinarily.",
+          "caution": "Rome Statute crimes may include special mental elements outside Article 30.",
+          "classification": "strong",
+          "domain_id": "icc_article_30",
+          "label": "International criminal law Article 30",
+          "semantic_similarity": 0.8656,
+          "support_score": 0.8243,
+          "threshold": 0.6
+        },
+        {
+          "basis": "Purpose, knowledge, recklessness, negligence; intent inferred from acts and circumstances.",
+          "caution": "Distinguish motive from intent and read the governing statute.",
+          "classification": "strong",
+          "domain_id": "common_law_mens_rea",
+          "label": "Common law / MPC mens rea",
+          "semantic_similarity": 0.9348,
+          "support_score": 0.7991,
+          "threshold": 0.56
+        },
+        {
+          "basis": "Direct or indirect intent, conditional intent, and negligence framed through codes.",
+          "caution": "Code text controls; dolus eventualis treatment varies by jurisdiction.",
+          "classification": "strong",
+          "domain_id": "civil_law_dolus_culpa",
+          "label": "Civil-law dolus / culpa",
+          "semantic_similarity": 0.9329,
+          "support_score": 0.799,
+          "threshold": 0.55
+        },
+        {
+          "basis": "Guilty intention/criminal responsibility with strict proof rules in some offense categories.",
+          "caution": "Evidentiary rules vary strongly by offense class and jurisdiction.",
+          "classification": "strong",
+          "domain_id": "islamic_criminal_responsibility",
+          "label": "Islamic-law criminal responsibility",
+          "semantic_similarity": 0.9232,
+          "support_score": 0.761,
+          "threshold": 0.58
+        },
+        {
+          "basis": "Responsibility inferred through harm, relational breach, warnings, repair, and community context.",
+          "caution": "This is a comparative abstraction, not one unified formal code.",
+          "classification": "strong",
+          "domain_id": "restorative_customary_responsibility",
+          "label": "Restorative/customary responsibility",
+          "semantic_similarity": 0.8669,
+          "support_score": 0.6957,
+          "threshold": 0.5
+        }
+      ],
+      "expected_high_domains": [
+        "common_law_mens_rea",
+        "civil_law_dolus_culpa",
+        "icc_article_30"
+      ],
+      "facts": [
+        "Actor researched the target system.",
+        "Actor selected a method that predictably caused the prohibited effect.",
+        "Actor concealed logs afterward."
+      ],
+      "inverse_criminality_space": {
+        "class": "dark_core",
+        "dark_space_score": 0.7674,
+        "meaning": "Adverse-inference region: high knowledge/risk/preparation/concealment/harm with low repair response. This is not a conviction metric."
+      },
+      "label": "Planned targeted action with concealment",
+      "packet_id": "planned_targeted_action",
+      "supported_domains": [
+        "icc_article_30",
+        "common_law_mens_rea",
+        "civil_law_dolus_culpa",
+        "islamic_criminal_responsibility",
+        "restorative_customary_responsibility"
+      ]
+    },
+    {
+      "axis_values": {
+        "concealment": 0.2,
+        "foreseeability": 0.82,
+        "harm_link": 0.78,
+        "knowledge": 0.72,
+        "preparation": 0.3,
+        "repair_response": 0.25,
+        "risk_disregard": 0.92,
+        "volition": 0.45
+      },
+      "domains": [
+        {
+          "basis": "Direct or indirect intent, conditional intent, and negligence framed through codes.",
+          "caution": "Code text controls; dolus eventualis treatment varies by jurisdiction.",
+          "classification": "supported",
+          "domain_id": "civil_law_dolus_culpa",
+          "label": "Civil-law dolus / culpa",
+          "semantic_similarity": 0.9105,
+          "support_score": 0.6299,
+          "threshold": 0.55
+        },
+        {
+          "basis": "Intent and knowledge: means to engage in conduct or is aware consequence will occur ordinarily.",
+          "caution": "Rome Statute crimes may include special mental elements outside Article 30.",
+          "classification": "supported",
+          "domain_id": "icc_article_30",
+          "label": "International criminal law Article 30",
+          "semantic_similarity": 0.8141,
+          "support_score": 0.6262,
+          "threshold": 0.6
+        },
+        {
+          "basis": "Responsibility inferred through harm, relational breach, warnings, repair, and community context.",
+          "caution": "This is a comparative abstraction, not one unified formal code.",
+          "classification": "supported",
+          "domain_id": "restorative_customary_responsibility",
+          "label": "Restorative/customary responsibility",
+          "semantic_similarity": 0.9319,
+          "support_score": 0.6041,
+          "threshold": 0.5
+        },
+        {
+          "basis": "Purpose, knowledge, recklessness, negligence; intent inferred from acts and circumstances.",
+          "caution": "Distinguish motive from intent and read the governing statute.",
+          "classification": "supported",
+          "domain_id": "common_law_mens_rea",
+          "label": "Common law / MPC mens rea",
+          "semantic_similarity": 0.8668,
+          "support_score": 0.5985,
+          "threshold": 0.56
+        },
+        {
+          "basis": "Guilty intention/criminal responsibility with strict proof rules in some offense categories.",
+          "caution": "Evidentiary rules vary strongly by offense class and jurisdiction.",
+          "classification": "supported",
+          "domain_id": "islamic_criminal_responsibility",
+          "label": "Islamic-law criminal responsibility",
+          "semantic_similarity": 0.8737,
+          "support_score": 0.5817,
+          "threshold": 0.58
+        }
+      ],
+      "expected_high_domains": [
+        "common_law_mens_rea",
+        "civil_law_dolus_culpa",
+        "restorative_customary_responsibility"
+      ],
+      "facts": [
+        "Actor received a warning.",
+        "Actor proceeded without safeguards.",
+        "The harm matched the warned-of risk."
+      ],
+      "inverse_criminality_space": {
+        "class": "shadow_region",
+        "dark_space_score": 0.5418,
+        "meaning": "Adverse-inference region: high knowledge/risk/preparation/concealment/harm with low repair response. This is not a conviction metric."
+      },
+      "label": "Known risk consciously disregarded",
+      "packet_id": "reckless_known_risk",
+      "supported_domains": [
+        "civil_law_dolus_culpa",
+        "icc_article_30",
+        "restorative_customary_responsibility",
+        "common_law_mens_rea",
+        "islamic_criminal_responsibility"
+      ]
+    },
+    {
+      "axis_values": {
+        "concealment": 0.02,
+        "foreseeability": 0.2,
+        "harm_link": 0.35,
+        "knowledge": 0.18,
+        "preparation": 0.05,
+        "repair_response": 0.9,
+        "risk_disregard": 0.14,
+        "volition": 0.12
+      },
+      "domains": [
+        {
+          "basis": "Responsibility inferred through harm, relational breach, warnings, repair, and community context.",
+          "caution": "This is a comparative abstraction, not one unified formal code.",
+          "classification": "weak",
+          "domain_id": "restorative_customary_responsibility",
+          "label": "Restorative/customary responsibility",
+          "semantic_similarity": 0.7859,
+          "support_score": 0.2982,
+          "threshold": 0.5
+        },
+        {
+          "basis": "Guilty intention/criminal responsibility with strict proof rules in some offense categories.",
+          "caution": "Evidentiary rules vary strongly by offense class and jurisdiction.",
+          "classification": "weak",
+          "domain_id": "islamic_criminal_responsibility",
+          "label": "Islamic-law criminal responsibility",
+          "semantic_similarity": 0.5786,
+          "support_score": 0.2255,
+          "threshold": 0.58
+        },
+        {
+          "basis": "Direct or indirect intent, conditional intent, and negligence framed through codes.",
+          "caution": "Code text controls; dolus eventualis treatment varies by jurisdiction.",
+          "classification": "weak",
+          "domain_id": "civil_law_dolus_culpa",
+          "label": "Civil-law dolus / culpa",
+          "semantic_similarity": 0.4539,
+          "support_score": 0.1838,
+          "threshold": 0.55
+        },
+        {
+          "basis": "Intent and knowledge: means to engage in conduct or is aware consequence will occur ordinarily.",
+          "caution": "Rome Statute crimes may include special mental elements outside Article 30.",
+          "classification": "weak",
+          "domain_id": "icc_article_30",
+          "label": "International criminal law Article 30",
+          "semantic_similarity": 0.4049,
+          "support_score": 0.1823,
+          "threshold": 0.6
+        },
+        {
+          "basis": "Purpose, knowledge, recklessness, negligence; intent inferred from acts and circumstances.",
+          "caution": "Distinguish motive from intent and read the governing statute.",
+          "classification": "weak",
+          "domain_id": "common_law_mens_rea",
+          "label": "Common law / MPC mens rea",
+          "semantic_similarity": 0.4179,
+          "support_score": 0.1689,
+          "threshold": 0.56
+        }
+      ],
+      "expected_high_domains": [],
+      "facts": [
+        "Actor did not prepare the harmful event.",
+        "Actor lacked notice of the specific risk.",
+        "Actor stopped and repaired damage immediately."
+      ],
+      "inverse_criminality_space": {
+        "class": "star_bearing",
+        "dark_space_score": 0.0,
+        "meaning": "Adverse-inference region: high knowledge/risk/preparation/concealment/harm with low repair response. This is not a conviction metric."
+      },
+      "label": "Accident with immediate repair behavior",
+      "packet_id": "accident_with_repair",
+      "supported_domains": []
+    },
+    {
+      "axis_values": {
+        "concealment": 0.22,
+        "foreseeability": 0.88,
+        "harm_link": 0.86,
+        "knowledge": 0.94,
+        "preparation": 0.4,
+        "repair_response": 0.18,
+        "risk_disregard": 0.45,
+        "volition": 0.42
+      },
+      "domains": [
+        {
+          "basis": "Intent and knowledge: means to engage in conduct or is aware consequence will occur ordinarily.",
+          "caution": "Rome Statute crimes may include special mental elements outside Article 30.",
+          "classification": "supported",
+          "domain_id": "icc_article_30",
+          "label": "International criminal law Article 30",
+          "semantic_similarity": 0.8855,
+          "support_score": 0.6785,
+          "threshold": 0.6
+        },
+        {
+          "basis": "Direct or indirect intent, conditional intent, and negligence framed through codes.",
+          "caution": "Code text controls; dolus eventualis treatment varies by jurisdiction.",
+          "classification": "supported",
+          "domain_id": "civil_law_dolus_culpa",
+          "label": "Civil-law dolus / culpa",
+          "semantic_similarity": 0.9316,
+          "support_score": 0.642,
+          "threshold": 0.55
+        },
+        {
+          "basis": "Guilty intention/criminal responsibility with strict proof rules in some offense categories.",
+          "caution": "Evidentiary rules vary strongly by offense class and jurisdiction.",
+          "classification": "supported",
+          "domain_id": "islamic_criminal_responsibility",
+          "label": "Islamic-law criminal responsibility",
+          "semantic_similarity": 0.8916,
+          "support_score": 0.5914,
+          "threshold": 0.58
+        },
+        {
+          "basis": "Purpose, knowledge, recklessness, negligence; intent inferred from acts and circumstances.",
+          "caution": "Distinguish motive from intent and read the governing statute.",
+          "classification": "supported",
+          "domain_id": "common_law_mens_rea",
+          "label": "Common law / MPC mens rea",
+          "semantic_similarity": 0.8592,
+          "support_score": 0.591,
+          "threshold": 0.56
+        },
+        {
+          "basis": "Responsibility inferred through harm, relational breach, warnings, repair, and community context.",
+          "caution": "This is a comparative abstraction, not one unified formal code.",
+          "classification": "supported",
+          "domain_id": "restorative_customary_responsibility",
+          "label": "Restorative/customary responsibility",
+          "semantic_similarity": 0.9117,
+          "support_score": 0.5887,
+          "threshold": 0.5
+        }
+      ],
+      "expected_high_domains": [
+        "civil_law_dolus_culpa",
+        "icc_article_30"
+      ],
+      "facts": [
+        "Actor did not desire the consequence.",
+        "Actor knew the consequence would occur in ordinary course.",
+        "Actor continued the conduct anyway."
+      ],
+      "inverse_criminality_space": {
+        "class": "shadow_region",
+        "dark_space_score": 0.5692,
+        "meaning": "Adverse-inference region: high knowledge/risk/preparation/concealment/harm with low repair response. This is not a conviction metric."
+      },
+      "label": "Knowledge without desire to cause the consequence",
+      "packet_id": "knowledge_without_purpose",
+      "supported_domains": [
+        "icc_article_30",
+        "civil_law_dolus_culpa",
+        "islamic_criminal_responsibility",
+        "common_law_mens_rea",
+        "restorative_customary_responsibility"
+      ]
+    }
+  ],
+  "cautious_language": "This lattice compares semantic support for intent-like mental elements across selected legal traditions. The inverse criminality space marks adverse-inference darkness, not guilt. Real legal outcomes depend on the jurisdiction, offense, evidence rules, burden of proof, and fact finder.",
+  "generated_at": "2026-05-29T05:57:10.226348+00:00",
+  "law_domains": [
+    {
+      "basis": "Purpose, knowledge, recklessness, negligence; intent inferred from acts and circumstances.",
+      "caution": "Distinguish motive from intent and read the governing statute.",
+      "domain_id": "common_law_mens_rea",
+      "label": "Common law / MPC mens rea",
+      "threshold": 0.56,
+      "weights": [
+        0.24,
+        0.19,
+        0.14,
+        0.14,
+        0.1,
+        0.09,
+        0.07,
+        0.03
+      ]
+    },
+    {
+      "basis": "Direct or indirect intent, conditional intent, and negligence framed through codes.",
+      "caution": "Code text controls; dolus eventualis treatment varies by jurisdiction.",
+      "domain_id": "civil_law_dolus_culpa",
+      "label": "Civil-law dolus / culpa",
+      "threshold": 0.55,
+      "weights": [
+        0.2,
+        0.22,
+        0.18,
+        0.12,
+        0.08,
+        0.07,
+        0.1,
+        0.03
+      ]
+    },
+    {
+      "basis": "Intent and knowledge: means to engage in conduct or is aware consequence will occur ordinarily.",
+      "caution": "Rome Statute crimes may include special mental elements outside Article 30.",
+      "domain_id": "icc_article_30",
+      "label": "International criminal law Article 30",
+      "threshold": 0.6,
+      "weights": [
+        0.26,
+        0.26,
+        0.2,
+        0.05,
+        0.07,
+        0.04,
+        0.1,
+        0.02
+      ]
+    },
+    {
+      "basis": "Guilty intention/criminal responsibility with strict proof rules in some offense categories.",
+      "caution": "Evidentiary rules vary strongly by offense class and jurisdiction.",
+      "domain_id": "islamic_criminal_responsibility",
+      "label": "Islamic-law criminal responsibility",
+      "threshold": 0.58,
+      "weights": [
+        0.22,
+        0.2,
+        0.12,
+        0.1,
+        0.08,
+        0.08,
+        0.11,
+        0.09
+      ]
+    },
+    {
+      "basis": "Responsibility inferred through harm, relational breach, warnings, repair, and community context.",
+      "caution": "This is a comparative abstraction, not one unified formal code.",
+      "domain_id": "restorative_customary_responsibility",
+      "label": "Restorative/customary responsibility",
+      "threshold": 0.5,
+      "weights": [
+        0.13,
+        0.14,
+        0.14,
+        0.13,
+        0.06,
+        0.06,
+        0.18,
+        0.16
+      ]
+    }
+  ],
+  "metrics": {
+    "axis_count": 8,
+    "dark_core_cases": 1,
+    "domain_count": 5,
+    "expected_domain_coverage_cases": 4,
+    "expected_domain_coverage_rate": 1.0,
+    "star_bearing_cases": 1
+  },
+  "purpose": "Map observable intent evidence onto multi-domain legal semantic bases.",
+  "schema": "scbe_multi_domain_law_intent_lattice_v1",
+  "sources": [
+    {
+      "name": "Cornell Wex intent",
+      "url": "https://www.law.cornell.edu/wex/intent",
+      "use": "Common-law intent and circumstantial evidence framing."
+    },
+    {
+      "name": "Cornell Wex criminal intent",
+      "url": "https://www.law.cornell.edu/wex/criminal_intent",
+      "use": "MPC-style culpability categories."
+    },
+    {
+      "name": "Rome Statute Article 30",
+      "url": "https://ihl-databases.icrc.org/en/ihl-treaties/icc-statute-1998/article-30",
+      "use": "International criminal law intent and knowledge standard."
+    },
+    {
+      "name": "Islam, mental health and law overview",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5498891/",
+      "use": "Islamic-law recognition of mens rea/criminal responsibility."
+    }
+  ]
+}

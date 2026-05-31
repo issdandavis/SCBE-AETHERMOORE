@@ -1,0 +1,95 @@
+{
+  "schema": "scbe_patent_tracker_v1",
+  "last_updated": "2026-05-30",
+  "docket": "SCBE-2026-0001",
+  "application_number": "19/691,526",
+  "application_number_compact": "19691526",
+  "status": "filed_paid_pending_formal_receipt_or_next_notice",
+  "priority": {
+    "provisional_application": "63/961,403",
+    "provisional_filing_date": "2026-01-15"
+  },
+  "evidence": {
+    "post_filing_docket": "docs/legal/patent-workbench/post_filing_docket_2026-05-30.md",
+    "application_status": "docs/legal/patent-workbench/application_status.md",
+    "payment_receipt": "docs/legal/filing-packet-scbe-2026-0001/04_FILED_RECEIPTS/USPTO_ELECTRONIC_PAYMENT_RECEIPT_APP_19-691526_2026-05-28.pdf",
+    "filing_receipt_snapshot": "docs/legal/filing-packet-scbe-2026-0001/04_FILED_RECEIPTS/FILING_RECEIPT_SNAPSHOT_APP_19-691526.md",
+    "filed_spec": "docs/legal/filing-packet-scbe-2026-0001/01_SUBMIT_THESE_TO_PATENT_CENTER/SCBE_NONPROVISIONAL_SPEC_v1.docx",
+    "rejection_likelihood_and_fallbacks": "docs/legal/patent-workbench/rejection_likelihood_and_fallbacks_2026-05-30.md",
+    "value_position_evidence": "docs/legal/patent-workbench/value_position_evidence_2026-05-30.md"
+  },
+  "tasks": [
+    {
+      "id": "PT-001",
+      "status": "done",
+      "target": "2026-05-28",
+      "task": "File non-provisional and pay fees"
+    },
+    {
+      "id": "PT-002",
+      "status": "open",
+      "target": "ASAP",
+      "task": "Save formal filing receipt from Patent Center"
+    },
+    {
+      "id": "PT-003",
+      "status": "open",
+      "target": "recurring",
+      "task": "Check for OPAP or other formality notice"
+    },
+    {
+      "id": "PT-004",
+      "status": "open",
+      "target": "2026-08-28",
+      "task": "IDS review window check under MPEP 609.04(b)"
+    },
+    {
+      "id": "PT-005",
+      "status": "open",
+      "target": "before_foreign_or_pct_action",
+      "task": "Confirm foreign filing license status"
+    },
+    {
+      "id": "PT-006",
+      "status": "open",
+      "target": "2027-01-15",
+      "task": "Foreign/PCT priority strategy review"
+    },
+    {
+      "id": "PT-007",
+      "status": "in_progress",
+      "target": "ongoing",
+      "task": "Build Office Action response bench"
+    },
+    {
+      "id": "PT-008",
+      "status": "in_progress",
+      "target": "ongoing",
+      "task": "Maintain continuation/CIP candidate log"
+    },
+    {
+      "id": "PT-009",
+      "status": "open",
+      "target": "on_formal_filing_receipt",
+      "task": "Record publication expectation"
+    },
+    {
+      "id": "PT-010",
+      "status": "open",
+      "target": "on_first_substantive_uspto_action",
+      "task": "Create deadline calculator entry"
+    },
+    {
+      "id": "PT-011",
+      "status": "done",
+      "target": "2026-05-30",
+      "task": "Create rejection likelihood and fallback memo"
+    },
+    {
+      "id": "PT-012",
+      "status": "done",
+      "target": "2026-05-30",
+      "task": "Create value/evidence memo for public-safe worth statement"
+    }
+  ]
+}

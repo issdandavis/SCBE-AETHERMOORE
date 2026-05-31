@@ -187,7 +187,7 @@ ABSTRACT = (
 )
 
 # ---------------------------------------------------------------------------
-# 26 Claims
+# 28 Claims
 # ---------------------------------------------------------------------------
 CLAIMS = [
     # --- Independent Claim 1 ---
@@ -261,29 +261,30 @@ CLAIMS = [
     (
         6, False,
         "The method of claim 1, further comprising maintaining a hash-indexed "
-        "adversarial-memory set and a hash-indexed safe-memory set, and, prior "
-        "to said transforming, returning a deny decision for a request whose "
-        "content hash is a member of the adversarial-memory set, and returning "
+        "adversarial-memory set and a hash-indexed safe-memory set, and returning "
+        "a deny decision for a request whose content hash is a member of the "
+        "hash-indexed adversarial-memory set without computing a hyperbolic distance, and returning "
         "an allow decision for a request whose content hash is a member of the "
-        "safe-memory set, in each case without computing the hyperbolic distance."
+        "hash-indexed safe-memory set without computing a hyperbolic distance."
     ),
     (
         7, False,
         "The method of claim 1, further comprising, responsive to a deny "
         "decision, generating a deterministic pseudorandom-looking noise output by "
         "computing a seed as a cryptographic hash of a fixed prefix concatenated "
-        "with a content hash of the denied request, iteratively re-hashing the "
+        "with a content hash of the request, iteratively re-hashing the "
         "seed until a target length is reached, and returning the noise output "
         "in place of an error response, such that the noise output is identical "
-        "for identical denied requests and is reproducible by an auditor from "
+        "for the same request and is reproducible by an auditor from "
         "the content hash."
     ),
     (
         8, False,
-        "The method of claim 1, further comprising periodically persisting, to "
+        "The method of claim 6, further comprising periodically persisting, to "
         "a durable store, at least the session centroid, a cumulative governance "
-        "cost, a query count, a trust history, and the adversarial-memory set of "
-        "claim 6; and, after a process restart, restoring the persisted values "
+        "cost, a query count, a trust history, and the hash-indexed adversarial-memory set, "
+        "collectively referred to as the persisted values; "
+        "and, after a process restart, restoring the persisted values "
         "so that the session continues from the restored trajectory rather than "
         "from a cold start."
     ),
@@ -305,9 +306,9 @@ CLAIMS = [
         "        calculate a harmonic governance cost from the measured drift "
         "using a nonlinear cost function that increases as the drift increases;\n"
         "        apply a decision gate to the harmonic governance cost and one or "
-        "more auxiliary signals; and\n"
-        "        route the proposed action according to allow, review, quarantine, "
-        "or deny;\n"
+        "more auxiliary signals to produce a governance decision; and\n"
+        "        route the proposed action according to the governance decision, "
+        "which is one of allow, review, quarantine, or deny;\n"
         "    wherein the session centroid is updated from prior proposed actions "
         "within a session, and the persistent runtime state is restored after a "
         "process restart."
@@ -339,22 +340,23 @@ CLAIMS = [
         12, False,
         "The system of claim 9, wherein, responsive to an allow decision, the "
         "system computes a content-addressed identifier of the proposed action as "
-        "a cryptographic hash of a canonical representation, signs the identifier "
-        "together with an authorization score and a timestamp using a post-quantum "
-        "digital signature algorithm in accordance with FIPS 204 (ML-DSA-65), "
-        "encapsulates a session key using a post-quantum key-encapsulation "
-        "mechanism in accordance with FIPS 203 (ML-KEM-768), and returns a "
-        "structured receipt comprising the decision, the score, signal "
-        "identifiers, the timestamp, the signature, and a key-encapsulation "
-        "ciphertext; and wherein a downstream executor verifies the signature "
-        "before executing the allowed action."
+        "a cryptographic hash of a canonical representation, produces a digital "
+        "signature by signing the identifier together with an authorization score "
+        "and a timestamp under a post-quantum digital signature algorithm in "
+        "accordance with FIPS 204 (ML-DSA-65), encapsulates a session key using "
+        "a post-quantum key-encapsulation mechanism in accordance with FIPS 203 "
+        "(ML-KEM-768) to produce a key-encapsulation ciphertext, and returns a "
+        "structured receipt comprising the governance decision, the authorization "
+        "score, one or more signal identifiers, the timestamp, the digital "
+        "signature, and the key-encapsulation ciphertext; and wherein a downstream "
+        "executor verifies the digital signature before executing the proposed action."
     ),
     (
         13, False,
         "The system of claim 9, wherein the system emits an audit receipt "
-        "comprising at least the decision, the harmonic governance cost, signal "
-        "identifiers, and decision-relevant metadata including a session query "
-        "count and a cumulative cost."
+        "comprising at least the governance decision, the harmonic governance cost, "
+        "one or more signal identifiers, and decision-relevant metadata including "
+        "a session query count and a cumulative cost."
     ),
     (
         14, False,
@@ -384,8 +386,8 @@ CLAIMS = [
         "threshold;\n"
         "    wherein the tamper signal is distinct from a tokenizer "
         "reconstruction-quality measure in that it is derived from a comparison "
-        "of abstract syntax tree representations and gates execution of a "
-        "proposed action."
+        "of abstract syntax tree representations and gates execution of the "
+        "proposed computational action."
     ),
     (
         16, False,
@@ -434,28 +436,31 @@ CLAIMS = [
         "authorization container that is unlocked only when N predetermined "
         "predicates are satisfied, where N is at least three, the predicates "
         "including at least: a semantic predicate evaluating whether the context "
-        "representation of the proposed action satisfies an authorized semantic "
+        "representation of the computational action satisfies an authorized semantic "
         "profile; a geometric predicate measuring whether the embedded point lies "
         "within a predetermined hyperbolic distance from the session centroid; "
         "and a cryptographic predicate verifying a post-quantum signature; "
         "wherein failure of any predicate causes the container to return a noise "
-        "or pseudorandom-looking output generated by the fail-to-noise function "
-        "of claim 7 rather than a structured predicate-failure response."
+        "or pseudorandom-looking output generated by computing a cryptographic "
+        "hash over a fixed prefix and a content hash of the computational action and "
+        "iteratively re-hashing the result until a predetermined output length "
+        "is reached, rather than a structured predicate-failure response."
     ),
     (
         22, False,
-        "The method of claim 21, wherein the noise output is generated by the "
-        "deterministic re-hashing of claim 7, such that a repeated failure path "
-        "for the same denied request produces an audit-reproducible output of "
-        "a predetermined length while avoiding disclosure of which predicate "
-        "failed."
+        "The method of claim 21, wherein the noise or pseudorandom-looking "
+        "output is generated by a deterministic re-hashing sequence seeded by "
+        "the content hash of the computational action, such that a repeated "
+        "failure path for the same computational action produces an audit-"
+        "reproducible output of the predetermined output length while avoiding "
+        "disclosure of which predicate failed."
     ),
     (
         23, False,
         "The method of claim 1, further comprising: prior to emitting the "
         "governance decision, determining whether the computational action matches "
         "a predetermined reroute rule associated with a class of actions; and, "
-        "when a match is found, substituting a replacement action for the proposed "
+        "when a match is found, substituting a replacement action for the "
         "computational action and emitting an allow decision for the replacement "
         "action, such that high-risk classes of actions are redirected to "
         "lower-risk alternatives without exposing a denial response to the "
@@ -516,12 +521,29 @@ CLAIMS = [
         "of a context representation maps uniquely to a token in that axis's "
         "vocabulary, the semantic content of the context thereby constraining the "
         "specific tokens produced within each axis's vocabulary; and wherein the "
-        "pairwise-disjoint serialized-vocabulary property ensures that the same "
-        "byte sequence encoded under distinct axes produces structurally distinct "
-        "token sequences, such that axis-specific encodings of the same input are "
-        "mutually distinguishable without decoding."
+        "pairwise-disjoint arrangement of the serialized vocabularies ensures "
+        "that the same byte sequence encoded under distinct axes produces "
+        "structurally distinct token sequences, such that axis-specific encodings "
+        "of the same input are mutually distinguishable without decoding."
     ),
 ]
+
+
+# ---------------------------------------------------------------------------
+# Paragraph numbering (USPTO [0001] format)
+# ---------------------------------------------------------------------------
+_para_counter = 0
+
+
+def _reset_para_counter() -> None:
+    global _para_counter
+    _para_counter = 0
+
+
+def _next_para_num() -> str:
+    global _para_counter
+    _para_counter += 1
+    return f"[{_para_counter:04d}]"
 
 
 # ---------------------------------------------------------------------------
@@ -584,15 +606,21 @@ def sub_heading(doc: Document, text: str) -> None:
     _fmt_run(r, bold=True, size=12)
 
 
-def body(doc: Document, text: str) -> None:
+def body(doc: Document, text: str, numbered: bool = True) -> None:
     for block in text.split("\n\n"):
         block = block.strip()
         if not block:
             continue
         p = doc.add_paragraph()
         _set_spacing(p, before=0, after=6)
-        p.paragraph_format.first_line_indent = Inches(0.5)
-        r = p.add_run(block)
+        if numbered:
+            p.paragraph_format.first_line_indent = Pt(0)
+            num_run = p.add_run(_next_para_num() + "    ")
+            _fmt_run(num_run, bold=True)
+            r = p.add_run(block)
+        else:
+            p.paragraph_format.first_line_indent = Inches(0.5)
+            r = p.add_run(block)
         _fmt_run(r)
 
 
@@ -694,6 +722,7 @@ def build() -> None:
 
     doc = Document()
     setup_document(doc)
+    _reset_para_counter()
 
     # ---- 1. TITLE --------------------------------------------------------
     p = doc.add_paragraph()
@@ -737,6 +766,9 @@ def build() -> None:
         p = doc.add_paragraph()
         _set_spacing(p, before=3, after=3)
         p.paragraph_format.left_indent = Inches(0.0)
+        p.paragraph_format.first_line_indent = Pt(0)
+        num_run = p.add_run(_next_para_num() + "    ")
+        _fmt_run(num_run, bold=True)
         r1 = p.add_run(f"{fig_label}—")
         _fmt_run(r1, bold=True)
         r2 = p.add_run(fig_desc)
@@ -799,7 +831,7 @@ def build() -> None:
     # ---- 8. ABSTRACT (last page) -----------------------------------------
     page_break(doc)
     section_heading(doc, "ABSTRACT")
-    body(doc, ABSTRACT)
+    body(doc, ABSTRACT, numbered=False)
 
     # ---- Save ------------------------------------------------------------
     doc.save(str(OUTPUT))
