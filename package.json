@@ -99,7 +99,7 @@
     "lint": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"packages/**/*.ts\"",
     "hooks:install": "node scripts/hooks/install.js",
     "prepare": "node scripts/hooks/install.js",
-    "lint:python": "flake8 src/ tests/",
+    "lint:python": "uv run --with flake8 python scripts/dev/run_flake8.py src/ tests/",
     "cli": "python scbe-cli.py",
     "codeprism:build": "python scripts/code_prism_build.py",
     "codeprism:mesh": "python scripts/code_prism_build.py --mesh",
