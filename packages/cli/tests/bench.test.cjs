@@ -32,6 +32,7 @@ test('help documents benchmark evidence lanes', () => {
   assert.match(result.stdout, /bench rubix-browser/);
   assert.match(result.stdout, /bench terminal-adapter/);
   assert.match(result.stdout, /bench chemistry/);
+  assert.match(result.stdout, /bench compound-decompose/);
   assert.match(result.stdout, /bench full/);
   assert.match(result.stdout, /bench circuit/);
   assert.match(result.stdout, /bench list/);
@@ -71,6 +72,7 @@ test('bench list emits registered evidence lanes as JSON', () => {
   assert.ok(payload.lanes.some((lane) => lane.id === 'rubix-browser'));
   assert.ok(payload.lanes.some((lane) => lane.id === 'terminal-adapter'));
   assert.ok(payload.lanes.some((lane) => lane.id === 'chemistry'));
+  assert.ok(payload.lanes.some((lane) => lane.id === 'compound-decompose'));
   assert.ok(payload.lanes.some((lane) => lane.id === 'full'));
   assert.ok(payload.lanes.some((lane) => lane.id === 'circuit'));
 });

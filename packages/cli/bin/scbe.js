@@ -106,6 +106,9 @@ Usage:
     [--json]              atomic tokenizer, chemical fusion, orbital invariants,
     [--inventory-only]    and private-proof-safe hash inventory
     [--open-report]
+  bench compound-decompose
+    [--json]              RDKit long-form compound decomposition/recomposition
+    [--open-report]       through atom mud, descriptors, fragments, receipts
   bench full             Aggregate full-system evidence matrix:
     [--json]              local artifacts, external targets, blockers, and
     [--run-local]          claim boundaries for website/patent-safe claims
@@ -4200,6 +4203,14 @@ const BENCH_TARGETS = {
     claimBoundary:
       'local symbolic chemistry, STISTA atomic-tokenizer, and GeoSeed orbital evidence; not a wet-lab chemistry planner score',
   },
+  'compound-decompose': {
+    script: 'scripts/benchmark/compound_decomposition_recomposition.py',
+    latestJson: 'artifacts/benchmarks/compound_decomposition_recomposition/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/compound_decomposition_recomposition/LATEST.md',
+    description: 'RDKit long-form compound decomposition/recomposition through atom mud',
+    claimBoundary:
+      'computational compound decomposition/recomposition benchmark; not wet-lab synthesis, biological efficacy proof, dosing guidance, or medical advice',
+  },
   full: {
     script: 'scripts/benchmark/scbe_full_system_benchmark.py',
     latestJson: 'artifacts/benchmarks/scbe_full_system/latest_report.json',
@@ -4422,6 +4433,7 @@ function printBenchHelp() {
       '  scbe bench rubix-browser [--json] [--open-report]',
       '  scbe bench terminal-adapter [--json] [--open-report]',
       '  scbe bench chemistry [--json] [--inventory-only] [--open-report]',
+      '  scbe bench compound-decompose [--json] [--open-report]',
       '  scbe bench full [--json] [--run-local] [--quick] [--open-report]',
       '  scbe bench circuit [--json] [--open-report]',
       '  scbe bench bfcl [--export-only] [--endpoint <url>] [--model <name>] [--auth-env <VAR>] [--open-report]',

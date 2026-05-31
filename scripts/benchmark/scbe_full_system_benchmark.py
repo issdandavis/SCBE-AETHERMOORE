@@ -126,6 +126,15 @@ LANES: list[LaneSpec] = [
         run_in_quick=True,
     ),
     LaneSpec(
+        lane_id="compound-decomposition-recomposition",
+        domain="computational chemistry product benchmark",
+        command="python scripts/benchmark/compound_decomposition_recomposition.py",
+        latest_json="artifacts/benchmarks/compound_decomposition_recomposition/latest_report.json",
+        claim_boundary="computational compound decomposition/recomposition benchmark; not wet-lab synthesis, biological efficacy proof, dosing guidance, or medical advice",
+        target="long-form compound dimensional analysis and recomposition",
+        run_in_quick=True,
+    ),
+    LaneSpec(
         lane_id="hard-agentic-pretest",
         domain="external-suite readiness",
         command="python scripts/benchmark/hard_agentic_benchmark_pretest.py",
