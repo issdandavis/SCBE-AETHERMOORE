@@ -156,6 +156,8 @@ Core commands:
     [--json]
   bench latest [lane]    Show latest artifact summary
     [--json]
+  bench dashboard        Emit a website/operator dashboard from evidence lanes
+    [--json] [--write <path>]
   bench prove [lane]     Emit claim-safe proof packet
     [--json] [--write <path>]
 
@@ -4411,6 +4413,139 @@ function printBenchIndex(args) {
   }
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function buildBenchDashboardPayload() {
+  const index = buildBenchIndex();
+  const ready = index.lanes.filter((lane) => lane.artifact_exists);
+  const missing = index.lanes.filter((lane) => !lane.artifact_exists);
+  return {
+    schema_version: 'scbe_bench_dashboard_v1',
+    generated_at_utc: nowIso(),
+    title: 'SCBE Benchmark Evidence Dashboard',
+    commit: index.commit,
+    branch: index.branch,
+    evidence_ready: index.evidence_ready,
+    evidence_total: index.evidence_total,
+    readiness_ratio: index.evidence_total ? index.evidence_ready / index.evidence_total : 0,
+    proof_rule: index.proof_rule,
+    summary: {
+      ready_lanes: ready.map((lane) => lane.id),
+      missing_lanes: missing.map((lane) => lane.id),
+      website_claim_boundary:
+        'Public copy may say evidence-backed local benchmark lanes only when it cites command, artifact path, commit, and claim boundary.',
+    },
+    lanes: index.lanes.map((lane) => ({
+      id: lane.id,
+      description: lane.description,
+      status: lane.artifact_exists ? 'evidence-ready' : 'missing-artifact',
+      command: lane.command,
+      script: lane.script,
+      latest_json: lane.latest_json,
+      latest_markdown: lane.latest_markdown,
+      artifact_hash: lane.artifact_hash,
+      generated_at_utc: lane.generated_at_utc,
+      summary: lane.report_summary || null,
+      claim_boundary: lane.claim_boundary,
+    })),
+  };
+}
+
+function benchDashboardHtml(payload) {
+  const rows = payload.lanes
+    .map((lane) => {
+      const summary = lane.summary ? escapeHtml(JSON.stringify(lane.summary)) : 'No latest artifact yet';
+      return [
+        '<tr>',
+        `<td><strong>${escapeHtml(lane.id)}</strong><br><span>${escapeHtml(lane.description)}</span></td>`,
+        `<td>${escapeHtml(lane.status)}</td>`,
+        `<td><code>${escapeHtml(lane.command)}</code><br><small>${escapeHtml(lane.latest_json)}</small></td>`,
+        `<td>${escapeHtml(lane.artifact_hash || 'missing')}</td>`,
+        `<td>${summary}<br><small>${escapeHtml(lane.claim_boundary)}</small></td>`,
+        '</tr>',
+      ].join('');
+    })
+    .join('\n');
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(payload.title)}</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 32px; color: #15171a; background: #f7f8fa; }
+    main { max-width: 1180px; margin: 0 auto; }
+    h1 { margin-bottom: 6px; }
+    .meta { color: #515861; margin-bottom: 24px; }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .card { background: white; border: 1px solid #dfe3e8; border-radius: 8px; padding: 14px; }
+    .value { font-size: 28px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #dfe3e8; }
+    th, td { padding: 10px; border-bottom: 1px solid #e7eaee; text-align: left; vertical-align: top; font-size: 14px; }
+    th { background: #eef2f6; }
+    code { font-size: 12px; }
+    small, span { color: #59616b; }
+    @media (max-width: 760px) { body { margin: 14px; } .cards { grid-template-columns: 1fr; } table { display: block; overflow-x: auto; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>${escapeHtml(payload.title)}</h1>
+    <div class="meta">Generated ${escapeHtml(payload.generated_at_utc)} from ${escapeHtml(payload.branch)} @ ${escapeHtml(payload.commit)}</div>
+    <section class="cards">
+      <div class="card"><div>Evidence lanes</div><div class="value">${payload.evidence_ready}/${payload.evidence_total}</div></div>
+      <div class="card"><div>Readiness</div><div class="value">${Math.round(payload.readiness_ratio * 100)}%</div></div>
+      <div class="card"><div>Proof rule</div><small>${escapeHtml(payload.proof_rule)}</small></div>
+    </section>
+    <table>
+      <thead><tr><th>Lane</th><th>Status</th><th>Command / Artifact</th><th>Hash</th><th>Summary / Boundary</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </main>
+</body>
+</html>
+`;
+}
+
+function printBenchDashboard(args) {
+  const asJson = args.includes('--json');
+  const writeIndex = args.indexOf('--write');
+  const writePath = writeIndex >= 0 ? args[writeIndex + 1] : null;
+  if (writeIndex >= 0 && !writePath) {
+    process.stderr.write('scbe bench dashboard: --write requires a path.\n');
+    process.exit(2);
+  }
+  const payload = buildBenchDashboardPayload();
+  if (writePath) {
+    const absolute = path.resolve(process.cwd(), writePath);
+    fs.mkdirSync(path.dirname(absolute), { recursive: true });
+    const content = asJson ? `${JSON.stringify(payload, null, 2)}\n` : benchDashboardHtml(payload);
+    fs.writeFileSync(absolute, content, 'utf8');
+    if (!asJson) {
+      process.stdout.write(`wrote ${absolute}\n`);
+      return;
+    }
+  }
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write(`SCBE benchmark dashboard: ${payload.evidence_ready}/${payload.evidence_total} lanes ready\n`);
+  process.stdout.write(`commit: ${payload.commit}\n`);
+  process.stdout.write(`proof: ${payload.proof_rule}\n\n`);
+  for (const lane of payload.lanes) {
+    process.stdout.write(`- ${lane.id}: ${lane.status}\n`);
+    process.stdout.write(`  ${lane.command}\n`);
+  }
+}
+
 // Lanes 40/100: claim-hardened proof packet
 function buildBenchProof(args) {
   const lane = args.find((arg, index) => !arg.startsWith('--') && args[index - 1] !== '--write');
@@ -4504,6 +4639,7 @@ function printBenchHelp() {
       '  scbe bench list [--json]',
       '  scbe bench status [--json]',
       '  scbe bench latest [lane] [--json]',
+      '  scbe bench dashboard [--json] [--write <path>]',
       '  scbe bench prove [lane] [--json] [--write <path>]',
       '  scbe bench index [--json] [--write <path>]',
       '',
@@ -4531,6 +4667,10 @@ function runBench(args) {
   }
   if (sub === 'latest') {
     printBenchLatest(args.slice(1));
+    process.exit(0);
+  }
+  if (sub === 'dashboard') {
+    printBenchDashboard(args.slice(1));
     process.exit(0);
   }
   if (sub === 'prove') {

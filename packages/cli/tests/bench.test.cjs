@@ -148,6 +148,29 @@ test('bench index plain text shows commit and lane status', () => {
   assert.match(result.stdout, /evidence:/);
 });
 
+test('bench dashboard emits website-ready JSON summary', () => {
+  const result = runCli(['bench', 'dashboard', '--json']);
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_bench_dashboard_v1');
+  assert.equal(payload.evidence_total, 10);
+  assert.ok(payload.summary.website_claim_boundary.includes('command'));
+  assert.ok(payload.lanes.every((lane) => typeof lane.claim_boundary === 'string'));
+  assert.ok(payload.lanes.every((lane) => ['evidence-ready', 'missing-artifact'].includes(lane.status)));
+});
+
+test('bench dashboard can write HTML artifact', () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-bench-dashboard-'));
+  const outPath = path.join(outDir, 'dashboard.html');
+  const result = runCli(['bench', 'dashboard', '--write', outPath]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /wrote /);
+  const html = fs.readFileSync(outPath, 'utf8');
+  assert.match(html, /SCBE Benchmark Evidence Dashboard/);
+  assert.match(html, /Proof rule/);
+  assert.match(html, /<table>/);
+});
+
 test('bench unknown lane exits with code 2', () => {
   const result = runCli(['bench', 'notexist']);
   assert.equal(result.status, 2, result.stdout);
