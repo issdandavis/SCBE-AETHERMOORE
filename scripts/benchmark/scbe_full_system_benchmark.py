@@ -109,6 +109,14 @@ LANES: list[LaneSpec] = [
         target="WebArena / BrowserGym / OSWorld",
     ),
     LaneSpec(
+        lane_id="terminal-adapter",
+        domain="terminal execution adapter",
+        command="python scripts/benchmark/terminal_bench_adapter.py",
+        latest_json="artifacts/benchmarks/terminal_bench_adapter/latest_report.json",
+        claim_boundary="local answer-file terminal adapter contract; not an official Terminal-Bench score",
+        target="Terminal-Bench",
+    ),
+    LaneSpec(
         lane_id="hard-agentic-pretest",
         domain="external-suite readiness",
         command="python scripts/benchmark/hard_agentic_benchmark_pretest.py",

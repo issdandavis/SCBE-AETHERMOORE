@@ -99,6 +99,9 @@ Usage:
   bench rubix-browser    Run permission-hypercube browser-control fixture
     [--json]
     [--open-report]
+  bench terminal-adapter Run local Terminal-Bench-style adapter contract
+    [--json]              setup, shell exec, answer.txt, verifier, receipts
+    [--open-report]
   bench full             Aggregate full-system evidence matrix:
     [--json]              local artifacts, external targets, blockers, and
     [--run-local]          claim boundaries for website/patent-safe claims
@@ -4171,6 +4174,14 @@ const BENCH_TARGETS = {
     claimBoundary:
       'local browser-control geometry fixture; not WebArena, BrowserGym, OSWorld, or VisualWebArena score',
   },
+  'terminal-adapter': {
+    script: 'scripts/benchmark/terminal_bench_adapter.py',
+    latestJson: 'artifacts/benchmarks/terminal_bench_adapter/latest_report.json',
+    latestMarkdown: 'artifacts/benchmarks/terminal_bench_adapter/LATEST.md',
+    description: 'local Terminal-Bench-style adapter contract',
+    claimBoundary:
+      'local answer-file terminal adapter contract; not an official Terminal-Bench score',
+  },
   full: {
     script: 'scripts/benchmark/scbe_full_system_benchmark.py',
     latestJson: 'artifacts/benchmarks/scbe_full_system/latest_report.json',
@@ -4383,6 +4394,7 @@ function printBenchHelp() {
       '  scbe bench hard-agentic [--timeout N] [--filter <id>] [--json] [--open-report]',
       '  scbe bench research [--style BrowseComp-style|GAIA-style] [--json] [--open-report]',
       '  scbe bench rubix-browser [--json] [--open-report]',
+      '  scbe bench terminal-adapter [--json] [--open-report]',
       '  scbe bench full [--json] [--run-local] [--quick] [--open-report]',
       '  scbe bench circuit [--json] [--open-report]',
       '  scbe bench list [--json]',
