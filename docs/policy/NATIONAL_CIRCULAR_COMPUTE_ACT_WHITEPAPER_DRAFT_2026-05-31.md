@@ -12,6 +12,38 @@ The core idea is simple: stop treating decommissioned compute, returned hardware
 
 This proposal is designed as a pragmatic extension of existing public infrastructure lanes rather than a new open-ended entitlement. It uses existing federal IT procurement, CHIPS/NSTC semiconductor infrastructure, NAIRR-style AI resource access, Department of Labor apprenticeship mechanisms, and commercial satellite connectivity where terrestrial fiber is not practical.
 
+## Current Federal Market Hooks
+
+As of 2026-05-31, the strongest near-term implementation hooks are defense AI infrastructure and distributed AI governance opportunities, not a direct public-citizen compute program.
+
+### AFRL AI and Next Generation Distributed C2 BAA
+
+Opportunity: FA8750-23-S-7006, "Artificial Intelligence and Next Generation Distributed Command and Control."
+
+Agency: Air Force Research Laboratory, Information Directorate, Rome NY.
+
+Fit: technical white paper lane for SCBE governance, distributed AI-node runtime authorization, HYDRA multi-agent coordination, and tiered risk decisions such as ALLOW, QUARANTINE, ESCALATE, and DENY.
+
+Capture posture: respond-now. This is the low-cost entry path because the BAA uses a two-step white-paper-first process and remains open for rolling submissions through 2028, subject to amendments and funding windows.
+
+### AFCEC Alaska AI Data Center RFLP
+
+Opportunity: AFCEC-26-R-0006, "RFLP Artificial Intelligence (AI) Data Center Development at Joint Base Elmendorf Richardson, Eielson Air Force Base, and Clear Space Force Station."
+
+Agency: Department of the Air Force / Air Force Civil Engineer Center.
+
+Fit: real-world evidence that the Air Force is already testing a federal-land plus commercial-AI-data-center model. This is the closest current infrastructure precedent for the Circular Compute Act's land-use concept.
+
+Capture posture: team-now, not prime-now, unless SCBE has a qualified real-estate, power, data-center, environmental, and base-access partner. The opportunity appears to be a lease/developer vehicle, not an R&D grant.
+
+### Implication for the Act
+
+The policy hook should shift from "CHIPS cleanrooms already exist everywhere" to a more defensible frame:
+
+> Federal land and public-sector procurement can host governed AI infrastructure when paired with private developers, apprenticeships, public access rules, and audit-ready runtime controls.
+
+NAIRR remains useful as a coordination and access precedent. CHIPS/NSTC remains useful as a semiconductor workforce and research precedent. Neither should be presented as a ready-made national citizen-compute hardware backbone.
+
 ## Problem
 
 AI access is increasingly becoming a baseline economic tool, but practical access remains uneven. Citizens, students, small businesses, rural communities, public libraries, and local governments often lack affordable compute, trusted governance, and durable infrastructure.
@@ -168,9 +200,11 @@ These are useful planning placeholders, but they should not be published as conf
 Verified anchors as of 2026-05-31:
 
 - NAIRR exists as an AI resource access initiative focused on researchers, educators, students, and innovators, not as a universal citizen AI utility.
-- NSF and Commerce/NIST have CHIPS/NSTC-related semiconductor research and workforce infrastructure.
+- NSF and Commerce/NIST have CHIPS/NSTC-related semiconductor research and workforce infrastructure, but that does not mean university reclaim labs are already nationally available.
 - Registered Apprenticeship is a Department of Labor system with established registration, oversight, and funding pathways.
 - Starlink offers civil government and federal purchasing paths, but policy text should remain provider-neutral.
+- AFRL FA8750-23-S-7006 provides a live technical white-paper path for AI and next-generation distributed C2.
+- AFCEC-26-R-0006 provides a live federal-land AI data-center precedent through the Alaska RFLP model.
 
 Assumptions requiring further validation:
 
@@ -181,6 +215,7 @@ Assumptions requiring further validation:
 - Starlink or other provider bandwidth guarantees, data-sovereignty terms, and federal pricing.
 - Legal viability of voter-linked access and equal-protection boundaries.
 - Current public Starlink GSA pricing is materially higher than the low-cost draft MOU numbers: the current planning zone is about $2,600 hardware plus $3,100-$18,200/year for fixed Priority service, depending on data tier. Lower numbers should be treated as bulk-negotiation targets, not public-market baselines.
+- Whether SCBE can prime the Alaska RFLP or should only team with a qualified developer, utility, real-estate, or data-center operator.
 
 ## SCBE Product Hook
 
@@ -202,8 +237,10 @@ Near-term product surfaces:
 2. Replace placeholder costs with quote-backed ranges.
 3. Produce one technical node spec with conservative low, expected, and high capacity bands.
 4. Validate the provider-neutral connectivity MOU against real procurement and service pricing.
-5. Draft a one-page policymaker brief and a two-page university partner brief.
-6. Map SCBE modules to the governance and runtime sections without overclaiming exclusivity.
+5. Draft the AFRL BAA white-paper outline for governed distributed AI nodes.
+6. Draft a partner-facing one-pager for the Alaska AI data-center RFLP.
+7. Draft a one-page policymaker brief and a two-page university partner brief.
+8. Map SCBE modules to the governance and runtime sections without overclaiming exclusivity.
 
 ## Source Anchors
 
@@ -215,3 +252,7 @@ Near-term product surfaces:
 - Department of Labor apprenticeship topic page: https://www.dol.gov/general/topic/training/apprenticeship
 - Starlink civil government support page: https://starlink.com/support/article/3ccad59e-9525-9492-9835-d1945a4ee30f
 - Starlink U.S. government purchasing support page: https://starlink.com/xk/support/article/e1744a37-1747-565d-c93c-9bd9afff9e48
+- SAM.gov opportunity link for AFRL FA8750-23-S-7006: https://sam.gov/workspace/contract/opp/029de16a1f234bd0b4f55889f5fa52f0/view
+- Public mirror for AFRL FA8750-23-S-7006: https://samclerk.com/opportunity/dept-of-defense/FA875023S7006
+- SAM.gov opportunity link for AFCEC-26-R-0006: https://sam.gov/workspace/contract/opp/4301462955ea459c9bb022422f18a7e6/view
+- Air Force article on Alaska AI data-center RFLP: https://www.af.mil/News/Article-Display/Article/4456660/daf-takes-steps-for-potential-Alaskan-ai-data-centers/
