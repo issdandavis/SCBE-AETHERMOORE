@@ -19,6 +19,23 @@ Every Phase I work package below should have a standalone SCBE use case, a
 local benchmark or verification path, and a clean handoff into product
 infrastructure before it is treated as proposal evidence.
 
+## 4.0B Capability and Qualification Boundary
+
+This proposal should not imply that SCBE is the most formally credentialed team
+in the applicant pool. Many prospective proposers will have deeper institutional
+credentials, formal academic appointments, larger labs, and longer publication
+records. SCBE's honest position is different: the work is an owner-built system
+with rapid iteration, executable artifacts, local benchmarks, governance gates,
+and a stronger current implementation base than existed at abstract submission.
+
+The technical approach should therefore be written around evidence and
+collaboration rather than pedigree. Where the proposal needs specialized NMR,
+mathematical-physics, IV&V, or program-delivery depth, the draft should either
+name the gap as a Phase I hiring/teaming need or route it through advisor and
+subcontractor support. SCBE should not overclaim credentials it does not have;
+it should show the working machinery, the validation path, and the plan to bring
+more qualified specialists onto the parts that require them.
+
 ## 4.0 Technical Approach Overview
 
 SCBE proposes a TA1 mathematical framework for designing, evaluating, and
