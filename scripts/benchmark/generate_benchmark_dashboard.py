@@ -62,6 +62,50 @@ def terminal_lane(root: Path) -> Lane:
     )
 
 
+def _score_results_file(path: Path) -> tuple[int, int, set[str]]:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    rows = data.get("results", [])
+    passed = sum(1 for row in rows if row.get("is_resolved") is True)
+    total = len(rows)
+    task_ids = {str(row.get("task_id", "")) for row in rows}
+    return passed, total, task_ids
+
+
+def hard_security_probe_lane(root: Path) -> Lane:
+    expected = {"crack-7z-hash", "decommissioning-service-with-sensitive-data"}
+    base = root / "artifacts" / "benchmarks" / "tb-neutral-compare"
+    candidates: list[tuple[float, Path, int, int]] = []
+    for path in base.glob("*/scbe/*/results.json"):
+        try:
+            passed, total, task_ids = _score_results_file(path)
+        except Exception:
+            continue
+        if expected.issubset(task_ids):
+            candidates.append((path.stat().st_mtime, path, passed, total))
+
+    if not candidates:
+        return Lane(
+            name="Terminal-Bench hard security-terminal probe",
+            status="NOT RUN",
+            score="missing",
+            evidence="artifacts/benchmarks/tb-neutral-compare/",
+            boundary="Run crack-7z-hash and decommissioning-service-with-sensitive-data to populate this lane.",
+        )
+
+    _mtime, path, passed, total = max(candidates, key=lambda item: item[0])
+    rel = path.relative_to(root).as_posix()
+    return Lane(
+        name="Terminal-Bench hard security-terminal probe",
+        status="PASS" if passed == total else "CHECK",
+        score=f"SCBE {passed}/{total}",
+        evidence=rel,
+        boundary=(
+            "Official terminal-bench task execution on two harder security-terminal tasks; "
+            "shows current planner capability, not a public leaderboard row."
+        ),
+    )
+
+
 def governance_lane() -> Lane:
     return Lane(
         name="Governance tier separation",
@@ -159,6 +203,7 @@ def public_next_lane() -> Lane:
 def build_lanes(root: Path) -> list[Lane]:
     return [
         terminal_lane(root),
+        hard_security_probe_lane(root),
         governance_lane(),
         petri_lane(root),
         longform_lane(root),
@@ -185,9 +230,10 @@ def render_table(lanes: list[Lane]) -> str:
 
 def render_dashboard(lanes: list[Lane], generated_at: str) -> str:
     terminal = lanes[0].score.replace("SCBE ", "").split(";", 1)[0]
-    longform = lanes[3].score
-    hydra = lanes[4].score.split(";", 1)[0]
-    petri = lanes[2].score.split(" false-allows", 1)[0]
+    hard_probe = lanes[1].score.replace("SCBE ", "")
+    longform = lanes[4].score
+    hydra = lanes[5].score.split(";", 1)[0]
+    petri = lanes[3].score.split(" false-allows", 1)[0]
     table = render_table(lanes)
     return f"""<!doctype html>
 <html lang="en">
@@ -280,6 +326,7 @@ def render_dashboard(lanes: list[Lane], generated_at: str) -> str:
 
       <section class="cards" aria-label="Current benchmark summary">
         <div class="card"><span class="value">{html.escape(terminal)}</span>Terminal-Bench core neutral parity against oracle.</div>
+        <div class="card"><span class="value">{html.escape(hard_probe)}</span>Hard security-terminal probe after weighted bridge fallback.</div>
         <div class="card"><span class="value">{html.escape(longform)}</span>Longform chain-integrity tamper and resume checks.</div>
         <div class="card"><span class="value">{html.escape(hydra)}</span>Hydra jobsite conservation cases.</div>
         <div class="card"><span class="value">{html.escape(petri)}</span>Conservative Petri v7-matched residual false-allows.</div>

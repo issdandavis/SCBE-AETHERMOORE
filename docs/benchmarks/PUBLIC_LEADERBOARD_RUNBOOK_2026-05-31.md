@@ -82,6 +82,14 @@ Observed 2026-05-31 hard security-terminal probe:
 - SCBE result: `artifacts/benchmarks/tb-neutral-compare/20260531T200702Z/scbe/2026-05-31__13-11-22/results.json`;
 - failure mode: SCBE governance logs show `commands: []`, `allow=0`, `quarantine=0`, `deny=0`, and `json-parse-error`; this is planner/model command-generation failure, not a governance block.
 
+Observed 2026-05-31 hard security-terminal rerun after weighted bridge fallback:
+
+- patch commit: `5254937de1b766ae33eb6bfc72ea8ddbce5a021c`;
+- oracle: 2/2, 100%;
+- SCBE: 2/2, 100%;
+- SCBE result: `artifacts/benchmarks/tb-neutral-compare/20260531T202914Z/scbe/2026-05-31__13-33-00/results.json`;
+- governance: both SCBE task commands were QUARANTINE, not DENY or bypass.
+
 Current neutral packet rerun:
 
 ```powershell

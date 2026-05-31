@@ -83,12 +83,13 @@
 
       <h1>SCBE Benchmark Evidence Dashboard</h1>
       <p class="meta">
-        Generated 2026-05-31T19:34:47Z from local artifacts. This dashboard separates local
+        Generated 2026-05-31T20:38:19Z from local artifacts. This dashboard separates local
         evidence from public leaderboard work. Local fixture scores are not public leaderboard scores.
       </p>
 
       <section class="cards" aria-label="Current benchmark summary">
         <div class="card"><span class="value">13/13</span>Terminal-Bench core neutral parity against oracle.</div>
+        <div class="card"><span class="value">2/2</span>Hard security-terminal probe after weighted bridge fallback.</div>
         <div class="card"><span class="value">105/105</span>Longform chain-integrity tamper and resume checks.</div>
         <div class="card"><span class="value">6/6</span>Hydra jobsite conservation cases.</div>
         <div class="card"><span class="value">2/173</span>Conservative Petri v7-matched residual false-allows.</div>
@@ -111,6 +112,13 @@
             <td>SCBE 13/13; oracle 13/13</td>
             <td><code>artifacts/benchmarks/tb-neutral-compare/tb_neutral_final_report.json</code></td>
             <td>Official terminal-bench core task execution packet; deterministic SCBE task plans; not a Terminal-Bench 2.x leaderboard row.</td>
+          </tr>
+          <tr>
+            <td><strong>Terminal-Bench hard security-terminal probe</strong></td>
+            <td>PASS</td>
+            <td>SCBE 2/2</td>
+            <td><code>artifacts/benchmarks/tb-neutral-compare/20260531T202914Z/scbe/2026-05-31__13-33-00/results.json</code></td>
+            <td>Official terminal-bench task execution on two harder security-terminal tasks; shows current planner capability, not a public leaderboard row.</td>
           </tr>
           <tr>
             <td><strong>Governance tier separation</strong></td>

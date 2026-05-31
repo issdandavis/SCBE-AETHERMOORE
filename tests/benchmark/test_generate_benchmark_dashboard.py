@@ -23,6 +23,16 @@ def test_build_lanes_reads_current_artifact_shapes(tmp_path: Path) -> None:
     )
     _write_json(
         tmp_path,
+        "artifacts/benchmarks/tb-neutral-compare/20260531T202914Z/scbe/2026-05-31__13-33-00/results.json",
+        {
+            "results": [
+                {"task_id": "crack-7z-hash", "is_resolved": True},
+                {"task_id": "decommissioning-service-with-sensitive-data", "is_resolved": True},
+            ]
+        },
+    )
+    _write_json(
+        tmp_path,
         "artifacts/benchmarks/longform_chain_integrity_latest.json",
         {"score": {"earned": 105, "max": 105}},
     )
@@ -60,16 +70,18 @@ def test_build_lanes_reads_current_artifact_shapes(tmp_path: Path) -> None:
     lanes = build_lanes(tmp_path)
 
     assert lanes[0].score == "SCBE 13/13; oracle 13/13"
-    assert lanes[2].score == "2/173 false-allows (1.16%) in v7-matched run"
-    assert lanes[3].score == "105/105"
-    assert lanes[4].score == "6/6; conservation 1.0"
-    assert lanes[5].score == "15 artifact-ready lanes; 11 pass; 2 partial"
+    assert lanes[1].score == "SCBE 2/2"
+    assert lanes[3].score == "2/173 false-allows (1.16%) in v7-matched run"
+    assert lanes[4].score == "105/105"
+    assert lanes[5].score == "6/6; conservation 1.0"
+    assert lanes[6].score == "15 artifact-ready lanes; 11 pass; 2 partial"
 
 
 def test_render_dashboard_escapes_artifact_text() -> None:
     html = render_dashboard(
         [
             Lane("Terminal-Bench core neutral parity", "PASS", "SCBE 13/13; oracle 13/13", "a.json", "boundary"),
+            Lane("Terminal-Bench hard security-terminal probe", "PASS", "SCBE 2/2", "a2.json", "boundary"),
             Lane("Governance tier separation", "PASS", "DENY", "b.md", "boundary"),
             Lane("Petri adversarial gate", "PASS", "2/173 false-allows (1.16%) in v7-matched run", "c.md", "boundary"),
             Lane("Longform chain integrity", "PASS", "105/105", "d.json", "boundary"),

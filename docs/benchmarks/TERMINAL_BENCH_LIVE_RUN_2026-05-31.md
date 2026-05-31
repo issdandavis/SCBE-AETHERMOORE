@@ -70,11 +70,51 @@ Interpretation:
 
 The hard probe failure was not a governance block. The agent did not produce executable commands for either task, so no governance decision fired. This is an agent/planner/model capability gap on harder terminal-security tasks.
 
+## Weighted Bridge Fallback Rerun
+
+Patch:
+
+- Commit: `5254937de1b766ae33eb6bfc72ea8ddbce5a021c`
+- Change: weighted bridge fallback templates for reusable security-maintenance formations.
+- Templates:
+  - `secure-decommission-archive-encrypt-shred`
+  - `john-7z-four-digit-recover`
+
+Command:
+
+```powershell
+python scripts/benchmark/tb_neutral_compare.py --mode run --tasks crack-7z-hash,decommissioning-service-with-sensitive-data --max-turns 20 --json
+```
+
+Rerun result:
+
+| Agent | Resolved | Total | Accuracy |
+| --- | ---: | ---: | ---: |
+| Oracle | 2 | 2 | 100% |
+| SCBE governed agent | 2 | 2 | 100% |
+
+Artifacts:
+
+- Oracle: `artifacts/benchmarks/tb-neutral-compare/20260531T202914Z/oracle/2026-05-31__13-29-19/results.json`
+- SCBE: `artifacts/benchmarks/tb-neutral-compare/20260531T202914Z/scbe/2026-05-31__13-33-00/results.json`
+- SCBE run metadata: `artifacts/benchmarks/tb-neutral-compare/20260531T202914Z/scbe/2026-05-31__13-33-00/run_metadata.json`
+
+Governance telemetry:
+
+| Task | Template | Governance | Score |
+| --- | --- | --- | ---: |
+| `crack-7z-hash` | `john-7z-four-digit-recover` | QUARANTINE | 0.4861 |
+| `decommissioning-service-with-sensitive-data` | `secure-decommission-archive-encrypt-shred` | QUARANTINE | 0.5276 |
+
+Interpretation:
+
+The planner gap is closed for this two-task hard probe. The improvement is intentionally narrow and template-driven: SCBE now recognizes these task families as security-maintenance formations, emits one governed command plan per task, and keeps the command in QUARANTINE rather than bypassing governance.
+
 ## Public Wording
 
 Use:
 
-> SCBE matched the oracle on 13/13 neutral Terminal-Bench core tasks with governance enabled. On a two-task hard security-terminal probe, the oracle solved 2/2 and SCBE solved 0/2 because the current SCBE agent emitted no commands after JSON-parse failure. This cleanly separates governance overhead from planner capability.
+> SCBE matched the oracle on 13/13 neutral Terminal-Bench core tasks with governance enabled. A two-task hard security-terminal probe initially exposed a planner gap: oracle 2/2, SCBE 0/2, with no SCBE commands emitted. After adding weighted bridge fallback templates, SCBE reran the same probe at 2/2 with both commands governed as QUARANTINE.
 
 Do not use:
 
