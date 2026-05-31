@@ -120,6 +120,9 @@ Usage:
   bench bfcl             BFCL tool-call adapter: schema export + model eval
     [--export-only]        Schema export + AST validation only (offline)
     [--endpoint <url>]     OpenAI-compat endpoint (default: Ollama localhost)
+  bench tau-bench        tau-bench policy microbench: SCBE governance compliance
+    [--fixture-only]       Validate fixtures only (offline, no model)
+    [--endpoint <url>]     OpenAI-compat endpoint (default: Ollama localhost)
     [--model <name>]       Model name (default: llama3.2)
     [--auth-env <VAR>]     Env var holding Bearer token (e.g. CEREBRAS_API_KEY)
     [--open-report]
@@ -4235,6 +4238,14 @@ const BENCH_TARGETS = {
     claimBoundary:
       'schema export 100% AST-valid; model eval is description-clarity probe against hand-authored cases, not an official BFCL leaderboard score',
   },
+  'tau-bench': {
+    script: 'scripts/benchmark/tau_bench_policy_adapter.py',
+    latestJson: 'artifacts/benchmarks/tau_bench_policy_latest.json',
+    latestMarkdown: 'artifacts/benchmarks/tau_bench_policy_latest.md',
+    description: 'tau-bench-inspired policy microbench: SCBE governance tool selection + ALLOW/QUARANTINE/ESCALATE/DENY compliance (pass --auth-env for model eval)',
+    claimBoundary:
+      '15 hand-authored SCBE governance fixtures with pre-scripted tool responses; measures instruction-following and policy compliance — NOT an official tau-bench leaderboard score',
+  },
 };
 
 function benchLaneRows() {
@@ -4437,6 +4448,7 @@ function printBenchHelp() {
       '  scbe bench full [--json] [--run-local] [--quick] [--open-report]',
       '  scbe bench circuit [--json] [--open-report]',
       '  scbe bench bfcl [--export-only] [--endpoint <url>] [--model <name>] [--auth-env <VAR>] [--open-report]',
+      '  scbe bench tau-bench [--fixture-only] [--endpoint <url>] [--model <name>] [--auth-env <VAR>] [--open-report]',
       '  scbe bench list [--json]',
       '  scbe bench status [--json]',
       '  scbe bench latest [lane] [--json]',
@@ -4481,7 +4493,9 @@ function runBench(args) {
     process.exit(2);
   }
   const openReport = args.includes('--open-report');
-  const forwarded = args.slice(1).filter((arg) => arg !== '--open-report');
+  const forwarded = args.slice(1).filter(
+    (arg) => arg !== '--open-report' && arg !== '--json',
+  );
   const child = spawnSync(pythonCommand(), [scriptPath, ...forwarded], {
     cwd: repoRoot(),
     encoding: 'utf8',
