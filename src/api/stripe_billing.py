@@ -525,10 +525,10 @@ def _send_delivery_email(
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
 
-    smtp_host = os.getenv("SCBE_SMTP_HOST", "smtp.porkbun.com")
+    smtp_host = os.getenv("SCBE_SMTP_HOST", "smtp.protonmail.ch")
     smtp_port = int(os.getenv("SCBE_SMTP_PORT", "587"))
-    smtp_user = os.getenv("SCBE_SMTP_USER", "ai@aethermoore.com")
-    smtp_pass = os.getenv("SCBE_SMTP_PASS", "")
+    smtp_user = os.getenv("SCBE_SMTP_USER") or os.getenv("PM_USER", "")
+    smtp_pass = os.getenv("SCBE_SMTP_PASS") or os.getenv("PM_PW", "")
 
     subject = f"Your {product_name} is ready"
     html_body = f"""<html><body style="font-family: Georgia, serif; color: #333; max-width: 600px;">
@@ -548,7 +548,8 @@ If you have any questions, reply to this email or reach us at ai@aethermoore.com
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
-    msg["From"] = f"AetherMoore <{smtp_user}>"
+    from_addr = os.getenv("PM_FROM") or smtp_user
+    msg["From"] = f"AetherMoore <{from_addr}>"
     msg["To"] = to_email
     msg["Reply-To"] = "ai@aethermoore.com"
     msg.attach(
