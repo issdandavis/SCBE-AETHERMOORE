@@ -110,6 +110,7 @@ from .reaction_state import (
     ReactionStatePacket,
     build_reaction_state_packet,
     classify_reaction,
+    packet_from_dict,
 )
 from .reaction_harness import (
     BijectiveReactionResult,
@@ -160,6 +161,7 @@ __all__ += [
     "ReactionStatePacket",
     "build_reaction_state_packet",
     "classify_reaction",
+    "packet_from_dict",
     "ReactionFieldCheck",
     "BijectiveReactionResult",
     "evaluate_bijective_reaction",

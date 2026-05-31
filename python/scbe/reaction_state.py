@@ -47,6 +47,31 @@ def sha256_value(value: Any) -> str:
     return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
 
 
+def packet_from_dict(data: dict[str, Any]) -> "ReactionStatePacket":
+    """Rehydrate a reaction packet from JSON-compatible data."""
+
+    source = ReactionEndpoint(**data["source"])
+    target = ReactionEndpoint(**data["target"])
+    recalculation = ReactionRecalculation(**data["recalculation"])
+    return ReactionStatePacket(
+        schema_version=data["schema_version"],
+        generated_at_utc=data["generated_at_utc"],
+        domain=data["domain"],
+        step=int(data["step"]),
+        bounded_operation=data["bounded_operation"],
+        source=source,
+        target=target,
+        semantic_engravings=list(data.get("semantic_engravings") or []),
+        loss_notes=list(data.get("loss_notes") or []),
+        recalculation=recalculation,
+        classification=data["classification"],
+        tongue_columns=dict(data.get("tongue_columns") or TONGUE_COLUMNS),
+        claim_boundary=list(data.get("claim_boundary") or []),
+        previous_packet_hash=data.get("previous_packet_hash"),
+        packet_hash=data.get("packet_hash"),
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class ReactionEndpoint:
     """One side of a reaction-state transform."""
