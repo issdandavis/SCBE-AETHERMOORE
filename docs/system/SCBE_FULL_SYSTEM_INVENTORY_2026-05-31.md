@@ -61,17 +61,24 @@ those as evidence or scratch unless intentionally promoted.
 
 - `api/main.py` and `src/api/main.py`: API surfaces with authenticated
   governance, auth, billing, metering, audit export, and SaaS/mobile endpoints.
+- `packages/scbe-govern/`: primary pip-installable governance SDK. It supports
+  inline checks, remote checks, LangChain-style tool wrapping, and generic
+  callable wrapping. Verified from repo root with `21 passed`.
 - `packages/agent-bus/`: Node governed execution surface with queue, plugins,
   GeoSeal pipeline, tool registry, circuit breakers, and CLI.
-- `packages/agent-bus-py/`: Python package for governed event running and now a
-  lightweight governance scan SDK.
+- `packages/agent-bus-py/`: Python package for governed event running, workspace
+  audit chains, and lightweight scan convenience functions.
 - `bin/geoseal.cjs`, `src/geoseal*.py`, `src/geoseal*.ts`: GeoSeal command and
   governance implementations.
 - `src/governance/`, `src/crypto/`, `packages/kernel/`: governance math,
   decision envelopes, audit ledger, runtime gate, and kernel primitives.
 
-Newly connected production-hose piece:
+Newly connected production-hose pieces:
 
+- `from scbe_govern import SCBEGovern, govern_tool`
+- `SCBEGovern().check("command")`
+- `SCBEGovern().guard("command")`
+- `POST /v1/govern/check` on the n8n bridge surface
 - `scbe_agent_bus.scan_agent_request(...)`
 - `scbe_agent_bus.scan_command(...)`
 - `scbe-agent-bus --scan`
@@ -293,8 +300,11 @@ Commands used for this pass:
 
 Targeted code verification for the SDK/REST scan work:
 
+- `PYTHONPATH=. python -m pytest packages/scbe-govern/tests -q`
 - `python -m py_compile packages/agent-bus-py/src/scbe_agent_bus/governance.py packages/agent-bus-py/src/scbe_agent_bus/__init__.py packages/agent-bus-py/src/scbe_agent_bus/__main__.py api/main.py src/api/main.py`
 - `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest packages/agent-bus-py/tests/test_governance_scan.py packages/agent-bus-py/tests/test_smoke.py -q`
 
-Result: 11 package tests passed with plugin autoload disabled. Direct SDK smoke
-returned `ALLOW` for `cat README.md` and `DENY` for a reverse shell command.
+Result: `packages/scbe-govern` passed 21/21 with normal pytest after adding
+`packages/scbe-govern/tests/conftest.py`. `packages/agent-bus-py` targeted tests
+passed 11/11 with plugin autoload disabled. Direct scan smoke returned `ALLOW`
+for `cat README.md` and `DENY` for a reverse shell command.
