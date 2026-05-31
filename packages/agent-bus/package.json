@@ -1,6 +1,6 @@
 {
   "name": "scbe-agent-bus",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "SCBE agent-bus — typed Node.js library for governed multi-agent event routing. Dispatches tasks through the 14-layer harmonic-wall pipeline; manages audit-chain workspaces (create/ingest/export/verify/lineage); exposes Sacred Tongue semantic bridge (48-bit hex/binary 6D DimVec encoding KO/AV/RU/CA/UM/DR axes), quasi-sphere overlap/slice/drift surfaces, and 25 built-in research tools (arXiv, Semantic Scholar, OpenAlex, CrossRef, PubMed, SAM.gov, USPTO, HuggingFace models, GitHub repos). TypeScript-first with full Zod-validated envelopes.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
