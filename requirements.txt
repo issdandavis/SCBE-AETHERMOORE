@@ -24,6 +24,7 @@ argon2-cffi>=23.1.0
 
 # API Server
 fastapi>=0.136.1
+starlette>=1.0.1
 uvicorn[standard]>=0.27.0
 pydantic>=2.6.0
 python-multipart>=0.0.29
@@ -32,6 +33,7 @@ psycopg[binary]>=3.3.4
 # Security - pinned to secure versions
 cryptography>=48.0.0
 urllib3>=2.7.0
+uv>=0.11.17
 pyasn1>=0.6.0
 protobuf>=5.28.0
 Werkzeug>=3.1.8

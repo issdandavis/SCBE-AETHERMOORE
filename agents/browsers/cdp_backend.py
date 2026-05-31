@@ -589,6 +589,7 @@ class CDPBackend(BrowserBackend):
 # =============================================================================
 
 def resolve_chrome_binary(system: Optional[str] = None) -> str:  # noqa: ARG001
+    """Resolve a Chrome/Chromium executable path. Delegates to binary_resolver."""
     """Resolve a Chrome/Chromium executable path via the shared binary resolver."""
     from agents.browser.binary_resolver import resolve_browser_binary
     path, _ = resolve_browser_binary()
@@ -596,6 +597,17 @@ def resolve_chrome_binary(system: Optional[str] = None) -> str:  # noqa: ARG001
 
 
 def get_chrome_launch_command(port: int = 9222, user_data_dir: str = None) -> str:
+    """Return a shell-quoted launch command string for legacy callers.
+
+    Prefer build_launch_command() for new code — it returns a shell-safe tuple.
+    """
+    from agents.browser.binary_resolver import build_launch_command
+    cmd_tuple, _ = build_launch_command(port=port, user_data_dir=user_data_dir)
+    # Reconstruct a shell string only for legacy compatibility.
+    parts = []
+    for part in cmd_tuple:
+        parts.append(f'"{part}"' if " " in part else part)
+    return " ".join(parts)
     """Get command to launch Chrome with remote debugging."""
     from agents.browser.binary_resolver import build_launch_command
     cmd_tuple, _ = build_launch_command(port=port, user_data_dir=user_data_dir)

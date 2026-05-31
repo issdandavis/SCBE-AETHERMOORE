@@ -42,7 +42,7 @@ describe('scbe-patent workbench CLI', () => {
     const payload = JSON.parse(raw);
 
     expect(payload.schema).toBe('scbe_patent_benchmark_command_v1');
-    expect(payload.application_number).toBe('63/961,403');
+    expect(payload.application_number).toBe('19/691,526');
     expect(payload.docket).toBe('SCBE-2026-0001');
     expect(payload.title).toContain('Hyperbolic Geometry-Based Authorization');
     expect(payload.counts.cases).toBe(8);

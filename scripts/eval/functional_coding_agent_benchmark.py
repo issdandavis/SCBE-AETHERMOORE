@@ -973,6 +973,27 @@ def synthesize_contract_joint_code(
 """,
             "contract_synthesis:swe_issue_file_focus",
         )
+    if task.task_id == "swe_patch_status_gate":
+        return (
+            """function evaluate(input, state) {
+  if (input.testsPassed !== true) {
+    state.patchStatus = "needs_tests";
+    return state.patchStatus;
+  }
+  if (input.lintPassed !== true) {
+    state.patchStatus = "needs_lint";
+    return state.patchStatus;
+  }
+  if (input.changedFiles.length <= input.maxFiles) {
+    state.patchStatus = "ready";
+  } else {
+    state.patchStatus = "too_large";
+  }
+  return state.patchStatus;
+}
+""",
+            "contract_synthesis:swe_patch_status_gate",
+        )
     if task.task_id == "terminal_bench_command_guard":
         return (
             """function evaluate(input, state) {
@@ -992,6 +1013,55 @@ def synthesize_contract_joint_code(
 }
 """,
             "contract_synthesis:terminal_command_guard",
+        )
+    if task.task_id == "terminal_bench_log_parser":
+        return (
+            """function evaluate(input, state) {
+  let passed = 0;
+  let failed = 0;
+  let errors = 0;
+  for (const line of input.lines) {
+    const text = String(line).toLowerCase();
+    if (text.indexOf("passed") >= 0) passed += 1;
+    if (text.indexOf("failed") >= 0) failed += 1;
+    if (text.indexOf("error") >= 0) errors += 1;
+  }
+  state.summary = { passed, failed, errors };
+  return failed === 0 && errors === 0 ? "green" : "red";
+}
+""",
+            "contract_synthesis:terminal_bench_log_parser",
+        )
+    if task.task_id == "aider_polyglot_edit_route":
+        return (
+            """function evaluate(input, state) {
+  let editFormat = "manual";
+  if (input.language === "python" || input.language === "javascript") editFormat = "diff";
+  if (input.language === "rust" || input.language === "go") editFormat = "whole";
+  if (input.changeKind === "rename") editFormat = "diff";
+  state.editFormat = editFormat;
+  state.language = input.language;
+  return editFormat;
+}
+""",
+            "contract_synthesis:aider_polyglot_edit_route",
+        )
+    if task.task_id == "aider_polyglot_test_command":
+        return (
+            """function evaluate(input, state) {
+  const commands = {
+    python: "python -m pytest",
+    javascript: "npm test",
+    rust: "cargo test",
+    go: "go test ./...",
+    java: "mvn test",
+    cpp: "ctest"
+  };
+  state.testCommand = commands[input.language] || "manual";
+  return state.testCommand;
+}
+""",
+            "contract_synthesis:aider_polyglot_test_command",
         )
     if task.task_id == "evalplus_edge_case_counter":
         return (
@@ -1077,6 +1147,21 @@ def synthesize_contract_joint_code(
 }
 """,
             "contract_synthesis:patch_diff_risk_score",
+        )
+    if task.task_id == "benchmark_claim_guard":
+        return (
+            """function evaluate(input, state) {
+  if (input.terminalBenchRun === true && input.sweBenchRun === true && input.aiderRun === true) {
+    state.claimLevel = "public_comparable";
+  } else if (input.localScore === 1) {
+    state.claimLevel = "local_harness_ready";
+  } else {
+    state.claimLevel = "internal_only";
+  }
+  return state.claimLevel;
+}
+""",
+            "contract_synthesis:benchmark_claim_guard",
         )
     if task.task_id == "context_precision_selector":
         return (
