@@ -7,7 +7,7 @@ pydantic>=2.5.0
 mangum>=0.21.0
 
 # Core dependencies
-numpy>=2.4.5
+numpy>=2.4.6
 scipy>=1.11.0
 
 # Security (minimal set for Lambda)
