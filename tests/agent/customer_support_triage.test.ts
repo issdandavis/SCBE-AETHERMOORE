@@ -70,11 +70,11 @@ describe('customer_support_triage workflow', () => {
 
   it('routes Billing category to billing agent', async () => {
     mockRunnerRun
-      .mockResolvedValueOnce(mockTextRun('Welcome! How can I help?'))  // welcomeAgent
-      .mockResolvedValueOnce(mockTriageRun('Billing'))                  // triageClassifier
+      .mockResolvedValueOnce(mockTextRun('Welcome! How can I help?')) // welcomeAgent
+      .mockResolvedValueOnce(mockTriageRun('Billing')) // triageClassifier
       .mockResolvedValueOnce(mockTextRun('Here is your invoice help')); // billingAgent
 
-    const result = await runWorkflow({ input_as_text: "I was charged twice on my card" });
+    const result = await runWorkflow({ input_as_text: 'I was charged twice on my card' });
 
     expect(result.welcomeOutput).toBe('Welcome! How can I help?');
     expect(result.triageCategory).toBe('Billing');
@@ -96,7 +96,7 @@ describe('customer_support_triage workflow', () => {
       .mockResolvedValueOnce(mockTriageRun('Technical'))
       .mockResolvedValueOnce(mockTextRun('Let me troubleshoot that for you'));
 
-    const result = await runWorkflow({ input_as_text: "The app crashes on startup" });
+    const result = await runWorkflow({ input_as_text: 'The app crashes on startup' });
 
     expect(result.triageCategory).toBe('Technical');
     expect(result.specialistOutput).toBe('Let me troubleshoot that for you');
@@ -112,7 +112,7 @@ describe('customer_support_triage workflow', () => {
       .mockResolvedValueOnce(mockTriageRun('Sales'))
       .mockResolvedValueOnce(mockTextRun('I can walk you through our pricing'));
 
-    const result = await runWorkflow({ input_as_text: "What plans do you offer?" });
+    const result = await runWorkflow({ input_as_text: 'What plans do you offer?' });
 
     expect(result.triageCategory).toBe('Sales');
     const salesCall = mockRunnerRun.mock.calls[2];
@@ -127,7 +127,7 @@ describe('customer_support_triage workflow', () => {
       .mockResolvedValueOnce(mockTriageRun('General'))
       .mockResolvedValueOnce(mockTextRun('Here is some general info'));
 
-    const result = await runWorkflow({ input_as_text: "How do I update my profile?" });
+    const result = await runWorkflow({ input_as_text: 'How do I update my profile?' });
 
     expect(result.triageCategory).toBe('General');
     const genCall = mockRunnerRun.mock.calls[2];
@@ -142,7 +142,7 @@ describe('customer_support_triage workflow', () => {
       .mockResolvedValueOnce(mockTriageRun('General'))
       .mockResolvedValueOnce(mockTextRun('Done'));
 
-    await runWorkflow({ input_as_text: "test" });
+    await runWorkflow({ input_as_text: 'test' });
 
     const firstCall = mockRunnerRun.mock.calls[0];
     expect(firstCall[0].name).toBe('Welcome Agent');
@@ -179,7 +179,7 @@ describe('customer_support_triage workflow', () => {
       .mockResolvedValueOnce(mockTriageRun('Technical'))
       .mockResolvedValueOnce(mockTextRun('Troubleshooting now'));
 
-    await runWorkflow({ input_as_text: "error 500" });
+    await runWorkflow({ input_as_text: 'error 500' });
 
     const specialistCall = mockRunnerRun.mock.calls[2];
     const history = specialistCall[1] as unknown[];
@@ -193,7 +193,7 @@ describe('customer_support_triage workflow', () => {
   it('throws if welcome agent returns no output', async () => {
     mockRunnerRun.mockResolvedValueOnce({ finalOutput: null, newItems: [] });
 
-    await expect(runWorkflow({ input_as_text: "hello" })).rejects.toThrow(
+    await expect(runWorkflow({ input_as_text: 'hello' })).rejects.toThrow(
       'Welcome agent returned no output'
     );
     expect(mockRunnerRun).toHaveBeenCalledTimes(1);
@@ -206,7 +206,7 @@ describe('customer_support_triage workflow', () => {
       .mockResolvedValueOnce(mockTextRun('Hi!'))
       .mockResolvedValueOnce({ finalOutput: null, newItems: [] });
 
-    await expect(runWorkflow({ input_as_text: "hello" })).rejects.toThrow(
+    await expect(runWorkflow({ input_as_text: 'hello' })).rejects.toThrow(
       'Triage classifier returned no output'
     );
     expect(mockRunnerRun).toHaveBeenCalledTimes(2);
@@ -220,7 +220,7 @@ describe('customer_support_triage workflow', () => {
       .mockResolvedValueOnce(mockTriageRun('Sales'))
       .mockResolvedValueOnce({ finalOutput: null, newItems: [] });
 
-    await expect(runWorkflow({ input_as_text: "buy" })).rejects.toThrow(
+    await expect(runWorkflow({ input_as_text: 'buy' })).rejects.toThrow(
       'Sales agent returned no output'
     );
   });

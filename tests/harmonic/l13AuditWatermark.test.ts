@@ -137,28 +137,24 @@ describe('AuditLedger.isIntact watermark', () => {
 // ─── DECIDE() latency regression ─────────────────────────────────────────────
 
 describe('DECIDE() p99 latency with large ledger', () => {
-  it(
-    'p99 < 100ms with 150-entry ledger across 100 calls',
-    { timeout: 30_000 },
-    () => {
-      const rt = makeRuntime(150);
-      const latencies: number[] = [];
+  it('p99 < 100ms with 150-entry ledger across 100 calls', { timeout: 30_000 }, () => {
+    const rt = makeRuntime(150);
+    const latencies: number[] = [];
 
-      for (let i = 0; i < 100; i++) {
-        rt.nowMono = BigInt(Date.now() * 1_000_000);
-        const t0 = performance.now();
-        DECIDE(TEST_REQUEST, rt);
-        latencies.push(performance.now() - t0);
-      }
+    for (let i = 0; i < 100; i++) {
+      rt.nowMono = BigInt(Date.now() * 1_000_000);
+      const t0 = performance.now();
+      DECIDE(TEST_REQUEST, rt);
+      latencies.push(performance.now() - t0);
+    }
 
-      latencies.sort((a, b) => a - b);
-      const p99 = latencies[Math.floor(latencies.length * 0.99)]!;
-      const p95 = latencies[Math.floor(latencies.length * 0.95)]!;
+    latencies.sort((a, b) => a - b);
+    const p99 = latencies[Math.floor(latencies.length * 0.99)]!;
+    const p95 = latencies[Math.floor(latencies.length * 0.95)]!;
 
-      expect(p99).toBeLessThan(100);
-      expect(p95).toBeLessThan(75);
-    },
-  );
+    expect(p99).toBeLessThan(100);
+    expect(p95).toBeLessThan(75);
+  });
 
   it('DECIDE() returns ALLOW for clean request', () => {
     const rt = makeRuntime(0);

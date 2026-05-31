@@ -728,13 +728,7 @@ export interface CompassRosePoint {
 }
 
 /** Perception axes used by experimental constellation anchor layouts. */
-export type PerceptionAxis =
-  | 'identity'
-  | 'motion'
-  | 'depth'
-  | 'structure'
-  | 'intent'
-  | 'security';
+export type PerceptionAxis = 'identity' | 'motion' | 'depth' | 'structure' | 'intent' | 'security';
 
 /** Architectural layer used to shape the constellation point. */
 export type ArchitectureTier = 'foundation' | 'column' | 'arch' | 'spire';
@@ -849,7 +843,7 @@ export function pyramidConstellationPosition(
   const angle = normalizeAngle(
     bearing +
       PERCEPTION_AXIS_OFFSETS[perceptionAxis] +
-      depthNorm * Math.PI / 12 +
+      (depthNorm * Math.PI) / 12 +
       cryptoOffset.angle
   );
   const ringRadius = Math.min(
@@ -897,7 +891,7 @@ export function generatePyramidConstellation(
         const angle = normalizeAngle(
           COMPASS_BEARINGS[tongue] +
             PERCEPTION_AXIS_OFFSETS[perceptionAxis] +
-            (depth / (depth + PHI)) * Math.PI / 12 +
+            ((depth / (depth + PHI)) * Math.PI) / 12 +
             cryptoOffset.angle
         );
         points.push({
@@ -939,7 +933,18 @@ export function generatePyramidConstellationStarMap(
   for (const tongue of TONGUES) {
     for (const axis of axes) {
       for (let i = 0; i < depths.length - 1; i++) {
-        addEdge(indexFor, points, edges, tongue, depths[i], axis, tongue, depths[i + 1], axis, 'depth-line');
+        addEdge(
+          indexFor,
+          points,
+          edges,
+          tongue,
+          depths[i],
+          axis,
+          tongue,
+          depths[i + 1],
+          axis,
+          'depth-line'
+        );
       }
     }
   }

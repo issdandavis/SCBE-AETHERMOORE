@@ -20,7 +20,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT_DIR = REPO_ROOT / "docs" / "legal" / "patent-workbench" / "benchmarks"
-APPLICATION_NUMBER = "63/961,403"
+APPLICATION_NUMBER = "19/691,526"
 DOCKET = "SCBE-2026-0001"
 TITLE = "System and Method for Hyperbolic Geometry-Based Authorization with Topological Control-Flow Integrity"
 
