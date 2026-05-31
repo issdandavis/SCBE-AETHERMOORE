@@ -4,6 +4,21 @@ Status: Draft skeleton, 2026-05-31
 Proposal: DARPA-PA-26-05 MATHBAC TA1
 Scope: Technical Approach body draft, not final submission prose
 
+## 4.0A Ownership and Commission Boundary
+
+MATHBAC is an opportunity, not a guaranteed commission. SCBE will build the
+technical artifacts in this lane as SCBE-owned product infrastructure unless and
+until an executed award, subcontract, or other commission creates a different
+delivery obligation. The proposal maps this work to DARPA-PA-26-05 so reviewers
+can evaluate fit, but the design priority remains reusable SCBE utility:
+benchmarks, telemetry, protocol ledgers, model-evaluation tools, and NMR-facing
+science workflows should remain valuable even if no MATHBAC award is made.
+
+This boundary protects the technical approach from becoming proposal-only work.
+Every Phase I work package below should have a standalone SCBE use case, a
+local benchmark or verification path, and a clean handoff into product
+infrastructure before it is treated as proposal evidence.
+
 ## 4.0 Technical Approach Overview
 
 SCBE proposes a TA1 mathematical framework for designing, evaluating, and
