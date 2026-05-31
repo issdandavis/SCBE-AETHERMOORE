@@ -68,6 +68,20 @@ Observed 2026-05-31 smoke:
 - SCBE result: `artifacts/benchmarks/tb-neutral-compare/20260531T193928Z/scbe/2026-05-31__12-40-16/results.json`;
 - commit recorded by harness: `e627e9390cff992b25261fdf785435037d9d57fe`.
 
+Observed 2026-05-31 neutral packet:
+
+- oracle: 13/13, 100%;
+- SCBE: 13/13, 100%;
+- SCBE result: `artifacts/benchmarks/tb-neutral-compare/20260531T194820Z/scbe/2026-05-31__12-58-04/results.json`.
+
+Observed 2026-05-31 hard security-terminal probe:
+
+- oracle: 2/2, 100%;
+- SCBE: 0/2, 0%;
+- tasks: `crack-7z-hash`, `decommissioning-service-with-sensitive-data`;
+- SCBE result: `artifacts/benchmarks/tb-neutral-compare/20260531T200702Z/scbe/2026-05-31__13-11-22/results.json`;
+- failure mode: SCBE governance logs show `commands: []`, `allow=0`, `quarantine=0`, `deny=0`, and `json-parse-error`; this is planner/model command-generation failure, not a governance block.
+
 Current neutral packet rerun:
 
 ```powershell
