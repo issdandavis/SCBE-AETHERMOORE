@@ -76,7 +76,12 @@ __all__ = [
     "TaskGateResult",
 ]
 from .atomic_tokenization import AtomicTokenState, Element as AtomicElement
-from .atomic_tokenization import TritVector, atomic_drift_scale, element_to_tau, element_to_trit_vector
+from .atomic_tokenization import (
+    TritVector,
+    atomic_drift_scale,
+    element_to_tau,
+    element_to_trit_vector,
+)
 from .atomic_tokenization import map_token_to_atomic_state, map_token_to_element
 from .chemical_fusion import FusionParams, FusionResult, fuse_atomic_states, fuse_tokens
 from .ca_opcode_table import (
@@ -95,9 +100,18 @@ from .history_reducer import (
     reduce_atomic_history,
     reduce_years,
 )
-from .ingestion_rights import classify_ingestion_rights_record, get_source_record, load_source_registry
+from .ingestion_rights import (
+    classify_ingestion_rights_record,
+    get_source_record,
+    load_source_registry,
+)
 from .rhombic_bridge import rhombic_fusion, rhombic_score
-from .semantic_gate import SemanticBlendPolicy, SemanticGateRecord, SemanticSignal, evaluate_semantic_gate
+from .semantic_gate import (
+    SemanticBlendPolicy,
+    SemanticGateRecord,
+    SemanticSignal,
+    evaluate_semantic_gate,
+)
 from .tongue_code_lanes import (
     CODE_LANE_REGISTRY,
     classify_code_lane_alignment,
@@ -128,6 +142,13 @@ from .quasi_integer_recoupling import (
     recouple_formal_charge,
     recouple_to_integer,
     recouple_to_states,
+)
+from .audio_field_observables import (
+    AudioFieldModel,
+    AudioFieldObservables,
+    analyze_audio_field,
+    generate_decaying_sine,
+    generate_sine,
 )
 
 __all__ += [
@@ -187,4 +208,9 @@ __all__ += [
     "recouple_to_integer",
     "recouple_bond_order",
     "recouple_formal_charge",
+    "AudioFieldModel",
+    "AudioFieldObservables",
+    "analyze_audio_field",
+    "generate_sine",
+    "generate_decaying_sine",
 ]
