@@ -32,6 +32,13 @@ A public claim needs all of the following:
 
 This is the first lane because we already have a SCBE terminal agent surface and a local 13-task evidence packet.
 
+Current local run surface:
+
+- Use WSL2 `Ubuntu-24.04`, not Windows Python 3.14.
+- Working harness observed: Python 3.12.3, `terminal-bench` 0.2.18, `/usr/local/bin/tb`.
+- Container surface observed: Podman 4.9.3, Docker CLI 29.1.3, `/run/podman/podman.sock` present.
+- Windows `tb` currently fails before help output under Python 3.14/Typer with `TypeError: 'function' object is not subscriptable`; treat that as a host-tooling issue, not a benchmark result.
+
 Recommended run shape:
 
 ```powershell
@@ -46,6 +53,34 @@ tb runs create \
   --agent-kwarg model=qwen2.5:7b \
   --agent-kwarg max_turns=20
 ```
+
+Known-good smoke from Windows PowerShell via the local wrapper:
+
+```powershell
+python scripts/benchmark/tb_neutral_compare.py --mode run --tasks hello-world --max-turns 10 --json
+```
+
+Observed 2026-05-31 smoke:
+
+- oracle: 1/1, 100%;
+- SCBE: 1/1, 100%;
+- SCBE run metadata: `artifacts/benchmarks/tb-neutral-compare/20260531T193928Z/scbe/2026-05-31__12-40-16/run_metadata.json`;
+- SCBE result: `artifacts/benchmarks/tb-neutral-compare/20260531T193928Z/scbe/2026-05-31__12-40-16/results.json`;
+- commit recorded by harness: `e627e9390cff992b25261fdf785435037d9d57fe`.
+
+Current neutral packet rerun:
+
+```powershell
+python scripts/benchmark/tb_neutral_compare.py --mode run --tasks hello-world,fix-permissions,openssl-selfsigned-cert,broken-python,fibonacci-server,fix-pandas-version,grid-pattern-transform,csv-to-parquet,heterogeneous-dates,fix-git,sanitize-git-repo,nginx-request-logging,polyglot-c-py --max-turns 20 --json
+```
+
+Hard-positioning probe:
+
+```powershell
+python scripts/benchmark/tb_neutral_compare.py --mode run --tasks crack-7z-hash,decommissioning-service-with-sensitive-data --max-turns 20 --json
+```
+
+The neutral packet answers whether governance blocks useful work. The hard-positioning probe answers whether the current agent/model can solve harder terminal-security tasks.
 
 If the current upstream CLI shape differs, inspect `tb runs create --help` first and record the observed command in the artifact packet.
 
