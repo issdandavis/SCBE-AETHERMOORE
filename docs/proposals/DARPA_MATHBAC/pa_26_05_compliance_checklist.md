@@ -43,13 +43,13 @@ Track corresponds to: **TA1 — The Mathematics of Agentic Communication Protoco
 | 2.1 | Proposals **must address TA1 OR TA2** in Phase I; not both in single proposal (lines 282–287) | One proposal, TA1 only | HAVE (decided TA1) |
 | 2.2 | **Must briefly describe Phase II SOW** showing how TA1+TA2 capabilities orchestrate (lines 282–286) | Vol I §3 — Phase II draft SOW, TA1+TA2 integration | NEED |
 | 2.3 | Non-conforming proposals (no Phase II description) **removed from consideration** (line 285–286) | hard requirement | NEED — gate before submit |
-| 2.4 | TA1/TA2 proposers must identify selected science subdomain(s) (line 299) | pick subdomain | **OPEN** — see Decision Box A below |
-| 2.5 | Must identify two families of scientific tasks in chosen subdomain (line 300) | name 2 task families | NEED |
+| 2.4 | TA1/TA2 proposers must identify selected science subdomain(s) (line 299) | pick subdomain | HAVE for draft — NMR spectroscopy selected by Decision Box A silence rule; see `vol_i_section_4_technical_approach_skeleton.md` |
+| 2.5 | Must identify two families of scientific tasks in chosen subdomain (line 300) | name 2 task families | HAVE for draft — 1H NMR structure prediction + mixture-spectrum deconvolution; final datasets still NEED |
 | 2.6 | TA2 only: identify ≥1 well-established principle/law/correlation to rediscover, with corpus that does NOT contain it (lines 304–308) | N/A | N/A |
 | 2.7 | **Must specify baseline performance with current methods** (line 308–310) | numbers from SCBE on chosen subdomain | NEED — requires §2.4 first |
 | 2.8 | Must identify additional metrics; for each provide 6 fields (lines 308–319): description, calculation method, how it measures progress, how it supplements current metrics, why adopt, literature sources | this is the 8-field metric spec from punch list item #6 | **HAVE v1 draft** — `proposer_added_metrics_v1.md` (4 metrics: MEE, ACV, CDPTI, PIS; 6 PA fields each + 2 header fields; awaiting fold into Attachment X) |
 | 2.9 | Must identify other scientific subdomains where approach generalizes (lines 320–321) | generalization paragraph in Vol I | NEED |
-| 2.10 | TA1 Phase I baseline = SOA model (e.g., Mixture of Experts) (line 322) | name comparison model | NEED — pick MoE reference |
+| 2.10 | TA1 Phase I baseline = SOA model (e.g., Mixture of Experts) (line 322) | name comparison model | HAVE for draft — Mixtral-8x7B selected by Decision Box C; baseline numbers still NEED |
 | 2.11 | Phase I performers expected to "Evolution Team" for Phase II (lines 332–336) | one performer cannot be in >1 Evolution Team | informational; affects Collin teaming |
 | 2.12 | **Phase I proposed price ≤ $2,000,000** (line 344) | hard cap | NEED — Vol II Cost workbook |
 | 2.13 | Provide Phase II ROM cost (line 343) | Vol I §3 + Cost workbook tab | NEED |
@@ -77,7 +77,7 @@ Every numbered item below is a *must-state* in Vol I.
 | TA1-(1)(c) | Methods to characterize/quantify communication-dynamics progress through campaign | NEED |
 | TA1-(1)(d) | Methods to optimize communication protocols | NEED |
 | TA1-(2) | Experiments + handcrafted baseline protocol(s) for comparison | NEED |
-| TA1-(3) | Which "small science" foundation models will be used (must have accessible latent spaces); how latent spaces accessed and used | NEED — pick SSM (Phi-3, Qwen-Sci, etc.) |
+| TA1-(3) | Which "small science" foundation models will be used (must have accessible latent spaces); how latent spaces accessed and used | HAVE for draft — ChemBERTa-77M primary SSM + Qwen2.5-Coder-0.5B-Instruct orchestrator; latent-access details still NEED |
 | TA1-(4) | Method for capturing/processing agentic-communication-stream + latent-space data; how shared with IV&V | NEED — telemetry pipeline spec |
 | TA1-(5) | How approach achieves/exceeds TA1 metrics (Table 1) | NEED |
 | TA1-doc-example | Clearly documented example in chosen subdomain showing expected capabilities | NEED |
@@ -257,7 +257,7 @@ A proposal is **non-conforming** (rejected) if it lacks Phase II SOW description
 
 ---
 
-## Section VI — OPEN DECISIONS (block compliance work until resolved)
+## Section VI — DECISIONS A-D (resolved for Vol I draft by 2026-05-06 silence rule)
 
 ### Decision Box A — Science subdomain (blocks §2.4 → cascade to §2.5/2.7/2.10/3.1/3.3/Vol I §6)
 Candidates given SCBE corpus + tongue alignment:
@@ -266,8 +266,8 @@ Candidates given SCBE corpus + tongue alignment:
 - **Materials discovery (perovskite/MoF subset)** — SparksMatter referenced in PA line 91; broader symbol corpus
 - **Mathematical theorem-proving (Lean/Mathlib)** — cleanest "principle" rediscovery test, but PA emphasizes physical-science domains
 
-Recommendation: **NMR structure elucidation** — lowest cost-to-baseline, named in PA, bounded data, IV&V can construct tractable challenges, and SCBE's spectral coherence layer (L9–L10) maps directly.
-**Owner of decision:** user.
+Selected for Vol I draft: **NMR structure elucidation** — lowest cost-to-baseline, named in PA, bounded data, IV&V can construct tractable challenges, and SCBE's spectral coherence layer (L9–L10) maps directly.
+Resolution basis: `decision_boxes_a_d_prep.md` silence rule after 2026-05-06.
 
 ### Decision Box B — Small Science Model selection (blocks TA1-(3))
 Must have accessible latent spaces. Candidates:
@@ -276,8 +276,8 @@ Must have accessible latent spaces. Candidates:
 - MolT5 (translation between molecules and natural language)
 - Mistral-Small instruction-tuned + chemistry SFT layer
 
-Recommendation: **ChemBERTa-77M as primary SSM + Qwen2.5-Coder-0.5B as orchestrator**. Both fit under HF Pro plan limits, both latent-space accessible.
-**Owner of decision:** user.
+Selected for Vol I draft: **ChemBERTa-77M as primary SSM + Qwen2.5-Coder-0.5B as orchestrator**. Both fit under HF Pro plan limits, both latent-space accessible.
+Resolution basis: `decision_boxes_a_d_prep.md` silence rule after 2026-05-06.
 
 ### Decision Box C — TA1 baseline protocol model (blocks §2.10)
 PA suggests "Mixture of Experts." Lightweight options that fit OT scope:
@@ -285,14 +285,15 @@ PA suggests "Mixture of Experts." Lightweight options that fit OT scope:
 - DBRX-Instruct
 - Switch-Transformer-base
 
-Recommendation: **Mixtral-8x7B** — open weights, well-published baseline, accessible via HF.
-**Owner of decision:** user.
+Selected for Vol I draft: **Mixtral-8x7B** — open weights, well-published baseline, accessible via HF.
+Resolution basis: `decision_boxes_a_d_prep.md` silence rule after 2026-05-06.
 
 ### Decision Box D — Two task families in chosen subdomain (blocks §2.5)
 If subdomain = NMR:
 - (i) 1H NMR → structure prediction
 - (ii) Mixture-spectrum deconvolution
-**Owner of decision:** user (after Box A).
+Selected for Vol I draft: **(i) 1H NMR to structure prediction + (ii) mixture-spectrum deconvolution**.
+Resolution basis: `decision_boxes_a_d_prep.md` silence rule after 2026-05-06.
 
 ---
 
@@ -306,7 +307,7 @@ This checklist closes punch-list item **#7** (`project_mathbac_proposal_spine_20
 | #5 | BAAT account setup | user (attended MFA) |
 | #6 | 8-field metric specs for MEE/ACV/CDPTI/PIS | DONE — `proposer_added_metrics_v1.md` (2026-04-29) |
 | #7 | This compliance checklist | DONE |
-| #8 | Vol I Technical & Management draft | Decision Boxes A–D + #6 |
+| #8 | Vol I Technical & Management draft | STARTED — Section 4 skeleton at `vol_i_section_4_technical_approach_skeleton.md`; full Vol I still NEED |
 | #9 | Vol II Price (Cost workbook + travel + compute table) | Decision Boxes + Vol I scope |
 | #10 | Advisor outreach (Kevrekidis, Bertsekas, Sakana, etc.) | user |
 | #11 | TDD draft (Attachment H) | Vol I milestones + deliverables |
