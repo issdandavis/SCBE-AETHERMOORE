@@ -111,6 +111,11 @@ from .reaction_state import (
     build_reaction_state_packet,
     classify_reaction,
 )
+from .reaction_harness import (
+    BijectiveReactionResult,
+    ReactionFieldCheck,
+    evaluate_bijective_reaction,
+)
 
 __all__ += [
     "AtomicElement",
@@ -155,4 +160,7 @@ __all__ += [
     "ReactionStatePacket",
     "build_reaction_state_packet",
     "classify_reaction",
+    "ReactionFieldCheck",
+    "BijectiveReactionResult",
+    "evaluate_bijective_reaction",
 ]

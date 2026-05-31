@@ -124,6 +124,34 @@ After transformation, do not trust the translation. Recalculate it:
 
 This is where standard analytical/scientific tools enter. SCBE does not need to be the chemistry engine. It needs to call the engine, hash the result, and classify the transform.
 
+## Bijective Reaction Harness
+
+The reusable harness lives in `python/scbe/reaction_harness.py`. It compares a transform as a set of declared fields:
+
+- `source_fields`: what the input state claims to carry;
+- `target_fields`: what survived into the output state;
+- `required_identity_fields`: values that must survive for identity to hold;
+- `recoverable_fields`: values restored through a side lane such as fragments, tests, descriptors, or call-site rewrites;
+- `allowed_loss_fields`: loss that should be engraved but does not break the declared identity.
+
+The harness emits a normal `ReactionStatePacket`, so code, chemistry, data, tokenizer, and agent transformations can all share the same classification surface.
+
+Example:
+
+```python
+result = evaluate_bijective_reaction(
+    domain="chem",
+    bounded_operation="atom_mud_recover_with_fragment_cards",
+    source_fields={"formula": "C2H6O", "canonical_smiles": "CCO", "connectivity": "C-C-O"},
+    target_fields={"formula": "C2H6O"},
+    recoverable_fields={"canonical_smiles": "CCO"},
+    required_identity_fields=("formula", "canonical_smiles"),
+    allowed_loss_fields=("connectivity",),
+)
+```
+
+That result is `LOSSY_RECOVERABLE`: topology was lost, but the required identity was restored through a declared recovery lane. Without the recovery lane, the same atom bag becomes `LOSSY_AMBIGUOUS`.
+
 ## Multi-Language Chemical Composition Analogy
 
 Coding languages are like different atomic families in this model:
@@ -160,4 +188,3 @@ scbe bench chemistry --json
 ## Claim Boundary
 
 This model supports governed cross-language and computational-chemistry transformations with explicit loss accounting. It does not prove biological efficacy, validate wet-lab chemistry, or guarantee semantic identity unless the packet classifies the path as bijective under a declared representation.
-
