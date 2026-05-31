@@ -182,6 +182,21 @@ Core commands:
     [--json]
 
 ─────────────────────────────────────────────────────────────────────────────
+  BUNDLE — polyglot reaction bundles
+─────────────────────────────────────────────────────────────────────────────
+  bundle <file|text>      Auto-create a bundle from uploaded input or text
+  bundle create           Create a bundle
+    [--input <file>] [--intent "..."] [--out <file>] [--json]
+  bundle add              Add a file to an existing bundle
+    --bundle <file> --file <file> [--role KO|AV|RU|CA|UM|DR] [--out <file>]
+  bundle verify           Verify bundle hashes and current source files
+    --bundle <file> [--json]
+  bundle translate        Emit a receiver-ready projection
+    --bundle <file> --to binary-hex [--json]
+  bundle reconstruct      Emit receiver reconstruction notes
+    --bundle <file> [--receiver <id>] [--json]
+
+─────────────────────────────────────────────────────────────────────────────
   CREATOR TOOLS — local-first content utility gates
 ─────────────────────────────────────────────────────────────────────────────
   youtube review <file>  Review a YouTube package JSON before upload;
@@ -4743,6 +4758,436 @@ function runReactionCli(args) {
   process.exit(1);
 }
 
+const BUNDLE_SCHEMA_VERSION = 'scbe_polyglot_reaction_bundle_v1';
+const BUNDLE_ENTRY_SCHEMA_VERSION = 'scbe_polyglot_bundle_entry_v1';
+const BUNDLE_TONGUE_MAP = {
+  KO: 'identity / original signal',
+  AV: 'observable features / descriptive transport',
+  RU: 'operation / transformation',
+  CA: 'constraint / law / rule block',
+  UM: 'uncertainty / loss / shadow state',
+  DR: 'resolution / proof / receiver landing',
+};
+
+function printBundleHelp() {
+  process.stdout.write(
+    [
+      'Usage:',
+      '  scbe bundle <file|text>',
+      '  scbe bundle create [--input <file>] [--intent "..."] [--out <file>] [--json]',
+      '  scbe bundle add --bundle <file> --file <file> [--role KO|AV|RU|CA|UM|DR] [--out <file>] [--json]',
+      '  scbe bundle verify --bundle <file> [--json]',
+      '  scbe bundle translate --bundle <file> --to binary-hex [--json]',
+      '  scbe bundle reconstruct --bundle <file> [--receiver <id>] [--json]',
+      '',
+      'A bundle preserves one main idea through multiple tubes: text, code, chemistry,',
+      'image/blob metadata, binary/hex exactness, Sacred Tongue roles, and proof hashes.',
+      'If the first argument is a real file, SCBE reads it. Otherwise it is treated as',
+      'intent text.',
+      '',
+    ].join('\n')
+  );
+}
+
+function bundleLanguageFromPath(filePath) {
+  const ext = path.extname(String(filePath || '')).toLowerCase();
+  if (ext === '.py') return 'python';
+  if (ext === '.js' || ext === '.mjs' || ext === '.cjs') return 'javascript';
+  if (ext === '.ts' || ext === '.tsx') return 'typescript';
+  if (ext === '.rs') return 'rust';
+  if (ext === '.go') return 'go';
+  if (ext === '.sh' || ext === '.bash') return 'shell';
+  if (ext === '.ps1') return 'powershell';
+  if (ext === '.json') return 'json';
+  if (ext === '.smi' || ext === '.smiles') return 'smiles';
+  if (ext === '.md') return 'markdown';
+  if (ext === '.txt') return 'text';
+  return null;
+}
+
+function looksLikeSmiles(text) {
+  const raw = String(text || '').trim();
+  if (!raw || raw.length > 240 || /\s{2,}/.test(raw)) return false;
+  if (!/[CONSHFPSIBrclnops\[\]\(\)=#@+\-0-9]/.test(raw)) return false;
+  return /^[A-Za-z0-9@+\-\[\]\(\)=#$\\\/.%]+$/.test(raw) && /[CONFPSIBrcnos]/.test(raw);
+}
+
+function detectBundleKind({ filePath, buffer, forcedKind }) {
+  if (forcedKind) return forcedKind;
+  const ext = path.extname(String(filePath || '')).toLowerCase();
+  if (['.py', '.js', '.mjs', '.cjs', '.ts', '.tsx', '.rs', '.go', '.sh', '.bash', '.ps1'].includes(ext)) return 'code';
+  if (['.smi', '.smiles', '.mol', '.sdf'].includes(ext)) return 'chem';
+  if (['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'].includes(ext)) return 'image';
+  if (ext === '.json') return 'json';
+  if (ext === '.bin' || ext === '.wasm' || ext === '.exe' || ext === '.dll') return 'binary';
+  const text = buffer ? buffer.toString('utf8') : '';
+  if (looksLikeSmiles(text)) return 'chem';
+  if (/\b(function|class|def|import|export|const|let|fn|package|SELECT)\b/.test(text)) return 'code';
+  return 'text';
+}
+
+function detectBundleLanguage({ kind, filePath, text }) {
+  const fromPath = bundleLanguageFromPath(filePath);
+  if (fromPath) return fromPath;
+  if (kind === 'chem') return 'smiles';
+  if (kind === 'binary') return 'binary';
+  if (kind === 'image') return 'image';
+  if (kind === 'json') return 'json';
+  const sample = String(text || '');
+  if (/\bdef\s+\w+\(|\bimport\s+\w+/.test(sample)) return 'python';
+  if (/\bfunction\s+\w+\(|\bconst\s+\w+\s*=|\bexport\s+/.test(sample)) return 'javascript';
+  if (/\bfn\s+\w+\(|\blet\s+mut\b/.test(sample)) return 'rust';
+  return 'text';
+}
+
+function defaultBundleRole(kind) {
+  if (kind === 'code') return 'RU';
+  if (kind === 'chem' || kind === 'json') return 'CA';
+  if (kind === 'image') return 'AV';
+  if (kind === 'binary') return 'DR';
+  return 'KO';
+}
+
+function bundleSemanticDims(text, kind, language) {
+  const lower = String(text || '').toLowerCase();
+  const axes = [
+    ['identity', 'source', 'same', 'exact', 'hash', 'main', 'intent'],
+    ['feature', 'observe', 'color', 'image', 'shape', 'chemistry', 'audio'],
+    ['run', 'transform', 'compile', 'release', 'parse', 'react', 'code'],
+    ['constraint', 'law', 'verify', 'test', 'rule', 'chemical', 'chem'],
+    ['loss', 'uncertain', 'unknown', 'fallback', 'ambiguous', 'gap'],
+    ['proof', 'resolve', 'receipt', 'landing', 'output', 'binary', 'hex'],
+  ];
+  const dims = axes.map((axis) => {
+    const hits = axis.reduce((total, word) => total + (lower.includes(word) ? 1 : 0), 0);
+    return Math.min(255, Math.round((hits / axis.length) * 255));
+  });
+  if (kind === 'code') dims[2] = Math.max(dims[2], 96);
+  if (kind === 'chem') dims[3] = Math.max(dims[3], 96);
+  if (kind === 'image') dims[1] = Math.max(dims[1], 96);
+  if (language && language !== 'text') dims[5] = Math.max(dims[5], 64);
+  return dims;
+}
+
+function bundleDimsToHex(dims) {
+  return dims.map((value) => Number(value || 0).toString(16).padStart(2, '0')).join('');
+}
+
+function bundleBinaryPreview(buffer, limit = 24) {
+  return Array.from(buffer.subarray(0, limit))
+    .map((byte) => byte.toString(2).padStart(8, '0'))
+    .join(' ');
+}
+
+function bundleEntryFromBuffer(buffer, opts = {}) {
+  const sourcePath = opts.sourcePath ? path.resolve(opts.sourcePath) : null;
+  const kind = detectBundleKind({ filePath: sourcePath, buffer, forcedKind: opts.kind });
+  const text = kind === 'binary' || kind === 'image' ? '' : buffer.toString('utf8');
+  const language = opts.language || detectBundleLanguage({ kind, filePath: sourcePath, text });
+  const dims = bundleSemanticDims(text, kind, language);
+  const sha = crypto.createHash('sha256').update(buffer).digest('hex');
+  const lossNotes = [];
+  if (!opts.kind && kind === 'text' && sourcePath) lossNotes.push('kind inferred from extension/content');
+  if (kind === 'image' || kind === 'binary') lossNotes.push('semantic layer stores metadata; exact bytes preserved by sha256/hex preview');
+  return {
+    schema_version: BUNDLE_ENTRY_SCHEMA_VERSION,
+    entry_id: opts.entryId || `entry_${String(opts.index || 1).padStart(3, '0')}`,
+    kind,
+    role: opts.role || defaultBundleRole(kind),
+    language,
+    source_path: sourcePath,
+    bytes: buffer.length,
+    sha256: sha,
+    hex_preview: buffer.toString('hex').slice(0, 96),
+    binary_preview: bundleBinaryPreview(buffer),
+    semantic_dims: dims,
+    semantic_hex: bundleDimsToHex(dims),
+    text_preview: text ? text.slice(0, 240) : '',
+    loss_notes: lossNotes,
+    metadata: {
+      basename: sourcePath ? path.basename(sourcePath) : null,
+      extension: sourcePath ? path.extname(sourcePath).toLowerCase() : null,
+    },
+  };
+}
+
+function bundleEntryFromText(text, opts = {}) {
+  return bundleEntryFromBuffer(Buffer.from(String(text || ''), 'utf8'), {
+    ...opts,
+    sourcePath: null,
+    kind: opts.kind || (looksLikeSmiles(text) ? 'chem' : 'text'),
+  });
+}
+
+function bundleWithoutHash(bundle) {
+  const clean = { ...bundle };
+  delete clean.bundle_hash;
+  delete clean.bundle_id;
+  return clean;
+}
+
+function sealBundle(bundle) {
+  const normalized = {
+    schema_version: BUNDLE_SCHEMA_VERSION,
+    created_at_utc: bundle.created_at_utc || new Date().toISOString(),
+    intent: bundle.intent || '',
+    entries: bundle.entries || [],
+    tongue_map: BUNDLE_TONGUE_MAP,
+    classification: bundle.classification || classifyBundle(bundle.entries || []),
+    loss_notes: bundle.loss_notes || [],
+  };
+  const hash = sha256Hex(canonicalLongformJson(normalized));
+  return {
+    ...normalized,
+    bundle_id: bundle.bundle_id || `bundle_${hash.slice(0, 12)}`,
+    bundle_hash: hash,
+  };
+}
+
+function classifyBundle(entries) {
+  if (!entries.length) return 'INVALID';
+  if (entries.some((entry) => !entry.sha256 || !entry.bytes)) return 'INVALID';
+  if (entries.some((entry) => Array.isArray(entry.loss_notes) && entry.loss_notes.length)) return 'LOSSY_RECOVERABLE';
+  return 'BIJECTIVE';
+}
+
+function loadBundle(filePath) {
+  const absolute = path.resolve(process.cwd(), filePath);
+  const payload = JSON.parse(fs.readFileSync(absolute, 'utf8'));
+  return { absolute, payload };
+}
+
+function printBundle(payload, asJson) {
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+  const bundle = payload.bundle || payload;
+  process.stdout.write(`SCBE bundle: ${bundle.bundle_id || '<unsealed>'}\n`);
+  process.stdout.write(`classification: ${bundle.classification || '<unknown>'}\n`);
+  process.stdout.write(`entries: ${Array.isArray(bundle.entries) ? bundle.entries.length : 0}\n`);
+  if (bundle.bundle_hash) process.stdout.write(`hash: ${bundle.bundle_hash}\n`);
+  if (payload.wrote) process.stdout.write(`wrote: ${payload.wrote}\n`);
+}
+
+function writeBundleIfRequested(bundle, outPath) {
+  if (!outPath) return null;
+  const absolute = path.resolve(process.cwd(), outPath);
+  fs.mkdirSync(path.dirname(absolute), { recursive: true });
+  fs.writeFileSync(absolute, `${JSON.stringify(bundle, null, 2)}\n`, 'utf8');
+  return absolute;
+}
+
+function createBundleFromArgs(args) {
+  const asJson = hasFlag(args, '--json');
+  const outPath = flagValue(args, '--out') || flagValue(args, '--output');
+  const forcedKind = flagValue(args, '--kind') || '';
+  const forcedRole = flagValue(args, '--role') || '';
+  const explicitInput = flagValue(args, '--input') || flagValue(args, '--file');
+  const positional = positionalArgs(args);
+  const candidate = explicitInput || positional[0] || '';
+  const candidatePath = candidate ? path.resolve(process.cwd(), candidate) : '';
+  const intent =
+    flagValue(args, '--intent') ||
+    flagValue(args, '--text') ||
+    (!explicitInput && candidate && !fs.existsSync(candidatePath) ? positional.join(' ') : '');
+  let entry;
+  if (explicitInput || (candidate && fs.existsSync(candidatePath))) {
+    if (!fs.existsSync(candidatePath)) {
+      process.stderr.write(`scbe bundle: input not found: ${candidate}\n`);
+      process.exit(2);
+    }
+    entry = bundleEntryFromBuffer(fs.readFileSync(candidatePath), {
+      sourcePath: candidatePath,
+      index: 1,
+      kind: forcedKind,
+      role: forcedRole,
+    });
+  } else {
+    const text = intent || '';
+    if (!text) {
+      process.stderr.write('Usage: scbe bundle <file|text> or scbe bundle create --input <file>\n');
+      process.exit(2);
+    }
+    entry = bundleEntryFromText(text, { index: 1, kind: forcedKind, role: forcedRole });
+  }
+  const bundle = sealBundle({
+    intent: intent || `bundle input: ${entry.source_path ? path.basename(entry.source_path) : entry.text_preview}`,
+    entries: [entry],
+  });
+  const wrote = writeBundleIfRequested(bundle, outPath);
+  printBundle({ ok: true, command: 'bundle create', bundle, wrote }, asJson);
+  process.exit(0);
+}
+
+function addBundleEntry(args) {
+  const asJson = hasFlag(args, '--json');
+  const bundlePath = flagValue(args, '--bundle');
+  const filePath = flagValue(args, '--file') || flagValue(args, '--input') || positionalArgs(args)[0];
+  if (!bundlePath || !filePath) {
+    process.stderr.write('Usage: scbe bundle add --bundle <file> --file <file>\n');
+    process.exit(2);
+  }
+  const { absolute, payload } = loadBundle(bundlePath);
+  const sourcePath = path.resolve(process.cwd(), filePath);
+  if (!fs.existsSync(sourcePath)) {
+    process.stderr.write(`scbe bundle add: file not found: ${filePath}\n`);
+    process.exit(2);
+  }
+  const entries = Array.isArray(payload.entries) ? payload.entries.slice() : [];
+  entries.push(
+    bundleEntryFromBuffer(fs.readFileSync(sourcePath), {
+      sourcePath,
+      index: entries.length + 1,
+      kind: flagValue(args, '--kind') || '',
+      role: flagValue(args, '--role') || '',
+    })
+  );
+  const bundle = sealBundle({ ...payload, entries, classification: classifyBundle(entries) });
+  const wrote = writeBundleIfRequested(bundle, flagValue(args, '--out') || absolute);
+  printBundle({ ok: true, command: 'bundle add', bundle, wrote }, asJson);
+  process.exit(0);
+}
+
+function verifyBundle(args) {
+  const asJson = hasFlag(args, '--json');
+  const bundlePath = flagValue(args, '--bundle') || positionalArgs(args)[0];
+  if (!bundlePath) {
+    process.stderr.write('Usage: scbe bundle verify --bundle <file>\n');
+    process.exit(2);
+  }
+  const { payload } = loadBundle(bundlePath);
+  const expectedHash = sha256Hex(canonicalLongformJson(bundleWithoutHash(payload)));
+  const bundleHashOk = expectedHash === payload.bundle_hash;
+  const entries = Array.isArray(payload.entries) ? payload.entries : [];
+  const entry_checks = entries.map((entry) => {
+    if (!entry.source_path) return { entry_id: entry.entry_id, source_path: null, ok: true, reason: 'embedded/text entry' };
+    if (!fs.existsSync(entry.source_path)) {
+      return { entry_id: entry.entry_id, source_path: entry.source_path, ok: false, reason: 'source missing' };
+    }
+    const actual = crypto.createHash('sha256').update(fs.readFileSync(entry.source_path)).digest('hex');
+    return {
+      entry_id: entry.entry_id,
+      source_path: entry.source_path,
+      ok: actual === entry.sha256,
+      expected_sha256: entry.sha256,
+      actual_sha256: actual,
+    };
+  });
+  const ok = bundleHashOk && entry_checks.every((entry) => entry.ok);
+  const report = {
+    schema_version: 'scbe_polyglot_bundle_verify_v1',
+    ok,
+    bundle_id: payload.bundle_id || null,
+    bundle_hash_ok: bundleHashOk,
+    expected_bundle_hash: expectedHash,
+    actual_bundle_hash: payload.bundle_hash || null,
+    entry_checks,
+  };
+  if (asJson) process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  else {
+    process.stdout.write(`SCBE bundle verify: ${ok ? 'PASS' : 'FAIL'}\n`);
+    process.stdout.write(`bundle hash: ${bundleHashOk ? 'ok' : 'mismatch'}\n`);
+    for (const entry of entry_checks) {
+      process.stdout.write(`- ${entry.entry_id}: ${entry.ok ? 'ok' : entry.reason || 'mismatch'}\n`);
+    }
+  }
+  process.exit(ok ? 0 : 1);
+}
+
+function translateBundle(args) {
+  const asJson = hasFlag(args, '--json');
+  const bundlePath = flagValue(args, '--bundle') || positionalArgs(args)[0];
+  const target = flagValue(args, '--to', 'binary-hex');
+  if (!bundlePath) {
+    process.stderr.write('Usage: scbe bundle translate --bundle <file> --to binary-hex\n');
+    process.exit(2);
+  }
+  const { payload } = loadBundle(bundlePath);
+  const projection = {
+    schema_version: 'scbe_polyglot_bundle_projection_v1',
+    bundle_id: payload.bundle_id || null,
+    target,
+    classification: payload.classification || null,
+    entries: (payload.entries || []).map((entry) => ({
+      entry_id: entry.entry_id,
+      kind: entry.kind,
+      role: entry.role,
+      language: entry.language,
+      sha256: entry.sha256,
+      hex_preview: entry.hex_preview,
+      binary_preview: entry.binary_preview,
+      semantic_hex: entry.semantic_hex,
+      receiver_note: 'Exact reconstruction requires original bytes or source file; preview is for routing and inspection.',
+    })),
+  };
+  if (asJson) process.stdout.write(`${JSON.stringify(projection, null, 2)}\n`);
+  else {
+    process.stdout.write(`SCBE bundle projection: ${target}\n`);
+    for (const entry of projection.entries) {
+      process.stdout.write(`- ${entry.entry_id} ${entry.role}/${entry.kind}: ${entry.semantic_hex} ${entry.sha256.slice(0, 12)}\n`);
+    }
+  }
+  process.exit(0);
+}
+
+function reconstructBundle(args) {
+  const asJson = hasFlag(args, '--json');
+  const bundlePath = flagValue(args, '--bundle') || positionalArgs(args)[0];
+  const receiver = flagValue(args, '--receiver', 'generic-agent');
+  if (!bundlePath) {
+    process.stderr.write('Usage: scbe bundle reconstruct --bundle <file> [--receiver <id>]\n');
+    process.exit(2);
+  }
+  const { payload } = loadBundle(bundlePath);
+  const packet = {
+    schema_version: 'scbe_polyglot_bundle_reconstruct_v1',
+    receiver,
+    bundle_id: payload.bundle_id || null,
+    intent: payload.intent || '',
+    classification: payload.classification || null,
+    steps: [
+      'verify bundle_hash before use',
+      'verify each source_path sha256 when available',
+      'use KO entries as identity anchors',
+      'use RU/CA entries as operation and constraint tubes',
+      'use UM loss_notes as explicit uncertainty, not hidden context',
+      'land DR/proof outputs after reconstruction',
+    ],
+    entries: (payload.entries || []).map((entry) => ({
+      entry_id: entry.entry_id,
+      role: entry.role,
+      kind: entry.kind,
+      language: entry.language,
+      source_path: entry.source_path,
+      sha256: entry.sha256,
+      semantic_hex: entry.semantic_hex,
+      loss_notes: entry.loss_notes || [],
+    })),
+  };
+  if (asJson) process.stdout.write(`${JSON.stringify(packet, null, 2)}\n`);
+  else {
+    process.stdout.write(`SCBE bundle reconstruct for ${receiver}\n`);
+    process.stdout.write(`bundle: ${packet.bundle_id || '<unknown>'}\n`);
+    process.stdout.write(`steps:\n${packet.steps.map((step) => `- ${step}`).join('\n')}\n`);
+  }
+  process.exit(0);
+}
+
+function runBundleCli(args) {
+  const sub = args[0] || 'help';
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    printBundleHelp();
+    process.exit(0);
+  }
+  if (sub === 'create' || sub === 'new') createBundleFromArgs(args.slice(1));
+  if (sub === 'add') addBundleEntry(args.slice(1));
+  if (sub === 'verify') verifyBundle(args.slice(1));
+  if (sub === 'translate' || sub === 'project') translateBundle(args.slice(1));
+  if (sub === 'reconstruct' || sub === 'receive') reconstructBundle(args.slice(1));
+  createBundleFromArgs(args);
+}
+
 // Top-level commands scbe handles directly. Used by the typo-suggestion guard.
 // Order doesn't matter; this list is the complete set of scbe-owned verbs.
 const KNOWN_COMMANDS = [
@@ -4766,6 +5211,7 @@ const KNOWN_COMMANDS = [
   'history',
   'bench',
   'benchmark',
+  'bundle',
   'youtube',
   'flow',
   'workspace',
@@ -5553,6 +5999,10 @@ if (argv[0] === 'bench' || argv[0] === 'benchmark') {
 
 if (argv[0] === 'react') {
   runReactionCli(argv.slice(1));
+}
+
+if (argv[0] === 'bundle') {
+  runBundleCli(argv.slice(1));
 }
 
 if (argv[0] === 'youtube') {
