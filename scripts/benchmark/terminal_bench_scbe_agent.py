@@ -76,6 +76,7 @@ CommandPlan = __import__(
 # Agent
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class _GovRecord:
     command: str
@@ -131,18 +132,29 @@ class ScbeGovernedAgent(BaseAgent):
         gov: list[_GovRecord] = []
         in_toks = out_toks = 0
         turn = 0
+        _debug: list[str] = []
 
         for turn in range(1, self.max_turns + 1):
-            state = session.capture_pane(capture_entire=True)
+            state = session.capture_pane(capture_entire=False)  # avoid huge pane reads
 
             try:
                 p = plan_commands(
-                    task_description, state, turn, self.max_turns,
-                    self.model, self.ollama_host,
+                    task_description,
+                    state,
+                    turn,
+                    self.max_turns,
+                    self.model,
+                    self.ollama_host,
                 )
-            except Exception:
+            except Exception as _exc:
+                _debug.append(
+                    f"t{turn}:plan_commands raised {type(_exc).__name__}:{_exc}"
+                )
                 break  # LLM unreachable — stop gracefully
 
+            _debug.append(
+                f"t{turn}:cmds={len(p.commands)} done={p.done} rat={p.rationale[:40]!r}"
+            )
             in_toks += (len(task_description) + len(state)) // 4
             out_toks += (len(" ".join(p.commands)) + len(p.rationale)) // 4
 
@@ -152,7 +164,9 @@ class ScbeGovernedAgent(BaseAgent):
             for cmd in p.commands:
                 d = semantic_distance(cmd)
                 incremental = session.get_incremental_output() or ""
-                pd = max(danger_drift(cmd), output_deviation(task_description, incremental))
+                pd = max(
+                    danger_drift(cmd), output_deviation(task_description, incremental)
+                )
                 score = harmonic_score(d, pd)
                 tier = risk_tier(score)
 
@@ -170,16 +184,22 @@ class ScbeGovernedAgent(BaseAgent):
                 if dev > self.deviation_threshold:
                     probes = polymerize_probes(cmd, post)
                     for probe in probes:
-                        session.send_keys([probe, "Enter"], block=True, max_timeout_sec=10.0)
+                        session.send_keys(
+                            [probe, "Enter"], block=True, max_timeout_sec=10.0
+                        )
                         time.sleep(0.2)
 
-                gov.append(_GovRecord(cmd, tier, score, d, pd, polymerized=bool(probes)))
+                gov.append(
+                    _GovRecord(cmd, tier, score, d, pd, polymerized=bool(probes))
+                )
 
             if p.done:
                 break
 
         if logging_dir:
-            _write_telemetry(Path(logging_dir), gov, self.model, turn)
+            _write_telemetry(
+                Path(logging_dir), gov, self.model, turn, task_description[:120], _debug
+            )
 
         kwargs: dict = {"total_input_tokens": in_toks, "total_output_tokens": out_toks}
         if FailureMode is not None:
@@ -187,7 +207,14 @@ class ScbeGovernedAgent(BaseAgent):
         return AgentResult(**kwargs)
 
 
-def _write_telemetry(log_dir: Path, gov: list[_GovRecord], model: str, turns: int) -> None:
+def _write_telemetry(
+    log_dir: Path,
+    gov: list[_GovRecord],
+    model: str,
+    turns: int,
+    task_prefix: str = "",
+    debug: list[str] | None = None,
+) -> None:
     log_dir.mkdir(parents=True, exist_ok=True)
     summary = {
         "allow": sum(1 for r in gov if r.decision == "ALLOW"),
@@ -210,5 +237,7 @@ def _write_telemetry(log_dir: Path, gov: list[_GovRecord], model: str, turns: in
             }
             for r in gov
         ],
+        "task_prefix": task_prefix,
+        "debug": debug or [],
     }
     (log_dir / "scbe_governance.json").write_text(json.dumps(telemetry, indent=2))
