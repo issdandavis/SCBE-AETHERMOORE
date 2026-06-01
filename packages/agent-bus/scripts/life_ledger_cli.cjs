@@ -44,8 +44,12 @@ function parseArgs(argv) {
     if (tok.startsWith('--')) {
       const key = tok.slice(2);
       const next = argv[i + 1];
-      if (!next || next.startsWith('--')) { flags[key] = true; }
-      else { flags[key] = next; i++; }
+      if (!next || next.startsWith('--')) {
+        flags[key] = true;
+      } else {
+        flags[key] = next;
+        i++;
+      }
     } else {
       positionals.push(tok);
     }
@@ -77,22 +81,24 @@ function main() {
   const { command, flags } = parseArgs(process.argv);
 
   if (command === 'help' || flags.help) {
-    process.stdout.write([
-      'Life Ledger CLI',
-      '',
-      'Commands:',
-      '  init --ledger <path> --agent-id <id> [--name <display_name>]',
-      '  encounter --ledger <path> --agent-id <id> [--alignment <float>] [--name <name>]',
-      '  status --ledger <path>',
-      '  skill --ledger <path> --skill <name> --xp <n>',
-      '  career-start --ledger <path> --role <role>',
-      '  career-end --ledger <path> --role <role>',
-      '  task-done --ledger <path> --role <role>',
-      '  join-group --ledger <path> --group <id>',
-      '  leave-group --ledger <path> --group <id>',
-      '  known-check --ledger <path> --agent-id <id>',
-      '',
-    ].join('\n'));
+    process.stdout.write(
+      [
+        'Life Ledger CLI',
+        '',
+        'Commands:',
+        '  init --ledger <path> --agent-id <id> [--name <display_name>]',
+        '  encounter --ledger <path> --agent-id <id> [--alignment <float>] [--name <name>]',
+        '  status --ledger <path>',
+        '  skill --ledger <path> --skill <name> --xp <n>',
+        '  career-start --ledger <path> --role <role>',
+        '  career-end --ledger <path> --role <role>',
+        '  task-done --ledger <path> --role <role>',
+        '  join-group --ledger <path> --group <id>',
+        '  leave-group --ledger <path> --group <id>',
+        '  known-check --ledger <path> --agent-id <id>',
+        '',
+      ].join('\n')
+    );
     return;
   }
 
@@ -115,7 +121,8 @@ function main() {
   if (command === 'encounter') {
     const record = loadRecord(ledgerPath);
     const encounteredId = requireFlag(flags, 'agent-id');
-    const alignmentSignal = flags.alignment !== undefined ? parseFloat(String(flags.alignment)) : undefined;
+    const alignmentSignal =
+      flags.alignment !== undefined ? parseFloat(String(flags.alignment)) : undefined;
     const name = flags.name ? String(flags.name) : undefined;
     const result = encounter(record, encounteredId, alignmentSignal, name);
     saveRecord(ledgerPath, record);

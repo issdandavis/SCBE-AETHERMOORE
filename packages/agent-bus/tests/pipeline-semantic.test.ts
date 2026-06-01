@@ -52,7 +52,16 @@ function failResult() {
 // ─── compilePlan: semantic attachment ────────────────────────────────────────
 
 describe('compilePlan: semantic attachment', () => {
-  beforeEach(() => mockSpawnSync.mockReset());
+  const originalGeoSealBin = process.env.SCBE_GEOSEAL_BIN;
+
+  beforeEach(() => {
+    mockSpawnSync.mockReset();
+    if (originalGeoSealBin === undefined) {
+      delete process.env.SCBE_GEOSEAL_BIN;
+    } else {
+      process.env.SCBE_GEOSEAL_BIN = originalGeoSealBin;
+    }
+  });
 
   it('attaches semantic field when intent matches discourse atoms', () => {
     // "Let me explain / for example / similarly" → ANNOUNCE + EXPAND → long_turn
@@ -95,13 +104,29 @@ describe('compilePlan: semantic attachment', () => {
     expect(plan).toBeNull();
   });
 
+  it('uses explicit geoseal binary before repo-local discovery', () => {
+    mockSpawnSync.mockReturnValueOnce(successResult(fakePlanJson()));
+    const plan = compilePlan('compile this through explicit geoseal', {
+      repoRoot: process.cwd(),
+      geosealBin: 'mock-geoseal',
+    });
+    expect(plan).not.toBeNull();
+    expect(mockSpawnSync).toHaveBeenCalledTimes(1);
+    expect(mockSpawnSync.mock.calls[0]?.[0]).toBe('mock-geoseal');
+    expect(mockSpawnSync.mock.calls[0]?.[1]).toEqual([
+      'compile',
+      '--json',
+      'compile this through explicit geoseal',
+    ]);
+  });
+
   it('falls back to an installed geoseal binary when repo-local compile fails', () => {
+    process.env.SCBE_GEOSEAL_BIN = 'mock-geoseal';
     mockSpawnSync
       .mockReturnValueOnce(failResult())
       .mockReturnValueOnce(successResult(fakePlanJson()));
     const plan = compilePlan('compile this through installed geoseal', {
       repoRoot: process.cwd(),
-      geosealBin: 'mock-geoseal',
     });
     expect(plan).not.toBeNull();
     expect(mockSpawnSync).toHaveBeenCalledTimes(2);

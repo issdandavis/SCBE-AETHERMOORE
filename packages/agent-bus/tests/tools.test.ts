@@ -74,6 +74,8 @@ describe('tool registry', () => {
   });
 
   it('audits tools into patent-facing surfaces and env readiness', () => {
+    const oldUsptoKey = process.env.USPTO_ODP_API_KEY;
+    delete process.env.USPTO_ODP_API_KEY;
     const audit = auditToolRegistry([
       {
         name: 'geoseal-compile',
@@ -88,6 +90,11 @@ describe('tool registry', () => {
         args: ['scripts/research_api_bus.py', '--api', 'uspto', '--query', '{task}'],
       },
     ]);
+    if (oldUsptoKey === undefined) {
+      delete process.env.USPTO_ODP_API_KEY;
+    } else {
+      process.env.USPTO_ODP_API_KEY = oldUsptoKey;
+    }
 
     expect(audit.schema_version).toBe('scbe.agent_bus.tool_registry_audit.v1');
     expect(audit.tool_count).toBe(2);

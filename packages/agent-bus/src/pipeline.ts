@@ -32,6 +32,17 @@ interface GeoSealInvocation {
   cwd: string;
 }
 
+function commandInvocation(command: string, argsPrefix: string[], cwd: string): GeoSealInvocation {
+  if (process.platform === 'win32' && /\.(?:cmd|bat)$/i.test(command)) {
+    return {
+      command: process.env.ComSpec || 'cmd.exe',
+      argsPrefix: ['/d', '/s', '/c', 'call', command, ...argsPrefix],
+      cwd,
+    };
+  }
+  return { command, argsPrefix, cwd };
+}
+
 /**
  * Resolve the SCBE repo root for GeoSeal calls.
  * Priority:
@@ -78,27 +89,25 @@ function resolveGeoSealInvocations(options: RunOptions = {}): GeoSealInvocation[
   const invocations: GeoSealInvocation[] = [];
   const repoRoot = findRepoRoot(options);
   const python = options.python || process.env.PYTHON || 'python';
+  const seen = new Set<string>();
 
-  if (repoRoot) {
-    invocations.push({
-      command: python,
-      argsPrefix: [path.join(repoRoot, GEOSL_CLI_MARKER)],
-      cwd: repoRoot,
-    });
+  if (options.geosealBin) {
+    seen.add(options.geosealBin);
+    invocations.push(commandInvocation(options.geosealBin, [], repoRoot || process.cwd()));
   }
 
-  const binaryCandidates = [
-    options.geosealBin,
-    process.env.SCBE_GEOSEAL_BIN,
-    'geoseal',
-    'scbe-geoseal',
-  ].filter((item): item is string => Boolean(item));
+  if (repoRoot) {
+    invocations.push(commandInvocation(python, [path.join(repoRoot, GEOSL_CLI_MARKER)], repoRoot));
+  }
 
-  const seen = new Set<string>();
+  const binaryCandidates = [process.env.SCBE_GEOSEAL_BIN, 'geoseal', 'scbe-geoseal'].filter(
+    (item): item is string => Boolean(item)
+  );
+
   for (const command of binaryCandidates) {
     if (seen.has(command)) continue;
     seen.add(command);
-    invocations.push({ command, argsPrefix: [], cwd: repoRoot || process.cwd() });
+    invocations.push(commandInvocation(command, [], repoRoot || process.cwd()));
   }
 
   return invocations;

@@ -2005,6 +2005,50 @@ export async function startAgentBusServer(
         }
         return;
       }
+      if (req.method === 'POST' && req.url === '/v1/bridge/plan') {
+        const body = JSON.parse(await readBody(req)) as {
+          intent?: string;
+          message?: import('./multi-bridge.js').BridgeMessageInput;
+          endpoints?: import('./multi-bridge.js').BridgeEndpointInput[];
+          options?: import('./multi-bridge.js').BridgeRouteOptions;
+        };
+        const { planBridgeRoute } = await import('./multi-bridge.js');
+        const plan = planBridgeRoute(
+          String(body.intent || 'bridge message'),
+          body.message || { from: '', to: [], body: '' },
+          body.endpoints || [],
+          body.options || {}
+        );
+        sendJson(res, plan.route.decision === 'DENY' ? 403 : 200, { ok: true, plan });
+        return;
+      }
+      if (req.method === 'POST' && req.url === '/v1/research-vault/packet/plan') {
+        const body = JSON.parse(
+          await readBody(req)
+        ) as import('./research-vault.js').ResearchVaultPlanInput;
+        const { planResearchVaultPacket } = await import('./research-vault.js');
+        const plan = planResearchVaultPacket(body);
+        sendJson(res, plan.governance.decision === 'DENY' ? 403 : 200, { ok: true, plan });
+        return;
+      }
+      if (req.method === 'POST' && req.url === '/v1/research-vault/packet/persist') {
+        const body = JSON.parse(
+          await readBody(req)
+        ) as import('./research-vault.js').ResearchVaultPlanInput & {
+          workspace_root?: string;
+        };
+        const workspaceRoot = String(body.workspace_root || '').trim();
+        if (!workspaceRoot) {
+          sendJson(res, 400, { ok: false, error: 'workspace_root is required' });
+          return;
+        }
+        const { planResearchVaultPacket, persistResearchVaultPlan } =
+          await import('./research-vault.js');
+        const plan = planResearchVaultPacket(body);
+        const persist = persistResearchVaultPlan(plan, workspaceRoot);
+        sendJson(res, plan.governance.decision === 'DENY' ? 403 : 200, { ok: true, plan, persist });
+        return;
+      }
       if (req.method === 'POST' && req.url === '/v1/pipeline') {
         const body = JSON.parse(await readBody(req)) as {
           intent?: string;
@@ -2263,6 +2307,58 @@ export {
   getReceipts,
   summarizeHandoff,
 } from './handoff-packet.js';
+
+export {
+  type BridgeKind,
+  type BridgeProvider,
+  type BridgeDirection,
+  type BridgeTrust,
+  type BridgeDecision,
+  type BridgeEndpoint,
+  type BridgeAttachment,
+  type BridgeMessage,
+  type BridgeRouteHop,
+  type BridgeGovernanceFinding,
+  type BridgeRoutePlan,
+  type AiCommPacket,
+  type BridgeEndpointInput,
+  type BridgeMessageInput,
+  type BridgeRouteOptions,
+  type AiCommPacketInput,
+  createBridgeEndpoint,
+  createBridgeMessage,
+  planBridgeRoute,
+  summarizeBridgePlan,
+  createAiCommPacket,
+} from './multi-bridge.js';
+
+export {
+  type ResearchSourceType,
+  type ResearchRightsStatus,
+  type ResearchQuality,
+  type ResearchStyleScope,
+  type ResearchMechanicsVisibility,
+  type ResearchReviewDecision,
+  type ResearchVaultDecision,
+  type ResearchVaultLabel,
+  type ResearchSourceCard,
+  type ResearchStyleCard,
+  type ResearchSelectedNote,
+  type ResearchRetrievalPacket,
+  type ResearchReviewRecord,
+  type ResearchVaultFinding,
+  type ResearchVaultPlan,
+  type ResearchVaultPersistReceipt,
+  type ResearchSourceCardInput,
+  type ResearchStyleCardInput,
+  type ResearchRetrievalPacketInput,
+  type ResearchVaultPlanInput,
+  createResearchSourceCard,
+  createResearchStyleCard,
+  buildResearchRetrievalPacket,
+  planResearchVaultPacket,
+  persistResearchVaultPlan,
+} from './research-vault.js';
 
 export {
   type StationCycleOptions,

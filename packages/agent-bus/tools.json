@@ -442,6 +442,13 @@
     "args": ["packages/agent-bus/scripts/toolsmith.cjs", "clock", "--tasks", "{task}"]
   },
   {
+    "name": "research-vault-plan",
+    "description": "Plan a local SCBE Research Vault retrieval packet from source/style cards. Input is JSON with query, source_cards, optional style_cards, and namespace. Emits governance decision and bridge plan; does not call mail, vector stores, or remote providers.",
+    "patentSurface": "agent-harness",
+    "command": "node",
+    "args": ["packages/agent-bus/scripts/research_vault_plan.cjs", "{task}"]
+  },
+  {
     "name": "tool-validate",
     "description": "Validate a tool spec JSON without registering it. Input is a JSON object with the proposed spec (name, description, command, args, optional patentSurface). Returns ok=true/false with a list of schema errors. Use as a dry-run before calling scbe-tool-register.",
     "patentSurface": "agent-harness",
@@ -466,6 +473,8 @@
     "description": "Record an encounter in an agent life ledger. Detects known vs new persons, tracks alignment and interaction history. Provide {task} as --ledger <path> --agent-id <id> [--alignment <float>].",
     "command": "node",
     "args": ["packages/agent-bus/scripts/life_ledger_cli.cjs", "encounter", "--ledger", "{task}"]
+  },
+  {
     "name": "rubix-browser-plan",
     "description": "Plan a browser-control route as permission-defined Rubix/tesseract faces with blocked-move audit evidence",
     "command": "node",

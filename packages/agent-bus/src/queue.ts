@@ -17,7 +17,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, type ChildProcess } from 'node:child_process';
 import type { AgentBusEvent, AgentBusResult, RunOptions } from './index.js';
 import { runBeforeRunPlugins, runAfterRunPlugins } from './plugins.js';
 import { autoDiscoverTools, getTool, buildToolArgv } from './tools.js';
@@ -244,10 +244,53 @@ function executeEventAsync(
     let stdout = '';
     let stderr = '';
 
-    const child = spawn(spawnCmd, spawnArgs, {
-      cwd: repoRoot,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    let child: ChildProcess;
+    try {
+      child = spawn(spawnCmd, spawnArgs, {
+        cwd: repoRoot,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+    } catch (err) {
+      const result: AgentBusResult = {
+        schema_version: 'scbe-agentbus-node-result-v1',
+        event_index: 1,
+        started_at: startedAt,
+        finished_at: new Date().toISOString(),
+        ok: false,
+        exit_code: null,
+        stderr_tail: `spawn error: ${err instanceof Error ? err.message : String(err)}`,
+        event: {
+          task_sha256: null,
+          task_chars: normalized.task.length,
+          series_id: normalized.seriesId || receipt.run_id,
+          operation_command_chars: (normalized.operationCommand || '').length,
+        },
+        result: null,
+      };
+      resolve(result);
+      return;
+    }
+
+    if (!child.stdout || !child.stderr) {
+      const result: AgentBusResult = {
+        schema_version: 'scbe-agentbus-node-result-v1',
+        event_index: 1,
+        started_at: startedAt,
+        finished_at: new Date().toISOString(),
+        ok: false,
+        exit_code: null,
+        stderr_tail: 'spawn error: child process pipes were not available',
+        event: {
+          task_sha256: null,
+          task_chars: normalized.task.length,
+          series_id: normalized.seriesId || receipt.run_id,
+          operation_command_chars: (normalized.operationCommand || '').length,
+        },
+        result: null,
+      };
+      resolve(result);
+      return;
+    }
 
     child.stdout.setEncoding('utf-8');
     child.stderr.setEncoding('utf-8');
