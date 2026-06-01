@@ -8,6 +8,8 @@ Existing submitted item: Proposal Abstract `DARPA-PA-26-05-MATHBAC-PA-010`, fina
 
 Full proposal status: not submitted. No final upload zip exists yet.
 
+Package-control status as of 2026-05-31: draft sources exist for Attachments C, D, E, F, H, and X. Attachment C is reviewed draft source. Official MATHBAC templates A-I/X and the PA PDF are now present in `../official_templates/`. Attachment G/I blocker worksheets and disclosure inventory exist. Public DARPA OT certifications, milestone templates, and research-security reference forms have also been downloaded to `../sam_gov_attachments/`. Final filled G/I, disclosure PDFs, final PDFs, final XLSX, and final flat zip staging are still not complete.
+
 ## BAAT Cover Sheet Fields
 
 Use current SAM/BAAT entity values:
@@ -36,16 +38,31 @@ Working recommendation: `$839,000` — use only if Attachment E/F are built from
 
 | Item | Required final filename | Workspace folder | Current source | Status |
 | --- | --- | --- | --- | --- |
-| Attachment C | `Attachment_C_Proposal_Summary_Slide.pdf` | `03_attachment_c_summary_slide/` | none found | MISSING |
-| Attachment D | `Attachment_D_Volume_I_Technical_Management.pdf` | `04_attachment_d_vol_i_technical_management/` | `vol_i_technical_approach_draft_v1.md`; `vol_i_section_4_technical_approach_skeleton.md` | DRAFT |
-| Attachment E | `Attachment_E_Volume_II_Price.pdf` | `05_attachment_e_vol_ii_price/` | `PRICE_COST_ANALYSIS_RESEARCH_2026-05-31.md` | DRAFT SOURCE |
-| Attachment F | `Attachment_F_Streamlined_Cost_Buildup.xlsx` | `06_attachment_f_cost_workbook/` | `COST_BUILDUP_DRAFT_2026-05-31.csv`; `MILESTONE_PAYMENT_DRAFT_2026-05-31.csv` | DRAFT SOURCE |
-| Attachment G | `Attachment_G_Model_OT_for_Research.pdf` | `07_attachment_g_model_ot/` | none found | MISSING |
-| Attachment H | `Attachment_H_Task_Description_Document.pdf` | `08_attachment_h_tdd/` | `ATTACHMENT_H_TDD_DRAFT_2026-05-31.md` | DRAFT SOURCE |
-| Attachment I | `Attachment_I_OT_Reps_and_Certs.pdf` | `09_attachment_i_reps_certs/` | none found | MISSING |
-| Attachment X | `Attachment_X_Proposal_Overview_and_Proposed_Metrics.pdf` | `10_attachment_x_metrics/` | `proposer_added_metrics_v1.md` | DRAFT |
-| Disclosure | `Common_Disclosure_Form_Issac_Davis.pdf` | `11_disclosure_forms/` | none found | MISSING |
-| Disclosure | `Current_and_Pending_Support_Issac_Davis.pdf` | `11_disclosure_forms/` | none found | MISSING |
+| Attachment C | `Attachment_C_Proposal_Summary_Slide.pdf` | `03_attachment_c_summary_slide/` | `ATTACHMENT_C_SUMMARY_SLIDE_DRAFT.md`; `../official_templates/Attachment_C_Proposal_Summary_Slide_Template.pptx` | REVIEWED DRAFT SOURCE; OFFICIAL TEMPLATE PRESENT; PDF MISSING |
+| Attachment D | `Attachment_D_Volume_I_Technical_Management.pdf` | `04_attachment_d_vol_i_technical_management/` | `ATTACHMENT_D_VOL_I_DRAFT.md`; `../official_templates/Attachment_D_Proposal_Instructions_and_Volume_I_Template__Technical_and_Management.docx` | DRAFT SOURCE; OFFICIAL TEMPLATE PRESENT; PDF MISSING |
+| Attachment E | `Attachment_E_Volume_II_Price.pdf` | `05_attachment_e_vol_ii_price/` | `PRICE_COST_ANALYSIS_RESEARCH_2026-05-31.md`; `ATTACHMENT_E_PRICE_VOLUME_DRAFT_2026-05-31.md`; `../official_templates/Attachment_E_Proposal_Instructions_and_Volume_II_Template_Price.docx` | PRICE NARRATIVE DRAFT PRESENT; OFFICIAL TEMPLATE PRESENT; PDF MISSING |
+| Attachment F | `Attachment_F_Streamlined_Cost_Buildup.xlsx` | `06_attachment_f_cost_workbook/` | `COST_BUILDUP_DRAFT_2026-05-31.csv`; `MILESTONE_PAYMENT_DRAFT_2026-05-31.csv`; `Attachment_F_Streamlined_Cost_Buildup_FILLED_DRAFT_2026-05-31.xlsx`; `ATTACHMENT_F_FILLED_DRAFT_NOTES_2026-05-31.md`; `../official_templates/Attachment_F_Streamlined_Cost_Buildup_Workbook.xlsx` | FILLED DRAFT WORKBOOK PRESENT; HUMAN REVIEW/FINAL XLSX MISSING |
+| Attachment G | `Attachment_G_Model_OT_for_Research.pdf` | `07_attachment_g_model_ot/` | `ATTACHMENT_G_COMPLETION_WORKSHEET.md`; `ATTACHMENT_G_FILL_GUIDE.md`; `Attachment_G_SCBE_FILLED.docx`; **`Attachment_G_SCBE_FILLED.pdf`** (703KB, 2026-05-31); `ATTACHMENT_G_FILLED_DRAFT_NOTES_2026-05-31.md`; `README.md`; `../official_templates/Attachment_G_Model_Other_Transaction_for_Research_Agreement_MATHBAC_.docx` | FILLED DRAFT DOCX/PDF PRESENT; USER REVIEW REQUIRED |
+| Attachment H | `Attachment_H_Task_Description_Document.pdf` | `08_attachment_h_tdd/` | `ATTACHMENT_H_TDD_DRAFT_2026-05-31.md`; `../official_templates/Attachment_H_Task_Description_Document_TDD_Template.docx` | DRAFT SOURCE; OFFICIAL TEMPLATE PRESENT; PDF MISSING |
+| Attachment I | `Attachment_I_OT_Reps_and_Certs.pdf` | `08_attachment_i_certifications/` | `ATTACHMENT_I_FILL_GUIDE.md`; `Attachment_I_SCBE_FILLED.docx`; **`Attachment_I_SCBE_FILLED.pdf`** (106KB, 2026-05-31); `../09_attachment_i_reps_certs/ATTACHMENT_I_COMPLETION_WORKSHEET.md`; `../09_attachment_i_reps_certs/ATTACHMENT_I_FILLED_DRAFT_NOTES_2026-05-31.md`; `../official_templates/Attachment_I_Other_Transaction_Certifications.docx` | FILLED DRAFT DOCX/PDF PRESENT; USER SIGNATURE/TIN REVIEW REQUIRED |
+| Attachment X | `Attachment_X_Proposal_Overview_and_Proposed_Metrics.pdf` | `10_attachment_x_metrics/` | `ATTACHMENT_X_PROPOSAL_OVERVIEW_AND_METRICS_DRAFT.md`; `../../proposer_added_metrics_v1.md`; `SOURCE_MAP.md`; `../official_templates/Attachment_X_Proposal_Overview_and_Proposed_Metrics.pptx` | DRAFT SOURCE; OFFICIAL TEMPLATE PRESENT; PDF MISSING |
+| Disclosure | `Common_Disclosure_Form_Issac_Davis.pdf` | `11_disclosure_forms/` | `DISCLOSURE_REQUIREMENTS_INVENTORY_2026-05-31.md`; `README.md`; `../sam_gov_attachments/NSF_COMMON_FORM_BIOGRAPHICAL_SKETCH_R.pdf` | OFFICIAL BLANK BIOGRAPHICAL SKETCH FORM DOWNLOADED; FINAL PDF MISSING |
+| Disclosure | `Current_and_Pending_Support_Issac_Davis.pdf` | `11_disclosure_forms/` | `DISCLOSURE_REQUIREMENTS_INVENTORY_2026-05-31.md`; `README.md`; `../sam_gov_attachments/NSF_COMMON_FORM_CURRENT_PENDING_SUPPORT_PAGE.html` | NSF GUIDANCE PAGE DOWNLOADED; FINAL PDF MISSING |
+
+## Deliberate Internal Support Notes
+
+These files are useful for agent handoff and implementation context, but they are **not BAAT upload files**:
+
+| File | Package role | BAAT status |
+| --- | --- | --- |
+| `docs/ops/SCBE_API_TUNNEL_AGENT_HANDOFF_2026-05-31.md` | Internal operations handoff for local API/tunnel/auth state | EXCLUDE |
+| `docs/ops/RESEARCH_VAULT_AGENT_HARNESS_BUS_CLI_INTEGRATION_PLAN.md` | Internal product/infrastructure lane note for Research Vault | EXCLUDE |
+| `12_ip_and_data_rights/collin_public_repo_due_diligence_2026-05-31.md` | Internal diligence only | EXCLUDE |
+| `12_ip_and_data_rights/collin_item2_surface_status_2026-05-31.md` | Internal unresolved-claim tracker | EXCLUDE unless the actual surface/artifact is closed in writing |
+| `08_attachment_h_tdd/HOAGS_SUPPORTING_SUB_SCOPE_DRAFT.md` | Source note for bounded sub scope | EXCLUDE as a standalone file; fold only approved language into final Attachment H |
+| `00_manifest/FULL_DOCUMENT_CONSISTENCY_REVIEW_2026-05-31.md` | Package-control review note | EXCLUDE |
+| `11_disclosure_forms/DISCLOSURE_REQUIREMENTS_INVENTORY_2026-05-31.md` | Disclosure planning worksheet | EXCLUDE as standalone file; use only to fill final disclosure PDFs |
+| Any `SOURCE_MAP.md`, `README.md`, cost-analysis research note, or package-control checklist | Build evidence and operator guidance | EXCLUDE |
 
 ## Prime/Sub Submission Guard
 
@@ -82,6 +99,8 @@ Prime/sub structure guide: `PRIME_SUB_SECTION_SEPARATION.md`.
 | IP/data rights | `../annex_a_revision_2_draft.md`; `../ip_carveout_v1.md` |
 | Abstract comparison | `../abstract_three_stacks_compare.md` |
 | SAM source notices | `../sam_gov_attachments/` |
+| Official MATHBAC templates | `../official_templates/`; `../official_templates/OFFICIAL_TEMPLATE_INVENTORY_2026-05-31.md` |
+| Public form download inventory | `../sam_gov_attachments/OFFICIAL_PUBLIC_FORM_DOWNLOADS_2026-05-31.md` |
 
 ## Stop-Go Rule
 
@@ -92,3 +111,4 @@ Do not click BAAT `Finalize Full Proposal` until:
 3. The zip exists and can be opened locally.
 4. The zip root contains the required files directly, not nested under extra folders unless the solicitation explicitly allows nested folders.
 5. The BAAT upload field shows the chosen zip filename.
+6. A package sanity scan has been run against the final staging folder, not merely against draft sources.
