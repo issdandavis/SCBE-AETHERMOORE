@@ -41,7 +41,7 @@ Working recommendation: `$839,000` — use only if Attachment E/F are built from
 | Attachment E | `Attachment_E_Volume_II_Price.pdf` | `05_attachment_e_vol_ii_price/` | `PRICE_COST_ANALYSIS_RESEARCH_2026-05-31.md` | DRAFT SOURCE |
 | Attachment F | `Attachment_F_Streamlined_Cost_Buildup.xlsx` | `06_attachment_f_cost_workbook/` | `COST_BUILDUP_DRAFT_2026-05-31.csv`; `MILESTONE_PAYMENT_DRAFT_2026-05-31.csv` | DRAFT SOURCE |
 | Attachment G | `Attachment_G_Model_OT_for_Research.pdf` | `07_attachment_g_model_ot/` | none found | MISSING |
-| Attachment H | `Attachment_H_Task_Description_Document.pdf` | `08_attachment_h_tdd/` | milestone requirements in `pa_26_05_compliance_checklist.md` | MISSING |
+| Attachment H | `Attachment_H_Task_Description_Document.pdf` | `08_attachment_h_tdd/` | `ATTACHMENT_H_TDD_DRAFT_2026-05-31.md` | DRAFT SOURCE |
 | Attachment I | `Attachment_I_OT_Reps_and_Certs.pdf` | `09_attachment_i_reps_certs/` | none found | MISSING |
 | Attachment X | `Attachment_X_Proposal_Overview_and_Proposed_Metrics.pdf` | `10_attachment_x_metrics/` | `proposer_added_metrics_v1.md` | DRAFT |
 | Disclosure | `Common_Disclosure_Form_Issac_Davis.pdf` | `11_disclosure_forms/` | none found | MISSING |

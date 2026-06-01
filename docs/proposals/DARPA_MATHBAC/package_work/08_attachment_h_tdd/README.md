@@ -6,6 +6,10 @@ Final target:
 
 `Attachment_H_Task_Description_Document.pdf`
 
+Working source:
+
+- `ATTACHMENT_H_TDD_DRAFT_2026-05-31.md`
+
 Current source:
 
 - `../../pa_26_05_compliance_checklist.md` milestone section.
