@@ -286,3 +286,8 @@ apps/aether-desktop/.scbe/
 
 # ARC-AGI-2 dataset clone -- large binary, fetched separately via git clone
 artifacts/arc-data/
+
+# DARPA/MATHBAC private signing and final-upload staging.
+# May contain TIN/SSN or signatures; keep only README/package-control docs tracked.
+docs/proposals/DARPA_MATHBAC/package_work/99_final_zip_staging/**
+!docs/proposals/DARPA_MATHBAC/package_work/99_final_zip_staging/README.md

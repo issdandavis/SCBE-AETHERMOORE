@@ -6,6 +6,9 @@ coverage
 *.tgz
 package-lock.json
 .hypothesis
+.mypy_cache
+.pytest_cache
+.ruff_cache
 __pycache__
 *.pyc
 .pytest_tmp
