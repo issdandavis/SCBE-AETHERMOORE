@@ -33,12 +33,12 @@ PHI = (1.0 + math.sqrt(5.0)) / 2.0  # ≈ 1.6180339887
 # 6 GeoSeed tongues → orbital shell mapping
 # weight = φⁿ,  l = angular momentum quantum number,  m_count = 2l+1
 TONGUES = [
-    {"name": "Kor'aelin",    "abbr": "KO", "n": 0, "weight": PHI**0, "l": 0},
-    {"name": "Avali",        "abbr": "AV", "n": 1, "weight": PHI**1, "l": 1},
-    {"name": "Runethic",     "abbr": "RU", "n": 2, "weight": PHI**2, "l": 2},
+    {"name": "Kor'aelin", "abbr": "KO", "n": 0, "weight": PHI**0, "l": 0},
+    {"name": "Avali", "abbr": "AV", "n": 1, "weight": PHI**1, "l": 1},
+    {"name": "Runethic", "abbr": "RU", "n": 2, "weight": PHI**2, "l": 2},
     {"name": "Cassisivadan", "abbr": "CA", "n": 3, "weight": PHI**3, "l": 3},
-    {"name": "Umbroth",      "abbr": "UM", "n": 4, "weight": PHI**4, "l": 4},
-    {"name": "Draumric",     "abbr": "DR", "n": 5, "weight": PHI**5, "l": 5},
+    {"name": "Umbroth", "abbr": "UM", "n": 4, "weight": PHI**4, "l": 4},
+    {"name": "Draumric", "abbr": "DR", "n": 5, "weight": PHI**5, "l": 5},
 ]
 
 # 21 Sacred Egg positions per shell (21D canonical state lift)
@@ -47,6 +47,7 @@ _SACRED_EGG_COUNT = 21
 
 
 # ── Hyperbolic geometry ────────────────────────────────────────────────────────
+
 
 def phi_to_poincare_r(n: int) -> float:
     """
@@ -103,9 +104,7 @@ def radial_wavefunction(rho: float, l: int, n_radial: int = 1) -> float:
     x = 2.0 * alpha * rho
     laguerre = float(eval_genlaguerre(p, 2 * l + 1, x))
     norm = math.sqrt(
-        (2.0 * alpha) ** 3
-        * float(factorial(p))
-        / (2.0 * (n_radial + l) * float(factorial(p + 2 * l + 1)))
+        (2.0 * alpha) ** 3 * float(factorial(p)) / (2.0 * (n_radial + l) * float(factorial(p + 2 * l + 1)))
     )
     return norm * (math.sinh(rho) ** l) * math.exp(-alpha * rho) * laguerre
 
@@ -118,8 +117,7 @@ def angular_wavefunction(theta: float, phi_angle: float, l: int, m: int) -> comp
     return sph_harm_y(l, m, theta, phi_angle)
 
 
-def orbital_density(rho: float, theta: float, phi_angle: float,
-                    l: int, m: int, n_radial: int = 1) -> float:
+def orbital_density(rho: float, theta: float, phi_angle: float, l: int, m: int, n_radial: int = 1) -> float:
     """
     Probability density |ψ|² × hyperbolic volume element sinh²(ρ).
 
@@ -134,6 +132,7 @@ def orbital_density(rho: float, theta: float, phi_angle: float,
 
 
 # ── Sacred Egg node positions ─────────────────────────────────────────────────
+
 
 def sacred_egg_nodes(tongue_idx: int) -> List[Tuple[float, float, float]]:
     """
@@ -161,18 +160,20 @@ def sacred_egg_nodes(tongue_idx: int) -> List[Tuple[float, float, float]]:
 
 # ── GeoSeedOrbital dataclass ──────────────────────────────────────────────────
 
+
 @dataclass
 class GeoSeedOrbital:
     """One orbital shell — one tongue, one l, one Poincaré-ball depth."""
+
     tongue: str
     abbr: str
-    n_phi: int                       # phi-weight index (0..5)
-    weight: float                    # φⁿ
-    l: int                           # angular momentum
-    poincare_r: float                # Euclidean radius in Poincaré ball
-    hyperbolic_rho: float            # ρ = n·ln(φ)  (hyperbolic distance from centre)
-    lb_eigenvalue: float             # Laplace-Beltrami eigenvalue
-    m_states: int                    # 2l+1 magnetic sub-states
+    n_phi: int  # phi-weight index (0..5)
+    weight: float  # φⁿ
+    l: int  # angular momentum
+    poincare_r: float  # Euclidean radius in Poincaré ball
+    hyperbolic_rho: float  # ρ = n·ln(φ)  (hyperbolic distance from centre)
+    lb_eigenvalue: float  # Laplace-Beltrami eigenvalue
+    m_states: int  # 2l+1 magnetic sub-states
     egg_nodes: List[Tuple[float, float, float]] = field(repr=False)
 
     @property
@@ -209,6 +210,7 @@ class GeoSeedOrbital:
 
 # ── Build the 6-orbital system ────────────────────────────────────────────────
 
+
 def build_geoseed_orbitals() -> List[GeoSeedOrbital]:
     """Construct all 6 GeoSeed hyperbolic orbital shells."""
     orbitals = []
@@ -217,22 +219,25 @@ def build_geoseed_orbitals() -> List[GeoSeedOrbital]:
         l = t["l"]
         rho = n * math.log(PHI)
         r = phi_to_poincare_r(n)
-        orbitals.append(GeoSeedOrbital(
-            tongue=t["name"],
-            abbr=t["abbr"],
-            n_phi=n,
-            weight=t["weight"],
-            l=l,
-            poincare_r=r,
-            hyperbolic_rho=rho,
-            lb_eigenvalue=laplace_beltrami_eigenvalue(l),
-            m_states=2 * l + 1,
-            egg_nodes=sacred_egg_nodes(n),
-        ))
+        orbitals.append(
+            GeoSeedOrbital(
+                tongue=t["name"],
+                abbr=t["abbr"],
+                n_phi=n,
+                weight=t["weight"],
+                l=l,
+                poincare_r=r,
+                hyperbolic_rho=rho,
+                lb_eigenvalue=laplace_beltrami_eigenvalue(l),
+                m_states=2 * l + 1,
+                egg_nodes=sacred_egg_nodes(n),
+            )
+        )
     return orbitals
 
 
 # ── Inter-shell coupling ───────────────────────────────────────────────────────
+
 
 def inter_shell_geodesic(orbitals: List[GeoSeedOrbital]) -> List[dict]:
     """
@@ -245,18 +250,21 @@ def inter_shell_geodesic(orbitals: List[GeoSeedOrbital]) -> List[dict]:
     for i in range(len(orbitals) - 1):
         a, b = orbitals[i], orbitals[i + 1]
         d = hyperbolic_distance(a.poincare_r, b.poincare_r)
-        gaps.append({
-            "from": a.abbr,
-            "to": b.abbr,
-            "from_l": a.l,
-            "to_l": b.l,
-            "geodesic_distance": round(d, 6),
-            "phi_ratio": round(b.weight / a.weight, 6),
-        })
+        gaps.append(
+            {
+                "from": a.abbr,
+                "to": b.abbr,
+                "from_l": a.l,
+                "to_l": b.l,
+                "geodesic_distance": round(d, 6),
+                "phi_ratio": round(b.weight / a.weight, 6),
+            }
+        )
     return gaps
 
 
 # ── Summary / entrypoint ──────────────────────────────────────────────────────
+
 
 def orbital_summary() -> dict:
     """Full model summary — orbitals, inter-shell gaps, golden-ratio checkpoint."""
@@ -292,18 +300,23 @@ def orbital_summary() -> dict:
 
 def main():
     import json
+
     summary = orbital_summary()
     print(json.dumps(summary, indent=2))
 
     # Print compact table
     print("\n── GeoSeed Hyperbolic Orbitals ────────────────────────────────")
-    print(f"{'Tongue':<15} {'Abbr':<5} {'l':<4} {'Type':<5} {'φⁿ':<8} "
-          f"{'r (ball)':<10} {'ρ (hyp)':<10} {'LB λ':<8} {'m-states'}")
+    print(
+        f"{'Tongue':<15} {'Abbr':<5} {'l':<4} {'Type':<5} {'φⁿ':<8} "
+        f"{'r (ball)':<10} {'ρ (hyp)':<10} {'LB λ':<8} {'m-states'}"
+    )
     print("-" * 75)
     for o in build_geoseed_orbitals():
-        print(f"{o.tongue:<15} {o.abbr:<5} {o.l:<4} {o.orbital_name:<5} "
-              f"{o.weight:<8.3f} {o.poincare_r:<10.6f} {o.hyperbolic_rho:<10.6f} "
-              f"{o.lb_eigenvalue:<8.0f} {o.m_states}")
+        print(
+            f"{o.tongue:<15} {o.abbr:<5} {o.l:<4} {o.orbital_name:<5} "
+            f"{o.weight:<8.3f} {o.poincare_r:<10.6f} {o.hyperbolic_rho:<10.6f} "
+            f"{o.lb_eigenvalue:<8.0f} {o.m_states}"
+        )
     print("-" * 75)
     print(f"  CA (l=3) sits at r = {build_geoseed_orbitals()[3].poincare_r:.9f}")
     print(f"  1/φ          =    {1/PHI:.9f}  ← exact match")

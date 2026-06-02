@@ -39,8 +39,8 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-
 # ── Core data structures ──────────────────────────────────────────────────────
+
 
 @dataclass
 class PrincipleSet:
@@ -53,6 +53,7 @@ class PrincipleSet:
     open_questions:   Unresolved questions that must carry forward.
     next_footholds:   Concrete next steps.
     """
+
     mission: str
     invariants: List[str] = field(default_factory=list)
     claim_boundaries: List[str] = field(default_factory=list)
@@ -76,6 +77,7 @@ class PrincipleSet:
 @dataclass
 class ContextBrick:
     """A named context snapshot — the unit of longform memory."""
+
     brick_id: str
     kind: str  # always "brick"
     ts: str
@@ -102,6 +104,7 @@ class LedgerEvent:
     event_hash is computed over the canonical JSON of this event
     with event_hash set to the empty string, then SHA-256'd.
     """
+
     event_id: str
     kind: str
     ts: str
@@ -137,6 +140,7 @@ class ContextLanding:
     plus the brick count and a cryptographic hash of the landing content.
     Any future session can verify integrity and resume from this point.
     """
+
     landing_id: str
     ts: str
     landing_hash: str
@@ -160,7 +164,8 @@ class ContextLanding:
         """Verify this landing's hash matches its content."""
         content = json.dumps(
             {k: v for k, v in self.to_dict().items() if k != "landing_hash"},
-            sort_keys=True, separators=(",", ":"),
+            sort_keys=True,
+            separators=(",", ":"),
         )
         expected = hashlib.sha256(content.encode()).hexdigest()
         return expected == self.landing_hash
@@ -174,6 +179,7 @@ class ResumePack:
     External sessions use this to resume without re-reading the full ledger.
     The pack is NOT authoritative — the JSONL ledger always is.
     """
+
     pack_id: str
     ts: str
     landing: ContextLanding
@@ -193,6 +199,7 @@ class ResumePack:
 
 
 # ── Validation ────────────────────────────────────────────────────────────────
+
 
 def validate_principles(principles: PrincipleSet, context: str) -> bool:
     """
@@ -220,6 +227,7 @@ def validate_principles(principles: PrincipleSet, context: str) -> bool:
 
 
 # ── JsonlWorkflowLedger ───────────────────────────────────────────────────────
+
 
 class JsonlWorkflowLedger:
     """
@@ -268,8 +276,7 @@ class JsonlWorkflowLedger:
         last = self._read_last_event()
         return (last.sequence + 1) if last else 1
 
-    def append(self, kind: str, payload: Dict[str, Any],
-                parent_hashes: Optional[List[str]] = None) -> LedgerEvent:
+    def append(self, kind: str, payload: Dict[str, Any], parent_hashes: Optional[List[str]] = None) -> LedgerEvent:
         """Append an event to the ledger. Returns the committed event."""
         self._ensure_dirs()
         last = self._read_last_event()
@@ -390,13 +397,17 @@ class JsonlWorkflowLedger:
 
 # ── Factory functions ─────────────────────────────────────────────────────────
 
+
 def _longform_dir(workspace_dir: str) -> str:
     return os.path.join(workspace_dir, ".scbe-longform")
 
 
-def new_ledger(workspace_dir: str, mission: str,
-               invariants: Optional[List[str]] = None,
-               claim_boundaries: Optional[List[str]] = None) -> JsonlWorkflowLedger:
+def new_ledger(
+    workspace_dir: str,
+    mission: str,
+    invariants: Optional[List[str]] = None,
+    claim_boundaries: Optional[List[str]] = None,
+) -> JsonlWorkflowLedger:
     """
     Create a new longform workflow workspace and return the ledger.
     Emits an initial 'brick' event with the PrincipleSet.
@@ -410,14 +421,17 @@ def new_ledger(workspace_dir: str, mission: str,
         claim_boundaries=claim_boundaries or [],
     )
     ledger.save_principles(principles)
-    ledger.append("brick", {
-        "mission": mission,
-        "invariants": principles.invariants,
-        "claim_boundaries": principles.claim_boundaries,
-        "open_questions": [],
-        "next_footholds": [],
-        "metadata": {"event": "workspace_init"},
-    })
+    ledger.append(
+        "brick",
+        {
+            "mission": mission,
+            "invariants": principles.invariants,
+            "claim_boundaries": principles.claim_boundaries,
+            "open_questions": [],
+            "next_footholds": [],
+            "metadata": {"event": "workspace_init"},
+        },
+    )
     return ledger
 
 
@@ -425,10 +439,7 @@ def load_ledger(workspace_dir: str) -> JsonlWorkflowLedger:
     """Load an existing longform workspace ledger."""
     lf_dir = _longform_dir(workspace_dir)
     if not os.path.exists(lf_dir):
-        raise FileNotFoundError(
-            f"No .scbe-longform workspace at {workspace_dir}. "
-            "Run `scbe work init` first."
-        )
+        raise FileNotFoundError(f"No .scbe-longform workspace at {workspace_dir}. " "Run `scbe work init` first.")
     return JsonlWorkflowLedger(lf_dir)
 
 
@@ -465,7 +476,8 @@ def create_landing(
     }
     content = json.dumps(
         {k: v for k, v in landing_data.items() if k != "landing_hash"},
-        sort_keys=True, separators=(",", ":"),
+        sort_keys=True,
+        separators=(",", ":"),
     )
     landing_hash = hashlib.sha256(content.encode()).hexdigest()
     landing_data["landing_hash"] = landing_hash
@@ -480,13 +492,16 @@ def create_landing(
         json.dump(landing.to_dict(), f, indent=2)
 
     # Append landing event to ledger
-    ledger.append("landing", {
-        "landing_id": landing_id,
-        "landing_hash": landing_hash,
-        "brick_count": bc,
-        "last_sequence": last_seq,
-        "principles_validated": True,
-    })
+    ledger.append(
+        "landing",
+        {
+            "landing_id": landing_id,
+            "landing_hash": landing_hash,
+            "brick_count": bc,
+            "last_sequence": last_seq,
+            "principles_validated": True,
+        },
+    )
 
     return landing
 

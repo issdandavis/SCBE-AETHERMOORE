@@ -39,8 +39,8 @@ PHI = (1.0 + math.sqrt(5.0)) / 2.0
 # ── Minimal curve fitting (no scipy required) via Nelder-Mead ─────────────────
 # This way the module works with stdlib only.
 
-def _nelder_mead(f, x0: List[float], tol: float = 1e-9,
-                 max_iter: int = 5000) -> List[float]:
+
+def _nelder_mead(f, x0: List[float], tol: float = 1e-9, max_iter: int = 5000) -> List[float]:
     """Nelder-Mead simplex minimizer (stdlib only)."""
     n = len(x0)
     alpha, beta, gamma, delta = 1.0, 0.5, 2.0, 0.5
@@ -101,10 +101,7 @@ def _nelder_mead(f, x0: List[float], tol: float = 1e-9,
 
         # Shrink
         best = simplex[0]
-        simplex = [best] + [
-            [best[j] + delta * (simplex[i][j] - best[j]) for j in range(n)]
-            for i in range(1, n + 1)
-        ]
+        simplex = [best] + [[best[j] + delta * (simplex[i][j] - best[j]) for j in range(n)] for i in range(1, n + 1)]
         scores = [score(pt) for pt in simplex]
 
     return simplex[0]
@@ -112,12 +109,13 @@ def _nelder_mead(f, x0: List[float], tol: float = 1e-9,
 
 # ── Fit functions ─────────────────────────────────────────────────────────────
 
+
 def _power_law(n: int, A: float, delta: float, p: float) -> float:
     """E = A / (n + delta)^p"""
     base = n + delta
     if base <= 0:
         return float("inf")
-    return A / (base ** p)
+    return A / (base**p)
 
 
 def _exponential(n: int, A: float, lam: float) -> float:
@@ -127,8 +125,7 @@ def _exponential(n: int, A: float, lam: float) -> float:
     return A * (lam ** (-n))
 
 
-def fit_power_law(energies: List[float], ns: Optional[List[int]] = None
-                  ) -> Tuple[float, float, float, float]:
+def fit_power_law(energies: List[float], ns: Optional[List[int]] = None) -> Tuple[float, float, float, float]:
     """
     Fit E_n = A / (n + delta)^p to the given energy list.
     Returns (A, delta, p, residual_rms).
@@ -155,8 +152,7 @@ def fit_power_law(energies: List[float], ns: Optional[List[int]] = None
     return A, delta, p, rms
 
 
-def fit_exponential(energies: List[float], ns: Optional[List[int]] = None
-                    ) -> Tuple[float, float, float]:
+def fit_exponential(energies: List[float], ns: Optional[List[int]] = None) -> Tuple[float, float, float]:
     """
     Fit E_n = A * lambda^{-n} to the given energy list.
     Returns (A, lambda, residual_rms).
@@ -184,6 +180,7 @@ def fit_exponential(energies: List[float], ns: Optional[List[int]] = None
 
 # ── FitResult ─────────────────────────────────────────────────────────────────
 
+
 @dataclass
 class FitResult:
     theory_name: str
@@ -197,8 +194,8 @@ class FitResult:
     exp_lambda: float
     exp_rms: float
     # Diagnosis
-    better_fit: str   # "power_law" or "exponential"
-    observable: str   # "binding" or "curvature"
+    better_fit: str  # "power_law" or "exponential"
+    observable: str  # "binding" or "curvature"
     notes: str = ""
 
     def predicted_power_law(self, n: int) -> float:
@@ -273,8 +270,13 @@ def fit_all_theories() -> Dict[str, FitResult]:
 
         fit_results[name] = FitResult(
             theory_name=name,
-            pl_A=pl_A, pl_delta=pl_delta, pl_p=pl_p, pl_rms=pl_rms,
-            exp_A=exp_A, exp_lambda=exp_lam, exp_rms=exp_rms,
+            pl_A=pl_A,
+            pl_delta=pl_delta,
+            pl_p=pl_p,
+            pl_rms=pl_rms,
+            exp_A=exp_A,
+            exp_lambda=exp_lam,
+            exp_rms=exp_rms,
             better_fit=better,
             observable=obs,
             notes=" | ".join(notes_parts),
@@ -285,13 +287,15 @@ def fit_all_theories() -> Dict[str, FitResult]:
 
 # ── Crossover analysis ────────────────────────────────────────────────────────
 
+
 @dataclass
 class CrossoverAnalysis:
     """Where Bohr and Compton-orbital diverge from the same anchor point."""
-    shell_ratios: List[float]        # compton_ev[n] / bohr_ev[n] per shell
-    divergence_pct: List[float]      # (compton - bohr) / bohr * 100
-    first_significant_shell: int     # first shell where |ratio - 1| > 0.5 (50%)
-    peak_divergence_shell: int       # shell with maximum ratio
+
+    shell_ratios: List[float]  # compton_ev[n] / bohr_ev[n] per shell
+    divergence_pct: List[float]  # (compton - bohr) / bohr * 100
+    first_significant_shell: int  # first shell where |ratio - 1| > 0.5 (50%)
+    peak_divergence_shell: int  # shell with maximum ratio
     peak_ratio: float
     compton_ev: List[float]
     bohr_ev: List[float]
@@ -318,9 +322,7 @@ def crossover_analysis() -> CrossoverAnalysis:
     The crossover point is where the ratio compton/bohr becomes large enough
     to be experimentally distinguishable (here: >50% divergence threshold).
     """
-    from src.geoseed.theory_comparison import (
-        theory_compton_orbital, theory_bohr
-    )
+    from src.geoseed.theory_comparison import theory_compton_orbital, theory_bohr
 
     compton = theory_compton_orbital()
     bohr = theory_bohr()
@@ -331,10 +333,7 @@ def crossover_analysis() -> CrossoverAnalysis:
     ratios = [c / b for c, b in zip(c_evs, b_evs)]
     div_pct = [(r - 1.0) * 100 for r in ratios]
 
-    first_sig = next(
-        (i for i, r in enumerate(ratios) if abs(r - 1.0) > 0.5),
-        len(ratios) - 1
-    )
+    first_sig = next((i for i, r in enumerate(ratios) if abs(r - 1.0) > 0.5), len(ratios) - 1)
     peak_shell = max(range(6), key=lambda i: ratios[i])
     peak_ratio = ratios[peak_shell]
 
@@ -362,6 +361,7 @@ def crossover_analysis() -> CrossoverAnalysis:
 
 # ── Combined energy model ──────────────────────────────────────────────────────
 
+
 @dataclass
 class CombinedEnergy:
     """
@@ -374,11 +374,12 @@ class CombinedEnergy:
     Alternatively, normalise E_curv separately so that it represents a
     fractional overhead on E_bind.
     """
+
     shell_indices: List[int]
-    bind_ev: List[float]      # Compton-orbital
-    curv_ev: List[float]      # GeoSeed-LB
-    total_ev: List[float]     # sum
-    bohr_ev: List[float]      # reference
+    bind_ev: List[float]  # Compton-orbital
+    curv_ev: List[float]  # GeoSeed-LB
+    total_ev: List[float]  # sum
+    bohr_ev: List[float]  # reference
     curv_fraction: List[float]  # E_curv / E_total per shell
 
     def to_dict(self) -> dict:
@@ -388,7 +389,8 @@ class CombinedEnergy:
             "description": "E_total = E_bind(Compton) + E_curv(GeoSeed-LB)",
             "shells": [
                 {
-                    "shell": i, "tongue": tongues[i],
+                    "shell": i,
+                    "tongue": tongues[i],
                     "bind_ev": round(self.bind_ev[i], 4),
                     "curv_ev": round(self.curv_ev[i], 4),
                     "total_ev": round(self.total_ev[i], 4),
@@ -408,10 +410,7 @@ def combined_energy_model(curv_scale: float = 0.1) -> CombinedEnergy:
     Default 0.1 makes the curvature term a 10% overhead at the ground shell —
     small enough to not dominate binding but measurable at outer shells.
     """
-    from src.geoseed.theory_comparison import (
-        theory_compton_orbital, theory_geoseed_lb, theory_bohr,
-        RYDBERG_EV
-    )
+    from src.geoseed.theory_comparison import theory_compton_orbital, theory_geoseed_lb, theory_bohr, RYDBERG_EV
 
     bind = theory_compton_orbital().energies_ev()
     lb = theory_geoseed_lb().energies_ev()
@@ -436,6 +435,7 @@ def combined_energy_model(curv_scale: float = 0.1) -> CombinedEnergy:
 
 
 # ── ASCII summary ─────────────────────────────────────────────────────────────
+
 
 def fit_report() -> str:
     fits = fit_all_theories()
@@ -482,10 +482,7 @@ def fit_report() -> str:
     lines.append("  (Compton binding + 10%-scaled GeoSeed-LB curvature)")
     lines.append("=" * 72)
     lines.append("")
-    lines.append(
-        f"  {'Shell':<10}  {'E_bind':<12}  {'E_curv':<12}  "
-        f"{'E_total':<12}  {'E_Bohr':<12}  {'curv%':<8}"
-    )
+    lines.append(f"  {'Shell':<10}  {'E_bind':<12}  {'E_curv':<12}  " f"{'E_total':<12}  {'E_Bohr':<12}  {'curv%':<8}")
     lines.append("  " + "-" * 68)
     for i, t in enumerate(tongues):
         lines.append(
@@ -499,6 +496,7 @@ def fit_report() -> str:
 
 # ── Independent dual fit ──────────────────────────────────────────────────────
 
+
 @dataclass
 class DualFitResult:
     """
@@ -506,6 +504,7 @@ class DualFitResult:
     E_bind = A / (n + delta_b)^p
     E_curv = B * (n + delta_c)^q    (positive q = grows outward)
     """
+
     # Binding fit
     bind_A: float
     bind_delta: float
@@ -517,11 +516,11 @@ class DualFitResult:
     curv_q: float
     curv_rms: float
     # Dual check
-    p_near_2: bool          # bind exponent converges to 2
-    q_near_2: bool          # curv exponent converges to 2
+    p_near_2: bool  # bind exponent converges to 2
+    q_near_2: bool  # curv exponent converges to 2
     product_constant: bool  # I(l) = E_bind(l) * E_curv(l) is flat
     product_values: List[float]
-    product_cv: float       # coefficient of variation (std/mean), near 0 = flat
+    product_cv: float  # coefficient of variation (std/mean), near 0 = flat
 
     def predicted_bind(self, n: int) -> float:
         return _power_law(n, self.bind_A, self.bind_delta, self.bind_p)
@@ -530,7 +529,7 @@ class DualFitResult:
         base = n + self.curv_delta
         if base <= 0:
             return 0.0
-        return self.curv_B * (base ** self.curv_q)
+        return self.curv_B * (base**self.curv_q)
 
     def to_dict(self) -> dict:
         return {
@@ -559,8 +558,7 @@ class DualFitResult:
         }
 
 
-def _fit_growth_law(energies: List[float], ns: Optional[List[int]] = None
-                    ) -> Tuple[float, float, float, float]:
+def _fit_growth_law(energies: List[float], ns: Optional[List[int]] = None) -> Tuple[float, float, float, float]:
     """
     Fit E_n = B * (n + delta)^q  (positive exponent, grows outward).
     Returns (B, delta, q, rms).
@@ -576,7 +574,7 @@ def _fit_growth_law(energies: List[float], ns: Optional[List[int]] = None
             base = n + delta
             if base <= 0 or B <= 0:
                 return 1e18
-            pred = B * (base ** q)
+            pred = B * (base**q)
             if not math.isfinite(pred):
                 return 1e18
             total += (pred - energies[i]) ** 2
@@ -597,11 +595,9 @@ def independent_dual_fit() -> DualFitResult:
     Checks whether the exponents converge to ±2 without being told to,
     and whether I(l) = E_bind(l) * E_curv(l) is flat across shells.
     """
-    from src.geoseed.theory_comparison import (
-        HYDROGEN_MEASURED_EV, theory_geoseed_lb
-    )
+    from src.geoseed.theory_comparison import HYDROGEN_MEASURED_EV, theory_geoseed_lb
 
-    bind_evs = HYDROGEN_MEASURED_EV          # measured hydrogen — source of truth
+    bind_evs = HYDROGEN_MEASURED_EV  # measured hydrogen — source of truth
     curv_evs = theory_geoseed_lb().energies_ev()
 
     # Fit binding (decay law)
@@ -610,17 +606,20 @@ def independent_dual_fit() -> DualFitResult:
     c_B, c_delta, c_q, c_rms = _fit_growth_law(curv_evs)
 
     # Product invariant
-    product = [
-        _power_law(n, b_A, b_delta, b_p) * (c_B * max(n + c_delta, 1e-10) ** c_q)
-        for n in range(6)
-    ]
+    product = [_power_law(n, b_A, b_delta, b_p) * (c_B * max(n + c_delta, 1e-10) ** c_q) for n in range(6)]
     mean_p = sum(product) / len(product)
     var_p = sum((v - mean_p) ** 2 for v in product) / len(product)
     cv = math.sqrt(var_p) / mean_p if mean_p > 0 else float("inf")
 
     return DualFitResult(
-        bind_A=b_A, bind_delta=b_delta, bind_p=b_p, bind_rms=b_rms,
-        curv_B=c_B, curv_delta=c_delta, curv_q=c_q, curv_rms=c_rms,
+        bind_A=b_A,
+        bind_delta=b_delta,
+        bind_p=b_p,
+        bind_rms=b_rms,
+        curv_B=c_B,
+        curv_delta=c_delta,
+        curv_q=c_q,
+        curv_rms=c_rms,
         p_near_2=abs(b_p - 2.0) < 0.15,
         q_near_2=abs(c_q - 2.0) < 0.15,
         product_constant=cv < 0.05,
@@ -631,20 +630,22 @@ def independent_dual_fit() -> DualFitResult:
 
 # ── Product invariant ─────────────────────────────────────────────────────────
 
+
 @dataclass
 class ProductInvariant:
     """
     I(l) = E_bind(l) * E_curv(l) per shell.
     Measures how flat the product is — flatness = dual law is structural.
     """
-    shell_values: List[float]   # I(l) per shell
+
+    shell_values: List[float]  # I(l) per shell
     mean: float
     std: float
-    cv: float                   # coefficient of variation: std/mean
-    is_flat: bool               # cv < 0.02 (2% variation)
+    cv: float  # coefficient of variation: std/mean
+    is_flat: bool  # cv < 0.02 (2% variation)
     bohr_evs: List[float]
     lb_evs: List[float]
-    rydberg_sq: float           # theoretical prediction: I = RYDBERG²
+    rydberg_sq: float  # theoretical prediction: I = RYDBERG²
 
     def to_dict(self) -> dict:
         return {
@@ -652,13 +653,12 @@ class ProductInvariant:
             "description": "I(l) = E_bind(l) * E_curv(l) — tests dual-law flatness",
             "shells": [
                 {
-                    "shell": i, "tongue": ["KO", "AV", "RU", "CA", "UM", "DR"][i],
+                    "shell": i,
+                    "tongue": ["KO", "AV", "RU", "CA", "UM", "DR"][i],
                     "bind_ev": round(self.bohr_evs[i], 6),
                     "curv_ev": round(self.lb_evs[i], 6),
                     "product": round(self.shell_values[i], 6),
-                    "deviation_from_mean_pct": round(
-                        (self.shell_values[i] - self.mean) / self.mean * 100, 4
-                    ),
+                    "deviation_from_mean_pct": round((self.shell_values[i] - self.mean) / self.mean * 100, 4),
                 }
                 for i in range(6)
             ],
@@ -677,9 +677,7 @@ def compute_product_invariant() -> ProductInvariant:
     Both use the same anchor (RYDBERG_EV), so the product should equal
     RYDBERG_EV² = 185.11 eV² exactly.
     """
-    from src.geoseed.theory_comparison import (
-        theory_bohr, theory_geoseed_lb, RYDBERG_EV
-    )
+    from src.geoseed.theory_comparison import theory_bohr, theory_geoseed_lb, RYDBERG_EV
 
     bind_evs = theory_bohr().energies_ev()
     curv_evs = theory_geoseed_lb().energies_ev()
@@ -694,14 +692,15 @@ def compute_product_invariant() -> ProductInvariant:
         mean=mean_v,
         std=std_v,
         cv=cv,
-        is_flat=cv < 1e-6,      # exact by construction if both normalised the same
+        is_flat=cv < 1e-6,  # exact by construction if both normalised the same
         bohr_evs=bind_evs,
         lb_evs=curv_evs,
-        rydberg_sq=RYDBERG_EV ** 2,
+        rydberg_sq=RYDBERG_EV**2,
     )
 
 
 # ── Weighted-sum fit ──────────────────────────────────────────────────────────
+
 
 @dataclass
 class WeightedSumFit:
@@ -710,7 +709,8 @@ class WeightedSumFit:
     and  log(E_target) = α' * log(E_bind) + β' * log(E_curv)  (log-additive / geometric)
     to find the best combination weights.
     """
-    target: str              # what we're fitting against (e.g. "measured_hydrogen")
+
+    target: str  # what we're fitting against (e.g. "measured_hydrogen")
     # Linear fit
     alpha_lin: float
     beta_lin: float
@@ -718,10 +718,10 @@ class WeightedSumFit:
     # Log-additive fit
     alpha_log: float
     beta_log: float
-    log_rms: float           # rms in log space
-    log_rms_ev: float        # rms back in eV space
+    log_rms: float  # rms in log space
+    log_rms_ev: float  # rms back in eV space
     # Which form wins?
-    better_form: str         # "linear" or "log_additive"
+    better_form: str  # "linear" or "log_additive"
     # Predictions
     linear_predictions: List[float]
     logadd_predictions: List[float]
@@ -738,10 +738,7 @@ class WeightedSumFit:
                 "rms_ev": round(self.lin_rms, 6),
             },
             "log_additive": {
-                "formula": (
-                    f"log(E) = {self.alpha_log:.4f}*log(E_bind) + "
-                    f"{self.beta_log:.4f}*log(E_curv)"
-                ),
+                "formula": (f"log(E) = {self.alpha_log:.4f}*log(E_bind) + " f"{self.beta_log:.4f}*log(E_curv)"),
                 "alpha": round(self.alpha_log, 6),
                 "beta": round(self.beta_log, 6),
                 "rms_log": round(self.log_rms, 6),
@@ -768,10 +765,7 @@ def weighted_sum_fit(target: str = "measured_hydrogen") -> WeightedSumFit:
 
     This tests whether the decomposition is physically useful or just convenient.
     """
-    from src.geoseed.theory_comparison import (
-        theory_compton_orbital, theory_geoseed_lb,
-        HYDROGEN_MEASURED_EV
-    )
+    from src.geoseed.theory_comparison import theory_compton_orbital, theory_geoseed_lb, HYDROGEN_MEASURED_EV
 
     bind_evs = theory_compton_orbital().energies_ev()
     curv_evs = theory_geoseed_lb().energies_ev()
@@ -780,10 +774,7 @@ def weighted_sum_fit(target: str = "measured_hydrogen") -> WeightedSumFit:
     # ── Linear fit: E = α*bind + β*curv ──────────────────────────────
     def lin_residual(params):
         alpha, beta = params
-        total = sum(
-            (alpha * bind_evs[i] + beta * curv_evs[i] - target_evs[i]) ** 2
-            for i in range(6)
-        )
+        total = sum((alpha * bind_evs[i] + beta * curv_evs[i] - target_evs[i]) ** 2 for i in range(6))
         return total / 6
 
     lin_params = _nelder_mead(lin_residual, [1.0, 0.0])
@@ -798,29 +789,26 @@ def weighted_sum_fit(target: str = "measured_hydrogen") -> WeightedSumFit:
 
     def log_residual(params):
         alpha, beta = params
-        total = sum(
-            (alpha * log_bind[i] + beta * log_curv[i] - log_target[i]) ** 2
-            for i in range(6)
-        )
+        total = sum((alpha * log_bind[i] + beta * log_curv[i] - log_target[i]) ** 2 for i in range(6))
         return total / 6
 
     log_params = _nelder_mead(log_residual, [0.5, 0.5])
     alo, blo = log_params
     log_rms = math.sqrt(log_residual(log_params))
-    logadd_preds = [
-        math.exp(alo * log_bind[i] + blo * log_curv[i])
-        for i in range(6)
-    ]
-    log_rms_ev = math.sqrt(
-        sum((logadd_preds[i] - target_evs[i]) ** 2 for i in range(6)) / 6
-    )
+    logadd_preds = [math.exp(alo * log_bind[i] + blo * log_curv[i]) for i in range(6)]
+    log_rms_ev = math.sqrt(sum((logadd_preds[i] - target_evs[i]) ** 2 for i in range(6)) / 6)
 
     better = "linear" if lin_rms <= log_rms_ev else "log_additive"
 
     return WeightedSumFit(
         target=target,
-        alpha_lin=al, beta_lin=bl, lin_rms=lin_rms,
-        alpha_log=alo, beta_log=blo, log_rms=log_rms, log_rms_ev=log_rms_ev,
+        alpha_lin=al,
+        beta_lin=bl,
+        lin_rms=lin_rms,
+        alpha_log=alo,
+        beta_log=blo,
+        log_rms=log_rms,
+        log_rms_ev=log_rms_ev,
         better_form=better,
         linear_predictions=lin_preds,
         logadd_predictions=logadd_preds,
@@ -829,6 +817,7 @@ def weighted_sum_fit(target: str = "measured_hydrogen") -> WeightedSumFit:
 
 
 # ── Extended report ───────────────────────────────────────────────────────────
+
 
 def duality_report() -> str:
     """Full report: independent dual fit + product invariant + weighted sum."""
@@ -850,9 +839,7 @@ def duality_report() -> str:
         f"  E_curv = {dual.curv_B:.4f} * (n + {dual.curv_delta:.4f})^{dual.curv_q:.4f}"
         f"   rms={dual.curv_rms:.6f}  q_near_2={dual.q_near_2}"
     )
-    lines.append(
-        f"  Product CV = {dual.product_cv:.6f}  (near 0 = flat invariant)"
-    )
+    lines.append(f"  Product CV = {dual.product_cv:.6f}  (near 0 = flat invariant)")
     lines.append("")
 
     lines.append("=" * 72)
@@ -877,19 +864,11 @@ def duality_report() -> str:
     lines.append("  WEIGHTED-SUM FIT  E_total = α·E_bind + β·E_curv")
     lines.append("  (fitting against measured hydrogen; bind=Compton, curv=GeoSeed-LB)")
     lines.append("=" * 72)
-    lines.append(
-        f"  Linear:      α={ws.alpha_lin:.6f}  β={ws.beta_lin:.6f}  rms={ws.lin_rms:.6f} eV"
-    )
-    lines.append(
-        f"  Log-additive: α={ws.alpha_log:.6f}  β={ws.beta_log:.6f}  "
-        f"rms={ws.log_rms_ev:.6f} eV"
-    )
+    lines.append(f"  Linear:      α={ws.alpha_lin:.6f}  β={ws.beta_lin:.6f}  rms={ws.lin_rms:.6f} eV")
+    lines.append(f"  Log-additive: α={ws.alpha_log:.6f}  β={ws.beta_log:.6f}  " f"rms={ws.log_rms_ev:.6f} eV")
     lines.append(f"  Better form: {ws.better_form}")
     lines.append("")
-    lines.append(
-        f"  {'Shell':<10}  {'Target':>10}  {'Linear':>10}  {'LogAdd':>10}  "
-        f"{'LinErr':>10}  {'LogErr':>10}"
-    )
+    lines.append(f"  {'Shell':<10}  {'Target':>10}  {'Linear':>10}  {'LogAdd':>10}  " f"{'LinErr':>10}  {'LogErr':>10}")
     lines.append("  " + "-" * 64)
     for i, t in enumerate(tongues):
         lines.append(
@@ -904,6 +883,7 @@ def duality_report() -> str:
 
 def main():
     import json
+
     print(fit_report())
     print()
     print(duality_report())

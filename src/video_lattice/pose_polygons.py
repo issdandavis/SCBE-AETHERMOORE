@@ -175,7 +175,9 @@ def _point(landmarks: Mapping[int, Landmark], index: IntEnum) -> Landmark:
         raise ValueError(f"missing landmark {index.name} ({int(index)})") from exc
 
 
-def polygon_points(landmarks: Sequence[Landmark] | Mapping[IntEnum, Landmark], indices: Iterable[IntEnum]) -> np.ndarray:
+def polygon_points(
+    landmarks: Sequence[Landmark] | Mapping[IntEnum, Landmark], indices: Iterable[IntEnum]
+) -> np.ndarray:
     mapped = _as_landmark_map(landmarks)
     return np.array([_point(mapped, index).xy() for index in indices], dtype=np.float64)
 
@@ -252,10 +254,7 @@ def hand_polygon_features(landmarks: Sequence[Landmark] | Mapping[IntEnum, Landm
     mapped = _as_landmark_map(landmarks)
     palm = polygon_points(mapped, HAND_PALM_POLYGON)
     wrist = _point(mapped, HandLandmark.WRIST).xy()
-    finger_points = {
-        name: polygon_points(mapped, chain)
-        for name, chain in HAND_FINGERS.items()
-    }
+    finger_points = {name: polygon_points(mapped, chain) for name, chain in HAND_FINGERS.items()}
     curls = [finger_curl(finger_points[name]) for name in ("thumb", "index", "middle", "ring", "pinky")]
     tip_indices = (
         HandLandmark.THUMB_TIP,
@@ -265,8 +264,12 @@ def hand_polygon_features(landmarks: Sequence[Landmark] | Mapping[IntEnum, Landm
         HandLandmark.PINKY_TIP,
     )
     tip_distances = [float(np.linalg.norm(_point(mapped, index).xy() - wrist)) for index in tip_indices]
-    thumb_index_spread = float(np.linalg.norm(_point(mapped, HandLandmark.THUMB_TIP).xy() - _point(mapped, HandLandmark.INDEX_TIP).xy()))
-    index_pinky_spread = float(np.linalg.norm(_point(mapped, HandLandmark.INDEX_TIP).xy() - _point(mapped, HandLandmark.PINKY_TIP).xy()))
+    thumb_index_spread = float(
+        np.linalg.norm(_point(mapped, HandLandmark.THUMB_TIP).xy() - _point(mapped, HandLandmark.INDEX_TIP).xy())
+    )
+    index_pinky_spread = float(
+        np.linalg.norm(_point(mapped, HandLandmark.INDEX_TIP).xy() - _point(mapped, HandLandmark.PINKY_TIP).xy())
+    )
     visibility = float(np.mean([point.visibility for point in mapped.values()]))
     centroid = polygon_centroid(palm)
     return np.array(

@@ -10,9 +10,7 @@ MODULE_PATH = ROOT / "scripts" / "benchmark" / "compound_decomposition_recomposi
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location(
-        "compound_decomposition_recomposition", MODULE_PATH
-    )
+    spec = importlib.util.spec_from_file_location("compound_decomposition_recomposition", MODULE_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -44,17 +42,12 @@ def test_atom_only_mud_step_exposes_ambiguity() -> None:
 
     ethanol_case = next(case for case in module.CASES if case.name == "ethanol")
     result = module.run_case(ethanol_case)
-    recomposition = next(
-        step for step in result["steps"] if step["name"] == "recomposition_search"
-    )
+    recomposition = next(step for step in result["steps"] if step["name"] == "recomposition_search")
 
     assert recomposition["output"]["atom_only_ambiguous"] is True
     assert "dimethyl ether" in recomposition["output"]["atom_only_candidates"]
     assert recomposition["output"]["selected"]["name"] == "ethanol"
-    assert (
-        result["reaction_state_packet"]["recalculation"]["extra"]["atom_only_ambiguous"]
-        is True
-    )
+    assert result["reaction_state_packet"]["recalculation"]["extra"]["atom_only_ambiguous"] is True
 
 
 def test_expanded_corpus_covers_multiple_functional_families() -> None:
