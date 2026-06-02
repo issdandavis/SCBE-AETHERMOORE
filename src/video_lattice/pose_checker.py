@@ -40,27 +40,29 @@ _PHI = (1 + math.sqrt(5)) / 2
 
 
 class PoseVerdict(Enum):
-    PASS = "pass"          # drift below soft threshold — generator is on track
-    SOFT_FAIL = "soft"     # drift above soft but below hard — inject mild correction
-    HARD_FAIL = "hard"     # drift above hard threshold — regenerate or use correction
+    PASS = "pass"  # drift below soft threshold — generator is on track
+    SOFT_FAIL = "soft"  # drift above soft but below hard — inject mild correction
+    HARD_FAIL = "hard"  # drift above hard threshold — regenerate or use correction
 
 
 @dataclass
 class ChainCheck:
     """Per-body-part drift result."""
-    name: str                          # "left_arm", "thumb", etc.
-    reference_angle: float             # joint angle in radians
+
+    name: str  # "left_arm", "thumb", etc.
+    reference_angle: float  # joint angle in radians
     generated_angle: float
-    angle_delta: float                 # |ref - gen| in radians
-    hyperbolic_distance: float         # full feature-vector distance in Poincaré ball
+    angle_delta: float  # |ref - gen| in radians
+    hyperbolic_distance: float  # full feature-vector distance in Poincaré ball
 
 
 @dataclass
 class PoseCheckResult:
     """Full result of one pose check comparison."""
-    pose_type: str                     # "hand" or "body"
-    overall_drift: float               # hyperbolic distance between feature vectors
-    cost_signal: float                 # R^(d²) nonlinear scaling
+
+    pose_type: str  # "hand" or "body"
+    overall_drift: float  # hyperbolic distance between feature vectors
+    cost_signal: float  # R^(d²) nonlinear scaling
     verdict: PoseVerdict
     chain_checks: List[ChainCheck] = field(default_factory=list)
     worst_chain: Optional[str] = None
@@ -200,13 +202,15 @@ class PoseChecker:
             gen_tip_vec = gen_pts[-1] - gen_pts[1]
             re = chain_lattice.embed(ref_tip_vec)
             ge = chain_lattice.embed(gen_tip_vec)
-            checks.append(ChainCheck(
-                name=name,
-                reference_angle=ref_angle,
-                generated_angle=gen_angle,
-                angle_delta=abs(ref_angle - gen_angle),
-                hyperbolic_distance=chain_lattice.distance(re, ge),
-            ))
+            checks.append(
+                ChainCheck(
+                    name=name,
+                    reference_angle=ref_angle,
+                    generated_angle=gen_angle,
+                    angle_delta=abs(ref_angle - gen_angle),
+                    hyperbolic_distance=chain_lattice.distance(re, ge),
+                )
+            )
         return checks
 
     def _body_chain_checks(
@@ -230,11 +234,13 @@ class PoseChecker:
             gen_seg = gen_pts[2] - gen_pts[1]
             re = chain_lattice.embed(ref_seg)
             ge = chain_lattice.embed(gen_seg)
-            checks.append(ChainCheck(
-                name=name,
-                reference_angle=ref_angle,
-                generated_angle=gen_angle,
-                angle_delta=abs(ref_angle - gen_angle),
-                hyperbolic_distance=chain_lattice.distance(re, ge),
-            ))
+            checks.append(
+                ChainCheck(
+                    name=name,
+                    reference_angle=ref_angle,
+                    generated_angle=gen_angle,
+                    angle_delta=abs(ref_angle - gen_angle),
+                    hyperbolic_distance=chain_lattice.distance(re, ge),
+                )
+            )
         return checks

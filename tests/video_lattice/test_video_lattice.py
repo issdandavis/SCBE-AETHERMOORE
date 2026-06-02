@@ -352,13 +352,18 @@ def test_ue5_bridge_send_correction_via_stub() -> None:
         sig = CorrectionSignal(
             frame_index=5,
             aggregate_drift=2.8,
-            cost_signal=1.618 ** (2.8 ** 2),
+            cost_signal=1.618 ** (2.8**2),
             axis_corrections={"motion": -1.2, "depth": -0.3},
             latent_nudge=None,
-            condition_signal={"severity": "moderate", "ue5": {"rerender_priority": 2,
-                              "apply_motion_blur_correction": True,
-                              "apply_depth_correction": False,
-                              "suggest_keyframe": False}},
+            condition_signal={
+                "severity": "moderate",
+                "ue5": {
+                    "rerender_priority": 2,
+                    "apply_motion_blur_correction": True,
+                    "apply_depth_correction": False,
+                    "suggest_keyframe": False,
+                },
+            },
             severity="moderate",
         )
         resp = bridge.send_correction(sig)
@@ -395,6 +400,7 @@ def test_ue5_bridge_send_pose_check_via_stub() -> None:
 # ------------------------------------------------------------------
 # Stub UE5 server for testing (no unreal dependency)
 # ------------------------------------------------------------------
+
 
 class _StubUE5Server:
     def __init__(self, port: int) -> None:
@@ -484,6 +490,7 @@ def test_world_director_apply_delta_move() -> None:
     initial_y = world.entities["hero"].y
 
     from src.video_lattice.gpt_world import WorldCommand, WorldDelta
+
     delta = WorldDelta(
         commands=[WorldCommand(type="move", data={"entity_id": "hero", "dx": 1, "dy": 0})],
         narrative="The hero steps east.",
@@ -501,6 +508,7 @@ def test_world_director_apply_delta_skips_solid_moves() -> None:
     director.model = "stub"
 
     from src.video_lattice.gpt_world import WorldCommand, WorldDelta
+
     # hero is at (2,2); wall is at (0,y) — move hero left until wall
     delta = WorldDelta(
         commands=[WorldCommand(type="move", data={"entity_id": "hero", "dx": -3, "dy": 0})],
@@ -520,6 +528,7 @@ def test_world_director_score_delta_no_op_is_zero() -> None:
     director.model = "stub"
 
     from src.video_lattice.gpt_world import WorldDelta
+
     delta = WorldDelta(commands=[], narrative="Nothing happens.", model="stub", raw_response="{}")
     drift = director.score_delta(world, delta)
     assert drift == pytest_approx(0.0)
@@ -531,6 +540,7 @@ def test_world_director_score_delta_move_is_positive() -> None:
     director.model = "stub"
 
     from src.video_lattice.gpt_world import WorldCommand, WorldDelta
+
     delta = WorldDelta(
         commands=[WorldCommand(type="move", data={"entity_id": "hero", "dx": 1, "dy": 0})],
         narrative="Hero moves.",
@@ -553,6 +563,7 @@ def test_round_table_director_picks_most_coherent() -> None:
             self.max_tokens = 64
             self._api_key = None
             self._client = None
+
         def step(self, world, note=""):
             return WorldDelta(commands=[], narrative="Nothing.", model=self.model, raw_response="{}")
 
@@ -563,6 +574,7 @@ def test_round_table_director_picks_most_coherent() -> None:
             self.max_tokens = 64
             self._api_key = None
             self._client = None
+
         def step(self, world, note=""):
             return WorldDelta(
                 commands=[WorldCommand(type="move", data={"entity_id": "hero", "dx": 1, "dy": 0})],

@@ -26,80 +26,85 @@ PHI = (1.0 + math.sqrt(5.0)) / 2.0
 @pytest.fixture(scope="module")
 def rydberg():
     from src.geoseed.theory_comparison import RYDBERG_EV
+
     return RYDBERG_EV
 
 
 @pytest.fixture(scope="module")
 def dual(rydberg):
     from src.geoseed.shell_duality import build_shell_duality
+
     return build_shell_duality()
 
 
 @pytest.fixture(scope="module")
 def field_obj(dual):
     from src.geoseed.shell_duality import ShellStateField
+
     return ShellStateField(dual)
 
 
 @pytest.fixture(scope="module")
 def pert():
     from src.geoseed.shell_duality import run_perturbation_tests
+
     return run_perturbation_tests()
 
 
 # ── ShellDuality invariant ────────────────────────────────────────────────────
 
+
 def test_invariant_equals_a_squared(dual, rydberg):
     """I(k) = A² exactly for all shells."""
-    a2 = rydberg ** 2
+    a2 = rydberg**2
     for k in range(1, 7):
-        assert abs(dual.invariant(k) - a2) < 1e-9, (
-            f"k={k}: I={dual.invariant(k):.9f} ≠ A²={a2:.9f}"
-        )
+        assert abs(dual.invariant(k) - a2) < 1e-9, f"k={k}: I={dual.invariant(k):.9f} ≠ A²={a2:.9f}"
+
 
 def test_invariant_cv_zero(dual):
     """Product must be perfectly flat."""
     assert dual.invariant_cv() < 1e-12
 
+
 def test_is_invariant_flat(dual):
     assert dual.is_invariant_flat()
+
 
 def test_geometric_center_equals_rydberg(dual, rydberg):
     """GM(k) = sqrt(I(k)) = A = Rydberg for all shells."""
     for k in range(1, 7):
         gm = dual.geometric_center(k)
-        assert abs(gm - rydberg) < 1e-9, (
-            f"k={k}: geometric_center={gm:.9f} ≠ Rydberg={rydberg:.9f}"
-        )
+        assert abs(gm - rydberg) < 1e-9, f"k={k}: geometric_center={gm:.9f} ≠ Rydberg={rydberg:.9f}"
+
 
 def test_coupling_ratio_is_one_over_k4(dual):
     """R(k) = E_bind/E_curv = 1/k^4."""
     for k in range(1, 7):
-        expected = 1.0 / (k ** 4)
+        expected = 1.0 / (k**4)
         actual = dual.coupling_ratio(k)
-        assert abs(actual - expected) < 1e-12, (
-            f"k={k}: ratio={actual:.12f} ≠ 1/k^4={expected:.12f}"
-        )
+        assert abs(actual - expected) < 1e-12, f"k={k}: ratio={actual:.12f} ≠ 1/k^4={expected:.12f}"
 
 
 # ── Shell balance ─────────────────────────────────────────────────────────────
+
 
 def test_ko_shell_is_balanced(dual, rydberg):
     """At KO (k=1): E_bind = E_curv = A."""
     assert abs(dual.bind(1) - rydberg) < 1e-9
     assert abs(dual.curv(1) - rydberg) < 1e-9
 
+
 def test_outer_shells_curv_dominates(dual):
     """For k > 1, curvature must exceed binding."""
     for k in range(2, 7):
-        assert dual.curv(k) > dual.bind(k), (
-            f"k={k}: curv={dual.curv(k):.4f} not > bind={dual.bind(k):.4f}"
-        )
+        assert dual.curv(k) > dual.bind(k), f"k={k}: curv={dual.curv(k):.4f} not > bind={dual.bind(k):.4f}"
+
 
 def test_bind_monotone_decreasing(dual):
     """Binding falls outward."""
     for k in range(1, 6):
         assert dual.bind(k) > dual.bind(k + 1)
+
 
 def test_curv_monotone_increasing(dual):
     """Curvature rises outward."""
@@ -109,18 +114,19 @@ def test_curv_monotone_increasing(dual):
 
 # ── Shell state angles ────────────────────────────────────────────────────────
 
+
 def test_ko_angle_is_45_deg(dual):
     """At KO (k=1): bind=curv → angle = 45°."""
     angle = math.degrees(dual.relation_angle(1))
     assert abs(angle - 45.0) < 1e-6, f"KO angle={angle:.6f}° ≠ 45°"
 
+
 def test_angles_monotone_increasing(dual):
     """Shell angle grows outward as curvature dominates."""
     angles = [math.degrees(dual.relation_angle(k)) for k in range(1, 7)]
     for i in range(1, 6):
-        assert angles[i] > angles[i - 1], (
-            f"angle not increasing at k={i+1}: {angles[i]:.2f} <= {angles[i-1]:.2f}"
-        )
+        assert angles[i] > angles[i - 1], f"angle not increasing at k={i+1}: {angles[i]:.2f} <= {angles[i-1]:.2f}"
+
 
 def test_angles_approach_90(dual):
     """DR shell (k=6) should be near 90°."""
@@ -130,18 +136,22 @@ def test_angles_approach_90(dual):
 
 # ── Bind/curv fractions ───────────────────────────────────────────────────────
 
+
 def test_ko_fractions_equal(dual):
     """At KO: bind_fraction = curv_fraction = 0.5."""
     assert abs(dual.bind_fraction(1) - 0.5) < 1e-9
     assert abs(dual.curv_fraction(1) - 0.5) < 1e-9
 
+
 def test_bind_fraction_decreases_outward(dual):
     for k in range(1, 6):
         assert dual.bind_fraction(k) > dual.bind_fraction(k + 1)
 
+
 def test_curv_fraction_increases_outward(dual):
     for k in range(1, 6):
         assert dual.curv_fraction(k) < dual.curv_fraction(k + 1)
+
 
 def test_fractions_sum_to_one(dual):
     for k in range(1, 7):
@@ -151,44 +161,52 @@ def test_fractions_sum_to_one(dual):
 
 # ── Perturbation tests ────────────────────────────────────────────────────────
 
+
 def test_pert_has_seven_scenarios(pert):
     assert len(pert.scenarios) == 7
+
 
 def test_pert_exact_baseline_flat(pert):
     base = next(s for s in pert.scenarios if s.name == "exact_baseline")
     assert base.invariant_cv < 1e-9
+
 
 def test_pert_rescaled_anchor_flat(pert):
     """Rescaling A still gives a flat invariant (different A², same structure)."""
     s = next(s for s in pert.scenarios if s.name == "rescaled_anchor")
     assert s.invariant_survived, f"rescaled_anchor CV={s.invariant_cv:.6f}"
 
+
 def test_pert_non_hydrogen_anchor_flat(pert):
     s = next(s for s in pert.scenarios if s.name == "non_hydrogen_anchor")
     assert s.invariant_survived, f"non_hydrogen_anchor CV={s.invariant_cv:.6f}"
+
 
 def test_pert_noisy_k_approximately_flat(pert):
     """Gaussian noise σ=0.1 on k should keep CV < 0.05."""
     s = next(s for s in pert.scenarios if s.name == "noisy_k_sigma01")
     assert s.invariant_cv < 0.05, f"noisy_k CV={s.invariant_cv:.4f}"
 
+
 def test_pert_offset_indexing_flat(pert):
     s = next(s for s in pert.scenarios if s.name == "offset_indexing")
     assert s.invariant_survived
+
 
 def test_pert_half_integer_flat(pert):
     s = next(s for s in pert.scenarios if s.name == "half_integer_k")
     assert s.invariant_survived
 
+
 def test_pert_large_anchor_flat(pert):
     s = next(s for s in pert.scenarios if s.name == "large_anchor")
     assert s.invariant_survived
 
+
 def test_pert_baseline_exponents_near_2(pert):
     base = next(s for s in pert.scenarios if s.name == "exact_baseline")
-    assert base.exponents_survived, (
-        f"p={base.bind_exponent:.3f}, q={base.curv_exponent:.3f} — not near 2"
-    )
+    assert base.exponents_survived, f"p={base.bind_exponent:.3f}, q={base.curv_exponent:.3f} — not near 2"
+
 
 def test_pert_to_dict(pert):
     d = pert.to_dict()
@@ -198,25 +216,30 @@ def test_pert_to_dict(pert):
 
 # ── ShellStateField ───────────────────────────────────────────────────────────
 
+
 def test_field_balance_at_ko(field_obj):
     """Balance point must be at KO (k=1)."""
     bal_k, diff = field_obj.balance_point()
     assert bal_k == 1, f"Balance at k={bal_k}, expected k=1"
     assert diff < 1e-9
 
+
 def test_field_crossover_at_ko(field_obj):
     """Exact crossover (bind=curv) happens at k=1."""
     cx_k, cx_e = field_obj.crossover_shell()
     assert cx_k == 1
 
+
 def test_field_hyperbola_constant_equals_a_sq(field_obj, rydberg):
-    assert abs(field_obj.hyperbola_constant() - rydberg ** 2) < 1e-9
+    assert abs(field_obj.hyperbola_constant() - rydberg**2) < 1e-9
+
 
 def test_field_all_outer_shells_curv_dominant(field_obj):
     states = field_obj.states()
     for i in range(1, 6):
         bind, curv = states[i]
         assert curv > bind, f"Shell {i+1} not curv-dominant: bind={bind}, curv={curv}"
+
 
 def test_field_to_dict(field_obj, rydberg):
     d = field_obj.to_dict()
@@ -228,18 +251,20 @@ def test_field_to_dict(field_obj, rydberg):
 
 # ── Custom anchor ─────────────────────────────────────────────────────────────
 
+
 def test_custom_anchor_preserves_structure():
     """The dual structure works for any positive anchor A."""
     from src.geoseed.shell_duality import build_shell_duality
+
     for A in [1.0, 5.5, 100.0, 0.01]:
         d = build_shell_duality(anchor_ev=A)
         for k in range(1, 7):
-            assert abs(d.invariant(k) - A ** 2) < 1e-9, (
-                f"A={A}, k={k}: I={d.invariant(k):.9f} ≠ A²={A**2:.9f}"
-            )
+            assert abs(d.invariant(k) - A**2) < 1e-9, f"A={A}, k={k}: I={d.invariant(k):.9f} ≠ A²={A**2:.9f}"
+
 
 def test_custom_anchor_geometric_center_equals_a():
     from src.geoseed.shell_duality import build_shell_duality
+
     A = 7.77
     d = build_shell_duality(anchor_ev=A)
     for k in range(1, 7):
@@ -249,11 +274,13 @@ def test_custom_anchor_geometric_center_equals_a():
 
 # ── Serialisation ─────────────────────────────────────────────────────────────
 
+
 def test_dual_to_dict_schema(dual):
     d = dual.to_dict()
     assert d["schema_version"] == "geoseed_shell_duality_v1"
     assert d["is_invariant_flat"] is True
     assert len(d["shells"]) == 6
+
 
 def test_dual_to_dict_ko_balanced(dual):
     d = dual.to_dict()
@@ -262,8 +289,10 @@ def test_dual_to_dict_ko_balanced(dual):
     assert abs(ko["bind_ev"] - ko["curv_ev"]) < 1e-9
     assert abs(ko["relation_angle_deg"] - 45.0) < 1e-4
 
+
 def test_duality_field_report_non_empty():
     from src.geoseed.shell_duality import duality_field_report
+
     report = duality_field_report()
     assert len(report) > 400
     assert "SHELL DUALITY FIELD" in report
@@ -273,9 +302,11 @@ def test_duality_field_report_non_empty():
 
 # ── RelationTerm ──────────────────────────────────────────────────────────────
 
+
 @pytest.fixture(scope="module")
 def rel():
     from src.geoseed.shell_duality import build_relation_term
+
     return build_relation_term()
 
 
@@ -294,9 +325,7 @@ def test_rel_compton_phi_scaling(rel, rydberg):
     """Each successive Compton shell is 1/φ of the previous."""
     for k in range(1, 6):
         ratio = rel.compton_ev(k) / rel.compton_ev(k + 1)
-        assert abs(ratio - PHI) < 1e-9, (
-            f"Compton k={k}→{k+1} ratio {ratio} ≠ φ"
-        )
+        assert abs(ratio - PHI) < 1e-9, f"Compton k={k}→{k+1} ratio {ratio} ≠ φ"
 
 
 def test_rel_coupling_formula(rel):
@@ -304,9 +333,7 @@ def test_rel_coupling_formula(rel):
     for k in range(1, 7):
         expected = (k * k) / (PHI ** (k - 1))
         actual = rel.coupling_ratio(k)
-        assert abs(actual - expected) < 1e-12, (
-            f"k={k}: ρ={actual:.12f} ≠ k²/φ^(k-1)={expected:.12f}"
-        )
+        assert abs(actual - expected) < 1e-12, f"k={k}: ρ={actual:.12f} ≠ k²/φ^(k-1)={expected:.12f}"
 
 
 def test_rel_resonance_shell_is_ko(rel):
@@ -332,9 +359,7 @@ def test_rel_peak_coupling_above_3(rel):
 def test_rel_all_outer_coupling_above_one(rel):
     """For k > 1, Compton always exceeds the dual-law bind (ρ > 1)."""
     for k in range(2, 7):
-        assert rel.coupling_ratio(k) > 1.0, (
-            f"k={k}: coupling ρ={rel.coupling_ratio(k):.4f} ≤ 1"
-        )
+        assert rel.coupling_ratio(k) > 1.0, f"k={k}: coupling ρ={rel.coupling_ratio(k):.4f} ≤ 1"
 
 
 def test_rel_phase_angles_positive(rel):
@@ -368,23 +393,25 @@ def test_rel_to_dict_ko_deviation_zero(rel):
 
 # ── Clean API ─────────────────────────────────────────────────────────────────
 
+
 def test_compute_invariant_returns_product():
     from src.geoseed.shell_duality import compute_invariant
+
     assert abs(compute_invariant(5.0, 20.0) - 100.0) < 1e-12
 
 
 def test_compute_invariant_rydberg_shells(rydberg):
     from src.geoseed.shell_duality import compute_invariant, shell_state_at
+
     for k in range(1, 7):
         b, c = shell_state_at(k)
         inv = compute_invariant(b, c)
-        assert abs(inv - rydberg ** 2) < 1e-9, (
-            f"k={k}: compute_invariant={inv:.9f} ≠ Rydberg²"
-        )
+        assert abs(inv - rydberg**2) < 1e-9, f"k={k}: compute_invariant={inv:.9f} ≠ Rydberg²"
 
 
 def test_shell_state_at_ko_balanced(rydberg):
     from src.geoseed.shell_duality import shell_state_at
+
     b, c = shell_state_at(1)
     assert abs(b - rydberg) < 1e-9
     assert abs(c - rydberg) < 1e-9
@@ -392,6 +419,7 @@ def test_shell_state_at_ko_balanced(rydberg):
 
 def test_fit_binding_law_recovers_p2(rydberg):
     from src.geoseed.shell_duality import fit_binding_law
+
     shells = [float(k) for k in range(1, 7)]
     values = [rydberg / (k * k) for k in range(1, 7)]
     A, delta, p, rms = fit_binding_law(shells, values)
@@ -401,6 +429,7 @@ def test_fit_binding_law_recovers_p2(rydberg):
 
 def test_perturbation_sweep_returns_7(rydberg):
     from src.geoseed.shell_duality import perturbation_sweep
+
     pt = perturbation_sweep(seed=0)
     assert len(pt.scenarios) == 7
     assert pt.all_survived()
@@ -408,20 +437,23 @@ def test_perturbation_sweep_returns_7(rydberg):
 
 # ── export_duality_artifact ───────────────────────────────────────────────────
 
+
 def test_export_artifact_creates_file(tmp_path, rydberg):
     from src.geoseed.shell_duality import export_duality_artifact
     import json
+
     out = str(tmp_path)
     path = export_duality_artifact(out_dir=out)
     assert path.endswith(".json")
     import os
+
     assert os.path.isfile(path)
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
     assert data["schema_version"] == "geoseed_shell_duality_artifact_v1"
     assert data["summary"]["is_invariant_flat"] is True
     assert data["summary"]["all_perturbations_survived"] is True
-    assert abs(data["summary"]["A_squared_ev2"] - rydberg ** 2) < 1e-6
+    assert abs(data["summary"]["A_squared_ev2"] - rydberg**2) < 1e-6
     assert data["summary"]["resonance_shell_k"] == 1
     assert data["summary"]["peak_coupling_shell_k"] == 4
     # all four sections present

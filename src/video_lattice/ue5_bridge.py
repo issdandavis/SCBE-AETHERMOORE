@@ -33,14 +33,14 @@ from .frame_corrector import CorrectionSignal
 from .pose_checker import PoseCheckResult, PoseVerdict
 
 DEFAULT_HOST = "127.0.0.1"
-DEFAULT_PORT = 7621   # distinct from UE5's own ports (6766 multicast, 6776 command)
+DEFAULT_PORT = 7621  # distinct from UE5's own ports (6766 multicast, 6776 command)
 RECV_BUF = 4096
 TIMEOUT_S = 5.0
 
 
 @dataclass
 class BridgeResponse:
-    status: str        # "ok" or "error"
+    status: str  # "ok" or "error"
     seq: int
     msg: str
     latency_ms: float
@@ -143,9 +143,7 @@ class UE5Bridge:
         """
         payload = result.to_dict()
         payload["correction_vector"] = (
-            result.correction_vector.tolist()
-            if result.correction_vector is not None
-            else None
+            result.correction_vector.tolist() if result.correction_vector is not None else None
         )
         return self._send("pose_check", payload)
 

@@ -9,15 +9,9 @@ from python.scbe.reaction_state import (
 
 
 def test_bijective_packet_hash_verifies() -> None:
-    source = ReactionEndpoint(
-        identity="is_palindrome", representation="python:function", tongue="KO"
-    )
-    target = ReactionEndpoint(
-        identity="isPalindrome", representation="javascript:function", tongue="DR"
-    )
-    recalculation = ReactionRecalculation(
-        syntax_ok=True, tests_ok=True, identity_ok=True
-    )
+    source = ReactionEndpoint(identity="is_palindrome", representation="python:function", tongue="KO")
+    target = ReactionEndpoint(identity="isPalindrome", representation="javascript:function", tongue="DR")
+    recalculation = ReactionRecalculation(syntax_ok=True, tests_ok=True, identity_ok=True)
 
     packet = build_reaction_state_packet(
         domain="code",
@@ -69,9 +63,7 @@ def test_ambiguous_atom_bag_stays_ambiguous_without_recovery() -> None:
 
 
 def test_failed_recalculation_is_invalid() -> None:
-    recalculation = ReactionRecalculation(
-        syntax_ok=True, tests_ok=False, identity_ok=True
-    )
+    recalculation = ReactionRecalculation(syntax_ok=True, tests_ok=False, identity_ok=True)
 
     classification = classify_reaction(
         recalculation=recalculation,

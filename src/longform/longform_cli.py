@@ -42,8 +42,8 @@ from src.longform.context_bridge import (
     build_resume_pack,
 )
 
-
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
 
 def _workspace(args) -> str:
     return os.path.abspath(getattr(args, "workspace", None) or os.getcwd())
@@ -72,7 +72,7 @@ def _extract_json(text: str) -> dict:
         end = raw.rfind("}")
         if start >= 0 and end > start:
             try:
-                return json.loads(raw[start:end + 1])
+                return json.loads(raw[start : end + 1])
             except json.JSONDecodeError:
                 return {}
     return {}
@@ -248,6 +248,7 @@ def _print_do_complete(d: dict) -> None:
 
 # ── Commands ──────────────────────────────────────────────────────────────────
 
+
 def cmd_work_init(args) -> None:
     ws = _workspace(args)
     mission = args.mission or getattr(args, "objective", "") or "Accomplish the objective."
@@ -307,11 +308,15 @@ def cmd_work_status(args) -> None:
         "principles": principles.to_dict() if principles else {},
         "open_questions": principles.open_questions if principles else [],
         "next_footholds": principles.next_footholds if principles else [],
-        "last_landing": {
-            "hash": last_l.landing_hash,
-            "ts": last_l.ts,
-            "brick_count": last_l.brick_count,
-        } if last_l else None,
+        "last_landing": (
+            {
+                "hash": last_l.landing_hash,
+                "ts": last_l.ts,
+                "brick_count": last_l.brick_count,
+            }
+            if last_l
+            else None
+        ),
     }
     _emit(result, args.json)
 
@@ -332,11 +337,14 @@ def cmd_work_resume(args) -> None:
         sys.exit(1)
 
     # Append resume event
-    ledger.append("resume", {
-        "landing_hash": pack.landing.landing_hash,
-        "session_id": str(uuid.uuid4()),
-        "resumed_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-    })
+    ledger.append(
+        "resume",
+        {
+            "landing_hash": pack.landing.landing_hash,
+            "session_id": str(uuid.uuid4()),
+            "resumed_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        },
+    )
 
     result = {
         "kind": "work_resume",
@@ -484,13 +492,16 @@ def cmd_agent_spawn(args) -> None:
         "status": "active",
     }
     ledger.save_agent(agent_id, contract)
-    ledger.append("agent_spawn", {
-        "agent_id": agent_id,
-        "role": role,
-        "mandate": args.mandate,
-        "allowed_tools": allowed_tools,
-        "budget": budget,
-    })
+    ledger.append(
+        "agent_spawn",
+        {
+            "agent_id": agent_id,
+            "role": role,
+            "mandate": args.mandate,
+            "allowed_tools": allowed_tools,
+            "budget": budget,
+        },
+    )
 
     result = {"kind": "agent_spawn", **contract}
     _emit(result, args.json)
@@ -541,12 +552,15 @@ def cmd_do(args) -> None:
         principles = ledger.load_principles()
 
     # Record objective
-    ledger.append("objective", {
-        "objective": objective,
-        "loops_requested": loops,
-        "land_every_stage": land_every,
-        "backend": getattr(args, "backend", "local"),
-    })
+    ledger.append(
+        "objective",
+        {
+            "objective": objective,
+            "loops_requested": loops,
+            "land_every_stage": land_every,
+            "backend": getattr(args, "backend", "local"),
+        },
+    )
 
     if not emit_json:
         print(f"  SCBE Longform — do: {objective[:60]}")
@@ -560,40 +574,50 @@ def cmd_do(args) -> None:
             print(f"  ── Stage {loop_n}/{loops} ──────────────────────────────")
 
         # Stage intent
-        ledger.append("stage_intent", {
-            "loop": loop_n,
-            "objective": objective,
-            "phase": "execute",
-        })
+        ledger.append(
+            "stage_intent",
+            {
+                "loop": loop_n,
+                "objective": objective,
+                "phase": "execute",
+            },
+        )
 
         if args.squad:
             dispatch_result = _run_agent_bus_stage(ws, objective, loop_n, args)
             ledger.append("agentbus_dispatch", dispatch_result)
-            ledger.append("stage_complete", {
-                "loop": loop_n,
-                "status": dispatch_result["status"],
-                "squad": True,
-                "dispatch_enabled": bool(dispatch_result.get("dispatch", {}).get("enabled")),
-                "selected_provider": dispatch_result.get("selected_provider"),
-                "series_id": dispatch_result.get("series_id"),
-                "artifact_summary": dispatch_result.get("artifacts", {}),
-            })
+            ledger.append(
+                "stage_complete",
+                {
+                    "loop": loop_n,
+                    "status": dispatch_result["status"],
+                    "squad": True,
+                    "dispatch_enabled": bool(dispatch_result.get("dispatch", {}).get("enabled")),
+                    "selected_provider": dispatch_result.get("selected_provider"),
+                    "series_id": dispatch_result.get("series_id"),
+                    "artifact_summary": dispatch_result.get("artifacts", {}),
+                },
+            )
         else:
-            ledger.append("stage_complete", {
-                "loop": loop_n,
-                "status": "stub",
-                "squad": False,
-                "note": (
-                    "Execution stub. Pass `--squad` to dispatch through the SCBE agent bus."
-                ),
-            })
+            ledger.append(
+                "stage_complete",
+                {
+                    "loop": loop_n,
+                    "status": "stub",
+                    "squad": False,
+                    "note": ("Execution stub. Pass `--squad` to dispatch through the SCBE agent bus."),
+                },
+            )
 
         # Audit: validate principles
         audit_ok = True  # in phase 1, always passes (stub)
-        ledger.append("audit_pass" if audit_ok else "audit_fail", {
-            "loop": loop_n,
-            "principles_validated": audit_ok,
-        })
+        ledger.append(
+            "audit_pass" if audit_ok else "audit_fail",
+            {
+                "loop": loop_n,
+                "principles_validated": audit_ok,
+            },
+        )
 
         if not emit_json:
             print(f"    brick emitted  loop={loop_n}  audit={'pass' if audit_ok else 'FAIL'}")
@@ -631,9 +655,9 @@ def cmd_do(args) -> None:
 
 # ── Argument parsing ──────────────────────────────────────────────────────────
 
+
 def _ws_arg(p: argparse.ArgumentParser) -> None:
-    p.add_argument("--workspace", "-w", default=None,
-                   help="Workspace directory (default: cwd)")
+    p.add_argument("--workspace", "-w", default=None, help="Workspace directory (default: cwd)")
 
 
 def _json_arg(p: argparse.ArgumentParser) -> None:
@@ -651,22 +675,27 @@ def build_parser() -> argparse.ArgumentParser:
     p_do = sub.add_parser("do", help="Run a durable governed agentic workflow")
     p_do.add_argument("objective", help="The objective to accomplish")
     p_do.add_argument("--loops", default="6", help="Max stage iterations (default 6)")
-    p_do.add_argument("--land", default="",
-                      help="Compatibility alias; use 'every-stage' to land every stage")
-    p_do.add_argument("--land-every-stage", action="store_true",
-                      help="Create a landing after each stage")
-    p_do.add_argument("--squad", action="store_true",
-                      help="Route each stage to the multi-agent squad (phase 2)")
-    p_do.add_argument("--dispatch-provider", default="offline",
-                      help="Agent-bus dispatch provider for --squad (default offline)")
-    p_do.add_argument("--dispatch-timeout", type=int, default=120,
-                      help="Seconds before a squad dispatch stage times out")
-    p_do.add_argument("--resume-policy", default="latest-safe",
-                      choices=["latest-safe", "explicit-hash"],
-                      help="Resume policy (default latest-safe)")
-    p_do.add_argument("--backend", default="local",
-                      choices=["local", "local-jsonl", "temporal"],
-                      help="Execution backend (default local)")
+    p_do.add_argument("--land", default="", help="Compatibility alias; use 'every-stage' to land every stage")
+    p_do.add_argument("--land-every-stage", action="store_true", help="Create a landing after each stage")
+    p_do.add_argument("--squad", action="store_true", help="Route each stage to the multi-agent squad (phase 2)")
+    p_do.add_argument(
+        "--dispatch-provider", default="offline", help="Agent-bus dispatch provider for --squad (default offline)"
+    )
+    p_do.add_argument(
+        "--dispatch-timeout", type=int, default=120, help="Seconds before a squad dispatch stage times out"
+    )
+    p_do.add_argument(
+        "--resume-policy",
+        default="latest-safe",
+        choices=["latest-safe", "explicit-hash"],
+        help="Resume policy (default latest-safe)",
+    )
+    p_do.add_argument(
+        "--backend",
+        default="local",
+        choices=["local", "local-jsonl", "temporal"],
+        help="Execution backend (default local)",
+    )
     _ws_arg(p_do)
     _json_arg(p_do)
 
@@ -677,23 +706,26 @@ def build_parser() -> argparse.ArgumentParser:
     p_init = ws_sub.add_parser("init", help="Initialize a new workspace")
     p_init.add_argument("--mission", "-m", default="", help="Mission statement")
     p_init.add_argument("--objective", default="", help="Compatibility alias for --mission")
-    p_init.add_argument("--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger")
-    p_init.add_argument("--invariant", "-i", action="append", default=[],
-                        help="Add an invariant (repeatable)")
-    p_init.add_argument("--claim", "-c", action="append", default=[],
-                        help="Add a claim boundary (repeatable)")
+    p_init.add_argument(
+        "--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger"
+    )
+    p_init.add_argument("--invariant", "-i", action="append", default=[], help="Add an invariant (repeatable)")
+    p_init.add_argument("--claim", "-c", action="append", default=[], help="Add a claim boundary (repeatable)")
     _ws_arg(p_init)
     _json_arg(p_init)
 
     p_status = ws_sub.add_parser("status", help="Show workspace status")
-    p_status.add_argument("--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger")
+    p_status.add_argument(
+        "--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger"
+    )
     _ws_arg(p_status)
     _json_arg(p_status)
 
     p_resume = ws_sub.add_parser("resume", help="Resume from a landing")
-    p_resume.add_argument("--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger")
-    p_resume.add_argument("--hash", default=None,
-                          help="Landing hash prefix (default: latest)")
+    p_resume.add_argument(
+        "--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger"
+    )
+    p_resume.add_argument("--hash", default=None, help="Landing hash prefix (default: latest)")
     _ws_arg(p_resume)
     _json_arg(p_resume)
 
@@ -702,8 +734,12 @@ def build_parser() -> argparse.ArgumentParser:
     land_sub = p_land.add_subparsers(dest="land_cmd")
 
     p_lc = land_sub.add_parser("create", help="Create a verified context landing")
-    p_lc.add_argument("--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger")
-    p_lc.add_argument("--summary", default="", help="Compatibility summary; landing content is captured from the ledger")
+    p_lc.add_argument(
+        "--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger"
+    )
+    p_lc.add_argument(
+        "--summary", default="", help="Compatibility summary; landing content is captured from the ledger"
+    )
     p_lc.add_argument("--stage", default="", help="Compatibility stage label")
     _ws_arg(p_lc)
     _json_arg(p_lc)
@@ -728,15 +764,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_asp = agent_sub.add_parser("spawn", help="Spawn a governed agent")
     p_asp.add_argument("role", nargs="?", help="Agent role (architect/tester/prover/etc.)")
-    p_asp.add_argument("--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger")
+    p_asp.add_argument(
+        "--workflow", default="", help="Compatibility workflow label; ignored by the single-workspace ledger"
+    )
     p_asp.add_argument("--role", dest="role_flag", default="", help="Compatibility alias for positional role")
     p_asp.add_argument("--mandate", required=True, help="Agent mandate/objective")
-    p_asp.add_argument("--tools", default="",
-                       help="Comma-separated allowed tools")
-    p_asp.add_argument("--allowed-tools", default="",
-                       help="Compatibility alias for --tools")
-    p_asp.add_argument("--budget", default="20",
-                       help="Max invocations before escalation (default 20)")
+    p_asp.add_argument("--tools", default="", help="Comma-separated allowed tools")
+    p_asp.add_argument("--allowed-tools", default="", help="Compatibility alias for --tools")
+    p_asp.add_argument("--budget", default="20", help="Max invocations before escalation (default 20)")
     _ws_arg(p_asp)
     _json_arg(p_asp)
 
