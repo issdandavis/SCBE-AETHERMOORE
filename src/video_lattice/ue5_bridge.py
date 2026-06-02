@@ -30,7 +30,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from .frame_corrector import CorrectionSignal
-from .pose_checker import PoseCheckResult, PoseVerdict
+from .pose_checker import PoseCheckResult
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 7621  # distinct from UE5's own ports (6766 multicast, 6776 command)
@@ -164,7 +164,7 @@ class UE5Bridge:
             t0 = time.perf_counter()
             try:
                 resp = self._try_send(encoded)
-            except (OSError, UE5BridgeError) as exc:
+            except (OSError, UE5BridgeError):
                 if self.auto_reconnect:
                     self.close()
                     self.connect()

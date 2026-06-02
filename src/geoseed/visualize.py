@@ -35,7 +35,6 @@ def ascii_shell_map(orbitals) -> str:
         if pos < _BAR_WIDTH:
             bar[pos] = _ORBITAL_SYMBOLS.get(o.l, "○")
 
-        sym = _ORBITAL_SYMBOLS.get(o.l, "?")
         name_str = f"{o.abbr} ({_ORBITAL_NAMES[o.l]})"
         bar_str = "".join(bar)
         r_str = f"r={o.poincare_r:.3f}"
@@ -156,7 +155,6 @@ def plot_shell_positions(orbitals, out_dir: str = ".") -> str:
 
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
-        import numpy as np
     except ImportError:
         return "(matplotlib not available — skipped)"
 
@@ -263,7 +261,7 @@ def plot_poincare_disk(orbitals, out_dir: str = ".") -> str:
             label=f"{o.abbr} ({_ORBITAL_NAMES[o.l]}, r={r:.3f})",
         )
         # Egg nodes (project to 2D equatorial plane)
-        for x, y, z in o.egg_nodes:
+        for x, _y, z in o.egg_nodes:
             eq_r = math.sqrt(x**2 + z**2)
             eq_theta = math.atan2(z, x)
             ax.plot(
@@ -387,8 +385,6 @@ def ascii_theory_comparison() -> str:
         bars = []
         for i, shell in enumerate(r.shells):
             resid = shell.energy_ev - measured[i]
-            mag = min(abs(resid), 20)
-            bar_len = max(int(mag * 1.5), 0)
             bars.append(("+" if resid >= 0 else "-") + f"{abs(resid):.1f}")
         lines.append(f"  {name:<22} " + "  ".join(f"{b:>7}" for b in bars))
 
