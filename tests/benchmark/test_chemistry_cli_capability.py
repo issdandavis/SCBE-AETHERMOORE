@@ -5,7 +5,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "scripts" / "benchmark" / "chemistry_cli_capability.py"
 

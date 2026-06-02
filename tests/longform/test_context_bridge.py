@@ -41,8 +41,8 @@ from src.longform.context_bridge import (
     validate_principles,
 )
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def ws(tmp_path):
@@ -69,6 +69,7 @@ def ps():
 
 # ── PrincipleSet ──────────────────────────────────────────────────────────────
 
+
 def test_principle_set_roundtrip(ps):
     d = ps.to_dict()
     restored = PrincipleSet.from_dict(d)
@@ -93,11 +94,17 @@ def test_principle_set_empty_lists():
 
 # ── LedgerEvent / hash chain ──────────────────────────────────────────────────
 
+
 def test_ledger_event_hash_deterministic():
     ev = LedgerEvent(
-        event_id="test-id", kind="brick", ts="2026-01-01T00:00:00Z",
-        sequence=1, previous_hash=None, parent_hashes=[],
-        payload={"mission": "x"}, event_hash="",
+        event_id="test-id",
+        kind="brick",
+        ts="2026-01-01T00:00:00Z",
+        sequence=1,
+        previous_hash=None,
+        parent_hashes=[],
+        payload={"mission": "x"},
+        event_hash="",
     )
     h1 = ev.compute_hash()
     h2 = ev.compute_hash()
@@ -107,23 +114,38 @@ def test_ledger_event_hash_deterministic():
 
 def test_ledger_event_hash_changes_with_payload():
     ev = LedgerEvent(
-        event_id="test-id", kind="brick", ts="2026-01-01T00:00:00Z",
-        sequence=1, previous_hash=None, parent_hashes=[],
-        payload={"mission": "x"}, event_hash="",
+        event_id="test-id",
+        kind="brick",
+        ts="2026-01-01T00:00:00Z",
+        sequence=1,
+        previous_hash=None,
+        parent_hashes=[],
+        payload={"mission": "x"},
+        event_hash="",
     )
     ev2 = LedgerEvent(
-        event_id="test-id", kind="brick", ts="2026-01-01T00:00:00Z",
-        sequence=1, previous_hash=None, parent_hashes=[],
-        payload={"mission": "y"}, event_hash="",
+        event_id="test-id",
+        kind="brick",
+        ts="2026-01-01T00:00:00Z",
+        sequence=1,
+        previous_hash=None,
+        parent_hashes=[],
+        payload={"mission": "y"},
+        event_hash="",
     )
     assert ev.compute_hash() != ev2.compute_hash()
 
 
 def test_ledger_event_roundtrip():
     ev = LedgerEvent(
-        event_id="abc", kind="brick", ts="2026-01-01Z",
-        sequence=5, previous_hash="aaaa", parent_hashes=["bbbb"],
-        payload={"k": "v"}, event_hash="xxxx",
+        event_id="abc",
+        kind="brick",
+        ts="2026-01-01Z",
+        sequence=5,
+        previous_hash="aaaa",
+        parent_hashes=["bbbb"],
+        payload={"k": "v"},
+        event_hash="xxxx",
     )
     d = ev.to_dict()
     ev2 = LedgerEvent.from_dict(d)
@@ -135,6 +157,7 @@ def test_ledger_event_roundtrip():
 
 
 # ── JsonlWorkflowLedger ───────────────────────────────────────────────────────
+
 
 def test_new_ledger_creates_workspace(ws):
     ledger = new_ledger(ws, "Mission A")
@@ -230,6 +253,7 @@ def test_load_principles_none_when_missing(tmp_path):
 
 # ── ContextLanding ────────────────────────────────────────────────────────────
 
+
 def test_create_landing_persists_file(ledger):
     ps = ledger.load_principles()
     landing = create_landing(ledger, ps)
@@ -312,6 +336,7 @@ def test_load_landing_none_for_unknown(ledger):
 
 # ── ResumePack ────────────────────────────────────────────────────────────────
 
+
 def test_build_resume_pack_requires_landing(ledger):
     with pytest.raises(ValueError, match="No landings"):
         build_resume_pack(ledger)
@@ -351,6 +376,7 @@ def test_build_resume_pack_by_hash(ledger):
 
 
 # ── validate_principles ───────────────────────────────────────────────────────
+
 
 def test_validate_principles_passes_full_match():
     ps = PrincipleSet(
@@ -404,6 +430,7 @@ def test_validate_principles_case_insensitive():
 
 
 # ── Agent spawn/list ──────────────────────────────────────────────────────────
+
 
 def test_agent_save_and_list(ledger):
     contract = {

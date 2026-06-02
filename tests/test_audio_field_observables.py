@@ -57,9 +57,7 @@ def test_magnetoelastic_model_emits_bounded_coupling_proxy() -> None:
     observed = analyze_audio_field(
         generate_sine(440.0, sample_rate_hz=4096.0, duration_s=0.05),
         sample_rate_hz=4096.0,
-        model=AudioFieldModel(
-            kind="magnetoelastic", name="thin-film-saw", coupling_gain=0.8
-        ),
+        model=AudioFieldModel(kind="magnetoelastic", name="thin-film-saw", coupling_gain=0.8),
     )
 
     assert observed.field_relationship == "strain-magnetization coupling proxy"
@@ -86,10 +84,7 @@ def test_magnetosonic_model_requires_wave_speeds() -> None:
 
     assert missing.field_coupling_proxy is None
     assert "missing" in missing.field_relationship
-    assert (
-        with_speeds.field_relationship
-        == "compressibility-magnetic-pressure coupling proxy"
-    )
+    assert with_speeds.field_relationship == "compressibility-magnetic-pressure coupling proxy"
     assert with_speeds.field_coupling_proxy is not None
     assert 0.0 <= with_speeds.field_coupling_proxy <= 1.0
 
@@ -106,6 +101,4 @@ def test_modal_count_is_recoupled_to_integer_state() -> None:
 
     assert observed.modal_count >= 2
     assert observed.modal_count_state.ok is True
-    assert observed.modal_count_state.recoupled_value == pytest.approx(
-        float(observed.modal_count)
-    )
+    assert observed.modal_count_state.recoupled_value == pytest.approx(float(observed.modal_count))

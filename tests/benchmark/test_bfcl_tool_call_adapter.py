@@ -38,6 +38,7 @@ TOOLS_JSON = ROOT / "packages" / "agent-bus" / "tools.json"
 
 # ── Schema export ──────────────────────────────────────────────────────────────
 
+
 def test_export_count():
     schemas = tools_to_bfcl_schemas(TOOLS_JSON)
     assert len(schemas) == 54, f"expected 54 tools, got {len(schemas)}"
@@ -81,9 +82,7 @@ def test_reporoot_excluded_from_required():
     """repoRoot is a bus-substituted variable, never caller-supplied."""
     schemas = tools_to_bfcl_schemas(TOOLS_JSON)
     for schema in schemas:
-        assert "repoRoot" not in schema["parameters"]["required"], (
-            f"{schema['name']} has repoRoot in required"
-        )
+        assert "repoRoot" not in schema["parameters"]["required"], f"{schema['name']} has repoRoot in required"
 
 
 def test_all_schemas_have_description():
@@ -93,6 +92,7 @@ def test_all_schemas_have_description():
 
 
 # ── Param extraction ───────────────────────────────────────────────────────────
+
 
 def test_extract_params_single():
     assert _extract_params(["-m", "module", "{task}"]) == ["task"]
@@ -114,6 +114,7 @@ def test_extract_params_deduplicated():
 
 
 # ── AST validator ──────────────────────────────────────────────────────────────
+
 
 def test_validate_good_schema():
     schema = {
@@ -167,6 +168,7 @@ def test_validate_required_not_in_properties():
 
 # ── Test cases ─────────────────────────────────────────────────────────────────
 
+
 def test_test_cases_have_required_fields():
     for case in TEST_CASES:
         assert "id" in case
@@ -180,9 +182,9 @@ def test_irrelevance_cases_have_none_tool():
     irrelevance = [c for c in TEST_CASES if c["category"] == "irrelevance"]
     assert len(irrelevance) >= 2, "need at least 2 irrelevance cases"
     for case in irrelevance:
-        assert case["ground_truth_tool"] is None, (
-            f"{case['id']} is tagged irrelevance but has a non-None ground_truth_tool"
-        )
+        assert (
+            case["ground_truth_tool"] is None
+        ), f"{case['id']} is tagged irrelevance but has a non-None ground_truth_tool"
 
 
 def test_no_duplicate_case_ids():
@@ -198,20 +200,18 @@ def test_question_does_not_restate_tool_name():
         if expected is None:
             continue
         assert expected not in case["question"], (
-            f"{case['id']} question contains the tool name '{expected}' verbatim — "
-            "this is a tautological test case"
+            f"{case['id']} question contains the tool name '{expected}' verbatim — " "this is a tautological test case"
         )
 
 
 # ── Receipt chaining ───────────────────────────────────────────────────────────
 
+
 def test_receipt_is_deterministic():
     ts = "2026-01-01T00:00:00Z"
     prev = "0" * 64
-    r1 = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-compile",
-                        {"task": "t"}, True, prev, ts)
-    r2 = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-compile",
-                        {"task": "t"}, True, prev, ts)
+    r1 = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-compile", {"task": "t"}, True, prev, ts)
+    r2 = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-compile", {"task": "t"}, True, prev, ts)
     assert r1["receipt_hash"] == r2["receipt_hash"]
 
 
@@ -240,19 +240,18 @@ def test_receipt_hash_is_sha256_length():
 
 def test_receipt_near_miss_field_present():
     ts = "2026-01-01T00:00:00Z"
-    r = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-seal", {}, False,
-                      "0" * 64, ts, near_miss=True)
+    r = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-seal", {}, False, "0" * 64, ts, near_miss=True)
     assert r["near_miss"] is True
 
 
 def test_receipt_near_miss_default_false():
     ts = "2026-01-01T00:00:00Z"
-    r = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-compile", {}, True,
-                      "0" * 64, ts)
+    r = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-compile", {}, True, "0" * 64, ts)
     assert r["near_miss"] is False
 
 
 # ── Near-miss namespace detection ─────────────────────────────────────────────
+
 
 def test_same_namespace_true():
     assert _same_namespace("geoseal-compile", "geoseal-seal") is True

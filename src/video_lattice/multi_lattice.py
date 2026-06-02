@@ -40,11 +40,11 @@ class LatticeAxis(Enum):
 
 # Default weights in phi-scaled progression (low→high importance)
 DEFAULT_WEIGHTS: Dict[LatticeAxis, float] = {
-    LatticeAxis.IDENTITY: _PHI**0,   # 1.000
-    LatticeAxis.MOTION: _PHI**1,     # 1.618
-    LatticeAxis.SCENE: _PHI**2,      # 2.618
-    LatticeAxis.COLOR: _PHI**3,      # 4.236
-    LatticeAxis.DEPTH: _PHI**4,      # 6.854
+    LatticeAxis.IDENTITY: _PHI**0,  # 1.000
+    LatticeAxis.MOTION: _PHI**1,  # 1.618
+    LatticeAxis.SCENE: _PHI**2,  # 2.618
+    LatticeAxis.COLOR: _PHI**3,  # 4.236
+    LatticeAxis.DEPTH: _PHI**4,  # 6.854
     LatticeAxis.STRUCTURE: _PHI**5,  # 11.09
 }
 
@@ -60,6 +60,7 @@ class AxisObservation:
 @dataclass
 class MultiLatticeFrame:
     """Result of observing one frame across all axes."""
+
     frame_index: int
     observations: Dict[LatticeAxis, AxisObservation] = field(default_factory=dict)
     aggregate_drift: float = 0.0
@@ -94,8 +95,7 @@ class MultiLattice:
 
         axis_dims = axis_dims or {}
         self._lattices: Dict[LatticeAxis, PoincareLattice] = {
-            ax: PoincareLattice(dim=axis_dims.get(ax, dim), name=ax.value)
-            for ax in LatticeAxis
+            ax: PoincareLattice(dim=axis_dims.get(ax, dim), name=ax.value) for ax in LatticeAxis
         }
 
     # ------------------------------------------------------------------
@@ -175,7 +175,7 @@ class MultiLattice:
         }
 
     def reset(self, axes: Optional[List[LatticeAxis]] = None) -> None:
-        for ax in (axes or list(LatticeAxis)):
+        for ax in axes or list(LatticeAxis):
             self._lattices[ax].reset()
         if axes is None:
             self._frame_count = 0

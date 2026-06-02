@@ -4724,68 +4724,92 @@ _SKILL_TIER_LABELS: Dict[str, str] = {
 
 # (tier, tongue, band, deps, description)
 _SKILL_TREE_META: Dict[str, Tuple[str, str, str, List[str], str]] = {
-    "ops":                   ("L1", "KO", "LEXICON",       [],                             "List all 64 lexicon ops"),
-    "atomic":                ("L1", "KO", "LEXICON",       ["ops"],                        "Inspect atomic substrate row for an op"),
-    "emit":                  ("L1", "KO", "LEXICON",       ["ops"],                        "Emit code for an op in any tongue"),
-    "encode-cmd":            ("L1", "KO", "TOKENIZER",     [],                             "Encode payload via Sacred Tongue tokenizer"),
-    "decode-cmd":            ("L1", "KO", "TOKENIZER",     ["encode-cmd"],                 "Decode Sacred Tongue token stream to plaintext"),
-    "xlate-cmd":             ("L1", "AV", "TOKENIZER",     ["encode-cmd", "decode-cmd"],   "Translate token stream across tongues"),
-    "binary-to-tokenizer":   ("L1", "KO", "TOKENIZER",     ["encode-cmd"],                 "Map binary bytes to Sacred Tongue token rows"),
-    "yin-yang-dual":         ("L2", "DR", "TOKENIZER",     ["encode-cmd", "decode-cmd"],   "Build KO/DR yin-yang dual token packet"),
-    "tongue-compile":        ("L2", "KO", "TOOLCHAIN",     ["encode-cmd"],                 "Compile Sacred Tongues .sts assembly to VM bytecode"),
-    "tongue-run":            ("L4", "KO", "TOOLCHAIN",     ["tongue-compile"],             "Run Sacred Tongues .sts program in bounded VM"),
-    "code-packet":           ("L2", "KO", "ANALYSIS",      ["emit"],                       "Build SCBE weighted code packet from source"),
-    "braille-lane":          ("L2", "KO", "ANALYSIS",      ["code-packet"],                "Build braille/polyhedral cell lane from source"),
-    "interaction-graph":     ("L2", "AV", "ANALYSIS",      ["code-packet"],                "Build source/token/STISA/atomic interaction graph"),
-    "topology-view":         ("L2", "AV", "ANALYSIS",      ["interaction-graph"],          "Build topology view with polygons and leylines"),
-    "cluster-graph":         ("L2", "RU", "ANALYSIS",      ["topology-view"],              "Build cross-lattice cluster graph"),
-    "formation-graph":       ("L2", "RU", "ANALYSIS",      ["cluster-graph"],              "Build cross-lattice formation graph"),
-    "cross-domain-sequence": ("L2", "CA", "ANALYSIS",      ["topology-view"],              "Build cross-domain route sequence"),
-    "honeycomb-analysis":    ("L2", "CA", "ANALYSIS",      ["topology-view"],              "Analyze route cell execution stability"),
-    "cognition-map":         ("L2", "UM", "ANALYSIS",      ["topology-view"],              "Build cognitive well/ternary overlay map"),
-    "mars-mission":          ("L2", "KO", "ANALYSIS",      ["topology-view"],              "Build Mars mission compass/minimap packet"),
-    "api-graph":             ("L2", "DR", "ANALYSIS",      [],                             "Self-describing skill tree of the GeoSeal CLI"),
-    "seal":                  ("L3", "KO", "GOVERNANCE",    ["emit"],                       "Apply GeoSeal phase signature to a payload"),
-    "verify":                ("L3", "KO", "GOVERNANCE",    ["seal"],                       "Verify a GeoSeal signature"),
-    "seal-here":             ("L3", "KO", "GOVERNANCE",    ["seal"],                       "Geo-fence seal (PowerShell parameter-bound)"),
-    "backend-registry":      ("L3", "KO", "ROUTING",       [],                             "List backend providers and lane support"),
-    "portal-box":            ("L3", "KO", "ROUTING",       ["code-packet"],                "Build local portal-box route packet"),
-    "stream-wheel":          ("L3", "AV", "ROUTING",       ["portal-box"],                 "Build local stream-wheel route packet"),
-    "code-roundtrip":        ("L3", "RU", "TOOLCHAIN",     ["encode-cmd", "decode-cmd"],   "Encode/decode/execute code roundtrip through tongue"),
-    "explain-route":         ("L3", "KO", "ROUTING",       ["backend-registry"],           "Explain route IR and backend chain for a source"),
-    "route":                 ("L3", "KO", "ROUTING",       ["explain-route"],              "Route intent via SLM (auto or manual)"),
-    "run":                   ("L4", "KO", "EXECUTION",     ["emit", "seal"],               "Run lexicon op in one tongue subprocess"),
-    "swarm":                 ("L4", "KO", "EXECUTION",     ["run"],                        "Dispatch op to swarm of tongue bots with BFT consensus"),
-    "cross-build":           ("L4", "RU", "EXECUTION",     ["emit"],                       "Bijective A→lattice IR→B tongue translation"),
-    "swarm-exec":            ("L4", "RU", "EXECUTION",     ["swarm", "cross-build"],       "Meet-in-the-middle codegen through bijective seam"),
-    "exec":                  ("L4", "CA", "EXECUTION",     ["seal"],                       "Run command through GeoSeal execution gate"),
-    "shell":                 ("L4", "CA", "EXECUTION",     ["exec"],                       "Run nested GeoSeal command string"),
-    "arc":                   ("L4", "UM", "EXECUTION",     ["run"],                        "Synthesize + apply ARC task program"),
-    "agent":                 ("L4", "KO", "AGENT",         ["route", "backend-registry"],  "Route coding task via Polly → GeoSeal stamp"),
-    "cursor":                ("L4", "DR", "AGENT",         ["agent"],                      "Delegate bounded repo task to Cursor Agent"),
-    "testing-cli":           ("L4", "KO", "TESTING",       ["run", "seal"],                "Build testing playback packet and execute"),
-    "project-scaffold":      ("L4", "KO", "SCAFFOLD",      ["agent", "route"],             "Create lightweight project scaffold from intent"),
-    "legitimacy-trial":      ("L5", "KO", "GOVERNANCE",    ["seal", "exec"],               "Evaluate time/location/workspace/intent context"),
-    "coding-trial":          ("L5", "KO", "GOVERNANCE",    ["legitimacy-trial"],           "Legitimacy trial plus compiler/test probe"),
-    "validate-line":         ("L5", "KO", "GOVERNANCE",    ["exec"],                       "Preflight command line — PSReadLine-style verdict"),
-    "history":               ("L5", "KO", "AUDIT",         ["run", "swarm"],               "Show execution history from ledger"),
-    "replay":                ("L5", "KO", "AUDIT",         ["history"],                    "Replay a previous ledger record"),
-    "workflow":              ("L5", "DR", "GOVERNANCE",    ["agent", "seal"],              "Declarative .geoseal.yaml workflow runner"),
-    "promotions":            ("L5", "KO", "PROMOTION",     ["route"],                      "List dispatch patterns above promotion threshold"),
-    "promote":               ("L5", "KO", "PROMOTION",     ["promotions"],                 "Register recurring dispatch as a named alias"),
-    "aliases":               ("L5", "KO", "PROMOTION",     ["promote"],                    "List registered alias names and dispatch shape"),
-    "alias":                 ("L5", "KO", "PROMOTION",     ["promote"],                    "Invoke a registered alias deterministically"),
-    "unpromote":             ("L5", "KO", "PROMOTION",     ["promote"],                    "Remove a registered alias"),
-    "compile":               ("L6", "AV", "ORCHESTRATION", ["route", "agent-harness"],     "Compile intent into agent-bus command plan"),
-    "agent-harness":         ("L6", "KO", "ORCHESTRATION", ["route", "backend-registry"],  "Emit model-neutral agent harness manifest"),
-    "agent-endurance-pack":  ("L6", "KO", "ORCHESTRATION", ["agent-harness"],              "Generate Agent Endurance v1 spec bundle"),
-    "call-switchboard":      ("L6", "CA", "ORCHESTRATION", ["route", "seal"],              "Evaluate multi-agent call reservation"),
-    "lightning-indexer":     ("L6", "RU", "ORCHESTRATION", ["call-switchboard"],           "Select sparse agent context candidates"),
-    "loop-dispatch":         ("L6", "AV", "ORCHESTRATION", ["agent", "legitimacy-trial"],  "Policy-gated external agent loop dispatch"),
-    "assist":                ("L6", "KO", "ORCHESTRATION", ["route", "compile"],           "Local micro-assist for terminal agents"),
-    "domino":                ("L6", "DR", "ORCHESTRATION", ["workflow"],                   "Arrange domino workflow tiles with contact transfer"),
-    "terminus-training":     ("L6", "UM", "TRAINING",      ["swarm", "agent"],             "Run Terminus guild agent training"),
-    "pair-agent-training":   ("L6", "KO", "TRAINING",      ["agent", "workflow"],          "Build GeoShell pair-agent SFT dataset"),
+    "ops": ("L1", "KO", "LEXICON", [], "List all 64 lexicon ops"),
+    "atomic": ("L1", "KO", "LEXICON", ["ops"], "Inspect atomic substrate row for an op"),
+    "emit": ("L1", "KO", "LEXICON", ["ops"], "Emit code for an op in any tongue"),
+    "encode-cmd": ("L1", "KO", "TOKENIZER", [], "Encode payload via Sacred Tongue tokenizer"),
+    "decode-cmd": ("L1", "KO", "TOKENIZER", ["encode-cmd"], "Decode Sacred Tongue token stream to plaintext"),
+    "xlate-cmd": ("L1", "AV", "TOKENIZER", ["encode-cmd", "decode-cmd"], "Translate token stream across tongues"),
+    "binary-to-tokenizer": ("L1", "KO", "TOKENIZER", ["encode-cmd"], "Map binary bytes to Sacred Tongue token rows"),
+    "yin-yang-dual": ("L2", "DR", "TOKENIZER", ["encode-cmd", "decode-cmd"], "Build KO/DR yin-yang dual token packet"),
+    "tongue-compile": ("L2", "KO", "TOOLCHAIN", ["encode-cmd"], "Compile Sacred Tongues .sts assembly to VM bytecode"),
+    "tongue-run": ("L4", "KO", "TOOLCHAIN", ["tongue-compile"], "Run Sacred Tongues .sts program in bounded VM"),
+    "code-packet": ("L2", "KO", "ANALYSIS", ["emit"], "Build SCBE weighted code packet from source"),
+    "braille-lane": ("L2", "KO", "ANALYSIS", ["code-packet"], "Build braille/polyhedral cell lane from source"),
+    "interaction-graph": ("L2", "AV", "ANALYSIS", ["code-packet"], "Build source/token/STISA/atomic interaction graph"),
+    "topology-view": ("L2", "AV", "ANALYSIS", ["interaction-graph"], "Build topology view with polygons and leylines"),
+    "cluster-graph": ("L2", "RU", "ANALYSIS", ["topology-view"], "Build cross-lattice cluster graph"),
+    "formation-graph": ("L2", "RU", "ANALYSIS", ["cluster-graph"], "Build cross-lattice formation graph"),
+    "cross-domain-sequence": ("L2", "CA", "ANALYSIS", ["topology-view"], "Build cross-domain route sequence"),
+    "honeycomb-analysis": ("L2", "CA", "ANALYSIS", ["topology-view"], "Analyze route cell execution stability"),
+    "cognition-map": ("L2", "UM", "ANALYSIS", ["topology-view"], "Build cognitive well/ternary overlay map"),
+    "mars-mission": ("L2", "KO", "ANALYSIS", ["topology-view"], "Build Mars mission compass/minimap packet"),
+    "api-graph": ("L2", "DR", "ANALYSIS", [], "Self-describing skill tree of the GeoSeal CLI"),
+    "seal": ("L3", "KO", "GOVERNANCE", ["emit"], "Apply GeoSeal phase signature to a payload"),
+    "verify": ("L3", "KO", "GOVERNANCE", ["seal"], "Verify a GeoSeal signature"),
+    "seal-here": ("L3", "KO", "GOVERNANCE", ["seal"], "Geo-fence seal (PowerShell parameter-bound)"),
+    "backend-registry": ("L3", "KO", "ROUTING", [], "List backend providers and lane support"),
+    "portal-box": ("L3", "KO", "ROUTING", ["code-packet"], "Build local portal-box route packet"),
+    "stream-wheel": ("L3", "AV", "ROUTING", ["portal-box"], "Build local stream-wheel route packet"),
+    "code-roundtrip": (
+        "L3",
+        "RU",
+        "TOOLCHAIN",
+        ["encode-cmd", "decode-cmd"],
+        "Encode/decode/execute code roundtrip through tongue",
+    ),
+    "explain-route": ("L3", "KO", "ROUTING", ["backend-registry"], "Explain route IR and backend chain for a source"),
+    "route": ("L3", "KO", "ROUTING", ["explain-route"], "Route intent via SLM (auto or manual)"),
+    "run": ("L4", "KO", "EXECUTION", ["emit", "seal"], "Run lexicon op in one tongue subprocess"),
+    "swarm": ("L4", "KO", "EXECUTION", ["run"], "Dispatch op to swarm of tongue bots with BFT consensus"),
+    "cross-build": ("L4", "RU", "EXECUTION", ["emit"], "Bijective A→lattice IR→B tongue translation"),
+    "swarm-exec": (
+        "L4",
+        "RU",
+        "EXECUTION",
+        ["swarm", "cross-build"],
+        "Meet-in-the-middle codegen through bijective seam",
+    ),
+    "exec": ("L4", "CA", "EXECUTION", ["seal"], "Run command through GeoSeal execution gate"),
+    "shell": ("L4", "CA", "EXECUTION", ["exec"], "Run nested GeoSeal command string"),
+    "arc": ("L4", "UM", "EXECUTION", ["run"], "Synthesize + apply ARC task program"),
+    "agent": ("L4", "KO", "AGENT", ["route", "backend-registry"], "Route coding task via Polly → GeoSeal stamp"),
+    "cursor": ("L4", "DR", "AGENT", ["agent"], "Delegate bounded repo task to Cursor Agent"),
+    "testing-cli": ("L4", "KO", "TESTING", ["run", "seal"], "Build testing playback packet and execute"),
+    "project-scaffold": ("L4", "KO", "SCAFFOLD", ["agent", "route"], "Create lightweight project scaffold from intent"),
+    "legitimacy-trial": ("L5", "KO", "GOVERNANCE", ["seal", "exec"], "Evaluate time/location/workspace/intent context"),
+    "coding-trial": ("L5", "KO", "GOVERNANCE", ["legitimacy-trial"], "Legitimacy trial plus compiler/test probe"),
+    "validate-line": ("L5", "KO", "GOVERNANCE", ["exec"], "Preflight command line — PSReadLine-style verdict"),
+    "history": ("L5", "KO", "AUDIT", ["run", "swarm"], "Show execution history from ledger"),
+    "replay": ("L5", "KO", "AUDIT", ["history"], "Replay a previous ledger record"),
+    "workflow": ("L5", "DR", "GOVERNANCE", ["agent", "seal"], "Declarative .geoseal.yaml workflow runner"),
+    "promotions": ("L5", "KO", "PROMOTION", ["route"], "List dispatch patterns above promotion threshold"),
+    "promote": ("L5", "KO", "PROMOTION", ["promotions"], "Register recurring dispatch as a named alias"),
+    "aliases": ("L5", "KO", "PROMOTION", ["promote"], "List registered alias names and dispatch shape"),
+    "alias": ("L5", "KO", "PROMOTION", ["promote"], "Invoke a registered alias deterministically"),
+    "unpromote": ("L5", "KO", "PROMOTION", ["promote"], "Remove a registered alias"),
+    "compile": ("L6", "AV", "ORCHESTRATION", ["route", "agent-harness"], "Compile intent into agent-bus command plan"),
+    "agent-harness": (
+        "L6",
+        "KO",
+        "ORCHESTRATION",
+        ["route", "backend-registry"],
+        "Emit model-neutral agent harness manifest",
+    ),
+    "agent-endurance-pack": ("L6", "KO", "ORCHESTRATION", ["agent-harness"], "Generate Agent Endurance v1 spec bundle"),
+    "call-switchboard": ("L6", "CA", "ORCHESTRATION", ["route", "seal"], "Evaluate multi-agent call reservation"),
+    "lightning-indexer": ("L6", "RU", "ORCHESTRATION", ["call-switchboard"], "Select sparse agent context candidates"),
+    "loop-dispatch": (
+        "L6",
+        "AV",
+        "ORCHESTRATION",
+        ["agent", "legitimacy-trial"],
+        "Policy-gated external agent loop dispatch",
+    ),
+    "assist": ("L6", "KO", "ORCHESTRATION", ["route", "compile"], "Local micro-assist for terminal agents"),
+    "domino": ("L6", "DR", "ORCHESTRATION", ["workflow"], "Arrange domino workflow tiles with contact transfer"),
+    "terminus-training": ("L6", "UM", "TRAINING", ["swarm", "agent"], "Run Terminus guild agent training"),
+    "pair-agent-training": ("L6", "KO", "TRAINING", ["agent", "workflow"], "Build GeoShell pair-agent SFT dataset"),
 }
 
 
@@ -4823,9 +4847,7 @@ def _build_api_skill_tree(
             p = build_parser()
             for action_group in p._subparsers._group_actions:
                 for name, sub_p in action_group.choices.items():
-                    param_counts[name] = sum(
-                        1 for a in sub_p._actions if a.dest not in ("help",)
-                    )
+                    param_counts[name] = sum(1 for a in sub_p._actions if a.dest not in ("help",))
         except Exception:
             pass
 
@@ -4886,11 +4908,13 @@ def _build_api_skill_tree(
         nodes.append(node)
         for dep in deps:
             if dep in active:
-                edges.append({
-                    "source": f"cmd:{dep}",
-                    "target": f"cmd:{cmd_name}",
-                    "relation": "unlocks",
-                })
+                edges.append(
+                    {
+                        "source": f"cmd:{dep}",
+                        "target": f"cmd:{cmd_name}",
+                        "relation": "unlocks",
+                    }
+                )
 
     by_tier: Dict[str, List[str]] = {}
     by_band: Dict[str, List[str]] = {}
@@ -4939,7 +4963,7 @@ def _skill_tree_to_mermaid(tree: Dict[str, Any], *, direction: str = "LR") -> st
     for tier in sorted(set(n["tier"] for n in tree["nodes"])):
         tier_label = _SKILL_TIER_LABELS.get(tier, tier)
         tier_nodes = [n for n in tree["nodes"] if n["tier"] == tier]
-        lines.append(f"  subgraph {tier}[\"{tier}: {tier_label}\"]")
+        lines.append(f'  subgraph {tier}["{tier}: {tier_label}"]')
         for n in tier_nodes:
             nid = re.sub(r"[^A-Za-z0-9_]", "_", n["id"])
             entry_mark = " ★" if n["entry_point"] else ""
@@ -4955,16 +4979,24 @@ def _skill_tree_to_mermaid(tree: Dict[str, Any], *, direction: str = "LR") -> st
 
 def _skill_tree_to_dot(tree: Dict[str, Any]) -> str:
     tier_colors = {
-        "L1": "#e0f2fe", "L2": "#dbeafe", "L3": "#ede9fe",
-        "L4": "#fce7f3", "L5": "#fee2e2", "L6": "#fef3c7",
+        "L1": "#e0f2fe",
+        "L2": "#dbeafe",
+        "L3": "#ede9fe",
+        "L4": "#fce7f3",
+        "L5": "#fee2e2",
+        "L6": "#fef3c7",
     }
     tier_borders = {
-        "L1": "#0ea5e9", "L2": "#3b82f6", "L3": "#8b5cf6",
-        "L4": "#ec4899", "L5": "#ef4444", "L6": "#f59e0b",
+        "L1": "#0ea5e9",
+        "L2": "#3b82f6",
+        "L3": "#8b5cf6",
+        "L4": "#ec4899",
+        "L5": "#ef4444",
+        "L6": "#f59e0b",
     }
     lines = [
         "digraph GeoSealSkillTree {",
-        '  rankdir=LR;',
+        "  rankdir=LR;",
         '  graph [fontname="Courier" fontsize=11];',
         '  node [shape=box fontname="Courier" fontsize=10 style=filled];',
         '  edge [fontname="Courier" fontsize=9];',
@@ -4974,7 +5006,7 @@ def _skill_tree_to_dot(tree: Dict[str, Any]) -> str:
         tier_nodes = [n for n in tree["nodes"] if n["tier"] == tier]
         fill = tier_colors.get(tier, "#ffffff")
         border = tier_borders.get(tier, "#999999")
-        lines.append(f'  subgraph cluster_{tier} {{')
+        lines.append(f"  subgraph cluster_{tier} {{")
         lines.append(f'    label="{tier}: {tier_label}";')
         lines.append(f'    style=filled; fillcolor="{fill}"; color="{border}"; penwidth=2;')
         for n in tier_nodes:
@@ -4988,7 +5020,7 @@ def _skill_tree_to_dot(tree: Dict[str, Any]) -> str:
     for edge in tree["edges"]:
         src = re.sub(r"[^A-Za-z0-9_]", "_", edge["source"])
         dst = re.sub(r"[^A-Za-z0-9_]", "_", edge["target"])
-        lines.append(f"  {src} -> {dst} [color=\"#94a3b8\"];")
+        lines.append(f'  {src} -> {dst} [color="#94a3b8"];')
     lines.append("}")
     return "\n".join(lines) + "\n"
 
@@ -5006,7 +5038,9 @@ def _skill_tree_to_ascii(tree: Dict[str, Any]) -> str:
 
     # Header stats
     entries = ", ".join(s["entry_points"][:6]) + ("…" if len(s["entry_points"]) > 6 else "")
-    lines.append(f"  {s['total_commands']} commands  {s['total_edges']} edges  depth={s['max_depth']}  entries: {entries}")
+    lines.append(
+        f"  {s['total_commands']} commands  {s['total_edges']} edges  depth={s['max_depth']}  entries: {entries}"
+    )
     top = "  top: " + "  ".join(f"{r['cmd']}(+{r['unlocks']})" for r in s["top_unlocking"][:5])
     lines.append(top)
     lines.append("─" * W)
@@ -5029,7 +5063,7 @@ def _skill_tree_to_ascii(tree: Dict[str, Any]) -> str:
             band_cmds_sorted = sorted(band_cmds)
             for i, cmd in enumerate(band_cmds_sorted):
                 n = node_map[cmd]
-                is_last = (i == len(band_cmds_sorted) - 1)
+                is_last = i == len(band_cmds_sorted) - 1
                 branch = "└─" if is_last else "├─"
                 entry_star = "★ " if n["entry_point"] else "  "
                 unlock_tag = f"+{n['unlocks_count']}" if n["unlocks_count"] else "  "
@@ -5044,8 +5078,7 @@ def _skill_tree_to_ascii(tree: Dict[str, Any]) -> str:
                 desc = n["description"]
                 lines.append(
                     f"      {branch} {entry_star}{cmd:<26} {n['tongue']} d={n['depth']} "
-                    f"[{unlock_tag:>3}] {desc}"
-                    + req_s
+                    f"[{unlock_tag:>3}] {desc}" + req_s
                 )
 
     lines.append("\n" + "─" * W)
@@ -5130,6 +5163,7 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
     # --- format rendering ---
     tree_full = _build_api_skill_tree()
     for fmt in formats:
+
         def _render(f=fmt, t=tree_full):
             if f == "mermaid":
                 _skill_tree_to_mermaid(t)
@@ -5147,6 +5181,7 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
 
     # --- tier filters ---
     for tf in ["L1", "L3", "L6"]:
+
         def _build_tier(t=tf):
             _build_api_skill_tree(tier_filter=t)
 
@@ -5157,6 +5192,7 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
 
     # --- tongue filters ---
     for tng in ["KO", "DR"]:
+
         def _build_tongue(tn=tng):
             _build_api_skill_tree(tongue_filter=tn)
 
@@ -6053,7 +6089,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_api_graph.add_argument("--tier", default=None, help="Filter by skill tier L1-L6")
     p_api_graph.add_argument("--tongue", default=None, help="Filter by tongue KO|AV|RU|CA|UM|DR")
-    p_api_graph.add_argument("--band", default=None, help="Filter by band e.g. LEXICON|ANALYSIS|ROUTING|EXECUTION|GOVERNANCE|ORCHESTRATION")
+    p_api_graph.add_argument(
+        "--band", default=None, help="Filter by band e.g. LEXICON|ANALYSIS|ROUTING|EXECUTION|GOVERNANCE|ORCHESTRATION"
+    )
     p_api_graph.add_argument(
         "--show-params",
         action="store_true",

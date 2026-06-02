@@ -51,10 +51,10 @@ class ContactNode:
 class ContactLatticeOutput:
     """Return type for one ContactLatticeLayer forward pass."""
 
-    enriched: np.ndarray                      # (seq_len, 3) contact-weighted embeddings
-    contacts: List[List[ContactNode]]          # per-token contact node lists
-    plane_embeddings: Dict[str, np.ndarray]    # {tongue: (seq_len, 3)}
-    contact_counts: List[int]                  # surviving contacts per token
+    enriched: np.ndarray  # (seq_len, 3) contact-weighted embeddings
+    contacts: List[List[ContactNode]]  # per-token contact node lists
+    plane_embeddings: Dict[str, np.ndarray]  # {tongue: (seq_len, 3)}
+    contact_counts: List[int]  # surviving contacts per token
 
 
 # ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ class TonguePlaneProjector:
         """
         result: Dict[str, np.ndarray] = {}
         for tongue, W in self._W.items():
-            h = embeddings @ W                               # (seq_len, 3)
+            h = embeddings @ W  # (seq_len, 3)
             norms = np.linalg.norm(h, axis=-1, keepdims=True) + 1e-8
             result[tongue] = (h / norms) * np.tanh(norms * 0.5)  # smooth ball compression
         return result
@@ -151,9 +151,7 @@ class ContactLatticeLayer:
         contact_counts: List[int] = []
 
         for t in range(seq_len):
-            positions: Dict[str, np.ndarray] = {
-                tongue: plane_embeddings[tongue][t] for tongue in TONGUES
-            }
+            positions: Dict[str, np.ndarray] = {tongue: plane_embeddings[tongue][t] for tongue in TONGUES}
 
             # Group tongues by contact cell (same Morton prefix)
             cell_groups: Dict[int, List[str]] = {}
@@ -172,9 +170,7 @@ class ContactLatticeLayer:
                         ContactNode(
                             cell_code=cell_code,
                             tongues=list(tongues_here),
-                            positions=[
-                                (float(p[0]), float(p[1]), float(p[2])) for p in pos_here
-                            ],
+                            positions=[(float(p[0]), float(p[1]), float(p[2])) for p in pos_here],
                             survival_score=score,
                         )
                     )

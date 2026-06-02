@@ -26,7 +26,7 @@ from typing import List, Optional
 
 import numpy as np
 
-_EPS = 1e-6   # boundary guard — keep ||x|| < 1 strictly
+_EPS = 1e-6  # boundary guard — keep ||x|| < 1 strictly
 _MAX_NORM = 1.0 - _EPS
 
 
@@ -61,7 +61,7 @@ class PoincareLattice:
             return np.zeros(self.dim, dtype=np.float64)
         # exp_0(v) = tanh(||v||/2) * v/||v||
         r = math.tanh(norm / 2.0)
-        r = min(r, _MAX_NORM)   # epsilon clamp
+        r = min(r, _MAX_NORM)  # epsilon clamp
         return (r / norm) * v
 
     def project(self, p: np.ndarray) -> np.ndarray:
@@ -87,7 +87,7 @@ class PoincareLattice:
         denom = (1.0 - float(np.dot(u, u))) * (1.0 - float(np.dot(v, v)))
         denom = max(denom, _EPS)
         arg = 1.0 + 2.0 * diff_sq / denom
-        arg = max(arg, 1.0)   # arccosh domain guard
+        arg = max(arg, 1.0)  # arccosh domain guard
         return math.acosh(arg)
 
     # ------------------------------------------------------------------

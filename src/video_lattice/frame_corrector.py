@@ -35,13 +35,14 @@ _PHI = (1 + math.sqrt(5)) / 2
 @dataclass
 class CorrectionSignal:
     """Structured correction output for one frame."""
+
     frame_index: int
     aggregate_drift: float
-    cost_signal: float                        # R^(d²) scaling factor
-    axis_corrections: Dict[str, float]        # axis → signed correction magnitude
-    latent_nudge: Optional[np.ndarray]        # delta for diffusion latent space
-    condition_signal: Dict[str, Any]          # structured hint for UE5 / generator
-    severity: str                             # "none" | "mild" | "moderate" | "severe"
+    cost_signal: float  # R^(d²) scaling factor
+    axis_corrections: Dict[str, float]  # axis → signed correction magnitude
+    latent_nudge: Optional[np.ndarray]  # delta for diffusion latent space
+    condition_signal: Dict[str, Any]  # structured hint for UE5 / generator
+    severity: str  # "none" | "mild" | "moderate" | "severe"
     # Trijective audit fields (empty/False when no intent anchor is set)
     intent_violated: bool = False
     intent_drift: float = 0.0
@@ -194,9 +195,7 @@ class FrameCorrector:
             "severity": severity,
             "drift": state.aggregate_drift,
             "cost_multiplier": cost,
-            "top_drift_axes": [
-                {"axis": name, "drift": round(d, 4)} for name, d in top_drift_axes
-            ],
+            "top_drift_axes": [{"axis": name, "drift": round(d, 4)} for name, d in top_drift_axes],
             "axis_corrections": {k: round(v, 4) for k, v in axis_corrections.items()},
             # Trijective audit: human-intent vs machine-representation leg
             "intent": {

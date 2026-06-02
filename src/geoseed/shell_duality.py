@@ -60,6 +60,7 @@ PHI = (1.0 + math.sqrt(5.0)) / 2.0
 
 # ── ShellDuality ──────────────────────────────────────────────────────────────
 
+
 @dataclass
 class ShellDuality:
     """
@@ -68,9 +69,10 @@ class ShellDuality:
     k runs from 1 to 6 (= l+1, where l is angular momentum 0..5).
     A is the common anchor (default: RYDBERG_EV = 13.606 eV).
     """
-    A: float                      # common anchor (eV)
-    shell_k: List[int]            # [1, 2, 3, 4, 5, 6]
-    tongue_labels: List[str]      # ["KO", "AV", "RU", "CA", "UM", "DR"]
+
+    A: float  # common anchor (eV)
+    shell_k: List[int]  # [1, 2, 3, 4, 5, 6]
+    tongue_labels: List[str]  # ["KO", "AV", "RU", "CA", "UM", "DR"]
 
     def bind(self, k: int) -> float:
         """E_bind(k) = A / k²   (binding depth, decays outward)"""
@@ -150,14 +152,15 @@ class ShellDuality:
         return {
             "schema_version": "geoseed_shell_duality_v1",
             "anchor_A_ev": round(self.A, 9),
-            "A_squared_ev2": round(self.A ** 2, 9),
+            "A_squared_ev2": round(self.A**2, 9),
             "geometric_center_ev": round(self.A, 9),
             "invariant_cv": self.invariant_cv(),
             "is_invariant_flat": self.is_invariant_flat(),
             "derivation": "E_bind*E_curv=A² from H³ radial metric (1/k²) + LB angular stiffness (k²)",
             "shells": [
                 {
-                    "k": k, "tongue": tongues[i],
+                    "k": k,
+                    "tongue": tongues[i],
                     "bind_ev": round(self.bind(k), 9),
                     "curv_ev": round(self.curv(k), 9),
                     "invariant": round(self.invariant(k), 9),
@@ -176,6 +179,7 @@ def build_shell_duality(anchor_ev: Optional[float] = None) -> ShellDuality:
     """Build the GeoSeed ShellDuality object with optional custom anchor."""
     if anchor_ev is None:
         from src.geoseed.theory_comparison import RYDBERG_EV
+
         anchor_ev = RYDBERG_EV
     return ShellDuality(
         A=anchor_ev,
@@ -186,22 +190,25 @@ def build_shell_duality(anchor_ev: Optional[float] = None) -> ShellDuality:
 
 # ── PerturbationTest ──────────────────────────────────────────────────────────
 
+
 @dataclass
 class PerturbationResult:
     """Results of one perturbation scenario."""
+
     name: str
     description: str
     invariant_values: List[float]
     invariant_cv: float
-    invariant_survived: bool   # CV < tolerance
-    bind_exponent: float       # fitted p (expect ~2)
-    curv_exponent: float       # fitted q (expect ~2)
-    exponents_survived: bool   # both p,q within tolerance of 2
+    invariant_survived: bool  # CV < tolerance
+    bind_exponent: float  # fitted p (expect ~2)
+    curv_exponent: float  # fitted q (expect ~2)
+    exponents_survived: bool  # both p,q within tolerance of 2
 
 
 @dataclass
 class PerturbationTest:
     """Collection of perturbation scenarios testing invariant robustness."""
+
     scenarios: List[PerturbationResult]
 
     def all_survived(self) -> bool:
@@ -226,42 +233,49 @@ class PerturbationTest:
         }
 
 
-def _fit_p_q(bind_vals: List[float], curv_vals: List[float],
-             k_vals: List[float]) -> Tuple[float, float]:
+def _fit_p_q(bind_vals: List[float], curv_vals: List[float], k_vals: List[float]) -> Tuple[float, float]:
     """Quick log-linear regression to estimate exponents p, q."""
+
     def log_slope(y_vals, x_vals):
         n = len(x_vals)
         log_x = [math.log(abs(x) + 1e-30) for x in x_vals]
         log_y = [math.log(abs(y) + 1e-30) for y in y_vals]
         sx = sum(log_x)
         sy = sum(log_y)
-        sxx = sum(lx ** 2 for lx in log_x)
+        sxx = sum(lx**2 for lx in log_x)
         sxy = sum(lx * ly for lx, ly in zip(log_x, log_y))
         denom = n * sxx - sx * sx
         if abs(denom) < 1e-20:
             return 0.0
         return (n * sxy - sx * sy) / denom
 
-    p = -log_slope(bind_vals, k_vals)   # bind decays → p should be +2
-    q = log_slope(curv_vals, k_vals)    # curv grows → q should be +2
+    p = -log_slope(bind_vals, k_vals)  # bind decays → p should be +2
+    q = log_slope(curv_vals, k_vals)  # curv grows → q should be +2
     return p, q
 
 
-def _make_scenario(name: str, description: str,
-                   bind_vals: List[float], curv_vals: List[float],
-                   k_vals: List[float],
-                   cv_tol: float = 0.02,
-                   exp_tol: float = 0.2) -> PerturbationResult:
+def _make_scenario(
+    name: str,
+    description: str,
+    bind_vals: List[float],
+    curv_vals: List[float],
+    k_vals: List[float],
+    cv_tol: float = 0.02,
+    exp_tol: float = 0.2,
+) -> PerturbationResult:
     products = [b * c for b, c in zip(bind_vals, curv_vals)]
     mean_p = sum(products) / len(products)
     var_p = sum((v - mean_p) ** 2 for v in products) / len(products)
     cv = math.sqrt(var_p) / mean_p if mean_p > 0 else float("inf")
     p, q = _fit_p_q(bind_vals, curv_vals, k_vals)
     return PerturbationResult(
-        name=name, description=description,
-        invariant_values=products, invariant_cv=cv,
+        name=name,
+        description=description,
+        invariant_values=products,
+        invariant_cv=cv,
         invariant_survived=cv < cv_tol,
-        bind_exponent=p, curv_exponent=q,
+        bind_exponent=p,
+        curv_exponent=q,
         exponents_survived=abs(p - 2) < exp_tol and abs(q - 2) < exp_tol,
     )
 
@@ -278,6 +292,7 @@ def run_perturbation_tests(seed: int = 42) -> PerturbationTest:
       7. Large-anchor stress: A = 1000.0 eV
     """
     from src.geoseed.theory_comparison import RYDBERG_EV
+
     A = RYDBERG_EV
 
     rng = random.Random(seed)
@@ -287,70 +302,108 @@ def run_perturbation_tests(seed: int = 42) -> PerturbationTest:
     ks = list(range(1, 7))
     bind = [A / (k * k) for k in ks]
     curv = [A * (k * k) for k in ks]
-    scenarios.append(_make_scenario(
-        "exact_baseline", "k=1..6, A=Rydberg, no noise",
-        bind, curv, [float(k) for k in ks], cv_tol=1e-9,
-    ))
+    scenarios.append(
+        _make_scenario(
+            "exact_baseline",
+            "k=1..6, A=Rydberg, no noise",
+            bind,
+            curv,
+            [float(k) for k in ks],
+            cv_tol=1e-9,
+        )
+    )
 
     # 2. Alternate indexing k = 2..7
     ks2 = list(range(2, 8))
     bind2 = [A / (k * k) for k in ks2]
     curv2 = [A * (k * k) for k in ks2]
-    scenarios.append(_make_scenario(
-        "offset_indexing", "k=2..7 (offset by 1 from standard)",
-        bind2, curv2, [float(k) for k in ks2],
-    ))
+    scenarios.append(
+        _make_scenario(
+            "offset_indexing",
+            "k=2..7 (offset by 1 from standard)",
+            bind2,
+            curv2,
+            [float(k) for k in ks2],
+        )
+    )
 
     # 3. Rescaled anchor: A' = 3.7 * A
     A3 = 3.7 * A
     ks3 = list(range(1, 7))
     bind3 = [A3 / (k * k) for k in ks3]
     curv3 = [A3 * (k * k) for k in ks3]
-    scenarios.append(_make_scenario(
-        "rescaled_anchor", f"A = 3.7 × Rydberg = {A3:.2f} eV",
-        bind3, curv3, [float(k) for k in ks3],
-    ))
+    scenarios.append(
+        _make_scenario(
+            "rescaled_anchor",
+            f"A = 3.7 × Rydberg = {A3:.2f} eV",
+            bind3,
+            curv3,
+            [float(k) for k in ks3],
+        )
+    )
 
     # 4. Non-hydrogen anchor
     A4 = 10.0
     bind4 = [A4 / (k * k) for k in ks]
     curv4 = [A4 * (k * k) for k in ks]
-    scenarios.append(_make_scenario(
-        "non_hydrogen_anchor", "A = 10.0 eV (arbitrary non-Rydberg anchor)",
-        bind4, curv4, [float(k) for k in ks],
-    ))
+    scenarios.append(
+        _make_scenario(
+            "non_hydrogen_anchor",
+            "A = 10.0 eV (arbitrary non-Rydberg anchor)",
+            bind4,
+            curv4,
+            [float(k) for k in ks],
+        )
+    )
 
     # 5. Noisy k: k + ε, ε ~ N(0, 0.1)
     noisy_ks = [k + rng.gauss(0, 0.1) for k in range(1, 7)]
     bind5 = [A / (k * k) for k in noisy_ks]
     curv5 = [A * (k * k) for k in noisy_ks]
-    scenarios.append(_make_scenario(
-        "noisy_k_sigma01", "k + Gaussian noise σ=0.1",
-        bind5, curv5, noisy_ks, cv_tol=0.05,
-    ))
+    scenarios.append(
+        _make_scenario(
+            "noisy_k_sigma01",
+            "k + Gaussian noise σ=0.1",
+            bind5,
+            curv5,
+            noisy_ks,
+            cv_tol=0.05,
+        )
+    )
 
     # 6. Half-integer indexing: k = 0.5, 1.5, …, 5.5
     half_ks = [n + 0.5 for n in range(6)]
     bind6 = [A / (k * k) for k in half_ks]
     curv6 = [A * (k * k) for k in half_ks]
-    scenarios.append(_make_scenario(
-        "half_integer_k", "k = 0.5, 1.5, ..., 5.5 (fractional shells)",
-        bind6, curv6, half_ks,
-    ))
+    scenarios.append(
+        _make_scenario(
+            "half_integer_k",
+            "k = 0.5, 1.5, ..., 5.5 (fractional shells)",
+            bind6,
+            curv6,
+            half_ks,
+        )
+    )
 
     # 7. Large-anchor stress: A = 1000 eV
     A7 = 1000.0
     bind7 = [A7 / (k * k) for k in ks]
     curv7 = [A7 * (k * k) for k in ks]
-    scenarios.append(_make_scenario(
-        "large_anchor", "A = 1000 eV (stress test)",
-        bind7, curv7, [float(k) for k in ks],
-    ))
+    scenarios.append(
+        _make_scenario(
+            "large_anchor",
+            "A = 1000 eV (stress test)",
+            bind7,
+            curv7,
+            [float(k) for k in ks],
+        )
+    )
 
     return PerturbationTest(scenarios=scenarios)
 
 
 # ── ShellStateField ───────────────────────────────────────────────────────────
+
 
 @dataclass
 class ShellStateField:
@@ -367,6 +420,7 @@ class ShellStateField:
       - The locus of states traces a hyperbola in (bind, curv) space
         with the invariant I = A² as the hyperbolic constant.
     """
+
     duality: ShellDuality
 
     def states(self) -> List[Tuple[float, float]]:
@@ -374,16 +428,14 @@ class ShellStateField:
 
     def trajectory_angles_deg(self) -> List[float]:
         """Angle of each shell state vector from the bind axis."""
-        return [math.degrees(self.duality.relation_angle(k))
-                for k in self.duality.shell_k]
+        return [math.degrees(self.duality.relation_angle(k)) for k in self.duality.shell_k]
 
     def balance_point(self) -> Tuple[int, float]:
         """
         Shell k where |E_bind - E_curv| is minimized = the "balanced" shell.
         By construction this is always KO (k=1) where bind=curv=A.
         """
-        diffs = [abs(self.duality.bind(k) - self.duality.curv(k))
-                 for k in self.duality.shell_k]
+        diffs = [abs(self.duality.bind(k) - self.duality.curv(k)) for k in self.duality.shell_k]
         idx = min(range(6), key=lambda i: diffs[i])
         return self.duality.shell_k[idx], diffs[idx]
 
@@ -400,7 +452,7 @@ class ShellStateField:
 
     def hyperbola_constant(self) -> float:
         """The hyperbolic constant of the (bind, curv) locus = A²."""
-        return self.duality.A ** 2
+        return self.duality.A**2
 
     def to_dict(self) -> dict:
         states = self.states()
@@ -433,6 +485,7 @@ def build_shell_state_field(anchor_ev: Optional[float] = None) -> ShellStateFiel
 
 # ── RelationTerm ──────────────────────────────────────────────────────────────
 
+
 @dataclass
 class RelationTerm:
     """
@@ -457,6 +510,7 @@ class RelationTerm:
     (bind, compton) plane gives the direction of the Compton model relative
     to the algebraic bind direction.
     """
+
     A: float
     shell_k: List[int]
     tongue_labels: List[str]
@@ -522,6 +576,7 @@ def build_relation_term(anchor_ev: Optional[float] = None) -> RelationTerm:
     """Build the RelationTerm coupling object for the six GeoSeed shells."""
     if anchor_ev is None:
         from src.geoseed.theory_comparison import RYDBERG_EV
+
         anchor_ev = RYDBERG_EV
     return RelationTerm(
         A=anchor_ev,
@@ -532,6 +587,7 @@ def build_relation_term(anchor_ev: Optional[float] = None) -> RelationTerm:
 
 # ── Clean top-level API ───────────────────────────────────────────────────────
 
+
 def compute_invariant(bind_ev: float, curv_ev: float) -> float:
     """Shell invariant I = E_bind × E_curv. Constant at A² for all k."""
     return bind_ev * curv_ev
@@ -541,29 +597,28 @@ def shell_state_at(k: int, A: Optional[float] = None) -> Tuple[float, float]:
     """(E_bind, E_curv) at shell k with anchor A (default: Rydberg)."""
     if A is None:
         from src.geoseed.theory_comparison import RYDBERG_EV
+
         A = RYDBERG_EV
     return A / (k * k), A * (k * k)
 
 
-def fit_binding_law(
-    shells: List[float], values: List[float]
-) -> Tuple[float, float, float, float]:
+def fit_binding_law(shells: List[float], values: List[float]) -> Tuple[float, float, float, float]:
     """
     Fit E = A / (k+δ)^p to binding energy values.
     Returns (A, delta, p, rms).
     """
     from src.geoseed.theory_fit import fit_power_law
+
     return fit_power_law(values, ns=shells)
 
 
-def fit_curvature_law(
-    shells: List[float], values: List[float]
-) -> Tuple[float, float, float, float]:
+def fit_curvature_law(shells: List[float], values: List[float]) -> Tuple[float, float, float, float]:
     """
     Fit E = B · (k+δ)^q to curvature energy values.
     Returns (B, delta, q, rms).
     """
     from src.geoseed.theory_fit import _fit_growth_law
+
     return _fit_growth_law(values, ns=shells)
 
 
@@ -573,6 +628,7 @@ def perturbation_sweep(seed: int = 42) -> "PerturbationTest":
 
 
 # ── Visualization ─────────────────────────────────────────────────────────────
+
 
 def plot_duality(out_dir: Optional[str] = None) -> str:
     """
@@ -593,6 +649,7 @@ def plot_duality(out_dir: Optional[str] = None) -> str:
 
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
     except ImportError:
@@ -610,19 +667,16 @@ def plot_duality(out_dir: Optional[str] = None) -> str:
 
     fig, axes = plt.subplots(3, 1, figsize=(8, 10))
     fig.suptitle(
-        "GeoSeed Shell Duality Field\n"
-        f"I(k) = E_bind × E_curv = A² = {dual.A ** 2:.4f} eV²  (constant for all k)",
-        fontsize=11, fontweight="bold",
+        "GeoSeed Shell Duality Field\n" f"I(k) = E_bind × E_curv = A² = {dual.A ** 2:.4f} eV²  (constant for all k)",
+        fontsize=11,
+        fontweight="bold",
     )
 
     # ── Panel 1: dual energy curves ──
     ax = axes[0]
-    ax.semilogy(ks, bind_vals, "o-", color="#2196F3", lw=2,
-                label="E_bind(k) = A/k²  (decays)")
-    ax.semilogy(ks, curv_vals, "s-", color="#F44336", lw=2,
-                label="E_curv(k) = A·k²  (grows)")
-    ax.axhline(dual.A, ls="--", color="#888888", lw=1.2,
-               label=f"Rydberg A = {dual.A:.4f} eV")
+    ax.semilogy(ks, bind_vals, "o-", color="#2196F3", lw=2, label="E_bind(k) = A/k²  (decays)")
+    ax.semilogy(ks, curv_vals, "s-", color="#F44336", lw=2, label="E_curv(k) = A·k²  (grows)")
+    ax.axhline(dual.A, ls="--", color="#888888", lw=1.2, label=f"Rydberg A = {dual.A:.4f} eV")
     ax.set_xticks(ks)
     ax.set_xticklabels(xlabels, fontsize=9)
     ax.set_ylabel("Energy (eV, log scale)")
@@ -632,27 +686,30 @@ def plot_duality(out_dir: Optional[str] = None) -> str:
 
     # ── Panel 2: invariant flatness ──
     ax = axes[1]
-    ax.plot(ks, inv_vals, "D-", color="#4CAF50", lw=2,
-            ms=8, label="I(k) = E_bind × E_curv")
-    ax.axhline(dual.A ** 2, ls="--", color="#888888", lw=1.5,
-               label=f"A² = {dual.A ** 2:.4f} eV²  (constant)")
+    ax.plot(ks, inv_vals, "D-", color="#4CAF50", lw=2, ms=8, label="I(k) = E_bind × E_curv")
+    ax.axhline(dual.A**2, ls="--", color="#888888", lw=1.5, label=f"A² = {dual.A ** 2:.4f} eV²  (constant)")
     ax.set_xticks(ks)
     ax.set_xticklabels(xlabels, fontsize=9)
     ax.set_ylabel("Invariant I(k)  (eV²)")
     ax.set_title("Shell Invariant — Constant at A² Across All Shells")
     ax.legend(fontsize=9)
     ax.grid(True, alpha=0.3)
-    ax.text(0.98, 0.06, f"CV = {dual.invariant_cv():.2e}",
-            ha="right", va="bottom", transform=ax.transAxes,
-            fontsize=10, color="#4CAF50",
-            bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.85))
+    ax.text(
+        0.98,
+        0.06,
+        f"CV = {dual.invariant_cv():.2e}",
+        ha="right",
+        va="bottom",
+        transform=ax.transAxes,
+        fontsize=10,
+        color="#4CAF50",
+        bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.85),
+    )
 
     # ── Panel 3: Compton coupling ratio ──
     ax = axes[2]
-    ax.bar(ks, rho_vals, color="#FF9800", alpha=0.82,
-           label="ρ(k) = k²/φ^(k−1)  (Compton/dual ratio)")
-    ax.axhline(1.0, ls="--", color="#555555", lw=1.5,
-               label="ρ = 1  (ground-state resonance)")
+    ax.bar(ks, rho_vals, color="#FF9800", alpha=0.82, label="ρ(k) = k²/φ^(k−1)  (Compton/dual ratio)")
+    ax.axhline(1.0, ls="--", color="#555555", lw=1.5, label="ρ = 1  (ground-state resonance)")
     ax.set_xticks(ks)
     ax.set_xticklabels(xlabels, fontsize=9)
     ax.set_ylabel("Coupling ratio ρ(k)")
@@ -662,8 +719,10 @@ def plot_duality(out_dir: Optional[str] = None) -> str:
     peak_k, peak_rho = rel.peak_coupling_shell()
     ax.annotate(
         f"peak k={peak_k}\nρ = {peak_rho:.2f}",
-        xy=(peak_k, peak_rho), xytext=(peak_k + 0.5, peak_rho - 0.4),
-        fontsize=8, arrowprops=dict(arrowstyle="->", color="gray"),
+        xy=(peak_k, peak_rho),
+        xytext=(peak_k + 0.5, peak_rho - 0.4),
+        fontsize=8,
+        arrowprops=dict(arrowstyle="->", color="gray"),
         bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.85),
     )
 
@@ -675,6 +734,7 @@ def plot_duality(out_dir: Optional[str] = None) -> str:
 
 
 # ── JSON artifact ─────────────────────────────────────────────────────────────
+
 
 def export_duality_artifact(out_dir: Optional[str] = None) -> str:
     """
@@ -709,7 +769,7 @@ def export_duality_artifact(out_dir: Optional[str] = None) -> str:
         "generated_by": "shell_duality.export_duality_artifact",
         "summary": {
             "anchor_A_ev": round(dual.A, 9),
-            "A_squared_ev2": round(dual.A ** 2, 9),
+            "A_squared_ev2": round(dual.A**2, 9),
             "invariant_cv": dual.invariant_cv(),
             "is_invariant_flat": dual.is_invariant_flat(),
             "all_perturbations_survived": pert.all_survived(),
@@ -738,6 +798,7 @@ def export_duality_artifact(out_dir: Optional[str] = None) -> str:
 
 # ── ASCII summary ─────────────────────────────────────────────────────────────
 
+
 def duality_field_report() -> str:
     from src.geoseed.theory_comparison import RYDBERG_EV
 
@@ -755,8 +816,7 @@ def duality_field_report() -> str:
     lines.append("")
 
     lines.append(
-        f"  {'Shell':<10}  {'E_bind':>10}  {'E_curv':>12}  "
-        f"{'I(k)=A²':>14}  {'angle°':>8}  {'dominant':>10}"
+        f"  {'Shell':<10}  {'E_bind':>10}  {'E_curv':>12}  " f"{'I(k)=A²':>14}  {'angle°':>8}  {'dominant':>10}"
     )
     lines.append("  " + "-" * 70)
     for i, k in enumerate(dual.shell_k):
@@ -764,8 +824,7 @@ def duality_field_report() -> str:
         ang = math.degrees(dual.relation_angle(k))
         dom = "BINDING" if b >= c else "CURVATURE"
         lines.append(
-            f"  {tongues[i]:<10}  {b:>10.4f}  {c:>12.4f}"
-            f"  {dual.invariant(k):>14.6f}  {ang:>8.2f}°  {dom:>10}"
+            f"  {tongues[i]:<10}  {b:>10.4f}  {c:>12.4f}" f"  {dual.invariant(k):>14.6f}  {ang:>8.2f}°  {dom:>10}"
         )
     lines.append("")
     lines.append(f"  Product CV = {dual.invariant_cv():.2e}  (flat = invariant holds)")
@@ -775,10 +834,7 @@ def duality_field_report() -> str:
     lines.append("=" * 72)
     lines.append("  PERTURBATION TEST (invariant robustness)")
     lines.append("=" * 72)
-    lines.append(
-        f"  {'Scenario':<24}  {'CV':>12}  {'Survived':>10}  "
-        f"{'p':>8}  {'q':>8}  {'exp±ok':>8}"
-    )
+    lines.append(f"  {'Scenario':<24}  {'CV':>12}  {'Survived':>10}  " f"{'p':>8}  {'q':>8}  {'exp±ok':>8}")
     lines.append("  " + "-" * 72)
     for s in pert.scenarios:
         lines.append(

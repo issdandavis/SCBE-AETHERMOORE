@@ -34,8 +34,8 @@ from scripts.benchmark._bench_common import (
     same_namespace,
 )
 
-
 # ── Fixture validation ─────────────────────────────────────────────────────────
+
 
 def test_fixture_validation_passes():
     result = validate_fixtures()
@@ -62,8 +62,7 @@ def test_tier_distribution():
 
 
 def test_all_cases_have_required_fields():
-    required = ("id", "tier", "user_request", "expected_first_tool",
-                 "expected_decision", "policy_clause")
+    required = ("id", "tier", "user_request", "expected_first_tool", "expected_decision", "policy_clause")
     for case in POLICY_CASES:
         for f in required:
             assert f in case, f"{case['id']} missing field '{f}'"
@@ -71,9 +70,7 @@ def test_all_cases_have_required_fields():
 
 def test_tool_responses_cover_all_cases():
     for case in POLICY_CASES:
-        assert case["id"] in _TOOL_RESPONSES, (
-            f"{case['id']} has no simulated tool response"
-        )
+        assert case["id"] in _TOOL_RESPONSES, f"{case['id']} has no simulated tool response"
 
 
 def test_tool_responses_are_valid_json():
@@ -86,8 +83,7 @@ def test_tool_responses_are_valid_json():
         # "decision" is intentionally absent — the model must apply the threshold
         # from the system prompt; pre-resolving it would make this a JSON-copy test
         assert "decision" not in parsed, (
-            f"{case_id}: response must NOT contain 'decision' field "
-            "(degenerate verifier — model would just echo it)"
+            f"{case_id}: response must NOT contain 'decision' field " "(degenerate verifier — model would just echo it)"
         )
         assert "flags" in parsed, f"{case_id}: response missing 'flags' field"
 
@@ -96,29 +92,24 @@ def test_no_tautological_requests_tool():
     """user_request must not contain the expected first tool name."""
     for case in POLICY_CASES:
         et = case["expected_first_tool"]
-        assert et not in case["user_request"], (
-            f"{case['id']}: user_request contains expected_first_tool '{et}'"
-        )
+        assert et not in case["user_request"], f"{case['id']}: user_request contains expected_first_tool '{et}'"
 
 
 def test_no_tautological_requests_decision():
     """user_request must not contain the expected decision word."""
     for case in POLICY_CASES:
         dec = case["expected_decision"].lower()
-        assert dec not in case["user_request"].lower(), (
-            f"{case['id']}: user_request contains expected_decision '{dec}'"
-        )
+        assert dec not in case["user_request"].lower(), f"{case['id']}: user_request contains expected_decision '{dec}'"
 
 
 def test_all_expected_decisions_are_valid():
     valid = {"ALLOW", "QUARANTINE", "ESCALATE", "DENY"}
     for case in POLICY_CASES:
-        assert case["expected_decision"] in valid, (
-            f"{case['id']}: unexpected decision '{case['expected_decision']}'"
-        )
+        assert case["expected_decision"] in valid, f"{case['id']}: unexpected decision '{case['expected_decision']}'"
 
 
 # ── Decision detection ─────────────────────────────────────────────────────────
+
 
 def test_detect_deny_from_refusal():
     text = "I'm sorry, I cannot and will not help with that. This violates policy."
@@ -153,6 +144,7 @@ def test_detect_none_from_ambiguous():
 
 # ── Minimal tool schemas ───────────────────────────────────────────────────────
 
+
 def test_minimal_schemas_include_governance_tools():
     schemas = _build_tool_schemas_minimal()
     names = {s["name"] for s in schemas}
@@ -171,6 +163,7 @@ def test_minimal_schemas_valid_structure():
 
 
 # ── _bench_common helpers ──────────────────────────────────────────────────────
+
 
 def test_sha256_deterministic():
     assert _sha256("hello") == _sha256("hello")
@@ -192,11 +185,12 @@ def test_same_namespace_false():
 def test_make_receipt_chain():
     ts = "2026-01-01T00:00:00Z"
     prev = "0" * 64
-    r1 = make_receipt("tp_01", "request 1", "scbe-compass|ALLOW",
-                      "scbe-compass|ALLOW", {"tier": "ALLOW"}, True, prev, ts)
-    r2 = make_receipt("tp_02", "request 2", "scbe-compass|DENY",
-                      "scbe-compass|DENY", {"tier": "DENY"}, True,
-                      r1["receipt_hash"], ts)
+    r1 = make_receipt(
+        "tp_01", "request 1", "scbe-compass|ALLOW", "scbe-compass|ALLOW", {"tier": "ALLOW"}, True, prev, ts
+    )
+    r2 = make_receipt(
+        "tp_02", "request 2", "scbe-compass|DENY", "scbe-compass|DENY", {"tier": "DENY"}, True, r1["receipt_hash"], ts
+    )
     assert r2["prev_hash"] == r1["receipt_hash"]
     assert r2["receipt_hash"] != r1["receipt_hash"]
 

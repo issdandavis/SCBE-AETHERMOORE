@@ -25,40 +25,38 @@ from typing import List, Dict
 
 # ── Physical constants ────────────────────────────────────────────────────────
 
-PHI         = (1.0 + math.sqrt(5.0)) / 2.0
-HBAR        = 1.054571817e-34   # J·s
-H_PLANCK    = 6.62607015e-34    # J·s
-M_ELECTRON  = 9.1093837015e-31  # kg
-C_LIGHT     = 2.99792458e8      # m/s
-EV          = 1.602176634e-19   # J per eV
-RYDBERG_EV  = 13.605693122994   # eV  (hydrogen ground state binding energy)
-ALPHA       = 7.2973525693e-3   # fine-structure constant
-A0          = 5.29177210903e-11 # Bohr radius (m)
+PHI = (1.0 + math.sqrt(5.0)) / 2.0
+HBAR = 1.054571817e-34  # J·s
+H_PLANCK = 6.62607015e-34  # J·s
+M_ELECTRON = 9.1093837015e-31  # kg
+C_LIGHT = 2.99792458e8  # m/s
+EV = 1.602176634e-19  # J per eV
+RYDBERG_EV = 13.605693122994  # eV  (hydrogen ground state binding energy)
+ALPHA = 7.2973525693e-3  # fine-structure constant
+A0 = 5.29177210903e-11  # Bohr radius (m)
 
 # Derived
-COMPTON_WAVELENGTH  = H_PLANCK / (M_ELECTRON * C_LIGHT)   # ≈ 2.426e-12 m
-COMPTON_FREQUENCY   = M_ELECTRON * C_LIGHT**2 / H_PLANCK  # ≈ 1.236e20 Hz
-COMPTON_ENERGY_EV   = M_ELECTRON * C_LIGHT**2 / EV        # ≈ 511 keV
+COMPTON_WAVELENGTH = H_PLANCK / (M_ELECTRON * C_LIGHT)  # ≈ 2.426e-12 m
+COMPTON_FREQUENCY = M_ELECTRON * C_LIGHT**2 / H_PLANCK  # ≈ 1.236e20 Hz
+COMPTON_ENERGY_EV = M_ELECTRON * C_LIGHT**2 / EV  # ≈ 511 keV
 
 TONGUE_ORDER = ["KO", "AV", "RU", "CA", "UM", "DR"]
 
 # Measured hydrogen binding energies (eV) for n = 1..6
 # (positive = energy to remove electron)
-HYDROGEN_MEASURED_EV = [
-    RYDBERG_EV / (n**2)
-    for n in range(1, 7)
-]
+HYDROGEN_MEASURED_EV = [RYDBERG_EV / (n**2) for n in range(1, 7)]
 
 
 # ── Result types ──────────────────────────────────────────────────────────────
+
 
 @dataclass
 class ShellPrediction:
     shell_index: int
     tongue: str
-    energy_ev: float        # binding energy magnitude (eV)
-    frequency_hz: float     # characteristic frequency (Hz)
-    orbital_radius_m: float # implied orbital radius (m)
+    energy_ev: float  # binding energy magnitude (eV)
+    frequency_hz: float  # characteristic frequency (Hz)
+    orbital_radius_m: float  # implied orbital radius (m)
 
 
 @dataclass
@@ -66,8 +64,8 @@ class TheoryResult:
     name: str
     description: str
     shells: List[ShellPrediction]
-    residuals_ev: List[float]       # theory - hydrogen_measured (eV per shell)
-    rms_residual_ev: float          # root-mean-square residual
+    residuals_ev: List[float]  # theory - hydrogen_measured (eV per shell)
+    rms_residual_ev: float  # root-mean-square residual
     note: str = ""
 
     def energies_ev(self) -> List[float]:
@@ -99,11 +97,15 @@ class TheoryResult:
 
 # ── Theory implementations ────────────────────────────────────────────────────
 
-def _make_result(name: str, description: str,
-                 energies_ev: List[float],
-                 frequencies_hz: List[float],
-                 radii_m: List[float],
-                 note: str = "") -> TheoryResult:
+
+def _make_result(
+    name: str,
+    description: str,
+    energies_ev: List[float],
+    frequencies_hz: List[float],
+    radii_m: List[float],
+    note: str = "",
+) -> TheoryResult:
     shells = [
         ShellPrediction(
             shell_index=i,
@@ -116,9 +118,9 @@ def _make_result(name: str, description: str,
     ]
     residuals = [energies_ev[i] - HYDROGEN_MEASURED_EV[i] for i in range(6)]
     rms = math.sqrt(sum(r**2 for r in residuals) / 6)
-    return TheoryResult(name=name, description=description,
-                        shells=shells, residuals_ev=residuals,
-                        rms_residual_ev=rms, note=note)
+    return TheoryResult(
+        name=name, description=description, shells=shells, residuals_ev=residuals, rms_residual_ev=rms, note=note
+    )
 
 
 def theory_compton_orbital() -> TheoryResult:
@@ -147,7 +149,9 @@ def theory_compton_orbital() -> TheoryResult:
     return _make_result(
         "compton_orbital",
         "Compton oscillation as orbital frequency (phi-scaled subharmonics)",
-        energies, freqs, radii,
+        energies,
+        freqs,
+        radii,
         note=(
             f"Base: f_C={COMPTON_FREQUENCY:.4e} Hz, E_C={COMPTON_ENERGY_EV:.1f} keV. "
             "Energy normalised to Rydberg at KO shell."
@@ -173,7 +177,9 @@ def theory_bohr() -> TheoryResult:
     return _make_result(
         "bohr",
         "Bohr hydrogen model: E = 13.6/n²  (n = shell+1)",
-        energies, freqs, radii,
+        energies,
+        freqs,
+        radii,
         note="Residual is zero by definition — this is the reference.",
     )
 
@@ -203,7 +209,9 @@ def theory_de_broglie() -> TheoryResult:
     return _make_result(
         "de_broglie",
         "de Broglie standing wave on GeoSeed phi-radii (n wavelengths/orbit)",
-        energies, freqs, radii,
+        energies,
+        freqs,
+        radii,
         note="GeoSeed Poincaré radii rescaled to physical units at Bohr radius.",
     )
 
@@ -213,7 +221,7 @@ def theory_geoseed_lb() -> TheoryResult:
     GeoSeed Laplace-Beltrami ladder: |λ_l| = (l+1)² = 1,4,9,16,25,36.
     Normalise so shell 0 (KO, l=0) = Rydberg energy.
     """
-    lam = [(l + 1)**2 for l in range(6)]
+    lam = [(l + 1) ** 2 for l in range(6)]
     scale = RYDBERG_EV / lam[0]
     energies, freqs, radii = [], [], []
     for l in range(6):
@@ -226,7 +234,9 @@ def theory_geoseed_lb() -> TheoryResult:
     return _make_result(
         "geoseed_lb",
         "GeoSeed Laplace-Beltrami eigenvalues: E ∝ (l+1)²",
-        energies, freqs, radii,
+        energies,
+        freqs,
+        radii,
         note="LB ladder grows as perfect squares — steeper than Bohr (1/n²).",
     )
 
@@ -251,7 +261,9 @@ def theory_harmonic() -> TheoryResult:
     return _make_result(
         "harmonic",
         "QM harmonic oscillator rungs at Compton frequency (normalised)",
-        energies, freqs, radii,
+        energies,
+        freqs,
+        radii,
         note="Linear energy ladder — flattest possible slope on the comparison chart.",
     )
 
@@ -280,7 +292,9 @@ def theory_pilot_wave() -> TheoryResult:
     return _make_result(
         "pilot_wave",
         "Bohm quantum potential: E ≈ ℏ²/(2m·r²) on GeoSeed phi-radii",
-        energies, freqs, radii,
+        energies,
+        freqs,
+        radii,
         note="Quantum potential dominates at small r — peaks at inner shells.",
     )
 
@@ -307,18 +321,15 @@ def comparison_table(results: Dict[str, TheoryResult]) -> str:
     col_w = 14
     lines = []
     lines.append("Theory Comparison: Binding Energy (eV) per GeoSeed Shell")
-    lines.append("  vs hydrogen measured: " +
-                 "  ".join(f"{e:.4f}" for e in HYDROGEN_MEASURED_EV))
+    lines.append("  vs hydrogen measured: " + "  ".join(f"{e:.4f}" for e in HYDROGEN_MEASURED_EV))
     lines.append("")
-    header = f"{'Theory':<22}" + "".join(
-        f"{t:>{col_w}}" for t in TONGUE_ORDER
-    ) + f"{'RMS Δ(eV)':>{col_w}}"
+    header = f"{'Theory':<22}" + "".join(f"{t:>{col_w}}" for t in TONGUE_ORDER) + f"{'RMS Δ(eV)':>{col_w}}"
     lines.append(header)
     lines.append("-" * len(header))
     for t in theories:
-        row = f"{t.name:<22}" + "".join(
-            f"{e:>{col_w}.4f}" for e in t.energies_ev()
-        ) + f"{t.rms_residual_ev:>{col_w}.4f}"
+        row = (
+            f"{t.name:<22}" + "".join(f"{e:>{col_w}.4f}" for e in t.energies_ev()) + f"{t.rms_residual_ev:>{col_w}.4f}"
+        )
         lines.append(row)
     lines.append("-" * len(header))
     lines.append("")
@@ -327,15 +338,14 @@ def comparison_table(results: Dict[str, TheoryResult]) -> str:
     lines.append(freq_header)
     lines.append("-" * (len(freq_header)))
     for t in theories:
-        row = f"{t.name:<22}" + "".join(
-            f"{math.log10(f):>{col_w}.2f}" for f in t.frequencies_hz()
-        )
+        row = f"{t.name:<22}" + "".join(f"{math.log10(f):>{col_w}.2f}" for f in t.frequencies_hz())
         lines.append(row)
     return "\n".join(lines)
 
 
 def main():
     import json
+
     results = run_all()
     print(comparison_table(results))
     print()

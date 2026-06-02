@@ -19,7 +19,7 @@ PHI = (1.0 + math.sqrt(5.0)) / 2.0
 
 _BAR_WIDTH = 50
 _ORBITAL_SYMBOLS = {0: "●", 1: "◉", 2: "⊕", 3: "✦", 4: "⊛", 5: "❋"}
-_ORBITAL_NAMES   = {0: "s", 1: "p", 2: "d", 3: "f", 4: "g", 5: "h"}
+_ORBITAL_NAMES = {0: "s", 1: "p", 2: "d", 3: "f", 4: "g", 5: "h"}
 
 
 def ascii_shell_map(orbitals) -> str:
@@ -72,6 +72,7 @@ def ascii_radial_profile(orbital, width: int = 60, height: int = 12) -> str:
         # Fall back to radial_wavefunction²
         try:
             from src.geoseed.orbital_model import radial_wavefunction
+
             vals = [radial_wavefunction(rho, orbital.l) ** 2 for rho in rhos]
         except Exception:
             vals = [0.0] * n_samples
@@ -83,7 +84,7 @@ def ascii_radial_profile(orbital, width: int = 60, height: int = 12) -> str:
     col_vals = []
     step = n_samples // width
     for i in range(width):
-        chunk = norm[i * step:(i + 1) * step]
+        chunk = norm[i * step : (i + 1) * step]
         col_vals.append(max(chunk) if chunk else 0.0)
 
     # Build grid
@@ -141,6 +142,7 @@ def ascii_poincare_disk(orbitals, radius: int = 20) -> str:
 
 # ── Matplotlib plots (optional) ───────────────────────────────────────────────
 
+
 def _ensure_artifacts_dir(base: str = ".") -> str:
     path = os.path.join(base, "artifacts", "geoseed")
     os.makedirs(path, exist_ok=True)
@@ -151,6 +153,7 @@ def plot_shell_positions(orbitals, out_dir: str = ".") -> str:
     """Save shell position bar chart as PNG. Returns path."""
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         import numpy as np
@@ -163,8 +166,7 @@ def plot_shell_positions(orbitals, out_dir: str = ".") -> str:
     rs = [o.poincare_r for o in orbitals]
 
     ax.barh(labels, rs, color=colors, edgecolor="white", height=0.6)
-    ax.axvline(1.0 / PHI, color="gold", linestyle="--", linewidth=1.5,
-               label=f"1/φ = {1/PHI:.3f} (CA anchor)")
+    ax.axvline(1.0 / PHI, color="gold", linestyle="--", linewidth=1.5, label=f"1/φ = {1/PHI:.3f} (CA anchor)")
     ax.axvline(1.0, color="grey", linestyle=":", linewidth=1, label="Ball boundary")
     ax.set_xlim(0, 1.05)
     ax.set_xlabel("Poincaré ball radius r")
@@ -174,8 +176,7 @@ def plot_shell_positions(orbitals, out_dir: str = ".") -> str:
     # Annotate gaps
     for i in range(1, len(orbitals)):
         mid = (rs[i] + rs[i - 1]) / 2
-        ax.annotate("Δρ=ln φ", xy=(mid, i - 0.5), fontsize=7,
-                    ha="center", color="grey")
+        ax.annotate("Δρ=ln φ", xy=(mid, i - 0.5), fontsize=7, ha="center", color="grey")
 
     plt.tight_layout()
     path = os.path.join(_ensure_artifacts_dir(out_dir), "shell_positions.png")
@@ -188,6 +189,7 @@ def plot_radial_profiles(orbitals, out_dir: str = ".") -> str:
     """Save radial wavefunction profiles as PNG. Returns path."""
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         import numpy as np
@@ -202,16 +204,15 @@ def plot_radial_profiles(orbitals, out_dir: str = ".") -> str:
         rho_max = max(4.0, 3.0 * o.hyperbolic_rho)
         rhos = np.linspace(1e-4, rho_max, 500)
         R = np.array([radial_wavefunction(float(r), o.l) for r in rhos])
-        R2 = R ** 2
+        R2 = R**2
         # Hyperbolic volume-weighted density: |R|² × sinh²(ρ)
         vol_R2 = R2 * np.sinh(rhos) ** 2
 
-        ax.plot(rhos, R2 / (R2.max() + 1e-30), color=colors[idx],
-                label="|R|²", linewidth=1.5)
-        ax.plot(rhos, vol_R2 / (vol_R2.max() + 1e-30), color=colors[idx],
-                linestyle="--", alpha=0.6, label="|R|²·sinh²ρ")
-        ax.axvline(o.hyperbolic_rho, color="gold", linestyle=":", linewidth=1,
-                   label=f"ρ_seed={o.hyperbolic_rho:.2f}")
+        ax.plot(rhos, R2 / (R2.max() + 1e-30), color=colors[idx], label="|R|²", linewidth=1.5)
+        ax.plot(
+            rhos, vol_R2 / (vol_R2.max() + 1e-30), color=colors[idx], linestyle="--", alpha=0.6, label="|R|²·sinh²ρ"
+        )
+        ax.axvline(o.hyperbolic_rho, color="gold", linestyle=":", linewidth=1, label=f"ρ_seed={o.hyperbolic_rho:.2f}")
         ax.set_title(f"{o.abbr} — {_ORBITAL_NAMES[o.l]}-orbital (l={o.l})")
         ax.set_xlabel("ρ (hyperbolic distance)")
         ax.set_ylabel("normalised density")
@@ -234,6 +235,7 @@ def plot_poincare_disk(orbitals, out_dir: str = ".") -> str:
     """Save 2D Poincaré disk cross-section as PNG. Returns path."""
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         import numpy as np
@@ -251,26 +253,39 @@ def plot_poincare_disk(orbitals, out_dir: str = ".") -> str:
     for idx, o in enumerate(orbitals):
         r = o.poincare_r
         if r == 0.0:
-            ax.plot(0, 0, "o", color=colors[idx], markersize=10,
-                    label=f"{o.abbr} ({_ORBITAL_NAMES[o.l]}, r=0)")
+            ax.plot(0, 0, "o", color=colors[idx], markersize=10, label=f"{o.abbr} ({_ORBITAL_NAMES[o.l]}, r=0)")
             continue
-        ax.plot(r * np.cos(theta), r * np.sin(theta),
-                color=colors[idx], linewidth=2,
-                label=f"{o.abbr} ({_ORBITAL_NAMES[o.l]}, r={r:.3f})")
+        ax.plot(
+            r * np.cos(theta),
+            r * np.sin(theta),
+            color=colors[idx],
+            linewidth=2,
+            label=f"{o.abbr} ({_ORBITAL_NAMES[o.l]}, r={r:.3f})",
+        )
         # Egg nodes (project to 2D equatorial plane)
         for x, y, z in o.egg_nodes:
             eq_r = math.sqrt(x**2 + z**2)
             eq_theta = math.atan2(z, x)
-            ax.plot(eq_r * math.cos(eq_theta), eq_r * math.sin(eq_theta),
-                    ".", color=colors[idx], markersize=3, alpha=0.5)
+            ax.plot(
+                eq_r * math.cos(eq_theta), eq_r * math.sin(eq_theta), ".", color=colors[idx], markersize=3, alpha=0.5
+            )
 
     # 1/φ reference
-    ax.plot(1.0 / PHI * np.cos(theta), 1.0 / PHI * np.sin(theta),
-            "gold", linestyle="--", linewidth=1, alpha=0.7, label="r = 1/φ (CA)")
+    ax.plot(
+        1.0 / PHI * np.cos(theta),
+        1.0 / PHI * np.sin(theta),
+        "gold",
+        linestyle="--",
+        linewidth=1,
+        alpha=0.7,
+        label="r = 1/φ (CA)",
+    )
 
     ax.set_aspect("equal")
-    ax.set_title("GeoSeed Orbitals — Poincaré Disk Cross-Section\n"
-                 "Dots = Sacred Egg quantisation nodes (equatorial projection)")
+    ax.set_title(
+        "GeoSeed Orbitals — Poincaré Disk Cross-Section\n"
+        "Dots = Sacred Egg quantisation nodes (equatorial projection)"
+    )
     ax.legend(loc="upper right", fontsize=8)
     ax.set_xlim(-1.15, 1.15)
     ax.set_ylim(-1.15, 1.15)
@@ -285,20 +300,20 @@ def plot_poincare_disk(orbitals, out_dir: str = ".") -> str:
 # ── Theory comparison plot ────────────────────────────────────────────────────
 
 _THEORY_COLORS = {
-    "compton_orbital": "#FF6B6B",   # warm red
-    "bohr":            "#4ECDC4",   # teal (reference)
-    "de_broglie":      "#45B7D1",   # sky blue
-    "geoseed_lb":      "#96CEB4",   # sage green
-    "harmonic":        "#FFEAA7",   # yellow
-    "pilot_wave":      "#DDA0DD",   # plum
+    "compton_orbital": "#FF6B6B",  # warm red
+    "bohr": "#4ECDC4",  # teal (reference)
+    "de_broglie": "#45B7D1",  # sky blue
+    "geoseed_lb": "#96CEB4",  # sage green
+    "harmonic": "#FFEAA7",  # yellow
+    "pilot_wave": "#DDA0DD",  # plum
 }
 _THEORY_LABELS = {
     "compton_orbital": "Compton-as-orbital (φ-ladder)",
-    "bohr":            "Bohr / measured H  [reference]",
-    "de_broglie":      "de Broglie standing wave",
-    "geoseed_lb":      "GeoSeed LB eigenvalues",
-    "harmonic":        "QM harmonic oscillator",
-    "pilot_wave":      "Bohm pilot wave (Q-potential)",
+    "bohr": "Bohr / measured H  [reference]",
+    "de_broglie": "de Broglie standing wave",
+    "geoseed_lb": "GeoSeed LB eigenvalues",
+    "harmonic": "QM harmonic oscillator",
+    "pilot_wave": "Bohm pilot wave (Q-potential)",
 }
 
 THEORY_COMPARISON_CAPTION = (
@@ -339,15 +354,15 @@ def ascii_theory_comparison() -> str:
             continue
         r = results[name]
         tag = " ← REF" if name == "bohr" else ""
-        row = f"  {(name + tag):<22}" + "".join(
-            f"{e:>{col_w}.3f}" for e in r.energies_ev()
-        ) + f"{r.rms_residual_ev:>{col_w}.3f}"
+        row = (
+            f"  {(name + tag):<22}"
+            + "".join(f"{e:>{col_w}.3f}" for e in r.energies_ev())
+            + f"{r.rms_residual_ev:>{col_w}.3f}"
+        )
         lines.append(row)
 
     lines.append("  " + "-" * (len(header) - 2))
-    lines.append(f"  {'H measured':<22}" + "".join(
-        f"{e:>{col_w}.3f}" for e in HYDROGEN_MEASURED_EV
-    ))
+    lines.append(f"  {'H measured':<22}" + "".join(f"{e:>{col_w}.3f}" for e in HYDROGEN_MEASURED_EV))
     lines.append("")
 
     # Log10 frequency row
@@ -357,9 +372,7 @@ def ascii_theory_comparison() -> str:
         if name not in results:
             continue
         r = results[name]
-        row = f"  {name:<22}" + "".join(
-            f"{math.log10(f):>{col_w}.2f}" for f in r.frequencies_hz()
-        )
+        row = f"  {name:<22}" + "".join(f"{math.log10(f):>{col_w}.2f}" for f in r.frequencies_hz())
         lines.append(row)
     lines.append("")
 
@@ -393,6 +406,7 @@ def plot_theory_comparison(out_dir: str = ".") -> str:
     """
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         import numpy as np
@@ -422,10 +436,14 @@ def plot_theory_comparison(out_dir: str = ".") -> str:
         lw = 2.5 if name == "bohr" else 1.5
         alpha = 1.0 if name in ("bohr", "compton_orbital") else 0.75
         ax1.semilogy(
-            x, evs,
+            x,
+            evs,
             color=_THEORY_COLORS.get(name, "grey"),
-            linestyle=ls, linewidth=lw, alpha=alpha,
-            marker="o", markersize=5,
+            linestyle=ls,
+            linewidth=lw,
+            alpha=alpha,
+            marker="o",
+            markersize=5,
             label=_THEORY_LABELS.get(name, name),
         )
 
@@ -447,10 +465,13 @@ def plot_theory_comparison(out_dir: str = ".") -> str:
         lw = 2.5 if name == "bohr" else 1.5
         alpha = 1.0 if name in ("bohr", "compton_orbital") else 0.75
         ax2.plot(
-            x, freqs,
+            x,
+            freqs,
             color=_THEORY_COLORS.get(name, "grey"),
-            linewidth=lw, alpha=alpha,
-            marker="s", markersize=5,
+            linewidth=lw,
+            alpha=alpha,
+            marker="s",
+            markersize=5,
             label=_THEORY_LABELS.get(name, name),
         )
 
@@ -465,28 +486,28 @@ def plot_theory_comparison(out_dir: str = ".") -> str:
     # Annotate Compton frequency line
     compton_log = math.log10(1.2356e20)
     ax2.axhline(compton_log, color="#FF6B6B", linestyle=":", linewidth=1, alpha=0.5)
-    ax2.annotate(f"f_Compton ≈ 10^{compton_log:.1f} Hz",
-                 xy=(0.01, compton_log + 0.3),
-                 xycoords=("axes fraction", "data"),
-                 fontsize=7, color="#FF6B6B", alpha=0.8)
+    ax2.annotate(
+        f"f_Compton ≈ 10^{compton_log:.1f} Hz",
+        xy=(0.01, compton_log + 0.3),
+        xycoords=("axes fraction", "data"),
+        fontsize=7,
+        color="#FF6B6B",
+        alpha=0.8,
+    )
 
     # ── Panel 3: Residuals as grouped bars ────────────────────────────────
     ax3 = axes[2]
     non_bohr = [n for n in order if n != "bohr"]
     n_theories = len(non_bohr)
     bar_width = 0.12
-    offsets = np.linspace(-(n_theories - 1) / 2 * bar_width,
-                          (n_theories - 1) / 2 * bar_width,
-                          n_theories)
+    offsets = np.linspace(-(n_theories - 1) / 2 * bar_width, (n_theories - 1) / 2 * bar_width, n_theories)
 
     for idx, name in enumerate(non_bohr):
         r = results[name]
-        residuals = np.array([
-            r.shells[i].energy_ev - measured[i]
-            for i in range(6)
-        ])
+        residuals = np.array([r.shells[i].energy_ev - measured[i] for i in range(6)])
         ax3.bar(
-            x + offsets[idx], residuals,
+            x + offsets[idx],
+            residuals,
             width=bar_width,
             color=_THEORY_COLORS.get(name, "grey"),
             alpha=0.8,
@@ -510,6 +531,7 @@ def plot_theory_comparison(out_dir: str = ".") -> str:
 
 
 # ── CLI entrypoint ────────────────────────────────────────────────────────────
+
 
 def main(out_dir: str = "."):
     from src.geoseed.orbital_model import build_geoseed_orbitals
