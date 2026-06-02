@@ -39,15 +39,17 @@ TONGUE_NAMES = {
 
 # ── Core types ────────────────────────────────────────────────────────────────
 
+
 @dataclass
 class TransferEvent:
     """One atom/token moving from one orbital shell to another."""
-    from_tongue: str        # e.g. "KO"
-    to_tongue: str          # e.g. "AV"
-    token: str              # the token that transferred
-    geodesic_cost: float    # n·ln(φ), n = |from_idx - to_idx|
-    is_self: bool           # True when from == to (no hop)
-    step: int               # sequence number within this recording session
+
+    from_tongue: str  # e.g. "KO"
+    to_tongue: str  # e.g. "AV"
+    token: str  # the token that transferred
+    geodesic_cost: float  # n·ln(φ), n = |from_idx - to_idx|
+    is_self: bool  # True when from == to (no hop)
+    step: int  # sequence number within this recording session
     metadata: dict = field(default_factory=dict)
 
 
@@ -57,12 +59,13 @@ class TransferMatrix:
     6×6 count matrix M[from_idx][to_idx] and derived rate/cost matrices.
     Rows = source shell, columns = destination shell.
     """
-    counts: List[List[int]]         # raw hop counts
-    rates: List[List[float]]        # counts / total_events (row-normalised)
-    costs: List[List[float]]        # geodesic cost per cell (n·ln(φ))
+
+    counts: List[List[int]]  # raw hop counts
+    rates: List[List[float]]  # counts / total_events (row-normalised)
+    costs: List[List[float]]  # geodesic cost per cell (n·ln(φ))
     total_events: int
-    self_transfer_count: int        # diagonal sum
-    cross_transfer_count: int       # off-diagonal sum
+    self_transfer_count: int  # diagonal sum
+    cross_transfer_count: int  # off-diagonal sum
 
     def dominant_flow(self) -> List[Tuple[str, str, int]]:
         """Top-5 (from, to) pairs by count, excluding self-transfers."""
@@ -84,14 +87,12 @@ class TransferMatrix:
             "total_events": self.total_events,
             "self_transfer_count": self.self_transfer_count,
             "cross_transfer_count": self.cross_transfer_count,
-            "dominant_flow": [
-                {"from": f, "to": t, "count": c}
-                for f, t, c in self.dominant_flow()
-            ],
+            "dominant_flow": [{"from": f, "to": t, "count": c} for f, t, c in self.dominant_flow()],
         }
 
 
 # ── Geodesic cost helper ──────────────────────────────────────────────────────
+
 
 def transfer_cost(from_tongue: str, to_tongue: str) -> float:
     """
@@ -107,6 +108,7 @@ def transfer_cost(from_tongue: str, to_tongue: str) -> float:
 
 
 # ── Recorder ─────────────────────────────────────────────────────────────────
+
 
 class AtomTransferRecorder:
     """
@@ -213,10 +215,7 @@ class AtomTransferRecorder:
             else:
                 rates.append([c / row_sum for c in row])
 
-        costs = [
-            [abs(i - j) * LN_PHI for j in range(n)]
-            for i in range(n)
-        ]
+        costs = [[abs(i - j) * LN_PHI for j in range(n)] for i in range(n)]
 
         self_count = sum(counts[i][i] for i in range(n))
         cross_count = total - self_count
@@ -249,9 +248,7 @@ class AtomTransferRecorder:
             "        " + "  ".join(f"{t:>4}" for t in TONGUE_ORDER),
         ]
         for i, row in enumerate(mx.counts):
-            lines.append(
-                f"  {TONGUE_ORDER[i]:<4}  " + "  ".join(f"{c:>4}" for c in row)
-            )
+            lines.append(f"  {TONGUE_ORDER[i]:<4}  " + "  ".join(f"{c:>4}" for c in row))
 
         if mx.dominant_flow():
             lines.append("")

@@ -60,10 +60,10 @@ COMMAND_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "type": {"type": "string", "enum": [
-                        "move", "set_tile", "add_entity", "remove_entity",
-                        "set_entity_state", "narrate"
-                    ]},
+                    "type": {
+                        "type": "string",
+                        "enum": ["move", "set_tile", "add_entity", "remove_entity", "set_entity_state", "narrate"],
+                    },
                     "entity_id": {"type": "string"},
                     "dx": {"type": "integer"},
                     "dy": {"type": "integer"},
@@ -111,9 +111,11 @@ Respond ONLY with the JSON object. No other text.
 # Data structures
 # ------------------------------------------------------------------
 
+
 @dataclass
 class WorldCommand:
     """One parsed command from a GPT delta."""
+
     type: str
     data: Dict[str, Any] = field(default_factory=dict)
 
@@ -121,6 +123,7 @@ class WorldCommand:
 @dataclass
 class WorldDelta:
     """GPT's response for one step: commands + narrative."""
+
     commands: List[WorldCommand]
     narrative: str
     model: str
@@ -140,6 +143,7 @@ class WorldDelta:
 @dataclass
 class RoundTableReport:
     """Multi-model comparison result."""
+
     winner_model: str
     winner_delta: WorldDelta
     winner_drift: float
@@ -155,6 +159,7 @@ class RoundTableReport:
 # ------------------------------------------------------------------
 # WorldDirector
 # ------------------------------------------------------------------
+
 
 class WorldDirector:
     """GPT-powered operator for a TinyWorld.
@@ -177,16 +182,14 @@ class WorldDirector:
         self.temperature = temperature
         self.max_tokens = max_tokens
         self._api_key = api_key or _load_api_key()
-        self._client = None   # lazy init — don't import openai at module load
+        self._client = None  # lazy init — don't import openai at module load
 
     def _get_client(self):
         if self._client is None:
             try:
                 from openai import OpenAI
             except ImportError as exc:
-                raise ImportError(
-                    "openai package required: pip install openai"
-                ) from exc
+                raise ImportError("openai package required: pip install openai") from exc
             self._client = OpenAI(api_key=self._api_key)
         return self._client
 
@@ -201,6 +204,7 @@ class WorldDirector:
         Falls back to demo_world() if parsing fails.
         """
         from .tiny_engine import demo_world
+
         system = """\
 You are a pocket-dimension architect. Given a description, return a JSON object
 that matches the scbe_tiny_world_v1 schema exactly:
@@ -266,6 +270,7 @@ Use single-character glyphs. Keep it small and symbolic. Respond ONLY with JSON.
         Lower = more coherent continuation.
         """
         import copy
+
         world_copy = TinyWorld.from_json(world.to_json())
         self.apply_delta(world_copy, delta)
         v_before = _world_feature_vector(world)
@@ -301,12 +306,11 @@ Use single-character glyphs. Keep it small and symbolic. Respond ONLY with JSON.
             "width": world.width,
             "height": world.height,
             "frame": world.frame_index,
-            "tiles": {k: {"glyph": t.glyph, "solid": t.solid, "tags": list(t.tags)}
-                      for k, t in world.tiles.items()},
+            "tiles": {k: {"glyph": t.glyph, "solid": t.solid, "tags": list(t.tags)} for k, t in world.tiles.items()},
             "sprites": {k: {"glyph": s.glyph} for k, s in world.sprites.items()},
-            "entities": {k: {"sprite": e.sprite_id, "x": e.x, "y": e.y,
-                             "state": e.state}
-                         for k, e in world.entities.items()},
+            "entities": {
+                k: {"sprite": e.sprite_id, "x": e.x, "y": e.y, "state": e.state} for k, e in world.entities.items()
+            },
         }
         parts = [
             f"GRID:\n{grid_str}",
@@ -357,12 +361,13 @@ Use single-character glyphs. Keep it small and symbolic. Respond ONLY with JSON.
             entity = world.entities[d["entity_id"]]
             entity.state[d["state_key"]] = d.get("state_value")
         elif cmd.type == "narrate":
-            pass   # narrate-only commands are captured in delta.narrative
+            pass  # narrate-only commands are captured in delta.narrative
 
 
 # ------------------------------------------------------------------
 # Round-table director
 # ------------------------------------------------------------------
+
 
 class RoundTableDirector:
     """Run a step through multiple models, keep the most coherent delta.
@@ -379,9 +384,7 @@ class RoundTableDirector:
             raise ValueError("need at least one director")
         self.directors = directors
 
-    def step(
-        self, world: TinyWorld, director_note: str = ""
-    ) -> Tuple[WorldDelta, RoundTableReport]:
+    def step(self, world: TinyWorld, director_note: str = "") -> Tuple[WorldDelta, RoundTableReport]:
         """Run all models, return (best_delta, report).
 
         Args:
@@ -417,6 +420,7 @@ class RoundTableDirector:
 # World feature vector for lattice coherence scoring
 # ------------------------------------------------------------------
 
+
 def _world_feature_vector(world: TinyWorld) -> np.ndarray:
     """Compact numeric descriptor of a world state.
 
@@ -437,8 +441,7 @@ def _world_feature_vector(world: TinyWorld) -> np.ndarray:
         xs = [e.x / world.width for e in world.entities.values()]
         ys = [e.y / world.height for e in world.entities.values()]
         centroid = np.array([np.mean(xs), np.mean(ys)], dtype=np.float64)
-        spread = np.array([np.std(xs) if len(xs) > 1 else 0.0,
-                           np.std(ys) if len(ys) > 1 else 0.0], dtype=np.float64)
+        spread = np.array([np.std(xs) if len(xs) > 1 else 0.0, np.std(ys) if len(ys) > 1 else 0.0], dtype=np.float64)
     else:
         centroid = np.zeros(2, dtype=np.float64)
         spread = np.zeros(2, dtype=np.float64)
@@ -458,6 +461,7 @@ def _world_feature_vector(world: TinyWorld) -> np.ndarray:
 # ------------------------------------------------------------------
 # API key loader
 # ------------------------------------------------------------------
+
 
 def _load_api_key() -> Optional[str]:
     key = os.environ.get("OPENAI_API_KEY")

@@ -243,7 +243,9 @@ def _undefined_depth_score(view_count: int, confidence: float, has_defined_depth
     return float(np.clip(score, 0.0, 1.0))
 
 
-def _missing_view_penalty(total_views: int, grouped_values: Iterable[Sequence[tuple[ViewFrame, LandmarkObservation]]]) -> float:
+def _missing_view_penalty(
+    total_views: int, grouped_values: Iterable[Sequence[tuple[ViewFrame, LandmarkObservation]]]
+) -> float:
     if total_views <= 1:
         return 0.25
     penalties = [1.0 - (len(group) / total_views) for group in grouped_values]

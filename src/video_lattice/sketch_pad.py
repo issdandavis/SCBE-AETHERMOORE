@@ -53,7 +53,14 @@ class SketchPad:
             self.margin + y * (self.height - 2 * self.margin),
         )
 
-    def line(self, a: Landmark | Sequence[float], b: Landmark | Sequence[float], *, color: str = "#e7edf8", width: float = 3.0) -> None:
+    def line(
+        self,
+        a: Landmark | Sequence[float],
+        b: Landmark | Sequence[float],
+        *,
+        color: str = "#e7edf8",
+        width: float = 3.0,
+    ) -> None:
         pa = self.map_point(a)
         pb = self.map_point(b)
         self.strokes.append(
@@ -61,7 +68,9 @@ class SketchPad:
             f'stroke="{escape(color)}" stroke-width="{width:.2f}" stroke-linecap="round" />'
         )
 
-    def polyline(self, points: Iterable[Landmark | Sequence[float]], *, color: str = "#e7edf8", width: float = 3.0) -> None:
+    def polyline(
+        self, points: Iterable[Landmark | Sequence[float]], *, color: str = "#e7edf8", width: float = 3.0
+    ) -> None:
         mapped = [self.map_point(point) for point in points]
         if len(mapped) < 2:
             return
@@ -226,17 +235,16 @@ def render_body_sketch(
     return pad
 
 
-def _map_landmarks(landmarks: Sequence[Landmark] | Mapping[HandLandmark | BodyLandmark, Landmark]) -> dict[int, Landmark]:
+def _map_landmarks(
+    landmarks: Sequence[Landmark] | Mapping[HandLandmark | BodyLandmark, Landmark],
+) -> dict[int, Landmark]:
     if isinstance(landmarks, Mapping):
         return {int(key): value for key, value in landmarks.items()}
     return {index: value for index, value in enumerate(landmarks)}
 
 
 def _svg_attrs(command: str) -> dict[str, str]:
-    return {
-        match.group(1): match.group(2)
-        for match in re.finditer(r'([a-zA-Z0-9:-]+)="([^"]*)"', command)
-    }
+    return {match.group(1): match.group(2) for match in re.finditer(r'([a-zA-Z0-9:-]+)="([^"]*)"', command)}
 
 
 def _parse_svg_points(points: str) -> list[tuple[float, float]]:

@@ -23,6 +23,7 @@ Modules:
   tiny_engine       — compact pocket-dimension world/render state
   gpt_world         — GPT director + round-table multi-model coherence
 """
+
 from .poincare_lattice import PoincareLattice
 from .multi_lattice import MultiLattice, LatticeAxis
 from .temporal_tracker import TemporalTracker, FrameState, IntentAnchor
