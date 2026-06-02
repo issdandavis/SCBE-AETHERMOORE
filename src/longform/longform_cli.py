@@ -35,7 +35,6 @@ if _ROOT not in sys.path:
 
 from src.longform.context_bridge import (
     PrincipleSet,
-    JsonlWorkflowLedger,
     new_ledger,
     load_ledger,
     create_landing,
@@ -633,9 +632,6 @@ def cmd_do(args) -> None:
         last_landing = create_landing(ledger, principles, metadata={"final": True})
         if not emit_json:
             print(f"\n  Final landing: {last_landing.landing_hash[:16]}…")
-
-    # Build resume pack
-    pack = build_resume_pack(ledger, session_hint=f"Resume: {objective[:40]}")
 
     result = {
         "kind": "do_complete",

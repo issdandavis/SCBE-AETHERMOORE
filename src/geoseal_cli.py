@@ -4867,7 +4867,7 @@ def _build_api_skill_tree(
         active = focus
     else:
         active = set()
-        for cmd_name, (tier, tongue, band, deps, desc) in _SKILL_TREE_META.items():
+        for cmd_name, (tier, tongue, band, _deps, _desc) in _SKILL_TREE_META.items():
             if tier_filter and tier != tier_filter:
                 continue
             if tongue_filter and tongue != tongue_filter:
@@ -4883,8 +4883,6 @@ def _build_api_skill_tree(
         tier, tongue, band, deps, desc = _SKILL_TREE_META[cmd_name]
         phi_tier = phi_wall_tier(phi_wall_cost(0.2, tongue))
         unlocks_global = fwd.get(cmd_name, [])
-        unlocks_visible = [c for c in unlocks_global if c in active]
-        requires_visible = [d for d in deps if d in active]
         node: Dict[str, Any] = {
             "id": f"cmd:{cmd_name}",
             "cmd": cmd_name,
@@ -5132,9 +5130,6 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
     verbose = bool(getattr(args, "verbose", False))
 
     formats = ["json", "mermaid", "dot", "tree"]
-    tier_filters = [None, "L1", "L2", "L3", "L4", "L5", "L6"]
-    tongue_filters = [None, "KO", "AV", "RU", "CA", "UM", "DR"]
-
     def _time_n(fn, n: int) -> Dict[str, float]:
         times = []
         for _ in range(n):
