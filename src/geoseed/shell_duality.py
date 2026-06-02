@@ -52,7 +52,7 @@ Clean API (all importable at top level):
 
 import math
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Tuple, Optional, Dict
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
@@ -445,7 +445,7 @@ class ShellStateField:
         For A/k² = Ak², this is k=1 exactly.  Any deviation from A/k²
         (e.g. Compton 1/φ^k) shifts this crossover.
         """
-        for i, k in enumerate(self.duality.shell_k):
+        for _i, k in enumerate(self.duality.shell_k):
             if self.duality.bind(k) <= self.duality.curv(k):
                 return k, self.duality.bind(k)
         return self.duality.shell_k[-1], self.duality.bind(self.duality.shell_k[-1])
@@ -800,10 +800,8 @@ def export_duality_artifact(out_dir: Optional[str] = None) -> str:
 
 
 def duality_field_report() -> str:
-    from src.geoseed.theory_comparison import RYDBERG_EV
 
     dual = build_shell_duality()
-    field = ShellStateField(dual)
     pert = run_perturbation_tests()
     tongues = ["KO(s)", "AV(p)", "RU(d)", "CA(f)", "UM(g)", "DR(h)"]
 
