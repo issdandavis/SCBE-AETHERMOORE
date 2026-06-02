@@ -302,6 +302,131 @@
     );
   }
 
+  function preAiReply(message) {
+    var t = String(message || "").toLowerCase().replace(/\s+/g, " ").trim();
+    if (!t) return null;
+
+    if (/(help me choose|what should i buy|pick a product|product picker|which product|where do i start)/.test(t)) {
+      return {
+        intent: "guide",
+        text:
+          "Best first path: start with the **$99 AI Agent Workflow Snapshot** if you have one agent workflow, prompt chain, repo link, MCP stack, or automation flow you want reviewed.\n\n" +
+          "If you only want templates, use the lower-cost toolkit/training products. If you need hands-on help, use the custom governance route.",
+        actions: [
+          { label: "Start $99 Snapshot", url: "workflow-snapshot.html" },
+          { label: "Open product picker", url: "products.html#fitCard" },
+          { label: "Ask about my setup", prompt: "I have an AI workflow. What should I send for a snapshot?" },
+        ],
+      };
+    }
+
+    if (/(workflow snapshot|starter read|snapshot price|\$99|99 dollar|how much)/.test(t)) {
+      return {
+        intent: "buy",
+        text:
+          "The **AI Agent Workflow Snapshot** is the small first paid step: **$99** for one concise read on one workflow.\n\n" +
+          "You send the setup, prompt chain, repo link, MCP stack, automation flow, or workflow diagram. The output is drift risks, unsafe tool paths, observability gaps, and three next fixes.",
+        actions: [
+          { label: "Start $99 Snapshot", url: "workflow-snapshot.html" },
+          { label: "See proof demo", url: "proof-workbench.html" },
+        ],
+      };
+    }
+
+    if (/(make.*agent.*safe|agent.*safer|governance|audit|unsafe tool|prompt injection|mcp|tool path|security)/.test(t)) {
+      return {
+        intent: "custom",
+        text:
+          "For AI-agent safety work, Polly routes you to one of two practical lanes:\n\n" +
+          "- **Starter Snapshot**: one workflow, quick read, three fixes.\n" +
+          "- **Custom governance help**: deeper review, integration, or agent-bus setup.\n\n" +
+          "The useful input is concrete: the workflow, tools it can call, failure you fear, and any logs or screenshots.",
+        actions: [
+          { label: "Start with $99", url: "workflow-snapshot.html" },
+          { label: "Custom help", url: "hire.html" },
+          { label: "What should I send?", prompt: "What should I send you for an AI agent workflow review?" },
+        ],
+      };
+    }
+
+    if (/(what is scbe|14-layer|fourteen layer|harmonic wall|sacred tongues|petri|contextbundle|geoseal|aethermoore)/.test(t)) {
+      return {
+        intent: "research",
+        text:
+          "SCBE-AETHERMOORE is the governance stack behind this site: it treats agent behavior as routed decisions with receipts, thresholds, and review states instead of vague safety promises.\n\n" +
+          "In product terms: it helps find where an AI workflow can drift, misuse tools, skip recovery states, or hide bad handoffs.",
+        actions: [
+          { label: "Proof Workbench", url: "proof-workbench.html" },
+          { label: "Read robot.md", url: "robot.md" },
+          { label: "Ask about the snapshot", prompt: "How does the workflow snapshot use SCBE?" },
+        ],
+      };
+    }
+
+    if (/(proof|demo|workbench|receipt|show me results|example)/.test(t)) {
+      return {
+        intent: "demo",
+        text:
+          "The proof demo is the quickest way to see the product idea: governed decisions, evidence, and a receipt-style output instead of just a rule list.",
+        actions: [
+          { label: "Open proof demo", url: "proof-workbench.html" },
+          { label: "Start Snapshot", url: "workflow-snapshot.html" },
+        ],
+      };
+    }
+
+    if (/(hire|contact|email|talk to issac|talk to isaac|human|call)/.test(t)) {
+      return {
+        intent: "handoff",
+        text:
+          "For direct help, send the shortest useful version: what you are building, what can go wrong, what tools/models are involved, and what you want fixed first.",
+        actions: [
+          { label: "Hire / contact", url: "hire.html" },
+          { label: "Email Issac", url: "mailto:issdandavis7795@gmail.com?subject=Polly%20site%20question" },
+        ],
+      };
+    }
+
+    if (/^(help|what can you do|commands|\?)$/.test(t)) {
+      return {
+        intent: "help",
+        text:
+          "I can route you without a paid AI call. Ask about: **what to buy**, **workflow snapshot price**, **making an AI agent safer**, **SCBE**, **proof demo**, or **contacting Issac**.",
+        actions: [
+          { label: "Help me choose", prompt: "What should I buy if I am new here?" },
+          { label: "Snapshot price", prompt: "How much is the workflow snapshot?" },
+          { label: "Make my AI agent safer", prompt: "Make my AI agent safer" },
+        ],
+      };
+    }
+
+    return null;
+  }
+
+  function preAiFallback() {
+    return {
+      intent: "pre-ai",
+      text:
+        "I can still route this without a model call. I did not find a precise match, so pick the closest path:\n\n" +
+        "- **Product fit** if you are deciding what to buy.\n" +
+        "- **Workflow Snapshot** if you have one AI workflow to review.\n" +
+        "- **Custom help** if you need a human to look at the setup.\n" +
+        "- **Proof demo** if you want to see the governance receipt idea first.",
+      actions: [
+        { label: "Help me choose", prompt: "What should I buy if I am new here?" },
+        { label: "Start $99 Snapshot", url: "workflow-snapshot.html" },
+        { label: "Custom help", url: "hire.html" },
+        { label: "Proof demo", url: "proof-workbench.html" },
+      ],
+    };
+  }
+
+  function renderPreAiReply(route, thread) {
+    var actionsHtml = renderSidebarActions(route.actions || []);
+    addMsg(thread, "assistant", md(route.text) + actionsHtml, chip(route.intent || "pre-ai", "hybrid") + chip("Pre-AI", "lore"));
+    appendMemory("polly", route.text);
+  }
+
   async function handleSearch(query, thread) {
     var pending = addMsg(thread, "system", "<p>Searching for <em>" + esc(query) + "</em>…</p>", chip("DuckDuckGo", "science"));
     try {
@@ -406,6 +531,16 @@
 
   async function handleChat(message, thinking, thread) {
     var thinkingMode = thinking || false;
+    var localRoute = thinkingMode ? null : preAiReply(message);
+    if (localRoute) {
+      renderPreAiReply(localRoute, thread);
+      return;
+    }
+    if (window.POLLY_ENABLE_BACKEND_CHAT !== true) {
+      renderPreAiReply(preAiFallback(), thread);
+      return;
+    }
+
     var metaLabel = thinkingMode ? chip("Thinking…", "science") : chip("Routing…", "science");
     var pending = addMsg(thread, "system", "<p>Working on it…</p>", metaLabel);
 
@@ -449,10 +584,9 @@
 
     if (answered) return;
 
-    // Fallback: call HuggingFace directly from the browser (free, no API key needed for public models)
-    try {
+    if (window.POLLY_ENABLE_BROWSER_LLM === true) try {
       if (pending) { pending.remove(); pending = null; }
-      pending = addMsg(thread, "system", "<p>Calling Qwen 72B…</p>", chip("HuggingFace", "science"));
+      pending = addMsg(thread, "system", "<p>Trying hosted assistant…</p>", chip("Model", "science"));
 
       var hfResp = await fetch(CHAT_PROXY, {
         method: "POST",
@@ -465,16 +599,20 @@
       if (hfResp.ok) {
         var hfData = await hfResp.json();
         var text = hfData.text || "No response from model.";
-        addMsg(thread, "assistant", md(text), chip("Qwen 72B", "online") + chip("HuggingFace", "science"));
+        addMsg(thread, "assistant", md(text), chip(hfData.provider || "Model", "online") + chip(hfData.model || "assistant", "science"));
         appendMemory("polly", text);
+        return;
       } else {
         var errText = await hfResp.text();
-        addMsg(thread, "assistant", "<p>AI is busy — free tier may be warming up. Try again in a moment.</p><p style='font-size:0.8rem;color:#8b949e;'>" + esc(errText.substring(0, 150)) + "</p>", chip("HuggingFace", "offline"));
+        addMsg(thread, "assistant", "<p>Hosted assistant is unavailable. Falling back to Pre-AI routing.</p><p style='font-size:0.8rem;color:#8b949e;'>" + esc(errText.substring(0, 150)) + "</p>", chip("Model", "offline"));
       }
     } catch (err) {
       if (pending) pending.remove();
-      addMsg(thread, "assistant", "<p>Could not reach AI. Check your internet connection.</p>", chip("Offline", "offline"));
+      pending = null;
     }
+
+    if (pending) pending.remove();
+    renderPreAiReply(preAiFallback(), thread);
   }
 
   // -------------------------------------------------------------------------
