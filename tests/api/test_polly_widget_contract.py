@@ -76,8 +76,26 @@ def test_sidebar_has_pre_ai_routes_for_zero_cost_chat() -> None:
         assert "Pre-AI" in src
         assert "POLLY_ENABLE_BACKEND_CHAT" in src
         assert "POLLY_ENABLE_BROWSER_LLM" in src
+        assert "STATIC_ONLY" in src
+        assert "staticBackendNotice" in src
+        assert "Static Polly commands" in src
         assert "workflow snapshot" in src.lower()
+        assert "ai-workflow-snapshot.html" in src
         assert "proof-workbench.html" in src
+
+
+def test_ai_workflow_snapshot_page_is_static_intake() -> None:
+    """The $39 intake page must work without a backend form service."""
+    src = _read(ROOT / "docs" / "ai-workflow-snapshot.html")
+    assert "$39" in src
+    assert "Download intake JSON" in src
+    assert "packet_type" in src
+    assert "aethermoore_ai_workflow_snapshot_intake_v1" in src
+    assert "POLLY_STATIC_ONLY" in src
+    assert 'data-polly-static="true"' in src
+    assert "fetch(" not in src
+    assert "mailto:" not in src
+    assert 'action="' not in src
 
 
 def test_sidebar_has_useful_product_and_agent_starters() -> None:
