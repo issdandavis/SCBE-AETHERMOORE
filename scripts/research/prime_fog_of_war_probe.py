@@ -2215,7 +2215,152 @@ def twin_prime_gravity_candidate(p: int, bodies: list[dict], learned_bins: set[i
     }
 
 
-def run_twin_prime_gravity_search(seed_limit: int, limit: int, bins: int, top: int) -> dict:
+def score_twin_gravity_row(row: dict, weights: dict[str, float]) -> float:
+    total = sum(max(0.0, weight) for weight in weights.values())
+    if total <= 0:
+        return 0.0
+    return (
+        (weights.get("gravity", 0.0) * row["gravity_field_normalized"])
+        + (weights.get("mesh", 0.0) * row["mesh_ratio"])
+        + (weights.get("wave", 0.0) * row["field_strength"])
+        + (weights.get("product_wave", 0.0) * row["product_field_strength"])
+    ) / total
+
+
+def classify_twin_gravity_row(row: dict) -> dict:
+    p_prime = deterministic_miller_rabin_u64(row["p"])
+    q_prime = deterministic_miller_rabin_u64(row["q"])
+    if p_prime and q_prime:
+        mode = "verified_twin_prime"
+    elif p_prime:
+        mode = "p_prime_q_composite"
+    elif q_prime:
+        mode = "p_composite_q_prime"
+    else:
+        mode = "both_composite"
+    return {
+        "mode": mode,
+        "p_prime": p_prime,
+        "q_prime": q_prime,
+        "p_small_divisor": None if p_prime else first_small_divisor(row["p"]),
+        "q_small_divisor": None if q_prime else first_small_divisor(row["q"]),
+    }
+
+
+def increment_count(counter: dict, key) -> None:
+    counter[str(key)] = counter.get(str(key), 0) + 1
+
+
+def twin_gravity_echo_analysis(rows: list[dict], bins: int) -> dict:
+    hit_angle_histogram = [0] * bins
+    echo_angle_histogram = [0] * bins
+    failure_modes: dict[str, int] = {}
+    small_divisors: dict[str, int] = {}
+    mesh_ratio_bands: dict[str, int] = {}
+    echo_rows = []
+    hit_rows = []
+
+    for row in rows:
+        classification = classify_twin_gravity_row(row)
+        angle_bin = row["angle_bin"]
+        if classification["mode"] == "verified_twin_prime":
+            hit_rows.append(row)
+            hit_angle_histogram[angle_bin] += 1
+            continue
+
+        echo = {**row, "classification": classification}
+        echo_rows.append(echo)
+        echo_angle_histogram[angle_bin] += 1
+        increment_count(failure_modes, classification["mode"])
+        for divisor in (classification["p_small_divisor"], classification["q_small_divisor"]):
+            if divisor is not None:
+                increment_count(small_divisors, divisor)
+        band = f"{math.floor(row['mesh_ratio'] * 10) / 10:.1f}"
+        increment_count(mesh_ratio_bands, band)
+
+    return {
+        "row_count": len(rows),
+        "hit_count": len(hit_rows),
+        "echo_count": len(echo_rows),
+        "precision": round(len(hit_rows) / max(1, len(rows)), 6),
+        "failure_modes": failure_modes,
+        "small_divisors": dict(sorted(small_divisors.items(), key=lambda item: (-item[1], int(item[0])))[:12]),
+        "mesh_ratio_bands": dict(sorted(mesh_ratio_bands.items())),
+        "hit_angle_histogram": hit_angle_histogram,
+        "echo_angle_histogram": echo_angle_histogram,
+        "top_echoes": [
+            {
+                "p": row["p"],
+                "q": row["q"],
+                "angle_bin": row["angle_bin"],
+                "combined_gravity_field": row["combined_gravity_field"],
+                "gravity_field_normalized": row["gravity_field_normalized"],
+                "mesh_ratio": row["mesh_ratio"],
+                "classification": row["classification"],
+            }
+            for row in echo_rows[:12]
+        ],
+    }
+
+
+def iter_gravity_weight_grid(step: float) -> Iterable[dict[str, float]]:
+    units = max(1, round(1 / max(0.01, step)))
+    for gravity in range(units + 1):
+        for mesh in range(units - gravity + 1):
+            for wave in range(units - gravity - mesh + 1):
+                product_wave = units - gravity - mesh - wave
+                yield {
+                    "gravity": gravity / units,
+                    "mesh": mesh / units,
+                    "wave": wave / units,
+                    "product_wave": product_wave / units,
+                }
+
+
+def tune_twin_gravity_weights(candidates: list[dict], top: int, step: float, bins: int) -> dict:
+    best = None
+    evaluations = 0
+    for weights in iter_gravity_weight_grid(step):
+        evaluations += 1
+        ranked = sorted(
+            candidates,
+            key=lambda row: (-score_twin_gravity_row(row, weights), -row["gravity_product_field"], row["p"]),
+        )[:top]
+        hits = sum(1 for row in ranked if row["verified"])
+        precision = hits / max(1, len(ranked))
+        mean_score = sum(score_twin_gravity_row(row, weights) for row in ranked) / max(1, len(ranked))
+        candidate = {
+            "weights": weights,
+            "top_hit_count": hits,
+            "top_precision": round(precision, 6),
+            "mean_score": round(mean_score, 12),
+            "top_rows": ranked,
+        }
+        if best is None or (
+            candidate["top_precision"],
+            candidate["top_hit_count"],
+            candidate["mean_score"],
+        ) > (
+            best["top_precision"],
+            best["top_hit_count"],
+            best["mean_score"],
+        ):
+            best = candidate
+
+    assert best is not None
+    best["evaluations"] = evaluations
+    best["echo_analysis"] = twin_gravity_echo_analysis(best["top_rows"], bins)
+    return best
+
+
+def run_twin_prime_gravity_search(
+    seed_limit: int,
+    limit: int,
+    bins: int,
+    top: int,
+    tune: bool = False,
+    tune_step: float = 0.1,
+) -> dict:
     seed_values = [
         p
         for p in range(3, seed_limit + 1, 2)
@@ -2237,6 +2382,8 @@ def run_twin_prime_gravity_search(seed_limit: int, limit: int, bins: int, top: i
     top_rows = ranked[:top]
     hits = [row for row in candidates if row["verified"]]
     top_hits = [row for row in top_rows if row["verified"]]
+    echo_analysis = twin_gravity_echo_analysis(top_rows, bins)
+    tuned = tune_twin_gravity_weights(candidates, top, tune_step, bins) if tune else None
     return {
         "schema_version": "prime_fog_twin_prime_gravity_search_v1",
         "interpretation": (
@@ -2253,6 +2400,8 @@ def run_twin_prime_gravity_search(seed_limit: int, limit: int, bins: int, top: i
         "top": top,
         "top_hit_count": len(top_hits),
         "top_precision": round(len(top_hits) / max(1, len(top_rows)), 6),
+        "echo_analysis": echo_analysis,
+        "tuning": tuned,
         "known_solution_grid": [
             {
                 "p": body["center"],
@@ -2275,6 +2424,21 @@ def print_twin_prime_gravity_search(payload: dict) -> None:
     print(f"known solution bodies: {payload['seed_solution_count']}")
     print(f"candidates: {payload['candidate_count']}  hits in range: {payload['hit_count']}")
     print(f"top precision: {payload['top_precision']:.2%} ({payload['top_hit_count']}/{payload['top']})")
+    echo = payload["echo_analysis"]
+    print(f"echoes: {echo['echo_count']}  precision={echo['precision']:.2%}")
+    print(f"echo failure modes: {echo['failure_modes']}")
+    print(f"echo small divisors: {echo['small_divisors']}")
+    print(f"echo mesh bands: {echo['mesh_ratio_bands']}")
+    print(f"hit angle bins: {echo['hit_angle_histogram']}")
+    print(f"echo angle bins: {echo['echo_angle_histogram']}")
+    if payload.get("tuning"):
+        tuned = payload["tuning"]
+        print()
+        print("Weight sweep:")
+        print(f"  evaluations: {tuned['evaluations']}")
+        print(f"  best weights: {tuned['weights']}")
+        print(f"  tuned precision: {tuned['top_precision']:.2%} ({tuned['top_hit_count']}/{payload['top']})")
+        print(f"  tuned echo modes: {tuned['echo_analysis']['failure_modes']}")
     print()
     print("Top gravity-ranked candidates:")
     for row in payload["top_rows"][:12]:
@@ -3591,6 +3755,242 @@ def decode_trit_vector(trit_int: int, n: int) -> list[int]:
     return trits
 
 
+# ── Quantum electron-well model ──────────────────────────────────────────────
+#
+# The trit gate vector IS a quantum-well potential landscape.
+#
+# Each gate i has three eigenstates:
+#   |0⟩  =  trit=0  "unbound"    — gate hard-failed, candidate escaped the well
+#   |1⟩  =  trit=1  "excited"    — near-miss, candidate in superposition zone
+#   |2⟩  =  trit=2  "ground"     — gate confirmed pass, lowest energy for this gate
+#
+# The full candidate state is a tensor product of per-gate eigenstates:
+#   |ψ⟩ = |trit_0⟩ ⊗ |trit_1⟩ ⊗ ... ⊗ |trit_n⟩
+#
+# Ground state    = all gates at |2⟩  → trit_int = 3^n - 1 (maximum)
+# Excitation level = number of gates in |1⟩ (superposition, not yet collapsed)
+# Ionization      = any gate at |0⟩   → candidate escaped the well entirely
+#
+# Before the endpoint verifier runs, a trit=1 gate is in genuine superposition:
+# the candidate could collapse to pass OR fail.  The verifier is the measurement
+# operator.  The "affirmation" the user describes is the verifier collapsing
+# the excited superposition state to a definite outcome.
+#
+# "Erratic transformation to new electron" = MW activity cliff: a ±0.5 Da step
+# causes one gate to tunnel from |1⟩ → |2⟩ or |1⟩ → |0⟩.  The candidate
+# jumps to a different address in trit-space.  The cliff IS the tunnel barrier.
+#
+# "Excitement into multi-state" = polypharmacology: a candidate simultaneously
+# satisfies multiple target profiles.  Encoded as multiple AlphaFold trits (one
+# per target protein); the multi-target excitation vector shows which targets the
+# candidate is in ground state for.
+#
+# Potential energy U(trit_vec):
+#   U = (max_int - trit_int) / max_int        in [0, 1]
+#   U = 0 at ground state (all 2s)            deepest in the well
+#   U = 1 at fully unbound (all 0s)           escaped / ionized
+#
+# Self-ratio observation (from user): the innate shape of one thing is not 1
+# but 1 ± self_ratio.  In trit-space this is:
+#   trit_i ∈ {0, 1, 2}  →  normalized = trit_i / 2  ∈ {0, 0.5, 1}
+#   self_ratio_i = |1 - normalized_i|  ∈ {0, 0.5, 1}
+# The ground state has self_ratio=0 for all gates (no deviation from the
+# stable shape).  An excited gate has self_ratio=0.5 (oscillating ± half-step).
+# An escaped gate has self_ratio=1 (fully inverted / at the outer wall).
+#
+# Connection to harmonic wall: H = 1/(1 + d + 2*pd)
+#   At ground state: d=0, pd=0  → H=1    (U=0)
+#   At excited:      d≈0.5       → H≈0.67 (U≈0.5)
+#   At escaped:      d=1, pd=1   → H≈0.2  (U=1)
+# The well potential IS the complement of the harmonic wall score.
+
+_GATE_NAMES = ["Lipinski-MW", "Severity", "Predicted-Band", "Stability", "LogP", "TPSA", "AF-pLDDT"]
+_GATE_LABELS = {0: "unbound", 1: "excited", 2: "ground"}
+
+
+def electron_well_state(trit_vec: list[int]) -> dict:
+    """Compute the quantum-well state for a trit gate vector.
+
+    Returns:
+      excitation_level   — number of gates in |1⟩ (uncertain, superposition)
+      ionized_gates      — number of gates in |0⟩ (hard-failed, escaped well)
+      ground_gates       — number of gates in |2⟩ (confirmed pass)
+      well_depth         — fractional proximity to ground state in [0, 1]
+                           1.0 = fully in ground state (all-pass)
+                           0.0 = fully escaped (all-fail)
+      potential_energy   — complement of well_depth (0 = deepest, 1 = escaped)
+      self_ratio         — mean |1 - trit_i/2| across gates (0 = stable)
+      gate_states        — per-gate label dict
+      superposition_frac — fraction of gates in excited superposition
+      state_label        — human label for the dominant state
+    """
+    n = len(trit_vec)
+    if n == 0:
+        return {
+            "excitation_level": 0, "ionized_gates": 0, "ground_gates": 0,
+            "well_depth": 0.0, "potential_energy": 1.0, "self_ratio": 1.0,
+            "gate_states": {}, "superposition_frac": 0.0, "state_label": "empty",
+        }
+    max_int = 3 ** n - 1
+    trit_int = encode_trit_vector(trit_vec)
+    excitation_level = sum(1 for t in trit_vec if t == 1)
+    ionized_gates = sum(1 for t in trit_vec if t == 0)
+    ground_gates = sum(1 for t in trit_vec if t == 2)
+    well_depth = trit_int / max_int
+    potential_energy = 1.0 - well_depth
+    self_ratio = sum(abs(1.0 - t / 2.0) for t in trit_vec) / n
+
+    gate_states = {}
+    for i, t in enumerate(trit_vec):
+        name = _GATE_NAMES[i] if i < len(_GATE_NAMES) else f"gate_{i}"
+        gate_states[name] = _GATE_LABELS[t]
+
+    superposition_frac = excitation_level / n
+
+    if ionized_gates > 0:
+        state_label = f"ionized({ionized_gates})"
+    elif excitation_level == 0:
+        state_label = "ground"
+    elif excitation_level == 1:
+        state_label = "1st-excited"
+    elif excitation_level == 2:
+        state_label = "2nd-excited"
+    else:
+        state_label = f"{excitation_level}th-excited"
+
+    return {
+        "excitation_level": excitation_level,
+        "ionized_gates": ionized_gates,
+        "ground_gates": ground_gates,
+        "well_depth": round(well_depth, 6),
+        "potential_energy": round(potential_energy, 6),
+        "self_ratio": round(self_ratio, 6),
+        "gate_states": gate_states,
+        "superposition_frac": round(superposition_frac, 4),
+        "state_label": state_label,
+    }
+
+
+def electron_well_landscape(grid: list[dict]) -> dict:
+    """Compute the electron well energy landscape across the answer-space grid.
+
+    Maps the trit grid into a quantum-well potential landscape:
+      - Ground state MWs (excitation=0): deepest in the well
+      - Excited state MWs (excitation>0): near the walls, cliff-edge candidates
+      - Activity cliffs: MW ranges where excitation level changes sharply
+
+    Returns:
+      ground_state_mws     — list of MWs fully in ground state
+      excitation_histogram — {excitation_level: count}
+      cliff_transitions    — list of (mw_a, mw_b, gate, direction) cliff edges
+      mean_well_depth      — average well_depth across all candidates
+      mean_self_ratio      — average self_ratio (lower = more stable geometry)
+      deepest_candidate    — candidate with highest well_depth (most ground-state)
+    """
+    if not grid:
+        return {
+            "ground_state_mws": [], "excitation_histogram": {},
+            "cliff_transitions": [], "mean_well_depth": 0.0,
+            "mean_self_ratio": 0.0, "deepest_candidate": None,
+        }
+
+    enriched = []
+    for g in grid:
+        ws = electron_well_state(g["trit_vec"])
+        enriched.append({**g, **ws})
+
+    ground_state_mws = [e["mw"] for e in enriched if e["excitation_level"] == 0 and e["ionized_gates"] == 0]
+
+    exc_hist: dict[int, int] = {}
+    for e in enriched:
+        k = e["excitation_level"]
+        exc_hist[k] = exc_hist.get(k, 0) + 1
+
+    # Activity cliffs: adjacent MW steps where a gate flips trit value
+    cliff_transitions = []
+    for i in range(len(enriched) - 1):
+        a, b = enriched[i], enriched[i + 1]
+        n = min(len(a["trit_vec"]), len(b["trit_vec"]))
+        for gi in range(n):
+            if a["trit_vec"][gi] != b["trit_vec"][gi]:
+                direction = "excited→ground" if b["trit_vec"][gi] > a["trit_vec"][gi] else "ground→excited"
+                gate_name = _GATE_NAMES[gi] if gi < len(_GATE_NAMES) else f"gate_{gi}"
+                cliff_transitions.append({
+                    "mw_a": a["mw"], "mw_b": b["mw"],
+                    "gate": gate_name, "gate_index": gi,
+                    "trit_a": a["trit_vec"][gi], "trit_b": b["trit_vec"][gi],
+                    "direction": direction,
+                })
+
+    mean_well_depth = sum(e["well_depth"] for e in enriched) / len(enriched)
+    mean_self_ratio = sum(e["self_ratio"] for e in enriched) / len(enriched)
+    deepest = max(enriched, key=lambda e: e["well_depth"])
+
+    return {
+        "ground_state_mws": ground_state_mws,
+        "ground_state_count": len(ground_state_mws),
+        "excitation_histogram": dict(sorted(exc_hist.items())),
+        "cliff_transitions": cliff_transitions[:50],
+        "cliff_count": len(cliff_transitions),
+        "mean_well_depth": round(mean_well_depth, 6),
+        "mean_self_ratio": round(mean_self_ratio, 6),
+        "deepest_candidate": {k: v for k, v in deepest.items() if k not in ("gate_states",)},
+    }
+
+
+def run_electron_well_probe(
+    stability_threshold: float = 1.0,
+    predicted_band: tuple[float, float] | None = None,
+    mw_step: float = 0.5,
+    extend_sigma: float = 1.0,
+    alphafold_uniprot: str | None = None,
+) -> dict:
+    """Full electron-well probe: answer space + quantum well energy landscape."""
+    space = run_answer_space_probe(
+        stability_threshold=stability_threshold,
+        predicted_band=predicted_band,
+        mw_step=mw_step,
+        extend_sigma=extend_sigma,
+        alphafold_uniprot=alphafold_uniprot,
+    )
+    landscape = electron_well_landscape(space["all_candidates"])
+    space["electron_well"] = landscape
+    return space
+
+
+def print_electron_well_probe(payload: dict) -> None:
+    """Print answer space + electron well energy landscape."""
+    print_answer_space_probe(payload)
+    well = payload.get("electron_well", {})
+    if not well:
+        return
+    print()
+    print("Electron well energy landscape")
+    print(f"  mean well depth:    {well['mean_well_depth']:.4f}  (1.0=fully in ground state)")
+    print(f"  mean self-ratio:    {well['mean_self_ratio']:.4f}  (0.0=stable shape, 1.0=inverted)")
+    print(f"  ground state MWs:   {well['ground_state_count']} candidates (excitation=0, all gates confirmed)")
+    print(f"  activity cliffs:    {well['cliff_count']} gate transitions detected")
+    print()
+    print("  Excitation level histogram:")
+    for lvl, cnt in sorted(well["excitation_histogram"].items()):
+        _lvl_labels = ["ground", "1st-excited", "2nd-excited", "3rd-excited"]
+        label = _lvl_labels[lvl] if lvl < len(_lvl_labels) else f"{lvl}th-excited"
+        bar = "▓" * min(cnt, 50)
+        print(f"    excitation={lvl}  ({label:<16})  {cnt:>5} pts  {bar}")
+    if well.get("deepest_candidate"):
+        d = well["deepest_candidate"]
+        print(f"\n  Deepest well candidate: MW={d['mw']}  trit={d['trit_label']}  "
+              f"depth={d['well_depth']:.4f}  self_ratio={d['self_ratio']:.4f}")
+    if well["cliff_transitions"]:
+        print()
+        print("  Activity cliff edges (first 10):")
+        print(f"  {'MW_a':>8}  {'MW_b':>8}  {'gate':<20}  {'trit_a':>6}  {'trit_b':>6}  direction")
+        print("  " + "─" * 72)
+        for c in well["cliff_transitions"][:10]:
+            print(f"  {c['mw_a']:>8.2f}  {c['mw_b']:>8.2f}  {c['gate']:<20}  "
+                  f"{c['trit_a']:>6}  {c['trit_b']:>6}  {c['direction']}")
+
+
 def drug_space_linear_decomp(seeds: list | None = None) -> dict:
     """PCA over the 2D (MW, log_half_life) drug-space of seed compounds.
 
@@ -4516,6 +4916,8 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--gravity-limit", type=int, default=50_000)
     parser.add_argument("--gravity-bins", type=int, default=32)
     parser.add_argument("--gravity-top", type=int, default=256)
+    parser.add_argument("--gravity-tune", action="store_true", help="Grid-search gravity field weights")
+    parser.add_argument("--gravity-tune-step", type=float, default=0.1)
     parser.add_argument("--collatz-ratio-tree", action="store_true", help="Build reverse Collatz tree from non-1 seeds")
     parser.add_argument("--collatz-tree-seeds", default="27,6171,77031")
     parser.add_argument("--collatz-tree-depth", type=int, default=14)
@@ -4604,6 +5006,13 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--answer-space-band-hi", type=float, default=0.0, help="Predicted-band upper MW")
     parser.add_argument("--answer-space-show-all", action="store_true", help="Print full grid not just top candidates")
     parser.add_argument(
+        "--electron-well", action="store_true",
+        help="Add quantum electron-well energy landscape to the answer-space probe. "
+             "Shows ground-state MWs, excitation levels, activity cliff edges, "
+             "well depth, and self-ratio (1±self_ratio shape oscillation). "
+             "Use with --answer-space.",
+    )
+    parser.add_argument(
         "--answer-space-alphafold-uniprot",
         type=str,
         default="",
@@ -4659,6 +5068,8 @@ def main(argv: Iterable[str] | None = None) -> int:
             args.gravity_limit,
             args.gravity_bins,
             args.gravity_top,
+            args.gravity_tune,
+            args.gravity_tune_step,
         )
         if args.json:
             print(json.dumps(payload, indent=2))
@@ -4793,18 +5204,31 @@ def main(argv: Iterable[str] | None = None) -> int:
         if args.answer_space_band_lo > 0 and args.answer_space_band_hi > 0:
             band = (args.answer_space_band_lo, args.answer_space_band_hi)
         af_uniprot = getattr(args, "answer_space_alphafold_uniprot", "") or ""
-        payload = run_answer_space_probe(
-            stability_threshold=args.answer_space_threshold,
-            predicted_band=band,
-            mw_step=args.answer_space_step,
-            extend_sigma=args.answer_space_sigma,
-            bins=args.solution_bins,
-            alphafold_uniprot=af_uniprot or None,
-        )
+        use_well = getattr(args, "electron_well", False)
+        if use_well:
+            payload = run_electron_well_probe(
+                stability_threshold=args.answer_space_threshold,
+                predicted_band=band,
+                mw_step=args.answer_space_step,
+                extend_sigma=args.answer_space_sigma,
+                alphafold_uniprot=af_uniprot or None,
+            )
+        else:
+            payload = run_answer_space_probe(
+                stability_threshold=args.answer_space_threshold,
+                predicted_band=band,
+                mw_step=args.answer_space_step,
+                extend_sigma=args.answer_space_sigma,
+                bins=args.solution_bins,
+                alphafold_uniprot=af_uniprot or None,
+            )
         if args.json:
             print(json.dumps(payload, indent=2))
         else:
-            print_answer_space_probe(payload)
+            if use_well:
+                print_electron_well_probe(payload)
+            else:
+                print_answer_space_probe(payload)
             if args.answer_space_show_all:
                 print()
                 print("Full grid:")
