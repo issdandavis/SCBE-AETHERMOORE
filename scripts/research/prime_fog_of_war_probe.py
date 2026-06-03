@@ -2683,6 +2683,60 @@ def riemann_zero_wave(p: int, freqs: list[float] = _RIEMANN_ZERO_FREQS) -> float
     return (raw + 1.0) / 2.0
 
 
+def riemann_phase_anchor(seed_values: list[int], freqs: list[float] = _RIEMANN_ZERO_FREQS) -> list[dict]:
+    """Build phase anchors from verified seed values for each Riemann zero frequency.
+
+    The flat Riemann wave asks whether a candidate sits at an absolute cosine peak.
+    That can add noise at dense ranges. This anchor instead asks whether a candidate
+    phase-aligns with the verified solution manifold already seen in the seeds.
+    """
+    seeds = [value for value in seed_values if value > 1]
+    if not seeds:
+        return []
+
+    anchors = []
+    for freq in freqs:
+        cos_mean = sum(math.cos(freq * math.log(seed)) for seed in seeds) / len(seeds)
+        sin_mean = sum(math.sin(freq * math.log(seed)) for seed in seeds) / len(seeds)
+        coherence = math.hypot(cos_mean, sin_mean)
+        if coherence <= 1e-12:
+            anchors.append({"freq": freq, "cos": 1.0, "sin": 0.0, "coherence": 0.0})
+        else:
+            anchors.append(
+                {
+                    "freq": freq,
+                    "cos": cos_mean / coherence,
+                    "sin": sin_mean / coherence,
+                    "coherence": coherence,
+                }
+            )
+    return anchors
+
+
+def riemann_phase_coherence(p: int, anchors: list[dict]) -> float:
+    """Candidate-to-seed Riemann phase coherence in [0, 1]."""
+    if p <= 1 or not anchors:
+        return 0.5
+
+    log_p = math.log(p)
+    total = 0.0
+    weight_sum = 0.0
+    for anchor in anchors:
+        weight = float(anchor.get("coherence", 0.0))
+        if weight <= 0:
+            continue
+        phase = float(anchor["freq"]) * log_p
+        candidate_cos = math.cos(phase)
+        candidate_sin = math.sin(phase)
+        aligned = (candidate_cos * float(anchor["cos"])) + (candidate_sin * float(anchor["sin"]))
+        total += weight * aligned
+        weight_sum += weight
+
+    if weight_sum <= 0:
+        return 0.5
+    return ((total / weight_sum) + 1.0) / 2.0
+
+
 def prime_harmonic_ratio_map(twin_centers: list[int]) -> dict:
     """Map consecutive twin prime center ratios against natural harmonic ratios.
 
@@ -2803,6 +2857,71 @@ def print_prime_harmonic_map(payload: dict) -> None:
         print()
 
 
+_PHI: float = (1.0 + math.sqrt(5.0)) / 2.0  # golden ratio ≈ 1.6180
+
+
+def phi_mean_zero_wave(
+    target: int,
+    seeds: list[int],
+    scale: float | None = None,
+    n_modes: int = 6,
+) -> float:
+    """Phi-mean-zero wave function: target as origin, known structure defines phase.
+
+    Places the wave function AT the target (not at the seeds). The target is the
+    zero point — phi-mean-zero. Each seed prime contributes a cosine wave whose
+    frequency is its log-distance from the target, phi-weighted by distance rank
+    so nearer seeds denominate the local pattern.
+
+    The superposition extrapolates the binary prime/composite pattern (0=composite,
+    1=prime) outward from the target in log-space. If the resulting overlap is high,
+    the target sits in a phase-constructive zone of the known prime structure. If low,
+    the target sits in a destructive zone (likely composite territory).
+
+    Dual to the gravity field: gravity measures pull FROM seeds TO candidate.
+    This measures overlap OF the candidate wave function WITH the seed manifold.
+    For symmetric kernels they are equivalent; phi-weighting makes this asymmetric,
+    privileging the nearest prime structure, which is the correct physical prior for
+    the prime number theorem (local density dominates).
+
+    n_modes: number of cosine frequency modes per seed (default 6 = first 6 harmonics
+             of the phi-scaled period). More modes = sharper resonance, more noise.
+    """
+    if not seeds or target <= 1:
+        return 0.5
+    if target in seeds:
+        return 1.0
+
+    log_t = math.log(target)
+    effective_scale = scale or math.log(max(seeds) + 1)
+
+    # Sort seeds by log-distance from target
+    by_dist = sorted(seeds, key=lambda s: abs(math.log(s) - log_t))
+
+    total = 0.0
+    weight_sum = 0.0
+    for rank, seed in enumerate(by_dist):
+        phi_weight = _PHI ** (-rank)  # phi-decay: rank 0 = weight 1, rank 1 = 1/φ, ...
+        log_dist = abs(log_t - math.log(seed))
+
+        # Superpose n_modes cosine waves at harmonics of the phi-scaled period.
+        # Mode k uses frequency 2π(k+1) / (effective_scale / φ^k).
+        # This is the "overlap them in the binary pattern" step: each mode checks
+        # whether the target is in phase with the kth harmonic of the seed's wave.
+        mode_sum = 0.0
+        for k in range(n_modes):
+            period = effective_scale / (_PHI ** k)
+            mode_sum += math.cos(2.0 * math.pi * log_dist * (k + 1) / period)
+        mode_sum /= n_modes
+
+        total += phi_weight * mode_sum
+        weight_sum += phi_weight
+
+    # Normalize: raw in [-1,1] → [0,1]
+    raw = total / weight_sum if weight_sum > 0 else 0.0
+    return (raw + 1.0) / 2.0
+
+
 def twin_prime_gravity_candidate(
     p: int,
     bodies: list[dict],
@@ -2810,11 +2929,18 @@ def twin_prime_gravity_candidate(
     bins: int,
     metric: str = "cylindrical",
     hyperbolic_scale: float | None = None,
+    seed_values: list[int] | None = None,
+    rz_anchors: list[dict] | None = None,
 ) -> dict:
     wave = twin_pair_wave_field(p, learned_bins, bins)
     gravity = solution_gravity_at_candidate(p, bodies, metric, hyperbolic_scale)
     div_clearance = _div_ratio_clearance(p)
     rz_wave = riemann_zero_wave(p)
+    rz_phase = riemann_phase_coherence(p, rz_anchors or [])
+    # Phi-mean-zero wave: dual to gravity. Places the wave function AT p,
+    # overlaps it with the seed prime manifold. Extrapolates the binary
+    # prime/composite pattern outward from the target in log-space.
+    pmz = phi_mean_zero_wave(p, seed_values or [], scale=hyperbolic_scale)
     product = multiplicative_wave_field(
         {
             "gravity": gravity["gravity_field_normalized"],
@@ -2824,16 +2950,19 @@ def twin_prime_gravity_candidate(
         },
         weights={"gravity": 0.7, "mesh": 1.1, "wave": 0.7, "product_wave": 0.5},
     )
-    # Weights sum to 1.0. div_ratio_clearance removes small-divisor trap noise.
-    # riemann_zero_wave adds the actual harmonic signature of where prime density
-    # oscillates above the smooth Li(x) prediction — the denominative refraction.
+    # Weights sum to 1.0.
+    # gravity + mesh + wave: structure pull from seed manifold
+    # div_clearance: removes small-divisor trap noise
+    # rz_phase: Riemann zero harmonic correction phase-anchored to seed solutions
+    # pmz: phi-mean-zero overlap (dual: target as origin, pattern extrapolation)
     combined = (
-        (0.30 * gravity["gravity_field_normalized"])
-        + (0.22 * wave["mesh_ratio"])
-        + (0.15 * wave["field_strength"])
-        + (0.09 * wave["product_field_strength"])
-        + (0.12 * div_clearance)
-        + (0.12 * rz_wave)
+        (0.26 * gravity["gravity_field_normalized"])
+        + (0.20 * wave["mesh_ratio"])
+        + (0.14 * wave["field_strength"])
+        + (0.08 * wave["product_field_strength"])
+        + (0.11 * div_clearance)
+        + (0.10 * rz_phase)
+        + (0.11 * pmz)
     )
     return {
         **wave,
@@ -2842,6 +2971,8 @@ def twin_prime_gravity_candidate(
         "gravity_components": product["components"],
         "div_ratio_clearance": round(div_clearance, 6),
         "riemann_zero_wave": round(rz_wave, 6),
+        "riemann_phase_coherence": round(rz_phase, 6),
+        "phi_mean_zero_wave": round(pmz, 6),
         "combined_gravity_field": round(combined, 12),
     }
 
@@ -3001,11 +3132,12 @@ def run_twin_prime_gravity_search(
     hyperbolic_scale = math.log(max(2, limit))
     bodies = solution_gravity_bodies(seed_values, bins, hyperbolic_scale)
     learned_bins = {body["angle_bin"] for body in bodies}
+    rz_anchors = riemann_phase_anchor(seed_values)
     start = max(3, seed_limit + 1)
     if start % 2 == 0:
         start += 1
     candidates = [
-        twin_prime_gravity_candidate(p, bodies, learned_bins, bins, metric, hyperbolic_scale)
+        twin_prime_gravity_candidate(p, bodies, learned_bins, bins, metric, hyperbolic_scale, seed_values, rz_anchors)
         for p in range(start, limit, 2)
     ]
     ranked = sorted(
@@ -3017,6 +3149,75 @@ def run_twin_prime_gravity_search(
     top_hits = [row for row in top_rows if row["verified"]]
     echo_analysis = twin_gravity_echo_analysis(top_rows, bins)
     tuned = tune_twin_gravity_weights(candidates, top, tune_step, bins) if tune else None
+
+    # ── 1. Solution radius ratio: Δcenter / center ─────────────────────────
+    # center = p + 1 for each verified twin prime.  Keeps scale change visible
+    # as numbers grow (raw ratio drifts to 1 at large values and loses signal).
+    hit_centers = sorted([row["p"] + 1 for row in hits])
+    sol_radius_ratios: list[float] = []
+    if len(hit_centers) >= 2:
+        for i in range(len(hit_centers) - 1):
+            c_curr, c_next = hit_centers[i], hit_centers[i + 1]
+            sol_radius_ratios.append((c_next - c_curr) / c_curr)
+    srr_mean = sum(sol_radius_ratios) / len(sol_radius_ratios) if sol_radius_ratios else 0.0
+    srr_max = max(sol_radius_ratios) if sol_radius_ratios else 0.0
+    srr_min = min(sol_radius_ratios) if sol_radius_ratios else 0.0
+
+    # ── 2. Phase lane contrast: hit_density / echo_density per angle bin ──
+    # Shows which log(p) mod 2π bins are true solution lanes vs noisy echo lanes.
+    eps_density = 1e-6
+    hit_bins = [0] * bins
+    echo_bins = [0] * bins
+    for row in top_rows:
+        ab = angle_bin_for_value(row["p"], bins)
+        if row["verified"]:
+            hit_bins[ab] += 1
+        else:
+            echo_bins[ab] += 1
+    lane_contrast = [
+        round(hit_bins[b] / max(echo_bins[b], eps_density), 4)
+        for b in range(bins)
+    ]
+    top_lane_bins = sorted(range(bins), key=lambda b: -lane_contrast[b])[:8]
+
+    # ── 3. Seed horizon jump ratio: candidate_p / max(seed_values) ────────
+    # Shows how far the gravity field is projecting beyond the known bodies.
+    max_seed = max(seed_values) if seed_values else 1
+    for row in candidates:
+        row["horizon_jump"] = round(row["p"] / max_seed, 4)
+
+    # ── 4. Precision lift by distance band ─────────────────────────────────
+    # Bins candidates by horizon_jump factor; computes precision per band.
+    # Tests whether the field learns a portable shape or just orbits seeds.
+    bands = [
+        ("1x-2x",      1.0,    2.0),
+        ("2x-10x",     2.0,   10.0),
+        ("10x-60x",   10.0,   60.0),
+        ("60x-1000x", 60.0, 1000.0),
+        ("1000x+",  1000.0, math.inf),
+    ]
+    band_stats: list[dict] = []
+    for label, lo, hi in bands:
+        band_cands = [row for row in candidates if lo <= row["horizon_jump"] < hi]
+        band_hits = [row for row in band_cands if row["verified"]]
+        base_rate = len(band_hits) / max(1, len(band_cands))
+        # Precision: top-10% of band by combined_gravity_field
+        top_n = max(1, len(band_cands) // 10)
+        band_ranked = sorted(band_cands, key=lambda r: -r["combined_gravity_field"])
+        band_top_hits = [r for r in band_ranked[:top_n] if r["verified"]]
+        precision = len(band_top_hits) / max(1, top_n)
+        lift = precision / max(base_rate, eps_density)
+        band_stats.append({
+            "band": label,
+            "candidates": len(band_cands),
+            "hits": len(band_hits),
+            "base_rate": round(base_rate, 4),
+            "top_n": top_n,
+            "top_hits": len(band_top_hits),
+            "precision": round(precision, 4),
+            "lift": round(lift, 2),
+        })
+
     return {
         "schema_version": "prime_fog_twin_prime_gravity_search_v1",
         "interpretation": (
@@ -3035,6 +3236,11 @@ def run_twin_prime_gravity_search(
         "gravity_metric": metric,
         "hyperbolic_scale": round(hyperbolic_scale, 12),
         "seed_solution_count": len(seed_values),
+        "riemann_phase_anchor_count": len(rz_anchors),
+        "riemann_phase_anchor_mean_coherence": round(
+            sum(anchor["coherence"] for anchor in rz_anchors) / max(1, len(rz_anchors)),
+            6,
+        ),
         "candidate_count": len(candidates),
         "hit_count": len(hits),
         "top": top,
@@ -3053,6 +3259,16 @@ def run_twin_prime_gravity_search(
             for body in bodies
         ],
         "top_rows": top_rows,
+        "solution_radius_ratio": {
+            "mean": round(srr_mean, 6),
+            "min": round(srr_min, 6),
+            "max": round(srr_max, 6),
+            "n": len(sol_radius_ratios),
+        },
+        "phase_lane_contrast": lane_contrast,
+        "top_lane_bins": top_lane_bins,
+        "band_precision": band_stats,
+        "max_seed": max_seed,
     }
 
 
@@ -3064,6 +3280,11 @@ def print_twin_prime_gravity_search(payload: dict) -> None:
     print(f"metric: {payload['gravity_metric']}  hyperbolic_scale={payload['hyperbolic_scale']}")
     print(f"seed limit: {payload['seed_limit']}  search limit: {payload['limit']}")
     print(f"known solution bodies: {payload['seed_solution_count']}")
+    print(
+        "riemann phase anchors: "
+        f"{payload.get('riemann_phase_anchor_count', 0)}  "
+        f"mean coherence={payload.get('riemann_phase_anchor_mean_coherence', 0.0)}"
+    )
     print(f"candidates: {payload['candidate_count']}  hits in range: {payload['hit_count']}")
     print(f"top precision: {payload['top_precision']:.2%} ({payload['top_hit_count']}/{payload['top']})")
     echo = payload["echo_analysis"]
@@ -3081,17 +3302,51 @@ def print_twin_prime_gravity_search(payload: dict) -> None:
         print(f"  best weights: {tuned['weights']}")
         print(f"  tuned precision: {tuned['top_precision']:.2%} ({tuned['top_hit_count']}/{payload['top']})")
         print(f"  tuned echo modes: {tuned['echo_analysis']['failure_modes']}")
+
+    # Solution radius ratio
+    srr = payload.get("solution_radius_ratio", {})
+    if srr:
+        print()
+        print(f"Solution radius ratio  Δcenter/center  (n={srr['n']} gaps):")
+        print(f"  mean={srr['mean']:.6f}  min={srr['min']:.6f}  max={srr['max']:.6f}")
+        print(f"  (scale-stable gap: keeps signal as p grows; raw p_next/p_curr drifts to 1)")
+
+    # Phase lane contrast
+    contrast = payload.get("phase_lane_contrast", [])
+    top_bins = payload.get("top_lane_bins", [])
+    if contrast and top_bins:
+        print()
+        print("Phase lane contrast  hit_density/echo_density  (top solution lanes):")
+        for b in top_bins:
+            bar = "█" * min(int(contrast[b] * 4), 40)
+            print(f"  bin {b:>2}  contrast={contrast[b]:>7.3f}  {bar}")
+
+    # Precision lift by distance band
+    bands = payload.get("band_precision", [])
+    if bands:
+        print()
+        print("Precision lift by seed horizon distance band  (top-10% of band):")
+        print(f"  {'band':<12}  {'cands':>7}  {'hits':>5}  {'base':>6}  {'prec':>6}  {'lift':>6}")
+        print("  " + "─" * 52)
+        for b in bands:
+            if b["candidates"] == 0:
+                continue
+            print(
+                f"  {b['band']:<12}  {b['candidates']:>7}  {b['hits']:>5}  "
+                f"{b['base_rate']:>5.2%}  {b['precision']:>5.2%}  {b['lift']:>5.1f}x"
+            )
+
     print()
     print("Top gravity-ranked candidates:")
     for row in payload["top_rows"][:12]:
         mark = "hit" if row["verified"] else "echo"
         div_clr = row.get("div_ratio_clearance", 1.0)
+        pmz = row.get("phi_mean_zero_wave", "—")
+        hj = row.get("horizon_jump", "—")
         print(
             f"  {mark:<4} p={row['p']:<8} q={row['q']:<8} "
-            f"gravity={row['gravity_field_normalized']:.6f} "
-            f"combined={row['combined_gravity_field']:.6f} "
-            f"div_clr={div_clr:.4f} "
-            f"nearest={row['nearest_solution']}"
+            f"combined={row['combined_gravity_field']:.5f} "
+            f"pmz={pmz:.4f}  div={div_clr:.3f}  jump={hj}x"
         )
 
 
