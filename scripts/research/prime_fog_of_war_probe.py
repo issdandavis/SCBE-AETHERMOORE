@@ -2626,6 +2626,11 @@ _NATURAL_HARMONICS: list[tuple[str, float]] = [
 # Candidates that land near these frequencies are composites masquerading as primes.
 # The integer ratio clearance field measures fractional-part distance from each trap.
 _DIV_ECHO_SMALL: list[int] = [7, 11, 13, 17, 19, 23]
+# Next layer of divisor traps — significant at ranges > 8810 (10x seed horizon).
+_DIV_ECHO_LARGE: list[int] = [29, 31, 37, 41, 43, 47]
+
+# Hardy-Littlewood twin prime constant C₂ = ∏_{p≥3} p(p-2)/(p-1)²
+_TWIN_PRIME_CONSTANT: float = 0.6601618158468695739278121
 
 
 def _div_ratio_clearance(p: int, divisors: list[int] = _DIV_ECHO_SMALL) -> float:
@@ -2860,6 +2865,111 @@ def print_prime_harmonic_map(payload: dict) -> None:
 _PHI: float = (1.0 + math.sqrt(5.0)) / 2.0  # golden ratio ≈ 1.6180
 
 
+# ── Independent sub-paths ─────────────────────────────────────────────────────
+# These three scorers operate in spaces ORTHOGONAL to the gravity/wave/Riemann
+# stack above. Each produces an independent [0,1] score. Running them as a
+# parallel path and intersecting their top-N with the gravity path's top-N gives
+# triangulated high-confidence candidates.
+#
+# Path A = gravity + wave + Riemann + phi-zero  (geometry / frequency space)
+# Path B = mod30_wheel + hl_density + large_div  (algebra / analytic / residue space)
+# Gold   = Path A top-N ∩ Path B top-N
+
+
+def mod30_wheel_score(p: int) -> float:
+    """Algebraic wheel gate: 1.0 if p ≡ 11 (mod 30), else 0.0.
+
+    All twin prime starters (p, p+2) with p > 5 satisfy p ≡ 11 (mod 30).
+    Proof: primes > 5 are ≡ {1,7,11,13,17,19,23,29} (mod 30).
+    Of these pairs (r, r+2): (1,3)→3|3, (7,9)→3|9, (11,13)→both coprime to 30,
+    (13,15)→5|15, (17,19)→both but 17 ≡ 17 not 11, (19,21)→3|21,
+    (23,25)→5|25, (29,31≡1)→valid but 29+2=31 ≡ 1 mod 30, same wheel slot as p=29.
+    Wait — 17 (mod 30): (17,19) both wheel-clean, so 17 is also valid? Let me recheck.
+    Actually: 17 mod 30 = 17, 17+2 = 19, both coprime to 30 → ALSO valid.
+    And 29 mod 30 = 29, 29+2 = 31 ≡ 1, also coprime to 30 → ALSO valid.
+    Correct wheel-valid residues for twin starters: {11, 17, 29}.
+    (5 mod 30: special case, (5,7) is a twin prime.)
+    Score is 1.0 for any of {5, 11, 17, 29} mod 30, else 0.0.
+    Zero score = exact algebraic elimination. Not probabilistic.
+    """
+    if p <= 5:
+        return 1.0
+    r = p % 30
+    return 1.0 if r in (11, 17, 29) else 0.0
+
+
+def hl_density_deviation_score(
+    p: int,
+    seed_twins: list[int],
+    window_log: float = 1.8,
+) -> float:
+    """Hardy-Littlewood local density deviation score.
+
+    In a log-window [log(p) - w, log(p) + w], the H-L conjecture B predicts
+    the expected number of twin prime starters:
+        expected = 2 * C₂ * (hi - lo) / (log(p))²
+
+    Score = actual_count / (expected + actual_count)  — normalized to [0,1).
+    High score (→1): this region has MORE twins than analytic theory predicts.
+    Near 0.5: region matches the H-L prediction exactly.
+    Low score (→0): region is sparse relative to analytic baseline.
+
+    Orthogonal to geometry: uses integer counts, not phase/gravity/waves.
+    The 'hot zone' detector: finds regions where twin primes cluster tighter
+    than the smooth analytic distribution would predict — these are the same
+    resonance pockets the gravity field hunts, but detected by a completely
+    different method.
+    """
+    log_p = math.log(max(p, 3))
+    lo = math.exp(log_p - window_log)
+    hi = math.exp(log_p + window_log)
+
+    actual = sum(1 for s in seed_twins if lo <= s <= hi)
+    window_size = hi - lo
+    expected = 2.0 * _TWIN_PRIME_CONSTANT * window_size / (log_p * log_p)
+
+    if expected <= 0:
+        return 0.5
+    # Ratio: 1.0 = matches HL exactly → score 0.5.  > 1 = denser → → 1.0
+    ratio = actual / expected
+    return ratio / (1.0 + ratio)
+
+
+def large_divisor_clearance(p: int) -> float:
+    """Divisor clearance against next-layer echo primes {29,31,37,41,43,47}.
+
+    Same fractional-part clearance as _div_ratio_clearance but using the
+    prime layer that becomes dominant at range > 8810 (the 10x seed horizon).
+    At large ranges the {7,11,13} traps weaken and the {29,31,37} layer
+    takes over — this captures that shift.
+    Completely independent from _div_ratio_clearance (different divisors).
+    """
+    return _div_ratio_clearance(p, _DIV_ECHO_LARGE)
+
+
+def path_b_score(
+    p: int,
+    seed_twins: list[int],
+    window_log: float = 1.8,
+) -> float:
+    """Combined Path B score (algebraic + analytic + next-layer divisor).
+
+    Path B is orthogonal to Path A (gravity/wave/Riemann).
+    wheel: hard algebraic gate — 0.0 = exact elimination
+    hl:    density deviation from Hardy-Littlewood baseline
+    ldiv:  large-prime divisor clearance (next echo layer)
+
+    Score: if wheel == 0 → 0.0 (exact composite, no further scoring).
+    Otherwise: 0.50 * hl + 0.50 * ldiv.
+    """
+    wheel = mod30_wheel_score(p)
+    if wheel == 0.0:
+        return 0.0
+    hl = hl_density_deviation_score(p, seed_twins, window_log)
+    ldiv = large_divisor_clearance(p)
+    return 0.50 * hl + 0.50 * ldiv
+
+
 def phi_mean_zero_wave(
     target: int,
     seeds: list[int],
@@ -2950,6 +3060,7 @@ def twin_prime_gravity_candidate(
         },
         weights={"gravity": 0.7, "mesh": 1.1, "wave": 0.7, "product_wave": 0.5},
     )
+    # Path A: geometry / frequency / phi space
     # Weights sum to 1.0.
     # gravity + mesh + wave: structure pull from seed manifold
     # div_clearance: removes small-divisor trap noise
@@ -2964,6 +3075,9 @@ def twin_prime_gravity_candidate(
         + (0.10 * rz_phase)
         + (0.11 * pmz)
     )
+    # Path B: algebra / analytic / next-layer-divisor — orthogonal to Path A
+    pb = path_b_score(p, seed_values or [])
+    wheel = mod30_wheel_score(p)
     return {
         **wave,
         **gravity,
@@ -2974,6 +3088,9 @@ def twin_prime_gravity_candidate(
         "riemann_phase_coherence": round(rz_phase, 6),
         "phi_mean_zero_wave": round(pmz, 6),
         "combined_gravity_field": round(combined, 12),
+        # Path B columns (independent sub-agent paths)
+        "mod30_wheel": wheel,
+        "path_b_score": round(pb, 6),
     }
 
 
@@ -3259,6 +3376,7 @@ def run_twin_prime_gravity_search(
             for body in bodies
         ],
         "top_rows": top_rows,
+        "all_candidates": candidates,
         "solution_radius_ratio": {
             "mean": round(srr_mean, 6),
             "min": round(srr_min, 6),
@@ -3336,6 +3454,37 @@ def print_twin_prime_gravity_search(payload: dict) -> None:
                 f"{b['base_rate']:>5.2%}  {b['precision']:>5.2%}  {b['lift']:>5.1f}x"
             )
 
+    # Path A ∩ Path B intersection statistics
+    all_rows = payload.get("all_candidates", [])
+    if all_rows and any("path_b_score" in r for r in all_rows[:5]):
+        n_all = len(all_rows)
+        top10_n = max(1, n_all // 10)
+        path_a_sorted = sorted(all_rows, key=lambda r: -r.get("combined_gravity_field", 0))
+        path_b_sorted = sorted(
+            [r for r in all_rows if r.get("mod30_wheel", 0) != 0.0],
+            key=lambda r: -r.get("path_b_score", 0),
+        )
+        path_a_top = {r["p"] for r in path_a_sorted[:top10_n]}
+        path_b_top = {r["p"] for r in path_b_sorted[:top10_n]}
+        intersection = path_a_top & path_b_top
+        wheel_zero = sum(1 for r in all_rows if r.get("mod30_wheel", 1.0) == 0.0)
+        wheel_elim_pct = wheel_zero / n_all * 100
+        hits_a = sum(1 for r in all_rows if r["p"] in path_a_top and r.get("verified"))
+        hits_b = sum(1 for r in all_rows if r["p"] in path_b_top and r.get("verified"))
+        hits_ab = sum(
+            1 for r in all_rows if r["p"] in intersection and r.get("verified")
+        )
+        base_rate = sum(1 for r in all_rows if r.get("verified")) / max(n_all, 1)
+        prec_a = hits_a / max(len(path_a_top), 1)
+        prec_b = hits_b / max(len(path_b_top), 1)
+        prec_ab = hits_ab / max(len(intersection), 1)
+        print()
+        print("Path A ∩ Path B intersection  (top-10% each path):")
+        print(f"  Path A  candidates={len(path_a_top):>5}  hits={hits_a:>4}  prec={prec_a:.2%}  ({prec_a/max(base_rate,1e-9):.1f}x lift)")
+        print(f"  Path B  candidates={len(path_b_top):>5}  hits={hits_b:>4}  prec={prec_b:.2%}  ({prec_b/max(base_rate,1e-9):.1f}x lift)")
+        print(f"  A∩B     candidates={len(intersection):>5}  hits={hits_ab:>4}  prec={prec_ab:.2%}  ({prec_ab/max(base_rate,1e-9):.1f}x lift)")
+        print(f"  mod30 wheel: {wheel_zero} eliminated ({wheel_elim_pct:.1f}% of candidates algebraically impossible)")
+
     print()
     print("Top gravity-ranked candidates:")
     for row in payload["top_rows"][:12]:
@@ -3343,10 +3492,11 @@ def print_twin_prime_gravity_search(payload: dict) -> None:
         div_clr = row.get("div_ratio_clearance", 1.0)
         pmz = row.get("phi_mean_zero_wave", "—")
         hj = row.get("horizon_jump", "—")
+        pb = row.get("path_b_score", "—")
         print(
             f"  {mark:<4} p={row['p']:<8} q={row['q']:<8} "
             f"combined={row['combined_gravity_field']:.5f} "
-            f"pmz={pmz:.4f}  div={div_clr:.3f}  jump={hj}x"
+            f"pmz={pmz:.4f}  pathB={pb:.4f}  div={div_clr:.3f}  jump={hj}x"
         )
 
 
