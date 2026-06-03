@@ -2063,6 +2063,336 @@ def semantic_invariant_packet(domain: str, form: str, normalized_name: str) -> d
     }
 
 
+U64_MAX = (1 << 64) - 1
+
+
+def _trailing_zero_bits(value: int) -> int | None:
+    if value <= 0:
+        return None
+    return (value & -value).bit_length() - 1
+
+
+def _trit_label_to_int(values: list[int]) -> int:
+    out = 0
+    for value in values:
+        out = (out * 3) + int(value)
+    return out
+
+
+def _integer_prime_verifier(core: int) -> dict:
+    if core < 2:
+        return {
+            "domain": "Z integers",
+            "normalization": "abs(raw)",
+            "method": "domain_reject",
+            "scope": "exact",
+            "is_prime": False,
+            "state": "outside_prime_domain",
+        }
+
+    if core <= U64_MAX:
+        is_prime = deterministic_miller_rabin_u64(core)
+        return {
+            "domain": "Z integers",
+            "normalization": "abs(raw)",
+            "method": "deterministic_miller_rabin_u64",
+            "scope": "exact for unsigned 64-bit integers",
+            "is_prime": is_prime,
+            "state": "prime" if is_prime else "composite",
+        }
+
+    divisor = first_small_divisor(core)
+    if divisor is not None:
+        return {
+            "domain": "Z integers",
+            "normalization": "abs(raw)",
+            "method": "small_divisor_witness",
+            "scope": "exact composite witness",
+            "is_prime": False,
+            "state": "composite",
+            "witness": {"divisor": divisor, "cofactor": core // divisor},
+        }
+
+    probable_signal = deterministic_miller_rabin_u64(core)
+    return {
+        "domain": "Z integers",
+        "normalization": "abs(raw)",
+        "method": "miller_rabin_seed_probe",
+        "scope": "telemetry only above unsigned 64-bit; true is not a proof",
+        "is_prime": None if probable_signal else False,
+        "probable_prime_signal": probable_signal,
+        "state": "unresolved_probable_prime" if probable_signal else "composite_witnessed",
+    }
+
+
+def _integer_relation_row(raw: int, bins: int, mesh_primes: list[int] | None, binary_bits: int) -> dict:
+    core = abs(raw)
+    sign = -1 if raw < 0 else 1 if raw > 0 else 0
+    verifier = _integer_prime_verifier(core)
+    small_divisor = first_small_divisor(core) if core >= 2 else None
+    mesh = prime_mesh_score([core], mesh_primes) if core >= 2 else {
+        "passed": 0,
+        "total": len(mesh_primes or SMALL_FILTER_PRIMES[1:]),
+        "ratio": 0.0,
+        "blockers": [],
+    }
+    wheel_gate = 1.0 if core in (2, 3, 5) or core % 30 in WHEEL30_RESIDUES else 0.0
+    bit_length = core.bit_length()
+    popcount = core.bit_count()
+    binary_density = popcount / max(1, bit_length)
+    binary_balance = harmonic_wall(abs(binary_density - 0.5) * 2.0)
+    suffix_width = max(1, min(binary_bits, max(1, bit_length)))
+    suffix_mask = (1 << suffix_width) - 1
+    verifier_signal = 1.0 if verifier["is_prime"] is True else 0.65 if verifier["is_prime"] is None else 0.15
+    components = {
+        "domain": 1.0 if core >= 2 else 0.05,
+        "mesh": mesh["ratio"] if core >= 2 else 0.05,
+        "no_small_blocker": 1.0 if small_divisor is None and core >= 2 else 0.12,
+        "wheel_lane": wheel_gate if wheel_gate else 0.2,
+        "binary_balance": binary_balance,
+        "verifier_echo": verifier_signal,
+        "negative_value_allowance": 1.0 if sign != 0 else 0.1,
+    }
+    product = multiplicative_wave_field(
+        components,
+        weights={
+            "domain": 0.8,
+            "mesh": 0.8,
+            "no_small_blocker": 1.0,
+            "wheel_lane": 0.4,
+            "binary_balance": 0.35,
+            "verifier_echo": 0.7,
+            "negative_value_allowance": 0.25,
+        },
+    )
+    trits = [
+        2 if core >= 2 else 0,
+        2 if mesh["ratio"] >= 1.0 else 1 if mesh["ratio"] >= 0.75 else 0,
+        2 if small_divisor is None and core >= 2 else 0,
+        2 if wheel_gate else 0,
+        2 if verifier["is_prime"] is True else 1 if verifier["is_prime"] is None else 0,
+        1 if sign < 0 else 2 if sign > 0 else 0,
+    ]
+    ternary_state = 1 if verifier["is_prime"] is True else -1 if verifier["is_prime"] is False else 0
+    factor_wave = None
+    if small_divisor is not None:
+        factor_wave = {
+            "divisor": small_divisor,
+            "cofactor": core // small_divisor,
+            "relation": f"{small_divisor}*{core // small_divisor}={core}",
+        }
+
+    return {
+        "raw": raw,
+        "core": core,
+        "orientation": sign,
+        "negative_tracking": {
+            "allowed": True,
+            "rule": "sign is orientation; primality lens uses abs(raw)",
+            "mirror": -raw if raw != 0 else 0,
+        },
+        "exact_verifier": verifier,
+        "ternary_state": ternary_state,
+        "phase": {
+            "theta": round(math.log(core) % (2 * math.pi), 12) if core > 0 else 0.0,
+            "angle_bin": angle_bin_for_value(core, bins),
+            "bins": bins,
+        },
+        "residue_vector": {
+            "mod6": core % 6 if core else 0,
+            "mod30": core % 30 if core else 0,
+            "mod210": core % 210 if core else 0,
+            "wheel30_lane": bool(wheel_gate),
+        },
+        "binary_vector": {
+            "bit_length": bit_length,
+            "popcount": popcount,
+            "density": round(binary_density, 12),
+            "density_harmonic": round(binary_balance, 12),
+            "suffix_bits": suffix_width,
+            "suffix": format(core & suffix_mask, f"0{suffix_width}b"),
+            "trailing_zero_bits": _trailing_zero_bits(core),
+            "trailing_zero_bits_n_minus_1": _trailing_zero_bits(core - 1),
+            "trailing_zero_bits_n_plus_1": _trailing_zero_bits(core + 1),
+        },
+        "mesh": mesh,
+        "factor_wave": factor_wave,
+        "fold_echoes": number_fold_echo(core) if core >= 2 else [],
+        "trit_vector": {
+            "order": ["domain", "mesh", "no_small_blocker", "wheel_lane", "verifier", "orientation"],
+            "values": trits,
+            "label": "[" + "".join(str(v) for v in trits) + "]",
+            "int": _trit_label_to_int(trits),
+        },
+        "field": {
+            "field_strength": round(sum(components.values()) / len(components), 12),
+            "normalized_force": round(normalize_force(sum(components.values())), 12),
+            **product,
+        },
+    }
+
+
+def _integer_relation_edges(rows: list[dict], bins: int) -> list[dict]:
+    ordered = sorted(rows, key=lambda row: (row["core"], row["raw"]))
+    edges = []
+    for left, right in zip(ordered, ordered[1:]):
+        a = int(left["core"])
+        b = int(right["core"])
+        raw_a = int(left["raw"])
+        raw_b = int(right["raw"])
+        gap = b - a
+        min_core = min(a, b)
+        gcd_value = math.gcd(a, b)
+        if a == b and raw_a == -raw_b and raw_a != 0:
+            relation = "negative_mirror_pair"
+        elif a == b:
+            relation = "same_absolute_core"
+        elif a > 1 and b % a == 0:
+            relation = "factor_wave_lands"
+        else:
+            relation = "ordered_gap"
+        dx_over_x = gap / a if a > 0 else None
+        dlog = (math.log(b) - math.log(a)) if a > 0 and b > 0 else None
+        bin_gap = abs(left["phase"]["angle_bin"] - right["phase"]["angle_bin"])
+        bin_gap = min(bin_gap, bins - bin_gap)
+        gcd_pull = gcd_value / max(1, min_core) if min_core > 0 else 0.0
+        phase_pull = harmonic_wall(bin_gap / max(1, bins))
+        mirror_pull = 1.0 if relation == "negative_mirror_pair" else 0.35
+        product = multiplicative_wave_field(
+            {
+                "gcd_pull": gcd_pull,
+                "phase_pull": phase_pull,
+                "mirror_pull": mirror_pull,
+            },
+            weights={"gcd_pull": 0.7, "phase_pull": 0.45, "mirror_pull": 0.35},
+        )
+        edges.append(
+            {
+                "from_raw": raw_a,
+                "to_raw": raw_b,
+                "from_core": a,
+                "to_core": b,
+                "relation": relation,
+                "gap": gap,
+                "dx_over_x": round(dx_over_x, 12) if dx_over_x is not None else None,
+                "dlog": round(dlog, 12) if dlog is not None else None,
+                "gcd": gcd_value,
+                "xor": a ^ b,
+                "hamming_distance": (a ^ b).bit_count(),
+                "field": product,
+            }
+        )
+    return edges
+
+
+def _integer_shell_echoes(row: dict, shell_radius: int, bins: int) -> list[dict]:
+    if shell_radius <= 0:
+        return []
+    center = int(row["core"])
+    echoes = []
+    for delta in range(-shell_radius, shell_radius + 1):
+        candidate = center + delta
+        if candidate < 0:
+            continue
+        verifier = _integer_prime_verifier(candidate)
+        echoes.append(
+            {
+                "candidate_core": candidate,
+                "delta": delta,
+                "positive_value": candidate,
+                "negative_mirror": -candidate if candidate != 0 else 0,
+                "state": verifier["state"],
+                "is_prime": verifier["is_prime"],
+                "angle_bin": angle_bin_for_value(candidate, bins),
+                "small_divisor": first_small_divisor(candidate) if candidate >= 2 else None,
+            }
+        )
+    return echoes
+
+
+def run_integer_magnifier(
+    numbers: list[int],
+    bins: int = 32,
+    shell_radius: int = 2,
+    mesh_primes: list[int] | None = None,
+    binary_bits: int = 16,
+) -> dict:
+    if not numbers:
+        numbers = [-31, -29, -17, -5, -1, 0, 1, 2, 3, 4, 5, 17, 19, 29, 31, 33, 35]
+    rows = [_integer_relation_row(value, bins, mesh_primes, binary_bits) for value in numbers]
+    edges = _integer_relation_edges(rows, bins)
+    for row in rows:
+        row["expansion_shell"] = _integer_shell_echoes(row, shell_radius, bins)
+
+    active_bins = sorted({row["phase"]["angle_bin"] for row in rows if row["core"] > 0})
+    verified = [row for row in rows if row["ternary_state"] == 1]
+    rejected = [row for row in rows if row["ternary_state"] == -1]
+    unresolved = [row for row in rows if row["ternary_state"] == 0]
+    return {
+        "schema_version": "prime_fog_integer_magnifier_v1",
+        "contract": {
+            "purpose": "testing magnification lens for integer relations",
+            "truth_boundary": "only exact_verifier collapses a prime/composite state",
+            "negative_rule": "negative values are preserved as orientation and normalized with abs(raw)",
+        },
+        "parameters": {
+            "bins": bins,
+            "shell_radius": shell_radius,
+            "mesh_primes": mesh_primes or SMALL_FILTER_PRIMES[1:],
+            "binary_bits": binary_bits,
+        },
+        "summary": {
+            "input_count": len(numbers),
+            "negative_count": sum(1 for value in numbers if value < 0),
+            "zero_count": sum(1 for value in numbers if value == 0),
+            "positive_count": sum(1 for value in numbers if value > 0),
+            "verified_prime_count": len(verified),
+            "rejected_count": len(rejected),
+            "unresolved_count": len(unresolved),
+            "active_angle_bins": active_bins,
+            "shadow_angle_bins": [idx for idx in range(bins) if idx not in active_bins],
+        },
+        "rows": rows,
+        "relation_edges": edges,
+    }
+
+
+def print_integer_magnifier(payload: dict) -> None:
+    print("Integer relation magnifier")
+    print(f"purpose: {payload['contract']['purpose']}")
+    print(f"truth boundary: {payload['contract']['truth_boundary']}")
+    print(f"negative rule: {payload['contract']['negative_rule']}")
+    print(f"summary: {payload['summary']}")
+    print()
+    print("Numbers:")
+    for row in payload["rows"]:
+        blocker = row["factor_wave"]["relation"] if row["factor_wave"] else "none"
+        print(
+            f"  raw={row['raw']:<8} core={row['core']:<8} orient={row['orientation']:+d} "
+            f"state={row['exact_verifier']['state']:<25} ternary={row['ternary_state']:+d} "
+            f"field={row['field']['field_strength']:.6f} product={row['field']['product_field_strength']:.6f}"
+        )
+        print(
+            f"    bin={row['phase']['angle_bin']:<2} mod30={row['residue_vector']['mod30']:<2} "
+            f"trit={row['trit_vector']['label']} bits={row['binary_vector']['suffix']} "
+            f"pop={row['binary_vector']['popcount']} blocker={blocker}"
+        )
+        if row["expansion_shell"]:
+            shell = ", ".join(
+                f"{echo['candidate_core']}:{echo['state']}" for echo in row["expansion_shell"]
+            )
+            print(f"    shell: {shell}")
+    if payload["relation_edges"]:
+        print()
+        print("Relation edges:")
+        for edge in payload["relation_edges"][:16]:
+            print(
+                f"  {edge['from_raw']} -> {edge['to_raw']} "
+                f"{edge['relation']} gap={edge['gap']} gcd={edge['gcd']} "
+                f"ham={edge['hamming_distance']} product={edge['field']['product_field_strength']:.6f}"
+            )
+
+
 def twin_pair_wave_field(p: int, learned_bins: set[int], bins: int) -> dict:
     q = p + 2
     mesh = prime_mesh_score([p, q])
@@ -2254,6 +2584,225 @@ def solution_gravity_at_candidate(
     }
 
 
+# ── Riemann zero frequencies ─────────────────────────────────────────────────
+# The imaginary parts of the first non-trivial zeros of ζ(s) on the critical
+# line Re(s)=1/2. These are the exact frequencies of the oscillation in π(x)
+# (the prime counting function). The formula is:
+#   π(x) ≈ Li(x) - Σ_ρ Li(x^ρ)  (sum over non-trivial zeros ρ)
+# Each zero t_n contributes a cosine wave cos(t_n * log x) to the error term.
+# Using these as a wave field gives the probe the actual harmonic signature of
+# where prime density is above or below the smooth prediction.
+_RIEMANN_ZERO_FREQS: list[float] = [
+    14.134725141734693,   # ρ_1  — the fundamental
+    21.022039638771554,   # ρ_2
+    25.010857580145688,   # ρ_3
+    30.424876125859513,   # ρ_4
+    32.935061587739189,   # ρ_5
+    37.586178158825671,   # ρ_6
+    40.918719012147495,   # ρ_7
+    43.327073280914999,   # ρ_8
+    48.005150881167159,   # ρ_9
+    49.773832477672302,   # ρ_10
+]
+
+# Natural harmonic ratios for the prime ratio map (small/large alignment check).
+# These are the ratios that appear in musical tuning, plant growth, and quantum
+# shell structure — used to test whether twin prime center spacings cluster near them.
+_NATURAL_HARMONICS: list[tuple[str, float]] = [
+    ("octave",       2.0),
+    ("fifth",        3 / 2),           # 1.500
+    ("fourth",       4 / 3),           # 1.333
+    ("major_third",  5 / 4),           # 1.250
+    ("minor_third",  6 / 5),           # 1.200
+    ("phi",          1.6180339887),    # golden ratio
+    ("sqrt2",        1.4142135623),
+    ("sqrt3",        1.7320508076),
+    ("e_over_pi",    math.e / math.pi),  # 0.8653 — below 1 (ratio can go either way)
+    ("pi_over_e",    math.pi / math.e),  # 1.1557
+    ("phi_sq",       2.6180339887),    # φ² = φ+1
+]
+
+# Echo-diagnostic small divisors: the prime-shaped-but-composite trap zone.
+# Candidates that land near these frequencies are composites masquerading as primes.
+# The integer ratio clearance field measures fractional-part distance from each trap.
+_DIV_ECHO_SMALL: list[int] = [7, 11, 13, 17, 19, 23]
+
+
+def _div_ratio_clearance(p: int, divisors: list[int] = _DIV_ECHO_SMALL) -> float:
+    """Integer ratio fractional-part clearance for p and p+2 against small divisors.
+
+    For each divisor d and each of n in {p, p+2}:
+      frac     = (n % d) / d          — position in the unit interval [0,1)
+      clearance = min(frac, 1-frac)*2  — 0 = exactly divisible (trap), 1 = maximally clear
+
+    Combined = geometric mean over all (d, n) pairs.
+
+    This is the 'integer ratio search in the binary region': scanning the interval
+    [0,1) of n/d mod 1 for proximity to integer landings. A candidate sitting close
+    to an integer ratio n/d is the algebraic equivalent of an arrow caught in the
+    7/11/13 crosswind just before the target.
+    """
+    scores: list[float] = []
+    for d in divisors:
+        for n in (p, p + 2):
+            frac = (n % d) / d
+            scores.append(min(frac, 1.0 - frac) * 2.0)
+    if not scores:
+        return 1.0
+    product = 1.0
+    for s in scores:
+        product *= max(s, 1e-9)
+    return product ** (1.0 / len(scores))
+
+
+def riemann_zero_wave(p: int, freqs: list[float] = _RIEMANN_ZERO_FREQS) -> float:
+    """Riemann zero wave field at candidate p.
+
+    Computes the normalized superposition of cosine waves driven by the imaginary
+    parts of the first N non-trivial Riemann zeros:
+
+      raw(p) = (1/N) * Σ_n cos(t_n * log(p))
+
+    Maps to [0, 1] via (raw + 1) / 2.
+
+    This is the actual harmonic signature of where π(x) oscillates above and below
+    Li(x). A high value means p sits near a local peak in prime density; a low value
+    means p is in a trough. Adding this as a weight gives the probe the refraction-
+    aware correction that the smooth gravity field lacks — the same oscillation that
+    produces the Skewes phenomenon and the prime conspiracy.
+
+    Ratios are denominative: the zero frequencies t_n are the denominators of the
+    oscillation — they determine the period of each refraction cycle. The field is
+    strongest (most predictive) at small p and weakens gracefully as p grows, exactly
+    like the error term in the prime counting formula.
+    """
+    if p <= 1:
+        return 0.5
+    log_p = math.log(p)
+    raw = sum(math.cos(t * log_p) for t in freqs) / len(freqs)
+    return (raw + 1.0) / 2.0
+
+
+def prime_harmonic_ratio_map(twin_centers: list[int]) -> dict:
+    """Map consecutive twin prime center ratios against natural harmonic ratios.
+
+    For each consecutive pair of twin prime centers c_n and c_{n+1}:
+      ratio = c_{n+1} / c_n
+
+    For each natural harmonic h, count how many ratios land within epsilon=0.02
+    of h (the 'resonance' count). The denominator is the total ratio count.
+
+    This tells us which natural harmonic ratios the twin prime spacing prefers.
+    A prime structure that strongly aligns with a natural harmonic (e.g. phi or 3/2)
+    at multiple scales would suggest the same geometric attractor governs both.
+
+    Also computes:
+      - ratio_mean, ratio_std: distribution of consecutive center ratios
+      - log_ratio_mean: mean of log(ratio) — this is the average log-scale gap
+      - riemann_alignment: fraction of centers where riemann_zero_wave > 0.5
+        (above the Li(x) prediction)
+    """
+    if len(twin_centers) < 2:
+        return {"error": "need at least 2 twin prime centers"}
+
+    ratios = [twin_centers[i + 1] / twin_centers[i] for i in range(len(twin_centers) - 1)]
+    n = len(ratios)
+    mean_r = sum(ratios) / n
+    var_r = sum((r - mean_r) ** 2 for r in ratios) / n
+    std_r = var_r ** 0.5
+    log_ratios = [math.log(r) for r in ratios]
+    mean_log = sum(log_ratios) / len(log_ratios)
+
+    # Resonance: how many ratios land within epsilon of each natural harmonic
+    eps = 0.02
+    resonance: dict[str, dict] = {}
+    for name, h in _NATURAL_HARMONICS:
+        hits = sum(1 for r in ratios if abs(r - h) < eps or abs(r - 1.0 / h) < eps)
+        resonance[name] = {
+            "harmonic": round(h, 6),
+            "hits": hits,
+            "fraction": round(hits / n, 4),
+        }
+
+    # Riemann zero alignment: for each center, is riemann_zero_wave > 0.5?
+    above_li = sum(1 for c in twin_centers if riemann_zero_wave(c) > 0.5)
+    riemann_alignment = round(above_li / len(twin_centers), 4)
+
+    # Gap structure: gaps between consecutive centers
+    gaps = [twin_centers[i + 1] - twin_centers[i] for i in range(len(twin_centers) - 1)]
+    gap_mod6 = {}
+    for g in gaps:
+        key = str(g % 6)
+        gap_mod6[key] = gap_mod6.get(key, 0) + 1
+    # Sort resonance by hits descending
+    sorted_resonance = dict(sorted(resonance.items(), key=lambda x: -x[1]["hits"]))
+
+    return {
+        "n_centers": len(twin_centers),
+        "n_ratios": n,
+        "ratio_mean": round(mean_r, 6),
+        "ratio_std": round(std_r, 6),
+        "log_ratio_mean": round(mean_log, 6),
+        "natural_harmonic_resonance": sorted_resonance,
+        "riemann_alignment_frac": riemann_alignment,
+        "gap_mod6_distribution": gap_mod6,
+        "top_harmonic": max(resonance.items(), key=lambda x: x[1]["hits"])[0],
+    }
+
+
+def run_prime_harmonic_map(limit: int = 10000, seed_limit: int | None = None) -> dict:
+    """Collect verified twin primes up to limit, run harmonic ratio map.
+
+    seed_limit: if set, only use twins in [3, seed_limit] as the reference set,
+    then show how the ratio map looks in both the seed and the extended range.
+    """
+    all_twins = [
+        p for p in range(3, limit + 1, 2)
+        if deterministic_miller_rabin_u64(p) and deterministic_miller_rabin_u64(p + 2)
+    ]
+    centers = [p + 1 for p in all_twins]
+
+    result: dict = {"limit": limit, "twin_count": len(all_twins)}
+    result["full_range"] = prime_harmonic_ratio_map(centers)
+
+    if seed_limit and seed_limit < limit:
+        seed_twins = [p for p in all_twins if p <= seed_limit]
+        seed_centers = [p + 1 for p in seed_twins]
+        ext_twins = [p for p in all_twins if p > seed_limit]
+        ext_centers = [p + 1 for p in ext_twins]
+        result["seed_range"] = prime_harmonic_ratio_map(seed_centers) if len(seed_centers) >= 2 else {}
+        result["extended_range"] = prime_harmonic_ratio_map(ext_centers) if len(ext_centers) >= 2 else {}
+        result["seed_limit"] = seed_limit
+
+    return result
+
+
+def print_prime_harmonic_map(payload: dict) -> None:
+    print("Prime harmonic ratio map")
+    print(f"twin primes up to {payload['limit']}  total pairs: {payload['twin_count']}")
+    print()
+    for band_key, label in [("seed_range", "seed"), ("extended_range", "extended"), ("full_range", "full")]:
+        if band_key not in payload:
+            if band_key == "full_range":
+                band_key = "full_range"
+                label = "full"
+            else:
+                continue
+        band = payload[band_key]
+        if not band or "error" in band:
+            continue
+        seed_lbl = f"  [{label}] n={band['n_centers']} centers  ratio_mean={band['ratio_mean']}  σ={band['ratio_std']}  log_gap={band['log_ratio_mean']}"
+        print(seed_lbl)
+        print(f"  riemann_alignment={band['riemann_alignment_frac']:.2%} of centers above Li(x) prediction")
+        print(f"  gap_mod6: {band['gap_mod6_distribution']}")
+        print(f"  top natural harmonic: {band['top_harmonic']}")
+        print(f"  natural harmonic resonance (within ±2% of ratio):")
+        for name, info in band["natural_harmonic_resonance"].items():
+            bar = "█" * info["hits"]
+            print(f"    {name:<14} h={info['harmonic']:.5f}  hits={info['hits']:>4}  frac={info['fraction']:.3f}  {bar[:40]}")
+        print()
+
+
 def twin_prime_gravity_candidate(
     p: int,
     bodies: list[dict],
@@ -2264,6 +2813,8 @@ def twin_prime_gravity_candidate(
 ) -> dict:
     wave = twin_pair_wave_field(p, learned_bins, bins)
     gravity = solution_gravity_at_candidate(p, bodies, metric, hyperbolic_scale)
+    div_clearance = _div_ratio_clearance(p)
+    rz_wave = riemann_zero_wave(p)
     product = multiplicative_wave_field(
         {
             "gravity": gravity["gravity_field_normalized"],
@@ -2273,17 +2824,24 @@ def twin_prime_gravity_candidate(
         },
         weights={"gravity": 0.7, "mesh": 1.1, "wave": 0.7, "product_wave": 0.5},
     )
+    # Weights sum to 1.0. div_ratio_clearance removes small-divisor trap noise.
+    # riemann_zero_wave adds the actual harmonic signature of where prime density
+    # oscillates above the smooth Li(x) prediction — the denominative refraction.
     combined = (
-        (0.42 * gravity["gravity_field_normalized"])
-        + (0.28 * wave["mesh_ratio"])
-        + (0.20 * wave["field_strength"])
-        + (0.10 * wave["product_field_strength"])
+        (0.30 * gravity["gravity_field_normalized"])
+        + (0.22 * wave["mesh_ratio"])
+        + (0.15 * wave["field_strength"])
+        + (0.09 * wave["product_field_strength"])
+        + (0.12 * div_clearance)
+        + (0.12 * rz_wave)
     )
     return {
         **wave,
         **gravity,
         "gravity_product_field": product["product_field_strength"],
         "gravity_components": product["components"],
+        "div_ratio_clearance": round(div_clearance, 6),
+        "riemann_zero_wave": round(rz_wave, 6),
         "combined_gravity_field": round(combined, 12),
     }
 
@@ -2527,11 +3085,12 @@ def print_twin_prime_gravity_search(payload: dict) -> None:
     print("Top gravity-ranked candidates:")
     for row in payload["top_rows"][:12]:
         mark = "hit" if row["verified"] else "echo"
+        div_clr = row.get("div_ratio_clearance", 1.0)
         print(
             f"  {mark:<4} p={row['p']:<8} q={row['q']:<8} "
             f"gravity={row['gravity_field_normalized']:.6f} "
             f"combined={row['combined_gravity_field']:.6f} "
-            f"product={row['gravity_product_field']:.6f} "
+            f"div_clr={div_clr:.4f} "
             f"nearest={row['nearest_solution']}"
         )
 
@@ -5171,6 +5730,20 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--blind-window", type=int, default=20_000)
     parser.add_argument("--echolocate", default="", help="Comma-separated integers to probe, fast path")
     parser.add_argument("--echo-radius", type=int, default=64)
+    parser.add_argument("--integer-magnifier", action="store_true", help="Run integer relation magnification test lens")
+    parser.add_argument(
+        "--integer-values",
+        default="-31,-29,-17,-5,-1,0,1,2,3,4,5,17,19,29,31,33,35",
+        help="Comma-separated signed integers for --integer-magnifier",
+    )
+    parser.add_argument("--integer-bins", type=int, default=32, help="Log-phase bins for --integer-magnifier")
+    parser.add_argument("--integer-shell", type=int, default=2, help="Near-value shell radius for --integer-magnifier")
+    parser.add_argument(
+        "--integer-binary-bits",
+        type=int,
+        default=16,
+        help="How many low binary bits to show in --integer-magnifier",
+    )
     parser.add_argument("--erdos-straus-lidar", action="store_true", help="Probe 4/n as three unit fractions")
     parser.add_argument("--erdos-limit", type=int, default=2_000)
     parser.add_argument("--erdos-proximity-count", type=int, default=8)
@@ -5314,6 +5887,17 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--top", type=int, default=10)
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--prime-ratio-map",
+        action="store_true",
+        help="Map consecutive twin prime center ratios against natural harmonic ratios "
+             "(phi, sqrt2, musical intervals) and Riemann zero alignment. "
+             "Shows which natural harmonic the twin prime spacing prefers at each scale.",
+    )
+    parser.add_argument("--ratio-map-limit", type=int, default=10000,
+                        help="Upper limit for twin prime collection in --prime-ratio-map (default 10000)")
+    parser.add_argument("--ratio-map-seed", type=int, default=1000,
+                        help="Seed/split point for seed vs extended range comparison (default 1000)")
     return parser.parse_args(argv)
 
 
@@ -5325,6 +5909,20 @@ def main(argv: Iterable[str] | None = None) -> int:
             print(json.dumps(payload, indent=2))
         else:
             print_echolocation(payload)
+        return 0
+
+    if args.integer_magnifier:
+        payload = run_integer_magnifier(
+            parse_number_list(args.integer_values),
+            args.integer_bins,
+            args.integer_shell,
+            parse_mesh_primes(args.fermat_mesh_primes),
+            args.integer_binary_bits,
+        )
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_integer_magnifier(payload)
         return 0
 
     if args.erdos_straus_lidar:
@@ -5366,6 +5964,17 @@ def main(argv: Iterable[str] | None = None) -> int:
             print(json.dumps(payload, indent=2))
         else:
             print_twin_prime_gravity_search(payload)
+        return 0
+
+    if getattr(args, "prime_ratio_map", False):
+        payload = run_prime_harmonic_map(
+            limit=args.ratio_map_limit,
+            seed_limit=args.ratio_map_seed,
+        )
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_prime_harmonic_map(payload)
         return 0
 
     if args.conjecture_wave:
