@@ -9,6 +9,7 @@ math verifies the target.
 from __future__ import annotations
 
 import argparse
+import bisect
 import hashlib
 import json
 import math
@@ -2079,6 +2080,89 @@ def _trit_label_to_int(values: list[int]) -> int:
     return out
 
 
+DEFAULT_RESIDUE_MODULI = [2, 3, 5, 6, 7, 11, 13, 17, 19, 23, 29, 30, 210]
+
+
+def _clean_positive_unique(values: list[int]) -> list[int]:
+    return sorted({value for value in values if value > 0})
+
+
+def _integer_residue_vector(core: int, moduli: list[int] | None = None) -> dict:
+    active_moduli = _clean_positive_unique(moduli or DEFAULT_RESIDUE_MODULI)
+    residues = {str(modulus): core % modulus if core else 0 for modulus in active_moduli}
+    shadow_hits = [modulus for modulus in active_moduli if core >= 2 and core % modulus == 0]
+    return {
+        "mode": "fixed_modulus_tracks",
+        "moduli": active_moduli,
+        "residues": residues,
+        "shadow_hits": shadow_hits,
+        "mod6": residues.get("6", core % 6 if core else 0),
+        "mod30": residues.get("30", core % 30 if core else 0),
+        "mod210": residues.get("210", core % 210 if core else 0),
+        "wheel30_lane": bool(core in (2, 3, 5) or core % 30 in WHEEL30_RESIDUES) if core else False,
+    }
+
+
+def _integer_factor_vector(core: int, factor_primes: list[int] | None = None) -> dict:
+    """Bounded factor telemetry for ingestion.
+
+    This is intentionally not an unbounded factorization routine. It divides by
+    configured small primes, records exact witnesses found in that bound, and
+    leaves the remaining cofactor as a residual tail for later verifier stages.
+    """
+    active_primes = _clean_positive_unique(factor_primes or ([2] + SMALL_FILTER_PRIMES[1:]))
+    if core < 2:
+        return {
+            "mode": "bounded_trial_division",
+            "factor_primes": active_primes,
+            "division_budget": 0,
+            "exponents": {},
+            "factors": [],
+            "residual": core,
+            "residual_state": "outside_prime_domain",
+            "complete": False,
+        }
+
+    residual = core
+    exponents: dict[str, int] = {}
+    factors = []
+    divisions = 0
+    for prime in active_primes:
+        if prime < 2:
+            continue
+        divisions += 1
+        exponent = 0
+        while residual % prime == 0:
+            residual //= prime
+            exponent += 1
+        if exponent:
+            exponents[str(prime)] = exponent
+            factors.append({"prime": prime, "exponent": exponent})
+        if residual == 1:
+            break
+
+    if residual == 1:
+        residual_state = "fully_factored_in_bound"
+        complete = True
+    elif residual <= U64_MAX and deterministic_miller_rabin_u64(residual):
+        residual_state = "prime_residual_tail"
+        complete = True
+    else:
+        residual_state = "unresolved_composite_or_large_tail"
+        complete = False
+
+    return {
+        "mode": "bounded_trial_division",
+        "factor_primes": active_primes,
+        "division_budget": divisions,
+        "exponents": exponents,
+        "factors": factors,
+        "residual": residual,
+        "residual_state": residual_state,
+        "complete": complete,
+    }
+
+
 def _integer_prime_verifier(core: int) -> dict:
     if core < 2:
         return {
@@ -2125,10 +2209,19 @@ def _integer_prime_verifier(core: int) -> dict:
     }
 
 
-def _integer_relation_row(raw: int, bins: int, mesh_primes: list[int] | None, binary_bits: int) -> dict:
+def _integer_relation_row(
+    raw: int,
+    bins: int,
+    mesh_primes: list[int] | None,
+    binary_bits: int,
+    factor_primes: list[int] | None = None,
+    residue_moduli: list[int] | None = None,
+) -> dict:
     core = abs(raw)
     sign = -1 if raw < 0 else 1 if raw > 0 else 0
     verifier = _integer_prime_verifier(core)
+    residue_vector = _integer_residue_vector(core, residue_moduli)
+    factor_vector = _integer_factor_vector(core, factor_primes or ([2] + (mesh_primes or SMALL_FILTER_PRIMES[1:])))
     small_divisor = first_small_divisor(core) if core >= 2 else None
     mesh = prime_mesh_score([core], mesh_primes) if core >= 2 else {
         "passed": 0,
@@ -2136,7 +2229,7 @@ def _integer_relation_row(raw: int, bins: int, mesh_primes: list[int] | None, bi
         "ratio": 0.0,
         "blockers": [],
     }
-    wheel_gate = 1.0 if core in (2, 3, 5) or core % 30 in WHEEL30_RESIDUES else 0.0
+    wheel_gate = 1.0 if residue_vector["wheel30_lane"] else 0.0
     bit_length = core.bit_length()
     popcount = core.bit_count()
     binary_density = popcount / max(1, bit_length)
@@ -2198,12 +2291,8 @@ def _integer_relation_row(raw: int, bins: int, mesh_primes: list[int] | None, bi
             "angle_bin": angle_bin_for_value(core, bins),
             "bins": bins,
         },
-        "residue_vector": {
-            "mod6": core % 6 if core else 0,
-            "mod30": core % 30 if core else 0,
-            "mod210": core % 210 if core else 0,
-            "wheel30_lane": bool(wheel_gate),
-        },
+        "residue_vector": residue_vector,
+        "factor_vector": factor_vector,
         "binary_vector": {
             "bit_length": bit_length,
             "popcount": popcount,
@@ -2316,10 +2405,24 @@ def run_integer_magnifier(
     shell_radius: int = 2,
     mesh_primes: list[int] | None = None,
     binary_bits: int = 16,
+    factor_primes: list[int] | None = None,
+    residue_moduli: list[int] | None = None,
 ) -> dict:
     if not numbers:
         numbers = [-31, -29, -17, -5, -1, 0, 1, 2, 3, 4, 5, 17, 19, 29, 31, 33, 35]
-    rows = [_integer_relation_row(value, bins, mesh_primes, binary_bits) for value in numbers]
+    active_factor_primes = _clean_positive_unique(factor_primes or ([2] + (mesh_primes or SMALL_FILTER_PRIMES[1:])))
+    active_residue_moduli = _clean_positive_unique(residue_moduli or DEFAULT_RESIDUE_MODULI)
+    rows = [
+        _integer_relation_row(
+            value,
+            bins,
+            mesh_primes,
+            binary_bits,
+            active_factor_primes,
+            active_residue_moduli,
+        )
+        for value in numbers
+    ]
     edges = _integer_relation_edges(rows, bins)
     for row in rows:
         row["expansion_shell"] = _integer_shell_echoes(row, shell_radius, bins)
@@ -2340,6 +2443,8 @@ def run_integer_magnifier(
             "shell_radius": shell_radius,
             "mesh_primes": mesh_primes or SMALL_FILTER_PRIMES[1:],
             "binary_bits": binary_bits,
+            "factor_primes": active_factor_primes,
+            "residue_moduli": active_residue_moduli,
         },
         "summary": {
             "input_count": len(numbers),
@@ -2349,6 +2454,8 @@ def run_integer_magnifier(
             "verified_prime_count": len(verified),
             "rejected_count": len(rejected),
             "unresolved_count": len(unresolved),
+            "factor_division_budget": sum(row["factor_vector"]["division_budget"] for row in rows),
+            "complete_factor_vector_count": sum(1 for row in rows if row["factor_vector"]["complete"]),
             "active_angle_bins": active_bins,
             "shadow_angle_bins": [idx for idx in range(bins) if idx not in active_bins],
         },
@@ -2376,6 +2483,12 @@ def print_integer_magnifier(payload: dict) -> None:
             f"    bin={row['phase']['angle_bin']:<2} mod30={row['residue_vector']['mod30']:<2} "
             f"trit={row['trit_vector']['label']} bits={row['binary_vector']['suffix']} "
             f"pop={row['binary_vector']['popcount']} blocker={blocker}"
+        )
+        print(
+            f"    factor_vector={row['factor_vector']['exponents']} "
+            f"residual={row['factor_vector']['residual']} "
+            f"state={row['factor_vector']['residual_state']} "
+            f"residue_shadows={row['residue_vector']['shadow_hits']}"
         )
         if row["expansion_shell"]:
             shell = ", ".join(
@@ -2873,7 +2986,8 @@ _PHI: float = (1.0 + math.sqrt(5.0)) / 2.0  # golden ratio ≈ 1.6180
 #
 # Path A = gravity + wave + Riemann + phi-zero  (geometry / frequency space)
 # Path B = mod30_wheel + hl_density + large_div  (algebra / analytic / residue space)
-# Gold   = Path A top-N ∩ Path B top-N
+# Path C = base10 digit braid / carry topology       (decimal morphology space)
+# Gold   = Path A top-N ∩ Path B top-N ∩ Path C top-N
 
 
 def mod30_wheel_score(p: int) -> float:
@@ -2970,6 +3084,317 @@ def path_b_score(
     return 0.50 * hl + 0.50 * ldiv
 
 
+# ── Path C: Shadow Lattice + p-adic Ultrametric ───────────────────────────────
+# Completely orthogonal to Path A (geometry/frequency/phi) and Path B
+# (modular algebra/analytic density).
+# Path C lives in: algebraic factor structure + q-adic tree topology.
+#
+# Shadow Lattice:  detects Prime Mirrors — composites n = seed_prime × other_prime
+#   that pass the mod30 wheel because (twin_starter ≡ 5 mod 6) × (prime ≡ 1 mod 6)
+#   = product ≡ 5 mod 6, landing on twin-prime wheel positions.
+#   These also pass div_clearance because their factor is > 47.
+#   Exact elimination: n divisible by ANY seed twin prime value → score 0.
+#
+# p-adic Ultrametric:  for each adic base q, candidate n is in a specific
+#   branch of the q-adic tree at each depth d (defined by n mod q^d).
+#   Twin primes cluster in specific branches; composites made from prime
+#   products land in different branches at depth > 1.
+#   Score: fraction of seeds sharing the same q-adic branch, above the
+#   random baseline, averaged across bases and depths.
+
+_PADIC_BASES: list[int] = [2, 3, 5, 7, 11]
+
+
+def _padic_valuation(n: int, q: int) -> int:
+    """Highest power of q dividing n (q-adic valuation v_q(n))."""
+    if n == 0:
+        return 20
+    v = 0
+    while n % q == 0:
+        n //= q
+        v += 1
+    return v
+
+
+def padic_twin_alignment(
+    p: int,
+    seeds: list[int],
+    bases: list[int] = _PADIC_BASES,
+    max_depth: int = 4,
+    top_k: int = 20,
+) -> float:
+    """p-adic branch alignment: measures how well candidate p matches the
+    q-adic address of known seed twin primes.
+
+    For each adic base q and depth d, n is in the branch (n mod q^d).
+    True twin primes cluster in specific branches (governed by congruence
+    conditions like p ≡ 2 mod 3 for all twin starters > 3).
+    Composites — especially those formed as products of primes — land in
+    different branches because multiplication produces different residues
+    than addition of nearby primes.
+
+    Score: at each (base, depth), count what fraction of nearest seeds share
+    p's branch vs the random expectation (1/q^d). Mean normalized ratio,
+    mapped to [0,1] via sigmoid.
+
+    Uses only top_k nearest seeds (log-distance) for efficiency at 1M range.
+    """
+    if not seeds:
+        return 0.5
+    log_p = math.log(max(p, 2))
+    nearest = sorted(seeds, key=lambda s: abs(math.log(max(s, 2)) - log_p))[:top_k]
+    n_seeds = len(nearest)
+
+    total_ratio = 0.0
+    count = 0
+    for q in bases:
+        q_pow = q
+        for d in range(1, max_depth + 1):
+            p_branch = p % q_pow
+            matches = sum(1 for s in nearest if s % q_pow == p_branch)
+            expected = n_seeds / q_pow
+            if expected >= 0.5:
+                total_ratio += matches / expected
+                count += 1
+            q_pow *= q
+
+    if count == 0:
+        return 0.5
+    mean_ratio = total_ratio / count
+    # mean_ratio ≈ 1.0 for random candidates; > 1.0 for branch-aligned candidates
+    # Map [0, ∞) → [0, 1) via ratio / (1 + ratio)
+    return mean_ratio / (1.0 + mean_ratio)
+
+
+def _digit_entropy_score(value: int) -> float:
+    digits = str(abs(value))
+    if not digits:
+        return 0.0
+    counts = {digit: digits.count(digit) for digit in set(digits)}
+    entropy = 0.0
+    for count in counts.values():
+        p_digit = count / len(digits)
+        entropy -= p_digit * math.log(p_digit)
+    return entropy / math.log(10)
+
+
+def _addition_carry_count(value: int, addend: int = 2) -> int:
+    carries = 0
+    carry = addend
+    n = abs(value)
+    while carry:
+        digit = n % 10
+        if digit + carry >= 10:
+            carries += 1
+            carry = 1
+            n //= 10
+        else:
+            break
+    return carries
+
+
+def _reversed_int(value: int) -> int:
+    return int(str(abs(value))[::-1])
+
+
+def _decimal_shadow_clearance(value: int, divisors: list[int] | None = None) -> float:
+    active = divisors or [7, 11, 13, 37]
+    scores = []
+    for divisor in active:
+        if divisor <= 1:
+            continue
+        frac = (value % divisor) / divisor
+        scores.append(min(frac, 1.0 - frac) * 2.0)
+    if not scores:
+        return 1.0
+    product = 1.0
+    for score in scores:
+        product *= max(score, 1e-9)
+    return product ** (1.0 / len(scores))
+
+
+def digit_braid_score(p: int) -> dict:
+    """Path C: base-10 digit morphology for twin-prime starters.
+
+    This intentionally avoids log/phase geometry. It reads the candidate as a
+    decimal braid: legal final digit, digit-sum shadows, local +/-2 topology,
+    carry complexity from p to p+2, digit entropy, and reversed-digit clearance.
+    The result is telemetry/ranking only; exact truth stays with the verifier.
+    """
+    q = p + 2
+    last_digit = p % 10
+    if p > 5 and last_digit not in (1, 7, 9):
+        return {
+            "score": 0.0,
+            "last_digit": last_digit,
+            "reason": "base10_last_digit_elimination",
+        }
+
+    p_digit_sum = sum(int(digit) for digit in str(abs(p)))
+    q_digit_sum = sum(int(digit) for digit in str(abs(q)))
+    digit_sum_gate = 1.0
+    if p > 3 and p_digit_sum % 3 == 0:
+        digit_sum_gate = 0.0
+    if q > 3 and q_digit_sum % 3 == 0:
+        digit_sum_gate = 0.0
+
+    local_guard = 1.0 if (p <= 5 or ((p - 2) % 3 == 0 and (p + 4) % 3 == 0)) else 0.0
+    carry_count = _addition_carry_count(p, 2)
+    carry_score = 1.0 / (1.0 + carry_count)
+    entropy_score = (_digit_entropy_score(p) + _digit_entropy_score(q)) / 2.0
+    reverse_clearance = (
+        _decimal_shadow_clearance(_reversed_int(p)) + _decimal_shadow_clearance(_reversed_int(q))
+    ) / 2.0
+    alternating_11_clearance = (
+        _decimal_shadow_clearance(p, [11]) + _decimal_shadow_clearance(q, [11])
+    ) / 2.0
+    product = multiplicative_wave_field(
+        {
+            "last_digit": 1.0,
+            "digit_sum": digit_sum_gate,
+            "local_guard": local_guard,
+            "carry": carry_score,
+            "entropy": max(0.15, entropy_score),
+            "reverse_clearance": reverse_clearance,
+            "alternating_11": alternating_11_clearance,
+        },
+        weights={
+            "last_digit": 1.0,
+            "digit_sum": 1.0,
+            "local_guard": 0.8,
+            "carry": 0.25,
+            "entropy": 0.35,
+            "reverse_clearance": 0.5,
+            "alternating_11": 0.35,
+        },
+    )
+    soft_score = (
+        (0.20 * digit_sum_gate)
+        + (0.18 * local_guard)
+        + (0.12 * carry_score)
+        + (0.18 * entropy_score)
+        + (0.20 * reverse_clearance)
+        + (0.12 * alternating_11_clearance)
+    )
+    return {
+        "score": round(soft_score * product["product_field_strength"], 12),
+        "last_digit": last_digit,
+        "digit_sum_mod3": [p_digit_sum % 3, q_digit_sum % 3],
+        "local_guard": local_guard,
+        "carry_count": carry_count,
+        "carry_score": round(carry_score, 6),
+        "entropy_score": round(entropy_score, 6),
+        "reverse_clearance": round(reverse_clearance, 6),
+        "alternating_11_clearance": round(alternating_11_clearance, 6),
+        "components": product["components"],
+    }
+
+
+def build_shadow_lattice(seed_twins: list[int], limit: int) -> dict:
+    """Build a deterministic semiprime exclusion mask from seed twin primes.
+
+    The lattice contains products a*b where a and b are primes appearing inside
+    verified seed twin pairs. A candidate whose p or p+2 lands exactly on this
+    lattice is a known composite shadow before Miller-Rabin runs.
+    """
+    prime_pool = sorted({value for p in seed_twins for value in (p, p + 2) if value > 1})
+    products: set[int] = set()
+    witnesses: dict[int, tuple[int, int]] = {}
+    cap = max(0, limit + 2)
+    for i, a in enumerate(prime_pool):
+        for b in prime_pool[i:]:
+            product = a * b
+            if product > cap:
+                break
+            products.add(product)
+            witnesses.setdefault(product, (a, b))
+    sorted_products = sorted(products)
+    return {
+        "prime_pool": prime_pool,
+        "products": sorted_products,
+        "product_set": products,
+        "witnesses": witnesses,
+        "limit": limit,
+    }
+
+
+def _nearest_shadow_gap(value: int, products: list[int]) -> tuple[int | None, int | None]:
+    if not products:
+        return None, None
+    index = bisect.bisect_left(products, value)
+    candidates = []
+    if index < len(products):
+        candidates.append(products[index])
+    if index > 0:
+        candidates.append(products[index - 1])
+    nearest = min(candidates, key=lambda candidate: abs(candidate - value))
+    return nearest, abs(nearest - value)
+
+
+def shadow_lattice_score(p: int, lattice: dict) -> dict:
+    q = p + 2
+    product_set = lattice.get("product_set", set())
+    products = lattice.get("products", [])
+    p_shadow = p in product_set
+    q_shadow = q in product_set
+    if p_shadow or q_shadow:
+        hit_value = p if p_shadow else q
+        witness = lattice.get("witnesses", {}).get(hit_value)
+        return {
+            "score": 0.0,
+            "exact_shadow": True,
+            "shadow_value": hit_value,
+            "witness": list(witness) if witness else None,
+            "nearest_gap": 0,
+        }
+
+    clearances = []
+    nearest_rows = []
+    for value in (p, q):
+        nearest, gap = _nearest_shadow_gap(value, products)
+        if nearest is None or gap is None:
+            clearances.append(1.0)
+            continue
+        scaled_gap = gap / max(1.0, math.sqrt(max(1, value)))
+        clearances.append(scaled_gap / (1.0 + scaled_gap))
+        nearest_rows.append({"value": value, "nearest_shadow": nearest, "gap": gap})
+    score = sum(clearances) / max(1, len(clearances))
+    nearest_gap = min((row["gap"] for row in nearest_rows), default=None)
+    return {
+        "score": round(score, 12),
+        "exact_shadow": False,
+        "shadow_value": None,
+        "witness": None,
+        "nearest_gap": nearest_gap,
+    }
+
+
+def path_c_score(p: int, shadow_lattice: dict | None = None) -> dict:
+    digit = digit_braid_score(p)
+    shadow = shadow_lattice_score(p, shadow_lattice or {}) if shadow_lattice else {
+        "score": 1.0,
+        "exact_shadow": False,
+        "shadow_value": None,
+        "witness": None,
+        "nearest_gap": None,
+    }
+    if digit["score"] <= 0.0 or shadow["exact_shadow"]:
+        score = 0.0
+    else:
+        score = digit["score"] * (0.35 + (0.65 * shadow["score"]))
+    return {
+        "score": round(score, 12),
+        "digit_score": round(float(digit.get("score", 0.0)), 12),
+        "shadow_score": round(float(shadow.get("score", 0.0)), 12),
+        "shadow_hit": bool(shadow.get("exact_shadow", False)),
+        "shadow_value": shadow.get("shadow_value"),
+        "shadow_witness": shadow.get("witness"),
+        "shadow_nearest_gap": shadow.get("nearest_gap"),
+        "last_digit": digit.get("last_digit"),
+        "carry_count": digit.get("carry_count"),
+    }
+
+
 def phi_mean_zero_wave(
     target: int,
     seeds: list[int],
@@ -3041,6 +3466,7 @@ def twin_prime_gravity_candidate(
     hyperbolic_scale: float | None = None,
     seed_values: list[int] | None = None,
     rz_anchors: list[dict] | None = None,
+    shadow_lattice: dict | None = None,
 ) -> dict:
     wave = twin_pair_wave_field(p, learned_bins, bins)
     gravity = solution_gravity_at_candidate(p, bodies, metric, hyperbolic_scale)
@@ -3078,6 +3504,7 @@ def twin_prime_gravity_candidate(
     # Path B: algebra / analytic / next-layer-divisor — orthogonal to Path A
     pb = path_b_score(p, seed_values or [])
     wheel = mod30_wheel_score(p)
+    pc = path_c_score(p, shadow_lattice)
     return {
         **wave,
         **gravity,
@@ -3091,6 +3518,16 @@ def twin_prime_gravity_candidate(
         # Path B columns (independent sub-agent paths)
         "mod30_wheel": wheel,
         "path_b_score": round(pb, 6),
+        # Path C columns (radix/p-adic-adjacent morphology + shadow lattice)
+        "path_c_score": round(pc["score"], 6),
+        "digit_braid_score": round(pc["digit_score"], 6),
+        "shadow_lattice_score": round(pc["shadow_score"], 6),
+        "shadow_lattice_hit": pc["shadow_hit"],
+        "shadow_lattice_value": pc["shadow_value"],
+        "shadow_lattice_witness": pc["shadow_witness"],
+        "shadow_lattice_nearest_gap": pc["shadow_nearest_gap"],
+        "digit_last": pc["last_digit"],
+        "digit_carry_count": pc["carry_count"],
     }
 
 
@@ -3250,11 +3687,22 @@ def run_twin_prime_gravity_search(
     bodies = solution_gravity_bodies(seed_values, bins, hyperbolic_scale)
     learned_bins = {body["angle_bin"] for body in bodies}
     rz_anchors = riemann_phase_anchor(seed_values)
+    shadow_lattice = build_shadow_lattice(seed_values, limit)
     start = max(3, seed_limit + 1)
     if start % 2 == 0:
         start += 1
     candidates = [
-        twin_prime_gravity_candidate(p, bodies, learned_bins, bins, metric, hyperbolic_scale, seed_values, rz_anchors)
+        twin_prime_gravity_candidate(
+            p,
+            bodies,
+            learned_bins,
+            bins,
+            metric,
+            hyperbolic_scale,
+            seed_values,
+            rz_anchors,
+            shadow_lattice,
+        )
         for p in range(start, limit, 2)
     ]
     ranked = sorted(
@@ -3353,6 +3801,8 @@ def run_twin_prime_gravity_search(
         "gravity_metric": metric,
         "hyperbolic_scale": round(hyperbolic_scale, 12),
         "seed_solution_count": len(seed_values),
+        "shadow_lattice_product_count": len(shadow_lattice["products"]),
+        "shadow_lattice_prime_pool_count": len(shadow_lattice["prime_pool"]),
         "riemann_phase_anchor_count": len(rz_anchors),
         "riemann_phase_anchor_mean_coherence": round(
             sum(anchor["coherence"] for anchor in rz_anchors) / max(1, len(rz_anchors)),
@@ -3398,6 +3848,11 @@ def print_twin_prime_gravity_search(payload: dict) -> None:
     print(f"metric: {payload['gravity_metric']}  hyperbolic_scale={payload['hyperbolic_scale']}")
     print(f"seed limit: {payload['seed_limit']}  search limit: {payload['limit']}")
     print(f"known solution bodies: {payload['seed_solution_count']}")
+    print(
+        "shadow lattice: "
+        f"{payload.get('shadow_lattice_product_count', 0)} products from "
+        f"{payload.get('shadow_lattice_prime_pool_count', 0)} seed primes"
+    )
     print(
         "riemann phase anchors: "
         f"{payload.get('riemann_phase_anchor_count', 0)}  "
@@ -3454,7 +3909,7 @@ def print_twin_prime_gravity_search(payload: dict) -> None:
                 f"{b['base_rate']:>5.2%}  {b['precision']:>5.2%}  {b['lift']:>5.1f}x"
             )
 
-    # Path A ∩ Path B intersection statistics
+    # Path A ∩ Path B ∩ Path C intersection statistics
     all_rows = payload.get("all_candidates", [])
     if all_rows and any("path_b_score" in r for r in all_rows[:5]):
         n_all = len(all_rows)
@@ -3466,24 +3921,40 @@ def print_twin_prime_gravity_search(payload: dict) -> None:
         )
         path_a_top = {r["p"] for r in path_a_sorted[:top10_n]}
         path_b_top = {r["p"] for r in path_b_sorted[:top10_n]}
+        path_c_sorted = sorted(
+            all_rows,
+            key=lambda r: -r.get("path_c_score", 0),
+        )
+        path_c_top = {r["p"] for r in path_c_sorted[:top10_n]}
         intersection = path_a_top & path_b_top
+        triple = intersection & path_c_top
         wheel_zero = sum(1 for r in all_rows if r.get("mod30_wheel", 1.0) == 0.0)
+        shadow_hits = sum(1 for r in all_rows if r.get("shadow_lattice_hit"))
         wheel_elim_pct = wheel_zero / n_all * 100
         hits_a = sum(1 for r in all_rows if r["p"] in path_a_top and r.get("verified"))
         hits_b = sum(1 for r in all_rows if r["p"] in path_b_top and r.get("verified"))
+        hits_c = sum(1 for r in all_rows if r["p"] in path_c_top and r.get("verified"))
         hits_ab = sum(
             1 for r in all_rows if r["p"] in intersection and r.get("verified")
+        )
+        hits_abc = sum(
+            1 for r in all_rows if r["p"] in triple and r.get("verified")
         )
         base_rate = sum(1 for r in all_rows if r.get("verified")) / max(n_all, 1)
         prec_a = hits_a / max(len(path_a_top), 1)
         prec_b = hits_b / max(len(path_b_top), 1)
+        prec_c = hits_c / max(len(path_c_top), 1)
         prec_ab = hits_ab / max(len(intersection), 1)
+        prec_abc = hits_abc / max(len(triple), 1)
         print()
-        print("Path A ∩ Path B intersection  (top-10% each path):")
+        print("Path A ∩ Path B ∩ Path C intersection  (top-10% each path):")
         print(f"  Path A  candidates={len(path_a_top):>5}  hits={hits_a:>4}  prec={prec_a:.2%}  ({prec_a/max(base_rate,1e-9):.1f}x lift)")
         print(f"  Path B  candidates={len(path_b_top):>5}  hits={hits_b:>4}  prec={prec_b:.2%}  ({prec_b/max(base_rate,1e-9):.1f}x lift)")
+        print(f"  Path C  candidates={len(path_c_top):>5}  hits={hits_c:>4}  prec={prec_c:.2%}  ({prec_c/max(base_rate,1e-9):.1f}x lift)")
         print(f"  A∩B     candidates={len(intersection):>5}  hits={hits_ab:>4}  prec={prec_ab:.2%}  ({prec_ab/max(base_rate,1e-9):.1f}x lift)")
+        print(f"  A∩B∩C   candidates={len(triple):>5}  hits={hits_abc:>4}  prec={prec_abc:.2%}  ({prec_abc/max(base_rate,1e-9):.1f}x lift)")
         print(f"  mod30 wheel: {wheel_zero} eliminated ({wheel_elim_pct:.1f}% of candidates algebraically impossible)")
+        print(f"  shadow lattice: {shadow_hits} exact seed-product shadows masked before verifier")
 
     print()
     print("Top gravity-ranked candidates:")
@@ -3493,10 +3964,12 @@ def print_twin_prime_gravity_search(payload: dict) -> None:
         pmz = row.get("phi_mean_zero_wave", "—")
         hj = row.get("horizon_jump", "—")
         pb = row.get("path_b_score", "—")
+        pc = row.get("path_c_score", "—")
+        shadow = " shadow" if row.get("shadow_lattice_hit") else ""
         print(
             f"  {mark:<4} p={row['p']:<8} q={row['q']:<8} "
             f"combined={row['combined_gravity_field']:.5f} "
-            f"pmz={pmz:.4f}  pathB={pb:.4f}  div={div_clr:.3f}  jump={hj}x"
+            f"pmz={pmz:.4f}  pathB={pb:.4f}  pathC={pc:.4f}{shadow}  div={div_clr:.3f}  jump={hj}x"
         )
 
 
@@ -4885,6 +5358,167 @@ def harmonic_gate_trit_unilateral(
     return 1 if h <= theta_edge else 0
 
 
+def _harmonic_gate_state(
+    spec: dict,
+    theta_edge: float = _HARMONIC_THETA_EDGE,
+) -> dict:
+    name = str(spec["name"])
+    kind = str(spec.get("kind", "bilateral"))
+    value = float(spec.get("value", 0.0))
+
+    if kind == "constant":
+        trit = int(spec.get("trit", 1))
+        return {
+            "name": name,
+            "kind": kind,
+            "value": value,
+            "delta": 0.0 if trit == 2 else 1.0 if trit == 1 else math.inf,
+            "harmonic": 0.0 if trit == 2 else theta_edge if trit == 1 else 1.0,
+            "trit": trit,
+        }
+
+    if kind == "bilateral":
+        lo_ideal = float(spec["lo_ideal"])
+        hi_ideal = float(spec["hi_ideal"])
+        lo_scale = max(float(spec["lo_scale"]), 1e-9)
+        hi_scale = max(float(spec["hi_scale"]), 1e-9)
+        if lo_ideal <= value <= hi_ideal:
+            delta = 0.0
+        elif value < lo_ideal:
+            delta = (lo_ideal - value) / lo_scale
+        else:
+            delta = (value - hi_ideal) / hi_scale
+    elif kind == "lower_bound":
+        lo_ideal = float(spec["lo_ideal"])
+        lo_scale = max(float(spec["lo_scale"]), 1e-9)
+        delta = 0.0 if value >= lo_ideal else (lo_ideal - value) / lo_scale
+    elif kind == "upper_bound":
+        hi_ideal = float(spec["hi_ideal"])
+        hi_scale = max(float(spec["hi_scale"]), 1e-9)
+        delta = 0.0 if value <= hi_ideal else (value - hi_ideal) / hi_scale
+    else:
+        raise ValueError(f"unsupported harmonic gate kind: {kind}")
+
+    h = delta / (1.0 + delta)
+    trit = 2 if delta <= 0.0 else 1 if h <= theta_edge else 0
+    return {
+        "name": name,
+        "kind": kind,
+        "value": round(value, 12),
+        "delta": round(delta, 12),
+        "harmonic": round(h, 12),
+        "trit": trit,
+    }
+
+
+def harmonic_gate_tensor(gate_specs: list[dict], theta_edge: float = _HARMONIC_THETA_EDGE) -> dict:
+    """Evaluate many trit gates with one shared H(delta)=delta/(1+delta) law."""
+    states = [_harmonic_gate_state(spec, theta_edge) for spec in gate_specs]
+    trits = [int(state["trit"]) for state in states]
+    harmonics = [float(state["harmonic"]) for state in states if math.isfinite(float(state["harmonic"]))]
+    mean_h = sum(harmonics) / max(1, len(harmonics))
+    return {
+        "theta_edge": theta_edge,
+        "law": "H(delta)=delta/(1+delta)",
+        "trits": trits,
+        "states": states,
+        "mean_harmonic": round(mean_h, 12),
+        "glow_float": round(sum(trits) / (2.0 * max(1, len(trits))), 12),
+    }
+
+
+def generalized_trit_tensor(
+    mw: float,
+    logp: float,
+    tpsa: float,
+    stability_score: float,
+    stability_threshold: float,
+    predicted_band: tuple[float, float] | None = None,
+    severity_min_dist: float | None = None,
+    alphafold_trit: int | None = None,
+) -> dict:
+    if severity_min_dist is None:
+        severe_mws = [s[1] for s in _CHEM_SEEDS if s[3]]
+        severity_min_dist = min((abs(mw - sm) for sm in severe_mws), default=999.0)
+
+    gate_specs: list[dict] = [
+        {
+            "name": "mw",
+            "kind": "bilateral",
+            "value": mw,
+            "lo_ideal": 100.0,
+            "hi_ideal": 500.0,
+            "lo_scale": 50.0,
+            "hi_scale": 400.0,
+        },
+        {
+            "name": "severity",
+            "kind": "lower_bound",
+            "value": severity_min_dist,
+            "lo_ideal": 5.0,
+            "lo_scale": 4.5,
+        },
+        {
+            "name": "predicted_band",
+            "kind": "constant",
+            "value": mw,
+            "trit": 1,
+        },
+        {
+            "name": "stability",
+            "kind": "lower_bound",
+            "value": stability_score,
+            "lo_ideal": stability_threshold,
+            "lo_scale": max(stability_threshold * 0.5, 1e-9),
+        },
+        {
+            "name": "logp",
+            "kind": "bilateral",
+            "value": logp,
+            "lo_ideal": 0.0,
+            "hi_ideal": 5.0,
+            "lo_scale": 3.0,
+            "hi_scale": 2.0,
+        },
+        {
+            "name": "tpsa",
+            "kind": "bilateral",
+            "value": tpsa,
+            "lo_ideal": 20.0,
+            "hi_ideal": 130.0,
+            "lo_scale": 15.0,
+            "hi_scale": 70.0,
+        },
+    ]
+
+    if predicted_band is not None:
+        lo_b, hi_b = predicted_band
+        width = max(hi_b - lo_b, 1.0)
+        gate_specs[2] = {
+            "name": "predicted_band",
+            "kind": "bilateral",
+            "value": mw,
+            "lo_ideal": lo_b,
+            "hi_ideal": hi_b,
+            "lo_scale": width * 0.5,
+            "hi_scale": width * 0.5,
+        }
+
+    if alphafold_trit is not None:
+        gate_specs.append(
+            {
+                "name": "alphafold_plddt",
+                "kind": "constant",
+                "value": alphafold_trit,
+                "trit": int(alphafold_trit),
+            }
+        )
+
+    tensor = harmonic_gate_tensor(gate_specs)
+    tensor["gate_order"] = [spec["name"] for spec in gate_specs]
+    return tensor
+
+
 def generalized_trit_vector(
     mw: float,
     logp: float,
@@ -4912,55 +5546,16 @@ def generalized_trit_vector(
     This is a single vectorized pass: compute all deltas, apply H, threshold.
     No branching per gate — all gates share the same rational squashing law.
     """
-    # Gate 0: MW (bilateral)
-    mw_t = harmonic_gate_trit(mw, 100.0, 500.0, 50.0, 400.0)
-
-    # Gate 1: Severity (unilateral — distance to nearest severe compound)
-    if severity_min_dist is None:
-        severe_mws = [s[1] for s in _CHEM_SEEDS if s[3]]
-        severity_min_dist = min((abs(mw - sm) for sm in severe_mws), default=999.0)
-    # Hard fail within 0.5 Da (exact mass collision)
-    if severity_min_dist < 0.5:
-        sev_t = 0
-    else:
-        sev_t = harmonic_gate_trit_unilateral(severity_min_dist, scale=5.0)
-        # The severity gate is INVERSE: closer to severe = worse, farther = better.
-        # delta = 0 at min_dist = 0 (collision) but we want trit=2 when FAR from severe.
-        # Re-map: delta_sev = max(0, 5.0 - severity_min_dist) / 5.0 * 5.0
-        # Simpler: use distance directly — far = small delta, large delta = close to severe
-        # The unilateral gate above gives trit=2 only when delta=0, i.e. dist=0 (wrong).
-        # Correct: we want trit=2 when far, trit=0 when close.
-        # Use COMPLEMENT: delta_sev = scale / max(severity_min_dist, 1e-9) - this diverges.
-        # Use asymptotic complement: H_far = 1 - H(dist/scale)
-        # Instead: just use the direct threshold comparison matching legacy logic.
-        sev_t = 2 if severity_min_dist >= 5.0 else (1 if severity_min_dist >= 0.5 else 0)
-
-    # Gate 2: Predicted band (bilateral from band boundaries)
-    if predicted_band is None:
-        band_t = 1
-    else:
-        lo_b, hi_b = predicted_band
-        width = max(hi_b - lo_b, 1.0)
-        band_t = harmonic_gate_trit(mw, lo_b, hi_b, width * 0.5, width * 0.5)
-
-    # Gate 3: Stability (unilateral — distance below threshold)
-    stab_delta = max(0.0, stability_threshold - stability_score)
-    stab_scale = stability_threshold * 0.5  # near-miss = within 50% of threshold
-    stab_t = harmonic_gate_trit_unilateral(stab_delta, scale=max(stab_scale, 1e-9))
-    # Correction: trit=2 only when AT OR ABOVE threshold (stab_delta=0)
-    if stability_score >= stability_threshold:
-        stab_t = 2
-
-    # Gate 4: LogP (bilateral, asymmetric cliffs)
-    logp_t = harmonic_gate_trit(logp, 0.0, 5.0, 3.0, 2.0)
-
-    # Gate 5: TPSA (bilateral, asymmetric cliffs)
-    tpsa_t = harmonic_gate_trit(tpsa, 20.0, 130.0, 15.0, 70.0)
-
-    trit_vec = [mw_t, sev_t, band_t, stab_t, logp_t, tpsa_t]
-    if alphafold_trit is not None:
-        trit_vec.append(int(alphafold_trit))
-    return trit_vec
+    return generalized_trit_tensor(
+        mw=mw,
+        logp=logp,
+        tpsa=tpsa,
+        stability_score=stability_score,
+        stability_threshold=stability_threshold,
+        predicted_band=predicted_band,
+        severity_min_dist=severity_min_dist,
+        alphafold_trit=alphafold_trit,
+    )["trits"]
 
 
 def encode_trit_vector(trits: list[int]) -> int:
@@ -5344,9 +5939,10 @@ def answer_space_grid(
             best_score = _chem_stability_score(mw, half_life_est, False)
 
         logp_est, tpsa_est = _estimate_logp_tpsa(mw)
+        harmonic_tensor = None
 
         if use_harmonic_gates:
-            trit_vec = generalized_trit_vector(
+            harmonic_tensor = generalized_trit_tensor(
                 mw=mw,
                 logp=logp_est,
                 tpsa=tpsa_est,
@@ -5355,6 +5951,7 @@ def answer_space_grid(
                 predicted_band=predicted_band,
                 alphafold_trit=alphafold_trit,
             )
+            trit_vec = harmonic_tensor["trits"]
         else:
             lip_t = _mw_lipinski_trit(mw)
             sev_t = _severity_trit(mw)
@@ -5380,6 +5977,14 @@ def answer_space_grid(
                     "tpsa_est": round(tpsa_est, 2),
                     "binary_pass": True,
                     "glow_float": round(sum(trit_vec) / (2.0 * len(trit_vec)), 4),
+                    **(
+                        {
+                            "harmonic_mean": harmonic_tensor["mean_harmonic"],
+                            "harmonic_gate_order": harmonic_tensor["gate_order"],
+                        }
+                        if harmonic_tensor is not None
+                        else {}
+                    ),
                 }
             )
         mw = round(mw + mw_step, 4)
@@ -6149,6 +6754,16 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
         default=16,
         help="How many low binary bits to show in --integer-magnifier",
     )
+    parser.add_argument(
+        "--integer-factor-primes",
+        default="2,3,5,7,11,13,17,19,23,29,31,37,41,43,47",
+        help="Bounded trial-division primes for integer factor_vector ingestion",
+    )
+    parser.add_argument(
+        "--integer-residue-moduli",
+        default="2,3,5,6,7,11,13,17,19,23,29,30,210",
+        help="Comma-separated moduli for integer residue_vector ingestion",
+    )
     parser.add_argument("--erdos-straus-lidar", action="store_true", help="Probe 4/n as three unit fractions")
     parser.add_argument("--erdos-limit", type=int, default=2_000)
     parser.add_argument("--erdos-proximity-count", type=int, default=8)
@@ -6323,6 +6938,8 @@ def main(argv: Iterable[str] | None = None) -> int:
             args.integer_shell,
             parse_mesh_primes(args.fermat_mesh_primes),
             args.integer_binary_bits,
+            parse_number_list(args.integer_factor_primes),
+            parse_number_list(args.integer_residue_moduli),
         )
         if args.json:
             print(json.dumps(payload, indent=2))
