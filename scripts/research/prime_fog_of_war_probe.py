@@ -10,10 +10,13 @@ from __future__ import annotations
 
 import argparse
 import bisect
+import cmath
+import colorsys
 import hashlib
 import json
 import math
 import time
+from collections import Counter
 from dataclasses import dataclass
 from typing import Iterable
 
@@ -2697,6 +2700,481 @@ def solution_gravity_at_candidate(
     }
 
 
+# ── Float-safe gravity primitives ────────────────────────────────────────────
+# These extend the integer gravity well infrastructure to accept any real
+# number — ratios, decimals, atomically small (1e-15) and very large (1e20).
+# They use log1p instead of log so values near 0 stay well-behaved, and they
+# use absolute value + epsilon so negative inputs don't crash.  The Poincaré
+# disk embedding is identical to hyperbolic_point but scaled to the log1p
+# range rather than the raw integer log range.
+
+
+def _hyperbolic_point_float(value: float, scale: float) -> dict:
+    """Embed any finite real in the Poincaré disk via log1p(|value|)."""
+    pos = max(1e-15, abs(float(value)))
+    log_val = math.log1p(pos)
+    safe_scale = max(1e-9, abs(scale))
+    radius = min(0.999999, math.tanh(log_val / safe_scale))
+    theta = log_val % (2 * math.pi)
+    return {
+        "r": radius,
+        "theta": theta,
+        "x": radius * math.cos(theta),
+        "y": radius * math.sin(theta),
+        "log_val": log_val,
+    }
+
+
+def _gravity_bodies_float(
+    values: list,
+    bins: int,
+    scale: float | None = None,
+) -> list[dict]:
+    """Build gravity bodies from any sequence of finite real numbers.
+
+    Accepts floats, ratios, decimals, very small (1e-15) and very large (1e20)
+    values.  Non-finite values are silently filtered.
+    """
+    filtered = [float(v) for v in values if v is not None and math.isfinite(float(v))]
+    if not filtered:
+        return []
+    pos_vals = [max(1e-15, abs(v)) for v in filtered]
+    log_vals = [math.log1p(v) for v in pos_vals]
+    # Anchor the Poincaré disk to the fundamental Riemann zero frequency ρ₁:
+    #   scale = t₁ / 2π ≈ 2.249
+    # This maps abs_ratio=4 (anchor threshold) to r≈0.61 on the disk,
+    # and is scale-invariant — the same embedding regardless of prime range.
+    auto_scale = scale if scale is not None else _RIEMANN_ZERO_FREQS[0] / (2 * math.pi)
+    bodies: list[dict] = []
+    for i, (orig, lv) in enumerate(zip(filtered, log_vals)):
+        left_lv = log_vals[i - 1] if i > 0 else None
+        right_lv = log_vals[i + 1] if i + 1 < len(log_vals) else None
+        left_ratio = abs(lv - left_lv) / max(1e-12, abs(lv)) if left_lv is not None else 0.0
+        right_ratio = abs(right_lv - lv) / max(1e-12, abs(lv)) if right_lv is not None else 0.0
+        curvature = abs(right_ratio - left_ratio) if left_lv is not None and right_lv is not None else 0.0
+        mass = 1.0 + min(3.0, curvature * 600)
+        bodies.append(
+            {
+                "center": orig,
+                "log_val": lv,
+                "theta": lv % (2 * math.pi),
+                "left_ratio": left_ratio,
+                "right_ratio": right_ratio,
+                "curvature": round(curvature, 12),
+                "mass": round(mass, 12),
+                "hyperbolic": _hyperbolic_point_float(orig, auto_scale),
+            }
+        )
+    return bodies
+
+
+def _gravity_at_float(
+    candidate: float,
+    bodies: list[dict],
+    metric: str = "hyperbolic",
+) -> dict:
+    """Score a float candidate against gravity bodies built by _gravity_bodies_float.
+
+    Returns gravity_field (raw force sum) and gravity_field_normalized ∈ [0,1].
+    The hyperbolic metric uses the Poincaré disk distance, making the score
+    scale-invariant: it only depends on relative log-space positions, not on
+    the absolute magnitude of the values.
+    """
+    if not bodies or not math.isfinite(float(candidate)):
+        return {"gravity_field": 0.0, "gravity_field_normalized": 0.0}
+    pos_cand = max(1e-15, abs(float(candidate)))
+    log_cand = math.log1p(pos_cand)
+    theta_cand = log_cand % (2 * math.pi)
+    # Same Riemann-anchored scale as _gravity_bodies_float — bodies and candidate
+    # must embed in the same disk geometry.
+    auto_scale = _RIEMANN_ZERO_FREQS[0] / (2 * math.pi)
+    cand_hyp = _hyperbolic_point_float(candidate, auto_scale)
+    total_force = 0.0
+    for body in bodies:
+        radial_distance = abs(log_cand - body["log_val"])
+        angular_distance = circular_tau_distance(theta_cand, body["theta"])
+        cylindrical_dist = math.sqrt(radial_distance**2 + angular_distance**2)
+        hyp_dist = poincare_distance(cand_hyp, body["hyperbolic"])
+        if metric == "hyperbolic":
+            geodesic_dist = hyp_dist
+        elif metric == "hybrid":
+            geodesic_dist = math.sqrt(cylindrical_dist * hyp_dist + 1e-12)
+        else:
+            geodesic_dist = cylindrical_dist
+        cand_ratio = abs(pos_cand - body["center"]) / max(1e-12, body["center"])
+        target_ratio = body["right_ratio"] if candidate >= body["center"] else body["left_ratio"]
+        ratio_error = abs(math.log1p(cand_ratio) - math.log1p(max(0.0, target_ratio)))
+        ratio_alignment = 1.0 / (1.0 + ratio_error)
+        force = (body["mass"] * ratio_alignment) / (geodesic_dist**2 + 0.03)
+        total_force += force
+    normalized = normalize_force(total_force)
+    return {
+        "gravity_field": round(total_force, 12),
+        "gravity_field_normalized": round(normalized, 12),
+    }
+
+
+def _topological_type_at_float(candidate: float, bodies: list[dict]) -> dict:
+    """Classify the topological flow type at candidate in the Poincaré gravity field.
+
+    Decomposes the gravity field into left-side vs right-side contributions (in
+    log space) and computes the net force vector in disk coordinates.  From these
+    three scalar quantities — asymmetry, cancellation, total force — classifies
+    the candidate as one of three geometric types:
+
+      compression  — balanced pull from both sides, net vector largely cancels.
+                     Candidate sits in a 'valley': gap ratios converge toward it.
+      saddle       — strongly asymmetric pull.  One side dominates.  Curvature
+                     changes sign here — the inflection / phase-transition zone.
+      expansion    — total field is weak.  Candidate is in a sparse, diffuse zone.
+
+    Returns a dict with:
+      type         : "compression" | "saddle" | "expansion"
+      asymmetry    : 0..1  (0 = perfectly symmetric left/right)
+      cancellation : 0..1  (how much of the scalar force the vector field cancels)
+      topo_score   : float in [0,1] — compressed→1, saddle→0.5, expansion→0
+      confidence   : 0..1
+    """
+    if not bodies or not math.isfinite(float(candidate)):
+        return {
+            "type": "unknown",
+            "asymmetry": 0.0,
+            "cancellation": 0.0,
+            "topo_score": 0.0,
+            "confidence": 0.0,
+        }
+
+    pos_cand = max(1e-15, abs(float(candidate)))
+    log_cand = math.log1p(pos_cand)
+    theta_cand = log_cand % (2 * math.pi)
+    auto_scale = _RIEMANN_ZERO_FREQS[0] / (2 * math.pi)
+    cand_hyp = _hyperbolic_point_float(candidate, auto_scale)
+
+    left_force = 0.0
+    right_force = 0.0
+    net_x = 0.0
+    net_y = 0.0
+
+    for body in bodies:
+        hyp_dist = poincare_distance(cand_hyp, body["hyperbolic"])
+        geodesic_dist = hyp_dist
+        cand_ratio = abs(pos_cand - body["center"]) / max(1e-12, body["center"])
+        target_ratio = body["right_ratio"] if candidate >= body["center"] else body["left_ratio"]
+        ratio_error = abs(math.log1p(cand_ratio) - math.log1p(max(0.0, target_ratio)))
+        ratio_alignment = 1.0 / (1.0 + ratio_error)
+        force_mag = (body["mass"] * ratio_alignment) / (geodesic_dist**2 + 0.03)
+
+        # Direction vector in disk space: from candidate toward body
+        dx = body["hyperbolic"]["x"] - cand_hyp["x"]
+        dy = body["hyperbolic"]["y"] - cand_hyp["y"]
+        dlen = math.sqrt(dx**2 + dy**2 + 1e-15)
+        net_x += force_mag * dx / dlen
+        net_y += force_mag * dy / dlen
+
+        if body["log_val"] < log_cand:
+            left_force += force_mag
+        else:
+            right_force += force_mag
+
+    total = left_force + right_force
+    asymmetry = abs(left_force - right_force) / max(1e-12, total)
+    net_mag = math.sqrt(net_x**2 + net_y**2)
+    # Cancellation: how much the vector forces cancel against each other.
+    # High cancellation with strong total → balanced pull from both sides (compression).
+    cancellation = 1.0 - net_mag / max(1e-12, total)
+    flow_angle = math.atan2(net_y, net_x)
+
+    # Thresholds (Riemann-anchored disk geometry; not tuned per range)
+    ASYMMETRY_SADDLE = 0.40
+    FORCE_EXPANSION = 0.25
+
+    if asymmetry >= ASYMMETRY_SADDLE:
+        topo_type = "saddle"
+        topo_score = 0.5 + 0.5 * asymmetry          # 0.7..1.0 range for strong saddles
+        confidence = min(1.0, asymmetry)
+    elif total < FORCE_EXPANSION:
+        topo_type = "expansion"
+        topo_score = 0.0
+        confidence = 1.0 - min(1.0, total / FORCE_EXPANSION)
+    else:
+        topo_type = "compression"
+        topo_score = cancellation * min(1.0, total / (total + 1.0))
+        confidence = min(1.0, cancellation)
+
+    return {
+        "type": topo_type,
+        "asymmetry": round(asymmetry, 6),
+        "cancellation": round(cancellation, 6),
+        "flow_angle": round(flow_angle, 6),
+        "left_force": round(left_force, 6),
+        "right_force": round(right_force, 6),
+        "net_mag": round(net_mag, 6),
+        "topo_score": round(topo_score, 6),
+        "confidence": round(confidence, 6),
+    }
+
+
+# ── Musical mode channels ─────────────────────────────────────────────────────
+# Adaptive tonic = geometric mean of abs_ratio window → log-uniform key center.
+# Each ratio maps to a pitch class via 12*log2(r/tonic) % 12 (equal temperament).
+# Seven diatonic modes are scored by mean nearest-degree distance; the best fit
+# determines the local "mode" of the prime gap field.  Mode-shift is the cosine
+# distance between early-half vs late-half mode-weight vectors — detects structural
+# inflection mid-window without knowing the scale of abs_ratio values.
+_DIATONIC_MODES: dict[str, list[float]] = {
+    "ionian":     [0, 2, 4, 5, 7, 9, 11],
+    "dorian":     [0, 2, 3, 5, 7, 9, 10],
+    "phrygian":   [0, 1, 3, 5, 7, 8, 10],
+    "lydian":     [0, 2, 4, 6, 7, 9, 11],
+    "mixolydian": [0, 2, 4, 5, 7, 9, 10],
+    "aeolian":    [0, 2, 3, 5, 7, 8, 10],
+    "locrian":    [0, 1, 3, 5, 6, 8, 10],
+}
+_DIATONIC_MODE_NAMES = list(_DIATONIC_MODES.keys())
+_DIATONIC_MODE_DEGREES = list(_DIATONIC_MODES.values())
+
+
+def _musical_mode_channels(ratio_vals: list[float]) -> dict:
+    """Adaptive tonic + diatonic mode fit channels for a window of abs_ratio values.
+
+    Returns:
+        local_tonic       : geometric mean of |ratio_vals| (log-uniform key center)
+        best_mode         : mode name with lowest mean nearest-degree semitone error
+        mode_fit_score    : 1 - mean_error/6.0  in [0, 1]  (1 = perfect fit)
+        mode_shift_channel: cosine distance between early-half and late-half mode
+                            weight vectors — near 1.0 signals a structural transition
+    """
+    _EMPTY: dict = {
+        "local_tonic": 1.0,
+        "best_mode": "none",
+        "mode_fit_score": 0.0,
+        "mode_shift_channel": 0.0,
+    }
+    n = len(ratio_vals)
+    if n < 2:
+        return _EMPTY
+
+    log_sum = 0.0
+    valid = 0
+    for r in ratio_vals:
+        if r > 1e-9:
+            log_sum += math.log(r)
+            valid += 1
+    if valid < 2:
+        return _EMPTY
+    local_tonic = math.exp(log_sum / valid)
+
+    pitch_classes = []
+    for r in ratio_vals:
+        if r > 1e-9:
+            pitch_classes.append((12.0 * math.log2(r / local_tonic)) % 12.0)
+
+    def _nearest_err(pc: float, degrees: list) -> float:
+        best = 12.0
+        for d in degrees:
+            delta = abs(pc - d)
+            if delta > 6.0:
+                delta = 12.0 - delta
+            if delta < best:
+                best = delta
+        return best
+
+    def _mode_error_vec(pitches: list) -> list:
+        if not pitches:
+            return [6.0] * len(_DIATONIC_MODE_DEGREES)
+        return [
+            sum(_nearest_err(pc, deg) for pc in pitches) / len(pitches)
+            for deg in _DIATONIC_MODE_DEGREES
+        ]
+
+    errors = _mode_error_vec(pitch_classes)
+    best_idx = int(min(range(len(errors)), key=lambda i: errors[i]))
+    best_mode = _DIATONIC_MODE_NAMES[best_idx]
+    mode_fit_score = max(0.0, 1.0 - errors[best_idx] / 6.0)
+
+    mode_shift_channel = 0.0
+    if len(pitch_classes) >= 4:
+        half = len(pitch_classes) // 2
+        early_err = _mode_error_vec(pitch_classes[:half])
+        late_err = _mode_error_vec(pitch_classes[half:])
+        # Invert errors to weights (lower error = higher weight)
+        ew = [max(0.0, 6.0 - e) for e in early_err]
+        lw = [max(0.0, 6.0 - e) for e in late_err]
+        dot = sum(a * b for a, b in zip(ew, lw))
+        mag_e = math.sqrt(sum(x * x for x in ew))
+        mag_l = math.sqrt(sum(x * x for x in lw))
+        if mag_e > 1e-9 and mag_l > 1e-9:
+            mode_shift_channel = max(0.0, 1.0 - dot / (mag_e * mag_l))
+
+    return {
+        "local_tonic": round(local_tonic, 6),
+        "best_mode": best_mode,
+        "mode_fit_score": round(mode_fit_score, 6),
+        "mode_shift_channel": round(mode_shift_channel, 6),
+    }
+
+
+# ── Lambda shadow channels ────────────────────────────────────────────────────
+# Flashlight: illuminate the local prime gap field with the von Mangoldt / prime-
+# density scaling law.  Expected echo baseline from PNT: mean of Λ(n)/ln(n) → 1.
+# Shadow = observed ln-weighted gap density − expected baseline.
+#
+# lambda_shadow_channel   : mean of (observed - expected) shadow over context window
+#                           positive = field is denser than baseline (hot zone)
+# lambda_gradient_channel : late-half minus early-half shadow mean (trajectory slope)
+# lambda_peak_lag         : index (0..n-1) of the maximum shadow value in the window;
+#                           normalized to [0,1].  Near 1.0 = shadow peak is recent.
+#
+# Key design choice: expected = 1.0 everywhere (PNT; Λ̄ ≈ 1) so the baseline is
+# parameter-free and scale-invariant.  Observed echo weight for step i is:
+#     w_i = abs_ratio_i / ln(approx_prime_i)
+# where approx_prime_i is the scan_prime scaled by the step offset (rough), but
+# since ln(p) changes slowly, using the single anchor ln(scan_prime) works fine.
+
+
+def _lambda_shadow_channels(ratio_vals: list[float], scan_prime: int) -> dict:
+    """Von Mangoldt / PNT shadow channels.
+
+    ratio_vals  : abs_ratio values from the context window (already absolute values)
+    scan_prime  : the prime at the scan position (used for ln-scaling)
+
+    Returns:
+        lambda_shadow_channel   : mean(observed - 1.0) over window, clipped to [-2, 2]
+        lambda_gradient_channel : late_mean_shadow - early_mean_shadow
+        lambda_peak_lag         : normalized position of max shadow in window [0, 1]
+    """
+    _EMPTY = {
+        "lambda_shadow_channel": 0.0,
+        "lambda_gradient_channel": 0.0,
+        "lambda_peak_lag": 0.5,
+    }
+    n = len(ratio_vals)
+    if n < 2 or scan_prime < 2:
+        return _EMPTY
+
+    ln_p = math.log(max(scan_prime, 2))
+    if ln_p < 1e-9:
+        return _EMPTY
+
+    # Observed echo weight per step: |ratio| / ln(p) → compare to expected baseline 1.0
+    shadows = [r / ln_p for r in ratio_vals]
+
+    mean_shadow = sum(shadows) / n
+    clipped_shadow = max(-2.0, min(2.0, mean_shadow - 1.0))
+
+    half = max(1, n // 2)
+    early_mean = sum(shadows[:half]) / half
+    late_mean = sum(shadows[half:]) / max(1, n - half)
+    gradient = max(-2.0, min(2.0, late_mean - early_mean))
+
+    peak_idx = int(max(range(n), key=lambda i: shadows[i]))
+    peak_lag = peak_idx / max(1, n - 1)
+
+    return {
+        "lambda_shadow_channel": round(clipped_shadow, 6),
+        "lambda_gradient_channel": round(gradient, 6),
+        "lambda_peak_lag": round(peak_lag, 6),
+    }
+
+
+# ── Graph-map channels (gap transition graph) ─────────────────────────────────
+# Treat the context window of abs_ratio values as a directed sequence graph:
+# each node is a ratio value, each edge (i→i+1) carries the signed difference.
+#
+# Four channels capture structure the point-by-point camera and lambda flashlight
+# do not see:
+#
+#   graph_monotone_ramp  : longest monotone (up or down) sub-run, normalized by n.
+#                          Near 1.0 = the whole window is a single ramp → field
+#                          is building or dissipating consistently.
+#   graph_return_rate    : fraction of steps that move TOWARD the local geometric
+#                          mean (tonic).  High = oscillatory field, low = trending.
+#   graph_edge_variance  : variance of successive differences |r_{i+1} - r_i|.
+#                          High = chaotic transitions; low = smooth progression.
+#   graph_attractor_score: concentration of the ratio distribution.  Computed as
+#                          1 - normalized entropy of a 5-bin histogram of ratio_vals.
+#                          Near 1.0 = nearly all ratios fall in one magnitude band
+#                          (strong attractor); near 0.0 = uniform spread.
+
+
+def _graph_map_channels(ratio_vals: list[float]) -> dict:
+    """Gap transition graph structural channels for a context window of abs_ratio values."""
+    _EMPTY = {
+        "graph_monotone_ramp": 0.0,
+        "graph_return_rate": 0.5,
+        "graph_edge_variance": 0.0,
+        "graph_attractor_score": 0.0,
+    }
+    n = len(ratio_vals)
+    if n < 2:
+        return _EMPTY
+
+    # ── local tonic (geometric mean) for return-rate computation ──────────────
+    log_sum = sum(math.log(max(r, 1e-9)) for r in ratio_vals)
+    tonic = math.exp(log_sum / n)
+
+    # ── graph_monotone_ramp ──────────────────────────────────────────────────
+    # Length of the longest consecutive run of strictly increasing or decreasing steps.
+    max_run = 1
+    cur_run = 1
+    cur_dir = 0  # 0=unknown, 1=up, -1=down
+    for i in range(1, n):
+        delta = ratio_vals[i] - ratio_vals[i - 1]
+        step_dir = 1 if delta > 0 else (-1 if delta < 0 else 0)
+        if step_dir == 0:
+            cur_run = 1
+            cur_dir = 0
+        elif cur_dir == 0 or step_dir == cur_dir:
+            cur_run += 1
+            cur_dir = step_dir
+        else:
+            cur_run = 2
+            cur_dir = step_dir
+        if cur_run > max_run:
+            max_run = cur_run
+    graph_monotone_ramp = (max_run - 1) / max(1, n - 1)
+
+    # ── graph_return_rate ────────────────────────────────────────────────────
+    # Fraction of steps where |r_i - tonic| < |r_{i-1} - tonic| (moving toward center).
+    returns = sum(
+        1 for i in range(1, n)
+        if abs(ratio_vals[i] - tonic) < abs(ratio_vals[i - 1] - tonic)
+    )
+    graph_return_rate = returns / (n - 1)
+
+    # ── graph_edge_variance ──────────────────────────────────────────────────
+    edges = [abs(ratio_vals[i] - ratio_vals[i - 1]) for i in range(1, n)]
+    edge_mean = sum(edges) / len(edges)
+    edge_var = sum((e - edge_mean) ** 2 for e in edges) / len(edges)
+    # Normalize: divide by (max_ratio - min_ratio)^2 to be scale-invariant
+    ratio_range = max(ratio_vals) - min(ratio_vals)
+    graph_edge_variance = edge_var / max(1e-9, ratio_range ** 2)
+    graph_edge_variance = min(1.0, graph_edge_variance)
+
+    # ── graph_attractor_score ────────────────────────────────────────────────
+    # 5-bin histogram of ratio_vals in [min, max]; entropy concentration.
+    r_min = min(ratio_vals)
+    r_max = max(ratio_vals)
+    if r_max <= r_min:
+        graph_attractor_score = 1.0
+    else:
+        bins = [0] * 5
+        for r in ratio_vals:
+            b = min(4, int(5 * (r - r_min) / (r_max - r_min)))
+            bins[b] += 1
+        probs = [b / n for b in bins if b > 0]
+        entropy = -sum(p * math.log2(p) for p in probs)
+        max_entropy = math.log2(min(5, n))
+        graph_attractor_score = max(0.0, 1.0 - entropy / max(1e-9, max_entropy))
+
+    return {
+        "graph_monotone_ramp": round(graph_monotone_ramp, 6),
+        "graph_return_rate": round(graph_return_rate, 6),
+        "graph_edge_variance": round(graph_edge_variance, 6),
+        "graph_attractor_score": round(graph_attractor_score, 6),
+    }
+
+
 # ── Riemann zero frequencies ─────────────────────────────────────────────────
 # The imaginary parts of the first non-trivial zeros of ζ(s) on the critical
 # line Re(s)=1/2. These are the exact frequencies of the oscillation in π(x)
@@ -2975,6 +3453,748 @@ def print_prime_harmonic_map(payload: dict) -> None:
         print()
 
 
+def _triangulation_mixed_radix_id(coords: tuple[int, ...], moduli: tuple[int, ...]) -> int:
+    index = 0
+    base = 1
+    for coord, modulus in zip(coords, moduli):
+        index += coord * base
+        base *= modulus
+    return index
+
+
+def _wavelength_from_phase(phase: float) -> float:
+    # Visible-spectrum-like span used for plotting/color coding; exact physical meaning
+    # is intentionally treated as an invariant proxy, not a literal optical model.
+    return 380.0 + (phase * 400.0)
+
+
+def _phase_to_color(phase: float) -> str:
+    # hue in [0,1) from phase and converted to a stable hex code
+    hue = phase % 1.0
+    r, g, b = colorsys.hsv_to_rgb(hue, 0.8, 0.95)
+    return f"#{int(r * 255):02x}{int(g * 255):02x}{int(b * 255):02x}"
+
+
+def _sub_decimal_bucket(n: int) -> int:
+    # Leading-digit fractional residue in [0,1): n / 10^floor(log10(n)).
+    if n <= 0:
+        return 0
+    scale = 10 ** math.floor(math.log10(n))
+    frac = (n / max(scale, 1.0)) - math.floor(n / max(scale, 1.0))
+    return int(frac * 1000)
+
+
+def _mod_triangulation_area(coords_a: tuple[int, ...], coords_b: tuple[int, ...], coords_c: tuple[int, ...]) -> float:
+    # Use first three coordinate axes to estimate local simplex area.
+    # It is a geometry signature for "triangulation hopping" consistency, not a proof metric.
+    dims = 3 if len(coords_a) >= 3 else len(coords_a)
+    if dims < 2:
+        return 0.0
+    v1 = [coords_b[i] - coords_a[i] for i in range(dims)]
+    v2 = [coords_c[i] - coords_a[i] for i in range(dims)]
+    if dims == 2:
+        area = abs(v1[0] * v2[1] - v1[1] * v2[0]) / 2.0
+    else:
+        cx = v1[1] * v2[2] - v1[2] * v2[1]
+        cy = v1[2] * v2[0] - v1[0] * v2[2]
+        cz = v1[0] * v2[1] - v1[1] * v2[0]
+        area = 0.5 * math.sqrt(cx * cx + cy * cy + cz * cz)
+    return area
+
+
+def _is_twin_prime_starter(n: int) -> bool:
+    if n == 5:
+        return True
+    return n > 5 and n % 30 in (11, 17, 29)
+
+
+def _sorted_insertion_index(values: list[int], target: float) -> int:
+    low = 0
+    high = len(values)
+    while low < high:
+        mid = (low + high) // 2
+        if values[mid] < target:
+            low = mid + 1
+        else:
+            high = mid
+    return low
+
+
+def _mean_triangulate(values: list[int], label: str) -> dict:
+    if not values:
+        return {
+            "label": label,
+            "count": 0,
+            "mean": 0.0,
+            "mean_rank": None,
+            "anchor_index": None,
+            "anchor_value": None,
+            "next_index": None,
+            "next_value": None,
+            "next_gap": None,
+        }
+
+    mean = sum(values) / len(values)
+    insertion_index = _sorted_insertion_index(values, mean)
+    anchor_index = min(max(insertion_index, 0), len(values) - 1)
+    next_index = anchor_index + 1 if anchor_index + 1 < len(values) else None
+    payload = {
+        "label": label,
+        "count": len(values),
+        "mean": round(mean, 6),
+        "mean_rank": insertion_index,
+        "anchor_index": anchor_index,
+        "anchor_value": values[anchor_index],
+        "next_index": next_index,
+        "next_value": values[next_index] if next_index is not None else None,
+    }
+    payload["next_gap"] = (payload["next_value"] - payload["anchor_value"]) if payload["next_value"] is not None else None
+    return payload
+
+
+def _classify_gap_shape(prev_gap: int, curr_gap: int, flat_delta: int = 0, rounded_delta: int = 4) -> tuple[str, int]:
+    # Treat shape transitions with integer gap-difference bands only.
+    delta = curr_gap - prev_gap
+    if delta == 0:
+        return "edge", 0
+    direction = "left" if delta > 0 else "right"
+    abs_delta = abs(delta)
+    if abs_delta <= rounded_delta:
+        return f"rounded_corner_{direction}", delta
+    return f"corner_{direction}", delta
+
+
+def _crt_board_axes(moduli: tuple[int, ...]) -> tuple[int, ...]:
+    axes = [m for m in moduli if m != 2]
+    if len(axes) >= 3:
+        return tuple(axes[-3:])
+    if len(axes) < 3:
+        axes.extend(m for m in moduli if m not in axes)
+    return tuple(axes[:3])
+
+
+def _crt_transition_token(start: int | None, end: int | None, modulus: int) -> str:
+    if start is None or end is None:
+        return "?"
+    start_residue = start % modulus
+    end_residue = end % modulus
+    if end_residue == start_residue:
+        return "."
+    return "X" if end_residue > start_residue else "O"
+
+
+def _crt_board_lines(matrix: list[list[str]]) -> list[str]:
+    lines = []
+    if not matrix or not matrix[0]:
+        return lines
+
+    def add_line(label: str, values: list[str]) -> None:
+        if "?" in values:
+            return
+        if values and all(value == values[0] for value in values):
+            lines.append(f"{label}:{values[0]}")
+
+    for row_idx, row in enumerate(matrix):
+        add_line(f"row{row_idx}", row)
+    for col_idx in range(len(matrix[0])):
+        add_line(f"col{col_idx}", [row[col_idx] for row in matrix])
+    if len(matrix) == 3 and len(matrix[0]) == 3:
+        add_line("diag0", [matrix[0][0], matrix[1][1], matrix[2][2]])
+        add_line("diag1", [matrix[0][2], matrix[1][1], matrix[2][0]])
+    return lines
+
+
+def _build_crt_board(
+    prev_n: int | None,
+    twin_n: int,
+    bridge_n: int,
+    next_n: int | None,
+    axes: tuple[int, ...],
+) -> dict:
+    transitions = [(prev_n, twin_n), (twin_n, bridge_n), (bridge_n, next_n)]
+    matrix = [[_crt_transition_token(start, end, modulus) for start, end in transitions] for modulus in axes]
+    signature = "/".join("".join(row) for row in matrix)
+    line_rules = _crt_board_lines(matrix)
+    return {
+        "n": twin_n,
+        "bridge": bridge_n,
+        "axes": list(axes),
+        "columns": ["incoming", "bridge", "outgoing"],
+        "matrix": matrix,
+        "signature": signature,
+        "line_rules": line_rules,
+        "line_count": len(line_rules),
+    }
+
+
+def _complex_quadrant_token(real: float, imag: float) -> str:
+    if abs(real) >= abs(imag):
+        return "R" if real >= 0 else "N"
+    return "I" if imag >= 0 else "J"
+
+
+def _phase_quadrant_token(n: int, modulus: int) -> str:
+    angle = 2.0 * math.pi * ((n % modulus) / modulus)
+    return _complex_quadrant_token(math.cos(angle), math.sin(angle))
+
+
+def _build_midpoint_conjugate_board(center: int, axes: tuple[int, ...]) -> dict:
+    matrix = [
+        [
+            _phase_quadrant_token(center - 1, modulus),
+            _phase_quadrant_token(center, modulus),
+            _phase_quadrant_token(center + 1, modulus),
+        ]
+        for modulus in axes
+    ]
+    sum_tokens = []
+    cancel_errors = []
+    real_sums = []
+    for modulus in axes:
+        theta = 2.0 * math.pi / modulus
+        relative_pair_sum = cmath.exp(-1j * theta) + cmath.exp(1j * theta)
+        cancel_errors.append(abs(relative_pair_sum.imag))
+        real_sums.append(round(relative_pair_sum.real, 9))
+
+        left = cmath.exp(2j * math.pi * (((center - 1) % modulus) / modulus))
+        right = cmath.exp(2j * math.pi * (((center + 1) % modulus) / modulus))
+        combined = left + right
+        sum_tokens.append(_complex_quadrant_token(combined.real, combined.imag))
+
+    cancellation_error = sum(cancel_errors)
+    cancellation_signature = "".join("C" if error <= 1e-9 else "B" for error in cancel_errors)
+    return {
+        "center": center,
+        "left": center - 1,
+        "right": center + 1,
+        "axes": list(axes),
+        "columns": ["left", "center", "right"],
+        "matrix": matrix,
+        "signature": "/".join("".join(row) for row in matrix),
+        "sum_signature": "".join(sum_tokens),
+        "cancellation_signature": cancellation_signature,
+        "cancellation_error": round(cancellation_error, 12),
+        "real_sums": real_sums,
+        "center_residue_signature": ",".join(str(center % modulus) for modulus in axes),
+    }
+
+
+def _rank_enrichment_entries(counts: Counter[str], verified_counts: Counter[str], baseline_precision: float) -> tuple[list[dict], list[dict]]:
+    entries = []
+    for key, count in counts.items():
+        verified = verified_counts[key]
+        precision = verified / max(1, count)
+        lift = precision / max(1e-12, baseline_precision) if baseline_precision else None
+        entries.append(
+            {
+                "key": key,
+                "twin_count": count,
+                "verified_twin_count": verified,
+                "precision": round(precision, 6),
+                "lift": None if lift is None else round(lift, 3),
+            }
+        )
+    by_lift = sorted(entries, key=lambda row: (row["lift"] is not None, row["lift"] or 0.0), reverse=True)
+    by_support = sorted(entries, key=lambda row: row["twin_count"], reverse=True)
+    return by_lift, by_support
+
+
+def run_mod_triangulation_hop_probe(
+    limit: int = 100_000,
+    moduli: tuple[int, ...] = (2, 3, 5),
+    top_hops: int = 24,
+    verify_bridges: bool = False,
+    exclude_non_starters: bool = False,
+) -> dict:
+    """Map numbers into orthogonal CRT coordinates and track root-product bridges."""
+    moduli = tuple(int(m) for m in moduli if int(m) > 1)
+    if not moduli:
+        return {"schema_version": "prime_fog_mod_triangulation_v1", "error": "moduli must be integers > 1"}
+
+    # Strict pairwise coprimality is preferred; if not present, note it directly.
+    bad_pairs: list[tuple[int, int, int]] = []
+    for i in range(len(moduli)):
+        for j in range(i + 1, len(moduli)):
+            gcd = math.gcd(moduli[i], moduli[j])
+            if gcd != 1:
+                bad_pairs.append((moduli[i], moduli[j], gcd))
+
+    product = math.prod(moduli)
+    modulus_nodes: dict[str, int] = {}
+    all_survivors: list[dict] = []
+    survivors: list[dict] = []
+    all_survivor_set: set[int] = set()
+    survivor_set: set[int] = set()
+    prime_cache: dict[int, bool] = {}
+    for n in range(2, limit + 1):
+        coords = tuple(n % m for m in moduli)
+        key = ",".join(str(v) for v in coords)
+        modulus_nodes[key] = modulus_nodes.get(key, 0) + 1
+        if all(c != 0 for c in coords):
+            row = {
+                "n": n,
+                "coords": coords,
+                "mixed_radix": _triangulation_mixed_radix_id(coords, moduli),
+                "sub_decimal_bucket": _sub_decimal_bucket(n),
+                "sub_decimal_ratio": round(n / (10 ** math.floor(math.log10(n))), 6),
+                "verified": None,
+            }
+            all_survivors.append(row)
+            all_survivor_set.add(n)
+            if not exclude_non_starters or _is_twin_prime_starter(n):
+                survivors.append(row)
+                survivor_set.add(n)
+
+    # Optional exact bridge verification: only tested where needed.
+    if verify_bridges:
+        to_verify: set[int] = set()
+        for row in survivors:
+            to_verify.add(row["n"])
+            pair = row["n"] + 2
+            if pair in survivor_set or pair <= limit:
+                to_verify.add(pair)
+        prime_cache = {n: deterministic_miller_rabin_u64(n) for n in to_verify}
+        for row in survivors:
+            row["verified"] = bool(prime_cache.get(row["n"], False))
+
+    hop_rows: list[dict] = []
+    hue_bins = 18
+    hue_hist = [0] * hue_bins
+    for current, nxt in zip(survivors[:-1], survivors[1:]):
+        gap = nxt["n"] - current["n"]
+        root = math.sqrt(current["n"] * nxt["n"])
+        log_root = math.log(root)
+        phase = (log_root * _PHI) % (2.0 * math.pi)
+        phase_norm = phase / (2.0 * math.pi)
+        wavelength = _wavelength_from_phase(phase_norm)
+        hue_bin = int(phase_norm * hue_bins) % hue_bins
+        hue_hist[hue_bin] += 1
+        hop_rows.append(
+            {
+                "from": current["n"],
+                "to": nxt["n"],
+                "gap": gap,
+                "ratio": gap / current["n"],
+                "root": round(root, 6),
+                "log_root": round(log_root, 6),
+                "phase": round(phase_norm, 6),
+                "wavelength_nm": round(wavelength, 3),
+                "color": _phase_to_color(phase_norm),
+                "from_coords": current["coords"],
+                "to_coords": nxt["coords"],
+                "sub_decimal_bridge": round((current["sub_decimal_bucket"] + nxt["sub_decimal_bucket"]) / 2, 1),
+            }
+        )
+
+    shape_hist = Counter()
+    for idx in range(1, len(hop_rows)):
+        shape, delta = _classify_gap_shape(hop_rows[idx - 1]["gap"], hop_rows[idx]["gap"])
+        hop_rows[idx]["shape"] = shape
+        hop_rows[idx]["shape_delta"] = delta
+        shape_hist[shape] += 1
+
+    if hop_rows:
+        hop_rows[0]["shape"] = "edge"
+        hop_rows[0]["shape_delta"] = 0
+        shape_hist["edge"] += 1
+
+    gaps = [hop["gap"] for hop in hop_rows]
+    hop_gaps_sorted = sorted(gaps)
+    if gaps:
+        mean_gap = sum(gaps) / len(gaps)
+        median_gap = hop_gaps_sorted[len(gaps) // 2]
+    else:
+        mean_gap = 0.0
+        median_gap = 0.0
+
+    hop_spectrum = [
+        {"bin": idx, "label": f"{idx/hue_bins:0.2f}..{(idx+1)/hue_bins:0.2f}", "count": count}
+        for idx, count in enumerate(hue_hist)
+    ]
+
+    top_hops_rows = sorted(hop_rows, key=lambda row: row["gap"], reverse=True)[:top_hops]
+
+    # Triangulation snapshots: consecutive node triplets, geometric area in first 3 axes.
+    tri_rows: list[dict] = []
+    if len(survivors) >= 3:
+        for i in range(len(survivors) - 2):
+            a = survivors[i]
+            b = survivors[i + 1]
+            c = survivors[i + 2]
+            area = _mod_triangulation_area(a["coords"], b["coords"], c["coords"])
+            tri_rows.append(
+                {
+                    "a": a["n"],
+                    "b": b["n"],
+                    "c": c["n"],
+                    "gap_ab": b["n"] - a["n"],
+                    "gap_bc": c["n"] - b["n"],
+                    "area": round(area, 4),
+                    "root": round(math.sqrt(a["n"] * c["n"]), 6),
+                }
+            )
+    tri_rows.sort(key=lambda row: row["area"], reverse=True)
+    tri_top = tri_rows[:max(5, min(20, len(tri_rows) // 200 + 1))]
+
+    # Twin-bridge layer: starter candidates p where p+2 is also in the full CRT-survivor lattice.
+    # With --triangulation-exclude-non-starters, p is restricted by residue class but p+2
+    # can still live outside that restricted class.
+    twin_candidates = [row["n"] for row in survivors if row["n"] + 2 in all_survivor_set]
+    twin_index_by_n = {row["n"]: idx for idx, row in enumerate(survivors)}
+    all_survivor_index_by_n = {row["n"]: idx for idx, row in enumerate(all_survivors)}
+    verified_twin = 0
+    motif_stats: Counter[str] = Counter()
+    motif_verified: Counter[str] = Counter()
+    if twin_candidates:
+        for twin_n in twin_candidates:
+            idx = twin_index_by_n.get(twin_n, -1)
+            incoming_shape = "none"
+            outgoing_shape = "none"
+            if idx >= 1 and idx < len(hop_rows):
+                incoming_shape = hop_rows[idx]["shape"]
+            if idx + 1 < len(hop_rows):
+                outgoing_shape = hop_rows[idx + 1]["shape"]
+            motif = f"{incoming_shape}|{outgoing_shape}"
+            motif_stats[motif] += 1
+
+    if verify_bridges:
+        verified_twin = sum(
+            1
+            for n in twin_candidates
+            if bool(prime_cache.get(n, False)) and bool(prime_cache.get(n + 2, False))
+        )
+        for twin_n in twin_candidates:
+            idx = twin_index_by_n.get(twin_n, -1)
+            incoming_shape = "none"
+            outgoing_shape = "none"
+            if idx >= 1 and idx < len(hop_rows):
+                incoming_shape = hop_rows[idx]["shape"]
+            if idx + 1 < len(hop_rows):
+                outgoing_shape = hop_rows[idx + 1]["shape"]
+            motif = f"{incoming_shape}|{outgoing_shape}"
+            if bool(prime_cache.get(twin_n, False)) and bool(prime_cache.get(twin_n + 2, False)):
+                motif_verified[motif] += 1
+
+    baseline_twin_precision = verified_twin / len(twin_candidates) if verify_bridges and twin_candidates else 0.0
+    motif_by_lift_raw, motif_by_support_raw = _rank_enrichment_entries(motif_stats, motif_verified, baseline_twin_precision)
+    motifs_by_lift = [{**{k: v for k, v in row.items() if k != "key"}, "motif": row["key"]} for row in motif_by_lift_raw]
+    motifs_by_support = [{**{k: v for k, v in row.items() if k != "key"}, "motif": row["key"]} for row in motif_by_support_raw]
+
+    board_axes = _crt_board_axes(moduli)
+    board_signature_stats: Counter[str] = Counter()
+    board_signature_verified: Counter[str] = Counter()
+    board_rule_stats: Counter[str] = Counter()
+    board_rule_verified: Counter[str] = Counter()
+    board_samples: list[dict] = []
+    midpoint_signature_stats: Counter[str] = Counter()
+    midpoint_signature_verified: Counter[str] = Counter()
+    midpoint_sum_stats: Counter[str] = Counter()
+    midpoint_sum_verified: Counter[str] = Counter()
+    midpoint_cancellation_stats: Counter[str] = Counter()
+    midpoint_cancellation_verified: Counter[str] = Counter()
+    midpoint_samples: list[dict] = []
+    for twin_n in twin_candidates:
+        twin_idx = all_survivor_index_by_n.get(twin_n)
+        bridge_idx = all_survivor_index_by_n.get(twin_n + 2)
+        if twin_idx is None or bridge_idx is None:
+            continue
+        prev_n = all_survivors[twin_idx - 1]["n"] if twin_idx > 0 else None
+        next_n = all_survivors[bridge_idx + 1]["n"] if bridge_idx + 1 < len(all_survivors) else None
+        board = _build_crt_board(prev_n, twin_n, twin_n + 2, next_n, board_axes)
+        signature = board["signature"]
+        rules = board["line_rules"] or ["no_line"]
+        board_signature_stats[signature] += 1
+        for rule in rules:
+            board_rule_stats[rule] += 1
+        is_verified_twin = bool(verify_bridges and prime_cache.get(twin_n, False) and prime_cache.get(twin_n + 2, False))
+        if is_verified_twin:
+            board_signature_verified[signature] += 1
+            for rule in rules:
+                board_rule_verified[rule] += 1
+        if len(board_samples) < top_hops:
+            board_samples.append(
+                {
+                    **board,
+                    "verified_twin": is_verified_twin if verify_bridges else None,
+                }
+            )
+        midpoint = _build_midpoint_conjugate_board(twin_n + 1, board_axes)
+        midpoint_signature_stats[midpoint["signature"]] += 1
+        midpoint_sum_stats[midpoint["sum_signature"]] += 1
+        midpoint_cancellation_stats[midpoint["cancellation_signature"]] += 1
+        if is_verified_twin:
+            midpoint_signature_verified[midpoint["signature"]] += 1
+            midpoint_sum_verified[midpoint["sum_signature"]] += 1
+            midpoint_cancellation_verified[midpoint["cancellation_signature"]] += 1
+        if len(midpoint_samples) < top_hops:
+            midpoint_samples.append(
+                {
+                    **midpoint,
+                    "verified_twin": is_verified_twin if verify_bridges else None,
+                }
+            )
+    board_signatures_by_lift, board_signatures_by_support = _rank_enrichment_entries(
+        board_signature_stats,
+        board_signature_verified,
+        baseline_twin_precision,
+    )
+    board_rules_by_lift, board_rules_by_support = _rank_enrichment_entries(
+        board_rule_stats,
+        board_rule_verified,
+        baseline_twin_precision,
+    )
+    midpoint_signatures_by_lift, midpoint_signatures_by_support = _rank_enrichment_entries(
+        midpoint_signature_stats,
+        midpoint_signature_verified,
+        baseline_twin_precision,
+    )
+    midpoint_sums_by_lift, midpoint_sums_by_support = _rank_enrichment_entries(
+        midpoint_sum_stats,
+        midpoint_sum_verified,
+        baseline_twin_precision,
+    )
+    midpoint_cancellations_by_lift, midpoint_cancellations_by_support = _rank_enrichment_entries(
+        midpoint_cancellation_stats,
+        midpoint_cancellation_verified,
+        baseline_twin_precision,
+    )
+
+    mean_triangulations = [
+        _mean_triangulate([row["n"] for row in survivors], "survivors"),
+    ]
+    if twin_candidates:
+        mean_triangulations.append(_mean_triangulate(twin_candidates, "twin_candidates"))
+
+    top_nodes = [
+        {"n": row["n"], "coords": row["coords"], "sub_decimal_bucket": row["sub_decimal_bucket"], "color": _phase_to_color(row["sub_decimal_bucket"] / 1000)}
+        for row in survivors[:top_hops]
+    ]
+
+    return {
+        "schema_version": "prime_fog_mod_triangulation_v1",
+        "limit": limit,
+        "moduli": list(moduli),
+        "exclude_non_starters": bool(exclude_non_starters),
+        "modulus_product": product,
+        "coprime_warnings": bad_pairs,
+        "residue_nodes": len(modulus_nodes),
+        "raw_survivor_count": len(all_survivors),
+        "survivor_count": len(survivors),
+        "survival_rate": round(len(survivors) / max(1, limit - 1), 6),
+        "gap_count": len(gaps),
+        "gap_mean": round(mean_gap, 6),
+        "gap_median": median_gap,
+        "gap_min": min(gaps) if gaps else 0,
+        "gap_max": max(gaps) if gaps else 0,
+        "shape_hist": [{"shape": k, "count": shape_hist[k]} for k in sorted(shape_hist)],
+        "shape_motif_overlay": {
+            "baseline_twin_precision": round(baseline_twin_precision, 6) if verify_bridges else None,
+            "twin_count": len(twin_candidates),
+            "motif_count": len(motif_stats),
+            "motifs_by_lift": motifs_by_lift[:10],
+            "motifs_by_support": motifs_by_support[:10],
+            "enabled": bool(verify_bridges),
+        },
+        "crt_board_overlay": {
+            "enabled": bool(board_axes),
+            "axes": list(board_axes),
+            "columns": ["incoming", "bridge", "outgoing"],
+            "tokens": {
+                "X": "forward_residue_move",
+                "O": "wraparound_residue_move",
+                ".": "same_residue",
+                "?": "missing_boundary",
+            },
+            "rule_note": "row/column/diagonal lines are non-exclusive custom rules",
+            "baseline_twin_precision": round(baseline_twin_precision, 6) if verify_bridges else None,
+            "signature_count": len(board_signature_stats),
+            "rule_count": len(board_rule_stats),
+            "signatures_by_lift": board_signatures_by_lift[:10],
+            "signatures_by_support": board_signatures_by_support[:10],
+            "rules_by_lift": board_rules_by_lift[:10],
+            "rules_by_support": board_rules_by_support[:10],
+            "samples": board_samples,
+        },
+        "midpoint_conjugate_overlay": {
+            "enabled": bool(board_axes),
+            "axes": list(board_axes),
+            "columns": ["left", "center", "right"],
+            "tokens": {
+                "R": "real_positive_dominant",
+                "N": "real_negative_dominant",
+                "I": "imag_positive_dominant",
+                "J": "imag_negative_dominant",
+                "C": "relative_imaginary_cancelled",
+                "B": "relative_imaginary_broken",
+            },
+            "baseline_twin_precision": round(baseline_twin_precision, 6) if verify_bridges else None,
+            "signature_count": len(midpoint_signature_stats),
+            "sum_signature_count": len(midpoint_sum_stats),
+            "cancellation_signature_count": len(midpoint_cancellation_stats),
+            "signatures_by_lift": midpoint_signatures_by_lift[:10],
+            "signatures_by_support": midpoint_signatures_by_support[:10],
+            "sum_signatures_by_lift": midpoint_sums_by_lift[:10],
+            "sum_signatures_by_support": midpoint_sums_by_support[:10],
+            "cancellations_by_lift": midpoint_cancellations_by_lift[:10],
+            "cancellations_by_support": midpoint_cancellations_by_support[:10],
+            "samples": midpoint_samples,
+        },
+        "hops_sample": top_hops_rows,
+        "spectrum": {
+            "bins": hue_bins,
+            "bin_counts": hop_spectrum,
+            "dominant_bin": max(range(hue_bins), key=lambda idx: hue_hist[idx]) if gaps else None,
+        },
+        "twin_candidates": len(twin_candidates),
+        "verified_twin_candidates": verified_twin,
+        "twin_verification_mode": bool(verify_bridges),
+        "twin_precision": round(baseline_twin_precision, 6) if verify_bridges and twin_candidates else None,
+        "mean_triangulations": mean_triangulations,
+        "top_nodes": top_nodes,
+        "triangulation_snapshots": tri_top,
+    }
+
+
+def print_mod_triangulation_probe(payload: dict) -> None:
+    print("Mod triangulation hopping probe")
+    if payload.get("error"):
+        print(f"error: {payload['error']}")
+        return
+    print(f"moduli: {payload['moduli']}  modulus_product={payload['modulus_product']}")
+    print(f"exclude_non_starters={payload['exclude_non_starters']}")
+    print(f"coprime warnings: {payload['coprime_warnings']}")
+    if payload["exclude_non_starters"]:
+        print(
+            f"limit: {payload['limit']}  residue_nodes={payload['residue_nodes']}  "
+            f"survivors={payload['survivor_count']} ({payload['survival_rate']:.2%}) [raw={payload['raw_survivor_count']}]"
+        )
+    else:
+        print(f"limit: {payload['limit']}  residue_nodes={payload['residue_nodes']}  survivors={payload['survivor_count']} ({payload['survival_rate']:.2%})")
+    print(f"gaps: n={payload['gap_count']}  mean={payload['gap_mean']:.3f}  median={payload['gap_median']:.1f}  min={payload['gap_min']}  max={payload['gap_max']}")
+    print(f"twin candidates from survivor lattice: {payload['twin_candidates']} verified={payload['verified_twin_candidates']} mode={payload['twin_verification_mode']}")
+    if payload["twin_precision"] is not None:
+        print(f"twin precision: {payload['twin_precision']:.4f}")
+    if payload["shape_hist"]:
+        print("shape histogram:")
+        for row in payload["shape_hist"]:
+            print(f"  {row['shape']:<23} n={row['count']}")
+    for entry in payload.get("mean_triangulations", []):
+        if entry.get("count", 0) == 0:
+            print(f"mean-triangulation ({entry.get('label', 'set')}): empty")
+            continue
+        anchor = entry["anchor_value"]
+        next_value = entry["next_value"]
+        next_gap = entry["next_gap"]
+        print(
+            f"mean-triangulation ({entry['label']}): mean={entry['mean']:.6f} "
+            f"index={entry['anchor_index']} value={anchor} -> next_index={entry['next_index']} "
+            f"next={next_value} gap={next_gap}"
+        )
+    print("wavelength spectrum bins:")
+    for row in payload["spectrum"]["bin_counts"]:
+        bar = "█" * min(row["count"], 40)
+        marker = " <- top" if row["count"] == max(row["count"] for row in payload["spectrum"]["bin_counts"]) else ""
+        print(f"  {row['label']}  n={row['count']:>6}  {bar}{marker}")
+    print(f"dominant bin: {payload['spectrum']['dominant_bin']}")
+    print("top root-product hops:")
+    for hop in payload["hops_sample"]:
+        print(
+            f"  {hop['from']} -> {hop['to']}  gap={hop['gap']:>4} "
+            f"root={hop['root']:<10} phase={hop['phase']:<.6f} "
+            f"λ={hop['wavelength_nm']:.1f}nm  color={hop['color']}  ratio={hop['ratio']:.3f}  "
+            f"shape={hop.get('shape','?')}  Δ={hop.get('shape_delta',0)}"
+        )
+    motif_overlay = payload.get("shape_motif_overlay", {})
+    if motif_overlay.get("enabled"):
+        print("shape motif overlay (verified bridges):")
+        baseline = motif_overlay.get("baseline_twin_precision")
+        if baseline is not None:
+            print(f"  baseline precision: {baseline:.4f}")
+        print("  motifs by lift:")
+        for row in motif_overlay.get("motifs_by_lift", [])[:8]:
+            print(
+                f"    motif={row['motif']:<40} twins={row['twin_count']:>6} "
+                f"verified={row['verified_twin_count']:>6} precision={row['precision']:.4f} "
+                f"lift={row['lift']}"
+            )
+        print("  motifs by support:")
+        for row in motif_overlay.get("motifs_by_support", [])[:8]:
+            print(
+                f"    motif={row['motif']:<40} twins={row['twin_count']:>6} "
+                f"verified={row['verified_twin_count']:>6} precision={row['precision']:.4f} "
+                f"lift={row['lift']}"
+            )
+    board_overlay = payload.get("crt_board_overlay", {})
+    if board_overlay.get("enabled"):
+        print("CRT board overlay:")
+        print(f"  axes={board_overlay['axes']} columns={board_overlay['columns']}")
+        print("  tokens: X=forward O=wrap .=same ?=boundary")
+        print("  signatures by lift:")
+        for row in board_overlay.get("signatures_by_lift", [])[:8]:
+            print(
+                f"    board={row['key']:<14} twins={row['twin_count']:>6} "
+                f"verified={row['verified_twin_count']:>6} precision={row['precision']:.4f} "
+                f"lift={row['lift']}"
+            )
+        print("  rules by lift:")
+        for row in board_overlay.get("rules_by_lift", [])[:8]:
+            print(
+                f"    rule={row['key']:<10} twins={row['twin_count']:>6} "
+                f"verified={row['verified_twin_count']:>6} precision={row['precision']:.4f} "
+                f"lift={row['lift']}"
+            )
+        print("  sample boards:")
+        for board in board_overlay.get("samples", [])[:5]:
+            rows = ["".join(row) for row in board["matrix"]]
+            print(
+                f"    n={board['n']:<8} bridge={board['bridge']:<8} "
+                f"sig={board['signature']:<14} lines={','.join(board['line_rules']) or 'none'} "
+                f"rows={rows}"
+            )
+    midpoint_overlay = payload.get("midpoint_conjugate_overlay", {})
+    if midpoint_overlay.get("enabled"):
+        print("midpoint conjugate overlay:")
+        print(f"  axes={midpoint_overlay['axes']} columns={midpoint_overlay['columns']}")
+        print("  tokens: R/N=real-dominant I/J=imag-dominant C=cancelled B=broken")
+        print("  midpoint phase boards by lift:")
+        for row in midpoint_overlay.get("signatures_by_lift", [])[:8]:
+            print(
+                f"    board={row['key']:<14} twins={row['twin_count']:>6} "
+                f"verified={row['verified_twin_count']:>6} precision={row['precision']:.4f} "
+                f"lift={row['lift']}"
+            )
+        print("  side-sum signatures by lift:")
+        for row in midpoint_overlay.get("sum_signatures_by_lift", [])[:8]:
+            print(
+                f"    sum={row['key']:<6} twins={row['twin_count']:>6} "
+                f"verified={row['verified_twin_count']:>6} precision={row['precision']:.4f} "
+                f"lift={row['lift']}"
+            )
+        print("  cancellation signatures:")
+        for row in midpoint_overlay.get("cancellations_by_support", [])[:8]:
+            print(
+                f"    cancel={row['key']:<6} twins={row['twin_count']:>6} "
+                f"verified={row['verified_twin_count']:>6} precision={row['precision']:.4f} "
+                f"lift={row['lift']}"
+            )
+        print("  sample midpoint boards:")
+        for board in midpoint_overlay.get("samples", [])[:5]:
+            rows = ["".join(row) for row in board["matrix"]]
+            print(
+                f"    x={board['center']:<8} pair=({board['left']},{board['right']}) "
+                f"sig={board['signature']:<14} sum={board['sum_signature']:<6} "
+                f"cancel={board['cancellation_signature']} err={board['cancellation_error']} rows={rows}"
+            )
+    print("triangulation snapshots (top areas):")
+    for tri in payload["triangulation_snapshots"]:
+        print(
+            f"  ({tri['a']}, {tri['b']}, {tri['c']})  gaps=({tri['gap_ab']},{tri['gap_bc']}) "
+            f"area={tri['area']:.4f} root={tri['root']}"
+        )
+    print("representative nodes:")
+    for row in payload["top_nodes"]:
+        print(f"  n={row['n']:<8} coords={tuple(row['coords'])} bucket={row['sub_decimal_bucket']:>4} color={row['color']}")
+
 _PHI: float = (1.0 + math.sqrt(5.0)) / 2.0  # golden ratio ≈ 1.6180
 
 
@@ -2987,6 +4207,7 @@ _PHI: float = (1.0 + math.sqrt(5.0)) / 2.0  # golden ratio ≈ 1.6180
 # Path A = gravity + wave + Riemann + phi-zero  (geometry / frequency space)
 # Path B = mod30_wheel + hl_density + large_div  (algebra / analytic / residue space)
 # Path C = base10 digit braid / carry topology       (decimal morphology space)
+# Path D = Cramér gap-record + log² normalized gap anomalies (analytic gap geometry)
 # Gold   = Path A top-N ∩ Path B top-N ∩ Path C top-N
 
 
@@ -3369,7 +4590,11 @@ def shadow_lattice_score(p: int, lattice: dict) -> dict:
     }
 
 
-def path_c_score(p: int, shadow_lattice: dict | None = None) -> dict:
+def path_c_score(
+    p: int,
+    shadow_lattice: dict | None = None,
+    seed_twins: list[int] | None = None,
+) -> dict:
     digit = digit_braid_score(p)
     shadow = shadow_lattice_score(p, shadow_lattice or {}) if shadow_lattice else {
         "score": 1.0,
@@ -3380,12 +4605,24 @@ def path_c_score(p: int, shadow_lattice: dict | None = None) -> dict:
     }
     if digit["score"] <= 0.0 or shadow["exact_shadow"]:
         score = 0.0
+        padic_s = 0.5
     else:
-        score = digit["score"] * (0.35 + (0.65 * shadow["score"]))
+        if seed_twins:
+            # p-adic branch alignment: how well does candidate's q-adic address
+            # match known seed twin prime branches across bases {2,3,5,7,11}?
+            # Genuinely orthogonal to digit_braid (base-10) and shadow (product
+            # lattice). Blended 55/45 with shadow inside the 0.70 signal band.
+            padic_s = padic_twin_alignment(p, seed_twins)
+            combined_signal = 0.55 * shadow["score"] + 0.45 * padic_s
+            score = digit["score"] * (0.30 + 0.70 * combined_signal)
+        else:
+            padic_s = 0.5
+            score = digit["score"] * (0.35 + 0.65 * shadow["score"])
     return {
         "score": round(score, 12),
         "digit_score": round(float(digit.get("score", 0.0)), 12),
         "shadow_score": round(float(shadow.get("score", 0.0)), 12),
+        "padic_score": round(float(padic_s), 6),
         "shadow_hit": bool(shadow.get("exact_shadow", False)),
         "shadow_value": shadow.get("shadow_value"),
         "shadow_witness": shadow.get("witness"),
@@ -3393,6 +4630,135 @@ def path_c_score(p: int, shadow_lattice: dict | None = None) -> dict:
         "last_digit": digit.get("last_digit"),
         "carry_count": digit.get("carry_count"),
     }
+
+
+def build_twin_gap_record_profile(seed_twins: list[int], window: int = 16) -> dict:
+    """Build a Cramér-style twin-gap profile from seed twins.
+
+    We use normalized twin gaps ratio = gap / log^2(center) to capture tail behavior.
+    Running records and rolling means let us score candidate positions by how well
+    they align with local gap-statistical structure.
+    """
+    centers = [p + 1 for p in sorted(seed_twins)]
+    if len(centers) < 3:
+        return {
+            "seed_centers": centers[:-1],
+            "gap_to_log2_ratio": [],
+            "record_ratio": [],
+            "rolling_ratio_mean": [],
+            "window": max(1, window),
+            "ready": False,
+        }
+
+    gaps = [centers[i + 1] - centers[i] for i in range(len(centers) - 1)]
+    ratios: list[float] = []
+    for idx, gap in enumerate(gaps):
+        scale = max(1.0, math.log(max(centers[idx], 2)) ** 2)
+        ratios.append(gap / scale)
+
+    prefix = [0.0]
+    for ratio in ratios:
+        prefix.append(prefix[-1] + ratio)
+
+    record: list[float] = []
+    running_max = 0.0
+    for ratio in ratios:
+        if ratio > running_max:
+            running_max = ratio
+        record.append(running_max)
+
+    window = max(1, int(window))
+    rolling_mean: list[float] = []
+    for i in range(len(ratios)):
+        lo = max(0, i - window + 1)
+        total = prefix[i + 1] - prefix[lo]
+        rolling_mean.append(total / (i - lo + 1))
+
+    return {
+        "seed_centers": centers[:-1],
+        "gap_to_log2_ratio": ratios,
+        "record_ratio": record,
+        "rolling_ratio_mean": rolling_mean,
+        "window": window,
+        "ready": True,
+    }
+
+
+_COMPASS_PRIMES: list[int] = [2, 3, 5, 7, 11, 13]
+_COMPASS_THETAS: list[float] = [
+    (1.0 + math.sqrt(5.0)) / 2.0,          # φ  — quasicrystalline (most irrational)
+    2.0 / (1.0 + math.sqrt(5.0)),           # 1/φ — conjugate quasicrystalline axis
+    math.pi / 4.0,                           # π/4 — 8-cycle harmonic partial alignment
+]
+_TAU: float = 2.0 * math.pi
+
+
+def path_d_score(p: int, seed_twins: list[int] | None, top_k: int = 20) -> tuple[float, dict]:
+    """Path D: Multi-dimensional phase compass alignment.
+
+    Maps (p, p+2) to state vectors Ψ(n, θ) ∈ ℂ^d where dimension k carries
+    angular frequency ωk = 2π·θ / pk matched to prime sieve components.
+
+    Three compass angles θ ∈ {φ, 1/φ, π/4} sweep the space:
+    - θ = φ: quasicrystalline projection — maximally irrational, non-repeating.
+      Twin primes cluster here because their residue structure across multiple
+      prime bases creates a recognizable interference pattern that composites
+      (products of two primes each with their own phase bias) cannot mimic.
+    - θ = 1/φ: conjugate axis — discriminates a different quadrant of the space.
+    - θ = π/4: captures 8-cycle harmonic resonance structure.
+
+    Score = joint cosine similarity of Ψ(p) and Ψ(p+2) with mean seed reference,
+    averaged across all three compass angles. The JOINT constraint (both p and p+2
+    must simultaneously align) is the key: for a composite n = a·b passing the mod30
+    wheel, either n or n+2 will typically misalign because composites' phase vectors
+    are biased by their factor structure in at least one dimension.
+
+    Orthogonal to:
+    - Path A: operates in complex multi-dimensional phase space vs. real 1D log-space
+    - Path B: continuous complex cosine similarity vs. discrete mod/count algebra
+    - Path C: joint pair phase vs. single-n digit/factor/branch structure
+    """
+    if not seed_twins or p <= 5:
+        return 0.5, {"compass_alignment": None}
+
+    log_p = math.log(max(p, 2))
+    nearest = sorted(seed_twins, key=lambda s: abs(math.log(max(s, 2)) - log_p))[:top_k]
+    n_s = len(nearest)
+    if n_s == 0:
+        return 0.5, {"compass_alignment": None}
+
+    total = 0.0
+    for theta in _COMPASS_THETAS:
+        # Candidate state vectors for p and p+2
+        p_psi = [cmath.exp(1j * p * _TAU * theta / pk) for pk in _COMPASS_PRIMES]
+        p2_psi = [cmath.exp(1j * (p + 2) * _TAU * theta / pk) for pk in _COMPASS_PRIMES]
+
+        # Mean reference state vectors from nearest seed twins
+        ref_p = [
+            sum(cmath.exp(1j * s * _TAU * theta / pk) for s in nearest) / n_s
+            for pk in _COMPASS_PRIMES
+        ]
+        ref_p2 = [
+            sum(cmath.exp(1j * (s + 2) * _TAU * theta / pk) for s in nearest) / n_s
+            for pk in _COMPASS_PRIMES
+        ]
+
+        # Cosine similarity: |⟨Ψ, Ψ_ref⟩| / (‖Ψ‖ · ‖Ψ_ref‖)
+        dot_p = abs(sum(a.conjugate() * b for a, b in zip(p_psi, ref_p)))
+        dot_p2 = abs(sum(a.conjugate() * b for a, b in zip(p2_psi, ref_p2)))
+        mag_p = math.sqrt(sum(abs(v) ** 2 for v in p_psi))
+        mag_rp = math.sqrt(sum(abs(v) ** 2 for v in ref_p))
+        mag_p2 = math.sqrt(sum(abs(v) ** 2 for v in p2_psi))
+        mag_rp2 = math.sqrt(sum(abs(v) ** 2 for v in ref_p2))
+
+        align_p = dot_p / max(mag_p * mag_rp, 1e-12)
+        align_p2 = dot_p2 / max(mag_p2 * mag_rp2, 1e-12)
+
+        # Joint twin constraint: geometric mean penalizes when either leg misaligns
+        total += math.sqrt(align_p * align_p2)
+
+    score = total / len(_COMPASS_THETAS)
+    return score, {"compass_alignment": round(score, 6)}
 
 
 def phi_mean_zero_wave(
@@ -3457,6 +4823,43 @@ def phi_mean_zero_wave(
     return (raw + 1.0) / 2.0
 
 
+def path_e_score(p: int, seed_values: list[int], window: int = 12) -> float:
+    """Path E: Riemann-anchored float gravity on inter-twin gap ratios.
+
+    Orthogonal to Paths A–D:
+    - Path A embeds the prime p itself in integer Poincaré space (log p scale).
+    - Path E embeds normalized inter-twin gap ratios in float Poincaré space,
+      anchored to t₁/2π ≈ 2.249 regardless of absolute prime range.
+
+    Score = how strongly the candidate's local gap ratio is attracted to the
+    basin formed by the inter-twin gap ratios of the nearest seed twins.
+    Twin primes cluster in specific ratio basins; composites that slip through
+    the mod30 wheel land in different basins — the Poincaré distance exposes
+    that mismatch without ever seeing the absolute prime values.
+
+    Scale-invariant: the same Riemann-anchored disk at 50M and 400M+.
+    """
+    if not seed_values or p <= 5:
+        return 0.0
+    log_p = math.log(max(p, 2))
+    nearest = sorted(seed_values, key=lambda s: abs(math.log(max(s, 2)) - log_p))[:window]
+    if len(nearest) < 2:
+        return 0.0
+    nearest_sorted = sorted(nearest)
+    gap_ratios = [
+        (nearest_sorted[i + 1] - nearest_sorted[i]) / max(1, nearest_sorted[i])
+        for i in range(len(nearest_sorted) - 1)
+    ]
+    if not gap_ratios:
+        return 0.0
+    twins_below = [s for s in seed_values if s < p]
+    cand_ratio = (p - max(twins_below)) / max(1, p) if twins_below else 1.0
+    bodies_e = _gravity_bodies_float(gap_ratios, bins=min(8, len(gap_ratios)))
+    if not bodies_e:
+        return 0.0
+    return _gravity_at_float(cand_ratio, bodies_e, metric="hyperbolic")["gravity_field_normalized"]
+
+
 def twin_prime_gravity_candidate(
     p: int,
     bodies: list[dict],
@@ -3467,6 +4870,7 @@ def twin_prime_gravity_candidate(
     seed_values: list[int] | None = None,
     rz_anchors: list[dict] | None = None,
     shadow_lattice: dict | None = None,
+    gap_profile: dict | None = None,
 ) -> dict:
     wave = twin_pair_wave_field(p, learned_bins, bins)
     gravity = solution_gravity_at_candidate(p, bodies, metric, hyperbolic_scale)
@@ -3504,7 +4908,9 @@ def twin_prime_gravity_candidate(
     # Path B: algebra / analytic / next-layer-divisor — orthogonal to Path A
     pb = path_b_score(p, seed_values or [])
     wheel = mod30_wheel_score(p)
-    pc = path_c_score(p, shadow_lattice)
+    pc = path_c_score(p, shadow_lattice, seed_values or [])
+    pd, pd_meta = path_d_score(p, seed_values or [])
+    pe = path_e_score(p, seed_values or [])
     return {
         **wave,
         **gravity,
@@ -3520,6 +4926,11 @@ def twin_prime_gravity_candidate(
         "path_b_score": round(pb, 6),
         # Path C columns (radix/p-adic-adjacent morphology + shadow lattice)
         "path_c_score": round(pc["score"], 6),
+        # Path D columns (cramer gap-record pressure diagnostics)
+        "path_d_score": round(pd, 6),
+        "path_d_compass_alignment": pd_meta.get("compass_alignment"),
+        # Path E: Riemann-anchored float gravity on inter-twin gap ratios
+        "path_e_score": round(pe, 6),
         "digit_braid_score": round(pc["digit_score"], 6),
         "shadow_lattice_score": round(pc["shadow_score"], 6),
         "shadow_lattice_hit": pc["shadow_hit"],
@@ -3688,6 +5099,7 @@ def run_twin_prime_gravity_search(
     learned_bins = {body["angle_bin"] for body in bodies}
     rz_anchors = riemann_phase_anchor(seed_values)
     shadow_lattice = build_shadow_lattice(seed_values, limit)
+    gap_profile = build_twin_gap_record_profile(seed_values)
     start = max(3, seed_limit + 1)
     if start % 2 == 0:
         start += 1
@@ -3702,6 +5114,7 @@ def run_twin_prime_gravity_search(
             seed_values,
             rz_anchors,
             shadow_lattice,
+            gap_profile,
         )
         for p in range(start, limit, 2)
     ]
@@ -3926,33 +5339,58 @@ def print_twin_prime_gravity_search(payload: dict) -> None:
             key=lambda r: -r.get("path_c_score", 0),
         )
         path_c_top = {r["p"] for r in path_c_sorted[:top10_n]}
+        path_d_sorted = sorted(
+            all_rows,
+            key=lambda r: -r.get("path_d_score", 0),
+        )
+        path_d_top = {r["p"] for r in path_d_sorted[:top10_n]}
+        path_e_sorted = sorted(all_rows, key=lambda r: -r.get("path_e_score", 0))
+        path_e_top = {r["p"] for r in path_e_sorted[:top10_n]}
         intersection = path_a_top & path_b_top
         triple = intersection & path_c_top
+        quad = triple & path_d_top
+        penta = quad & path_e_top
         wheel_zero = sum(1 for r in all_rows if r.get("mod30_wheel", 1.0) == 0.0)
         shadow_hits = sum(1 for r in all_rows if r.get("shadow_lattice_hit"))
         wheel_elim_pct = wheel_zero / n_all * 100
         hits_a = sum(1 for r in all_rows if r["p"] in path_a_top and r.get("verified"))
         hits_b = sum(1 for r in all_rows if r["p"] in path_b_top and r.get("verified"))
         hits_c = sum(1 for r in all_rows if r["p"] in path_c_top and r.get("verified"))
+        hits_d = sum(1 for r in all_rows if r["p"] in path_d_top and r.get("verified"))
+        hits_e = sum(1 for r in all_rows if r["p"] in path_e_top and r.get("verified"))
         hits_ab = sum(
             1 for r in all_rows if r["p"] in intersection and r.get("verified")
         )
         hits_abc = sum(
             1 for r in all_rows if r["p"] in triple and r.get("verified")
         )
+        hits_abcd = sum(
+            1 for r in all_rows if r["p"] in quad and r.get("verified")
+        )
+        hits_abcde = sum(
+            1 for r in all_rows if r["p"] in penta and r.get("verified")
+        )
         base_rate = sum(1 for r in all_rows if r.get("verified")) / max(n_all, 1)
         prec_a = hits_a / max(len(path_a_top), 1)
         prec_b = hits_b / max(len(path_b_top), 1)
         prec_c = hits_c / max(len(path_c_top), 1)
+        prec_d = hits_d / max(len(path_d_top), 1)
+        prec_e = hits_e / max(len(path_e_top), 1)
         prec_ab = hits_ab / max(len(intersection), 1)
         prec_abc = hits_abc / max(len(triple), 1)
+        prec_abcd = hits_abcd / max(len(quad), 1)
+        prec_abcde = hits_abcde / max(len(penta), 1)
         print()
-        print("Path A ∩ Path B ∩ Path C intersection  (top-10% each path):")
+        print("Path A ∩ Path B ∩ Path C ∩ Path D intersection  (top-10% each path):")
         print(f"  Path A  candidates={len(path_a_top):>5}  hits={hits_a:>4}  prec={prec_a:.2%}  ({prec_a/max(base_rate,1e-9):.1f}x lift)")
         print(f"  Path B  candidates={len(path_b_top):>5}  hits={hits_b:>4}  prec={prec_b:.2%}  ({prec_b/max(base_rate,1e-9):.1f}x lift)")
         print(f"  Path C  candidates={len(path_c_top):>5}  hits={hits_c:>4}  prec={prec_c:.2%}  ({prec_c/max(base_rate,1e-9):.1f}x lift)")
+        print(f"  Path D  candidates={len(path_d_top):>5}  hits={hits_d:>4}  prec={prec_d:.2%}  ({prec_d/max(base_rate,1e-9):.1f}x lift)")
+        print(f"  Path E  candidates={len(path_e_top):>5}  hits={hits_e:>4}  prec={prec_e:.2%}  ({prec_e/max(base_rate,1e-9):.1f}x lift)  [Riemann-anchored gap-ratio gravity]")
         print(f"  A∩B     candidates={len(intersection):>5}  hits={hits_ab:>4}  prec={prec_ab:.2%}  ({prec_ab/max(base_rate,1e-9):.1f}x lift)")
         print(f"  A∩B∩C   candidates={len(triple):>5}  hits={hits_abc:>4}  prec={prec_abc:.2%}  ({prec_abc/max(base_rate,1e-9):.1f}x lift)")
+        print(f"  A∩B∩C∩D candidates={len(quad):>5}  hits={hits_abcd:>4}  prec={prec_abcd:.2%}  ({prec_abcd/max(base_rate,1e-9):.1f}x lift)")
+        print(f"  A∩…∩E   candidates={len(penta):>5}  hits={hits_abcde:>4}  prec={prec_abcde:.2%}  ({prec_abcde/max(base_rate,1e-9):.1f}x lift)  [all five paths]")
         print(f"  mod30 wheel: {wheel_zero} eliminated ({wheel_elim_pct:.1f}% of candidates algebraically impossible)")
         print(f"  shadow lattice: {shadow_hits} exact seed-product shadows masked before verifier")
 
@@ -3965,11 +5403,16 @@ def print_twin_prime_gravity_search(payload: dict) -> None:
         hj = row.get("horizon_jump", "—")
         pb = row.get("path_b_score", "—")
         pc = row.get("path_c_score", "—")
+        pd = row.get("path_d_score", "—")
+        compass = row.get("path_d_compass_alignment")
         shadow = " shadow" if row.get("shadow_lattice_hit") else ""
+        pd_str = f"{pd:.4f}" if isinstance(pd, float) else str(pd)
+        compass_str = f"{compass:.4f}" if isinstance(compass, float) else "—"
         print(
             f"  {mark:<4} p={row['p']:<8} q={row['q']:<8} "
             f"combined={row['combined_gravity_field']:.5f} "
-            f"pmz={pmz:.4f}  pathB={pb:.4f}  pathC={pc:.4f}{shadow}  div={div_clr:.3f}  jump={hj}x"
+            f"pmz={pmz:.4f}  pathB={pb:.4f}  pathC={pc:.4f}  pathD={pd_str}  "
+            f"compass={compass_str}  div={div_clr:.3f}{shadow}  jump={hj}x"
         )
 
 
@@ -6918,7 +8361,2622 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
                         help="Upper limit for twin prime collection in --prime-ratio-map (default 10000)")
     parser.add_argument("--ratio-map-seed", type=int, default=1000,
                         help="Seed/split point for seed vs extended range comparison (default 1000)")
+    parser.add_argument("--mod-triangulation", action="store_true", help="Run mod-space triangulation hopping probe")
+    parser.add_argument("--triangulation-limit", type=int, default=100_000, help="Upper range for triangulation probe (default=100000)")
+    parser.add_argument("--triangulation-mods", default="2,3,5", help="Comma-separated moduli for CRT axes")
+    parser.add_argument("--triangulation-top", type=int, default=24, help="Top samples to print in hops/nodes")
+    parser.add_argument("--triangulation-verify", action="store_true", help="Verify prime/twin-bridge candidates exactly")
+    parser.add_argument(
+        "--triangulation-exclude-non-starters",
+        action="store_true",
+        help="Drop known twin non-starters after CRT filtering (keeps only n in {11,17,29} mod 30, plus n=5)",
+    )
+    # Superprime layer — P(P(n)) through CRT negative-triangulation shells
+    parser.add_argument("--superprime-layer", action="store_true", help="Map P(P(n)) superprimes [n prime] through CRT mod-30 shells")
+    parser.add_argument("--superprime-limit", type=int, default=10_000, help="Sieve limit for superprime layer (default=10000)")
+    parser.add_argument("--superprime-top", type=int, default=40, help="Rows to print in superprime table (default=40)")
+    # Imaginary gap path — Δg × i complex pathfinder
+    parser.add_argument("--imaginary-paths", action="store_true", help="Trace Δg×i complex path from prime gap acceleration")
+    parser.add_argument("--imaginary-paths-limit", type=int, default=10_000, help="Sieve limit for imaginary gap path (default=10000)")
+    parser.add_argument("--imaginary-paths-superprime", action="store_true", help="Use P(P(n)) superprime sequence for imaginary path (combines both probes)")
+    parser.add_argument("--imaginary-paths-top", type=int, default=40, help="Path sample rows to print (default=40)")
+    parser.add_argument("--imaginary-paths-ratio", action="store_true", help="Re-step using ratio of true Δg to mean |Δg| (triangulation normalization)")
+    parser.add_argument("--imaginary-paths-well", action="store_true", help="Apply square-well potential at inner/outer shell crossings + tangential extrapolation")
+    parser.add_argument("--imaginary-paths-well-depth", type=float, default=1.0, help="Well depth W in ratio-units (default=1.0; reflects inner→outer steps with |ratio|<=sqrt(W))")
+    parser.add_argument("--imaginary-paths-well-extrap", type=int, default=5, help="Steps to extrapolate tangentially from each landmark crossing (default=5)")
+    parser.add_argument("--imaginary-paths-well-threshold", type=float, default=2.0, help="Min |ratio| to trigger tangential extrapolation (default=2.0)")
+    parser.add_argument("--foam-score", action="store_true", help="Score splash zones by surrounding turbulence density")
+    parser.add_argument("--foam-score-window", type=int, default=10, help="Steps to scan each side of a splash for mist/droplet density (default=10)")
+    parser.add_argument("--foam-score-top", type=int, default=20, help="Number of top foam zones to display (default=20)")
+    parser.add_argument("--wall-loop", action="store_true", help="Test III/OOO splash events for hidden crossings in mod-210/2310 + phi phase drift")
+    parser.add_argument("--wall-loop-window", type=int, default=6, help="Window around each splash for gap wall-loop scan (default=6)")
+    parser.add_argument("--wall-loop-top", type=int, default=20, help="Top splash events to inspect per pattern class (default=20)")
+    parser.add_argument("--soliton", action="store_true", help="Gap charge field soliton probe: ±1 per wall prime, 5-class taxonomy, soliton score")
+    parser.add_argument("--soliton-window", type=int, default=10, help="Window around each splash for foam/charge density (default=10)")
+    parser.add_argument("--soliton-top", type=int, default=25, help="Top events to display sorted by soliton score (default=25)")
+    parser.add_argument("--next-region-field", action="store_true", help="Combine foam/shell/wall/phi/prime-ratio channels into found→next region search field")
+    parser.add_argument("--next-region-window", type=int, default=12, help="Steps after each found splash anchor to score as the next region (default=12)")
+    parser.add_argument("--next-region-top", type=int, default=25, help="Top next regions to display (default=25)")
+    parser.add_argument("--next-region-anchor-threshold", type=float, default=4.0, help="Min |ratio| to treat a found event as an anchor (default=4.0)")
+    parser.add_argument("--next-region-profile", choices=["balanced", "soliton", "forecast", "instability", "instability_flip", "instability_gate2", "resonance_gate3", "instability_geo", "resonant_soliton"], default="balanced", help="Channel weight profile: balanced (current), soliton (wall/charge/hidden), forecast (phi/prime/no outcome), instability (rebound/crossing/flip - phi - prime_ratio), instability_flip (gates high-foam/no-flip churn), instability_gate2 (extra stale-churn gates), resonance_gate3 (p-adic depth x prime-ratio), resonant_soliton (accel+depth flux+ratio+flip)")
+    parser.add_argument("--field-scan", action="store_true", help="Scan every non-anchor step with trailing structural channels, then measure future heat/anchors")
+    parser.add_argument("--field-scan-window", type=int, default=12, help="Future steps to score after each scan point (default=12)")
+    parser.add_argument("--field-scan-history", type=int, default=6, help="Trailing context steps used for predictive field score (default=6)")
+    parser.add_argument("--field-scan-top", type=int, default=25, help="Top field-scan rows to display (default=25)")
+    parser.add_argument("--field-scan-anchor-threshold", type=float, default=4.0, help="Future |ratio| threshold counted as a confirmed anchor (default=4.0)")
+    parser.add_argument("--field-scan-profile", choices=["balanced", "soliton", "forecast", "instability", "instability_flip", "instability_gate2", "resonance_gate3", "instability_geo", "resonant_soliton", "cassette", "instability_geo_cassette", "thermal", "instability_geo_cassette_thermal", "thermal_cold", "thermal_cool", "thermal_heat", "thermal_omni", "thermal_abs", "instability_geo_cassette_thermal_abs", "igct_c2_g3", "igct_c2_g4", "igct_c2_g5", "igct_c2_g6", "igct_c3_g3", "igct_c3_g4", "igct_c3_g5", "igct_c3_g6", "igct_c4_g3", "igct_c4_g4", "igct_c4_g5", "igct_c4_g6", "igct_c2_g7", "igct_c2_g8", "igct_c3_g7", "igct_c3_g8", "igct_c4_g7", "igct_c4_g8"], default="forecast", help="Predictive channel profile for --field-scan (default=forecast)")
     return parser.parse_args(argv)
+
+
+# ─── Superprime Layer (P(P(n)) prime-index filter) ────────────────────────────
+
+
+def _compute_doubly_indexed_superprimes(primes: list[int]) -> list[dict]:
+    """P(P(n)) for each prime n, using n as a 1-based index into the primes list."""
+    rows: list[dict] = []
+    for n in primes:
+        if n < 1 or n > len(primes):
+            continue
+        pn = primes[n - 1]
+        if pn < 1 or pn > len(primes):
+            continue
+        ppn = primes[pn - 1]
+        r30 = ppn % 30
+        zs = r30 % 5
+        if zs > 2:
+            zs -= 5
+        ys = r30 % 3
+        if ys > 1:
+            ys -= 3
+        a = r30 % 2
+        is_pc = (a != 0) and (ys != 0) and (zs != 0)
+        shell: str | None = None
+        if is_pc:
+            shell = "inner" if (zs * zs + ys * ys) == 2 else "outer"
+        rows.append({"n": n, "P_n": pn, "P_P_n": ppn, "r30": r30, "is_prime_candidate": is_pc, "shell": shell})
+    return rows
+
+
+def run_superprime_layer(limit: int = 10_000, top: int = 40) -> dict:
+    """Map P(P(n)) [n prime] through CRT mod-30 negative-triangulation shells."""
+    primes = sieve(limit)
+    rows = _compute_doubly_indexed_superprimes(primes)
+    sh: dict[str, int] = {"inner": 0, "outer": 0, "sieve_prime": 0, "other": 0}
+    for r in rows:
+        if r["shell"] == "inner":
+            sh["inner"] += 1
+        elif r["shell"] == "outer":
+            sh["outer"] += 1
+        elif r["r30"] in {0, 2, 3, 5, 6, 10, 15, 30}:
+            sh["sieve_prime"] += 1
+        else:
+            sh["other"] += 1
+    pp_seq = [r["P_P_n"] for r in rows]
+    gaps = [pp_seq[i + 1] - pp_seq[i] for i in range(len(pp_seq) - 1)] if len(pp_seq) > 1 else []
+    delta_g = [gaps[i + 1] - gaps[i] for i in range(len(gaps) - 1)] if len(gaps) > 1 else []
+    return {
+        "schema_version": "prime_fog_superprime_layer_v1",
+        "limit": limit,
+        "prime_count": len(primes),
+        "superprime_count": len(rows),
+        "shell_histogram": sh,
+        "inner_outer_ratio": round(sh["inner"] / max(1, sh["outer"]), 4),
+        "gap_mean": round(sum(gaps) / len(gaps), 3) if gaps else 0,
+        "gap_max": max(gaps) if gaps else 0,
+        "delta_g_positive": sum(1 for d in delta_g if d > 0),
+        "delta_g_negative": sum(1 for d in delta_g if d < 0),
+        "delta_g_zero": sum(1 for d in delta_g if d == 0),
+        "rows": rows[:top],
+    }
+
+
+def print_superprime_layer(payload: dict) -> None:
+    print(f"\n{'═' * 64}")
+    print("  SUPERPRIME LAYER  P(P(n)) [n prime]  — pure prime-index filter")
+    print(f"{'═' * 64}")
+    print(f"  limit={payload['limit']}  primes={payload['prime_count']}  superprimes={payload['superprime_count']}")
+    sh = payload["shell_histogram"]
+    total_sp = max(1, sum(sh.values()))
+    print(f"\n  CRT SHELL DISTRIBUTION  (mod-30 negative-triangulation map)")
+    print(f"  inner  |z|²=2 : {sh['inner']:4d}  ({100*sh['inner']/total_sp:.1f}%)")
+    print(f"  outer  |z|²=5 : {sh['outer']:4d}  ({100*sh['outer']/total_sp:.1f}%)")
+    print(f"  sieve prime    : {sh['sieve_prime']:4d}  ({100*sh['sieve_prime']/total_sp:.1f}%)")
+    print(f"  other/composite: {sh['other']:4d}  ({100*sh['other']/total_sp:.1f}%)")
+    print(f"  inner:outer ratio : {payload['inner_outer_ratio']}")
+    print(f"  gap_mean={payload['gap_mean']}  gap_max={payload['gap_max']}")
+    dp = payload["delta_g_positive"]
+    dn = payload["delta_g_negative"]
+    dz = payload["delta_g_zero"]
+    tot = max(1, dp + dn + dz)
+    print(f"\n  Δg>0 (gap widening):  {dp:4d}  ({100*dp/tot:.1f}%)")
+    print(f"  Δg<0 (gap shrinking): {dn:4d}  ({100*dn/tot:.1f}%)")
+    print(f"  Δg=0 (edge):          {dz:4d}  ({100*dz/tot:.1f}%)")
+    print(f"\n  {'n':>6}  {'P(n)':>8}  {'P(P(n))':>9}  {'r30':>5}  shell")
+    print(f"  {'─'*6}  {'─'*8}  {'─'*9}  {'─'*5}  {'─'*6}")
+    for row in payload["rows"]:
+        shell_label = row["shell"] or ("sieve" if row["r30"] in {2, 3, 5} else "comp")
+        print(f"  {row['n']:>6}  {row['P_n']:>8}  {row['P_P_n']:>9}  {row['r30']:>5}  {shell_label}")
+
+
+# ─── Imaginary Gap Path (Δg × i complex pathfinder) ─────────────────────────
+
+
+def run_imaginary_gap_path(
+    limit: int = 10_000,
+    superprime_only: bool = False,
+    top: int = 40,
+    ratio_mode: bool = False,
+) -> dict:
+    """Trace the complex path formed by prime gap acceleration Δg = g[n+1] − g[n].
+
+    Positive Δg → real step +Δg      (gap widening, rightward on Re-axis).
+    Negative Δg → imag step +|Δg|·i  (gap shrinking, upward on Im-axis).
+    Zero Δg     → edge (no movement).
+
+    ratio_mode: replace each raw Δg step with Δg / mean(|Δg|) — a dimensionless
+    triangulation ratio showing each step as a multiple of the average acceleration.
+    """
+    all_primes = sieve(limit)
+    if superprime_only:
+        rows = _compute_doubly_indexed_superprimes(all_primes)
+        seq = [r["P_P_n"] for r in rows]
+        seq_label = "P(P(n)) superprimes [n prime]"
+    else:
+        seq = all_primes
+        seq_label = "all primes"
+
+    if len(seq) < 3:
+        return {"schema_version": "prime_fog_imaginary_path_v1", "error": "too few primes in sequence"}
+
+    gaps = [seq[i + 1] - seq[i] for i in range(len(seq) - 1)]
+    delta_g = [gaps[i + 1] - gaps[i] for i in range(len(gaps) - 1)]
+
+    # Triangulation ratio baseline: mean absolute Δg across all non-zero steps
+    nonzero_dg = [abs(d) for d in delta_g if d != 0]
+    mean_abs_dg = sum(nonzero_dg) / len(nonzero_dg) if nonzero_dg else 1.0
+
+    z = complex(0, 0)
+    path_points: list[dict] = [{"idx": 0, "prime": seq[0], "z_re": 0.0, "z_im": 0.0, "dg": None, "ratio": None, "shape": "start"}]
+    shape_hist: Counter = Counter()
+    real_steps: list[float] = []
+    imag_steps: list[float] = []
+
+    for idx, dg in enumerate(delta_g):
+        prev_gap = gaps[idx]
+        curr_gap = gaps[idx + 1]
+        shape, _ = _classify_gap_shape(prev_gap, curr_gap)
+        shape_hist[shape] += 1
+        ratio = dg / mean_abs_dg  # signed: positive→real, negative→imaginary
+        step = ratio if ratio_mode else dg
+        if dg > 0:
+            z = complex(z.real + abs(step), z.imag)
+            real_steps.append(abs(step))
+        elif dg < 0:
+            z = complex(z.real, z.imag + abs(step))
+            imag_steps.append(abs(step))
+        path_points.append({
+            "idx": idx + 1,
+            "prime": seq[idx + 2] if idx + 2 < len(seq) else None,
+            "z_re": round(z.real, 6),
+            "z_im": round(z.imag, 6),
+            "dg": dg,
+            "ratio": round(ratio, 6),
+            "gap_before": prev_gap,
+            "gap_after": curr_gap,
+            "shape": shape,
+        })
+
+    re_vals = [p["z_re"] for p in path_points]
+    im_vals = [p["z_im"] for p in path_points]
+    re_min, re_max = min(re_vals), max(re_vals)
+    im_min, im_max = min(im_vals), max(im_vals)
+    width = re_max - re_min
+    height = im_max - im_min
+    angle_deg = math.degrees(cmath.phase(z)) if abs(z) > 0 else 0.0
+    corners_right = shape_hist.get("corner_right", 0) + shape_hist.get("rounded_corner_right", 0)
+    corners_left = shape_hist.get("corner_left", 0) + shape_hist.get("rounded_corner_left", 0)
+
+    # Top outlier ratios — the highest-ratio steps are the triangulation landmarks
+    ratio_entries = [(p["ratio"], p["idx"], p["prime"], p["dg"]) for p in path_points if p["ratio"] is not None]
+    top_ratios = sorted(ratio_entries, key=lambda x: abs(x[0]), reverse=True)[:10]
+
+    return {
+        "schema_version": "prime_fog_imaginary_path_v1",
+        "sequence": seq_label,
+        "limit": limit,
+        "seq_length": len(seq),
+        "gap_count": len(gaps),
+        "delta_g_count": len(delta_g),
+        "ratio_mode": ratio_mode,
+        "mean_abs_dg": round(mean_abs_dg, 4),
+        "delta_g_positive": sum(1 for d in delta_g if d > 0),
+        "delta_g_negative": sum(1 for d in delta_g if d < 0),
+        "delta_g_zero": sum(1 for d in delta_g if d == 0),
+        "z_final_re": round(z.real, 6),
+        "z_final_im": round(z.imag, 6),
+        "z_final_magnitude": round(abs(z), 6),
+        "z_final_angle_deg": round(angle_deg, 3),
+        "bounding_box": {"re_min": re_min, "re_max": re_max, "im_min": im_min, "im_max": im_max},
+        "path_width": round(width, 6),
+        "path_height": round(height, 6),
+        "aspect_ratio": round(height / width, 6) if width > 0 else None,
+        "real_step_mean": round(sum(real_steps) / len(real_steps), 6) if real_steps else 0,
+        "imag_step_mean": round(sum(imag_steps) / len(imag_steps), 6) if imag_steps else 0,
+        "corners_turning_right": corners_right,
+        "corners_turning_left": corners_left,
+        "edges": shape_hist.get("edge", 0),
+        "shape_histogram": dict(shape_hist),
+        "top_ratio_landmarks": [{"ratio": r[0], "idx": r[1], "prime": r[2], "dg": r[3]} for r in top_ratios],
+        "path_sample": path_points[:top],
+        "path_tail": path_points[-10:] if len(path_points) > top + 10 else [],
+    }
+
+
+_SHELL_V = {"inner": 2.0, "outer": 5.0}  # potential energy of each shell; lower = well
+
+
+def _triple_veff(sa: str | None, sb: str | None, sc: str | None) -> float:
+    """Effective potential at the middle node B relative to neighbors A and C.
+
+    V_eff = V_B - mean(V_A, V_C)
+      OIO -> 2 - 5     = -3.0   (deep well, boosts step)
+      IOI -> 5 - 2     = +3.0   (barrier, damps/reflects)
+      IIO -> 2 - 3.5   = -1.5   (partial well)
+      OII -> 2 - 3.5   = -1.5
+      IOO -> 5 - 3.5   = +1.5   (partial barrier)
+      OOI -> 5 - 3.5   = +1.5
+      III / OOO        =  0.0   (flat)
+    """
+    vb = _SHELL_V.get(sb, 5.0)
+    va = _SHELL_V.get(sa, 5.0)
+    vc = _SHELL_V.get(sc, 5.0)
+    return vb - (va + vc) / 2.0
+
+
+def _well_ratio(ratio: float, veff: float, W: float) -> float:
+    """Apply square-well energy correction.
+
+    ratio  : signed normalised step (positive -> Re, negative -> Im)
+    veff   : effective potential from _triple_veff (negative = well, positive = barrier)
+    W      : well depth scale factor (default 1.0 means OIO correction = ±1.0 in ratio² space)
+
+    E_kin_after = ratio² - W * (veff / 3.0)
+    Reflects (returns 0) if E_kin_after <= 0.
+    """
+    correction = W * (veff / 3.0)  # normalise veff [-3,+3] to [-W,+W]
+    e_after = ratio * ratio - correction
+    if e_after <= 0.0:
+        return 0.0  # reflected
+    return math.copysign(math.sqrt(e_after), ratio)
+
+
+def _mod30_coords(n: int) -> tuple[int, int]:
+    """Signed balanced (zs, ys) coords in the mod-30 CRT embedding."""
+    r30 = n % 30
+    zs = r30 % 5
+    if zs > 2:
+        zs -= 5
+    ys = r30 % 3
+    if ys > 1:
+        ys -= 3
+    return zs, ys
+
+
+def run_imaginary_well_path(
+    limit: int = 1_000_000,
+    superprime_only: bool = True,
+    top: int = 40,
+    W: float = 1.0,
+    extrap_steps: int = 5,
+    landmark_threshold: float = 2.0,
+) -> dict:
+    """Square-well potential at triple shell crossings + tangential extrapolation.
+
+    At each step the triple (A, B, C) defines V_eff = V_B - mean(V_A, V_C).
+    The well-corrected step replaces the raw ratio step.
+    At every crossing where |well_ratio| >= landmark_threshold, extrapolate
+    forward extrap_steps positions along the tangent angle of that step,
+    using the mod-30 embedding tangent vector (z_C - z_A) as the geometric anchor.
+    """
+    all_primes = sieve(limit)
+    if superprime_only:
+        rows = _compute_doubly_indexed_superprimes(all_primes)
+        seq = [r["P_P_n"] for r in rows]
+        seq_label = "P(P(n)) superprimes [n prime]"
+        shell_map: dict[int, str | None] = {r["P_P_n"]: r["shell"] for r in rows}
+    else:
+        seq = all_primes
+        seq_label = "all primes"
+        shell_map = {}
+
+    if len(seq) < 3:
+        return {"schema_version": "prime_fog_well_path_v1", "error": "too few primes"}
+
+    gaps = [seq[i + 1] - seq[i] for i in range(len(seq) - 1)]
+    delta_g = [gaps[i + 1] - gaps[i] for i in range(len(gaps) - 1)]
+
+    nonzero = [abs(d) for d in delta_g if d != 0]
+    mean_abs_dg = sum(nonzero) / len(nonzero) if nonzero else 1.0
+
+    z_well = complex(0, 0)  # well-corrected path
+    z_raw = complex(0, 0)   # unmodified ratio path
+
+    path_points: list[dict] = []
+    landmark_extraps: list[dict] = []
+    shell_pattern_hist: Counter = Counter()
+    reflected_count = 0
+    crossing_count = 0
+
+    for idx, dg in enumerate(delta_g):
+        sa = shell_map.get(seq[idx])
+        sb = shell_map.get(seq[idx + 1])
+        sc = shell_map.get(seq[idx + 2]) if idx + 2 < len(seq) else None
+
+        veff = _triple_veff(sa, sb, sc)
+        pattern = f"{'I' if sa=='inner' else 'O'}{'I' if sb=='inner' else 'O'}{'I' if sc=='inner' else 'O'}"
+        shell_pattern_hist[pattern] += 1
+
+        ratio = dg / mean_abs_dg
+        wr = _well_ratio(ratio, veff, W)
+        reflected = wr == 0.0
+        if reflected:
+            reflected_count += 1
+
+        is_crossing = (sa != sc) and sa in ("inner", "outer") and sc in ("inner", "outer")
+        if is_crossing:
+            crossing_count += 1
+
+        # Advance both paths
+        if dg > 0:
+            z_raw = complex(z_raw.real + abs(ratio), z_raw.imag)
+            z_well = complex(z_well.real + abs(wr), z_well.imag)
+        elif dg < 0:
+            z_raw = complex(z_raw.real, z_raw.imag + abs(ratio))
+            z_well = complex(z_well.real, z_well.imag + abs(wr))
+
+        # Mod-30 tangent: direction from A to C in the CRT embedding
+        za = complex(*_mod30_coords(seq[idx]))
+        zc = complex(*_mod30_coords(seq[idx + 2])) if idx + 2 < len(seq) else za
+        tangent_vec = zc - za
+        theta_mod30 = math.degrees(cmath.phase(tangent_vec)) if abs(tangent_vec) > 0 else 0.0
+
+        # Path tangent: direction of the current well step in path space
+        if dg > 0:
+            theta_path = 0.0   # +real
+        elif dg < 0:
+            theta_path = 90.0  # +imag
+        else:
+            theta_path = 45.0  # edge
+
+        pt = {
+            "idx": idx + 1,
+            "prime_C": seq[idx + 2] if idx + 2 < len(seq) else None,
+            "z_well_re": round(z_well.real, 4),
+            "z_well_im": round(z_well.imag, 4),
+            "z_raw_re": round(z_raw.real, 4),
+            "z_raw_im": round(z_raw.imag, 4),
+            "dg": dg,
+            "ratio": round(ratio, 4),
+            "well_ratio": round(wr, 4),
+            "veff": round(veff, 2),
+            "pattern": pattern,
+            "reflected": reflected,
+            "theta_mod30_deg": round(theta_mod30, 2),
+            "theta_path_deg": theta_path,
+        }
+        path_points.append(pt)
+
+        # Mark landmark crossings for second-pass extrapolation
+        if abs(wr) >= landmark_threshold and is_crossing:
+            avg_step = (z_well.real + z_well.imag) / max(1, idx + 1)
+            landmark_extraps.append({
+                "at_idx": idx + 1,
+                "list_pos": len(path_points),  # index into path_points AFTER append
+                "prime_C": seq[idx + 2] if idx + 2 < len(seq) else None,
+                "pattern": pattern,
+                "veff": round(veff, 2),
+                "ratio": round(ratio, 4),
+                "well_ratio": round(wr, 4),
+                "theta_mod30_deg": round(theta_mod30, 2),
+                "z_re": round(z_well.real, 4),
+                "z_im": round(z_well.imag, 4),
+                "avg_step": avg_step,
+                "extrapolation": [],  # filled in second pass
+            })
+
+    # Second pass: fill actual positions into extrapolation predictions
+    for lm in landmark_extraps:
+        base = lm["list_pos"]
+        theta_rad = math.radians(lm["theta_mod30_deg"])
+        avg_step = lm["avg_step"]
+        preds = []
+        for n in range(1, extrap_steps + 1):
+            pred_re = lm["z_re"] + n * avg_step * math.cos(theta_rad)
+            pred_im = lm["z_im"] + n * avg_step * math.sin(theta_rad)
+            actual = path_points[base + n] if base + n < len(path_points) else None
+            preds.append({
+                "n": n,
+                "pred_re": round(pred_re, 4),
+                "pred_im": round(pred_im, 4),
+                "actual_re": actual["z_well_re"] if actual else None,
+                "actual_im": actual["z_well_im"] if actual else None,
+                "err_re": round(pred_re - actual["z_well_re"], 4) if actual else None,
+                "err_im": round(pred_im - actual["z_well_im"], 4) if actual else None,
+            })
+        lm["extrapolation"] = preds
+        del lm["list_pos"], lm["avg_step"]  # clean up internal fields
+
+    angle_well = math.degrees(cmath.phase(z_well)) if abs(z_well) > 0 else 0.0
+    angle_raw = math.degrees(cmath.phase(z_raw)) if abs(z_raw) > 0 else 0.0
+    w_re, w_im = z_well.real, z_well.imag
+    asp = round(w_im / w_re, 6) if w_re > 0 else None
+
+    return {
+        "schema_version": "prime_fog_well_path_v1",
+        "sequence": seq_label,
+        "limit": limit,
+        "seq_length": len(seq),
+        "delta_g_count": len(delta_g),
+        "W": W,
+        "mean_abs_dg": round(mean_abs_dg, 4),
+        "reflected_steps": reflected_count,
+        "shell_crossings": crossing_count,
+        "shell_pattern_histogram": dict(shell_pattern_hist.most_common()),
+        "z_well_final_re": round(w_re, 4),
+        "z_well_final_im": round(w_im, 4),
+        "z_well_magnitude": round(abs(z_well), 4),
+        "z_well_angle_deg": round(angle_well, 3),
+        "z_well_aspect": asp,
+        "z_raw_final_re": round(z_raw.real, 4),
+        "z_raw_final_im": round(z_raw.imag, 4),
+        "z_raw_angle_deg": round(angle_raw, 3),
+        "angle_shift_deg": round(angle_well - angle_raw, 4),
+        "landmark_threshold": landmark_threshold,
+        "landmark_extrapolations": landmark_extraps,
+        "path_sample": path_points[:top],
+        "path_tail": path_points[-10:] if len(path_points) > top + 10 else [],
+    }
+
+
+def print_imaginary_well_path(payload: dict) -> None:
+    print(f"\n{'═' * 68}")
+    print("  IMAGINARY WELL PATH  —  triple-shell V_eff + tangential extrapolation")
+    print(f"{'═' * 68}")
+    print(f"  sequence : {payload['sequence']}")
+    print(f"  limit={payload['limit']}  seq_len={payload['seq_length']}  W={payload['W']}  mean|Δg|={payload['mean_abs_dg']}")
+    print(f"\n  WELL CORRECTION SUMMARY")
+    print(f"  reflected steps (classically forbidden) : {payload['reflected_steps']}")
+    print(f"  shell crossings (A≠C)                  : {payload['shell_crossings']}")
+    print(f"\n  SHELL PATTERN HISTOGRAM  (V_eff shown)")
+    veff_map = {"OIO": -3.0, "IOI": +3.0, "IIO": -1.5, "OII": -1.5, "IOO": +1.5, "OOI": +1.5, "III": 0.0, "OOO": 0.0}
+    for pat, cnt in payload["shell_pattern_histogram"].items():
+        ve = veff_map.get(pat, "?")
+        bar = "█" * min(cnt // 5 + 1, 30)
+        print(f"  {pat}  V_eff={str(ve):>5}  {cnt:>5}  {bar}")
+    print(f"\n  PATH GEOMETRY  (well-corrected vs raw ratio)")
+    print(f"  well : z={payload['z_well_final_re']:.4f}+{payload['z_well_final_im']:.4f}i  |z|={payload['z_well_magnitude']:.4f}  ∠={payload['z_well_angle_deg']:.3f}°  asp={payload['z_well_aspect']}")
+    print(f"  raw  : z={payload['z_raw_final_re']:.4f}+{payload['z_raw_final_im']:.4f}i  ∠={payload['z_raw_angle_deg']:.3f}°")
+    print(f"  angle shift (well − raw) : {payload['angle_shift_deg']:+.4f}°")
+    extraps = payload["landmark_extrapolations"]
+    if extraps:
+        print(f"\n  TANGENTIAL EXTRAPOLATIONS  ({len(extraps)} landmark crossings, threshold={payload.get('landmark_threshold', 2.0)})")
+        for lm in extraps:
+            print(f"\n  ── idx={lm['at_idx']}  prime={lm['prime_C']}  pattern={lm['pattern']}  V_eff={lm['veff']}  ratio={lm['ratio']:+.4f}  well_ratio={lm['well_ratio']:+.4f}")
+            print(f"     anchor z=({lm['z_re']:.2f},{lm['z_im']:.2f})  θ_mod30={lm['theta_mod30_deg']:.1f}°")
+            print(f"     {'n':>3}  {'pred_re':>10}  {'pred_im':>10}  {'actual_re':>10}  {'actual_im':>10}  {'err_re':>9}  {'err_im':>9}")
+            for p in lm["extrapolation"]:
+                ar = f"{p['actual_re']:.2f}" if p["actual_re"] is not None else "—"
+                ai = f"{p['actual_im']:.2f}" if p["actual_im"] is not None else "—"
+                er = f"{p['err_re']:+.2f}" if p["err_re"] is not None else "—"
+                ei = f"{p['err_im']:+.2f}" if p["err_im"] is not None else "—"
+                print(f"     {p['n']:>3}  {p['pred_re']:>10.2f}  {p['pred_im']:>10.2f}  {ar:>10}  {ai:>10}  {er:>9}  {ei:>9}")
+    print(f"\n  PATH SAMPLE (first {len(payload['path_sample'])} steps)")
+    print(f"  {'idx':>4}  {'prime':>10}  {'pat':>3}  {'veff':>5}  {'ratio':>7}  {'w_rat':>7}  {'z_re':>8}  {'z_im':>8}  {'θmod30':>7}  refl")
+    print(f"  {'─'*4}  {'─'*10}  {'─'*3}  {'─'*5}  {'─'*7}  {'─'*7}  {'─'*8}  {'─'*8}  {'─'*7}  ─")
+    for pt in payload["path_sample"]:
+        r = "Y" if pt["reflected"] else " "
+        p = str(pt["prime_C"]) if pt["prime_C"] else "—"
+        print(f"  {pt['idx']:>4}  {p:>10}  {pt['pattern']:>3}  {pt['veff']:>5.1f}  {pt['ratio']:>7.3f}  {pt['well_ratio']:>7.3f}  {pt['z_well_re']:>8.3f}  {pt['z_well_im']:>8.3f}  {pt['theta_mod30_deg']:>7.1f}  {r}")
+
+
+def print_imaginary_gap_path(payload: dict) -> None:
+    ratio_mode = payload.get("ratio_mode", False)
+    step_label = "ratio" if ratio_mode else "dg"
+    print(f"\n{'═' * 64}")
+    title = "IMAGINARY GAP PATH  —  Δg × i  [RATIO RE-STEP]" if ratio_mode else "IMAGINARY GAP PATH  —  Δg × i complex pathfinder"
+    print(f"  {title}")
+    print(f"{'═' * 64}")
+    print(f"  sequence : {payload['sequence']}")
+    print(f"  limit={payload['limit']}  seq_len={payload['seq_length']}  Δg samples={payload['delta_g_count']}")
+    if ratio_mode:
+        print(f"  mean |Δg| baseline = {payload['mean_abs_dg']}  (step = Δg / baseline)")
+    dp = payload["delta_g_positive"]
+    dn = payload["delta_g_negative"]
+    dz = payload["delta_g_zero"]
+    tot = max(1, dp + dn + dz)
+    print(f"\n  GAP ACCELERATION → COMPLEX PLANE MAPPING")
+    print(f"  Δg>0 → +real  (avg={payload['real_step_mean']:8.4f}) : {dp:5d}  ({100*dp/tot:.1f}%)")
+    print(f"  Δg<0 → +imag  (avg={payload['imag_step_mean']:8.4f}) : {dn:5d}  ({100*dn/tot:.1f}%)")
+    print(f"  Δg=0 → edge                           : {dz:5d}  ({100*dz/tot:.1f}%)")
+    print(f"\n  PATH GEOMETRY")
+    bb = payload["bounding_box"]
+    print(f"  Re range [{bb['re_min']:.4f}, {bb['re_max']:.4f}]   Im range [{bb['im_min']:.4f}, {bb['im_max']:.4f}]")
+    print(f"  width={payload['path_width']:.4f}   height={payload['path_height']:.4f}   aspect={payload['aspect_ratio'] or '—'}")
+    print(f"  z_final = {payload['z_final_re']:.4f} + {payload['z_final_im']:.4f}i   |z|={payload['z_final_magnitude']:.4f}   ∠={payload['z_final_angle_deg']:.3f}°")
+    print(f"\n  CORNER GRAMMAR  (shape_histogram from _classify_gap_shape)")
+    print(f"  corners_right (Δg>0 arrivals) : {payload['corners_turning_right']}")
+    print(f"  corners_left  (Δg<0 arrivals) : {payload['corners_turning_left']}")
+    print(f"  edges (Δg=0)                  : {payload['edges']}")
+    print(f"  full histogram : {payload['shape_histogram']}")
+    landmarks = payload.get("top_ratio_landmarks", [])
+    if landmarks:
+        print(f"\n  TOP TRIANGULATION LANDMARKS  (highest |ratio| = furthest from average)")
+        print(f"  {'rank':>4}  {'idx':>6}  {'prime':>12}  {'dg':>8}  {'ratio':>10}  direction")
+        print(f"  {'─'*4}  {'─'*6}  {'─'*12}  {'─'*8}  {'─'*10}  {'─'*9}")
+        for rank, lm in enumerate(landmarks, 1):
+            direction = "+real" if lm["dg"] > 0 else "+imag"
+            print(f"  {rank:>4}  {lm['idx']:>6}  {str(lm['prime'] or '—'):>12}  {lm['dg']:>8}  {lm['ratio']:>10.4f}  {direction}")
+    print(f"\n  PATH SAMPLE (first {len(payload['path_sample'])} steps)")
+    print(f"  {'idx':>4}  {'prime':>12}  {'z_re':>10}  {'z_im':>10}  {step_label:>8}  shape")
+    print(f"  {'─'*4}  {'─'*12}  {'─'*10}  {'─'*10}  {'─'*8}  {'─'*20}")
+    for pt in payload["path_sample"]:
+        step_val = pt["ratio"] if ratio_mode else pt["dg"]
+        step_str = f"{step_val:.4f}" if step_val is not None else "—"
+        prime_str = str(pt["prime"]) if pt["prime"] is not None else "—"
+        print(f"  {pt['idx']:>4}  {prime_str:>12}  {pt['z_re']:>10.4f}  {pt['z_im']:>10.4f}  {step_str:>8}  {pt['shape']}")
+    tail = payload.get("path_tail", [])
+    if tail:
+        print(f"\n  PATH TAIL (last {len(tail)} steps)")
+        for pt in tail:
+            step_val = pt["ratio"] if ratio_mode else pt["dg"]
+            step_str = f"{step_val:.4f}" if step_val is not None else "—"
+            prime_str = str(pt["prime"]) if pt["prime"] is not None else "—"
+            print(f"  {pt['idx']:>4}  {prime_str:>12}  {pt['z_re']:>10.4f}  {pt['z_im']:>10.4f}  {step_str:>8}  {pt['shape']}")
+
+
+def _classify_step(abs_ratio: float) -> str:
+    if abs_ratio < 1.0:
+        return "calm"
+    elif abs_ratio < 2.0:
+        return "mist"
+    elif abs_ratio < 4.0:
+        return "droplet"
+    return "splash"
+
+
+def run_foam_score_probe(
+    limit: int = 1_000_000,
+    superprime_only: bool = True,
+    window: int = 10,
+    top: int = 20,
+    W: float = 1.0,
+) -> dict:
+    """Score splash zones by surrounding turbulence density.
+
+    Classifies each step: calm |r|<1, mist 1-2, droplet 2-4, splash >=4.
+    For each splash event, scans ±window steps for mist/droplet count and
+    rebound pairs (adjacent opposite-sign contacts), then ranks by foam_score.
+    foam_score = splash_strength + droplet_density*3 + mist_density*1.5
+                 + rebound_pair_density*2 + crossing_density
+    """
+    all_primes = sieve(limit)
+    if superprime_only:
+        rows = _compute_doubly_indexed_superprimes(all_primes)
+        seq = [r["P_P_n"] for r in rows]
+        seq_label = "P(P(n)) superprimes [n prime]"
+        shell_map: dict[int, str | None] = {r["P_P_n"]: r["shell"] for r in rows}
+    else:
+        seq = all_primes
+        seq_label = "all primes"
+        shell_map = {}
+
+    if len(seq) < 3:
+        return {"schema_version": "prime_fog_foam_score_v1", "error": "too few primes"}
+
+    gaps = [seq[i + 1] - seq[i] for i in range(len(seq) - 1)]
+    delta_g = [gaps[i + 1] - gaps[i] for i in range(len(gaps) - 1)]
+
+    nonzero = [abs(d) for d in delta_g if d != 0]
+    mean_abs_dg = sum(nonzero) / len(nonzero) if nonzero else 1.0
+
+    classified: list[dict] = []
+    for idx, dg in enumerate(delta_g):
+        sa = shell_map.get(seq[idx])
+        sb = shell_map.get(seq[idx + 1])
+        sc = shell_map.get(seq[idx + 2]) if idx + 2 < len(seq) else None
+        veff = _triple_veff(sa, sb, sc)
+        is_crossing = (sa != sc) and sa in ("inner", "outer") and sc in ("inner", "outer")
+        pattern = f"{'I' if sa == 'inner' else 'O'}{'I' if sb == 'inner' else 'O'}{'I' if sc == 'inner' else 'O'}"
+        ratio = dg / mean_abs_dg
+        cls = _classify_step(abs(ratio))
+        classified.append({
+            "idx": idx,
+            "prime": seq[idx + 1],
+            "dg": dg,
+            "ratio": ratio,
+            "cls": cls,
+            "sign": 1 if dg > 0 else (-1 if dg < 0 else 0),
+            "pattern": pattern,
+            "veff": round(veff, 2),
+            "is_crossing": is_crossing,
+        })
+
+    N = len(classified)
+    global_dist: Counter = Counter(c["cls"] for c in classified)
+
+    # Rebound contacts: for each splash, count immediately adjacent steps with opposite sign.
+    # Matches the structural ~1.7x ratio observed empirically.
+    splash_indices = [i for i, c in enumerate(classified) if c["cls"] == "splash"]
+    splash_set: set[int] = set(splash_indices)
+
+    rebound_contact_count = 0
+    rebound_contact_idx: set[int] = set()
+    for si in splash_indices:
+        sp_sign = classified[si]["sign"]
+        for adj in (si - 1, si + 1):
+            if 0 <= adj < N and classified[adj]["sign"] != 0 and classified[adj]["sign"] != sp_sign:
+                rebound_contact_count += 1
+                rebound_contact_idx.add(adj)
+
+    zones: list[dict] = []
+    for si in splash_indices:
+        sp = classified[si]
+        lo = max(0, si - window)
+        hi = min(N - 1, si + window)
+        neighborhood = classified[lo:si] + classified[si + 1:hi + 1]
+        nbr = max(1, len(neighborhood))
+
+        mist_count = sum(1 for c in neighborhood if c["cls"] == "mist")
+        droplet_count = sum(1 for c in neighborhood if c["cls"] == "droplet")
+        adj_splash = sum(1 for c in neighborhood if c["cls"] == "splash")
+        # Rebound bonus in neighborhood: any index that is a rebound contact to a splash in window
+        rebound_bonus = sum(
+            1 for j in range(lo, hi + 1)
+            if j in rebound_contact_idx
+            and any(abs(j - k) == 1 for k in splash_set if lo <= k <= hi)
+        )
+        crossing_bonus = sum(1 for c in neighborhood if c["is_crossing"])
+
+        mist_density = mist_count / nbr
+        droplet_density = droplet_count / nbr
+
+        foam_score = (
+            abs(sp["ratio"])
+            + droplet_density * 3.0
+            + mist_density * 1.5
+            + (rebound_bonus / nbr) * 2.0
+            + (crossing_bonus / nbr) * 1.0
+        )
+        zones.append({
+            "rank": 0,
+            "at_idx": si + 1,
+            "prime": sp["prime"],
+            "splash_ratio": round(sp["ratio"], 4),
+            "pattern": sp["pattern"],
+            "veff": sp["veff"],
+            "is_crossing": sp["is_crossing"],
+            "mist_count": mist_count,
+            "droplet_count": droplet_count,
+            "adj_splash_count": adj_splash,
+            "rebound_bonus_count": rebound_bonus,
+            "crossing_bonus_count": crossing_bonus,
+            "mist_density": round(mist_density, 4),
+            "droplet_density": round(droplet_density, 4),
+            "turbulence_density": round((mist_count + droplet_count) / nbr, 4),
+            "foam_score": round(foam_score, 4),
+        })
+
+    zones.sort(key=lambda z: z["foam_score"], reverse=True)
+    for rank, z in enumerate(zones, 1):
+        z["rank"] = rank
+
+    near_idx: set[int] = set()
+    for si in splash_indices:
+        for j in range(max(0, si - window), min(N, si + window + 1)):
+            near_idx.add(j)
+    near_classified = [classified[i] for i in sorted(near_idx)]
+    near_dist: Counter = Counter(c["cls"] for c in near_classified)
+
+    def _pct(dist: Counter, total_n: int) -> dict:
+        return {k: round(100.0 * v / max(1, total_n), 2) for k, v in dist.most_common()}
+
+    return {
+        "schema_version": "prime_fog_foam_score_v1",
+        "sequence": seq_label,
+        "limit": limit,
+        "seq_length": len(seq),
+        "W": W,
+        "window": window,
+        "mean_abs_dg": round(mean_abs_dg, 4),
+        "total_steps": N,
+        "global_distribution": dict(global_dist.most_common()),
+        "global_distribution_pct": _pct(global_dist, N),
+        "global_turbulence_pct": round(100.0 * (global_dist.get("mist", 0) + global_dist.get("droplet", 0)) / max(1, N), 2),
+        "splash_count": len(splash_indices),
+        "rebound_contact_count": rebound_contact_count,
+        "rebound_per_splash": round(rebound_contact_count / max(1, len(splash_indices)), 4),
+        "near_splash_step_count": len(near_idx),
+        "near_splash_distribution": dict(near_dist.most_common()),
+        "near_splash_distribution_pct": _pct(near_dist, len(near_idx)),
+        "near_turbulence_pct": round(100.0 * (near_dist.get("mist", 0) + near_dist.get("droplet", 0)) / max(1, len(near_idx)), 2),
+        "top_foam_zones": zones[:top],
+        "all_zone_count": len(zones),
+    }
+
+
+def print_foam_score_probe(payload: dict) -> None:
+    print(f"\n{'═' * 72}")
+    print("  FOAM SCORE PROBE  —  splash zone turbulence ranking")
+    print(f"{'═' * 72}")
+    print(f"  sequence      : {payload['sequence']}")
+    print(f"  limit         : {payload['limit']:,}")
+    print(f"  total steps   : {payload['total_steps']:,}")
+    print(f"  foam window   : ±{payload['window']}")
+    print()
+    gd = payload["global_distribution_pct"]
+    print(f"  GLOBAL DISTRIBUTION  ({payload['total_steps']:,} steps)")
+    for cls in ("calm", "mist", "droplet", "splash"):
+        n = payload["global_distribution"].get(cls, 0)
+        print(f"    {cls:10s}  {n:>8,}   {gd.get(cls, 0.0):6.2f}%")
+    print(f"    turbulence   {'':>8}   {payload['global_turbulence_pct']:6.2f}%  (mist+droplet)")
+    print()
+    nd = payload["near_splash_distribution_pct"]
+    print(f"  NEAR-SPLASH DISTRIBUTION  ({payload['near_splash_step_count']:,} steps within ±{payload['window']} of a splash)")
+    for cls in ("calm", "mist", "droplet", "splash"):
+        n = payload["near_splash_distribution"].get(cls, 0)
+        print(f"    {cls:10s}  {n:>8,}   {nd.get(cls, 0.0):6.2f}%")
+    print(f"    turbulence   {'':>8}   {payload['near_turbulence_pct']:6.2f}%  (mist+droplet)")
+    print()
+    n_sp = payload["splash_count"]
+    n_rb = payload["rebound_contact_count"]
+    rps = payload["rebound_per_splash"]
+    print(f"  SPLASH EVENTS : {n_sp}   REBOUND CONTACTS : {n_rb}   rebound/splash : {rps:.3f}")
+    print()
+    print(f"  TOP FOAM ZONES  (ranked by foam_score = splash_strength + droplet*3 + mist*1.5 + rebound*2 + crossing)")
+    zones = payload["top_foam_zones"]
+    hdr = f"  {'rk':>3}  {'idx':>8}  {'prime':>14}  {'splash_r':>9}  {'pat':>3}  {'veff':>5}  {'mst%':>5}  {'drp%':>5}  {'rb':>3}  {'cx':>3}  {'foam':>8}"
+    print(hdr)
+    print(f"  {'─'*3}  {'─'*8}  {'─'*14}  {'─'*9}  {'─'*3}  {'─'*5}  {'─'*5}  {'─'*5}  {'─'*3}  {'─'*3}  {'─'*8}")
+    w2 = max(1, 2 * payload["window"])
+    for z in zones:
+        xmark = "*" if z["is_crossing"] else " "
+        mst_pct = 100.0 * z["mist_count"] / w2
+        drp_pct = 100.0 * z["droplet_count"] / w2
+        print(
+            f"  {z['rank']:>3}  {z['at_idx']:>8,}  {z['prime']:>14,}  {z['splash_ratio']:>9.4f}"
+            f"  {z['pattern']:>3}{xmark}  {z['veff']:>5.1f}  {mst_pct:>5.1f}  {drp_pct:>5.1f}"
+            f"  {z['rebound_bonus_count']:>3}  {z['crossing_bonus_count']:>3}  {z['foam_score']:>8.4f}"
+        )
+
+
+_PHI = (1.0 + 5.0 ** 0.5) / 2.0
+# skip 2 — all even gaps are trivially 0; mod-13 is the tesseract (4th hidden) axis
+_GAP_WALL_MODS = [3, 5, 7, 11, 13, 17, 19]
+
+# Behavior taxonomy (4 types + flat):
+#   flat      = no crossings anywhere (pure large-gap variance outlier)
+#   surface   = mod-30 crossing only (fully visible in the shell map)
+#   shadow    = exactly 1 hidden axis sign-flips (mod-7 OR mod-11 OR mod-13)
+#   deep      = exactly 2 hidden axes sign-flip
+#   tesseract = all 3 hidden axes sign-flip simultaneously (4D boundary event)
+_BEHAVIOR_ORDER = ["tesseract", "deep", "shadow", "surface", "flat"]
+
+
+def _extended_prime_coords(p: int) -> dict:
+    """Signed balanced CRT coordinates across mod-30 / mod-210 / mod-2310 / mod-30030 axes."""
+    r30 = p % 30
+    zs = r30 % 5
+    if zs > 2:
+        zs -= 5
+    ys = r30 % 3
+    if ys > 1:
+        ys -= 3
+    a = r30 % 2
+    is_pc = (a != 0) and (ys != 0) and (zs != 0)
+    shell30 = None
+    if is_pc:
+        sq30 = zs * zs + ys * ys
+        shell30 = "inner" if sq30 == 2 else "outer"
+    ws = p % 7           # mod-210 axis
+    if ws > 3:
+        ws -= 7
+    vs = p % 11          # mod-2310 axis
+    if vs > 5:
+        vs -= 11
+    ts = p % 13          # mod-30030 axis (tesseract dimension)
+    if ts > 6:
+        ts -= 13
+    return {
+        "shell30": shell30,
+        "zs": zs, "ys": ys, "ws": ws, "vs": vs, "ts": ts,
+        "phi_phase": (p * _PHI) % 1.0,
+    }
+
+
+def _gap_wall_loops(gap: int) -> dict:
+    """Folded residue vector for a prime gap. -1 where gap is divisible by that prime."""
+    rv = {}
+    for q in _GAP_WALL_MODS:
+        r = gap % q
+        rv[q] = -1 if r == 0 else r
+    return rv
+
+
+def _gap_charge_simple(gap: int) -> int:
+    """Signed gap charge: -1 for each wall prime that divides gap, +1 otherwise. Range -5 to +5."""
+    return sum(-1 if gap % p == 0 else 1 for p in _GAP_WALL_MODS)
+
+
+_SOLITON_PHI_THRESHOLD = 0.30
+_SOLITON_CLASSES = [
+    "visible_crossing",
+    "mixed_collision",
+    "charged_hidden_wall",
+    "smooth_phase",
+    "variance_only",
+]
+
+
+def _soliton_event_class(cross30: bool, gc_before: int, gc_after: int, phi_drift: float) -> str:
+    """5-class soliton taxonomy based on mod-30 crossing and flanking gap charge signs."""
+    neg = (gc_before < 0) or (gc_after < 0)
+    if cross30 and neg:
+        return "mixed_collision"
+    if cross30:
+        return "visible_crossing"
+    if neg:
+        return "charged_hidden_wall"
+    if phi_drift >= _SOLITON_PHI_THRESHOLD:
+        return "smooth_phase"
+    return "variance_only"
+
+
+_PRIME_RATIO_PAIRS: list[tuple[int, int, float]] = [
+    (p, q, p / q)
+    for p in [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53]
+    for q in [1, 2, 3, 5, 7]
+    if p > q
+]
+
+
+def _nearest_prime_ratio(abs_ratio: float) -> tuple[float, str]:
+    """Returns (log_error, label). Small err = strong prime-ratio resonance."""
+    if abs_ratio < 1.1:
+        return 1.0, ""
+    best_err = float("inf")
+    best_label = ""
+    log_r = math.log(abs_ratio)
+    for p, q, r in _PRIME_RATIO_PAIRS:
+        err = abs(log_r - math.log(r))
+        if err < best_err:
+            best_err = err
+            best_label = f"{p}/{q}"
+    return best_err, best_label
+
+
+def _prime_ratio_score(log_err: float) -> float:
+    """Resonance score 0→1: 1 = perfect match, 0 at log-err ≥ 0.02."""
+    return max(0.0, 1.0 - log_err / 0.02)
+
+
+def _splash_type5(
+    cross30: bool,
+    gc_before: int,
+    gc_after: int,
+    phi_drift: float,
+    prime_res: float,
+    rebound: int,
+) -> str:
+    """5-class splash type taxonomy: wall_charge / shell_crossing / prime_ratio / smooth_phi / rebound."""
+    neg = (gc_before < 0) or (gc_after < 0)
+    if neg and not cross30:
+        return "wall_charge_splash"
+    if cross30:
+        return "shell_crossing_splash"
+    if prime_res >= 0.5:
+        return "prime_ratio_splash"
+    if phi_drift >= 0.30:
+        return "smooth_phi_splash"
+    return "rebound_splash"
+
+
+def _behavior_class(cross30: bool, hidden7: bool, hidden11: bool, hidden13: bool) -> str:
+    hidden_count = sum([hidden7, hidden11, hidden13])
+    if hidden_count == 3:
+        return "tesseract"
+    if hidden_count == 2:
+        return "deep"
+    if hidden_count == 1:
+        return "shadow"
+    if cross30:
+        return "surface"
+    return "flat"
+
+
+def run_wall_loop_probe(
+    limit: int = 1_000_000,
+    superprime_only: bool = True,
+    window: int = 6,
+    top: int = 20,
+) -> dict:
+    """Test III/OOO splash events for hidden crossings across 4 CRT axes + phi drift.
+
+    Behavior taxonomy (4 types + flat):
+      tesseract = all 3 hidden axes flip (mod-7, mod-11, mod-13) — 4D boundary event
+      deep      = exactly 2 hidden axes flip
+      shadow    = exactly 1 hidden axis flips
+      surface   = mod-30 shell crossing only
+      flat      = no crossings (pure large-gap variance outlier)
+
+    Events sorted by own_wall_density (count of -1 in gap's folded residue vector).
+    """
+    all_primes = sieve(limit)
+    if superprime_only:
+        rows = _compute_doubly_indexed_superprimes(all_primes)
+        seq = [r["P_P_n"] for r in rows]
+        seq_label = "P(P(n)) superprimes [n prime]"
+    else:
+        seq = all_primes
+        seq_label = "all primes"
+
+    if len(seq) < 3:
+        return {"schema_version": "prime_fog_wall_loop_v2", "error": "too few primes"}
+
+    gaps = [seq[i + 1] - seq[i] for i in range(len(seq) - 1)]
+    delta_g = [gaps[i + 1] - gaps[i] for i in range(len(gaps) - 1)]
+    nonzero = [abs(d) for d in delta_g if d != 0]
+    mean_abs_dg = sum(nonzero) / len(nonzero) if nonzero else 1.0
+
+    N = len(delta_g)
+    splash_events: list[dict] = []
+    pattern_stats: dict = {}
+
+    for idx, dg in enumerate(delta_g):
+        pa = seq[idx]
+        pb = seq[idx + 1]
+        pc = seq[idx + 2] if idx + 2 < len(seq) else seq[idx + 1]
+        ca = _extended_prime_coords(pa)
+        cb = _extended_prime_coords(pb)
+        cc = _extended_prime_coords(pc)
+
+        sa, sb, sc = ca["shell30"], cb["shell30"], cc["shell30"]
+        pat = f"{'I' if sa == 'inner' else 'O'}{'I' if sb == 'inner' else 'O'}{'I' if sc == 'inner' else 'O'}"
+
+        cross30 = (sa != sc) and sa in ("inner", "outer") and sc in ("inner", "outer")
+
+        hidden7 = ca["ws"] != 0 and cc["ws"] != 0 and ((ca["ws"] > 0) != (cc["ws"] > 0))
+        hidden11 = ca["vs"] != 0 and cc["vs"] != 0 and ((ca["vs"] > 0) != (cc["vs"] > 0))
+        hidden13 = ca["ts"] != 0 and cc["ts"] != 0 and ((ca["ts"] > 0) != (cc["ts"] > 0))
+
+        bclass = _behavior_class(cross30, hidden7, hidden11, hidden13)
+        phi_drift = abs(cc["phi_phase"] - ca["phi_phase"])
+        ratio = dg / mean_abs_dg
+        cls = _classify_step(abs(ratio))
+
+        if pat not in pattern_stats:
+            pattern_stats[pat] = {
+                "total": 0, "splash": 0, "cross30": 0,
+                "hidden7": 0, "hidden11": 0, "hidden13": 0,
+                "tesseract": 0, "deep": 0, "shadow": 0, "surface": 0, "flat": 0,
+            }
+        st = pattern_stats[pat]
+        st["total"] += 1
+        if cross30:
+            st["cross30"] += 1
+        if hidden7:
+            st["hidden7"] += 1
+        if hidden11:
+            st["hidden11"] += 1
+        if hidden13:
+            st["hidden13"] += 1
+        st[bclass] += 1
+        if cls == "splash":
+            st["splash"] += 1
+
+        if cls != "splash":
+            continue
+
+        lo = max(0, idx - window)
+        hi = min(N - 1, idx + window)
+        window_gaps = gaps[lo: hi + 2]
+        wall_totals: Counter = Counter()
+        for g in window_gaps:
+            for q, v in _gap_wall_loops(g).items():
+                if v == -1:
+                    wall_totals[q] += 1
+        wl_own = _gap_wall_loops(gaps[idx])
+        own_wall_density = sum(1 for v in wl_own.values() if v == -1)
+        window_wall_density = sum(wall_totals.values())
+
+        phi_vals = [_extended_prime_coords(seq[j + 1])["phi_phase"] for j in range(lo, hi + 1) if j + 1 < len(seq)]
+        phi_mean = sum(phi_vals) / max(1, len(phi_vals))
+        phi_std = (sum((v - phi_mean) ** 2 for v in phi_vals) / max(1, len(phi_vals))) ** 0.5
+
+        splash_events.append({
+            "at_idx": idx + 1,
+            "prime_A": pa, "prime_B": pb, "prime_C": pc,
+            "pattern": pat,
+            "ratio": round(ratio, 4),
+            "cross30": cross30,
+            "hidden7": hidden7,
+            "hidden11": hidden11,
+            "hidden13": hidden13,
+            "behavior": bclass,
+            "ws_A": ca["ws"], "ws_C": cc["ws"],
+            "vs_A": ca["vs"], "vs_C": cc["vs"],
+            "ts_A": ca["ts"], "ts_C": cc["ts"],
+            "phi_drift_triple": round(phi_drift, 6),
+            "phi_std_window": round(phi_std, 6),
+            "own_wall_density": own_wall_density,
+            "window_wall_density": window_wall_density,
+            "gap_wall_loops_own": {str(q): v for q, v in wl_own.items()},
+            "gap_wall_freq_window": {str(q): wall_totals.get(q, 0) for q in _GAP_WALL_MODS},
+        })
+
+    # Pattern summary with per-behavior counts
+    pattern_summary: list[dict] = []
+    for pat, st in sorted(pattern_stats.items(), key=lambda x: -x[1]["total"]):
+        tot = max(1, st["total"])
+        pattern_summary.append({
+            "pattern": pat,
+            "total": st["total"],
+            "splash": st["splash"],
+            "cross30_pct": round(100.0 * st["cross30"] / tot, 1),
+            "hidden7_pct": round(100.0 * st["hidden7"] / tot, 1),
+            "hidden11_pct": round(100.0 * st["hidden11"] / tot, 1),
+            "hidden13_pct": round(100.0 * st["hidden13"] / tot, 1),
+            "tesseract_pct": round(100.0 * st["tesseract"] / tot, 1),
+            "deep_pct": round(100.0 * st["deep"] / tot, 1),
+            "shadow_pct": round(100.0 * st["shadow"] / tot, 1),
+            "surface_pct": round(100.0 * st["surface"] / tot, 1),
+            "flat_pct": round(100.0 * st["flat"] / tot, 1),
+        })
+
+    # Behavior-tagged groups, sorted by own_wall_density desc then |ratio| desc
+    def _sort_key(e: dict) -> tuple:
+        return (-e["own_wall_density"], -abs(e["ratio"]))
+
+    by_behavior: dict[str, list[dict]] = {b: [] for b in _BEHAVIOR_ORDER}
+    for e in splash_events:
+        by_behavior[e["behavior"]].append(e)
+    for b in _BEHAVIOR_ORDER:
+        by_behavior[b].sort(key=_sort_key)
+
+    return {
+        "schema_version": "prime_fog_wall_loop_v2",
+        "sequence": seq_label,
+        "limit": limit,
+        "total_steps": N,
+        "splash_count": len(splash_events),
+        "window": window,
+        "behavior_counts": {b: len(by_behavior[b]) for b in _BEHAVIOR_ORDER},
+        "pattern_summary": pattern_summary,
+        "by_behavior": {b: by_behavior[b][:top] for b in _BEHAVIOR_ORDER},
+        "all_by_wall_density": sorted(splash_events, key=_sort_key)[:top],
+    }
+
+
+def print_wall_loop_probe(payload: dict) -> None:
+    print(f"\n{'═' * 78}")
+    print("  WALL LOOP PROBE  —  4-axis hidden crossing + gap wall density")
+    print(f"  behaviors: flat / surface / shadow / deep / TESSERACT")
+    print(f"{'═' * 78}")
+    print(f"  sequence    : {payload['sequence']}")
+    print(f"  limit       : {payload['limit']:,}")
+    print(f"  total steps : {payload['total_steps']:,}")
+    print(f"  window      : ±{payload['window']}")
+    print()
+
+    bc = payload["behavior_counts"]
+    total_sp = max(1, payload["splash_count"])
+    print(f"  BEHAVIOR DISTRIBUTION  ({total_sp} splash events)")
+    for b in _BEHAVIOR_ORDER:
+        n = bc[b]
+        pct = 100.0 * n / total_sp
+        bar = "█" * int(pct / 2)
+        print(f"    {b:12s}  {n:>5}  {pct:5.1f}%  {bar}")
+    print()
+
+    print(f"  PATTERN CROSSING RATES  (hidden axes: ws=mod7, vs=mod11, ts=mod13)")
+    print(f"  {'pat':>3}  {'total':>6}  {'sp':>4}  {'c30%':>5}  {'h7%':>5}  {'h11%':>5}  {'h13%':>5}  {'tess%':>6}  {'deep%':>6}  {'shad%':>6}  {'surf%':>6}  {'flat%':>6}")
+    print(f"  {'─'*3}  {'─'*6}  {'─'*4}  {'─'*5}  {'─'*5}  {'─'*5}  {'─'*5}  {'─'*6}  {'─'*6}  {'─'*6}  {'─'*6}  {'─'*6}")
+    for ps in payload["pattern_summary"]:
+        print(
+            f"  {ps['pattern']:>3}  {ps['total']:>6,}  {ps['splash']:>4}"
+            f"  {ps['cross30_pct']:>5.1f}"
+            f"  {ps['hidden7_pct']:>5.1f}  {ps['hidden11_pct']:>5.1f}  {ps['hidden13_pct']:>5.1f}"
+            f"  {ps['tesseract_pct']:>6.1f}  {ps['deep_pct']:>6.1f}  {ps['shadow_pct']:>6.1f}"
+            f"  {ps['surface_pct']:>6.1f}  {ps['flat_pct']:>6.1f}"
+        )
+    print()
+
+    col_hdr = (
+        f"  {'idx':>7}  {'prime_B':>14}  {'ratio':>8}  {'pat':>3}  {'beh':>9}"
+        f"  {'c30':>3}  {'h7':>3}  {'h11':>3}  {'h13':>3}"
+        f"  {'wA':>3}  {'wC':>3}  {'vA':>3}  {'vC':>3}  {'tA':>3}  {'tC':>3}"
+        f"  {'φ_drft':>7}  {'wd':>3}  gap_wl[3,5,7,11,13]"
+    )
+    col_sep = (
+        f"  {'─'*7}  {'─'*14}  {'─'*8}  {'─'*3}  {'─'*9}"
+        f"  {'─'*3}  {'─'*3}  {'─'*3}  {'─'*3}"
+        f"  {'─'*3}  {'─'*3}  {'─'*3}  {'─'*3}  {'─'*3}  {'─'*3}"
+        f"  {'─'*7}  {'─'*3}  {'─'*20}"
+    )
+
+    def _show_group(label: str, events: list[dict]) -> None:
+        if not events:
+            return
+        print(f"  ── {label}  ({len(events)} shown) ──")
+        print(col_hdr)
+        print(col_sep)
+        for e in events:
+            gwl = e["gap_wall_loops_own"]
+            wl_str = ",".join(str(gwl.get(str(q), "?")) for q in _GAP_WALL_MODS)
+            c30 = "Y" if e["cross30"] else "."
+            h7  = "Y" if e["hidden7"]  else "."
+            h11 = "Y" if e["hidden11"] else "."
+            h13 = "Y" if e["hidden13"] else "."
+            print(
+                f"  {e['at_idx']:>7,}  {e['prime_B']:>14,}  {e['ratio']:>8.4f}"
+                f"  {e['pattern']:>3}  {e['behavior']:>9}"
+                f"  {c30:>3}  {h7:>3}  {h11:>3}  {h13:>3}"
+                f"  {e['ws_A']:>3}  {e['ws_C']:>3}  {e['vs_A']:>3}  {e['vs_C']:>3}"
+                f"  {e['ts_A']:>3}  {e['ts_C']:>3}"
+                f"  {e['phi_drift_triple']:>7.4f}  {e['own_wall_density']:>3}  [{wl_str}]"
+            )
+        print()
+
+    # Show tesseract + dense-wall events first
+    _show_group("TESSERACT  (all 3 hidden axes flip)", payload["by_behavior"]["tesseract"])
+    _show_group("ALL SPLASHES sorted by gap wall density", payload["all_by_wall_density"])
+    _show_group("DEEP  (2 hidden axes)", payload["by_behavior"]["deep"])
+    _show_group("SURFACE  (mod-30 only)", payload["by_behavior"]["surface"])
+    _show_group("FLAT  (no crossings — pure outliers)", payload["by_behavior"]["flat"])
+
+
+def run_soliton_probe(
+    limit: int = 1_000_000,
+    superprime_only: bool = True,
+    window: int = 10,
+    top: int = 25,
+) -> dict:
+    """Gap charge field soliton probe.
+
+    gap_charge(g) = sum(-1 if g%p==0 else +1 for p in [3,5,7,11,13])  range -5 to +5
+
+    soliton_score = abs(ratio) + rebound_count + foam_density
+                   + max(0, -gc_before) + max(0, -gc_after) + charge_flip
+
+    5-class event taxonomy:
+      visible_crossing    : mod-30 shell crossing (standard CRT event)
+      mixed_collision     : shell crossing AND negative flanking gap charge
+      charged_hidden_wall : no crossing, negative flanking charge (III/OOO gap-field events)
+      smooth_phase        : no crossing, positive charge, phi_drift >= 0.30
+      variance_only       : no crossing, positive charge, phi_drift < 0.30
+    """
+    all_primes = sieve(limit)
+    if superprime_only:
+        rows = _compute_doubly_indexed_superprimes(all_primes)
+        seq = [r["P_P_n"] for r in rows]
+        seq_label = "P(P(n)) superprimes [n prime]"
+        shell_map = {r["P_P_n"]: r["shell"] for r in rows}
+    else:
+        seq = all_primes
+        seq_label = "all primes"
+        shell_map = {}
+
+    if len(seq) < 3:
+        return {"schema_version": "prime_fog_soliton_v1", "error": "too few primes"}
+
+    gaps = [seq[i + 1] - seq[i] for i in range(len(seq) - 1)]
+    delta_g = [gaps[i + 1] - gaps[i] for i in range(len(gaps) - 1)]
+    nonzero = [abs(d) for d in delta_g if d != 0]
+    mean_abs_dg = sum(nonzero) / len(nonzero) if nonzero else 1.0
+
+    gap_charges = [_gap_charge_simple(g) for g in gaps]
+
+    N = len(delta_g)
+    splash_events: list[dict] = []
+    class_hist: dict[str, int] = {sc: 0 for sc in _SOLITON_CLASSES}
+    pat_class_hist: dict[str, dict[str, int]] = {}
+
+    for idx, dg in enumerate(delta_g):
+        ratio = dg / mean_abs_dg
+        if _classify_step(abs(ratio)) != "splash":
+            continue
+
+        pa = seq[idx]
+        pb = seq[idx + 1]
+        pc = seq[idx + 2]
+
+        sa = shell_map.get(pa)
+        sc_val = shell_map.get(pc)
+        pat = (
+            ("I" if sa == "inner" else "O")
+            + ("I" if shell_map.get(pb) == "inner" else "O")
+            + ("I" if sc_val == "inner" else "O")
+        )
+        cross30 = sa in ("inner", "outer") and sc_val in ("inner", "outer") and sa != sc_val
+
+        gc_before = gap_charges[idx - 1] if idx > 0 else 0
+        gc_AB = gap_charges[idx]
+        gc_BC = gap_charges[idx + 1] if idx + 1 < len(gap_charges) else 0
+        gc_after = gap_charges[idx + 2] if idx + 2 < len(gap_charges) else 0
+
+        ca = _extended_prime_coords(pa)
+        cc = _extended_prime_coords(pc)
+        phi_drift = abs(cc["phi_phase"] - ca["phi_phase"])
+
+        h7 = ca["ws"] != 0 and cc["ws"] != 0 and (ca["ws"] > 0) != (cc["ws"] > 0)
+        h11 = ca["vs"] != 0 and cc["vs"] != 0 and (ca["vs"] > 0) != (cc["vs"] > 0)
+        h13 = ca["ts"] != 0 and cc["ts"] != 0 and (ca["ts"] > 0) != (cc["ts"] > 0)
+        bclass = _behavior_class(cross30, h7, h11, h13)
+
+        s_class = _soliton_event_class(cross30, gc_before, gc_after, phi_drift)
+
+        rebound = 0
+        if idx > 0 and delta_g[idx - 1] != 0 and dg != 0 and (delta_g[idx - 1] > 0) != (dg > 0):
+            rebound += 1
+        if idx + 1 < N and delta_g[idx + 1] != 0 and dg != 0 and (delta_g[idx + 1] > 0) != (dg > 0):
+            rebound += 1
+
+        lo = max(0, idx - window)
+        hi = min(N - 1, idx + window)
+        nbr = [abs(delta_g[j] / mean_abs_dg) for j in range(lo, hi + 1) if j != idx]
+        mist_droplet = sum(1 for r in nbr if 1.0 <= r < 4.0)
+        foam_density = mist_droplet / max(1, len(nbr))
+
+        charge_flip = 1.0 if (gc_before < 0) != (gc_after < 0) else 0.0
+
+        soliton_score = (
+            abs(ratio)
+            + rebound
+            + foam_density
+            + max(0, -gc_before)
+            + max(0, -gc_after)
+            + charge_flip
+        )
+
+        w_lo = max(0, idx - window)
+        w_hi = min(len(gap_charges) - 1, idx + window + 3)
+        w_charges = gap_charges[w_lo : w_hi + 1]
+        mean_wc = sum(w_charges) / max(1, len(w_charges))
+        neg_wc_frac = sum(1 for c in w_charges if c < 0) / max(1, len(w_charges))
+
+        class_hist[s_class] = class_hist.get(s_class, 0) + 1
+        if pat not in pat_class_hist:
+            pat_class_hist[pat] = {sc: 0 for sc in _SOLITON_CLASSES}
+        pat_class_hist[pat][s_class] = pat_class_hist[pat].get(s_class, 0) + 1
+
+        splash_events.append(
+            {
+                "at_idx": idx + 1,
+                "prime_A": pa,
+                "prime_B": pb,
+                "prime_C": pc,
+                "pattern": pat,
+                "ratio": round(ratio, 4),
+                "cross30": cross30,
+                "behavior": bclass,
+                "soliton_class": s_class,
+                "gc_before": gc_before,
+                "gc_AB": gc_AB,
+                "gc_BC": gc_BC,
+                "gc_after": gc_after,
+                "charge_flip": bool(charge_flip),
+                "phi_drift": round(phi_drift, 4),
+                "rebound_count": rebound,
+                "foam_density": round(foam_density, 4),
+                "mean_window_gc": round(mean_wc, 3),
+                "neg_window_frac": round(neg_wc_frac, 4),
+                "soliton_score": round(soliton_score, 4),
+            }
+        )
+
+    pat_summary: list[dict] = []
+    for pat, c in sorted(pat_class_hist.items()):
+        total = max(1, sum(c.values()))
+        row: dict = {"pattern": pat, "splash_count": total}
+        for sc in _SOLITON_CLASSES:
+            row[f"{sc}_pct"] = round(100.0 * c.get(sc, 0) / total, 1)
+        pat_summary.append(row)
+
+    by_soliton = sorted(splash_events, key=lambda e: -e["soliton_score"])
+    iii_ooo = [e for e in by_soliton if e["pattern"] in ("III", "OOO")]
+    chw = [e for e in by_soliton if e["soliton_class"] == "charged_hidden_wall"]
+    crossings = [e for e in by_soliton if e["cross30"]]
+
+    return {
+        "schema_version": "prime_fog_soliton_v1",
+        "sequence": seq_label,
+        "limit": limit,
+        "total_steps": N,
+        "splash_count": len(splash_events),
+        "window": window,
+        "mean_abs_dg": round(mean_abs_dg, 4),
+        "class_histogram": class_hist,
+        "pattern_summary": pat_summary,
+        "top_by_soliton": by_soliton[:top],
+        "iii_ooo_splashes": iii_ooo[:top],
+        "charged_hidden_wall_splashes": chw[:top],
+        "crossing_splashes": crossings[:top],
+    }
+
+
+def print_soliton_probe(payload: dict) -> None:
+    if "error" in payload:
+        print(f"SOLITON PROBE error: {payload['error']}")
+        return
+
+    print(f"\n{'='*72}")
+    print("SOLITON CHARGE PROBE")
+    print(f"  sequence : {payload['sequence']}")
+    print(f"  limit    : {payload['limit']:,}")
+    print(f"  splashes : {payload['splash_count']}  (of {payload['total_steps']:,} steps)")
+    print("  charge   : sum(-1 if gap%p==0 else +1 for p in [3,5,7,11,13])  range -5 to +5")
+
+    print(f"\n{'─'*60}")
+    print("EVENT CLASS DISTRIBUTION  (splash events only)")
+    ch = payload["class_histogram"]
+    total = max(1, payload["splash_count"])
+    for sc in _SOLITON_CLASSES:
+        n = ch.get(sc, 0)
+        bar = "#" * int(30 * n / total)
+        print(f"  {sc:<25}  {n:>4}  ({100.0*n/total:5.1f}%)  {bar}")
+
+    print(f"\n{'─'*60}")
+    print("PATTERN × CLASS  (% of each pattern's splashes)")
+    print(f"  {'pat':>3}  {'n':>5}  {'vis':>5}  {'mix':>5}  {'chw':>5}  {'phi':>5}  {'var':>5}")
+    print(f"  {'─'*46}")
+    for row in payload["pattern_summary"]:
+        p = row["pattern"]
+        n = row["splash_count"]
+        vis = row.get("visible_crossing_pct", 0.0)
+        mix = row.get("mixed_collision_pct", 0.0)
+        chw = row.get("charged_hidden_wall_pct", 0.0)
+        phi = row.get("smooth_phase_pct", 0.0)
+        var = row.get("variance_only_pct", 0.0)
+        print(f"  {p:>3}  {n:>5}  {vis:>5.1f}  {mix:>5.1f}  {chw:>5.1f}  {phi:>5.1f}  {var:>5.1f}")
+
+    def _show_events(title: str, events: list[dict], limit: int = 20) -> None:
+        if not events:
+            return
+        print(f"\n{'─'*60}")
+        print(f"{title}  [{len(events)} total, {min(len(events), limit)} shown]")
+        print(
+            f"  {'rk':>3}  {'idx':>6}  {'prime_B':>10}  {'rat':>7}  "
+            f"{'pat':>3}  {'cls':<25}  {'c30':>3}  "
+            f"{'gcB':>4}  {'gcA':>4}  {'flp':>3}  {'phi':>6}  {'sol':>7}"
+        )
+        for i, e in enumerate(events[:limit], 1):
+            c30 = "Y" if e["cross30"] else "N"
+            fl = "Y" if e["charge_flip"] else "N"
+            print(
+                f"  {i:>3}  {e['at_idx']:>6}  {e['prime_B']:>10,}  {e['ratio']:>7.3f}  "
+                f"{e['pattern']:>3}  {e['soliton_class']:<25}  {c30:>3}  "
+                f"{e['gc_before']:>4}  {e['gc_after']:>4}  {fl:>3}  "
+                f"{e['phi_drift']:>6.4f}  {e['soliton_score']:>7.3f}"
+            )
+
+    _show_events("TOP EVENTS BY SOLITON SCORE", payload["top_by_soliton"])
+    _show_events("III / OOO SPLASHES  (non-crossing patterns)", payload["iii_ooo_splashes"])
+    _show_events(
+        "CHARGED HIDDEN WALL  (no mod-30 cross, negative flanking charge)",
+        payload["charged_hidden_wall_splashes"],
+    )
+    _show_events("CROSSING SPLASHES  (visible + mixed)", payload["crossing_splashes"])
+    print()
+
+
+_PRIME_RATIO_NUMERATOR_PRIMES = [
+    2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,
+    53, 59, 61, 67, 71, 73, 79, 83, 89, 97,
+]
+_PRIME_RATIO_DENOMINATORS = [1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
+
+
+def _nearest_prime_ratio(gap_a: int, gap_b: int) -> dict:
+    if gap_a <= 0 or gap_b <= 0:
+        return {"ratio": 0.0, "target": 0.0, "label": "none", "error": 1.0, "score": 0.0}
+    ratio = max(gap_a, gap_b) / min(gap_a, gap_b)
+    best: tuple[float, float, int, int] | None = None
+    for p in _PRIME_RATIO_NUMERATOR_PRIMES:
+        for q in _PRIME_RATIO_DENOMINATORS:
+            if p <= q:
+                continue
+            target = p / q
+            error = abs(math.log(ratio / target))
+            if best is None or error < best[0]:
+                best = (error, target, p, q)
+    if best is None:
+        return {"ratio": ratio, "target": 0.0, "label": "none", "error": 1.0, "score": 0.0}
+    error, target, p, q = best
+    return {
+        "ratio": round(ratio, 6),
+        "target": round(target, 6),
+        "label": f"{p}/{q}",
+        "error": round(error, 6),
+        "score": round(1 / (1 + 50 * error), 6),
+    }
+
+
+def _gap_depth_ratio_resonance(
+    prime_ratio: dict,
+    depth_before: float,
+    depth_after: float,
+    wall_before: int,
+    wall_after: int,
+) -> dict:
+    depth_total = depth_before + depth_after
+    depth_norm = min(1.0, depth_total / 12.0)
+    wall_norm = min(1.0, (wall_before + wall_after) / max(1, 2 * len(_GAP_WALL_MODS)))
+    support = (depth_norm * 0.70) + (wall_norm * 0.30)
+    score = prime_ratio["score"] * support
+    return {
+        "score": round(score, 6),
+        "depth_total": round(depth_total, 6),
+        "depth_norm": round(depth_norm, 6),
+        "wall_norm": round(wall_norm, 6),
+        "support": round(support, 6),
+        "ratio_label": prime_ratio["label"],
+        "label": f"{prime_ratio['label']}@D{depth_total:.2f}",
+    }
+
+
+def _gap_wall_count(gap: int) -> int:
+    return sum(1 for p in _GAP_WALL_MODS if gap % p == 0)
+
+
+def _gap_padic_depth(gap: int) -> float:
+    return sum(_padic_valuation(gap, p) * math.log(p) for p in _GAP_WALL_MODS)
+
+
+def _build_superprime_event_field(limit: int, superprime_only: bool) -> dict:
+    all_primes = sieve(limit)
+    if superprime_only:
+        rows = _compute_doubly_indexed_superprimes(all_primes)
+        seq = [r["P_P_n"] for r in rows]
+        seq_label = "P(P(n)) superprimes [n prime]"
+        shell_map = {r["P_P_n"]: r["shell"] for r in rows}
+    else:
+        seq = all_primes
+        seq_label = "all primes"
+        shell_map = {}
+
+    if len(seq) < 3:
+        return {"error": "too few primes"}
+
+    gaps = [seq[i + 1] - seq[i] for i in range(len(seq) - 1)]
+    delta_g = [gaps[i + 1] - gaps[i] for i in range(len(gaps) - 1)]
+    nonzero = [abs(d) for d in delta_g if d != 0]
+    mean_abs_dg = sum(nonzero) / len(nonzero) if nonzero else 1.0
+    gap_charges = [_gap_charge_simple(g) for g in gaps]
+
+    events: list[dict] = []
+    for idx, dg in enumerate(delta_g):
+        pa = seq[idx]
+        pb = seq[idx + 1]
+        pc = seq[idx + 2]
+        ca = _extended_prime_coords(pa)
+        cb = _extended_prime_coords(pb)
+        cc = _extended_prime_coords(pc)
+
+        sa = shell_map.get(pa) if shell_map else ca["shell30"]
+        sb = shell_map.get(pb) if shell_map else cb["shell30"]
+        sc = shell_map.get(pc) if shell_map else cc["shell30"]
+        pattern = (
+            ("I" if sa == "inner" else "O")
+            + ("I" if sb == "inner" else "O")
+            + ("I" if sc == "inner" else "O")
+        )
+        cross30 = sa in ("inner", "outer") and sc in ("inner", "outer") and sa != sc
+        hidden7 = ca["ws"] != 0 and cc["ws"] != 0 and ((ca["ws"] > 0) != (cc["ws"] > 0))
+        hidden11 = ca["vs"] != 0 and cc["vs"] != 0 and ((ca["vs"] > 0) != (cc["vs"] > 0))
+        hidden13 = ca["ts"] != 0 and cc["ts"] != 0 and ((ca["ts"] > 0) != (cc["ts"] > 0))
+        hidden_count = int(hidden7) + int(hidden11) + int(hidden13)
+
+        ratio = dg / mean_abs_dg
+        gap_before = gaps[idx]
+        gap_after = gaps[idx + 1]
+        wall_before = _gap_wall_count(gap_before)
+        wall_after = _gap_wall_count(gap_after)
+        depth_before = _gap_padic_depth(gap_before)
+        depth_after = _gap_padic_depth(gap_after)
+        gc_before = gap_charges[idx]
+        gc_after = gap_charges[idx + 1]
+        prime_ratio = _nearest_prime_ratio(gap_before, gap_after)
+        depth_resonance = _gap_depth_ratio_resonance(
+            prime_ratio,
+            depth_before,
+            depth_after,
+            wall_before,
+            wall_after,
+        )
+        depth_delta = depth_after - depth_before
+        depth_flux = abs(depth_delta)
+        charge_flip = (gc_before < 0) != (gc_after < 0)
+        resonant_soliton_score = (
+            abs(ratio)
+            + depth_flux
+            + prime_ratio["score"]
+            + (1.0 if charge_flip else 0.0)
+        )
+        phi_drift = abs(cc["phi_phase"] - ca["phi_phase"])
+
+        events.append(
+            {
+                "idx": idx + 1,
+                "prime_A": pa,
+                "prime_B": pb,
+                "prime_C": pc,
+                "gap_before": gap_before,
+                "gap_after": gap_after,
+                "dg": dg,
+                "ratio": ratio,
+                "abs_ratio": abs(ratio),
+                "cls": _classify_step(abs(ratio)),
+                "sign": 1 if dg > 0 else -1 if dg < 0 else 0,
+                "pattern": pattern,
+                "cross30": cross30,
+                "hidden_count": hidden_count,
+                "behavior": _behavior_class(cross30, hidden7, hidden11, hidden13),
+                "wall_before": wall_before,
+                "wall_after": wall_after,
+                "wall_density": (wall_before + wall_after) / (2 * len(_GAP_WALL_MODS)),
+                "padic_depth_before": depth_before,
+                "padic_depth_after": depth_after,
+                "padic_depth": max(depth_before, depth_after),
+                "gap_charge_before": gc_before,
+                "gap_charge_after": gc_after,
+                "charge_flip": charge_flip,
+                "phi_drift": phi_drift,
+                "prime_ratio": prime_ratio,
+                "depth_resonance": depth_resonance,
+                "depth_delta": depth_delta,
+                "depth_flux": depth_flux,
+                "resonant_soliton_score": resonant_soliton_score,
+            }
+        )
+
+    for i, event in enumerate(events):
+        event["rebound"] = any(
+            0 <= j < len(events) and events[j]["sign"] != 0 and event["sign"] != 0 and events[j]["sign"] != event["sign"]
+            for j in (i - 1, i + 1)
+        )
+
+    return {
+        "sequence": seq_label,
+        "seq_length": len(seq),
+        "gaps": gaps,
+        "events": events,
+        "mean_abs_dg": mean_abs_dg,
+    }
+
+
+def _next_region_kind(row: dict) -> str:
+    if row["wall_channel"] >= 0.45:
+        return "hidden_wall_region"
+    if row["crossing_channel"] >= 0.50:
+        return "visible_crossing_region"
+    if row.get("depth_resonance_channel", 0.0) >= 0.55:
+        return "depth_resonance_region"
+    if row["prime_ratio_channel"] >= 0.90:
+        return "prime_ratio_region"
+    if row["phi_channel"] >= 0.50:
+        return "smooth_phase_region"
+    return "variance_region"
+
+
+_NEXT_REGION_PROFILES: dict[str, dict[str, float]] = {
+    # retrospective: uses next_strength (window outcome)
+    "balanced": {
+        "anchor": 1.0, "next_strength": 2.0,
+        "foam": 1.0, "rebound": 2.0, "crossing": 1.0, "hidden": 1.0,
+        "wall": 3.0, "depth": 1.0, "charge_flip": 2.0, "phi": 1.0, "prime_ratio": 1.0,
+    },
+    # predictive: bias toward hidden walls and charge movement, no outcome
+    "soliton": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 1.0, "rebound": 2.0, "crossing": -0.5, "hidden": 2.0,
+        "wall": 5.0, "depth": 0.0, "charge_flip": 4.0, "phi": 0.0, "prime_ratio": 0.0,
+    },
+    # predictive: region-health without outcome domination
+    "forecast": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 0.0, "rebound": 0.0, "crossing": 0.5, "hidden": 1.0,
+        "wall": 2.0, "depth": 0.0, "charge_flip": 2.0, "phi": 3.0, "prime_ratio": 2.0,
+    },
+    # predictive: score onset of breakdown — penalize stability, reward stress signals
+    "instability": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 2.0, "rebound": 3.0, "crossing": 2.0, "hidden": 2.0,
+        "wall": 2.0, "depth": 1.0, "charge_flip": 3.0, "phi": -2.0, "prime_ratio": -2.0,
+    },
+    # same stress profile, but high foam without charge motion is treated as stale churn
+    "instability_flip": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 2.0, "rebound": 3.0, "crossing": 2.0, "hidden": 2.0,
+        "wall": 2.0, "depth": 1.0, "charge_flip": 3.0, "phi": -2.0, "prime_ratio": -2.0,
+    },
+    # same stress profile, with additional stale-churn gates for known miss shapes
+    "instability_gate2": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 2.0, "rebound": 3.0, "crossing": 2.0, "hidden": 2.0,
+        "wall": 2.0, "depth": 1.0, "charge_flip": 3.0, "phi": -2.0, "prime_ratio": -2.0,
+    },
+    # gate2 plus p-adic-supported prime-ratio resonance
+    "resonance_gate3": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 2.0, "rebound": 3.0, "crossing": 2.0, "hidden": 2.0,
+        "wall": 2.0, "depth": 0.5, "charge_flip": 3.0, "phi": -2.0, "prime_ratio": -2.0,
+        "depth_resonance": 4.0,
+    },
+    # direct combined metric: |accel_ratio| + depth_flux + prime-ratio resonance + charge-flip bonus
+    "resonant_soliton": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 0.0, "rebound": 0.0, "crossing": 0.0, "hidden": 0.0,
+        "wall": 0.0, "depth": 0.0, "depth_flux": 2.0, "charge_flip": 0.0,
+        "phi": 0.0, "prime_ratio": 0.0, "depth_resonance": 2.0, "resonant_soliton": 8.0,
+    },
+    # thermal omnidirectional suite — isolates each axis of the thermal signal:
+    # cold_spot: ordered (low-variance) windows; no direction
+    "thermal_cold": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 1.0, "rebound": 2.0, "crossing": 1.0, "hidden": 1.0,
+        "wall": 1.0, "depth": 0.5, "charge_flip": 2.0, "phi": -1.0, "prime_ratio": -1.0,
+        "geodesic_trend": 2.0,
+        "cold_spot": 8.0,
+    },
+    # cooling only: disorder decreasing toward anchor (front half noisier than back)
+    "thermal_cool": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 1.0, "rebound": 2.0, "crossing": 1.0, "hidden": 1.0,
+        "wall": 1.0, "depth": 0.5, "charge_flip": 2.0, "phi": -1.0, "prime_ratio": -1.0,
+        "geodesic_trend": 2.0,
+        "cooling": 8.0,
+    },
+    # heating only: disorder increasing toward anchor (back half noisier than front)
+    "thermal_heat": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 1.0, "rebound": 2.0, "crossing": 1.0, "hidden": 1.0,
+        "wall": 1.0, "depth": 0.5, "charge_flip": 2.0, "phi": -1.0, "prime_ratio": -1.0,
+        "geodesic_trend": 2.0,
+        "heating": 8.0,
+    },
+    # combined: cold_spot + both directions (null hypothesis that direction is irrelevant)
+    "thermal_omni": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 1.0, "rebound": 2.0, "crossing": 1.0, "hidden": 1.0,
+        "wall": 1.0, "depth": 0.5, "charge_flip": 2.0, "phi": -1.0, "prime_ratio": -1.0,
+        "geodesic_trend": 2.0,
+        "cold_spot": 4.0, "cooling": 4.0, "heating": 4.0,
+    },
+    # thermal: cold_spot rewards ordered windows; cooling rewards windows where
+    # disorder decays toward the anchor (front half noisier than back half)
+    "thermal": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 1.0, "rebound": 2.0, "crossing": 1.0, "hidden": 1.0,
+        "wall": 1.0, "depth": 0.5, "charge_flip": 2.0, "phi": -1.0, "prime_ratio": -1.0,
+        "geodesic_trend": 2.0,
+        "cold_spot": 4.0, "cooling": 6.0,
+    },
+    # instability_geo_cassette + cold_spot + |gradient|: phase-boundary thermal channels
+    # gradient_abs rewards windows with large front/back temperature contrast (phase transition)
+    # regardless of direction — the boundary zone, not which side you're on
+    "instability_geo_cassette_thermal_abs": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 2.0, "rebound": 3.0, "crossing": 2.0, "hidden": 2.0,
+        "wall": 2.0, "depth": 1.0, "charge_flip": 3.0, "phi": -2.0, "prime_ratio": -2.0,
+        "geodesic_trend": 4.0,
+        "cassette": 2.0, "cassette_adj": 4.0, "cassette_triplet": 3.0, "cassette_non_adj": 1.0,
+        "cold_spot": 3.0, "gradient_abs": 5.0,
+    },
+    # grid sweep: cold_spot in {2,3,4} x gradient_abs in {3,4,5,6}
+    # base channels identical to instability_geo_cassette_thermal_abs
+    "igct_c2_g3": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":2.0,"gradient_abs":3.0},
+    "igct_c2_g4": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":2.0,"gradient_abs":4.0},
+    "igct_c2_g5": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":2.0,"gradient_abs":5.0},
+    "igct_c2_g6": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":2.0,"gradient_abs":6.0},
+    "igct_c3_g3": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":3.0,"gradient_abs":3.0},
+    "igct_c3_g4": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":3.0,"gradient_abs":4.0},
+    "igct_c3_g5": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":3.0,"gradient_abs":5.0},
+    "igct_c3_g6": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":3.0,"gradient_abs":6.0},
+    "igct_c4_g3": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":4.0,"gradient_abs":3.0},
+    "igct_c4_g4": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":4.0,"gradient_abs":4.0},
+    "igct_c4_g5": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":4.0,"gradient_abs":5.0},
+    "igct_c4_g6": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":4.0,"gradient_abs":6.0},
+    "igct_c2_g7": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":2.0,"gradient_abs":7.0},
+    "igct_c2_g8": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":2.0,"gradient_abs":8.0},
+    "igct_c3_g7": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":3.0,"gradient_abs":7.0},
+    "igct_c3_g8": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":3.0,"gradient_abs":8.0},
+    "igct_c4_g7": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":4.0,"gradient_abs":7.0},
+    "igct_c4_g8": {"anchor":0.0,"next_strength":0.0,"foam":2.0,"rebound":3.0,"crossing":2.0,"hidden":2.0,"wall":2.0,"depth":1.0,"charge_flip":3.0,"phi":-2.0,"prime_ratio":-2.0,"geodesic_trend":4.0,"cassette":2.0,"cassette_adj":4.0,"cassette_triplet":3.0,"cassette_non_adj":1.0,"cold_spot":4.0,"gradient_abs":8.0},
+    # standalone thermal_abs: cold_spot + |gradient| only, light instability base
+    "thermal_abs": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 1.0, "rebound": 2.0, "crossing": 1.0, "hidden": 1.0,
+        "wall": 1.0, "depth": 0.5, "charge_flip": 2.0, "phi": -1.0, "prime_ratio": -1.0,
+        "geodesic_trend": 2.0,
+        "cold_spot": 4.0, "gradient_abs": 6.0,
+    },
+    # instability_geo_cassette + thermal perturbation channels
+    # cooling_score is directional: rewards windows where disorder decays toward anchor
+    "instability_geo_cassette_thermal": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 2.0, "rebound": 3.0, "crossing": 2.0, "hidden": 2.0,
+        "wall": 2.0, "depth": 1.0, "charge_flip": 3.0, "phi": -2.0, "prime_ratio": -2.0,
+        "geodesic_trend": 4.0,
+        "cassette": 2.0, "cassette_adj": 4.0, "cassette_triplet": 3.0, "cassette_non_adj": 1.0,
+        "cold_spot": 3.0, "cooling": 5.0,
+    },
+    # instability_geo + cassette sub-channels: tests whether cross-manifold structure adds lift
+    # adj (offset=1) and triplet (outer pair of 3) weighted higher than broad non-adjacent
+    "instability_geo_cassette": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 2.0, "rebound": 3.0, "crossing": 2.0, "hidden": 2.0,
+        "wall": 2.0, "depth": 1.0, "charge_flip": 3.0, "phi": -2.0, "prime_ratio": -2.0,
+        "geodesic_trend": 4.0,
+        "cassette": 2.0, "cassette_adj": 4.0, "cassette_triplet": 3.0, "cassette_non_adj": 1.0,
+    },
+    # cross-manifold phase-shifted symmetric zone: reward shell-complement + sign-opposite pairs
+    # cassette = cross_density * phase_coherence * spectral_anomaly in trailing window
+    "cassette": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 1.0, "rebound": 2.0, "crossing": 1.0, "hidden": 1.0,
+        "wall": 1.0, "depth": 0.5, "charge_flip": 2.0, "phi": -1.0, "prime_ratio": -1.0,
+        "geodesic_trend": 1.5, "cassette": 6.0,
+    },
+    # instability + geodesic trend: reward accelerating path through log-gap space
+    # geodesic_trend > 0 means late-window step-sizes exceed early-window (field building)
+    # geodesic_trend < 0 means decelerating (post-storm decay) — penalized here
+    "instability_geo": {
+        "anchor": 0.0, "next_strength": 0.0,
+        "foam": 2.0, "rebound": 3.0, "crossing": 2.0, "hidden": 2.0,
+        "wall": 2.0, "depth": 1.0, "charge_flip": 3.0, "phi": -2.0, "prime_ratio": -2.0,
+        "geodesic_trend": 4.0,
+    },
+}
+
+
+def _cassette_signal(region: list[dict]) -> dict:
+    """Cross-manifold phase-shifted symmetric zone (CMPSSZ / cassette) scorer.
+
+    Finds events where shell pattern is the bitwise complement (OIO ↔ IOI, etc.)
+    AND gap-acceleration sign is opposite.  Three resolution levels:
+
+      adj     — adjacent pairs (offset=1): the immediate inversion
+      triplet — consecutive triplets (i, i+1, i+2) where outer pair is complement
+      non_adj — all complement pairs at offset≥2 (broad background)
+
+    cassette_score = weighted_cross × phase_coherence × spectral_anomaly
+    """
+    n = len(region)
+    _empty = {
+        "cassette_score": 0.0,
+        "adj_density": 0.0,
+        "triplet_density": 0.0,
+        "non_adj_density": 0.0,
+        "phase_coherence": 0.0,
+        "spectral_anomaly": 0.0,
+    }
+    if n < 2:
+        return _empty
+
+    def _complement(pat: str) -> str:
+        return "".join("O" if c == "I" else "I" for c in pat)
+
+    # --- adjacent pairs (offset=1) ---
+    adj_cross = 0
+    for i in range(n - 1):
+        ei, ej = region[i], region[i + 1]
+        if (
+            _complement(ei["pattern"]) == ej["pattern"]
+            and ei["sign"] != 0
+            and ej["sign"] != 0
+            and ei["sign"] != ej["sign"]
+        ):
+            adj_cross += 1
+    adj_density = adj_cross / max(1, n - 1)
+
+    # --- consecutive triplets: outer pair (i, i+2) is complement, i+1 bridges ---
+    triplet_cross = 0
+    for i in range(n - 2):
+        ei, ek = region[i], region[i + 2]
+        if (
+            _complement(ei["pattern"]) == ek["pattern"]
+            and ei["sign"] != 0
+            and ek["sign"] != 0
+            and ei["sign"] != ek["sign"]
+        ):
+            triplet_cross += 1
+    triplet_density = triplet_cross / max(1, n - 2) if n >= 3 else 0.0
+
+    # --- non-adjacent pairs (offset≥2) + collect all offsets for phase coherence ---
+    non_adj_cross = 0
+    non_adj_total = 0
+    offsets: list[int] = []
+    # adjacent offsets first
+    for i in range(n - 1):
+        ei, ej = region[i], region[i + 1]
+        if (
+            _complement(ei["pattern"]) == ej["pattern"]
+            and ei["sign"] != 0
+            and ej["sign"] != 0
+            and ei["sign"] != ej["sign"]
+        ):
+            offsets.append(1)
+    # non-adjacent
+    for i in range(n):
+        comp_i = _complement(region[i]["pattern"])
+        si = region[i]["sign"]
+        for j in range(i + 2, n):
+            non_adj_total += 1
+            ej = region[j]
+            if comp_i == ej["pattern"] and si != 0 and ej["sign"] != 0 and si != ej["sign"]:
+                non_adj_cross += 1
+                offsets.append(j - i)
+    non_adj_density = non_adj_cross / max(1, non_adj_total)
+
+    # --- phase coherence: consistency of offset distances across all pairs ---
+    if offsets:
+        mean_off = sum(offsets) / len(offsets)
+        variance = sum((o - mean_off) ** 2 for o in offsets) / len(offsets)
+        std_off = math.sqrt(variance)
+        phase_coherence = max(0.0, 1.0 - std_off / max(mean_off, 1.0))
+    else:
+        phase_coherence = 0.0
+
+    # --- spectral anomaly: DFT peakedness of gap_before sequence ---
+    spectral_anomaly = 0.0
+    if n >= 4:
+        gap_seq = [float(e["gap_before"]) for e in region]
+        N = len(gap_seq)
+        mags = []
+        for k in range(1, N // 2 + 1):
+            s = sum(gap_seq[j] * cmath.exp(-2j * cmath.pi * k * j / N) for j in range(N))
+            mags.append(abs(s))
+        if mags:
+            mean_mag = sum(mags) / len(mags)
+            max_mag = max(mags)
+            spectral_anomaly = min(3.0, max_mag / max(mean_mag, 1e-9))
+
+    # combined cross: adjacent weighted most heavily (sharpest signal), triplets medium
+    cross_combined = (adj_density * 3.0 + triplet_density * 2.0 + non_adj_density * 1.0) / 6.0
+    cassette_score = cross_combined * phase_coherence * spectral_anomaly
+
+    return {
+        "cassette_score": round(cassette_score, 5),
+        "adj_density": round(adj_density, 4),
+        "triplet_density": round(triplet_density, 4),
+        "non_adj_density": round(non_adj_density, 4),
+        "phase_coherence": round(phase_coherence, 4),
+        "spectral_anomaly": round(spectral_anomaly, 4),
+    }
+
+
+def _thermal_signal(region: list[dict]) -> dict:
+    """Thermal perturbation channel.
+
+    Models the gap field as a thermal system where gap-acceleration variance
+    is the 'temperature'.  Three outputs:
+
+      thermal_amplitude — std(dg) / mean(|gap|): how noisy the window is
+      cold_spot_score   — 1/(1+amplitude): high = ordered = signal above noise floor
+      thermal_gradient  — (T_front - T_back) / (T_front + T_back):
+                          positive = field is cooling toward anchor (ordered)
+                          negative = field is heating (building disorder)
+      cooling_score     — max(0, thermal_gradient): reward cooling direction only
+
+    Hypothesis: anchor primes occur preferentially when the trailing window is
+    cooling — the front half was noisy, the back half organised.
+    """
+    n = len(region)
+    _empty = {
+        "thermal_amplitude": 0.0,
+        "cold_spot_score": 0.5,
+        "thermal_gradient": 0.0,
+        "cooling_score": 0.0,
+        "heating_score": 0.0,
+        "gradient_abs": 0.0,
+    }
+    if n < 4:
+        return _empty
+
+    dg_vals = [float(e["dg"]) for e in region]
+    gap_vals = [float(e["gap_before"]) for e in region]
+
+    mean_gap = sum(abs(g) for g in gap_vals) / n
+    mean_dg = sum(dg_vals) / n
+    variance_dg = sum((d - mean_dg) ** 2 for d in dg_vals) / n
+    std_dg = math.sqrt(variance_dg)
+
+    thermal_amplitude = std_dg / max(mean_gap, 1.0)
+    cold_spot_score = 1.0 / (1.0 + thermal_amplitude)
+
+    # directional gradient: front half (older) vs back half (closer to anchor)
+    half = n // 2
+    front_dg = dg_vals[:half]
+    back_dg = dg_vals[half:]
+
+    mean_f = sum(front_dg) / len(front_dg)
+    mean_b = sum(back_dg) / len(back_dg)
+    var_f = sum((d - mean_f) ** 2 for d in front_dg) / len(front_dg)
+    var_b = sum((d - mean_b) ** 2 for d in back_dg) / len(back_dg)
+    T_front = math.sqrt(var_f)
+    T_back = math.sqrt(var_b)
+
+    denom = T_front + T_back
+    if denom > 1e-9:
+        thermal_gradient = (T_front - T_back) / denom
+    else:
+        thermal_gradient = 0.0
+
+    cooling_score = max(0.0, thermal_gradient)   # reward: front hotter → field cooling toward anchor
+    heating_score = max(0.0, -thermal_gradient)  # reward: back hotter → field heating toward anchor
+    gradient_abs = abs(thermal_gradient)         # phase boundary: large contrast regardless of direction
+
+    return {
+        "thermal_amplitude": round(thermal_amplitude, 4),
+        "cold_spot_score": round(cold_spot_score, 4),
+        "thermal_gradient": round(thermal_gradient, 4),
+        "cooling_score": round(cooling_score, 4),
+        "heating_score": round(heating_score, 4),
+        "gradient_abs": round(gradient_abs, 4),
+    }
+
+
+def _field_region_channels(region: list[dict]) -> dict:
+    if not region:
+        return {
+            "foam_channel": 0.0,
+            "rebound_channel": 0.0,
+            "crossing_channel": 0.0,
+            "hidden_channel": 0.0,
+            "wall_channel": 0.0,
+            "depth_channel": 0.0,
+            "depth_flux_channel": 0.0,
+            "charge_flip_channel": 0.0,
+            "phi_channel": 0.0,
+            "prime_ratio_channel": 0.0,
+            "prime_ratio_label": "none",
+            "depth_resonance_channel": 0.0,
+            "depth_resonance_label": "none",
+            "resonant_soliton_channel": 0.0,
+            "geodesic_trend_channel": 0.0,
+            "cassette_channel": 0.0,
+            "cassette_adj_channel": 0.0,
+            "cassette_triplet_channel": 0.0,
+            "cassette_non_adj_channel": 0.0,
+            "cmpssz_phase_coherence": 0.0,
+            "cmpssz_spectral_anomaly": 0.0,
+            "cold_spot_channel": 0.5,
+            "cooling_channel": 0.0,
+            "heating_channel": 0.0,
+            "gradient_abs_channel": 0.0,
+            "thermal_amplitude": 0.0,
+            "thermal_gradient": 0.0,
+            "class_counts": {},
+            "pattern_counts": {},
+        }
+
+    n = len(region)
+    mist_density = sum(1 for e in region if e["cls"] == "mist") / n
+    droplet_density = sum(1 for e in region if e["cls"] == "droplet") / n
+    splash_density = sum(1 for e in region if e["cls"] == "splash") / n
+    pr_best = max(region, key=lambda e: e["prime_ratio"]["score"])
+    dr_best = max(region, key=lambda e: e["depth_resonance"]["score"])
+    # geodesic_trend: acceleration of trajectory in log-gap space
+    # embed each step as (log|gap_before|, log|gap_after|), compute consecutive step distances,
+    # compare late-half vs early-half mean. log(late/early) > 0 = field building toward event.
+    if n >= 3:
+        pts = [(math.log(max(e["gap_before"], 1)), math.log(max(e["gap_after"], 1))) for e in region]
+        dists = [
+            math.sqrt((pts[i + 1][0] - pts[i][0]) ** 2 + (pts[i + 1][1] - pts[i][1]) ** 2)
+            for i in range(len(pts) - 1)
+        ]
+        half = max(1, len(dists) // 2)
+        early_mean = sum(dists[:half]) / half
+        late_mean = sum(dists[half:]) / max(1, len(dists) - half)
+        raw_geo = math.log(late_mean / max(early_mean, 1e-9)) if late_mean > 0 else -2.0
+        geodesic_trend_val = max(-2.0, min(2.0, raw_geo))
+    else:
+        geodesic_trend_val = 0.0
+    cmp = _cassette_signal(region)
+    thm = _thermal_signal(region)
+    return {
+        "foam_channel": (mist_density * 1.5) + (droplet_density * 3.0) + (splash_density * 4.0),
+        "rebound_channel": sum(1 for e in region if e["rebound"]) / n,
+        "crossing_channel": sum(1 for e in region if e["cross30"]) / n,
+        "hidden_channel": sum(e["hidden_count"] for e in region) / (3 * n),
+        "wall_channel": sum(e["wall_density"] for e in region) / n,
+        "depth_channel": min(1.0, sum(e["padic_depth"] for e in region) / (15.0 * n)),
+        "depth_flux_channel": min(1.0, sum(e["depth_flux"] for e in region) / (10.0 * n)),
+        "charge_flip_channel": sum(1 for e in region if e["charge_flip"]) / n,
+        "phi_channel": max(e["phi_drift"] for e in region),
+        "prime_ratio_channel": pr_best["prime_ratio"]["score"],
+        "prime_ratio_label": pr_best["prime_ratio"]["label"],
+        "depth_resonance_channel": dr_best["depth_resonance"]["score"],
+        "depth_resonance_label": dr_best["depth_resonance"]["label"],
+        "resonant_soliton_channel": min(1.0, max(e["resonant_soliton_score"] for e in region) / 12.0),
+        "geodesic_trend_channel": round(geodesic_trend_val, 4),
+        "cassette_channel": cmp["cassette_score"],
+        "cassette_adj_channel": cmp["adj_density"],
+        "cassette_triplet_channel": cmp["triplet_density"],
+        "cassette_non_adj_channel": cmp["non_adj_density"],
+        "cmpssz_phase_coherence": cmp["phase_coherence"],
+        "cmpssz_spectral_anomaly": cmp["spectral_anomaly"],
+        "cold_spot_channel": thm["cold_spot_score"],
+        "cooling_channel": thm["cooling_score"],
+        "heating_channel": thm["heating_score"],
+        "gradient_abs_channel": thm["gradient_abs"],
+        "thermal_amplitude": thm["thermal_amplitude"],
+        "thermal_gradient": thm["thermal_gradient"],
+        "class_counts": dict(Counter(e["cls"] for e in region)),
+        "pattern_counts": dict(Counter(e["pattern"] for e in region).most_common(5)),
+    }
+
+
+def _weighted_field_score(channels: dict, weights: dict[str, float]) -> float:
+    return (
+        channels["foam_channel"] * weights.get("foam", 0.0)
+        + channels["rebound_channel"] * weights.get("rebound", 0.0)
+        + channels["crossing_channel"] * weights.get("crossing", 0.0)
+        + channels["hidden_channel"] * weights.get("hidden", 0.0)
+        + channels["wall_channel"] * weights.get("wall", 0.0)
+        + channels["depth_channel"] * weights.get("depth", 0.0)
+        + channels["depth_flux_channel"] * weights.get("depth_flux", 0.0)
+        + channels["charge_flip_channel"] * weights.get("charge_flip", 0.0)
+        + channels["phi_channel"] * weights.get("phi", 0.0)
+        + channels["prime_ratio_channel"] * weights.get("prime_ratio", 0.0)
+        + channels["depth_resonance_channel"] * weights.get("depth_resonance", 0.0)
+        + channels["resonant_soliton_channel"] * weights.get("resonant_soliton", 0.0)
+        + channels.get("geodesic_trend_channel", 0.0) * weights.get("geodesic_trend", 0.0)
+        + channels.get("cassette_channel", 0.0) * weights.get("cassette", 0.0)
+        + channels.get("cassette_adj_channel", 0.0) * weights.get("cassette_adj", 0.0)
+        + channels.get("cassette_triplet_channel", 0.0) * weights.get("cassette_triplet", 0.0)
+        + channels.get("cassette_non_adj_channel", 0.0) * weights.get("cassette_non_adj", 0.0)
+        + channels.get("cold_spot_channel", 0.0) * weights.get("cold_spot", 0.0)
+        + channels.get("cooling_channel", 0.0) * weights.get("cooling", 0.0)
+        + channels.get("heating_channel", 0.0) * weights.get("heating", 0.0)
+        + channels.get("gradient_abs_channel", 0.0) * weights.get("gradient_abs", 0.0)
+    )
+
+
+def _field_profile_gate_reason(channels: dict, profile: str) -> str:
+    if (
+        profile in ("instability_flip", "instability_gate2", "resonance_gate3")
+        and channels["foam_channel"] >= 2.5
+        and channels["charge_flip_channel"] <= 0.0
+    ):
+        return "high_foam_no_charge_flip"
+    if profile in ("instability_gate2", "resonance_gate3"):
+        if (
+            channels["foam_channel"] <= 1.5
+            and channels["wall_channel"] >= 0.40
+            and channels["crossing_channel"] >= 0.80
+        ):
+            return "low_foam_high_wall_crossing_churn"
+        if (
+            channels["prime_ratio_channel"] >= 0.95
+            and channels["crossing_channel"] <= 0.35
+            and channels["charge_flip_channel"] <= 0.50
+        ):
+            return "prime_ratio_low_crossing_churn"
+        if (
+            channels["foam_channel"] >= 2.35
+            and channels["charge_flip_channel"] <= 0.0
+            and channels["crossing_channel"] >= 0.90
+            and channels["phi_channel"] <= 0.40
+        ):
+            return "no_flip_low_phi_splash_residue"
+    if (
+        profile == "resonance_gate3"
+        and channels["prime_ratio_channel"] >= 0.95
+        and channels["depth_resonance_channel"] <= 0.20
+    ):
+        return "unsupported_prime_ratio_resonance"
+    return ""
+
+
+def _apply_field_profile_gate(score: float, channels: dict, profile: str) -> float:
+    if _field_profile_gate_reason(channels, profile):
+        return 0.0
+    return score
+
+
+def run_next_region_field_probe(
+    limit: int = 1_000_000,
+    superprime_only: bool = True,
+    window: int = 12,
+    top: int = 25,
+    anchor_threshold: float = 4.0,
+    profile: str = "balanced",
+) -> dict:
+    """Next-region search field with three channel-weight profiles.
+
+    predictive_score  — anchor-local features only (before the window opens)
+    observed_heat     — window evidence including next_strength (after-the-fact)
+    field_score       — profile-weighted combination
+
+    Overlap test: rank by predictive_score DESC and observed_heat DESC.
+    Fraction of top-N that appear in both = predictive overlap %.
+    """
+    field = _build_superprime_event_field(limit, superprime_only)
+    if "error" in field:
+        return {"schema_version": "prime_fog_next_region_field_v1", "error": field["error"]}
+
+    weights = _NEXT_REGION_PROFILES.get(profile, _NEXT_REGION_PROFILES["balanced"])
+    events = field["events"]
+    anchors = [i for i, event in enumerate(events) if event["abs_ratio"] >= anchor_threshold]
+    rows: list[dict] = []
+
+    for anchor_i in anchors:
+        anchor = events[anchor_i]
+        lo = anchor_i + 1
+        hi = min(len(events), anchor_i + 1 + window)
+        region = events[lo:hi]
+        if not region:
+            continue
+
+        n = len(region)
+        mist_density = sum(1 for e in region if e["cls"] == "mist") / n
+        droplet_density = sum(1 for e in region if e["cls"] == "droplet") / n
+        splash_density = sum(1 for e in region if e["cls"] == "splash") / n
+        foam_channel = (mist_density * 1.5) + (droplet_density * 3.0) + (splash_density * 4.0)
+        rebound_channel = sum(1 for e in region if e["rebound"]) / n
+        crossing_channel = sum(1 for e in region if e["cross30"]) / n
+        hidden_channel = sum(e["hidden_count"] for e in region) / (3 * n)
+        wall_channel = sum(e["wall_density"] for e in region) / n
+        depth_channel = min(1.0, sum(e["padic_depth"] for e in region) / (n * 10.0))
+        charge_flip_channel = sum(1 for e in region if e["charge_flip"]) / n
+        phi_channel = max(e["phi_drift"] for e in region)
+        prime_ratio_channel = max(e["prime_ratio"]["score"] for e in region)
+        depth_resonance_channel = max(e["depth_resonance"]["score"] for e in region)
+        max_event = max(region, key=lambda e: e["abs_ratio"])
+        anchor_channel = min(anchor["abs_ratio"] / 10.0, 1.0)
+        next_strength_channel = min(max_event["abs_ratio"] / 10.0, 1.0)
+
+        # Profile-weighted field score
+        ch = {
+            "anchor": anchor_channel, "next_strength": next_strength_channel,
+            "foam": foam_channel, "rebound": rebound_channel,
+            "crossing": crossing_channel, "hidden": hidden_channel,
+            "wall": wall_channel, "depth": depth_channel,
+            "charge_flip": charge_flip_channel, "phi": phi_channel,
+            "prime_ratio": prime_ratio_channel,
+            "depth_resonance": depth_resonance_channel,
+        }
+        field_score = sum(ch.get(k, 0.0) * weights[k] for k in weights)
+
+        # Observed heat: full retrospective score (always balanced, includes outcome)
+        observed_heat = (
+            next_strength_channel * 3.0
+            + foam_channel
+            + rebound_channel * 2.0
+            + crossing_channel
+            + wall_channel * 3.0
+            + depth_channel
+            + charge_flip_channel * 2.0
+            + phi_channel
+            + prime_ratio_channel
+        )
+
+        # Predictive score: anchor-local only, no window evidence
+        predictive_score = (
+            anchor_channel
+            + anchor["phi_drift"]
+            + anchor["prime_ratio"]["score"]
+            + anchor["wall_density"] * 3.0
+            + min(anchor["padic_depth"], 5.0) / 5.0
+            + (1.0 if anchor["charge_flip"] else 0.0) * 2.0
+            + anchor["hidden_count"] / 3.0
+            + max(0, -anchor["gap_charge_before"]) * 0.2
+            + max(0, -anchor["gap_charge_after"]) * 0.2
+        )
+
+        pr_best = max(region, key=lambda e: e["prime_ratio"]["score"])
+        dr_best = max(region, key=lambda e: e["depth_resonance"]["score"])
+        row = {
+            "rank": 0,
+            "anchor_idx": anchor["idx"],
+            "anchor_prime": anchor["prime_B"],
+            "anchor_ratio": round(anchor["ratio"], 4),
+            "anchor_pattern": anchor["pattern"],
+            "region_start_idx": region[0]["idx"],
+            "region_end_idx": region[-1]["idx"],
+            "top_event_idx": max_event["idx"],
+            "top_event_prime": max_event["prime_B"],
+            "top_event_ratio": round(max_event["ratio"], 4),
+            "top_event_pattern": max_event["pattern"],
+            "field_score": round(field_score, 4),
+            "observed_heat": round(observed_heat, 4),
+            "predictive_score": round(predictive_score, 4),
+            "region_kind": "",
+            # channels
+            "anchor_channel": round(anchor_channel, 4),
+            "next_strength_channel": round(next_strength_channel, 4),
+            "foam_channel": round(foam_channel, 4),
+            "rebound_channel": round(rebound_channel, 4),
+            "crossing_channel": round(crossing_channel, 4),
+            "hidden_channel": round(hidden_channel, 4),
+            "wall_channel": round(wall_channel, 4),
+            "depth_channel": round(depth_channel, 4),
+            "charge_flip_channel": round(charge_flip_channel, 4),
+            "phi_channel": round(phi_channel, 4),
+            "prime_ratio_channel": round(prime_ratio_channel, 4),
+            "prime_ratio_label": pr_best["prime_ratio"]["label"],
+            "depth_resonance_channel": round(depth_resonance_channel, 4),
+            "depth_resonance_label": dr_best["depth_resonance"]["label"],
+            "class_counts": dict(Counter(e["cls"] for e in region)),
+            "pattern_counts": dict(Counter(e["pattern"] for e in region).most_common(5)),
+        }
+        row["region_kind"] = _next_region_kind(row)
+        rows.append(row)
+
+    rows.sort(key=lambda r: -r["field_score"])
+    for rank, row in enumerate(rows, 1):
+        row["rank"] = rank
+
+    # Overlap: top-20 by field_score vs top-20 by observed_heat vs top-20 by predictive_score
+    overlap_n = min(20, len(rows))
+    top_field_idx = {r["anchor_idx"] for r in rows[:overlap_n]}
+    by_heat = sorted(rows, key=lambda r: -r["observed_heat"])
+    top_heat_idx = {r["anchor_idx"] for r in by_heat[:overlap_n]}
+    by_pred = sorted(rows, key=lambda r: -r["predictive_score"])
+    top_pred_idx = {r["anchor_idx"] for r in by_pred[:overlap_n]}
+
+    overlap_field_heat = len(top_field_idx & top_heat_idx)
+    overlap_pred_heat = len(top_pred_idx & top_heat_idx)
+    overlap_pred_field = len(top_pred_idx & top_field_idx)
+
+    return {
+        "schema_version": "prime_fog_next_region_field_v1",
+        "sequence": field["sequence"],
+        "limit": limit,
+        "seq_length": field["seq_length"],
+        "total_steps": len(events),
+        "mean_abs_dg": round(field["mean_abs_dg"], 4),
+        "window": window,
+        "anchor_threshold": anchor_threshold,
+        "anchor_count": len(anchors),
+        "region_count": len(rows),
+        "profile": profile,
+        "weights": weights,
+        "kind_counts": dict(Counter(row["region_kind"] for row in rows)),
+        "overlap_n": overlap_n,
+        "overlap_field_heat": overlap_field_heat,
+        "overlap_pred_heat": overlap_pred_heat,
+        "overlap_pred_field": overlap_pred_field,
+        "top_regions": rows[:top],
+        "top_by_heat": by_heat[:top],
+        "top_by_predictive": by_pred[:top],
+    }
+
+
+def run_field_scan_probe(
+    limit: int = 1_000_000,
+    superprime_only: bool = True,
+    window: int = 12,
+    history: int = 6,
+    top: int = 25,
+    anchor_threshold: float = 4.0,
+    profile: str = "forecast",
+) -> dict:
+    """Causal field scan.
+
+    field_score uses only the current/trailing context ending at scan_idx.
+    future_heat and future_anchor are measured after scan_idx and are not used
+    by the predictive score.
+    """
+    field = _build_superprime_event_field(limit, superprime_only)
+    if "error" in field:
+        return {"schema_version": "prime_fog_field_scan_v1", "error": field["error"]}
+
+    events = field["events"]
+    if len(events) < 2:
+        return {"schema_version": "prime_fog_field_scan_v1", "error": "too few events"}
+
+    weights = _NEXT_REGION_PROFILES.get(profile, _NEXT_REGION_PROFILES["forecast"])
+    history = max(1, history)
+    window = max(1, window)
+    rows: list[dict] = []
+
+    for scan_i, event in enumerate(events[:-1]):
+        if event["abs_ratio"] >= anchor_threshold:
+            continue
+
+        context = events[max(0, scan_i + 1 - history) : scan_i + 1]
+        future = events[scan_i + 1 : min(len(events), scan_i + 1 + window)]
+        if not future:
+            continue
+
+        current = _field_region_channels(context)
+        future_channels = _field_region_channels(future)
+        max_future = max(future, key=lambda e: e["abs_ratio"])
+        future_anchor_events = [e for e in future if e["abs_ratio"] >= anchor_threshold]
+        first_anchor = future_anchor_events[0] if future_anchor_events else None
+        future_strength_channel = min(2.0, max_future["abs_ratio"] / anchor_threshold)
+        future_heat = (
+            future_strength_channel * 2.0
+            + future_channels["foam_channel"]
+            + future_channels["rebound_channel"] * 2.0
+        )
+        raw_field_score = _weighted_field_score(current, weights)
+        profile_gate = _field_profile_gate_reason(current, profile)
+        field_score = _apply_field_profile_gate(raw_field_score, current, profile)
+
+        # Precompute gravity fallback score from local abs_ratio context.
+        # Uses float-safe Poincaré embedding — scale-invariant across prime ranges.
+        # branch_score() uses this when the thermal gate fires and fallback_scale=0.
+        _ratio_vals = [e["abs_ratio"] for e in context if math.isfinite(e.get("abs_ratio", 0.0)) and e.get("abs_ratio", 0.0) > 0]
+        if len(_ratio_vals) >= 2:
+            _gbodies = _gravity_bodies_float(_ratio_vals, bins=min(8, len(_ratio_vals)))
+            _gresult = _gravity_at_float(event["abs_ratio"], _gbodies, metric="hyperbolic")
+            gravity_score_normalized = _gresult["gravity_field_normalized"]
+            _topo = _topological_type_at_float(event["abs_ratio"], _gbodies)
+            topo_type_str = _topo["type"]
+            topo_score = _topo["topo_score"]
+            topo_asymmetry = _topo["asymmetry"]
+            topo_confidence = _topo["confidence"]
+        else:
+            gravity_score_normalized = 0.0
+            topo_type_str = "unknown"
+            topo_score = 0.0
+            topo_asymmetry = 0.0
+            topo_confidence = 0.0
+
+        _mmode = _musical_mode_channels(_ratio_vals)
+        _lshadow = _lambda_shadow_channels(_ratio_vals, event["prime_B"])
+        _gmap = _graph_map_channels(_ratio_vals)
+
+        row = {
+            "scan_idx": event["idx"],
+            "scan_prime": event["prime_B"],
+            "scan_ratio": round(event["ratio"], 4),
+            "field_score": round(field_score, 4),
+            "raw_field_score": round(raw_field_score, 4),
+            "profile_gate": profile_gate,
+            "future_heat": round(future_heat, 4),
+            "future_strength_channel": round(future_strength_channel, 4),
+            "future_anchor": bool(future_anchor_events),
+            "future_anchor_count": len(future_anchor_events),
+            "first_anchor_idx": first_anchor["idx"] if first_anchor else None,
+            "first_anchor_prime": first_anchor["prime_B"] if first_anchor else None,
+            "first_anchor_ratio": round(first_anchor["ratio"], 4) if first_anchor else None,
+            "lead_steps": (first_anchor["idx"] - event["idx"]) if first_anchor else None,
+            "top_future_idx": max_future["idx"],
+            "top_future_prime": max_future["prime_B"],
+            "top_future_ratio": round(max_future["ratio"], 4),
+            "profile": profile,
+            "gravity_score_normalized": round(gravity_score_normalized, 6),
+            "topo_type": topo_type_str,
+            "topo_score": round(topo_score, 6),
+            "topo_asymmetry": round(topo_asymmetry, 6),
+            "topo_confidence": round(topo_confidence, 6),
+            "local_tonic": _mmode["local_tonic"],
+            "best_mode": _mmode["best_mode"],
+            "mode_fit_score": _mmode["mode_fit_score"],
+            "mode_shift_channel": _mmode["mode_shift_channel"],
+            "lambda_shadow_channel": _lshadow["lambda_shadow_channel"],
+            "lambda_gradient_channel": _lshadow["lambda_gradient_channel"],
+            "lambda_peak_lag": _lshadow["lambda_peak_lag"],
+            "graph_monotone_ramp": _gmap["graph_monotone_ramp"],
+            "graph_return_rate": _gmap["graph_return_rate"],
+            "graph_edge_variance": _gmap["graph_edge_variance"],
+            "graph_attractor_score": _gmap["graph_attractor_score"],
+            **{k: round(v, 4) if isinstance(v, float) else v for k, v in current.items()},
+            "future_class_counts": future_channels["class_counts"],
+            "future_pattern_counts": future_channels["pattern_counts"],
+        }
+        row["region_kind"] = _next_region_kind(row)
+        rows.append(row)
+
+    rows.sort(key=lambda r: -r["field_score"])
+    for rank, row in enumerate(rows, 1):
+        row["rank"] = rank
+
+    by_heat = sorted(rows, key=lambda r: -r["future_heat"])
+    by_anchor = sorted(
+        rows,
+        key=lambda r: (not r["future_anchor"], r["lead_steps"] if r["lead_steps"] is not None else 10**9, -r["field_score"]),
+    )
+
+    overlap_n = min(20, len(rows))
+    top_field_idx = {r["scan_idx"] for r in rows[:overlap_n]}
+    top_heat_idx = {r["scan_idx"] for r in by_heat[:overlap_n]}
+    overlap_field_heat = len(top_field_idx & top_heat_idx)
+    top_rows = rows[:overlap_n]
+    top_anchor_hits = sum(1 for r in top_rows if r["future_anchor"])
+    baseline_anchor_rate = sum(1 for r in rows if r["future_anchor"]) / len(rows) if rows else 0.0
+
+    return {
+        "schema_version": "prime_fog_field_scan_v1",
+        "sequence": field["sequence"],
+        "limit": limit,
+        "seq_length": field["seq_length"],
+        "total_steps": len(events),
+        "mean_abs_dg": round(field["mean_abs_dg"], 4),
+        "window": window,
+        "history": history,
+        "anchor_threshold": anchor_threshold,
+        "profile": profile,
+        "weights": weights,
+        "scan_count": len(rows),
+        "kind_counts": dict(Counter(row["region_kind"] for row in rows)),
+        "overlap_n": overlap_n,
+        "overlap_field_heat": overlap_field_heat,
+        "top_anchor_hits": top_anchor_hits,
+        "baseline_anchor_rate": round(baseline_anchor_rate, 4),
+        "top_anchor_rate": round(top_anchor_hits / overlap_n, 4) if overlap_n else 0.0,
+        "top_by_field": rows[:top],
+        "top_by_future_heat": by_heat[:top],
+        "top_by_soonest_anchor": by_anchor[:top],
+    }
+
+
+def print_field_scan_probe(payload: dict) -> None:
+    if "error" in payload:
+        print(f"FIELD SCAN error: {payload['error']}")
+        return
+
+    print(f"\n{'='*88}")
+    print("FIELD SCAN")
+    print(f"{'='*88}")
+    print(f"  sequence  : {payload['sequence']}")
+    print(f"  limit     : {payload['limit']:,}")
+    print(f"  steps     : {payload['total_steps']:,}   scanned: {payload['scan_count']:,}")
+    print(f"  history   : trailing {payload['history']} steps")
+    print(f"  window    : future {payload['window']} steps")
+    print(f"  profile   : {payload['profile']}")
+    print(f"  anchors   : future |ratio| >= {payload['anchor_threshold']}")
+    print(f"  kinds     : {payload['kind_counts']}")
+
+    n = payload["overlap_n"]
+    fh = payload["overlap_field_heat"]
+    print(f"\n{'-'*60}")
+    print(f"CAUSAL TEST  (top-{n} sets)")
+    print(f"  field_score ∩ future_heat : {fh}/{n} ({100*fh//n if n else 0}%)")
+    print(f"  top field future-anchor   : {payload['top_anchor_hits']}/{n} ({payload['top_anchor_rate']:.1%})")
+    print(f"  baseline future-anchor    : {payload['baseline_anchor_rate']:.1%}")
+
+    def _show(title: str, rows: list[dict]) -> None:
+        print(f"\n{'-'*60}")
+        print(title)
+        print(
+            f"  {'rk':>3}  {'idx':>6}  {'ratio':>7}  {'field':>7}  {'heat':>7}  "
+            f"{'lead':>5}  {'a_ratio':>8}  {'kind':<22}  pr / dr"
+        )
+        for i, row in enumerate(rows, 1):
+            lead = row["lead_steps"] if row["lead_steps"] is not None else "-"
+            a_ratio = row["first_anchor_ratio"] if row["first_anchor_ratio"] is not None else "-"
+            print(
+                f"  {i:>3}  {row['scan_idx']:>6,}  {row['scan_ratio']:>7.3f}  "
+                f"{row['field_score']:>7.3f}  {row['future_heat']:>7.3f}  "
+                f"{str(lead):>5}  {str(a_ratio):>8}  {row['region_kind']:<22}  "
+                f"{row['prime_ratio_label']} / {row['depth_resonance_label']}"
+            )
+            print(
+                f"       ch: foam={row['foam_channel']:.2f} rb={row['rebound_channel']:.2f} "
+                f"cx={row['crossing_channel']:.2f} hid={row['hidden_channel']:.2f} "
+                f"wall={row['wall_channel']:.2f} flip={row['charge_flip_channel']:.2f} "
+                f"phi={row['phi_channel']:.2f} pr={row['prime_ratio_channel']:.2f} "
+                f"dr={row['depth_resonance_channel']:.2f}"
+                f" flux={row.get('depth_flux_channel', 0.0):.2f}"
+                f" rs={row.get('resonant_soliton_channel', 0.0):.2f}"
+                f" geo={row.get('geodesic_trend_channel', 0.0):.3f}"
+                f" cas={row.get('cassette_channel', 0.0):.4f}"
+                f"(adj={row.get('cassette_adj_channel', 0.0):.2f}"
+                f" tri={row.get('cassette_triplet_channel', 0.0):.2f}"
+                f" na={row.get('cassette_non_adj_channel', 0.0):.2f}"
+                f" pc={row.get('cmpssz_phase_coherence', 0.0):.2f}"
+                f" sa={row.get('cmpssz_spectral_anomaly', 0.0):.2f})"
+                f" thm=(cs={row.get('cold_spot_channel', 0.5):.2f}"
+                f" |g|={row.get('gradient_abs_channel', 0.0):.2f}"
+                f" cool={row.get('cooling_channel', 0.0):.2f}"
+                f" heat={row.get('heating_channel', 0.0):.2f}"
+                f" grad={row.get('thermal_gradient', 0.0):+.2f})"
+            )
+
+    _show("TOP BY FIELD SCORE  (no future evidence in score)", payload["top_by_field"])
+    _show("TOP BY FUTURE HEAT  (outcome control)", payload["top_by_future_heat"])
+    _show("SOONEST FUTURE ANCHORS", payload["top_by_soonest_anchor"])
+    print()
+
+
+def print_next_region_field_probe(payload: dict) -> None:
+    if "error" in payload:
+        print(f"NEXT REGION FIELD error: {payload['error']}")
+        return
+
+    print(f"\n{'='*88}")
+    print("NEXT REGION SEARCH FIELD")
+    print(f"{'='*88}")
+    print(f"  sequence  : {payload['sequence']}")
+    print(f"  limit     : {payload['limit']:,}")
+    print(f"  steps     : {payload['total_steps']:,}   anchors: {payload['anchor_count']}  (|ratio|≥{payload['anchor_threshold']})")
+    print(f"  window    : next {payload['window']} steps after each anchor")
+    print(f"  profile   : {payload['profile']}")
+    print(f"  kinds     : {payload['kind_counts']}")
+
+    # Channel weight table
+    print(f"\n{'─'*60}")
+    print("CHANNEL WEIGHTS")
+    w = payload["weights"]
+    ch_order = ["anchor", "next_strength", "foam", "rebound", "crossing", "hidden",
+                "wall", "depth", "depth_flux", "charge_flip", "phi", "prime_ratio",
+                "depth_resonance", "resonant_soliton", "geodesic_trend"]
+    note = {
+        "anchor":        "anchor |ratio| (retrospective anchor strength)",
+        "next_strength": "max |ratio| in window  ← OUTCOME (look-ahead)",
+        "foam":          "mist+droplet density in window",
+        "rebound":       "sign-flip rate in window",
+        "crossing":      "mod-30 crossing fraction in window",
+        "hidden":        "hidden-axis crossing fraction in window",
+        "wall":          "gap wall-loop density in window",
+        "depth":         "p-adic depth in window",
+        "depth_flux":    "absolute change in p-adic depth across transitions",
+        "charge_flip":   "charge-flip fraction in window",
+        "phi":           "max phi drift in window",
+        "prime_ratio":   "best prime-ratio match score in window",
+        "depth_resonance": "best p-adic-supported prime-ratio match in window",
+        "resonant_soliton": "combined accel + depth-flux + ratio-lock + charge-flip score",
+        "geodesic_trend": "late/early log-gap trajectory trend",
+    }
+    for c in ch_order:
+        wt = w.get(c, 0.0)
+        mark = "← PREDICTIVE" if c in ("anchor",) else ("← OUTCOME" if c == "next_strength" else "")
+        bar = ("+" if wt > 0 else "") + "#" * int(abs(wt) * 4)
+        print(f"  {c:<18}  {wt:>6.1f}  {bar:<22}  {note[c]}")
+
+    # Overlap test
+    n = payload["overlap_n"]
+    fh = payload["overlap_field_heat"]
+    ph = payload["overlap_pred_heat"]
+    pf = payload["overlap_pred_field"]
+    print(f"\n{'─'*60}")
+    print(f"OVERLAP TEST  (top-{n} sets)")
+    print(f"  field_score  ∩ observed_heat  : {fh}/{n}  ({100*fh//n}%)  ← does profile track outcome?")
+    print(f"  predictive   ∩ observed_heat  : {ph}/{n}  ({100*ph//n}%)  ← do anchor features predict outcome?")
+    print(f"  predictive   ∩ field_score    : {pf}/{n}  ({100*pf//n}%)  ← do anchor features agree with profile?")
+    predictive_is_real = ph >= n * 0.5
+    print(f"  verdict: predictive overlap = {ph}/{n} → {'REAL FORWARD SIGNAL' if predictive_is_real else 'WEAK — anchor features do not predict outcome'}")
+
+    def _show_region_list(title: str, region_list: list[dict], limit: int = 20) -> None:
+        print(f"\n{'─'*60}")
+        print(f"{title}")
+        print(
+            f"  {'rk':>3}  {'anc':>6}  {'a_rat':>7}  {'n_rat':>7}  "
+            f"{'kind':<22}  {'fld':>6}  {'heat':>6}  {'pred':>6}  {'pr_label'} / dr"
+        )
+        for i, row in enumerate(region_list[:limit], 1):
+            print(
+                f"  {i:>3}  {row['anchor_idx']:>6,}  {row['anchor_ratio']:>7.3f}  "
+                f"{row['top_event_ratio']:>7.3f}  {row['region_kind']:<22}  "
+                f"{row['field_score']:>6.3f}  {row['observed_heat']:>6.3f}  "
+                f"{row['predictive_score']:>6.3f}  {row['prime_ratio_label']} / {row['depth_resonance_label']}"
+            )
+            print(
+                f"       ch: foam={row['foam_channel']:.2f} rb={row['rebound_channel']:.2f} "
+                f"cx={row['crossing_channel']:.2f} hid={row['hidden_channel']:.2f} "
+                f"wall={row['wall_channel']:.2f} flip={row['charge_flip_channel']:.2f} "
+                f"phi={row['phi_channel']:.2f} pr={row['prime_ratio_channel']:.2f} "
+                f"dr={row['depth_resonance_channel']:.2f}"
+                f" geo={row.get('geodesic_trend_channel', 0.0):.3f}"
+            )
+
+    _show_region_list(
+        f"TOP REGIONS BY FIELD SCORE  (profile={payload['profile']})",
+        payload["top_regions"],
+    )
+    _show_region_list(
+        "TOP REGIONS BY OBSERVED HEAT  (retrospective, includes next_strength)",
+        payload["top_by_heat"],
+    )
+    _show_region_list(
+        "TOP REGIONS BY PREDICTIVE SCORE  (anchor-local only, no window look-ahead)",
+        payload["top_by_predictive"],
+    )
+    print()
 
 
 def main(argv: Iterable[str] | None = None) -> int:
@@ -6997,6 +11055,128 @@ def main(argv: Iterable[str] | None = None) -> int:
             print(json.dumps(payload, indent=2))
         else:
             print_prime_harmonic_map(payload)
+        return 0
+
+    if args.mod_triangulation:
+        mods = tuple(m for m in parse_number_list(args.triangulation_mods) if m > 1)
+        payload = run_mod_triangulation_hop_probe(
+            limit=args.triangulation_limit,
+            moduli=mods or (2, 3, 5),
+            top_hops=args.triangulation_top,
+            verify_bridges=args.triangulation_verify,
+            exclude_non_starters=args.triangulation_exclude_non_starters,
+        )
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_mod_triangulation_probe(payload)
+        return 0
+
+    if args.superprime_layer:
+        payload = run_superprime_layer(limit=args.superprime_limit, top=args.superprime_top)
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_superprime_layer(payload)
+        return 0
+
+    if args.imaginary_paths:
+        payload = run_imaginary_gap_path(
+            limit=args.imaginary_paths_limit,
+            superprime_only=args.imaginary_paths_superprime,
+            top=args.imaginary_paths_top,
+            ratio_mode=args.imaginary_paths_ratio,
+        )
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_imaginary_gap_path(payload)
+        return 0
+
+    if args.imaginary_paths_well:
+        payload = run_imaginary_well_path(
+            limit=args.imaginary_paths_limit,
+            superprime_only=args.imaginary_paths_superprime,
+            top=args.imaginary_paths_top,
+            W=args.imaginary_paths_well_depth,
+            extrap_steps=args.imaginary_paths_well_extrap,
+            landmark_threshold=args.imaginary_paths_well_threshold,
+        )
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_imaginary_well_path(payload)
+        return 0
+
+    if args.foam_score:
+        payload = run_foam_score_probe(
+            limit=args.imaginary_paths_limit,
+            superprime_only=args.imaginary_paths_superprime,
+            window=args.foam_score_window,
+            top=args.foam_score_top,
+            W=args.imaginary_paths_well_depth,
+        )
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_foam_score_probe(payload)
+        return 0
+
+    if args.wall_loop:
+        payload = run_wall_loop_probe(
+            limit=args.imaginary_paths_limit,
+            superprime_only=args.imaginary_paths_superprime,
+            window=args.wall_loop_window,
+            top=args.wall_loop_top,
+        )
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_wall_loop_probe(payload)
+        return 0
+
+    if args.soliton:
+        payload = run_soliton_probe(
+            limit=args.imaginary_paths_limit,
+            superprime_only=args.imaginary_paths_superprime,
+            window=args.soliton_window,
+            top=args.soliton_top,
+        )
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_soliton_probe(payload)
+        return 0
+
+    if args.next_region_field:
+        payload = run_next_region_field_probe(
+            limit=args.imaginary_paths_limit,
+            superprime_only=args.imaginary_paths_superprime,
+            window=args.next_region_window,
+            top=args.next_region_top,
+            anchor_threshold=args.next_region_anchor_threshold,
+            profile=args.next_region_profile,
+        )
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_next_region_field_probe(payload)
+        return 0
+
+    if args.field_scan:
+        payload = run_field_scan_probe(
+            limit=args.imaginary_paths_limit,
+            superprime_only=args.imaginary_paths_superprime,
+            window=args.field_scan_window,
+            history=args.field_scan_history,
+            top=args.field_scan_top,
+            anchor_threshold=args.field_scan_anchor_threshold,
+            profile=args.field_scan_profile,
+        )
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_field_scan_probe(payload)
         return 0
 
     if args.conjecture_wave:

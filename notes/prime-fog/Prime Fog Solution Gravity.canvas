@@ -1,0 +1,212 @@
+{
+  "nodes": [
+    {
+      "id": "index",
+      "type": "file",
+      "file": "prime-fog/Prime Fog Solution Gravity Map.md",
+      "x": 0,
+      "y": 0,
+      "width": 420,
+      "height": 220
+    },
+    {
+      "id": "cascade_v3",
+      "type": "file",
+      "file": "prime-fog/cascades/cascade v3 hypothesis.md",
+      "x": 520,
+      "y": 0,
+      "width": 380,
+      "height": 210
+    },
+    {
+      "id": "cen_std",
+      "type": "file",
+      "file": "prime-fog/variables/cen_std.md",
+      "x": -520,
+      "y": -260,
+      "width": 300,
+      "height": 160
+    },
+    {
+      "id": "frz_skew",
+      "type": "file",
+      "file": "prime-fog/variables/frz_skew.md",
+      "x": -520,
+      "y": -60,
+      "width": 300,
+      "height": 160
+    },
+    {
+      "id": "frz_mean",
+      "type": "file",
+      "file": "prime-fog/variables/frz_mean.md",
+      "x": -900,
+      "y": 90,
+      "width": 300,
+      "height": 160
+    },
+    {
+      "id": "frz_std",
+      "type": "file",
+      "file": "prime-fog/variables/frz_std.md",
+      "x": -900,
+      "y": 290,
+      "width": 300,
+      "height": 160
+    },
+    {
+      "id": "magnitude",
+      "type": "file",
+      "file": "prime-fog/solutions/magnitude.md",
+      "x": 980,
+      "y": -260,
+      "width": 300,
+      "height": 160
+    },
+    {
+      "id": "frozen_coherent",
+      "type": "file",
+      "file": "prime-fog/solutions/frozen coherent.md",
+      "x": 980,
+      "y": -60,
+      "width": 300,
+      "height": 160
+    },
+    {
+      "id": "compressed_frozen",
+      "type": "file",
+      "file": "prime-fog/solutions/compressed frozen.md",
+      "x": 980,
+      "y": 160,
+      "width": 300,
+      "height": 160
+    },
+    {
+      "id": "dominant",
+      "type": "file",
+      "file": "prime-fog/solutions/dominant.md",
+      "x": 980,
+      "y": 380,
+      "width": 300,
+      "height": 160
+    },
+    {
+      "id": "board_d",
+      "type": "file",
+      "file": "prime-fog/rings/Board D - 250M-300M.md",
+      "x": 1380,
+      "y": -260,
+      "width": 300,
+      "height": 160
+    },
+    {
+      "id": "board_f",
+      "type": "file",
+      "file": "prime-fog/rings/Board F - 350M-400M.md",
+      "x": 1380,
+      "y": -60,
+      "width": 300,
+      "height": 160
+    },
+    {
+      "id": "board_g",
+      "type": "file",
+      "file": "prime-fog/rings/Board G - 400M-450M.md",
+      "x": 1380,
+      "y": 160,
+      "width": 300,
+      "height": 160
+    },
+    {
+      "id": "board_h",
+      "type": "file",
+      "file": "prime-fog/rings/Board H - 450M-500M.md",
+      "x": 1380,
+      "y": 380,
+      "width": 300,
+      "height": 160
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "fromNode": "index",
+      "fromSide": "right",
+      "toNode": "cascade_v3",
+      "toSide": "left",
+      "label": "flight rule"
+    },
+    {
+      "id": "e2",
+      "fromNode": "cen_std",
+      "fromSide": "right",
+      "toNode": "magnitude",
+      "toSide": "left",
+      "label": "low"
+    },
+    {
+      "id": "e3",
+      "fromNode": "magnitude",
+      "fromSide": "right",
+      "toNode": "board_d",
+      "toSide": "left",
+      "label": "hits D"
+    },
+    {
+      "id": "e4",
+      "fromNode": "frz_skew",
+      "fromSide": "right",
+      "toNode": "frozen_coherent",
+      "toSide": "left",
+      "label": "high, normal mean/std"
+    },
+    {
+      "id": "e5",
+      "fromNode": "frozen_coherent",
+      "fromSide": "right",
+      "toNode": "board_f",
+      "toSide": "left",
+      "label": "16/231"
+    },
+    {
+      "id": "e6",
+      "fromNode": "frz_mean",
+      "fromSide": "right",
+      "toNode": "compressed_frozen",
+      "toSide": "left",
+      "label": "high"
+    },
+    {
+      "id": "e7",
+      "fromNode": "frz_std",
+      "fromSide": "right",
+      "toNode": "compressed_frozen",
+      "toSide": "left",
+      "label": "compressed"
+    },
+    {
+      "id": "e8",
+      "fromNode": "compressed_frozen",
+      "fromSide": "right",
+      "toNode": "board_g",
+      "toSide": "left",
+      "label": "explains break"
+    },
+    {
+      "id": "e9",
+      "fromNode": "dominant",
+      "fromSide": "right",
+      "toNode": "board_g",
+      "toSide": "left",
+      "label": "11/214"
+    },
+    {
+      "id": "e10",
+      "fromNode": "cascade_v3",
+      "fromSide": "right",
+      "toNode": "board_h",
+      "toSide": "left",
+      "label": "next blind ring"
+    }
+  ]
+}
