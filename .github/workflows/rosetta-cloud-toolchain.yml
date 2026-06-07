@@ -1,0 +1,260 @@
+name: Rosetta Cloud Toolchain
+
+on:
+  workflow_dispatch:
+    inputs:
+      primes:
+        description: "Ordered prime tape to compile"
+        required: false
+        default: "29 29 2"
+      fn:
+        description: "Function name for generated source"
+        required: false
+        default: "abs_add"
+      args:
+        description: "Comma-separated function arguments"
+        required: false
+        default: "a,b"
+      values:
+        description: "Comma/space-separated runtime values"
+        required: false
+        default: "3,-4"
+      targets:
+        description: "Comma-separated target lenses"
+        required: false
+        default: "python,typescript,go,c,haskell"
+      control_expr:
+        description: "Bounded Tier-2 control expression/program to compile"
+        required: false
+        default: "factorial(5)"
+      control_fn:
+        description: "Function name for generated control source"
+        required: false
+        default: "factorial_5"
+      control_targets:
+        description: "Comma-separated control targets"
+        required: false
+        default: "python,typescript,go,c"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/rosetta-cloud-toolchain.yml"
+      - "python/scbe/rosetta_compiler.py"
+      - "python/scbe/rosetta_control.py"
+      - "python/scbe/rosetta_control_gate.py"
+      - "python/scbe/rosetta_control_ingress.py"
+      - "python/scbe/rosetta_frontend.py"
+      - "python/scbe/prime_ir.py"
+      - "python/scbe/prime_shape_gate.py"
+      - "python/scbe/tongue_isa.py"
+      - "scripts/agents/scbe_code.py"
+      - "tests/agents/test_rosetta_compiler.py"
+      - "tests/agents/test_rosetta_control.py"
+      - "tests/agents/test_rosetta_control_gate.py"
+      - "tests/agents/test_rosetta_control_ingress.py"
+      - "tests/agents/test_rosetta_frontend.py"
+      - "tests/agents/test_prime_ir.py"
+      - "tests/agents/test_prime_shape_gate.py"
+      - "tests/agents/test_scbe_code.py"
+
+permissions:
+  contents: read
+
+jobs:
+  rosetta:
+    name: Cross-language Rosetta delivery
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ROSETTA_PRIMES: ${{ github.event.inputs.primes || '29 29 2' }}
+      ROSETTA_FN: ${{ github.event.inputs.fn || 'abs_add' }}
+      ROSETTA_ARGS: ${{ github.event.inputs.args || 'a,b' }}
+      ROSETTA_VALUES: ${{ github.event.inputs.values || '3,-4' }}
+      ROSETTA_TARGETS: ${{ github.event.inputs.targets || 'python,typescript,go,c,haskell' }}
+      ROSETTA_CONTROL_EXPR: ${{ github.event.inputs.control_expr || 'factorial(5)' }}
+      ROSETTA_CONTROL_FN: ${{ github.event.inputs.control_fn || 'factorial_5' }}
+      ROSETTA_CONTROL_TARGETS: ${{ github.event.inputs.control_targets || 'python,typescript,go,c' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Install native compiler carriers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc ghc
+
+      - name: Install Python test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest numpy
+
+      - name: Show carrier versions
+        run: |
+          python --version
+          node --version
+          go version
+          gcc --version | head -n 1
+          runghc --version
+
+      - name: Run Rosetta compiler tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -m pytest \
+            tests/agents/test_rosetta_compiler.py \
+            tests/agents/test_rosetta_control.py \
+            tests/agents/test_rosetta_control_gate.py \
+            tests/agents/test_rosetta_control_ingress.py \
+            tests/agents/test_rosetta_frontend.py \
+            tests/agents/test_prime_ir.py \
+            tests/agents/test_prime_shape_gate.py \
+            tests/agents/test_scbe_code.py \
+            -q
+
+      - name: Generate Rosetta delivery artifact
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          mkdir -p artifacts/rosetta
+          python scripts/agents/scbe_code.py rosetta-node \
+            --primes "$ROSETTA_PRIMES" \
+            --targets "$ROSETTA_TARGETS" \
+            --fn "$ROSETTA_FN" \
+            --args "$ROSETTA_ARGS" \
+            --values "$ROSETTA_VALUES" \
+            --run \
+            --json | tee artifacts/rosetta/rosetta-node.json
+
+      - name: Generate bounded control delivery artifact
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python scripts/agents/scbe_code.py rosetta-control-node \
+            --expr "$ROSETTA_CONTROL_EXPR" \
+            --targets "$ROSETTA_CONTROL_TARGETS" \
+            --fn "$ROSETTA_CONTROL_FN" \
+            --run \
+            --json | tee artifacts/rosetta/rosetta-control-node.json
+
+      - name: Verify every requested carrier delivered
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path("artifacts/rosetta/rosetta-node.json").read_text(encoding="utf-8"))
+          failures = []
+          for artifact in payload["artifacts"]:
+              target = artifact["target"]
+              runtime = artifact["runtime"]
+              if not artifact["round_trip_ok"]:
+                  failures.append(f"{target}: trace round-trip failed")
+              if runtime.get("status") != "PASS":
+                  failures.append(
+                      f"{target}: runtime did not pass ({runtime.get('status')}: {runtime.get('error', '')})"
+                  )
+          if not payload.get("runtime_consensus_ok"):
+              failures.append("runtime consensus failed")
+          if failures:
+              raise SystemExit("\n".join(failures))
+          print("Rosetta cloud delivery passed for:", ", ".join(a["target"] for a in payload["artifacts"]))
+          print("Shortest source target:", payload["shortest_target"])
+          print("Shortest runnable target:", payload["shortest_runnable_target"])
+          PY
+
+      - name: Verify bounded control carriers delivered
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          from python.scbe.rosetta_control_ingress import ingest_rosetta_control_source
+          from python.scbe.rosetta_control_gate import audit_rosetta_control_shape
+
+          payload = json.loads(Path("artifacts/rosetta/rosetta-control-node.json").read_text(encoding="utf-8"))
+          expected_primes = payload["control_tape"]["prime_tape"]
+          failures = []
+          for artifact in payload["artifacts"]:
+              target = artifact["target"]
+              runtime = artifact["runtime"]
+              if runtime.get("status") != "PASS":
+                  failures.append(
+                      f"{target}: runtime did not pass ({runtime.get('status')}: {runtime.get('error', '')})"
+                  )
+              audit = audit_rosetta_control_shape(
+                  artifact["source"],
+                  expression=os.environ["ROSETTA_CONTROL_EXPR"],
+                  target=target,
+                  fn_name=payload["fn_name"],
+                  expected_primes=expected_primes,
+              )
+              if not audit.ok:
+                  failures.append(f"{target}: control shape failed ({audit.verdict}: {audit.problems})")
+              ingress = ingest_rosetta_control_source(
+                  artifact["source"],
+                  expected_primes=expected_primes,
+              )
+              if not ingress.ok:
+                  failures.append(f"{target}: source ingress failed ({ingress.verdict}: {ingress.problems})")
+          if not payload.get("runtime_consensus_ok"):
+              failures.append("bounded control runtime consensus failed")
+          if failures:
+              raise SystemExit("\n".join(failures))
+          print("Rosetta bounded control passed for:", ", ".join(a["target"] for a in payload["artifacts"]))
+          print("Control value:", payload["value"])
+          print("Control prime tape:", payload["control_tape"]["prime_tape"])
+          PY
+
+      - name: Split generated sources
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          out = Path("artifacts/rosetta/source")
+          out.mkdir(parents=True, exist_ok=True)
+          payload = json.loads(Path("artifacts/rosetta/rosetta-node.json").read_text(encoding="utf-8"))
+          suffix = {
+              "python": "py",
+              "typescript": "ts",
+              "go": "go",
+              "c": "c",
+              "haskell": "hs",
+          }
+          for artifact in payload["artifacts"]:
+              target = artifact["target"]
+              Path(out / f"{payload['fn_name']}.{suffix[target]}").write_text(
+                  artifact["source"],
+                  encoding="utf-8",
+              )
+          control = json.loads(Path("artifacts/rosetta/rosetta-control-node.json").read_text(encoding="utf-8"))
+          for artifact in control["artifacts"]:
+              target = artifact["target"]
+              Path(out / f"{control['fn_name']}.control.{suffix[target]}").write_text(
+                  artifact["source"],
+                  encoding="utf-8",
+              )
+          PY
+
+      - name: Upload Rosetta artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rosetta-cloud-toolchain
+          path: artifacts/rosetta/
