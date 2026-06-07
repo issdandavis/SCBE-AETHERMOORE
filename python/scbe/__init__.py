@@ -150,6 +150,15 @@ from .audio_field_observables import (
     generate_decaying_sine,
     generate_sine,
 )
+from .chem_code import (
+    ChemCodeError,
+    ChemCodeResult,
+    ChemEvent,
+    canonicalize_chem_source,
+    parse_chem_code,
+    result_to_json as chem_code_result_to_json,
+    run_chem_code,
+)
 
 __all__ += [
     "AtomicElement",
@@ -213,4 +222,11 @@ __all__ += [
     "analyze_audio_field",
     "generate_sine",
     "generate_decaying_sine",
+    "ChemCodeError",
+    "ChemCodeResult",
+    "ChemEvent",
+    "canonicalize_chem_source",
+    "parse_chem_code",
+    "chem_code_result_to_json",
+    "run_chem_code",
 ]
