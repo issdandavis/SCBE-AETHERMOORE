@@ -148,7 +148,15 @@ def harmonic_scaling_spin_voxel(
     base = r ** (d**2)
     i_norm = max(intent_norm, cfg.epsilon)
     disorder = spin_disorder(spins, edges=edges, epsilon=cfg.epsilon)
-    h_spin = spin_hamiltonian(spins, edges=edges, config=cfg)
-    # Disorder drives penalty; Hamiltonian contributes soft stabilization signal.
-    spin_penalty = max(0.0, disorder + (h_spin / max(cfg.spin_reference, cfg.epsilon)))
+    # Penalty is the intensive per-edge disorder density (mean of 1 - cos over the
+    # edge set). Because it is normalized by edge count it is scale-free: the cost
+    # depends on the spin *configuration*, not the voxel count. The earlier term
+    # mixed in spin_hamiltonian(), an *extensive* magnetic energy (a sum over edges
+    # and sites). That sum grows with size and is signed, so at 16^3 it dominated
+    # the bounded cost and could drive it negative -- and a same-inventory shuffle
+    # null shows the magnetic structure is decorative for separation anyway
+    # (scripts/eval/spin_voxel_null_gate.py). The extensive term is therefore no
+    # longer fed into the cost; spin_hamiltonian() remains available as a physics
+    # observable for callers that want the raw energy.
+    spin_penalty = max(0.0, disorder)
     return base * (t_phase_factor(phase) / i_norm) * (1.0 + (cfg.alpha * spin_penalty))
