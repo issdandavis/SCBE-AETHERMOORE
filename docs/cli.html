@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <title>Try the SCBE Terminal — in your browser</title>
+    <meta
+      name="description"
+      content="Test the SCBE governed-CLI terminal frontend live in your browser — the real rendering code, not a mockup. Type scbe term, --detail, --json, /run, and compare it against a plain shell."
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta property="og:title" content="Try the SCBE Terminal" />
+    <meta
+      property="og:description"
+      content="The real CLI rendering code, running in your browser. Type commands, see governed receipts, compare to a plain shell."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href="https://aethermoore.com/cli.html" />
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --bg-soft: #11161f;
+        --panel: rgba(18, 23, 32, 0.92);
+        --line: rgba(214, 167, 86, 0.18);
+        --text: #f2f0ea;
+        --muted: #a3acb9;
+        --accent: #d6a756;
+        --accent-strong: #f0bf67;
+        --cool: #8cb4ff;
+        --term-bg: #0a0c11;
+        --max: 1180px;
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+        --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+      body {
+        font-family: Georgia, 'Times New Roman', serif;
+        background:
+          radial-gradient(circle at top, rgba(214, 167, 86, 0.1), transparent 36%),
+          linear-gradient(180deg, #0b0d12 0%, #0e131b 42%, #0b0d12 100%);
+        color: var(--text);
+        line-height: 1.6;
+      }
+      a { color: inherit; text-decoration: none; }
+
+      .topbar {
+        position: sticky; top: 0; z-index: 40;
+        backdrop-filter: blur(14px);
+        background: rgba(11, 13, 18, 0.82);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .wrap { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; }
+      .topbar-inner {
+        min-height: 64px; display: flex; align-items: center;
+        justify-content: space-between; gap: 20px;
+      }
+      .brand {
+        font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase;
+        color: var(--accent); font-weight: 700;
+      }
+      .nav { display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+      .nav a:hover { color: var(--text); }
+
+      .hero { padding: 64px 0 26px; }
+      .eyebrow {
+        color: var(--accent); text-transform: uppercase; letter-spacing: 0.18em;
+        font-size: 12px; font-weight: 700; margin-bottom: 14px;
+      }
+      h1 {
+        font-size: clamp(34px, 5.6vw, 64px); line-height: 0.98;
+        letter-spacing: -0.035em; margin-bottom: 16px;
+      }
+      .hero p { max-width: 60ch; font-size: clamp(16px, 1.8vw, 19px); color: var(--muted); }
+
+      .demo-flag {
+        display: inline-flex; align-items: center; gap: 9px; margin-top: 16px;
+        font-size: 13px; color: var(--muted);
+        border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px;
+      }
+      .demo-flag b { color: var(--accent-strong); font-weight: 700; }
+
+      /* ---- terminal ---- */
+      .term-shell {
+        margin: 22px 0 8px;
+        background: var(--term-bg);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .term-bar {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 14px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .dot { width: 11px; height: 11px; border-radius: 50%; }
+      .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+      .term-title {
+        margin-left: 8px; font-family: var(--mono); font-size: 12px;
+        color: var(--muted); letter-spacing: 0.04em;
+      }
+      .term-state {
+        margin-left: auto; font-family: var(--mono); font-size: 11px;
+        display: inline-flex; align-items: center; gap: 7px; color: var(--muted);
+      }
+      .term-state .led { width: 8px; height: 8px; border-radius: 50%; background: #6b7280; }
+      .term-state.live .led { background: #28c840; box-shadow: 0 0 8px #28c840; }
+      .term-body {
+        font-family: var(--mono);
+        font-size: 13px; line-height: 1.5;
+        color: #d7dde6;
+        padding: 16px 16px 8px;
+        height: 460px; overflow-y: auto;
+        white-space: pre-wrap; word-break: break-word;
+      }
+      .term-body .cmd-echo { color: var(--accent-strong); }
+      .term-body .cmd-echo::before { content: 'scbe ❯ '; color: var(--cool); }
+      .term-body .sys { color: var(--muted); font-style: italic; }
+      .term-out { margin: 2px 0 14px; }
+      .term-inputrow {
+        display: flex; align-items: center; gap: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 12px 16px; background: rgba(255,255,255,0.015);
+      }
+      .term-inputrow .prompt { font-family: var(--mono); color: var(--cool); font-size: 13px; }
+      #cmd {
+        flex: 1; background: transparent; border: none; outline: none;
+        font-family: var(--mono); font-size: 13px; color: var(--text);
+      }
+      .runbtn {
+        font-family: var(--mono); font-size: 12px; cursor: pointer;
+        color: #14110c; font-weight: 700;
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        border: none; border-radius: 8px; padding: 7px 14px;
+      }
+
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 26px; }
+      .chip {
+        font-family: var(--mono); font-size: 12px; cursor: pointer; color: var(--cool);
+        background: rgba(140, 180, 255, 0.08); border: 1px solid rgba(140, 180, 255, 0.18);
+        border-radius: 8px; padding: 6px 11px; transition: 140ms ease;
+      }
+      .chip:hover { background: rgba(140, 180, 255, 0.16); color: var(--text); }
+
+      /* ---- backend connect ---- */
+      .backend {
+        border: 1px solid var(--line); border-radius: 14px;
+        background: rgba(18, 23, 32, 0.6); padding: 18px 20px; margin: 8px 0 36px;
+      }
+      .backend h3 { font-size: 15px; margin-bottom: 6px; }
+      .backend p { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+      .backend .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .backend input {
+        flex: 1; min-width: 240px; font-family: var(--mono); font-size: 13px;
+        background: var(--term-bg); border: 1px solid var(--line); border-radius: 8px;
+        padding: 9px 12px; color: var(--text); outline: none;
+      }
+      .backend button {
+        font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text);
+        background: rgba(140, 180, 255, 0.12); border: 1px solid rgba(140, 180, 255, 0.28);
+        border-radius: 8px; padding: 9px 16px;
+      }
+      .backend code {
+        font-family: var(--mono); font-size: 12px; color: var(--accent-strong);
+        background: rgba(214,167,86,0.08); padding: 1px 6px; border-radius: 5px;
+      }
+
+      /* ---- compare ---- */
+      .section { padding: 22px 0 60px; }
+      h2 { font-size: clamp(24px, 3vw, 34px); letter-spacing: -0.02em; margin-bottom: 8px; }
+      .sub { color: var(--muted); margin-bottom: 22px; max-width: 62ch; }
+      .matrix { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+      .matrix th, .matrix td {
+        text-align: left; padding: 12px 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07); vertical-align: top;
+      }
+      .matrix thead th {
+        font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+      }
+      .matrix thead th.us { color: var(--accent-strong); }
+      .matrix td.feat { color: var(--text); font-weight: 700; }
+      .matrix td.us { color: var(--text); }
+      .matrix .y { color: #5bd68b; font-weight: 700; }
+      .matrix .n { color: #8a93a2; }
+      .matrix .p { color: var(--accent-strong); }
+      .matrix tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+      .note { color: var(--muted); font-size: 13px; margin-top: 14px; }
+
+      footer { color: var(--muted); font-size: 14px; padding: 26px 0 80px; }
+      footer a.back { color: var(--accent); }
+
+      @media (max-width: 720px) {
+        .term-body { height: 380px; font-size: 12px; }
+        .matrix .hidemob { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <a class="brand" href="index.html">◄ AetherMoore</a>
+        <nav class="nav">
+          <a href="index.html">Home</a>
+          <a href="math-spine.html">Math Spine</a>
+          <a href="benchmarks.html">Benchmarks</a>
+          <a href="products.html">Products</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="wrap hero">
+      <div class="eyebrow">Live · Governed CLI</div>
+      <h1>Try the SCBE terminal</h1>
+      <p>
+        This is the terminal’s <strong>real rendering code</strong> running in your browser —
+        the same <code style="font-family: var(--mono); color: var(--accent-strong)">terminal-frontend.js</code>
+        the CLI ships, not a mockup. Type a command, watch the governed panel render, and compare it
+        to a plain shell below.
+      </p>
+      <span class="demo-flag">
+        <b>Demo mode</b> — runs against a sample workspace. Commands that <em>execute</em> (<code style="font-family: var(--mono)">/run</code>) are simulated until you connect a backend.
+      </span>
+    </section>
+
+    <main class="wrap">
+      <div class="term-shell">
+        <div class="term-bar">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="term-title">scbe terminal — sample workspace</span>
+          <span class="term-state" id="termState"><span class="led"></span><span id="termStateText">demo mode</span></span>
+        </div>
+        <div class="term-body" id="termBody" aria-live="polite"></div>
+        <div class="term-inputrow">
+          <span class="prompt">scbe ❯</span>
+          <input id="cmd" autocomplete="off" autocapitalize="off" spellcheck="false"
+                 placeholder="try: scbe term --detail   (type help for all commands)" />
+          <button class="runbtn" id="runbtn">Run</button>
+        </div>
+      </div>
+
+      <div class="chips" id="chips"></div>
+
+      <div class="backend">
+        <h3>Connect a backend <span style="color: var(--muted); font-weight: 400; font-size: 13px;">(optional · advanced)</span></h3>
+        <p>
+          Want <code>/run</code> to execute for real? Stand up a tiny endpoint anywhere you like —
+          a free container service works fine — that accepts <code>POST /run {"command": "..."}</code>
+          and returns a terminal receipt JSON. Paste its URL here and the demo switches from
+          simulated receipts to live ones. Nothing is sent anywhere until you connect.
+        </p>
+        <div class="row">
+          <input id="backendUrl" placeholder="https://your-container.example.app   (leave blank for demo mode)" />
+          <button id="backendBtn">Connect</button>
+        </div>
+      </div>
+
+      <section class="section">
+        <h2>Same task, different tools</h2>
+        <p class="sub">
+          What you get from the SCBE terminal versus a plain shell and a typical AI coding CLI.
+          The other columns describe common behavior — they are a positioning guide, not a benchmark.
+        </p>
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th>Capability</th>
+              <th class="us">SCBE terminal</th>
+              <th>Plain shell</th>
+              <th class="hidemob">Typical AI CLI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="feat">Governed run receipt (pass/fail + next step)</td>
+              <td class="us"><span class="y">✓</span> built in</td>
+              <td><span class="n">—</span> raw exit code</td>
+              <td class="hidemob"><span class="n">—</span> usually none</td>
+            </tr>
+            <tr>
+              <td class="feat">Readiness posture (one-glance decision)</td>
+              <td class="us"><span class="y">✓</span> READY / WARN / REPAIR</td>
+              <td><span class="n">—</span></td>
+              <td class="hidemob"><span class="n">—</span></td>
+            </tr>
+            <tr>
+              <td class="feat">Natural-language routing</td>
+              <td class="us"><span class="y">✓</span> local + provider models</td>
+              <td><span class="n">—</span></td>
+              <td class="hidemob"><span class="p">~</span> model-dependent</td>
+            </tr>
+            <tr>
+              <td class="feat">Machine protocol (NDJSON / --json)</td>
+              <td class="us"><span class="y">✓</span> agent bus + JSON mode</td>
+              <td><span class="p">~</span> pipes only</td>
+              <td class="hidemob"><span class="p">~</span> varies</td>
+            </tr>
+            <tr>
+              <td class="feat">Colored UI with zero dependencies</td>
+              <td class="us"><span class="y">✓</span> 0 deps</td>
+              <td><span class="p">~</span> depends on tool</td>
+              <td class="hidemob"><span class="p">~</span> heavy deps</td>
+            </tr>
+            <tr>
+              <td class="feat">Pipe / NO_COLOR / JSON safety</td>
+              <td class="us"><span class="y">✓</span> never leaks ANSI to JSON</td>
+              <td><span class="p">~</span> manual</td>
+              <td class="hidemob"><span class="p">~</span> varies</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="note">
+          The SCBE column is what this page actually renders above — try <code style="font-family: var(--mono); color: var(--accent-strong)">scbe run "npm test"</code>
+          to see a governed receipt, then <code style="font-family: var(--mono); color: var(--accent-strong)">scbe term --json</code> for the agent-facing payload.
+        </p>
+      </section>
+    </main>
+
+    <footer class="wrap">
+      <p>
+        This page runs <code style="font-family: var(--mono); color: var(--accent-strong)">packages/cli/lib/terminal-frontend.js</code>
+        and <code style="font-family: var(--mono); color: var(--accent-strong)">lib/ui.js</code> unmodified, wrapped for the browser by
+        <code style="font-family: var(--mono)">build-web-terminal.cjs</code>. The workspace state shown is a sample, not your machine.
+      </p>
+      <p style="margin-top: 12px;"><a class="back" href="index.html">◄ Back to AetherMoore</a></p>
+    </footer>
+
+    <script src="static/scbe-terminal-web.js"></script>
+    <script>
+      (function () {
+        var T = window.SCBETerm;
+        var body = document.getElementById('termBody');
+        var input = document.getElementById('cmd');
+        var runbtn = document.getElementById('runbtn');
+        var stateEl = document.getElementById('termState');
+        var stateText = document.getElementById('termStateText');
+        var backendUrl = '';
+
+        // ----- sample workspace context (clearly a demo, not the visitor's host) -----
+        var lastReceipt = null;
+        function readiness() {
+          var lanes = [
+            ['node', 'node >= 18', 'pass'], ['py', 'python >= 3.11', 'pass'],
+            ['liboqs', 'PQC bindings (ML-KEM/ML-DSA)', 'pass'], ['build', 'TypeScript build', 'pass'],
+            ['vitest', 'TS test suite', 'pass'], ['pytest', 'Python test suite', 'pass'],
+            ['gate', 'governance gate', 'pass'], ['bus', 'agent bus tools', 'pass'],
+            ['receipts', 'terminal receipts', 'pass'], ['models', 'local model route', 'pass'],
+            ['git', 'clean worktree', 'pass'], ['pack', 'npm pack dry-run', 'pass'],
+            ['official', 'official harness', 'warn', 'needs vendor harness', 'Run the official conformance pack'],
+            ['linux', 'Linux kernel telemetry', 'warn', 'host not Linux', 'Run on a Linux host to verify'],
+          ];
+          return lanes.map(function (l) {
+            return { id: l[0], label: l[1], level: l[2], detail: l[3] || '', next_step: l[4] || '' };
+          });
+        }
+        function context() {
+          return {
+            cwd: '/repo/SCBE-AETHERMOORE',
+            repoRoot: '/repo/SCBE-AETHERMOORE',
+            historyPath: 'artifacts/scbe-terminal/history.jsonl',
+            version: { cli_package: 'scbe-aethermoore-cli', cli_version: '4.0.3', core_version: '4.0.3', node: 'v20.11.0', platform: 'linux' },
+            git: { branch: 'feat/cli-ui-kit', commit: 'c0208af', dirty: true, upstream: 'origin/feat/cli-ui-kit' },
+            shellConfig: { provider: 'ollama', model: 'llama3.2' },
+            platform: { readiness: readiness() },
+            naturalLanguage: { autocorrect: true, word_count: 412, learned_tools: 7,
+              examples: [['fix the repo', 'natural-language resolver'], ['show status', 'maps to status'], ['run the tests', 'governed run']].map(function (e) { return { phrase: e[0], use: e[1] }; }),
+              sources: ['static command vocabulary', 'local confirmed utterance log'] },
+            lastReceipt: lastReceipt,
+          };
+        }
+
+        function write(html, cls) {
+          var div = document.createElement('div');
+          div.className = 'term-out' + (cls ? ' ' + cls : '');
+          div.innerHTML = html;
+          body.appendChild(div);
+          body.scrollTop = body.scrollHeight;
+        }
+        function echo(cmd) {
+          var div = document.createElement('div');
+          div.className = 'cmd-echo';
+          div.textContent = cmd;
+          body.appendChild(div);
+        }
+        function panel(opts) {
+          var payload = T.buildTerminalFrontendPayload(context());
+          if (opts.json) return write(T.ansiToHtml(JSON.stringify(payload, null, 2)));
+          var ansi = T.renderTerminalFrontend(payload, { color: opts.color !== false, width: 84, detail: !!opts.detail });
+          write(T.ansiToHtml(ansi));
+        }
+
+        function simulateRun(cmd) {
+          var ok = !/\bfail|error|false\b/i.test(cmd);
+          lastReceipt = {
+            started_at: new Date().toISOString(), command: cmd, cwd: '/repo/SCBE-AETHERMOORE',
+            success: ok, exit_code: ok ? 0 : 1, duration_ms: 120 + Math.floor(cmd.length * 7),
+            stdout_preview: ok ? 'ok — ' + cmd + '\n(demo: output simulated)' : '',
+            stderr_preview: ok ? '' : 'demo: simulated non-zero exit for "' + cmd + '"',
+            failure: ok ? null : { summary: 'simulated failure', next_step: 'Connect a backend for real execution.' },
+          };
+        }
+        function liveRun(cmd) {
+          write('<span class="sys">→ POST ' + backendUrl + '/run … running</span>');
+          return fetch(backendUrl.replace(/\/$/, '') + '/run', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: cmd }),
+          }).then(function (r) { return r.json(); }).then(function (receipt) {
+            lastReceipt = receipt; panel({ detail: false });
+          }).catch(function (e) {
+            write('<span class="sys">backend error: ' + String(e.message || e) + ' — staying in demo mode</span>');
+          });
+        }
+
+        function helpText() {
+          var rows = [
+            ['scbe term', 'render the compact dashboard'],
+            ['scbe term --detail', 'full panel (modes, readiness, grammar)'],
+            ['scbe term --json', 'agent-facing JSON payload'],
+            ['scbe term --no-color', 'plain (NO_COLOR) render'],
+            ['status', 'JSON status receipt'],
+            ['models', 'local model route'],
+            ['scbe run "<cmd>"', 'governed run + receipt (/run <cmd> also works)'],
+            ['[verify] <cmd>', 'attach an instruction tag, then run'],
+            ['clear', 'clear the screen'],
+          ];
+          var out = 'commands\n';
+          rows.forEach(function (r) { out += '  ' + r[0] + new Array(Math.max(2, 26 - r[0].length)).join(' ') + r[1] + '\n'; });
+          write(T.ansiToHtml(out));
+        }
+
+        function run(raw) {
+          var cmd = String(raw || '').trim();
+          if (!cmd) return;
+          echo(cmd);
+          var lc = cmd.toLowerCase();
+
+          if (lc === 'help' || lc === '?' || lc === '/help' || lc === ':help') return helpText();
+          if (lc === 'clear' || lc === 'cls') { body.innerHTML = ''; return; }
+
+          // run forms: scbe run "x" | /run x | run x | [tag] x
+          var tag = cmd.match(/^\[(\w+)\]\s+(.*)$/);
+          var runMatch = cmd.match(/^scbe\s+run\s+["']?(.+?)["']?$/i) || cmd.match(/^\/?run\s+(.+)$/i);
+          if (tag) {
+            write('<span class="sys">tag [' + tag[1] + '] attached → routing as governed run</span>');
+            return dispatchRun(tag[2]);
+          }
+          if (runMatch) return dispatchRun(runMatch[1]);
+
+          if (/^(status|\/status|:status)$/.test(lc)) {
+            var p = T.buildTerminalFrontendPayload(context());
+            return write(T.ansiToHtml(JSON.stringify({ schema_version: p.schema_version, readiness: p.readiness, git: p.git, runtime: p.runtime, last_receipt: p.last_receipt }, null, 2)));
+          }
+          if (/^(models|\/models|:models)$/.test(lc)) {
+            return write(T.ansiToHtml('local model route\n  provider   ollama\n  model      llama3.2\n  url        http://127.0.0.1:11434\n  (configure with: scbe shell --ai)'));
+          }
+          if (/\bterm(inal)?\b/.test(lc) || lc === 'scbe' ) {
+            if (/\btui\b/.test(lc)) write('<span class="sys">scbe terminal tui is a full-screen Ink app — local only. Showing the dashboard instead:</span>');
+            return panel({ detail: /(--detail|\s-d\b)/.test(lc), json: /--json/.test(lc), color: !/--no-?color/.test(lc) });
+          }
+          // fallback: treat as natural language → governed run
+          write('<span class="sys">no exact command — routing "' + cmd + '" through the natural-language resolver → governed run</span>');
+          dispatchRun(cmd);
+        }
+
+        function dispatchRun(cmd) {
+          if (backendUrl) return liveRun(cmd);
+          simulateRun(cmd);
+          write('<span class="sys">receipt simulated (demo mode) — connect a backend for real execution</span>');
+          panel({ detail: false });
+        }
+
+        function setBackend(url) {
+          backendUrl = url.trim();
+          if (backendUrl) {
+            stateEl.classList.add('live'); stateText.textContent = 'connected';
+          } else {
+            stateEl.classList.remove('live'); stateText.textContent = 'demo mode';
+          }
+        }
+
+        // wire up
+        runbtn.addEventListener('click', function () { run(input.value); input.value = ''; });
+        input.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') { run(input.value); input.value = ''; }
+        });
+        document.getElementById('backendBtn').addEventListener('click', function () {
+          setBackend(document.getElementById('backendUrl').value);
+          run('status');
+        });
+
+        var chipCmds = ['scbe term', 'scbe term --detail', 'scbe term --json', 'scbe run "npm test"', 'status', 'models', 'help'];
+        var chips = document.getElementById('chips');
+        chipCmds.forEach(function (c) {
+          var b = document.createElement('button');
+          b.className = 'chip'; b.textContent = c;
+          b.addEventListener('click', function () { run(c); });
+          chips.appendChild(b);
+        });
+
+        // first paint
+        if (T) {
+          write('<span class="sys">SCBE terminal frontend — real rendering code, sample workspace. Type "help" for commands.</span>');
+          panel({ detail: false });
+        } else {
+          body.textContent = 'Failed to load the terminal bundle (static/scbe-terminal-web.js).';
+        }
+        input.focus();
+      })();
+    </script>
+  </body>
+</html>
