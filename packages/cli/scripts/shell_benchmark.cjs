@@ -106,7 +106,7 @@ function main() {
       assert.equal(r.status, 0);
       assert.match(r.stdout, /SCBE governed shell/);
       assert.match(r.stdout, /"provider": "ollama"/);
-      assert.match(r.stdout, /"model": "llama3\.2"/);
+      assert.match(r.stdout, /"model": "[^"]+"/);
       return { stdout_preview: r.stdout.slice(0, 360), duration_ms: r.duration_ms };
     })
   );

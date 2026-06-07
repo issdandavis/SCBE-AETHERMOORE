@@ -140,7 +140,6 @@ const TASKS = [
     difficulty: 'easy',
     instruction:
       "Run the benchmark artifact freshness test suite at packages/cli/tests/bench_artifact_freshness.test.cjs using Node's built-in test runner (`node --test packages/cli/tests/bench_artifact_freshness.test.cjs`). Count the passing tests from the output. Write the count as a plain integer (e.g. `17`) to `{WORKDIR}/answer.txt`.",
-      "Run the benchmark artifact freshness test suite at packages/cli/tests/bench_artifact_freshness.test.cjs using Node's built-in test runner (`node --test`). Report how many tests pass.",
     done_if:
       `node -e "` +
       `const t=require('fs').readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
@@ -465,7 +464,9 @@ async function runTask(task, opts = {}) {
       // Execute command and update terminal state
       let observation = '';
       if (cmd && !blocked) {
-        const exec = runShell(cmd, Math.min(30000, timeoutMs - (Date.now() - started)));
+        const remainingMs = timeoutMs - (Date.now() - started);
+        const execTimeoutMs = Math.max(1000, Math.min(30000, remainingMs));
+        const exec = runShell(cmd, execTimeoutMs);
         observation = [exec.stdout, exec.stderr].filter(Boolean).join('\n').slice(0, 2000);
         terminalState = `$ ${cmd}\n${observation}`;
       } else if (blocked) {
@@ -731,7 +732,9 @@ function writeArtifact(results, model, provider) {
   const provider = process.env.SCBE_PROVIDER || 'ollama';
   console.log(`\nTask Corpus Bench v2 — provider=${provider} model=${model}`);
   console.log(`Tasks: ${tasksToRun.length}  Corpus turn budget: ${maxCorpusTurns}`);
-  console.log('Verifier contract v2: {WORKDIR}/answer.txt per task — no static-state false positives\n');
+  console.log(
+    'Verifier contract v2: {WORKDIR}/answer.txt per task — no static-state false positives\n'
+  );
 
   const results = await runCorpus(tasksToRun, { maxCorpusTurns });
 
