@@ -122,7 +122,7 @@ opentelemetry-instrumentation-kafka-python==0.62b1
 opentelemetry-instrumentation-logging==0.63b1
 opentelemetry-instrumentation-mysql==0.61b0
 opentelemetry-instrumentation-mysqlclient==0.62b1
-opentelemetry-instrumentation-pika==0.62b0
+opentelemetry-instrumentation-pika==0.63b1
 opentelemetry-instrumentation-psycopg2==0.62b1
 opentelemetry-instrumentation-pymemcache==0.63b1
 opentelemetry-instrumentation-pymongo==0.62b1
