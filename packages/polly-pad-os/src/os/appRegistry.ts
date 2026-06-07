@@ -637,6 +637,15 @@ export function generateAppRegistry(): Map<string, AppDefinition> {
       minSize: { width: 600, height: 450 },
     },
     {
+      id: 'layeredabacus',
+      name: 'Layered Abacus',
+      icon: 'TableCellsSplit',
+      category: 'Utilities',
+      component: null as any,
+      defaultSize: { width: 980, height: 640 },
+      minSize: { width: 760, height: 520 },
+    },
+    {
       id: 'bmi',
       name: 'BMI Calculator',
       icon: 'HeartPulse',

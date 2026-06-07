@@ -72,6 +72,7 @@ const appImports: Record<string, () => Promise<{ default: React.ComponentType<an
   binaryclock: () => import('@/apps/BinaryClock'),
   calculatorpro: () => import('@/apps/CalculatorPro'),
   mathgraph: () => import('@/apps/MathGraph'),
+  layeredabacus: () => import('@/apps/LayeredAbacus'),
   bmi: () => import('@/apps/BMI'),
   typeracer: () => import('@/apps/games/TypeRacer'),
   connect4: () => import('@/apps/games/Connect4'),

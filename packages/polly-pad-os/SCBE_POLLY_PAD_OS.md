@@ -1,6 +1,6 @@
 # Polly Pad OS — AI-Operable Desktop (base)
 
-**What this is:** the base for an AI OS — a browser-rendered desktop with 81 apps that an
+**What this is:** the base for an AI OS — a browser-rendered desktop with 82 apps that an
 agent can drive from a backend and _see the result_. This is the Polly Pad upgrade: Polly Pad
 goes from a CLI pad ([`packages/polly-pad-cli`](../polly-pad-cli)) to a full visual workspace
 the SCBE fleet can operate.
@@ -9,9 +9,9 @@ the SCBE fleet can operate.
 
 - Source: `Kimi_Agent_Web Linux OS Build.zip` (Downloads), staged 2026-06-07.
 - Stack: React 19, Vite 7, Tailwind 3.4, shadcn/ui (40+ primitives), TypeScript 5.9.
-- 81 registered apps in `src/os/appRegistry.ts`. Window manager + Start menu + Taskbar in `src/os/`.
+- 82 registered apps in `src/os/appRegistry.ts`. Window manager + Start menu + Taskbar in `src/os/`.
 - An earlier build (`Kimi_Agent_Web_Linux_OS_Build_1/`) existed but was an empty husk by the time
-  this was staged; this 81-app build is the canonical base.
+  this was staged; this desktop build is the canonical base.
 - Committed + pushed on `feat/cli-ui-kit` (HEAD `0f2b858f3` feat(app): add polly pad OS package); 166 files tracked.
   `node_modules` installed (gitignored).
 
@@ -24,6 +24,7 @@ If an AI agent can _use_ the apps, it gains a visual tool palette, not just text
 | Terminal, **Multi-Agent Terminal**, Code Editor | act — run commands, edit, drive the SCBE fleet/HYDRA                    |
 | System Monitor, Disk Usage, Task Manager        | observe — render machine state (e.g. the real C: disk-pressure problem) |
 | Paint, Spreadsheet, Charts, Photo/Video         | produce — generate visual artifacts the agent can show                  |
+| **Layered Abacus**, Calculator, Math Graph      | calculate — chunked rows/layers, prime-basis rows, numeric snapshots    |
 | Games (Chess, Sudoku, 2048…)                    | sandboxed verify-by-play / reasoning surfaces                           |
 
 The backend contract is now concrete in `src/os/runtime.ts`:
@@ -49,14 +50,15 @@ Supported actions:
 - `open`, `close`, `focus`, `minimize`, `maximize`, `restore`
 - `move`, `resize`, `setTitle`
 - `setTheme`, `setStartMenu`, `notify`
+- `abacusSetRow`, `abacusAddLayer`, `abacusReset` for `layeredabacus`
 
-Verification: `npm test` runs `tests/runtime.test.ts`, which proves the 81-app registry, app open,
+Verification: `npm test` runs `tests/runtime.test.ts`, which proves the 82-app registry, app open,
 move/resize, singleton focus behavior, system-level theme/menu/notification calls, close behavior,
-and fail-closed invalid input handling.
+chunked layered-abacus math with prime-basis rows, and fail-closed invalid input handling.
 
 ## Next steps
 
-1. ~~`npm install`~~ done (node_modules present). Confirm `npm run dev` actually boots the 81-app desktop.
+1. ~~`npm install`~~ done (node_modules present). ~~Confirm `npm run dev` boots the desktop~~ done on `127.0.0.1:5187`.
 2. ~~Programmatic `invoke()` runtime~~ done (`src/os/runtime.ts`, verified by `npm test`).
 3. Wire one app end-to-end (Multi-Agent Terminal -> backend stub) so the visual app and runtime share live state.
-4. Commit/push the runtime layer after final verification.
+4. If needed later, connect the React app state directly to the backend runtime so browser clicks and agent invokes use the same live store.

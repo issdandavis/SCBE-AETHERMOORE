@@ -5,6 +5,15 @@ import type {
   Theme,
   WindowState,
 } from '../types/index.ts';
+import {
+  addAbacusLayer,
+  calculateAbacusTotals,
+  normalizeAbacusState,
+  resetAbacus,
+  setAbacusRow as setAbacusModelRow,
+  type AddAbacusLayerInput,
+  type LayeredAbacusState,
+} from '../lib/layeredAbacus.ts';
 import { generateAppRegistry } from './appRegistry.ts';
 import { DEFAULT_THEME, DEFAULT_VIEWPORT, defaultDesktopIcons } from './defaultState.ts';
 
@@ -22,7 +31,10 @@ export type PollyPadAction =
   | 'setTitle'
   | 'setTheme'
   | 'setStartMenu'
-  | 'notify';
+  | 'notify'
+  | 'abacusSetRow'
+  | 'abacusAddLayer'
+  | 'abacusReset';
 
 export interface PollyPadInvokeArgs {
   windowId?: string;
@@ -35,6 +47,13 @@ export interface PollyPadInvokeArgs {
   theme?: Theme;
   open?: boolean;
   notification?: Omit<Notification, 'id' | 'timestamp'>;
+  rowId?: string;
+  layerId?: string;
+  label?: string;
+  value?: number;
+  count?: number;
+  name?: string;
+  rows?: AddAbacusLayerInput['rows'];
 }
 
 export interface PollyPadAppSnapshot {
@@ -194,6 +213,15 @@ export class PollyPadRuntime {
       case 'notify':
         this.addNotification(args.notification);
         return undefined;
+      case 'abacusSetRow':
+        requireAppAction(appId, 'layeredabacus', action);
+        return this.setAbacusRow(this.requireWindowId(appId, args.windowId), args);
+      case 'abacusAddLayer':
+        requireAppAction(appId, 'layeredabacus', action);
+        return this.addAbacusLayer(this.requireWindowId(appId, args.windowId), args);
+      case 'abacusReset':
+        requireAppAction(appId, 'layeredabacus', action);
+        return this.resetAbacusWindow(this.requireWindowId(appId, args.windowId));
       default:
         throw new Error(`Unsupported action: ${action satisfies never}`);
     }
@@ -238,7 +266,7 @@ export class PollyPadRuntime {
       isMaximized: false,
       isFocused: true,
       zIndex: ++this.zIndexCounter,
-      data: cloneData(data),
+      data: hydrateAppData(appId, data),
     };
 
     this.windows = [...this.windows.map((window) => ({ ...window, isFocused: false })), nextWindow];
@@ -386,6 +414,48 @@ export class PollyPadRuntime {
     ];
   }
 
+  private setAbacusRow(windowId: string, args: PollyPadInvokeArgs): string {
+    const rowId = requireString(args.rowId, 'rowId');
+    const window = this.requireWindow(windowId);
+    const state = readAbacusState(window.data);
+    const nextState = setAbacusModelRow(state, {
+      count: args.count,
+      label: args.label,
+      layerId: args.layerId,
+      rowId,
+      value: args.value,
+    });
+
+    this.setWindowData(windowId, createAbacusWindowData(asRecord(window.data), nextState));
+    return this.focusWindow(windowId);
+  }
+
+  private addAbacusLayer(windowId: string, args: PollyPadInvokeArgs): string {
+    const window = this.requireWindow(windowId);
+    const state = readAbacusState(window.data);
+    const nextState = addAbacusLayer(state, {
+      layerId: args.layerId,
+      name: args.name,
+      rows: args.rows,
+    });
+
+    this.setWindowData(windowId, createAbacusWindowData(asRecord(window.data), nextState));
+    return this.focusWindow(windowId);
+  }
+
+  private resetAbacusWindow(windowId: string): string {
+    const window = this.requireWindow(windowId);
+    this.setWindowData(windowId, createAbacusWindowData(asRecord(window.data), resetAbacus()));
+    return this.focusWindow(windowId);
+  }
+
+  private setWindowData(windowId: string, data: unknown): void {
+    this.requireWindow(windowId);
+    this.windows = this.windows.map((window) =>
+      window.id === windowId ? { ...window, data } : window
+    );
+  }
+
   private requireWindowId(appId: string, requestedWindowId?: string): string {
     if (requestedWindowId) {
       this.requireWindow(requestedWindowId);
@@ -426,6 +496,49 @@ function requireNumber(value: unknown, name: string): number {
     throw new Error(`${name} must be a finite number`);
   }
   return value;
+}
+
+function requireString(value: unknown, name: string): string {
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error(`${name} must be a non-empty string`);
+  }
+  return value;
+}
+
+function requireAppAction(appId: string, expectedAppId: string, action: PollyPadAction): void {
+  if (appId !== expectedAppId) {
+    throw new Error(`${action} is only supported by ${expectedAppId}`);
+  }
+}
+
+function hydrateAppData(appId: string, data: unknown): unknown {
+  if (appId !== 'layeredabacus') {
+    return cloneData(data);
+  }
+
+  return createAbacusWindowData(asRecord(data), readAbacusState(data));
+}
+
+function createAbacusWindowData(
+  base: Record<string, unknown>,
+  state = resetAbacus()
+): Record<string, unknown> {
+  return {
+    ...cloneData(base),
+    abacus: state,
+    totals: calculateAbacusTotals(state),
+  };
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  return {};
+}
+
+function readAbacusState(value: unknown): LayeredAbacusState {
+  return normalizeAbacusState(asRecord(value).abacus as Partial<LayeredAbacusState> | undefined);
 }
 
 function cloneData<T>(value: T): T {

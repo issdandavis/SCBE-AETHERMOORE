@@ -11,18 +11,22 @@ function createRuntime() {
 }
 
 describe('PollyPadRuntime', () => {
-  it('lists the complete 81-app desktop registry', () => {
+  it('lists the complete 82-app desktop registry', () => {
     const runtime = createRuntime();
     const result = runtime.invoke('os', 'listApps');
 
     assert.equal(result.ok, true);
-    assert.equal(result.snapshot.appCount, 81);
+    assert.equal(result.snapshot.appCount, 82);
     assert.equal(
       result.snapshot.apps.some((app) => app.id === 'multiagent'),
       true
     );
     assert.equal(
       result.snapshot.apps.some((app) => app.id === 'governance'),
+      true
+    );
+    assert.equal(
+      result.snapshot.apps.some((app) => app.id === 'layeredabacus'),
       true
     );
   });
@@ -81,6 +85,42 @@ describe('PollyPadRuntime', () => {
     assert.equal(closed.snapshot.windows.length, 0);
   });
 
+  it('lets agents calculate with layered abacus chunks and prime rows', () => {
+    const runtime = createRuntime();
+    const opened = runtime.invoke('layeredabacus', 'open');
+    assert.equal(opened.ok, true);
+
+    const tens = runtime.invoke('layeredabacus', 'abacusSetRow', {
+      layerId: 'decimal',
+      rowId: 'tens',
+      count: 4,
+    });
+    assert.equal(tens.ok, true);
+
+    const prime = runtime.invoke('layeredabacus', 'abacusSetRow', {
+      layerId: 'prime',
+      rowId: 'p7',
+      count: 3,
+    });
+    assert.equal(prime.ok, true);
+
+    const data = prime.snapshot.windows[0].data as {
+      totals: { total: number; layers: Array<{ id: string; total: number }> };
+    };
+    assert.equal(data.totals.total, 61);
+    assert.equal(data.totals.layers.find((layer) => layer.id === 'decimal')?.total, 40);
+    assert.equal(data.totals.layers.find((layer) => layer.id === 'prime')?.total, 21);
+
+    const custom = runtime.invoke('layeredabacus', 'abacusAddLayer', {
+      layerId: 'route-cost',
+      name: 'Route Cost Tokens',
+      rows: [{ id: 'gate', label: 'gate', value: 8, count: 2 }],
+    });
+    assert.equal(custom.ok, true);
+    const customData = custom.snapshot.windows[0].data as { totals: { total: number } };
+    assert.equal(customData.totals.total, 77);
+  });
+
   it('fails closed on unknown apps or invalid operation arguments', () => {
     const runtime = createRuntime();
 
@@ -92,5 +132,12 @@ describe('PollyPadRuntime', () => {
     const invalidMove = runtime.invoke('terminal', 'move', { x: Number.NaN, y: 1 });
     assert.equal(invalidMove.ok, false);
     assert.match(invalidMove.error ?? '', /x must be a finite number/);
+
+    const wrongSurface = runtime.invoke('terminal', 'abacusSetRow', {
+      rowId: 'tens',
+      count: 1,
+    });
+    assert.equal(wrongSurface.ok, false);
+    assert.match(wrongSurface.error ?? '', /only supported by layeredabacus/);
   });
 });
