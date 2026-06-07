@@ -67,7 +67,10 @@ DEFAULT_OFFERS = [
         buyer="small teams, founders, and subcontract leads using AI who need a plain governance risk read",
         price_floor_usd=500,
         price_anchor_usd=500,
-        promise="Review one AI workflow and deliver a 2-page findings memo, three prioritized fixes, and a practical evidence checklist.",
+        promise=(
+            "Review one AI workflow and deliver a 2-page findings memo, three prioritized fixes, "
+            "and a practical evidence checklist."
+        ),
         deliverables=[
             "Review one AI workflow, toolchain, or customer-facing AI feature.",
             "Identify data, decision, audit, and vendor-risk gaps in plain English.",
@@ -85,7 +88,8 @@ DEFAULT_OFFERS = [
             "docs/specs/IDENTIFIER_CANONICALITY_L13.md",
         ],
         call_to_action=(
-            "Buy the fixed checkout, then send the intake at https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#intake. "
+            "Buy the fixed checkout, then send the intake at "
+            "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#intake. "
             "Checkout link: "
             "https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j"
         ),
@@ -111,27 +115,42 @@ DEFAULT_OFFERS = [
             "tests/smoke/test_npm_geoseal_bin.py",
             "tests/api/test_free_llm_routes.py",
         ],
-        call_to_action="Reply with your OS and the AI coding tools you already use; I will quote the CLI plus agent-bus setup.",
+        call_to_action=(
+            "Reply with your OS and the AI coding tools you already use; "
+            "I will quote the CLI plus agent-bus setup."
+        ),
     ),
     Offer(
-        offer_id="ai_workflow_audit_sprint",
-        title="AI Workflow Audit Sprint",
-        buyer="people paying for multiple AI tools but lacking a reliable daily workflow",
-        price_floor_usd=100,
-        price_anchor_usd=300,
-        promise="Find waste, fragile steps, and missing handoffs in an AI tool stack, then produce a usable repair plan.",
+        offer_id="workflow_snapshot_starter",
+        title="AI Agent Workflow Snapshot",
+        buyer=(
+            "solo builders and small teams with one AI workflow, prompt chain, MCP stack, "
+            "automation flow, or agent prototype"
+        ),
+        price_floor_usd=99,
+        price_anchor_usd=99,
+        promise=(
+            "Review one AI workflow and deliver a concise findings memo covering drift risks, unsafe tool paths, "
+            "missing recovery states, observability gaps, and three prioritized fixes."
+        ),
         deliverables=[
-            "Inventory current tools, scripts, datasets, and failure points.",
-            "Flag what should be automated, deleted, preserved, or moved.",
-            "Deliver a prioritized 7-day repair checklist.",
+            "Review one AI workflow, repo link, prompt chain, MCP stack, automation flow, or diagram.",
+            "Map drift risks, unsafe tool paths, missing recovery states, observability gaps, "
+            "and prompt-injection surfaces.",
+            "Deliver one concise findings memo with three prioritized fixes.",
+            "Credit the starter fee toward the $500 Governance Snapshot if deeper review is needed.",
         ],
         proof_paths=[
-            "scripts/revenue/daily_autopilot.py",
-            "scripts/system/sell_from_terminal.py",
-            "scripts/system/monetization_swarm_status.py",
-            "docs/business/GTM_PLAYBOOK.md",
+            "docs/workflow-snapshot.html",
+            "docs/ai-workflow-snapshot.html",
+            "docs/offers.json",
+            "scripts/revenue/build_workflow_snapshot_autopromo.py",
         ],
-        call_to_action="Send me the tools you use and one repeated workflow that keeps breaking.",
+        call_to_action=(
+            "Start with Stripe, then send the intake packet from "
+            "https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html#free-check. "
+            "Checkout link: https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
+        ),
     ),
     Offer(
         offer_id="research_packet_cleanup",
@@ -153,6 +172,10 @@ DEFAULT_OFFERS = [
         call_to_action="Send the folder names and deadline; I will produce the first cleanup map.",
     ),
 ]
+
+OFFER_ALIASES = {
+    "ai_workflow_audit_sprint": "workflow_snapshot_starter",
+}
 
 
 def _now_utc() -> str:
@@ -267,6 +290,7 @@ def _select_offer(offer_id: str) -> Offer:
     if offer_id == "rotate":
         day_index = datetime.now().timetuple().tm_yday % len(DEFAULT_OFFERS)
         return DEFAULT_OFFERS[day_index]
+    offer_id = OFFER_ALIASES.get(offer_id, offer_id)
     for offer in DEFAULT_OFFERS:
         if offer.offer_id == offer_id:
             return offer
@@ -387,7 +411,8 @@ def _markdown(report: dict[str, object]) -> str:
     assert isinstance(snapshot, dict)
     for check in snapshot["checks"]:
         assert isinstance(check, dict)
-        lines.append(f"- `{ ' '.join(check['command']) }` -> {check['returncode']}")
+        command_text = " ".join(check["command"])
+        lines.append(f"- `{command_text}` -> {check['returncode']}")
     return "\n".join(lines) + "\n"
 
 

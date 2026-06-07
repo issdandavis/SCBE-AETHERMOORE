@@ -45,7 +45,10 @@ def test_daily_cash_sprint_generates_governance_snapshot_offer(tmp_path: Path) -
 
     drafts = report["outreach_drafts"]
     assert len(drafts) == 3
-    assert any("https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j" in draft["text"] for draft in drafts)
+    assert any(
+        "https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j" in draft["text"]
+        for draft in drafts
+    )
     markdown = paths["markdown"].read_text(encoding="utf-8")
     assert "2-page findings memo" in markdown
     assert "Price: $500\n" in markdown
@@ -63,11 +66,49 @@ def test_daily_cash_sprint_generates_tip_jar_offer(tmp_path: Path) -> None:
     assert report["offer"]["offer_id"] == "tip_jar"
     assert report["offer"]["price_floor_usd"] == 5
     assert report["offer"]["price_anchor_usd"] == 5
-    assert any("https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k" in draft["text"] for draft in report["outreach_drafts"])
+    assert any(
+        "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k" in draft["text"]
+        for draft in report["outreach_drafts"]
+    )
 
     markdown = paths["markdown"].read_text(encoding="utf-8")
     assert "Price: $5\n" in markdown
     assert "$5-$5" not in markdown
+
+
+def test_daily_cash_sprint_generates_workflow_snapshot_public_offer(
+    tmp_path: Path,
+) -> None:
+    paths = generate_packet(
+        offer_id="workflow_snapshot_starter",
+        minutes=20,
+        out_root=tmp_path,
+    )
+
+    report = json.loads(paths["json"].read_text(encoding="utf-8"))
+    assert report["offer"]["offer_id"] == "workflow_snapshot_starter"
+    assert report["offer"]["title"] == "AI Agent Workflow Snapshot"
+    assert report["offer"]["price_floor_usd"] == 99
+    assert report["offer"]["price_anchor_usd"] == 99
+    assert any(
+        "https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l" in draft["text"]
+        for draft in report["outreach_drafts"]
+    )
+
+    markdown = paths["markdown"].read_text(encoding="utf-8")
+    assert "Price: $99\n" in markdown
+    assert "$99-$99" not in markdown
+
+
+def test_daily_cash_sprint_keeps_legacy_workflow_alias(tmp_path: Path) -> None:
+    paths = generate_packet(
+        offer_id="ai_workflow_audit_sprint",
+        minutes=20,
+        out_root=tmp_path,
+    )
+
+    report = json.loads(paths["json"].read_text(encoding="utf-8"))
+    assert report["offer"]["offer_id"] == "workflow_snapshot_starter"
 
 
 def test_daily_cash_sprint_continuous_advances_to_next_task(tmp_path: Path) -> None:
