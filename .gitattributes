@@ -19,3 +19,6 @@
 *.tsx text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
+
+# Legacy published CLI entrypoint has mixed line endings in existing blobs.
+packages/cli/bin/scbe.js -text

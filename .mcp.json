@@ -12,17 +12,6 @@
       ],
       "env": {}
     },
-    "fetch": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": [
-        "/c",
-        "npx",
-        "-y",
-        "@modelcontextprotocol/server-fetch"
-      ],
-      "env": {}
-    },
     "github": {
       "type": "stdio",
       "command": "cmd",
@@ -34,34 +23,6 @@
       ],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}"
-      }
-    },
-    "scbe-orchestrator": {
-      "type": "stdio",
-      "command": "python",
-      "args": [
-        "mcp/orchestrator.py"
-      ],
-      "env": {
-        "SWARM_DRY_RUN": "1"
-      }
-    },
-    "youtube-studio": {
-      "type": "stdio",
-      "command": "youtube-studio-mcp",
-      "args": [],
-      "env": {}
-    },
-    "notion-sweep": {
-      "type": "stdio",
-      "command": "python",
-      "args": [
-        "mcp/notion_server.py"
-      ],
-      "env": {
-        "NOTION_API_KEY": "${NOTION_API_KEY}",
-        "NOTION_TOKEN": "${NOTION_TOKEN}",
-        "NOTION_MCP_TOKEN": "${NOTION_MCP_TOKEN}"
       }
     },
     "kaggle": {
@@ -90,6 +51,16 @@
       "env": {
         "STRIPE_SECRET_KEY": "${STRIPE_SECRET_KEY}"
       }
+    },
+    "fetch": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "uvx",
+        "mcp-server-fetch"
+      ],
+      "env": {}
     }
   }
 }
