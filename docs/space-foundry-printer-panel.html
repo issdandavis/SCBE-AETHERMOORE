@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCBE Space Foundry Printer Panel</title>
+  <meta name="description" content="Layered 3D printer operation panel for governed space-foundry workflows.">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080907;
+      --ink: #f2efe2;
+      --muted: #9ca38f;
+      --line: #2f3529;
+      --line-strong: #59604d;
+      --deck: #11130f;
+      --deck-2: #171a14;
+      --deck-3: #202419;
+      --ok: #73d58f;
+      --warn: #e3c35a;
+      --bad: #f06b58;
+      --blue: #7cc7d7;
+      --metal: #b9c6bb;
+      --regolith: #b99264;
+      --ceramic: #dfd3b0;
+      --polymer: #7fb89a;
+      --shadow: rgba(0, 0, 0, 0.42);
+      --mono: Consolas, "Cascadia Mono", "SFMono-Regular", monospace;
+      --body: "Segoe UI", "Aptos", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+        radial-gradient(circle at 78% 8%, rgba(124, 199, 215, 0.12), transparent 30%),
+        radial-gradient(circle at 14% 22%, rgba(227, 195, 90, 0.08), transparent 28%),
+        var(--bg);
+      background-size: 32px 32px, 32px 32px, auto, auto, auto;
+      color: var(--ink);
+      font-family: var(--body);
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(8, 9, 7, 0.88);
+      backdrop-filter: blur(8px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .seal {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line-strong);
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(135deg, rgba(124, 199, 215, 0.18), transparent 45%),
+        var(--deck-2);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 10px 22px var(--shadow);
+    }
+
+    .seal::before {
+      content: "";
+      width: 19px;
+      height: 19px;
+      border: 2px solid var(--ok);
+      transform: rotate(45deg);
+      box-shadow: 0 0 0 7px rgba(115, 213, 143, 0.08);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 760;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    .top-metrics {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(92px, 1fr);
+      gap: 8px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      background: rgba(17, 19, 15, 0.9);
+      padding: 8px 10px;
+      min-width: 0;
+    }
+
+    .metric .label,
+    .panel-title,
+    .small-label {
+      color: var(--muted);
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .metric .value {
+      margin-top: 4px;
+      font-family: var(--mono);
+      font-size: 0.93rem;
+      white-space: nowrap;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.86fr) minmax(420px, 1.46fr) minmax(280px, 0.92fr);
+      gap: 12px;
+      padding: 12px;
+      min-height: 0;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: rgba(17, 19, 15, 0.92);
+      min-height: 0;
+      box-shadow: 0 16px 40px var(--shadow);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent);
+    }
+
+    .panel-title {
+      font-weight: 740;
+    }
+
+    .panel-body {
+      padding: 12px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      background: var(--deck-3);
+      color: var(--ink);
+      padding: 5px 8px;
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 12px rgba(115, 213, 143, 0.7);
+    }
+
+    .status-pill.warn .status-dot {
+      background: var(--warn);
+      box-shadow: 0 0 12px rgba(227, 195, 90, 0.7);
+    }
+
+    .status-pill.bad .status-dot {
+      background: var(--bad);
+      box-shadow: 0 0 12px rgba(240, 107, 88, 0.7);
+    }
+
+    .tool-row {
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(89, 96, 77, 0.42);
+    }
+
+    .tool-row:last-child {
+      border-bottom: 0;
+    }
+
+    .tool-icon {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      color: var(--blue);
+      background: var(--deck-2);
+      font-family: var(--mono);
+      font-size: 0.7rem;
+    }
+
+    .tool-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .tool-meta {
+      margin-top: 2px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+    }
+
+    .tool-state {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--ok);
+    }
+
+    .visual {
+      display: grid;
+      grid-template-rows: auto minmax(320px, 1fr) auto;
+      min-height: 0;
+    }
+
+    .viewport {
+      position: relative;
+      min-height: 320px;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(124, 199, 215, 0.06) 1px, transparent 1px),
+        linear-gradient(rgba(124, 199, 215, 0.05) 1px, transparent 1px),
+        linear-gradient(180deg, #11140f, #090a08);
+      background-size: 28px 28px;
+    }
+
+    #buildCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 320px;
+    }
+
+    .viewport-overlay {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .readout {
+      border: 1px solid rgba(89, 96, 77, 0.72);
+      background: rgba(8, 9, 7, 0.78);
+      padding: 8px;
+      min-width: 0;
+    }
+
+    .readout strong {
+      display: block;
+      margin-top: 3px;
+      font-family: var(--mono);
+      font-size: 0.86rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field {
+      border: 1px solid var(--line);
+      background: var(--deck);
+      padding: 10px;
+    }
+
+    .field input[type="range"] {
+      width: 100%;
+      accent-color: var(--blue);
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .segmented button,
+    .actions button {
+      border: 1px solid var(--line-strong);
+      background: var(--deck-2);
+      color: var(--ink);
+      padding: 8px 10px;
+      cursor: pointer;
+      min-height: 34px;
+    }
+
+    .segmented button.active {
+      background: var(--blue);
+      color: #071012;
+      border-color: var(--blue);
+      font-weight: 800;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(8, 9, 7, 0.62);
+    }
+
+    .actions button.primary {
+      background: var(--ok);
+      color: #07110a;
+      border-color: var(--ok);
+      font-weight: 800;
+    }
+
+    .actions button.stop {
+      background: var(--bad);
+      color: #160705;
+      border-color: var(--bad);
+      font-weight: 850;
+    }
+
+    .gate {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(89, 96, 77, 0.42);
+    }
+
+    .gate:last-child {
+      border-bottom: 0;
+    }
+
+    .gate-name {
+      font-weight: 720;
+      font-size: 0.86rem;
+    }
+
+    .gate-detail {
+      margin-top: 3px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.7rem;
+    }
+
+    .chip {
+      border: 1px solid var(--line-strong);
+      color: var(--ok);
+      padding: 4px 7px;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      background: rgba(115, 213, 143, 0.08);
+    }
+
+    .chip.warn {
+      color: var(--warn);
+      background: rgba(227, 195, 90, 0.08);
+    }
+
+    .chip.bad {
+      color: var(--bad);
+      background: rgba(240, 107, 88, 0.09);
+    }
+
+    .receipt {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      background: #080907;
+      padding: 10px;
+      min-height: 156px;
+      color: #b7c7b1;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      white-space: pre-wrap;
+      overflow: auto;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 5px;
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      background: var(--deck);
+    }
+
+    .phase {
+      min-width: 0;
+      border: 1px solid var(--line);
+      padding: 7px 5px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .phase.active {
+      color: #06100b;
+      background: var(--ok);
+      border-color: var(--ok);
+      font-weight: 820;
+    }
+
+    .phase.warn {
+      color: #171106;
+      background: var(--warn);
+      border-color: var(--warn);
+      font-weight: 820;
+    }
+
+    @media (max-width: 1050px) {
+      .main {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .top-metrics {
+        grid-auto-flow: row;
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .viewport {
+        min-height: 420px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .topbar,
+      .main {
+        padding: 10px;
+      }
+
+      .top-metrics,
+      .control-grid,
+      .viewport-overlay,
+      .timeline,
+      .actions {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .segmented {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .brand {
+        align-items: flex-start;
+      }
+
+      .viewport {
+        min-height: 360px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="seal" aria-hidden="true"></div>
+        <div>
+          <h1>Space Foundry Layer Printer</h1>
+          <div class="subtitle">Governed additive cell: seed package, printer gates, scan receipts, coupon plan</div>
+        </div>
+      </div>
+      <section class="top-metrics" aria-label="Printer status">
+        <div class="metric">
+          <div class="label">Decision</div>
+          <div class="value" id="decisionMetric">ALLOW</div>
+        </div>
+        <div class="metric">
+          <div class="label">Layer</div>
+          <div class="value" id="layerMetric">037 / 160</div>
+        </div>
+        <div class="metric">
+          <div class="label">Receipt</div>
+          <div class="value" id="receiptMetric">clean</div>
+        </div>
+        <div class="metric">
+          <div class="label">Mode</div>
+          <div class="value" id="modeMetric">vacuum print</div>
+        </div>
+      </section>
+    </header>
+
+    <section class="main">
+      <aside class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Tool Stack</div>
+          <span class="status-pill" id="toolStatus"><span class="status-dot"></span> READY</span>
+        </div>
+        <div class="panel-body">
+          <div class="tool-row">
+            <div class="tool-icon">SL</div>
+            <div>
+              <div class="tool-name">Slicer lane</div>
+              <div class="tool-meta">seed -> layer schedule</div>
+            </div>
+            <div class="tool-state">LOCKED</div>
+          </div>
+          <div class="tool-row">
+            <div class="tool-icon">EX</div>
+            <div>
+              <div class="tool-name">Extruder head</div>
+              <div class="tool-meta" id="extruderMeta">metal powder + binder</div>
+            </div>
+            <div class="tool-state" id="extruderState">ARMED</div>
+          </div>
+          <div class="tool-row">
+            <div class="tool-icon">SC</div>
+            <div>
+              <div class="tool-name">Scan loop</div>
+              <div class="tool-meta">camera, caliper, ridge hash</div>
+            </div>
+            <div class="tool-state">PASS</div>
+          </div>
+          <div class="tool-row">
+            <div class="tool-icon">AN</div>
+            <div>
+              <div class="tool-name">Anneal bay</div>
+              <div class="tool-meta">thermal hold deferred</div>
+            </div>
+            <div class="tool-state" id="annealState">COLD</div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel visual">
+        <div class="panel-header">
+          <div class="panel-title">Layered Build Volume</div>
+          <span class="status-pill" id="printState"><span class="status-dot"></span> PRINTING</span>
+        </div>
+        <div class="viewport">
+          <canvas id="buildCanvas" width="960" height="620" aria-label="Layered 3D build visualization"></canvas>
+          <div class="viewport-overlay">
+            <div class="readout">
+              <div class="small-label">Nozzle</div>
+              <strong id="nozzleReadout">214 C</strong>
+            </div>
+            <div class="readout">
+              <div class="small-label">Bed</div>
+              <strong id="bedReadout">82 C</strong>
+            </div>
+            <div class="readout">
+              <div class="small-label">Vacuum</div>
+              <strong id="vacuumReadout">3.2 kPa</strong>
+            </div>
+            <div class="readout">
+              <div class="small-label">Scan drift</div>
+              <strong id="driftReadout">0.018 mm</strong>
+            </div>
+          </div>
+        </div>
+        <div class="timeline" aria-label="Build phases">
+          <div class="phase">slice</div>
+          <div class="phase">purge</div>
+          <div class="phase active" id="phasePrint">print</div>
+          <div class="phase" id="phaseScan">scan</div>
+          <div class="phase">seal</div>
+          <div class="phase">land</div>
+        </div>
+        <div class="actions">
+          <button class="primary" id="startBtn" type="button">Start</button>
+          <button id="pauseBtn" type="button">Pause</button>
+          <button class="stop" id="stopBtn" type="button">Stop</button>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Governance Gates</div>
+          <span class="status-pill" id="gateStatus"><span class="status-dot"></span> ALLOW</span>
+        </div>
+        <div class="panel-body">
+          <div class="control-grid">
+            <div class="field">
+              <label class="small-label" for="layerSlider">Layer scrub</label>
+              <input id="layerSlider" type="range" min="1" max="160" value="37">
+            </div>
+            <div class="field">
+              <label class="small-label" for="riskSlider">Risk scalar</label>
+              <input id="riskSlider" type="range" min="0" max="100" value="22">
+            </div>
+            <div class="field">
+              <label class="small-label" for="tempSlider">Nozzle temp</label>
+              <input id="tempSlider" type="range" min="160" max="340" value="214">
+            </div>
+            <div class="field">
+              <label class="small-label" for="vacuumSlider">Chamber pressure</label>
+              <input id="vacuumSlider" type="range" min="1" max="40" value="3">
+            </div>
+          </div>
+
+          <div class="field" style="margin-top: 10px">
+            <div class="small-label" style="margin-bottom: 8px">Material lane</div>
+            <div class="segmented" id="materialButtons">
+              <button type="button" data-material="metal" class="active">Metal</button>
+              <button type="button" data-material="ceramic">Ceramic</button>
+              <button type="button" data-material="regolith">Regolith</button>
+              <button type="button" data-material="polymer">Polymer</button>
+            </div>
+          </div>
+
+          <div style="margin-top: 12px">
+            <div class="gate">
+              <div>
+                <div class="gate-name">Thermal envelope</div>
+                <div class="gate-detail" id="thermalDetail">nozzle within lane</div>
+              </div>
+              <div class="chip" id="thermalChip">PASS</div>
+            </div>
+            <div class="gate">
+              <div>
+                <div class="gate-name">Vacuum chamber</div>
+                <div class="gate-detail" id="vacuumDetail">pressure stable</div>
+              </div>
+              <div class="chip" id="vacuumChip">PASS</div>
+            </div>
+            <div class="gate">
+              <div>
+                <div class="gate-name">Layer scan drift</div>
+                <div class="gate-detail" id="driftDetail">within coupon tolerance</div>
+              </div>
+              <div class="chip" id="driftChip">PASS</div>
+            </div>
+            <div class="gate">
+              <div>
+                <div class="gate-name">Receipt chain</div>
+                <div class="gate-detail">SCAD hash + braid receipt clean</div>
+              </div>
+              <div class="chip">PASS</div>
+            </div>
+            <div class="gate">
+              <div>
+                <div class="gate-name">Command authority</div>
+                <div class="gate-detail" id="riskDetail">risk scalar inside envelope</div>
+              </div>
+              <div class="chip" id="riskChip">PASS</div>
+            </div>
+          </div>
+
+          <pre class="receipt" id="receiptPanel"></pre>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const state = {
+      layer: 37,
+      layers: 160,
+      risk: 22,
+      nozzle: 214,
+      bed: 82,
+      vacuum: 3,
+      material: "metal",
+      running: true,
+      tick: 0,
+      drift: 0.018
+    };
+
+    const materialConfig = {
+      metal: { color: "#b9c6bb", name: "metal powder + binder", maxTemp: 260 },
+      ceramic: { color: "#dfd3b0", name: "ceramic slurry", maxTemp: 300 },
+      regolith: { color: "#b99264", name: "regolith simulant", maxTemp: 320 },
+      polymer: { color: "#7fb89a", name: "polymer coupon", maxTemp: 235 }
+    };
+
+    const canvas = document.getElementById("buildCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function fitCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(320, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(320, Math.floor(rect.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function shade(hex, amount) {
+      const n = parseInt(hex.slice(1), 16);
+      const r = Math.max(0, Math.min(255, (n >> 16) + amount));
+      const g = Math.max(0, Math.min(255, ((n >> 8) & 255) + amount));
+      const b = Math.max(0, Math.min(255, (n & 255) + amount));
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function drawIsoBox(cx, cy, w, h, depth, color, alpha) {
+      const x = cx;
+      const y = cy;
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.moveTo(x, y - h);
+      ctx.lineTo(x + w, y - h + depth);
+      ctx.lineTo(x, y - h + depth * 2);
+      ctx.lineTo(x - w, y - h + depth);
+      ctx.closePath();
+      ctx.fillStyle = shade(color, 18);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(x - w, y - h + depth);
+      ctx.lineTo(x, y - h + depth * 2);
+      ctx.lineTo(x, y + depth * 2);
+      ctx.lineTo(x - w, y + depth);
+      ctx.closePath();
+      ctx.fillStyle = shade(color, -35);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(x + w, y - h + depth);
+      ctx.lineTo(x, y - h + depth * 2);
+      ctx.lineTo(x, y + depth * 2);
+      ctx.lineTo(x + w, y + depth);
+      ctx.closePath();
+      ctx.fillStyle = shade(color, -12);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    function drawGantry(width, height) {
+      const cx = width / 2;
+      const cy = height * 0.55;
+      ctx.strokeStyle = "rgba(185,198,187,0.44)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx - 230, cy - 175);
+      ctx.lineTo(cx - 230, cy + 118);
+      ctx.moveTo(cx + 230, cy - 175);
+      ctx.lineTo(cx + 230, cy + 118);
+      ctx.moveTo(cx - 250, cy - 170);
+      ctx.lineTo(cx + 250, cy - 170);
+      ctx.stroke();
+
+      const headX = cx - 150 + ((state.tick % 180) / 180) * 300;
+      ctx.fillStyle = "#7cc7d7";
+      ctx.fillRect(headX - 18, cy - 190, 36, 26);
+      ctx.fillStyle = "#f2efe2";
+      ctx.fillRect(headX - 5, cy - 164, 10, 28);
+      ctx.strokeStyle = "rgba(124,199,215,0.6)";
+      ctx.beginPath();
+      ctx.moveTo(headX, cy - 136);
+      ctx.lineTo(cx, cy - 36 - state.layer * 0.42);
+      ctx.stroke();
+    }
+
+    function drawBuild() {
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width / 2;
+      const baseY = height * 0.7;
+      const mat = materialConfig[state.material];
+
+      ctx.strokeStyle = "rgba(124,199,215,0.16)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 12; i += 1) {
+        ctx.beginPath();
+        ctx.moveTo(cx - 260 + i * 44, baseY + 118);
+        ctx.lineTo(cx - 30 + i * 44, baseY - 20);
+        ctx.stroke();
+      }
+      for (let i = 0; i < 8; i += 1) {
+        ctx.beginPath();
+        ctx.moveTo(cx - 275, baseY - 16 + i * 21);
+        ctx.lineTo(cx + 275, baseY - 16 + i * 21);
+        ctx.stroke();
+      }
+
+      drawIsoBox(cx, baseY + 28, 218, 10, 54, "#3f4737", 0.95);
+
+      const visible = Math.min(64, Math.max(6, Math.floor(state.layer / 2.5)));
+      for (let i = 0; i < visible; i += 1) {
+        const layerRatio = i / Math.max(1, visible - 1);
+        const wobble = Math.sin(i * 0.9 + state.tick * 0.03) * 3;
+        const alpha = 0.32 + layerRatio * 0.56;
+        drawIsoBox(cx + wobble, baseY - i * 3.25, 118 + layerRatio * 38, 5, 30, mat.color, alpha);
+      }
+
+      ctx.strokeStyle = state.drift > 0.06 ? "#f06b58" : state.drift > 0.035 ? "#e3c35a" : "#73d58f";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 4]);
+      ctx.strokeRect(cx - 155, baseY - visible * 3.25 - 30, 310, visible * 3.25 + 96);
+      ctx.setLineDash([]);
+
+      drawGantry(width, height);
+    }
+
+    function classify() {
+      const mat = materialConfig[state.material];
+      const thermalBad = state.nozzle > mat.maxTemp + 18;
+      const thermalWarn = state.nozzle > mat.maxTemp;
+      const vacuumBad = state.vacuum > 28;
+      const vacuumWarn = state.vacuum > 14;
+      const driftBad = state.drift > 0.06;
+      const driftWarn = state.drift > 0.035;
+      const riskBad = state.risk >= 82;
+      const riskWarn = state.risk >= 48;
+      const bad = thermalBad || vacuumBad || driftBad || riskBad;
+      const warn = !bad && (thermalWarn || vacuumWarn || driftWarn || riskWarn);
+      return { bad, warn, thermalBad, thermalWarn, vacuumBad, vacuumWarn, driftBad, driftWarn };
+    }
+
+    function setChip(id, status, detailId, detail) {
+      const chip = document.getElementById(id);
+      chip.textContent = status;
+      chip.className = "chip" + (status === "DENY" ? " bad" : status === "WARN" ? " warn" : "");
+      if (detailId) document.getElementById(detailId).textContent = detail;
+    }
+
+    function setPill(id, label, kind) {
+      const pill = document.getElementById(id);
+      pill.innerHTML = '<span class="status-dot"></span> ' + label;
+      pill.className = "status-pill" + (kind === "bad" ? " bad" : kind === "warn" ? " warn" : "");
+    }
+
+    function update() {
+      if (state.running) {
+        state.tick += 1;
+        state.drift = Math.max(0.006, Math.min(0.09, state.drift + Math.sin(state.tick * 0.08) * 0.0006));
+        if (state.tick % 35 === 0) state.layer = Math.min(state.layers, state.layer + 1);
+        document.getElementById("layerSlider").value = state.layer;
+      }
+
+      const c = classify();
+      const decision = c.bad ? "DENY" : c.warn ? "QUARANTINE" : "ALLOW";
+      const kind = c.bad ? "bad" : c.warn ? "warn" : "ok";
+
+      document.getElementById("decisionMetric").textContent = decision;
+      document.getElementById("layerMetric").textContent = String(state.layer).padStart(3, "0") + " / " + state.layers;
+      document.getElementById("receiptMetric").textContent = c.bad ? "blocked" : c.warn ? "review" : "clean";
+      document.getElementById("modeMetric").textContent = state.vacuum <= 8 ? "vacuum print" : "pressure review";
+
+      document.getElementById("nozzleReadout").textContent = state.nozzle + " C";
+      document.getElementById("bedReadout").textContent = state.bed + " C";
+      document.getElementById("vacuumReadout").textContent = state.vacuum.toFixed(1) + " kPa";
+      document.getElementById("driftReadout").textContent = state.drift.toFixed(3) + " mm";
+      document.getElementById("extruderMeta").textContent = materialConfig[state.material].name;
+
+      setPill("gateStatus", decision, kind);
+      setPill("toolStatus", c.bad ? "HOLD" : c.warn ? "REVIEW" : "READY", kind);
+      setPill("printState", state.running ? (c.bad ? "HELD" : "PRINTING") : "PAUSED", state.running ? kind : "warn");
+
+      document.getElementById("extruderState").textContent = c.bad ? "LOCKED" : state.running ? "ACTIVE" : "ARMED";
+      document.getElementById("annealState").textContent = state.layer > 120 ? "QUEUE" : "COLD";
+
+      setChip(
+        "thermalChip",
+        c.thermalBad ? "DENY" : c.thermalWarn ? "WARN" : "PASS",
+        "thermalDetail",
+        c.thermalBad ? "nozzle exceeds hard lane" : c.thermalWarn ? "close to material max" : "nozzle within lane"
+      );
+      setChip(
+        "vacuumChip",
+        c.vacuumBad ? "DENY" : c.vacuumWarn ? "WARN" : "PASS",
+        "vacuumDetail",
+        c.vacuumBad ? "pressure too high" : c.vacuumWarn ? "pressure drifting" : "pressure stable"
+      );
+      setChip(
+        "driftChip",
+        c.driftBad ? "DENY" : c.driftWarn ? "WARN" : "PASS",
+        "driftDetail",
+        c.driftBad ? "layer mismatch above bound" : c.driftWarn ? "scan drift rising" : "within coupon tolerance"
+      );
+      setChip(
+        "riskChip",
+        state.risk >= 82 ? "DENY" : state.risk >= 48 ? "WARN" : "PASS",
+        "riskDetail",
+        state.risk >= 82 ? "operator risk hold" : state.risk >= 48 ? "human review advised" : "risk scalar inside envelope"
+      );
+
+      document.getElementById("phasePrint").className = "phase " + (state.running ? "active" : "");
+      document.getElementById("phaseScan").className = "phase " + (state.layer % 12 === 0 ? "warn" : "");
+
+      document.getElementById("receiptPanel").textContent = JSON.stringify({
+        schema: "scbe-fab-receipt-v0.1",
+        tool: "printer.main",
+        operation: state.running ? "print_layer" : "hold",
+        material: state.material,
+        layer: state.layer,
+        decision,
+        risk_scalar: state.risk / 100,
+        thermal_c: state.nozzle,
+        chamber_kpa: state.vacuum,
+        scan_drift_mm: Number(state.drift.toFixed(4)),
+        claim_boundary: "research panel; real actuator commands require deterministic gate"
+      }, null, 2);
+
+      drawBuild();
+    }
+
+    function bind() {
+      document.getElementById("layerSlider").addEventListener("input", (event) => {
+        state.layer = Number(event.target.value);
+        update();
+      });
+      document.getElementById("riskSlider").addEventListener("input", (event) => {
+        state.risk = Number(event.target.value);
+        update();
+      });
+      document.getElementById("tempSlider").addEventListener("input", (event) => {
+        state.nozzle = Number(event.target.value);
+        update();
+      });
+      document.getElementById("vacuumSlider").addEventListener("input", (event) => {
+        state.vacuum = Number(event.target.value);
+        update();
+      });
+      document.getElementById("materialButtons").addEventListener("click", (event) => {
+        const btn = event.target.closest("button[data-material]");
+        if (!btn) return;
+        state.material = btn.dataset.material;
+        for (const el of document.querySelectorAll("#materialButtons button")) {
+          el.classList.toggle("active", el === btn);
+        }
+        update();
+      });
+      document.getElementById("startBtn").addEventListener("click", () => {
+        state.running = true;
+        update();
+      });
+      document.getElementById("pauseBtn").addEventListener("click", () => {
+        state.running = false;
+        update();
+      });
+      document.getElementById("stopBtn").addEventListener("click", () => {
+        state.running = false;
+        state.risk = 92;
+        document.getElementById("riskSlider").value = state.risk;
+        update();
+      });
+      window.addEventListener("resize", () => {
+        fitCanvas();
+        update();
+      });
+    }
+
+    bind();
+    fitCanvas();
+    update();
+    window.setInterval(update, 900);
+  </script>
+</body>
+</html>
