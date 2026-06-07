@@ -33,6 +33,17 @@ export {
   startQueueWorker,
 } from './queue.js';
 
+export {
+  type SyncContext,
+  type SyncJobResult,
+  type SyncPipelineDefinition,
+  type SyncPipelineState,
+  type SyncPipelineStatus,
+  SyncManager,
+  getPipelineState,
+  resetPipelineState,
+} from './sync-pipeline.js';
+
 // Semantic atom scanner + dimensional decomposition engine
 export {
   // Dimension axis
