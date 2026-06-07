@@ -1,6 +1,6 @@
 [submodule "aws-lambda-simple-web-app"]
 	path = aws-lambda-simple-web-app
-	url = https://github.com/issdandavis/aws-lambda-simple-web-app.git
+	url = git@github.com:issdandavis/aws-lambda-simple-web-app-active.git
 [submodule "external/Entropicdefenseengineproposal"]
 	path = external/Entropicdefenseengineproposal
 	url = https://github.com/issdandavis/Entropicdefenseengineproposal.git
@@ -12,13 +12,13 @@
 	url = https://github.com/Owl-Listener/designer-skills.git
 [submodule "external_repos/Spiralverse-AetherMoore"]
 	path = external_repos/Spiralverse-AetherMoore
-	url = https://github.com/issdandavis/Spiralverse-AetherMoore.git
+	url = git@github.com:issdandavis/Spiralverse-AetherMoore-active.git
 [submodule "external_repos/aws-lambda-simple-web-app"]
 	path = external_repos/aws-lambda-simple-web-app
-	url = https://github.com/issdandavis/aws-lambda-simple-web-app.git
+	url = git@github.com:issdandavis/aws-lambda-simple-web-app-active.git
 [submodule "external_repos/aws-lambda-simple-web-app-fresh"]
 	path = external_repos/aws-lambda-simple-web-app-fresh
-	url = https://github.com/issdandavis/aws-lambda-simple-web-app.git
+	url = git@github.com:issdandavis/aws-lambda-simple-web-app-active.git
 [submodule "external_repos/scbe-quantum-prototype"]
 	path = external_repos/scbe-quantum-prototype
 	url = https://github.com/issdandavis/scbe-quantum-prototype.git
