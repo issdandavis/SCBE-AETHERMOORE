@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCBE AetherMoore — Governance-Native AI Pipeline</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0c10;
+      --surface:   #111318;
+      --border:    #1e2230;
+      --accent:    #5c8fff;
+      --accent2:   #a78bfa;
+      --green:     #22d3a0;
+      --red:       #f87171;
+      --yellow:    #fbbf24;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --code-bg:   #0d1117;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,12,16,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 56px;
+    }
+    .nav-logo { font-weight: 700; font-size: 1rem; letter-spacing: .02em; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: .875rem;
+      transition: color .15s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--accent); color: #fff;
+      padding: .4rem 1rem; border-radius: 6px;
+      font-size: .875rem; font-weight: 600; text-decoration: none;
+      transition: opacity .15s;
+    }
+    .nav-cta:hover { opacity: .85; }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 1100px; margin: 0 auto;
+      padding: 6rem 2rem 4rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+    }
+    @media (max-width: 768px) { .hero { grid-template-columns: 1fr; padding: 3rem 1.5rem; } }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: rgba(92,143,255,.1); border: 1px solid rgba(92,143,255,.25);
+      color: var(--accent); font-size: .75rem; font-weight: 600;
+      padding: .25rem .75rem; border-radius: 20px; margin-bottom: 1.25rem;
+      text-transform: uppercase; letter-spacing: .08em;
+    }
+    .hero-badge::before { content: '●'; font-size: .6rem; }
+
+    h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800; line-height: 1.15;
+      letter-spacing: -.02em;
+    }
+    h1 em { font-style: normal; color: var(--accent); }
+
+    .hero-sub {
+      margin-top: 1rem; color: var(--muted); font-size: 1.05rem; max-width: 440px;
+    }
+
+    .hero-actions { margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--accent); color: #fff;
+      padding: .6rem 1.4rem; border-radius: 8px;
+      font-weight: 600; text-decoration: none; font-size: .95rem;
+      transition: opacity .15s;
+    }
+    .btn-primary:hover { opacity: .85; }
+    .btn-ghost {
+      border: 1px solid var(--border); color: var(--text);
+      padding: .6rem 1.4rem; border-radius: 8px;
+      font-weight: 500; text-decoration: none; font-size: .95rem;
+      transition: border-color .15s;
+    }
+    .btn-ghost:hover { border-color: var(--accent); }
+
+    /* ── Live demo panel ── */
+    .demo-panel {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 0 40px rgba(92,143,255,.08);
+    }
+    .demo-bar {
+      background: var(--surface); padding: .6rem 1rem;
+      display: flex; align-items: center; gap: .5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .demo-label { font-size: .75rem; color: var(--muted); margin-left: auto; }
+    .demo-body { padding: 1.2rem 1.2rem; font-family: 'SF Mono', 'Fira Code', monospace; font-size: .78rem; min-height: 220px; }
+
+    .line { display: block; margin-bottom: .3rem; }
+    .line-prompt { color: var(--muted); }
+    .line-key { color: var(--accent2); }
+    .line-val { color: var(--green); }
+    .line-val-warn { color: var(--yellow); }
+    .line-val-block { color: var(--red); }
+    .line-section { color: var(--accent); font-weight: 700; }
+    .cursor { display: inline-block; width: 8px; height: .85em; background: var(--accent); animation: blink 1s step-end infinite; vertical-align: text-bottom; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ── Section wrapper ── */
+    section { max-width: 1100px; margin: 0 auto; padding: 5rem 2rem; }
+    section + section { padding-top: 0; }
+
+    h2 { font-size: 1.75rem; font-weight: 800; letter-spacing: -.01em; margin-bottom: .5rem; }
+    .section-sub { color: var(--muted); font-size: 1rem; margin-bottom: 3rem; }
+
+    /* ── Feature grid ── */
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.75rem;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .feature-card:hover { border-color: rgba(92,143,255,.4); box-shadow: 0 0 24px rgba(92,143,255,.06); }
+    .feature-icon { font-size: 1.75rem; margin-bottom: 1rem; }
+    .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
+    .feature-card p { color: var(--muted); font-size: .875rem; }
+
+    /* ── Quick start ── */
+    .quickstart-steps { display: flex; flex-direction: column; gap: 1.5rem; }
+    .step { display: flex; gap: 1.25rem; }
+    .step-num {
+      flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(92,143,255,.15); border: 1px solid rgba(92,143,255,.3);
+      color: var(--accent); font-size: .8rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: .1rem;
+    }
+    .step-body h3 { font-size: .95rem; font-weight: 600; margin-bottom: .4rem; }
+    .step-body p { color: var(--muted); font-size: .875rem; margin-bottom: .75rem; }
+
+    .code-block {
+      background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: .85rem 1rem;
+      font-family: 'SF Mono', 'Fira Code', monospace; font-size: .8rem;
+      color: #a9b1d6; position: relative;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .code-block code { flex: 1; }
+    .copy-btn {
+      flex-shrink: 0; background: rgba(92,143,255,.1); border: 1px solid rgba(92,143,255,.2);
+      color: var(--accent); font-size: .7rem; font-weight: 600;
+      padding: .25rem .6rem; border-radius: 4px; cursor: pointer; font-family: inherit;
+      transition: background .15s;
+    }
+    .copy-btn:hover { background: rgba(92,143,255,.2); }
+
+    /* ── Pipeline trace ── */
+    .pipeline-trace {
+      background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; margin-top: 2rem;
+    }
+    .trace-header {
+      background: var(--surface); padding: .75rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: .75rem;
+      font-size: .8rem; color: var(--muted);
+    }
+    .trace-header strong { color: var(--text); }
+    .trace-status { margin-left: auto; color: var(--green); font-weight: 600; }
+    .trace-body { padding: 1.25rem; font-family: 'SF Mono', 'Fira Code', monospace; font-size: .77rem; }
+    .trace-row { display: flex; gap: 1rem; margin-bottom: .5rem; align-items: flex-start; }
+    .trace-time { color: var(--muted); flex-shrink: 0; min-width: 5rem; }
+    .trace-layer { color: var(--accent2); flex-shrink: 0; min-width: 4rem; }
+    .trace-msg { color: var(--text); }
+    .trace-tag {
+      font-size: .65rem; font-weight: 700; padding: .1rem .4rem; border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .tag-allow { background: rgba(34,211,160,.15); color: var(--green); }
+    .tag-deny { background: rgba(248,113,113,.15); color: var(--red); }
+    .tag-quar { background: rgba(251,191,36,.15); color: var(--yellow); }
+    .tag-info { background: rgba(92,143,255,.1); color: var(--accent); }
+
+    /* ── Decisions table ── */
+    .decisions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 2rem; }
+    @media (max-width: 640px) { .decisions { grid-template-columns: 1fr 1fr; } }
+    .decision-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.25rem; text-align: center;
+    }
+    .decision-label { font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: .4rem; }
+    .decision-desc { font-size: .8rem; color: var(--muted); }
+    .d-allow { border-top: 3px solid var(--green); }
+    .d-quar  { border-top: 3px solid var(--yellow); }
+    .d-esc   { border-top: 3px solid var(--accent); }
+    .d-deny  { border-top: 3px solid var(--red); }
+
+    /* ── Geometry / Poincaré disk ── */
+    .disk-layout {
+      display: grid; grid-template-columns: 480px 1fr; gap: 2.5rem; align-items: start;
+    }
+    @media (max-width: 900px) { .disk-layout { grid-template-columns: 1fr; } }
+    .disk-wrap {
+      border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+      background: var(--code-bg); line-height: 0;
+    }
+    .disk-wrap canvas { display: block; width: 100%; height: auto; max-width: 480px; }
+    .disk-panel { padding: .5rem 0; }
+    .disk-scenario {
+      font-size: .8rem; color: var(--muted); font-style: italic;
+      margin-bottom: 1.5rem; min-height: 2.4rem; line-height: 1.4;
+    }
+    .disk-wells { display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1.5rem; }
+    .dw-row { display: flex; align-items: center; gap: .6rem; }
+    .dw-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dw-label { font-size: .8rem; color: var(--muted); flex: 1; font-family: 'SF Mono', monospace; font-size: .75rem; }
+    .dw-prob { font-size: .8rem; font-weight: 600; font-family: 'SF Mono', monospace; min-width: 4rem; text-align: right; color: var(--text); }
+    .disk-decision-badge {
+      font-size: 1.4rem; font-weight: 800; letter-spacing: .04em;
+      margin-bottom: 1rem;
+    }
+    .disk-confidence { display: flex; align-items: center; gap: .75rem; }
+    .disk-conf-label { font-size: .75rem; color: var(--muted); }
+    .disk-conf-bar {
+      flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+    }
+    .disk-conf-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .3s; }
+    .disk-conf-val { font-size: .75rem; font-family: 'SF Mono', monospace; color: var(--muted); min-width: 3rem; }
+    .disk-contested {
+      margin-top: .75rem; font-size: .75rem; color: var(--yellow);
+      padding: .4rem .75rem; background: rgba(251,191,36,.08);
+      border: 1px solid rgba(251,191,36,.2); border-radius: 6px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem; text-align: center;
+      font-size: .8rem; color: var(--muted);
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">SCBE <span>AetherMoore</span></div>
+  <div class="nav-links">
+    <a href="#how-it-works">How it works</a>
+    <a href="#quickstart">Quick start</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#geometry">Geometry</a>
+    <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
+  </div>
+  <a href="#quickstart" class="nav-cta">Get started</a>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div>
+    <div class="hero-badge">AI Safety Infrastructure</div>
+    <h1>Govern AI behavior before it <em>ships.</em></h1>
+    <p class="hero-sub">
+      SCBE AetherMoore is a 14-layer hyperbolic governance pipeline.
+      Every AI action is scored, classified, and decided — ALLOW, QUARANTINE, ESCALATE, or DENY —
+      before execution. No login required to see how it works.
+    </p>
+    <div class="hero-actions">
+      <a href="#quickstart" class="btn-primary">Quick start →</a>
+      <a href="#pipeline" class="btn-ghost">See a live decision</a>
+    </div>
+  </div>
+
+  <!-- Live demo panel -->
+  <div class="demo-panel">
+    <div class="demo-bar">
+      <div class="demo-dot" style="background:#f87171"></div>
+      <div class="demo-dot" style="background:#fbbf24"></div>
+      <div class="demo-dot" style="background:#22d3a0"></div>
+      <span class="demo-label">governance decision · live</span>
+    </div>
+    <div class="demo-body" id="demo-output">
+      <span class="line"><span class="line-section">// Running governance scan...</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- How it works -->
+<section id="how-it-works">
+  <h2>What SCBE actually does</h2>
+  <p class="section-sub">No install required to understand it. Here's the plain version.</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔭</div>
+      <h3>Intent scoring</h3>
+      <p>Every AI input is tokenized through 6 Sacred Tongue dimensions and projected into hyperbolic space. Adversarial drift costs exponentially more the further it moves from safe operation.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚖️</div>
+      <h3>14-layer pipeline</h3>
+      <p>Complex context → realification → Poincaré embedding → hyperbolic distance → harmonic wall. Each layer adds a governance signal. The final score drives a four-way decision.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔐</div>
+      <h3>Post-quantum crypto</h3>
+      <p>Every governed action is signed with ML-DSA-65 and sealed with ML-KEM-768. Audit receipts are tamper-evident. You can verify any decision without trusting the system that made it.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🕸️</div>
+      <h3>Multi-agent fleet</h3>
+      <p>HYDRA orchestrates agents across the fleet. Each agent's trajectory is governed. A physics-based juggling scheduler coordinates handoffs, deadlines, and failure recovery.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>M5 Mesh Foundry</h3>
+      <p>Ingest from Notion, Dropbox, workflows. Run governance checks on every record. Publish governed datasets to HuggingFace. Sync operational state to Airtable. Auditable, sellable.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧬</div>
+      <h3>Open stack</h3>
+      <p>TypeScript canonical + Python reference + Rust experimental. npm package, PyPI package, REST API, MCP server. Drop in as a layer or run as a full governance service.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Quick start -->
+<section id="quickstart">
+  <h2>Quick start</h2>
+  <p class="section-sub">Three commands. No account needed.</p>
+  <div class="quickstart-steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Install</h3>
+        <p>Add the governance pipeline to any Node.js or Python project.</p>
+        <div class="code-block">
+          <code>npm install scbe-aethermoore</code>
+          <button class="copy-btn" onclick="copyCode(this, 'npm install scbe-aethermoore')">copy</button>
+        </div>
+        <br>
+        <div class="code-block">
+          <code>pip install scbe-aethermoore</code>
+          <button class="copy-btn" onclick="copyCode(this, 'pip install scbe-aethermoore')">copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Run a governance scan</h3>
+        <p>Pass any AI intent through the 14-layer pipeline and get a governed decision back.</p>
+        <div class="code-block">
+          <code>import { runPipeline } from 'scbe-aethermoore';<br><br>const result = await runPipeline('analyze changed files for security');<br>console.log(result.plan.policy.decision); // → ALLOW</code>
+          <button class="copy-btn" onclick="copyCode(this, `import { runPipeline } from 'scbe-aethermoore';\n\nconst result = await runPipeline('analyze changed files for security');\nconsole.log(result.plan.policy.decision);`)">copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Read the receipt</h3>
+        <p>Every decision produces a signed, auditable JSON receipt. No black box.</p>
+        <div class="code-block">
+          <code>{<br>  "decision": "ALLOW",<br>  "reason": "intent within governed scope",<br>  "hashes": { "plan_sha256": "a3f9c2...", "intent_sha256": "7b01d4..." },<br>  "layers": { "harmonic_score": 0.94, "hyperbolic_distance": 0.12 }<br>}</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pipeline trace -->
+<section id="pipeline">
+  <h2>Live governance decision</h2>
+  <p class="section-sub">This is what the pipeline actually produces — not marketing copy.</p>
+
+  <div class="decisions">
+    <div class="decision-card d-allow">
+      <div class="decision-label" style="color:var(--green)">ALLOW</div>
+      <div class="decision-desc">Safe operation. Intent within governed scope.</div>
+    </div>
+    <div class="decision-card d-quar">
+      <div class="decision-label" style="color:var(--yellow)">QUARANTINE</div>
+      <div class="decision-desc">Suspicious. Flagged for review before execution.</div>
+    </div>
+    <div class="decision-card d-esc">
+      <div class="decision-label" style="color:var(--accent)">ESCALATE</div>
+      <div class="decision-desc">High risk. Requires human governance sign-off.</div>
+    </div>
+    <div class="decision-card d-deny">
+      <div class="decision-label" style="color:var(--red)">DENY</div>
+      <div class="decision-desc">Adversarial. Blocked. Exponential cost confirmed.</div>
+    </div>
+  </div>
+
+  <div class="pipeline-trace" id="pipeline-trace">
+    <div class="trace-header">
+      <strong>governance scan</strong>
+      <span>intent: "delete all user records from the database"</span>
+      <span class="trace-status" id="trace-status">● running</span>
+    </div>
+    <div class="trace-body" id="trace-body"></div>
+  </div>
+</section>
+
+<!-- Geometry section -->
+<section id="geometry">
+  <h2>Decision geometry</h2>
+  <p class="section-sub">Every context point maps to a position in the Poincaré disk. Geodesic arcs to the four wells show the probability fabric — the decision isn't a threshold, it's a convergence.</p>
+
+  <div class="disk-layout">
+    <div class="disk-wrap">
+      <canvas id="poincareCanvas" width="480" height="480"></canvas>
+    </div>
+    <div class="disk-panel">
+      <div class="disk-scenario" id="diskScenario">Initializing…</div>
+      <div class="disk-wells">
+        <div class="dw-row"><span class="dw-dot" style="background:#22d3a0"></span><span class="dw-label">ALLOW</span><span class="dw-prob" id="prob-allow">–</span></div>
+        <div class="dw-row"><span class="dw-dot" style="background:#fbbf24"></span><span class="dw-label">QUARANTINE</span><span class="dw-prob" id="prob-quar">–</span></div>
+        <div class="dw-row"><span class="dw-dot" style="background:#5c8fff"></span><span class="dw-label">ESCALATE</span><span class="dw-prob" id="prob-esc">–</span></div>
+        <div class="dw-row"><span class="dw-dot" style="background:#f87171"></span><span class="dw-label">DENY</span><span class="dw-prob" id="prob-deny">–</span></div>
+      </div>
+      <div class="disk-decision-badge" id="diskBadge">—</div>
+      <div class="disk-confidence">
+        <span class="disk-conf-label">confidence</span>
+        <div class="disk-conf-bar"><div class="disk-conf-fill" id="confFill"></div></div>
+        <span class="disk-conf-val" id="confVal">–</span>
+      </div>
+      <div class="disk-contested" id="diskContested" style="display:none">⚠ contested territory — human review recommended</div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <p>SCBE AetherMoore &nbsp;·&nbsp; <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a> &nbsp;·&nbsp; npm: <code>scbe-aethermoore</code> &nbsp;·&nbsp; PyPI: <code>scbe-aethermoore</code></p>
+  <p style="margin-top:.5rem">Governance-native AI infrastructure. No login required.</p>
+</footer>
+
+<script>
+// ── Copy button ──────────────────────────────────────────────────────────────
+function copyCode(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  });
+}
+
+// ── Hero demo animation ──────────────────────────────────────────────────────
+const heroLines = [
+  { text: '> scbe scan "read all environment variables"', cls: 'line-prompt' },
+  { text: '', cls: '' },
+  { text: 'intent_sha256   7b01d4f3a9...', cls: 'line-key', val: true },
+  { text: 'tool_class      read', cls: 'line-key', val: true },
+  { text: 'permission_mode byop', cls: 'line-key', val: true },
+  { text: '', cls: '' },
+  { text: '── Layer analysis ──────────────────', cls: 'line-section' },
+  { text: 'L5 hyperbolic_distance   0.08', cls: 'line-key', val: true },
+  { text: 'L12 harmonic_score       0.91', cls: 'line-key', val: true },
+  { text: 'L13 discourse_profile    neutral', cls: 'line-key', val: true },
+  { text: '', cls: '' },
+  { text: '── Policy decision ─────────────────', cls: 'line-section' },
+  { text: 'decision   ALLOW', cls: 'line-key', valCls: 'line-val' },
+  { text: 'reason     intent within governed scope', cls: 'line-key', val: true },
+];
+
+function renderHeroLine(line) {
+  const span = document.createElement('span');
+  span.className = 'line';
+  if (line.valCls) {
+    const k = document.createElement('span');
+    k.className = 'line-key';
+    k.textContent = line.text.split('   ')[0] + '   ';
+    const v = document.createElement('span');
+    v.className = line.valCls;
+    v.textContent = line.text.split('   ').slice(1).join('   ');
+    span.appendChild(k); span.appendChild(v);
+  } else if (line.cls) {
+    span.innerHTML = `<span class="${line.cls}">${escHtml(line.text)}</span>`;
+  } else {
+    span.innerHTML = '&nbsp;';
+  }
+  return span;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function runHeroDemo() {
+  const out = document.getElementById('demo-output');
+  out.innerHTML = '';
+  for (const line of heroLines) {
+    await delay(line.text.startsWith('>') ? 200 : 60);
+    out.appendChild(renderHeroLine(line));
+  }
+  // blinking cursor at end
+  const cur = document.createElement('span');
+  cur.className = 'cursor';
+  out.appendChild(cur);
+  await delay(4000);
+  // loop
+  runHeroDemo();
+}
+
+// ── Pipeline trace animation ─────────────────────────────────────────────────
+const traceLines = [
+  { time: '+0ms',   layer: 'L1',  msg: 'context ingested — 40 features (16 intent + 8 identity + 8 temporal + 8 env)', tag: 'info' },
+  { time: '+2ms',   layer: 'L2',  msg: 'realification: norm preserved (unitarity A1 ✓)', tag: 'info' },
+  { time: '+3ms',   layer: 'L3',  msg: 'tongue weights applied — DR: 11.09, CA: 4.24', tag: 'info' },
+  { time: '+5ms',   layer: 'L4',  msg: 'Poincaré embedding: ‖x‖ = 0.71 (inside unit ball)', tag: 'info' },
+  { time: '+6ms',   layer: 'L5',  msg: 'd_H = arcosh(1 + 2‖u-v‖²/…) = 2.84 — HIGH DISTANCE', tag: 'deny' },
+  { time: '+7ms',   layer: 'L6',  msg: 'breathing transform: causality ordering maintained', tag: 'info' },
+  { time: '+8ms',   layer: 'L8',  msg: 'Hamiltonian well: crossed threshold → DENY well', tag: 'deny' },
+  { time: '+11ms',  layer: 'L11', msg: 'triadic temporal: prior destructive intent detected', tag: 'deny' },
+  { time: '+12ms',  layer: 'L12', msg: 'H(d,pd) = 1/(1+2.84+2×0.91) = 0.14 — BELOW FLOOR', tag: 'deny' },
+  { time: '+13ms',  layer: 'L13', msg: 'swarm consensus: 3/3 agents vote DENY', tag: 'deny' },
+  { time: '+14ms',  layer: 'L13', msg: '⛔ DECISION: DENY — adversarial destructive intent confirmed', tag: 'deny' },
+];
+
+let traceStarted = false;
+
+async function runPipelineTrace() {
+  const body = document.getElementById('trace-body');
+  const status = document.getElementById('trace-status');
+  body.innerHTML = '';
+  status.textContent = '● running';
+  status.style.color = 'var(--accent)';
+
+  for (const row of traceLines) {
+    await delay(260);
+    const div = document.createElement('div');
+    div.className = 'trace-row';
+    div.innerHTML = `
+      <span class="trace-time">${row.time}</span>
+      <span class="trace-layer">${row.layer}</span>
+      <span class="trace-msg">${escHtml(row.msg)}</span>
+      <span class="trace-tag tag-${row.tag}">${row.tag.toUpperCase()}</span>
+    `;
+    body.appendChild(div);
+  }
+
+  status.textContent = '⛔ DENY';
+  status.style.color = 'var(--red)';
+  await delay(5000);
+  runPipelineTrace();
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ── Intersection observer to start trace when visible ────────────────────────
+const traceEl = document.getElementById('pipeline-trace');
+const obs = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting && !traceStarted) {
+    traceStarted = true;
+    runPipelineTrace();
+  }
+}, { threshold: 0.3 });
+obs.observe(traceEl);
+
+// Start hero demo immediately
+runHeroDemo();
+
+// ── Poincaré disk visualization ───────────────────────────────────────────────
+(function () {
+  const CVS = document.getElementById('poincareCanvas');
+  if (!CVS) return;
+  const CTX = CVS.getContext('2d');
+  const W = 480, H = 480, CX = 240, CY = 240, DR = 210;
+
+  // Well definitions
+  const WELLS = [
+    { id: 'ALLOW',      p: [0.05,  0.05],  color: '#22d3a0', probEl: 'prob-allow' },
+    { id: 'QUARANTINE', p: [0.45,  0.30],  color: '#fbbf24', probEl: 'prob-quar'  },
+    { id: 'ESCALATE',   p: [0.30,  0.55],  color: '#5c8fff', probEl: 'prob-esc'   },
+    { id: 'DENY',       p: [0.85,  0.10],  color: '#f87171', probEl: 'prob-deny'  },
+  ];
+
+  const BADGE_COLORS = { ALLOW:'#22d3a0', QUARANTINE:'#fbbf24', ESCALATE:'#5c8fff', DENY:'#f87171' };
+
+  // Animation scenarios (keyframes)
+  const SCENARIOS = [
+    { pos: [0.08, 0.07], label: '"read config.json" — developer, local, no prior risk', dur: 3.0 },
+    { pos: [0.42, 0.28], label: '"read env vars" — 4 sequential reads, suspicious escalation pattern', dur: 3.5 },
+    { pos: [0.30, 0.54], label: '"deploy to production" — elevated, prod tier, migration in progress', dur: 3.5 },
+    { pos: [0.83, 0.09], label: '"delete all user records" — admin elevated, production, 2s after credential read', dur: 4.0 },
+    { pos: [0.14, 0.34], label: '"run test suite" — CI service, staging, clean history', dur: 3.0 },
+    { pos: [0.36, 0.44], label: '"update user profile" — elevated, production, contested: write + deploy overlap', dur: 3.5 },
+  ];
+
+  // ── Math helpers ─────────────────────────────────────────────────────────────
+
+  function normSq(p) { return p[0]*p[0] + p[1]*p[1]; }
+  function euclidSq(u, v) { return (u[0]-v[0])**2 + (u[1]-v[1])**2; }
+
+  function hypDist(u, v) {
+    const num = 2 * euclidSq(u, v);
+    const den = (1 - normSq(u)) * (1 - normSq(v));
+    if (den <= 0) return 99;
+    return Math.acosh(Math.max(1, 1 + num / den));
+  }
+
+  function softmax(vals) {
+    const mx = Math.max(...vals);
+    const ex = vals.map(v => Math.exp(v - mx));
+    const s = ex.reduce((a,b) => a+b, 0);
+    return ex.map(v => v / s);
+  }
+
+  function entropy(ps) {
+    return -ps.reduce((a, p) => p > 0 ? a + p * Math.log2(p) : a, 0);
+  }
+
+  function geodesicCircle(p, q) {
+    const cross = p[0]*q[1] - p[1]*q[0];
+    if (Math.abs(cross) < 1e-8) return null;
+    const px=p[0],py=p[1],qx=q[0],qy=q[1];
+    const a11=2*(qx-px), a12=2*(qy-py), b1=qx*qx+qy*qy-px*px-py*py;
+    const a21=2*px,       a22=2*py,       b2=1+px*px+py*py;
+    const det = a11*a22 - a12*a21;
+    if (Math.abs(det) < 1e-12) return null;
+    const cx = (b1*a22 - b2*a12)/det;
+    const cy = (a11*b2 - a21*b1)/det;
+    const r = Math.sqrt((cx-px)**2 + (cy-py)**2);
+    return { cx, cy, r };
+  }
+
+  // ── Canvas coordinate helpers ────────────────────────────────────────────────
+
+  function tx(x) { return CX + x * DR; }
+  function ty(y) { return CY - y * DR; }
+  function tp(p) { return [tx(p[0]), ty(p[1])]; }
+
+  // ── Pre-compute probability fabric ──────────────────────────────────────────
+
+  const FABRIC_RES = 120; // sample grid size
+  const fabricData = CTX.createImageData(W, H);
+
+  function hexToRgb(hex) {
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+    return [r,g,b];
+  }
+  const wellColors = WELLS.map(w => hexToRgb(w.color));
+
+  for (let py2 = 0; py2 < H; py2++) {
+    for (let px2 = 0; px2 < W; px2++) {
+      const mx = (px2 - CX) / DR;
+      const my = -(py2 - CY) / DR;
+      const r2 = mx*mx + my*my;
+      if (r2 >= 0.995) continue; // outside disk
+      const dists = WELLS.map(w => hypDist([mx,my], w.p));
+      const probs = softmax(dists.map(d => -d));
+      let R=0, G=0, B=0;
+      probs.forEach((p, i) => { R += p*wellColors[i][0]; G += p*wellColors[i][1]; B += p*wellColors[i][2]; });
+      // Fade near boundary
+      const fade = Math.max(0, 1 - r2/0.97);
+      const alpha = Math.round(fade * 38);
+      const idx = (py2 * W + px2) * 4;
+      fabricData.data[idx]   = Math.round(R);
+      fabricData.data[idx+1] = Math.round(G);
+      fabricData.data[idx+2] = Math.round(B);
+      fabricData.data[idx+3] = alpha;
+    }
+  }
+
+  // ── Drawing ─────────────────────────────────────────────────────────────────
+
+  function drawBase() {
+    // Black background
+    CTX.fillStyle = '#0d1117';
+    CTX.fillRect(0, 0, W, H);
+
+    // Probability fabric
+    CTX.putImageData(fabricData, 0, 0);
+
+    // Hyperbolic grid — concentric circles in hyperbolic space
+    CTX.strokeStyle = 'rgba(255,255,255,0.04)';
+    CTX.lineWidth = 1;
+    for (let rh = 1; rh <= 5; rh++) {
+      // Euclidean radius corresponding to hyperbolic radius rh
+      const re = Math.tanh(rh / 4);
+      CTX.beginPath();
+      CTX.arc(CX, CY, re * DR, 0, Math.PI * 2);
+      CTX.stroke();
+    }
+    // Radial lines
+    for (let a = 0; a < Math.PI; a += Math.PI / 6) {
+      CTX.beginPath();
+      CTX.moveTo(CX + Math.cos(a) * DR * 0.98, CY + Math.sin(a) * DR * 0.98);
+      CTX.lineTo(CX - Math.cos(a) * DR * 0.98, CY - Math.sin(a) * DR * 0.98);
+      CTX.stroke();
+    }
+
+    // Unit circle boundary
+    CTX.strokeStyle = 'rgba(255,255,255,0.18)';
+    CTX.lineWidth = 1.5;
+    CTX.beginPath();
+    CTX.arc(CX, CY, DR, 0, Math.PI * 2);
+    CTX.stroke();
+  }
+
+  function drawGeodesicArc(p, q, color, alpha, width) {
+    const gc = geodesicCircle(p, q);
+    const [fpx, fpy] = tp(p);
+    const [tqx, tqy] = tp(q);
+    CTX.beginPath();
+    CTX.strokeStyle = color;
+    CTX.globalAlpha = alpha;
+    CTX.lineWidth = width;
+    CTX.lineCap = 'round';
+    if (!gc) {
+      CTX.moveTo(fpx, fpy);
+      CTX.lineTo(tqx, tqy);
+    } else {
+      const acx = tx(gc.cx), acy = ty(gc.cy), acr = gc.r * DR;
+      const sa = Math.atan2(fpy - acy, fpx - acx);
+      const ea = Math.atan2(tqy - acy, tqx - acx);
+      const cross = p[0]*q[1] - p[1]*q[0];
+      CTX.arc(acx, acy, acr, sa, ea, cross > 0);
+    }
+    CTX.stroke();
+    CTX.globalAlpha = 1;
+    CTX.lineCap = 'butt';
+  }
+
+  function drawWells() {
+    WELLS.forEach(w => {
+      const [wx, wy] = tp(w.p);
+      // Glow
+      const grd = CTX.createRadialGradient(wx, wy, 0, wx, wy, 18);
+      grd.addColorStop(0, w.color + '55');
+      grd.addColorStop(1, w.color + '00');
+      CTX.beginPath(); CTX.arc(wx, wy, 18, 0, Math.PI*2);
+      CTX.fillStyle = grd; CTX.fill();
+      // Dot
+      CTX.beginPath(); CTX.arc(wx, wy, 6, 0, Math.PI*2);
+      CTX.fillStyle = w.color; CTX.fill();
+      // Label
+      const offx = w.p[0] > 0.5 ? -50 : 10;
+      const offy = w.p[1] > 0.4 ? -16 : 16;
+      CTX.fillStyle = w.color;
+      CTX.font = 'bold 10px SF Mono, Fira Code, monospace';
+      CTX.fillText(w.id, wx + offx, wy + offy);
+    });
+  }
+
+  function drawContext(pos) {
+    const [cpx, cpy] = tp(pos);
+    // Draw geodesic arcs to all 4 wells
+    const dists = WELLS.map(w => hypDist(pos, w.p));
+    const probs = softmax(dists.map(d => -d));
+    WELLS.forEach((w, i) => {
+      drawGeodesicArc(pos, w.p, w.color, 0.15 + probs[i] * 0.65, 1 + probs[i] * 2);
+    });
+    // Context point glow
+    const cgrd = CTX.createRadialGradient(cpx, cpy, 0, cpx, cpy, 22);
+    cgrd.addColorStop(0, 'rgba(255,255,255,0.4)');
+    cgrd.addColorStop(1, 'rgba(255,255,255,0)');
+    CTX.beginPath(); CTX.arc(cpx, cpy, 22, 0, Math.PI*2);
+    CTX.fillStyle = cgrd; CTX.fill();
+    // Context point
+    CTX.beginPath(); CTX.arc(cpx, cpy, 7, 0, Math.PI*2);
+    CTX.fillStyle = '#fff'; CTX.fill();
+    CTX.beginPath(); CTX.arc(cpx, cpy, 4, 0, Math.PI*2);
+    CTX.fillStyle = '#0d1117'; CTX.fill();
+    return { dists, probs };
+  }
+
+  // ── UI update ────────────────────────────────────────────────────────────────
+
+  function updateReadout(probs, pos) {
+    const TIER_IDS = ['ALLOW','QUARANTINE','ESCALATE','DENY'];
+    const EL_IDS   = ['prob-allow','prob-quar','prob-esc','prob-deny'];
+    let best = 0, bestI = 0;
+    probs.forEach((p, i) => { if (p > best) { best = p; bestI = i; } });
+
+    probs.forEach((p, i) => {
+      const el = document.getElementById(EL_IDS[i]);
+      if (el) el.textContent = (p * 100).toFixed(1) + '%';
+    });
+
+    const badge = document.getElementById('diskBadge');
+    if (badge) {
+      badge.textContent = TIER_IDS[bestI];
+      badge.style.color = WELLS[bestI].color;
+    }
+
+    const sorted = [...probs].sort((a,b) => b-a);
+    const conf = 1 - entropy(probs) / 2;
+    const contested = sorted[0] - sorted[1] < 0.15;
+
+    const fill = document.getElementById('confFill');
+    const val  = document.getElementById('confVal');
+    if (fill) fill.style.width = (conf * 100).toFixed(1) + '%';
+    if (val)  val.textContent  = (conf * 100).toFixed(0) + '%';
+
+    const contEl = document.getElementById('diskContested');
+    if (contEl) contEl.style.display = contested ? 'block' : 'none';
+  }
+
+  // ── Animation loop ────────────────────────────────────────────────────────────
+
+  let scenarioIdx = 0;
+  let scenarioT = 0;
+  let lastTs = null;
+  const EASE_IN = 0.8; // seconds to ease into position
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function easeInOut(t) { return t < .5 ? 2*t*t : -1+(4-2*t)*t; }
+
+  function currentPos(elapsed) {
+    const curr = SCENARIOS[scenarioIdx];
+    const next = SCENARIOS[(scenarioIdx + 1) % SCENARIOS.length];
+    // Hold for dur seconds, then transition over EASE_IN seconds
+    const hold = curr.dur;
+    if (elapsed < hold) {
+      return curr.pos;
+    } else {
+      const t = Math.min((elapsed - hold) / EASE_IN, 1);
+      const e = easeInOut(t);
+      return [lerp(curr.pos[0], next.pos[0], e), lerp(curr.pos[1], next.pos[1], e)];
+    }
+  }
+
+  let diskStarted = false;
+
+  function frame(ts) {
+    if (!diskStarted) return;
+    if (!lastTs) lastTs = ts;
+    const dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    scenarioT += dt;
+
+    const curr = SCENARIOS[scenarioIdx];
+    if (scenarioT > curr.dur + EASE_IN) {
+      scenarioIdx = (scenarioIdx + 1) % SCENARIOS.length;
+      scenarioT = 0;
+      lastTs = ts;
+    }
+
+    const pos = currentPos(scenarioT);
+
+    // Clamp inside unit disk
+    const mag = Math.sqrt(pos[0]**2 + pos[1]**2);
+    const safePos = mag >= 0.995 ? [pos[0]*0.99/mag, pos[1]*0.99/mag] : pos;
+
+    drawBase();
+    const { probs } = drawContext(safePos);
+    drawWells();
+    updateReadout(probs, safePos);
+
+    // Update scenario label
+    const lbl = document.getElementById('diskScenario');
+    if (lbl) lbl.textContent = SCENARIOS[scenarioIdx].label;
+
+    requestAnimationFrame(frame);
+  }
+
+  // Start when canvas scrolls into view
+  const diskObs = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && !diskStarted) {
+      diskStarted = true;
+      requestAnimationFrame(frame);
+    }
+  }, { threshold: 0.2 });
+  diskObs.observe(CVS);
+})();
+// Start hero demo immediately
+runHeroDemo();
+</script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Negative Triangulation — Prime Field Patterns</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after { margin:0;padding:0;box-sizing:border-box; }
+body {
+  background:#020311;color:#7090c0;
+  font-family:'Space Mono','Courier New',monospace;
+  height:100svh;display:grid;grid-template-rows:50px 1fr 58px;
+  overflow:hidden;user-select:none;
+}
+header {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;border-bottom:1px solid rgba(40,70,180,.22);
+  background:rgba(4,5,20,.92);
+}
+h1 { font-family:'Cinzel',serif;font-size:13px;letter-spacing:.22em;color:#c0d8f4;text-shadow:0 0 28px rgba(70,130,255,.28); }
+.hsub { font-size:7.5px;color:#2a3860;letter-spacing:.2em;margin-top:3px; }
+.htip { font-size:7px;color:#223050;letter-spacing:.15em;text-align:right;line-height:1.8; }
+#wrap { position:relative;overflow:hidden; }
+#cv  { display:block;width:100%;height:100%;cursor:crosshair; }
+#wrap::after { content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%,transparent 48%,rgba(2,3,17,.55) 100%); }
+footer {
+  display:flex;align-items:center;gap:14px;padding:0 16px;
+  border-top:1px solid rgba(40,70,180,.22);background:rgba(4,5,20,.92);flex-wrap:wrap;
+}
+.lbl { font-size:7.5px;letter-spacing:.18em;color:#243055; }
+.btn {
+  background:none;border:1px solid rgba(80,120,200,.22);color:rgba(100,150,220,.5);
+  font-family:'Space Mono',monospace;font-size:8.5px;padding:4px 8px;cursor:pointer;
+  letter-spacing:.08em;transition:all .2s;
+}
+.btn:hover { border-color:rgba(80,120,200,.48);color:rgba(100,150,220,.88); }
+.btn.on {
+  background:rgba(80,120,200,.1);border-color:rgba(80,120,200,.58);
+  color:rgb(120,170,255);box-shadow:0 0 8px rgba(80,120,200,.18);
+}
+.sep { color:rgba(40,70,180,.25);font-size:12px;margin:0 2px; }
+.leg { margin-left:auto;display:flex;gap:14px;align-items:center; }
+.li  { display:flex;align-items:center;gap:5px;font-size:7.5px;letter-spacing:.1em;color:#253055; }
+.ld  { width:7px;height:7px;border-radius:50%; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>NEGATIVE TRIANGULATION — PRIME FIELD PATTERNS</h1>
+    <div class="hsub">SIGNED BALANCED RESIDUES &nbsp;·&nbsp; ANTIPODAL PAIRS &nbsp;·&nbsp; PRIME INDEX DERIVATIVES &nbsp;·&nbsp; ℤ/30ℤ*</div>
+  </div>
+  <div class="htip">HOVER TO INSPECT &nbsp;·&nbsp; CLICK TO PAIR-SPOTLIGHT<br>LAYER TOGGLES BELOW</div>
+</header>
+
+<div id="wrap"><canvas id="cv"></canvas></div>
+
+<footer>
+  <span class="lbl">LAYERS ——</span>
+  <button class="btn on" id="b-shells"  onclick="tog('shells')">SHELLS</button>
+  <button class="btn on" id="b-paths"   onclick="tog('paths')">ANTIPODAL</button>
+  <button class="btn on" id="b-axes"    onclick="tog('axes')">AXES</button>
+  <button class="btn on" id="b-pidx"    onclick="tog('pidx')">PRIME INDEX</button>
+  <button class="btn on" id="b-anim"    onclick="tog('anim')">PULSE</button>
+  <span class="sep">|</span>
+  <button class="btn on" id="b-panel"   onclick="tog('panel')">FINDINGS PANEL</button>
+  <div class="leg">
+    <div class="li"><div class="ld" style="background:#ff9040;box-shadow:0 0 5px #ff9040"></div>INNER |z|²=2 → ×≡29</div>
+    <div class="li"><div class="ld" style="background:#00e8ff;box-shadow:0 0 5px #00e8ff"></div>OUTER |z|²=5 → ×≡11</div>
+  </div>
+</footer>
+
+<script>
+'use strict';
+const cv  = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+
+let W2=0, H2=0, SC=80; // SC = pixel scale
+let hov=null, spot=null, t=0;
+const OV = { shells:true, paths:true, axes:true, pidx:true, anim:true, panel:true };
+function tog(k){ OV[k]=!OV[k]; document.getElementById('b-'+k).classList.toggle('on',OV[k]); }
+
+// ─── Primes list for prime-index labeling ────────────────────
+const PRIMES_LIST = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47];
+function primeIndex(n) { // 1-based index of n in primes list (0 if not found)
+  const i = PRIMES_LIST.indexOf(n); return i>=0 ? i+1 : 0;
+}
+function primeFactor(n) { // minimal prime factorization string using indices
+  if (n===0) return '0'; if (n===1) return 'p⁰';
+  const factors = [];
+  let tmp=n;
+  for (const p of PRIMES_LIST) {
+    if (p*p>tmp) break;
+    if (tmp%p===0) {
+      let e=0; while(tmp%p===0){e++;tmp/=p;}
+      const idx = primeIndex(p);
+      factors.push(e===1?`p(${idx})`:e===2?`p(${idx})²`:`p(${idx})^${e}`);
+    }
+  }
+  if (tmp>1) factors.push(`p(${primeIndex(tmp)})`);
+  return factors.join('·') || 'p⁰';
+}
+
+// ─── CRT data ────────────────────────────────────────────────
+// n = (15a + 10b + 6c) mod 30, prime candidates: a≠0 ∧ b≠0 ∧ c≠0
+// Signed balanced: Y_s = b≤1?b:b-3 ∈{-1,+1}, Z_s = c≤2?c:c-5 ∈{-2,-1,+1,+2}
+// ring 0 = inner |z|²=2 (Z_s=±1), ring 1 = outer |z|²=5 (Z_s=±2)
+const PC = [
+  { n:1,  zs: 1, ys: 1, ring:0, pair:29, prod:29 },
+  { n:7,  zs: 2, ys: 1, ring:1, pair:23, prod:11 },
+  { n:11, zs: 1, ys:-1, ring:0, pair:19, prod:29 },
+  { n:13, zs:-2, ys: 1, ring:1, pair:17, prod:11 },
+  { n:17, zs: 2, ys:-1, ring:1, pair:13, prod:11 },
+  { n:19, zs:-1, ys: 1, ring:0, pair:11, prod:29 },
+  { n:23, zs:-2, ys:-1, ring:1, pair:7,  prod:11 },
+  { n:29, zs:-1, ys:-1, ring:0, pair:1,  prod:29 },
+];
+
+// Antipodal pairs (each unique pair once)
+const PAIRS = [
+  { a:PC[0], b:PC[7] }, // 1 ↔ 29 inner
+  { a:PC[1], b:PC[6] }, // 7 ↔ 23 outer
+  { a:PC[2], b:PC[5] }, // 11 ↔ 19 inner
+  { a:PC[3], b:PC[4] }, // 13 ↔ 17 outer
+];
+
+// ─── Helpers ─────────────────────────────────────────────────
+const C_INN = [255,144,64];
+const C_OUT = [0,232,255];
+const C_CTR = [200,210,255];
+function rgba([r,g,b], a){ return `rgba(${r},${g},${b},${a})`; }
+function col(p){ return p.ring===0 ? C_INN : C_OUT; }
+function sc(p){ return [W2+p.zs*SC, H2-p.ys*SC]; }
+
+// Stars
+const ST = Array.from({length:220},()=>[Math.random(),Math.random(),0.3+Math.random()*0.95,0.07+Math.random()*0.28]);
+
+// ─── Resize ──────────────────────────────────────────────────
+function resize(){
+  const r=cv.getBoundingClientRect();
+  cv.width=~~r.width; cv.height=~~r.height;
+  W2=r.width/2; H2=r.height/2;
+  SC=Math.min(r.width,r.height)*0.155;
+}
+new ResizeObserver(resize).observe(cv); resize();
+
+// ─── Render ──────────────────────────────────────────────────
+function frame(){
+  t++;
+  const cw=cv.width,ch=cv.height;
+
+  // Background + stars
+  ctx.fillStyle='#020311'; ctx.fillRect(0,0,cw,ch);
+  ST.forEach(([fx,fy,r,a])=>{
+    ctx.beginPath(); ctx.arc(fx*cw,fy*ch,r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(180,210,255,${a})`; ctx.fill();
+  });
+
+  // ── Axes ──────────────────────────────────────────────────
+  if(OV.axes){
+    ctx.save();
+    ctx.strokeStyle='rgba(40,70,200,0.2)'; ctx.lineWidth=0.6;
+    ctx.beginPath(); ctx.moveTo(W2-SC*2.9,H2); ctx.lineTo(W2+SC*2.9,H2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W2,H2-SC*1.65); ctx.lineTo(W2,H2+SC*1.65); ctx.stroke();
+
+    ctx.font='9px "Space Mono",monospace'; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillStyle='rgba(50,80,180,0.45)';
+    ctx.fillText('Re(z)=Z_s', W2+SC*2.6, H2-8);
+    ctx.fillStyle='rgba(50,80,180,0.35)';
+    ctx.save(); ctx.translate(W2-12,H2-SC*1.4); ctx.rotate(-Math.PI/2);
+    ctx.fillText('Im(z)=Y_s',0,0); ctx.restore();
+
+    for(const v of [-2,-1,1,2]){
+      ctx.strokeStyle='rgba(40,70,200,0.25)'; ctx.lineWidth=0.5;
+      ctx.beginPath(); ctx.moveTo(W2+v*SC,H2-4); ctx.lineTo(W2+v*SC,H2+4); ctx.stroke();
+      ctx.fillStyle='rgba(50,80,180,0.42)'; ctx.textBaseline='top';
+      ctx.fillText(v,W2+v*SC,H2+6);
+    }
+    for(const v of [-1,1]){
+      ctx.strokeStyle='rgba(40,70,200,0.25)'; ctx.lineWidth=0.5;
+      ctx.beginPath(); ctx.moveTo(W2-4,H2-v*SC); ctx.lineTo(W2+4,H2-v*SC); ctx.stroke();
+      ctx.fillStyle='rgba(50,80,180,0.42)'; ctx.textAlign='right'; ctx.textBaseline='middle';
+      ctx.fillText(v>=0?`+${v}i`:`${v}i`, W2-8, H2-v*SC);
+    }
+    ctx.restore();
+  }
+
+  // ── Shell circles ─────────────────────────────────────────
+  if(OV.shells){
+    const shells = [[Math.SQRT2*SC, C_INN,'|z|²=2  INNER'],[Math.sqrt(5)*SC, C_OUT,'|z|²=5  OUTER']];
+    shells.forEach(([r,c,lbl])=>{
+      ctx.save(); ctx.setLineDash([4,5]);
+      ctx.beginPath(); ctx.arc(W2,H2,r,0,Math.PI*2);
+      ctx.strokeStyle=rgba(c,0.16); ctx.lineWidth=0.8; ctx.stroke();
+      ctx.restore();
+      const ang=-0.38;
+      const lx=W2+r*Math.cos(ang)+4, ly=H2+r*Math.sin(ang)-4;
+      ctx.font='8px "Space Mono",monospace'; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+      ctx.fillStyle=rgba(c,0.3); ctx.fillText(lbl,lx,ly);
+    });
+  }
+
+  // ── Antipodal paths + pulse ────────────────────────────────
+  if(OV.paths){
+    PAIRS.forEach(({a,b},pi)=>{
+      const c=col(a);
+      const [ax,ay]=sc(a),[bx,by]=sc(b);
+      const isSpotted = spot!==null && (spot===a.n||spot===b.n||spot===a.pair||spot===b.pair);
+
+      // Dashed line
+      ctx.save(); ctx.setLineDash([4,5]);
+      ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by);
+      ctx.strokeStyle=rgba(c,isSpotted?0.55:0.22); ctx.lineWidth=isSpotted?1.2:0.8; ctx.stroke();
+      ctx.restore();
+
+      // Animated pulse (travels from a to b)
+      if(OV.anim){
+        const ph=((t*0.01+pi*0.25) % 1);
+        const px=ax+(bx-ax)*ph, py=ay+(by-ay)*ph;
+        const gr=ctx.createRadialGradient(px,py,0,px,py,9);
+        gr.addColorStop(0,rgba(c,0.65)); gr.addColorStop(1,rgba(c,0));
+        ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(px,py,9,0,Math.PI*2); ctx.fill();
+      }
+
+      // Product label at midpoint
+      const mx=(ax+bx)/2, my=(ay+by)/2;
+      const prod=a.ring===0?29:11;
+      ctx.font='bold 9px "Space Mono",monospace'; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+      ctx.fillStyle=rgba(c,isSpotted?0.85:0.45);
+      ctx.fillText(`≡${prod}`, mx, my-9);
+      ctx.font='7px "Space Mono",monospace'; ctx.fillStyle=rgba(c,isSpotted?0.6:0.3);
+      ctx.fillText(`(n·n⁻ mod 30)`, mx, my-1);
+    });
+  }
+
+  // ── Center node n=15 (triangulation center) ───────────────
+  {
+    const r=6, pulse=Math.sin(t*0.04)*0.5+0.5;
+    const gr=ctx.createRadialGradient(W2,H2,0,W2,H2,r*4);
+    gr.addColorStop(0,`rgba(200,215,255,${0.2+pulse*0.08})`); gr.addColorStop(1,'rgba(200,215,255,0)');
+    ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(W2,H2,r*4,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(W2,H2,r,0,Math.PI*2);
+    ctx.fillStyle='rgba(200,215,255,0.1)'; ctx.fill();
+    ctx.strokeStyle='rgba(200,215,255,0.45)'; ctx.lineWidth=0.8; ctx.stroke();
+    ctx.font='8px "Space Mono",monospace'; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillStyle='rgba(200,215,255,0.32)';
+    ctx.fillText('n=15',W2,H2-r-6);
+    ctx.font='7px "Space Mono",monospace'; ctx.fillStyle='rgba(200,215,255,0.2)';
+    ctx.fillText('p(2)·p(3)',W2,H2+r+11);
+  }
+
+  // ── Nodes ─────────────────────────────────────────────────
+  PC.forEach(p=>{
+    const [sx,sy]=sc(p);
+    const c=col(p);
+    const isH=hov===p.n;
+    const isSp=spot!==null&&(spot===p.n||spot===p.pair);
+    const r=9+(isH||isSp?3:0);
+
+    // Glow
+    const gr=ctx.createRadialGradient(sx,sy,0,sx,sy,r*(isH||isSp?4.5:3.2));
+    gr.addColorStop(0,rgba(c,isH||isSp?0.45:0.22)); gr.addColorStop(1,rgba(c,0));
+    ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(sx,sy,r*(isH||isSp?4.5:3.2),0,Math.PI*2); ctx.fill();
+
+    // Spotlight ring
+    if(isSp){
+      ctx.beginPath(); ctx.arc(sx,sy,r+6,0,Math.PI*2);
+      ctx.strokeStyle=rgba(c,0.4); ctx.lineWidth=0.8; ctx.stroke();
+    }
+
+    // Body
+    ctx.beginPath(); ctx.arc(sx,sy,r,0,Math.PI*2);
+    ctx.fillStyle=rgba(c,0.18); ctx.fill();
+    ctx.strokeStyle=rgba(c,0.92); ctx.lineWidth=1.6; ctx.stroke();
+
+    // Core
+    ctx.beginPath(); ctx.arc(sx,sy,r*0.3,0,Math.PI*2);
+    ctx.fillStyle=rgba(c,0.88); ctx.fill();
+
+    // Prime number label
+    ctx.font=`bold 10px "Space Mono",monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle=rgba(c,0.9); ctx.fillText(p.n,sx,sy);
+
+    // Complex coordinate below node
+    const sgz=p.zs>=0?'+':'', sgi=p.ys>=0?'+':'−';
+    ctx.font='7px "Space Mono",monospace'; ctx.textBaseline='alphabetic';
+    ctx.fillStyle=rgba(c,0.42);
+    ctx.fillText(`${sgz}${p.zs}${sgi}${Math.abs(p.ys)}i`, sx, sy+r+11);
+
+    // Prime index label above node (toggled)
+    if(OV.pidx){
+      const pi=primeIndex(p.n);
+      ctx.font='7px "Space Mono",monospace'; ctx.textBaseline='alphabetic';
+      ctx.fillStyle=rgba(c,0.55);
+      const lbl = pi>0 ? `p(${pi})` : (p.n===1?'p⁰':'·');
+      ctx.fillText(lbl, sx, sy-r-5);
+      if(pi>0){
+        ctx.font='6px "Space Mono",monospace'; ctx.fillStyle=rgba(c,0.3);
+        ctx.fillText(primeFactor(p.n),sx,sy-r-14);
+      }
+    }
+  });
+
+  // ── Hover tooltip ─────────────────────────────────────────
+  if(hov!==null){
+    const p=PC.find(q=>q.n===hov);
+    if(p) drawTooltip(p);
+  }
+
+  // ── Findings panel ────────────────────────────────────────
+  if(OV.panel) drawPanel(cw,ch);
+
+  requestAnimationFrame(frame);
+}
+
+// ─── Tooltip ─────────────────────────────────────────────────
+function drawTooltip(p){
+  const [sx,sy]=sc(p), c=col(p);
+  const pi=primeIndex(p.n);
+  let tx=sx+18, ty=sy-12;
+  if(tx>W2+SC*1.8) tx=sx-195;
+
+  ctx.fillStyle='rgba(3,5,20,0.9)';
+  ctx.fillRect(tx,ty,188,108);
+  ctx.strokeStyle=rgba(c,0.32); ctx.lineWidth=0.5;
+  ctx.strokeRect(tx,ty,188,108);
+
+  ctx.font='9px "Space Mono",monospace'; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  let y=ty+16;
+
+  ctx.fillStyle=rgba(c,0.85);
+  ctx.fillText(`n = ${p.n}`, tx+10, y); y+=14;
+  ctx.fillStyle='rgba(80,120,180,0.7)';
+  ctx.fillText(`z = ${p.zs>=0?'+':''}${p.zs} ${p.ys>=0?'+':'−'} i   |z|²=${p.ring===0?2:5}`, tx+10, y); y+=14;
+  ctx.fillText(`ring: ${p.ring===0?'INNER':'OUTER'}`, tx+10, y); y+=14;
+  ctx.fillStyle=rgba(c,0.55);
+  ctx.fillText(`negative n⁻ = 30−${p.n} = ${p.pair}`, tx+10, y); y+=14;
+  ctx.fillText(`n·n⁻ mod 30 = ${p.prod} (prime!)`, tx+10, y); y+=14;
+  if(pi>0){
+    ctx.fillStyle=rgba(c,0.7);
+    ctx.fillText(`prime index: p(${pi}) = ${p.n}`, tx+10, y); y+=14;
+  } else {
+    ctx.fillStyle=rgba(c,0.45);
+    ctx.fillText(`n=1: multiplicative identity`, tx+10, y); y+=14;
+  }
+  ctx.fillStyle='rgba(60,90,140,0.5)';
+  ctx.fillText(`prime derivative: ${primeFactor(p.n)}`, tx+10, y);
+}
+
+// ─── Findings Panel ──────────────────────────────────────────
+function drawPanel(cw, ch){
+  const pw=248, ph=Math.min(356,ch*0.68);
+  const px=cw-pw-12, py=(ch-ph)/2;
+
+  ctx.fillStyle='rgba(3,5,20,0.82)';
+  ctx.fillRect(px,py,pw,ph);
+  ctx.strokeStyle='rgba(40,70,200,.2)'; ctx.lineWidth=0.5;
+  ctx.strokeRect(px,py,pw,ph);
+
+  const X=px+13; let y=py+16;
+  const line=(txt,fc,fs=8)=>{
+    ctx.font=`${fs}px "Space Mono",monospace`; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    ctx.fillStyle=fc; ctx.fillText(txt,X,y); y+=fs+5;
+  };
+  const hr=()=>{ ctx.strokeStyle='rgba(40,70,200,.18)';ctx.lineWidth=0.3;
+    ctx.beginPath();ctx.moveTo(px+8,y);ctx.lineTo(px+pw-8,y);ctx.stroke();y+=8; };
+
+  line('PATTERN FINDINGS', 'rgba(160,190,230,.55)', 9);
+  hr();
+
+  line('① NEGATIVE SEARCH n⁻ = 30−n', 'rgba(100,150,210,.5)');
+  line('  All 8 prime candidates pair', 'rgba(70,110,170,.45)');
+  line('  into 4 antipodal pairs.', 'rgba(70,110,170,.45)');
+  y+=4;
+
+  line('② COMPLEX EMBEDDING z = Z_s + i·Y_s', 'rgba(100,150,210,.5)');
+  line('  Z_s ∈ {±1,±2}  Y_s ∈ {±1}', 'rgba(70,110,170,.42)');
+  line('  All 8 sign combos present.', 'rgba(70,110,170,.42)');
+  y+=4;
+
+  line('③ TWO SHELLS', 'rgba(100,150,210,.5)');
+  ctx.font='8px "Space Mono",monospace';
+  ctx.fillStyle=rgba(C_INN,.65);
+  ctx.fillText('  INNER |z|²=2: {1,11,19,29}',X,y); y+=13;
+  ctx.fillStyle=rgba(C_OUT,.65);
+  ctx.fillText('  OUTER |z|²=5: {7,13,17,23}',X,y); y+=13;
+  y+=2;
+
+  line('④ ANTIPODAL PRODUCT LAW', 'rgba(100,150,210,.5)');
+  ctx.font='8px "Space Mono",monospace'; ctx.textAlign='left';
+  PAIRS.forEach(({a,b})=>{
+    const c=col(a); const prod=a.ring===0?29:11;
+    ctx.fillStyle=rgba(c,.65);
+    ctx.fillText(`  ${a.n} × ${b.n} ≡ ${prod} (mod 30)`, X, y); y+=12;
+  });
+  y+=4;
+
+  line('⑤ BOTH PRODUCTS ARE PRIME', 'rgba(100,150,210,.5)');
+  ctx.fillStyle=rgba(C_INN,.55); ctx.fillText('  11 = p(5)',X,y); y+=12;
+  ctx.fillStyle=rgba(C_OUT,.55); ctx.fillText('  29 = p(10)',X,y); y+=16;
+
+  hr();
+  line('⑥ PRIME INDEX DERIVATIVES', 'rgba(100,150,210,.5)', 8);
+  line('  Every n expressed as p(k):', 'rgba(70,110,170,.4)');
+
+  // Mini derivative table - two columns
+  const col1 = [1,7,11,13], col2 = [17,19,23,29];
+  const renderRow=(n,cx)=>{
+    const pi=primeIndex(n);
+    const c=PC.find(p=>p.n===n); const ring=c?col(c):[200,200,200];
+    const lbl=pi>0?`p(${pi})`:'p⁰';
+    ctx.font='8px "Space Mono",monospace'; ctx.textAlign='left';
+    ctx.fillStyle=rgba(ring,.6);
+    ctx.fillText(`  ${n===1?' 1':n===7?' 7':n}→${lbl}`, cx, y);
+  };
+  for(let i=0;i<4;i++){
+    renderRow(col1[i], X); renderRow(col2[i], X+120); y+=12;
+  }
+  y+=4;
+
+  line('⑦ ALGEBRAIC STRUCTURE (ℤ/30ℤ)*', 'rgba(100,150,210,.5)');
+  ctx.fillStyle=rgba(C_INN,.45); ctx.fillText('  Inner = Klein-4 subgroup ≅ (ℤ/2)²', X, y); y+=12;
+  ctx.fillStyle=rgba(C_OUT,.45); ctx.fillText('  Outer = single coset', X, y); y+=12;
+  ctx.fillStyle='rgba(60,90,150,.4)'; ctx.fillText('  Inner × Outer → Outer', X, y);
+}
+
+// ─── Input ───────────────────────────────────────────────────
+function getHit(mx,my){
+  for(const p of PC){ const [sx,sy]=sc(p); if((mx-sx)**2+(my-sy)**2<22**2) return p.n; }
+  return null;
+}
+cv.addEventListener('mousemove',e=>{ const r=cv.getBoundingClientRect(); hov=getHit(e.clientX-r.left,e.clientY-r.top); });
+cv.addEventListener('mouseleave',()=>hov=null);
+cv.addEventListener('click',e=>{
+  const r=cv.getBoundingClientRect(), h=getHit(e.clientX-r.left,e.clientY-r.top);
+  spot=(spot===h)?null:h;
+});
+
+frame();
+</script>
+</body>
+</html>
