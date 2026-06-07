@@ -18,6 +18,7 @@ Version: 1.0.0
 """
 
 import asyncio
+import json
 import time
 import uuid
 from abc import ABC, abstractmethod
@@ -26,6 +27,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 import logging
+
+from src.security.tool_call_token_gate import gate_tool_call_token_output
 
 logger = logging.getLogger(__name__)
 
@@ -158,7 +161,9 @@ class Tool(ABC):
                 }
                 expected_type = type_map.get(param.type)
                 if expected_type and not isinstance(value, expected_type):
-                    errors.append(f"Parameter {param.name} expected {param.type}, got {type(value).__name__}")
+                    errors.append(
+                        f"Parameter {param.name} expected {param.type}, got {type(value).__name__}"
+                    )
 
         return errors
 
@@ -218,17 +223,23 @@ class PermissionManager:
             self.role_permissions[role] = {}
         self.role_permissions[role][tool_id] = level
 
-    def check_permission(self, agent_id: str, agent_role: str, tool: ToolDefinition) -> bool:
+    def check_permission(
+        self, agent_id: str, agent_role: str, tool: ToolDefinition
+    ) -> bool:
         """Check if agent has permission to use tool."""
         required = tool.required_permission
 
         # Check agent-specific permission
-        agent_level = self.agent_permissions.get(agent_id, {}).get(tool.id, PermissionLevel.NONE)
+        agent_level = self.agent_permissions.get(agent_id, {}).get(
+            tool.id, PermissionLevel.NONE
+        )
         if agent_level.value >= required.value:
             return True
 
         # Check role permission
-        role_level = self.role_permissions.get(agent_role, {}).get(tool.id, PermissionLevel.NONE)
+        role_level = self.role_permissions.get(agent_role, {}).get(
+            tool.id, PermissionLevel.NONE
+        )
         if role_level.value >= required.value:
             return True
 
@@ -316,7 +327,9 @@ class ToolRegistry:
     def __init__(self):
         self.tools: Dict[str, Tool] = {}
         self.definitions: Dict[str, ToolDefinition] = {}
-        self.categories: Dict[ToolCategory, List[str]] = {cat: [] for cat in ToolCategory}
+        self.categories: Dict[ToolCategory, List[str]] = {
+            cat: [] for cat in ToolCategory
+        }
 
     def register(self, tool: Tool):
         """Register a tool."""
@@ -410,7 +423,9 @@ class ToolExecutor:
                 status=ExecutionStatus.DENIED,
                 error="Permission denied",
             )
-            self.audit.log_execution(execution_id, agent_id, tool_id, parameters, result, context)
+            self.audit.log_execution(
+                execution_id, agent_id, tool_id, parameters, result, context
+            )
             return result
 
         # Check rate limit
@@ -422,7 +437,9 @@ class ToolExecutor:
                 status=ExecutionStatus.RATE_LIMITED,
                 error=f"Rate limit exceeded: {definition.rate_limit}/min",
             )
-            self.audit.log_execution(execution_id, agent_id, tool_id, parameters, result, context)
+            self.audit.log_execution(
+                execution_id, agent_id, tool_id, parameters, result, context
+            )
             return result
 
         # Validate parameters
@@ -434,8 +451,63 @@ class ToolExecutor:
                 status=ExecutionStatus.FAILED,
                 error=f"Parameter validation failed: {validation_errors}",
             )
-            self.audit.log_execution(execution_id, agent_id, tool_id, parameters, result, context)
+            self.audit.log_execution(
+                execution_id, agent_id, tool_id, parameters, result, context
+            )
             return result
+
+        token_gate = gate_tool_call_token_output(
+            json.dumps(
+                {"tool": tool_id, "arguments": parameters}, sort_keys=True, default=str
+            ),
+            session_goal=str(context.get("session_goal", "")),
+            user_authority=str(context.get("user_authority", "standard")),
+            requested_tool=tool_id,
+            requested_args=parameters,
+        )
+        token_gate_metadata = {
+            "action": token_gate.action,
+            "tool_name": token_gate.tool_name,
+            "risk_score": token_gate.risk_score,
+            "intent_label": token_gate.intent_label,
+            "labels": list(token_gate.labels),
+            "reason": token_gate.reason,
+            "requested_access": token_gate.requested_access.value,
+            "trajectory_decision": token_gate.trajectory_decision.value,
+        }
+        if token_gate.action == "deny":
+            result = ToolExecutionResult(
+                execution_id=execution_id,
+                tool_id=tool_id,
+                status=ExecutionStatus.DENIED,
+                error=f"Token tool gate denied call: {token_gate.reason}",
+                metadata={"token_tool_gate": token_gate_metadata},
+            )
+            self.audit.log_execution(
+                execution_id, agent_id, tool_id, parameters, result, context
+            )
+            return result
+
+        if token_gate.action in {"sandbox", "review"} and not context.get(
+            "allow_sandbox_execution"
+        ):
+            self.pending_confirmations[execution_id] = {
+                "agent_id": agent_id,
+                "tool_id": tool_id,
+                "parameters": parameters,
+                "context": context,
+                "created_at": datetime.now(),
+                "token_tool_gate": token_gate_metadata,
+            }
+            return ToolExecutionResult(
+                execution_id=execution_id,
+                tool_id=tool_id,
+                status=ExecutionStatus.PENDING,
+                metadata={
+                    "requires_confirmation": True,
+                    "token_tool_gate": token_gate_metadata,
+                },
+            )
 
         # Check if confirmation required
         if definition.requires_confirmation:
@@ -450,11 +522,21 @@ class ToolExecutor:
                 execution_id=execution_id,
                 tool_id=tool_id,
                 status=ExecutionStatus.PENDING,
-                metadata={"requires_confirmation": True},
+                metadata={
+                    "requires_confirmation": True,
+                    "token_tool_gate": token_gate_metadata,
+                },
             )
 
         # Execute tool
-        return await self._execute_tool(execution_id, agent_id, tool, parameters, context)
+        return await self._execute_tool(
+            execution_id,
+            agent_id,
+            tool,
+            parameters,
+            context,
+            metadata={"token_tool_gate": token_gate_metadata},
+        )
 
     async def confirm_execution(self, execution_id: str) -> ToolExecutionResult:
         """Confirm a pending execution."""
@@ -475,6 +557,11 @@ class ToolExecutor:
             tool,
             pending["parameters"],
             pending["context"],
+            metadata=(
+                {"token_tool_gate": pending["token_tool_gate"]}
+                if "token_tool_gate" in pending
+                else None
+            ),
         )
 
     async def _execute_tool(
@@ -484,6 +571,7 @@ class ToolExecutor:
         tool: Tool,
         parameters: Dict[str, Any],
         context: Dict[str, Any],
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> ToolExecutionResult:
         """Actually execute the tool."""
         started_at = datetime.now()
@@ -506,6 +594,7 @@ class ToolExecutor:
                 started_at=started_at,
                 completed_at=completed_at,
                 execution_time_ms=execution_time,
+                metadata=metadata or {},
             )
 
         except asyncio.TimeoutError:
@@ -528,7 +617,9 @@ class ToolExecutor:
                 completed_at=datetime.now(),
             )
 
-        self.audit.log_execution(execution_id, agent_id, tool.definition.id, parameters, result, context)
+        self.audit.log_execution(
+            execution_id, agent_id, tool.definition.id, parameters, result, context
+        )
         return result
 
 
@@ -556,7 +647,9 @@ class HTTPRequestTool(Tool):
                         default="GET",
                     ),
                     ToolParameter("headers", "dict", "Request headers", required=False),
-                    ToolParameter("body", "dict", "Request body for POST/PUT", required=False),
+                    ToolParameter(
+                        "body", "dict", "Request body for POST/PUT", required=False
+                    ),
                     ToolParameter(
                         "timeout",
                         "int",
@@ -650,7 +743,9 @@ class FileSystemTool(Tool):
                 description="Read files from allowed directories",
                 category=ToolCategory.DATA_RETRIEVAL,
                 parameters=[
-                    ToolParameter("operation", "string", "Operation: read, list, exists"),
+                    ToolParameter(
+                        "operation", "string", "Operation: read, list, exists"
+                    ),
                     ToolParameter("path", "string", "File or directory path"),
                 ],
                 return_type="dict",
@@ -669,7 +764,9 @@ class FileSystemTool(Tool):
 
         # Security: Check path is allowed
         abs_path = os.path.abspath(path)
-        if self.allowed_paths and not any(abs_path.startswith(ap) for ap in self.allowed_paths):
+        if self.allowed_paths and not any(
+            abs_path.startswith(ap) for ap in self.allowed_paths
+        ):
             raise ValueError(f"Path not allowed: {path}")
 
         # Prevent path traversal
@@ -703,7 +800,9 @@ class ToolCallingSystem:
         self.permissions = PermissionManager()
         self.rate_limiter = RateLimiter()
         self.audit = AuditLogger()
-        self.executor = ToolExecutor(self.registry, self.permissions, self.rate_limiter, self.audit)
+        self.executor = ToolExecutor(
+            self.registry, self.permissions, self.rate_limiter, self.audit
+        )
 
         # Register built-in tools
         self._register_builtin_tools()
@@ -735,9 +834,13 @@ class ToolCallingSystem:
         context: Optional[Dict[str, Any]] = None,
     ) -> ToolExecutionResult:
         """Call a tool."""
-        return await self.executor.execute(agent_id, agent_role, tool_name, parameters, context)
+        return await self.executor.execute(
+            agent_id, agent_role, tool_name, parameters, context
+        )
 
-    def get_available_tools(self, agent_id: str, agent_role: str) -> List[Dict[str, Any]]:
+    def get_available_tools(
+        self, agent_id: str, agent_role: str
+    ) -> List[Dict[str, Any]]:
         """Get tools available to an agent."""
         available = []
         for definition in self.registry.definitions.values():
