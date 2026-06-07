@@ -15,6 +15,7 @@ import colorsys
 import hashlib
 import json
 import math
+import sys
 import time
 from collections import Counter
 from dataclasses import dataclass
@@ -8437,6 +8438,88 @@ def _compute_doubly_indexed_superprimes(primes: list[int]) -> list[dict]:
     return rows
 
 
+def _iter_primes_segmented(limit: int, seg_size: int = 1 << 22):
+    """Yield ``(index, prime)`` for every prime ``<= limit``, 1-based index, in O(seg_size) memory.
+
+    Memory-bounded twin of :func:`sieve`: never holds the full prime list, only one
+    ``seg_size``-byte window at a time. Used to pick sparse superprimes off their global
+    prime index without materialising every prime up to ``limit`` (the RAM wall).
+    """
+    if limit < 2:
+        return
+    base = sieve(math.isqrt(limit))  # base primes <= sqrt(limit); tiny (sqrt(2e9) ~ 44_721)
+    idx = 0
+    lo = 2
+    while lo <= limit:
+        hi = min(limit, lo + seg_size - 1)
+        size = hi - lo + 1
+        flags = bytearray(b"\x01") * size
+        for p in base:
+            if p * p > hi:
+                break
+            start = max(p * p, ((lo + p - 1) // p) * p)
+            if start <= hi:
+                flags[start - lo : hi - lo + 1 : p] = b"\x00" * (((hi - start) // p) + 1)
+        for off in range(size):
+            if flags[off]:
+                idx += 1
+                yield idx, lo + off
+        lo = hi + 1
+
+
+def _superprime_rows_segmented(limit: int, seg_size: int = 1 << 22) -> list[dict]:
+    """Memory-bounded reimplementation of ``_compute_doubly_indexed_superprimes(sieve(limit))``.
+
+    P(P(n)) = ``p_{p_n}`` needs random access ``primes[primes[n-1]-1]``, so this is not a literal
+    swap of the sieve but an index-tracking pick-off: build the sparse target indices ``{p_n}`` from
+    a small sieve (only up to an upper bound on ``pi(limit)``), then stream primes ``<= limit`` with a
+    running 1-based index and capture the prime whenever the index lands on a target. Targets above
+    ``pi(limit)`` are over-generated and auto-drop (the stream never reaches them) — this reproduces
+    the original ``pn <= len(primes)`` guard for free. Rows come out ascending in ``n`` (n, p_n,
+    p_{p_n} all monotonic, p_n injective), byte-identical to the original.
+    """
+    if limit < 2:
+        return []
+    # Upper bound on pi(limit): Dusart 2010, pi(x) <= x/(ln x - 1.1) for x >= 60184. Below that,
+    # pi(x) <= x trivially and sieve(limit) is cheap. small sieve must reach this bound to supply p_n.
+    if limit >= 60184:
+        upper = int(limit / (math.log(limit) - 1.1)) + 64
+    else:
+        upper = limit
+    small = sieve(upper)  # primes <= upper (>= pi(limit)); supplies p_n for every contributing n
+    m = len(small)  # = pi(upper) >= pi(limit)
+    targets: dict[int, int] = {}  # global prime index pn = p_n  ->  n
+    for n in small:  # n = prime value, ascending
+        if n > m:  # cannot index p_n = small[n-1]
+            break
+        pn = small[n - 1]  # p_n
+        if pn > upper:  # p_n exceeds the pi(limit) over-bound -> can never fire; pn increasing -> stop
+            break
+        targets[pn] = n
+    rows: list[dict] = []
+    for idx, prime in _iter_primes_segmented(limit, seg_size):
+        n = targets.get(idx)
+        if n is None:
+            continue
+        ppn = prime  # = p_{p_n}, the superprime
+        r30 = ppn % 30
+        zs = r30 % 5
+        if zs > 2:
+            zs -= 5
+        ys = r30 % 3
+        if ys > 1:
+            ys -= 3
+        a = r30 % 2
+        is_pc = (a != 0) and (ys != 0) and (zs != 0)
+        shell: str | None = None
+        if is_pc:
+            shell = "inner" if (zs * zs + ys * ys) == 2 else "outer"
+        rows.append(
+            {"n": n, "P_n": small[n - 1], "P_P_n": ppn, "r30": r30, "is_prime_candidate": is_pc, "shell": shell}
+        )
+    return rows
+
+
 def run_superprime_layer(limit: int = 10_000, top: int = 40) -> dict:
     """Map P(P(n)) [n prime] through CRT mod-30 negative-triangulation shells."""
     primes = sieve(limit)
@@ -9832,14 +9915,15 @@ def _gap_padic_depth(gap: int) -> float:
 
 
 def _build_superprime_event_field(limit: int, superprime_only: bool) -> dict:
-    all_primes = sieve(limit)
     if superprime_only:
-        rows = _compute_doubly_indexed_superprimes(all_primes)
+        # Memory-bounded: pick superprimes off their global index via a segmented stream instead of
+        # materialising sieve(limit) (the RAM wall). Byte-identical to the old full-sieve path.
+        rows = _superprime_rows_segmented(limit)
         seq = [r["P_P_n"] for r in rows]
         seq_label = "P(P(n)) superprimes [n prime]"
         shell_map = {r["P_P_n"]: r["shell"] for r in rows}
     else:
-        seq = all_primes
+        seq = sieve(limit)
         seq_label = "all primes"
         shell_map = {}
 

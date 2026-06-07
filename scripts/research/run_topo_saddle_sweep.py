@@ -19,8 +19,6 @@ reports the frozen gate hit count on top-20 B-range candidates.
 
 from __future__ import annotations
 
-import json
-import math
 import sys
 from itertools import product
 from pathlib import Path
@@ -31,6 +29,8 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.research.run_prime_search_engine_bench import (  # noqa: E402
     DEFAULT_ROW_CACHE_DIR,
+    read_cached_rows,
+    row_cache_exists,
     row_cache_path,
 )
 from scripts.research.run_field_branch_gate_search import (  # noqa: E402
@@ -59,7 +59,21 @@ HISTORY = 12
 ANCHOR_THRESHOLD = 4.0
 
 # ── sweep grid ────────────────────────────────────────────────────────────────
-SADDLE_THRESHOLDS = [0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.70, 0.80]
+SADDLE_THRESHOLDS = [
+    0.10,
+    0.15,
+    0.20,
+    0.25,
+    0.30,
+    0.35,
+    0.40,
+    0.45,
+    0.50,
+    0.55,
+    0.60,
+    0.70,
+    0.80,
+]
 TOPO_WEIGHTS = [0.50, 0.60, 0.70, 0.80, 0.90, 1.00]
 # also sweep the "gate-miss full replace" blend: use ONLY saddle type (grav weight=0)
 
@@ -90,7 +104,9 @@ def branch_term(row: dict[str, Any], spec: GateSpec) -> float:
     geo = float(row.get("geodesic_trend_channel", 0.0))
     cas = float(row.get("cassette_channel", 0.0))
     ch = float(row.get("charge_flip_channel", 0.0))
-    return base + spec.branch_bonus * (1.5 * cold + 1.0 * grad + 0.75 * cas + 0.5 * ch + max(0.0, geo))
+    return base + spec.branch_bonus * (
+        1.5 * cold + 1.0 * grad + 0.75 * cas + 0.5 * ch + max(0.0, geo)
+    )
 
 
 def parametric_topo_score(row: dict[str, Any], saddle_threshold: float) -> float:
@@ -101,10 +117,17 @@ def parametric_topo_score(row: dict[str, Any], saddle_threshold: float) -> float
         return 0.5 + 0.5 * asym
     else:
         # sub-threshold: linear ramp down from saddle boundary to 0
-        return asym / max(1e-9, saddle_threshold) * (0.5 + 0.5 * saddle_threshold) * (asym / max(1e-9, saddle_threshold))
+        return (
+            asym
+            / max(1e-9, saddle_threshold)
+            * (0.5 + 0.5 * saddle_threshold)
+            * (asym / max(1e-9, saddle_threshold))
+        )
 
 
-def score_row(row: dict[str, Any], spec: GateSpec, saddle_threshold: float, topo_weight: float) -> float:
+def score_row(
+    row: dict[str, Any], spec: GateSpec, saddle_threshold: float, topo_weight: float
+) -> float:
     gate = gate_value(row, spec)
     branch = branch_term(row, spec)
     if gate > 0.0:
@@ -130,10 +153,11 @@ def score_rows(
 
 def load_rows(cache_dir: Path, limit: int) -> list[dict[str, Any]]:
     path = row_cache_path(cache_dir, limit, WINDOW, HISTORY, ANCHOR_THRESHOLD)
-    if not path.exists():
-        raise FileNotFoundError(f"Row cache missing: {path}\nRun the benchmark first to build it.")
-    with path.open() as f:
-        return json.load(f)
+    if not row_cache_exists(path):
+        raise FileNotFoundError(
+            f"Row cache missing: {path}\nRun the benchmark first to build it."
+        )
+    return read_cached_rows(path)
 
 
 def main() -> None:
@@ -151,7 +175,9 @@ def main() -> None:
     max_150m_prime = max(r["scan_prime"] for r in rows_150m)
     b_rows = [r for r in rows_200m if r["scan_prime"] > max_150m_prime]
     positives = sum(1 for r in b_rows if r.get("future_anchor"))
-    print(f"B rows: {len(b_rows):,}  positives: {positives}  baseline: {positives / len(b_rows):.4f}")
+    print(
+        f"B rows: {len(b_rows):,}  positives: {positives}  baseline: {positives / len(b_rows):.4f}"
+    )
     print(f"{'threshold':>10}  {'topo_w':>7}  {'hits':>5}  {'rate':>7}  {'vs_base':>8}")
     print("-" * 50)
 
@@ -168,7 +194,10 @@ def main() -> None:
         rate = hits / TOP_N
         base_rate = min(positives, TOP_N) / TOP_N
         marker = " ◄ best" if hits == best_hits else ""
-        print(f"{saddle_threshold:>10.2f}  {topo_weight:>7.2f}  {hits:>5d}  {rate:>7.1%}  {hits - round(base_rate * TOP_N):>+8d}{marker}")
+        print(
+            f"{saddle_threshold:>10.2f}  {topo_weight:>7.2f}  {hits:>5d}  "
+            f"{rate:>7.1%}  {hits - round(base_rate * TOP_N):>+8d}{marker}"
+        )
 
     print()
     # Print compact grid: threshold rows, topo_weight columns

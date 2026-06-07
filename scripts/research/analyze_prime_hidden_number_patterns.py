@@ -21,16 +21,21 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.research.run_field_gate_oos_validate import spec_from_report  # noqa: E402
-from scripts.research.run_field_gate_threshold_sensitivity import fresh_rows  # noqa: E402
+from scripts.research.run_field_gate_threshold_sensitivity import (
+    fresh_rows,
+)  # noqa: E402
 from scripts.research.run_prime_search_engine_bench import (  # noqa: E402
     FEATURE_NAMES,
     feature_vector,
+    read_cached_rows,
+    row_cache_exists,
     row_cache_path,
     score_frozen,
 )
 
-
-DEFAULT_REPORT = Path("artifacts/prime_search_engine_bench_100_200_hidden_numbers/latest_report.json")
+DEFAULT_REPORT = Path(
+    "artifacts/prime_search_engine_bench_100_200_hidden_numbers/latest_report.json"
+)
 DEFAULT_ROW_CACHE_DIR = Path("artifacts/prime_fog_row_cache")
 DEFAULT_OUT_DIR = Path("artifacts/prime_hidden_number_patterns")
 
@@ -43,11 +48,13 @@ def safe_stdev(values: list[float]) -> float:
     return statistics.pstdev(values) if len(values) > 1 else 0.0
 
 
-def load_rows(cache_dir: Path, limit: int, window: int, history: int, anchor_threshold: float) -> list[dict[str, Any]]:
+def load_rows(
+    cache_dir: Path, limit: int, window: int, history: int, anchor_threshold: float
+) -> list[dict[str, Any]]:
     path = row_cache_path(cache_dir, limit, window, history, anchor_threshold)
-    if not path.exists():
+    if not row_cache_exists(path):
         raise FileNotFoundError(f"missing row cache: {path}")
-    return json.loads(path.read_text(encoding="utf-8"))
+    return read_cached_rows(path)
 
 
 def anchor_id(row: dict[str, Any]) -> object | None:
@@ -61,7 +68,11 @@ def hidden_id(number: dict[str, Any]) -> object | None:
 def method_found_sets(report: dict[str, Any]) -> dict[str, set[object]]:
     out: dict[str, set[object]] = {}
     for method, hidden_numbers in report.get("hidden_number_maps", {}).items():
-        out[method] = {hidden_id(number) for number in hidden_numbers if hidden_id(number) is not None}
+        out[method] = {
+            hidden_id(number)
+            for number in hidden_numbers
+            if hidden_id(number) is not None
+        }
     return out
 
 
@@ -107,7 +118,9 @@ def build_anchor_records(
         candidates = rows_by_anchor.get(aid, [])
         if not candidates:
             continue
-        best_row, best_score = max(candidates, key=lambda pair: (pair[1], -pair[0].get("lead_steps", 10**9)))
+        best_row, best_score = max(
+            candidates, key=lambda pair: (pair[1], -pair[0].get("lead_steps", 10**9))
+        )
         features = dict(zip(FEATURE_NAMES, feature_vector(best_row)))
         found_by = [method for method, found in found_sets.items() if aid in found]
         records.append(
@@ -134,7 +147,9 @@ def build_anchor_records(
     return records
 
 
-def standardized_deltas(records: list[dict[str, Any]], positive_key: str) -> list[dict[str, Any]]:
+def standardized_deltas(
+    records: list[dict[str, Any]], positive_key: str
+) -> list[dict[str, Any]]:
     positives = [record for record in records if record[positive_key]]
     negatives = [record for record in records if not record[positive_key]]
     out = []
@@ -143,7 +158,10 @@ def standardized_deltas(records: list[dict[str, Any]], positive_key: str) -> lis
         neg_values = [float(record["features"][feature]) for record in negatives]
         pos_mean = safe_mean(pos_values)
         neg_mean = safe_mean(neg_values)
-        pooled = math.sqrt((safe_stdev(pos_values) ** 2 + safe_stdev(neg_values) ** 2) / 2.0) or 1.0
+        pooled = (
+            math.sqrt((safe_stdev(pos_values) ** 2 + safe_stdev(neg_values) ** 2) / 2.0)
+            or 1.0
+        )
         out.append(
             {
                 "feature": feature,
@@ -163,11 +181,15 @@ def threshold_candidates(values: list[float], max_candidates: int = 24) -> list[
     thresholds = []
     for index in range(1, max_candidates + 1):
         q = index / (max_candidates + 1)
-        thresholds.append(unique[min(len(unique) - 1, max(0, round((len(unique) - 1) * q)))])
+        thresholds.append(
+            unique[min(len(unique) - 1, max(0, round((len(unique) - 1) * q)))]
+        )
     return sorted(set(thresholds))
 
 
-def threshold_rules(records: list[dict[str, Any]], positive_key: str) -> list[dict[str, Any]]:
+def threshold_rules(
+    records: list[dict[str, Any]], positive_key: str
+) -> list[dict[str, Any]]:
     total_pos = sum(1 for record in records if record[positive_key])
     total_neg = len(records) - total_pos
     rules = []
@@ -178,19 +200,26 @@ def threshold_rules(records: list[dict[str, Any]], positive_key: str) -> list[di
                 selected = [
                     record
                     for record in records
-                    if (float(record["features"][feature]) >= threshold if op == ">=" else float(record["features"][feature]) <= threshold)
+                    if (
+                        float(record["features"][feature]) >= threshold
+                        if op == ">="
+                        else float(record["features"][feature]) <= threshold
+                    )
                 ]
                 if not selected:
                     continue
                 tp = sum(1 for record in selected if record[positive_key])
                 fp = len(selected) - tp
-                fn = total_pos - tp
                 tn = total_neg - fp
                 precision = tp / (tp + fp) if tp + fp else 0.0
                 recall = tp / total_pos if total_pos else 0.0
                 specificity = tn / total_neg if total_neg else 0.0
                 balanced_accuracy = 0.5 * (recall + specificity)
-                f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
+                f1 = (
+                    2 * precision * recall / (precision + recall)
+                    if precision + recall
+                    else 0.0
+                )
                 rules.append(
                     {
                         "feature": feature,
@@ -206,7 +235,10 @@ def threshold_rules(records: list[dict[str, Any]], positive_key: str) -> list[di
                         "f1": round(f1, 6),
                     }
                 )
-    return sorted(rules, key=lambda item: (-item["balanced_accuracy"], -item["f1"], item["feature"]))[:40]
+    return sorted(
+        rules,
+        key=lambda item: (-item["balanced_accuracy"], -item["f1"], item["feature"]),
+    )[:40]
 
 
 def method_overlap(found_sets: dict[str, set[object]]) -> dict[str, Any]:
@@ -238,19 +270,46 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
     ]
     for method, count in report["method_overlap"]["set_sizes"].items():
         lines.append(f"| {method} | {count} |")
-    lines.extend(["", "## Strongest Frozen-Found Feature Deltas", "", "| Feature | Found mean | Unfound mean | Std delta |", "| --- | ---: | ---: | ---: |"])
+    lines.extend(
+        [
+            "",
+            "## Strongest Frozen-Found Feature Deltas",
+            "",
+            "| Feature | Found mean | Unfound mean | Std delta |",
+            "| --- | ---: | ---: | ---: |",
+        ]
+    )
     for item in report["frozen_vs_unfound_deltas"][:20]:
         lines.append(
-            "| {feature} | {positive_mean} | {negative_mean} | {standardized_delta} |".format(**item)
-        )
-    lines.extend(["", "## Best One-Rule Shadows", "", "| Rule | Selected | TP | FP | Precision | Recall | Balanced acc |", "| --- | ---: | ---: | ---: | ---: | ---: | ---: |"])
-    for rule in report["frozen_vs_unfound_threshold_rules"][:20]:
-        lines.append(
-            "| {feature} {op} {threshold} | {selected} | {tp} | {fp} | {precision} | {recall} | {balanced_accuracy} |".format(
-                **rule
+            "| {feature} | {positive_mean} | {negative_mean} | {standardized_delta} |".format(
+                **item
             )
         )
-    lines.extend(["", "## Frozen-Found Hidden Numbers", "", "| Anchor prime | Ratio | Lead | Frozen score | Found by |", "| ---: | ---: | ---: | ---: | --- |"])
+    lines.extend(
+        [
+            "",
+            "## Best One-Rule Shadows",
+            "",
+            "| Rule | Selected | TP | FP | Precision | Recall | Balanced acc |",
+            "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+        ]
+    )
+    for rule in report["frozen_vs_unfound_threshold_rules"][:20]:
+        lines.append(
+            (
+                "| {feature} {op} {threshold} | {selected} | {tp} | {fp} | "
+                "{precision} | {recall} | {balanced_accuracy} |"
+            ).format(**rule)
+        )
+    lines.extend(
+        [
+            "",
+            "## Frozen-Found Hidden Numbers",
+            "",
+            "| Anchor prime | Ratio | Lead | Frozen score | Found by |",
+            "| ---: | ---: | ---: | ---: | --- |",
+        ]
+    )
     for record in report["frozen_found_records"]:
         lines.append(
             "| {anchor_prime} | {anchor_ratio} | {representative_lead_steps} | {frozen_score} | {found_by} |".format(
@@ -290,7 +349,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         config["anchor_threshold"],
     )
     range_b = fresh_rows(boundary_rows, test_rows)
-    frozen_spec = spec_from_report(Path(config.get("source_report", args.gate_report)), args.selector)
+    frozen_spec = spec_from_report(
+        Path(config.get("source_report", args.gate_report)), args.selector
+    )
     frozen_scores = score_frozen(range_b, frozen_spec)
     catalog = json.loads(Path(args.catalog).read_text(encoding="utf-8"))
     found_sets = method_found_sets(benchmark)
@@ -319,8 +380,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "any_found_vs_unfound_deltas": standardized_deltas(records, "any_found"),
         "duplicate_ghosts": {
             "frozen_gate": top_row_duplicate_ghosts(benchmark["frozen_gate"]),
-            "best_selected_on_range_a": top_row_duplicate_ghosts(benchmark["best_selected_on_range_a"]),
-            "best_oracle_on_range_b": top_row_duplicate_ghosts(benchmark["best_oracle_on_range_b"]),
+            "best_selected_on_range_a": top_row_duplicate_ghosts(
+                benchmark["best_selected_on_range_a"]
+            ),
+            "best_oracle_on_range_b": top_row_duplicate_ghosts(
+                benchmark["best_oracle_on_range_b"]
+            ),
         },
         "frozen_found_records": [
             {
@@ -341,7 +406,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ],
         "records": records if args.include_records else [],
     }
-    (out_dir / "latest_report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    (out_dir / "latest_report.json").write_text(
+        json.dumps(report, indent=2) + "\n", encoding="utf-8"
+    )
     write_markdown(report, out_dir / "LATEST.md")
     return report
 
@@ -349,9 +416,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", default=str(DEFAULT_REPORT))
-    parser.add_argument("--catalog", default="artifacts/prime_search_engine_bench_100_200_hidden_numbers/known_unknown_catalog_latest.json")
-    parser.add_argument("--gate-report", default="artifacts/prime_fog_branch_gate/latest_report.json")
-    parser.add_argument("--selector", choices=["holdout", "train", "full"], default="holdout")
+    parser.add_argument(
+        "--catalog",
+        default="artifacts/prime_search_engine_bench_100_200_hidden_numbers/known_unknown_catalog_latest.json",
+    )
+    parser.add_argument(
+        "--gate-report", default="artifacts/prime_fog_branch_gate/latest_report.json"
+    )
+    parser.add_argument(
+        "--selector", choices=["holdout", "train", "full"], default="holdout"
+    )
     parser.add_argument("--row-cache-dir", default=str(DEFAULT_ROW_CACHE_DIR))
     parser.add_argument("--out-dir", default=str(DEFAULT_OUT_DIR))
     parser.add_argument("--include-records", action="store_true")
