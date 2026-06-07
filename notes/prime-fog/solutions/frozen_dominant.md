@@ -23,13 +23,21 @@ wf=1.0, wa=0.0, wc=0.0
 
 Validation: [[Ring K]] had `frz_mean=0.5062` and `frz_skew=1.0328`; raw
 [[frozen gate]] won outright at 10/179 while every blend lost at least one
-anchor.
+anchor. [[Ring L]] also passed strongly.
 
-Interpretation: the frozen score distribution becomes concentrated enough that
-blending loses signal. The raw [[frozen gate]] top-20 is the best route.
+Falsification: [[Ring M]] and [[Ring N]] both satisfied the same trigger, but
+[[frozen coherent]] won both. The original interpretation was too strong:
+the frozen score distribution can become concentrated enough to fire the rule
+while still needing centroid support to recover anchors.
+
+Current status: not a stable controller rule. Treat as a local K/L behavior, not
+a law.
 
 Related:
 - [[Ring K]]
+- [[Ring L]]
+- [[Ring M]]
+- [[Ring N]]
 - [[cascade v6]]
 - [[frz_mean]]
 - [[frz_skew]]

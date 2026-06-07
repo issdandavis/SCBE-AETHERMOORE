@@ -112,14 +112,28 @@ Implications:
   is sharp enough, the top-20 may degenerate (too few rows above the spike, or anchors
   hiding just under it). **Watch for the frozen margin to peak then fall.**
 
-## Boundary
+## VERIFIED — Ring M built, projection PARTIALLY falsified
 
-This is a feature projection only. It does not prove Ring M hits or anchor
-count. The next hard test is whether Ring M's feature-first pass still has
-frz_skew above 1.0 and whether raw frozen keeps the margin.
+Disk was freed (cache moved to F: via junction). Ring M built; actuals vs projection:
 
-**Empirical verification is currently BLOCKED**: the 700M–750M sieve is OS-killed by
-the disk wall (2 GB free). Ring M stays a projection until disk headroom is freed.
+| feature | projected (PCA / FD) | actual M | verdict |
+| --- | ---: | ---: | --- |
+| frz_mean | 0.542 / 0.546 | **0.606** | WRONG — did not saturate, still climbing |
+| frz_skew | 1.307 / 1.341 | 1.167 | right sign (>1.0), overshot |
+| frz_kurt | 1.956 / 2.171 | 1.615 | WRONG — flattened, no runaway |
+| regime | frozen_dominant | **frozen_coherent** | **WRONG — regime flipped** |
+
+**Scorecard:**
+- **Dynamics warning: CORRECT.** "Watch for the frozen margin to peak then fall" / "near-future
+  breakdown" — margin went K +1 → L +8 → **M −5**. The navigator called the breakdown.
+- **Regime + coordinate projection: WRONG.** Both navigators extrapolated the accelerating
+  trajectory forward into continued frozen_dominant. The system was actually at a **turning point**:
+  L→M speed collapsed to ~0.085 (from K→L's 0.596), frz_skew turned over, the cooperative regime
+  returned. Extrapolating acceleration assumes no turning point — there was one.
+
+**Operating lesson:** trust the navigator's qualitative dynamics flags (speed, "breakdown coming"),
+NOT its quantitative one-step coordinates. A trajectory at maximum speed is often a trajectory about
+to turn, not one about to continue. See [[Ring M]] for the full falsification.
 
 Related:
 - [[Ring L]]

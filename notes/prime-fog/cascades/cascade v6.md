@@ -17,7 +17,7 @@ else:
     cascade v5
 ```
 
-Status: **FROZEN BEFORE RING L**.
+Status: **FROZEN BEFORE RING L; falsified at Rings M and N.**
 
 Retrodiction:
 
@@ -27,6 +27,17 @@ Retrodiction:
 | [[Ring I]] | compressed_frozen_late_high_kurt | dominant | pass |
 | [[Ring J]] | compressed_frozen_late_low_kurt | magnitude | pass |
 | [[Ring K]] | frozen_dominant | frozen | pass |
+
+Blind / forward tests:
+
+| Ring | Predicted regime | Predicted winner | Actual winner | Result |
+| --- | --- | --- | --- | --- |
+| [[Ring L]] | frozen_dominant | frozen | frozen | pass |
+| [[Ring M]] | frozen_dominant | frozen | frozen_coherent | fail |
+| [[Ring N]] | frozen_dominant | frozen | frozen_coherent | fail |
+
+The trigger stayed true at M and N (`frz_mean > 0.45`, `frz_skew > 1.0`), but
+the conclusion was wrong. High skew alone does not prove raw frozen is optimal.
 
 Artifact: `artifacts/range_regime_classifier/cascade_v6_spec.json`
 

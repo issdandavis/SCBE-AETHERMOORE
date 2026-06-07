@@ -226,3 +226,34 @@ Keep the vector-field math. Keep the multi-clock runtime idea. Keep the tests.
 
 Do not keep the claim that governance vectors inherit condensed-matter physics or cryptographic security properties from magnetism.
 
+## 8. Null-Gated Update
+
+Current probe:
+
+- `scripts/eval/spin_voxel_null_gate.py`
+- `tests/eval/test_spin_voxel_null_gate.py`
+- `artifacts/eval/spin_voxel_null_gate_v1.json`
+
+The probe uses same-inventory paired fields: one smooth ring ordering and one
+half-turn boundary ordering. The null shuffles each sample's vectors, preserving
+spin count, unit magnitudes, and exact vector inventory while destroying local
+neighborhood topology.
+
+Run summary:
+
+```text
+verdict: FIELD_TOPOLOGY_SIGNAL
+real_auc: 1.000000
+shuffle_inventory_null_auc_p95: 0.588129
+delta_real_minus_null95: 0.411871
+smooth_median_multiplier: 1.001685
+boundary_median_multiplier: 1.688272
+```
+
+Claim boundary:
+
+```text
+This validates angular-neighborhood topology as a controlled read-side field
+signal. It does not validate magnetism, topological protection, quantum
+resilience, or production security.
+```

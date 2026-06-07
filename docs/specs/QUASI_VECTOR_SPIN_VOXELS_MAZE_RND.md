@@ -17,6 +17,44 @@ disorder can serve as a governance/routing signal that amplifies harmonic cost.
 - Covered by `tests/test_spin_voxel.py`.
 - No production wiring yet; this is shadow-mode R&D only.
 
+## v1 Null-Gated Probe
+
+The first non-tautological gate is implemented in
+`scripts/eval/spin_voxel_null_gate.py` and covered by
+`tests/eval/test_spin_voxel_null_gate.py`.
+
+The test does not ask whether the formula amplifies a larger spin penalty. That
+would be true by construction. Instead it builds paired local fields with the
+same vector inventory:
+
+- smooth order: neighboring vectors change gradually around the ring,
+- boundary order: the same vectors are reordered into half-turn jumps.
+
+Then it compares the real angular-neighborhood score against a per-sample
+shuffle null that preserves spin count, unit magnitudes, and exact vector
+inventory while destroying ring-neighborhood topology.
+
+Latest controlled run:
+
+```json
+{
+  "verdict": "FIELD_TOPOLOGY_SIGNAL",
+  "real_auc": 1.0,
+  "shuffle_inventory_null_auc_p95": 0.588129,
+  "delta_real_minus_null95": 0.411871,
+  "smooth_median_multiplier": 1.001685,
+  "boundary_median_multiplier": 1.688272
+}
+```
+
+Interpretation:
+
+- The implemented field-disorder metric does read same-inventory local topology.
+- The result validates a vector-field boundary/coherence signal at controlled
+  scale.
+- It does not validate magnetic, spintronic, topological, quantum, or production
+  security claims.
+
 ## v0 Mathematical Mapping
 
 - Spins: `S_i in R^3` (normalized vectors).
