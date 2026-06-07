@@ -215,11 +215,58 @@ function receiptTone(receipt) {
   return receipt.success ? 'allow' : 'deny';
 }
 
+function renderCompactTerminalFrontend(payload, u) {
+  const receipt = payload.last_receipt || {};
+  const receiptStatus = receipt.available
+    ? receipt.success
+      ? u.badge('pass', 'allow')
+      : u.badge('fail', 'deny')
+    : u.badge('empty', 'warn');
+  const command = receipt.command ? u.truncate(receipt.command, 50) : u.dim('none yet');
+  const quickRows = (payload.quick_commands || [])
+    .slice(0, 4)
+    .map((entry) => [u.cyan(entry.command), entry.use]);
+  const grammarRows = [
+    [u.cyan('say it'), 'natural language + autocorrect'],
+    [u.cyan('/run <cmd>'), 'governed receipt'],
+    [u.cyan('[verify] <cmd>'), 'extra instruction tag'],
+    [u.cyan('tab:2:run:<cmd>'), 'room routing'],
+  ];
+
+  return [
+    u.box(
+      [
+        `${u.badge(payload.readiness?.decision || 'unknown', decisionTone(payload.readiness?.decision))} ${payload.git?.branch || 'unknown'}${payload.git?.dirty ? '*' : ''} ${u.dim(`${payload.shell?.provider || 'offline'}:${payload.shell?.model || 'offline'}`)}`,
+        `${u.dim('next')} ${u.cyan(payload.launch?.headed || 'scbe term tui')} ${u.dim('|')} ${u.cyan(payload.launch?.governed_run || 'scbe run "<command>" --json')}`,
+      ],
+      { title: 'SCBE TERMINAL', color: u.cyan }
+    ),
+    '',
+    u.bold('Quick nav'),
+    u.table(quickRows, { head: ['type', 'does'] }),
+    '',
+    u.bold('Last receipt'),
+    u.kv([
+      ['status', receiptStatus],
+      ['command', command],
+      ['next', receipt.next_step || 'Run a governed command to create a receipt.'],
+    ]),
+    '',
+    u.bold('Inputs'),
+    u.table(grammarRows, { head: ['form', 'meaning'] }),
+    '',
+    u.dim('More: scbe term --detail  |  Agents: scbe term --json  |  Benchmark: scbe term bench'),
+  ].join('\n');
+}
+
 function renderTerminalFrontend(payload, options = {}) {
   const u = options.ui || ui({ json: options.json, color: options.color });
   const width = options.width || 88;
   const detail = Boolean(options.detail);
   const receipt = payload.last_receipt || {};
+
+  if (!detail) return renderCompactTerminalFrontend(payload, u);
+
   const modeRows = (payload.modes || []).map((mode) => [
     u.badge(
       mode.mode,

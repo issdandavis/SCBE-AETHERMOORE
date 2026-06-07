@@ -107,6 +107,7 @@ Core commands:
                                      repo posture, last receipt, next action
   scbe terminal tui                  Open the headed Ink terminal
   scbe terminal --json               Machine-readable front-end state
+  scbe terminal bench                Benchmark terminal frontend startup/render
   scbe term                          Short alias for terminal
   scbe run "npm test"
   scbe status
@@ -133,6 +134,7 @@ Core commands:
   terminal tui            Open the headed terminal UI
   terminal --detail       Show stdout/stderr receipt tails and full controls
   terminal --json         Emit the same state as JSON for small agents
+  terminal bench          Benchmark the terminal frontend
   term | ui               Short aliases for terminal
 
 ─────────────────────────────────────────────────────────────────────────────
@@ -445,6 +447,7 @@ Core commands:
   scbe terminal                         # compact front end for the CLI
   scbe terminal tui                     # headed terminal UI
   scbe terminal --json                  # front-end state for agents
+  scbe terminal bench                   # benchmark frontend startup/render
   scbe version --json | jq '.version'
   scbe doctor --json | jq '{node:.node,liboqs:.liboqs}'
   scbe liboqs --json | jq '{kem:.kem_algorithm,dsa:.dsa_algorithm}'
@@ -1406,6 +1409,7 @@ function printTerminalHelp() {
       '  scbe terminal              compact CLI front end',
       '  scbe terminal --detail     include receipt tails and full controls',
       '  scbe terminal --json       machine-readable front-end state',
+      '  scbe terminal bench        benchmark frontend startup/render time',
       '  scbe terminal tui          open headed Ink terminal',
       '',
       'Aliases:',
@@ -1425,6 +1429,98 @@ function printTerminalHelp() {
       '',
     ].join('\n')
   );
+}
+
+function parsePositiveInt(value, fallback, { min = 1, max = 50 } = {}) {
+  const parsed = Number.parseInt(String(value || ''), 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
+function summarizeSamples(samples) {
+  const sorted = [...samples].sort((a, b) => a - b);
+  const pick = (q) => sorted[Math.min(sorted.length - 1, Math.floor(q * (sorted.length - 1)))];
+  const sum = sorted.reduce((acc, n) => acc + n, 0);
+  return {
+    runs: sorted.length,
+    min_ms: Number(sorted[0].toFixed(2)),
+    median_ms: Number(pick(0.5).toFixed(2)),
+    p95_ms: Number(pick(0.95).toFixed(2)),
+    max_ms: Number(sorted[sorted.length - 1].toFixed(2)),
+    mean_ms: Number((sum / sorted.length).toFixed(2)),
+  };
+}
+
+function runTerminalBenchmark(args) {
+  const asJson = args.includes('--json');
+  const runs = parsePositiveInt(flagValue(args, '--runs', '5'), 5, { min: 1, max: 25 });
+  const scenarios = [
+    { id: 'json', label: 'JSON state', argv: ['term', '--json'] },
+    { id: 'compact', label: 'Compact panel', argv: ['term', '--no-color'] },
+    { id: 'detail', label: 'Detail panel', argv: ['term', '--detail', '--no-color'] },
+  ];
+  const results = scenarios.map((scenario) => {
+    const samples = [];
+    const statuses = [];
+    for (let i = 0; i < runs; i += 1) {
+      const start = process.hrtime.bigint();
+      const child = spawnSync(process.execPath, [__filename, ...scenario.argv], {
+        cwd: repoRoot(),
+        encoding: 'utf8',
+        timeout: 30_000,
+        maxBuffer: 2 * 1024 * 1024,
+        env: { ...process.env, NO_COLOR: '1' },
+      });
+      const elapsed = Number(process.hrtime.bigint() - start) / 1_000_000;
+      samples.push(elapsed);
+      statuses.push(typeof child.status === 'number' ? child.status : 1);
+    }
+    return {
+      id: scenario.id,
+      label: scenario.label,
+      command: `scbe ${scenario.argv.join(' ')}`,
+      ok: statuses.every((status) => status === 0),
+      ...summarizeSamples(samples),
+    };
+  });
+  const payload = {
+    schema_version: 'scbe_terminal_frontend_benchmark_v1',
+    generated_at: nowIso(),
+    runs,
+    node: process.version,
+    scenarios: results,
+    caveat:
+      'Measures end-to-end CLI process startup plus frontend state/render work on this machine.',
+  };
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    process.exit(results.every((result) => result.ok) ? 0 : 1);
+  }
+  const u = ui({});
+  process.stdout.write(
+    [
+      u.box(
+        [
+          `${u.bold('SCBE terminal benchmark')} ${u.dim(`${runs} runs per scenario`)}`,
+          u.dim(payload.caveat),
+        ],
+        { title: 'BENCH', color: u.cyan }
+      ),
+      '',
+      u.table(
+        results.map((result) => [
+          result.ok ? u.badge('ok', 'allow') : u.badge('fail', 'deny'),
+          result.label,
+          `${result.median_ms}ms`,
+          `${result.p95_ms}ms`,
+          result.command,
+        ]),
+        { head: ['state', 'surface', 'median', 'p95', 'command'] }
+      ),
+      '',
+    ].join('\n')
+  );
+  process.exit(results.every((result) => result.ok) ? 0 : 1);
 }
 
 function buildTerminalNaturalLanguageState() {
@@ -1512,6 +1608,33 @@ function buildTerminalPlatformPacket(root) {
   };
 }
 
+function terminalGitPosture(root) {
+  const status = runCapture('git', ['status', '--short', '--branch'], { cwd: root, timeout: 3000 });
+  const commit = runCapture('git', ['rev-parse', '--short', 'HEAD'], { cwd: root, timeout: 3000 });
+  let branch = 'unknown';
+  let upstream = null;
+  let dirty = null;
+  if (status.ok) {
+    const lines = String(status.stdout || '')
+      .split(/\r?\n/)
+      .filter(Boolean);
+    const head = lines[0] || '';
+    dirty = lines.slice(1).length > 0;
+    const match = head.match(/^##\s+([^.\s]+)(?:\.\.\.([^\s]+))?/);
+    if (match) {
+      branch = match[1] || 'unknown';
+      upstream = match[2] || null;
+    }
+  }
+  return {
+    root,
+    branch,
+    commit: commit.ok ? commit.stdout : 'unknown',
+    dirty,
+    upstream,
+  };
+}
+
 function buildTerminalFrontendState() {
   const root = repoRoot();
   return buildTerminalFrontendPayload({
@@ -1521,7 +1644,7 @@ function buildTerminalFrontendState() {
     historyPath: historyPath(),
     version: versionPacket(),
     platform: buildTerminalPlatformPacket(root),
-    git: gitPosture(root),
+    git: terminalGitPosture(root),
     shellConfig: readShellConfig(),
     lastReceipt: readLastHistoryRow(),
     naturalLanguage: buildTerminalNaturalLanguageState(),
@@ -1542,6 +1665,10 @@ function runTerminalFrontend(args) {
   if (sub === 'help' || args.includes('--help') || args.includes('-h')) {
     printTerminalHelp();
     process.exit(0);
+  }
+  if (sub === 'bench' || sub === 'benchmark') {
+    runTerminalBenchmark(args.filter((arg) => arg !== sub));
+    return;
   }
   if (sub === 'tui' || args.includes('--tui')) {
     runInteractiveShell({ tui: true });

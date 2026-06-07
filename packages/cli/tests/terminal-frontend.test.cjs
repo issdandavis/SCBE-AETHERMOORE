@@ -36,6 +36,7 @@ test('help documents the terminal frontend and short aliases', () => {
   assert.match(result.stdout, /scbe terminal\s+Compact terminal front end/);
   assert.match(result.stdout, /scbe terminal tui/);
   assert.match(result.stdout, /scbe terminal --json/);
+  assert.match(result.stdout, /scbe terminal bench/);
   assert.match(result.stdout, /scbe term\s+Short alias for terminal/);
 });
 
@@ -58,12 +59,12 @@ test('terminal alias renders compact human navigation without ANSI under NO_COLO
 
   assert.equal(result.status, 0, result.stderr);
   assert.doesNotMatch(result.stdout, new RegExp(ESC));
-  assert.match(result.stdout, /SCBE Terminal Frontend/);
-  assert.match(result.stdout, /QUICK NAV/);
+  assert.match(result.stdout, /SCBE TERMINAL/);
+  assert.match(result.stdout, /Quick nav/);
   assert.match(result.stdout, /scbe term tui/);
-  assert.match(result.stdout, /NATURAL LANGUAGE/);
-  assert.match(result.stdout, /COMMAND GRAMMAR/);
-  assert.match(result.stdout, /More detail: scbe terminal --detail/);
+  assert.match(result.stdout, /Last receipt/);
+  assert.match(result.stdout, /Inputs/);
+  assert.match(result.stdout, /More: scbe term --detail/);
 });
 
 test('terminal help is short and command-focused', () => {
@@ -72,8 +73,21 @@ test('terminal help is short and command-focused', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /Usage:/);
   assert.match(result.stdout, /scbe terminal --detail/);
+  assert.match(result.stdout, /scbe terminal bench/);
   assert.match(result.stdout, /Aliases:/);
   assert.match(result.stdout, /Shell grammar:/);
+});
+
+test('terminal bench emits measured JSON scenarios', () => {
+  const result = runCli(['term', 'bench', '--runs', '1', '--json'], { timeout: 30_000 });
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_terminal_frontend_benchmark_v1');
+  assert.equal(payload.runs, 1);
+  assert.ok(payload.scenarios.length >= 3);
+  assert.ok(payload.scenarios.every((scenario) => scenario.ok));
+  assert.ok(payload.scenarios.every((scenario) => scenario.median_ms > 0));
 });
 
 test('rich shell accepts slash terminal navigation', () => {
@@ -83,8 +97,8 @@ test('rich shell accepts slash terminal navigation', () => {
   });
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /SCBE Terminal Frontend/);
-  assert.match(result.stdout, /QUICK NAV/);
+  assert.match(result.stdout, /SCBE TERMINAL/);
+  assert.match(result.stdout, /Quick nav/);
   assert.doesNotMatch(result.stdout, /should-not-call-model/);
 });
 
