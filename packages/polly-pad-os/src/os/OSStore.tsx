@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import type { WindowState, DesktopIcon, Notification, Theme, AppDefinition } from '@/types';
 import { generateAppRegistry } from './appRegistry';
+import { DEFAULT_THEME, defaultDesktopIcons } from './defaultState';
 
 interface OSContextType {
   windows: WindowState[];
@@ -34,20 +35,11 @@ interface OSContextType {
 
 const OSContext = createContext<OSContextType | null>(null);
 
-const defaultIcons: DesktopIcon[] = [
-  { id: 'd1', appId: 'files', name: 'Files', icon: 'FolderOpen', x: 20, y: 20 },
-  { id: 'd2', appId: 'terminal', name: 'Terminal', icon: 'Terminal', x: 20, y: 110 },
-  { id: 'd3', appId: 'texteditor', name: 'Text Editor', icon: 'FileText', x: 20, y: 200 },
-  { id: 'd4', appId: 'browser', name: 'Browser', icon: 'Globe', x: 20, y: 290 },
-  { id: 'd5', appId: 'calculator', name: 'Calculator', icon: 'Calculator', x: 20, y: 380 },
-  { id: 'd6', appId: 'settings', name: 'Settings', icon: 'Settings', x: 20, y: 470 },
-];
-
 export function OSProvider({ children }: { children: React.ReactNode }) {
   const [windows, setWindows] = useState<WindowState[]>([]);
-  const [desktopIcons] = useState<DesktopIcon[]>(defaultIcons);
+  const [desktopIcons] = useState<DesktopIcon[]>(defaultDesktopIcons);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>(DEFAULT_THEME);
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [activeWindowId, setActiveWindowId] = useState<string | null>(null);
   const zIndexCounter = useRef(100);
