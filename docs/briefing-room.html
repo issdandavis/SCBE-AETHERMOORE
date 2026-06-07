@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SCBE Briefing Room | Professional AI workflow reports with route receipts</title>
+    <meta
+      name="description"
+      content="Send one AI workflow, research question, source pack, or automation path. Get a professional report, route receipt, risk checklist, and next actions."
+    />
+    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/briefing-room.html" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #f4efe4;
+        --paper: #f7f1e5;
+        --paper-ink: #1b2028;
+        --muted: #b9c2c9;
+        --quiet: #82909c;
+        --bg: #090c10;
+        --panel: #111821;
+        --panel-2: #162330;
+        --line: rgba(244, 239, 228, 0.14);
+        --gold: #d7a84f;
+        --gold-2: #f0c773;
+        --teal: #38d0bc;
+        --red: #e47964;
+        --blue: #8bb8ff;
+        --shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background:
+          linear-gradient(90deg, rgba(215, 168, 79, 0.06) 1px, transparent 1px) 0 0 / 48px 48px,
+          linear-gradient(0deg, rgba(56, 208, 188, 0.045) 1px, transparent 1px) 0 0 / 48px 48px,
+          radial-gradient(circle at 72% 8%, rgba(56, 208, 188, 0.16), transparent 34%),
+          linear-gradient(180deg, #0d1117 0%, var(--bg) 46%, #0b0d10 100%);
+        color: var(--ink);
+        font-family: Aptos, 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+        line-height: 1.55;
+      }
+
+      body::before {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        content: '';
+        opacity: 0.28;
+        background-image: linear-gradient(
+          120deg,
+          transparent,
+          rgba(255, 255, 255, 0.035) 42%,
+          transparent 43%
+        );
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .shell {
+        width: min(1160px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid var(--line);
+        background: rgba(9, 12, 16, 0.82);
+        backdrop-filter: blur(16px);
+      }
+
+      .topbar-inner {
+        display: flex;
+        min-height: 68px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        width: 28px;
+        height: 28px;
+        border: 1px solid rgba(215, 168, 79, 0.6);
+        background:
+          linear-gradient(90deg, transparent 47%, rgba(56, 208, 188, 0.8) 48% 52%, transparent 53%),
+          linear-gradient(0deg, transparent 47%, rgba(215, 168, 79, 0.9) 48% 52%, transparent 53%),
+          #121922;
+        box-shadow: 0 0 0 4px rgba(215, 168, 79, 0.08);
+      }
+
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 14px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .nav a {
+        text-decoration-color: transparent;
+        text-underline-offset: 4px;
+      }
+
+      .nav a:hover,
+      .nav a:focus-visible {
+        color: var(--ink);
+        text-decoration-color: var(--gold);
+      }
+
+      .hero {
+        min-height: calc(90svh - 68px);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(340px, 0.96fr);
+        gap: clamp(28px, 5vw, 58px);
+        align-items: center;
+        padding: clamp(42px, 7vw, 92px) 0 44px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
+        color: var(--gold-2);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        width: 38px;
+        height: 1px;
+        background: var(--gold-2);
+        content: '';
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        max-width: 760px;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: clamp(42px, 5.8vw, 72px);
+        font-weight: 700;
+        line-height: 0.95;
+      }
+
+      h2 {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: clamp(30px, 4.4vw, 52px);
+        line-height: 1.02;
+      }
+
+      h3 {
+        font-size: 18px;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .lead {
+        max-width: 650px;
+        margin-top: 22px;
+        color: var(--muted);
+        font-size: clamp(18px, 2vw, 21px);
+      }
+
+      .hero-actions,
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .btn {
+        display: inline-flex;
+        min-height: 48px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(215, 168, 79, 0.72);
+        border-radius: 6px;
+        padding: 12px 18px;
+        font-weight: 900;
+        text-decoration: none;
+        transition:
+          transform 160ms ease,
+          border-color 160ms ease,
+          background 160ms ease;
+      }
+
+      .btn:hover,
+      .btn:focus-visible {
+        transform: translateY(-1px);
+      }
+
+      .btn-primary {
+        color: #17130b;
+        background: linear-gradient(135deg, var(--gold), var(--gold-2));
+      }
+
+      .btn-secondary {
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .btn-tertiary {
+        border-color: rgba(56, 208, 188, 0.5);
+        color: var(--teal);
+        background: rgba(56, 208, 188, 0.06);
+      }
+
+      .trust-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 26px;
+      }
+
+      .pill {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 7px 11px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.035);
+        font-size: 13px;
+      }
+
+      .artifact-preview {
+        position: relative;
+        display: grid;
+        min-height: 590px;
+        align-items: center;
+      }
+
+      .artifact-board {
+        position: relative;
+        min-height: 580px;
+      }
+
+      .report-sheet,
+      .receipt-sheet,
+      .route-sheet {
+        position: absolute;
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
+
+      .report-sheet {
+        top: 18px;
+        right: 6%;
+        width: min(470px, 92%);
+        min-height: 530px;
+        padding: 28px;
+        color: var(--paper-ink);
+        background:
+          linear-gradient(90deg, rgba(27, 32, 40, 0.08) 1px, transparent 1px) 0 0 / 36px 36px,
+          var(--paper);
+        transform: rotate(1.2deg);
+      }
+
+      .report-sheet::before {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 7px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--gold), var(--teal));
+        content: '';
+      }
+
+      .receipt-sheet {
+        right: 0;
+        bottom: 20px;
+        width: min(380px, 74%);
+        padding: 18px;
+        border: 1px solid rgba(56, 208, 188, 0.35);
+        background: rgba(11, 16, 22, 0.96);
+      }
+
+      .route-sheet {
+        bottom: 72px;
+        left: 0;
+        width: min(260px, 58%);
+        padding: 18px;
+        border: 1px solid rgba(215, 168, 79, 0.35);
+        background: #17212d;
+      }
+
+      .paper-label,
+      .code-label {
+        color: var(--quiet);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .report-title {
+        margin-top: 22px;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 32px;
+        line-height: 1.02;
+      }
+
+      .report-subtitle {
+        max-width: 30ch;
+        margin-top: 12px;
+        color: #5b6470;
+        font-size: 15px;
+      }
+
+      .report-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 26px;
+      }
+
+      .mini-block {
+        border: 1px solid rgba(27, 32, 40, 0.13);
+        border-radius: 6px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.48);
+      }
+
+      .mini-block strong {
+        display: block;
+        margin-bottom: 4px;
+        color: #12161e;
+        font-size: 13px;
+      }
+
+      .mini-block span {
+        color: #5b6470;
+        font-size: 12px;
+      }
+
+      .report-lines {
+        display: grid;
+        gap: 8px;
+        margin-top: 28px;
+      }
+
+      .line {
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(27, 32, 40, 0.14);
+      }
+
+      .line.short {
+        width: 58%;
+      }
+
+      .line.mid {
+        width: 82%;
+      }
+
+      code,
+      pre {
+        font-family: 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
+      }
+
+      pre {
+        overflow: hidden;
+        margin: 12px 0 0;
+        color: #cde5e1;
+        font-size: 12px;
+        line-height: 1.45;
+        white-space: pre-wrap;
+      }
+
+      .route-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .route-step {
+        display: grid;
+        grid-template-columns: 26px 1fr;
+        align-items: center;
+        gap: 9px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .dot {
+        width: 26px;
+        height: 26px;
+        display: inline-grid;
+        place-items: center;
+        border: 1px solid rgba(215, 168, 79, 0.55);
+        color: var(--gold-2);
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .section {
+        padding: 72px 0;
+      }
+
+      .section + .section {
+        border-top: 1px solid var(--line);
+      }
+
+      .section-kicker {
+        max-width: 760px;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 18px;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: minmax(0, 0.86fr) minmax(300px, 1.14fr);
+        gap: clamp(24px, 5vw, 58px);
+        align-items: start;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 30px;
+      }
+
+      .feature,
+      .price-card,
+      .faq-item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(17, 24, 33, 0.86);
+        padding: 20px;
+      }
+
+      .feature p,
+      .price-card p,
+      .faq-item p {
+        margin-top: 9px;
+        color: var(--muted);
+      }
+
+      .package-list,
+      .check-list {
+        display: grid;
+        gap: 12px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .package-list li,
+      .check-list li {
+        position: relative;
+        padding-left: 26px;
+        color: var(--muted);
+      }
+
+      .package-list li::before,
+      .check-list li::before {
+        position: absolute;
+        left: 0;
+        color: var(--teal);
+        content: '>';
+      }
+
+      .workflow {
+        display: grid;
+        gap: 14px;
+      }
+
+      .workflow-step {
+        display: grid;
+        grid-template-columns: 54px 1fr;
+        gap: 16px;
+        align-items: start;
+        border-left: 1px solid rgba(215, 168, 79, 0.32);
+        padding-left: 18px;
+      }
+
+      .step-num {
+        display: inline-grid;
+        width: 48px;
+        height: 48px;
+        place-items: center;
+        border: 1px solid rgba(215, 168, 79, 0.6);
+        color: var(--gold-2);
+        font-weight: 900;
+      }
+
+      .price-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 32px;
+      }
+
+      .price-card.featured {
+        border-color: rgba(215, 168, 79, 0.68);
+        background:
+          linear-gradient(180deg, rgba(215, 168, 79, 0.12), transparent 42%), rgba(17, 24, 33, 0.94);
+      }
+
+      .price-tag {
+        margin-top: 16px;
+        color: var(--gold-2);
+        font-size: 34px;
+        font-weight: 900;
+      }
+
+      .price-card .btn {
+        width: 100%;
+        margin-top: 18px;
+      }
+
+      .example {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-top: 30px;
+      }
+
+      .sample-panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(11, 16, 22, 0.88);
+        padding: 22px;
+      }
+
+      .sample-panel h3 {
+        color: var(--gold-2);
+      }
+
+      .sample-panel pre {
+        max-height: 260px;
+        overflow: auto;
+      }
+
+      .safety-band {
+        border: 1px solid rgba(228, 121, 100, 0.38);
+        background: rgba(228, 121, 100, 0.07);
+      }
+
+      .faq-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 30px;
+      }
+
+      .final {
+        padding: 76px 0 88px;
+      }
+
+      .final-box {
+        border: 1px solid rgba(215, 168, 79, 0.38);
+        border-radius: 8px;
+        padding: clamp(24px, 5vw, 46px);
+        background:
+          linear-gradient(135deg, rgba(215, 168, 79, 0.12), rgba(56, 208, 188, 0.07)),
+          rgba(17, 24, 33, 0.94);
+      }
+
+      .footer {
+        border-top: 1px solid var(--line);
+        padding: 26px 0 42px;
+        color: var(--quiet);
+        font-size: 14px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition: none !important;
+        }
+      }
+
+      @media (max-width: 940px) {
+        .hero,
+        .split,
+        .example {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          min-height: auto;
+        }
+
+        .artifact-preview {
+          min-height: 560px;
+        }
+
+        .feature-grid,
+        .price-row,
+        .faq-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .topbar-inner {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 16px 0;
+        }
+
+        .nav {
+          justify-content: flex-start;
+        }
+
+        .hero {
+          padding-top: 36px;
+        }
+
+        .artifact-preview {
+          min-height: 650px;
+        }
+
+        .report-sheet {
+          right: 0;
+          width: 100%;
+          min-height: 500px;
+          padding: 22px;
+        }
+
+        .report-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .route-sheet,
+        .receipt-sheet {
+          left: 0;
+          right: auto;
+          width: 92%;
+        }
+
+        .receipt-sheet {
+          bottom: 0;
+        }
+
+        .route-sheet {
+          bottom: 188px;
+        }
+
+        .btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="shell topbar-inner">
+        <a class="brand" href="index.html" aria-label="AetherMoore home">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>AetherMoore</span>
+        </a>
+        <nav class="nav" aria-label="Primary navigation">
+          <a href="briefing-room.html">Briefing Room</a>
+          <a href="governance-snapshot.html">Snapshot</a>
+          <a href="offers/index.html">Offers</a>
+          <a href="research/index.html">Research</a>
+          <a href="support.html">Support</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="shell hero" aria-label="SCBE Briefing Room">
+        <div>
+          <div class="eyebrow">One task in, professional package out</div>
+          <h1>AI workflow and research reports with route receipts.</h1>
+          <p class="lead">
+            Send one workflow, source pack, repo automation, prompt chain, or research question.
+            SCBE turns it into a formatted briefing package with governance notes, risk checks,
+            sources, and next actions.
+          </p>
+          <div class="hero-actions" aria-label="Briefing Room purchase actions">
+            <a
+              class="btn btn-primary"
+              href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
+              target="_blank"
+              rel="noopener"
+              >Start the $99 Briefing</a
+            >
+            <a
+              class="btn btn-secondary"
+              href="https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j"
+              target="_blank"
+              rel="noopener"
+              >Book the $500 Snapshot</a
+            >
+            <a class="btn btn-tertiary" href="#package">See what you receive</a>
+          </div>
+          <div class="trust-strip" aria-label="Product guarantees">
+            <span class="pill">Local-first review</span>
+            <span class="pill">No secrets required</span>
+            <span class="pill">Receipt-ready evidence</span>
+            <span class="pill">Human checked before delivery</span>
+          </div>
+        </div>
+
+        <div class="artifact-preview" aria-label="Example briefing package preview">
+          <div class="artifact-board">
+            <article class="report-sheet">
+              <div class="paper-label">Briefing package preview</div>
+              <h2 class="report-title">AI Workflow Governance Brief</h2>
+              <p class="report-subtitle">
+                Fixed-scope report for one agent route, automation path, or research question.
+              </p>
+              <div class="report-grid">
+                <div class="mini-block">
+                  <strong>Decision risk</strong>
+                  <span>Tool access and approval boundaries.</span>
+                </div>
+                <div class="mini-block">
+                  <strong>Source coverage</strong>
+                  <span>What the answer used and what is missing.</span>
+                </div>
+                <div class="mini-block">
+                  <strong>Route receipt</strong>
+                  <span>Gate, decision, and output metadata.</span>
+                </div>
+                <div class="mini-block">
+                  <strong>Next actions</strong>
+                  <span>Three fixes ranked by impact.</span>
+                </div>
+              </div>
+              <div class="report-lines" aria-hidden="true">
+                <span class="line mid"></span>
+                <span class="line"></span>
+                <span class="line short"></span>
+                <span class="line"></span>
+                <span class="line mid"></span>
+              </div>
+            </article>
+
+            <aside class="route-sheet">
+              <div class="code-label">Route</div>
+              <div class="route-list">
+                <div class="route-step">
+                  <span class="dot">1</span><span>intake normalized</span>
+                </div>
+                <div class="route-step">
+                  <span class="dot">2</span><span>scope classified</span>
+                </div>
+                <div class="route-step"><span class="dot">3</span><span>sources checked</span></div>
+                <div class="route-step">
+                  <span class="dot">4</span><span>report formatted</span>
+                </div>
+              </div>
+            </aside>
+
+            <aside class="receipt-sheet">
+              <div class="code-label">route-receipt.json</div>
+              <pre>
+{
+  "decision": "ALLOW",
+  "mode": "briefing",
+  "checks": ["scope", "source", "risk"],
+  "deliverables": 5,
+  "human_review": true
+}</pre
+              >
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="submit">
+        <div class="shell split">
+          <div>
+            <div class="eyebrow">What you submit</div>
+            <h2>Bring one messy problem. Not a perfect spec.</h2>
+            <p class="section-kicker">
+              The intake can be a prompt chain, a workflow diagram, a repo link, public docs,
+              redacted screenshots, notes, or a research question. The product exists to turn that
+              raw material into a professional package.
+            </p>
+          </div>
+          <ul class="check-list">
+            <li>AI agent or tool workflow that needs a governance read.</li>
+            <li>Research sources that need to become a brief, memo, or proposal draft.</li>
+            <li>Prompt chain, MCP setup, CLI automation, or agent bus path.</li>
+            <li>One decision the report should support.</li>
+            <li>
+              Redacted examples only. No private keys, secrets, regulated data, or customer records.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section" id="package">
+        <div class="shell">
+          <div class="eyebrow">What you receive</div>
+          <h2>A compact professional package, not a chat transcript.</h2>
+          <p class="section-kicker">
+            Each Briefing Room job is delivered as formatted artifacts you can forward, file, or use
+            as implementation notes.
+          </p>
+          <div class="feature-grid">
+            <article class="feature">
+              <h3>Formatted report</h3>
+              <p>
+                Plain-English findings with enough structure to hand to a buyer, reviewer, or
+                teammate.
+              </p>
+            </article>
+            <article class="feature">
+              <h3>Route receipt</h3>
+              <p>
+                Decision metadata showing how the request was classified, checked, and delivered.
+              </p>
+            </article>
+            <article class="feature">
+              <h3>Risk checklist</h3>
+              <p>Unsafe tool paths, missing approval points, source gaps, and practical fixes.</p>
+            </article>
+            <article class="feature">
+              <h3>Source notes</h3>
+              <p>What the report used, what it did not use, and what needs verification.</p>
+            </article>
+            <article class="feature">
+              <h3>Next actions</h3>
+              <p>Three prioritized moves so the report becomes work, not shelfware.</p>
+            </article>
+            <article class="feature">
+              <h3>Optional templates</h3>
+              <p>Toolkit or training-vault assets added only when they support the job.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="how">
+        <div class="shell split">
+          <div>
+            <div class="eyebrow">Under the hood</div>
+            <h2>The system routes quietly. The user gets the result.</h2>
+            <p class="section-kicker">
+              SCBE can use Compass, GeoSeal, the agent bus, governed retrieval, prompt-injection
+              checks, code checks, and report templates. The buyer does not need to learn those
+              names to get value from the product.
+            </p>
+          </div>
+          <div class="workflow" aria-label="Briefing Room workflow">
+            <div class="workflow-step">
+              <span class="step-num">01</span>
+              <div>
+                <h3>Normalize the intake</h3>
+                <p>Scope the task, remove unsafe inputs, and define the report target.</p>
+              </div>
+            </div>
+            <div class="workflow-step">
+              <span class="step-num">02</span>
+              <div>
+                <h3>Route the work</h3>
+                <p>Pick the right research, governance, code, or workflow checks.</p>
+              </div>
+            </div>
+            <div class="workflow-step">
+              <span class="step-num">03</span>
+              <div>
+                <h3>Compose the package</h3>
+                <p>Format the report, receipt, risk checklist, source notes, and next actions.</p>
+              </div>
+            </div>
+            <div class="workflow-step">
+              <span class="step-num">04</span>
+              <div>
+                <h3>Review before delivery</h3>
+                <p>Human check the final package before sending it back.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="pricing">
+        <div class="shell">
+          <div class="eyebrow">Pricing</div>
+          <h2>One product, three lanes.</h2>
+          <p class="section-kicker">
+            Start small, run the full snapshot when the workflow matters, then keep it fresh only if
+            the system changes month to month.
+          </p>
+          <div class="price-row">
+            <article class="price-card">
+              <h3>Briefing Starter</h3>
+              <div class="price-tag">$99</div>
+              <p>One concise memo, route receipt, and three next actions.</p>
+              <ul class="package-list">
+                <li>One workflow or question</li>
+                <li>Concise findings memo</li>
+                <li>Upgrade credit toward Snapshot</li>
+              </ul>
+              <a
+                class="btn btn-secondary"
+                href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
+                target="_blank"
+                rel="noopener"
+                >Start for $99</a
+              >
+            </article>
+
+            <article class="price-card featured">
+              <h3>Briefing Snapshot</h3>
+              <div class="price-tag">$500</div>
+              <p>
+                Full fixed-scope package for a serious workflow, source pack, or automation path.
+              </p>
+              <ul class="package-list">
+                <li>Professional report</li>
+                <li>Risk and governance checklist</li>
+                <li>Route receipt and source notes</li>
+                <li>One follow-up clarification thread</li>
+              </ul>
+              <a
+                class="btn btn-primary"
+                href="https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j"
+                target="_blank"
+                rel="noopener"
+                >Book the Snapshot</a
+              >
+            </article>
+
+            <article class="price-card">
+              <h3>Heartbeat</h3>
+              <div class="price-tag">$99/mo</div>
+              <p>Monthly delta report for one workflow after the first snapshot.</p>
+              <ul class="package-list">
+                <li>Changed-risk summary</li>
+                <li>Fresh receipt row</li>
+                <li>Recommended action list</li>
+              </ul>
+              <a
+                class="btn btn-secondary"
+                href="https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m"
+                target="_blank"
+                rel="noopener"
+                >Keep it current</a
+              >
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="example">
+        <div class="shell">
+          <div class="eyebrow">Example output</div>
+          <h2>The package is built for decisions.</h2>
+          <div class="example">
+            <article class="sample-panel">
+              <h3>report.md</h3>
+              <pre>
+# Findings
+
+The workflow has useful automation, but tool calls need approval boundaries before production use.
+
+## Highest risk
+External source ingestion can influence the agent before the execution gate.
+
+## Three fixes
+1. Separate retrieval from execution.
+2. Add route receipts to tool calls.
+3. Require human approval for write actions.</pre
+              >
+            </article>
+            <article class="sample-panel">
+              <h3>risk-checklist.md</h3>
+              <pre>
+[x] Prompt-injection surface reviewed
+[x] Tool permissions mapped
+[x] Human approval boundary identified
+[ ] Production secret handling verified
+[ ] Monitoring receipt stored</pre
+              >
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section safety-band" id="safety">
+        <div class="shell split">
+          <div>
+            <div class="eyebrow">Safety boundary</div>
+            <h2>No secrets. No regulated production data.</h2>
+          </div>
+          <p class="section-kicker">
+            Send redacted examples, public links, screenshots, notes, or diagrams. Do not send API
+            keys, private keys, customer records, bank data, medical records, export-controlled
+            material, classified material, or regulated production data.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="faq">
+        <div class="shell">
+          <div class="eyebrow">FAQ</div>
+          <h2>Simple answers before checkout.</h2>
+          <div class="faq-grid">
+            <article class="faq-item">
+              <h3>Is this a platform subscription?</h3>
+              <p>
+                No. The first product is a finished report package. The monthly Heartbeat is
+                optional.
+              </p>
+            </article>
+            <article class="faq-item">
+              <h3>Do I need to understand SCBE?</h3>
+              <p>No. SCBE is the engine. You get the formatted deliverables.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Can this review code?</h3>
+              <p>
+                Yes, if the scope is one workflow or automation path and the materials are safe to
+                share.
+              </p>
+            </article>
+            <article class="faq-item">
+              <h3>What if I only want templates?</h3>
+              <p>
+                Use the $29 toolkit or training vault. They are self-serve fallbacks, not the main
+                product.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="final" id="intake">
+        <div class="shell final-box">
+          <div class="eyebrow">Start here</div>
+          <h2>Send one task. Get the briefing package.</h2>
+          <p class="section-kicker">
+            Start with the $99 lane if you want a quick read. Use the $500 Snapshot when the result
+            needs to be complete enough for a buyer, reviewer, or implementation plan.
+          </p>
+          <div class="button-row">
+            <a
+              class="btn btn-primary"
+              href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
+              target="_blank"
+              rel="noopener"
+              >Start the $99 Briefing</a
+            >
+            <a
+              class="btn btn-secondary"
+              href="mailto:ai@aethermoore.com?subject=SCBE%20Briefing%20Room%20intake&body=Payment%20email%3A%0ABriefing%20type%3A%0AWorkflow%2C%20question%2C%20or%20source%20pack%3A%0AWhat%20decision%20should%20this%20support%3A%0ALinks%20or%20redacted%20screenshots%3A%0ADeadline%20or%20context%3A%0A"
+              >Send intake by email</a
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="shell">
+        <span>SCBE Briefing Room is an AetherMoore governed AI workflow product.</span>
+        <span> </span>
+        <a href="index.html">Home</a>
+        <span> / </span>
+        <a href="offers/index.html">Offers</a>
+        <span> / </span>
+        <a href="support.html">Support</a>
+      </div>
+    </footer>
+  </body>
+</html>

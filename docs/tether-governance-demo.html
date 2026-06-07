@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCBE — Physical Tether Governance Surface</title>
+  <meta name="description" content="Desk simulation bridge: tether telemetry → ContextBundle curvature → ALLOW/QUARANTINE/DENY">
+  <style>
+    :root {
+      --bg: #070b12;
+      --surface: #0d1421;
+      --border: #1e2d42;
+      --text: #e8eef7;
+      --muted: #7a92b0;
+      --allow: #22c55e;
+      --quarantine: #f59e0b;
+      --deny: #ef4444;
+      --escalate: #3b82f6;
+      --accent: #17c6cf;
+      --mono: 'SF Mono', 'Fira Code', Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, sans-serif;
+      line-height: 1.5;
+      padding: 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 8px; }
+    .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .card h2 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+    .status { font-size: 1.1rem; font-weight: 700; }
+    .status.allow { color: var(--allow); }
+    .status.quarantine { color: var(--quarantine); }
+    .status.deny { color: var(--deny); }
+    .spin-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .spinner.slow { animation-duration: 2.2s; border-top-color: var(--quarantine); }
+    .spinner.stall { animation: none; border-color: var(--deny); opacity: 0.5; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .terminal-wrap {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .terminal-wrap.quarantine-flash {
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.45);
+    }
+    .terminal-wrap.deny-flash {
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.55);
+    }
+    .terminal-head {
+      background: #121d2e;
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .terminal-body {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      padding: 12px;
+      min-height: 160px;
+      background: #05080e;
+      white-space: pre-wrap;
+      color: #a8c4e8;
+    }
+    .actions { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+    button {
+      background: var(--accent);
+      color: #041018;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <h1>Physical tether governance surface</h1>
+  <p class="sub">
+    Prototype: <code>scripts/sim_tether_rectifier.py</code> →
+    <code>src/harmonic/tetherTelemetry.ts</code> →
+    <code>ContextBundle</code> imaginary axis.
+    <a href="guard.html">AetherGuard</a> ·
+    <a href="research/README.md">Research index</a>
+  </p>
+
+  <div class="cards">
+    <div class="card">
+      <h2>Tension matrix</h2>
+      <div id="tension-status" class="status allow">STABLE</div>
+      <div style="font-size:0.8rem;color:var(--muted);margin-top:6px" id="tension-val">strain —</div>
+    </div>
+    <div class="card">
+      <h2>Strandbeest rectifier</h2>
+      <div class="spin-wrap">
+        <div id="rect-spin" class="spinner"></div>
+        <span id="torque-val" style="font-family:var(--mono);font-size:0.85rem">T_spin —</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>ContextBundle curvature</h2>
+      <div id="gov-status" class="status allow">ALLOW</div>
+      <div style="font-size:0.8rem;color:var(--muted);margin-top:6px" id="curv-val">κ —</div>
+    </div>
+    <div class="card">
+      <h2>Vibration</h2>
+      <div id="vib-val" style="font-family:var(--mono);font-size:0.9rem">—</div>
+    </div>
+  </div>
+
+  <div id="term-wrap" class="terminal-wrap">
+    <div class="terminal-head">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#ffbd2e"></span>
+      <span class="dot" style="background:#28ca40"></span>
+      live governance / telemetry stream
+    </div>
+    <div id="term" class="terminal-body">Waiting for stream…</div>
+  </div>
+
+  <div class="actions">
+    <button type="button" id="btn-local">Run local JS sim</button>
+    <button type="button" class="ghost" id="btn-fetch">Poll http://127.0.0.1:8765/latest.json</button>
+  </div>
+
+  <script type="module">
+    const VIB_Q = 0.0035, VIB_D = 0.008, TQ = 0.02, FLUX = 0.15;
+
+    function clamp(v, lo = 0, hi = 1) { return Math.max(lo, Math.min(hi, v)); }
+
+    function curvature(frame, prev) {
+      let score = 0;
+      const reasons = [];
+      const vib = frame.vibration_amplitude;
+      if (vib >= VIB_D) { score = 0.95; reasons.push('vibration_denial'); }
+      else if (vib >= VIB_Q) { score = Math.max(score, 0.6); reasons.push('vibration_elevated'); }
+      if (frame.rectified_torque < TQ) { score = Math.max(score, 0.72); reasons.push('torque_collapse'); }
+      if (Math.abs(frame.magnetic_flux_drift) > FLUX) { score = Math.max(score, 0.6); reasons.push('flux_drift'); }
+      if (prev) {
+        const jerk = Math.abs(vib - prev.vibration_amplitude) / Math.max((frame.ts_ms - prev.ts_ms) || 1, 1) * 1000;
+        if (jerk > 0.001) { score = Math.max(score, clamp(0.4 + jerk * 80)); reasons.push('jerk'); }
+      }
+      score = clamp(score);
+      let decision = 'ALLOW';
+      if (score >= 0.88) decision = 'DENY';
+      else if (score >= 0.45) decision = 'QUARANTINE';
+      return { curvature: score, decision, reasons };
+    }
+
+    let prev = null;
+    let localTimer = null;
+
+    function render(frame) {
+      const c = curvature(frame, prev);
+      prev = frame;
+
+      const tensionEl = document.getElementById('tension-status');
+      const strain = frame.tension_strain;
+      tensionEl.textContent = strain > 0.25 ? 'HIGH LOAD' : strain > 0.12 ? 'ELEVATED' : 'STABLE';
+      tensionEl.className = 'status ' + (strain > 0.25 ? 'deny' : strain > 0.12 ? 'quarantine' : 'allow');
+      document.getElementById('tension-val').textContent = 'strain ' + strain.toFixed(6);
+
+      const spin = document.getElementById('rect-spin');
+      const tq = frame.rectified_torque;
+      spin.className = 'spinner' + (tq < TQ ? ' stall' : tq < TQ * 2 ? ' slow' : '');
+      document.getElementById('torque-val').textContent = 'T_spin ' + tq.toFixed(6);
+
+      const gov = document.getElementById('gov-status');
+      gov.textContent = c.decision;
+      gov.className = 'status ' + c.decision.toLowerCase();
+      document.getElementById('curv-val').textContent = 'κ ' + c.curvature.toFixed(4);
+
+      document.getElementById('vib-val').textContent = 'amp ' + frame.vibration_amplitude.toExponential(3);
+
+      const wrap = document.getElementById('term-wrap');
+      wrap.classList.remove('quarantine-flash', 'deny-flash');
+      if (c.decision === 'QUARANTINE') wrap.classList.add('quarantine-flash');
+      if (c.decision === 'DENY') wrap.classList.add('deny-flash');
+
+      const lines = [
+        '[' + new Date().toISOString() + '] decision=' + c.decision + ' κ=' + c.curvature.toFixed(4),
+        '  vibration_amplitude=' + frame.vibration_amplitude,
+        '  tension_strain=' + frame.tension_strain,
+        '  magnetic_flux_drift=' + frame.magnetic_flux_drift,
+        '  rectified_torque=' + frame.rectified_torque,
+        '  reasons=' + c.reasons.join(', '),
+      ];
+      const term = document.getElementById('term');
+      term.textContent = lines.join('\n') + '\n\n' + term.textContent.split('\n').slice(0, 12).join('\n');
+    }
+
+    // Minimal in-browser wave sim (mirrors Python desk model qualitatively)
+    function createLocalSim() {
+      const n = 32;
+      let y = new Array(n).fill(0), v = new Array(n).fill(0), inner = new Array(n).fill(0);
+      let t = 0, step = 0, torque = 0;
+      return () => {
+        if (step % 40 === 0) y[n >> 1] += 0.003 * Math.sin(t * 8);
+        let strain = 0;
+        for (let i = 1; i < n; i++) strain += Math.abs(y[i] - y[i-1]);
+        strain /= n;
+        const damp = 1 + 6 * Math.tanh(strain * 12);
+        for (let i = 1; i < n - 1; i++) {
+          const lap = y[i+1] - 2*y[i] + y[i-1];
+          const eddy = -3 * (v[i] - inner[i]);
+          const a = lap * 40 - damp * v[i] + eddy;
+          v[i] += 0.002 * a;
+          y[i] += 0.002 * v[i];
+          inner[i] += 0.1 * (v[i] - inner[i]);
+        }
+        let rect = 0;
+        for (let i = 1; i < n - 1; i++) {
+          const lat = y[i+1] - 2*y[i] + y[i-1];
+          rect += Math.tanh(lat * 40) * Math.sign(v[i] || 1);
+        }
+        torque = 0.95 * torque + 0.05 * 0.2 * rect / n;
+        t += 0.002; step++;
+        const vib = Math.max(...y.map(Math.abs));
+        const flux = 0.98 * (step > 1 ? (window._flux || 0) : 0) + 0.02 * 2.5e-5 * 7800 * strain * 0.02;
+        window._flux = flux;
+        return {
+          ts_ms: Date.now(),
+          vibration_amplitude: vib,
+          tension_strain: strain,
+          magnetic_flux_drift: flux,
+          rectified_torque: torque,
+        };
+      };
+    }
+
+    document.getElementById('btn-local').onclick = () => {
+      if (localTimer) clearInterval(localTimer);
+      const tick = createLocalSim();
+      localTimer = setInterval(() => render(tick()), 100);
+    };
+
+    document.getElementById('btn-fetch').onclick = async () => {
+      try {
+        const res = await fetch('http://127.0.0.1:8765/latest.json');
+        render(await res.json());
+      } catch (e) {
+        document.getElementById('term').textContent = 'Fetch failed — run:\n  python scripts/sim_tether_rectifier.py --stream --serve 8765\n\n' + e;
+      }
+    };
+  </script>
+</body>
+</html>

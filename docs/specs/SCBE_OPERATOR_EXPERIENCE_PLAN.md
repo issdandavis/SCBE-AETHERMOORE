@@ -13,7 +13,7 @@ lane so it can be routed, reviewed, and merged without colliding with CLI code.
 ## Research Inputs
 
 The strongest current patterns across Codex CLI, Claude Code, GitHub Copilot
-CLI, and Hermes-style agent shells are:
+CLI, and similar agent shells are:
 
 - One command starts the daily-driver shell.
 - Slash commands expose repeatable workflows.
