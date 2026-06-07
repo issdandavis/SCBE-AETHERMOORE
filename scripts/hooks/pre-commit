@@ -40,6 +40,11 @@ def staged_files() -> list[str]:
 def check_secrets(files: list[str]) -> list[tuple[str, str, str]]:
     found = []
     for filepath in files:
+        # Skip anything that isn't a regular file: submodule gitlinks resolve to a
+        # directory (open() -> IsADirectoryError/PermissionError), and deleted/staged-
+        # away paths don't exist. Only scan real file content for secrets.
+        if not Path(filepath).is_file():
+            continue
         try:
             with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
@@ -47,7 +52,7 @@ def check_secrets(files: list[str]) -> list[tuple[str, str, str]]:
                 for m in re.findall(pattern, content):
                     if "[SCRUBBED" not in m:
                         found.append((filepath, name, m[:20] + "..."))
-        except FileNotFoundError:
+        except OSError:
             pass
     return found
 
