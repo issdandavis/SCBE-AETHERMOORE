@@ -16,6 +16,7 @@ range B (100M -> 150M), which keeps information asymmetry visible.
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import math
 import sys
@@ -36,8 +37,9 @@ from scripts.research.run_field_branch_gate_search import (  # noqa: E402
     score_spec,
 )
 from scripts.research.run_field_gate_oos_validate import spec_from_report  # noqa: E402
-from scripts.research.run_field_gate_threshold_sensitivity import fresh_rows  # noqa: E402
-
+from scripts.research.run_field_gate_threshold_sensitivity import (
+    fresh_rows,
+)  # noqa: E402
 
 DEFAULT_OUT_DIR = Path("artifacts/prime_search_engine_bench")
 DEFAULT_ROW_CACHE_DIR = Path("artifacts/prime_fog_row_cache")
@@ -132,9 +134,45 @@ class BranchPath:
     positives: int
 
 
-def row_cache_path(cache_dir: Path, limit: int, window: int, history: int, anchor_threshold: float) -> Path:
+def row_cache_path(
+    cache_dir: Path, limit: int, window: int, history: int, anchor_threshold: float
+) -> Path:
     threshold = str(anchor_threshold).replace(".", "p")
     return cache_dir / f"field_rows_l{limit}_w{window}_h{history}_a{threshold}.json"
+
+
+def _row_cache_gz_path(base_path: Path) -> Path:
+    """Gzip sibling of a base ``.json`` cache path (``...json`` -> ``...json.gz``)."""
+    return base_path.with_name(base_path.name + ".gz")
+
+
+def row_cache_exists(base_path: Path) -> bool:
+    """True if either the gzip cache or a legacy plain-json cache is present."""
+    return _row_cache_gz_path(base_path).exists() or base_path.exists()
+
+
+def read_cached_rows(base_path: Path) -> list[dict[str, Any]]:
+    """Load cached rows, preferring gzip (``.json.gz``); fall back to legacy plain ``.json``."""
+    gz_path = _row_cache_gz_path(base_path)
+    if gz_path.exists():
+        with gzip.open(gz_path, "rt", encoding="utf-8") as handle:
+            return json.load(handle)
+    if base_path.exists():
+        return json.loads(base_path.read_text(encoding="utf-8"))
+    raise FileNotFoundError(f"missing row cache: {gz_path} (and legacy {base_path})")
+
+
+def write_cached_rows(base_path: Path, rows: list[dict[str, Any]]) -> Path:
+    """Write rows as compact gzip JSON, atomically (tmp + rename). Returns the path written."""
+    gz_path = _row_cache_gz_path(base_path)
+    gz_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = gz_path.with_name(gz_path.name + ".tmp")
+    with gzip.open(tmp_path, "wt", encoding="utf-8") as handle:
+        json.dump(rows, handle, separators=(",", ":"))
+    tmp_path.replace(
+        gz_path
+    )  # atomic on POSIX and Windows; no partial file for concurrent readers
+    return gz_path
 
 
 def build_or_load_rows(
@@ -146,20 +184,19 @@ def build_or_load_rows(
     use_cache: bool,
 ) -> list[dict[str, Any]]:
     cache_path = row_cache_path(cache_dir, limit, window, history, anchor_threshold)
-    if use_cache and cache_path.exists():
+    if use_cache and row_cache_exists(cache_path):
         print(f"Loading cached rows: {cache_path}", flush=True)
-        return json.loads(cache_path.read_text(encoding="utf-8"))
+        return read_cached_rows(cache_path)
     rows = build_rows(limit, window, history, anchor_threshold)
     if use_cache:
-        cache_dir.mkdir(parents=True, exist_ok=True)
-        cache_path.write_text(json.dumps(rows, indent=2) + "\n", encoding="utf-8")
+        write_cached_rows(cache_path, rows)
     return rows
 
 
 def safe_float(value: Any, default: float = 0.0) -> float:
     try:
         out = float(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return default
     if math.isnan(out) or math.isinf(out):
         return default
@@ -183,7 +220,10 @@ def cmpssz_log_zone_score(row: dict[str, Any]) -> float:
     phase = safe_float(row.get("cmpssz_phase_coherence", 0.0))
     spectral = min(1.0, safe_float(row.get("cmpssz_spectral_anomaly", 0.0)) / 3.0)
     symmetry = min(1.0, (0.55 * adj) + (0.35 * triplet) + (0.10 * non_adj))
-    density = min(1.0, safe_float(row.get("cassette_channel", 0.0)) + (0.35 * adj) + (0.20 * triplet))
+    density = min(
+        1.0,
+        safe_float(row.get("cassette_channel", 0.0)) + (0.35 * adj) + (0.20 * triplet),
+    )
     background_penalty = 0.35 * non_adj * max(0.0, 1.0 - adj)
     return (
         _log_floor(symmetry)
@@ -216,7 +256,9 @@ def feature_vector(row: dict[str, Any]) -> list[float]:
         "profile_igct_c4_g5": profile_score(row, "igct_c4_g5"),
         "profile_igct_c4_g6": profile_score(row, "igct_c4_g6"),
         # Poincaré disk topological type features (scale-invariant)
-        "gravity_score_normalized": safe_float(row.get("gravity_score_normalized", 0.0)),
+        "gravity_score_normalized": safe_float(
+            row.get("gravity_score_normalized", 0.0)
+        ),
         "topo_score": safe_float(row.get("topo_score", 0.0)),
         "topo_asymmetry": safe_float(row.get("topo_asymmetry", 0.0)),
         "topo_confidence": safe_float(row.get("topo_confidence", 0.0)),
@@ -238,7 +280,9 @@ def feature_vector(row: dict[str, Any]) -> list[float]:
         "cmpssz_spectral_anomaly": safe_float(row.get("cmpssz_spectral_anomaly", 0.0)),
         "cmpssz_log_zone_score": cmpssz_log_zone_score(row),
     }
-    return [channels[name] for name in CHANNEL_FEATURES] + [derived[name] for name in DERIVED_FEATURES]
+    return [channels[name] for name in CHANNEL_FEATURES] + [
+        derived[name] for name in DERIVED_FEATURES
+    ]
 
 
 def matrix(rows: list[dict[str, Any]]) -> list[list[float]]:
@@ -285,7 +329,9 @@ def linear_scores(model: LinearModel, x_rows: list[list[float]]) -> list[float]:
     scores = []
     for raw in x_rows:
         z = zrow(raw, model.means, model.scales)
-        scores.append(model.bias + sum(weight * value for weight, value in zip(model.weights, z)))
+        scores.append(
+            model.bias + sum(weight * value for weight, value in zip(model.weights, z))
+        )
     return scores
 
 
@@ -322,15 +368,21 @@ def best_split(
     best: tuple[int, float, list[int], list[int], float] | None = None
     width = len(x_rows[0]) if x_rows else 0
     for feature_index in range(width):
-        thresholds = quantile_thresholds([x_rows[index][feature_index] for index in indexes], bins)
+        thresholds = quantile_thresholds(
+            [x_rows[index][feature_index] for index in indexes], bins
+        )
         for threshold in thresholds:
-            left = [index for index in indexes if x_rows[index][feature_index] <= threshold]
-            right = [index for index in indexes if x_rows[index][feature_index] > threshold]
+            left = [
+                index for index in indexes if x_rows[index][feature_index] <= threshold
+            ]
+            right = [
+                index for index in indexes if x_rows[index][feature_index] > threshold
+            ]
             if len(left) < min_leaf or len(right) < min_leaf:
                 continue
-            child_impurity = (len(left) / len(indexes)) * gini_impurity(y_rows, left) + (
-                len(right) / len(indexes)
-            ) * gini_impurity(y_rows, right)
+            child_impurity = (len(left) / len(indexes)) * gini_impurity(
+                y_rows, left
+            ) + (len(right) / len(indexes)) * gini_impurity(y_rows, right)
             gain = parent - child_impurity
             if best is None or gain > best[4]:
                 best = (feature_index, threshold, left, right, gain)
@@ -360,8 +412,12 @@ def fit_tree(
         positives=positives,
         feature_index=feature_index,
         threshold=threshold,
-        left=fit_tree(x_rows, y_rows, left_indexes, depth + 1, max_depth, min_leaf, bins),
-        right=fit_tree(x_rows, y_rows, right_indexes, depth + 1, max_depth, min_leaf, bins),
+        left=fit_tree(
+            x_rows, y_rows, left_indexes, depth + 1, max_depth, min_leaf, bins
+        ),
+        right=fit_tree(
+            x_rows, y_rows, right_indexes, depth + 1, max_depth, min_leaf, bins
+        ),
     )
 
 
@@ -388,9 +444,13 @@ def collect_branch_paths(
     path: tuple[tuple[int, str, float], ...] = (),
 ) -> list[BranchPath]:
     if node.feature_index is None or node.threshold is None:
-        path_id = " AND ".join(
-            f"{FEATURE_NAMES[index]} {op} {threshold:.6g}" for index, op, threshold in path
-        ) or "TRUE"
+        path_id = (
+            " AND ".join(
+                f"{FEATURE_NAMES[index]} {op} {threshold:.6g}"
+                for index, op, threshold in path
+            )
+            or "TRUE"
+        )
         return [
             BranchPath(
                 path_id=path_id,
@@ -402,9 +462,17 @@ def collect_branch_paths(
         ]
     out: list[BranchPath] = []
     if node.left is not None:
-        out.extend(collect_branch_paths(node.left, path + ((node.feature_index, "<=", node.threshold),)))
+        out.extend(
+            collect_branch_paths(
+                node.left, path + ((node.feature_index, "<=", node.threshold),)
+            )
+        )
     if node.right is not None:
-        out.extend(collect_branch_paths(node.right, path + ((node.feature_index, ">", node.threshold),)))
+        out.extend(
+            collect_branch_paths(
+                node.right, path + ((node.feature_index, ">", node.threshold),)
+            )
+        )
     return out
 
 
@@ -432,21 +500,31 @@ def fit_score_normalizer(scores: list[float]) -> tuple[float, float]:
     return mean, math.sqrt(variance) or 1.0
 
 
-def apply_score_normalizer(scores: list[float], mean: float, scale: float) -> list[float]:
-    return [NEG_INF if score <= NEG_INF / 10 else (score - mean) / scale for score in scores]
+def apply_score_normalizer(
+    scores: list[float], mean: float, scale: float
+) -> list[float]:
+    return [
+        NEG_INF if score <= NEG_INF / 10 else (score - mean) / scale for score in scores
+    ]
 
 
-def blend_scores(score_columns: list[list[float]], weights: tuple[float, ...]) -> list[float]:
+def blend_scores(
+    score_columns: list[list[float]], weights: tuple[float, ...]
+) -> list[float]:
     blended = []
     for values in zip(*score_columns):
         if any(value <= NEG_INF / 10 for value in values):
             blended.append(NEG_INF)
         else:
-            blended.append(sum(weight * value for weight, value in zip(weights, values)))
+            blended.append(
+                sum(weight * value for weight, value in zip(weights, values))
+            )
     return blended
 
 
-def add_tie_break(scores: list[float], tie_breakers: list[float], scale: float = 1.0e-6) -> list[float]:
+def add_tie_break(
+    scores: list[float], tie_breakers: list[float], scale: float = 1.0e-6
+) -> list[float]:
     out = []
     for score, tie_breaker in zip(scores, tie_breakers):
         if score <= NEG_INF / 10:
@@ -479,7 +557,10 @@ def selected_top_rows(
     for row in ranked:
         if scores[id(row)] <= NEG_INF / 10:
             continue
-        if min_scan_gap and any(abs(row["scan_idx"] - prior["scan_idx"]) < min_scan_gap for prior in selected):
+        if min_scan_gap and any(
+            abs(row["scan_idx"] - prior["scan_idx"]) < min_scan_gap
+            for prior in selected
+        ):
             continue
         if unique_anchors_only:
             anchor = row.get("first_anchor_prime")
@@ -504,7 +585,13 @@ def metrics_for_scores(
 ) -> dict[str, Any]:
     positives = sum(1 for row in rows if row["future_anchor"])
     base_rate = positives / len(rows) if rows else 0.0
-    top = selected_top_rows(rows, scores, top_n, min_scan_gap=min_scan_gap, unique_anchors_only=unique_anchors_only)
+    top = selected_top_rows(
+        rows,
+        scores,
+        top_n,
+        min_scan_gap=min_scan_gap,
+        unique_anchors_only=unique_anchors_only,
+    )
     top_hits = sum(1 for row in top if row["future_anchor"])
 
     # Unique anchor counting: how many distinct future numbers are covered by top-N hits.
@@ -538,7 +625,8 @@ def metrics_for_scores(
         {
             r.get("first_anchor_idx", r.get("first_anchor_prime"))
             for r in rows
-            if r.get("future_anchor") and r.get("first_anchor_idx", r.get("first_anchor_prime")) is not None
+            if r.get("future_anchor")
+            and r.get("first_anchor_idx", r.get("first_anchor_prime")) is not None
         }
     )
 
@@ -562,8 +650,14 @@ def metrics_for_scores(
         "unique_anchors_total": unique_anchors_total,
         "duplicate_anchor_hits": duplicate_anchor_hits,
         "unique_anchor_rate": round(unique_anchor_hits / len(top), 6) if top else 0.0,
-        "unique_anchor_recall": round(unique_anchor_hits / unique_anchors_total, 6) if unique_anchors_total else 0.0,
-        "lift": round((top_hits / len(top)) / base_rate, 6) if top and base_rate else 0.0,
+        "unique_anchor_recall": (
+            round(unique_anchor_hits / unique_anchors_total, 6)
+            if unique_anchors_total
+            else 0.0
+        ),
+        "lift": (
+            round((top_hits / len(top)) / base_rate, 6) if top and base_rate else 0.0
+        ),
         "average_precision": round(precision_sum / positives, 6) if positives else 0.0,
         "min_scan_gap": min_scan_gap,
         "hidden_numbers": hidden_numbers,
@@ -604,8 +698,20 @@ def evaluate_candidate(
         "name": name,
         "family": family,
         "params": params or {},
-        "range_a": metrics_for_scores(rows_a, score_dict(rows_a, scores_a), top_n, min_scan_gap=min_scan_gap, unique_anchors_only=unique_anchors_only),
-        "range_b": metrics_for_scores(rows_b, score_dict(rows_b, scores_b), top_n, min_scan_gap=min_scan_gap, unique_anchors_only=unique_anchors_only),
+        "range_a": metrics_for_scores(
+            rows_a,
+            score_dict(rows_a, scores_a),
+            top_n,
+            min_scan_gap=min_scan_gap,
+            unique_anchors_only=unique_anchors_only,
+        ),
+        "range_b": metrics_for_scores(
+            rows_b,
+            score_dict(rows_b, scores_b),
+            top_n,
+            min_scan_gap=min_scan_gap,
+            unique_anchors_only=unique_anchors_only,
+        ),
     }
 
 
@@ -638,7 +744,9 @@ def choose_by_range_b(candidates: list[dict[str, Any]]) -> dict[str, Any]:
     )[0]
 
 
-def method_family_diverse(methods: list[dict[str, Any]], top_k: int) -> list[dict[str, Any]]:
+def method_family_diverse(
+    methods: list[dict[str, Any]], top_k: int
+) -> list[dict[str, Any]]:
     selected: list[dict[str, Any]] = []
     seen_families: set[str] = set()
     for method in ranked_by_range_a(methods):
@@ -685,8 +793,12 @@ def evaluate_rrf_ensemble(
     rank_constant: int,
     unique_anchors_only: bool = False,
 ) -> dict[str, Any]:
-    scores_a = rrf_scores_from_top_rows(rows_a, selected_methods, "range_a", rank_constant)
-    scores_b = rrf_scores_from_top_rows(rows_b, selected_methods, "range_b", rank_constant)
+    scores_a = rrf_scores_from_top_rows(
+        rows_a, selected_methods, "range_a", rank_constant
+    )
+    scores_b = rrf_scores_from_top_rows(
+        rows_b, selected_methods, "range_b", rank_constant
+    )
     return evaluate_candidate(
         name=name,
         family="rrf_ensemble",
@@ -832,7 +944,9 @@ def report_baseline_profile(
     }
 
 
-def split_ordered_rows(rows: list[dict[str, Any]], fit_fraction: float) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def split_ordered_rows(
+    rows: list[dict[str, Any]], fit_fraction: float
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     ordered = sorted(rows, key=lambda row: row["scan_idx"])
     split_at = max(1, min(len(ordered) - 1, int(len(ordered) * fit_fraction)))
     return ordered[:split_at], ordered[split_at:]
@@ -895,7 +1009,11 @@ def build_known_unknown_catalog(
             if number.get("anchor_idx", number.get("anchor_prime")) is not None
         }
     for anchor_id, item in catalog.items():
-        item["found_by"] = [method_name for method_name, found_ids in found_lookup.items() if anchor_id in found_ids]
+        item["found_by"] = [
+            method_name
+            for method_name, found_ids in found_lookup.items()
+            if anchor_id in found_ids
+        ]
     return sorted(
         catalog.values(),
         key=lambda item: (
@@ -993,7 +1111,9 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
                 "| ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
             ]
         )
-        hidden_numbers = item["range_b"].get("hidden_numbers", [])[: report["config"]["top_n"]]
+        hidden_numbers = item["range_b"].get("hidden_numbers", [])[
+            : report["config"]["top_n"]
+        ]
         if not hidden_numbers:
             lines.append("| - | - | - | - | - | - | - |")
         for number in hidden_numbers:
@@ -1019,7 +1139,9 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
             "| ---: | ---: | ---: | ---: | --- | --- |",
         ]
     )
-    for item in report.get("known_unknown_catalog", [])[: min(40, len(report.get("known_unknown_catalog", [])))]:
+    for item in report.get("known_unknown_catalog", [])[
+        : min(40, len(report.get("known_unknown_catalog", [])))
+    ]:
         lead_range = f"{item.get('min_lead_steps')}..{item.get('max_lead_steps')}"
         lines.append(
             "| {anchor_idx} | {anchor_prime} | {anchor_ratio} | {candidate_rows} | {lead_range} | {found_by} |".format(
@@ -1071,8 +1193,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if not range_a_all or not range_b:
         raise RuntimeError("empty benchmark range; increase limits")
     fit_a, range_a = split_ordered_rows(range_a_all, args.fit_fraction)
-    range_a_full_label = f"{args.limit_a_boundary // 1_000_000}M-{args.limit_a_test // 1_000_000}M"
-    range_b_label = f"{args.limit_a_test // 1_000_000}M-{args.limit_b_test // 1_000_000}M"
+    range_a_full_label = (
+        f"{args.limit_a_boundary // 1_000_000}M-{args.limit_a_test // 1_000_000}M"
+    )
+    range_b_label = (
+        f"{args.limit_a_test // 1_000_000}M-{args.limit_b_test // 1_000_000}M"
+    )
 
     print(
         f"Range A fit rows: {len(fit_a):,}; Range A select rows: {len(range_a):,}; Range B rows: {len(range_b):,}",
@@ -1091,7 +1217,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     frozen_b_z = apply_score_normalizer(frozen_b, frozen_mean, frozen_scale)
 
     candidates: list[dict[str, Any]] = []
-    gap_values = tuple(int(value) for value in args.scan_gaps.split(",") if value.strip())
+    gap_values = tuple(
+        int(value) for value in args.scan_gaps.split(",") if value.strip()
+    )
 
     for gap in gap_values:
         candidates.append(
@@ -1148,11 +1276,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 (
                     f"tree_d{max_depth}_leaf{min_leaf}",
                     tree,
-                    {"max_depth": max_depth, "min_leaf": min_leaf, "bins": args.tree_bins},
+                    {
+                        "max_depth": max_depth,
+                        "min_leaf": min_leaf,
+                        "bins": args.tree_bins,
+                    },
                 )
             )
 
-    tree_score_columns: list[tuple[str, list[float], list[float], dict[str, Any], TreeNode]] = []
+    tree_score_columns: list[
+        tuple[str, list[float], list[float], dict[str, Any], TreeNode]
+    ] = []
     for name, tree, params in tree_candidates:
         scores_fit = tree_scores(tree, x_fit)
         scores_a = tree_scores(tree, x_a)
@@ -1174,7 +1308,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     scores_b=ranked_scores_b,
                     top_n=args.top_n,
                     min_scan_gap=gap,
-                unique_anchors_only=_ua,
+                    unique_anchors_only=_ua,
                     params={**params, "scan_gap": gap},
                 )
             )
@@ -1204,13 +1338,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         scores_b=blend_b,
                         top_n=args.top_n,
                         min_scan_gap=gap,
-                unique_anchors_only=_ua,
-                        params={"weights": weights, "tree": tree_params, "scan_gap": gap},
+                        unique_anchors_only=_ua,
+                        params={
+                            "weights": weights,
+                            "tree": tree_params,
+                            "scan_gap": gap,
+                        },
                     )
                 )
 
     # Two-stage retrieval: candidate generator first, frozen gate reranker second.
-    candidate_fractions = tuple(float(value) for value in args.candidate_fractions.split(",") if value.strip())
+    candidate_fractions = tuple(
+        float(value) for value in args.candidate_fractions.split(",") if value.strip()
+    )
     for fraction in candidate_fractions:
         mask_a = top_fraction_mask(centroid_a, fraction)
         mask_b = top_fraction_mask(centroid_b, fraction)
@@ -1227,8 +1367,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     scores_b=rerank_b,
                     top_n=args.top_n,
                     min_scan_gap=gap,
-                unique_anchors_only=_ua,
-                    params={"candidate_fraction": fraction, "reranker": "frozen_gate", "scan_gap": gap},
+                    unique_anchors_only=_ua,
+                    params={
+                        "candidate_fraction": fraction,
+                        "reranker": "frozen_gate",
+                        "scan_gap": gap,
+                    },
                 )
             )
 
@@ -1252,7 +1396,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         scores_b=branch_b,
                         top_n=args.top_n,
                         min_scan_gap=gap,
-                unique_anchors_only=_ua,
+                        unique_anchors_only=_ua,
                         params={
                             "tree": tree_params,
                             "scan_gap": gap,
@@ -1264,7 +1408,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 )
 
     baseline_methods = [
-        report_baseline_profile(range_a, range_b, profile, args.top_n) for profile in LEADER_PROFILES
+        report_baseline_profile(range_a, range_b, profile, args.top_n)
+        for profile in LEADER_PROFILES
     ]
     frozen_gate = evaluate_candidate(
         name="frozen_gate",
@@ -1294,8 +1439,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         unique_anchors_only=_ua,
         params={"channels": "shadow+gradient+peak_lag"},
     )
-    frozen_plus_lambda_a = score_frozen_plus_lambda(range_a, frozen_spec, lambda_weight=0.3)
-    frozen_plus_lambda_b = score_frozen_plus_lambda(range_b, frozen_spec, lambda_weight=0.3)
+    frozen_plus_lambda_a = score_frozen_plus_lambda(
+        range_a, frozen_spec, lambda_weight=0.3
+    )
+    frozen_plus_lambda_b = score_frozen_plus_lambda(
+        range_b, frozen_spec, lambda_weight=0.3
+    )
     frozen_plus_lambda = evaluate_candidate(
         name="frozen_plus_lambda_w0.3",
         family="lambda_shadow",
@@ -1325,8 +1474,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         unique_anchors_only=_ua,
         params={"channels": "ramp+return+edge_var+attractor"},
     )
-    frozen_plus_graph_a = score_frozen_plus_graph(range_a, frozen_spec, graph_weight=0.3)
-    frozen_plus_graph_b = score_frozen_plus_graph(range_b, frozen_spec, graph_weight=0.3)
+    frozen_plus_graph_a = score_frozen_plus_graph(
+        range_a, frozen_spec, graph_weight=0.3
+    )
+    frozen_plus_graph_b = score_frozen_plus_graph(
+        range_b, frozen_spec, graph_weight=0.3
+    )
     frozen_plus_graph = evaluate_candidate(
         name="frozen_plus_graph_w0.3",
         family="graph_map",
@@ -1356,8 +1509,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         unique_anchors_only=_ua,
         params={"score": "log_floor(symmetry,phase,density,spectral)-background_n7"},
     )
-    frozen_plus_cmpssz_a = score_frozen_plus_cmpssz(range_a, frozen_spec, cmpssz_weight=0.3)
-    frozen_plus_cmpssz_b = score_frozen_plus_cmpssz(range_b, frozen_spec, cmpssz_weight=0.3)
+    frozen_plus_cmpssz_a = score_frozen_plus_cmpssz(
+        range_a, frozen_spec, cmpssz_weight=0.3
+    )
+    frozen_plus_cmpssz_b = score_frozen_plus_cmpssz(
+        range_b, frozen_spec, cmpssz_weight=0.3
+    )
     frozen_plus_cmpssz = evaluate_candidate(
         name="frozen_plus_cmpssz_w0.3",
         family="cmpssz",
@@ -1374,12 +1531,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     pre_ensemble_methods = [frozen_gate, *baseline_methods, *candidates]
     ensemble_candidates: list[dict[str, Any]] = []
-    ensemble_top_k = tuple(int(value) for value in args.ensemble_top_k.split(",") if value.strip())
-    rrf_constants = tuple(int(value) for value in args.rrf_constants.split(",") if value.strip())
+    ensemble_top_k = tuple(
+        int(value) for value in args.ensemble_top_k.split(",") if value.strip()
+    )
+    rrf_constants = tuple(
+        int(value) for value in args.rrf_constants.split(",") if value.strip()
+    )
     ranked_methods = ranked_by_range_a(pre_ensemble_methods)
     for top_k in ensemble_top_k:
         selected_plain = ranked_methods[: max(1, min(top_k, len(ranked_methods)))]
-        selected_diverse = method_family_diverse(pre_ensemble_methods, max(1, min(top_k, len(pre_ensemble_methods))))
+        selected_diverse = method_family_diverse(
+            pre_ensemble_methods, max(1, min(top_k, len(pre_ensemble_methods)))
+        )
         for rank_constant in rrf_constants:
             ensemble_candidates.append(
                 evaluate_rrf_ensemble(
@@ -1481,7 +1644,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "The oracle row is diagnostic and not a blind result."
         ),
     }
-    (out_dir / "latest_report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    (out_dir / "latest_report.json").write_text(
+        json.dumps(report, indent=2) + "\n", encoding="utf-8"
+    )
     (out_dir / "hidden_numbers_latest.json").write_text(
         json.dumps(report["hidden_number_maps"], indent=2) + "\n",
         encoding="utf-8",
@@ -1496,8 +1661,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--report", default="artifacts/prime_fog_branch_gate/latest_report.json")
-    parser.add_argument("--selector", choices=["holdout", "train", "full"], default="holdout")
+    parser.add_argument(
+        "--report", default="artifacts/prime_fog_branch_gate/latest_report.json"
+    )
+    parser.add_argument(
+        "--selector", choices=["holdout", "train", "full"], default="holdout"
+    )
     parser.add_argument("--limit-a-boundary", type=int, default=50_000_000)
     parser.add_argument("--limit-a-test", type=int, default=100_000_000)
     parser.add_argument("--limit-b-test", type=int, default=150_000_000)
@@ -1516,7 +1685,12 @@ def main() -> int:
     parser.add_argument("--keep-all-candidates", type=int, default=80)
     parser.add_argument("--row-cache-dir", default=str(DEFAULT_ROW_CACHE_DIR))
     parser.add_argument("--no-row-cache", action="store_true")
-    parser.add_argument("--unique-anchors", dest="unique_anchors_only", action="store_true", default=False)
+    parser.add_argument(
+        "--unique-anchors",
+        dest="unique_anchors_only",
+        action="store_true",
+        default=False,
+    )
     parser.add_argument("--out-dir", default=str(DEFAULT_OUT_DIR))
     args = parser.parse_args()
 
