@@ -50,7 +50,28 @@ def test_tongue_compile_and_run_bounded_vm() -> None:
     compile_payload = json.loads(compiled.stdout)
     assert compile_payload["schema_version"] == "scbe_tongues_toolchain_compile_v1"
     assert compile_payload["instruction_count"] == 5
-    assert compile_payload["bytecode"] == [5, 0, 2, 0, 5, 1, 3, 0, 16, 2, 0, 1, 7, 2, 0, 0, 1, 0, 0, 0]
+    assert compile_payload["bytecode"] == [
+        5,
+        0,
+        2,
+        0,
+        5,
+        1,
+        3,
+        0,
+        16,
+        2,
+        0,
+        1,
+        7,
+        2,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+    ]
 
     executed = _run_cli("tongue-run", "--content", program, "--json")
     assert executed.returncode == 0, executed.stderr
@@ -62,7 +83,9 @@ def test_tongue_compile_and_run_bounded_vm() -> None:
 
 
 def test_tongue_run_rejects_unbounded_loop() -> None:
-    executed = _run_cli("tongue-run", "--content", "loop:\nko:jmp loop", "--max-steps", "3", "--json")
+    executed = _run_cli(
+        "tongue-run", "--content", "loop:\nko:jmp loop", "--max-steps", "3", "--json"
+    )
     assert executed.returncode == 2
     assert "execution exceeded max_steps=3" in executed.stderr
 
@@ -70,7 +93,9 @@ def test_tongue_run_rejects_unbounded_loop() -> None:
 def test_xlate_cmd_preserves_payload() -> None:
     encoded = _run_cli("encode-cmd", "--tongue", "KO", "abc")
     assert encoded.returncode == 0, encoded.stderr
-    translated = _run_cli("xlate-cmd", "--src", "KO", "--dst", "AV", encoded.stdout.strip())
+    translated = _run_cli(
+        "xlate-cmd", "--src", "KO", "--dst", "AV", encoded.stdout.strip()
+    )
     assert translated.returncode == 0, translated.stderr
     decoded = _run_cli("decode-cmd", "--tongue", "AV", translated.stdout.strip())
     assert decoded.returncode == 0, decoded.stderr
@@ -102,7 +127,9 @@ def test_xlate_cmd_pairwise_lattice_preserves_payload() -> None:
         encoded = _run_cli("encode-cmd", "--tongue", src, payload)
         assert encoded.returncode == 0, f"{src}: {encoded.stderr}"
         for dst in tongues:
-            translated = _run_cli("xlate-cmd", "--src", src, "--dst", dst, encoded.stdout.strip())
+            translated = _run_cli(
+                "xlate-cmd", "--src", src, "--dst", dst, encoded.stdout.strip()
+            )
             assert translated.returncode == 0, f"{src}->{dst}: {translated.stderr}"
             decoded = _run_cli("decode-cmd", "--tongue", dst, translated.stdout.strip())
             assert decoded.returncode == 0, f"{src}->{dst}: {decoded.stderr}"
@@ -125,7 +152,9 @@ def test_xlate_cmd_multihop_chain_preserves_payload() -> None:
 
 
 def test_binary_to_tokenizer_maps_bits_to_tokens_and_prime_language() -> None:
-    result = _run_cli("binary-to-tokenizer", "--tongue", "KO", "--json", "01101000 01101001")
+    result = _run_cli(
+        "binary-to-tokenizer", "--tongue", "KO", "--json", "01101000 01101001"
+    )
     assert result.returncode == 0, result.stderr
     mapping = json.loads(result.stdout)
     assert mapping["version"] == "geoseal-binary-tokenizer-map-v1"
@@ -145,7 +174,9 @@ def test_binary_to_tokenizer_maps_bits_to_tokens_and_prime_language() -> None:
 
 
 def test_binary_to_tokenizer_accepts_bits_flag() -> None:
-    result = _run_cli("binary-to-tokenizer", "--tongue", "KO", "--bits", "01101000 01101001", "--json")
+    result = _run_cli(
+        "binary-to-tokenizer", "--tongue", "KO", "--bits", "01101000 01101001", "--json"
+    )
     assert result.returncode == 0, result.stderr
     mapping = json.loads(result.stdout)
     assert mapping["byte_count"] == 2
@@ -168,6 +199,116 @@ def test_binary_to_tokenizer_flags_language_mismatch() -> None:
     assert mapping["prime_language"] == "c"
     assert mapping["requested_language"] == "python"
     assert mapping["language_matches_prime"] is False
+
+
+def test_prime_atlas_lookup_json_for_known_index() -> None:
+    result = _run_cli("prime-atlas", "10000", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["version"] == "geoseal-prime-atlas-lookup-v1"
+    assert (
+        payload["truth_contract"]
+        == "lookup_only_known_primes_not_a_new_primality_oracle"
+    )
+    assert (
+        payload["field_status"]["global_prime_composite_balance"]["status"]
+        == "FACT_AGGREGATE"
+    )
+    assert (
+        payload["field_status"]["prime_composite_phase"]["status"] == "FACT_AGGREGATE"
+    )
+    assert (
+        payload["field_status"]["small_factor_pressure"]["status"] == "FACT_AGGREGATE"
+    )
+    assert (
+        "separates"
+        in payload["field_status"]["prime_composite_phase"]["null_gate_required_for"]
+    )
+    assert payload["query"]["start_index"] == 10000
+    assert payload["query"]["count"] == 1
+
+    row = payload["rows"][0]
+    assert row["index"] == 10000
+    assert row["prime"] == 104729
+    assert row["gaps"]["previous"] == 6
+    assert row["gaps"]["next"] == 14
+    assert row["scale"]["log_value"] > 11.0
+    assert row["scale"]["next_gap_over_log"] > 0
+    assert row["scale"]["inverse_next_gap_scale"] > 0
+    assert row["residue_address"]["wheel_modulus"] == 30030
+    assert row["residue_address"]["wheel_lane"] == 104729 % 30030
+    assert row["nearby_known_structures"]["wheel_coprime"] is True
+    global_balance = row["global_prime_composite_balance"]
+    assert global_balance["pi_x"] == 10000
+    assert global_balance["composite_count"] == 94728
+    assert global_balance["special_count"] == 1
+    assert global_balance["prime_to_composite_ratio"] > 0
+    assert global_balance["prime_fraction_positive_non_special"] < 0.1
+    phase = row["prime_composite_phase"]
+    assert phase["radius"] == 30
+    assert phase["integer_count"] == 61
+    assert phase["prime_count"] > 0
+    assert phase["nonprime_count"] > 0
+    assert phase["prime_to_nonprime_ratio"] > 0
+    assert phase["small_factor_pressure_mean"] > 0
+
+
+def test_prime_atlas_lookup_includes_proven_seed_region() -> None:
+    result = _run_cli(
+        "prime-atlas",
+        "10000",
+        "--include-region",
+        "--region-sample",
+        "2",
+        "--phase-radius",
+        "12",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    region = payload["seed_region"]
+    seed = region["seed"]
+    assert region["target_inside_window"] is True
+    assert region["target_value"] == 104729
+    assert region["known_prime_count"] > 0
+    assert seed["lower_bound"] <= 104729 <= seed["upper_bound"]
+    assert "guaranteed" in seed["coverage_contract"].lower()
+    assert any(row["index"] == 10000 for row in region["sample_rows"])
+    assert all(
+        row["prime_composite_phase"]["radius"] == 12 for row in region["sample_rows"]
+    )
+
+
+def test_browse_atlas_cli_builds_read_only_corridor_graph() -> None:
+    result = _run_cli(
+        "browse-atlas",
+        "--url",
+        "https://example.com",
+        "--title",
+        "Example Home",
+        "--goal",
+        "find contact page",
+        "--links-json",
+        json.dumps(
+            [
+                {"text": "Pricing", "href": "/pricing", "selector": "a.pricing"},
+                {"text": "Contact", "href": "/contact", "selector": "a.contact"},
+            ]
+        ),
+        "--buttons-json",
+        json.dumps([{"text": "Buy now", "selector": "button.buy"}]),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["schema_version"] == "aetherbrowser_corridor_atlas_v1"
+    assert payload["safety_contract"] == "read_only_map_no_clicks_no_form_submission"
+    assert payload["chosen_corridor"]["visible_label"] == "Contact"
+    assert payload["chosen_corridor"]["risk_level"] == "low"
+    assert (
+        payload["chosen_corridor"]["factor_address"]["encoding"]
+        == "prime_factor_address_v1"
+    )
 
 
 def test_atomic_shows_row_metadata() -> None:
@@ -201,7 +342,9 @@ def test_code_packet_emits_source_packet(tmp_path: Path) -> None:
     assert len(packet["language_views"]) == 6
     assert packet["braille_lane"]["version"] == "scbe-braille-cell-lane-v1"
     assert packet["braille_lane"]["binary_surface"]["cell_count"] > 0
-    assert packet["braille_lane"]["token_surface"]["token_count"] == len(packet["lexical_tokens"])
+    assert packet["braille_lane"]["token_surface"]["token_count"] == len(
+        packet["lexical_tokens"]
+    )
     assert packet["stisa"]["version"] == "scbe-stisa-surface-v1"
     assert len(packet["stisa"]["field_definitions"]) == 8
     assert len(packet["stisa"]["token_rows"]) == len(packet["lexical_tokens"])
@@ -213,13 +356,19 @@ def test_code_packet_emits_source_packet(tmp_path: Path) -> None:
     assert packet["scip_symbol_index"]["planned_provider"] == "scip"
     assert packet["semantic_token_bridge"]["provider"] == "tree_sitter_semantic_tokens"
     assert packet["semantic_token_bridge"]["planned_provider"] == "lsp_semantic_tokens"
-    assert packet["semantic_operation_signature"]["schema_version"] == "scbe-semantic-operation-signature-v1"
+    assert (
+        packet["semantic_operation_signature"]["schema_version"]
+        == "scbe-semantic-operation-signature-v1"
+    )
     assert packet["semantic_operation_signature"]["operation_path"] == [
         "function_definition/2",
         "return_flow",
         "arithmetic:add/2",
     ]
-    assert packet["semantic_expression"]["interchange_key"] == packet["semantic_operation_signature"]["interchange_key"]
+    assert (
+        packet["semantic_expression"]["interchange_key"]
+        == packet["semantic_operation_signature"]["interchange_key"]
+    )
     assert "def" in packet["lexical_tokens"]
     assert packet["route_ir"]["schema_version"] == "scbe_route_ir_v1"
     assert packet["route_ir"]["route"]["tongue"] == "KO"
@@ -227,11 +376,20 @@ def test_code_packet_emits_source_packet(tmp_path: Path) -> None:
     assert packet["route_ir"]["hashes"]["plan_sha256"]
     assert packet["execution_lane"]["schema_version"] == "scbe_execution_lane_v1"
     assert "binary" in packet["execution_lane"]["core_lanes"]
-    assert packet["native_tokenization"]["schema_version"] == "scbe_native_tokenization_surface_v1"
+    assert (
+        packet["native_tokenization"]["schema_version"]
+        == "scbe_native_tokenization_surface_v1"
+    )
     assert len(packet["native_tokenization"]["inputs"]) == 6
-    assert len(packet["native_tokenization"]["outputs"]) == len(packet["language_views"])
-    assert all(row["token_count"] > 0 for row in packet["native_tokenization"]["inputs"])
-    assert all("token_sha256" in row for row in packet["native_tokenization"]["outputs"])
+    assert len(packet["native_tokenization"]["outputs"]) == len(
+        packet["language_views"]
+    )
+    assert all(
+        row["token_count"] > 0 for row in packet["native_tokenization"]["inputs"]
+    )
+    assert all(
+        "token_sha256" in row for row in packet["native_tokenization"]["outputs"]
+    )
     assert packet["atomic_states"]
     assert packet["ternary_semantics"]["version"] == "scbe-ternary-semantics-v1"
     assert packet["ternary_semantics"]["checksum"]
@@ -395,9 +553,13 @@ def test_code_packet_scaffolds_structure_symbol_and_semantic_layers(
     assert "math" in packet["structural_parse"]["captures"]["imports"]
     assert "Greeter" in packet["structural_parse"]["captures"]["classes"]
     assert "area" in packet["structural_parse"]["captures"]["functions"]
-    definition_symbols = {item["symbol"] for item in packet["scip_symbol_index"]["symbols"]["definitions"]}
+    definition_symbols = {
+        item["symbol"] for item in packet["scip_symbol_index"]["symbols"]["definitions"]
+    }
     assert {"math", "Greeter", "area"} <= definition_symbols
-    token_types = {item["token_type"] for item in packet["semantic_token_bridge"]["tokens"]}
+    token_types = {
+        item["token_type"] for item in packet["semantic_token_bridge"]["tokens"]
+    }
     assert "keyword" in token_types
     assert "function" in token_types or "class" in token_types
     assert packet["scip_symbol_index"]["symbols"]["references"] == []
@@ -525,13 +687,21 @@ def test_interaction_graph_connects_source_tokens_atoms_and_views(
     assert any(node_id.startswith("spiral:") for node_id in node_ids)
     assert "view:KO:python" in node_ids
 
-    edge_triplets = {(edge["source"], edge["target"], edge["relation"]) for edge in graph["edges"]}
+    edge_triplets = {
+        (edge["source"], edge["target"], edge["relation"]) for edge in graph["edges"]
+    }
     assert ("source:program", "route:tongue:KO", "routes_to") in edge_triplets
     assert any(relation == "maps_to_stisa_row" for _, _, relation in edge_triplets)
     assert any(relation == "maps_to_atomic_state" for _, _, relation in edge_triplets)
-    assert any(relation == "projects_to_braille_cell" for _, _, relation in edge_triplets)
-    assert any(relation == "evolves_to_harmonic_state" for _, _, relation in edge_triplets)
-    assert any(relation == "projects_to_language_view" for _, _, relation in edge_triplets)
+    assert any(
+        relation == "projects_to_braille_cell" for _, _, relation in edge_triplets
+    )
+    assert any(
+        relation == "evolves_to_harmonic_state" for _, _, relation in edge_triplets
+    )
+    assert any(
+        relation == "projects_to_language_view" for _, _, relation in edge_triplets
+    )
     assert any(relation == "decomposes_to_quark" for _, _, relation in edge_triplets)
 
 
@@ -609,7 +779,9 @@ def test_topology_view_emits_polygons_chains_and_compass(tmp_path: Path) -> None
         "DR",
     ]
     add_binding = next(
-        entry for entry in topology["dictionaries"]["keyboard_command_map"] if entry["command_key"] == "add"
+        entry
+        for entry in topology["dictionaries"]["keyboard_command_map"]
+        if entry["command_key"] == "add"
     )
     assert add_binding["key_slot"] == "A1"
     assert add_binding["phase_operation"] == "arithmetic:add"
@@ -621,7 +793,9 @@ def test_topology_view_emits_polygons_chains_and_compass(tmp_path: Path) -> None
     assert active_bindings["anchor_command"]["command_key"] == "add"
     assert active_bindings["anchor_command"]["key_slot"] == "A1"
     assert active_bindings["anchor_command"]["topology_local_relevance_score"] > 0
-    assert any(entry["command_key"] == "sub" for entry in active_bindings["nearby_commands"])
+    assert any(
+        entry["command_key"] == "sub" for entry in active_bindings["nearby_commands"]
+    )
     assert topology["operative_command"]["command_key"] == "add"
     assert topology["operative_command"]["phase_operation"] == "arithmetic:add"
     assert topology["operative_command"]["key_slot"] == "A1"
@@ -639,7 +813,9 @@ def test_topology_view_emits_polygons_chains_and_compass(tmp_path: Path) -> None
         "binary_spine",
         "harmonic_spine",
     }
-    assert topology["summary"]["operative_command"]["phase_operation"] == "arithmetic:add"
+    assert (
+        topology["summary"]["operative_command"]["phase_operation"] == "arithmetic:add"
+    )
     assert topology["summary"]["route_packet"]["operative_command"] == "arithmetic:add"
     assert topology["cost_retro"]["objective"]["operative_command"] == "arithmetic:add"
     assert topology["cost_retro"]["totals"]["route_total_cost"] > 0
@@ -648,9 +824,14 @@ def test_topology_view_emits_polygons_chains_and_compass(tmp_path: Path) -> None
         "binary_spine",
         "harmonic_spine",
     }
-    assert topology["summary"]["cost_retro"]["route_total_cost"] == topology["cost_retro"]["totals"]["route_total_cost"]
+    assert (
+        topology["summary"]["cost_retro"]["route_total_cost"]
+        == topology["cost_retro"]["totals"]["route_total_cost"]
+    )
     assert any(node["kind"] == "data_polygon" for node in topology["nodes"])
-    assert any(edge["relation"] == "amino_backbone_traverse" for edge in topology["edges"])
+    assert any(
+        edge["relation"] == "amino_backbone_traverse" for edge in topology["edges"]
+    )
 
     polygon = topology["polygons"][0]
     assert polygon["token"]
@@ -697,8 +878,13 @@ def test_testing_cli_surfaces_route_packet_and_execution(tmp_path: Path) -> None
     assert payload["route_packet"]["stability_adjusted_route_score"] > 0
     assert payload["route_packet"]["route_confidence"] > 0
     assert payload["topology"]["route_packet"]["stability_adjusted_route_score"] > 0
-    assert payload["topology"]["operative_command"]["stability_adjusted_route_score"] > 0
-    assert payload["native_tokenization"]["schema_version"] == "scbe_testing_cli_native_tokenization_v1"
+    assert (
+        payload["topology"]["operative_command"]["stability_adjusted_route_score"] > 0
+    )
+    assert (
+        payload["native_tokenization"]["schema_version"]
+        == "scbe_testing_cli_native_tokenization_v1"
+    )
     assert payload["native_tokenization"]["input"]["token_count"] > 0
     assert "token_sha256" in payload["native_tokenization"]["output"]
 
@@ -727,7 +913,10 @@ def test_cross_domain_sequence_builds_near_related_field_steps(tmp_path: Path) -
     assert sequence["steps"][0]["phase_operation"] == "arithmetic:add"
     assert any(step["step_kind"] == "domain_projection" for step in sequence["steps"])
     assert any(step["domain"] == "mathematics" for step in sequence["steps"])
-    assert any(step["step_kind"] == "support_projection" and step["command_key"] == "sub" for step in sequence["steps"])
+    assert any(
+        step["step_kind"] == "support_projection" and step["command_key"] == "sub"
+        for step in sequence["steps"]
+    )
 
 
 def test_cross_domain_sequence_accepts_topology_view_artifact(tmp_path: Path) -> None:
@@ -786,8 +975,14 @@ def test_honeycomb_analysis_matches_outputs_and_tracks_remainders(
     assert analysis["feedback"]["stability_adjusted_route_score"] > 0
     assert analysis["feedback"]["route_confidence"] > 0
     assert set(analysis["feedback"]["stable_tongues"]) >= {"KO", "AV"}
-    assert any(cell["tongue"] == "KO" and cell["value"] == "10" for cell in analysis["numeric_cells"])
-    assert any(cell["tongue"] == "AV" and cell["value"] == "10" for cell in analysis["numeric_cells"])
+    assert any(
+        cell["tongue"] == "KO" and cell["value"] == "10"
+        for cell in analysis["numeric_cells"]
+    )
+    assert any(
+        cell["tongue"] == "AV" and cell["value"] == "10"
+        for cell in analysis["numeric_cells"]
+    )
 
 
 def test_project_scaffold_builds_pacman_style_web_project(tmp_path: Path) -> None:
@@ -810,7 +1005,9 @@ def test_project_scaffold_builds_pacman_style_web_project(tmp_path: Path) -> Non
     assert (output_dir / "style.css").exists()
     assert (output_dir / "game.js").exists()
     assert (output_dir / "project_manifest.json").exists()
-    manifest = json.loads((output_dir / "project_manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (output_dir / "project_manifest.json").read_text(encoding="utf-8")
+    )
     assert manifest["route_packet"]["command_key"] == "add"
     assert manifest["honeycomb_feedback"]["route_confidence"] > 0
     index_html = (output_dir / "index.html").read_text(encoding="utf-8")
@@ -930,7 +1127,10 @@ def test_cluster_and_formation_graphs_emit_cross_lattice_layers(tmp_path: Path) 
     assert formation.returncode == 0, formation.stderr
     formation_graph = json.loads(formation.stdout)
     assert formation_graph["version"] == "scbe-formation-graph-v1"
-    assert formation_graph["summary"]["formation_count"] == cluster_graph["summary"]["cluster_count"]
+    assert (
+        formation_graph["summary"]["formation_count"]
+        == cluster_graph["summary"]["cluster_count"]
+    )
     assert all(node["metadata"]["anchor_mode"] for node in formation_graph["nodes"])
     assert all(edge["metadata"]["cross_lattice"] for edge in formation_graph["edges"])
     assert all(edge["metadata"]["non_linear_grid"] for edge in formation_graph["edges"])
@@ -955,7 +1155,9 @@ def test_emit_json_bundle_shows_language_conlang_binary_and_tokenizer() -> None:
         "Draumric",
     } <= conlangs
     assert all(variant["binary"]["byte_count"] > 0 for variant in bundle["variants"])
-    assert all(variant["tokenizer"]["token_count"] > 0 for variant in bundle["variants"])
+    assert all(
+        variant["tokenizer"]["token_count"] > 0 for variant in bundle["variants"]
+    )
 
 
 def test_code_roundtrip_executes_rust_prime_lane(tmp_path: Path) -> None:
