@@ -73,7 +73,7 @@ def hyperbolic_distance(r1: float, r2: float) -> float:
     return 2.0 * math.atanh(num / den)
 
 
-def laplace_beltrami_eigenvalue(l: int) -> float:
+def laplace_beltrami_eigenvalue(angular_l: int) -> float:
     """
     Eigenvalue of the Laplace-Beltrami operator on H³ for angular momentum l.
 
@@ -81,10 +81,10 @@ def laplace_beltrami_eigenvalue(l: int) -> float:
     This gives the quantisation ladder: -1, -4, -9, -16, -25, -36
     for l = 0..5 — one per GeoSeed tongue.
     """
-    return -float((l + 1) ** 2)
+    return -float((angular_l + 1) ** 2)
 
 
-def radial_wavefunction(rho: float, l: int, n_radial: int = 1) -> float:
+def radial_wavefunction(rho: float, angular_l: int, n_radial: int = 1) -> float:
     """
     Radial part of the hyperbolic orbital wavefunction.
 
@@ -100,24 +100,35 @@ def radial_wavefunction(rho: float, l: int, n_radial: int = 1) -> float:
     if rho <= 0:
         return 0.0
     p = n_radial - 1
-    alpha = 1.0 / (n_radial + l)
+    alpha = 1.0 / (n_radial + angular_l)
     x = 2.0 * alpha * rho
-    laguerre = float(eval_genlaguerre(p, 2 * l + 1, x))
+    laguerre = float(eval_genlaguerre(p, 2 * angular_l + 1, x))
     norm = math.sqrt(
-        (2.0 * alpha) ** 3 * float(factorial(p)) / (2.0 * (n_radial + l) * float(factorial(p + 2 * l + 1)))
+        (2.0 * alpha) ** 3
+        * float(factorial(p))
+        / (2.0 * (n_radial + angular_l) * float(factorial(p + 2 * angular_l + 1)))
     )
-    return norm * (math.sinh(rho) ** l) * math.exp(-alpha * rho) * laguerre
+    return norm * (math.sinh(rho) ** angular_l) * math.exp(-alpha * rho) * laguerre
 
 
-def angular_wavefunction(theta: float, phi_angle: float, l: int, m: int) -> complex:
+def angular_wavefunction(
+    theta: float, phi_angle: float, angular_l: int, m: int
+) -> complex:
     """
     Angular part: standard spherical harmonic Y_l^m(θ, φ).
     The angular Laplacian is the same in flat and hyperbolic 3-space.
     """
-    return sph_harm_y(l, m, theta, phi_angle)
+    return sph_harm_y(angular_l, m, theta, phi_angle)
 
 
-def orbital_density(rho: float, theta: float, phi_angle: float, l: int, m: int, n_radial: int = 1) -> float:
+def orbital_density(
+    rho: float,
+    theta: float,
+    phi_angle: float,
+    angular_l: int,
+    m: int,
+    n_radial: int = 1,
+) -> float:
     """
     Probability density |ψ|² × hyperbolic volume element sinh²(ρ).
 
@@ -125,8 +136,8 @@ def orbital_density(rho: float, theta: float, phi_angle: float, l: int, m: int, 
     it grows exponentially, packing more nodes into outer shells
     than a flat-space atom would have.
     """
-    R = radial_wavefunction(rho, l, n_radial)
-    Y = angular_wavefunction(theta, phi_angle, l, m)
+    R = radial_wavefunction(rho, angular_l, n_radial)
+    Y = angular_wavefunction(theta, phi_angle, angular_l, m)
     volume_element = math.sinh(rho) ** 2 if rho > 0 else 0.0
     return (R * abs(Y)) ** 2 * volume_element
 
@@ -180,6 +191,11 @@ class GeoSeedOrbital:
     def orbital_name(self) -> str:
         return ["s", "p", "d", "f", "g", "h"][self.l]
 
+    @property
+    def orbital_type(self) -> str:
+        """Compatibility alias used by visual reports and tests."""
+        return self.orbital_name
+
     def peak_density(self, m: int = 0) -> float:
         """Density at the radial peak (θ=π/2, φ=0, ρ=hyperbolic_rho)."""
         return orbital_density(self.hyperbolic_rho, math.pi / 2, 0.0, self.l, m)
@@ -198,7 +214,7 @@ class GeoSeedOrbital:
             "phi_index": self.n_phi,
             "phi_weight": round(self.weight, 6),
             "angular_momentum_l": self.l,
-            "orbital_type": self.orbital_name,
+            "orbital_type": self.orbital_type,
             "poincare_r": round(self.poincare_r, 6),
             "hyperbolic_rho": round(self.hyperbolic_rho, 6),
             "lb_eigenvalue": self.lb_eigenvalue,
@@ -216,7 +232,7 @@ def build_geoseed_orbitals() -> List[GeoSeedOrbital]:
     orbitals = []
     for t in TONGUES:
         n = t["n"]
-        l = t["l"]
+        angular_l = t["l"]
         rho = n * math.log(PHI)
         r = phi_to_poincare_r(n)
         orbitals.append(
@@ -225,11 +241,11 @@ def build_geoseed_orbitals() -> List[GeoSeedOrbital]:
                 abbr=t["abbr"],
                 n_phi=n,
                 weight=t["weight"],
-                l=l,
+                l=angular_l,
                 poincare_r=r,
                 hyperbolic_rho=rho,
-                lb_eigenvalue=laplace_beltrami_eigenvalue(l),
-                m_states=2 * l + 1,
+                lb_eigenvalue=laplace_beltrami_eigenvalue(angular_l),
+                m_states=2 * angular_l + 1,
                 egg_nodes=sacred_egg_nodes(n),
             )
         )
@@ -239,13 +255,15 @@ def build_geoseed_orbitals() -> List[GeoSeedOrbital]:
 # ── Inter-shell coupling ───────────────────────────────────────────────────────
 
 
-def inter_shell_geodesic(orbitals: List[GeoSeedOrbital]) -> List[dict]:
+def inter_shell_geodesic(orbitals: List[GeoSeedOrbital] | None = None) -> List[dict]:
     """
     Geodesic distances between adjacent shells.
 
     In the Saturn Ring Stabilizer model, energy transfers between
     shells along these geodesics — shorter geodesic = stronger coupling.
     """
+    if orbitals is None:
+        orbitals = build_geoseed_orbitals()
     gaps = []
     for i in range(len(orbitals) - 1):
         a, b = orbitals[i], orbitals[i + 1]
@@ -266,7 +284,23 @@ def inter_shell_geodesic(orbitals: List[GeoSeedOrbital]) -> List[dict]:
 # ── Summary / entrypoint ──────────────────────────────────────────────────────
 
 
-def orbital_summary() -> dict:
+def _density_profiles(
+    orbitals: List[GeoSeedOrbital], n_points: int = 64
+) -> dict[str, list[dict[str, float]]]:
+    profiles: dict[str, list[dict[str, float]]] = {}
+    for orbital in orbitals:
+        rhos, values = orbital.radial_profile(n_points=n_points)
+        profiles[orbital.abbr] = [
+            {
+                "rho": round(float(rho), 9),
+                "density": round(float(abs(value) ** 2), 12),
+            }
+            for rho, value in zip(rhos, values)
+        ]
+    return profiles
+
+
+def orbital_summary(include_profiles: bool = False) -> dict:
     """Full model summary — orbitals, inter-shell gaps, golden-ratio checkpoint."""
     orbitals = build_geoseed_orbitals()
     gaps = inter_shell_geodesic(orbitals)
@@ -275,8 +309,9 @@ def orbital_summary() -> dict:
     ca = orbitals[3]
     golden_checkpoint = abs(ca.poincare_r - 1.0 / PHI) < 1e-9
 
-    return {
+    summary = {
         "schema_version": "geoseed_orbital_v1",
+        "model_scope": "deterministic structural analogy; not a physical atomic-orbital claim",
         "phi": PHI,
         "manifold": "Poincare_ball_H3",
         "golden_ratio_checkpoint": {
@@ -285,9 +320,14 @@ def orbital_summary() -> dict:
             "poincare_r": round(ca.poincare_r, 9),
             "expected_1_over_phi": round(1.0 / PHI, 9),
             "exact": golden_checkpoint,
+            "exact_within_1e_12": abs(ca.poincare_r - 1.0 / PHI) < 1e-12,
         },
         "orbitals": [o.to_dict() for o in orbitals],
         "inter_shell_gaps": gaps,
+        "uniform_gap": {
+            "hyperbolic_distance": round(math.log(PHI), 9),
+            "description": "adjacent GeoSeed shells are separated by ln(phi)",
+        },
         "total_m_states": sum(o.m_states for o in orbitals),
         "note": (
             "Total magnetic sub-states across 6 tongues = "
@@ -296,6 +336,9 @@ def orbital_summary() -> dict:
             "The f-block (CA, l=3) anchors at r=1/phi in the Poincare ball."
         ),
     }
+    if include_profiles:
+        summary["density_profiles"] = _density_profiles(orbitals)
+    return summary
 
 
 def main():

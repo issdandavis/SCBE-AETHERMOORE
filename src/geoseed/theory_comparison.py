@@ -20,7 +20,7 @@ per shell, plus a residual vs measured hydrogen levels.
 """
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Dict
 
 # ── Physical constants ────────────────────────────────────────────────────────
@@ -88,7 +88,9 @@ class TheoryResult:
                     "frequency_hz": s.frequency_hz,
                     "orbital_radius_m": s.orbital_radius_m,
                     "residual_ev": round(self.residuals_ev[s.shell_index], 6),
-                    "hydrogen_measured_ev": round(HYDROGEN_MEASURED_EV[s.shell_index], 6),
+                    "hydrogen_measured_ev": round(
+                        HYDROGEN_MEASURED_EV[s.shell_index], 6
+                    ),
                 }
                 for s in self.shells
             ],
@@ -119,7 +121,12 @@ def _make_result(
     residuals = [energies_ev[i] - HYDROGEN_MEASURED_EV[i] for i in range(6)]
     rms = math.sqrt(sum(r**2 for r in residuals) / 6)
     return TheoryResult(
-        name=name, description=description, shells=shells, residuals_ev=residuals, rms_residual_ev=rms, note=note
+        name=name,
+        description=description,
+        shells=shells,
+        residuals_ev=residuals,
+        rms_residual_ev=rms,
+        note=note,
     )
 
 
@@ -221,11 +228,11 @@ def theory_geoseed_lb() -> TheoryResult:
     GeoSeed Laplace-Beltrami ladder: |λ_l| = (l+1)² = 1,4,9,16,25,36.
     Normalise so shell 0 (KO, l=0) = Rydberg energy.
     """
-    lam = [(l + 1) ** 2 for l in range(6)]
+    lam = [(ell + 1) ** 2 for ell in range(6)]
     scale = RYDBERG_EV / lam[0]
     energies, freqs, radii = [], [], []
-    for l in range(6):
-        e_ev = scale * lam[l]
+    for ell in range(6):
+        e_ev = scale * lam[ell]
         f_hz = e_ev * EV / H_PLANCK
         r_m = HBAR / math.sqrt(2 * M_ELECTRON * e_ev * EV) if e_ev > 0 else 0.0
         energies.append(e_ev)
@@ -321,14 +328,22 @@ def comparison_table(results: Dict[str, TheoryResult]) -> str:
     col_w = 14
     lines = []
     lines.append("Theory Comparison: Binding Energy (eV) per GeoSeed Shell")
-    lines.append("  vs hydrogen measured: " + "  ".join(f"{e:.4f}" for e in HYDROGEN_MEASURED_EV))
+    lines.append(
+        "  vs hydrogen measured: " + "  ".join(f"{e:.4f}" for e in HYDROGEN_MEASURED_EV)
+    )
     lines.append("")
-    header = f"{'Theory':<22}" + "".join(f"{t:>{col_w}}" for t in TONGUE_ORDER) + f"{'RMS Δ(eV)':>{col_w}}"
+    header = (
+        f"{'Theory':<22}"
+        + "".join(f"{t:>{col_w}}" for t in TONGUE_ORDER)
+        + f"{'RMS Δ(eV)':>{col_w}}"
+    )
     lines.append(header)
     lines.append("-" * len(header))
     for t in theories:
         row = (
-            f"{t.name:<22}" + "".join(f"{e:>{col_w}.4f}" for e in t.energies_ev()) + f"{t.rms_residual_ev:>{col_w}.4f}"
+            f"{t.name:<22}"
+            + "".join(f"{e:>{col_w}.4f}" for e in t.energies_ev())
+            + f"{t.rms_residual_ev:>{col_w}.4f}"
         )
         lines.append(row)
     lines.append("-" * len(header))
@@ -338,7 +353,9 @@ def comparison_table(results: Dict[str, TheoryResult]) -> str:
     lines.append(freq_header)
     lines.append("-" * (len(freq_header)))
     for t in theories:
-        row = f"{t.name:<22}" + "".join(f"{math.log10(f):>{col_w}.2f}" for f in t.frequencies_hz())
+        row = f"{t.name:<22}" + "".join(
+            f"{math.log10(f):>{col_w}.2f}" for f in t.frequencies_hz()
+        )
         lines.append(row)
     return "\n".join(lines)
 
