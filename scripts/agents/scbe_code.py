@@ -291,6 +291,37 @@ def cmd_copilot_route(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_repo_task_route(args: argparse.Namespace) -> int:
+    """Build or execute a safe repo-maintenance task route."""
+    from python.scbe.repo_task_router import (
+        build_repo_task_route,
+        execute_repo_task_route,
+    )
+
+    try:
+        route = build_repo_task_route(args.task, args.paths)
+        if args.execute:
+            route = execute_repo_task_route(route)
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
+    payload = route.to_dict()
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        for command in payload["commands"]:
+            print(
+                f"{command['name']}: "
+                f"{'ALLOW' if command['allowed'] else 'BLOCK'} "
+                f"{' '.join(command['argv'])}"
+            )
+        if route.executed:
+            for result in payload["results"]:
+                print(f"{result['name']}: returncode={result['returncode']}")
+    return 0 if route.ok else 1
+
+
 def cmd_lint_prime_shape(args: argparse.Namespace) -> int:
     """Require source to carry a valid prime-opcode shape witness."""
     from python.scbe.prime_shape_gate import audit_prime_opcode_shape
@@ -842,6 +873,29 @@ def build_parser() -> argparse.ArgumentParser:
     p_copilot_route.add_argument("--args", default="", help="comma-separated arg names")
     p_copilot_route.add_argument("--json", action="store_true")
     p_copilot_route.set_defaults(func=cmd_copilot_route)
+
+    p_repo_task = sub.add_parser(
+        "repo-task-route",
+        help="paths -> allowlisted format/lint/verify route with GeoSeal receipts",
+    )
+    p_repo_task.add_argument(
+        "--task",
+        choices=["format", "lint", "verify", "format-lint"],
+        default="format-lint",
+    )
+    p_repo_task.add_argument(
+        "--paths",
+        nargs="+",
+        required=True,
+        help="repo-relative file paths to route through the task toolchain",
+    )
+    p_repo_task.add_argument(
+        "--execute",
+        action="store_true",
+        help="run the allowlisted route after GeoSeal allows every command",
+    )
+    p_repo_task.add_argument("--json", action="store_true")
+    p_repo_task.set_defaults(func=cmd_repo_task_route)
 
     p_lint_prime = sub.add_parser(
         "lint-prime-shape", help="validate source opcode trace -> prime tape shape"

@@ -426,6 +426,48 @@ def test_copilot_route_card_blocks_compile_for_unsupported_templates():
     assert "without compiler templates" in blocked["reason"]
 
 
+def test_repo_task_route_builds_allowlisted_format_lint_verify_plan():
+    rc, stdout, _ = _run_cli(
+        [
+            "repo-task-route",
+            "--task",
+            "format-lint",
+            "--paths",
+            "python/scbe/copilot_router.py",
+            "tests/agents/test_scbe_code.py",
+            "--json",
+        ]
+    )
+    assert rc == 0
+    payload = json.loads(stdout)
+    assert payload["schema"] == "scbe_repo_task_route_v1"
+    assert payload["executed"] is False
+    assert payload["ok"] is True
+    assert [command["name"] for command in payload["commands"]] == [
+        "python-black-format",
+        "python-flake8",
+        "python-py-compile",
+    ]
+    assert all(command["allowed"] for command in payload["commands"])
+    assert payload["commands"][0]["mutates"] is True
+    assert payload["commands"][0]["geoseal"]["decision"]["decision"] == "ALLOW_CLI"
+
+
+def test_repo_task_route_rejects_workspace_escape():
+    rc, _, err = _run_cli(
+        [
+            "repo-task-route",
+            "--task",
+            "lint",
+            "--paths",
+            "../outside.py",
+            "--json",
+        ]
+    )
+    assert rc == 2
+    assert "path escapes workspace" in err
+
+
 def test_ca_plan_unknown_op_fails():
     rc, _, err = _run_cli(["ca-plan", "--ops", "abs,definitely_not_ca"])
     assert rc == 2
