@@ -99,6 +99,7 @@
     "format:python": "black --target-version py311 --line-length 120 src/ tests/ hydra/",
     "lint": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"packages/**/*.ts\"",
     "lint:repo": "node scripts/dev/run_prettier_tracked.mjs --check",
+    "lint:python:floor": "python scripts/dev/check_python_floor_syntax.py --floor 3.11 --tracked-only",
     "hooks:install": "node scripts/hooks/install.js",
     "prepare": "node scripts/hooks/install.js",
     "lint:python": "uv run --with flake8 python scripts/dev/run_flake8.py src/ tests/",

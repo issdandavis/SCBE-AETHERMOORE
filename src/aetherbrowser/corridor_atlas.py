@@ -482,12 +482,12 @@ def _bbox(item: dict[str, Any]) -> tuple[float, float, float, float] | None:
                 float(box.get("width", 0)),
                 float(box.get("height", 0)),
             )
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             return None
     if isinstance(box, (list, tuple)) and len(box) == 4:
         try:
             return tuple(float(value) for value in box)  # type: ignore[return-value]
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             return None
     return None
 

@@ -491,5 +491,12 @@
       "--headless",
       "--json"
     ]
+  },
+  {
+    "name": "mython-bridge",
+    "description": "Plain-language → SCBE Python function dispatcher. Speak naturally to trigger geoseal, governance, tongues, or research functions. Supports pipelines with → separator. Run with no args to see the command grid.",
+    "patentSurface": "agent-harness",
+    "command": "python",
+    "args": ["scripts/mython_bridge.py", "{task}"]
   }
 ]

@@ -22,7 +22,7 @@ import math
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
@@ -34,7 +34,6 @@ from scripts.research.run_field_branch_gate_search import (  # noqa: E402
     ensure_dynamic_profiles,
     profile_score,
     score_profile,
-    score_spec,
 )
 from scripts.research.run_field_gate_oos_validate import spec_from_report  # noqa: E402
 from scripts.research.run_field_gate_threshold_sensitivity import (
@@ -196,7 +195,7 @@ def build_or_load_rows(
 def safe_float(value: Any, default: float = 0.0) -> float:
     try:
         out = float(value)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return default
     if math.isnan(out) or math.isinf(out):
         return default
@@ -1030,7 +1029,10 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
     lines = [
         "# Prime Search Engine Upgrade Bench",
         "",
-        f"Training happens on the early `{fit_label}` split, selection happens on `{select_label}`, and validation is `{validate_label}`.",
+        (
+            f"Training happens on the early `{fit_label}` split, selection happens on "
+            f"`{select_label}`, and validation is `{validate_label}`."
+        ),
         "",
         "## Summary",
         "",
@@ -1039,7 +1041,10 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
     ]
     for item in report["leaderboard"]:
         lines.append(
-            "| {name} | {family} | {a}/{an} ({ar:.1%}) | {au}/{aut} | {b}/{bn} ({br:.1%}) | {bu}/{but_} | {gap} |".format(
+            (
+                "| {name} | {family} | {a}/{an} ({ar:.1%}) | {au}/{aut} | "
+                "{b}/{bn} ({br:.1%}) | {bu}/{but_} | {gap} |"
+            ).format(
                 name=item["name"],
                 family=item["family"],
                 a=item["range_a"]["top_hits"],
@@ -1118,7 +1123,10 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
             lines.append("| - | - | - | - | - | - | - |")
         for number in hidden_numbers:
             lines.append(
-                "| {rank} | {anchor_idx} | {anchor_prime} | {anchor_ratio} | {scan_idx} | {lead_steps} | {score} |".format(
+                (
+                    "| {rank} | {anchor_idx} | {anchor_prime} | {anchor_ratio} | "
+                    "{scan_idx} | {lead_steps} | {score} |"
+                ).format(
                     rank=number.get("rank"),
                     anchor_idx=number.get("anchor_idx"),
                     anchor_prime=number.get("anchor_prime"),
@@ -1699,7 +1707,11 @@ def main() -> int:
     oracle = report["best_oracle_on_range_b"]
     frozen = report["frozen_gate"]
     print(
-        "selected_on_A={name} A={ah}/{an} B={bh}/{bn} (B-uniq={bu}/{bua}); frozen_B={fh}/{fn} (uniq={fu}/{fua}); oracle_B={oh}/{on} (uniq={ou}/{oua})".format(
+        (
+            "selected_on_A={name} A={ah}/{an} B={bh}/{bn} (B-uniq={bu}/{bua}); "
+            "frozen_B={fh}/{fn} (uniq={fu}/{fua}); "
+            "oracle_B={oh}/{on} (uniq={ou}/{oua})"
+        ).format(
             name=selected["name"],
             ah=selected["range_a"]["top_hits"],
             an=selected["range_a"]["top_n"],
