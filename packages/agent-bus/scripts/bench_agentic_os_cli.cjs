@@ -138,7 +138,7 @@ function main() {
     );
   }
 
-  const hermesTasks = [
+  const compassTasks = [
     {
       label: 'compass_plan_forge_cross_domain',
       task: 'cross-language compiler with binary hex interpolation and tokenizer self-check',
@@ -161,7 +161,7 @@ function main() {
       expectTool: 'ai-router-health',
     },
   ];
-  for (const spec of hermesTasks) {
+  for (const spec of compassTasks) {
     cases.push(
       benchmarkCase(spec.label, () => {
         const plan = bus.planScbeCompassRoute(spec.task);

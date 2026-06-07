@@ -5,11 +5,9 @@
  *
  * Usage:
  *   node packages/agent-bus/scripts/compass.cjs "cross-language compile add(x,y)"
- *   node packages/agent-bus/scripts/compass.cjs --hermes "write a chapter"
  *   node packages/agent-bus/scripts/compass.cjs --classify "review YouTube upload"
  *
  * Flags:
- *   --hermes    Emit HermesRoutePlan (compatibility alias schema) instead of native Compass plan
  *   --classify  Only print the task mode classification (no full plan)
  *
  * Exit codes: 0 = ok, 1 = error, 2 = missing input
@@ -18,26 +16,22 @@
 const path = require('node:path');
 
 const pkgRoot = path.resolve(__dirname, '..');
-const { planScbeCompassRoute, planHermesRoute, classifyScbeCompassTask } = require(
+const { planScbeCompassRoute, classifyScbeCompassTask } = require(
   path.join(pkgRoot, 'dist', 'index.js')
 );
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
   process.stderr.write(
-    [
-      'Usage: node compass.cjs "<task>"',
-      '       node compass.cjs --hermes "<task>"',
-      '       node compass.cjs --classify "<task>"',
-      '',
-    ].join('\n')
+    ['Usage: node compass.cjs "<task>"', '       node compass.cjs --classify "<task>"', ''].join(
+      '\n'
+    )
   );
   process.exit(2);
 }
 
-const hermesMode = args[0] === '--hermes';
 const classifyMode = args[0] === '--classify';
-const flagConsumed = hermesMode || classifyMode ? 1 : 0;
+const flagConsumed = classifyMode ? 1 : 0;
 const task = args.slice(flagConsumed).join(' ').trim();
 
 if (!task) {
@@ -55,9 +49,6 @@ try {
         2
       ) + '\n'
     );
-  } else if (hermesMode) {
-    const plan = planHermesRoute(task);
-    process.stdout.write(JSON.stringify(plan, null, 2) + '\n');
   } else {
     const plan = planScbeCompassRoute(task);
     process.stdout.write(JSON.stringify(plan, null, 2) + '\n');

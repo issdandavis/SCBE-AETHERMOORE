@@ -28,8 +28,6 @@ const {
   runPipeline,
   saveGovernedPipelineState,
   summarizeGovernedPipelineState,
-  hermesModelLanes,
-  planHermesRoute,
   buildScbeRollStack,
   scbeCompassModelLanes,
   planScbeCompassRoute,
@@ -134,7 +132,6 @@ Usage:
   scbe-agent-bus compass board --task "cross-language compiler" --json
   scbe-agent-bus compass rolls --task "solve maze pathfinding benchmark" --json
   scbe-agent-bus compass stack --task "solve maze pathfinding benchmark" --json
-  scbe-agent-bus hermes plan --task "draft and review a YouTube script" --json
   scbe-agent-bus rubix-browser plan --task "open docs and click download" --permissions visual.read,dom.read,tool.call --json
   scbe-agent-bus rubix-browser bench --headless --json
   scbe-agent-bus workspace new --hint customer-smoke --json
@@ -157,7 +154,6 @@ Commands:
   plugins   List registered bus plugins.
   tools     List registered CLI tools (set SCBE_BUS_TOOLS=./tools.json to load).
   compass   SCBE-native agentic CLI front door for formations and adapters.
-  hermes    Compatibility alias for compass-style task routing.
   rubix-browser Plan browser-control routes as permission-defined cube/tesseract faces.
   pipeline  Compile and run natural-language intents through GeoSeal governance.
             Use --governed-state to enable the durable trajectory gate.
@@ -685,23 +681,20 @@ async function main() {
     process.exitCode = 2;
     return;
   }
-  if (command === 'compass' || command === 'hermes') {
-    const isHermesAlias = command === 'hermes';
+  if (command === 'compass') {
     const action = String(flags._action || process.argv[3] || 'plan').trim();
     if (action === 'models') {
       const payload = {
-        schema_version: isHermesAlias
-          ? 'scbe.agent_bus.hermes_model_lanes.v1'
-          : 'scbe.agent_bus.compass_model_lanes.v1',
-        command_surface: isHermesAlias ? 'hermes-alias' : 'scbe-compass',
+        schema_version: 'scbe.agent_bus.compass_model_lanes.v1',
+        command_surface: 'scbe-compass',
         generated_at: new Date().toISOString(),
-        lanes: isHermesAlias ? hermesModelLanes() : scbeCompassModelLanes(),
+        lanes: scbeCompassModelLanes(),
         note: 'Local-free means no provider bill after install. Remote free-tier lanes are quota-limited. Paid providers require budget approval.',
       };
       if (flags.json) {
         process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
       } else {
-        process.stdout.write('Hermes model lanes:\n');
+        process.stdout.write('Compass model lanes:\n');
         for (const lane of payload.lanes) {
           process.stdout.write(
             `  ${lane.id}: ${lane.costTier} privacy=${lane.privacy} requires=${lane.requires.join(', ') || 'none'}\n`
@@ -714,7 +707,7 @@ async function main() {
     if (action === 'tree') {
       const payload = {
         schema_version: 'scbe.agent_bus.compass_command_tree.v1',
-        command_surface: isHermesAlias ? 'hermes-alias' : 'scbe-compass',
+        command_surface: 'scbe-compass',
         generated_at: new Date().toISOString(),
         source_notes: [
           'notes/sphere-grid/Agentic Sphere Grid.md',
@@ -741,7 +734,7 @@ async function main() {
       const mode = plan?.mode || 'general';
       const payload = {
         schema_version: 'scbe.agent_bus.compass_board_rules.v1',
-        command_surface: isHermesAlias ? 'hermes-alias' : 'scbe-compass',
+        command_surface: 'scbe-compass',
         generated_at: new Date().toISOString(),
         task,
         mode,
@@ -770,7 +763,7 @@ async function main() {
       const mode = plan?.mode || 'general';
       const payload = {
         schema_version: 'scbe.agent_bus.compass_roll_cards.v1',
-        command_surface: isHermesAlias ? 'hermes-alias' : 'scbe-compass',
+        command_surface: 'scbe-compass',
         generated_at: new Date().toISOString(),
         task,
         mode,
@@ -815,13 +808,13 @@ async function main() {
         process.exitCode = 2;
         return;
       }
-      const payload = isHermesAlias ? planHermesRoute(task) : planScbeCompassRoute(task);
+      const payload = planScbeCompassRoute(task);
       if (flags.json) {
         process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
       } else {
         process.stdout.write(
           [
-            `${isHermesAlias ? 'Hermes alias' : 'SCBE Compass'} route: ${payload.mode}`,
+            `SCBE Compass route: ${payload.mode}`,
             `Objective: ${payload.objective}`,
             `Command path: ${payload.command_path || '<alias>'}`,
             `Primary tools: ${payload.primary_tools.join(', ')}`,

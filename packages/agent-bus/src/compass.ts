@@ -6,8 +6,8 @@
  * the existing dispatch surfaces.
  */
 
-export type HermesTaskMode = 'compiler' | 'writing' | 'youtube' | 'model' | 'general';
-export type ScbeCompassMode = HermesTaskMode;
+export type CompassTaskMode = 'compiler' | 'writing' | 'youtube' | 'model' | 'general';
+export type ScbeCompassMode = CompassTaskMode;
 export type ScbeFormation = 'forge' | 'scribe' | 'broadcast' | 'council' | 'scout' | 'field';
 export type ScbeTongueDomain = 'KO' | 'AV' | 'RU' | 'CA' | 'UM' | 'DR';
 export type ScbeBoardMechanic =
@@ -23,7 +23,7 @@ export type ScbeRollKind =
   | 'verification'
   | 'human-approval';
 
-export interface HermesModelLane {
+export interface CompassModelLane {
   id: string;
   label: string;
   costTier: 'offline' | 'local-free-after-install' | 'remote-free-tier-limited' | 'paid-remote';
@@ -33,15 +33,15 @@ export interface HermesModelLane {
   notes: string;
 }
 
-export interface HermesRoutePlan {
-  schema_version: 'scbe.agent_bus.hermes_route_plan.v1';
+export interface CompassRoutePlan {
+  schema_version: 'scbe.agent_bus.compass_route_plan.v1';
   generated_at: string;
   task: string;
-  mode: HermesTaskMode;
+  mode: CompassTaskMode;
   objective: string;
   primary_tools: string[];
   helper_actions: string[];
-  model_lanes: HermesModelLane[];
+  model_lanes: CompassModelLane[];
   governance: {
     privacy: 'local_only';
     budget_cents: 0;
@@ -163,7 +163,7 @@ export interface ScbeCompassRoutePlan {
   board_rules: ScbeBoardRule[];
   roll_cards: ScbeRollCard[];
   helper_actions: string[];
-  model_lanes: HermesModelLane[];
+  model_lanes: CompassModelLane[];
   governance: {
     privacy: 'local_only';
     budget_cents: 0;
@@ -173,7 +173,7 @@ export interface ScbeCompassRoutePlan {
   cli_examples: string[];
 }
 
-const MODEL_LANES: HermesModelLane[] = [
+const MODEL_LANES: CompassModelLane[] = [
   {
     id: 'offline',
     label: 'Deterministic/offline harness',
@@ -318,7 +318,7 @@ const PARITY_TARGETS: ScbeCliParityTarget[] = [
   },
 ];
 
-export function classifyHermesTask(task: string): HermesTaskMode {
+export function classifyCompassTask(task: string): CompassTaskMode {
   return classifyScbeCompassTask(task);
 }
 
@@ -339,18 +339,18 @@ export function classifyScbeCompassTask(task: string): ScbeCompassMode {
   return 'general';
 }
 
-export function hermesModelLanes(): readonly HermesModelLane[] {
+export function compassModelLanes(): readonly CompassModelLane[] {
   return scbeCompassModelLanes();
 }
 
-export function scbeCompassModelLanes(): readonly HermesModelLane[] {
+export function scbeCompassModelLanes(): readonly CompassModelLane[] {
   return MODEL_LANES;
 }
 
-export function planHermesRoute(task: string): HermesRoutePlan {
+export function planCompassRoute(task: string): CompassRoutePlan {
   const compass = planScbeCompassRoute(task);
   return {
-    schema_version: 'scbe.agent_bus.hermes_route_plan.v1',
+    schema_version: 'scbe.agent_bus.compass_route_plan.v1',
     generated_at: compass.generated_at,
     task: compass.task,
     mode: compass.mode,
@@ -360,7 +360,7 @@ export function planHermesRoute(task: string): HermesRoutePlan {
     model_lanes: compass.model_lanes,
     governance: compass.governance,
     cli_examples: compass.cli_examples.map((example) =>
-      example.replace('scbe-agent-bus compass', 'scbe-agent-bus hermes')
+      example.replace('scbe-agent-bus compass', 'scbe-agent-bus compass')
     ),
   };
 }
@@ -415,11 +415,11 @@ export function scbeCompassParityTargets(): readonly ScbeCliParityTarget[] {
   return PARITY_TARGETS;
 }
 
-export function scbeCompassBoardRules(mode: HermesTaskMode = 'general'): readonly ScbeBoardRule[] {
+export function scbeCompassBoardRules(mode: CompassTaskMode = 'general'): readonly ScbeBoardRule[] {
   return boardRulesForMode(mode);
 }
 
-export function scbeCompassRollCards(mode: HermesTaskMode = 'general'): readonly ScbeRollCard[] {
+export function scbeCompassRollCards(mode: CompassTaskMode = 'general'): readonly ScbeRollCard[] {
   return rollCardsForMode(mode);
 }
 
@@ -464,7 +464,7 @@ export function buildScbeRollStack(task: string): ScbeRollStackPlan {
   };
 }
 
-function commandNodeForMode(mode: HermesTaskMode): ScbeCommandNode {
+function commandNodeForMode(mode: CompassTaskMode): ScbeCommandNode {
   if (mode === 'compiler') return COMMAND_TREE.find((n) => n.path === 'CA.forge.compiler')!;
   if (mode === 'writing') return COMMAND_TREE.find((n) => n.path === 'DR.scribe.structure')!;
   if (mode === 'youtube') return COMMAND_TREE.find((n) => n.path === 'AV.broadcast.youtube')!;
@@ -472,7 +472,7 @@ function commandNodeForMode(mode: HermesTaskMode): ScbeCommandNode {
   return COMMAND_TREE.find((n) => n.path === 'KO.command')!;
 }
 
-function buildOctreeContextPack(mode: HermesTaskMode, task: string): ScbeOctreeContextPack {
+function buildOctreeContextPack(mode: CompassTaskMode, task: string): ScbeOctreeContextPack {
   return {
     schema_version: 'scbe.agent_bus.octree_context_pack.v1',
     dense_local: [
@@ -509,7 +509,7 @@ function buildOctreeContextPack(mode: HermesTaskMode, task: string): ScbeOctreeC
   };
 }
 
-function boardRulesForMode(mode: HermesTaskMode): ScbeBoardRule[] {
+function boardRulesForMode(mode: CompassTaskMode): ScbeBoardRule[] {
   const rules: ScbeBoardRule[] = [
     {
       mechanic: 'octree-sector',
@@ -709,7 +709,7 @@ function baseRollCards(): ScbeRollCard[] {
   ];
 }
 
-function rollCardsForMode(mode: HermesTaskMode): ScbeRollCard[] {
+function rollCardsForMode(mode: CompassTaskMode): ScbeRollCard[] {
   const shared = baseRollCards();
   if (mode === 'youtube') {
     return [
@@ -866,7 +866,7 @@ function rollCardsForMode(mode: HermesTaskMode): ScbeRollCard[] {
   return shared;
 }
 
-function adapterSlotsForMode(mode: HermesTaskMode): string[] {
+function adapterSlotsForMode(mode: CompassTaskMode): string[] {
   const shared = [
     'tool-registry adapter for any CLI with deterministic argv',
     'model-provider adapter with local/free-tier/paid cost metadata',
@@ -901,7 +901,7 @@ function adapterSlotsForMode(mode: HermesTaskMode): string[] {
   return shared;
 }
 
-function primaryToolsForMode(mode: HermesTaskMode): string[] {
+function primaryToolsForMode(mode: CompassTaskMode): string[] {
   if (mode === 'youtube') {
     return ['youtube-video-review', 'youtube-article-dry-run', 'youtube-upload-unlisted'];
   }
@@ -922,7 +922,7 @@ function primaryToolsForMode(mode: HermesTaskMode): string[] {
   return ['geoseal-compile', 'scbe-agentbus', 'ai-router-health'];
 }
 
-function helperActionsForMode(mode: HermesTaskMode): string[] {
+function helperActionsForMode(mode: CompassTaskMode): string[] {
   if (mode === 'youtube') {
     return [
       'review uploaded/video candidate metadata before generation',
@@ -954,7 +954,7 @@ function helperActionsForMode(mode: HermesTaskMode): string[] {
   return ['compile intent', 'audit tool readiness', 'execute only after governance gate'];
 }
 
-function objectiveForMode(mode: HermesTaskMode): string {
+function objectiveForMode(mode: CompassTaskMode): string {
   if (mode === 'youtube') return 'governed writing-to-video and upload pipeline';
   if (mode === 'writing') return 'local-first writing helper and publication prep pipeline';
   if (mode === 'compiler') return 'cross-domain compiler with binary/hex transport evidence';
@@ -962,7 +962,7 @@ function objectiveForMode(mode: HermesTaskMode): string {
   return 'general governed agent-bus task route';
 }
 
-function formationForMode(mode: HermesTaskMode): ScbeFormation {
+function formationForMode(mode: CompassTaskMode): ScbeFormation {
   if (mode === 'compiler') return 'forge';
   if (mode === 'writing') return 'scribe';
   if (mode === 'youtube') return 'broadcast';
@@ -970,7 +970,7 @@ function formationForMode(mode: HermesTaskMode): ScbeFormation {
   return 'field';
 }
 
-function formationStepsForMode(mode: HermesTaskMode): ScbeFormationStep[] {
+function formationStepsForMode(mode: CompassTaskMode): ScbeFormationStep[] {
   if (mode === 'compiler') {
     return [
       { stage: 'gate', action: 'compile intent and audit tool readiness', tool: 'geoseal-compile' },
@@ -1043,7 +1043,7 @@ function formationStepsForMode(mode: HermesTaskMode): ScbeFormationStep[] {
   ];
 }
 
-function cliExamplesForMode(mode: HermesTaskMode, task: string): string[] {
+function cliExamplesForMode(mode: CompassTaskMode, task: string): string[] {
   const q = JSON.stringify(task || 'your task');
   const examples = [
     `scbe-agent-bus compass plan --task ${q} --json`,

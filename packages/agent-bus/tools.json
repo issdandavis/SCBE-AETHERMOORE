@@ -260,13 +260,6 @@
     "args": ["packages/agent-bus/scripts/compass.cjs", "{task}"]
   },
   {
-    "name": "scbe-hermes",
-    "description": "Hermes compatibility alias over SCBE Compass — same planning logic, emits HermesRoutePlan schema (hermes_route_plan.v1) for backward-compatible bus integrations.",
-    "patentSurface": "agent-harness",
-    "command": "node",
-    "args": ["packages/agent-bus/scripts/compass.cjs", "--hermes", "{task}"]
-  },
-  {
     "name": "roll-stack-maze-benchmark",
     "description": "Run the SCBE Compass roll-stack execution benchmark on deterministic maze pathfinding fixtures. Requires a real local BFS execution, output-contract validation, and receipt hashes; plan-only results fail the lane.",
     "patentSurface": "agent-harness",

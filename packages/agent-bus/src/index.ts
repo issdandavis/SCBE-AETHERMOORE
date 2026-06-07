@@ -228,14 +228,14 @@ export {
 } from './vector-field-nav.js';
 
 export {
-  type HermesTaskMode,
+  type CompassTaskMode,
   type ScbeCompassMode,
   type ScbeFormation,
   type ScbeTongueDomain,
   type ScbeBoardMechanic,
   type ScbeRollKind,
-  type HermesModelLane,
-  type HermesRoutePlan,
+  type CompassModelLane,
+  type CompassRoutePlan,
   type ScbeFormationStep,
   type ScbeCommandNode,
   type ScbeOctreeContextPack,
@@ -245,18 +245,18 @@ export {
   type ScbeRollStackPlan,
   type ScbeRollStackStep,
   type ScbeCompassRoutePlan,
-  classifyHermesTask,
+  classifyCompassTask,
   classifyScbeCompassTask,
   buildScbeRollStack,
-  hermesModelLanes,
+  compassModelLanes,
   scbeCompassModelLanes,
-  planHermesRoute,
+  planCompassRoute,
   planScbeCompassRoute,
   scbeCompassCommandTree,
   scbeCompassParityTargets,
   scbeCompassBoardRules,
   scbeCompassRollCards,
-} from './hermes.js';
+} from './compass.js';
 
 export {
   type RubixBrowserFace,

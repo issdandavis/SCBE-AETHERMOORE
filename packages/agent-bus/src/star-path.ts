@@ -117,7 +117,7 @@ function tongueDistance(a: Tongue, b: Tongue): number {
 
 // ─── Tool classification ──────────────────────────────────────────────────────
 
-const HUB_NAMES = new Set(['scbe-agentbus', 'scbe-compass', 'scbe-hermes']);
+const HUB_NAMES = new Set(['scbe-agentbus', 'scbe-compass']);
 const GEOSEAL_RE = /^geoseal-/;
 const RESEARCH_RE = /^research-/;
 const RU_NAMES = new Set([

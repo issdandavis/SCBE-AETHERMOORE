@@ -1,24 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import {
-  classifyHermesTask,
+  classifyCompassTask,
   classifyScbeCompassTask,
   buildScbeRollStack,
-  hermesModelLanes,
-  planHermesRoute,
+  compassModelLanes,
+  planCompassRoute,
   planScbeCompassRoute,
   scbeCompassBoardRules,
   scbeCompassCommandTree,
   scbeCompassRollCards,
-} from '../src/hermes.js';
+} from '../src/compass.js';
 
-describe('Hermes agentic CLI planner', () => {
+describe('Compass agentic CLI planner', () => {
   it('classifies compiler, writing, youtube, and model tasks', () => {
-    expect(classifyHermesTask('cross-language compile with binary hex interpolation')).toBe(
+    expect(classifyCompassTask('cross-language compile with binary hex interpolation')).toBe(
       'compiler'
     );
-    expect(classifyHermesTask('write a chapter draft')).toBe('writing');
-    expect(classifyHermesTask('review YouTube upload metadata')).toBe('youtube');
-    expect(classifyHermesTask('check ollama and huggingface model APIs')).toBe('model');
+    expect(classifyCompassTask('write a chapter draft')).toBe('writing');
+    expect(classifyCompassTask('review YouTube upload metadata')).toBe('youtube');
+    expect(classifyCompassTask('check ollama and huggingface model APIs')).toBe('model');
   });
 
   it('plans native SCBE Compass formations with adapter slots', () => {
@@ -71,20 +71,20 @@ describe('Hermes agentic CLI planner', () => {
     expect(tree.find((node) => node.path === 'DR.scribe.structure')?.formation).toBe('scribe');
   });
 
-  it('keeps Hermes as a compatibility alias over the native compass classifier', () => {
-    expect(classifyHermesTask('review YouTube upload metadata')).toBe(
+  it('keeps Compass as a compatibility alias over the native compass classifier', () => {
+    expect(classifyCompassTask('review YouTube upload metadata')).toBe(
       classifyScbeCompassTask('review YouTube upload metadata')
     );
 
-    const aliasPlan = planHermesRoute('write a chapter draft');
-    expect(aliasPlan.schema_version).toBe('scbe.agent_bus.hermes_route_plan.v1');
-    expect(aliasPlan.cli_examples[0]).toContain('scbe-agent-bus hermes plan');
+    const aliasPlan = planCompassRoute('write a chapter draft');
+    expect(aliasPlan.schema_version).toBe('scbe.agent_bus.compass_route_plan.v1');
+    expect(aliasPlan.cli_examples[0]).toContain('scbe-agent-bus compass plan');
   });
 
   it('plans a local-first YouTube route with public-publish blocked', () => {
-    const plan = planHermesRoute('make a YouTube upload from an article');
+    const plan = planCompassRoute('make a YouTube upload from an article');
 
-    expect(plan.schema_version).toBe('scbe.agent_bus.hermes_route_plan.v1');
+    expect(plan.schema_version).toBe('scbe.agent_bus.compass_route_plan.v1');
     expect(plan.mode).toBe('youtube');
     expect(plan.primary_tools).toContain('youtube-video-review');
     expect(plan.governance.privacy).toBe('local_only');
@@ -134,7 +134,7 @@ describe('Hermes agentic CLI planner', () => {
   });
 
   it('labels model lanes with real cost boundaries instead of unlimited-free claims', () => {
-    const lanes = hermesModelLanes();
+    const lanes = compassModelLanes();
 
     expect(lanes.map((lane) => lane.costTier)).toContain('local-free-after-install');
     expect(lanes.map((lane) => lane.costTier)).toContain('remote-free-tier-limited');

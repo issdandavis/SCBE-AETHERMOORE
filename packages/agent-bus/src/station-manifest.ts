@@ -11,7 +11,7 @@
  *   StarPath (routing graph) via transit nodes
  *   LifeLedger (agent identity) via docking ports
  *   ReactionChain (autopilot) via cultural protocols
- *   Hermes (route classification) via zone districts
+ *   Compass (route classification) via zone districts
  *
  * All state updates are immutable — functions return a new StationManifest.
  * The manifest is JSON-serializable and can be checkpointed between runs.
