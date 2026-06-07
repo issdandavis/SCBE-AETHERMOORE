@@ -32,7 +32,6 @@ from src.longform.context_bridge import (
     PrincipleSet,
     LedgerEvent,
     ContextLanding,
-    ResumePack,
     JsonlWorkflowLedger,
     new_ledger,
     load_ledger,
@@ -82,7 +81,13 @@ def test_principle_set_roundtrip(ps):
 
 def test_principle_set_to_dict_has_all_fields(ps):
     d = ps.to_dict()
-    for key in ("mission", "invariants", "claim_boundaries", "open_questions", "next_footholds"):
+    for key in (
+        "mission",
+        "invariants",
+        "claim_boundaries",
+        "open_questions",
+        "next_footholds",
+    ):
         assert key in d
 
 
@@ -162,6 +167,7 @@ def test_ledger_event_roundtrip():
 def test_new_ledger_creates_workspace(ws):
     ledger = new_ledger(ws, "Mission A")
     lf = os.path.join(ws, ".scbe-longform")
+    assert ledger is not None
     assert os.path.isdir(lf)
     assert os.path.isfile(os.path.join(lf, "ledger.jsonl"))
     assert os.path.isfile(os.path.join(lf, "principles.json"))
@@ -454,6 +460,8 @@ def test_agent_list_empty_workspace(ledger):
 
 def test_multiple_agents(ledger):
     for i in range(3):
-        ledger.save_agent(f"agent-{i:03d}", {"agent_id": f"agent-{i:03d}", "role": f"role_{i}"})
+        ledger.save_agent(
+            f"agent-{i:03d}", {"agent_id": f"agent-{i:03d}", "role": f"role_{i}"}
+        )
     agents = ledger.list_agents()
     assert len(agents) == 3
