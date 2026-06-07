@@ -8,6 +8,10 @@ const os = require('node:os');
 const path = require('node:path');
 const readline = require('node:readline');
 const { ui } = require('../lib/ui');
+const {
+  buildTerminalFrontendPayload,
+  renderTerminalFrontend,
+} = require('../lib/terminal-frontend');
 
 let utteranceLog = null;
 try {
@@ -99,6 +103,11 @@ Core commands:
   scbe shell --minimal               Minimal scriptable readline (no AI)
   scbe shell --agent-json            NDJSON stdin/stdout for harness/benchmark control
   scbe shell --squad                 Route each turn to the best squad provider (cerebras/groq/ollama)
+  scbe terminal                      Compact terminal front end: launch modes,
+                                     repo posture, last receipt, next action
+  scbe terminal tui                  Open the headed Ink terminal
+  scbe terminal --json               Machine-readable front-end state
+  scbe term                          Short alias for terminal
   scbe run "npm test"
   scbe status
   scbe liboqs
@@ -120,6 +129,11 @@ Core commands:
   shell --squad           Route each turn to the best squad provider by task
                           class (cerebras=fast-ops, groq=safety/policy,
                           ollama=local); shows provider + token usage in footer
+  terminal                Compact control panel for the shell and command receipts
+  terminal tui            Open the headed terminal UI
+  terminal --detail       Show stdout/stderr receipt tails and full controls
+  terminal --json         Emit the same state as JSON for small agents
+  term | ui               Short aliases for terminal
 
 ─────────────────────────────────────────────────────────────────────────────
   RUN / STATUS / LIBOQS
@@ -428,6 +442,9 @@ Core commands:
   scbe shell --tui                      # alias for rich mode
   scbe shell --ai                       # plain-English intent routing
   scbe shell --minimal                  # scriptable readline, CI-safe
+  scbe terminal                         # compact front end for the CLI
+  scbe terminal tui                     # headed terminal UI
+  scbe terminal --json                  # front-end state for agents
   scbe version --json | jq '.version'
   scbe doctor --json | jq '{node:.node,liboqs:.liboqs}'
   scbe liboqs --json | jq '{kem:.kem_algorithm,dsa:.dsa_algorithm}'
@@ -1382,6 +1399,168 @@ function runStatus() {
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
 }
 
+function printTerminalHelp() {
+  process.stdout.write(
+    [
+      'Usage:',
+      '  scbe terminal              compact CLI front end',
+      '  scbe terminal --detail     include receipt tails and full controls',
+      '  scbe terminal --json       machine-readable front-end state',
+      '  scbe terminal tui          open headed Ink terminal',
+      '',
+      'Aliases:',
+      '  scbe term',
+      '  scbe ui',
+      '',
+      'Quick commands:',
+      '  scbe term',
+      '  scbe term tui',
+      '  scbe run "<cmd>" --json',
+      '  scbe shell --agent-json',
+      '',
+      'Shell grammar:',
+      '  /run <cmd>                 governed command request',
+      '  [verify] <cmd>             extra instruction tag',
+      '  tab:2:run:<cmd>            route to a room',
+      '',
+    ].join('\n')
+  );
+}
+
+function buildTerminalNaturalLanguageState() {
+  let learnedTools = null;
+  try {
+    if (utteranceLog) {
+      const corpus = utteranceLog.buildCorpus({ confirmedOnly: true, maxPerTool: 50 });
+      learnedTools = Object.keys(corpus || {}).length;
+    }
+  } catch (_err) {
+    learnedTools = null;
+  }
+  let wordCount = null;
+  try {
+    wordCount = nlVocab().size;
+  } catch (_err) {
+    wordCount = null;
+  }
+  return {
+    autocorrect: true,
+    word_count: wordCount,
+    learned_tools: learnedTools,
+    sources: ['static command vocabulary', 'local confirmed utterance log'],
+    examples: [
+      { phrase: 'show status', use: 'routes to status' },
+      { phrase: 'run the tests', use: 'routes to a governed command' },
+      { phrase: 'what tools do you have', use: 'local tool list, no model needed' },
+    ],
+  };
+}
+
+function buildTerminalPlatformPacket(root) {
+  const workspace = workspacePosture(root);
+  const rows = [
+    readinessRow(
+      'terminal_dashboard',
+      'Terminal dashboard',
+      'pass',
+      'compact human panel and JSON state are local-only',
+      'scbe term'
+    ),
+    readinessRow(
+      'headed_tui',
+      'Headed terminal',
+      'pass',
+      'Ink TUI entrypoint is bundled in the CLI package',
+      'scbe term tui'
+    ),
+    readinessRow(
+      'agent_json',
+      'Agent JSON',
+      'pass',
+      'NDJSON protocol is available for small agents and harnesses',
+      'scbe shell --agent-json'
+    ),
+    readinessRow(
+      'terminal_receipts',
+      'Terminal receipts',
+      workspace.terminal_history_ready ? 'pass' : 'warn',
+      workspace.terminal_history_ready
+        ? 'receipt history exists'
+        : 'no governed run receipt has been written yet',
+      'scbe run "node --version" --json'
+    ),
+  ];
+  const failCount = rows.filter((row) => row.level === 'fail').length;
+  const warnCount = rows.filter((row) => row.level === 'warn').length;
+  return {
+    schema_version: 'scbe_terminal_readiness_v1',
+    generated_at: nowIso(),
+    ok: failCount === 0,
+    summary: {
+      decision: failCount === 0 ? 'READY' : 'REPAIR_REQUIRED',
+      fail_count: failCount,
+      warn_count: warnCount,
+    },
+    host: {
+      platform: process.platform,
+      arch: process.arch,
+      cwd: process.cwd(),
+      repo_root: root,
+    },
+    readiness: rows,
+    providers: providerPosture(),
+  };
+}
+
+function buildTerminalFrontendState() {
+  const root = repoRoot();
+  return buildTerminalFrontendPayload({
+    generatedAt: nowIso(),
+    cwd: process.cwd(),
+    repoRoot: root,
+    historyPath: historyPath(),
+    version: versionPacket(),
+    platform: buildTerminalPlatformPacket(root),
+    git: gitPosture(root),
+    shellConfig: readShellConfig(),
+    lastReceipt: readLastHistoryRow(),
+    naturalLanguage: buildTerminalNaturalLanguageState(),
+  });
+}
+
+function printTerminalFrontendPanel(options = {}) {
+  process.stdout.write(
+    `${renderTerminalFrontend(buildTerminalFrontendState(), {
+      color: options.noColor ? false : undefined,
+      detail: Boolean(options.detail),
+    })}\n`
+  );
+}
+
+function runTerminalFrontend(args) {
+  const sub = args.find((arg) => !arg.startsWith('--')) || '';
+  if (sub === 'help' || args.includes('--help') || args.includes('-h')) {
+    printTerminalHelp();
+    process.exit(0);
+  }
+  if (sub === 'tui' || args.includes('--tui')) {
+    runInteractiveShell({ tui: true });
+    return;
+  }
+  const asJson = args.includes('--json');
+  const noColor = args.includes('--no-color') || process.env.NO_COLOR;
+  const payload = buildTerminalFrontendState();
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    process.exit(0);
+  }
+  printTerminalFrontendPanel({
+    noColor,
+    detail: args.includes('--detail') || args.includes('-d'),
+  });
+  process.exit(0);
+}
+
 function runLiboqs(args) {
   const asJson = args.includes('--json');
   if (!resolveRepoScript('src/crypto/pqc_liboqs.py')) {
@@ -2233,6 +2412,8 @@ function shellHelpText() {
     '',
     '  Ask normally:        hey, explain this repo',
     '  Run a command:       run git status --short',
+    '  Slash nav:           /term | /status | /models | /run git status --short',
+    '  Bracket tag:         [verify] npm test  |  [format] packages/cli/bin/scbe.js',
     '  PowerShell direct:   !git status --short',
     '  Time/date:           now | time | date',
     '  Location:            location',
@@ -2253,6 +2434,7 @@ function shellHelpText() {
     '  Leave:               exit',
     '',
     '  Raw tab grammar:     tab:new:name | tab:2:chat:<message> | tab:2:run:<command>',
+    '  Front end:           scbe term  |  scbe term tui  |  scbe term --json',
     '',
   ].join('\n');
 }
@@ -2272,6 +2454,9 @@ function shellToolsText() {
     '  count       Count lines, words, chars, and bytes in text or a file',
     '  find        Search text with ripgrep when available',
     '  run         Run a system command directly: run git status --short',
+    '  /term       Print the compact terminal front end inside the shell',
+    '  /run        Run a governed command: /run npm test',
+    '  [tag] cmd   Add an instruction tag; command bodies run through receipts',
     '  build       Build root/cli/agent-bus shortcuts',
     '  !command    Run a PowerShell-style command through the legacy SCBE runner',
     '  room        Create/switch agent rooms: room builder',
@@ -3636,6 +3821,13 @@ function runInteractiveShell(flags = {}) {
         'tab:1',
         'tab:1:chat:',
         'tab:1:run:',
+        '/term',
+        '/tui',
+        '/run',
+        '/status',
+        '/models',
+        '[verify]',
+        '[format]',
       ];
       const hits = all.filter((c) => c.startsWith(line));
       return [hits.length ? hits : all, line];
@@ -3665,6 +3857,36 @@ function runInteractiveShell(flags = {}) {
         '  use: room builder | use 2 | ask builder hello | cmd builder npm test | tab:1:model:qwen2.5:0.5b\n'
       )
     );
+  };
+
+  const printModelList = () => {
+    const models = listInstalledOllamaModels();
+    if (!models.length) {
+      process.stdout.write(
+        ansi('yellow', '  no local Ollama models found. Try: ollama pull llama3.2:1b\n')
+      );
+      return;
+    }
+    process.stdout.write(ansi('bold', '  local Ollama models\n'));
+    for (const name of models) {
+      const marker = name === cfg.model ? '*' : ' ';
+      process.stdout.write(ansi(marker === '*' ? 'green' : 'gray', `  ${marker} ${name}\n`));
+    }
+    process.stdout.write(ansi('gray', '  use: :config set model <name>\n'));
+  };
+
+  const printCapturedRun = (command, options = {}) => {
+    const label = options.tag ? `[${options.tag}] ` : '';
+    process.stdout.write(ansi('dim', `  ${label}$ ${command}\n`));
+    const row = runShellCommand(command, { quiet: true, capture: true, timeoutMs: 30000 });
+    if (row.stdout_preview?.trim()) process.stdout.write(`${row.stdout_preview.trim()}\n`);
+    if (row.stderr_preview?.trim()) process.stderr.write(`${row.stderr_preview.trim()}\n`);
+    if (!row.success && row.failure) {
+      process.stdout.write(
+        ansi('red', `  ✗ ${row.failure.summary}\n`) + ansi('gray', `  → ${row.failure.next_step}\n`)
+      );
+    }
+    return row;
   };
 
   const createTab = (name) => {
@@ -3910,6 +4132,83 @@ function runInteractiveShell(flags = {}) {
     return false;
   };
 
+  const handleSlashCommand = async (line) => {
+    if (!line.startsWith('/')) return false;
+    const raw = line.slice(1).trim();
+    const [verbRaw, ...restParts] = raw.split(/\s+/);
+    const verb = String(verbRaw || 'help').toLowerCase();
+    const rest = restParts.join(' ').trim();
+
+    if (['term', 'terminal', 'ui', 'dashboard'].includes(verb)) {
+      printTerminalFrontendPanel({
+        noColor: Boolean(process.env.NO_COLOR),
+        detail: /\b--detail\b/.test(rest),
+      });
+      return true;
+    }
+    if (verb === 'tui') {
+      process.stdout.write(ansi('cyan', '  headed terminal: scbe terminal tui\n'));
+      process.stdout.write(
+        ansi('gray', '  start it from your normal prompt so Ink can own the screen cleanly.\n')
+      );
+      return true;
+    }
+    if (verb === 'run') {
+      if (!rest) {
+        process.stdout.write(ansi('yellow', '  usage: /run <command>\n'));
+        return true;
+      }
+      printCapturedRun(rest);
+      return true;
+    }
+    if (verb === 'status') {
+      runStatus();
+      return true;
+    }
+    if (verb === 'models') {
+      printModelList();
+      return true;
+    }
+    if (verb === 'rooms' || verb === 'tabs') {
+      printTabs();
+      return true;
+    }
+    if (verb === 'help' || verb === '?') {
+      process.stdout.write(shellHelpText());
+      return true;
+    }
+    if (verb === 'exit' || verb === 'quit') {
+      rl.close();
+      return true;
+    }
+    process.stdout.write(ansi('yellow', `  unknown slash command: /${verb} — try /help\n`));
+    return true;
+  };
+
+  const handleBracketCommand = async (line) => {
+    const match = line.match(/^\[([A-Za-z][A-Za-z0-9 _-]{0,40})\]\s+([\s\S]+)$/);
+    if (!match) return false;
+    const tag = match[1].trim().toLowerCase().replace(/\s+/g, '-');
+    const body = match[2].trim();
+    if (!body) {
+      process.stdout.write(ansi('yellow', `  [${tag}] needs an instruction or command body\n`));
+      return true;
+    }
+    if (body.startsWith('/')) return handleSlashCommand(body);
+    if (handleCoreShellCommand(body)) return true;
+
+    const commandLike =
+      /^(npm|node|npx|python|py|pytest|git|gh|ruff|black|tsc|scbe)\b/i.test(body) ||
+      ['run', 'verify', 'test', 'lint', 'format', 'build'].includes(tag);
+    if (commandLike) {
+      printCapturedRun(tag === 'build' ? buildCommandForTarget(body) : body, { tag });
+      return true;
+    }
+
+    await runTabChat(activeTab(), `[${tag}] ${body}`);
+    return true;
+  };
+
   process.stdout.write('\n');
   const branch = gitPosture().branch || 'no-git';
   const activeModel = `${activeTab().cfg.provider}:${activeTab().cfg.model}`;
@@ -3953,6 +4252,18 @@ function runInteractiveShell(flags = {}) {
       } else {
         process.stdout.write(ansi('gray', '  skipped.\n'));
       }
+      rl.prompt();
+      return;
+    }
+
+    if (await handleSlashCommand(line)) {
+      refreshPrompt();
+      rl.prompt();
+      return;
+    }
+
+    if (await handleBracketCommand(line)) {
+      refreshPrompt();
       rl.prompt();
       return;
     }
@@ -7388,6 +7699,9 @@ const KNOWN_COMMANDS = [
   'agent',
   'land',
   'shell',
+  'terminal',
+  'term',
+  'ui',
   'run',
   'status',
   'liboqs',
@@ -8292,6 +8606,10 @@ if (argv[0] === 'doctor') {
 
 if (argv[0] === 'platform') {
   runPlatform(argv.slice(1));
+}
+
+if (argv[0] === 'terminal' || argv[0] === 'term' || argv[0] === 'ui') {
+  runTerminalFrontend(argv.slice(1));
 }
 
 if (argv[0] === 'credits' || argv[0] === 'hosted-run') {
