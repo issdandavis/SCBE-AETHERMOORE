@@ -251,6 +251,46 @@ def cmd_compile_prime(args: argparse.Namespace) -> int:
     return 0 if payload["round_trip_ok"] else 2
 
 
+def cmd_copilot_route(args: argparse.Namespace) -> int:
+    """Return a deterministic route card for weak coding agents."""
+    from python.scbe.copilot_router import build_copilot_route_card
+
+    names = _ops_for_expression(args.expr) if args.expr else _parse_ca_ops(args.ops)
+    if not names:
+        print("provide --ops or --expr", file=sys.stderr)
+        return 2
+
+    arg_names = [arg for arg in (args.args or "").split(",") if arg.strip()]
+    try:
+        card = build_copilot_route_card(
+            names,
+            target=args.target,
+            fn_name=args.fn,
+            arg_names=arg_names,
+        )
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
+    payload = card.to_dict()
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(
+            "\n".join(
+                command["name"]
+                + ": "
+                + (
+                    " ".join(str(part) for part in command["argv"])
+                    if "argv" in command
+                    else str(command["purpose"])
+                )
+                for command in payload["next_commands"]
+            )
+        )
+    return 0
+
+
 def cmd_lint_prime_shape(args: argparse.Namespace) -> int:
     """Require source to carry a valid prime-opcode shape witness."""
     from python.scbe.prime_shape_gate import audit_prime_opcode_shape
@@ -780,6 +820,28 @@ def build_parser() -> argparse.ArgumentParser:
     p_compile_prime.add_argument("--args", default="", help="comma-separated arg names")
     p_compile_prime.add_argument("--json", action="store_true")
     p_compile_prime.set_defaults(func=cmd_compile_prime)
+
+    p_copilot_route = sub.add_parser(
+        "copilot-route",
+        help="op names / known expressions -> route card for weak coding agents",
+    )
+    p_copilot_route.add_argument(
+        "--ops", default="", help='comma/space-separated names, e.g. "abs,abs,add"'
+    )
+    p_copilot_route.add_argument(
+        "--expr",
+        default="",
+        help='known expression alias, e.g. "abs(a)+abs(b)" or "abs_add"',
+    )
+    p_copilot_route.add_argument(
+        "--target",
+        choices=["python", "typescript", "go", "c", "haskell"],
+        default="python",
+    )
+    p_copilot_route.add_argument("--fn", default="tongue_fn")
+    p_copilot_route.add_argument("--args", default="", help="comma-separated arg names")
+    p_copilot_route.add_argument("--json", action="store_true")
+    p_copilot_route.set_defaults(func=cmd_copilot_route)
 
     p_lint_prime = sub.add_parser(
         "lint-prime-shape", help="validate source opcode trace -> prime tape shape"

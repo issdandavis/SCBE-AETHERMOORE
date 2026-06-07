@@ -380,6 +380,52 @@ def test_compile_prime_python_round_trip_bijective():
     assert payload["round_trip_ok"] is True
 
 
+def test_copilot_route_card_for_abs_add_expression():
+    rc, stdout, _ = _run_cli(
+        [
+            "copilot-route",
+            "--expr",
+            "abs(a)+abs(b)",
+            "--target",
+            "python",
+            "--fn",
+            "abs_add",
+            "--args",
+            "a,b",
+            "--json",
+        ]
+    )
+    assert rc == 0
+    payload = json.loads(stdout)
+    assert payload["schema"] == "scbe_agentic_copilot_route_v1"
+    assert payload["ops"] == ["abs", "abs", "add"]
+    assert payload["opcodes"] == [9, 9, 0]
+    assert payload["prime_tape"] == "29 29 2"
+    assert payload["compile_supported"] is True
+    assert payload["stib_semantic_abacus"]["decision"] == "ALLOW_CLI"
+    assert payload["stib_semantic_abacus"]["allowed"] is True
+    assert payload["route_rows"][0]["route_lane"] == "arithmetic.mod30:29"
+    assert payload["route_rows"][0]["prime_coordinate"]["prime_index"] == 10
+    command_names = [command["name"] for command in payload["next_commands"]]
+    assert command_names == [
+        "inspect-prime-route",
+        "compile-prime",
+        "lint-prime-shape",
+    ]
+
+
+def test_copilot_route_card_blocks_compile_for_unsupported_templates():
+    rc, stdout, _ = _run_cli(["copilot-route", "--ops", "pow", "--json"])
+    assert rc == 0
+    payload = json.loads(stdout)
+    assert payload["ops"] == ["pow"]
+    assert payload["compile_supported"] is False
+    blocked = payload["next_commands"][-1]
+    assert blocked["name"] == "compile-prime"
+    assert blocked["safe"] is False
+    assert "without compiler templates" in blocked["reason"]
+
+
 def test_ca_plan_unknown_op_fails():
     rc, _, err = _run_cli(["ca-plan", "--ops", "abs,definitely_not_ca"])
     assert rc == 2
