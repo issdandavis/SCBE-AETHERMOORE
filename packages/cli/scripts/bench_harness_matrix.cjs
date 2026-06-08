@@ -72,6 +72,7 @@ function shellSummary(run) {
     earned: score?.earned ?? null,
     total: score?.total ?? null,
     percent: score?.percent ?? null,
+    axis_scores: artifact?.data?.axis_scores || null,
     artifact: artifact?.path || null,
     stderr_tail: run.stderr.slice(-500),
   };

@@ -71,6 +71,61 @@ function caseResult(name, fn, points = 1) {
   }
 }
 
+const SCORE_AXES = [
+  'ease_of_use',
+  'utility',
+  'tooling',
+  'ai_support',
+  'governance',
+  'harness_reliability',
+];
+
+function scoreAxis(name) {
+  if (
+    /help|minimal|config|bare_sentence|spoken_math|worksheet|typo|terminal_panel|short/i.test(name)
+  ) {
+    return 'ease_of_use';
+  }
+  if (/powershell|math|verifier|workflow|status|freshness|scaffold/i.test(name)) {
+    return 'utility';
+  }
+  if (/tui|package|files_tool|read_tool|test_tool|patch_tool|translation|tooling/i.test(name)) {
+    return 'tooling';
+  }
+  if (/governance|destructive|ko_ban|move_packet|fleet/i.test(name)) {
+    return 'governance';
+  }
+  if (/agent_json|async|model|rationale|board|context|done_signal/i.test(name)) {
+    return 'ai_support';
+  }
+  return 'harness_reliability';
+}
+
+function scoreByAxis(cases) {
+  const axes = Object.fromEntries(
+    SCORE_AXES.map((axis) => [
+      axis,
+      {
+        earned: 0,
+        total: 0,
+        percent: 0,
+        cases: [],
+      },
+    ])
+  );
+  for (const row of cases) {
+    const axis = scoreAxis(row.name);
+    axes[axis].earned += row.earned;
+    axes[axis].total += row.points;
+    axes[axis].cases.push(row.name);
+  }
+  for (const axis of SCORE_AXES) {
+    const bucket = axes[axis];
+    bucket.percent = bucket.total ? Math.round((bucket.earned / bucket.total) * 10_000) / 100 : 0;
+  }
+  return axes;
+}
+
 function main() {
   const cases = [];
 
@@ -104,9 +159,63 @@ function main() {
     caseResult('rich_shell_config_is_local_free_by_default', () => {
       const r = runNodeCli(['shell'], { input: ':config\n:exit\n' });
       assert.equal(r.status, 0);
-      assert.match(r.stdout, /SCBE governed shell/);
+      assert.match(r.stdout, /SCBE\s+local/);
       assert.match(r.stdout, /"provider": "ollama"/);
       assert.match(r.stdout, /"model": "[^"]+"/);
+      return { stdout_preview: r.stdout.slice(0, 360), duration_ms: r.duration_ms };
+    })
+  );
+
+  cases.push(
+    caseResult('bare_sentence_geoseal_termux_routes_to_worksheet', () => {
+      const r = runNodeCli([
+        'geoseal',
+        'compile',
+        'intent',
+        'summarize',
+        'README',
+        'with',
+        'termunx',
+        'fallback',
+      ]);
+      assert.equal(r.status, 0);
+      assert.match(r.stdout, /worksheet: worksheet\.generic/);
+      assert.match(r.stdout, /skills: geoseal, termux/);
+      assert.match(r.stdout, /execute: no/);
+      assert.doesNotMatch(r.stderr, /workspace ingest/);
+      return { stdout_preview: r.stdout.slice(0, 360), duration_ms: r.duration_ms };
+    })
+  );
+
+  cases.push(
+    caseResult('spoken_math_worksheet_handles_long_plain_english', () => {
+      const r = runNodeCli([
+        'square',
+        'root',
+        'of',
+        '89',
+        'times',
+        'the',
+        'inverse',
+        'ratio',
+        'of',
+        'the',
+        'factorial',
+        'derivative',
+        'of',
+        '89',
+        'before',
+        'and',
+        'after',
+        'as',
+        'a',
+        'dual',
+        'operation',
+      ]);
+      assert.equal(r.status, 0);
+      assert.match(r.stdout, /worksheet: compute\.spoken_math/);
+      assert.match(r.stdout, /primary:/);
+      assert.match(r.stdout, /dual:/);
       return { stdout_preview: r.stdout.slice(0, 360), duration_ms: r.duration_ms };
     })
   );
@@ -980,6 +1089,7 @@ function main() {
 
   const total = cases.reduce((sum, row) => sum + row.points, 0);
   const earned = cases.reduce((sum, row) => sum + row.earned, 0);
+  const axis_scores = scoreByAxis(cases);
   const report = {
     schema: 'scbe_shell_agentic_benchmark_v1',
     generated_at: new Date().toISOString(),
@@ -997,6 +1107,7 @@ function main() {
       total,
       percent: total ? Math.round((earned / total) * 10_000) / 100 : 0,
     },
+    axis_scores,
     cases,
     ready: earned === total,
   };
