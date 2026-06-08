@@ -351,6 +351,24 @@ test('infer command routes geoseal and termux worksheets with typo tolerance', (
   assert.match(result.stdout, /execute: no/);
 });
 
+test('bare sentence routes to worksheet before weak natural-language guess', () => {
+  const result = runCli([
+    'geoseal',
+    'compile',
+    'intent',
+    'summarize',
+    'README',
+    'with',
+    'termunx',
+    'fallback',
+  ]);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /worksheet: worksheet\.generic/);
+  assert.match(result.stdout, /skills: geoseal, termux/);
+  assert.doesNotMatch(result.stderr, /workspace ingest/);
+});
+
 test('rich shell treats run plus prose as an assistant request, not executable a.exe', () => {
   const result = runCli(['shell'], {
     input: 'run a polynomial search function through negative inner counter space\n:exit\n',

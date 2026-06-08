@@ -9803,7 +9803,10 @@ if (argv[0] === 'emit') {
     .join(' ')
     .trim();
   const worksheet = buildMechanicalWorksheet(rawInput);
-  if (worksheet?.intent === 'compute.spoken_math') {
+  if (
+    worksheet?.intent === 'compute.spoken_math' ||
+    (worksheet?.intent === 'worksheet.generic' && worksheet.skills.some((skill) => skill.available))
+  ) {
     printMechanicalWorksheet(worksheet, { json: asJson });
     process.exit(0);
   }
