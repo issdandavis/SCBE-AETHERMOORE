@@ -42,7 +42,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 from .poincare_lattice import PoincareLattice
-from .tiny_engine import Entity, Tile, TinyWorld
+from .tiny_engine import Entity, TinyWorld
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _CONNECTOR_ENV = _REPO_ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
@@ -269,7 +269,6 @@ Use single-character glyphs. Keep it small and symbolic. Respond ONLY with JSON.
         feature vector into a PoincareLattice and returns d_H between them.
         Lower = more coherent continuation.
         """
-        import copy
 
         world_copy = TinyWorld.from_json(world.to_json())
         self.apply_delta(world_copy, delta)

@@ -12,7 +12,6 @@ import numpy as np
 from src.video_lattice import (
     BodyLandmark,
     HandLandmark,
-    IntentAnchor,
     Landmark,
     LatticeAxis,
     LocalVectorIndex,

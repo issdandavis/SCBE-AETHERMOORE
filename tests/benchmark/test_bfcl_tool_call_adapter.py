@@ -1,7 +1,7 @@
 """Tests for the BFCL tool-call adapter (offline / export-only lane).
 
 These tests run without Ollama or any API key. They verify:
-- All 54 tools are exported as OpenAI function-calling schemas (BFCL-adjacent format)
+- All 56 tools are exported as OpenAI function-calling schemas (BFCL-adjacent format)
 - AST validation passes 100%
 - Multi-param and no-param tools are exported correctly
 - Irrelevance test cases produce ground_truth_tool = None
@@ -13,12 +13,8 @@ credentials and is exercised by running the script directly.
 
 from __future__ import annotations
 
-import hashlib
-import json
 import sys
 from pathlib import Path
-
-import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -41,7 +37,7 @@ TOOLS_JSON = ROOT / "packages" / "agent-bus" / "tools.json"
 
 def test_export_count():
     schemas = tools_to_bfcl_schemas(TOOLS_JSON)
-    assert len(schemas) == 54, f"expected 54 tools, got {len(schemas)}"
+    assert len(schemas) == 56, f"expected 56 tools, got {len(schemas)}"
 
 
 def test_ast_validation_all_pass():

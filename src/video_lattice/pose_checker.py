@@ -19,7 +19,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Sequence
+from typing import List, Optional, Sequence
 
 import numpy as np
 
@@ -27,13 +27,10 @@ from .poincare_lattice import PoincareLattice
 from .pose_polygons import (
     BODY_CHAINS,
     HAND_FINGERS,
-    BodyLandmark,
-    HandLandmark,
     Landmark,
     angle_at,
     body_polygon_features,
     hand_polygon_features,
-    polygon_points,
 )
 
 _PHI = (1 + math.sqrt(5)) / 2

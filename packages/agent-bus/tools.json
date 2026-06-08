@@ -466,6 +466,8 @@
     "description": "Record an encounter in an agent life ledger. Detects known vs new persons, tracks alignment and interaction history. Provide {task} as --ledger <path> --agent-id <id> [--alignment <float>].",
     "command": "node",
     "args": ["packages/agent-bus/scripts/life_ledger_cli.cjs", "encounter", "--ledger", "{task}"]
+  },
+  {
     "name": "rubix-browser-plan",
     "description": "Plan a browser-control route as permission-defined Rubix/tesseract faces with blocked-move audit evidence",
     "command": "node",
