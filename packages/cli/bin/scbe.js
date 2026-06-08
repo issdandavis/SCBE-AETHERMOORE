@@ -3254,6 +3254,14 @@ function selectMechanicalSkillIds(normalized, intent) {
   const selected = new Set();
   if (intent === 'compute.spoken_math') selected.add('math-worksheet');
   if (/\b(bash|shell|powershell|cmd|terminal|run)\b/.test(normalized)) selected.add('bash');
+  if (
+    /\b(geoseal|geo seal|governance|receipt|seal|gate|quarantine|deny|allow|pipeline)\b/.test(
+      normalized
+    )
+  )
+    selected.add('geoseal');
+  if (/\b(termux|termunx|android|phone|mobile|pkg|apt|termux api|termux-api)\b/.test(normalized))
+    selected.add('termux');
   if (/\b(pull|merge|rebase|sync)\b/.test(normalized)) selected.add('pull');
   if (/\b(fetch|download|retrieve|lookup|look up|read remote)\b/.test(normalized))
     selected.add('fetch');

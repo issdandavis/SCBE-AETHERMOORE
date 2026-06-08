@@ -332,6 +332,25 @@ test('infer command fills a mechanical worksheet with hidden skill cards', () =>
   assert.match(result.stdout, /execute: no/);
 });
 
+test('infer command routes geoseal and termux worksheets with typo tolerance', () => {
+  const result = runCli([
+    'infer',
+    'geoseal',
+    'compile',
+    'intent',
+    'summarize',
+    'README',
+    'with',
+    'termunx',
+    'fallback',
+  ]);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /worksheet: worksheet\.generic/);
+  assert.match(result.stdout, /skills: geoseal, termux/);
+  assert.match(result.stdout, /execute: no/);
+});
+
 test('rich shell treats run plus prose as an assistant request, not executable a.exe', () => {
   const result = runCli(['shell'], {
     input: 'run a polynomial search function through negative inner counter space\n:exit\n',
