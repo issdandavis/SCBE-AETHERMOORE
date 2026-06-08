@@ -376,6 +376,68 @@ const TASKS = [
     max_turns: 4,
     timeout_ms: 60000,
   },
+  {
+    id: 'codegen-js-intent-router',
+    category: 'codegen',
+    verifier: 'strong',
+    difficulty: 'medium',
+    instruction:
+      'Generate a JavaScript module at `{WORKDIR}/intent_router.js` exporting `classifyInput(input)`, plus a runnable test file at `{WORKDIR}/test-intent-router.js`. The function should classify `/run dir` as `{kind:"slash", target:"run", args:"dir"}`, `[bash: git status]` as `{kind:"bracket", target:"bash", args:"git status"}`, `math 2+2` as `{kind:"math", target:"math", args:"2+2"}`, and ordinary text as `{kind:"natural", target:"chat", args:<trimmed text>}`. Run the test with Node. If it passes, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if:
+      `node -e "` +
+      `const fs=require('fs'),cp=require('child_process'),p=require('path');` +
+      `const dir=p.dirname('{WORKDIR}/answer.txt');` +
+      `const answer=fs.readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `if(answer!=='pass'){process.stderr.write('expected pass got:'+answer+'\\n');process.exit(1)}` +
+      `if(!fs.existsSync(p.join(dir,'intent_router.js'))||!fs.existsSync(p.join(dir,'test-intent-router.js'))){process.stderr.write('missing generated files\\n');process.exit(1)}` +
+      `const r=cp.spawnSync(process.execPath,[p.join(dir,'test-intent-router.js')],{cwd:dir,encoding:'utf8'});` +
+      `if(r.status!==0){process.stderr.write((r.stdout||'')+(r.stderr||''));process.exit(1)}` +
+      `"`,
+    max_turns: 4,
+    timeout_ms: 60000,
+  },
+  {
+    id: 'codegen-python-prime-abacus',
+    category: 'codegen',
+    verifier: 'strong',
+    difficulty: 'medium',
+    instruction:
+      'Generate a Python module at `{WORKDIR}/prime_abacus.py` containing `is_prime(n)`, `prime_depth(n)`, and `anchor_gap(n)`. `prime_depth(n)` should count primes <= n. `anchor_gap(n)` should return a dictionary with `anchor` equal to the greatest prime <= n, `depth` equal to `prime_depth(n)`, and `gap` equal to `n - anchor`. Add a runnable test file at `{WORKDIR}/test_prime_abacus.py`. If tests pass, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if:
+      `node -e "` +
+      `const fs=require('fs'),cp=require('child_process'),p=require('path');` +
+      `const dir=p.dirname('{WORKDIR}/answer.txt');` +
+      `const answer=fs.readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `if(answer!=='pass'){process.stderr.write('expected pass got:'+answer+'\\n');process.exit(1)}` +
+      `if(!fs.existsSync(p.join(dir,'prime_abacus.py'))||!fs.existsSync(p.join(dir,'test_prime_abacus.py'))){process.stderr.write('missing generated files\\n');process.exit(1)}` +
+      `const py=process.env.PYTHON||'python';` +
+      `const r=cp.spawnSync(py,[p.join(dir,'test_prime_abacus.py')],{cwd:dir,encoding:'utf8'});` +
+      `if(r.status!==0){process.stderr.write((r.stdout||'')+(r.stderr||''));process.exit(1)}` +
+      `"`,
+    max_turns: 4,
+    timeout_ms: 60000,
+  },
+  {
+    id: 'codegen-python-chunk-worksheet',
+    category: 'codegen',
+    verifier: 'strong',
+    difficulty: 'medium',
+    instruction:
+      'Generate a Python module at `{WORKDIR}/chunk_worksheet.py` containing `chunk_text(text, size)` and `worksheet(text, size=3)`. `chunk_text` should split text into word chunks of at most `size` words. `worksheet` should return rows like `{"index": 0, "start": 0, "end": 3, "text": "..."}` so an agent can work in token-like chunks. Add a runnable test file at `{WORKDIR}/test_chunk_worksheet.py`. If tests pass, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if:
+      `node -e "` +
+      `const fs=require('fs'),cp=require('child_process'),p=require('path');` +
+      `const dir=p.dirname('{WORKDIR}/answer.txt');` +
+      `const answer=fs.readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `if(answer!=='pass'){process.stderr.write('expected pass got:'+answer+'\\n');process.exit(1)}` +
+      `if(!fs.existsSync(p.join(dir,'chunk_worksheet.py'))||!fs.existsSync(p.join(dir,'test_chunk_worksheet.py'))){process.stderr.write('missing generated files\\n');process.exit(1)}` +
+      `const py=process.env.PYTHON||'python';` +
+      `const r=cp.spawnSync(py,[p.join(dir,'test_chunk_worksheet.py')],{cwd:dir,encoding:'utf8'});` +
+      `if(r.status!==0){process.stderr.write((r.stdout||'')+(r.stderr||''));process.exit(1)}` +
+      `"`,
+    max_turns: 4,
+    timeout_ms: 60000,
+  },
 ];
 
 // ── Task runner ───────────────────────────────────────────────────────────────

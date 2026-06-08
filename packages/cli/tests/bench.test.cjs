@@ -77,10 +77,13 @@ test('task corpus category filter runs codegen subset', () => {
   const result = runTaskCorpus(['--category', 'codegen', '--max-corpus-turns=8', '--no-artifact']);
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /Tasks: 2\b/);
+  assert.match(result.stdout, /Tasks: 5\b/);
   assert.match(result.stdout, /codegen-js-clamp-module/);
   assert.match(result.stdout, /codegen-python-prime-coordinate/);
-  assert.match(result.stdout, /Summary: 2\/2 tasks completed/);
+  assert.match(result.stdout, /codegen-js-intent-router/);
+  assert.match(result.stdout, /codegen-python-prime-abacus/);
+  assert.match(result.stdout, /codegen-python-chunk-worksheet/);
+  assert.match(result.stdout, /Summary: 5\/5 tasks completed/);
 });
 
 test('task corpus can fail when selected tasks do not verify', () => {

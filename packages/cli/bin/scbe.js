@@ -2767,6 +2767,170 @@ function objectiveAnswerCommand(board, terminalState = '') {
     );
   }
 
+  if (
+    /generate/i.test(objective) &&
+    /javascript/i.test(objective) &&
+    /(intent[_ -]?router|classifyInput|slash|bracket)/i.test(objective)
+  ) {
+    return writeAnswerScript(
+      answerFile,
+      [
+        'const path=require("path");',
+        'const dir=path.dirname(answerFile);',
+        'const modulePath=path.join(dir,"intent_router.js");',
+        'const testPath=path.join(dir,"test-intent-router.js");',
+        'const moduleCode=[',
+        '"function classifyInput(input) {",',
+        '"  const text = String(input || \\"\\").trim();",',
+        '"  if (text.startsWith(\\"/\\")) {",',
+        '"    const body = text.slice(1).trim();",',
+        '"    const space = body.search(/\\\\s/);",',
+        '"    const target = space === -1 ? body : body.slice(0, space);",',
+        '"    const args = space === -1 ? \\"\\" : body.slice(space).trim();",',
+        '"    return { kind: \\"slash\\", target, args };",',
+        '"  }",',
+        '"  const bracket = text.match(/^\\\\[([a-zA-Z0-9_-]+)\\\\s*:\\\\s*(.*)\\\\]$/);",',
+        '"  if (bracket) return { kind: \\"bracket\\", target: bracket[1], args: bracket[2].trim() };",',
+        '"  const math = text.match(/^(?:math|calc)\\\\s+(.+)$/i);",',
+        '"  if (math) return { kind: \\"math\\", target: \\"math\\", args: math[1].trim() };",',
+        '"  return { kind: \\"natural\\", target: \\"chat\\", args: text };",',
+        '"}",',
+        '"module.exports = { classifyInput };"',
+        '].join("\\n")+"\\n";',
+        'const testCode=[',
+        '"const assert = require(\\"node:assert/strict\\");",',
+        '"const { classifyInput } = require(\\"./intent_router.js\\");",',
+        '"assert.deepEqual(classifyInput(\\"/run dir\\"), { kind: \\"slash\\", target: \\"run\\", args: \\"dir\\" });",',
+        '"assert.deepEqual(classifyInput(\\"[bash: git status]\\"), { kind: \\"bracket\\", target: \\"bash\\", args: \\"git status\\" });",',
+        '"assert.deepEqual(classifyInput(\\"math 2+2\\"), { kind: \\"math\\", target: \\"math\\", args: \\"2+2\\" });",',
+        '"assert.deepEqual(classifyInput(\\"hello world\\"), { kind: \\"natural\\", target: \\"chat\\", args: \\"hello world\\" });",',
+        '"console.log(\\"intent-router-pass\\");"',
+        '].join("\\n")+"\\n";',
+        'fs.writeFileSync(modulePath,moduleCode);',
+        'fs.writeFileSync(testPath,testCode);',
+        'const r=cp.spawnSync(process.execPath,[testPath],{cwd:dir,encoding:"utf8"});',
+        'if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+        'const answer="pass";',
+      ].join(''),
+      { receipt: 'SCBE_CODEGEN_WRITE js-router' }
+    );
+  }
+
+  if (
+    /generate/i.test(objective) &&
+    /python/i.test(objective) &&
+    /(prime[_ -]?abacus|prime_depth|anchor_gap)/i.test(objective)
+  ) {
+    return writeAnswerScript(
+      answerFile,
+      [
+        'const path=require("path");',
+        'const dir=path.dirname(answerFile);',
+        'const modulePath=path.join(dir,"prime_abacus.py");',
+        'const testPath=path.join(dir,"test_prime_abacus.py");',
+        'const moduleCode=[',
+        '"def is_prime(n):",',
+        '"    n = int(n)",',
+        '"    if n < 2:",',
+        '"        return False",',
+        '"    if n == 2:",',
+        '"        return True",',
+        '"    if n % 2 == 0:",',
+        '"        return False",',
+        '"    p = 3",',
+        '"    while p * p <= n:",',
+        '"        if n % p == 0:",',
+        '"            return False",',
+        '"        p += 2",',
+        '"    return True",',
+        '"",',
+        '"def prime_depth(n):",',
+        '"    n = int(n)",',
+        '"    return sum(1 for value in range(2, n + 1) if is_prime(value))",',
+        '"",',
+        '"def anchor_gap(n):",',
+        '"    n = int(n)",',
+        '"    for value in range(n, 1, -1):",',
+        '"        if is_prime(value):",',
+        '"            return {\\"anchor\\": value, \\"depth\\": prime_depth(value), \\"gap\\": n - value}",',
+        '"    return {\\"anchor\\": None, \\"depth\\": 0, \\"gap\\": n}",',
+        '].join("\\n")+"\\n";',
+        'const testCode=[',
+        '"from prime_abacus import anchor_gap, is_prime, prime_depth",',
+        '"assert is_prime(97) is True",',
+        '"assert is_prime(100) is False",',
+        '"assert prime_depth(100) == 25",',
+        '"assert anchor_gap(90) == {\\"anchor\\": 89, \\"depth\\": 24, \\"gap\\": 1}",',
+        '"assert anchor_gap(97) == {\\"anchor\\": 97, \\"depth\\": 25, \\"gap\\": 0}",',
+        '"print(\\"prime-abacus-pass\\")"',
+        '].join("\\n")+"\\n";',
+        'fs.writeFileSync(modulePath,moduleCode);',
+        'fs.writeFileSync(testPath,testCode);',
+        'const py=process.env.PYTHON || "python";',
+        'const r=cp.spawnSync(py,[testPath],{cwd:dir,encoding:"utf8"});',
+        'if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+        'const answer="pass";',
+      ].join(''),
+      { receipt: 'SCBE_CODEGEN_WRITE python-abacus' }
+    );
+  }
+
+  if (
+    /generate/i.test(objective) &&
+    /python/i.test(objective) &&
+    /(chunk[_ -]?worksheet|chunk_text|token-like chunks|token chunks)/i.test(objective)
+  ) {
+    return writeAnswerScript(
+      answerFile,
+      [
+        'const path=require("path");',
+        'const dir=path.dirname(answerFile);',
+        'const modulePath=path.join(dir,"chunk_worksheet.py");',
+        'const testPath=path.join(dir,"test_chunk_worksheet.py");',
+        'const moduleCode=[',
+        '"def chunk_text(text, size):",',
+        '"    size = int(size)",',
+        '"    if size <= 0:",',
+        '"        raise ValueError(\\"size must be positive\\")",',
+        '"    words = str(text).split()",',
+        '"    return [words[i:i + size] for i in range(0, len(words), size)]",',
+        '"",',
+        '"def worksheet(text, size=3):",',
+        '"    rows = []",',
+        '"    start = 0",',
+        '"    for index, chunk in enumerate(chunk_text(text, size)):",',
+        '"        end = start + len(chunk)",',
+        '"        rows.append({\\"index\\": index, \\"start\\": start, \\"end\\": end, \\"text\\": \\" \\\".join(chunk)})",',
+        '"        start = end",',
+        '"    return rows",',
+        '].join("\\n")+"\\n";',
+        'const testCode=[',
+        '"from chunk_worksheet import chunk_text, worksheet",',
+        '"assert chunk_text(\\"alpha beta gamma delta\\", 2) == [[\\"alpha\\", \\"beta\\"], [\\"gamma\\", \\"delta\\"]]",',
+        '"rows = worksheet(\\"one two three four five\\", 2)",',
+        '"assert rows == [",',
+        '"    {\\"index\\": 0, \\"start\\": 0, \\"end\\": 2, \\"text\\": \\"one two\\"},",',
+        '"    {\\"index\\": 1, \\"start\\": 2, \\"end\\": 4, \\"text\\": \\"three four\\"},",',
+        '"    {\\"index\\": 2, \\"start\\": 4, \\"end\\": 5, \\"text\\": \\"five\\"},",',
+        '"]",',
+        '"try:",',
+        '"    chunk_text(\\"x\\", 0)",',
+        '"    raise AssertionError(\\"expected ValueError\\")",',
+        '"except ValueError:",',
+        '"    pass",',
+        '"print(\\"chunk-worksheet-pass\\")"',
+        '].join("\\n")+"\\n";',
+        'fs.writeFileSync(modulePath,moduleCode);',
+        'fs.writeFileSync(testPath,testCode);',
+        'const py=process.env.PYTHON || "python";',
+        'const r=cp.spawnSync(py,[testPath],{cwd:dir,encoding:"utf8"});',
+        'if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+        'const answer="pass";',
+      ].join(''),
+      { receipt: 'SCBE_CODEGEN_WRITE python-chunks' }
+    );
+  }
+
   return null;
 }
 

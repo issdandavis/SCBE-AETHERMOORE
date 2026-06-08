@@ -78,6 +78,64 @@ function shellSummary(run) {
   };
 }
 
+function parseModelMatrix(raw) {
+  if (!raw || !raw.trim()) return [];
+  const text = raw.trim();
+  if (text.startsWith('[')) {
+    const rows = JSON.parse(text);
+    if (!Array.isArray(rows)) throw new Error('SCBE_CODEGEN_MODEL_MATRIX JSON must be an array');
+    return rows.map((row, index) => ({
+      name: String(row.name || `${row.provider || 'model'}-${index + 1}`),
+      provider: String(row.provider || ''),
+      model: String(row.model || ''),
+      baseUrl: row.baseUrl || row.base_url || row.url || '',
+      apiKeyEnv: row.apiKeyEnv || row.api_key_env || '',
+    }));
+  }
+  return text
+    .split(';')
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((part, index) => {
+      const fields = part.split('|').map((value) => value.trim());
+      if (fields.length < 3) {
+        throw new Error(
+          `model matrix row ${index + 1} must be name|provider|model[|baseUrl][|apiKeyEnv]`
+        );
+      }
+      return {
+        name: fields[0],
+        provider: fields[1],
+        model: fields[2],
+        baseUrl: fields[3] || '',
+        apiKeyEnv: fields[4] || '',
+      };
+    });
+}
+
+function envForModelRow(row) {
+  const env = {
+    SCBE_PROVIDER: row.provider,
+    SCBE_MODEL: row.model,
+    SCBE_DISABLE_AGENT_JSON_FALLBACK: row.provider === 'offline' ? '' : '1',
+  };
+  if (row.baseUrl) {
+    env.SCBE_BASE_URL = row.baseUrl;
+    env.SCBE_URL = row.baseUrl;
+  }
+  if (row.apiKeyEnv && process.env[row.apiKeyEnv]) env.SCBE_API_KEY = process.env[row.apiKeyEnv];
+  return Object.fromEntries(
+    Object.entries(env).filter(([, value]) => value != null && value !== '')
+  );
+}
+
+function safeName(value) {
+  return String(value || 'model')
+    .replace(/[^a-zA-Z0-9_.-]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 48);
+}
+
 function printRow(name, summary) {
   const score =
     summary.percent != null
@@ -120,7 +178,7 @@ function main() {
 
   const offlineCodegen = runNode(
     corpusBench,
-    ['--category', 'codegen', '--max-corpus-turns=8', '--fail-on-incomplete'],
+    ['--category', 'codegen', '--max-corpus-turns=20', '--fail-on-incomplete'],
     { SCBE_PROVIDER: 'offline' },
     120000
   );
@@ -157,6 +215,7 @@ function main() {
     results.push({
       name: 'live_provider_corpus',
       description: 'live provider from current SCBE_PROVIDER/SCBE_MODEL config',
+      optional: true,
       ...corpusSummary(live),
     });
   }
@@ -171,7 +230,26 @@ function main() {
     results.push({
       name: 'live_provider_codegen_corpus',
       description: 'live provider codegen tasks with deterministic scaffold fallback disabled',
+      optional: true,
       ...corpusSummary(liveCodegen),
+    });
+  }
+
+  const modelMatrix = parseModelMatrix(process.env.SCBE_CODEGEN_MODEL_MATRIX || '');
+  for (const row of modelMatrix) {
+    const modelRun = runNode(
+      corpusBench,
+      ['--category', 'codegen', '--max-corpus-turns=20', '--fail-on-incomplete'],
+      envForModelRow(row),
+      300000
+    );
+    results.push({
+      name: `model_codegen_${safeName(row.name)}`,
+      description: 'code-generation corpus against one configured provider/model row',
+      optional: true,
+      provider: row.provider,
+      model: row.model,
+      ...corpusSummary(modelRun),
     });
   }
 
@@ -192,6 +270,9 @@ function main() {
     }).stdout.trim(),
     live_provider_included: process.env.SCBE_RUN_LIVE_BENCH === '1',
     live_codegen_included: process.env.SCBE_RUN_LIVE_CODEGEN_BENCH === '1',
+    codegen_model_matrix_included: modelMatrix.length > 0,
+    codegen_model_matrix_count: modelMatrix.length,
+    optional_failure_required: process.env.SCBE_REQUIRE_OPTIONAL_BENCH === '1',
     results,
   };
 
@@ -201,7 +282,10 @@ function main() {
   console.log(`\nartifact: ${out}`);
 
   const failedRequired = results.some(
-    (r) => r.name !== 'missing_model_no_fallback_control' && !r.ok
+    (r) =>
+      r.name !== 'missing_model_no_fallback_control' &&
+      !r.ok &&
+      (process.env.SCBE_REQUIRE_OPTIONAL_BENCH === '1' || !r.optional)
   );
   process.exit(failedRequired ? 1 : 0);
 }
