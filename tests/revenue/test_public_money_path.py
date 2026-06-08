@@ -29,6 +29,8 @@ def test_workflow_snapshot_checkout_is_consistent_and_live_wired() -> None:
 
     assert CHECKOUT_URL in workflow
     assert CHECKOUT_URL in intake
+    assert 'data-funnel-event="cta_click_buy"' in workflow
+    assert 'data-funnel-event="cta_click_buy"' in intake
     assert config["endpoints"]["workflow_snapshot_checkout"] == CHECKOUT_URL
     assert config["endpoints"]["workflow_snapshot_page"].endswith("/workflow-snapshot.html")
 
@@ -40,3 +42,15 @@ def test_ai_workflow_snapshot_has_no_stale_39_dollar_copy() -> None:
     assert "$39" not in intake
     assert "cheaper $39" not in workflow
     assert "$99 AI Workflow Snapshot" in intake
+    assert "price_usd: 99" in intake
+
+
+def test_money_path_pages_load_funnel_telemetry() -> None:
+    homepage = read_doc("index.html")
+    workflow = read_doc("workflow-snapshot.html")
+    intake = read_doc("ai-workflow-snapshot.html")
+
+    assert 'src="static/polly-funnel.js"' in homepage
+    assert 'src="static/polly-funnel.js"' in workflow
+    assert 'src="static/polly-funnel.js"' in intake
+    assert 'data-funnel-event="snapshot_intake_ok"' in intake
