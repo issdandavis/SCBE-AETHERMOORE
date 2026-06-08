@@ -410,7 +410,7 @@ def combined_energy_model(curv_scale: float = 0.1) -> CombinedEnergy:
     Default 0.1 makes the curvature term a 10% overhead at the ground shell —
     small enough to not dominate binding but measurable at outer shells.
     """
-    from src.geoseed.theory_comparison import theory_compton_orbital, theory_geoseed_lb, theory_bohr, RYDBERG_EV
+    from src.geoseed.theory_comparison import theory_compton_orbital, theory_geoseed_lb, theory_bohr
 
     bind = theory_compton_orbital().energies_ev()
     lb = theory_geoseed_lb().energies_ev()
