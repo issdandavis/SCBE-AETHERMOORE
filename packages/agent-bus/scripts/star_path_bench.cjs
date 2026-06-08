@@ -25,8 +25,12 @@ function parseArgs(argv) {
     if (!tok.startsWith('--')) continue;
     const key = tok.slice(2);
     const next = argv[i + 1];
-    if (!next || next.startsWith('--')) { flags[key] = true; }
-    else { flags[key] = next; i++; }
+    if (!next || next.startsWith('--')) {
+      flags[key] = true;
+    } else {
+      flags[key] = next;
+      i++;
+    }
   }
   return flags;
 }
@@ -49,7 +53,11 @@ function main() {
       mode: 'point_to_point',
       start,
       goal,
-      trajectories: [bfs(graph, start, goal), dijkstra(graph, start, goal), aStar(graph, start, goal)].filter(Boolean),
+      trajectories: [
+        bfs(graph, start, goal),
+        dijkstra(graph, start, goal),
+        aStar(graph, start, goal),
+      ].filter(Boolean),
     };
     printJson(results);
     return;
