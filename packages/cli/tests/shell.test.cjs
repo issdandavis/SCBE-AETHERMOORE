@@ -267,6 +267,71 @@ test('rich shell handles everyday clock and math builtins without model', () => 
   assert.doesNotMatch(result.stdout, /should-not-call-model/);
 });
 
+test('rich shell solves spoken factorial derivative dual math locally', () => {
+  const result = runCli(['shell'], {
+    input:
+      'square root of 89 times the inverse ratio of the factoral derivate of 89 before and after the inverse ratio as a dual oeprtiuon\n:exit\n',
+    env: { SCBE_MOCK_RESPONSE: 'should-not-call-model' },
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /worksheet: compute\.spoken_math/);
+  assert.match(result.stdout, /skills: math-worksheet/);
+  assert.match(result.stdout, /primary:/);
+  assert.match(result.stdout, /0\.104808/);
+  assert.match(result.stdout, /dual:/);
+  assert.match(result.stdout, /849\.165/);
+  assert.doesNotMatch(result.stdout, /should-not-call-model/);
+});
+
+test('math command solves spoken factorial derivative dual phrase as a worksheet', () => {
+  const result = runCli([
+    'math',
+    'square',
+    'root',
+    'of',
+    '89',
+    'times',
+    'inverse',
+    'ratio',
+    'of',
+    'factorial',
+    'derivative',
+    'of',
+    '89',
+    'before',
+    'and',
+    'after',
+    'as',
+    'dual',
+  ]);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /worksheet: compute\.spoken_math/);
+  assert.match(result.stdout, /primary:/);
+  assert.match(result.stdout, /dual:/);
+});
+
+test('infer command fills a mechanical worksheet with hidden skill cards', () => {
+  const result = runCli([
+    'infer',
+    'pull',
+    'latest',
+    'changes',
+    'then',
+    'fetch',
+    'docs',
+    'with',
+    'parallel',
+    'thinking',
+  ]);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /worksheet: worksheet\.generic/);
+  assert.match(result.stdout, /skills: pull, fetch, parallel-thinking/);
+  assert.match(result.stdout, /execute: no/);
+});
+
 test('rich shell treats run plus prose as an assistant request, not executable a.exe', () => {
   const result = runCli(['shell'], {
     input: 'run a polynomial search function through negative inner counter space\n:exit\n',

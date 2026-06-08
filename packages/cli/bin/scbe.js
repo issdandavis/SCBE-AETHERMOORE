@@ -2789,6 +2789,7 @@ const CORE_SHELL_COMMANDS = [
   'whereami',
   'math',
   'calc',
+  'infer',
   'chem',
   'prime',
   'emit',
@@ -2826,11 +2827,12 @@ function shellHelpText() {
     '  Run a command:       run git status --short',
     '  Slash nav:           /term | /status | /models | /run git status --short',
     '  Agent lanes:         /claude review this file  |  /codex fix the failing test',
+    '  Worksheet:           infer pull then fetch docs  |  infer square root of 89...',
     '  Bracket tag:         [verify] npm test  |  [format] packages/cli/bin/scbe.js',
     '  PowerShell direct:   !git status --short',
     '  Time/date:           now | time | date',
     '  Location:            location',
-    '  Math:                math 2 + 2 * sqrt(9)  |  calc factorial(5)  |  calc gcd(48,18)',
+    '  Math:                math 2 + 2 * sqrt(9)  |  math square root of 89...',
     '  Chemistry:           chem H2O2  |  chem C9H8O4',
     '  Prime check:         prime 7  |  prime 13  |  prime 11',
     '  Cross-compile:       emit RU factorial(5)  |  emit CA gcd(48,18)',
@@ -2861,7 +2863,8 @@ function shellToolsText() {
     '  chat        Talk to the active local model',
     '  time/date   Print local time and date',
     '  location    Print cwd, host, user, platform, locale, and timezone',
-    '  math/calc   Calculate an expression with common Math functions',
+    '  math/calc   Calculate an expression or supported spoken math phrase',
+    '  infer       Build a mechanical worksheet before execution',
     '  read        Read a text file: read README.md',
     '  write       Write a text file: write notes/today.txt hello',
     '  append      Append text to a file',
@@ -3129,6 +3132,242 @@ function evaluateMathExpression(expression) {
   return value;
 }
 
+function formatMathNumber(value) {
+  if (!Number.isFinite(value)) return String(value);
+  const abs = Math.abs(value);
+  if (abs !== 0 && (abs < 0.000001 || abs >= 1000000000)) return value.toExponential(12);
+  return Number(value.toPrecision(12)).toString();
+}
+
+function normalizeSpokenMathPhrase(input) {
+  return String(input || '')
+    .toLowerCase()
+    .replace(/\bfactoral\b/g, 'factorial')
+    .replace(/\bfactorials\b/g, 'factorial')
+    .replace(/\bderivate\b/g, 'derivative')
+    .replace(/\boeprtiuon\b/g, 'operation')
+    .replace(/\bopertaion\b/g, 'operation')
+    .replace(/\bsquare\s*root\b/g, 'square root')
+    .replace(/[^\w.+\-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function parseSpokenMathPhrase(input) {
+  const normalized = normalizeSpokenMathPhrase(input);
+  if (!normalized) return null;
+  const hasFactorialDerivative =
+    /\bfactorial\b/.test(normalized) && /\bderivative\b/.test(normalized);
+  const hasBeforeAfter = /\bbefore\b/.test(normalized) && /\bafter\b/.test(normalized);
+  const hasRatio = /\bratio\b/.test(normalized);
+  if (!hasFactorialDerivative || !hasBeforeAfter || !hasRatio) return null;
+
+  const numbers = [...normalized.matchAll(/(?<![A-Za-z])[-+]?\d+(?![A-Za-z])/g)].map((match) =>
+    Number(match[0])
+  );
+  if (!numbers.length) return null;
+  const n = numbers[0];
+  if (!Number.isSafeInteger(n) || n < 2) {
+    return {
+      schema_version: 'scbe_spoken_math_v1',
+      ok: false,
+      operation: 'factorial_derivative_ratio',
+      input,
+      normalized,
+      error: 'factorial derivative ratio needs an integer n >= 2',
+    };
+  }
+
+  const scale = /\bsqrt\b|\bsquare root\b/.test(normalized) ? Math.sqrt(n) : 1;
+  const beforeOverAfter = (n - 1) / (n * n);
+  const afterOverBefore = (n * n) / (n - 1);
+  const primary = scale * beforeOverAfter;
+  const dual = scale * afterOverBefore;
+
+  return {
+    schema_version: 'scbe_spoken_math_v1',
+    ok: true,
+    operation: 'sqrt_scaled_factorial_derivative_inverse_ratio',
+    input,
+    normalized,
+    n,
+    scale,
+    formula: {
+      d_before: 'n! - (n-1)!',
+      d_after: '(n+1)! - n!',
+      inverse_ratio: 'd_before / d_after = (n - 1) / n^2',
+      primary: 'sqrt(n) * (n - 1) / n^2',
+      dual: 'sqrt(n) * n^2 / (n - 1)',
+    },
+    values: {
+      before_over_after: beforeOverAfter,
+      after_over_before: afterOverBefore,
+      primary,
+      dual,
+    },
+    assumptions: [
+      'factorial derivative is interpreted as a finite difference around n!',
+      'inverse ratio means before derivative divided by after derivative',
+      'dual operation returns the reciprocal direction too',
+      'the ratio is simplified before evaluation to avoid huge factorials',
+    ],
+  };
+}
+
+function mechanicalSkillDir() {
+  return path.resolve(__dirname, '..', 'skills');
+}
+
+function readMechanicalSkillCard(id) {
+  const safeId = String(id || '').replace(/[^a-z0-9_-]/gi, '');
+  const relativePath = `skills/${safeId}.md`;
+  const filePath = path.join(mechanicalSkillDir(), `${safeId}.md`);
+  let body = '';
+  try {
+    body = fs.readFileSync(filePath, 'utf8');
+  } catch (_err) {
+    return {
+      id: safeId,
+      path: relativePath,
+      available: false,
+      title: safeId,
+      summary: 'skill card missing',
+    };
+  }
+  const title = (body.match(/^#\s+(.+)$/m) || [])[1] || safeId;
+  const summary = (body.match(/^summary:\s*(.+)$/m) || [])[1] || '';
+  const triggers = ((body.match(/^triggers:\s*(.+)$/m) || [])[1] || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return {
+    id: safeId,
+    path: relativePath,
+    available: true,
+    title,
+    summary,
+    triggers,
+  };
+}
+
+function selectMechanicalSkillIds(normalized, intent) {
+  const selected = new Set();
+  if (intent === 'compute.spoken_math') selected.add('math-worksheet');
+  if (/\b(bash|shell|powershell|cmd|terminal|run)\b/.test(normalized)) selected.add('bash');
+  if (/\b(pull|merge|rebase|sync)\b/.test(normalized)) selected.add('pull');
+  if (/\b(fetch|download|retrieve|lookup|look up|read remote)\b/.test(normalized))
+    selected.add('fetch');
+  if (/\b(call|invoke|agent|claude|codex|tool)\b/.test(normalized)) selected.add('call');
+  if (/\b(parallel|fanout|multi agent|compare|review lanes|think)\b/.test(normalized))
+    selected.add('parallel-thinking');
+  return [...selected];
+}
+
+function buildMechanicalWorksheet(input) {
+  const normalized = normalizeSpokenMathPhrase(input);
+  if (!normalized) return null;
+  const spokenMath = parseSpokenMathPhrase(input);
+  if (spokenMath) {
+    const skillIds = selectMechanicalSkillIds(normalized, 'compute.spoken_math');
+    return {
+      schema_version: 'scbe_mechanical_worksheet_v1',
+      input,
+      normalized,
+      intent: 'compute.spoken_math',
+      confidence: spokenMath.ok ? 0.94 : 0.5,
+      route: 'local_deterministic_math',
+      execute: spokenMath.ok,
+      skills: skillIds.map(readMechanicalSkillCard),
+      slots: [
+        { name: 'n', value: spokenMath.n },
+        { name: 'scale', value: 'sqrt(n)' },
+        { name: 'ratio', value: 'before_derivative / after_derivative' },
+        { name: 'dual', value: true },
+      ],
+      operations: [
+        'normalize spoken phrase',
+        'bind n from the repeated integer',
+        'define factorial derivative as finite difference around n!',
+        'simplify d_before / d_after to (n - 1) / n^2',
+        'multiply by sqrt(n)',
+        'return reciprocal direction as the dual operation',
+      ],
+      assumptions: spokenMath.assumptions || [],
+      result: spokenMath,
+    };
+  }
+
+  const skillIds = selectMechanicalSkillIds(normalized, 'worksheet.generic');
+  if (!skillIds.length) return null;
+  return {
+    schema_version: 'scbe_mechanical_worksheet_v1',
+    input,
+    normalized,
+    intent: 'worksheet.generic',
+    confidence: 0.72,
+    route: 'worksheet_only',
+    execute: false,
+    skills: skillIds.map(readMechanicalSkillCard),
+    slots: [
+      { name: 'request', value: input },
+      { name: 'execution', value: 'deferred until a concrete command/tool is selected' },
+    ],
+    operations: [
+      'classify the request',
+      'load matching hidden skill cards',
+      'fill a worksheet before execution',
+      'route executable work through scbe x, /claude, /codex, or agent-bus',
+    ],
+    assumptions: [
+      'generic worksheets do not execute commands automatically',
+      'dangerous or remote actions must pass the existing SCBE command gate first',
+    ],
+    result: null,
+  };
+}
+
+function printMechanicalWorksheet(worksheet, options = {}) {
+  if (options.json) {
+    process.stdout.write(`${JSON.stringify(worksheet, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write(
+    [
+      ansi('bold', `  worksheet: ${worksheet.intent}`),
+      `  confidence: ${Math.round(worksheet.confidence * 100)}%`,
+      `  route: ${worksheet.route}`,
+      `  execute: ${worksheet.execute ? 'yes' : 'no'}`,
+      `  input: ${worksheet.input}`,
+      `  skills: ${worksheet.skills.map((skill) => skill.id).join(', ') || 'none'}`,
+      '',
+      ansi('gray', '  slots'),
+      ...worksheet.slots.map((slot) => `  - ${slot.name}: ${slot.value}`),
+      '',
+      ansi('gray', '  operations'),
+      ...worksheet.operations.map((operation, index) => `  ${index + 1}. ${operation}`),
+      '',
+      ansi('gray', '  assumptions'),
+      ...worksheet.assumptions.map((assumption) => `  - ${assumption}`),
+    ].join('\n') + '\n'
+  );
+  if (worksheet.result?.ok && worksheet.intent === 'compute.spoken_math') {
+    const result = worksheet.result;
+    process.stdout.write(
+      [
+        '',
+        ansi('gray', '  result'),
+        `  primary: sqrt(${result.n}) * (${result.n - 1}) / ${result.n}^2`,
+        `  = ${formatMathNumber(result.values.primary)}`,
+        `  dual: sqrt(${result.n}) * ${result.n}^2 / (${result.n - 1})`,
+        `  = ${formatMathNumber(result.values.dual)}`,
+        '',
+      ].join('\n')
+    );
+  } else {
+    process.stdout.write('\n');
+  }
+}
+
 function countText(text) {
   const body = String(text || '');
   const lineCount = body.length ? body.split(/\r\n|\r|\n/).length : 0;
@@ -3277,12 +3516,42 @@ function handleCoreShellCommand(line) {
     return true;
   }
 
+  if (verb === 'infer') {
+    const body = rest.replace(/(^|\s)--json(?=\s|$)/g, ' ').trim();
+    if (!body) {
+      process.stdout.write(ansi('yellow', '  usage: infer <sentence or task>\n'));
+      return true;
+    }
+    const worksheet = buildMechanicalWorksheet(body);
+    if (!worksheet) {
+      process.stdout.write(ansi('yellow', '  infer: no mechanical worksheet matched this input\n'));
+      return true;
+    }
+    printMechanicalWorksheet(worksheet, { json: wantsJson });
+    return true;
+  }
+
   if (verb === 'math' || verb === 'calc') {
+    const mathInput = rest.replace(/(^|\s)--json(?=\s|$)/g, ' ').trim();
+    if (!mathInput) {
+      process.stdout.write(
+        ansi(
+          'gray',
+          '  usage: math 2 + 2 * sqrt(9)  |  math square root of 89 times inverse ratio...\n'
+        )
+      );
+      return true;
+    }
+    const worksheet = buildMechanicalWorksheet(mathInput);
+    if (worksheet?.intent === 'compute.spoken_math') {
+      printMechanicalWorksheet(worksheet, { json: wantsJson });
+      return true;
+    }
     // Tier 2 keywords trigger the Python engine; simple arithmetic stays in JS.
     const TIER2_PATTERN =
       /\b(factorial|gcd|lucas_lehmer|mersenne|euclid_perfect|while|if\s*\{|let\s+\w|var\s+\w)\b/;
-    if (TIER2_PATTERN.test(rest)) {
-      const py = spawnSync('python', ['scripts/scbe_calc.py', 'expr', ...rest.split(/\s+/)], {
+    if (TIER2_PATTERN.test(mathInput)) {
+      const py = spawnSync('python', ['scripts/scbe_calc.py', 'expr', ...mathInput.split(/\s+/)], {
         cwd: repoRoot(),
         encoding: 'utf8',
       });
@@ -3293,7 +3562,7 @@ function handleCoreShellCommand(line) {
       }
     } else {
       try {
-        const result = evaluateMathExpression(rest);
+        const result = evaluateMathExpression(mathInput);
         process.stdout.write(`  = ${Number.isInteger(result) ? result : String(result)}\n`);
       } catch (err) {
         process.stdout.write(ansi('yellow', `  math: ${err.message}\n`));
@@ -4288,6 +4557,7 @@ function runInteractiveShell(flags = {}) {
         '/term',
         '/tui',
         '/run',
+        'infer',
         '/status',
         '/models',
         '[verify]',
@@ -4961,6 +5231,13 @@ function runInteractiveShell(flags = {}) {
     const forceAssistantRoute = Boolean(
       runPrefixMatch && !looksLikeShellCommand(runPrefixMatch[1].trim())
     );
+
+    const worksheet = buildMechanicalWorksheet(line);
+    if (worksheet?.intent === 'compute.spoken_math') {
+      printMechanicalWorksheet(worksheet);
+      rl.prompt();
+      return;
+    }
 
     // ── Auto-route through mython if confidence ≥ 0.5 (math=1.0, semantic≥0.5) ──
     if (!forceAssistantRoute) {
@@ -8245,6 +8522,7 @@ const KNOWN_COMMANDS = [
   // Tier 2 computation
   'calc',
   'math',
+  'infer',
   'chem',
   'prime',
   'emit',
@@ -9367,10 +9645,42 @@ if (argv[0] === 'xval') {
 
 // ── Tier 2 computation commands ──────────────────────────────────────────────
 
-if (argv[0] === 'calc' || argv[0] === 'math') {
-  const rest = argv.slice(1).join(' ').trim();
+if (argv[0] === 'infer') {
+  const asJson = argv.includes('--json');
+  const rest = argv
+    .slice(1)
+    .filter((arg) => arg !== '--json')
+    .join(' ')
+    .trim();
   if (!rest) {
-    process.stdout.write('  usage: calc <expression>  |  calc factorial(5)  |  calc gcd(48,18)\n');
+    process.stdout.write('  usage: scbe infer <sentence or task> [--json]\n');
+    process.exit(0);
+  }
+  const worksheet = buildMechanicalWorksheet(rest);
+  if (!worksheet) {
+    process.stderr.write('infer: no mechanical worksheet matched this input\n');
+    process.exit(1);
+  }
+  printMechanicalWorksheet(worksheet, { json: asJson });
+  process.exit(0);
+}
+
+if (argv[0] === 'calc' || argv[0] === 'math') {
+  const asJson = argv.includes('--json');
+  const rest = argv
+    .slice(1)
+    .filter((arg) => arg !== '--json')
+    .join(' ')
+    .trim();
+  if (!rest) {
+    process.stdout.write(
+      '  usage: calc <expression>  |  math square root of 89 times inverse ratio...\n'
+    );
+    process.exit(0);
+  }
+  const worksheet = buildMechanicalWorksheet(rest);
+  if (worksheet?.intent === 'compute.spoken_math') {
+    printMechanicalWorksheet(worksheet, { json: asJson });
     process.exit(0);
   }
   const TIER2_PATTERN =
@@ -9475,6 +9785,19 @@ if (argv[0] === 'emit') {
     row.alias = alias.name;
     if (alias.json) process.stdout.write(`${JSON.stringify(row, null, 2)}\n`);
     process.exit(row.exit_code);
+  }
+}
+
+{
+  const asJson = argv.includes('--json');
+  const rawInput = argv
+    .filter((arg) => arg !== '--json')
+    .join(' ')
+    .trim();
+  const worksheet = buildMechanicalWorksheet(rawInput);
+  if (worksheet?.intent === 'compute.spoken_math') {
+    printMechanicalWorksheet(worksheet, { json: asJson });
+    process.exit(0);
   }
 }
 

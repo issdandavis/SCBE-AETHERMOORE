@@ -13,6 +13,7 @@
   "files": [
     "bin",
     "lib",
+    "skills",
     "scripts/scbe_tb_agent.py",
     "scripts/shell_benchmark.cjs",
     "scripts/bench_task_corpus.cjs",
