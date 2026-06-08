@@ -71,14 +71,7 @@ function caseResult(name, fn, points = 1) {
   }
 }
 
-const SCORE_AXES = [
-  'ease_of_use',
-  'utility',
-  'tooling',
-  'ai_support',
-  'governance',
-  'harness_reliability',
-];
+const SCORE_AXES = ['ease_of_use', 'utility', 'tooling', 'ai_support', 'governance'];
 
 function scoreAxis(name) {
   if (
@@ -98,7 +91,7 @@ function scoreAxis(name) {
   if (/agent_json|async|model|rationale|board|context|done_signal/i.test(name)) {
     return 'ai_support';
   }
-  return 'harness_reliability';
+  return 'utility';
 }
 
 function scoreByAxis(cases) {
