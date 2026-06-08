@@ -267,6 +267,17 @@ test('rich shell handles everyday clock and math builtins without model', () => 
   assert.doesNotMatch(result.stdout, /should-not-call-model/);
 });
 
+test('rich shell treats run plus prose as an assistant request, not executable a.exe', () => {
+  const result = runCli(['shell'], {
+    input: 'run a polynomial search function through negative inner counter space\n:exit\n',
+    env: { SCBE_MOCK_RESPONSE: 'prose-route-ok' },
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /prose-route-ok/);
+  assert.doesNotMatch(result.stdout + result.stderr, /'a' is not recognized/);
+});
+
 test('rich shell handles file write read and count builtins', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-core-home-'));
   const workdir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-core-work-'));
@@ -306,6 +317,23 @@ test('rich shell run builtin executes a normal system command directly', () => {
   assert.doesNotMatch(result.stdout, /SCBE .*GeoSeal/);
   assert.doesNotMatch(result.stdout, /should-not-call-model/);
 });
+
+test(
+  'rich shell run builtin uses PowerShell semantics on Windows',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const binDir = path.resolve(__dirname, '..', 'bin');
+    const result = runCli(['shell'], {
+      input: `run Get-ChildItem -Name ${binDir}\n:exit\n`,
+      env: { SCBE_MOCK_RESPONSE: 'should-not-call-model' },
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /scbe\.js/);
+    assert.doesNotMatch(result.stdout + result.stderr, /not recognized/);
+    assert.doesNotMatch(result.stdout, /should-not-call-model/);
+  }
+);
 
 test('rich shell supports short room chat aliases', () => {
   const result = runCli(['shell'], {

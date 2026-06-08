@@ -719,6 +719,7 @@ function spawnShellCommand(command, options = {}) {
           stdio,
           encoding: 'utf8',
           ...(options.timeoutMs ? { timeout: options.timeoutMs } : {}),
+          ...(options.maxBuffer ? { maxBuffer: options.maxBuffer } : {}),
         }
       );
     }
@@ -729,6 +730,7 @@ function spawnShellCommand(command, options = {}) {
     stdio,
     encoding: 'utf8',
     ...(options.timeoutMs ? { timeout: options.timeoutMs } : {}),
+    ...(options.maxBuffer ? { maxBuffer: options.maxBuffer } : {}),
   });
 }
 
@@ -2823,6 +2825,7 @@ function shellHelpText() {
     '  Ask normally:        hey, explain this repo',
     '  Run a command:       run git status --short',
     '  Slash nav:           /term | /status | /models | /run git status --short',
+    '  Agent lanes:         /claude review this file  |  /codex fix the failing test',
     '  Bracket tag:         [verify] npm test  |  [format] packages/cli/bin/scbe.js',
     '  PowerShell direct:   !git status --short',
     '  Time/date:           now | time | date',
@@ -2868,6 +2871,8 @@ function shellToolsText() {
     '  alias       Save/list shortcuts: :alias g git status --short',
     '  /term       Print the compact terminal front end inside the shell',
     '  /run        Run a governed command: /run npm test',
+    '  /claude     Ask Claude through a receipt: /claude review the current diff',
+    '  /codex      Ask Codex through a receipt: /codex make a focused patch',
     '  [tag] cmd   Add an instruction tag; command bodies run through receipts',
     '  build       Build root/cli/agent-bus shortcuts',
     '  !command    Run a PowerShell-style command through the legacy SCBE runner',
@@ -2925,6 +2930,15 @@ function validateShellProposedCommand(command) {
     'find',
     'where',
     'whoami',
+    'get-childitem',
+    'get-content',
+    'set-content',
+    'select-string',
+    'where-object',
+    'foreach-object',
+    'invoke-webrequest',
+    'irm',
+    'curl',
   ]);
   if (first.startsWith(':')) {
     return {
@@ -2945,6 +2959,10 @@ function validateShellProposedCommand(command) {
     };
   }
   return { ok: true, reason: 'looks executable' };
+}
+
+function looksLikeShellCommand(command) {
+  return validateShellProposedCommand(command).ok;
 }
 
 function splitShellWords(input) {
@@ -2996,19 +3014,18 @@ function resolveShellPath(input) {
 
 function runDirectShellCommand(command, options = {}) {
   const start = Date.now();
-  const child = spawnSync(command, {
-    cwd: options.cwd || process.cwd(),
-    shell: true,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-    timeout: options.timeoutMs || 30000,
+  const cwd = options.cwd || process.cwd();
+  const child = spawnShellCommand(command, {
+    cwd,
+    capture: true,
+    timeoutMs: options.timeoutMs || 30000,
     maxBuffer: options.maxBuffer || 1024 * 1024 * 8,
   });
   const exitCode = typeof child.status === 'number' ? child.status : 1;
   return {
     schema_version: 'scbe_direct_shell_run_v1',
     command,
-    cwd: options.cwd || process.cwd(),
+    cwd,
     exit_code: exitCode,
     success: exitCode === 0,
     duration_ms: Date.now() - start,
@@ -3019,14 +3036,48 @@ function runDirectShellCommand(command, options = {}) {
 }
 
 function printDirectShellRow(row) {
-  if (row.stdout) process.stdout.write(row.stdout.endsWith('\n') ? row.stdout : `${row.stdout}\n`);
-  if (row.stderr) process.stderr.write(row.stderr.endsWith('\n') ? row.stderr : `${row.stderr}\n`);
-  if (row.error) process.stderr.write(`${row.error}\n`);
-  if (!row.success) {
-    process.stdout.write(
-      ansi('red', `  command exited ${row.exit_code}`) + ansi('gray', `  (${row.duration_ms}ms)\n`)
-    );
+  printRunCard({
+    command: row.command,
+    success: row.success,
+    exit_code: row.exit_code,
+    duration_ms: row.duration_ms,
+    stdout_preview: row.stdout,
+    stderr_preview: row.stderr || row.error,
+  });
+}
+
+function printRunCard(row, options = {}) {
+  const label = options.label || 'RUN';
+  const ok = row.success === true;
+  const tone = ok ? 'green' : 'red';
+  const mark = ok ? 'PASS' : `FAIL ${row.exit_code ?? '?'}`;
+  const duration = row.duration_ms != null ? `${row.duration_ms}ms` : '?ms';
+  const command = String(row.command || '').trim();
+  process.stdout.write(
+    [
+      ansi('gray', `  ╭─ ${label} ${ansi(tone, `[${mark}]`)} ${ansi('gray', duration)}`),
+      ansi('gray', `  │ $ ${command}`),
+    ].join('\n') + '\n'
+  );
+  const stdout = String(row.stdout_preview || '').trim();
+  const stderr = String(row.stderr_preview || '').trim();
+  if (stdout) {
+    process.stdout.write(ansi('green', '  │ stdout\n'));
+    for (const line of stdout.split(/\r?\n/).slice(-18)) {
+      process.stdout.write(`  │   ${line}\n`);
+    }
   }
+  if (stderr) {
+    process.stdout.write(ansi('red', '  │ stderr\n'));
+    for (const line of stderr.split(/\r?\n/).slice(-12)) {
+      process.stdout.write(`  │   ${line}\n`);
+    }
+  }
+  if (!ok && row.failure) {
+    process.stdout.write(ansi('red', `  │ ${row.failure.summary}\n`));
+    process.stdout.write(ansi('gray', `  │ next: ${row.failure.next_step}\n`));
+  }
+  process.stdout.write(ansi('gray', '  ╰\n'));
 }
 
 function evaluateMathExpression(expression) {
@@ -3419,6 +3470,7 @@ function handleCoreShellCommand(line) {
       process.stdout.write(ansi('yellow', '  usage: run <system-command>\n'));
       return true;
     }
+    if (!looksLikeShellCommand(rest)) return false;
     printDirectShellRow(runDirectShellCommand(rest));
     return true;
   }
@@ -4290,15 +4342,35 @@ function runInteractiveShell(flags = {}) {
   const printCapturedRun = (command, options = {}) => {
     const label = options.tag ? `[${options.tag}] ` : '';
     process.stdout.write(ansi('dim', `  ${label}$ ${command}\n`));
-    const row = runShellCommand(command, { quiet: true, capture: true, timeoutMs: 30000 });
-    if (row.stdout_preview?.trim()) process.stdout.write(`${row.stdout_preview.trim()}\n`);
-    if (row.stderr_preview?.trim()) process.stderr.write(`${row.stderr_preview.trim()}\n`);
-    if (!row.success && row.failure) {
-      process.stdout.write(
-        ansi('red', `  ✗ ${row.failure.summary}\n`) + ansi('gray', `  → ${row.failure.next_step}\n`)
-      );
-    }
+    const row = runShellCommand(command, {
+      quiet: true,
+      capture: true,
+      timeoutMs: options.timeoutMs || 30000,
+    });
+    printRunCard(row, { label: options.tag ? options.tag.toUpperCase() : 'RUN' });
     return row;
+  };
+
+  const agentAssistPrompt = (agent, request) =>
+    [
+      'You are being called from the SCBE shell.',
+      'Keep the answer concise and operational.',
+      'When giving terminal commands, prefer the SCBE harness form: scbe x <command>.',
+      'Do not claim work is complete unless you actually ran or verified it.',
+      '',
+      `User request for ${agent}:`,
+      request,
+    ].join('\n');
+
+  const runAgentAssist = (agent, request) => {
+    const prompt = agentAssistPrompt(agent, request);
+    const command =
+      agent === 'claude'
+        ? `${process.env.SCBE_CLAUDE_CMD || 'claude'} -p ${quoteExecArg(prompt)}`
+        : `${process.env.SCBE_CODEX_CMD || 'codex'} exec --sandbox workspace-write --cd ${quoteExecArg(
+            repoRoot()
+          )} ${quoteExecArg(prompt)}`;
+    return printCapturedRun(command, { tag: agent, timeoutMs: 300000 });
   };
 
   const createTab = (name) => {
@@ -4461,14 +4533,7 @@ function runInteractiveShell(flags = {}) {
       const row = runShellCommand(input, { capture: true, timeoutMs: 30000 });
       tab.turns += 1;
       tab.last_result = row.success ? 'run:ok' : 'run:fail';
-      if (row.stdout_preview?.trim()) process.stdout.write(`${row.stdout_preview.trim()}\n`);
-      if (row.stderr_preview?.trim()) process.stderr.write(`${row.stderr_preview.trim()}\n`);
-      if (!row.success && row.failure) {
-        process.stdout.write(
-          ansi('red', `  ✗ ${row.failure.summary}\n`) +
-            ansi('gray', `  → ${row.failure.next_step}\n`)
-        );
-      }
+      printRunCard(row, { label: `TAB:${tab.id}` });
       return true;
     }
 
@@ -4530,14 +4595,7 @@ function runInteractiveShell(flags = {}) {
       const row = runShellCommand(command, { capture: true, timeoutMs: 30000 });
       tab.turns += 1;
       tab.last_result = row.success ? 'run:ok' : 'run:fail';
-      if (row.stdout_preview?.trim()) process.stdout.write(`${row.stdout_preview.trim()}\n`);
-      if (row.stderr_preview?.trim()) process.stderr.write(`${row.stderr_preview.trim()}\n`);
-      if (!row.success && row.failure) {
-        process.stdout.write(
-          ansi('red', `  ✗ ${row.failure.summary}\n`) +
-            ansi('gray', `  → ${row.failure.next_step}\n`)
-        );
-      }
+      printRunCard(row, { label: `ROOM:${tab.name}` });
       return true;
     }
 
@@ -4571,6 +4629,14 @@ function runInteractiveShell(flags = {}) {
         return true;
       }
       printCapturedRun(rest);
+      return true;
+    }
+    if (verb === 'claude' || verb === 'codex') {
+      if (!rest) {
+        process.stdout.write(ansi('yellow', `  usage: /${verb} <request>\n`));
+        return true;
+      }
+      runAgentAssist(verb, rest);
       return true;
     }
     if (verb === 'status') {
@@ -4659,8 +4725,7 @@ function runInteractiveShell(flags = {}) {
         });
       }
       if (accepted) {
-        process.stdout.write(ansi('dim', `  $ ${proposed}\n`));
-        runShellCommand(proposed);
+        printCapturedRun(proposed);
       } else {
         process.stdout.write(ansi('gray', '  skipped.\n'));
       }
@@ -4876,18 +4941,7 @@ function runInteractiveShell(flags = {}) {
       }
       process.stdout.write(ansi('dim', `  $ ${cmd}\n`));
       const row = runShellCommand(cmd, { quiet: true, capture: scriptedInput });
-      if (scriptedInput && row.stdout_preview?.trim()) {
-        process.stdout.write(`${row.stdout_preview.trim()}\n`);
-      }
-      if (scriptedInput && row.stderr_preview?.trim()) {
-        process.stderr.write(`${row.stderr_preview.trim()}\n`);
-      }
-      if (!row.success && row.failure) {
-        process.stdout.write(
-          ansi('red', `  ✗ ${row.failure.summary}\n`) +
-            ansi('gray', `  → ${row.failure.next_step}\n`)
-        );
-      }
+      if (scriptedInput || !row.success) printRunCard(row, { label: 'POWERSHELL' });
       rl.prompt();
       return;
     }
@@ -4898,24 +4952,18 @@ function runInteractiveShell(flags = {}) {
         ? `${process.execPath} "${__filename}" ${line}`
         : line;
       const row = runShellCommand(scbeCmd, { capture: scriptedInput });
-      if (scriptedInput && row.stdout_preview?.trim()) {
-        process.stdout.write(`${row.stdout_preview.trim()}\n`);
-      }
-      if (scriptedInput && row.stderr_preview?.trim()) {
-        process.stderr.write(`${row.stderr_preview.trim()}\n`);
-      }
-      if (!row.success && row.failure) {
-        process.stdout.write(
-          ansi('red', `  ✗ ${row.failure.summary}\n`) +
-            ansi('gray', `  → ${row.failure.next_step}\n`)
-        );
-      }
+      if (scriptedInput || !row.success) printRunCard(row, { label: 'SCBE' });
       rl.prompt();
       return;
     }
 
+    const runPrefixMatch = line.match(/^run\s+([\s\S]+)$/i);
+    const forceAssistantRoute = Boolean(
+      runPrefixMatch && !looksLikeShellCommand(runPrefixMatch[1].trim())
+    );
+
     // ── Auto-route through mython if confidence ≥ 0.5 (math=1.0, semantic≥0.5) ──
-    {
+    if (!forceAssistantRoute) {
       const _mr = runCapture(pythonCommand(), ['scripts/mython_bridge.py', '--json', line], {
         timeout: 35000,
       });
@@ -4928,21 +4976,34 @@ function runInteractiveShell(flags = {}) {
             if (_conf >= 0.5 && _best.category !== '?') {
               const _ok = _best.ok ? '✓' : '✗';
               const _tag = `${_best.category}·${_best.operation}  conf=${_conf.toFixed(2)}`;
-              process.stdout.write(ansi('dim', `  ⊕ mython·${_tag}\n`));
               const _data = _best.data || {};
-              if (_best.ok && typeof _data === 'object') {
+              const _entries =
+                _best.ok && typeof _data === 'object'
+                  ? Object.entries(_data).filter(([_k, _v]) => {
+                      if (_k === 'schema_version') return false;
+                      if (_v === null || _v === undefined) return false;
+                      if (typeof _v === 'string' && !_v.trim()) return false;
+                      return true;
+                    })
+                  : [];
+              if (_entries.length > 0) {
+                process.stdout.write(ansi('dim', `  ⊕ mython·${_tag}\n`));
                 for (const [_k, _v] of Object.entries(_data)) {
                   if (_k === 'schema_version') continue;
                   const _vs = typeof _v === 'string' ? _v : JSON.stringify(_v);
                   process.stdout.write(ansi('cyan', `  ${_k}: ${_vs}\n`));
                 }
-              } else {
+                process.stdout.write(ansi('dim', `  elapsed: ${_best.elapsed}s\n`));
+                rl.prompt();
+                return;
+              } else if (!_best.ok) {
+                process.stdout.write(ansi('dim', `  ⊕ mython·${_tag}\n`));
                 const _err = _data && _data.error ? _data.error : 'no match';
                 process.stdout.write(ansi('red', `  ${_ok} ${_err}\n`));
+                process.stdout.write(ansi('dim', `  elapsed: ${_best.elapsed}s\n`));
+                rl.prompt();
+                return;
               }
-              process.stdout.write(ansi('dim', `  elapsed: ${_best.elapsed}s\n`));
-              rl.prompt();
-              return;
             }
           }
         } catch (_) {
