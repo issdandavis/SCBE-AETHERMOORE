@@ -1,0 +1,60 @@
+{
+  "schema_version": "scbe_external_agentic_eval_manifest_v1",
+  "description": "Repo-native code-generation verifier tasks for the SCBE CLI harness. These are host-sandbox checks for generated code artifacts, not public leaderboard parity claims.",
+  "tasks": [
+    {
+      "task_id": "scbe-codegen-js-clamp-module",
+      "suite": "repo_native",
+      "title": "Generate and verify a JavaScript clamp module",
+      "repo": "local",
+      "instructions": "Run the SCBE task-corpus codegen task that asks the harness to generate clamp.js and test-clamp.js, then rerun the generated test.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-js-clamp-module",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/clamp.js",
+        "{WORKDIR}/test-clamp.js",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-python-prime-coordinate",
+      "suite": "repo_native",
+      "title": "Generate and verify a Python prime-coordinate module",
+      "repo": "local",
+      "instructions": "Run the SCBE task-corpus codegen task that asks the harness to generate prime_coordinate.py and test_prime_coordinate.py, then rerun the generated test.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-python-prime-coordinate",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/prime_coordinate.py",
+        "{WORKDIR}/test_prime_coordinate.py",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    }
+  ]
+}

@@ -15,6 +15,8 @@
  * Usage:
  *   node scripts/bench_task_corpus.cjs
  *   node scripts/bench_task_corpus.cjs --task run-freshness-tests
+ *   node scripts/bench_task_corpus.cjs --category codegen
+ *   node scripts/bench_task_corpus.cjs --provider offline --fail-on-incomplete
  *   node scripts/bench_task_corpus.cjs --list
  *   SCBE_MODEL=groq/llama-3.3-70b-versatile node scripts/bench_task_corpus.cjs
  *   node scripts/bench_task_corpus.cjs --no-artifact    # skip artifact write
@@ -723,6 +725,14 @@ function writeArtifact(results, model, provider) {
 (async () => {
   const args = process.argv.slice(2);
 
+  function readOption(name) {
+    const exact = args.indexOf(name);
+    if (exact !== -1) return args[exact + 1] || null;
+    const prefix = `${name}=`;
+    const arg = args.find((a) => a.startsWith(prefix));
+    return arg ? arg.slice(prefix.length) : null;
+  }
+
   if (args.includes('--list')) {
     console.log('Task corpus:');
     for (const t of TASKS) {
@@ -740,6 +750,10 @@ function writeArtifact(results, model, provider) {
         '',
         'Options:',
         '  --task <id>              Run only a single task by id',
+        '  --category <name>        Run only tasks in one category',
+        '  --provider <name>        Override SCBE_PROVIDER for this run',
+        '  --offline                Alias for --provider offline',
+        '  --fail-on-incomplete     Exit 1 if any selected task fails verification',
         '  --list                   Print task corpus and exit',
         '  --no-artifact            Skip writing the JSON artifact',
         '  --max-corpus-turns=N     Total turn budget across corpus (default: 80)',
@@ -750,24 +764,28 @@ function writeArtifact(results, model, provider) {
         '',
         'Tip: smoke-test verifiers without a model:',
         '  SCBE_PROVIDER=offline node scripts/bench_task_corpus.cjs --task list-agent-bus-tools',
+        '  SCBE_PROVIDER=offline node scripts/bench_task_corpus.cjs --category codegen',
       ].join('\n')
     );
     process.exit(0);
   }
 
-  const taskArg = args.find((a) => a.startsWith('--task'));
-  const taskFilter = taskArg
-    ? taskArg.includes('=')
-      ? taskArg.split('=')[1]
-      : args[args.indexOf(taskArg) + 1]
-    : null;
+  const taskFilter = readOption('--task');
+  const categoryFilter = readOption('--category');
+  const providerOverride = args.includes('--offline') ? 'offline' : readOption('--provider');
+  if (providerOverride) process.env.SCBE_PROVIDER = providerOverride;
   const noArtifact = args.includes('--no-artifact');
-  const maxTurnsArg = args.find((a) => a.startsWith('--max-corpus-turns='));
-  const maxCorpusTurns = maxTurnsArg ? parseInt(maxTurnsArg.split('=')[1], 10) : 80;
+  const failOnIncomplete = args.includes('--fail-on-incomplete');
+  const maxTurnsArg = readOption('--max-corpus-turns');
+  const maxCorpusTurns = maxTurnsArg ? parseInt(maxTurnsArg, 10) : 80;
 
-  const tasksToRun = taskFilter ? TASKS.filter((t) => t.id === taskFilter) : TASKS;
+  let tasksToRun = TASKS;
+  if (taskFilter) tasksToRun = tasksToRun.filter((t) => t.id === taskFilter);
+  if (categoryFilter) tasksToRun = tasksToRun.filter((t) => t.category === categoryFilter);
   if (!tasksToRun.length) {
-    console.error(`No task found matching: ${taskFilter}`);
+    console.error(
+      `No task found matching: task=${taskFilter || '*'} category=${categoryFilter || '*'}`
+    );
     process.exit(1);
   }
 
@@ -788,6 +806,6 @@ function writeArtifact(results, model, provider) {
     console.log(`\nArtifact: ${artifactPath}`);
   }
 
-  // Exit 0 always — calibration phase, no baseline gate
-  process.exit(0);
+  const hasIncomplete = results.some((r) => !r.completed);
+  process.exit(failOnIncomplete && hasIncomplete ? 1 : 0);
 })();

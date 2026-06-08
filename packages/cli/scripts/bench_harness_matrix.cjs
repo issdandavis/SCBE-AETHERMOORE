@@ -118,6 +118,18 @@ function main() {
     ...corpusSummary(offlineCorpus),
   });
 
+  const offlineCodegen = runNode(
+    corpusBench,
+    ['--category', 'codegen', '--max-corpus-turns=8', '--fail-on-incomplete'],
+    { SCBE_PROVIDER: 'offline' },
+    120000
+  );
+  results.push({
+    name: 'offline_codegen_corpus',
+    description: 'deterministic code-generation scaffold with runnable verifiers',
+    ...corpusSummary(offlineCodegen),
+  });
+
   const noFallback = runNode(
     corpusBench,
     ['--task', 'run-freshness-tests', '--max-corpus-turns=2', '--no-artifact'],
@@ -149,6 +161,20 @@ function main() {
     });
   }
 
+  if (process.env.SCBE_RUN_LIVE_CODEGEN_BENCH === '1') {
+    const liveCodegen = runNode(
+      corpusBench,
+      ['--category', 'codegen', '--max-corpus-turns=8', '--fail-on-incomplete'],
+      { SCBE_DISABLE_AGENT_JSON_FALLBACK: '1' },
+      180000
+    );
+    results.push({
+      name: 'live_provider_codegen_corpus',
+      description: 'live provider codegen tasks with deterministic scaffold fallback disabled',
+      ...corpusSummary(liveCodegen),
+    });
+  }
+
   console.log('mode                               exit  score');
   console.log('─'.repeat(56));
   for (const result of results) printRow(result.name, result);
@@ -165,6 +191,7 @@ function main() {
       encoding: 'utf8',
     }).stdout.trim(),
     live_provider_included: process.env.SCBE_RUN_LIVE_BENCH === '1',
+    live_codegen_included: process.env.SCBE_RUN_LIVE_CODEGEN_BENCH === '1',
     results,
   };
 

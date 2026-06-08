@@ -6,6 +6,7 @@ const path = require('node:path');
 const test = require('node:test');
 
 const CLI = path.resolve(__dirname, '..', 'bin', 'scbe.js');
+const TASK_CORPUS = path.resolve(__dirname, '..', 'scripts', 'bench_task_corpus.cjs');
 const EXPECTED_BENCH_LANES = 12;
 
 function runCli(args, options = {}) {
@@ -20,6 +21,23 @@ function runCli(args, options = {}) {
     input: options.input || '',
     encoding: 'utf8',
     timeout: options.timeout || 30_000,
+    env,
+  });
+}
+
+function runTaskCorpus(args, options = {}) {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-task-corpus-'));
+  const env = {
+    ...process.env,
+    HOME: home,
+    USERPROFILE: home,
+    NO_COLOR: '1',
+    SCBE_PROVIDER: 'offline',
+    ...(options.env || {}),
+  };
+  return spawnSync(process.execPath, [TASK_CORPUS, ...args], {
+    encoding: 'utf8',
+    timeout: options.timeout || 120_000,
     env,
   });
 }
@@ -53,6 +71,38 @@ test('bench list has all registered lanes', () => {
   assert.equal(payload.lanes.length, EXPECTED_BENCH_LANES);
   assert.ok(payload.lanes.some((lane) => lane.id === 'providers'));
   assert.ok(payload.lanes.some((lane) => lane.id === 'compound-decompose'));
+});
+
+test('task corpus category filter runs codegen subset', () => {
+  const result = runTaskCorpus(['--category', 'codegen', '--max-corpus-turns=8', '--no-artifact']);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Tasks: 2\b/);
+  assert.match(result.stdout, /codegen-js-clamp-module/);
+  assert.match(result.stdout, /codegen-python-prime-coordinate/);
+  assert.match(result.stdout, /Summary: 2\/2 tasks completed/);
+});
+
+test('task corpus can fail when selected tasks do not verify', () => {
+  const result = runTaskCorpus(
+    [
+      '--task',
+      'run-freshness-tests',
+      '--max-corpus-turns=1',
+      '--no-artifact',
+      '--fail-on-incomplete',
+    ],
+    {
+      env: {
+        SCBE_PROVIDER: 'ollama',
+        SCBE_URL: 'http://127.0.0.1:9',
+        SCBE_DISABLE_AGENT_JSON_FALLBACK: '1',
+      },
+    }
+  );
+
+  assert.equal(result.status, 1, result.stdout);
+  assert.match(result.stdout, /Summary: 0\/1 tasks completed/);
 });
 
 test('bench compound-decompose forwards JSON flag', () => {
