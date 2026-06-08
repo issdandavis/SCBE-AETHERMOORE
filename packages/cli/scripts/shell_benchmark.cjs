@@ -47,6 +47,16 @@ function runNodeCli(args, options = {}) {
   };
 }
 
+function decodeNodeEvalPayload(command) {
+  const match = String(command || '').match(/Buffer\.from\('([^']+)','base64'\)/);
+  if (!match) return String(command || '');
+  try {
+    return Buffer.from(match[1], 'base64').toString('utf8');
+  } catch {
+    return String(command || '');
+  }
+}
+
 function caseResult(name, fn, points = 1) {
   const started = Date.now();
   try {
@@ -1040,12 +1050,14 @@ function main() {
       assert.ok(lines.length >= 2, `expected ready + response, got: ${r.stdout}`);
       const resp = JSON.parse(lines[1]);
       assert.ok(resp.commands.length > 0, `expected codegen command, got ${JSON.stringify(resp)}`);
-      assert.match(resp.commands[0].keystrokes, /prime_coordinate\.py/);
-      assert.match(resp.commands[0].keystrokes, /SCBE_CODEGEN_WRITE python-prime/);
+      const decodedCommand = decodeNodeEvalPayload(resp.commands[0].keystrokes);
+      assert.match(decodedCommand, /prime_coordinate\.py/);
+      assert.match(decodedCommand, /SCBE_CODEGEN_WRITE python-prime/);
       assert.ok(resp.move_packet, 'codegen command must include move packet');
       assert.equal(resp.move_packet.round_trip_ok, true);
       return {
         command_preview: resp.commands[0].keystrokes.slice(0, 220),
+        decoded_preview: decodedCommand.slice(0, 220),
         move_id: resp.move_packet.move_id,
       };
     })

@@ -24,6 +24,16 @@ function runCli(args, options = {}) {
   });
 }
 
+function decodeNodeEvalPayload(command) {
+  const match = String(command || '').match(/Buffer\.from\('([^']+)','base64'\)/);
+  if (!match) return String(command || '');
+  try {
+    return Buffer.from(match[1], 'base64').toString('utf8');
+  } catch {
+    return String(command || '');
+  }
+}
+
 test('alias command saves shortcuts and executes them through receipts', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-alias-'));
 
@@ -186,9 +196,10 @@ test('agent-json reroutes repeated observation command into verifier artifact wr
     });
     const second = await recvJsonLine(proc);
 
-    assert.match(second.commands[0].keystrokes, /writeFileSync/);
-    assert.match(second.commands[0].keystrokes, /answer\.txt/);
-    assert.match(second.commands[0].keystrokes, /SCBE_ROUTE_WRITE/);
+    const decodedCommand = decodeNodeEvalPayload(second.commands[0].keystrokes);
+    assert.match(decodedCommand, /writeFileSync/);
+    assert.match(decodedCommand, /answer\.txt/);
+    assert.match(decodedCommand, /SCBE_ROUTE_WRITE/);
     assert.equal(second.board.last_route_hint.reason, 'repeated-command-phase-shift');
   } finally {
     proc.kill();

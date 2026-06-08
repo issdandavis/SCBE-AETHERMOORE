@@ -86,6 +86,23 @@ test('task corpus category filter runs codegen subset', () => {
   assert.match(result.stdout, /Summary: 5\/5 tasks completed/);
 });
 
+test('task corpus runs a hard codegen repair task', () => {
+  const result = runTaskCorpus(
+    [
+      '--task',
+      'codegen-hard-js-safe-shell-filter',
+      '--max-corpus-turns=4',
+      '--no-artifact',
+      '--fail-on-incomplete',
+    ],
+    { timeout: 120_000 }
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /codegen-hard-js-safe-shell-filter/);
+  assert.match(result.stdout, /Summary: 1\/1 tasks completed/);
+});
+
 test('task corpus can fail when selected tasks do not verify', () => {
   const result = runTaskCorpus(
     [

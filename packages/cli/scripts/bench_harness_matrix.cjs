@@ -188,6 +188,18 @@ function main() {
     ...corpusSummary(offlineCodegen),
   });
 
+  const offlineHardCodegen = runNode(
+    corpusBench,
+    ['--category', 'codegen-hard', '--max-corpus-turns=40', '--fail-on-incomplete'],
+    { SCBE_PROVIDER: 'offline' },
+    300000
+  );
+  results.push({
+    name: 'offline_hard_codegen_corpus',
+    description: 'deterministic hard code-generation and repair tasks with runnable verifiers',
+    ...corpusSummary(offlineHardCodegen),
+  });
+
   const noFallback = runNode(
     corpusBench,
     ['--task', 'run-freshness-tests', '--max-corpus-turns=2', '--no-artifact'],
@@ -236,6 +248,7 @@ function main() {
   }
 
   const modelMatrix = parseModelMatrix(process.env.SCBE_CODEGEN_MODEL_MATRIX || '');
+  const runHardModelMatrix = process.env.SCBE_RUN_HARD_CODEGEN_MODELS === '1';
   for (const row of modelMatrix) {
     const modelRun = runNode(
       corpusBench,
@@ -251,6 +264,24 @@ function main() {
       model: row.model,
       ...corpusSummary(modelRun),
     });
+
+    if (runHardModelMatrix) {
+      const hardModelRun = runNode(
+        corpusBench,
+        ['--category', 'codegen-hard', '--max-corpus-turns=40', '--fail-on-incomplete'],
+        envForModelRow(row),
+        600000
+      );
+      results.push({
+        name: `model_hard_codegen_${safeName(row.name)}`,
+        description:
+          'hard code-generation and repair corpus against one configured provider/model row',
+        optional: true,
+        provider: row.provider,
+        model: row.model,
+        ...corpusSummary(hardModelRun),
+      });
+    }
   }
 
   console.log('mode                               exit  score');
@@ -272,6 +303,7 @@ function main() {
     live_codegen_included: process.env.SCBE_RUN_LIVE_CODEGEN_BENCH === '1',
     codegen_model_matrix_included: modelMatrix.length > 0,
     codegen_model_matrix_count: modelMatrix.length,
+    hard_codegen_model_matrix_included: runHardModelMatrix && modelMatrix.length > 0,
     optional_failure_required: process.env.SCBE_REQUIRE_OPTIONAL_BENCH === '1',
     results,
   };

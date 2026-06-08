@@ -17,6 +17,7 @@
  *   node scripts/bench_task_corpus.cjs --task run-freshness-tests
  *   node scripts/bench_task_corpus.cjs --category codegen
  *   node scripts/bench_task_corpus.cjs --provider offline --fail-on-incomplete
+ *   node scripts/bench_task_corpus.cjs --provider ollama --model qwen2.5-coder:1.5b
  *   node scripts/bench_task_corpus.cjs --list
  *   SCBE_MODEL=groq/llama-3.3-70b-versatile node scripts/bench_task_corpus.cjs
  *   node scripts/bench_task_corpus.cjs --no-artifact    # skip artifact write
@@ -132,6 +133,14 @@ function recvLine(proc, timeoutMs = 60000) {
 //   strong  — checks exact content (known ground truth)
 //   medium  — checks presence/shape (model must produce meaningful output)
 //   weak    — checks file non-empty only (smoke-level)
+
+function nodeEval(script) {
+  const encoded = Buffer.from(
+    String(script).replace(/\{WORKDIR\}/g, '__WORKDIR__'),
+    'utf8'
+  ).toString('base64');
+  return `node -e "const __s=Buffer.from('${encoded}','base64').toString().replace(/__WORKDIR__/g,'{WORKDIR}');eval(__s)"`;
+}
 
 const TASKS = [
   // ── Execute ────────────────────────────────────────────────────────────────
@@ -438,6 +447,341 @@ const TASKS = [
     max_turns: 4,
     timeout_ms: 60000,
   },
+
+  // ── Hard code generation / repair ────────────────────────────────────────
+  {
+    id: 'codegen-hard-js-fix-average',
+    category: 'codegen-hard',
+    verifier: 'strong',
+    difficulty: 'hard',
+    setup: nodeEval(`
+      const fs = require('fs');
+      const path = require('path');
+      const dir = '{WORKDIR}';
+      fs.writeFileSync(path.join(dir, 'stats.js'), [
+        'function average(values) {',
+        '  return values.reduce((a, b) => a + b, 0) / (values.length - 1);',
+        '}',
+        'module.exports = { average };',
+        ''
+      ].join('\\n'));
+      fs.writeFileSync(path.join(dir, 'test-stats.js'), [
+        'const assert = require("node:assert/strict");',
+        'const { average } = require("./stats.js");',
+        'assert.equal(average([1, 2, 3, 4]), 2.5);',
+        'assert.equal(average([10]), 10);',
+        'assert.equal(average([]), 0);',
+        'console.log("stats-pass");',
+        ''
+      ].join('\\n'));
+    `),
+    instruction:
+      'Task id: codegen-hard-js-fix-average. A failing JavaScript fixture already exists at `{WORKDIR}/stats.js` with tests at `{WORKDIR}/test-stats.js`. Edit `stats.js` so `node {WORKDIR}/test-stats.js` passes. Do not weaken the test. If it passes, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if: nodeEval(`
+      const fs = require('fs');
+      const cp = require('child_process');
+      const path = require('path');
+      const dir = path.dirname('{WORKDIR}/answer.txt');
+      const answer = fs.readFileSync(path.join(dir, 'answer.txt'), 'utf8').trim();
+      if (answer !== 'pass') throw new Error('expected pass got ' + answer);
+      const mod = require(path.join(dir, 'stats.js'));
+      if (mod.average([1, 2, 3, 4]) !== 2.5) throw new Error('bad average list');
+      if (mod.average([10]) !== 10) throw new Error('bad singleton');
+      if (mod.average([]) !== 0) throw new Error('bad empty');
+      const r = cp.spawnSync(process.execPath, [path.join(dir, 'test-stats.js')], { cwd: dir, encoding: 'utf8' });
+      if (r.status !== 0) throw new Error((r.stdout || '') + (r.stderr || ''));
+    `),
+    max_turns: 4,
+    timeout_ms: 90000,
+  },
+  {
+    id: 'codegen-hard-python-fix-normalizer',
+    category: 'codegen-hard',
+    verifier: 'strong',
+    difficulty: 'hard',
+    setup: nodeEval(`
+      const fs = require('fs');
+      const path = require('path');
+      const dir = '{WORKDIR}';
+      fs.writeFileSync(path.join(dir, 'normalizer.py'), [
+        'def normalize_command(text):',
+        '    return str(text)',
+        ''
+      ].join('\\n'));
+      fs.writeFileSync(path.join(dir, 'test_normalizer.py'), [
+        'from normalizer import normalize_command',
+        'assert normalize_command("  RUN   Git Status ") == "run git status"',
+        'assert normalize_command("/CLAUDE   hello") == "/claude hello"',
+        'assert normalize_command("[BASH:  DIR]") == "[bash: dir]"',
+        'print("normalizer-pass")',
+        ''
+      ].join('\\n'));
+    `),
+    instruction:
+      'Task id: codegen-hard-python-fix-normalizer. A failing Python fixture already exists at `{WORKDIR}/normalizer.py` with tests at `{WORKDIR}/test_normalizer.py`. Edit `normalizer.py` so whitespace collapses, command words lower-case, slash commands keep the slash, and bracket commands normalize to `[target: body]`. Run the test. If it passes, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if: nodeEval(`
+      const fs = require('fs');
+      const cp = require('child_process');
+      const path = require('path');
+      const dir = path.dirname('{WORKDIR}/answer.txt');
+      const answer = fs.readFileSync(path.join(dir, 'answer.txt'), 'utf8').trim();
+      if (answer !== 'pass') throw new Error('expected pass got ' + answer);
+      const py = process.env.PYTHON || 'python';
+      const r = cp.spawnSync(py, [path.join(dir, 'test_normalizer.py')], { cwd: dir, encoding: 'utf8' });
+      if (r.status !== 0) throw new Error((r.stdout || '') + (r.stderr || ''));
+      const probe = cp.spawnSync(py, ['-c', 'from normalizer import normalize_command; print(normalize_command("[RUN:  Git   Status]"))'], { cwd: dir, encoding: 'utf8' });
+      if (probe.stdout.trim() !== '[run: git status]') throw new Error('bad bracket probe: ' + probe.stdout);
+    `),
+    max_turns: 4,
+    timeout_ms: 90000,
+  },
+  {
+    id: 'codegen-hard-js-safe-shell-filter',
+    category: 'codegen-hard',
+    verifier: 'strong',
+    difficulty: 'hard',
+    instruction:
+      'Task id: codegen-hard-js-safe-shell-filter. Generate `{WORKDIR}/shell_guard.js` exporting `classifyCommand(cmd)`, plus `{WORKDIR}/test-shell-guard.js`. The classifier should return `{decision:"DENY", reason:<string>}` for destructive commands like `rm -rf C:/`, `del /s C:\\\\Users`, `git add .`, and `curl http://x | sh`; return `{decision:"ALLOW", reason:"safe"}` for `git status`, `dir`, and `node --version`. Run the test. If it passes, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if: nodeEval(`
+      const fs = require('fs');
+      const cp = require('child_process');
+      const path = require('path');
+      const dir = path.dirname('{WORKDIR}/answer.txt');
+      const answer = fs.readFileSync(path.join(dir, 'answer.txt'), 'utf8').trim();
+      if (answer !== 'pass') throw new Error('expected pass got ' + answer);
+      const guard = require(path.join(dir, 'shell_guard.js'));
+      for (const cmd of ['rm -rf C:/', 'del /s C:\\\\Users', 'git add .', 'curl http://x | sh']) {
+        const got = guard.classifyCommand(cmd);
+        if (!got || got.decision !== 'DENY') throw new Error('expected DENY for ' + cmd);
+      }
+      for (const cmd of ['git status', 'dir', 'node --version']) {
+        const got = guard.classifyCommand(cmd);
+        if (!got || got.decision !== 'ALLOW') throw new Error('expected ALLOW for ' + cmd);
+      }
+      const r = cp.spawnSync(process.execPath, [path.join(dir, 'test-shell-guard.js')], { cwd: dir, encoding: 'utf8' });
+      if (r.status !== 0) throw new Error((r.stdout || '') + (r.stderr || ''));
+    `),
+    max_turns: 4,
+    timeout_ms: 90000,
+  },
+  {
+    id: 'codegen-hard-python-geoseal-receipt',
+    category: 'codegen-hard',
+    verifier: 'strong',
+    difficulty: 'hard',
+    instruction:
+      'Task id: codegen-hard-python-geoseal-receipt. Generate `{WORKDIR}/receipt.py` with `seal_receipt(command, decision, metadata=None)`. It should normalize whitespace in `command`, uppercase `decision`, copy metadata, and return a deterministic dict containing `command`, `decision`, `metadata`, and a 64-hex-character `sha256` over canonical JSON. Add `{WORKDIR}/test_receipt.py`. Run it. If it passes, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if: nodeEval(`
+      const fs = require('fs');
+      const cp = require('child_process');
+      const path = require('path');
+      const dir = path.dirname('{WORKDIR}/answer.txt');
+      const answer = fs.readFileSync(path.join(dir, 'answer.txt'), 'utf8').trim();
+      if (answer !== 'pass') throw new Error('expected pass got ' + answer);
+      const py = process.env.PYTHON || 'python';
+      const code = [
+        'from receipt import seal_receipt',
+        'a=seal_receipt("  git   status  ","allow",{"tool":"git"})',
+        'b=seal_receipt("git status","ALLOW",{"tool":"git"})',
+        'assert a==b, (a,b)',
+        'assert a["command"]=="git status"',
+        'assert a["decision"]=="ALLOW"',
+        'assert len(a["sha256"])==64 and all(c in "0123456789abcdef" for c in a["sha256"])',
+        'print("receipt-probe-pass")'
+      ].join('; ');
+      const probe = cp.spawnSync(py, ['-c', code], { cwd: dir, encoding: 'utf8' });
+      if (probe.status !== 0) throw new Error((probe.stdout || '') + (probe.stderr || ''));
+      const r = cp.spawnSync(py, [path.join(dir, 'test_receipt.py')], { cwd: dir, encoding: 'utf8' });
+      if (r.status !== 0) throw new Error((r.stdout || '') + (r.stderr || ''));
+    `),
+    max_turns: 4,
+    timeout_ms: 90000,
+  },
+  {
+    id: 'codegen-hard-js-jsonl-redactor',
+    category: 'codegen-hard',
+    verifier: 'strong',
+    difficulty: 'hard',
+    instruction:
+      'Task id: codegen-hard-js-jsonl-redactor. Generate `{WORKDIR}/jsonl_redactor.js` exporting `redactLine(line)` and `redactJsonl(text)`, plus `{WORKDIR}/test-jsonl-redactor.js`. It must parse JSONL when possible, redact emails, `sk-...` keys, `ghp_...` keys, `Bearer ...` tokens, and 12-19 digit card-like runs, then serialize JSON back to one line per record. Invalid JSON lines should be redacted as text, not dropped. Run the test. If it passes, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if: nodeEval(`
+      const fs = require('fs');
+      const cp = require('child_process');
+      const path = require('path');
+      const dir = path.dirname('{WORKDIR}/answer.txt');
+      const answer = fs.readFileSync(path.join(dir, 'answer.txt'), 'utf8').trim();
+      if (answer !== 'pass') throw new Error('expected pass got ' + answer);
+      const redactor = require(path.join(dir, 'jsonl_redactor.js'));
+      const input = '{"email":"me@example.com","key":"sk-abcdef1234567890","note":"Bearer abc.def.ghi"}\\nnot json ghp_abcdef1234567890 4111111111111111';
+      const out = redactor.redactJsonl(input);
+      for (const leak of ['me@example.com', 'sk-abcdef', 'ghp_abcdef', '4111111111111111', 'Bearer abc']) {
+        if (out.includes(leak)) throw new Error('leak: ' + leak + ' in ' + out);
+      }
+      if (!out.includes('[secret]')) throw new Error('missing redaction marker');
+      const r = cp.spawnSync(process.execPath, [path.join(dir, 'test-jsonl-redactor.js')], { cwd: dir, encoding: 'utf8' });
+      if (r.status !== 0) throw new Error((r.stdout || '') + (r.stderr || ''));
+    `),
+    max_turns: 4,
+    timeout_ms: 90000,
+  },
+  {
+    id: 'codegen-hard-python-prime-window',
+    category: 'codegen-hard',
+    verifier: 'strong',
+    difficulty: 'hard',
+    instruction:
+      'Task id: codegen-hard-python-prime-window. Generate `{WORKDIR}/prime_window.py` with `nearest_primes(n, count=3)` returning a sorted list of the nearest `count` primes to integer `n`, preferring lower primes first on equal distance. Include a runnable `{WORKDIR}/test_prime_window.py`. Run it. If it passes, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if: nodeEval(`
+      const fs = require('fs');
+      const cp = require('child_process');
+      const path = require('path');
+      const dir = path.dirname('{WORKDIR}/answer.txt');
+      const answer = fs.readFileSync(path.join(dir, 'answer.txt'), 'utf8').trim();
+      if (answer !== 'pass') throw new Error('expected pass got ' + answer);
+      const py = process.env.PYTHON || 'python';
+      const code = 'from prime_window import nearest_primes; assert nearest_primes(90,3)==[83,89,97]; assert nearest_primes(100,4)==[97,101,103,107]; print("prime-window-probe-pass")';
+      const probe = cp.spawnSync(py, ['-c', code], { cwd: dir, encoding: 'utf8' });
+      if (probe.status !== 0) throw new Error((probe.stdout || '') + (probe.stderr || ''));
+      const r = cp.spawnSync(py, [path.join(dir, 'test_prime_window.py')], { cwd: dir, encoding: 'utf8' });
+      if (r.status !== 0) throw new Error((r.stdout || '') + (r.stderr || ''));
+    `),
+    max_turns: 4,
+    timeout_ms: 90000,
+  },
+  {
+    id: 'codegen-hard-js-autocorrect-router',
+    category: 'codegen-hard',
+    verifier: 'strong',
+    difficulty: 'hard',
+    instruction:
+      'Task id: codegen-hard-js-autocorrect-router. Generate `{WORKDIR}/autocorrect_router.js` exporting `routeInput(text, dictionary)`, plus a runnable test file. It should correct one-edit command typos using the dictionary keys, preserving the rest of the text: `mat 2+2` -> `{command:"math", args:"2+2"}`, `claud hello` -> `{command:"claude", args:"hello"}`, and exact `/run dir` should route to `{command:"run", args:"dir"}`. If no command matches, return `{command:"chat", args:<trimmed text>}`. If tests pass, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if: nodeEval(`
+      const fs = require('fs');
+      const cp = require('child_process');
+      const path = require('path');
+      const dir = path.dirname('{WORKDIR}/answer.txt');
+      const answer = fs.readFileSync(path.join(dir, 'answer.txt'), 'utf8').trim();
+      if (answer !== 'pass') throw new Error('expected pass got ' + answer);
+      const router = require(path.join(dir, 'autocorrect_router.js'));
+      const dict = { math: true, claude: true, codex: true, run: true };
+      const checks = [
+        ['mat 2+2', { command: 'math', args: '2+2' }],
+        ['claud hello', { command: 'claude', args: 'hello' }],
+        ['/run dir', { command: 'run', args: 'dir' }],
+        ['ordinary words', { command: 'chat', args: 'ordinary words' }]
+      ];
+      for (const [input, expected] of checks) {
+        const got = router.routeInput(input, dict);
+        if (JSON.stringify(got) !== JSON.stringify(expected)) throw new Error(input + ' -> ' + JSON.stringify(got));
+      }
+      const r = cp.spawnSync(process.execPath, [path.join(dir, 'test-autocorrect-router.js')], { cwd: dir, encoding: 'utf8' });
+      if (r.status !== 0) throw new Error((r.stdout || '') + (r.stderr || ''));
+    `),
+    max_turns: 4,
+    timeout_ms: 90000,
+  },
+  {
+    id: 'codegen-hard-python-agent-worksheet',
+    category: 'codegen-hard',
+    verifier: 'strong',
+    difficulty: 'hard',
+    instruction:
+      'Task id: codegen-hard-python-agent-worksheet. Generate `{WORKDIR}/agent_worksheet.py` with `build_worksheet(sentence)`. It should return a dict with `objective`, `chunks`, and `steps`. Split the sentence into chunks of at most 5 words, infer steps for words like read, edit, test, commit, push, and preserve the original sentence as objective. Add a runnable test file. If tests pass, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if: nodeEval(`
+      const fs = require('fs');
+      const cp = require('child_process');
+      const path = require('path');
+      const dir = path.dirname('{WORKDIR}/answer.txt');
+      const answer = fs.readFileSync(path.join(dir, 'answer.txt'), 'utf8').trim();
+      if (answer !== 'pass') throw new Error('expected pass got ' + answer);
+      const py = process.env.PYTHON || 'python';
+      const code = [
+        'from agent_worksheet import build_worksheet',
+        'w=build_worksheet("read the file edit the bug test it commit and push")',
+        'assert w["objective"].startswith("read the file")',
+        'assert all(len(c.split())<=5 for c in w["chunks"])',
+        'assert set(["read","edit","test","commit","push"]).issubset(set(w["steps"])), w',
+        'print("worksheet-probe-pass")'
+      ].join('; ');
+      const probe = cp.spawnSync(py, ['-c', code], { cwd: dir, encoding: 'utf8' });
+      if (probe.status !== 0) throw new Error((probe.stdout || '') + (probe.stderr || ''));
+      const r = cp.spawnSync(py, [path.join(dir, 'test_agent_worksheet.py')], { cwd: dir, encoding: 'utf8' });
+      if (r.status !== 0) throw new Error((r.stdout || '') + (r.stderr || ''));
+    `),
+    max_turns: 4,
+    timeout_ms: 90000,
+  },
+  {
+    id: 'codegen-hard-js-dual-file-cli',
+    category: 'codegen-hard',
+    verifier: 'strong',
+    difficulty: 'hard',
+    setup: nodeEval(`
+      const fs = require('fs');
+      const path = require('path');
+      const dir = '{WORKDIR}';
+      fs.writeFileSync(path.join(dir, 'math_ops.js'), 'module.exports = {};\\n');
+      fs.writeFileSync(path.join(dir, 'cli.js'), [
+        'const { sum, product } = require("./math_ops.js");',
+        'const [op, ...raw] = process.argv.slice(2);',
+        'const nums = raw.map(Number);',
+        'if (op === "sum") console.log(sum(nums));',
+        'else if (op === "product") console.log(product(nums));',
+        'else { console.error("unknown op"); process.exit(2); }',
+        ''
+      ].join('\\n'));
+    `),
+    instruction:
+      'Task id: codegen-hard-js-dual-file-cli. A two-file JavaScript CLI exists in `{WORKDIR}`. Edit `math_ops.js` so `node {WORKDIR}/cli.js sum 2 3 4` prints `9` and `node {WORKDIR}/cli.js product 2 3 4` prints `24`. Add a small `{WORKDIR}/test-cli.js` that checks both commands. If it passes, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if: nodeEval(`
+      const fs = require('fs');
+      const cp = require('child_process');
+      const path = require('path');
+      const dir = path.dirname('{WORKDIR}/answer.txt');
+      const answer = fs.readFileSync(path.join(dir, 'answer.txt'), 'utf8').trim();
+      if (answer !== 'pass') throw new Error('expected pass got ' + answer);
+      const sum = cp.spawnSync(process.execPath, [path.join(dir, 'cli.js'), 'sum', '2', '3', '4'], { cwd: dir, encoding: 'utf8' });
+      const prod = cp.spawnSync(process.execPath, [path.join(dir, 'cli.js'), 'product', '2', '3', '4'], { cwd: dir, encoding: 'utf8' });
+      if (sum.stdout.trim() !== '9') throw new Error('bad sum: ' + sum.stdout + sum.stderr);
+      if (prod.stdout.trim() !== '24') throw new Error('bad product: ' + prod.stdout + prod.stderr);
+      const r = cp.spawnSync(process.execPath, [path.join(dir, 'test-cli.js')], { cwd: dir, encoding: 'utf8' });
+      if (r.status !== 0) throw new Error((r.stdout || '') + (r.stderr || ''));
+    `),
+    max_turns: 4,
+    timeout_ms: 90000,
+  },
+  {
+    id: 'codegen-hard-crosslang-prime-manifest',
+    category: 'codegen-hard',
+    verifier: 'strong',
+    difficulty: 'hard',
+    instruction:
+      'Task id: codegen-hard-crosslang-prime-manifest. Generate both `{WORKDIR}/prime_manifest.py` and `{WORKDIR}/prime_manifest.js`. Each must expose/print the same prime coordinate manifest for `n=90`: `{n:90, prime_depth:24, anchor:89, gap:1, omega:4, omega_distinct:3, residue30:0}`. Add tests `{WORKDIR}/test_prime_manifest.py` and `{WORKDIR}/test-prime-manifest.js`. If both tests pass and both languages agree, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if: nodeEval(`
+      const fs = require('fs');
+      const cp = require('child_process');
+      const path = require('path');
+      const dir = path.dirname('{WORKDIR}/answer.txt');
+      const answer = fs.readFileSync(path.join(dir, 'answer.txt'), 'utf8').trim();
+      if (answer !== 'pass') throw new Error('expected pass got ' + answer);
+      const py = process.env.PYTHON || 'python';
+      const p = cp.spawnSync(py, ['-c', 'import json, prime_manifest; print(json.dumps(prime_manifest.manifest(90), sort_keys=True))'], { cwd: dir, encoding: 'utf8' });
+      const j = cp.spawnSync(process.execPath, ['-e', 'const { manifest } = require("./prime_manifest.js"); console.log(JSON.stringify(manifest(90)))'], { cwd: dir, encoding: 'utf8' });
+      if (p.status !== 0 || j.status !== 0) throw new Error((p.stdout || '') + (p.stderr || '') + (j.stdout || '') + (j.stderr || ''));
+      const pyObj = JSON.parse(p.stdout.trim());
+      const jsObj = JSON.parse(j.stdout.trim());
+      const expected = { n: 90, prime_depth: 24, anchor: 89, gap: 1, omega: 4, omega_distinct: 3, residue30: 0 };
+      for (const [key, value] of Object.entries(expected)) {
+        if (pyObj[key] !== value) throw new Error('bad python manifest: ' + key + '=' + pyObj[key]);
+        if (jsObj[key] !== value) throw new Error('bad js manifest: ' + key + '=' + jsObj[key]);
+      }
+      const rt = cp.spawnSync(py, [path.join(dir, 'test_prime_manifest.py')], { cwd: dir, encoding: 'utf8' });
+      const jt = cp.spawnSync(process.execPath, [path.join(dir, 'test-prime-manifest.js')], { cwd: dir, encoding: 'utf8' });
+      if (rt.status !== 0 || jt.status !== 0) throw new Error((rt.stdout || '') + (rt.stderr || '') + (jt.stdout || '') + (jt.stderr || ''));
+    `),
+    max_turns: 4,
+    timeout_ms: 90000,
+  },
 ];
 
 // ── Task runner ───────────────────────────────────────────────────────────────
@@ -499,11 +843,12 @@ async function runTask(task, opts = {}) {
     return result;
   }
 
-  // Per-task tmpdir — substituted for {WORKDIR} in instruction + done_if.
+  // Per-task tmpdir — substituted for {WORKDIR} in setup/instruction/done_if.
   // Forward-slash conversion makes it safe in shell inline-node snippets on Windows.
   const workdir = fs.mkdtempSync(path.join(os.tmpdir(), `scbe-bench-${task.id}-`));
   const safeWorkdir = workdir.split(path.sep).join('/');
 
+  const setup = task.setup ? task.setup.replace(/\{WORKDIR\}/g, safeWorkdir) : null;
   const instruction = task.instruction.replace(/\{WORKDIR\}/g, safeWorkdir);
   const done_if = task.done_if ? task.done_if.replace(/\{WORKDIR\}/g, safeWorkdir) : null;
 
@@ -511,6 +856,15 @@ async function runTask(task, opts = {}) {
   let proc;
 
   try {
+    if (setup) {
+      const sr = runShell(setup, 15000);
+      if (sr.status !== 0) {
+        result.error = `setup failed: ${[sr.stdout, sr.stderr].filter(Boolean).join('\n')}`;
+        result.duration_ms = Date.now() - started;
+        return result;
+      }
+    }
+
     proc = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
       stdio: ['pipe', 'pipe', 'inherit'],
       cwd: REPO_ROOT,
@@ -814,6 +1168,7 @@ function writeArtifact(results, model, provider) {
         '  --task <id>              Run only a single task by id',
         '  --category <name>        Run only tasks in one category',
         '  --provider <name>        Override SCBE_PROVIDER for this run',
+        '  --model <name>           Override SCBE_MODEL for this run',
         '  --offline                Alias for --provider offline',
         '  --fail-on-incomplete     Exit 1 if any selected task fails verification',
         '  --list                   Print task corpus and exit',
@@ -836,6 +1191,8 @@ function writeArtifact(results, model, provider) {
   const categoryFilter = readOption('--category');
   const providerOverride = args.includes('--offline') ? 'offline' : readOption('--provider');
   if (providerOverride) process.env.SCBE_PROVIDER = providerOverride;
+  const modelOverride = readOption('--model');
+  if (modelOverride) process.env.SCBE_MODEL = modelOverride;
   const noArtifact = args.includes('--no-artifact');
   const failOnIncomplete = args.includes('--fail-on-incomplete');
   const maxTurnsArg = readOption('--max-corpus-turns');

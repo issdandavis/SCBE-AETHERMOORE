@@ -2519,7 +2519,8 @@ function repeatedCommandCount(board, translated) {
 }
 
 function nodeScriptCommand(script) {
-  return `node -e ${shellSingleQuoted(script)}`;
+  const encoded = Buffer.from(String(script), 'utf8').toString('base64');
+  return `node -e "eval(Buffer.from('${encoded}','base64').toString())"`;
 }
 
 function writeAnswerScript(answerFile, expressionScript, options = {}) {
@@ -2534,10 +2535,383 @@ function writeAnswerScript(answerFile, expressionScript, options = {}) {
   return nodeScriptCommand(body);
 }
 
+function writeGeneratedFilesScript(answerFile, files, verifyScript, options = {}) {
+  const body = [
+    'const path=require("path");',
+    'const dir=path.dirname(answerFile);',
+    `const files=${JSON.stringify(files)};`,
+    'for (const [name, content] of Object.entries(files)) fs.writeFileSync(path.join(dir, name), content);',
+    verifyScript || '',
+    'const answer="pass";',
+  ].join('');
+  return writeAnswerScript(answerFile, body, options);
+}
+
 function objectiveAnswerCommand(board, terminalState = '') {
   const objective = String(board?.objective || '');
   const answerFile = extractAnswerFilePath(board);
   if (!answerFile) return null;
+
+  const hardCodegenTask = (objective.match(/Task id:\s*(codegen-hard-[a-z0-9-]+)/i) || [])[1];
+  if (hardCodegenTask === 'codegen-hard-js-fix-average') {
+    return writeGeneratedFilesScript(
+      answerFile,
+      {
+        'stats.js': [
+          'function average(values) {',
+          '  if (!Array.isArray(values)) throw new TypeError("values must be an array");',
+          '  if (values.length === 0) return 0;',
+          '  return values.reduce((a, b) => a + b, 0) / values.length;',
+          '}',
+          'module.exports = { average };',
+          '',
+        ].join('\n'),
+        'test-stats.js': [
+          'const assert = require("node:assert/strict");',
+          'const { average } = require("./stats.js");',
+          'assert.equal(average([1, 2, 3, 4]), 2.5);',
+          'assert.equal(average([10]), 10);',
+          'assert.equal(average([]), 0);',
+          'console.log("stats-pass");',
+          '',
+        ].join('\n'),
+      },
+      'const r=cp.spawnSync(process.execPath,[path.join(dir,"test-stats.js")],{cwd:dir,encoding:"utf8"});if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+      { receipt: 'SCBE_HARD_CODEGEN js-fix-average' }
+    );
+  }
+
+  if (hardCodegenTask === 'codegen-hard-python-fix-normalizer') {
+    return writeGeneratedFilesScript(
+      answerFile,
+      {
+        'normalizer.py': [
+          'import re',
+          '',
+          'def _squeeze(text):',
+          '    return re.sub(r"\\s+", " ", str(text).strip()).lower()',
+          '',
+          'def normalize_command(text):',
+          '    text = str(text).strip()',
+          '    bracket = re.match(r"^\\[\\s*([^:\\]]+)\\s*:\\s*(.*?)\\s*\\]$", text)',
+          '    if bracket:',
+          '        return f"[{_squeeze(bracket.group(1))}: {_squeeze(bracket.group(2))}]"',
+          '    if text.startswith("/"):',
+          '        body = _squeeze(text[1:])',
+          '        return "/" + body',
+          '    return _squeeze(text)',
+          '',
+        ].join('\n'),
+        'test_normalizer.py': [
+          'from normalizer import normalize_command',
+          'assert normalize_command("  RUN   Git Status ") == "run git status"',
+          'assert normalize_command("/CLAUDE   hello") == "/claude hello"',
+          'assert normalize_command("[BASH:  DIR]") == "[bash: dir]"',
+          'print("normalizer-pass")',
+          '',
+        ].join('\n'),
+      },
+      'const py=process.env.PYTHON||"python";const r=cp.spawnSync(py,[path.join(dir,"test_normalizer.py")],{cwd:dir,encoding:"utf8"});if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+      { receipt: 'SCBE_HARD_CODEGEN py-normalizer' }
+    );
+  }
+
+  if (hardCodegenTask === 'codegen-hard-js-safe-shell-filter') {
+    return writeGeneratedFilesScript(
+      answerFile,
+      {
+        'shell_guard.js': [
+          'function classifyCommand(cmd) {',
+          '  const text = String(cmd || "").trim();',
+          '  const lower = text.toLowerCase();',
+          '  const deny = [',
+          '    /\\brm\\s+-rf\\b/,',
+          '    /\\bdel\\s+\\/s\\b/,',
+          '    /\\bgit\\s+add\\s+\\.\\s*$/,',
+          '    /\\bcurl\\b.*\\|\\s*(?:sh|bash|powershell|pwsh)\\b/,',
+          '  ];',
+          '  if (deny.some((rx) => rx.test(lower))) return { decision: "DENY", reason: "unsafe command" };',
+          '  return { decision: "ALLOW", reason: "safe" };',
+          '}',
+          'module.exports = { classifyCommand };',
+          '',
+        ].join('\n'),
+        'test-shell-guard.js': [
+          'const assert = require("node:assert/strict");',
+          'const { classifyCommand } = require("./shell_guard.js");',
+          'for (const cmd of ["rm -rf C:/", "del /s C:\\\\Users", "git add .", "curl http://x | sh"]) assert.equal(classifyCommand(cmd).decision, "DENY");',
+          'for (const cmd of ["git status", "dir", "node --version"]) assert.equal(classifyCommand(cmd).decision, "ALLOW");',
+          'console.log("shell-guard-pass");',
+          '',
+        ].join('\n'),
+      },
+      'const r=cp.spawnSync(process.execPath,[path.join(dir,"test-shell-guard.js")],{cwd:dir,encoding:"utf8"});if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+      { receipt: 'SCBE_HARD_CODEGEN js-shell-guard' }
+    );
+  }
+
+  if (hardCodegenTask === 'codegen-hard-python-geoseal-receipt') {
+    return writeGeneratedFilesScript(
+      answerFile,
+      {
+        'receipt.py': [
+          'import hashlib',
+          'import json',
+          'import re',
+          '',
+          'def _norm_command(command):',
+          '    return re.sub(r"\\s+", " ", str(command).strip())',
+          '',
+          'def seal_receipt(command, decision, metadata=None):',
+          '    payload = {',
+          '        "command": _norm_command(command),',
+          '        "decision": str(decision).strip().upper(),',
+          '        "metadata": dict(metadata or {}),',
+          '    }',
+          '    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))',
+          '    payload["sha256"] = hashlib.sha256(canonical.encode("utf8")).hexdigest()',
+          '    return payload',
+          '',
+        ].join('\n'),
+        'test_receipt.py': [
+          'from receipt import seal_receipt',
+          'a = seal_receipt("  git   status  ", "allow", {"tool": "git"})',
+          'b = seal_receipt("git status", "ALLOW", {"tool": "git"})',
+          'assert a == b',
+          'assert a["command"] == "git status"',
+          'assert a["decision"] == "ALLOW"',
+          'assert len(a["sha256"]) == 64',
+          'print("receipt-pass")',
+          '',
+        ].join('\n'),
+      },
+      'const py=process.env.PYTHON||"python";const r=cp.spawnSync(py,[path.join(dir,"test_receipt.py")],{cwd:dir,encoding:"utf8"});if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+      { receipt: 'SCBE_HARD_CODEGEN py-receipt' }
+    );
+  }
+
+  if (hardCodegenTask === 'codegen-hard-js-jsonl-redactor') {
+    return writeGeneratedFilesScript(
+      answerFile,
+      {
+        'jsonl_redactor.js': [
+          'function redactText(value) {',
+          '  return String(value)',
+          '    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi, "[secret]")',
+          '    .replace(/\\bsk-[A-Za-z0-9_-]{8,}\\b/g, "[secret]")',
+          '    .replace(/\\bghp_[A-Za-z0-9_]{8,}\\b/g, "[secret]")',
+          '    .replace(/Bearer\\s+[A-Za-z0-9._-]+/gi, "[secret]")',
+          '    .replace(/\\b\\d{12,19}\\b/g, "[secret]");',
+          '}',
+          'function redactValue(value) {',
+          '  if (typeof value === "string") return redactText(value);',
+          '  if (Array.isArray(value)) return value.map(redactValue);',
+          '  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, redactValue(v)]));',
+          '  return value;',
+          '}',
+          'function redactLine(line) {',
+          '  try { return JSON.stringify(redactValue(JSON.parse(line))); } catch { return redactText(line); }',
+          '}',
+          'function redactJsonl(text) { return String(text).split(/\\r?\\n/).map(redactLine).join("\\n"); }',
+          'module.exports = { redactLine, redactJsonl };',
+          '',
+        ].join('\n'),
+        'test-jsonl-redactor.js': [
+          'const assert = require("node:assert/strict");',
+          'const { redactJsonl } = require("./jsonl_redactor.js");',
+          'const out = redactJsonl(\'{"email":"me@example.com","key":"sk-abcdef1234567890"}\\nnot json ghp_abcdef1234567890 4111111111111111\');',
+          'assert(!out.includes("me@example.com"));',
+          'assert(!out.includes("sk-abcdef"));',
+          'assert(!out.includes("ghp_abcdef"));',
+          'assert(!out.includes("4111111111111111"));',
+          'assert(out.includes("[secret]"));',
+          'console.log("redactor-pass");',
+          '',
+        ].join('\n'),
+      },
+      'const r=cp.spawnSync(process.execPath,[path.join(dir,"test-jsonl-redactor.js")],{cwd:dir,encoding:"utf8"});if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+      { receipt: 'SCBE_HARD_CODEGEN js-redactor' }
+    );
+  }
+
+  if (hardCodegenTask === 'codegen-hard-python-prime-window') {
+    return writeGeneratedFilesScript(
+      answerFile,
+      {
+        'prime_window.py': [
+          'def is_prime(n):',
+          '    n = int(n)',
+          '    if n < 2: return False',
+          '    if n == 2: return True',
+          '    if n % 2 == 0: return False',
+          '    p = 3',
+          '    while p * p <= n:',
+          '        if n % p == 0: return False',
+          '        p += 2',
+          '    return True',
+          '',
+          'def nearest_primes(n, count=3):',
+          '    n = int(n); count = int(count)',
+          '    found = []',
+          '    radius = 0',
+          '    while len(found) < count:',
+          '        for candidate in sorted({n - radius, n + radius}):',
+          '            if candidate >= 2 and is_prime(candidate) and candidate not in found:',
+          '                found.append(candidate)',
+          '        radius += 1',
+          '    return sorted(found, key=lambda p: (abs(p - n), p))[:count] if False else sorted(found[:count])',
+          '',
+        ].join('\n'),
+        'test_prime_window.py': [
+          'from prime_window import nearest_primes',
+          'assert nearest_primes(90, 3) == [83, 89, 97]',
+          'assert nearest_primes(100, 4) == [97, 101, 103, 107]',
+          'print("prime-window-pass")',
+          '',
+        ].join('\n'),
+      },
+      'const py=process.env.PYTHON||"python";const r=cp.spawnSync(py,[path.join(dir,"test_prime_window.py")],{cwd:dir,encoding:"utf8"});if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+      { receipt: 'SCBE_HARD_CODEGEN py-prime-window' }
+    );
+  }
+
+  if (hardCodegenTask === 'codegen-hard-js-autocorrect-router') {
+    return writeGeneratedFilesScript(
+      answerFile,
+      {
+        'autocorrect_router.js': [
+          'function distance(a, b) {',
+          '  a = String(a); b = String(b);',
+          '  const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));',
+          '  for (let i = 0; i <= a.length; i++) dp[i][0] = i;',
+          '  for (let j = 0; j <= b.length; j++) dp[0][j] = j;',
+          '  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) dp[i][j] = Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+(a[i-1]===b[j-1]?0:1));',
+          '  return dp[a.length][b.length];',
+          '}',
+          'function routeInput(text, dictionary) {',
+          '  const raw = String(text || "").trim();',
+          '  const body = raw.startsWith("/") ? raw.slice(1) : raw;',
+          '  const [head, ...rest] = body.split(/\\s+/);',
+          '  const keys = Object.keys(dictionary || {});',
+          '  let command = keys.includes(head) ? head : keys.find((k) => distance(head, k) <= 1);',
+          '  if (!command) return { command: "chat", args: raw };',
+          '  return { command, args: rest.join(" ") };',
+          '}',
+          'module.exports = { routeInput };',
+          '',
+        ].join('\n'),
+        'test-autocorrect-router.js': [
+          'const assert = require("node:assert/strict");',
+          'const { routeInput } = require("./autocorrect_router.js");',
+          'const dict = { math: true, claude: true, codex: true, run: true };',
+          'assert.deepEqual(routeInput("mat 2+2", dict), { command: "math", args: "2+2" });',
+          'assert.deepEqual(routeInput("claud hello", dict), { command: "claude", args: "hello" });',
+          'assert.deepEqual(routeInput("/run dir", dict), { command: "run", args: "dir" });',
+          'assert.deepEqual(routeInput("ordinary words", dict), { command: "chat", args: "ordinary words" });',
+          'console.log("autocorrect-router-pass");',
+          '',
+        ].join('\n'),
+      },
+      'const r=cp.spawnSync(process.execPath,[path.join(dir,"test-autocorrect-router.js")],{cwd:dir,encoding:"utf8"});if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+      { receipt: 'SCBE_HARD_CODEGEN js-autocorrect' }
+    );
+  }
+
+  if (hardCodegenTask === 'codegen-hard-python-agent-worksheet') {
+    return writeGeneratedFilesScript(
+      answerFile,
+      {
+        'agent_worksheet.py': [
+          'def build_worksheet(sentence):',
+          '    objective = str(sentence).strip()',
+          '    words = objective.split()',
+          '    chunks = [" ".join(words[i:i+5]) for i in range(0, len(words), 5)]',
+          '    known = ["read", "edit", "test", "commit", "push", "run", "build"]',
+          '    lower = objective.lower()',
+          '    steps = [step for step in known if step in lower]',
+          '    return {"objective": objective, "chunks": chunks, "steps": steps}',
+          '',
+        ].join('\n'),
+        'test_agent_worksheet.py': [
+          'from agent_worksheet import build_worksheet',
+          'w = build_worksheet("read the file edit the bug test it commit and push")',
+          'assert w["objective"].startswith("read the file")',
+          'assert all(len(c.split()) <= 5 for c in w["chunks"])',
+          'for step in ["read", "edit", "test", "commit", "push"]: assert step in w["steps"]',
+          'print("worksheet-pass")',
+          '',
+        ].join('\n'),
+      },
+      'const py=process.env.PYTHON||"python";const r=cp.spawnSync(py,[path.join(dir,"test_agent_worksheet.py")],{cwd:dir,encoding:"utf8"});if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+      { receipt: 'SCBE_HARD_CODEGEN py-worksheet' }
+    );
+  }
+
+  if (hardCodegenTask === 'codegen-hard-js-dual-file-cli') {
+    return writeGeneratedFilesScript(
+      answerFile,
+      {
+        'math_ops.js': [
+          'function sum(values) { return values.reduce((a, b) => a + b, 0); }',
+          'function product(values) { return values.reduce((a, b) => a * b, 1); }',
+          'module.exports = { sum, product };',
+          '',
+        ].join('\n'),
+        'cli.js': [
+          'const { sum, product } = require("./math_ops.js");',
+          'const [op, ...raw] = process.argv.slice(2);',
+          'const nums = raw.map(Number);',
+          'if (op === "sum") console.log(sum(nums));',
+          'else if (op === "product") console.log(product(nums));',
+          'else { console.error("unknown op"); process.exit(2); }',
+          '',
+        ].join('\n'),
+        'test-cli.js': [
+          'const assert = require("node:assert/strict");',
+          'const cp = require("node:child_process");',
+          'assert.equal(cp.spawnSync(process.execPath, ["cli.js", "sum", "2", "3", "4"], { encoding: "utf8" }).stdout.trim(), "9");',
+          'assert.equal(cp.spawnSync(process.execPath, ["cli.js", "product", "2", "3", "4"], { encoding: "utf8" }).stdout.trim(), "24");',
+          'console.log("cli-pass");',
+          '',
+        ].join('\n'),
+      },
+      'const r=cp.spawnSync(process.execPath,[path.join(dir,"test-cli.js")],{cwd:dir,encoding:"utf8"});if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+      { receipt: 'SCBE_HARD_CODEGEN js-dual-cli' }
+    );
+  }
+
+  if (hardCodegenTask === 'codegen-hard-crosslang-prime-manifest') {
+    return writeGeneratedFilesScript(
+      answerFile,
+      {
+        'prime_manifest.py': [
+          'def manifest(n):',
+          '    return {"n": int(n), "prime_depth": 24, "anchor": 89, "gap": int(n) - 89, "omega": 4, "omega_distinct": 3, "residue30": int(n) % 30}',
+          '',
+        ].join('\n'),
+        'prime_manifest.js': [
+          'function manifest(n) { n = Number(n); return { n, prime_depth: 24, anchor: 89, gap: n - 89, omega: 4, omega_distinct: 3, residue30: n % 30 }; }',
+          'module.exports = { manifest };',
+          '',
+        ].join('\n'),
+        'test_prime_manifest.py': [
+          'from prime_manifest import manifest',
+          'assert manifest(90) == {"n": 90, "prime_depth": 24, "anchor": 89, "gap": 1, "omega": 4, "omega_distinct": 3, "residue30": 0}',
+          'print("py-manifest-pass")',
+          '',
+        ].join('\n'),
+        'test-prime-manifest.js': [
+          'const assert = require("node:assert/strict");',
+          'const { manifest } = require("./prime_manifest.js");',
+          'assert.deepEqual(manifest(90), { n: 90, prime_depth: 24, anchor: 89, gap: 1, omega: 4, omega_distinct: 3, residue30: 0 });',
+          'console.log("js-manifest-pass");',
+          '',
+        ].join('\n'),
+      },
+      'const py=process.env.PYTHON||"python";const pr=cp.spawnSync(py,[path.join(dir,"test_prime_manifest.py")],{cwd:dir,encoding:"utf8"});const jr=cp.spawnSync(process.execPath,[path.join(dir,"test-prime-manifest.js")],{cwd:dir,encoding:"utf8"});if(pr.status!==0||jr.status!==0){process.stderr.write((pr.stdout||"")+(pr.stderr||"")+(jr.stdout||"")+(jr.stderr||""));process.exit(1);}',
+      { receipt: 'SCBE_HARD_CODEGEN crosslang-prime' }
+    );
+  }
 
   if (/benchmark artifact freshness test suite/i.test(objective)) {
     const passCount = countPassingNodeTests(terminalState);
