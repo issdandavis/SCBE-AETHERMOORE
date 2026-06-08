@@ -483,6 +483,8 @@
               href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
               target="_blank"
               rel="noopener"
+              data-funnel-event="cta_click_buy"
+              data-funnel-label="ai-workflow-price-card-stripe"
               style="width: 100%; justify-content: center"
               >Start for $99 with Stripe →</a
             >
@@ -618,8 +620,24 @@
             ></textarea>
 
             <div class="actions">
-              <button class="btn" type="button" id="downloadPacket">Download intake JSON</button>
-              <button class="btn secondary" type="button" id="copyPacket">Copy packet</button>
+              <button
+                class="btn"
+                type="button"
+                id="downloadPacket"
+                data-funnel-event="snapshot_intake_ok"
+                data-funnel-label="download-intake-json"
+              >
+                Download intake JSON
+              </button>
+              <button
+                class="btn secondary"
+                type="button"
+                id="copyPacket"
+                data-funnel-event="snapshot_intake_ok"
+                data-funnel-label="copy-intake-json"
+              >
+                Copy packet
+              </button>
             </div>
           </form>
         </div>
@@ -654,6 +672,8 @@
                 href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
                 target="_blank"
                 rel="noopener"
+                data-funnel-event="cta_click_buy"
+                data-funnel-label="ai-workflow-pay-section-stripe"
                 >$99 with Stripe →</a
               >
               <a class="btn secondary" href="workflow-snapshot.html">Full $99 offer</a>
@@ -730,7 +750,7 @@
           return {
             packet_type: 'aethermoore_ai_workflow_snapshot_intake_v1',
             offer: 'AI Workflow Snapshot',
-            price_usd: 39,
+            price_usd: 99,
             created_at: new Date().toISOString(),
             contact: value('contact'),
             workflow_name: value('workflow'),
@@ -794,6 +814,7 @@
     <script>
       window.POLLY_STATIC_ONLY = true;
     </script>
+    <script src="static/polly-funnel.js" data-page="ai-workflow-snapshot"></script>
     <script
       src="static/polly-sidebar-agent.js"
       data-polly-api="."

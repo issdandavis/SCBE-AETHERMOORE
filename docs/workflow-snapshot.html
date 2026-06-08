@@ -125,6 +125,21 @@
         gap: 12px;
         margin-top: 28px;
       }
+      .trust-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 18px;
+      }
+      .trust-chip {
+        border: 1px solid rgba(45, 211, 166, 0.26);
+        border-radius: 7px;
+        background: rgba(45, 211, 166, 0.08);
+        padding: 12px 14px;
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 750;
+      }
       .price-box {
         border: 1px solid var(--line);
         background: rgba(21, 26, 35, 0.84);
@@ -202,6 +217,7 @@
       }
       @media (max-width: 780px) {
         .price-strip,
+        .trust-row,
         .grid,
         .steps,
         .pay-grid {
@@ -227,27 +243,35 @@
 
     <header id="offer" class="hero">
       <div class="wrap">
-        <div class="eyebrow">First paid step</div>
-        <h1>Find the weak points in one AI agent workflow.</h1>
+        <div class="eyebrow">First paid step · $99 one-time</div>
+        <h1>
+          Get a risk read before your AI workflow calls tools, writes files, or touches customers.
+        </h1>
         <p class="lead">
           Send one agent setup, prompt chain, repo link, MCP stack, automation flow, or workflow
-          diagram. AetherMoore returns a concise starter read: drift risks, unsafe tool paths,
-          missing recovery states, observability gaps, and three next fixes.
+          diagram. AetherMoore returns one written starter read: what can go wrong, what evidence is
+          missing, and the next three fixes.
         </p>
         <div class="actions">
-          <a class="btn secondary" href="ai-workflow-snapshot.html#intake"
-            >Build the intake packet first</a
-          >
           <a
             class="btn btn-primary"
             href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
             target="_blank"
             rel="noopener"
+            data-funnel-event="cta_click_buy"
+            data-funnel-label="workflow-snapshot-hero-stripe"
             >Start for $99 with Stripe</a
           >
-          <a class="btn secondary" href="#cash-app">Pay with Cash App</a>
-          <a class="btn secondary" href="#free-check">Run the free self-check</a>
-          <a class="btn secondary" href="governance-snapshot.html">Need the $500 review?</a>
+          <a class="btn secondary" href="ai-workflow-snapshot.html#receipt">See sample receipt</a>
+          <a class="btn secondary" href="ai-workflow-snapshot.html#intake"
+            >Build the intake packet first</a
+          >
+        </div>
+        <div class="trust-row" aria-label="Buyer trust signals">
+          <div class="trust-chip">No secrets required</div>
+          <div class="trust-chip">Manual delivery after intake</div>
+          <div class="trust-chip">Upgrade credit toward $500 review</div>
+          <div class="trust-chip">Live Stripe checkout</div>
         </div>
         <div class="price-strip" aria-label="Offer ladder">
           <div class="price-box"><strong>Free</strong><span>Self-check and public docs.</span></div>
@@ -500,6 +524,8 @@
               href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
               target="_blank"
               rel="noopener"
+              data-funnel-event="cta_click_buy"
+              data-funnel-label="workflow-snapshot-final-stripe"
               >Start the $99 read</a
             >
             <a class="btn secondary" href="payments.html">Open payment center</a>

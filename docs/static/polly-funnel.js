@@ -1,4 +1,4 @@
-/* Polly funnel beacons — operator-only telemetry for /hire and /governance-snapshot.
+/* Polly funnel beacons — operator-only telemetry for buyer and service pages.
  *
  * Fires named events to /v1/polly/funnel so the operator dashboard can
  * see fall-off per stage. Designed to be drop-in: include this script
@@ -104,6 +104,45 @@
     }
   }
 
+  function attr(el, name) {
+    return (el && el.getAttribute && el.getAttribute(name)) || '';
+  }
+
+  function inferClickEvent(el) {
+    var explicit = attr(el, 'data-funnel-event');
+    if (explicit) return explicit.toLowerCase();
+    var href = attr(el, 'href').toLowerCase();
+    if (href.indexOf('buy.stripe.com') !== -1 || href.indexOf('#cash-app') !== -1) {
+      return 'cta_click_buy';
+    }
+    if (href.indexOf('mailto:') === 0) return 'cta_click_email';
+    if (href.indexOf('chat.html') !== -1 || href.indexOf('#chat') !== -1) return 'cta_click_chat';
+    return '';
+  }
+
+  function clickMeta(el) {
+    var label = attr(el, 'data-funnel-label') || (el.textContent || '').trim();
+    var href = attr(el, 'href');
+    return {
+      label: label.slice(0, 96),
+      href: href.slice(0, 180),
+    };
+  }
+
+  function autoAttachClicks() {
+    document.addEventListener(
+      'click',
+      function (ev) {
+        var target = ev.target && ev.target.closest ? ev.target.closest('a,button') : null;
+        if (!target) return;
+        var event = inferClickEvent(target);
+        if (!event) return;
+        fire(event, clickMeta(target));
+      },
+      { capture: true }
+    );
+  }
+
   // Auto-attach scroll thresholds. Calls scroll_50 once and scroll_90 once
   // when the corresponding doc-fraction is reached. No-op on pages too
   // short to scroll (avoids firing on widget-only modals).
@@ -133,10 +172,12 @@
       document.addEventListener('DOMContentLoaded', function () {
         fire('arrival');
         autoAttachScroll();
+        autoAttachClicks();
       });
     } else {
       fire('arrival');
       autoAttachScroll();
+      autoAttachClicks();
     }
   }
 
