@@ -454,7 +454,6 @@ def run_test_suite_benchmark() -> dict[str, Any]:
         text=True,
         timeout=180,
         env={**os.environ, "CI": "true", "FORCE_COLOR": "0"},
-        shell=True,
     )
     elapsed = time.time() - t0
     combined = proc.stdout + proc.stderr
