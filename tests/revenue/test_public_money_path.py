@@ -49,8 +49,32 @@ def test_money_path_pages_load_funnel_telemetry() -> None:
     homepage = read_doc("index.html")
     workflow = read_doc("workflow-snapshot.html")
     intake = read_doc("ai-workflow-snapshot.html")
+    category = read_doc("ai-agent-governance-toolkit.html")
 
     assert 'src="static/polly-funnel.js"' in homepage
     assert 'src="static/polly-funnel.js"' in workflow
     assert 'src="static/polly-funnel.js"' in intake
+    assert 'src="static/polly-funnel.js"' in category
     assert 'data-funnel-event="snapshot_intake_ok"' in intake
+
+
+def test_ai_agent_governance_category_page_is_search_targeted() -> None:
+    category = read_doc("ai-agent-governance-toolkit.html")
+    homepage = read_doc("index.html")
+    products = read_doc("products.html")
+    sitemap = read_doc("sitemap.xml")
+    cli = read_doc("cli.html")
+
+    assert "<title>AI Agent Governance Toolkit and Workflow Audit | AetherMoore</title>" in category
+    assert "AI agent governance starter path" in category
+    assert "AI agent workflow audit" in category
+    assert "Cursor, Copilot, Claude Code, Codex" in category
+    assert "Zapier, Make, n8n, Lindy" in category
+    assert "$99 Workflow Snapshot" in category
+    assert 'data-funnel-event="cta_click_buy"' in category
+    assert "ai-agent-governance-toolkit.html" in homepage
+    assert "ai-agent-governance-toolkit.html" in products
+    assert "https://aethermoore.com/SCBE-AETHERMOORE/ai-agent-governance-toolkit.html" in sitemap
+    assert "https://aethermoore.com/SCBE-AETHERMOORE/ai-workflow-snapshot.html" in sitemap
+    assert "https://aethermoore.com/SCBE-AETHERMOORE/cli.html" in sitemap
+    assert '<link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/cli.html" />' in cli
