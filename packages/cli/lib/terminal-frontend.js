@@ -38,6 +38,13 @@ const MODE_CARDS = [
     role: 'execute one command with GeoSeal gate and terminal receipt',
     mode: 'machine',
   },
+  {
+    id: 'token_exec',
+    label: 'token exec',
+    command: 'scbe exec npm test',
+    role: 'execute command tokens through the same receipt path',
+    mode: 'machine',
+  },
 ];
 
 const HOTKEYS = [
@@ -52,6 +59,7 @@ const HOTKEYS = [
 const QUICK_COMMANDS = [
   ['scbe term', 'open this panel'],
   ['scbe term tui', 'headed terminal'],
+  ['scbe x <cmd>', 'run command tokens'],
   ['scbe run "<cmd>" --json', 'run with receipt'],
   ['scbe shell --agent-json', 'agent protocol'],
 ];
@@ -199,6 +207,7 @@ function buildTerminalFrontendPayload(context = {}) {
       ai: 'scbe shell --ai',
       headless: 'scbe shell --agent-json',
       governed_run: 'scbe run "<command>" --json',
+      token_exec: 'scbe x <program> [args...]',
     },
   };
 }

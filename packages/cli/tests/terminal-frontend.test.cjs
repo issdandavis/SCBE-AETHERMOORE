@@ -38,6 +38,18 @@ test('help documents the terminal frontend and short aliases', () => {
   assert.match(result.stdout, /scbe terminal --json/);
   assert.match(result.stdout, /scbe terminal bench/);
   assert.match(result.stdout, /scbe term\s+Short alias for terminal/);
+  assert.match(result.stdout, /scbe exec npm test/);
+  assert.match(result.stdout, /scbe x git status --short/);
+});
+
+test('bare scbe opens the compact terminal panel instead of the long manual', () => {
+  const result = runCli([]);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.doesNotMatch(result.stdout, new RegExp(ESC));
+  assert.match(result.stdout, /SCBE TERMINAL/);
+  assert.match(result.stdout, /Quick nav/);
+  assert.doesNotMatch(result.stdout, /scbe-aethermoore-cli/);
 });
 
 test('terminal --json emits parseable frontend state for agents', () => {
@@ -49,9 +61,34 @@ test('terminal --json emits parseable frontend state for agents', () => {
   assert.equal(payload.schema_version, 'scbe_terminal_frontend_v1');
   assert.equal(payload.title, 'SCBE Terminal Frontend');
   assert.ok(payload.launch.headless.includes('agent-json'));
+  assert.equal(payload.launch.token_exec, 'scbe x <program> [args...]');
   assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe term'));
+  assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe x <cmd>'));
+  assert.ok(payload.modes.some((entry) => entry.id === 'token_exec'));
   assert.equal(payload.natural_language.autocorrect, true);
   assert.equal(typeof payload.natural_language.word_count, 'number');
+});
+
+test('exec runs command tokens through the governed receipt path', () => {
+  const result = runCli(['exec', '--json', 'node', '--version']);
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_terminal_run_v1');
+  assert.equal(payload.command, 'node --version');
+  assert.equal(payload.success, true);
+  assert.match(payload.stdout_preview, /^v\d+\./);
+  assert.equal(payload.compass.lane, 'node');
+});
+
+test('x is a short alias for exec', () => {
+  const result = runCli(['x', '--json', 'node', '--version']);
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_terminal_run_v1');
+  assert.equal(payload.command, 'node --version');
+  assert.equal(payload.success, true);
 });
 
 test('terminal alias renders compact human navigation without ANSI under NO_COLOR', () => {

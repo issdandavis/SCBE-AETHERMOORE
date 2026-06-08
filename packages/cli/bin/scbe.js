@@ -110,6 +110,8 @@ Core commands:
   scbe terminal bench                Benchmark terminal frontend startup/render
   scbe term                          Short alias for terminal
   scbe run "npm test"
+  scbe exec npm test                 Execute command tokens through SCBE receipts
+  scbe x git status --short          Short alias for exec
   scbe status
   scbe liboqs
   scbe liboqs --json
@@ -143,6 +145,12 @@ Core commands:
   run "<command>"         Execute a shell command inside the governed harness;
                           wraps stdout/stderr with L13 risk tagging
                           Example: scbe run "npm test"
+  exec [--json] <cmd>     Execute command tokens without quote-wrapping the
+                          whole command; same GeoSeal receipt path as run
+                          Example: scbe exec git status --short
+                          Use -- before command args when the command itself
+                          needs SCBE flags, e.g. scbe exec -- node app --json
+  x [--json] <cmd>        Short alias for exec
   status [--json]         Print current workspace, bus, and provider status
   liboqs [--json]         Emit post-quantum proof receipt:
                           ML-KEM-768 encap/decap + ML-DSA-65 sign/verify
@@ -977,6 +985,34 @@ function parseRunArgs(args) {
   const capture = json || args.includes('--capture');
   const filtered = args.filter((arg) => !['--json', '--quiet', '--capture'].includes(arg));
   return { command: filtered.join(' '), json, quiet, capture };
+}
+
+function quoteExecArg(arg) {
+  const text = String(arg ?? '');
+  if (text === '') return '""';
+  if (/^[A-Za-z0-9_@%+=:,./\\-]+$/.test(text)) return text;
+  if (process.platform === 'win32') {
+    return `"${text.replace(/"/g, '\\"')}"`;
+  }
+  return `'${text.replace(/'/g, "'\\''")}'`;
+}
+
+function parseExecArgs(args) {
+  const delimiterIndex = args.indexOf('--');
+  const controlArgs = delimiterIndex >= 0 ? args.slice(0, delimiterIndex) : args;
+  const commandArgs =
+    delimiterIndex >= 0
+      ? args.slice(delimiterIndex + 1)
+      : args.filter((arg) => !['--json', '--quiet', '--capture'].includes(arg));
+  const json = controlArgs.includes('--json');
+  const quiet = controlArgs.includes('--quiet');
+  const capture = json || controlArgs.includes('--capture');
+  return {
+    command: commandArgs.map(quoteExecArg).join(' '),
+    json,
+    quiet,
+    capture,
+  };
 }
 
 function printHistory(limit = 20) {
@@ -7830,6 +7866,8 @@ const KNOWN_COMMANDS = [
   'term',
   'ui',
   'run',
+  'exec',
+  'x',
   'status',
   'liboqs',
   'history',
@@ -8710,7 +8748,10 @@ function runUtterances(args) {
 }
 
 const argv = process.argv.slice(2);
-if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h' || argv[0] === 'help') {
+if (argv.length === 0) {
+  runTerminalFrontend([]);
+}
+if (argv[0] === '--help' || argv[0] === '-h' || argv[0] === 'help') {
   process.stdout.write(colorizeHelp(CLI_HELP, ui({})));
   process.exit(0);
 }
@@ -8829,6 +8870,17 @@ if (argv[0] === 'run') {
   const { command, json, quiet, capture } = parseRunArgs(argv.slice(1));
   if (!command) {
     process.stderr.write('Usage: scbe run "npm test"\n');
+    process.exit(2);
+  }
+  const row = runShellCommand(command, { json, quiet, capture });
+  if (json) process.stdout.write(`${JSON.stringify(row, null, 2)}\n`);
+  process.exit(row.exit_code);
+}
+
+if (argv[0] === 'exec' || argv[0] === 'x') {
+  const { command, json, quiet, capture } = parseExecArgs(argv.slice(1));
+  if (!command) {
+    process.stderr.write('Usage: scbe exec [--json] git status --short\n');
     process.exit(2);
   }
   const row = runShellCommand(command, { json, quiet, capture });
