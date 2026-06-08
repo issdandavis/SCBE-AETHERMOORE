@@ -79,6 +79,9 @@ Usage:
   upgrade                 Print upgrade instructions and SCBE_API_KEY setup
   history [--limit N]     Show recent command history from the autocorrect ledger
                           (default: --limit 20)
+  alias                   List local command aliases from ~/.scbe/shell.json
+  alias <name> <command>  Save a shortcut, e.g. scbe alias g git status --short
+  alias rm <name>         Remove a shortcut
 Core commands:
   scbe version
   scbe version --json
@@ -116,6 +119,8 @@ Core commands:
   scbe liboqs
   scbe liboqs --json
   scbe history --limit 20
+  scbe alias g git status --short
+  scbe g
 
 ─────────────────────────────────────────────────────────────────────────────
   SHELL — personal interactive and scriptable shells
@@ -155,6 +160,10 @@ Core commands:
   liboqs [--json]         Emit post-quantum proof receipt:
                           ML-KEM-768 encap/decap + ML-DSA-65 sign/verify
                           with timing; confirms liboqs C bindings are live
+  alias                   List command shortcuts
+  alias <name> <command>  Save a shortcut; aliases run through the same
+                          governed receipt path as exec/x
+  alias rm <name>         Remove a shortcut
 
 ─────────────────────────────────────────────────────────────────────────────
   BENCH — executable evidence lanes
@@ -1997,6 +2006,7 @@ function readShellConfig() {
     url: 'http://localhost:11434',
     timeout_ms: 30000,
     stream: true,
+    aliases: {},
     system_prompt:
       'You are SCBE, a governed AI command assistant. Help the user accomplish their intent safely. ' +
       'For normal conversation, answer plainly and do not emit a command. ' +
@@ -2005,6 +2015,9 @@ function readShellConfig() {
   };
   try {
     const cfg = { ...defaults, ...JSON.parse(fs.readFileSync(shellConfigPath(), 'utf8')) };
+    if (!cfg.aliases || typeof cfg.aliases !== 'object' || Array.isArray(cfg.aliases)) {
+      cfg.aliases = {};
+    }
     if (cfg.provider === 'ollama') cfg.model = resolveOllamaModel(cfg.model);
     return cfg;
   } catch {
@@ -2016,6 +2029,171 @@ function saveShellConfig(cfg) {
   const dir = path.dirname(shellConfigPath());
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(shellConfigPath(), `${JSON.stringify(cfg, null, 2)}\n`, 'utf8');
+}
+
+function safeAliases(cfg = readShellConfig()) {
+  const aliases = cfg.aliases || {};
+  const out = {};
+  for (const [name, command] of Object.entries(aliases)) {
+    if (typeof command === 'string' && command.trim()) out[name] = command.trim();
+  }
+  return out;
+}
+
+function validateAliasName(name) {
+  const value = String(name || '').trim();
+  if (!/^[A-Za-z][A-Za-z0-9_-]{0,31}$/.test(value)) {
+    return {
+      ok: false,
+      reason: 'alias must start with a letter and use only letters, numbers, _ or -',
+    };
+  }
+  if (KNOWN_COMMANDS.includes(value.toLowerCase())) {
+    return { ok: false, reason: `"${value}" is already an SCBE command` };
+  }
+  return { ok: true, name: value };
+}
+
+function printAliases(aliases, asJson = false) {
+  const entries = Object.entries(aliases).sort(([a], [b]) => a.localeCompare(b));
+  if (asJson) {
+    process.stdout.write(
+      `${JSON.stringify(
+        {
+          schema_version: 'scbe_aliases_v1',
+          aliases: Object.fromEntries(entries),
+          count: entries.length,
+          config_path: shellConfigPath(),
+        },
+        null,
+        2
+      )}\n`
+    );
+    return;
+  }
+  if (!entries.length) {
+    process.stdout.write('No SCBE aliases yet.\nTry: scbe alias g git status --short\n');
+    return;
+  }
+  process.stdout.write('SCBE aliases\n');
+  for (const [name, command] of entries) {
+    process.stdout.write(`  ${name.padEnd(12)} ${command}\n`);
+  }
+}
+
+function runAliasCli(args) {
+  let asJson = args[0] === '--json';
+  let filtered = asJson ? args.slice(1) : args.slice();
+  const sub = filtered[0] || 'list';
+  if (
+    ['list', 'ls', 'get', 'rm', 'remove', 'delete'].includes(sub) &&
+    filtered.includes('--json')
+  ) {
+    asJson = true;
+    filtered = filtered.filter((arg) => arg !== '--json');
+  }
+  const cfg = readShellConfig();
+  const aliases = safeAliases(cfg);
+
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    process.stdout.write(
+      [
+        'Usage:',
+        '  scbe alias',
+        '  scbe alias <name> <command...>',
+        '  scbe alias set <name> <command...>',
+        '  scbe alias get <name> [--json]',
+        '  scbe alias rm <name>',
+        '',
+        'Examples:',
+        '  scbe alias g git status --short',
+        '  scbe alias t npm --prefix packages/cli test',
+        '  scbe g',
+        '  scbe t --json',
+        '',
+      ].join('\n')
+    );
+    process.exit(0);
+  }
+
+  if (sub === 'list' || sub === 'ls') {
+    printAliases(aliases, asJson);
+    process.exit(0);
+  }
+
+  if (sub === 'get') {
+    const name = filtered[1] || '';
+    const command = aliases[name];
+    if (!command) {
+      if (asJson)
+        process.stdout.write(`${JSON.stringify({ ok: false, name, command: null }, null, 2)}\n`);
+      else process.stderr.write(`scbe alias: no alias named "${name}"\n`);
+      process.exit(1);
+    }
+    if (asJson) process.stdout.write(`${JSON.stringify({ ok: true, name, command }, null, 2)}\n`);
+    else process.stdout.write(`${name} ${command}\n`);
+    process.exit(0);
+  }
+
+  if (sub === 'rm' || sub === 'remove' || sub === 'delete') {
+    const name = filtered[1] || '';
+    if (!aliases[name]) {
+      process.stderr.write(`scbe alias: no alias named "${name}"\n`);
+      process.exit(1);
+    }
+    delete aliases[name];
+    cfg.aliases = aliases;
+    saveShellConfig(cfg);
+    if (asJson) process.stdout.write(`${JSON.stringify({ ok: true, removed: name }, null, 2)}\n`);
+    else process.stdout.write(`Removed alias ${name}\n`);
+    process.exit(0);
+  }
+
+  const name = sub === 'set' ? filtered[1] : filtered[0];
+  const commandParts = sub === 'set' ? filtered.slice(2) : filtered.slice(1);
+  const validation = validateAliasName(name);
+  if (!validation.ok) {
+    process.stderr.write(`scbe alias: ${validation.reason}\n`);
+    process.exit(2);
+  }
+  const command = commandParts.join(' ').trim();
+  if (!command) {
+    process.stderr.write('Usage: scbe alias <name> <command...>\n');
+    process.exit(2);
+  }
+  aliases[validation.name] = command;
+  cfg.aliases = aliases;
+  saveShellConfig(cfg);
+  if (asJson)
+    process.stdout.write(
+      `${JSON.stringify({ ok: true, name: validation.name, command }, null, 2)}\n`
+    );
+  else process.stdout.write(`Saved alias ${validation.name} -> ${command}\n`);
+  process.exit(0);
+}
+
+function parseAliasInvocation(argv, aliases = safeAliases()) {
+  const name = argv[0] || '';
+  const base = aliases[name];
+  if (!base) return null;
+  const args = argv.slice(1);
+  const delimiterIndex = args.indexOf('--');
+  const controlArgs = delimiterIndex >= 0 ? args.slice(0, delimiterIndex) : args;
+  const commandArgs =
+    delimiterIndex >= 0
+      ? args.slice(delimiterIndex + 1)
+      : args.filter((arg) => !['--json', '--quiet', '--capture'].includes(arg));
+  const json = controlArgs.includes('--json');
+  const quiet = controlArgs.includes('--quiet');
+  const capture = json || controlArgs.includes('--capture');
+  const suffix = commandArgs.map(quoteExecArg).join(' ');
+  return {
+    name,
+    command: suffix ? `${base} ${suffix}` : base,
+    json,
+    quiet,
+    capture,
+  };
 }
 
 // ─── Agent-JSON: task-completion prompt + shell tool translations ─────────────
@@ -2593,6 +2771,7 @@ function shellHelpText() {
     '  List rooms:          rooms',
     '  Local models:        models',
     '  Tool list:           tools',
+    '  Aliases:             :alias  |  :alias g git status --short',
     '  Config:              config',
     '  Leave:               exit',
     '',
@@ -2617,6 +2796,7 @@ function shellToolsText() {
     '  count       Count lines, words, chars, and bytes in text or a file',
     '  find        Search text with ripgrep when available',
     '  run         Run a system command directly: run git status --short',
+    '  alias       Save/list shortcuts: :alias g git status --short',
     '  /term       Print the compact terminal front end inside the shell',
     '  /run        Run a governed command: /run npm test',
     '  [tag] cmd   Add an instruction tag; command bodies run through receipts',
@@ -4509,6 +4689,36 @@ function runInteractiveShell(flags = {}) {
       } else if (meta === 'clear') {
         process.stdout.write('\x1b[2J\x1b[0f');
         printShellStatusBar(cfg, flags.squad);
+      } else if (meta === 'alias' || meta === 'aliases') {
+        const cfgNow = readShellConfig();
+        const aliases = safeAliases(cfgNow);
+        if (!metaArgs.length || metaArgs[0] === 'list' || metaArgs[0] === 'ls') {
+          printAliases(aliases, false);
+        } else if (metaArgs[0] === 'rm' || metaArgs[0] === 'remove' || metaArgs[0] === 'delete') {
+          const name = metaArgs[1] || '';
+          if (!aliases[name]) {
+            process.stdout.write(ansi('yellow', `  no alias named ${name}\n`));
+          } else {
+            delete aliases[name];
+            cfgNow.aliases = aliases;
+            saveShellConfig(cfgNow);
+            process.stdout.write(ansi('green', `  removed alias ${name}\n`));
+          }
+        } else {
+          const name = metaArgs[0] || '';
+          const validation = validateAliasName(name);
+          const command = metaArgs.slice(1).join(' ').trim();
+          if (!validation.ok) {
+            process.stdout.write(ansi('yellow', `  ${validation.reason}\n`));
+          } else if (!command) {
+            process.stdout.write(ansi('yellow', '  Usage: :alias <name> <command...>\n'));
+          } else {
+            aliases[validation.name] = command;
+            cfgNow.aliases = aliases;
+            saveShellConfig(cfgNow);
+            process.stdout.write(ansi('green', `  alias ${validation.name} -> ${command}\n`));
+          }
+        }
       } else if (meta === 'config') {
         if (metaArgs[0] === 'set' && metaArgs[1]) {
           const key = metaArgs[1];
@@ -7868,6 +8078,8 @@ const KNOWN_COMMANDS = [
   'run',
   'exec',
   'x',
+  'alias',
+  'aliases',
   'status',
   'liboqs',
   'history',
@@ -8866,6 +9078,10 @@ if (argv[0] === 'history') {
   process.exit(0);
 }
 
+if (argv[0] === 'alias' || argv[0] === 'aliases') {
+  runAliasCli(argv.slice(1));
+}
+
 if (argv[0] === 'run') {
   const { command, json, quiet, capture } = parseRunArgs(argv.slice(1));
   if (!command) {
@@ -9116,6 +9332,20 @@ if (argv[0] === 'emit') {
     process.exit(1);
   }
   process.exit(0);
+}
+
+{
+  const alias = parseAliasInvocation(argv);
+  if (alias) {
+    const row = runShellCommand(alias.command, {
+      json: alias.json,
+      quiet: alias.quiet,
+      capture: alias.capture,
+    });
+    row.alias = alias.name;
+    if (alias.json) process.stdout.write(`${JSON.stringify(row, null, 2)}\n`);
+    process.exit(row.exit_code);
+  }
 }
 
 // Natural language resolver: triggered when input doesn't match any known command

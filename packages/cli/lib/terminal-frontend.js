@@ -60,6 +60,7 @@ const QUICK_COMMANDS = [
   ['scbe term', 'open this panel'],
   ['scbe term tui', 'headed terminal'],
   ['scbe x <cmd>', 'run command tokens'],
+  ['scbe alias g <cmd>', 'save a shortcut'],
   ['scbe run "<cmd>" --json', 'run with receipt'],
   ['scbe shell --agent-json', 'agent protocol'],
 ];
@@ -162,6 +163,15 @@ function buildTerminalFrontendPayload(context = {}) {
   const readiness = summarizeReadiness(platform);
   const receipt = normalizeReceipt(context.lastReceipt);
   const shellConfig = context.shellConfig || {};
+  const aliases =
+    shellConfig.aliases &&
+    typeof shellConfig.aliases === 'object' &&
+    !Array.isArray(shellConfig.aliases)
+      ? Object.entries(shellConfig.aliases)
+          .filter(([, command]) => typeof command === 'string' && command.trim())
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([name, command]) => ({ name, command }))
+      : [];
   return {
     schema_version: 'scbe_terminal_frontend_v1',
     generated_at: context.generatedAt || new Date().toISOString(),
@@ -188,6 +198,7 @@ function buildTerminalFrontendPayload(context = {}) {
       model: shellConfig.model || 'llama3.2',
       url: shellConfig.url || shellConfig.base_url || null,
     },
+    aliases,
     natural_language: context.naturalLanguage || {
       autocorrect: true,
       word_count: null,

@@ -62,8 +62,10 @@ test('terminal --json emits parseable frontend state for agents', () => {
   assert.equal(payload.title, 'SCBE Terminal Frontend');
   assert.ok(payload.launch.headless.includes('agent-json'));
   assert.equal(payload.launch.token_exec, 'scbe x <program> [args...]');
+  assert.deepEqual(payload.aliases, []);
   assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe term'));
   assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe x <cmd>'));
+  assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe alias g <cmd>'));
   assert.ok(payload.modes.some((entry) => entry.id === 'token_exec'));
   assert.equal(payload.natural_language.autocorrect, true);
   assert.equal(typeof payload.natural_language.word_count, 'number');

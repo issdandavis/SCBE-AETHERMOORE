@@ -8,7 +8,7 @@ const test = require('node:test');
 const CLI = path.resolve(__dirname, '..', 'bin', 'scbe.js');
 
 function runCli(args, options = {}) {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-shell-'));
+  const home = options.home || fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-shell-'));
   const env = {
     ...process.env,
     ...(options.env || {}),
@@ -23,6 +23,39 @@ function runCli(args, options = {}) {
     env,
   });
 }
+
+test('alias command saves shortcuts and executes them through receipts', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-alias-'));
+
+  const saved = runCli(['alias', '--json', 'g', 'node', '--version'], { home });
+  assert.equal(saved.status, 0, saved.stderr);
+  const savedPayload = JSON.parse(saved.stdout);
+  assert.equal(savedPayload.ok, true);
+  assert.equal(savedPayload.name, 'g');
+  assert.equal(savedPayload.command, 'node --version');
+
+  const listed = runCli(['alias', 'list', '--json'], { home });
+  assert.equal(listed.status, 0, listed.stderr);
+  const listedPayload = JSON.parse(listed.stdout);
+  assert.equal(listedPayload.aliases.g, 'node --version');
+
+  const terminal = runCli(['terminal', '--json'], { home });
+  assert.equal(terminal.status, 0, terminal.stderr);
+  const terminalPayload = JSON.parse(terminal.stdout);
+  assert.deepEqual(terminalPayload.aliases, [{ name: 'g', command: 'node --version' }]);
+
+  const ran = runCli(['g', '--json'], { home });
+  assert.equal(ran.status, 0, ran.stderr);
+  const ranPayload = JSON.parse(ran.stdout);
+  assert.equal(ranPayload.schema_version, 'scbe_terminal_run_v1');
+  assert.equal(ranPayload.alias, 'g');
+  assert.equal(ranPayload.command, 'node --version');
+  assert.equal(ranPayload.success, true);
+
+  const removed = runCli(['alias', 'rm', 'g', '--json'], { home });
+  assert.equal(removed.status, 0, removed.stderr);
+  assert.equal(JSON.parse(removed.stdout).removed, 'g');
+});
 
 function recvJsonLine(proc, timeoutMs = 30_000) {
   return new Promise((resolve, reject) => {
