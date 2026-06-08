@@ -245,7 +245,7 @@ def test_combined_schema_version(comb):
 
 
 def test_fit_to_dict_has_required_keys(fits):
-    for name, f in fits.items():
+    for _name, f in fits.items():
         d = f.to_dict()
         assert "theory" in d
         assert "observable" in d

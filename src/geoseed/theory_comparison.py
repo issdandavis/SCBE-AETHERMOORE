@@ -20,7 +20,7 @@ per shell, plus a residual vs measured hydrogen levels.
 """
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Dict
 
 # ── Physical constants ────────────────────────────────────────────────────────
