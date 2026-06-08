@@ -5130,6 +5130,7 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
     verbose = bool(getattr(args, "verbose", False))
 
     formats = ["json", "mermaid", "dot", "tree"]
+
     def _time_n(fn, n: int) -> Dict[str, float]:
         times = []
         for _ in range(n):

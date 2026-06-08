@@ -11,9 +11,7 @@ MODULE_PATH = ROOT / "scripts" / "benchmark" / "real_patch_task_benchmark.py"
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location(
-        "real_patch_task_benchmark", MODULE_PATH
-    )
+    spec = importlib.util.spec_from_file_location("real_patch_task_benchmark", MODULE_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -87,11 +85,7 @@ def test_prime_schematic_repair_selects_from_evidence_not_task_id(
 
     assert result.tests_passed is True
     assert result.scope_ok is True
-    receipt = json.loads(
-        (tmp_path / "renamed" / ".scbe_schematic_receipt.json").read_text(
-            encoding="utf-8"
-        )
-    )
+    receipt = json.loads((tmp_path / "renamed" / ".scbe_schematic_receipt.json").read_text(encoding="utf-8"))
     assert receipt["task_id"] == "renamed_hidden_anchor"
     assert receipt["selected_schematic"] == "slugify_separator_normal_form"
     assert receipt["selected_prime"] == 2
