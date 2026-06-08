@@ -27,6 +27,8 @@ from typing import Any, Callable
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = REPO_ROOT / "artifacts" / "benchmarks" / "real_patch_tasks"
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 # Model IDs mirror the squad routing in packages/cli/bin/scbe.js and CLAUDE.md.
 PROVIDERS: dict[str, dict[str, str]] = {
@@ -599,6 +601,13 @@ def route_task(text: str) -> str:
     raise ValueError(f"no SCBE repair registered for {task.task_id}")
 
 
+def schematic_repair(root: Path, task: PatchTask) -> None:
+    """Template-first repair lane selected by task evidence, not task_id."""
+    from scripts.benchmark.code_schematic_repair import repair_with_schematic
+
+    repair_with_schematic(root, task)
+
+
 def score_result(result: LaneResult) -> dict[str, Any]:
     checks = {
         "tests_passed": result.tests_passed,
@@ -648,8 +657,18 @@ def build_report(
         )
         for task in TASKS
     ]
+    schematic_results = [
+        run_lane(
+            task,
+            lane="prime_schematic_repair",
+            root=work_dir / "schematic" / task.task_id,
+            repair=schematic_repair,
+        )
+        for task in TASKS
+    ]
     baseline_scores = [score_result(result) for result in baseline_results]
     scbe_scores = [score_result(result) for result in scbe_results]
+    schematic_scores = [score_result(result) for result in schematic_results]
     baseline_passes = sum(
         1 for item in baseline_scores if item["checks"]["tests_passed"]
     )
@@ -658,24 +677,42 @@ def build_report(
         for item in scbe_scores
         if item["checks"]["tests_passed"] and item["checks"]["edit_scope_clean"]
     )
+    schematic_passes = sum(
+        1
+        for item in schematic_scores
+        if item["checks"]["tests_passed"] and item["checks"]["edit_scope_clean"]
+    )
     task_count = len(TASKS)
     summary = {
         "decision": (
             "PASS"
-            if scbe_passes == task_count and baseline_passes < task_count
+            if (
+                scbe_passes == task_count
+                and schematic_passes == task_count
+                and baseline_passes < task_count
+            )
             else "HOLD"
         ),
         "task_count": task_count,
         "baseline_test_passes": baseline_passes,
         "scbe_test_passes": scbe_passes,
+        "schematic_test_passes": schematic_passes,
         "baseline_avg": round(
             sum(item["score"] for item in baseline_scores) / task_count, 4
         ),
         "scbe_avg": round(sum(item["score"] for item in scbe_scores) / task_count, 4),
+        "schematic_avg": round(
+            sum(item["score"] for item in schematic_scores) / task_count, 4
+        ),
         "scbe_wins": sum(
             1
             for base, scbe in zip(baseline_scores, scbe_scores)
             if scbe["score"] > base["score"]
+        ),
+        "schematic_wins": sum(
+            1
+            for base, schematic in zip(baseline_scores, schematic_scores)
+            if schematic["score"] > base["score"]
         ),
     }
 
@@ -692,19 +729,23 @@ def build_report(
                 repair=_make_agent_repair_fn(agent_provider, meta_out),
             )
             agent_results.append(result)
-            agent_metas.append(meta_out[0] if meta_out else {"error": "repair not called"})
+            agent_metas.append(
+                meta_out[0] if meta_out else {"error": "repair not called"}
+            )
 
     agent_scores = [score_result(r) for r in agent_results]
 
     claim_boundary: list[str] = [
         "This proves the challenge harness can run issue-to-edit-to-test tasks with receipts.",
         "The SCBE lane is a deterministic repair harness for seeded fixtures (reference upper bound).",
+        "The prime-schematic lane is template-first repair selected from task evidence, not open-ended generation.",
         "The next escalation is attaching live coding agents to the same task manifest.",
     ]
 
     raw_results: dict[str, Any] = {
         "baseline": [asdict(result) for result in baseline_results],
         "scbe": [asdict(result) for result in scbe_results],
+        "schematic": [asdict(result) for result in schematic_results],
     }
 
     report: dict[str, Any] = {
@@ -723,6 +764,7 @@ def build_report(
         },
         "baseline_scores": baseline_scores,
         "scbe_scores": scbe_scores,
+        "schematic_scores": schematic_scores,
         "raw_results": raw_results,
         "claim_boundary": claim_boundary,
     }
@@ -750,8 +792,7 @@ def build_report(
         report["agent_summary"] = agent_summary
         report["agent_scores"] = agent_scores
         report["agent_meta"] = [
-            {"task_id": task.task_id, **meta}
-            for task, meta in zip(TASKS, agent_metas)
+            {"task_id": task.task_id, **meta} for task, meta in zip(TASKS, agent_metas)
         ]
         raw_results["agent"] = [asdict(r) for r in agent_results]
         claim_boundary.append(
@@ -784,6 +825,8 @@ def _render_markdown(report: dict[str, Any]) -> str:
         "|---|---:|---:|",
         f"| Direct no-repair baseline | `{summary['baseline_avg']}` | "
         f"`{summary['baseline_test_passes']} / {summary['task_count']}` |",
+        f"| Prime-schematic repair | `{summary['schematic_avg']}` | "
+        f"`{summary['schematic_test_passes']} / {summary['task_count']}` |",
         f"| SCBE repair harness | `{summary['scbe_avg']}` | "
         f"`{summary['scbe_test_passes']} / {summary['task_count']}` |",
     ]
@@ -796,6 +839,7 @@ def _render_markdown(report: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
+            f"- Prime-schematic wins: `{summary['schematic_wins']} / {summary['task_count']}`",
             f"- SCBE wins: `{summary['scbe_wins']} / {summary['task_count']}`",
             "",
             "## Per-Task Scores",
@@ -803,23 +847,32 @@ def _render_markdown(report: dict[str, Any]) -> str:
         ]
     )
     if agent_summary:
-        lines.extend(["| Task | Baseline | SCBE | Agent |", "|---|---:|---:|---:|"])
+        lines.extend(
+            [
+                "| Task | Baseline | Schematic | SCBE | Agent |",
+                "|---|---:|---:|---:|---:|",
+            ]
+        )
         baseline_by_id = {item["task_id"]: item for item in report["baseline_scores"]}
+        schematic_by_id = {item["task_id"]: item for item in report["schematic_scores"]}
         agent_by_id = {item["task_id"]: item for item in report["agent_scores"]}
         for item in report["scbe_scores"]:
             task_id = item["task_id"]
             ag = agent_by_id.get(task_id, {})
             lines.append(
                 f"| `{task_id}` | `{baseline_by_id[task_id]['score']}` "
-                f"| `{item['score']}` | `{ag.get('score', 'n/a')}` |"
+                f"| `{schematic_by_id[task_id]['score']}` | `{item['score']}` "
+                f"| `{ag.get('score', 'n/a')}` |"
             )
     else:
-        lines.extend(["| Task | Baseline | SCBE |", "|---|---:|---:|"])
+        lines.extend(["| Task | Baseline | Schematic | SCBE |", "|---|---:|---:|---:|"])
         baseline_by_id = {item["task_id"]: item for item in report["baseline_scores"]}
+        schematic_by_id = {item["task_id"]: item for item in report["schematic_scores"]}
         for item in report["scbe_scores"]:
             task_id = item["task_id"]
             lines.append(
-                f"| `{task_id}` | `{baseline_by_id[task_id]['score']}` | `{item['score']}` |"
+                f"| `{task_id}` | `{baseline_by_id[task_id]['score']}` "
+                f"| `{schematic_by_id[task_id]['score']}` | `{item['score']}` |"
             )
     lines.extend(
         [
@@ -861,6 +914,7 @@ def main(argv: list[str] | None = None) -> int:
             "real patch task benchmark: "
             f"decision={summary['decision']} "
             f"baseline={summary['baseline_test_passes']}/{summary['task_count']} "
+            f"schematic={summary['schematic_test_passes']}/{summary['task_count']} "
             f"scbe={summary['scbe_test_passes']}/{summary['task_count']}"
         )
         if "agent_summary" in report:
