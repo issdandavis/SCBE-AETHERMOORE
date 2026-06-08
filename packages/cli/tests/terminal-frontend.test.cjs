@@ -93,6 +93,18 @@ test('x is a short alias for exec', () => {
   assert.equal(payload.success, true);
 });
 
+test('x uses PowerShell semantics on Windows', { skip: process.platform !== 'win32' }, () => {
+  const binDir = path.resolve(__dirname, '..', 'bin');
+  const result = runCli(['x', '--json', 'Get-ChildItem', '-Name', binDir]);
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_terminal_run_v1');
+  assert.match(payload.command, /^Get-ChildItem -Name /);
+  assert.equal(payload.success, true);
+  assert.match(payload.stdout_preview, /scbe\.js/);
+});
+
 test('terminal alias renders compact human navigation without ANSI under NO_COLOR', () => {
   const result = runCli(['term']);
 

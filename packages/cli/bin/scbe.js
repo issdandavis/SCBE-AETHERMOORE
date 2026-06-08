@@ -661,6 +661,77 @@ function commandProbe(command, args = ['--version'], options = {}) {
   };
 }
 
+let _powershellCommand = null;
+
+function resolvePowerShellCommand() {
+  if (process.platform !== 'win32') return null;
+  if (_powershellCommand !== null) return _powershellCommand;
+  const candidates = [
+    process.env.SCBE_POWERSHELL,
+    'pwsh.exe',
+    'pwsh',
+    'powershell.exe',
+    'powershell',
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    const result = spawnSync(
+      candidate,
+      [
+        '-NoLogo',
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        '$PSVersionTable.PSVersion.ToString()',
+      ],
+      {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeout: 5000,
+      }
+    );
+    if (result.status === 0) {
+      _powershellCommand = candidate;
+      return _powershellCommand;
+    }
+  }
+  _powershellCommand = '';
+  return null;
+}
+
+function spawnShellCommand(command, options = {}) {
+  const stdio = options.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit';
+  if (process.platform === 'win32') {
+    const powershell = resolvePowerShellCommand();
+    if (powershell) {
+      return spawnSync(
+        powershell,
+        [
+          '-NoLogo',
+          '-NoProfile',
+          '-NonInteractive',
+          '-ExecutionPolicy',
+          'Bypass',
+          '-Command',
+          command,
+        ],
+        {
+          cwd: options.cwd,
+          stdio,
+          encoding: 'utf8',
+          ...(options.timeoutMs ? { timeout: options.timeoutMs } : {}),
+        }
+      );
+    }
+  }
+  return spawnSync(command, {
+    cwd: options.cwd,
+    shell: true,
+    stdio,
+    encoding: 'utf8',
+    ...(options.timeoutMs ? { timeout: options.timeoutMs } : {}),
+  });
+}
+
 function firstLine(text) {
   return (
     String(text || '')
@@ -930,12 +1001,10 @@ function runShellCommand(command, options = {}) {
       `SCBE ${compass.intent}/${compass.lane} | GeoSeal ${gate.tier} | ${startedAt}\n`
     );
   }
-  const child = spawnSync(command, {
+  const child = spawnShellCommand(command, {
     cwd,
-    shell: true,
-    stdio: options.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
-    encoding: 'utf8',
-    ...(options.timeoutMs ? { timeout: options.timeoutMs } : {}),
+    capture: options.capture,
+    timeoutMs: options.timeoutMs,
   });
   row.exit_code = typeof child.status === 'number' ? child.status : 1;
   row.duration_ms = Date.now() - start;
@@ -1001,7 +1070,7 @@ function quoteExecArg(arg) {
   if (text === '') return '""';
   if (/^[A-Za-z0-9_@%+=:,./\\-]+$/.test(text)) return text;
   if (process.platform === 'win32') {
-    return `"${text.replace(/"/g, '\\"')}"`;
+    return `'${text.replace(/'/g, "''")}'`;
   }
   return `'${text.replace(/'/g, "'\\''")}'`;
 }
