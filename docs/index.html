@@ -184,6 +184,17 @@
       .nav a:hover {
         color: var(--text);
       }
+      .nav a.nav-feature {
+        color: var(--text);
+        border: 1px solid rgba(214, 167, 86, 0.28);
+        border-radius: 999px;
+        padding: 3px 9px;
+        background: rgba(214, 167, 86, 0.08);
+      }
+      .nav a.nav-feature:hover {
+        border-color: rgba(214, 167, 86, 0.58);
+        background: rgba(214, 167, 86, 0.14);
+      }
       .hero {
         padding: 92px 0 72px;
       }
@@ -845,6 +856,8 @@
         <nav class="nav" aria-label="Primary">
           <a href="start-here.html">Start Here</a>
           <a href="guard.html" style="color:#17c6cf;font-weight:700;">AetherGuard</a>
+          <a class="nav-feature" href="cli.html">Terminal</a>
+          <a class="nav-feature" href="math-spine.html">Math Spine</a>
           <a href="products.html">Products</a>
           <a href="https://scbe-agent-bridge-vercel.vercel.app/console" target="_blank" rel="noopener"
             >Hosted Tools</a
@@ -2278,6 +2291,12 @@ node packages/cli/bin/scbe.js shell --squad</pre>
                 story canon from technical SCBE answers before it responds.
               </p>
               <p style="margin-top: 16px">
+                <a class="btn btn-soft" href="cli.html">Try the SCBE Terminal</a>
+              </p>
+              <p style="margin-top: 10px">
+                <a class="btn btn-soft" href="#governance-demo">Try the governance demo</a>
+              </p>
+              <p style="margin-top: 10px">
                 <a
                   class="btn btn-soft"
                   href="https://github.com/issdandavis/SCBE-AETHERMOORE"
@@ -2296,6 +2315,9 @@ node packages/cli/bin/scbe.js shell --squad</pre>
               </p>
               <p style="margin-top: 16px">
                 <a class="btn btn-soft" href="#recent-milestones">Open research and proof</a>
+              </p>
+              <p style="margin-top: 10px">
+                <a class="btn btn-soft" href="math-spine.html">Open the Math Spine guide</a>
               </p>
               <p style="margin-top: 10px">
                 <a class="btn btn-soft" href="training-hub.html">Open the Training Bus</a>
@@ -3289,6 +3311,8 @@ node packages/cli/bin/scbe.js shell --squad</pre>
               <h3>Technical proof surfaces</h3>
               <ul>
                 <li><a href="#recent-milestones">Recent milestones and proof</a></li>
+                <li><a href="math-spine.html">Math Spine scroll guide</a></li>
+                <li><a href="cli.html">Try the SCBE terminal</a></li>
                 <li><a href="benchmarks/dashboard.html">Benchmark evidence dashboard</a></li>
                 <li><a href="chat.html">Polly chat (ask the system)</a></li>
                 <li>
@@ -3627,6 +3651,8 @@ node packages/cli/bin/scbe.js shell --squad</pre>
           <a href="enterprise-license.html">Enterprise</a>
           <a href="#delivery">Delivery</a>
           <a href="mailto:ai@aethermoore.com?subject=SCBE%20Toolkit%20Support">Support</a>
+          <a href="cli.html">Terminal</a>
+          <a href="math-spine.html">Math Spine</a>
           <a href="#recent-milestones">Research</a>
           <a href="products.html">Products</a>
           <a href="packages.html">Packages</a>
