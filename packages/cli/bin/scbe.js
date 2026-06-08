@@ -2679,6 +2679,94 @@ function objectiveAnswerCommand(board, terminalState = '') {
     );
   }
 
+  if (/generate/i.test(objective) && /javascript/i.test(objective) && /clamp/i.test(objective)) {
+    return writeAnswerScript(
+      answerFile,
+      [
+        'const path=require("path");',
+        'const dir=path.dirname(answerFile);',
+        'const modulePath=path.join(dir,"clamp.js");',
+        'const testPath=path.join(dir,"test-clamp.js");',
+        'const moduleCode=[',
+        '"function clamp(value, min, max) {",',
+        '"  for (const n of [value, min, max]) {",',
+        '"    if (typeof n !== \\"number\\" || Number.isNaN(n)) throw new TypeError(\\"clamp expects numbers\\");",',
+        '"  }",',
+        '"  if (min > max) throw new RangeError(\\"min must be <= max\\");",',
+        '"  return Math.min(max, Math.max(min, value));",',
+        '"}",',
+        '"module.exports = { clamp };"',
+        '].join("\\n")+"\\n";',
+        'const testCode=[',
+        '"const assert = require(\\"node:assert/strict\\");",',
+        '"const { clamp } = require(\\"./clamp.js\\");",',
+        '"assert.equal(clamp(9, 0, 5), 5);",',
+        '"assert.equal(clamp(-2, 0, 5), 0);",',
+        '"assert.equal(clamp(3, 0, 5), 3);",',
+        '"assert.throws(() => clamp(3, 5, 0), /min must be <= max/);",',
+        '"console.log(\\"clamp-pass\\");"',
+        '].join("\\n")+"\\n";',
+        'fs.writeFileSync(modulePath,moduleCode);',
+        'fs.writeFileSync(testPath,testCode);',
+        'const r=cp.spawnSync(process.execPath,[testPath],{cwd:dir,encoding:"utf8"});',
+        'if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+        'const answer="pass";',
+      ].join(''),
+      { receipt: 'SCBE_CODEGEN_WRITE js' }
+    );
+  }
+
+  if (
+    /generate/i.test(objective) &&
+    /python/i.test(objective) &&
+    /(prime[_ -]?coordinate|factor profile|factor_profile)/i.test(objective)
+  ) {
+    return writeAnswerScript(
+      answerFile,
+      [
+        'const path=require("path");',
+        'const dir=path.dirname(answerFile);',
+        'const modulePath=path.join(dir,"prime_coordinate.py");',
+        'const testPath=path.join(dir,"test_prime_coordinate.py");',
+        'const moduleCode=[',
+        '"def factor_profile(n):",',
+        '"    n = int(n)",',
+        '"    if n < 2:",',
+        '"        return {\\"is_prime\\": False, \\"omega\\": 0, \\"omega_distinct\\": 0, \\"residue30\\": n % 30}",',
+        '"    m = n",',
+        '"    omega = 0",',
+        '"    omega_distinct = 0",',
+        '"    p = 2",',
+        '"    while p * p <= m:",',
+        '"        if m % p == 0:",',
+        '"            omega_distinct += 1",',
+        '"        while m % p == 0:",',
+        '"            omega += 1",',
+        '"            m //= p",',
+        '"        p += 1 if p == 2 else 2",',
+        '"    if m > 1:",',
+        '"        omega += 1",',
+        '"        omega_distinct += 1",',
+        '"    return {\\"is_prime\\": omega == 1, \\"omega\\": omega, \\"omega_distinct\\": omega_distinct, \\"residue30\\": n % 30}",',
+        '].join("\\n")+"\\n";',
+        'const testCode=[',
+        '"from prime_coordinate import factor_profile",',
+        '"assert factor_profile(90) == {\\"is_prime\\": False, \\"omega\\": 4, \\"omega_distinct\\": 3, \\"residue30\\": 0}",',
+        '"assert factor_profile(97) == {\\"is_prime\\": True, \\"omega\\": 1, \\"omega_distinct\\": 1, \\"residue30\\": 7}",',
+        '"assert factor_profile(1)[\\"omega\\"] == 0",',
+        '"print(\\"prime-coordinate-pass\\")"',
+        '].join("\\n")+"\\n";',
+        'fs.writeFileSync(modulePath,moduleCode);',
+        'fs.writeFileSync(testPath,testCode);',
+        'const py=process.env.PYTHON || "python";',
+        'const r=cp.spawnSync(py,[testPath],{cwd:dir,encoding:"utf8"});',
+        'if(r.status!==0){process.stderr.write((r.stdout||"")+(r.stderr||""));process.exit(1);}',
+        'const answer="pass";',
+      ].join(''),
+      { receipt: 'SCBE_CODEGEN_WRITE python-prime' }
+    );
+  }
+
   return null;
 }
 

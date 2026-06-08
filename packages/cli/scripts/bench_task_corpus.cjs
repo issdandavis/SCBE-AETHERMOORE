@@ -331,6 +331,49 @@ const TASKS = [
     max_turns: 4,
     timeout_ms: 60000,
   },
+
+  // ── Code generation ───────────────────────────────────────────────────────
+  {
+    id: 'codegen-js-clamp-module',
+    category: 'codegen',
+    verifier: 'strong',
+    difficulty: 'medium',
+    instruction:
+      'Generate a JavaScript module at `{WORKDIR}/clamp.js` exporting `clamp(value, min, max)`, plus a runnable test file at `{WORKDIR}/test-clamp.js`. The function must clamp high/low values, return in-range values unchanged, and throw if `min > max`. Run the test with Node. If it passes, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if:
+      `node -e "` +
+      `const fs=require('fs'),cp=require('child_process'),p=require('path');` +
+      `const dir=p.dirname('{WORKDIR}/answer.txt');` +
+      `const answer=fs.readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `if(answer!=='pass'){process.stderr.write('expected pass got:'+answer+'\\n');process.exit(1)}` +
+      `if(!fs.existsSync(p.join(dir,'clamp.js'))||!fs.existsSync(p.join(dir,'test-clamp.js'))){process.stderr.write('missing generated files\\n');process.exit(1)}` +
+      `const r=cp.spawnSync(process.execPath,[p.join(dir,'test-clamp.js')],{cwd:dir,encoding:'utf8'});` +
+      `if(r.status!==0){process.stderr.write((r.stdout||'')+(r.stderr||''));process.exit(1)}` +
+      `"`,
+    max_turns: 4,
+    timeout_ms: 60000,
+  },
+  {
+    id: 'codegen-python-prime-coordinate',
+    category: 'codegen',
+    verifier: 'strong',
+    difficulty: 'medium',
+    instruction:
+      'Generate a Python module at `{WORKDIR}/prime_coordinate.py` containing `factor_profile(n)`. It should return a dictionary with `is_prime`, `omega`, `omega_distinct`, and `residue30`. Use the prime-depth coordinate method: `omega` counts prime factors with multiplicity, `omega_distinct` counts distinct prime factors, and `residue30` is `n % 30`. Add a runnable test file at `{WORKDIR}/test_prime_coordinate.py`. If tests pass, write exactly `pass` to `{WORKDIR}/answer.txt`.',
+    done_if:
+      `node -e "` +
+      `const fs=require('fs'),cp=require('child_process'),p=require('path');` +
+      `const dir=p.dirname('{WORKDIR}/answer.txt');` +
+      `const answer=fs.readFileSync('{WORKDIR}/answer.txt','utf8').trim();` +
+      `if(answer!=='pass'){process.stderr.write('expected pass got:'+answer+'\\n');process.exit(1)}` +
+      `if(!fs.existsSync(p.join(dir,'prime_coordinate.py'))||!fs.existsSync(p.join(dir,'test_prime_coordinate.py'))){process.stderr.write('missing generated files\\n');process.exit(1)}` +
+      `const py=process.env.PYTHON||'python';` +
+      `const r=cp.spawnSync(py,[p.join(dir,'test_prime_coordinate.py')],{cwd:dir,encoding:'utf8'});` +
+      `if(r.status!==0){process.stderr.write((r.stdout||'')+(r.stderr||''));process.exit(1)}` +
+      `"`,
+    max_turns: 4,
+    timeout_ms: 60000,
+  },
 ];
 
 // ── Task runner ───────────────────────────────────────────────────────────────

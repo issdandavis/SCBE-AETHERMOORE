@@ -71,9 +71,12 @@ function caseResult(name, fn, points = 1) {
   }
 }
 
-const SCORE_AXES = ['ease_of_use', 'utility', 'tooling', 'ai_support', 'governance'];
+const SCORE_AXES = ['ease_of_use', 'utility', 'tooling', 'ai_support', 'governance', 'codegen'];
 
 function scoreAxis(name) {
+  if (/codegen|generate.*module|prime_coordinate|clamp/i.test(name)) {
+    return 'codegen';
+  }
   if (
     /help|minimal|config|bare_sentence|spoken_math|worksheet|typo|terminal_panel|short/i.test(name)
   ) {
@@ -1007,6 +1010,44 @@ function main() {
       assert.ok(resp.commands.length > 0, 'expected fallback command');
       assert.match(resp.commands[0].keystrokes, /npm pack --dry-run --json/);
       return { command: resp.commands[0].keystrokes };
+    })
+  );
+
+  cases.push(
+    caseResult('agent_json_codegen_scaffold_emits_prime_coordinate_writer', () => {
+      const { spawnSync: spawn } = require('node:child_process');
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-codegen-protocol-'));
+      const answer = path.join(dir, 'answer.txt').replace(/\\/g, '/');
+      const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+        cwd: REPO_ROOT,
+        input:
+          JSON.stringify({
+            instruction:
+              `Generate a Python module at ${dir.replace(/\\/g, '/')}/prime_coordinate.py containing ` +
+              '`factor_profile(n)`. It should return is_prime, omega, omega_distinct, and residue30. ' +
+              `If tests pass, write exactly pass to ${answer}.`,
+            terminal_state: '$ ',
+            done_if: `node -e "const fs=require('fs');process.exit(fs.existsSync('${answer}')?0:1)"`,
+          }) + '\n\n',
+        encoding: 'utf8',
+        timeout: 20_000,
+        env: { ...process.env, NO_COLOR: '1', SCBE_PROVIDER: 'offline' },
+      });
+      const lines = (r.stdout || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      assert.ok(lines.length >= 2, `expected ready + response, got: ${r.stdout}`);
+      const resp = JSON.parse(lines[1]);
+      assert.ok(resp.commands.length > 0, `expected codegen command, got ${JSON.stringify(resp)}`);
+      assert.match(resp.commands[0].keystrokes, /prime_coordinate\.py/);
+      assert.match(resp.commands[0].keystrokes, /SCBE_CODEGEN_WRITE python-prime/);
+      assert.ok(resp.move_packet, 'codegen command must include move packet');
+      assert.equal(resp.move_packet.round_trip_ok, true);
+      return {
+        command_preview: resp.commands[0].keystrokes.slice(0, 220),
+        move_id: resp.move_packet.move_id,
+      };
     })
   );
 
