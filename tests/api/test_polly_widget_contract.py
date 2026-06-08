@@ -85,9 +85,9 @@ def test_sidebar_has_pre_ai_routes_for_zero_cost_chat() -> None:
 
 
 def test_ai_workflow_snapshot_page_is_static_intake() -> None:
-    """The $39 intake page must work without a backend form service."""
+    """The $99 intake page must work without a backend form service."""
     src = _read(ROOT / "docs" / "ai-workflow-snapshot.html")
-    assert "$39" in src
+    assert "$99" in src
     assert "Download intake JSON" in src
     assert "packet_type" in src
     assert "aethermoore_ai_workflow_snapshot_intake_v1" in src
