@@ -184,6 +184,17 @@
       .nav a:hover {
         color: var(--text);
       }
+      .nav a.nav-feature {
+        color: var(--text);
+        border: 1px solid rgba(214, 167, 86, 0.28);
+        border-radius: 999px;
+        padding: 3px 9px;
+        background: rgba(214, 167, 86, 0.08);
+      }
+      .nav a.nav-feature:hover {
+        border-color: rgba(214, 167, 86, 0.58);
+        background: rgba(214, 167, 86, 0.14);
+      }
       .hero {
         padding: 92px 0 72px;
       }
@@ -847,6 +858,8 @@
           <a href="briefing-room.html">Briefing Room</a>
           <a href="guard.html" style="color: #17c6cf; font-weight: 700">AetherGuard</a>
           <a href="governance-sdk.html">SDK</a>
+          <a class="nav-feature" href="cli.html">Terminal</a>
+          <a class="nav-feature" href="math-spine.html">Math Spine</a>
           <a href="benchmarks.html">Benchmarks</a>
           <a href="products.html">Products</a>
           <a
@@ -2655,6 +2668,12 @@ npm run benchmark:vector-field-nav -- --skip-ablation --show-comparison</pre
                 story canon from technical SCBE answers before it responds.
               </p>
               <p style="margin-top: 16px">
+                <a class="btn btn-soft" href="cli.html">Try the SCBE Terminal</a>
+              </p>
+              <p style="margin-top: 10px">
+                <a class="btn btn-soft" href="#governance-demo">Try the governance demo</a>
+              </p>
+              <p style="margin-top: 10px">
                 <a
                   class="btn btn-soft"
                   href="https://github.com/issdandavis/SCBE-AETHERMOORE"
@@ -2673,6 +2692,9 @@ npm run benchmark:vector-field-nav -- --skip-ablation --show-comparison</pre
               </p>
               <p style="margin-top: 16px">
                 <a class="btn btn-soft" href="#recent-milestones">Open research and proof</a>
+              </p>
+              <p style="margin-top: 10px">
+                <a class="btn btn-soft" href="math-spine.html">Open the Math Spine guide</a>
               </p>
               <p style="margin-top: 10px">
                 <a class="btn btn-soft" href="training-hub.html">Open the Training Bus</a>
@@ -3664,6 +3686,8 @@ npm run benchmark:vector-field-nav -- --skip-ablation --show-comparison</pre
               <h3>Technical proof surfaces</h3>
               <ul>
                 <li><a href="#recent-milestones">Recent milestones and proof</a></li>
+                <li><a href="math-spine.html">Math Spine scroll guide</a></li>
+                <li><a href="cli.html">Try the SCBE terminal</a></li>
                 <li><a href="benchmarks.html">Benchmark evidence dashboard</a></li>
                 <li><a href="governance-sdk.html">Governance SDK quickstart</a></li>
                 <li><a href="chat.html">Polly chat (ask the system)</a></li>
@@ -4002,6 +4026,8 @@ npm run benchmark:vector-field-nav -- --skip-ablation --show-comparison</pre
           <a href="enterprise-license.html">Enterprise</a>
           <a href="#delivery">Delivery</a>
           <a href="mailto:ai@aethermoore.com?subject=SCBE%20Toolkit%20Support">Support</a>
+          <a href="cli.html">Terminal</a>
+          <a href="math-spine.html">Math Spine</a>
           <a href="#recent-milestones">Research</a>
           <a href="products.html">Products</a>
           <a href="packages.html">Packages</a>
