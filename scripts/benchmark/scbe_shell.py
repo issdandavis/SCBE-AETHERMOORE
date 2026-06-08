@@ -33,6 +33,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -57,12 +58,28 @@ from scripts.benchmark.scbe_governance_core import (
 # Local execution
 # ─────────────────────────────────────────────────────────────────────────────
 
+
+def _local_shell_argv(cmd: str) -> list[str]:
+    """Return an explicit shell argv so commands run with shell=False."""
+    if os.name == "nt":
+        pwsh = shutil.which("pwsh") or shutil.which("powershell")
+        if pwsh:
+            return [pwsh, "-NoProfile", "-NonInteractive", "-Command", cmd]
+        comspec = os.environ.get("COMSPEC") or shutil.which("cmd.exe") or "cmd.exe"
+        return [comspec, "/D", "/C", cmd]
+
+    bash = shutil.which("bash")
+    if bash:
+        return [bash, "-lc", cmd]
+    sh = shutil.which("sh") or "/bin/sh"
+    return [sh, "-c", cmd]
+
+
 def run_local(cmd: str, timeout: int = 30) -> tuple[str, int]:
     """Run a shell command locally. Returns (combined_output, exit_code)."""
     try:
         result = subprocess.run(
-            cmd,
-            shell=True,
+            _local_shell_argv(cmd),
             capture_output=True,
             text=True,
             timeout=timeout,
@@ -79,9 +96,11 @@ def run_local(cmd: str, timeout: int = 30) -> tuple[str, int]:
 # Governed execution loop
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 @dataclass
 class ShellSession:
     """Accumulates terminal state like a real shell would."""
+
     history: list[str] = field(default_factory=list)
 
     def record(self, cmd: str, output: str) -> None:
@@ -139,9 +158,7 @@ def run_governed_task(
         for turn in range(1, max_turns + 1):
             turns_used = turn
             try:
-                plan = plan_commands(
-                    instruction, session.state(), turn, max_turns, model, ollama_host
-                )
+                plan = plan_commands(instruction, session.state(), turn, max_turns, model, ollama_host)
             except Exception as e:
                 emit(f"[SCBE] LLM error on turn {turn}: {e}")
                 break
@@ -214,6 +231,7 @@ def run_governed_task(
 # CLI
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="SCBE-governed local shell — governed task execution with polymerization"
@@ -223,8 +241,9 @@ def main() -> None:
     parser.add_argument("--model", default="qwen2.5:0.5b", help="Ollama model tag")
     parser.add_argument("--host", default="http://127.0.0.1:11434", help="Ollama host URL")
     parser.add_argument("--max-turns", type=int, default=15, help="LLM turn budget")
-    parser.add_argument("--deviation-threshold", type=float, default=0.45,
-                        help="Deviation score that triggers polymerization probes")
+    parser.add_argument(
+        "--deviation-threshold", type=float, default=0.45, help="Deviation score that triggers polymerization probes"
+    )
     parser.add_argument("--quiet", action="store_true", help="Suppress live output; print JSON receipt only")
     parser.add_argument("--receipt", help="Write JSON receipt to this file path")
     args = parser.parse_args()
@@ -255,7 +274,9 @@ def main() -> None:
     else:
         print("\n[SCBE] ── Governance Receipt ──")
         s = receipt["governance_summary"]
-        print(f"  ALLOW={s['allow']}  QUARANTINE={s['quarantine']}  DENY={s['deny']}  polymerized={s['polymerized_events']}")
+        print(
+            f"  ALLOW={s['allow']}  QUARANTINE={s['quarantine']}  DENY={s['deny']}  polymerized={s['polymerized_events']}"
+        )
 
 
 if __name__ == "__main__":
