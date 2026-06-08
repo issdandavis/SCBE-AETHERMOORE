@@ -49,8 +49,11 @@ try {
   if (classifyMode) {
     const mode = classifyScbeCompassTask(task);
     process.stdout.write(
-      JSON.stringify({ schema_version: 'scbe.agent_bus.compass_classify.v1', task, mode }, null, 2) +
-        '\n'
+      JSON.stringify(
+        { schema_version: 'scbe.agent_bus.compass_classify.v1', task, mode },
+        null,
+        2
+      ) + '\n'
     );
   } else if (hermesMode) {
     const plan = planHermesRoute(task);
