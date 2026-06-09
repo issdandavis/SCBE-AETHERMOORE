@@ -170,13 +170,9 @@ def build_default_friction_laplacian() -> FrictionLaplacian:
     D = np.diag(W.sum(axis=1))
     L = D - W
 
-    # Symmetric normalization: D^{-1/2} L D^{-1/2}
-    d = np.diag(D).copy()
-    with np.errstate(divide="ignore"):
-        inv_sqrt = 1.0 / np.sqrt(np.maximum(d, 1e-12))
-    S = np.diag(inv_sqrt)
-    L = S @ L @ S
-
+    # Keep the default graph Laplacian in combinatorial form. Symmetric
+    # normalization changes the null vector from 1 to sqrt(degree), which
+    # breaks the operator invariant used by the training tests.
     L = 0.5 * (L + L.T)
     return FrictionLaplacian(matrix=L)
 

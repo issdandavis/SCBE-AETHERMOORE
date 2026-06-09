@@ -89,61 +89,61 @@ TONGUE_NAMES: dict[str, str] = {
 
 # Canonical tongue for each news source (which tongue "speaks" this data)
 SOURCE_TONGUE: dict[str, str] = {
-    "hn": "KO",       # Kor'aelin — precise/flow (Python/tech)
-    "arxiv": "CA",    # Cassisivadan — symbolic/math
-    "reddit": "AV",   # Avali — reactive/social
-    "darpa": "RU",    # Runethic — ethical/structured
-    "sam": "RU",      # Runethic — governance
-    "bbc": "AV",      # Avali — broadcast/context
-    "aje": "UM",      # Umbroth — veiled/multilingual
-    "dw": "RU",       # Runethic — structured
-    "f24": "AV",      # Avali — broadcast
-    "nhk": "UM",      # Umbroth — Japanese-adjacent
-    "toi": "AV",      # Avali — broadcast
-    "cgtn": "CA",     # Cassisivadan — state/systematic
-    "gdelt": "DR",    # Draumric — archival structure
-    "guardian": "KO", # Kor'aelin — precise reporting
-    "newsdata": "AV", # Avali
-    "worldnews": "DR", # Draumric
+    "hn": "KO",  # Kor'aelin — precise/flow (Python/tech)
+    "arxiv": "CA",  # Cassisivadan — symbolic/math
+    "reddit": "AV",  # Avali — reactive/social
+    "darpa": "RU",  # Runethic — ethical/structured
+    "sam": "RU",  # Runethic — governance
+    "bbc": "AV",  # Avali — broadcast/context
+    "aje": "UM",  # Umbroth — veiled/multilingual
+    "dw": "RU",  # Runethic — structured
+    "f24": "AV",  # Avali — broadcast
+    "nhk": "UM",  # Umbroth — Japanese-adjacent
+    "toi": "AV",  # Avali — broadcast
+    "cgtn": "CA",  # Cassisivadan — state/systematic
+    "gdelt": "DR",  # Draumric — archival structure
+    "guardian": "KO",  # Kor'aelin — precise reporting
+    "newsdata": "AV",  # Avali
+    "worldnews": "DR",  # Draumric
 }
 
 # Geographic coordinates (lat, lon, ISO-3166 alpha-2)
 SOURCE_COORDS: dict[str, tuple[float, float, str]] = {
-    "bbc":      (51.509, -0.118,  "GB"),
-    "aje":      (25.285,  51.531, "QA"),
-    "dw":       (52.520,  13.405, "DE"),
-    "f24":      (48.864,   2.349, "FR"),
-    "nhk":      (35.689, 139.692, "JP"),
-    "toi":      (19.076,  72.878, "IN"),
-    "cgtn":     (39.909, 116.397, "CN"),
-    "gdelt":    (0.000,    0.000, "XX"),  # global
-    "hn":       (37.387, -122.060, "US"),
-    "arxiv":    (40.730,  -73.935, "US"),
-    "reddit":   (37.535, -121.960, "US"),
-    "darpa":    (38.895,  -77.037, "US"),
-    "sam":      (38.895,  -77.037, "US"),
-    "guardian": (51.533,  -0.122,  "GB"),
+    "bbc": (51.509, -0.118, "GB"),
+    "aje": (25.285, 51.531, "QA"),
+    "dw": (52.520, 13.405, "DE"),
+    "f24": (48.864, 2.349, "FR"),
+    "nhk": (35.689, 139.692, "JP"),
+    "toi": (19.076, 72.878, "IN"),
+    "cgtn": (39.909, 116.397, "CN"),
+    "gdelt": (0.000, 0.000, "XX"),  # global
+    "hn": (37.387, -122.060, "US"),
+    "arxiv": (40.730, -73.935, "US"),
+    "reddit": (37.535, -121.960, "US"),
+    "darpa": (38.895, -77.037, "US"),
+    "sam": (38.895, -77.037, "US"),
+    "guardian": (51.533, -0.122, "GB"),
     "newsdata": (37.387, -122.060, "US"),
-    "worldnews": (0.000,   0.000,  "XX"),
+    "worldnews": (0.000, 0.000, "XX"),
 }
 
 REGION_COORDS: dict[str, tuple[float, float, str]] = {
-    "us":     (38.895,  -77.037, "US"),
-    "eu":     (50.110,    8.682, "DE"),
-    "asia":   (35.689,  139.692, "JP"),
-    "me":     (25.204,   55.270, "AE"),
-    "africa": (-1.286,   36.817, "KE"),
-    "global": (0.000,     0.000, "XX"),
+    "us": (38.895, -77.037, "US"),
+    "eu": (50.110, 8.682, "DE"),
+    "asia": (35.689, 139.692, "JP"),
+    "me": (25.204, 55.270, "AE"),
+    "africa": (-1.286, 36.817, "KE"),
+    "global": (0.000, 0.000, "XX"),
 }
 
 # Gnews-variant → region coords
 GNEWS_COORDS: dict[str, tuple[float, float, str]] = {
-    "gnews-eu":    (50.110,   8.682, "DE"),
-    "gnews-asia":  (35.689, 139.692, "JP"),
-    "gnews-me":    (25.204,  55.270, "AE"),
-    "gnews-af":    (-1.286,  36.817, "KE"),
+    "gnews-eu": (50.110, 8.682, "DE"),
+    "gnews-asia": (35.689, 139.692, "JP"),
+    "gnews-me": (25.204, 55.270, "AE"),
+    "gnews-af": (-1.286, 36.817, "KE"),
     "gnews-latam": (-23.550, -46.633, "BR"),
-    "gnews-jp":    (35.689, 139.692, "JP"),
+    "gnews-jp": (35.689, 139.692, "JP"),
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -249,6 +249,7 @@ def tongue_decode(tokens: list[str], tongue: str = "KO") -> bytes:
 
 _FORCE_SKIP = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {"1", "true", "yes"}
 
+
 def _load_oqs():
     """Attempt to import oqs without letting liboqs bootstrap abort importers."""
     if _FORCE_SKIP:
@@ -257,7 +258,7 @@ def _load_oqs():
         import oqs  # type: ignore
 
         return oqs
-    except Exception:
+    except (Exception, SystemExit):
         return None
 
 
@@ -308,10 +309,15 @@ def _geo_phase_seal(
     phi_w = TONGUE_PHI_WEIGHTS.get(tongue, 1.0)
     h = hashlib.sha256()
     for part in (
-        source, tongue, country,
-        f"{lat:.4f}", f"{lon:.4f}",
-        f"{phase:.8f}", f"{phi_w:.6f}",
-        f"{ts:.6f}", payload_hash,
+        source,
+        tongue,
+        country,
+        f"{lat:.4f}",
+        f"{lon:.4f}",
+        f"{phase:.8f}",
+        f"{phi_w:.6f}",
+        f"{ts:.6f}",
+        payload_hash,
     ):
         h.update(part.encode())
         h.update(b"|")
@@ -486,15 +492,15 @@ def stage_egg(hashed: dict) -> dict:
     result = dict(hashed)
     result["egg"] = {
         "egg_id": egg_id,
-        "shell": chain_root,                       # cryptographic shell
-        "yolk": yolk_b64,                          # base64 payload
+        "shell": chain_root,  # cryptographic shell
+        "yolk": yolk_b64,  # base64 payload
         "yolk_byte_len": len(yolk_bytes),
         "tongue": tongue,
         "tongue_name": tongue_name,
         "ritual": "news_ingest",
         "source": source,
         "egg_cost_phi": egg_cost,
-        "hatched_at": None,                        # null until consumed
+        "hatched_at": None,  # null until consumed
         "credits": 0,
         "created_at": datetime.now(tz=timezone.utc).isoformat(),
     }
@@ -544,9 +550,7 @@ def stage_encrypt(egged: dict) -> dict:
     egg_id = egg.get("egg_id", "")
 
     # Derive transport key from egg identity (deterministic, session-specific)
-    key_material = hashlib.sha256(
-        f"SCBE-TRANSPORT-KEY:{egg_id}:{chain_root}".encode()
-    ).digest()
+    key_material = hashlib.sha256(f"SCBE-TRANSPORT-KEY:{egg_id}:{chain_root}".encode()).digest()
 
     plaintext = base64.b64decode(egg.get("yolk", ""))
 
@@ -634,7 +638,7 @@ def stage_sign(encrypted: dict) -> dict:
                         "sig_len": len(signature),
                         "pk_len": len(pub),
                     }
-            except BaseException:
+            except (Exception, SystemExit):
                 alg = "Dilithium3"
                 with oqs.Signature(alg) as signer:
                     pub = signer.generate_keypair()
@@ -645,7 +649,7 @@ def stage_sign(encrypted: dict) -> dict:
                         "sig_len": len(signature),
                         "pk_len": len(pub),
                     }
-        except BaseException as exc:
+        except (Exception, SystemExit) as exc:
             sig_meta = {
                 "algorithm": "HMAC-SHA256-fallback",
                 "signature": _hmac256(_CHAIN_KEY, blob),
@@ -664,11 +668,7 @@ def stage_sign(encrypted: dict) -> dict:
         "chain_root": chain_root,
         "source": encrypted.get("source", ""),
         "region": encrypted.get("region", ""),
-        "geo": {
-            k: v
-            for k, v in encrypted.get("geo", {}).items()
-            if k in ("lat", "lon", "country", "tongue", "seal")
-        },
+        "geo": {k: v for k, v in encrypted.get("geo", {}).items() if k in ("lat", "lon", "country", "tongue", "seal")},
         # Ciphertext omitted from records; auth_tag + ciphertext_len are sufficient
         # for training data — the actual bytes add ~2KB bloat per record.
         "encrypted_payload": {k: v for k, v in enc.items() if k != "ciphertext"},
@@ -758,14 +758,16 @@ def sft_tok_decode_roundtrip(tok: dict, idx: int) -> dict:
         {
             "tokens_preview": preview,
             "tongue": tongue,
-            "full_token_count": tok.get("tokenization", {}).get("tongue_matrix", {}).get(tongue, {}).get("token_count", 0),
+            "full_token_count": tok.get("tokenization", {})
+            .get("tongue_matrix", {})
+            .get(tongue, {})
+            .get("token_count", 0),
         },
         {
             "decoded_title": title,
             "all_roundtrip_ok": tok.get("tokenization", {}).get("all_roundtrip_ok", False),
             "tongue_matrix_summary": {
-                t: d.get("roundtrip_ok", False)
-                for t, d in tok.get("tokenization", {}).get("tongue_matrix", {}).items()
+                t: d.get("roundtrip_ok", False) for t, d in tok.get("tokenization", {}).get("tongue_matrix", {}).items()
             },
         },
     )
@@ -894,9 +896,7 @@ def sft_braid_alignment(tok: dict, idx: int) -> dict | None:
     tname = TONGUE_NAMES.get(tongue, tongue)
     title = tok.get("title", "")
     source = tok.get("source", "?")
-    preview_tokens = (
-        tok.get("tokenization", {}).get("tongue_matrix", {}).get(tongue, {}).get("tokens_preview", [])
-    )
+    preview_tokens = tok.get("tokenization", {}).get("tongue_matrix", {}).get(tongue, {}).get("tokens_preview", [])
     return _sft(
         f"news:braid-align:{tongue}:{idx}",
         f"Score the semantic-atomic braid alignment for this news article. "
@@ -956,9 +956,7 @@ def run_item(item: dict, idx: int) -> tuple[dict, list[dict]]:
             },
             "hashes": hashed.get("hashes", {}),
             "egg": signed.get("egg", {}),
-            "encrypted": {
-                k: v for k, v in signed.get("encrypted", {}).items() if k != "ciphertext"
-            },
+            "encrypted": {k: v for k, v in signed.get("encrypted", {}).items() if k != "ciphertext"},
             "transport": signed.get("transport", {}),
         },
         "crypto_tier": CRYPTO_TIER,
@@ -1030,9 +1028,7 @@ def main() -> None:
         "tongue_coverage": list(TONGUE_PHI_WEIGHTS.keys()),
         "records_file": records_path.relative_to(REPO_ROOT).as_posix(),
         "sft_file": sft_path.relative_to(REPO_ROOT).as_posix(),
-        "pipeline_stages": [
-            "raw", "geotagged", "tokenized", "hashed", "egged", "encrypted", "signed"
-        ],
+        "pipeline_stages": ["raw", "geotagged", "tokenized", "hashed", "egged", "encrypted", "signed"],
         "braid_available": _BRAID_AVAILABLE,
     }
     SUMMARY_PATH.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")

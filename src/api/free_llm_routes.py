@@ -165,6 +165,41 @@ def _append_bus_event(event: Dict[str, Any]) -> None:
         handle.write(json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n")
 
 
+def _public_dispatch_payload(response: Dict[str, Any]) -> Dict[str, Any]:
+    """Return only externally safe dispatch fields for API callers."""
+
+    data = response.get("data") if isinstance(response, dict) else {}
+    data = data if isinstance(data, dict) else {}
+    result = data.get("result")
+    result = result if isinstance(result, dict) else {}
+    bus_event = data.get("bus_event")
+    bus_event = bus_event if isinstance(bus_event, dict) else {}
+    return {
+        "status": response.get("status", "ok") if isinstance(response, dict) else "ok",
+        "data": {
+            "version": data.get("version", "hydra-free-llm-dispatch-v1"),
+            "user": data.get("user"),
+            "route": data.get("route"),
+            "result": {
+                "provider": result.get("provider"),
+                "model": result.get("model"),
+                "finish_reason": result.get("finish_reason"),
+                "text": result.get("text", ""),
+                "fallback_from": result.get("fallback_from"),
+            },
+            "bus_event": {
+                "version": bus_event.get("version", "hydra-free-llm-bus-event-v1"),
+                "event_id": bus_event.get("event_id"),
+                "origin": bus_event.get("origin"),
+                "timestamp": bus_event.get("timestamp"),
+                "route": bus_event.get("route"),
+                "prompt": bus_event.get("prompt"),
+                "result": bus_event.get("result"),
+            },
+        },
+    }
+
+
 OLLAMA_LAUNCH_INTEGRATIONS: Dict[str, Dict[str, Any]] = {
     "claude": {"name": "Claude Code", "aliases": []},
     "cline": {"name": "Cline", "aliases": []},
@@ -174,7 +209,6 @@ OLLAMA_LAUNCH_INTEGRATIONS: Dict[str, Dict[str, Any]] = {
     "hermes": {"name": "Hermes Agent", "aliases": []},
     "kimi": {"name": "Kimi Code CLI", "aliases": []},
     "opencode": {"name": "OpenCode", "aliases": []},
-    "openclaw": {"name": "OpenClaw", "aliases": ["clawdbot", "moltbot"]},
     "pi": {"name": "Pi", "aliases": []},
     "vscode": {"name": "VS Code", "aliases": ["code"]},
 }
@@ -231,7 +265,9 @@ def free_llm_registry() -> Dict[str, Any]:
     hf_token_present = bool(
         os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN") or os.getenv("HUGGING_FACE_HUB_TOKEN")
     )
-    ollama_base = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434").rstrip("/")
+    ollama_base = os.getenv("AGENT_OLLAMA_URL") or os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+    ollama_model = os.getenv("AGENT_OLLAMA_MODEL") or os.getenv("OLLAMA_MODEL") or "openclaw:latest"
+    ollama_base = ollama_base.rstrip("/")
     registry: Dict[str, Any] = {
         "version": "hydra-free-llm-registry-v1",
         "default_order": ["ollama", "huggingface", "offline"],
@@ -253,7 +289,7 @@ def free_llm_registry() -> Dict[str, Any]:
                 "privacy": "local",
                 "available": True,
                 "base_url": ollama_base,
-                "default_model": os.getenv("OLLAMA_MODEL", "qwen2.5-coder:0.5b"),
+                "default_model": ollama_model,
                 "dispatch": "ollama_api_chat",
             },
             "huggingface": {
@@ -531,7 +567,7 @@ def dispatch_free_llm_request(
             origin=origin,
         )
         _append_bus_event(bus_event)
-        raise HTTPException(status_code=502, detail="provider_dispatch_failed") from exc
+        raise HTTPException(status_code=502, detail="provider_dispatch_failed") from None
     bus_event = _build_bus_event(
         request=request,
         user=user,
@@ -555,4 +591,4 @@ def dispatch_free_llm_request(
 @free_llm_router.post("/dispatch")
 async def dispatch_free_llm(request: FreeLLMDispatchRequest, x_api_key: str = Header(...)):
     user = await verify_api_key(x_api_key)
-    return dispatch_free_llm_request(request, user=user, origin="outside")
+    return _public_dispatch_payload(dispatch_free_llm_request(request, user=user, origin="outside"))

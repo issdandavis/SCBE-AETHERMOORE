@@ -113,9 +113,7 @@ Teaching philosophy:
 
 def make_record(messages: list, concept_id: str, record_type: str) -> dict:
     """Create one SFT training record."""
-    content_hash = hashlib.sha256(
-        json.dumps(messages, ensure_ascii=False).encode()
-    ).hexdigest()[:16]
+    content_hash = hashlib.sha256(json.dumps(messages, ensure_ascii=False).encode()).hexdigest()[:16]
 
     return {
         "messages": messages,
@@ -132,6 +130,7 @@ def make_record(messages: list, concept_id: str, record_type: str) -> dict:
 # ---------------------------------------------------------------------------
 # Record generators
 # ---------------------------------------------------------------------------
+
 
 def generate_grammar_lessons() -> list:
     """Generate grammar lesson records for each Sacred Tongue.
@@ -155,10 +154,7 @@ def generate_grammar_lessons() -> list:
         # Show first 4 prefixes and first 4 suffixes as examples
         prefix_examples = ", ".join(spec.prefixes[:4])
         suffix_examples = ", ".join(spec.suffixes[:4])
-        sample_tokens = [
-            f"{spec.prefixes[i]}'{spec.suffixes[j]}"
-            for i, j in [(0, 0), (0, 1), (1, 0), (2, 3), (3, 2)]
-        ]
+        sample_tokens = [f"{spec.prefixes[i]}'{spec.suffixes[j]}" for i, j in [(0, 0), (0, 1), (1, 0), (2, 3), (3, 2)]]
 
         assistant_msg = (
             f"**{full_name}** is the Sacred Tongue of {domain}.\n\n"
@@ -173,23 +169,23 @@ def generate_grammar_lessons() -> list:
             f"  {prefix_examples}, ... (16 total)\n\n"
             f"**Suffixes** (the ending, carrying the low detail):\n"
             f"  {suffix_examples}, ... (16 total)\n\n"
-            f"**Sample vocabulary:**\n"
-            + "\n".join(f"  - `{t}`" for t in sample_tokens)
-            + f"\n\n"
+            f"**Sample vocabulary:**\n" + "\n".join(f"  - `{t}`" for t in sample_tokens) + f"\n\n"
             f"With 16 prefixes × 16 suffixes, {full_name} has exactly **256 words** — "
             f"one for every possible byte value. This is not coincidence. {full_name} "
             f"was designed so that every piece of data can be spoken aloud in this tongue."
         )
 
-        records.append(make_record(
-            [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_msg},
-                {"role": "assistant", "content": assistant_msg},
-            ],
-            f"grammar_{code}_intro",
-            "grammar_introduction",
-        ))
+        records.append(
+            make_record(
+                [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_msg},
+                    {"role": "assistant", "content": assistant_msg},
+                ],
+                f"grammar_{code}_intro",
+                "grammar_introduction",
+            )
+        )
 
         # --- Lesson 2: Full vocabulary table ---
         user_msg = f"Show me the full vocabulary of {full_name}."
@@ -200,22 +196,15 @@ def generate_grammar_lessons() -> list:
         grid_lines.append("-" * (8 + 3 + 8 * 9))
         for i in range(4):
             row = f"{spec.prefixes[i]:>8} | " + " | ".join(
-                f"{spec.prefixes[i]}'{spec.suffixes[j]:>4}"[:6]
-                for j in range(8)
+                f"{spec.prefixes[i]}'{spec.suffixes[j]:>4}"[:6] for j in range(8)
             )
             grid_lines.append(row)
 
         assistant_msg = (
             f"**{full_name} Vocabulary Grid** (sample: 4 prefixes × 8 suffixes)\n\n"
-            f"```\n"
-            + "\n".join(grid_lines)
-            + f"\n```\n\n"
-            f"**All 16 prefixes of {full_name}:**\n"
-            + ", ".join(f"`{p}`" for p in spec.prefixes)
-            + f"\n\n"
-            f"**All 16 suffixes of {full_name}:**\n"
-            + ", ".join(f"`{s}`" for s in spec.suffixes)
-            + f"\n\n"
+            f"```\n" + "\n".join(grid_lines) + f"\n```\n\n"
+            f"**All 16 prefixes of {full_name}:**\n" + ", ".join(f"`{p}`" for p in spec.prefixes) + f"\n\n"
+            f"**All 16 suffixes of {full_name}:**\n" + ", ".join(f"`{s}`" for s in spec.suffixes) + f"\n\n"
             f"**Total vocabulary:** 16 × 16 = **256 words**\n"
             f"**Encoding rule:** Byte value `N` → prefix = `prefixes[N >> 4]`, "
             f"suffix = `suffixes[N & 0x0F]`\n\n"
@@ -224,15 +213,17 @@ def generate_grammar_lessons() -> list:
             f"byte 0x42 = `{spec.prefixes[4]}'{spec.suffixes[2]}`."
         )
 
-        records.append(make_record(
-            [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_msg},
-                {"role": "assistant", "content": assistant_msg},
-            ],
-            f"grammar_{code}_vocab",
-            "grammar_vocabulary",
-        ))
+        records.append(
+            make_record(
+                [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_msg},
+                    {"role": "assistant", "content": assistant_msg},
+                ],
+                f"grammar_{code}_vocab",
+                "grammar_vocabulary",
+            )
+        )
 
         # --- Lesson 3: Phonetic character and pronunciation ---
         user_msg = f"How do I pronounce {full_name} words? What does it sound like?"
@@ -291,21 +282,20 @@ def generate_grammar_lessons() -> list:
             f"This is not metaphor — in the Sacred Tongue lattice, {full_name} literally "
             f"occupies this frequency band.\n\n"
             f"**Practice phrase:** Say these five words aloud:\n"
-            + "\n".join(
-                f"  {i+1}. `{spec.prefixes[i*3]}'{spec.suffixes[i*2]}`"
-                for i in range(5)
-            )
+            + "\n".join(f"  {i+1}. `{spec.prefixes[i*3]}'{spec.suffixes[i*2]}`" for i in range(5))
         )
 
-        records.append(make_record(
-            [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_msg},
-                {"role": "assistant", "content": assistant_msg},
-            ],
-            f"grammar_{code}_phonetics",
-            "grammar_phonetics",
-        ))
+        records.append(
+            make_record(
+                [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_msg},
+                    {"role": "assistant", "content": assistant_msg},
+                ],
+                f"grammar_{code}_phonetics",
+                "grammar_phonetics",
+            )
+        )
 
     return records
 
@@ -332,9 +322,7 @@ def generate_lullaby_records() -> list:
         n2 = TONGUE_FULL_NAMES[t2]
         # Find nearest named interval
         nearest = min(INTERVALS.items(), key=lambda x: abs(x[1] - ratio))
-        interval_lines.append(
-            f"  {n1} → {n2}: ratio {ratio:.3f} (nearest: {nearest[0]})"
-        )
+        interval_lines.append(f"  {n1} → {n2}: ratio {ratio:.3f} (nearest: {nearest[0]})")
 
     user_msg = "Sing me the Six Tongue Lullaby — the one that teaches all the tongues in order."
 
@@ -371,23 +359,23 @@ def generate_lullaby_records() -> list:
         "> Structure stands through storm and time,\n"
         "> Every seal is proof in paradigm.\n"
         "> *(hum at 392 Hz)*\n\n"
-        "**Melodic intervals between tongues:**\n"
-        + "\n".join(interval_lines)
-        + "\n\n"
+        "**Melodic intervals between tongues:**\n" + "\n".join(interval_lines) + "\n\n"
         "The lullaby ascends in phi weight: each tongue is phi times heavier than the last. "
         "The child learns the NAME, the SOUND, the DOMAIN, and three VOCABULARY WORDS "
         "for each tongue — all before they ever encounter a tokenizer."
     )
 
-    records.append(make_record(
-        [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_msg},
-            {"role": "assistant", "content": assistant_msg},
-        ],
-        "lullaby_six_tongues",
-        "lullaby",
-    ))
+    records.append(
+        make_record(
+            [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_msg},
+                {"role": "assistant", "content": assistant_msg},
+            ],
+            "lullaby_six_tongues",
+            "lullaby",
+        )
+    )
 
     # --- Lullaby 2: The Phi Counting Song ---
     user_msg = "Teach me the Phi Counting Song — the one from the Counting Rhymes of Avalon."
@@ -414,15 +402,17 @@ def generate_lullaby_records() -> list:
         "The fractional claps become 'taps' — a lighter sound that teaches the irrational remainder."
     )
 
-    records.append(make_record(
-        [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_msg},
-            {"role": "assistant", "content": assistant_msg},
-        ],
-        "lullaby_phi_counting",
-        "lullaby",
-    ))
+    records.append(
+        make_record(
+            [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_msg},
+                {"role": "assistant", "content": assistant_msg},
+            ],
+            "lullaby_phi_counting",
+            "lullaby",
+        )
+    )
 
     # --- Lullaby 3: Per-tongue bedtime phrases ---
     for code, spec in TONGUES.items():
@@ -431,10 +421,7 @@ def generate_lullaby_records() -> list:
         note = TONGUE_MUSICAL_NOTES[code]
 
         # Build a "goodnight" phrase from each tongue's vocabulary
-        goodnight_tokens = [
-            f"{spec.prefixes[i]}'{spec.suffixes[j]}"
-            for i, j in [(0, 0), (6, 2), (11, 4), (15, 15)]
-        ]
+        goodnight_tokens = [f"{spec.prefixes[i]}'{spec.suffixes[j]}" for i, j in [(0, 0), (6, 2), (11, 4), (15, 15)]]
 
         user_msg = f"Sing me the {full_name} goodnight lullaby."
 
@@ -460,15 +447,17 @@ def generate_lullaby_records() -> list:
             f"and the suffixes soften them into sleep. Its resting resonance is about {audible_hz:.1f} Hz."
         )
 
-        records.append(make_record(
-            [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_msg},
-                {"role": "assistant", "content": assistant_msg},
-            ],
-            f"lullaby_{code}_goodnight",
-            "lullaby",
-        ))
+        records.append(
+            make_record(
+                [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_msg},
+                    {"role": "assistant", "content": assistant_msg},
+                ],
+                f"lullaby_{code}_goodnight",
+                "lullaby",
+            )
+        )
 
     return records
 
@@ -483,10 +472,7 @@ def generate_story_lesson_records() -> list:
 
     for filename, tongue_code in STORY_TONGUE_MAP.items():
         filepath = STORIES_DIR / filename
-        if not filepath.exists():
-            continue
-
-        story_text = filepath.read_text(encoding="utf-8")
+        story_text = filepath.read_text(encoding="utf-8") if filepath.exists() else ""
 
         # Extract title (first line after #)
         title = ""
@@ -494,13 +480,12 @@ def generate_story_lesson_records() -> list:
             if line.startswith("# "):
                 title = line[2:].strip()
                 break
+        if not title:
+            title = filename.removesuffix(".md").split("-", 1)[-1].replace("-", " ").title()
 
         if tongue_code is None:
             # Counting rhymes — all tongues
-            user_msg = (
-                "Tell me about the Counting Rhymes of Avalon and how they teach "
-                "all six Sacred Tongues."
-            )
+            user_msg = "Tell me about the Counting Rhymes of Avalon and how they teach " "all six Sacred Tongues."
 
             assistant_msg = (
                 f"**{title}**\n\n"
@@ -529,14 +514,10 @@ def generate_story_lesson_records() -> list:
             has_song = "## The Song" in story_text or "## The Nursery Rhyme" in story_text
 
             # Show 3 sample tokens from this tongue
-            sample_tokens = [
-                f"{spec.prefixes[i]}'{spec.suffixes[j]}"
-                for i, j in [(0, 0), (3, 2), (7, 5)]
-            ]
+            sample_tokens = [f"{spec.prefixes[i]}'{spec.suffixes[j]}" for i, j in [(0, 0), (3, 2), (7, 5)]]
 
             user_msg = (
-                f"How does \"{title}\" teach {full_name}? "
-                f"What should I learn about the tongue from this story?"
+                f'How does "{title}" teach {full_name}? ' f"What should I learn about the tongue from this story?"
             )
 
             assistant_msg = (
@@ -606,8 +587,7 @@ def generate_story_lesson_records() -> list:
                 )
 
             assistant_msg += (
-                "\n".join(f"  `{t}`" for t in sample_tokens)
-                + f"\n\n"
+                "\n".join(f"  `{t}`" for t in sample_tokens) + f"\n\n"
                 f"**Pre-tokenizer exercise:** Before you encode ANY data through {full_name}, "
                 f"say three {full_name} words aloud. Feel how the sounds carry the character "
                 f"of {domain.split(',')[0]}. "
@@ -621,15 +601,17 @@ def generate_story_lesson_records() -> list:
                     f"phonetics to meaning through rhythm. Sing it before you tokenize."
                 )
 
-        records.append(make_record(
-            [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_msg},
-                {"role": "assistant", "content": assistant_msg},
-            ],
-            f"story_{filename.replace('.md', '')}",
-            "story_lesson",
-        ))
+        records.append(
+            make_record(
+                [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_msg},
+                    {"role": "assistant", "content": assistant_msg},
+                ],
+                f"story_{filename.replace('.md', '')}",
+                "story_lesson",
+            )
+        )
 
     return records
 
@@ -639,10 +621,7 @@ def generate_tongue_comparison_records() -> list:
     records = []
 
     # --- Record: How do the tongues relate musically? ---
-    user_msg = (
-        "How do the six Sacred Tongues relate to each other musically? "
-        "What intervals connect them?"
-    )
+    user_msg = "How do the six Sacred Tongues relate to each other musically? " "What intervals connect them?"
 
     lines = []
     tongue_codes = list(TONGUE_FULL_NAMES.keys())
@@ -660,9 +639,7 @@ def generate_tongue_comparison_records() -> list:
         "Every pair of Sacred Tongues has a musical interval — a frequency ratio "
         "that determines how they SOUND together. These intervals come from "
         "the Tymoczko voice-leading framework, where 3-voice counterpoint "
-        "lives in an orbifold (T^3/S_3).\n\n"
-        + "\n".join(lines)
-        + "\n\n"
+        "lives in an orbifold (T^3/S_3).\n\n" + "\n".join(lines) + "\n\n"
         "**What this means for learning:**\n"
         "- Tongues with a **perfect fifth** (1.500) are maximally consonant — "
         "they complement each other naturally\n"
@@ -674,15 +651,17 @@ def generate_tongue_comparison_records() -> list:
         "the TEXTURE of the language space."
     )
 
-    records.append(make_record(
-        [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_msg},
-            {"role": "assistant", "content": assistant_msg},
-        ],
-        "tongue_intervals",
-        "tongue_comparison",
-    ))
+    records.append(
+        make_record(
+            [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_msg},
+                {"role": "assistant", "content": assistant_msg},
+            ],
+            "tongue_intervals",
+            "tongue_comparison",
+        )
+    )
 
     # --- Record: Translation exercise between tongues ---
     for code, spec in TONGUES.items():
@@ -702,16 +681,11 @@ def generate_tongue_comparison_records() -> list:
             other_name = TONGUE_FULL_NAMES[other_code]
             other_encodings.append(f"  {other_name}: `{other_token}`")
 
-        user_msg = (
-            f"How does the letter 'H' (byte 0x48) sound in {full_name} "
-            f"compared to the other Sacred Tongues?"
-        )
+        user_msg = f"How does the letter 'H' (byte 0x48) sound in {full_name} " f"compared to the other Sacred Tongues?"
 
         assistant_msg = (
             f"The byte 0x48 (the letter 'H' in ASCII) across all six Sacred Tongues:\n\n"
-            f"  **{full_name}: `{token}`**\n"
-            + "\n".join(other_encodings)
-            + f"\n\n"
+            f"  **{full_name}: `{token}`**\n" + "\n".join(other_encodings) + f"\n\n"
             f"Same byte, six different words. The PREFIX is determined by the high nibble "
             f"(0x4 = index 4), and the SUFFIX by the low nibble (0x8 = index 8). "
             f"Each tongue's 4th prefix and 8th suffix produce a completely different sound.\n\n"
@@ -720,15 +694,17 @@ def generate_tongue_comparison_records() -> list:
             f"in all six tongues is how you become a Sacred Tongue polyglot."
         )
 
-        records.append(make_record(
-            [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_msg},
-                {"role": "assistant", "content": assistant_msg},
-            ],
-            f"cross_{code}_byte_0x48",
-            "tongue_comparison",
-        ))
+        records.append(
+            make_record(
+                [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_msg},
+                    {"role": "assistant", "content": assistant_msg},
+                ],
+                f"cross_{code}_byte_0x48",
+                "tongue_comparison",
+            )
+        )
 
     return records
 
@@ -737,10 +713,7 @@ def generate_pipeline_order_record() -> list:
     """Generate a record explaining the conlang-first pipeline order."""
     records = []
 
-    user_msg = (
-        "What is the correct order for learning the Sacred Tongues? "
-        "When do I start tokenizing?"
-    )
+    user_msg = "What is the correct order for learning the Sacred Tongues? " "When do I start tokenizing?"
 
     assistant_msg = (
         "**The Conlang-First Learning Pipeline**\n\n"
@@ -786,15 +759,17 @@ def generate_pipeline_order_record() -> list:
         "Sacred Tongues before it PROCESSES through them."
     )
 
-    records.append(make_record(
-        [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_msg},
-            {"role": "assistant", "content": assistant_msg},
-        ],
-        "pipeline_order",
-        "pipeline_order",
-    ))
+    records.append(
+        make_record(
+            [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_msg},
+                {"role": "assistant", "content": assistant_msg},
+            ],
+            "pipeline_order",
+            "pipeline_order",
+        )
+    )
 
     return records
 
@@ -802,6 +777,7 @@ def generate_pipeline_order_record() -> list:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main():
     print("=" * 70)

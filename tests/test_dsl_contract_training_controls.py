@@ -12,8 +12,16 @@ def test_kernel_template_has_contract_weighted_loss_and_gpu_gate() -> None:
     source = (ROOT / "scripts" / "kaggle_auto" / "kernel_template.py").read_text(encoding="utf-8")
 
     assert "REQUIRE_GPU" in source
-    assert "Refusing CPU/P100 tiny-run" in source
+    assert "No accelerator was assigned" in source
     assert "class WeightedDslSFTTrainer" in source
+    assert "checking_device" in source
+    assert "device_checked" in source
+    assert "use_4bit" in source
+    assert "p100_cpu_smoke_fallback" in source
+    assert "hard-fails during P100 model load" in source
+    assert "if REQUIRE_GPU and not has_cuda" in source
+    assert "CPU_SMOKE_MAX_RECORDS" in source
+    assert "CPU_SMOKE_MAX_STEPS" in source
     assert "torch.isin" in source
     assert "SELECTOR_TOKEN_WEIGHT" in source
     assert "DSL_PRIMITIVE_TOKEN_WEIGHT" in source
@@ -33,6 +41,8 @@ def test_launch_forwards_contract_training_levers() -> None:
         "max_sample_multiplier",
         "repair_lane_files",
         "repair_lane_weight",
+        "cpu_smoke_max_records",
+        "cpu_smoke_max_steps",
     ):
         assert f'"{key}": config.get("{key}"' in source or f'"{key}": True' in source
 

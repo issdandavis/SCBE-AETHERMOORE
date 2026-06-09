@@ -249,13 +249,13 @@ ROUNDS = {
         # governance_security_boundary_eval_v1 is held out of this set so the post-
         # promotion frozen-eval gate remains a clean unseen check.
         "eval_files": [
-            "bijective_codeflow_v1_holdout.sft.jsonl",            # 104 rows  in-dist sanity
-            "aligned_foundations_holdout.sft.jsonl",              #  15 rows  v1 +803%
-            "atomic_workflow_stage6_repair_holdout.sft.jsonl",    #  10 rows  v1 +299%
-            "atomic_workflow_stage6_holdout.sft.jsonl",           #  13 rows  v1 +136%
-            "command_lattice_seed_holdout.sft.jsonl",             #   2 rows  v1 +559%
-            "coding_system_full_v1_holdout.sft.jsonl",            #   8 rows  in-dist
-            "cross_tongue_dialogue_bijective_v1_holdout.sft.jsonl", # 2 rows  in-dist
+            "bijective_codeflow_v1_holdout.sft.jsonl",  # 104 rows  in-dist sanity
+            "aligned_foundations_holdout.sft.jsonl",  #  15 rows  v1 +803%
+            "atomic_workflow_stage6_repair_holdout.sft.jsonl",  #  10 rows  v1 +299%
+            "atomic_workflow_stage6_holdout.sft.jsonl",  #  13 rows  v1 +136%
+            "command_lattice_seed_holdout.sft.jsonl",  #   2 rows  v1 +559%
+            "coding_system_full_v1_holdout.sft.jsonl",  #   8 rows  in-dist
+            "cross_tongue_dialogue_bijective_v1_holdout.sft.jsonl",  # 2 rows  in-dist
         ],
         "hf_repo": "issdandavis/scbe-bijective-tongue-coder-qwen-kaggle-v2",
         "hf_dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
@@ -434,11 +434,14 @@ ROUNDS = {
         "max_sample_multiplier": 6.0,
         "repair_lane_files": ["contract_repair_v3_train.sft.jsonl"],
         "repair_lane_weight": 4.0,
+        "cpu_smoke_max_records": 32,
+        "cpu_smoke_max_steps": 3,
         "early_stopping_patience": 2,
         "early_stopping_threshold": 0.0,
         "eval_steps": 10,
         "save_steps": 10,
         "slug_override": "polly-auto-dsl-syn-v3-fast",
+        "title_override": "Polly Auto DSL Syn V3 Fast",
     },
     "regularized-coding-v8": {
         "desc": "Regularized coding model v8 - focused coding bucket with frozen eval",
@@ -507,6 +510,8 @@ ARC_KERNEL_SLUG = "arc-neurogolf-submit"
 ARC_SUBMISSION_TEMPLATE = Path(__file__).parent / "arc_submission_kernel.py"
 ARC_NEUROGOLF_DATASET = f"{KAGGLE_USER}/scbe-neurogolf-solver"
 ARC_COMPETITION = "arc-prize-2026"
+TOKENIZER_PROBE_SLUG = "polly-tokenizer-probe-qwen-coder"
+TOKENIZER_PROBE_MODEL = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
 
 
 # ============================================================
@@ -514,6 +519,7 @@ ARC_COMPETITION = "arc-prize-2026"
 # ============================================================
 
 TEMPLATE_PATH = Path(__file__).parent / "kernel_template.py"
+
 
 def generate_kernel_script(round_name: str, config: dict) -> str:
     """Generate kernel script by injecting config into template."""
@@ -528,36 +534,40 @@ def generate_kernel_script(round_name: str, config: dict) -> str:
     else:
         batch_size, grad_accum, max_len = 4, 8, 256
 
-    kernel_config = json.dumps({
-        "round": round_name,
-        "base_model": config["base_model"],
-        "hf_repo": config["hf_repo"],
-        "files": config["files"],
-        "eval_files": config.get("eval_files", []),
-        "epochs": config["epochs"],
-        "batch_size": batch_size,
-        "grad_accum": grad_accum,
-        "max_length": max_len,
-        "hf_dataset_repo": config.get("hf_dataset_repo", HF_DATASET),
-        "kaggle_dataset": config.get("kaggle_dataset", KAGGLE_DATASET),
-        "max_steps": config.get("max_steps", -1),
-        "learning_rate": config.get("learning_rate", 2e-4),
-        "max_records": config.get("max_records", 10000),
-        "lora_r": config.get("lora_r", 16),
-        "lora_alpha": config.get("lora_alpha", 32),
-        "lora_dropout": config.get("lora_dropout", 0.05),
-        "early_stopping_patience": config.get("early_stopping_patience", 3),
-        "early_stopping_threshold": config.get("early_stopping_threshold", 0.0),
-        "eval_steps": config.get("eval_steps", 30),
-        "save_steps": config.get("save_steps", 30),
-        "require_gpu": config.get("require_gpu", False),
-        "balance_categories": config.get("balance_categories", False),
-        "selector_token_weight": config.get("selector_token_weight", 1.0),
-        "dsl_primitive_token_weight": config.get("dsl_primitive_token_weight", 1.0),
-        "max_sample_multiplier": config.get("max_sample_multiplier", 6.0),
-        "repair_lane_files": config.get("repair_lane_files", []),
-        "repair_lane_weight": config.get("repair_lane_weight", 1.0),
-    })
+    kernel_config = json.dumps(
+        {
+            "round": round_name,
+            "base_model": config["base_model"],
+            "hf_repo": config["hf_repo"],
+            "files": config["files"],
+            "eval_files": config.get("eval_files", []),
+            "epochs": config["epochs"],
+            "batch_size": batch_size,
+            "grad_accum": grad_accum,
+            "max_length": max_len,
+            "hf_dataset_repo": config.get("hf_dataset_repo", HF_DATASET),
+            "kaggle_dataset": config.get("kaggle_dataset", KAGGLE_DATASET),
+            "max_steps": config.get("max_steps", -1),
+            "learning_rate": config.get("learning_rate", 2e-4),
+            "max_records": config.get("max_records", 10000),
+            "lora_r": config.get("lora_r", 16),
+            "lora_alpha": config.get("lora_alpha", 32),
+            "lora_dropout": config.get("lora_dropout", 0.05),
+            "early_stopping_patience": config.get("early_stopping_patience", 3),
+            "early_stopping_threshold": config.get("early_stopping_threshold", 0.0),
+            "eval_steps": config.get("eval_steps", 30),
+            "save_steps": config.get("save_steps", 30),
+            "require_gpu": config.get("require_gpu", False),
+            "balance_categories": config.get("balance_categories", False),
+            "selector_token_weight": config.get("selector_token_weight", 1.0),
+            "dsl_primitive_token_weight": config.get("dsl_primitive_token_weight", 1.0),
+            "max_sample_multiplier": config.get("max_sample_multiplier", 6.0),
+            "repair_lane_files": config.get("repair_lane_files", []),
+            "repair_lane_weight": config.get("repair_lane_weight", 1.0),
+            "cpu_smoke_max_records": config.get("cpu_smoke_max_records", 48),
+            "cpu_smoke_max_steps": config.get("cpu_smoke_max_steps", 3),
+        }
+    )
 
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
     return template.replace('"__INJECT_CONFIG_HERE__"', f"'{kernel_config}'")
@@ -566,6 +576,7 @@ def generate_kernel_script(round_name: str, config: dict) -> str:
 # ============================================================
 # KERNEL PUSH / POLL / PULL
 # ============================================================
+
 
 def create_kernel_dir(round_name: str, config: dict, gpu: str) -> Path:
     """Create a Kaggle kernel directory with metadata and script."""
@@ -593,9 +604,7 @@ def create_kernel_dir(round_name: str, config: dict, gpu: str) -> Path:
         "competition_sources": [],
         "kernel_sources": [],
     }
-    (kernel_dir / "kernel-metadata.json").write_text(
-        json.dumps(meta, indent=2), encoding="utf-8"
-    )
+    (kernel_dir / "kernel-metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
     return kernel_dir
 
@@ -624,10 +633,170 @@ def create_arc_kernel_dir(gpu: str) -> Path:
         "competition_sources": [ARC_COMPETITION],
         "kernel_sources": [],
     }
-    (kernel_dir / "kernel-metadata.json").write_text(
-        json.dumps(meta, indent=2), encoding="utf-8"
-    )
+    (kernel_dir / "kernel-metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
+    return kernel_dir
+
+
+def tokenizer_probe_script(model_id: str = TOKENIZER_PROBE_MODEL) -> str:
+    """Return a tiny Kaggle script that isolates tokenizer download/load failures."""
+    return f"""#!/usr/bin/env python3
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import time
+import traceback
+from pathlib import Path
+
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+os.environ.setdefault("PYTHONUTF8", "1")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
+MODEL_ID = {json.dumps(model_id)}
+START = time.time()
+
+
+def write_status(phase, **extra):
+    payload = {{
+        "probe": "tokenizer",
+        "model_id": MODEL_ID,
+        "phase": phase,
+        "elapsed_s": round(time.time() - START, 2),
+        **extra,
+    }}
+    Path("/kaggle/working/STATUS.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    print(json.dumps(payload, ensure_ascii=True), flush=True)
+
+
+def fail(phase, exc):
+    payload = {{
+        "probe": "tokenizer",
+        "model_id": MODEL_ID,
+        "phase": "failed",
+        "failed_phase": phase,
+        "elapsed_s": round(time.time() - START, 2),
+        "error_type": type(exc).__name__,
+        "error": str(exc),
+        "traceback": traceback.format_exc(),
+    }}
+    Path("/kaggle/working/ERROR.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    Path("/kaggle/working/STATUS.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    print(json.dumps(payload, ensure_ascii=True), flush=True)
+    raise
+
+
+try:
+    write_status("installing_dependencies")
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "-q",
+            "huggingface_hub>=0.25",
+            "transformers==4.46.3",
+            "tokenizers>=0.20,<0.21",
+            "sentencepiece",
+        ],
+        check=True,
+    )
+except BaseException as exc:
+    fail("installing_dependencies", exc)
+
+try:
+    write_status("importing")
+    import huggingface_hub
+    import tokenizers
+    import transformers
+    from huggingface_hub import hf_hub_download, snapshot_download
+    from transformers import AutoTokenizer
+
+    write_status(
+        "imported",
+        versions={{
+            "huggingface_hub": huggingface_hub.__version__,
+            "transformers": transformers.__version__,
+            "tokenizers": tokenizers.__version__,
+        }},
+    )
+except BaseException as exc:
+    fail("importing", exc)
+
+try:
+    write_status("downloading_tokenizer_config")
+    cfg = hf_hub_download(repo_id=MODEL_ID, filename="tokenizer_config.json")
+    write_status("downloaded_tokenizer_config", path=cfg)
+except BaseException as exc:
+    fail("downloading_tokenizer_config", exc)
+
+try:
+    write_status("snapshot_tokenizer_files")
+    snap = snapshot_download(
+        repo_id=MODEL_ID,
+        allow_patterns=[
+            "tokenizer.json",
+            "tokenizer_config.json",
+            "vocab.json",
+            "merges.txt",
+            "special_tokens_map.json",
+            "generation_config.json",
+        ],
+    )
+    write_status("snapshot_done", path=snap, files=sorted(str(p.name) for p in Path(snap).glob("*")))
+except BaseException as exc:
+    fail("snapshot_tokenizer_files", exc)
+
+try:
+    write_status("loading_slow_tokenizer")
+    tok = AutoTokenizer.from_pretrained(snap, use_fast=False, local_files_only=True)
+    ids = tok.encode("def add(a, b): return a + b", add_special_tokens=False)
+    write_status("slow_tokenizer_ok", token_count=len(ids), first_ids=ids[:12])
+except BaseException as exc:
+    fail("loading_slow_tokenizer", exc)
+
+try:
+    write_status("loading_fast_tokenizer")
+    tok_fast = AutoTokenizer.from_pretrained(snap, use_fast=True, local_files_only=True)
+    ids = tok_fast.encode("def add(a, b): return a + b", add_special_tokens=False)
+    write_status("fast_tokenizer_ok", token_count=len(ids), first_ids=ids[:12])
+except BaseException as exc:
+    write_status("fast_tokenizer_failed_nonfatal", error_type=type(exc).__name__, error=str(exc))
+
+Path("/kaggle/working/DONE.json").write_text(
+    json.dumps({{"probe": "tokenizer", "status": "complete", "model_id": MODEL_ID}}, indent=2),
+    encoding="utf-8",
+)
+write_status("complete")
+"""
+
+
+def create_tokenizer_probe_kernel_dir(gpu: str) -> Path:
+    """Create a tiny tokenizer diagnostic kernel."""
+    kernel_dir = REPO_ROOT / "artifacts" / "kaggle_kernels" / TOKENIZER_PROBE_SLUG
+    kernel_dir.mkdir(parents=True, exist_ok=True)
+    (kernel_dir / "script.py").write_text(tokenizer_probe_script(), encoding="utf-8")
+    meta = {
+        "id": f"{KAGGLE_USER}/{TOKENIZER_PROBE_SLUG}",
+        "title": "Polly Tokenizer Probe Qwen Coder",
+        "code_file": "script.py",
+        "language": "python",
+        "kernel_type": "script",
+        "is_private": True,
+        "enable_gpu": gpu != "none",
+        "enable_internet": True,
+        "dataset_sources": [],
+        "competition_sources": [],
+        "kernel_sources": [],
+    }
+    (kernel_dir / "kernel-metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
     return kernel_dir
 
 
@@ -640,7 +809,8 @@ def push_kernel(kernel_dir: Path, gpu: str = "none", accelerator_override: str |
         cmd.extend(["--accelerator", accelerator])
     result = subprocess.run(
         cmd,
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     print(result.stdout)
     combined = f"{result.stdout}\n{result.stderr}".lower()
@@ -655,7 +825,8 @@ def check_status(kernel_slug: str) -> str:
     ref = f"{KAGGLE_USER}/{kernel_slug}"
     result = subprocess.run(
         ["kaggle", "kernels", "status", ref],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     output = result.stdout.strip()
     # Parse status from output
@@ -705,7 +876,8 @@ def pull_output(kernel_slug: str, dest: Path | None = None) -> Path:
     print(f"Pulling output from {ref} -> {dest}")
     result = subprocess.run(
         ["kaggle", "kernels", "output", ref, "-p", str(dest)],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     print(result.stdout)
     if result.returncode != 0:
@@ -838,8 +1010,8 @@ def wait_until_ready(round_name: str, gpu: str, interval: int, timeout: int, gpu
     while elapsed <= timeout:
         report = readiness_report(round_name, gpu, gpu_session_limit)
         print(
-                f"[ready {elapsed//60:>4d}m] ready={report['ready']} "
-                f"slots={report['gpu_slots_available']} missing={len(report['missing_dataset_files'])}"
+            f"[ready {elapsed//60:>4d}m] ready={report['ready']} "
+            f"slots={report['gpu_slots_available']} missing={len(report['missing_dataset_files'])}"
         )
         if report["ready"]:
             return report
@@ -862,6 +1034,7 @@ def list_running():
 # ============================================================
 # MAIN
 # ============================================================
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -910,6 +1083,7 @@ def main():
     parser.add_argument("--ready", action="store_true", help="Preflight a round: slots, local files, and kernel dir")
     parser.add_argument("--pull", action="store_true", help="Download output from completed kernel")
     parser.add_argument("--arc-submit", action="store_true", help="Push ARC Prize submission kernel")
+    parser.add_argument("--tokenizer-probe", action="store_true", help="Push a tiny Kaggle tokenizer diagnostic kernel")
     args = parser.parse_args()
 
     if args.status:
@@ -949,8 +1123,31 @@ def main():
             print(f"  kaggle kernels status {KAGGLE_USER}/{ARC_KERNEL_SLUG}")
         return
 
+    if args.tokenizer_probe:
+        print(f"\n{'='*60}")
+        print("TOKENIZER PROBE - Qwen coder")
+        print(f"{'='*60}\n")
+        kernel_dir = create_tokenizer_probe_kernel_dir(args.gpu)
+        print(f"Kernel dir: {kernel_dir}")
+        if not push_kernel(kernel_dir, args.gpu, args.accelerator):
+            print("FAILED to push tokenizer probe")
+            sys.exit(1)
+        print(f"Kernel pushed: kaggle.com/code/{KAGGLE_USER}/{TOKENIZER_PROBE_SLUG}")
+        if args.poll:
+            status = poll_until_done(TOKENIZER_PROBE_SLUG, interval=args.poll_interval)
+            dest = pull_output(TOKENIZER_PROBE_SLUG)
+            print(f"Tokenizer probe status: {status}")
+            print(f"Output at: {dest}")
+        else:
+            print("Probe running. Check with:")
+            print(f"  kaggle kernels status {KAGGLE_USER}/{TOKENIZER_PROBE_SLUG}")
+            print(
+                f"  kaggle kernels output {KAGGLE_USER}/{TOKENIZER_PROBE_SLUG} -p artifacts/kaggle_output/{TOKENIZER_PROBE_SLUG}"
+            )
+        return
+
     if not args.round:
-        parser.error("--round is required (unless using --status or --arc-submit)")
+        parser.error("--round is required (unless using --status, --arc-submit, or --tokenizer-probe)")
 
     if args.ready:
         if args.round == "all":
