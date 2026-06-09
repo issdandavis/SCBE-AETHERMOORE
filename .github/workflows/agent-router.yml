@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       task:
-        description: 'Task type: research | monitor | ask | scrape | web_search | coding | system_build | agentic_ladder | pair_benchmark | poly_coding_seed | agent_bus'
+        description: 'Task type: research | monitor | ask | scrape | web_search | coding | system_build | agentic_ladder | pair_benchmark | poly_coding_seed | math_benchmark | agent_bus'
         required: true
         default: 'monitor'
         type: string
@@ -79,6 +79,11 @@ jobs:
         env:
           PYTHONPATH: .
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
         run: |
           mkdir -p artifacts/agent-router docs/static/agent-data
 
@@ -130,6 +135,9 @@ jobs:
             poly_coding_seed)
               python scripts/system/agent_router_smoke.py poly_coding_seed \
                 > artifacts/agent-router/result.json
+              ;;
+            math_benchmark)
+              python scripts/benchmark/agent_router_math_benchmark.py --query "$QUERY"
               ;;
             agent_bus)
               # Dispatch QUERY as one SCBE agent-bus event. Defaults
@@ -239,7 +247,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: agent-router-result
-          path: artifacts/agent-router/result.json
+          path: |
+            artifacts/agent-router/result.json
+            artifacts/benchmarks/math-reasoning/
           retention-days: 30
 
       - name: Write summary
