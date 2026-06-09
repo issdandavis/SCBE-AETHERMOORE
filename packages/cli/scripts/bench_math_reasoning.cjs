@@ -8,6 +8,12 @@ const path = require('node:path');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
 const ARTIFACT_DIR = path.join(REPO_ROOT, 'artifacts', 'benchmarks', 'math-reasoning');
+const ROUTER_LAST_PATH = path.join(
+  REPO_ROOT,
+  'artifacts',
+  'ai_router',
+  'terminal_ai_router_last.json'
+);
 
 const PROBLEMS = [
   {
@@ -340,6 +346,28 @@ function run(command, args, cwd, timeoutMs) {
   };
 }
 
+function summarizeRouterFailure() {
+  try {
+    const report = JSON.parse(fs.readFileSync(ROUTER_LAST_PATH, 'utf8'));
+    const attempts = Array.isArray(report.attempts) ? report.attempts : [];
+    const summary = {
+      selected: report.selected || null,
+      attempts: attempts.slice(-6).map((attempt) => ({
+        provider: attempt.provider,
+        tier: attempt.tier,
+        model: attempt.model,
+        status: attempt.status,
+        http_status: attempt.http_status,
+        error: attempt.error || attempt.reason || '',
+        response_summary: attempt.response_summary || undefined,
+      })),
+    };
+    return JSON.stringify(summary);
+  } catch (_) {
+    return '';
+  }
+}
+
 async function callOllama(prompt, model) {
   const base = (process.env.OLLAMA_BASE_URL || process.env.OLLAMA_URL || 'http://127.0.0.1:11434')
     .replace(/\/+$/g, '')
@@ -391,7 +419,9 @@ function callRouter(prompt, opts) {
     fs.rmSync(promptFile, { force: true });
   } catch (_) {}
   if (result.status !== 0) {
-    throw new Error((result.stderr || result.stdout || 'router failed').trim());
+    const routerSummary = summarizeRouterFailure();
+    const message = (result.stderr || result.stdout || 'router failed').trim();
+    throw new Error(routerSummary ? `${message}\nrouter_summary=${routerSummary}` : message);
   }
   return result.stdout.trim();
 }
