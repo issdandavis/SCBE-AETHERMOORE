@@ -112,6 +112,9 @@ Core commands:
   scbe terminal --json               Machine-readable front-end state
   scbe terminal bench                Benchmark terminal frontend startup/render
   scbe term                          Short alias for terminal
+  scbe desktop                       Portable desktop subsystem for Polly Pad OS
+  scbe desktop open                  Start the portable desktop locally
+  scbe desktop pack                  Build a portable static desktop zip
   scbe run "npm test"
   scbe exec npm test                 Execute command tokens through SCBE receipts
   scbe x git status --short          Short alias for exec
@@ -143,6 +146,9 @@ Core commands:
   terminal --json         Emit the same state as JSON for small agents
   terminal bench          Benchmark the terminal frontend
   term | ui               Short aliases for terminal
+  desktop                 Portable desktop subsystem for Polly Pad OS
+  desktop open            Start the portable desktop locally
+  desktop pack            Build a portable static desktop zip
 
 ─────────────────────────────────────────────────────────────────────────────
   RUN / STATUS / LIBOQS
@@ -6132,6 +6138,25 @@ function runPythonScript(relativePath, args) {
   process.exit(1);
 }
 
+function runNodeScript(relativePath, args) {
+  const script = resolveRepoScript(relativePath);
+  if (!script) {
+    process.stderr.write(
+      [
+        `scbe could not find ${relativePath}.`,
+        'This command needs a local SCBE-AETHERMOORE source checkout.',
+        '',
+      ].join('\n')
+    );
+    process.exit(2);
+  }
+  const child = spawnSync(process.execPath, [script, ...args], {
+    stdio: 'inherit',
+  });
+  if (typeof child.status === 'number') process.exit(child.status);
+  process.exit(1);
+}
+
 function runCompiler(args) {
   runPythonScript('scripts/agents/scbe_code.py', args);
 }
@@ -9184,6 +9209,8 @@ const KNOWN_COMMANDS = [
   'terminal',
   'term',
   'ui',
+  'desktop',
+  'desk',
   'run',
   'exec',
   'x',
@@ -10100,6 +10127,10 @@ if (argv[0] === 'platform') {
 
 if (argv[0] === 'terminal' || argv[0] === 'term' || argv[0] === 'ui') {
   runTerminalFrontend(argv.slice(1));
+}
+
+if (argv[0] === 'desktop' || argv[0] === 'desk') {
+  runNodeScript('packages/cli/scripts/desktop_subsystem.cjs', argv.slice(1));
 }
 
 if (argv[0] === 'credits' || argv[0] === 'hosted-run') {

@@ -38,6 +38,7 @@ test('help documents the terminal frontend and short aliases', () => {
   assert.match(result.stdout, /scbe terminal --json/);
   assert.match(result.stdout, /scbe terminal bench/);
   assert.match(result.stdout, /scbe term\s+Short alias for terminal/);
+  assert.match(result.stdout, /scbe desktop\s+Portable desktop subsystem/);
   assert.match(result.stdout, /scbe exec npm test/);
   assert.match(result.stdout, /scbe x git status --short/);
 });
@@ -139,6 +140,34 @@ test('terminal bench emits measured JSON scenarios', () => {
   assert.ok(payload.scenarios.length >= 3);
   assert.ok(payload.scenarios.every((scenario) => scenario.ok));
   assert.ok(payload.scenarios.every((scenario) => scenario.median_ms > 0));
+});
+
+test('desktop subsystem emits portable desktop status JSON', () => {
+  const result = runCli(['desktop', '--json']);
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_portable_desktop_status_v1');
+  assert.match(payload.desktop_root, /packages[\\/]+polly-pad-os$/);
+  assert.equal(payload.package_name, 'polly-pad-os');
+  assert.ok(payload.app_count >= 80);
+  assert.equal(payload.launcher_commands.open, 'scbe desktop open');
+});
+
+test('desktop subsystem dry-runs open and pack without launching a browser', () => {
+  const open = runCli(['desktop', 'open', '--dry-run', '--json', '--port', '3111']);
+  assert.equal(open.status, 0, open.stderr);
+  const openPayload = JSON.parse(open.stdout);
+  assert.equal(openPayload.schema_version, 'scbe_portable_desktop_open_v1');
+  assert.equal(openPayload.url, 'http://127.0.0.1:3111/');
+  assert.equal(openPayload.dry_run, true);
+
+  const pack = runCli(['desktop', 'pack', '--dry-run', '--json']);
+  assert.equal(pack.status, 0, pack.stderr);
+  const packPayload = JSON.parse(pack.stdout);
+  assert.equal(packPayload.schema_version, 'scbe_portable_desktop_pack_v1');
+  assert.match(packPayload.out_path, /scbe-portable-desktop\.zip$/);
+  assert.equal(packPayload.dry_run, true);
 });
 
 test('rich shell accepts slash terminal navigation', () => {
