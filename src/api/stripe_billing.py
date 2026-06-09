@@ -66,14 +66,47 @@ PLANS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-# In-memory mapping: stripe_customer_id -> tenant record
-# In production this would be a database table.
-BILLING_CUSTOMERS: Dict[str, Dict[str, Any]] = {}
-
-# API keys issued via billing (api_key -> {customer_id, plan, tenant_id, ...})
-BILLING_API_KEYS: Dict[str, Dict[str, Any]] = {}
-
 LOGGER = logging.getLogger("scbe.billing")
+
+_KEYS_FILE = Path(__file__).resolve().parents[2] / "artifacts" / "revenue" / "api_keys.jsonl"
+
+
+def _load_keys() -> tuple[Dict[str, Any], Dict[str, Any]]:
+    """Load persisted billing records from disk on startup."""
+    customers: Dict[str, Any] = {}
+    keys: Dict[str, Any] = {}
+    if not _KEYS_FILE.exists():
+        return customers, keys
+    try:
+        with open(_KEYS_FILE, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                record = json.loads(line)
+                cid = record.get("customer_id", "")
+                key = record.get("api_key", "")
+                if cid:
+                    customers[cid] = record
+                if key:
+                    keys[key] = record
+    except Exception as exc:
+        LOGGER.warning("Failed to load billing keys from disk: %s", exc)
+    return customers, keys
+
+
+def _persist_key(record: Dict[str, Any]) -> None:
+    """Append an API key record to disk."""
+    _KEYS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with open(_KEYS_FILE, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
+    except Exception as exc:
+        LOGGER.warning("Failed to persist API key record: %s", exc)
+
+
+# Load persisted state on import
+BILLING_CUSTOMERS, BILLING_API_KEYS = _load_keys()
 
 
 def _owner_token() -> str:
@@ -350,11 +383,15 @@ def _handle_checkout_completed(session: Dict[str, Any]) -> None:
 
     BILLING_CUSTOMERS[customer_id] = record
     BILLING_API_KEYS[api_key] = record
+    _persist_key(record)
 
     # Also register in the SaaS API key store so endpoints accept it
-    from src.api.saas_routes import VALID_API_KEYS
+    try:
+        from src.api.saas_routes import VALID_API_KEYS
 
-    VALID_API_KEYS[api_key] = email or customer_id
+        VALID_API_KEYS[api_key] = email or customer_id
+    except ImportError:
+        pass
 
 
 def _handle_subscription_updated(subscription: Dict[str, Any]) -> None:
@@ -525,10 +562,10 @@ def _send_delivery_email(
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
 
-    smtp_host = os.getenv("SCBE_SMTP_HOST", "smtp.porkbun.com")
+    smtp_host = os.getenv("SCBE_SMTP_HOST", "smtp.protonmail.ch")
     smtp_port = int(os.getenv("SCBE_SMTP_PORT", "587"))
-    smtp_user = os.getenv("SCBE_SMTP_USER", "ai@aethermoore.com")
-    smtp_pass = os.getenv("SCBE_SMTP_PASS", "")
+    smtp_user = os.getenv("SCBE_SMTP_USER") or os.getenv("PM_USER", "")
+    smtp_pass = os.getenv("SCBE_SMTP_PASS") or os.getenv("PM_PW", "")
 
     subject = f"Your {product_name} is ready"
     html_body = f"""<html><body style="font-family: Georgia, serif; color: #333; max-width: 600px;">
@@ -548,7 +585,8 @@ If you have any questions, reply to this email or reach us at ai@aethermoore.com
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
-    msg["From"] = f"AetherMoore <{smtp_user}>"
+    from_addr = os.getenv("PM_FROM") or smtp_user
+    msg["From"] = f"AetherMoore <{from_addr}>"
     msg["To"] = to_email
     msg["Reply-To"] = "ai@aethermoore.com"
     msg.attach(
