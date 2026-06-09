@@ -1,5 +1,8 @@
 'use strict';
 
+const path = require('node:path');
+
+const { actionCard, listActionBundles, REPO_ROOT } = require('./action-bundles');
 const { ui } = require('./ui');
 
 const MODE_CARDS = [
@@ -58,6 +61,7 @@ const HOTKEYS = [
 
 const QUICK_COMMANDS = [
   ['scbe term', 'open this panel'],
+  ['scbe actions', 'show true action bundles'],
   ['scbe term tui', 'headed terminal'],
   ['scbe x <cmd>', 'run command tokens'],
   ['scbe alias g <cmd>', 'save a shortcut'],
@@ -208,6 +212,10 @@ function buildTerminalFrontendPayload(context = {}) {
     },
     readiness,
     modes: MODE_CARDS,
+    actions: listActionBundles().map(actionCard),
+    action_history_path:
+      context.actionHistoryPath ||
+      path.join(REPO_ROOT, 'artifacts', 'scbe-actions', 'history.jsonl'),
     quick_commands: QUICK_COMMANDS.map(([command, use]) => ({ command, use })),
     command_grammar: COMMAND_GRAMMAR.map(([syntax, use]) => ({ syntax, use })),
     hotkeys: HOTKEYS.map(([keys, use]) => ({ keys, use })),
@@ -246,6 +254,13 @@ function renderCompactTerminalFrontend(payload, u) {
   const quickRows = (payload.quick_commands || [])
     .slice(0, 4)
     .map((entry) => [u.cyan(entry.command), entry.use]);
+  const actionRows = (payload.actions || [])
+    .slice(0, 5)
+    .map((entry) => [
+      u.badge(entry.risk || 'low', entry.risk === 'medium' ? 'warn' : 'allow'),
+      u.bold(entry.id),
+      u.cyan(entry.command),
+    ]);
   const grammarRows = [
     [u.cyan('say it'), 'natural language + autocorrect'],
     [u.cyan('/run <cmd>'), 'governed receipt'],
@@ -265,6 +280,9 @@ function renderCompactTerminalFrontend(payload, u) {
     u.bold('Quick nav'),
     u.table(quickRows, { head: ['type', 'does'] }),
     '',
+    u.bold('Action cards'),
+    u.table(actionRows, { head: ['risk', 'id', 'true command'] }),
+    '',
     u.bold('Last receipt'),
     u.kv([
       ['status', receiptStatus],
@@ -275,7 +293,7 @@ function renderCompactTerminalFrontend(payload, u) {
     u.bold('Inputs'),
     u.table(grammarRows, { head: ['form', 'meaning'] }),
     '',
-    u.dim('More: scbe term --detail  |  Agents: scbe term --json  |  Benchmark: scbe term bench'),
+    u.dim('More: scbe term --detail  |  Actions: scbe actions  |  Agents: scbe term --json'),
   ].join('\n');
 }
 
@@ -349,6 +367,19 @@ function renderTerminalFrontend(payload, options = {}) {
     u.table(
       (payload.quick_commands || []).map((entry) => [u.cyan(entry.command), entry.use]),
       { head: ['type', 'does'] }
+    )
+  );
+  out.push('');
+  out.push(u.heading('Action Cards', width));
+  out.push(
+    u.table(
+      (payload.actions || []).map((entry) => [
+        u.badge(entry.risk || 'low', entry.risk === 'medium' ? 'warn' : 'allow'),
+        u.bold(entry.id),
+        u.cyan(entry.command),
+        u.dim(u.truncate(entry.feedback || entry.intent || '', 38)),
+      ]),
+      { head: ['risk', 'id', 'run', 'feedback'] }
     )
   );
   out.push('');

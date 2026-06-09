@@ -39,6 +39,8 @@ test('help documents the terminal frontend and short aliases', () => {
   assert.match(result.stdout, /scbe terminal bench/);
   assert.match(result.stdout, /scbe term\s+Short alias for terminal/);
   assert.match(result.stdout, /scbe desktop\s+Portable desktop subsystem/);
+  assert.match(result.stdout, /scbe actions\s+List true action bundles/);
+  assert.match(result.stdout, /scbe action desktop\.open\s+Run one action bundle/);
   assert.match(result.stdout, /scbe exec npm test/);
   assert.match(result.stdout, /scbe x git status --short/);
 });
@@ -65,9 +67,13 @@ test('terminal --json emits parseable frontend state for agents', () => {
   assert.equal(payload.launch.token_exec, 'scbe x <program> [args...]');
   assert.deepEqual(payload.aliases, []);
   assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe term'));
+  assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe actions'));
   assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe x <cmd>'));
   assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe alias g <cmd>'));
   assert.ok(payload.modes.some((entry) => entry.id === 'token_exec'));
+  assert.ok(payload.actions.some((entry) => entry.id === 'terminal.panel'));
+  assert.ok(payload.actions.some((entry) => entry.id === 'desktop.open'));
+  assert.match(payload.action_history_path, /scbe-actions[\\/]+history\.jsonl$/);
   assert.equal(payload.natural_language.autocorrect, true);
   assert.equal(typeof payload.natural_language.word_count, 'number');
 });
@@ -113,6 +119,7 @@ test('terminal alias renders compact human navigation without ANSI under NO_COLO
   assert.doesNotMatch(result.stdout, new RegExp(ESC));
   assert.match(result.stdout, /SCBE TERMINAL/);
   assert.match(result.stdout, /Quick nav/);
+  assert.match(result.stdout, /Action cards/);
   assert.match(result.stdout, /scbe term tui/);
   assert.match(result.stdout, /Last receipt/);
   assert.match(result.stdout, /Inputs/);

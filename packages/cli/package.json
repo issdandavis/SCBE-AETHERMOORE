@@ -21,6 +21,7 @@
     "scripts/bench_code_ranker.cjs",
     "scripts/bench_tb_smoke.cjs",
     "scripts/desktop_subsystem.cjs",
+    "scripts/action_runner.cjs",
     "scripts/scbe_workflow.cjs",
     "tests",
     "README.md",
@@ -38,6 +39,7 @@
     "bench:code-ranker": "node scripts/bench_code_ranker.cjs",
     "bench:tb-smoke": "node scripts/bench_tb_smoke.cjs",
     "desktop": "node scripts/desktop_subsystem.cjs",
+    "actions": "node scripts/action_runner.cjs",
     "workflow": "node scripts/scbe_workflow.cjs",
     "pack:dry": "npm pack --dry-run --json"
   },

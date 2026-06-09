@@ -115,6 +115,8 @@ Core commands:
   scbe desktop                       Portable desktop subsystem for Polly Pad OS
   scbe desktop open                  Start the portable desktop locally
   scbe desktop pack                  Build a portable static desktop zip
+  scbe actions                       List true action bundles
+  scbe action desktop.open           Run one action bundle
   scbe run "npm test"
   scbe exec npm test                 Execute command tokens through SCBE receipts
   scbe x git status --short          Short alias for exec
@@ -149,6 +151,9 @@ Core commands:
   desktop                 Portable desktop subsystem for Polly Pad OS
   desktop open            Start the portable desktop locally
   desktop pack            Build a portable static desktop zip
+  actions                 List action cards that collapse common routes into
+                          one true command
+  action <id>             Run one action card, e.g. action desktop.status
 
 ─────────────────────────────────────────────────────────────────────────────
   RUN / STATUS / LIBOQS
@@ -1536,6 +1541,8 @@ function printTerminalHelp() {
       '  scbe terminal --json       machine-readable front-end state',
       '  scbe terminal bench        benchmark frontend startup/render time',
       '  scbe terminal tui          open headed Ink terminal',
+      '  scbe actions               list true action bundles',
+      '  scbe action <id>           run one action bundle',
       '',
       'Aliases:',
       '  scbe term',
@@ -1543,6 +1550,8 @@ function printTerminalHelp() {
       '',
       'Quick commands:',
       '  scbe term',
+      '  scbe actions',
+      '  scbe action terminal.panel',
       '  scbe term tui',
       '  scbe run "<cmd>" --json',
       '  scbe shell --agent-json',
@@ -9209,6 +9218,8 @@ const KNOWN_COMMANDS = [
   'terminal',
   'term',
   'ui',
+  'actions',
+  'action',
   'desktop',
   'desk',
   'run',
@@ -10127,6 +10138,14 @@ if (argv[0] === 'platform') {
 
 if (argv[0] === 'terminal' || argv[0] === 'term' || argv[0] === 'ui') {
   runTerminalFrontend(argv.slice(1));
+}
+
+if (argv[0] === 'actions') {
+  runNodeScript('packages/cli/scripts/action_runner.cjs', argv.slice(1));
+}
+
+if (argv[0] === 'action') {
+  runNodeScript('packages/cli/scripts/action_runner.cjs', ['run', ...argv.slice(1)]);
 }
 
 if (argv[0] === 'desktop' || argv[0] === 'desk') {
