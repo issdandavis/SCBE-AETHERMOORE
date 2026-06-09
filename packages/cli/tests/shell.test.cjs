@@ -111,6 +111,46 @@ test('trap-dispatch normalizes Ollama base URLs that include /api', async () => 
   }
 });
 
+test('advisor command normalizes Ollama base URLs that include /api', async () => {
+  let seenPath = null;
+  const server = http.createServer((req, res) => {
+    seenPath = req.url;
+    req.on('data', () => {});
+    req.on('end', () => {
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ message: { content: 'advisor hint ok' } }));
+    });
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const { port } = server.address();
+    const result = await runCliAsync(
+      [
+        'advisor',
+        'give a short coding hint',
+        '--provider',
+        'ollama',
+        '--model',
+        'mock-coder',
+        '--url',
+        `http://127.0.0.1:${port}/api`,
+        '--json',
+      ],
+      { timeout: 30_000 }
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.equal(payload.schema_version, 'scbe_shell_advisor_v1');
+    assert.equal(payload.ok, true);
+    assert.equal(payload.response, 'advisor hint ok');
+    assert.equal(payload.advisor.provider, 'ollama');
+    assert.equal(seenPath, '/api/chat');
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
 test('alias command saves shortcuts and executes them through receipts', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-alias-'));
 
@@ -196,6 +236,7 @@ test('help documents personal shell modes', () => {
 
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /scbe shell\s+Personal command shell/);
+  assert.match(result.stdout, /scbe advisor\s+"suggest next step"/);
   assert.match(result.stdout, /scbe shell --ai/);
   assert.match(result.stdout, /scbe shell --tui/);
   assert.match(result.stdout, /scbe shell --minimal/);
@@ -329,6 +370,14 @@ test('minimal shell preserves scriptable exit behavior', () => {
   assert.doesNotMatch(result.stdout, /SCBE governed shell/);
 });
 
+test('minimal shell routes known scbe commands back through the cli', () => {
+  const result = runCli(['shell', '--minimal'], { input: 'platform --json\n:exit\n' });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /"schema_version":\s*"scbe_platform_readiness_v1"/);
+  assert.doesNotMatch(result.stdout + result.stderr, /ParserError|Unexpected token|not recognized/);
+});
+
 test('rich shell supports config inspection without touching real home config', () => {
   const result = runCli(['shell'], { input: ':config\n:exit\n' });
 
@@ -336,6 +385,15 @@ test('rich shell supports config inspection without touching real home config', 
   assert.match(result.stdout, /SCBE\s+local/);
   assert.match(result.stdout, /"provider": "ollama"/);
   assert.match(result.stdout, /"model": "[^"]+"/);
+});
+
+test('rich shell routes known scbe commands back through the cli', () => {
+  const result = runCli(['shell'], { input: 'platform --json\n:exit\n' });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /SCBE \[PASS\]/);
+  assert.match(result.stdout, /scbe\.js platform --json/);
+  assert.doesNotMatch(result.stdout + result.stderr, /ParserError|Unexpected token|not recognized/);
 });
 
 test('rich shell lists local models without leaving the shell', () => {
@@ -686,4 +744,77 @@ test('tui.mjs exists and exports launchTui', async () => {
   assert.ok(fs.existsSync(tuiPath), 'bin/tui.mjs must exist');
   const m = await import(pathToFileURL(tuiPath).href);
   assert.equal(typeof m.launchTui, 'function', 'tui.mjs must export launchTui');
+});
+
+// ─── grep / glob file-search builtins (work with or without ripgrep) ──────────
+function runShellInWorkdir(input, files) {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-grep-home-'));
+  const workdir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-grep-work-'));
+  for (const [name, content] of Object.entries(files || {})) {
+    fs.writeFileSync(path.join(workdir, name), content);
+  }
+  const result = spawnSync(process.execPath, [CLI, 'shell'], {
+    cwd: workdir,
+    input,
+    encoding: 'utf8',
+    timeout: 15_000,
+    env: {
+      ...process.env,
+      HOME: home,
+      USERPROFILE: home,
+      NO_COLOR: '1',
+      SCBE_MOCK_RESPONSE: 'should-not-call-model',
+    },
+  });
+  fs.rmSync(home, { recursive: true, force: true });
+  fs.rmSync(workdir, { recursive: true, force: true });
+  return result;
+}
+
+test('rich shell grep builtin finds a literal match with line number', () => {
+  const result = runShellInWorkdir('grep needle .\n:exit\n', {
+    'note.txt': 'alpha beta\ngamma needle delta\n',
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /note\.txt:2:gamma needle delta/);
+  assert.doesNotMatch(result.stdout, /should-not-call-model/);
+});
+
+test('rich shell grep builtin supports regex and -i case folding', () => {
+  const result = runShellInWorkdir('grep "g.mma" . -i\n:exit\n', {
+    'note.txt': 'GAMMA upper\nplain line\n',
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /note\.txt:1:GAMMA upper/);
+});
+
+test('rich shell grep builtin reports no matches cleanly', () => {
+  const result = runShellInWorkdir('grep zzznotpresent .\n:exit\n', {
+    'note.txt': 'nothing relevant here\n',
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /no matches for: zzznotpresent/);
+});
+
+test('rich shell glob builtin lists files by name pattern', () => {
+  const result = runShellInWorkdir('glob "*.test.cjs" .\n:exit\n', {
+    'keep.test.cjs': '// match me\n',
+    'skip.txt': 'ignore me\n',
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /keep\.test\.cjs/);
+  assert.doesNotMatch(result.stdout, /skip\.txt/);
+});
+
+test('rich shell glob builtin reports no files match cleanly', () => {
+  const result = runShellInWorkdir('glob "*.nonesuch" .\n:exit\n', {
+    'note.txt': 'present\n',
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /no files match: \*\.nonesuch/);
 });

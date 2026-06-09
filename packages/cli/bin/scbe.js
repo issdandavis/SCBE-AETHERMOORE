@@ -106,6 +106,7 @@ Core commands:
   scbe shell --minimal               Minimal scriptable readline (no AI)
   scbe shell --agent-json            NDJSON stdin/stdout for harness/benchmark control
   scbe shell --squad                 Route each turn to the best squad provider (cerebras/groq/ollama)
+  scbe advisor "suggest next step"   One-shot advisor lane using the shell/provider config
   scbe terminal                      Compact terminal front end: launch modes,
                                      repo posture, last receipt, next action
   scbe terminal tui                  Open the headed Ink terminal
@@ -148,6 +149,8 @@ Core commands:
   shell --squad           Route each turn to the best squad provider by task
                           class (cerebras=fast-ops, groq=safety/policy,
                           ollama=local); shows provider + token usage in footer
+  advisor <request>       One-shot advisor answer; same model stack as the shell,
+                          but without opening the full chat loop
   terminal                Compact control panel for the shell and command receipts
   terminal tui            Open the headed terminal UI
   terminal --detail       Show stdout/stderr receipt tails and full controls
@@ -2110,6 +2113,10 @@ function readShellConfig() {
     model: resolveOllamaModel('llama3.2'),
     url: 'http://localhost:11434',
     timeout_ms: 30000,
+    advisor_provider: 'ollama',
+    advisor_model: resolveOllamaModel('llama3.2'),
+    advisor_url: 'http://localhost:11434',
+    advisor_timeout_ms: 20000,
     stream: true,
     aliases: {},
     system_prompt:
@@ -2124,10 +2131,191 @@ function readShellConfig() {
       cfg.aliases = {};
     }
     if (cfg.provider === 'ollama') cfg.model = resolveOllamaModel(cfg.model);
+    if ((cfg.advisor_provider || '').toLowerCase() === 'ollama') {
+      cfg.advisor_model = resolveOllamaModel(cfg.advisor_model || cfg.model);
+    }
     return cfg;
   } catch {
     return defaults;
   }
+}
+
+function normalizeOllamaBaseUrl(value) {
+  return String(value || 'http://127.0.0.1:11434')
+    .replace(/\/api\/chat\/?$/i, '')
+    .replace(/\/api\/?$/i, '')
+    .replace(/\/$/, '');
+}
+
+function resolveAdvisorConfig(baseCfg = readShellConfig(), overrides = {}) {
+  const provider = String(
+    overrides.provider || baseCfg.advisor_provider || baseCfg.provider || 'ollama'
+  ).toLowerCase();
+  const timeoutMs = Number(
+    overrides.timeout_ms ||
+      overrides.timeoutMs ||
+      baseCfg.advisor_timeout_ms ||
+      baseCfg.timeout_ms ||
+      20000
+  );
+  const cfg = {
+    ...baseCfg,
+    provider,
+    model: String(
+      overrides.model ||
+        baseCfg.advisor_model ||
+        baseCfg.model ||
+        (provider === 'offline' ? 'offline' : 'llama3.2')
+    ),
+    url: String(
+      overrides.url ||
+        overrides.base_url ||
+        baseCfg.advisor_url ||
+        baseCfg.url ||
+        process.env.OLLAMA_BASE_URL ||
+        'http://localhost:11434'
+    ),
+    timeout_ms: Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 20000,
+    stream: true,
+    system_prompt:
+      'You are the SCBE advisor lane. Return a short operational answer. ' +
+      'Prefer compact next steps, concrete commands, and cautions only when they change the action. ' +
+      'If the user asks for shell work, prefer SCBE harness commands when they are the correct surface. ' +
+      'Do not claim work was run unless it actually was.',
+  };
+  if (cfg.provider === 'ollama') {
+    cfg.model = resolveOllamaModel(cfg.model);
+    cfg.url = normalizeOllamaBaseUrl(cfg.url);
+  }
+  return cfg;
+}
+
+function advisorPrompt(request) {
+  return [
+    'SCBE advisor request.',
+    'Return a concise answer.',
+    'Use bullets only if they add clarity.',
+    'If a command is the best answer, put it on its own line.',
+    '',
+    `Request: ${String(request || '').trim()}`,
+  ].join('\n');
+}
+
+async function requestAdvisor(request, options = {}) {
+  const cfg = resolveAdvisorConfig(options.cfg || readShellConfig(), options);
+  const prompt = advisorPrompt(request);
+  const payload = {
+    schema_version: 'scbe_shell_advisor_v1',
+    ok: false,
+    request: String(request || '').trim(),
+    advisor: {
+      provider: cfg.provider,
+      model: cfg.model,
+      url:
+        cfg.provider === 'ollama'
+          ? cfg.url
+          : cfg.base_url || cfg.openai_base_url || cfg.url || null,
+      timeout_ms: cfg.timeout_ms,
+    },
+    prompt_sha256: crypto.createHash('sha256').update(prompt, 'utf8').digest('hex'),
+    response: '',
+    error: null,
+  };
+  try {
+    payload.response = await streamLLM(prompt, cfg, [], null);
+    payload.ok = true;
+  } catch (err) {
+    payload.error = err && err.message ? err.message : String(err);
+  }
+  return payload;
+}
+
+function printAdvisorPayload(payload, asJson = false) {
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+  const lines = [
+    'SCBE advisor',
+    `provider: ${payload.advisor.provider}`,
+    `model:    ${payload.advisor.model}`,
+    payload.advisor.url ? `url:      ${payload.advisor.url}` : null,
+    '',
+  ].filter(Boolean);
+  if (payload.error) {
+    lines.push(`error: ${payload.error}`, '');
+  } else {
+    lines.push('--- response ---');
+    for (const line of String(payload.response || '').split('\n')) lines.push(line);
+    lines.push('--- end response ---', '');
+  }
+  process.stdout.write(lines.join('\n'));
+}
+
+function runAdvisorCli(args) {
+  let asJson = false;
+  const baseCfg = readShellConfig();
+  const options = {};
+  const words = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const tok = args[i];
+    if (tok === '--json') asJson = true;
+    else if (tok === '--provider') {
+      options.provider = args[i + 1] || '';
+      i += 1;
+    } else if (tok === '--model') {
+      options.model = args[i + 1] || '';
+      i += 1;
+    } else if (tok === '--url' || tok === '--ollama-url') {
+      options.url = args[i + 1] || '';
+      i += 1;
+    } else if (tok === '--timeout-ms') {
+      options.timeout_ms = args[i + 1] || '';
+      i += 1;
+    } else if (tok === 'help' || tok === '--help' || tok === '-h') {
+      process.stdout.write(
+        [
+          'Usage:',
+          '  scbe advisor <request> [--provider <name>] [--model <name>] [--json]',
+          '  scbe advisor "review the next repair step"',
+          '  scbe advisor "suggest the shortest command" --provider ollama --model qwen2.5:0.5b',
+          '',
+          `Defaults come from ${shellConfigPath()}:`,
+          `  advisor_provider=${baseCfg.advisor_provider || baseCfg.provider}`,
+          `  advisor_model=${baseCfg.advisor_model || baseCfg.model}`,
+          '',
+        ].join('\n')
+      );
+      process.exit(0);
+    } else {
+      words.push(tok);
+    }
+  }
+  const request = words.join(' ').trim();
+  if (!request) {
+    process.stderr.write(
+      'Usage: scbe advisor <request> [--provider <name>] [--model <name>] [--json]\n'
+    );
+    process.exit(2);
+  }
+  requestAdvisor(request, options)
+    .then((payload) => {
+      printAdvisorPayload(payload, asJson);
+      process.exit(payload.ok ? 0 : 1);
+    })
+    .catch((err) => {
+      const payload = {
+        schema_version: 'scbe_shell_advisor_v1',
+        ok: false,
+        request,
+        advisor: resolveAdvisorConfig(baseCfg, options),
+        prompt_sha256: null,
+        response: '',
+        error: err && err.message ? err.message : String(err),
+      };
+      printAdvisorPayload(payload, asJson);
+      process.exit(1);
+    });
 }
 
 function saveShellConfig(cfg) {
@@ -2315,7 +2503,9 @@ const _AGENT_JSON_SYSTEM_PROMPT = [
   '6. Do not repeat the same command if the terminal state has not changed.',
   '',
   'BUILT-IN TOOLS — use like any command inside <cmd>...</cmd>:',
-  '  :files <pattern>           — find files by name or grep for text in files',
+  '  :files <pattern>           — find files by name substring',
+  '  :glob <pattern>            — find files by name pattern  e.g. :glob "*.test.cjs"',
+  '  :grep <regex>              — search file CONTENTS by regex (recursive)  e.g. :grep "def main"',
   '  :read <path> <start>:<end> — read lines start–end of a file  e.g. :read main.py 1:40',
   '  :test <cmd>                — run test command; output includes SCBE_TEST_PASS or SCBE_TEST_FAIL',
   '  :patch <file>              — apply a unified diff: patch -p1 < <file>',
@@ -2333,6 +2523,14 @@ function translateToolCommand(cmd) {
   if (tool === 'files') {
     const esc = args.replace(/'/g, "'\\''");
     return `find . -name '*${esc}*' 2>/dev/null | head -30`;
+  }
+  if (tool === 'grep') {
+    const esc = args.replace(/'/g, "'\\''");
+    return `grep -rIn -- '${esc}' . 2>/dev/null | head -50`;
+  }
+  if (tool === 'glob') {
+    const esc = args.replace(/'/g, "'\\''");
+    return `find . -name '${esc}' 2>/dev/null | head -50`;
   }
   if (tool === 'read') {
     const parts = args.split(/\s+/);
@@ -3479,6 +3677,7 @@ const CORE_SHELL_COMMANDS = [
   'now',
   'location',
   'whereami',
+  'advisor',
   'math',
   'calc',
   'infer',
@@ -3490,6 +3689,8 @@ const CORE_SHELL_COMMANDS = [
   'append',
   'count',
   'find',
+  'grep',
+  'glob',
   'run',
   'format',
   'test',
@@ -3525,8 +3726,10 @@ function shellHelpText() {
     '  Ask normally:        hey, explain this repo',
     '  Run a command:       run git status --short',
     '  Slash nav:           /term | /status | /models | /run git status --short',
+    '                       /browser https://example.com | /capture http://127.0.0.1:3000/',
     '  Repo actions:        /format --dry-run | /test --dry-run | /prepush --dry-run',
-    '  Agent lanes:         /claude review this file  |  /codex fix the failing test',
+    '  Agent lanes:         advisor review next step  |  /advisor suggest a command',
+    '                       /claude review this file  |  /codex fix the failing test',
     '  Worksheet:           infer pull then fetch docs  |  infer square root of 89...',
     '  Bracket tag:         [verify] npm test  |  [format] packages/cli/bin/scbe.js',
     '  PowerShell direct:   !git status --short',
@@ -3562,6 +3765,7 @@ function shellToolsText() {
     ansi('bold', 'Tools available in this shell'),
     '',
     '  chat        Talk to the active local model',
+    '  advisor     One-shot advisor answer: advisor review the next repair step',
     '  time/date   Print local time and date',
     '  location    Print cwd, host, user, platform, locale, and timezone',
     '  math/calc   Calculate an expression or supported spoken math phrase',
@@ -3574,6 +3778,8 @@ function shellToolsText() {
     '  run         Run a system command directly: run git status --short',
     '  alias       Save/list shortcuts: :alias g git status --short',
     '  /term       Print the compact terminal front end inside the shell',
+    '  /browser    Open a real page through the browser capture lane',
+    '  /capture    Capture the desktop or page surface to an artifact',
     '  /run        Run a governed command: /run npm test',
     '  /format     Format CLI/desktop surfaces through a GeoSeal action receipt',
     '  /test       Run CLI + desktop tests through a GeoSeal action receipt',
@@ -3581,6 +3787,7 @@ function shellToolsText() {
     '  /prepush    Run diff check, desktop app bench, tests, and build',
     '  /commit     Run prepush, then commit staged changes',
     '  /push       Run prepush, then push the current branch',
+    '  /advisor    Ask the configured advisor lane: /advisor suggest the next command',
     '  /claude     Ask Claude through a receipt: /claude review the current diff',
     '  /codex      Ask Codex through a receipt: /codex make a focused patch',
     '  [tag] cmd   Add an instruction tag; command bodies run through receipts',
@@ -4158,6 +4365,113 @@ function fallbackFindText(query, target) {
   return { root, scanned, matches };
 }
 
+// Regex content search fallback (used when ripgrep is unavailable). Mirrors
+// fallbackFindText but matches each line against a RegExp; on an invalid pattern
+// it degrades to a substring match so the verb never throws.
+function fallbackGrepText(pattern, target, options = {}) {
+  let re = null;
+  try {
+    re = new RegExp(pattern, options.ignoreCase ? 'i' : '');
+  } catch {
+    re = null;
+  }
+  const root = resolveShellPath(target || '.');
+  const matches = [];
+  const stack = [root];
+  let scanned = 0;
+  const skipDirs = new Set(['.git', 'node_modules', '.pytest_cache', '.hypothesis', 'dist']);
+
+  while (stack.length && matches.length < 200 && scanned < 1000) {
+    const current = stack.pop();
+    let stat;
+    try {
+      stat = fs.statSync(current);
+    } catch {
+      continue;
+    }
+    if (stat.isDirectory()) {
+      let entries = [];
+      try {
+        entries = fs.readdirSync(current, { withFileTypes: true });
+      } catch {
+        continue;
+      }
+      for (const entry of entries.reverse()) {
+        if (entry.isDirectory() && skipDirs.has(entry.name)) continue;
+        stack.push(path.join(current, entry.name));
+      }
+      continue;
+    }
+    if (!stat.isFile() || stat.size > 1024 * 1024) continue;
+    scanned += 1;
+    let text = '';
+    try {
+      text = fs.readFileSync(current, 'utf8');
+    } catch {
+      continue;
+    }
+    const rel = path.relative(process.cwd(), current) || current;
+    text.split(/\r?\n/).forEach((line, index) => {
+      const hit = re ? re.test(line) : line.includes(pattern);
+      if (hit && matches.length < 200) matches.push(`${rel}:${index + 1}:${line}`);
+    });
+  }
+  return { root, scanned, matches };
+}
+
+// Translate a shell glob (e.g. "*.test.cjs") into an anchored RegExp on basenames.
+function globToRegExp(glob) {
+  const escaped = glob
+    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*/g, '.*')
+    .replace(/\?/g, '.');
+  return new RegExp(`^${escaped}$`, process.platform === 'win32' ? 'i' : '');
+}
+
+// Filename-pattern search fallback (used when ripgrep is unavailable).
+function fallbackGlobFiles(pattern, target) {
+  let re = null;
+  try {
+    re = globToRegExp(pattern);
+  } catch {
+    re = null;
+  }
+  const root = resolveShellPath(target || '.');
+  const matches = [];
+  const stack = [root];
+  let scanned = 0;
+  const skipDirs = new Set(['.git', 'node_modules', '.pytest_cache', '.hypothesis', 'dist']);
+
+  while (stack.length && matches.length < 200 && scanned < 5000) {
+    const current = stack.pop();
+    let stat;
+    try {
+      stat = fs.statSync(current);
+    } catch {
+      continue;
+    }
+    if (stat.isDirectory()) {
+      let entries = [];
+      try {
+        entries = fs.readdirSync(current, { withFileTypes: true });
+      } catch {
+        continue;
+      }
+      for (const entry of entries.reverse()) {
+        if (entry.isDirectory() && skipDirs.has(entry.name)) continue;
+        stack.push(path.join(current, entry.name));
+      }
+      continue;
+    }
+    scanned += 1;
+    if (!stat.isFile()) continue;
+    const base = path.basename(current);
+    const hit = re ? re.test(base) : base.includes(pattern);
+    if (hit) matches.push(path.relative(process.cwd(), current) || current);
+  }
+  return { root, scanned, matches };
+}
+
 function buildCommandForTarget(rest) {
   const target = String(rest || '').trim();
   if (!target || /^(root|repo)$/i.test(target)) return 'npm run build';
@@ -4168,7 +4482,16 @@ function buildCommandForTarget(rest) {
   return `npm run ${target}`;
 }
 
-function handleCoreShellCommand(line) {
+function buildScbeSelfCommand(input) {
+  const words = Array.isArray(input)
+    ? input.map((part) => String(part))
+    : splitShellWords(String(input || ''));
+  const argv = [process.execPath, __filename, ...words].map(quoteExecArg).join(' ');
+  if (process.platform === 'win32') return `& ${argv}`;
+  return argv;
+}
+
+async function handleCoreShellCommand(line, options = {}) {
   const trimmed = String(line || '').trim();
   const match = trimmed.match(/^([A-Za-z][A-Za-z0-9_-]*)\b/);
   const verb = match ? match[1].toLowerCase() : '';
@@ -4228,6 +4551,17 @@ function handleCoreShellCommand(line) {
         ].join('\n')
       );
     }
+    return true;
+  }
+
+  if (verb === 'advisor') {
+    const request = rest.replace(/(^|\s)--json(?=\s|$)/g, ' ').trim();
+    if (!request) {
+      process.stdout.write(ansi('yellow', '  usage: advisor <request> [--json]\n'));
+      return true;
+    }
+    const payload = await requestAdvisor(request, { cfg: options.cfg || readShellConfig() });
+    printAdvisorPayload(payload, wantsJson);
     return true;
   }
 
@@ -4449,6 +4783,80 @@ function handleCoreShellCommand(line) {
     return true;
   }
 
+  if (verb === 'grep') {
+    const words = splitShellWords(rest);
+    let ignoreCase = false;
+    let fileGlob = null;
+    const positional = [];
+    for (let i = 0; i < words.length; i += 1) {
+      const word = words[i];
+      if (word === '-i' || word === '--ignore-case') ignoreCase = true;
+      else if (word === '-g' || word === '--glob') fileGlob = words[(i += 1)];
+      else positional.push(word);
+    }
+    const pattern = positional[0];
+    if (!pattern) {
+      process.stdout.write(ansi('yellow', '  usage: grep <regex> [path] [-i] [-g <fileglob>]\n'));
+      return true;
+    }
+    const target = positional[1] || '.';
+    const rgArgs = ['--line-number'];
+    if (ignoreCase) rgArgs.push('--ignore-case');
+    if (fileGlob) rgArgs.push('--glob', fileGlob);
+    rgArgs.push('--regexp', pattern, target);
+    const child = spawnSync('rg', rgArgs, {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: 15000,
+      maxBuffer: 1024 * 1024 * 4,
+    });
+    if (child.status === 0) {
+      process.stdout.write(child.stdout.endsWith('\n') ? child.stdout : `${child.stdout}\n`);
+    } else if (child.status === 1) {
+      process.stdout.write(`  no matches for: ${pattern}\n`);
+    } else {
+      const fallback = fallbackGrepText(pattern, target, { ignoreCase });
+      process.stdout.write(
+        fallback.matches.length
+          ? `${fallback.matches.join('\n')}\n`
+          : `  no matches for: ${pattern}\n`
+      );
+    }
+    return true;
+  }
+
+  if (verb === 'glob') {
+    const words = splitShellWords(rest);
+    const positional = words.filter((word) => !word.startsWith('-'));
+    const pattern = positional[0];
+    if (!pattern) {
+      process.stdout.write(
+        ansi('yellow', '  usage: glob <name-pattern> [path]   e.g. glob "*.test.cjs"\n')
+      );
+      return true;
+    }
+    const target = positional[1] || '.';
+    const child = spawnSync('rg', ['--files', '--glob', pattern, target], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: 15000,
+      maxBuffer: 1024 * 1024 * 4,
+    });
+    if (child.status === 0 && child.stdout.trim()) {
+      process.stdout.write(child.stdout.endsWith('\n') ? child.stdout : `${child.stdout}\n`);
+    } else {
+      const fallback = fallbackGlobFiles(pattern, target);
+      process.stdout.write(
+        fallback.matches.length
+          ? `${fallback.matches.join('\n')}\n`
+          : `  no files match: ${pattern}\n`
+      );
+    }
+    return true;
+  }
+
   if (verb === 'run') {
     if (!rest) {
       process.stdout.write(ansi('yellow', '  usage: run <system-command>\n'));
@@ -4537,7 +4945,7 @@ async function streamLLM(prompt, cfg, history, onToken) {
     const key = cfg.fireworks_api_key || cfg.api_key || process.env.FIREWORKS_API_KEY || '';
     headers = { 'content-type': 'application/json', authorization: `Bearer ${key}` };
   } else if (isOllama) {
-    apiUrl = `${(cfg.url || 'http://localhost:11434').replace(/\/$/, '')}/api/chat`;
+    apiUrl = `${normalizeOllamaBaseUrl(cfg.url || 'http://localhost:11434')}/api/chat`;
     headers = { 'content-type': 'application/json' };
   } else {
     const base = cfg.openai_base_url || cfg.base_url || 'https://api.openai.com/v1';
@@ -4708,9 +5116,8 @@ function runInteractiveShell(flags = {}) {
         rl.prompt();
         return;
       }
-      const scbeCmd = /^(compile|compile-ca|ca-plan|render-op|route|aetherpp)\b/.test(command)
-        ? `${process.execPath} "${__filename}" ${command}`
-        : command;
+      const first = command.trim().split(/\s+/)[0].toLowerCase();
+      const scbeCmd = KNOWN_COMMANDS.includes(first) ? buildScbeSelfCommand(command) : command;
       const row = runShellCommand(scbeCmd);
       if (!row.success && row.failure)
         process.stdout.write(
@@ -5290,6 +5697,7 @@ function runInteractiveShell(flags = {}) {
         '/term',
         '/tui',
         '/run',
+        '/advisor',
         '/format',
         '/test',
         '/fix',
@@ -5632,12 +6040,37 @@ function runInteractiveShell(flags = {}) {
       );
       return true;
     }
+    if (verb === 'browser' || verb === 'browse') {
+      if (!rest) {
+        process.stdout.write(ansi('yellow', '  usage: /browser <url>\n'));
+        return true;
+      }
+      const command = buildScbeSelfCommand(['desktop', 'browse', '--json', '--url', rest]);
+      printCapturedRun(command, { tag: 'browser', timeoutMs: 90000 });
+      return true;
+    }
+    if (verb === 'capture' || verb === 'screenshot') {
+      const argv = ['desktop', 'capture', '--json'];
+      if (rest) argv.push('--url', rest);
+      const command = buildScbeSelfCommand(argv);
+      printCapturedRun(command, { tag: 'capture', timeoutMs: 90000 });
+      return true;
+    }
     if (verb === 'run') {
       if (!rest) {
         process.stdout.write(ansi('yellow', '  usage: /run <command>\n'));
         return true;
       }
       printCapturedRun(rest);
+      return true;
+    }
+    if (verb === 'advisor') {
+      if (!rest) {
+        process.stdout.write(ansi('yellow', '  usage: /advisor <request>\n'));
+        return true;
+      }
+      const payload = await requestAdvisor(rest, { cfg: activeTab().cfg });
+      printAdvisorPayload(payload, false);
       return true;
     }
     if (['format', 'test', 'fix', 'prepush', 'ship', 'commit', 'push'].includes(verb)) {
@@ -5688,7 +6121,7 @@ function runInteractiveShell(flags = {}) {
       return true;
     }
     if (body.startsWith('/')) return handleSlashCommand(body);
-    if (handleCoreShellCommand(body)) return true;
+    if (await handleCoreShellCommand(body, { cfg: activeTab().cfg })) return true;
 
     const commandLike =
       /^(npm|node|npx|python|py|pytest|git|gh|ruff|black|tsc|scbe)\b/i.test(body) ||
@@ -5772,7 +6205,7 @@ function runInteractiveShell(flags = {}) {
       return;
     }
 
-    if (handleCoreShellCommand(line)) {
+    if (await handleCoreShellCommand(line, { cfg: activeTab().cfg })) {
       refreshPrompt();
       rl.prompt();
       return;
@@ -5963,9 +6396,7 @@ function runInteractiveShell(flags = {}) {
 
     // ── Known scbe command ────────────────────────────────────────────────
     if (kind === 'command') {
-      const scbeCmd = /^(compile|compile-ca|ca-plan|render-op|route|aetherpp)\b/.test(line)
-        ? `${process.execPath} "${__filename}" ${line}`
-        : line;
+      const scbeCmd = buildScbeSelfCommand(line);
       const row = runShellCommand(scbeCmd, { capture: scriptedInput });
       if (scriptedInput || !row.success) printRunCard(row, { label: 'SCBE' });
       rl.prompt();
@@ -6912,10 +7343,7 @@ async function ollamaDispatch(prompt, model, ollamaUrl, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const baseUrl = String(ollamaUrl || 'http://127.0.0.1:11434')
-      .replace(/\/api\/chat\/?$/i, '')
-      .replace(/\/api\/?$/i, '')
-      .replace(/\/$/, '');
+    const baseUrl = normalizeOllamaBaseUrl(ollamaUrl || 'http://127.0.0.1:11434');
     const res = await fetch(`${baseUrl}/api/chat`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -9286,6 +9714,7 @@ const KNOWN_COMMANDS = [
   'agent',
   'land',
   'shell',
+  'advisor',
   'terminal',
   'term',
   'ui',
@@ -10212,6 +10641,11 @@ if (argv[0] === 'doctor') {
 
 if (argv[0] === 'platform') {
   runPlatform(argv.slice(1));
+}
+
+if (argv[0] === 'advisor') {
+  runAdvisorCli(argv.slice(1));
+  return;
 }
 
 if (argv[0] === 'terminal' || argv[0] === 'term' || argv[0] === 'ui') {
