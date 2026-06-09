@@ -8,6 +8,7 @@ const test = require('node:test');
 const CLI = path.resolve(__dirname, '..', 'bin', 'scbe.js');
 const TASK_CORPUS = path.resolve(__dirname, '..', 'scripts', 'bench_task_corpus.cjs');
 const CODE_RANKER = path.resolve(__dirname, '..', 'scripts', 'bench_code_ranker.cjs');
+const MATH_REASONING = path.resolve(__dirname, '..', 'scripts', 'bench_math_reasoning.cjs');
 const EXPECTED_BENCH_LANES = 12;
 
 function runCli(args, options = {}) {
@@ -54,6 +55,22 @@ function runCodeRanker(args, options = {}) {
     ...(options.env || {}),
   };
   return spawnSync(process.execPath, [CODE_RANKER, ...args], {
+    encoding: 'utf8',
+    timeout: options.timeout || 60_000,
+    env,
+  });
+}
+
+function runMathReasoning(args, options = {}) {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-math-reasoning-'));
+  const env = {
+    ...process.env,
+    HOME: home,
+    USERPROFILE: home,
+    NO_COLOR: '1',
+    ...(options.env || {}),
+  };
+  return spawnSync(process.execPath, [MATH_REASONING, ...args], {
     encoding: 'utf8',
     timeout: options.timeout || 60_000,
     env,
@@ -249,6 +266,37 @@ test('bench code-ranker delegates to code ranker script', () => {
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.schema_version, 'scbe_code_model_ranker_v1');
   assert.equal(payload.private_model_rankings[0].model, 'tiny-code-model');
+});
+
+test('math reasoning oracle solves exact-answer fixture', () => {
+  const result = runMathReasoning(['--mode', 'oracle', '--json', '--no-artifact']);
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_math_reasoning_benchmark_v1');
+  assert.equal(payload.score.correct, payload.score.total);
+  assert.equal(payload.score.total, 8);
+  assert.equal(payload.results.find((row) => row.id === 'probability-dice-01').predicted, '1/8');
+});
+
+test('bench math-reasoning delegates to math benchmark script', () => {
+  const result = runCli([
+    'bench',
+    'math-reasoning',
+    '--mode',
+    'oracle',
+    '--json',
+    '--no-artifact',
+    '--limit',
+    '2',
+  ]);
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_math_reasoning_benchmark_v1');
+  assert.equal(payload.mode, 'oracle');
+  assert.equal(payload.score.correct, 2);
+  assert.equal(payload.score.total, 2);
 });
 
 test('bench tb-smoke dry run defaults SCBE to choice-script mode', () => {

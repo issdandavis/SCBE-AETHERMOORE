@@ -245,6 +245,9 @@ Core commands:
     [--json]
   bench code-ranker      Rank local codegen model artifacts against public
     [--json]             official benchmark targets without mixing score lanes
+  bench math-reasoning   Exact-answer hard math microbench:
+    [--mode raw|choice|tool-choice|gated-tool-choice]
+                          compare raw answers vs choice-script/tool routing
   bench dashboard        Emit a website/operator dashboard from evidence lanes
     [--json] [--write <path>]
   bench prove [lane]     Emit claim-safe proof packet
@@ -8649,6 +8652,7 @@ function printBenchHelp() {
       '  scbe bench status [--json]',
       '  scbe bench latest [lane] [--json]',
       '  scbe bench code-ranker [--json] [--probe-official]',
+      '  scbe bench math-reasoning [--mode raw|choice|tool-choice|gated-tool-choice|oracle] [--provider ollama|router] [--json]',
       '  scbe bench tb-smoke --oracle|--scbe [--task <id>] [--json]',
       '  scbe bench dashboard [--json] [--write <path>]',
       '  scbe bench prove [lane] [--json] [--write <path>]',
@@ -8699,6 +8703,20 @@ function runBench(args) {
       'cli',
       'scripts',
       'bench_code_ranker.cjs'
+    );
+    const child = spawnSync(process.execPath, [scriptAbs, ...args.slice(1)], {
+      cwd: repoRoot(),
+      stdio: 'inherit',
+    });
+    process.exit(typeof child.status === 'number' ? child.status : 1);
+  }
+  if (sub === 'math-reasoning' || sub === 'math' || sub === 'mathbench') {
+    const scriptAbs = path.resolve(
+      repoRoot(),
+      'packages',
+      'cli',
+      'scripts',
+      'bench_math_reasoning.cjs'
     );
     const child = spawnSync(process.execPath, [scriptAbs, ...args.slice(1)], {
       cwd: repoRoot(),
