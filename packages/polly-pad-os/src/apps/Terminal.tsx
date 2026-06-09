@@ -1,275 +1,300 @@
 // @ts-nocheck
-import React, { useState, useRef, useEffect } from 'react';
-import { FS } from '@/utils/fs';
+import React, { useEffect, useRef, useState } from 'react';
 
-interface TerminalLine {
-  type: 'input' | 'output' | 'error';
-  content: string;
+type TerminalLine = {
+  kind: 'input' | 'output' | 'error' | 'system';
+  text: string;
   prompt?: string;
-}
-
-const COMMANDS: Record<string, (...args: any[]) => { output: string; newCwd?: string }> = {
-  help: () => ({
-    output:
-      'Available commands:\n  ls, cd, pwd, cat, echo, mkdir, rm, touch, clear, help, whoami, uname, date, calc, uptime, df, ps, find, grep, wc, history, reboot, fortune',
-  }),
-  ls: (args, cwd) => {
-    const children = FS.getChildren(cwd);
-    if (children.length === 0) return { output: 'total 0' };
-    return {
-      output: children
-        .map(
-          (c) =>
-            `${c.type === 'directory' ? 'd' : '-'}rwxrwxrwx 1 user user ${(c.size || 0).toString().padStart(6)} ${new Date(c.modifiedAt).toLocaleDateString('en', { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })} ${c.name}`
-        )
-        .join('\n'),
-    };
-  },
-  cd: (args, cwd) => {
-    if (!args[0] || args[0] === '~') return { output: '', newCwd: 'user' };
-    if (args[0] === '..') {
-      const node = FS.getNode(cwd);
-      if (node?.parentId) return { output: '', newCwd: node.parentId };
-      return { output: '' };
-    }
-    if (args[0] === '/') return { output: '', newCwd: 'root' };
-    const children = FS.getChildren(cwd);
-    const target = children.find((c) => c.name === args[0] && c.type === 'directory');
-    if (target) return { output: '', newCwd: target.id };
-    return { output: `cd: no such file or directory: ${args[0]}` };
-  },
-  pwd: (args, cwd) => ({ output: FS.getPath(cwd) || '/' }),
-  cat: (args, cwd) => {
-    if (!args[0]) return { output: 'cat: missing file argument' };
-    const children = FS.getChildren(cwd);
-    const file = children.find((c) => c.name === args[0] && c.type === 'file');
-    if (!file) return { output: `cat: ${args[0]}: No such file` };
-    return { output: file.content || '(empty)' };
-  },
-  echo: (args) => ({ output: args.join(' ') }),
-  mkdir: (args, cwd) => {
-    if (!args[0]) return { output: 'mkdir: missing directory name' };
-    if (FS.exists(cwd, args[0]))
-      return { output: `mkdir: cannot create directory '${args[0]}': File exists` };
-    FS.create(cwd, args[0], 'directory');
-    return { output: '' };
-  },
-  touch: (args, cwd) => {
-    if (!args[0]) return { output: 'touch: missing file argument' };
-    FS.create(cwd, args[0], 'file');
-    return { output: '' };
-  },
-  rm: (args, cwd) => {
-    if (!args[0]) return { output: 'rm: missing file argument' };
-    if (args[0] === '-rf' && args[1]) {
-      const children = FS.getChildren(cwd);
-      const target = children.find((c) => c.name === args[1]);
-      if (target) {
-        FS.delete(target.id);
-        return { output: '' };
-      }
-    }
-    const children = FS.getChildren(cwd);
-    const target = children.find((c) => c.name === args[0]);
-    if (target) {
-      FS.delete(target.id);
-      return { output: '' };
-    }
-    return { output: `rm: cannot remove '${args[0]}': No such file` };
-  },
-  clear: () => ({ output: '__CLEAR__' }),
-  whoami: () => ({ output: 'user' }),
-  uname: (args) => {
-    if (args[0] === '-a')
-      return { output: 'LinuxOS Web linuxos 5.15.0-generic #1 SMP x86_64 GNU/Linux' };
-    return { output: 'LinuxOS' };
-  },
-  date: () => ({ output: new Date().toString() }),
-  calc: (args) => {
-    try {
-      const expr = args.join(' ');
-      // eslint-disable-next-line no-new-func
-      const result = new Function('return ' + expr)();
-      return { output: String(result) };
-    } catch {
-      return { output: 'calc: invalid expression' };
-    }
-  },
-  uptime: () => {
-    const s = Math.floor(performance.now() / 1000);
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    return {
-      output: `${h}:${m.toString().padStart(2, '0')} up ${h}h ${m}m, 1 user, load average: 0.12, 0.08, 0.05`,
-    };
-  },
-  df: () => ({
-    output:
-      'Filesystem     1K-blocks    Used Available Use% Mounted on\n/dev/sda1       97656372 12456372  85200000  13% /',
-  }),
-  ps: () => ({
-    output:
-      '  PID TTY          TIME CMD\n    1 ?        00:00:01 init\n  234 ?        00:00:03 desktop\n  567 ?        00:00:01 terminal\n  890 ?        00:00:00 browser',
-  }),
-  find: (args, cwd) => {
-    const name = args.find((_, i) => args[i - 1] === '-name');
-    const children = FS.getChildren(cwd);
-    const matches = name ? children.filter((c) => c.name.includes(name)) : children;
-    return { output: matches.map((c) => c.name).join('\n') || 'No matches found' };
-  },
-  grep: (args) => {
-    if (args.length < 2) return { output: 'Usage: grep <pattern> <text>' };
-    const [pattern, ...textParts] = args;
-    const text = textParts.join(' ');
-    return { output: text.includes(pattern) ? text : 'No match' };
-  },
-  wc: (args, cwd) => {
-    if (!args[0]) return { output: '0 0 0' };
-    const children = FS.getChildren(cwd);
-    const file = children.find((c) => c.name === args[0] && c.type === 'file');
-    if (!file) return { output: `wc: ${args[0]}: No such file` };
-    const content = file.content || '';
-    const lines = content.split('\n').length;
-    const words = content.split(/\s+/).filter(Boolean).length;
-    const chars = content.length;
-    return { output: `${lines} ${words} ${chars} ${args[0]}` };
-  },
-  history: (args, _, history: string[]) => ({
-    output: history.map((h, i) => `${(i + 1).toString().padStart(4)}  ${h}`).join('\n'),
-  }),
-  reboot: () => ({ output: 'System is going down for reboot now!' }),
-  fortune: () => {
-    const fortunes = [
-      'The early bird gets the worm, but the second mouse gets the cheese.',
-      'A journey of a thousand miles begins with a single step.',
-      'To be or not to be, that is the question.',
-      'The only way to do great work is to love what you do.',
-      'Stay hungry, stay foolish.',
-      'The best way to predict the future is to create it.',
-      'Simplicity is the ultimate sophistication.',
-    ];
-    return { output: fortunes[Math.floor(Math.random() * fortunes.length)] };
-  },
 };
 
-export default function Terminal({ windowId }: { windowId: string }) {
-  const [lines, setLines] = useState<TerminalLine[]>([
-    { type: 'output', content: 'LinuxOS Web Terminal - Type "help" for available commands' },
-  ]);
-  const [currentInput, setCurrentInput] = useState('');
-  const [cwd, setCwd] = useState('user');
+type CommandResult = {
+  schema_version: string;
+  command?: string;
+  cwd?: string;
+  next_cwd?: string;
+  shell?: string;
+  success?: boolean;
+  exit_code?: number;
+  duration_ms?: number;
+  stdout?: string;
+  stderr?: string;
+  error?: string;
+};
+
+const DEFAULT_BRIDGE = 'http://127.0.0.1:3678';
+
+function configuredBridgeUrl() {
+  const viteBridge = import.meta.env.VITE_SCBE_ACTION_BRIDGE;
+  if (viteBridge) return viteBridge;
+  try {
+    return localStorage.getItem('scbe_action_bridge') || DEFAULT_BRIDGE;
+  } catch {
+    return DEFAULT_BRIDGE;
+  }
+}
+
+function compactPath(path: string) {
+  if (!path) return 'repo';
+  return path.replace(/^C:\\Users\\issda\\SCBE-AETHERMOORE/i, 'SCBE');
+}
+
+function promptFor(cwd: string) {
+  return `PS ${compactPath(cwd)}>`;
+}
+
+async function postJson(url: string, payload: unknown) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  return { ok: response.ok, data };
+}
+
+export default function Terminal() {
+  const [bridgeUrl, setBridgeUrl] = useState(configuredBridgeUrl());
+  const [cwd, setCwd] = useState('C:\\Users\\issda\\SCBE-AETHERMOORE');
+  const [shell, setShell] = useState('powershell.exe');
+  const [input, setInput] = useState('');
+  const [running, setRunning] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [lines, setLines] = useState<TerminalLine[]>([
+    {
+      kind: 'system',
+      text: 'SCBE PowerShell bridge. Type help, /actions, /action repo.status, or any PowerShell command.',
+    },
+  ]);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [lines]);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  const executeCommand = (input: string) => {
-    const trimmed = input.trim();
-    if (!trimmed) {
-      setLines((prev) => [...prev, { type: 'input', content: '', prompt: getPrompt() }]);
-      return;
-    }
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [lines, running]);
 
-    setHistory((prev) => [...prev, trimmed]);
+  useEffect(() => {
+    fetch(`${bridgeUrl}/terminal/session`)
+      .then((response) => response.json())
+      .then((session) => {
+        if (session?.cwd) setCwd(session.cwd);
+        if (session?.shell) setShell(session.shell);
+        setLines((prev) => [
+          ...prev,
+          { kind: 'system', text: `bridge ready: ${bridgeUrl} (${session.shell || shell})` },
+        ]);
+      })
+      .catch(() => {
+        setLines((prev) => [
+          ...prev,
+          {
+            kind: 'error',
+            text: `bridge offline: ${bridgeUrl}. Start it with scbe desktop open or scbe desktop bridge.`,
+          },
+        ]);
+      });
+  }, [bridgeUrl]);
+
+  const push = (items: TerminalLine[]) => setLines((prev) => [...prev, ...items]);
+
+  const runAction = async (id: string) => {
+    const result = await postJson(`${bridgeUrl}/actions/run`, { id });
+    const payload = result.data;
+    push([
+      {
+        kind: payload.success ? 'output' : 'error',
+        text: `${payload.action_id || id}: ${payload.success ? 'PASS' : 'FAIL'} exit ${payload.exit_code ?? '?'}\n${payload.stdout_preview || payload.stderr_preview || payload.error || ''}`,
+      },
+    ]);
+  };
+
+  const runCommand = async (raw: string) => {
+    const command = raw.trim();
+    if (!command) return;
+    const prompt = promptFor(cwd);
+    setHistory((prev) => [...prev, command]);
     setHistoryIndex(-1);
+    push([{ kind: 'input', text: command, prompt }]);
 
-    const parts = trimmed.split(/\s+/);
-    const cmd = parts[0];
-    const args = parts.slice(1);
-
-    const handler = COMMANDS[cmd];
-    let output: string;
-
-    if (cmd === 'clear') {
+    if (command === 'clear') {
       setLines([]);
       return;
-    } else if (cmd === 'history') {
-      output = COMMANDS.history(args, cwd, history).output;
-    } else if (handler) {
-      const result = handler(args, cwd);
-      output = result.output;
-      if (result.newCwd) setCwd(result.newCwd);
-    } else {
-      output = `${cmd}: command not found`;
+    }
+    if (command === 'help') {
+      push([
+        {
+          kind: 'system',
+          text: [
+            'Built-ins:',
+            '  help',
+            '  clear',
+            '  bridge <url>',
+            '  /actions',
+            '  /action <id>',
+            '  /open <url or search>',
+            '',
+            'Everything else is sent to real PowerShell through the bridge.',
+          ].join('\n'),
+        },
+      ]);
+      return;
+    }
+    if (command.startsWith('bridge ')) {
+      const next = command.slice('bridge '.length).trim();
+      setBridgeUrl(next);
+      try {
+        localStorage.setItem('scbe_action_bridge', next);
+      } catch {
+        // ignored
+      }
+      push([{ kind: 'system', text: `bridge set: ${next}` }]);
+      return;
+    }
+    if (command === '/actions') {
+      const response = await fetch(`${bridgeUrl}/actions`);
+      const payload = await response.json();
+      push([
+        {
+          kind: 'output',
+          text: payload.actions
+            .map(
+              (action: { id: string; label: string }) => `${action.id.padEnd(24)} ${action.label}`
+            )
+            .join('\n'),
+        },
+      ]);
+      return;
+    }
+    if (command.startsWith('/action ')) {
+      await runAction(command.slice('/action '.length).trim());
+      return;
+    }
+    if (command.startsWith('/open ')) {
+      const result = await postJson(`${bridgeUrl}/internet/open`, {
+        url: command.slice('/open '.length).trim(),
+      });
+      push([
+        {
+          kind: result.ok ? 'output' : 'error',
+          text: result.ok
+            ? `opened in system browser: ${result.data.url}`
+            : result.data.error || 'internet open failed',
+        },
+      ]);
+      return;
     }
 
-    const newLines: TerminalLine[] = [{ type: 'input', content: trimmed, prompt: getPrompt() }];
-    if (output) newLines.push({ type: 'output', content: output });
-    setLines((prev) => [...prev, ...newLines]);
-  };
-
-  const getPrompt = () => {
-    const path = FS.getPath(cwd);
-    return `user@linuxos:${path === '/home/user' ? '~' : path}$`;
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      executeCommand(currentInput);
-      setCurrentInput('');
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (historyIndex < history.length - 1) {
-        const newIndex = historyIndex + 1;
-        setHistoryIndex(newIndex);
-        setCurrentInput(history[history.length - 1 - newIndex] || '');
+    setRunning(true);
+    try {
+      const result = await postJson(`${bridgeUrl}/terminal/run`, { command, cwd });
+      const payload = result.data as CommandResult;
+      if (payload.next_cwd) setCwd(payload.next_cwd);
+      const out: TerminalLine[] = [];
+      if (payload.stdout) out.push({ kind: 'output', text: payload.stdout });
+      if (payload.stderr) out.push({ kind: 'error', text: payload.stderr });
+      if (!payload.stdout && !payload.stderr) {
+        out.push({
+          kind: payload.success ? 'system' : 'error',
+          text: `exit ${payload.exit_code ?? '?'} in ${payload.duration_ms ?? '?'}ms`,
+        });
+      } else {
+        out.push({
+          kind: 'system',
+          text: `exit ${payload.exit_code ?? '?'} in ${payload.duration_ms ?? '?'}ms`,
+        });
       }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
+      push(out);
+    } catch (err) {
+      push([{ kind: 'error', text: err instanceof Error ? err.message : 'command failed' }]);
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && !running) {
+      const next = input;
+      setInput('');
+      void runCommand(next);
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (historyIndex < history.length - 1) {
+        const nextIndex = historyIndex + 1;
+        setHistoryIndex(nextIndex);
+        setInput(history[history.length - 1 - nextIndex] || '');
+      }
+      return;
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
       if (historyIndex > 0) {
-        const newIndex = historyIndex - 1;
-        setHistoryIndex(newIndex);
-        setCurrentInput(history[history.length - 1 - newIndex] || '');
+        const nextIndex = historyIndex - 1;
+        setHistoryIndex(nextIndex);
+        setInput(history[history.length - 1 - nextIndex] || '');
       } else {
         setHistoryIndex(-1);
-        setCurrentInput('');
+        setInput('');
       }
     }
   };
 
   return (
     <div
-      className="w-full h-full bg-[#0b1120] text-green-400 font-mono text-xs flex flex-col overflow-hidden"
+      className="h-full w-full bg-[#080b0f] text-zinc-100 font-mono text-xs flex flex-col"
       onClick={() => inputRef.current?.focus()}
     >
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3">
-        {lines.map((line, i) => (
-          <div key={i} className="whitespace-pre-wrap break-all">
-            {line.type === 'input' && (
-              <span className="text-blue-400">{line.prompt || getPrompt()} </span>
-            )}
+      <div className="flex items-center justify-between border-b border-zinc-700/60 bg-[#11151b] px-3 py-2">
+        <div>
+          <div className="text-[11px] uppercase tracking-[0.16em] text-cyan-300">
+            SCBE PowerShell
+          </div>
+          <div className="text-[10px] text-zinc-400">{bridgeUrl}</div>
+        </div>
+        <div className="text-[10px] text-zinc-400">{shell}</div>
+      </div>
+
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
+        {lines.map((line, index) => (
+          <div key={index} className="whitespace-pre-wrap break-words">
+            {line.kind === 'input' && <span className="text-cyan-300">{line.prompt} </span>}
             <span
               className={
-                line.type === 'error'
-                  ? 'text-red-400'
-                  : line.type === 'input'
-                    ? 'text-green-300'
-                    : 'text-green-400/80'
+                line.kind === 'error'
+                  ? 'text-red-300'
+                  : line.kind === 'system'
+                    ? 'text-amber-200'
+                    : line.kind === 'input'
+                      ? 'text-zinc-100'
+                      : 'text-emerald-200'
               }
             >
-              {line.content}
+              {line.text}
             </span>
           </div>
         ))}
-        <div className="flex items-center">
-          <span className="text-blue-400">{getPrompt()} </span>
+        {running && <div className="text-cyan-300">running...</div>}
+      </div>
+
+      <div className="border-t border-zinc-700/60 bg-[#0d1117] px-3 py-2">
+        <div className="flex items-center gap-2">
+          <span className="shrink-0 text-cyan-300">{promptFor(cwd)}</span>
           <input
             ref={inputRef}
-            type="text"
-            value={currentInput}
-            onChange={(e) => setCurrentInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="flex-1 bg-transparent outline-none text-green-300 caret-green-400"
+            data-testid="powershell-input"
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={onKeyDown}
+            disabled={running}
             spellCheck={false}
             autoComplete="off"
+            style={{ color: '#f8fafc', caretColor: '#67e8f9' }}
+            className="min-w-0 flex-1 bg-transparent text-zinc-50 outline-none disabled:opacity-50"
           />
         </div>
       </div>

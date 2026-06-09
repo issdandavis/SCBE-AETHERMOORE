@@ -43,7 +43,7 @@ export function generateAppRegistry(): Map<string, AppDefinition> {
     },
     {
       id: 'browser',
-      name: 'Browser',
+      name: 'Internet',
       icon: 'Globe',
       category: 'Internet',
       component: null as any,

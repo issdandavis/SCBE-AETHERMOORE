@@ -294,7 +294,7 @@ function startDevServer(port, logPath, bridgeUrl = '') {
   return { pid: child.pid, err_path: logPath };
 }
 
-function startActionBridgeProcess(port, logPath) {
+function startActionBridgeProcess(port, logPath, desktopUrl = '') {
   const errPath = logPath.replace(/\.log$/i, '.err.log');
   if (process.platform === 'win32') {
     const launcherPath = path.join(ARTIFACT_ROOT, `run-bridge-${port}.cmd`);
@@ -302,6 +302,7 @@ function startActionBridgeProcess(port, logPath) {
       launcherPath,
       [
         '@echo off',
+        desktopUrl ? `set SCBE_DESKTOP_URL=${desktopUrl}` : '',
         `cd /d ${JSON.stringify(REPO_ROOT)}`,
         `${cmdToken(process.execPath)} ${JSON.stringify(__filename)} bridge --port ${port} > ${JSON.stringify(logPath)} 2> ${JSON.stringify(errPath)}`,
         '',
@@ -329,6 +330,10 @@ function startActionBridgeProcess(port, logPath) {
     cwd: REPO_ROOT,
     detached: true,
     stdio: ['ignore', out, out],
+    env: {
+      ...process.env,
+      ...(desktopUrl ? { SCBE_DESKTOP_URL: desktopUrl } : {}),
+    },
   });
   child.unref();
   return { pid: child.pid, err_path: logPath };
@@ -411,6 +416,148 @@ function runActionJson(id, { dryRun = false } = {}) {
   return { status: result.status === 0 ? 200 : 500, payload };
 }
 
+function normalizeUrl(input) {
+  const raw = String(input || '').trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (/^(localhost|127\.0\.0\.1)(:\d+)?(\/.*)?$/i.test(raw)) return `http://${raw}`;
+  if (raw.includes(' ') || !raw.includes('.')) {
+    return `https://www.google.com/search?q=${encodeURIComponent(raw)}`;
+  }
+  return `https://${raw}`;
+}
+
+function runPowerShellCommand({ command, cwd } = {}) {
+  const text = String(command || '').trim();
+  const started = Date.now();
+  if (!text) {
+    return {
+      status: 400,
+      payload: {
+        schema_version: 'scbe_terminal_command_result_v1',
+        success: false,
+        exit_code: 2,
+        error: 'missing command',
+        duration_ms: 0,
+      },
+    };
+  }
+  if (text.length > 8000) {
+    return {
+      status: 400,
+      payload: {
+        schema_version: 'scbe_terminal_command_result_v1',
+        command: text.slice(0, 120),
+        success: false,
+        exit_code: 2,
+        error: 'command too long',
+        duration_ms: 0,
+      },
+    };
+  }
+
+  const requestedCwd = cwd ? path.resolve(String(cwd)) : REPO_ROOT;
+  const runCwd = fs.existsSync(requestedCwd) ? requestedCwd : REPO_ROOT;
+  const shell = process.platform === 'win32' ? 'powershell.exe' : 'pwsh';
+  const marker = `__SCBE_CWD_${Date.now()}_${Math.random().toString(36).slice(2)}__=`;
+  const wrappedCommand = [
+    `$ErrorActionPreference = 'Continue'`,
+    `Set-Location -LiteralPath ${psSingle(runCwd)}`,
+    text,
+    `Write-Output (${psSingle(marker)} + (Get-Location).Path)`,
+  ].join('; ');
+  const args =
+    process.platform === 'win32'
+      ? ['-NoLogo', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', wrappedCommand]
+      : ['-NoLogo', '-NoProfile', '-Command', wrappedCommand];
+  const result = spawnSync(shell, args, {
+    cwd: runCwd,
+    encoding: 'utf8',
+    timeout: 60_000,
+    maxBuffer: 8 * 1024 * 1024,
+  });
+  const rawStdout = result.stdout || '';
+  let nextCwd = runCwd;
+  const stdoutLines = rawStdout.split(/\r?\n/);
+  const filteredStdout = [];
+  for (const line of stdoutLines) {
+    if (line.startsWith(marker)) {
+      nextCwd = line.slice(marker.length).trim() || nextCwd;
+    } else {
+      filteredStdout.push(line);
+    }
+  }
+  const stdout = filteredStdout.join('\n').replace(/\n+$/g, '');
+  const stderr = result.stderr || '';
+  const exitCode = typeof result.status === 'number' ? result.status : result.error ? 1 : 0;
+  return {
+    status: exitCode === 0 ? 200 : 500,
+    payload: {
+      schema_version: 'scbe_terminal_command_result_v1',
+      command: text,
+      cwd: runCwd,
+      next_cwd: nextCwd,
+      shell,
+      success: exitCode === 0,
+      exit_code: exitCode,
+      duration_ms: Date.now() - started,
+      stdout,
+      stderr,
+      stdout_preview: firstLine(stdout),
+      stderr_preview: firstLine(stderr),
+      error: result.error ? result.error.message : undefined,
+    },
+  };
+}
+
+async function captureScreen({ url, out } = {}) {
+  const targetUrl = normalizeUrl(url || process.env.SCBE_DESKTOP_URL || 'http://127.0.0.1:3000/');
+  const outPath = path.resolve(
+    REPO_ROOT,
+    out ||
+      path.join(
+        ARTIFACT_ROOT,
+        'screens',
+        `desktop-${new Date().toISOString().replace(/[:.]/g, '-')}.png`
+      )
+  );
+  ensureDir(path.dirname(outPath));
+  let chromium;
+  try {
+    ({ chromium } = require('@playwright/test'));
+  } catch (err) {
+    return {
+      status: 500,
+      payload: {
+        schema_version: 'scbe_screen_capture_v1',
+        success: false,
+        url: targetUrl,
+        out_path: outPath,
+        error: `Playwright is not available: ${err.message}`,
+      },
+    };
+  }
+
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 20_000 });
+    await page.screenshot({ path: outPath, fullPage: true });
+    return {
+      status: 200,
+      payload: {
+        schema_version: 'scbe_screen_capture_v1',
+        success: true,
+        url: targetUrl,
+        out_path: outPath,
+        bytes: fs.statSync(outPath).size,
+      },
+    };
+  } finally {
+    await browser.close();
+  }
+}
+
 async function runBridge(args) {
   const port = Number.parseInt(flagValue(args, '--port', '3678'), 10) || 3678;
   ensureDir(ACTION_HISTORY_ROOT);
@@ -428,6 +575,34 @@ async function runBridge(args) {
           pid: process.pid,
           repo_root: REPO_ROOT,
           action_history_root: ACTION_HISTORY_ROOT,
+          terminal: {
+            shell: process.platform === 'win32' ? 'powershell.exe' : 'pwsh',
+            endpoint: '/terminal/run',
+            cwd: REPO_ROOT,
+          },
+          internet: {
+            endpoint: '/internet/open',
+          },
+          screen: {
+            endpoint: '/screen/capture',
+          },
+        });
+        return;
+      }
+      if (req.method === 'GET' && url.pathname === '/terminal/session') {
+        sendJson(res, 200, {
+          schema_version: 'scbe_terminal_session_v1',
+          ok: true,
+          shell: process.platform === 'win32' ? 'powershell.exe' : 'pwsh',
+          cwd: REPO_ROOT,
+          repo_root: REPO_ROOT,
+          pid: process.pid,
+          endpoints: {
+            run: '/terminal/run',
+            actions: '/actions/run',
+            internet: '/internet/open',
+            capture: '/screen/capture',
+          },
         });
         return;
       }
@@ -438,6 +613,38 @@ async function runBridge(args) {
       if (req.method === 'POST' && url.pathname === '/actions/run') {
         const body = await readRequestJson(req);
         const result = runActionJson(body.id, { dryRun: Boolean(body.dry_run) });
+        sendJson(res, result.status, result.payload);
+        return;
+      }
+      if (req.method === 'POST' && url.pathname === '/terminal/run') {
+        const body = await readRequestJson(req);
+        const result = runPowerShellCommand({ command: body.command, cwd: body.cwd });
+        sendJson(res, result.status, result.payload);
+        return;
+      }
+      if (req.method === 'POST' && url.pathname === '/internet/open') {
+        const body = await readRequestJson(req);
+        const target = normalizeUrl(body.url || body.query);
+        if (!target) {
+          sendJson(res, 400, {
+            schema_version: 'scbe_internet_open_v1',
+            success: false,
+            error: 'missing url',
+          });
+          return;
+        }
+        openUrl(target);
+        sendJson(res, 200, {
+          schema_version: 'scbe_internet_open_v1',
+          success: true,
+          url: target,
+          opened: 'system-browser',
+        });
+        return;
+      }
+      if (req.method === 'POST' && url.pathname === '/screen/capture') {
+        const body = await readRequestJson(req);
+        const result = await captureScreen({ url: body.url, out: body.out });
         sendJson(res, result.status, result.payload);
         return;
       }
@@ -481,7 +688,7 @@ async function runOpen(args) {
     return;
   }
 
-  const bridge = startActionBridgeProcess(bridgePort, bridgeLogPath);
+  const bridge = startActionBridgeProcess(bridgePort, bridgeLogPath, url);
   const server = startDevServer(port, logPath, bridgeUrl);
   payload.pid = server.pid;
   payload.stderr_path = server.err_path;

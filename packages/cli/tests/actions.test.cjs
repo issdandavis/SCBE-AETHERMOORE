@@ -164,6 +164,9 @@ test('desktop action bridge exposes actions and runs one action over HTTP', asyn
     const health = await waitForJson(`http://127.0.0.1:${port}/health`);
     assert.equal(health.schema_version, 'scbe_action_bridge_health_v1');
     assert.equal(health.ok, true);
+    assert.equal(health.terminal.endpoint, '/terminal/run');
+    assert.equal(health.internet.endpoint, '/internet/open');
+    assert.equal(health.screen.endpoint, '/screen/capture');
 
     const catalog = await getJson(`http://127.0.0.1:${port}/actions`);
     assert.equal(catalog.schema_version, 'scbe_action_catalog_v1');
@@ -175,6 +178,20 @@ test('desktop action bridge exposes actions and runs one action over HTTP', asyn
     assert.equal(result.schema_version, 'scbe_action_result_v1');
     assert.equal(result.success, true);
     assert.equal(result.stdout_json.schema_version, 'scbe_terminal_run_v1');
+
+    const session = await getJson(`http://127.0.0.1:${port}/terminal/session`);
+    assert.equal(session.schema_version, 'scbe_terminal_session_v1');
+    assert.match(session.shell, /powershell|pwsh/i);
+    assert.match(session.cwd, /SCBE-AETHERMOORE/);
+    assert.equal(session.endpoints.capture, '/screen/capture');
+
+    const terminalRun = await postJson(`http://127.0.0.1:${port}/terminal/run`, {
+      command: 'Write-Output "SCBE_TERMINAL_TEST"',
+    });
+    assert.equal(terminalRun.schema_version, 'scbe_terminal_command_result_v1');
+    assert.equal(terminalRun.success, true);
+    assert.match(terminalRun.stdout, /SCBE_TERMINAL_TEST/);
+    assert.match(terminalRun.next_cwd, /SCBE-AETHERMOORE/);
   } finally {
     child.kill('SIGTERM');
   }

@@ -1,6 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useOS } from '@/os/OSStore';
-import { ArrowLeft, ArrowRight, RotateCcw, Home, Globe, Lock, Bookmark, Star } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  RotateCcw,
+  Home,
+  Globe,
+  Lock,
+  Bookmark,
+  Star,
+  ExternalLink,
+} from 'lucide-react';
 
 const START_PAGE = `
 <!DOCTYPE html>
@@ -64,6 +74,10 @@ document.getElementById('search').addEventListener('keydown',function(e){
 </html>
 `;
 
+function bridgeUrl() {
+  return import.meta.env.VITE_SCBE_ACTION_BRIDGE || 'http://127.0.0.1:3678';
+}
+
 export default function Browser({ windowId }: { windowId: string }) {
   const { setWindowTitle } = useOS();
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -80,6 +94,23 @@ export default function Browser({ windowId }: { windowId: string }) {
     }
   });
   const [showBookmarks, setShowBookmarks] = useState(false);
+  const [lastRoutedUrl, setLastRoutedUrl] = useState('');
+
+  const openThroughBridge = async (target: string) => {
+    const href = target.trim();
+    if (!href || href === 'about:start') return;
+    try {
+      const response = await fetch(`${bridgeUrl()}/internet/open`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: href }),
+      });
+      const payload = await response.json();
+      if (payload?.url) setLastRoutedUrl(payload.url);
+    } catch {
+      setLastRoutedUrl('bridge offline');
+    }
+  };
 
   const navigate = (target: string) => {
     let href = target.trim();
@@ -102,6 +133,7 @@ export default function Browser({ windowId }: { windowId: string }) {
     const newHistory = [...history.slice(0, historyIdx + 1), href];
     setHistory(newHistory);
     setHistoryIdx(newHistory.length - 1);
+    void openThroughBridge(href);
   };
 
   const goBack = () => {
@@ -190,6 +222,13 @@ export default function Browser({ windowId }: { windowId: string }) {
           <Star size={14} />
         </button>
         <button
+          onClick={() => openThroughBridge(currentUrl || url)}
+          className="p-1.5 rounded hover:bg-blue-500/20 text-blue-300/40 transition-colors"
+          title="Open through the SCBE bridge"
+        >
+          <ExternalLink size={14} />
+        </button>
+        <button
           onClick={() => setShowBookmarks(!showBookmarks)}
           className="p-1.5 rounded hover:bg-blue-500/20 text-blue-300/40 transition-colors relative"
         >
@@ -221,6 +260,11 @@ export default function Browser({ windowId }: { windowId: string }) {
           )}
         </button>
       </div>
+      {lastRoutedUrl && (
+        <div className="border-b border-blue-500/10 bg-[#0d1926] px-3 py-1 text-[10px] text-blue-200/50">
+          routed internet: {lastRoutedUrl}
+        </div>
+      )}
       <div className="flex-1 overflow-hidden">
         {currentUrl === 'about:start' || !currentUrl ? (
           <iframe
