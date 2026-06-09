@@ -165,7 +165,7 @@ export default function Settings() {
                 <Wifi size={18} className="text-green-400" />
                 <div>
                   <div className="text-sm text-blue-200">Wi-Fi Connected</div>
-                  <div className="text-xs text-blue-400/40">LinuxOS-Network</div>
+                  <div className="text-xs text-blue-400/40">SCBE-Local-Network</div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-xs">
@@ -214,7 +214,7 @@ export default function Settings() {
               <h3 className="text-sm text-blue-200 mb-3">System Information</h3>
               <div className="space-y-2 text-xs">
                 {[
-                  ['OS', 'LinuxOS Web 1.0'],
+                  ['OS', 'SCBE Tool Desktop 1.0'],
                   ['Kernel', '5.15.0-generic'],
                   ['Architecture', 'x86_64'],
                   ['CPU', 'Virtual 8-Core Processor'],

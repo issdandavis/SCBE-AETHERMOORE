@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const DEMO_HTML = `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: sans-serif; padding: 20px; }\n    h1 { color: #60a5fa; }\n  </style>\n</head>\n<body>\n  <h1>Hello LinuxOS!</h1>\n  <p>This is a live HTML preview.</p>\n  <button style="padding:10px 20px;background:#3b82f6;color:white;border:none;border-radius:5px;">\n    Click Me\n  </button>\n</body>\n</html>`;
+const DEMO_HTML = `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: sans-serif; padding: 20px; }\n    h1 { color: #60a5fa; }\n  </style>\n</head>\n<body>\n  <h1>Hello SCBE Desktop!</h1>\n  <p>This is a live HTML preview.</p>\n  <button style="padding:10px 20px;background:#3b82f6;color:white;border:none;border-radius:5px;">\n    Click Me\n  </button>\n</body>\n</html>`;
 
 export default function HTMLEditor() {
   const [code, setCode] = useState(DEMO_HTML);

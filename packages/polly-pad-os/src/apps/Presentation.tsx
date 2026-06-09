@@ -3,23 +3,24 @@ import { ChevronLeft, ChevronRight, Play, Square } from 'lucide-react';
 
 const SLIDES = [
   {
-    title: 'Welcome to LinuxOS',
-    content: 'A web-based Linux replica with 60+ fully functional apps.',
+    title: 'SCBE Tool Desktop',
+    content: 'A local browser workbench for bridge-backed SCBE tools.',
     color: 'from-blue-600/30 to-purple-600/30',
   },
   {
     title: 'Desktop Environment',
-    content: 'Features draggable icons, a window manager, and a fully functional taskbar.',
+    content: 'Features draggable windows, a taskbar, and a Start Menu for tool surfaces.',
     color: 'from-green-600/30 to-teal-600/30',
   },
   {
-    title: '60+ Applications',
-    content: 'Includes games, productivity tools, media players, dev tools, and utilities.',
+    title: 'Real Surfaces First',
+    content:
+      'PowerShell, Tool Console, Internet routing, and Layered Abacus are the default surfaces.',
     color: 'from-orange-600/30 to-red-600/30',
   },
   {
-    title: 'Fully Functional',
-    content: 'Every app is interactive and works - not just placeholders.',
+    title: 'Demo Apps Are Labeled',
+    content: 'Imported sandbox apps are hidden by default and labeled as demos when shown.',
     color: 'from-purple-600/30 to-pink-600/30',
   },
   {

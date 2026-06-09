@@ -155,7 +155,7 @@ export default function JSONFormatter() {
     setInput(
       JSON.stringify(
         {
-          name: 'LinuxOS',
+          name: 'SCBE Desktop',
           version: '2.0',
           features: ['Desktop', 'Terminal', 'Browser', 'Code Editor'],
           config: { theme: 'dark', language: 'en', notifications: true },

@@ -3,19 +3,19 @@ import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, FileText } from 'lucide-rea
 
 const PAGES = [
   {
-    title: 'LinuxOS Web - User Guide',
+    title: 'SCBE Tool Desktop - Notes',
     content:
-      'Welcome to LinuxOS Web, a fully functional web-based Linux replica.\n\nThis guide will help you navigate the system and use its 60+ applications.\n\nGetting Started:\n- Click the Start button to open the app menu\n- Double-click desktop icons to open apps\n- Drag windows by their title bar\n- Resize windows from the bottom-right corner',
+      'This is a demo document viewer. The production-use surfaces are PowerShell, Tool Console, Internet routing, and Layered Abacus.\n\nGetting Started:\n- Click the Start button to open the app menu\n- Double-click desktop icons to open apps\n- Drag windows by their title bar\n- Resize windows from the bottom-right corner',
   },
   {
     title: 'Desktop Environment',
     content:
-      'The LinuxOS Web desktop provides a familiar environment:\n\n- Desktop icons for quick access\n- Taskbar with system tray and clock\n- Start menu with search functionality\n- Window management (minimize, maximize, close)\n- Right-click context menus\n\nAll windows are draggable and resizable.',
+      'The SCBE Tool Desktop provides a browser-based workbench:\n\n- Desktop icons for real tool surfaces\n- Taskbar with system tray and clock\n- Start menu with search functionality\n- Window management (minimize, maximize, close)\n- Right-click context menus\n\nDemo apps are available only when explicitly toggled on.',
   },
   {
-    title: 'Applications Overview',
+    title: 'Surface Truth',
     content:
-      'LinuxOS Web includes 60+ applications across categories:\n\n- System: File Manager, Terminal, Settings, Task Manager\n- Games: Snake, Tetris, Chess, Blackjack, and more\n- Media: Music Player, Photo Viewer, Paint\n- Productivity: Notes, Spreadsheet, Todo List\n- Development: Code Editor, JSON Formatter, Regex Tester\n- Utilities: Calculator, Calendar, Weather, Clock',
+      'Real surfaces are bridge-backed or tested local tools. Demo apps are visual/source material from the imported desktop build and should not be treated as production capability until wired to a real endpoint.',
   },
 ];
 
@@ -27,7 +27,9 @@ export default function PDFViewer() {
     <div className="w-full h-full flex flex-col bg-[#0d1926] text-blue-100/80">
       <div className="flex items-center gap-2 px-3 py-1.5 border-b border-blue-500/10 bg-[#111d2e]">
         <FileText size={14} className="text-red-400/60" />
-        <span className="text-xs text-blue-200/60 flex-1 truncate">LinuxOS_Web_Guide.pdf</span>
+        <span className="text-xs text-blue-200/60 flex-1 truncate">
+          SCBE_Tool_Desktop_Notes.pdf
+        </span>
         <button
           onClick={() => setZoom((z) => Math.max(0.5, z - 0.1))}
           className="p-1 rounded hover:bg-blue-500/20 text-blue-300/50"

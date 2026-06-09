@@ -6,12 +6,12 @@ interface BootScreenProps {
 }
 
 const bootMessages = [
-  { icon: <Cpu size={14} />, text: 'Initializing CPU cores...', delay: 200 },
-  { icon: <HardDrive size={14} />, text: 'Mounting virtual filesystem...', delay: 400 },
-  { icon: <Shield size={14} />, text: 'Loading security modules...', delay: 200 },
-  { icon: <Wifi size={14} />, text: 'Initializing network stack...', delay: 300 },
-  { icon: <CheckCircle size={14} />, text: 'Loading 60 applications...', delay: 600 },
-  { icon: <CheckCircle size={14} />, text: 'Starting desktop environment...', delay: 400 },
+  { icon: <Cpu size={14} />, text: 'Preparing tool bridge...', delay: 200 },
+  { icon: <HardDrive size={14} />, text: 'Loading local desktop state...', delay: 400 },
+  { icon: <Shield size={14} />, text: 'Checking governed action surfaces...', delay: 200 },
+  { icon: <Wifi size={14} />, text: 'Connecting local bridge endpoints...', delay: 300 },
+  { icon: <CheckCircle size={14} />, text: 'Opening real tool surfaces...', delay: 600 },
+  { icon: <CheckCircle size={14} />, text: 'Starting SCBE desktop...', delay: 400 },
 ];
 
 export default function BootScreen({ onComplete }: BootScreenProps) {
@@ -58,8 +58,10 @@ export default function BootScreen({ onComplete }: BootScreenProps) {
             <rect x="14" y="14" width="7" height="7" rx="1" />
           </svg>
         </div>
-        <h1 className="text-3xl font-bold text-blue-100 tracking-tight">LinuxOS Web</h1>
-        <p className="text-sm text-blue-400/50 mt-1">Web-Based Linux Replica</p>
+        <h1 className="text-3xl font-bold text-blue-100 tracking-tight">SCBE Tool Desktop</h1>
+        <p className="text-sm text-blue-400/50 mt-1">
+          Local bridge for tools, receipts, and screens
+        </p>
       </div>
 
       {/* Boot Messages */}

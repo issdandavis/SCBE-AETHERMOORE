@@ -1,6 +1,6 @@
 import type { FileNode } from '@/types';
 
-const STORAGE_KEY = 'linuxos_fs';
+const STORAGE_KEY = 'scbe_tool_desktop_fs';
 
 const defaultFS: FileNode[] = [
   {
@@ -97,7 +97,7 @@ const defaultFS: FileNode[] = [
     type: 'file',
     parentId: 'documents',
     content:
-      'Welcome to LinuxOS Web!\n\nThis is a fully functional web-based Linux replica with 50+ applications.\n\nExplore the desktop, open apps, play games, and enjoy the experience!\n\nFeatures:\n- Desktop environment with draggable icons\n- Window management (drag, resize, minimize, maximize)\n- Virtual file system with persistence\n- 50+ fully functional applications\n- Terminal with real commands\n- Games, productivity tools, media players\n- And much more!\n\nGet started by clicking the Start Menu.',
+      'Welcome to SCBE Tool Desktop.\n\nThis is a local browser desktop for real SCBE tool surfaces. The visible default apps are the ones wired to bridge-backed tools.\n\nReal surfaces:\n- PowerShell through the local bridge\n- Tool Console for action cards and receipts\n- Internet route/open bridge\n- Layered Abacus for chunked calculation\n\nDemo apps can be shown from the Start Menu, but they are not presented as production tools.',
     createdAt: Date.now(),
     modifiedAt: Date.now(),
     size: 512,
@@ -109,7 +109,7 @@ const defaultFS: FileNode[] = [
     type: 'file',
     parentId: 'user',
     content:
-      '# LinuxOS Web\n\nA web-based Linux replica built with React and TypeScript.\n\n## Quick Start\n- Click the Start button to open the app menu\n- Double-click desktop icons to open apps\n- Use the terminal for command-line operations\n- Right-click the desktop for context menu\n\nHave fun!',
+      '# SCBE Tool Desktop\n\nA local browser workbench for bridge-backed SCBE tools.\n\n## Quick Start\n- Open PowerShell for real repo commands\n- Open Tool Console for action cards and receipts\n- Open Internet to route URLs through the bridge\n- Toggle demo apps from the Start Menu only when you want the old sandbox apps',
     createdAt: Date.now(),
     modifiedAt: Date.now(),
     size: 256,

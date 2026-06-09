@@ -98,7 +98,9 @@ export default function Wiki() {
         <div className="bg-[#162032] rounded-xl p-4 border border-blue-500/10 mb-4">
           <p className="text-sm text-blue-200/60 leading-relaxed">{article.content}</p>
         </div>
-        <div className="text-xs text-blue-300/20">From LinuxOS Wiki, the free encyclopedia</div>
+        <div className="text-xs text-blue-300/20">
+          From SCBE Desktop Wiki, the free encyclopedia
+        </div>
       </div>
     </div>
   );

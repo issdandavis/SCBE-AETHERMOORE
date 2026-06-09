@@ -5,8 +5,8 @@ const DEMO_EMAILS = [
   {
     id: '1',
     from: 'admin@linuxos.web',
-    subject: 'Welcome to LinuxOS Web',
-    preview: 'Thank you for trying out LinuxOS Web...',
+    subject: 'Welcome to SCBE Tool Desktop',
+    preview: 'Thank you for trying out SCBE Tool Desktop...',
     starred: true,
     read: false,
   },

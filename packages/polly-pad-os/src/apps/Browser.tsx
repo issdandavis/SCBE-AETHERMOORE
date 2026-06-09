@@ -36,8 +36,8 @@ p{color:#60a5fa80;margin-bottom:32px}
 </style>
 </head>
 <body>
-<h1>LinuxOS Browser</h1>
-<p>Your gateway to the web</p>
+<h1>SCBE Internet</h1>
+<p>Routes URLs and searches through the local action bridge</p>
 <div class="search-box">
   <input type="text" placeholder="Search or type a URL..." id="search" />
 </div>
@@ -95,8 +95,14 @@ export default function Browser({ windowId }: { windowId: string }) {
   });
   const [showBookmarks, setShowBookmarks] = useState(false);
   const [lastRoutedUrl, setLastRoutedUrl] = useState('');
+  const [browserResult, setBrowserResult] = useState<any>(null);
+  const [loadingRealBrowser, setLoadingRealBrowser] = useState(false);
+  const screenshotSrc =
+    browserResult?.screenshot_url && browserResult.success
+      ? `${bridgeUrl()}${browserResult.screenshot_url}`
+      : '';
 
-  const openThroughBridge = async (target: string) => {
+  const openSystemBrowser = async (target: string) => {
     const href = target.trim();
     if (!href || href === 'about:start') return;
     try {
@@ -112,7 +118,7 @@ export default function Browser({ windowId }: { windowId: string }) {
     }
   };
 
-  const navigate = (target: string) => {
+  const openHeadlessBrowser = async (target: string) => {
     let href = target.trim();
     if (!href) return;
     if (href === 'about:start') {
@@ -133,7 +139,29 @@ export default function Browser({ windowId }: { windowId: string }) {
     const newHistory = [...history.slice(0, historyIdx + 1), href];
     setHistory(newHistory);
     setHistoryIdx(newHistory.length - 1);
-    void openThroughBridge(href);
+    setLoadingRealBrowser(true);
+    try {
+      const response = await fetch(`${bridgeUrl()}/browser/open`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: href }),
+      });
+      const payload = await response.json();
+      setBrowserResult(payload);
+      if (payload?.title) setWindowTitle(windowId, payload.title);
+      if (payload?.final_url) {
+        setCurrentUrl(payload.final_url);
+        setIsSecure(payload.final_url.startsWith('https://'));
+      }
+    } catch {
+      setBrowserResult({ success: false, error: 'bridge offline' });
+    } finally {
+      setLoadingRealBrowser(false);
+    }
+  };
+
+  const navigate = (target: string) => {
+    void openHeadlessBrowser(target);
   };
 
   const goBack = () => {
@@ -222,7 +250,7 @@ export default function Browser({ windowId }: { windowId: string }) {
           <Star size={14} />
         </button>
         <button
-          onClick={() => openThroughBridge(currentUrl || url)}
+          onClick={() => openSystemBrowser(currentUrl || url)}
           className="p-1.5 rounded hover:bg-blue-500/20 text-blue-300/40 transition-colors"
           title="Open through the SCBE bridge"
         >
@@ -262,11 +290,53 @@ export default function Browser({ windowId }: { windowId: string }) {
       </div>
       {lastRoutedUrl && (
         <div className="border-b border-blue-500/10 bg-[#0d1926] px-3 py-1 text-[10px] text-blue-200/50">
-          routed internet: {lastRoutedUrl}
+          system browser: {lastRoutedUrl}
         </div>
       )}
       <div className="flex-1 overflow-hidden">
-        {currentUrl === 'about:start' || !currentUrl ? (
+        {browserResult && currentUrl !== 'about:start' ? (
+          <div className="h-full overflow-auto bg-[#08101b] p-4 text-blue-100/80">
+            <div className="mb-3 rounded border border-blue-500/15 bg-blue-500/5 p-3">
+              <div className="text-xs uppercase tracking-widest text-blue-300/40">
+                Real browser result
+              </div>
+              <div className="mt-1 text-sm text-blue-100">
+                {browserResult.title || '(no title)'}
+              </div>
+              <div className="mt-1 break-all text-xs text-blue-200/50">
+                {browserResult.final_url || browserResult.requested_url || currentUrl}
+              </div>
+              <div className="mt-2 text-xs text-blue-200/50">
+                status: {browserResult.status_code ?? 'unknown'} ·{' '}
+                {browserResult.success ? 'captured' : browserResult.error || 'failed'}
+              </div>
+            </div>
+            {loadingRealBrowser && (
+              <div className="text-xs text-blue-300/60">Loading real browser...</div>
+            )}
+            {browserResult.out_path && (
+              <>
+                {screenshotSrc && (
+                  <div className="overflow-hidden rounded border border-blue-500/20 bg-black shadow-2xl shadow-blue-950/30">
+                    <img
+                      src={screenshotSrc}
+                      alt={`Browser capture of ${browserResult.final_url || browserResult.requested_url}`}
+                      className="block w-full"
+                    />
+                  </div>
+                )}
+                <div className="mt-3 rounded border border-blue-500/15 bg-black/20 p-3 font-mono text-xs text-blue-200/60">
+                  screenshot: {browserResult.out_path}
+                </div>
+              </>
+            )}
+            {!browserResult.success && (
+              <div className="rounded border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-200">
+                {browserResult.error || 'Browser capture failed'}
+              </div>
+            )}
+          </div>
+        ) : currentUrl === 'about:start' || !currentUrl ? (
           <iframe
             ref={iframeRef}
             srcDoc={START_PAGE}

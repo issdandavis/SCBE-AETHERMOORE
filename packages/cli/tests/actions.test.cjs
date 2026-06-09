@@ -63,6 +63,24 @@ function getJson(url) {
   });
 }
 
+function getBuffer(url) {
+  return new Promise((resolve, reject) => {
+    const req = http.get(url, (res) => {
+      const chunks = [];
+      res.on('data', (chunk) => chunks.push(chunk));
+      res.on('end', () => {
+        resolve({
+          statusCode: res.statusCode,
+          headers: res.headers,
+          body: Buffer.concat(chunks),
+        });
+      });
+    });
+    req.on('error', reject);
+    req.setTimeout(5000, () => req.destroy(new Error('request timed out')));
+  });
+}
+
 function postJson(url, payload) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify(payload);
@@ -167,6 +185,8 @@ test('desktop action bridge exposes actions and runs one action over HTTP', asyn
     assert.equal(health.terminal.endpoint, '/terminal/run');
     assert.equal(health.internet.endpoint, '/internet/open');
     assert.equal(health.screen.endpoint, '/screen/capture');
+    assert.equal(health.browser.endpoint, '/browser/open');
+    assert.equal(health.browser.artifact_endpoint, '/artifact');
 
     const catalog = await getJson(`http://127.0.0.1:${port}/actions`);
     assert.equal(catalog.schema_version, 'scbe_action_catalog_v1');
@@ -184,6 +204,8 @@ test('desktop action bridge exposes actions and runs one action over HTTP', asyn
     assert.match(session.shell, /powershell|pwsh/i);
     assert.match(session.cwd, /SCBE-AETHERMOORE/);
     assert.equal(session.endpoints.capture, '/screen/capture');
+    assert.equal(session.endpoints.browser, '/browser/open');
+    assert.equal(session.endpoints.artifact, '/artifact');
 
     const terminalRun = await postJson(`http://127.0.0.1:${port}/terminal/run`, {
       command: 'Write-Output "SCBE_TERMINAL_TEST"',
@@ -192,6 +214,20 @@ test('desktop action bridge exposes actions and runs one action over HTTP', asyn
     assert.equal(terminalRun.success, true);
     assert.match(terminalRun.stdout, /SCBE_TERMINAL_TEST/);
     assert.match(terminalRun.next_cwd, /SCBE-AETHERMOORE/);
+
+    const browserRun = await postJson(`http://127.0.0.1:${port}/browser/open`, {
+      url: 'https://example.com',
+    });
+    assert.equal(browserRun.schema_version, 'scbe_browser_page_v1');
+    assert.equal(browserRun.success, true);
+    assert.match(browserRun.title, /Example Domain/i);
+    assert.match(browserRun.screenshot_url, /^\/artifact\?path=/);
+    assert.ok(browserRun.bytes > 0);
+
+    const screenshot = await getBuffer(`http://127.0.0.1:${port}${browserRun.screenshot_url}`);
+    assert.equal(screenshot.statusCode, 200);
+    assert.match(screenshot.headers['content-type'], /image\/png/);
+    assert.ok(screenshot.body.length >= browserRun.bytes);
   } finally {
     child.kill('SIGTERM');
   }

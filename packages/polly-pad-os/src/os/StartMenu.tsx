@@ -58,9 +58,11 @@ import {
   Zap,
   Box,
   Layers,
+  Sigma,
 } from 'lucide-react';
 
 const categoryIcons: Record<string, React.ReactNode> = {
+  Tools: <Wrench size={16} />,
   System: <Monitor size={16} />,
   Productivity: <LayoutGrid size={16} />,
   Games: <Puzzle size={16} />,
@@ -71,6 +73,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
 };
 
 const categoryOrder = [
+  'Tools',
   'System',
   'Productivity',
   'Internet',
@@ -125,6 +128,7 @@ const iconMap: Record<string, React.ReactNode> = {
   Footprints: <Gamepad2 size={22} />,
   Bird: <Globe size={22} />,
   Layers: <LayoutGrid size={22} />,
+  Sigma: <Sigma size={22} />,
   UserX: <User size={22} />,
   Type: <FileText size={22} />,
   Braces: <Code size={22} />,
@@ -139,7 +143,6 @@ const iconMap: Record<string, React.ReactNode> = {
   Fingerprint: <KeyRound size={22} />,
   GitCompare: <Code size={22} />,
   Binary: <Calculator size={22} />,
-  Sigma: <Calculator size={22} />,
   HeartPulse: <Activity size={22} />,
   Keyboard: <KeyboardIcon size={22} />,
   CircleDot: <Grid3x3 size={22} />,
@@ -166,6 +169,8 @@ const iconMap: Record<string, React.ReactNode> = {
   XCircle: <X size={22} />,
 };
 
+const REAL_SURFACE_IDS = new Set(['terminal', 'multiagent', 'browser', 'layeredabacus']);
+
 function KeyboardIcon({ size }: { size: number }) {
   return (
     <svg
@@ -188,9 +193,12 @@ export default function StartMenu() {
   const { appRegistry, openApp, setStartMenuOpen, startMenuOpen } = useOS();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showDemos, setShowDemos] = useState(false);
 
   const apps = useMemo(() => {
-    const list = Array.from(appRegistry.values());
+    const list = Array.from(appRegistry.values()).filter(
+      (app) => showDemos || REAL_SURFACE_IDS.has(app.id)
+    );
     if (!searchQuery && !selectedCategory) return list;
     return list.filter((app) => {
       const matchesSearch =
@@ -198,13 +206,13 @@ export default function StartMenu() {
       const matchesCategory = !selectedCategory || app.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [appRegistry, searchQuery, selectedCategory]);
+  }, [appRegistry, searchQuery, selectedCategory, showDemos]);
 
   const categories = useMemo(() => {
     const cats = new Set<string>();
-    appRegistry.forEach((app) => cats.add(app.category));
+    apps.forEach((app) => cats.add(app.category));
     return categoryOrder.filter((c) => cats.has(c));
-  }, [appRegistry]);
+  }, [apps]);
 
   const appsByCategory = useMemo(() => {
     const map: Record<string, typeof apps> = {};
@@ -265,6 +273,16 @@ export default function StartMenu() {
               {cat}
             </button>
           ))}
+          <button
+            onClick={() => setShowDemos(!showDemos)}
+            className={`px-3 py-1 rounded-lg text-xs transition-all whitespace-nowrap ${
+              showDemos
+                ? 'bg-amber-500/20 text-amber-200 border border-amber-400/30'
+                : 'text-blue-300/50 hover:bg-blue-500/10'
+            }`}
+          >
+            {showDemos ? 'Hide demos' : 'Show demos'}
+          </button>
         </div>
 
         {/* Apps Grid */}
@@ -272,7 +290,12 @@ export default function StartMenu() {
           {searchQuery ? (
             <div className="grid grid-cols-4 gap-1.5 mt-2">
               {apps.map((app) => (
-                <AppTile key={app.id} app={app} onClick={() => openApp(app.id)} />
+                <AppTile
+                  key={app.id}
+                  app={app}
+                  isDemo={!REAL_SURFACE_IDS.has(app.id)}
+                  onClick={() => openApp(app.id)}
+                />
               ))}
             </div>
           ) : (
@@ -284,7 +307,12 @@ export default function StartMenu() {
                   </div>
                   <div className="grid grid-cols-4 gap-1.5">
                     {(appsByCategory[cat] || []).map((app) => (
-                      <AppTile key={app.id} app={app} onClick={() => openApp(app.id)} />
+                      <AppTile
+                        key={app.id}
+                        app={app}
+                        isDemo={!REAL_SURFACE_IDS.has(app.id)}
+                        onClick={() => openApp(app.id)}
+                      />
                     ))}
                   </div>
                 </div>
@@ -322,9 +350,11 @@ export default function StartMenu() {
 
 function AppTile({
   app,
+  isDemo,
   onClick,
 }: {
   app: { id: string; name: string; icon: string };
+  isDemo: boolean;
   onClick: () => void;
 }) {
   return (
@@ -338,6 +368,11 @@ function AppTile({
       <span className="text-[10px] text-blue-200/60 group-hover:text-blue-100 leading-tight">
         {app.name}
       </span>
+      {isDemo && (
+        <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] text-amber-200">
+          demo
+        </span>
+      )}
     </button>
   );
 }

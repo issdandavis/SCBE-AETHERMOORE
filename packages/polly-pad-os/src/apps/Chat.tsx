@@ -25,7 +25,7 @@ const KNOWLEDGE_BASE: Record<string, string | (() => string)> = {
     ];
     return jokes[Math.floor(Math.random() * jokes.length)];
   },
-  hello: 'Hello there! I\'m the LinuxOS assistant. Type "help" to see what I can do.',
+  hello: 'Hello there! I\'m the SCBE demo assistant. Type "help" to see what I can do.',
   hi: 'Hi! How can I help you today?',
   hey: 'Hey there! Need any assistance?',
 };
@@ -85,7 +85,7 @@ export default function Chat() {
     return [
       {
         id: '1',
-        text: 'Hello! I\'m the LinuxOS assistant. Type "help" to see what I can do.',
+        text: 'Hello! I\'m the SCBE demo assistant. Type "help" to see what I can do.',
         sender: 'bot',
         timestamp: Date.now(),
       },
@@ -167,7 +167,7 @@ export default function Chat() {
       <div className="flex items-center justify-between px-3 py-2 border-b border-blue-500/10 bg-[#111d2e]">
         <div className="flex items-center gap-2">
           <Bot size={14} className="text-blue-400" />
-          <span className="text-xs text-blue-200 font-semibold">LinuxOS Assistant</span>
+          <span className="text-xs text-blue-200 font-semibold">SCBE Demo Assistant</span>
         </div>
         <button
           onClick={clearChat}

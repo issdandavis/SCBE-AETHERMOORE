@@ -349,6 +349,41 @@ function sendJson(res, status, payload) {
   res.end(`${JSON.stringify(payload, null, 2)}\n`);
 }
 
+function isPathInside(root, target) {
+  const relative = path.relative(path.resolve(root), path.resolve(target));
+  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+}
+
+function artifactUrlFor(filePath) {
+  const resolved = path.resolve(filePath);
+  if (!isPathInside(ARTIFACT_ROOT, resolved)) return null;
+  return `/artifact?path=${encodeURIComponent(resolved)}`;
+}
+
+function sendArtifact(res, filePath) {
+  const resolved = path.resolve(String(filePath || ''));
+  if (!isPathInside(ARTIFACT_ROOT, resolved)) {
+    sendJson(res, 403, { error: 'artifact path outside bridge artifact root' });
+    return;
+  }
+  if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
+    sendJson(res, 404, { error: 'artifact not found' });
+    return;
+  }
+  const ext = path.extname(resolved).toLowerCase();
+  const contentType =
+    ext === '.png'
+      ? 'image/png'
+      : ext === '.jpg' || ext === '.jpeg'
+        ? 'image/jpeg'
+        : 'application/octet-stream';
+  res.writeHead(200, {
+    'Content-Type': contentType,
+    'Access-Control-Allow-Origin': '*',
+  });
+  fs.createReadStream(resolved).pipe(res);
+}
+
 function readRequestJson(req, maxBytes = 1024 * 1024) {
   return new Promise((resolve, reject) => {
     let body = '';
@@ -558,6 +593,60 @@ async function captureScreen({ url, out } = {}) {
   }
 }
 
+async function openBrowserPage({ url, out } = {}) {
+  const targetUrl = normalizeUrl(url || 'https://example.com');
+  const outPath = path.resolve(
+    REPO_ROOT,
+    out ||
+      path.join(
+        ARTIFACT_ROOT,
+        'browser',
+        `page-${new Date().toISOString().replace(/[:.]/g, '-')}.png`
+      )
+  );
+  ensureDir(path.dirname(outPath));
+  let chromium;
+  try {
+    ({ chromium } = require('@playwright/test'));
+  } catch (err) {
+    return {
+      status: 500,
+      payload: {
+        schema_version: 'scbe_browser_page_v1',
+        success: false,
+        requested_url: targetUrl,
+        out_path: outPath,
+        error: `Playwright is not available: ${err.message}`,
+      },
+    };
+  }
+
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    const response = await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    const title = await page.title();
+    await page.screenshot({ path: outPath, fullPage: true });
+    const bytes = fs.statSync(outPath).size;
+    return {
+      status: 200,
+      payload: {
+        schema_version: 'scbe_browser_page_v1',
+        success: true,
+        requested_url: targetUrl,
+        final_url: page.url(),
+        title,
+        status_code: response ? response.status() : null,
+        out_path: outPath,
+        screenshot_url: artifactUrlFor(outPath),
+        bytes,
+      },
+    };
+  } finally {
+    await browser.close();
+  }
+}
+
 async function runBridge(args) {
   const port = Number.parseInt(flagValue(args, '--port', '3678'), 10) || 3678;
   ensureDir(ACTION_HISTORY_ROOT);
@@ -586,7 +675,15 @@ async function runBridge(args) {
           screen: {
             endpoint: '/screen/capture',
           },
+          browser: {
+            endpoint: '/browser/open',
+            artifact_endpoint: '/artifact',
+          },
         });
+        return;
+      }
+      if (req.method === 'GET' && url.pathname === '/artifact') {
+        sendArtifact(res, url.searchParams.get('path'));
         return;
       }
       if (req.method === 'GET' && url.pathname === '/terminal/session') {
@@ -602,6 +699,8 @@ async function runBridge(args) {
             actions: '/actions/run',
             internet: '/internet/open',
             capture: '/screen/capture',
+            browser: '/browser/open',
+            artifact: '/artifact',
           },
         });
         return;
@@ -645,6 +744,12 @@ async function runBridge(args) {
       if (req.method === 'POST' && url.pathname === '/screen/capture') {
         const body = await readRequestJson(req);
         const result = await captureScreen({ url: body.url, out: body.out });
+        sendJson(res, result.status, result.payload);
+        return;
+      }
+      if (req.method === 'POST' && url.pathname === '/browser/open') {
+        const body = await readRequestJson(req);
+        const result = await openBrowserPage({ url: body.url || body.query, out: body.out });
         sendJson(res, result.status, result.payload);
         return;
       }

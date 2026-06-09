@@ -45,6 +45,8 @@ import {
   Scissors,
   Trash2,
   RefreshCw,
+  Bot,
+  Sigma,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -86,6 +88,8 @@ const iconMap: Record<string, React.ReactNode> = {
   Video: <Video size={40} />,
   QrCode: <QrCode size={40} />,
   Languages: <Languages size={40} />,
+  Bot: <Bot size={40} />,
+  Sigma: <Sigma size={40} />,
 };
 
 export default function Desktop() {
