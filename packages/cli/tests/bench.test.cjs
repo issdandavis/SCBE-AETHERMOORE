@@ -7,6 +7,7 @@ const test = require('node:test');
 
 const CLI = path.resolve(__dirname, '..', 'bin', 'scbe.js');
 const TASK_CORPUS = path.resolve(__dirname, '..', 'scripts', 'bench_task_corpus.cjs');
+const CODE_RANKER = path.resolve(__dirname, '..', 'scripts', 'bench_code_ranker.cjs');
 const EXPECTED_BENCH_LANES = 12;
 
 function runCli(args, options = {}) {
@@ -16,6 +17,7 @@ function runCli(args, options = {}) {
     HOME: home,
     USERPROFILE: home,
     NO_COLOR: '1',
+    ...(options.env || {}),
   };
   return spawnSync(process.execPath, [CLI, ...args], {
     input: options.input || '',
@@ -40,6 +42,67 @@ function runTaskCorpus(args, options = {}) {
     timeout: options.timeout || 120_000,
     env,
   });
+}
+
+function runCodeRanker(args, options = {}) {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-code-ranker-'));
+  const env = {
+    ...process.env,
+    HOME: home,
+    USERPROFILE: home,
+    NO_COLOR: '1',
+    ...(options.env || {}),
+  };
+  return spawnSync(process.execPath, [CODE_RANKER, ...args], {
+    encoding: 'utf8',
+    timeout: options.timeout || 60_000,
+    env,
+  });
+}
+
+function writeTaskCorpusArtifact(dir, name, options = {}) {
+  const total = options.total || 10;
+  const completed = options.completed ?? total;
+  const tasks = Array.from({ length: total }, (_, index) => ({
+    id: `codegen-hard-task-${index + 1}`,
+    category: options.category || 'codegen-hard',
+    difficulty: 'hard',
+    verifier: 'strong',
+    completed: index < completed,
+    turns: options.turnsPerTask || 1,
+    turns_to_complete: index < completed ? options.turnsPerTask || 1 : null,
+    false_done_count: 0,
+    ko_ban_count: 0,
+    duration_ms: options.durationPerTask || 100,
+    rescued_by_advisor: Boolean(options.rescue && index >= completed - (options.rescueCount || 0)),
+  }));
+  fs.writeFileSync(
+    path.join(dir, name),
+    JSON.stringify(
+      {
+        schema: 'task-corpus/v2',
+        generated_at: options.generated_at || '2026-06-09T00:00:00.000Z',
+        commit: options.commit || 'abc1234',
+        provider: options.provider || 'ollama',
+        model: options.model || 'tiny-code-model',
+        advisor: options.advisor || null,
+        score: {
+          completed,
+          total,
+          completion_rate: total ? completed / total : 0,
+        },
+        totals: {
+          turns: tasks.reduce((sum, task) => sum + task.turns, 0),
+          false_done: 0,
+          ko_bans: 0,
+          duration_ms: tasks.reduce((sum, task) => sum + task.duration_ms, 0),
+        },
+        tasks,
+      },
+      null,
+      2
+    )
+  );
 }
 
 test('bench help prints local evidence boundary', () => {
@@ -124,6 +187,68 @@ test('task corpus can print task assignment chart with advisor column', () => {
   assert.match(result.stdout, /offline:tiny-primary/);
   assert.match(result.stdout, /offline:advisor-echo/);
   assert.doesNotMatch(result.stdout, /TASK CORPUS RESULTS/);
+});
+
+test('code ranker separates real model rows from offline scaffold calibration', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-code-ranker-artifacts-'));
+  writeTaskCorpusArtifact(dir, '2026-06-09T00-00-00-000Z.json', {
+    provider: 'ollama',
+    model: 'qwen2.5-coder:1.5b',
+    completed: 8,
+    turnsPerTask: 3,
+  });
+  writeTaskCorpusArtifact(dir, '2026-06-09T00-01-00-000Z.json', {
+    provider: 'ollama',
+    model: 'qwen2.5-coder:1.5b',
+    completed: 10,
+    turnsPerTask: 4,
+    advisor: {
+      provider: 'ollama',
+      model: 'qwen2.5-coder:1.5b',
+      mode: 'retry',
+      rescue_enabled: true,
+      rescue_mode: 'retry',
+    },
+    rescue: true,
+    rescueCount: 2,
+  });
+  writeTaskCorpusArtifact(dir, '2026-06-09T00-02-00-000Z.json', {
+    provider: 'offline',
+    model: '(default)',
+    completed: 10,
+  });
+
+  const result = runCodeRanker(['--json'], {
+    env: { SCBE_CODE_RANKER_ARTIFACT_DIR: dir },
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_code_model_ranker_v1');
+  assert.equal(payload.private_model_run_count, 2);
+  assert.equal(payload.scaffold_run_count, 1);
+  assert.equal(payload.scaffold_calibration_runs.length, 0);
+  assert.equal(payload.private_model_rankings[0].harness_mode, 'rescue-advisor:retry');
+  assert.equal(payload.private_model_rankings[0].score.completed, 10);
+  assert.ok(payload.public_reference_targets.some((target) => target.id === 'terminal_bench_2_1'));
+  assert.match(payload.claim_boundary, /Official placement requires/);
+});
+
+test('bench code-ranker delegates to code ranker script', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-code-ranker-cli-'));
+  writeTaskCorpusArtifact(dir, '2026-06-09T00-00-00-000Z.json', {
+    provider: 'ollama',
+    model: 'tiny-code-model',
+    completed: 9,
+  });
+  const result = runCli(['bench', 'code-ranker', '--json'], {
+    env: { SCBE_CODE_RANKER_ARTIFACT_DIR: dir },
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_code_model_ranker_v1');
+  assert.equal(payload.private_model_rankings[0].model, 'tiny-code-model');
 });
 
 test('task corpus advisor worksheet remains verifier-gated', () => {

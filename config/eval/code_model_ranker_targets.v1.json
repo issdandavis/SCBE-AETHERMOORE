@@ -1,0 +1,83 @@
+{
+  "schema_version": "scbe_code_model_ranker_targets_v1",
+  "source_checked_at": "2026-06-09",
+  "claim_boundary": "Reference targets only. Do not merge SCBE private harness rows into public ranks unless the unchanged upstream benchmark harness produced the row and the required artifacts are published.",
+  "public_targets": [
+    {
+      "id": "terminal_bench_2_1",
+      "suite": "Terminal-Bench 2.1",
+      "domain": "terminal_agent",
+      "metric": "accuracy",
+      "source_url": "https://www.tbench.ai/leaderboard/terminal-bench/2.1",
+      "source_note": "Official Terminal-Bench 2.1 leaderboard states results were run and verified by a Terminal-Bench team member.",
+      "top_public_anchor": {
+        "name": "Codex CLI / GPT-5.5",
+        "score": "83.4% +/- 2.2",
+        "date": "2026-05-01"
+      },
+      "official_run_command": "harbor run -d terminal-bench/terminal-bench-2-1 --agent-import-path \"path.to.agent:SomeAgent\" -k 5",
+      "comparison_boundary": "SCBE can only rank here after Harbor runs the exact Terminal-Bench 2.1 dataset with unchanged timeouts/resources."
+    },
+    {
+      "id": "terminal_bench_2_0",
+      "suite": "Terminal-Bench 2.0",
+      "domain": "terminal_agent",
+      "metric": "accuracy",
+      "source_url": "https://www.tbench.ai/leaderboard/terminal-bench/2.0",
+      "source_note": "Official Terminal-Bench 2.0 leaderboard and runnable Harbor command.",
+      "top_public_anchor": {
+        "name": "vix / Claude Opus 4.7",
+        "score": "90.2% +/- 2.1",
+        "date": "2026-05-15"
+      },
+      "official_run_command": "harbor run -d terminal-bench@2.0 --agent-import-path \"path.to.agent:SomeAgent\" -k 5",
+      "comparison_boundary": "SCBE local adapter results are not official Terminal-Bench scores until run through Harbor on the official dataset."
+    },
+    {
+      "id": "swe_bench_verified",
+      "suite": "SWE-bench Verified",
+      "domain": "repo_repair_agent",
+      "metric": "% resolved over 500 human-filtered instances",
+      "source_url": "https://www.swebench.com/verified.html",
+      "submission_url": "https://github.com/SWE-bench/experiments",
+      "source_note": "Official page defines Verified as 500 human-validated instances and the experiments repo defines required submission artifacts.",
+      "top_public_anchor": {
+        "name": "live upstream leaderboard",
+        "score": "dynamic",
+        "date": "live"
+      },
+      "official_run_command": "python -m swebench.harness.run_evaluation --help",
+      "comparison_boundary": "A real SCBE row needs all_preds/preds, metadata, README, per-instance logs, and trajectories or equivalent official submission artifacts."
+    },
+    {
+      "id": "aider_polyglot",
+      "suite": "Aider Polyglot",
+      "domain": "code_editing_model",
+      "metric": "percent correct",
+      "source_url": "https://aider.chat/docs/leaderboards/",
+      "source_note": "Official Aider polyglot coding leaderboard.",
+      "top_public_anchor": {
+        "name": "gpt-5 (high)",
+        "score": "88.0%",
+        "date": "live page"
+      },
+      "official_run_command": "aider --model openai/gpt-5",
+      "comparison_boundary": "Aider measures code-editing model behavior inside Aider; SCBE must run the Aider benchmark path before comparing."
+    },
+    {
+      "id": "livecodebench",
+      "suite": "LiveCodeBench",
+      "domain": "code_generation_model",
+      "metric": "scenario scores across code generation, repair, execution, and test-output prediction",
+      "source_url": "https://livecodebench.github.io/",
+      "source_note": "Official page describes continuous contamination-resistant coding tasks with dated problem releases.",
+      "top_public_anchor": {
+        "name": "live upstream leaderboard",
+        "score": "dynamic",
+        "date": "live"
+      },
+      "official_run_command": "follow https://github.com/LiveCodeBench/LiveCodeBench for current evaluation commands",
+      "comparison_boundary": "This is model-code benchmark territory, not SCBE terminal-agent territory, unless SCBE is tested as the execution/repair harness around a model."
+    }
+  ]
+}

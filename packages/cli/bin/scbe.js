@@ -218,6 +218,8 @@ Core commands:
     [--json]
   bench latest [lane]    Show latest artifact summary
     [--json]
+  bench code-ranker      Rank local codegen model artifacts against public
+    [--json]             official benchmark targets without mixing score lanes
   bench dashboard        Emit a website/operator dashboard from evidence lanes
     [--json] [--write <path>]
   bench prove [lane]     Emit claim-safe proof packet
@@ -8521,6 +8523,7 @@ function printBenchHelp() {
       '  scbe bench list [--json]',
       '  scbe bench status [--json]',
       '  scbe bench latest [lane] [--json]',
+      '  scbe bench code-ranker [--json] [--probe-official]',
       '  scbe bench dashboard [--json] [--write <path>]',
       '  scbe bench prove [lane] [--json] [--write <path>]',
       '  scbe bench index [--json] [--write <path>]',
@@ -8562,6 +8565,20 @@ function runBench(args) {
   if (sub === 'index') {
     printBenchIndex(args.slice(1));
     process.exit(0);
+  }
+  if (sub === 'code-ranker' || sub === 'codegen-ranker' || sub === 'ranker') {
+    const scriptAbs = path.resolve(
+      repoRoot(),
+      'packages',
+      'cli',
+      'scripts',
+      'bench_code_ranker.cjs'
+    );
+    const child = spawnSync(process.execPath, [scriptAbs, ...args.slice(1)], {
+      cwd: repoRoot(),
+      stdio: 'inherit',
+    });
+    process.exit(typeof child.status === 'number' ? child.status : 1);
   }
   // Lane 42: free-first policy — `scbe bench providers` or `scbe bench router`
   if (sub === 'providers' || sub === 'router' || sub === 'provider-health') {
