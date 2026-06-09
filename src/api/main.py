@@ -36,6 +36,9 @@ import os
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+_AGENT_BUS_PY_SRC = os.path.abspath(os.path.join(os.path.dirname(__file__), "../..", "packages", "agent-bus-py", "src"))
+if _AGENT_BUS_PY_SRC not in sys.path:
+    sys.path.insert(0, _AGENT_BUS_PY_SRC)
 
 
 def _load_local_env_if_explicitly_enabled() -> None:
@@ -94,6 +97,7 @@ from src.api.search_routes import search_router
 from src.api.llm_routes import llm_router
 from src.api.polly_routes import polly_router
 from src.api.free_llm_routes import free_llm_router
+from scbe_agent_bus import scan_agent_request
 
 try:
     from src.api.mesh_routes import mesh_router
@@ -329,6 +333,32 @@ class PollyChatRequest(BaseModel):
     context: List[PollyChatMessage] = Field(default_factory=list)
 
 
+class GovernanceScanRequest(BaseModel):
+    agent_id: str = Field(default="agent", max_length=256)
+    action: str = Field(default="EXECUTE", max_length=128)
+    target: str = Field(default="", max_length=4096)
+    command: str = Field(default="", max_length=16000)
+    observed: str = Field(default="", max_length=32000)
+    context: Dict[str, Any] = Field(default_factory=dict)
+
+
+class GovernanceScanResponse(BaseModel):
+    schema_version: str
+    decision: str
+    tier: str
+    score: float
+    d_H: float
+    pattern_drift: float
+    role: str
+    action: str
+    target: str
+    command: str
+    policy_version: str
+    receipt_hash: str
+    scanned_at: str
+    explanation: Dict[str, Any]
+
+
 def _build_runtime_deck_payload(
     *,
     language: str,
@@ -395,7 +425,8 @@ def _polly_local_chat_response(message: str) -> dict[str, Any]:
     return {
         "response": (
             "Polly Pad local mode is online. "
-            "For coding tasks, send code or ask for a system-card deck and GeoSeal will route it through the bounded control plane."
+            "For coding tasks, send code or ask for a system-card deck and "
+            "GeoSeal will route it through the bounded control plane."
         ),
         "domain": "hybrid",
         "tentacle": "local",
@@ -585,6 +616,24 @@ async def verify_api_key(
         raise HTTPException(429, "Rate limit exceeded (100 req/min)")
 
     return VALID_API_KEYS[resolved_key]
+
+
+@app.post("/v1/governance/scan", response_model=GovernanceScanResponse, tags=["Governance"])
+async def governance_scan(request: GovernanceScanRequest, user: str = Depends(verify_api_key)):
+    """SDK-compatible governance scan for wrapping existing agent frameworks."""
+    receipt = scan_agent_request(
+        action=request.action,
+        target=request.target,
+        command=request.command,
+        observed=request.observed,
+        context={**(request.context or {}), "user": user, "agent_id": request.agent_id},
+        policy_version="scbe-governance-sdk-v1",
+    )
+    metrics_store.agent_requests[request.agent_id] += 1
+    metrics_store.risk_scores.append(float(receipt["score"]))
+    if receipt["decision"] == "DENY":
+        metrics_store.total_denials += 1
+    return GovernanceScanResponse(**receipt)
 
 
 # ============================================================================
