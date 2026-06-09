@@ -280,10 +280,22 @@ def _restore_tracked_files_polluted_by_tests():
     yield
     for path, original in snapshots.items():
         try:
-            if path.read_bytes() != original:
+            current = path.read_bytes()
+        except FileNotFoundError:
+            # File was deleted during the test; restore it.
+            try:
+                path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes(original)
+            except OSError:
+                pass
+            continue
         except OSError:
-            pass
+            continue
+        if current != original:
+            try:
+                path.write_bytes(original)
+            except OSError:
+                pass
     for rel in _POLLUTION_CREATED:
         path = repo_root / rel
         if path.exists():

@@ -465,7 +465,14 @@ class TestKDTree:
 
 
 class TestPQCHarmonic:
-    """Test PQC Harmonic enhancement."""
+    """Test PQC Harmonic enhancement.
+
+    Variant note: these tests exercise ``harmonic_scale`` and the PQC key-stretch
+    primitives, which are identical across the root and ``src/`` variants
+    (``H = R**(d**2)``). The variant difference documented in CLAUDE.md applies
+    only to the L12 governance score (``H = 1/(1+d+2*pd)``), which these tests
+    do not touch — so no variant lock is required here.
+    """
 
     def test_fast_harmonic_key(self):
         """Test fast harmonic key derivation."""

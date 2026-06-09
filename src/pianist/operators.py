@@ -8,7 +8,6 @@ intent.
 
 from __future__ import annotations
 
-import os
 import random
 import shlex
 from dataclasses import dataclass
@@ -199,8 +198,12 @@ class CloudOperator:
     system_prompt: str = CLOUD_OPERATOR_SYSTEM_PROMPT
 
     def __post_init__(self) -> None:
-        if self.responder is None and not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY")):
-            self.fallback = self.fallback or MarkovOperator()
+        # Without a responder, we always need a fallback — otherwise next_action
+        # immediately returns None and the operator no-ops. Whether API keys
+        # exist is irrelevant: the responder callable is what actually makes
+        # the network call.
+        if self.responder is None and self.fallback is None:
+            self.fallback = MarkovOperator()
 
     def next_action(self, state: PianoState) -> Optional[Action]:
         if self.responder is None:
