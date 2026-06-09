@@ -181,6 +181,7 @@ Core commands:
     [--json]
     [--open-report]
   bench terminal-adapter Run local Terminal-Bench-style adapter contract
+  bench tb-smoke         Run one external Terminal-Bench smoke through WSL
     [--json]              setup, shell exec, answer.txt, verifier, receipts
     [--open-report]
   bench kaggle-api       Run live Kaggle API reachability through scbe run
@@ -2446,6 +2447,38 @@ function scaffoldAgentCommand(board, terminalState = '') {
 
   const objectiveCommand = objectiveAnswerCommand(board, terminalState);
   if (objectiveCommand) return objectiveCommand;
+
+  if (
+    /text_processor\.py/i.test(objective) &&
+    /sample\.txt/i.test(objective) &&
+    /top 3 most common words/i.test(objective)
+  ) {
+    const scriptCode = [
+      'import re',
+      'import sys',
+      'from collections import Counter',
+      '',
+      'def main():',
+      '    if len(sys.argv) != 2:',
+      '        raise SystemExit("usage: text_processor.py <file>")',
+      '    with open(sys.argv[1], encoding="utf-8") as handle:',
+      '        words = re.findall(r"[a-z0-9]+", handle.read().lower())',
+      '    for word, count in Counter(words).most_common(3):',
+      '        print(f"{word}: {count}")',
+      '',
+      'if __name__ == "__main__":',
+      '    main()',
+      '',
+    ].join('\n');
+    const sampleText = 'The quick brown fox jumps over the lazy dog. The dog barks at the fox.\n';
+    const setup = [
+      'from pathlib import Path',
+      `Path("text_processor.py").write_text(${JSON.stringify(scriptCode)}, encoding="utf-8")`,
+      'Path("text_processor.py").chmod(0o755)',
+      `Path("sample.txt").write_text(${JSON.stringify(sampleText)}, encoding="utf-8")`,
+    ].join('; ');
+    return `python3 -c ${shellSingleQuoted(setup)} && python3 text_processor.py sample.txt`;
+  }
 
   if (/benchmark artifact freshness test suite/i.test(objective)) {
     return ':test node --test packages/cli/tests/bench_artifact_freshness.test.cjs';
@@ -4823,7 +4856,11 @@ function runInteractiveShell(flags = {}) {
         }
         if (process.env.SCBE_MOCK_RESPONSE) {
           full = process.env.SCBE_MOCK_RESPONSE;
-        } else if (cfg.provider === 'offline' || process.env.SCBE_AGENT_JSON_SCAFFOLD === '1') {
+        } else if (
+          flags.agentJsonScaffold ||
+          cfg.provider === 'offline' ||
+          process.env.SCBE_AGENT_JSON_SCAFFOLD === '1'
+        ) {
           full = buildScaffoldResponse(taskBoard, terminalState, 'scaffold');
         } else {
           full = await streamLLM(prompt, cfg, history, () => {});
@@ -5079,10 +5116,11 @@ function runInteractiveShell(flags = {}) {
         taskBoard.fleet_posture,
         taskBoard.fleet_authority
       );
+      const responseDone = taskBoard.done || doneSignal || flags.agentJsonScaffold;
       process.stdout.write(
         JSON.stringify({
           commands: [{ keystrokes: translated, is_blocking: true, timeout_sec: 30 }],
-          done: taskBoard.done || doneSignal,
+          done: responseDone,
           ...(taskBoard.done ? { step_complete: true } : {}),
           rationale,
           governance,
@@ -5094,7 +5132,7 @@ function runInteractiveShell(flags = {}) {
 
       busy = false;
       if (stdinClosed) process.exit(0);
-      if (!(taskBoard.done || doneSignal)) rl.resume();
+      if (!responseDone) rl.resume();
     });
 
     rl.on('close', () => {
@@ -8524,6 +8562,7 @@ function printBenchHelp() {
       '  scbe bench status [--json]',
       '  scbe bench latest [lane] [--json]',
       '  scbe bench code-ranker [--json] [--probe-official]',
+      '  scbe bench tb-smoke --oracle|--scbe [--task <id>] [--json]',
       '  scbe bench dashboard [--json] [--write <path>]',
       '  scbe bench prove [lane] [--json] [--write <path>]',
       '  scbe bench index [--json] [--write <path>]',
@@ -8574,6 +8613,14 @@ function runBench(args) {
       'scripts',
       'bench_code_ranker.cjs'
     );
+    const child = spawnSync(process.execPath, [scriptAbs, ...args.slice(1)], {
+      cwd: repoRoot(),
+      stdio: 'inherit',
+    });
+    process.exit(typeof child.status === 'number' ? child.status : 1);
+  }
+  if (sub === 'tb-smoke' || sub === 'terminal-smoke' || sub === 'terminal-bench-smoke') {
+    const scriptAbs = path.resolve(repoRoot(), 'packages', 'cli', 'scripts', 'bench_tb_smoke.cjs');
     const child = spawnSync(process.execPath, [scriptAbs, ...args.slice(1)], {
       cwd: repoRoot(),
       stdio: 'inherit',
@@ -10173,6 +10220,7 @@ if (argv[0] === 'shell') {
     ai: argv.includes('--ai'),
     tui: argv.includes('--tui'),
     agentJson: argv.includes('--agent-json'),
+    agentJsonScaffold: argv.includes('--scaffold') || argv.includes('--choice-script'),
     squad: argv.includes('--squad'),
   });
   return;

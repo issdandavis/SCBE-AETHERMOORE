@@ -251,6 +251,29 @@ test('bench code-ranker delegates to code ranker script', () => {
   assert.equal(payload.private_model_rankings[0].model, 'tiny-code-model');
 });
 
+test('bench tb-smoke dry run defaults SCBE to choice-script mode', () => {
+  const result = runCli(['bench', 'tb-smoke', '--scbe', '--dry-run', '--json']);
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_tb_smoke_v1');
+  assert.equal(payload.dry_run, true);
+  assert.equal(payload.options.agent, 'scbe');
+  assert.equal(payload.options.choice_script, true);
+  assert.match(payload.bash_script, /SCBE_AGENT_JSON_SCAFFOLD=1/);
+  assert.match(payload.bash_script, /scbe_tb_agent:ScbeAgent/);
+});
+
+test('bench tb-smoke can dry run raw model mode separately from system mode', () => {
+  const result = runCli(['bench', 'tb-smoke', '--scbe-model', '--dry-run', '--json']);
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.options.agent, 'scbe');
+  assert.equal(payload.options.choice_script, false);
+  assert.doesNotMatch(payload.bash_script, /SCBE_AGENT_JSON_SCAFFOLD=1/);
+});
+
 test('task corpus advisor worksheet remains verifier-gated', () => {
   const result = runTaskCorpus(
     [

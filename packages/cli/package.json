@@ -19,6 +19,7 @@
     "scripts/bench_task_corpus.cjs",
     "scripts/bench_harness_matrix.cjs",
     "scripts/bench_code_ranker.cjs",
+    "scripts/bench_tb_smoke.cjs",
     "scripts/scbe_workflow.cjs",
     "tests",
     "README.md",
@@ -34,6 +35,7 @@
     "bench:corpus": "node scripts/bench_task_corpus.cjs",
     "bench:matrix": "node scripts/bench_harness_matrix.cjs",
     "bench:code-ranker": "node scripts/bench_code_ranker.cjs",
+    "bench:tb-smoke": "node scripts/bench_tb_smoke.cjs",
     "workflow": "node scripts/scbe_workflow.cjs",
     "pack:dry": "npm pack --dry-run --json"
   },

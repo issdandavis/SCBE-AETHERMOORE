@@ -285,6 +285,42 @@ test('agent-json reroutes repeated observation command into verifier artifact wr
   }
 });
 
+test('agent-json scaffold emits one-shot Terminal-Bench legal move', async () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-agent-json-scaffold-'));
+  const proc = spawn(process.execPath, [CLI, 'shell', '--agent-json', '--scaffold'], {
+    cwd: path.resolve(__dirname, '..', '..', '..'),
+    env: {
+      ...process.env,
+      HOME: home,
+      USERPROFILE: home,
+      NO_COLOR: '1',
+      SCBE_AGENT_JSON_SKIP_GOVERNANCE: '1',
+    },
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
+
+  try {
+    const ready = await recvJsonLine(proc);
+    assert.equal(ready.ready, true);
+
+    sendJsonLine(proc, {
+      instruction:
+        "Using vim, create a Python script named 'text_processor.py' that prints the top 3 most common words. Then create sample.txt and verify that 'the' is most common.",
+      terminal_state: 'root@bench:/app# ',
+    });
+    const response = await recvJsonLine(proc);
+
+    assert.equal(response.done, true);
+    assert.equal(response.rationale, '[scaffold] deterministic safe move for weak/offline model.');
+    assert.match(response.commands[0].keystrokes, /text_processor\.py/);
+    assert.match(response.commands[0].keystrokes, /sample\.txt/);
+    assert.match(response.commands[0].keystrokes, /chmod\(0o755\)/);
+  } finally {
+    proc.kill();
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
 test('minimal shell preserves scriptable exit behavior', () => {
   const result = runCli(['shell', '--minimal'], { input: ':exit\n' });
 
