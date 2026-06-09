@@ -41,6 +41,9 @@ test('help documents the terminal frontend and short aliases', () => {
   assert.match(result.stdout, /scbe desktop\s+Portable desktop subsystem/);
   assert.match(result.stdout, /scbe actions\s+List true action bundles/);
   assert.match(result.stdout, /scbe action desktop\.open\s+Run one action bundle/);
+  assert.match(result.stdout, /scbe format --dry-run/);
+  assert.match(result.stdout, /scbe prepush --dry-run/);
+  assert.match(result.stdout, /scbe commit -m/);
   assert.match(result.stdout, /scbe exec npm test/);
   assert.match(result.stdout, /scbe x git status --short/);
 });

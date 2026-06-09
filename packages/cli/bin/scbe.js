@@ -117,6 +117,12 @@ Core commands:
   scbe desktop pack                  Build a portable static desktop zip
   scbe actions                       List true action bundles
   scbe action desktop.open           Run one action bundle
+  scbe format --dry-run              Format the coding surfaces through a GeoSeal action plan
+  scbe test --dry-run                Run the CLI + desktop verification plan
+  scbe fix --dry-run                 Format, then verify
+  scbe prepush --dry-run             Run the before-push gate: diff check, app bench, tests, build
+  scbe commit -m "feat: ..."         Run prepush, then commit staged changes
+  scbe push --dry-run                Run prepush, then push the current branch
   scbe run "npm test"
   scbe exec npm test                 Execute command tokens through SCBE receipts
   scbe x git status --short          Short alias for exec
@@ -161,6 +167,13 @@ Core commands:
   run "<command>"         Execute a shell command inside the governed harness;
                           wraps stdout/stderr with L13 risk tagging
                           Example: scbe run "npm test"
+  format [--dry-run]      Format CLI/desktop code surfaces through a GeoSeal
+                          action receipt
+  test [--dry-run]        Run CLI + desktop tests through an action receipt
+  fix [--dry-run]         Format, then verify through an action receipt
+  prepush [--dry-run]     Run diff check, desktop app bench, tests, and build
+  commit -m "message"     Run prepush, then commit staged changes
+  push [branch]           Run prepush, then push a branch
   exec [--json] <cmd>     Execute command tokens without quote-wrapping the
                           whole command; same GeoSeal receipt path as run
                           Example: scbe exec git status --short
@@ -3475,6 +3488,13 @@ const CORE_SHELL_COMMANDS = [
   'count',
   'find',
   'run',
+  'format',
+  'test',
+  'fix',
+  'prepush',
+  'commit',
+  'push',
+  'ship',
   'build',
 ];
 
@@ -3502,6 +3522,7 @@ function shellHelpText() {
     '  Ask normally:        hey, explain this repo',
     '  Run a command:       run git status --short',
     '  Slash nav:           /term | /status | /models | /run git status --short',
+    '  Repo actions:        /format --dry-run | /test --dry-run | /prepush --dry-run',
     '  Agent lanes:         /claude review this file  |  /codex fix the failing test',
     '  Worksheet:           infer pull then fetch docs  |  infer square root of 89...',
     '  Bracket tag:         [verify] npm test  |  [format] packages/cli/bin/scbe.js',
@@ -3514,6 +3535,7 @@ function shellHelpText() {
     '  Cross-compile:       emit RU factorial(5)  |  emit CA gcd(48,18)',
     '  Files:               read README.md | write note.txt hello | count README.md',
     '  Build:               build | build cli | build agent-bus',
+    '  Ship gate:           prepush --dry-run | commit -m "feat: ..." | push --dry-run',
     '  New agent room:      room builder',
     '  Switch room:         use builder',
     '  Agent chat:          ask builder review the plan',
@@ -3550,6 +3572,12 @@ function shellToolsText() {
     '  alias       Save/list shortcuts: :alias g git status --short',
     '  /term       Print the compact terminal front end inside the shell',
     '  /run        Run a governed command: /run npm test',
+    '  /format     Format CLI/desktop surfaces through a GeoSeal action receipt',
+    '  /test       Run CLI + desktop tests through a GeoSeal action receipt',
+    '  /fix        Format, then verify through a GeoSeal action receipt',
+    '  /prepush    Run diff check, desktop app bench, tests, and build',
+    '  /commit     Run prepush, then commit staged changes',
+    '  /push       Run prepush, then push the current branch',
     '  /claude     Ask Claude through a receipt: /claude review the current diff',
     '  /codex      Ask Codex through a receipt: /codex make a focused patch',
     '  [tag] cmd   Add an instruction tag; command bodies run through receipts',
@@ -4428,6 +4456,19 @@ function handleCoreShellCommand(line) {
     return true;
   }
 
+  if (['format', 'test', 'fix', 'prepush', 'ship', 'commit', 'push'].includes(verb)) {
+    const script = path.join(__dirname, '..', 'scripts', 'dev_actions.cjs');
+    const command = `${quoteExecArg(process.execPath)} ${quoteExecArg(script)} ${verb}${rest ? ` ${rest}` : ''}`;
+    process.stdout.write(ansi('dim', `  $ ${command}\n`));
+    const row = runShellCommand(command, {
+      quiet: true,
+      capture: false,
+      timeoutMs: 360000,
+    });
+    if (!row.success) printRunCard(row, { label: verb.toUpperCase() });
+    return true;
+  }
+
   if (verb === 'build') {
     const command = buildCommandForTarget(rest);
     process.stdout.write(ansi('dim', `  $ ${command}\n`));
@@ -5246,6 +5287,12 @@ function runInteractiveShell(flags = {}) {
         '/term',
         '/tui',
         '/run',
+        '/format',
+        '/test',
+        '/fix',
+        '/prepush',
+        '/commit',
+        '/push',
         'infer',
         '/status',
         '/models',
@@ -5588,6 +5635,12 @@ function runInteractiveShell(flags = {}) {
         return true;
       }
       printCapturedRun(rest);
+      return true;
+    }
+    if (['format', 'test', 'fix', 'prepush', 'ship', 'commit', 'push'].includes(verb)) {
+      const script = path.join(__dirname, '..', 'scripts', 'dev_actions.cjs');
+      const command = `${quoteExecArg(process.execPath)} ${quoteExecArg(script)} ${verb}${rest ? ` ${rest}` : ''}`;
+      printCapturedRun(command, { tag: verb, timeoutMs: 360000 });
       return true;
     }
     if (verb === 'claude' || verb === 'codex') {
@@ -9225,6 +9278,13 @@ const KNOWN_COMMANDS = [
   'run',
   'exec',
   'x',
+  'format',
+  'test',
+  'fix',
+  'prepush',
+  'ship',
+  'commit',
+  'push',
   'alias',
   'aliases',
   'status',
@@ -10240,6 +10300,10 @@ if (argv[0] === 'history') {
 
 if (argv[0] === 'alias' || argv[0] === 'aliases') {
   runAliasCli(argv.slice(1));
+}
+
+if (['format', 'test', 'fix', 'prepush', 'ship', 'commit', 'push'].includes(argv[0])) {
+  runNodeScript('packages/cli/scripts/dev_actions.cjs', argv);
 }
 
 if (argv[0] === 'run') {

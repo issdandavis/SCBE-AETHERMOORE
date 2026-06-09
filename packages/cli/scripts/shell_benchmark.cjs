@@ -24,6 +24,7 @@ function runNodeCli(args, options = {}) {
   const env = {
     ...process.env,
     NO_COLOR: '1',
+    ...(options.env || {}),
   };
   if (home) {
     env.HOME = home;
@@ -268,6 +269,65 @@ function main() {
         return {
           tier: payload.governance.tier,
           finding: payload.governance.findings[0],
+          duration_ms: r.duration_ms,
+        };
+      },
+      2
+    )
+  );
+
+  cases.push(
+    caseResult(
+      'dev_action_prepush_dry_run_geoseal_receipt',
+      () => {
+        const r = runNodeCli(['prepush', '--dry-run', '--json', '--no-write']);
+        assert.equal(r.status, 0);
+        const payload = JSON.parse(r.stdout);
+        assert.equal(payload.schema_version, 'scbe_dev_action_receipt_v1');
+        assert.equal(payload.action, 'prepush');
+        assert.equal(payload.summary.planned, 5);
+        assert.equal(payload.semantic_prime_syntax.action_coordinate.prime, 13);
+        assert.ok(payload.steps.every((row) => row.geoseal));
+        return {
+          steps: payload.summary.total_steps,
+          semantic_line: payload.semantic_prime_syntax.line,
+          duration_ms: r.duration_ms,
+        };
+      },
+      2
+    )
+  );
+
+  cases.push(
+    caseResult('dev_action_format_dry_run_is_one_command', () => {
+      const r = runNodeCli(['format', '--dry-run', '--json', '--no-write']);
+      assert.equal(r.status, 0);
+      const payload = JSON.parse(r.stdout);
+      assert.equal(payload.action, 'format');
+      assert.equal(payload.summary.planned, 1);
+      assert.match(payload.steps[0].command, /prettier --write/);
+      return {
+        command: payload.steps[0].command,
+        semantic: payload.steps[0].semantic_operation.syntax,
+        duration_ms: r.duration_ms,
+      };
+    })
+  );
+
+  cases.push(
+    caseResult(
+      'dev_action_push_dry_run_keeps_git_push_behind_prepush',
+      () => {
+        const r = runNodeCli(['push', '--dry-run', '--json', '--no-write', '--branch', 'main']);
+        assert.equal(r.status, 0);
+        const payload = JSON.parse(r.stdout);
+        assert.equal(payload.action, 'push');
+        assert.equal(payload.steps.at(-1).id, 'git-push');
+        assert.ok(payload.steps.find((row) => row.id === 'diff-check'));
+        assert.ok(payload.steps.find((row) => row.id === 'cli-tests'));
+        return {
+          steps: payload.summary.total_steps,
+          final_command: payload.steps.at(-1).command,
           duration_ms: r.duration_ms,
         };
       },
