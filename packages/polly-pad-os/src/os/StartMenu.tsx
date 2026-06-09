@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useOS } from './OSStore';
+import { getAppCapability, isLaunchSurface } from './appCapabilities';
 import {
   FolderOpen,
   Terminal,
@@ -169,8 +170,6 @@ const iconMap: Record<string, React.ReactNode> = {
   XCircle: <X size={22} />,
 };
 
-const REAL_SURFACE_IDS = new Set(['terminal', 'multiagent', 'browser', 'layeredabacus']);
-
 function KeyboardIcon({ size }: { size: number }) {
   return (
     <svg
@@ -193,11 +192,11 @@ export default function StartMenu() {
   const { appRegistry, openApp, setStartMenuOpen, startMenuOpen } = useOS();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [showDemos, setShowDemos] = useState(false);
+  const [showBacklog, setShowBacklog] = useState(false);
 
   const apps = useMemo(() => {
     const list = Array.from(appRegistry.values()).filter(
-      (app) => showDemos || REAL_SURFACE_IDS.has(app.id)
+      (app) => showBacklog || isLaunchSurface(app.id)
     );
     if (!searchQuery && !selectedCategory) return list;
     return list.filter((app) => {
@@ -206,7 +205,7 @@ export default function StartMenu() {
       const matchesCategory = !selectedCategory || app.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [appRegistry, searchQuery, selectedCategory, showDemos]);
+  }, [appRegistry, searchQuery, selectedCategory, showBacklog]);
 
   const categories = useMemo(() => {
     const cats = new Set<string>();
@@ -274,14 +273,14 @@ export default function StartMenu() {
             </button>
           ))}
           <button
-            onClick={() => setShowDemos(!showDemos)}
+            onClick={() => setShowBacklog(!showBacklog)}
             className={`px-3 py-1 rounded-lg text-xs transition-all whitespace-nowrap ${
-              showDemos
+              showBacklog
                 ? 'bg-amber-500/20 text-amber-200 border border-amber-400/30'
                 : 'text-blue-300/50 hover:bg-blue-500/10'
             }`}
           >
-            {showDemos ? 'Hide demos' : 'Show demos'}
+            {showBacklog ? 'Hide backlog' : 'Show all apps'}
           </button>
         </div>
 
@@ -293,7 +292,7 @@ export default function StartMenu() {
                 <AppTile
                   key={app.id}
                   app={app}
-                  isDemo={!REAL_SURFACE_IDS.has(app.id)}
+                  status={getAppCapability(app.id).status}
                   onClick={() => openApp(app.id)}
                 />
               ))}
@@ -310,7 +309,7 @@ export default function StartMenu() {
                       <AppTile
                         key={app.id}
                         app={app}
-                        isDemo={!REAL_SURFACE_IDS.has(app.id)}
+                        status={getAppCapability(app.id).status}
                         onClick={() => openApp(app.id)}
                       />
                     ))}
@@ -350,13 +349,19 @@ export default function StartMenu() {
 
 function AppTile({
   app,
-  isDemo,
+  status,
   onClick,
 }: {
   app: { id: string; name: string; icon: string };
-  isDemo: boolean;
+  status: ReturnType<typeof getAppCapability>['status'];
   onClick: () => void;
 }) {
+  const statusClasses = {
+    'download-ready': 'bg-sky-500/15 text-sky-200',
+    local: 'bg-emerald-500/15 text-emerald-200',
+    real: 'bg-blue-500/20 text-blue-100',
+  };
+
   return (
     <button
       onClick={onClick}
@@ -368,9 +373,9 @@ function AppTile({
       <span className="text-[10px] text-blue-200/60 group-hover:text-blue-100 leading-tight">
         {app.name}
       </span>
-      {isDemo && (
-        <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] text-amber-200">
-          demo
+      {status !== 'real' && (
+        <span className={`rounded px-1.5 py-0.5 text-[9px] ${statusClasses[status]}`}>
+          {status}
         </span>
       )}
     </button>

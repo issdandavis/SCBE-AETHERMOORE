@@ -12,6 +12,13 @@ const DESKTOP_ROOT = path.join(REPO_ROOT, 'packages', 'polly-pad-os');
 const ARTIFACT_ROOT = path.join(REPO_ROOT, 'artifacts', 'portable-desktop');
 const ACTION_HISTORY_ROOT = path.join(REPO_ROOT, 'artifacts', 'scbe-actions');
 const ACTION_RUNNER = path.join(REPO_ROOT, 'packages', 'cli', 'scripts', 'action_runner.cjs');
+const CAPABILITY_BENCH = path.join(
+  REPO_ROOT,
+  'packages',
+  'polly-pad-os',
+  'scripts',
+  'capability_benchmark.ts'
+);
 const DEFAULT_ZIP = path.join(
   os.homedir(),
   'Downloads',
@@ -128,6 +135,7 @@ function printHelp() {
       '  scbe desktop open            Start dev server and open browser',
       '  scbe desktop bridge          Start the local action bridge only',
       '  scbe desktop test            Run desktop runtime tests',
+      '  scbe desktop app-bench       Benchmark app capability status and goals',
       '  scbe desktop build           Build the desktop app',
       '  scbe desktop pack            Build a portable static zip',
       '  scbe desktop --json          Machine-readable status',
@@ -926,6 +934,20 @@ function runPack(args) {
   }
 }
 
+function runAppBench(args) {
+  ensureDesktopRoot();
+  const child = spawnSync(
+    process.execPath,
+    ['--experimental-strip-types', CAPABILITY_BENCH, ...args],
+    {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+      stdio: 'inherit',
+    }
+  );
+  process.exit(typeof child.status === 'number' ? child.status : 1);
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const sub = args[0] && !args[0].startsWith('--') ? args[0] : 'status';
@@ -947,6 +969,10 @@ async function main() {
     ensureDesktopRoot();
     const child = runNpm('test');
     process.exit(typeof child.status === 'number' ? child.status : 1);
+  }
+  if (sub === 'app-bench' || sub === 'apps' || sub === 'capabilities') {
+    runAppBench(rest);
+    return;
   }
   if (sub === 'build') {
     ensureDesktopRoot();

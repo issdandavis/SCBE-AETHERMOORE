@@ -161,6 +161,28 @@ test('desktop subsystem emits portable desktop status JSON', () => {
   assert.equal(payload.launcher_commands.open, 'scbe desktop open');
 });
 
+test('desktop subsystem emits app capability benchmark JSON', () => {
+  const result = runCli(['desktop', 'app-bench', '--json']);
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_polly_app_capability_benchmark_v1');
+  assert.equal(payload.summary.total, 82);
+  assert.equal(payload.summary.real, 4);
+  assert.equal(payload.summary.runtime_open_passed, payload.summary.runtime_open_total);
+  assert.equal(payload.summary.component_mapped_passed, payload.summary.component_mapped_total);
+  assert.ok(payload.summary.download_ready > 0);
+  assert.ok(payload.goals.some((goal) => goal.id === 'g3-download-ready-backlog'));
+  assert.ok(
+    payload.tasks.some((task) => task.app_id === 'browser' && task.capability_status === 'real')
+  );
+  assert.ok(
+    payload.tasks.some(
+      (task) => task.app_id === 'codeeditor' && task.capability_status === 'download-ready'
+    )
+  );
+});
+
 test('desktop subsystem dry-runs open and pack without launching a browser', () => {
   const open = runCli(['desktop', 'open', '--dry-run', '--json', '--port', '3111']);
   assert.equal(open.status, 0, open.stderr);

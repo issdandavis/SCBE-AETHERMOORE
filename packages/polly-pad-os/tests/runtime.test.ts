@@ -29,6 +29,28 @@ describe('PollyPadRuntime', () => {
       result.snapshot.apps.some((app) => app.id === 'layeredabacus'),
       true
     );
+    assert.equal(result.snapshot.apps.filter((app) => app.capability.status === 'real').length, 4);
+    assert.equal(
+      result.snapshot.apps.every((app) => app.capability.goal && app.capability.proof),
+      true
+    );
+  });
+
+  it('keeps the default desktop scoped to real app surfaces', () => {
+    const runtime = createRuntime();
+    const result = runtime.invoke('os', 'snapshot');
+
+    assert.equal(result.ok, true);
+    assert.deepEqual(result.snapshot.desktopIcons.map((icon) => icon.appId).sort(), [
+      'browser',
+      'layeredabacus',
+      'multiagent',
+      'terminal',
+    ]);
+    for (const icon of result.snapshot.desktopIcons) {
+      const app = result.snapshot.apps.find((candidate) => candidate.id === icon.appId);
+      assert.equal(app?.capability.status, 'real');
+    }
   });
 
   it('opens, moves, resizes, and snapshots app windows without a browser', () => {

@@ -14,6 +14,7 @@ import {
   type AddAbacusLayerInput,
   type LayeredAbacusState,
 } from '../lib/layeredAbacus.ts';
+import { getAppCapability, type AppCapability } from './appCapabilities.ts';
 import { generateAppRegistry } from './appRegistry.ts';
 import { DEFAULT_THEME, DEFAULT_VIEWPORT, defaultDesktopIcons } from './defaultState.ts';
 
@@ -64,6 +65,7 @@ export interface PollyPadAppSnapshot {
   defaultSize: AppDefinition['defaultSize'];
   minSize?: AppDefinition['minSize'];
   canResize: boolean;
+  capability: AppCapability;
   singleton: boolean;
   openCount: number;
 }
@@ -151,6 +153,7 @@ export class PollyPadRuntime {
         name: app.name,
         icon: app.icon,
         category: app.category,
+        capability: getAppCapability(app.id),
         defaultSize: { ...app.defaultSize },
         minSize: app.minSize ? { ...app.minSize } : undefined,
         canResize: app.canResize ?? true,
