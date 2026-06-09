@@ -191,7 +191,7 @@ function printHelp() {
   process.stdout.write(
     [
       'Usage:',
-      '  node packages/cli/scripts/bench_math_reasoning.cjs [--mode raw|worksheet|choice|tool-choice|gated-tool-choice|oracle] [--provider ollama|router|offline] [--model name] [--json]',
+      '  node packages/cli/scripts/bench_math_reasoning.cjs [--mode raw|worksheet|choice|tool-choice|gated-tool-choice|oracle] [--provider ollama|router|offline] [--model name] [--router-config path] [--json]',
       '',
       'Modes:',
       '  raw        Model returns the exact final answer.',
@@ -216,6 +216,7 @@ function parseArgs(argv) {
     provider: 'ollama',
     model: process.env.OLLAMA_MODEL || 'qwen2.5:0.5b',
     routerProvider: '',
+    routerConfig: '',
     limit: PROBLEMS.length,
     json: false,
     noArtifact: false,
@@ -233,6 +234,9 @@ function parseArgs(argv) {
     else if (arg === '--router-provider') opts.routerProvider = argv[++i] || opts.routerProvider;
     else if (arg.startsWith('--router-provider='))
       opts.routerProvider = arg.slice('--router-provider='.length);
+    else if (arg === '--router-config') opts.routerConfig = argv[++i] || opts.routerConfig;
+    else if (arg.startsWith('--router-config='))
+      opts.routerConfig = arg.slice('--router-config='.length);
     else if (arg === '--limit') opts.limit = Number(argv[++i] || opts.limit);
     else if (arg.startsWith('--limit=')) opts.limit = Number(arg.slice('--limit='.length));
     else if (arg === '--json') opts.json = true;
@@ -368,6 +372,7 @@ function callRouter(prompt, opts) {
   const providers = opts.routerProvider || opts.provider;
   const args = [
     'scripts/system/terminal_ai_router.py',
+    ...(opts.routerConfig ? ['--config', opts.routerConfig] : []),
     'call',
     '--prompt-file',
     promptFile,
