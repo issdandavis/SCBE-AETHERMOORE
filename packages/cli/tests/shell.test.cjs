@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const { spawn, spawnSync } = require('node:child_process');
 const fs = require('node:fs');
+const http = require('node:http');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
@@ -24,6 +25,40 @@ function runCli(args, options = {}) {
   });
 }
 
+function runCliAsync(args, options = {}) {
+  const home = options.home || fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-shell-'));
+  const env = {
+    ...process.env,
+    ...(options.env || {}),
+    HOME: home,
+    USERPROFILE: home,
+    NO_COLOR: '1',
+  };
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [CLI, ...args], {
+      env,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    let stdout = '';
+    let stderr = '';
+    const timer = setTimeout(() => {
+      child.kill();
+    }, options.timeout || 30_000);
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk;
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk;
+    });
+    if (options.input) child.stdin.write(options.input);
+    child.stdin.end();
+    child.on('close', (code, signal) => {
+      clearTimeout(timer);
+      resolve({ status: code, signal, stdout, stderr });
+    });
+  });
+}
+
 function decodeNodeEvalPayload(command) {
   const match = String(command || '').match(/Buffer\.from\('([^']+)','base64'\)/);
   if (!match) return String(command || '');
@@ -33,6 +68,48 @@ function decodeNodeEvalPayload(command) {
     return String(command || '');
   }
 }
+
+test('trap-dispatch normalizes Ollama base URLs that include /api', async () => {
+  let seenPath = null;
+  const server = http.createServer((req, res) => {
+    seenPath = req.url;
+    req.on('data', () => {});
+    req.on('end', () => {
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ message: { content: 'advisor hint ok' } }));
+    });
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const { port } = server.address();
+    const result = await runCliAsync(
+      [
+        'trap-dispatch',
+        '--input',
+        'give a short coding hint',
+        '--provider',
+        'ollama',
+        '--model',
+        'mock-coder',
+        '--json',
+      ],
+      {
+        env: {
+          OLLAMA_BASE_URL: `http://127.0.0.1:${port}/api`,
+        },
+        timeout: 30_000,
+      }
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.equal(payload.receipt, 'SCBE_TRAP_DISPATCH=1');
+    assert.equal(payload.response, 'advisor hint ok');
+    assert.equal(seenPath, '/api/chat');
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
 
 test('alias command saves shortcuts and executes them through receipts', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-alias-'));

@@ -129,6 +129,23 @@ function envForModelRow(row) {
   );
 }
 
+function advisorEnv() {
+  const env = {};
+  if (process.env.SCBE_ADVISOR_PROVIDER)
+    env.SCBE_ADVISOR_PROVIDER = process.env.SCBE_ADVISOR_PROVIDER;
+  if (process.env.SCBE_ADVISOR_MODEL) env.SCBE_ADVISOR_MODEL = process.env.SCBE_ADVISOR_MODEL;
+  if (process.env.SCBE_ADVISOR_MAX_CHARS)
+    env.SCBE_ADVISOR_MAX_CHARS = process.env.SCBE_ADVISOR_MAX_CHARS;
+  if (process.env.SCBE_ADVISOR_MODE) env.SCBE_ADVISOR_MODE = process.env.SCBE_ADVISOR_MODE;
+  if (process.env.SCBE_ADVISOR_WEB) env.SCBE_ADVISOR_WEB = process.env.SCBE_ADVISOR_WEB;
+  if (process.env.SCBE_ADVISOR_WEB_QUERY)
+    env.SCBE_ADVISOR_WEB_QUERY = process.env.SCBE_ADVISOR_WEB_QUERY;
+  if (process.env.SCBE_ADVISOR_WEB_DOMAINS)
+    env.SCBE_ADVISOR_WEB_DOMAINS = process.env.SCBE_ADVISOR_WEB_DOMAINS;
+  if (process.env.SCBE_ADVISOR_WEB_MAX) env.SCBE_ADVISOR_WEB_MAX = process.env.SCBE_ADVISOR_WEB_MAX;
+  return env;
+}
+
 function safeName(value) {
   return String(value || 'model')
     .replace(/[^a-zA-Z0-9_.-]+/g, '_')
@@ -249,6 +266,12 @@ function main() {
 
   const modelMatrix = parseModelMatrix(process.env.SCBE_CODEGEN_MODEL_MATRIX || '');
   const runHardModelMatrix = process.env.SCBE_RUN_HARD_CODEGEN_MODELS === '1';
+  const runAdvisorModelMatrix =
+    process.env.SCBE_RUN_ADVISOR_CODEGEN_MODELS === '1' &&
+    Boolean(process.env.SCBE_ADVISOR_MODEL || process.env.SCBE_ADVISOR_PROVIDER);
+  const runRescueModelMatrix =
+    process.env.SCBE_RUN_RESCUE_CODEGEN_MODELS === '1' &&
+    Boolean(process.env.SCBE_ADVISOR_MODEL || process.env.SCBE_ADVISOR_PROVIDER);
   for (const row of modelMatrix) {
     const modelRun = runNode(
       corpusBench,
@@ -282,6 +305,54 @@ function main() {
         ...corpusSummary(hardModelRun),
       });
     }
+
+    if (runAdvisorModelMatrix) {
+      const hardAdvisorRun = runNode(
+        corpusBench,
+        ['--category', 'codegen-hard', '--max-corpus-turns=40', '--fail-on-incomplete'],
+        { ...envForModelRow(row), ...advisorEnv() },
+        900000
+      );
+      results.push({
+        name: `advisor_hard_codegen_${safeName(row.name)}`,
+        description:
+          'hard code-generation corpus with a secondary advisor worksheet in the configured advisor mode',
+        optional: true,
+        provider: row.provider,
+        model: row.model,
+        advisor_provider: process.env.SCBE_ADVISOR_PROVIDER || 'ollama',
+        advisor_model: process.env.SCBE_ADVISOR_MODEL || '',
+        advisor_mode: process.env.SCBE_ADVISOR_MODE || 'retry',
+        ...corpusSummary(hardAdvisorRun),
+      });
+    }
+
+    if (runRescueModelMatrix) {
+      const hardRescueRun = runNode(
+        corpusBench,
+        [
+          '--category',
+          'codegen-hard',
+          '--max-corpus-turns=80',
+          '--fail-on-incomplete',
+          '--rescue-advisor',
+        ],
+        { ...envForModelRow(row), ...advisorEnv() },
+        1200000
+      );
+      results.push({
+        name: `rescue_hard_codegen_${safeName(row.name)}`,
+        description:
+          'hard code-generation corpus; plain primary first, advisor retries verifier failures',
+        optional: true,
+        provider: row.provider,
+        model: row.model,
+        advisor_provider: process.env.SCBE_ADVISOR_PROVIDER || 'ollama',
+        advisor_model: process.env.SCBE_ADVISOR_MODEL || '',
+        advisor_mode: process.env.SCBE_ADVISOR_MODE || 'retry',
+        ...corpusSummary(hardRescueRun),
+      });
+    }
   }
 
   console.log('mode                               exit  score');
@@ -304,6 +375,8 @@ function main() {
     codegen_model_matrix_included: modelMatrix.length > 0,
     codegen_model_matrix_count: modelMatrix.length,
     hard_codegen_model_matrix_included: runHardModelMatrix && modelMatrix.length > 0,
+    advisor_codegen_model_matrix_included: runAdvisorModelMatrix && modelMatrix.length > 0,
+    rescue_codegen_model_matrix_included: runRescueModelMatrix && modelMatrix.length > 0,
     optional_failure_required: process.env.SCBE_REQUIRE_OPTIONAL_BENCH === '1',
     results,
   };

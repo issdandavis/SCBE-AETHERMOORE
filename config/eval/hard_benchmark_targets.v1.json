@@ -1,0 +1,120 @@
+{
+  "schema_version": "scbe_hard_benchmark_targets_v1",
+  "generated_at": "2026-06-09",
+  "claim_boundary": "Target registry only. These entries identify difficult public benchmarks and safe first-run paths; they are not leaderboard claims. Public comparison requires unchanged upstream harnesses, exact model/agent config, raw artifacts, and published receipts.",
+  "selection_rule": "Prefer benchmarks where agent/tooling/verification can matter more than raw one-shot model text. Run blind first, then SCBE rescue/retry harness, then compare.",
+  "targets": [
+    {
+      "id": "terminal_bench_2",
+      "domain": "coding_terminal_agent",
+      "priority": "S",
+      "why_hard": "Official benchmark for terminal agents; recent paper/site reports frontier models and agents below 65 percent on Terminal-Bench 2.0.",
+      "official_url": "https://www.tbench.ai/",
+      "paper_url": "https://arxiv.org/abs/2601.11868",
+      "local_strategy": "Use SCBE shell --agent-json as the agent adapter. Run a tiny task subset first, then blind full subset, then rescue-advisor retry.",
+      "first_safe_run": {
+        "mode": "command_shape_only",
+        "commands": ["tb --help", "tb datasets list"]
+      },
+      "scbe_lanes": ["blind_primary", "advisor_retry", "rescue_advisor", "receipt_verified"]
+    },
+    {
+      "id": "swe_bench_verified",
+      "domain": "coding_repo_repair",
+      "priority": "S",
+      "why_hard": "Human-validated 500-instance subset of SWE-bench for real GitHub issue repair. Strong target for multi-step patch/test/retry systems.",
+      "official_url": "https://www.swebench.com/verified.html",
+      "repo_url": "https://github.com/princeton-nlp/SWE-bench",
+      "local_strategy": "Start with one verified task in a clean worktree. Compare raw primary agent versus SCBE gated retry with advisor and test receipt.",
+      "first_safe_run": {
+        "mode": "harness_help_only",
+        "commands": ["python -m swebench.harness.run_evaluation --help", "docker --version"]
+      },
+      "scbe_lanes": ["blind_primary", "test_driven_retry", "advisor_debugger", "patch_receipt"]
+    },
+    {
+      "id": "swe_bench_multimodal_or_pro",
+      "domain": "coding_repo_repair",
+      "priority": "A",
+      "why_hard": "Harder SWE-style variants and mutations reduce overfitting to known issue text. Use only after SWE-bench Verified adapter is stable.",
+      "official_url": "https://www.swebench.com/",
+      "local_strategy": "Do not claim public results until the upstream harness and split are exact. Use for internal blind stress tests.",
+      "first_safe_run": {
+        "mode": "registry_only",
+        "commands": []
+      },
+      "scbe_lanes": ["blind_primary", "mutation_resistant_retry", "merge_check"]
+    },
+    {
+      "id": "chembench",
+      "domain": "chemistry_llm_reasoning",
+      "priority": "S",
+      "why_hard": "Comprehensive chemistry LLM benchmark with chemistry and materials-science tasks; suitable for controlled advisor web/retrieval experiments.",
+      "official_url": "https://github.com/lamalab-org/chembench",
+      "dataset_url": "https://huggingface.co/datasets/jablonkagroup/ChemBench",
+      "local_strategy": "Start with a small deterministic text-only subset. Compare closed-book raw model, allowlisted web advisor, and verifier/retry where answers are checkable.",
+      "first_safe_run": {
+        "mode": "dataset_probe",
+        "commands": [
+          "python - <<'PY'\nfrom datasets import load_dataset\nprint(load_dataset('jablonkagroup/ChemBench', split='train[:5]'))\nPY"
+        ]
+      },
+      "scbe_lanes": ["closed_book", "controlled_web_advisor", "retrieval_receipt", "answer_checker"]
+    },
+    {
+      "id": "chemrag_bench",
+      "domain": "chemistry_rag",
+      "priority": "A",
+      "why_hard": "Chemistry RAG benchmark for testing whether retrieval improves chemistry answers instead of just adding noise.",
+      "official_url": "https://chemrag.github.io/",
+      "local_strategy": "Use SCBE controlled web advisor and local citation receipts. Score raw model versus retrieval-assisted answer with source constraints.",
+      "first_safe_run": {
+        "mode": "site_probe",
+        "commands": []
+      },
+      "scbe_lanes": ["closed_book", "allowlisted_retrieval", "citation_checked_retry"]
+    },
+    {
+      "id": "superchem",
+      "domain": "chemistry_multimodal_reasoning",
+      "priority": "B",
+      "why_hard": "Expert-curated reasoning-intensive chemistry benchmark with multimodal and text-only formats. Harder to wire because multimodal handling is needed.",
+      "official_url": "https://superchem.pku.edu.cn/",
+      "paper_url": "https://arxiv.org/abs/2512.01274",
+      "local_strategy": "Start text-only. Add image/multimodal only after the text scorer and provenance receipts are stable.",
+      "first_safe_run": {
+        "mode": "text_only_probe",
+        "commands": []
+      },
+      "scbe_lanes": ["text_blind", "controlled_web_advisor", "multimodal_later"]
+    },
+    {
+      "id": "qm9_kaggle_property_prediction",
+      "domain": "chemistry_ml_property_prediction",
+      "priority": "A",
+      "why_hard": "Molecular property prediction on QM9-style data tests data handling, feature engineering, model training, and reproducible scoring rather than chat-only chemistry.",
+      "official_url": "https://www.kaggle.com/datasets/mariovozza5/qm9-molecules",
+      "local_strategy": "Use Kaggle API to fetch a small slice. Build a baseline descriptor model, then let SCBE generate/retry feature pipelines under a fixed metric.",
+      "first_safe_run": {
+        "mode": "kaggle_metadata_only",
+        "commands": ["kaggle datasets files mariovozza5/qm9-molecules"]
+      },
+      "scbe_lanes": ["baseline_model", "feature_pipeline_retry", "fixed_metric_receipt"]
+    },
+    {
+      "id": "molecule_net_or_ogb_mol",
+      "domain": "chemistry_ml_property_prediction",
+      "priority": "B",
+      "why_hard": "Standard molecular property prediction tasks can test whether SCBE helps build correct ML pipelines, not just answer chemistry trivia.",
+      "official_url": "https://ogb.stanford.edu/docs/graph/",
+      "local_strategy": "Start with a tiny split and a deterministic metric. Add graph-model or RDKit features only when dependencies are available.",
+      "first_safe_run": {
+        "mode": "dependency_probe",
+        "commands": [
+          "python - <<'PY'\nimport importlib.util\nprint('rdkit', bool(importlib.util.find_spec('rdkit')))\nprint('torch', bool(importlib.util.find_spec('torch')))\nPY"
+        ]
+      },
+      "scbe_lanes": ["dependency_probe", "baseline_model", "pipeline_repair"]
+    }
+  ]
+}

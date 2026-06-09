@@ -18,6 +18,8 @@
  *   node scripts/bench_task_corpus.cjs --category codegen
  *   node scripts/bench_task_corpus.cjs --provider offline --fail-on-incomplete
  *   node scripts/bench_task_corpus.cjs --provider ollama --model qwen2.5-coder:1.5b
+ *   node scripts/bench_task_corpus.cjs --category codegen-hard --advisor-model qwen2.5-coder:1.5b
+ *   node scripts/bench_task_corpus.cjs --category codegen-hard --chart
  *   node scripts/bench_task_corpus.cjs --list
  *   SCBE_MODEL=groq/llama-3.3-70b-versatile node scripts/bench_task_corpus.cjs
  *   node scripts/bench_task_corpus.cjs --no-artifact    # skip artifact write
@@ -140,6 +142,254 @@ function nodeEval(script) {
     'utf8'
   ).toString('base64');
   return `node -e "const __s=Buffer.from('${encoded}','base64').toString().replace(/__WORKDIR__/g,'{WORKDIR}');eval(__s)"`;
+}
+
+function advisorConfig(opts = {}) {
+  const model = opts.advisorModel || process.env.SCBE_ADVISOR_MODEL || '';
+  const provider =
+    opts.advisorProvider || process.env.SCBE_ADVISOR_PROVIDER || (model ? 'ollama' : '');
+  if (!model && !provider) return null;
+  return {
+    provider: provider || 'ollama',
+    model: model || (provider === 'offline' ? 'offline-echo' : ''),
+    maxChars: Number(opts.advisorMaxChars || process.env.SCBE_ADVISOR_MAX_CHARS || 1400),
+    mode: opts.advisorMode || process.env.SCBE_ADVISOR_MODE || 'retry',
+  };
+}
+
+function taskStrategy(task) {
+  if (task.category === 'codegen-hard') return 'repair/generate files; verifier runs code';
+  if (task.category === 'codegen') return 'generate runnable artifact; verifier imports it';
+  if (task.category === 'execute') return 'run command and extract result';
+  if (task.category.startsWith('search')) return 'search repo, compute exact answer';
+  if (task.category === 'governance') return 'inspect policy/gate result';
+  if (task.category === 'agent-bus') return 'call bus/research tool and parse output';
+  return 'primary agent acts; verifier decides';
+}
+
+function printAssignmentChart(tasks, opts = {}) {
+  const advisor = advisorConfig(opts);
+  const primary = `${process.env.SCBE_PROVIDER || opts.provider || 'ollama'}:${process.env.SCBE_MODEL || opts.model || '(default)'}`;
+  const advisorLabel = advisor
+    ? `${advisor.provider}:${advisor.model || '(default)'}/${advisor.mode}`
+    : 'none';
+  const rows = tasks.map((task) => ({
+    task: task.id,
+    difficulty: task.difficulty,
+    category: task.category,
+    primary,
+    advisor: advisorLabel,
+    verifier: task.verifier,
+    strategy: taskStrategy(task),
+  }));
+
+  const widths = {
+    task: Math.max(4, ...rows.map((r) => r.task.length)),
+    difficulty: Math.max(10, ...rows.map((r) => r.difficulty.length)),
+    category: Math.max(8, ...rows.map((r) => r.category.length)),
+    primary: Math.max(7, ...rows.map((r) => r.primary.length)),
+    advisor: Math.max(7, ...rows.map((r) => r.advisor.length)),
+    verifier: Math.max(8, ...rows.map((r) => r.verifier.length)),
+    strategy: Math.max(8, ...rows.map((r) => r.strategy.length)),
+  };
+  const header =
+    pad('Task', widths.task) +
+    ' │ ' +
+    pad('Difficulty', widths.difficulty) +
+    ' │ ' +
+    pad('Category', widths.category) +
+    ' │ ' +
+    pad('Primary', widths.primary) +
+    ' │ ' +
+    pad('Advisor', widths.advisor) +
+    ' │ ' +
+    pad('Verifier', widths.verifier) +
+    ' │ ' +
+    pad('Assignment', widths.strategy);
+  const hr = '─'.repeat(header.length);
+  console.log('\nTASK DIFFICULTY + ASSIGNMENT CHART');
+  console.log(hr);
+  console.log(header);
+  console.log(hr);
+  for (const row of rows) {
+    console.log(
+      pad(row.task, widths.task) +
+        ' │ ' +
+        pad(row.difficulty, widths.difficulty) +
+        ' │ ' +
+        pad(row.category, widths.category) +
+        ' │ ' +
+        pad(row.primary, widths.primary) +
+        ' │ ' +
+        pad(row.advisor, widths.advisor) +
+        ' │ ' +
+        pad(row.verifier, widths.verifier) +
+        ' │ ' +
+        pad(row.strategy, widths.strategy)
+    );
+  }
+  console.log(hr);
+}
+
+function buildAdvisorPrompt(task) {
+  const research = task.researchBrief
+    ? ['', 'CONTROLLED WEB RESEARCH BRIEF (allowlisted snippets only):', task.researchBrief].join(
+        '\n'
+      )
+    : '';
+  return [
+    'You are an advisor for a coding benchmark harness.',
+    'Do not claim completion. Do not ask follow-up questions. Do not run commands.',
+    'Return a compact worksheet for the primary coding agent:',
+    '1. files to create or edit',
+    '2. core algorithm or fix',
+    '3. edge cases the verifier is likely to test',
+    '4. one shortest safe command shape, if useful',
+    '',
+    `Task id: ${task.id}`,
+    `Category: ${task.category}`,
+    `Difficulty: ${task.difficulty}`,
+    `Verifier: ${task.verifier}`,
+    '',
+    'Instruction:',
+    task.instruction,
+    research,
+  ].join('\n');
+}
+
+function parseCsv(value) {
+  return String(value || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function hostnameOf(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./i, '').toLowerCase();
+  } catch (_) {
+    return '';
+  }
+}
+
+function allowedByDomain(url, domains) {
+  if (!domains.length) return false;
+  const host = hostnameOf(url);
+  return domains.some((domain) => {
+    const clean = String(domain || '')
+      .replace(/^www\./i, '')
+      .toLowerCase();
+    return host === clean || host.endsWith(`.${clean}`);
+  });
+}
+
+async function controlledWebResearch(query, config = {}) {
+  if (!query) return null;
+  const allowedDomains = parseCsv(
+    config.domains ||
+      'swebench.com,terminalbench.lol,tbench.ai,github.com,arxiv.org,kaggle.com,chemrag.github.io,superchem.pku.edu.cn,huggingface.co'
+  );
+  const maxResults = Math.max(1, Math.min(5, Number(config.maxResults || 3)));
+  const started = Date.now();
+  const result = {
+    query,
+    allowed_domains: allowedDomains,
+    source: 'duckduckgo_instant_answer',
+    ok: false,
+    duration_ms: 0,
+    results: [],
+    error: null,
+  };
+  if (typeof fetch !== 'function') {
+    result.error = 'fetch unavailable';
+    return result;
+  }
+  try {
+    const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const candidates = [];
+    if (data.AbstractText && data.AbstractURL) {
+      candidates.push({
+        title: data.Heading || 'Abstract',
+        url: data.AbstractURL,
+        snippet: data.AbstractText,
+      });
+    }
+    for (const item of data.RelatedTopics || []) {
+      if (item.Text && item.FirstURL) {
+        candidates.push({
+          title: item.Text.slice(0, 90),
+          url: item.FirstURL,
+          snippet: item.Text,
+        });
+      }
+    }
+    result.results = candidates
+      .filter((item) => allowedByDomain(item.url, allowedDomains))
+      .slice(0, maxResults)
+      .map((item) => ({
+        title: item.title,
+        url: item.url,
+        domain: hostnameOf(item.url),
+        snippet: String(item.snippet || '').slice(0, 280),
+      }));
+    result.ok = result.results.length > 0;
+  } catch (error) {
+    result.error = error.message;
+  } finally {
+    result.duration_ms = Date.now() - started;
+  }
+  return result;
+}
+
+function formatResearchBrief(research) {
+  if (!research?.results?.length) return '';
+  return research.results
+    .map((item, index) => `${index + 1}. ${item.title}\n   ${item.url}\n   ${item.snippet}`)
+    .join('\n');
+}
+
+function callAdvisor(task, workdir, config) {
+  if (!config) return null;
+  const started = Date.now();
+  const promptPath = path.join(workdir, 'advisor_prompt.txt');
+  fs.writeFileSync(promptPath, buildAdvisorPrompt(task), 'utf8');
+  const args = [
+    CLI,
+    'trap-dispatch',
+    '--file',
+    promptPath,
+    '--provider',
+    config.provider,
+    '--json',
+  ];
+  if (config.model) args.push('--model', config.model);
+  const run = spawnSync(process.execPath, args, {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    timeout: 90000,
+    env: { ...process.env, NO_COLOR: '1' },
+    maxBuffer: 1024 * 1024 * 4,
+  });
+  const raw = (run.stdout || '').trim();
+  let parsed = null;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (_) {}
+  const text = String(parsed?.response || raw || run.stderr || '').trim();
+  return {
+    provider: config.provider,
+    model: config.model || '',
+    ok: run.status === 0 && (!parsed || parsed.receipt === 'SCBE_TRAP_DISPATCH=1'),
+    duration_ms: Date.now() - started,
+    hint: text.slice(0, Math.max(200, config.maxChars || 1400)),
+    error:
+      run.status === 0
+        ? null
+        : (run.stderr || run.error?.message || 'advisor failed').slice(0, 500),
+  };
 }
 
 const TASKS = [
@@ -810,6 +1060,8 @@ const TASKS = [
  *   ko_ban_count: number,
  *   valid_cmd_turns: number,
  *   duration_ms: number,
+ *   advisor: object|null,
+ *   research: object|null,
  *   turns_log: TurnRecord[],
  *   error: string|null
  * }} TaskResult
@@ -834,6 +1086,8 @@ async function runTask(task, opts = {}) {
     ko_ban_count: 0,
     valid_cmd_turns: 0,
     duration_ms: 0,
+    advisor: null,
+    research: null,
     turns_log: [],
     error: null,
   };
@@ -849,8 +1103,18 @@ async function runTask(task, opts = {}) {
   const safeWorkdir = workdir.split(path.sep).join('/');
 
   const setup = task.setup ? task.setup.replace(/\{WORKDIR\}/g, safeWorkdir) : null;
-  const instruction = task.instruction.replace(/\{WORKDIR\}/g, safeWorkdir);
+  let instruction = task.instruction.replace(/\{WORKDIR\}/g, safeWorkdir);
   const done_if = task.done_if ? task.done_if.replace(/\{WORKDIR\}/g, safeWorkdir) : null;
+  const advisor = advisorConfig(opts);
+  const advisorMode = advisor?.mode || 'off';
+  const webQuery = opts.advisorWeb
+    ? opts.advisorWebQuery || `${task.id} ${task.category} benchmark coding agent`
+    : '';
+  const advisorBlock = () =>
+    result.advisor?.ok && result.advisor.hint
+      ? '\n\nADVISOR WORKSHEET (secondary model; verifier still decides):\n' +
+        result.advisor.hint.replace(/\{WORKDIR\}/g, safeWorkdir)
+      : '';
 
   const started = Date.now();
   let proc;
@@ -863,6 +1127,22 @@ async function runTask(task, opts = {}) {
         result.duration_ms = Date.now() - started;
         return result;
       }
+    }
+
+    if (advisor && opts.advisorWeb) {
+      result.research = await controlledWebResearch(webQuery, {
+        domains: opts.advisorWebDomains,
+        maxResults: opts.advisorWebMaxResults,
+      });
+    }
+
+    if (result.research?.results?.length) {
+      task = { ...task, researchBrief: formatResearchBrief(result.research) };
+    }
+
+    if (advisor && advisorMode === 'preload') {
+      result.advisor = callAdvisor(task, workdir, advisor);
+      instruction += advisorBlock();
     }
 
     proc = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
@@ -966,6 +1246,11 @@ async function runTask(task, opts = {}) {
 
       if (turn >= effectiveMax) break;
 
+      if (advisor && advisorMode !== 'preload' && !result.advisor) {
+        result.advisor = callAdvisor(task, workdir, advisor);
+        if (result.advisor?.ok) terminalState += advisorBlock();
+      }
+
       // Send next turn
       sendLine(proc, { terminal_state: terminalState });
     }
@@ -996,6 +1281,7 @@ async function runCorpus(tasks, opts = {}) {
   const maxCorpusTurns = opts.maxCorpusTurns || 80;
   let remainingBudget = maxCorpusTurns;
   const results = [];
+  const canRescue = Boolean(opts.rescueAdvisor && advisorConfig(opts));
 
   for (const task of tasks) {
     console.log(`\n${'─'.repeat(60)}`);
@@ -1007,10 +1293,45 @@ async function runCorpus(tasks, opts = {}) {
       `Max turns: ${Math.min(task.max_turns, remainingBudget)}  Budget remaining: ${remainingBudget}`
     );
 
-    const result = await runTask(task, { remainingBudget });
-    results.push(result);
-
+    let result = await runTask(task, {
+      ...opts,
+      advisorProvider: opts.rescueAdvisor ? '' : opts.advisorProvider,
+      advisorModel: opts.rescueAdvisor ? '' : opts.advisorModel,
+      remainingBudget,
+    });
     remainingBudget -= result.turns;
+
+    if (!result.completed && canRescue && remainingBudget > 0) {
+      const rescueAdvisor = advisorConfig(opts);
+      console.log(
+        `    rescue: verifier failed; retrying with advisor (${rescueAdvisor.provider}:${rescueAdvisor.model || '(default)'})`
+      );
+      const rescue = await runTask(task, {
+        ...opts,
+        advisorMode: opts.rescueAdvisorMode || opts.advisorMode || 'retry',
+        remainingBudget,
+      });
+      remainingBudget -= rescue.turns;
+      result = {
+        ...rescue,
+        turns: result.turns + rescue.turns,
+        duration_ms: result.duration_ms + rescue.duration_ms,
+        turns_to_complete: rescue.completed ? result.turns + rescue.turns_to_complete : null,
+        rescued_by_advisor: rescue.completed,
+        baseline_attempt: {
+          completed: result.completed,
+          turns: result.turns,
+          error: result.error,
+        },
+        rescue_attempt: {
+          completed: rescue.completed,
+          turns: rescue.turns,
+          error: rescue.error,
+        },
+      };
+    }
+
+    results.push(result);
 
     const status = result.completed
       ? `[PASS] in ${result.turns_to_complete} turns`
@@ -1020,6 +1341,13 @@ async function runCorpus(tasks, opts = {}) {
     console.log(
       `  → ${status}  false_done=${result.false_done_count}  ko_bans=${result.ko_ban_count}  ${result.duration_ms}ms`
     );
+    if (result.advisor) {
+      const advisorStatus = result.advisor.ok ? 'ok' : 'warn';
+      console.log(
+        `    advisor=${advisorStatus} ${result.advisor.provider}:${result.advisor.model || '(default)'} ${result.advisor.duration_ms}ms`
+      );
+    }
+    if (result.rescued_by_advisor) console.log('    rescued_by_advisor=true');
 
     if (remainingBudget <= 0) {
       console.log('\n[BUDGET EXHAUSTED] Stopping corpus early.');
@@ -1107,15 +1435,28 @@ function getHeadCommit() {
   }).stdout.trim();
 }
 
-function writeArtifact(results, model, provider) {
+function writeArtifact(results, model, provider, opts = {}) {
   if (!fs.existsSync(ARTIFACT_DIR)) fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const advisor = advisorConfig(opts);
   const artifact = {
     schema: 'task-corpus/v2',
     generated_at: new Date().toISOString(),
     commit: getHeadCommit(),
     provider: provider || process.env.SCBE_PROVIDER || 'unknown',
     model: model || process.env.SCBE_MODEL || 'unknown',
+    advisor: advisor
+      ? {
+          provider: advisor.provider,
+          model: advisor.model,
+          max_chars: advisor.maxChars,
+          mode: advisor.mode,
+          rescue_enabled: Boolean(opts.rescueAdvisor),
+          rescue_mode: opts.rescueAdvisorMode || advisor.mode || 'retry',
+          web_enabled: Boolean(opts.advisorWeb),
+          web_domains: opts.advisorWebDomains || null,
+        }
+      : null,
     score: {
       completed: results.filter((r) => r.completed).length,
       total: results.length,
@@ -1169,6 +1510,17 @@ function writeArtifact(results, model, provider) {
         '  --category <name>        Run only tasks in one category',
         '  --provider <name>        Override SCBE_PROVIDER for this run',
         '  --model <name>           Override SCBE_MODEL for this run',
+        '  --advisor-provider <name>  Advisor provider: offline | ollama',
+        '  --advisor-model <name>   Advisor model. Defaults provider to ollama.',
+        '  --advisor-max-chars=N    Max advisor worksheet chars (default: 1400)',
+        '  --advisor-mode <mode>    retry (default) | preload',
+        '  --advisor-web           Add controlled allowlisted web snippets to advisor prompt',
+        '  --advisor-web-query <q>  Override advisor web query',
+        '  --advisor-web-domain <csv>  Allowed advisor web domains',
+        '  --advisor-web-max=N     Max advisor web results (1-5, default: 3)',
+        '  --rescue-advisor        Run plain first; advisor retries only failed tasks',
+        '  --rescue-advisor-mode <mode>  Advisor mode for rescue attempt (default: retry)',
+        '  --chart                  Print difficulty/assignment chart and exit',
         '  --offline                Alias for --provider offline',
         '  --fail-on-incomplete     Exit 1 if any selected task fails verification',
         '  --list                   Print task corpus and exit',
@@ -1195,6 +1547,19 @@ function writeArtifact(results, model, provider) {
   if (modelOverride) process.env.SCBE_MODEL = modelOverride;
   const noArtifact = args.includes('--no-artifact');
   const failOnIncomplete = args.includes('--fail-on-incomplete');
+  const advisorProvider = readOption('--advisor-provider');
+  const advisorModel = readOption('--advisor-model') || readOption('--advisor');
+  const advisorMaxChars = readOption('--advisor-max-chars');
+  const advisorMode = readOption('--advisor-mode');
+  const advisorWeb = args.includes('--advisor-web') || process.env.SCBE_ADVISOR_WEB === '1';
+  const advisorWebQuery = readOption('--advisor-web-query') || process.env.SCBE_ADVISOR_WEB_QUERY;
+  const advisorWebDomains =
+    readOption('--advisor-web-domain') ||
+    readOption('--advisor-web-domains') ||
+    process.env.SCBE_ADVISOR_WEB_DOMAINS;
+  const advisorWebMaxResults = readOption('--advisor-web-max') || process.env.SCBE_ADVISOR_WEB_MAX;
+  const rescueAdvisor = args.includes('--rescue-advisor');
+  const rescueAdvisorMode = readOption('--rescue-advisor-mode');
   const maxTurnsArg = readOption('--max-corpus-turns');
   const maxCorpusTurns = maxTurnsArg ? parseInt(maxTurnsArg, 10) : 80;
 
@@ -1216,12 +1581,38 @@ function writeArtifact(results, model, provider) {
     'Verifier contract v2: {WORKDIR}/answer.txt per task — no static-state false positives\n'
   );
 
-  const results = await runCorpus(tasksToRun, { maxCorpusTurns });
+  const runOpts = {
+    maxCorpusTurns,
+    advisorProvider,
+    advisorModel,
+    advisorMaxChars,
+    advisorMode,
+    advisorWeb,
+    advisorWebQuery,
+    advisorWebDomains,
+    advisorWebMaxResults,
+    rescueAdvisor,
+    rescueAdvisorMode,
+  };
+
+  if (args.includes('--chart')) {
+    printAssignmentChart(tasksToRun, {
+      provider,
+      model,
+      advisorProvider,
+      advisorModel,
+      advisorMaxChars,
+      advisorMode,
+    });
+    process.exit(0);
+  }
+
+  const results = await runCorpus(tasksToRun, runOpts);
 
   printSummaryTable(results);
 
   if (!noArtifact) {
-    const artifactPath = writeArtifact(results, model, provider);
+    const artifactPath = writeArtifact(results, model, provider, runOpts);
     console.log(`\nArtifact: ${artifactPath}`);
   }
 

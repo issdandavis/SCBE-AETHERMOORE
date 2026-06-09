@@ -6782,7 +6782,11 @@ async function ollamaDispatch(prompt, model, ollamaUrl, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(`${ollamaUrl.replace(/\/$/, '')}/api/chat`, {
+    const baseUrl = String(ollamaUrl || 'http://127.0.0.1:11434')
+      .replace(/\/api\/chat\/?$/i, '')
+      .replace(/\/api\/?$/i, '')
+      .replace(/\/$/, '');
+    const res = await fetch(`${baseUrl}/api/chat`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({

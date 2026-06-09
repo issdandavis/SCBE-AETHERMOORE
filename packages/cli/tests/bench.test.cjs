@@ -103,6 +103,52 @@ test('task corpus runs a hard codegen repair task', () => {
   assert.match(result.stdout, /Summary: 1\/1 tasks completed/);
 });
 
+test('task corpus can print task assignment chart with advisor column', () => {
+  const result = runTaskCorpus([
+    '--category',
+    'codegen-hard',
+    '--provider',
+    'offline',
+    '--model',
+    'tiny-primary',
+    '--advisor-provider',
+    'offline',
+    '--advisor-model',
+    'advisor-echo',
+    '--chart',
+  ]);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /TASK DIFFICULTY \+ ASSIGNMENT CHART/);
+  assert.match(result.stdout, /codegen-hard-js-fix-average/);
+  assert.match(result.stdout, /offline:tiny-primary/);
+  assert.match(result.stdout, /offline:advisor-echo/);
+  assert.doesNotMatch(result.stdout, /TASK CORPUS RESULTS/);
+});
+
+test('task corpus advisor worksheet remains verifier-gated', () => {
+  const result = runTaskCorpus(
+    [
+      '--task',
+      'codegen-hard-python-agent-worksheet',
+      '--advisor-provider',
+      'offline',
+      '--advisor-model',
+      'advisor-echo',
+      '--advisor-mode',
+      'preload',
+      '--max-corpus-turns=4',
+      '--no-artifact',
+      '--fail-on-incomplete',
+    ],
+    { timeout: 120_000 }
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /advisor=ok offline:advisor-echo/);
+  assert.match(result.stdout, /Summary: 1\/1 tasks completed/);
+});
+
 test('task corpus can fail when selected tasks do not verify', () => {
   const result = runTaskCorpus(
     [
