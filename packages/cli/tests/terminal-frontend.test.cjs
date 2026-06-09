@@ -34,6 +34,7 @@ test('help documents the terminal frontend and short aliases', () => {
 
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /scbe terminal\s+Compact terminal front end/);
+  assert.match(result.stdout, /scbe advisor\s+"suggest next step"/);
   assert.match(result.stdout, /scbe terminal tui/);
   assert.match(result.stdout, /scbe terminal --json/);
   assert.match(result.stdout, /scbe terminal bench/);
@@ -66,19 +67,33 @@ test('terminal --json emits parseable frontend state for agents', () => {
   const payload = JSON.parse(result.stdout);
   assert.equal(payload.schema_version, 'scbe_terminal_frontend_v1');
   assert.equal(payload.title, 'SCBE Terminal Frontend');
+  assert.equal(payload.launch.advisor, 'scbe advisor "<request>"');
   assert.ok(payload.launch.headless.includes('agent-json'));
   assert.equal(payload.launch.token_exec, 'scbe x <program> [args...]');
   assert.deepEqual(payload.aliases, []);
   assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe term'));
+  assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe advisor "<request>"'));
+  assert.ok(
+    payload.quick_commands.some(
+      (entry) => entry.command === 'scbe desktop browse https://example.com --json'
+    )
+  );
+  assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe desktop capture --json'));
   assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe actions'));
   assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe x <cmd>'));
   assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe alias g <cmd>'));
   assert.ok(payload.modes.some((entry) => entry.id === 'token_exec'));
+  assert.ok(payload.modes.some((entry) => entry.id === 'advisor'));
   assert.ok(payload.actions.some((entry) => entry.id === 'terminal.panel'));
   assert.ok(payload.actions.some((entry) => entry.id === 'desktop.open'));
+  assert.ok(payload.actions.some((entry) => entry.id === 'desktop.browser-open'));
+  assert.ok(payload.actions.some((entry) => entry.id === 'desktop.capture'));
   assert.match(payload.action_history_path, /scbe-actions[\\/]+history\.jsonl$/);
   assert.equal(payload.natural_language.autocorrect, true);
   assert.equal(typeof payload.natural_language.word_count, 'number');
+  assert.ok(payload.command_grammar.some((entry) => entry.syntax === '/advisor <request>'));
+  assert.ok(payload.command_grammar.some((entry) => entry.syntax === '/browser <url>'));
+  assert.ok(payload.command_grammar.some((entry) => entry.syntax === '/capture [url]'));
 });
 
 test('exec runs command tokens through the governed receipt path', () => {
@@ -186,6 +201,33 @@ test('desktop subsystem emits app capability benchmark JSON', () => {
   );
 });
 
+test('desktop subsystem can open a real browser page as JSON', () => {
+  const result = runCli(['desktop', 'browse', 'https://example.com', '--json'], {
+    timeout: 90_000,
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_browser_page_v1');
+  assert.equal(payload.success, true);
+  assert.match(payload.title, /Example Domain/);
+  assert.match(payload.final_url || payload.requested_url, /example\.com/);
+  assert.ok(payload.bytes > 0);
+});
+
+test('desktop subsystem can capture a real page as JSON', () => {
+  const result = runCli(['desktop', 'capture', 'https://example.com', '--json'], {
+    timeout: 90_000,
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_screen_capture_v1');
+  assert.equal(payload.success, true);
+  assert.match(payload.url, /example\.com/);
+  assert.ok(payload.bytes > 0);
+});
+
 test('desktop subsystem dry-runs open and pack without launching a browser', () => {
   const open = runCli(['desktop', 'open', '--dry-run', '--json', '--port', '3111']);
   assert.equal(open.status, 0, open.stderr);
@@ -225,6 +267,29 @@ test('rich shell slash run writes a real command receipt path', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /2468/);
   assert.doesNotMatch(result.stdout, /should-not-call-model/);
+});
+
+test('rich shell slash advisor uses the one-shot advisor lane', () => {
+  const result = runCli(['shell'], {
+    input: '/advisor suggest the next command\n:exit\n',
+    env: { SCBE_MOCK_RESPONSE: 'advisor says use scbe test' },
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /SCBE advisor/);
+  assert.match(result.stdout, /advisor says use scbe test/);
+});
+
+test('rich shell slash browser uses the real browser capture lane', () => {
+  const result = runCli(['shell'], {
+    input: '/browser https://example.com\n:exit\n',
+    timeout: 90_000,
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /\[browser\].*desktop .*browse .*example\.com/i);
+  assert.match(result.stdout, /Example Domain/);
+  assert.doesNotMatch(result.stdout + result.stderr, /ParserError|Unexpected token|not recognized/);
 });
 
 test('rich shell bracket command runs obvious command bodies through receipts', () => {

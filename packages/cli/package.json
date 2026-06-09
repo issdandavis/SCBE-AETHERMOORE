@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "ink": "^4.4.1",
+    "playwright-core": "^1.58.2",
     "react": "^18.3.1",
     "scbe-aethermoore": "^4.1.0",
     "scbe-agent-bus": "^0.4.0"

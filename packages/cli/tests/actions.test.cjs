@@ -135,6 +135,9 @@ test('actions --json lists true runnable bundles', () => {
   assert.ok(payload.count >= 10);
   assert.ok(payload.actions.some((entry) => entry.id === 'terminal.panel'));
   assert.ok(payload.actions.some((entry) => entry.id === 'desktop.open'));
+  assert.ok(payload.actions.some((entry) => entry.id === 'desktop.browser-open'));
+  assert.ok(payload.actions.some((entry) => entry.id === 'desktop.capture'));
+  assert.ok(payload.actions.some((entry) => entry.id === 'desktop.bridge-smoke'));
   assert.ok(payload.actions.every((entry) => entry.command));
 });
 
@@ -170,6 +173,22 @@ test('action can run a governed receipt smoke', () => {
   assert.equal(payload.stdout_json.schema_version, 'scbe_terminal_run_v1');
   assert.match(payload.stdout_preview, /scbe_terminal_run_v1/);
   assert.match(payload.stdout_preview, /node --version/);
+});
+
+test('action can run the integrated desktop bridge smoke', () => {
+  const result = runCli(['action', 'desktop.bridge-smoke', '--json'], { timeout: 90_000 });
+
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.schema_version, 'scbe_action_result_v1');
+  assert.equal(payload.action_id, 'desktop.bridge-smoke');
+  assert.equal(payload.success, true);
+  assert.equal(payload.stdout_json.schema_version, 'scbe_action_bridge_smoke_v1');
+  assert.equal(payload.stdout_json.success, true);
+  assert.equal(payload.stdout_json.health.ok, true);
+  assert.equal(payload.stdout_json.terminal.success, true);
+  assert.equal(payload.stdout_json.browser.success, true);
+  assert.match(payload.stdout_json.browser.title, /Example Domain/i);
 });
 
 test('desktop action bridge exposes actions and runs one action over HTTP', async () => {

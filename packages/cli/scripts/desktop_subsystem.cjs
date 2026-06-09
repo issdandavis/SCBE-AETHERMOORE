@@ -37,6 +37,20 @@ function flagValue(args, name, fallback = '') {
   return value;
 }
 
+function firstPositionalArg(args, flagsWithValue = []) {
+  const skip = new Set(flagsWithValue);
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = String(args[i] || '');
+    if (!arg) continue;
+    if (skip.has(arg)) {
+      i += 1;
+      continue;
+    }
+    if (!arg.startsWith('--')) return arg;
+  }
+  return '';
+}
+
 function npmBin() {
   return process.platform === 'win32' ? 'npm.cmd' : 'npm';
 }
@@ -119,6 +133,8 @@ function inspectDesktop() {
     launcher_commands: {
       status: 'scbe desktop --json',
       open: 'scbe desktop open',
+      browse: 'scbe desktop browse https://example.com --json',
+      capture: 'scbe desktop capture --json',
       bridge: 'scbe desktop bridge',
       test: 'scbe desktop test',
       build: 'scbe desktop build',
@@ -133,7 +149,10 @@ function printHelp() {
       'Usage:',
       '  scbe desktop                 Show portable desktop status',
       '  scbe desktop open            Start dev server and open browser',
+      '  scbe desktop browse <url>    Open a real page headlessly and capture it',
+      '  scbe desktop capture [url]   Capture the desktop/page surface to an artifact',
       '  scbe desktop bridge          Start the local action bridge only',
+      '  scbe desktop bridge-smoke    Prove bridge health + PowerShell + browser capture',
       '  scbe desktop test            Run desktop runtime tests',
       '  scbe desktop app-bench       Benchmark app capability status and goals',
       '  scbe desktop build           Build the desktop app',
@@ -172,6 +191,8 @@ function printStatus(asJson) {
       '',
       'Commands:',
       '  scbe desktop open',
+      '  scbe desktop browse <url>',
+      '  scbe desktop capture [url]',
       '  scbe desktop bridge',
       '  scbe desktop test',
       '  scbe desktop build',
@@ -234,6 +255,29 @@ function waitForHttp(url, timeoutMs = 20000) {
   });
 }
 
+async function fetchJson(url, options = {}) {
+  if (typeof fetch !== 'function') {
+    throw new Error('global fetch is unavailable — requires Node 18+');
+  }
+  const method = options.method || 'GET';
+  const headers = { 'content-type': 'application/json', ...(options.headers || {}) };
+  const body = options.body ? JSON.stringify(options.body) : undefined;
+  const res = await fetch(url, {
+    method,
+    headers,
+    body,
+    signal: AbortSignal.timeout(options.timeoutMs || 15000),
+  });
+  const text = await res.text();
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch (err) {
+    throw new Error(`invalid JSON from ${url}: ${err.message}`);
+  }
+  return { status: res.status, payload };
+}
+
 function openUrl(url) {
   if (process.platform === 'win32') {
     spawn('powershell.exe', ['-NoProfile', '-Command', 'Start-Process', url], {
@@ -247,6 +291,92 @@ function openUrl(url) {
     return;
   }
   spawn('xdg-open', [url], { detached: true, stdio: 'ignore' }).unref();
+}
+
+function commandPath(command) {
+  try {
+    const tool = process.platform === 'win32' ? 'where.exe' : 'which';
+    const result = spawnSync(tool, [command], {
+      encoding: 'utf8',
+      timeout: 2000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    if (result.status !== 0) return '';
+    return firstLine(result.stdout || '').trim();
+  } catch {
+    return '';
+  }
+}
+
+function resolveBrowserExecutable() {
+  const envPath = String(process.env.SCBE_BROWSER_EXECUTABLE_PATH || '').trim();
+  if (envPath && fs.existsSync(envPath)) return envPath;
+  const windowsCandidates = [
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+  ];
+  if (process.platform === 'win32') {
+    return windowsCandidates.find((candidate) => fs.existsSync(candidate)) || '';
+  }
+  const posixCandidates =
+    process.platform === 'darwin'
+      ? [
+          '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+          '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+          commandPath('google-chrome'),
+          commandPath('microsoft-edge'),
+        ]
+      : [
+          commandPath('google-chrome'),
+          commandPath('chromium-browser'),
+          commandPath('chromium'),
+          commandPath('microsoft-edge'),
+        ];
+  return posixCandidates.find((candidate) => candidate && fs.existsSync(candidate)) || '';
+}
+
+function loadPlaywrightChromium() {
+  const tried = [];
+  for (const id of ['playwright-core', '@playwright/test', 'playwright']) {
+    try {
+      const mod = require(id);
+      const chromium = mod && mod.chromium;
+      if (chromium) return { chromium, source: id };
+      tried.push(`${id}: missing chromium export`);
+    } catch (err) {
+      tried.push(`${id}: ${err.message}`);
+    }
+  }
+  return {
+    chromium: null,
+    source: null,
+    error: `No Playwright runtime available. Tried ${tried.join(' | ')}`,
+  };
+}
+
+async function launchBrowserRuntime(chromium) {
+  const executablePath = resolveBrowserExecutable();
+  const attempts = [];
+  const options = [];
+  if (executablePath) options.push({ headless: true, executablePath });
+  options.push({ headless: true });
+  let lastError = null;
+  for (const launchOptions of options) {
+    try {
+      const browser = await chromium.launch(launchOptions);
+      return { browser, executablePath: launchOptions.executablePath || null };
+    } catch (err) {
+      lastError = err;
+      attempts.push(
+        launchOptions.executablePath
+          ? `executablePath=${launchOptions.executablePath}: ${err.message}`
+          : `bundled: ${err.message}`
+      );
+    }
+  }
+  throw new Error(attempts.join(' | ') || (lastError ? lastError.message : 'browser launch failed'));
 }
 
 function psSingle(value) {
@@ -565,10 +695,8 @@ async function captureScreen({ url, out } = {}) {
       )
   );
   ensureDir(path.dirname(outPath));
-  let chromium;
-  try {
-    ({ chromium } = require('@playwright/test'));
-  } catch (err) {
+  const runtime = loadPlaywrightChromium();
+  if (!runtime.chromium) {
     return {
       status: 500,
       payload: {
@@ -576,12 +704,13 @@ async function captureScreen({ url, out } = {}) {
         success: false,
         url: targetUrl,
         out_path: outPath,
-        error: `Playwright is not available: ${err.message}`,
+        error: runtime.error,
       },
     };
   }
 
-  const browser = await chromium.launch({ headless: true });
+  const launched = await launchBrowserRuntime(runtime.chromium);
+  const browser = launched.browser;
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
     await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 20_000 });
@@ -594,6 +723,8 @@ async function captureScreen({ url, out } = {}) {
         url: targetUrl,
         out_path: outPath,
         bytes: fs.statSync(outPath).size,
+        runtime: runtime.source,
+        browser_path: launched.executablePath,
       },
     };
   } finally {
@@ -613,10 +744,8 @@ async function openBrowserPage({ url, out } = {}) {
       )
   );
   ensureDir(path.dirname(outPath));
-  let chromium;
-  try {
-    ({ chromium } = require('@playwright/test'));
-  } catch (err) {
+  const runtime = loadPlaywrightChromium();
+  if (!runtime.chromium) {
     return {
       status: 500,
       payload: {
@@ -624,12 +753,13 @@ async function openBrowserPage({ url, out } = {}) {
         success: false,
         requested_url: targetUrl,
         out_path: outPath,
-        error: `Playwright is not available: ${err.message}`,
+        error: runtime.error,
       },
     };
   }
 
-  const browser = await chromium.launch({ headless: true });
+  const launched = await launchBrowserRuntime(runtime.chromium);
+  const browser = launched.browser;
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
     const response = await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30_000 });
@@ -648,6 +778,8 @@ async function openBrowserPage({ url, out } = {}) {
         out_path: outPath,
         screenshot_url: artifactUrlFor(outPath),
         bytes,
+        runtime: runtime.source,
+        browser_path: launched.executablePath,
       },
     };
   } finally {
@@ -830,6 +962,143 @@ async function runOpen(args) {
   }
 }
 
+async function runBridgeSmoke(args) {
+  const asJson = hasFlag(args, '--json');
+  const preferredPort = Number.parseInt(flagValue(args, '--port', '3678'), 10) || 3678;
+  const browserUrl = flagValue(args, '--url', 'https://example.com');
+  const command = flagValue(args, '--command', 'Write-Output "SCBE_BRIDGE_SMOKE_OK"');
+  const port = await findPort(preferredPort);
+  ensureDir(ARTIFACT_ROOT);
+  const bridgeLogPath = path.join(ARTIFACT_ROOT, `action-bridge-smoke-${port}.log`);
+  const bridge = startActionBridgeProcess(port, bridgeLogPath);
+  const baseUrl = `http://127.0.0.1:${port}`;
+  const payload = {
+    schema_version: 'scbe_action_bridge_smoke_v1',
+    success: false,
+    bridge_url: baseUrl,
+    bridge_pid: bridge.pid,
+    bridge_log_path: bridgeLogPath,
+    terminal_command: command,
+    browser_url: browserUrl,
+    health: null,
+    terminal: null,
+    browser: null,
+    error: null,
+  };
+  try {
+    const ready = await waitForHttp(`${baseUrl}/health`, 20000);
+    if (!ready) {
+      payload.error = 'bridge did not become healthy';
+    } else {
+      const health = await fetchJson(`${baseUrl}/health`);
+      const terminal = await fetchJson(`${baseUrl}/terminal/run`, {
+        method: 'POST',
+        body: { command },
+        timeoutMs: 20000,
+      });
+      const browser = await fetchJson(`${baseUrl}/browser/open`, {
+        method: 'POST',
+        body: { url: browserUrl },
+        timeoutMs: 45000,
+      });
+      payload.health = health.payload;
+      payload.terminal = terminal.payload;
+      payload.browser = browser.payload;
+      payload.success =
+        health.status === 200 &&
+        health.payload &&
+        health.payload.ok === true &&
+        terminal.status === 200 &&
+        terminal.payload &&
+        terminal.payload.success === true &&
+        browser.status === 200 &&
+        browser.payload &&
+        browser.payload.success === true;
+    }
+  } catch (err) {
+    payload.error = err && err.message ? err.message : String(err);
+  } finally {
+    if (bridge.pid) {
+      try {
+        process.kill(bridge.pid, 'SIGTERM');
+      } catch {}
+    }
+  }
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+  } else if (payload.success) {
+    process.stdout.write(
+      [
+        'SCBE bridge smoke passed.',
+        `bridge:   ${payload.bridge_url}`,
+        `shell:    ${payload.terminal.shell}`,
+        `stdout:   ${payload.terminal.stdout_preview || payload.terminal.stdout || ''}`,
+        `browser:  ${payload.browser.title} (${payload.browser.final_url || payload.browser.requested_url})`,
+        `artifact: ${payload.browser.screenshot_url || '<none>'}`,
+        '',
+      ].join('\n')
+    );
+  } else {
+    process.stdout.write(`SCBE bridge smoke failed: ${payload.error || 'surface returned failure'}\n`);
+  }
+  process.exit(payload.success ? 0 : 1);
+}
+
+async function runBrowse(args) {
+  const asJson = hasFlag(args, '--json');
+  const url =
+    flagValue(args, '--url') ||
+    firstPositionalArg(args, ['--url', '--out']) ||
+    'https://example.com';
+  const out = flagValue(args, '--out', '');
+  const result = await openBrowserPage({ url, out });
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(result.payload, null, 2)}\n`);
+  } else if (result.payload && result.payload.success) {
+    process.stdout.write(
+      [
+        'SCBE browser open passed.',
+        `title:    ${result.payload.title}`,
+        `url:      ${result.payload.final_url || result.payload.requested_url}`,
+        `artifact: ${result.payload.screenshot_url || result.payload.out_path}`,
+        `runtime:  ${result.payload.runtime || 'unknown'}`,
+        '',
+      ].join('\n')
+    );
+  } else {
+    process.stdout.write(`SCBE browser open failed: ${result.payload?.error || 'unknown error'}\n`);
+  }
+  process.exit(result.status === 200 && result.payload?.success ? 0 : 1);
+}
+
+async function runCapture(args) {
+  const asJson = hasFlag(args, '--json');
+  const url =
+    flagValue(args, '--url') ||
+    firstPositionalArg(args, ['--url', '--out']) ||
+    process.env.SCBE_DESKTOP_URL ||
+    'http://127.0.0.1:3000/';
+  const out = flagValue(args, '--out', '');
+  const result = await captureScreen({ url, out });
+  if (asJson) {
+    process.stdout.write(`${JSON.stringify(result.payload, null, 2)}\n`);
+  } else if (result.payload && result.payload.success) {
+    process.stdout.write(
+      [
+        'SCBE screen capture passed.',
+        `url:      ${result.payload.url}`,
+        `artifact: ${result.payload.out_path}`,
+        `bytes:    ${result.payload.bytes}`,
+        `runtime:  ${result.payload.runtime || 'unknown'}`,
+        '',
+      ].join('\n')
+    );
+  } else {
+    process.stdout.write(`SCBE screen capture failed: ${result.payload?.error || 'unknown error'}\n`);
+  }
+  process.exit(result.status === 200 && result.payload?.success ? 0 : 1);
+}
+
 function writePortableLaunchers(staging) {
   fs.writeFileSync(
     path.join(staging, 'open-desktop.ps1'),
@@ -963,6 +1232,18 @@ async function main() {
   }
   if (sub === 'bridge') {
     await runBridge(rest);
+    return;
+  }
+  if (sub === 'browse' || sub === 'browser') {
+    await runBrowse(rest);
+    return;
+  }
+  if (sub === 'capture' || sub === 'screenshot') {
+    await runCapture(rest);
+    return;
+  }
+  if (sub === 'bridge-smoke' || sub === 'smoke') {
+    await runBridgeSmoke(rest);
     return;
   }
   if (sub === 'test') {

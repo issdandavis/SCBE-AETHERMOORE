@@ -28,6 +28,13 @@ const MODE_CARDS = [
     mode: 'copilot',
   },
   {
+    id: 'advisor',
+    label: 'advisor',
+    command: 'scbe advisor "suggest the next step"',
+    role: 'one-shot operational hint without opening the full shell loop',
+    mode: 'copilot',
+  },
+  {
     id: 'agent_json',
     label: 'headless bus',
     command: 'scbe shell --agent-json',
@@ -63,6 +70,9 @@ const QUICK_COMMANDS = [
   ['scbe term', 'open this panel'],
   ['scbe actions', 'show true action bundles'],
   ['scbe term tui', 'headed terminal'],
+  ['scbe advisor "<request>"', 'one-shot advisor lane'],
+  ['scbe desktop browse https://example.com --json', 'real browser page + screenshot'],
+  ['scbe desktop capture --json', 'capture desktop/page artifact'],
   ['scbe x <cmd>', 'run command tokens'],
   ['scbe alias g <cmd>', 'save a shortcut'],
   ['scbe run "<cmd>" --json', 'run with receipt'],
@@ -72,6 +82,9 @@ const QUICK_COMMANDS = [
 const COMMAND_GRAMMAR = [
   ['/term', 'open dashboard'],
   ['/tui', 'headed terminal'],
+  ['/advisor <request>', 'one-shot advisor answer'],
+  ['/browser <url>', 'open a real page and capture it'],
+  ['/capture [url]', 'capture the desktop/page surface'],
   ['/run <cmd>', 'governed command receipt'],
   ['[verify] <cmd>', 'attach an instruction tag'],
   ['[format] <file>', 'request scoped formatting'],
@@ -202,6 +215,13 @@ function buildTerminalFrontendPayload(context = {}) {
       model: shellConfig.model || 'llama3.2',
       url: shellConfig.url || shellConfig.base_url || null,
     },
+    advisor: {
+      provider: shellConfig.advisor_provider || shellConfig.provider || 'ollama',
+      model: shellConfig.advisor_model || shellConfig.model || 'llama3.2',
+      url:
+        shellConfig.advisor_url || shellConfig.url || shellConfig.base_url || null,
+      timeout_ms: shellConfig.advisor_timeout_ms || shellConfig.timeout_ms || 20000,
+    },
     aliases,
     natural_language: context.naturalLanguage || {
       autocorrect: true,
@@ -224,6 +244,7 @@ function buildTerminalFrontendPayload(context = {}) {
       dashboard: 'scbe terminal',
       headed: 'scbe terminal tui',
       ai: 'scbe shell --ai',
+      advisor: 'scbe advisor "<request>"',
       headless: 'scbe shell --agent-json',
       governed_run: 'scbe run "<command>" --json',
       token_exec: 'scbe x <program> [args...]',
