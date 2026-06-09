@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useOS } from './OSStore';
+import AgentActionBubble from './AgentActionBubble';
 import {
   FolderOpen,
   Terminal,
@@ -235,6 +236,8 @@ export default function Desktop() {
           </div>
         </>
       )}
+
+      <AgentActionBubble />
     </div>
   );
 }

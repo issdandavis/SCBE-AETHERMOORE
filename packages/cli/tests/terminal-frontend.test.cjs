@@ -167,6 +167,8 @@ test('desktop subsystem dry-runs open and pack without launching a browser', () 
   const openPayload = JSON.parse(open.stdout);
   assert.equal(openPayload.schema_version, 'scbe_portable_desktop_open_v1');
   assert.equal(openPayload.url, 'http://127.0.0.1:3111/');
+  assert.equal(openPayload.bridge_url, 'http://127.0.0.1:3678');
+  assert.match(openPayload.bridge_command, /desktop_subsystem\.cjs bridge --port 3678/);
   assert.equal(openPayload.dry_run, true);
 
   const pack = runCli(['desktop', 'pack', '--dry-run', '--json']);

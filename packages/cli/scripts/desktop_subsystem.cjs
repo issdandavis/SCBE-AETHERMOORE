@@ -10,6 +10,8 @@ const path = require('node:path');
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
 const DESKTOP_ROOT = path.join(REPO_ROOT, 'packages', 'polly-pad-os');
 const ARTIFACT_ROOT = path.join(REPO_ROOT, 'artifacts', 'portable-desktop');
+const ACTION_HISTORY_ROOT = path.join(REPO_ROOT, 'artifacts', 'scbe-actions');
+const ACTION_RUNNER = path.join(REPO_ROOT, 'packages', 'cli', 'scripts', 'action_runner.cjs');
 const DEFAULT_ZIP = path.join(
   os.homedir(),
   'Downloads',
@@ -110,6 +112,7 @@ function inspectDesktop() {
     launcher_commands: {
       status: 'scbe desktop --json',
       open: 'scbe desktop open',
+      bridge: 'scbe desktop bridge',
       test: 'scbe desktop test',
       build: 'scbe desktop build',
       pack: 'scbe desktop pack',
@@ -123,6 +126,7 @@ function printHelp() {
       'Usage:',
       '  scbe desktop                 Show portable desktop status',
       '  scbe desktop open            Start dev server and open browser',
+      '  scbe desktop bridge          Start the local action bridge only',
       '  scbe desktop test            Run desktop runtime tests',
       '  scbe desktop build           Build the desktop app',
       '  scbe desktop pack            Build a portable static zip',
@@ -130,6 +134,7 @@ function printHelp() {
       '',
       'Options:',
       '  --port <n>                   Preferred local dev port (default 3000)',
+      '  --bridge-port <n>            Preferred action bridge port (default 3678)',
       '  --no-open                    Start server without opening browser',
       '  --dry-run                    For pack/open, show what would happen',
       '  --out <path>                 Portable zip destination',
@@ -159,6 +164,7 @@ function printStatus(asJson) {
       '',
       'Commands:',
       '  scbe desktop open',
+      '  scbe desktop bridge',
       '  scbe desktop test',
       '  scbe desktop build',
       '  scbe desktop pack',
@@ -239,7 +245,7 @@ function psSingle(value) {
   return `'${String(value).replace(/'/g, "''")}'`;
 }
 
-function startDevServer(port, logPath) {
+function startDevServer(port, logPath, bridgeUrl = '') {
   const errPath = logPath.replace(/\.log$/i, '.err.log');
   if (process.platform === 'win32') {
     const launcherPath = path.join(ARTIFACT_ROOT, `run-dev-${port}.cmd`);
@@ -247,6 +253,7 @@ function startDevServer(port, logPath) {
       launcherPath,
       [
         '@echo off',
+        bridgeUrl ? `set VITE_SCBE_ACTION_BRIDGE=${bridgeUrl}` : '',
         `cd /d ${JSON.stringify(REPO_ROOT)}`,
         `${cmdToken(npmBin())} --prefix ${JSON.stringify(DESKTOP_ROOT)} run dev -- --host 127.0.0.1 --port ${port} > ${JSON.stringify(logPath)} 2> ${JSON.stringify(errPath)}`,
         '',
@@ -277,10 +284,171 @@ function startDevServer(port, logPath) {
       cwd: REPO_ROOT,
       detached: true,
       stdio: ['ignore', out, out],
+      env: {
+        ...process.env,
+        ...(bridgeUrl ? { VITE_SCBE_ACTION_BRIDGE: bridgeUrl } : {}),
+      },
     }
   );
   child.unref();
   return { pid: child.pid, err_path: logPath };
+}
+
+function startActionBridgeProcess(port, logPath) {
+  const errPath = logPath.replace(/\.log$/i, '.err.log');
+  if (process.platform === 'win32') {
+    const launcherPath = path.join(ARTIFACT_ROOT, `run-bridge-${port}.cmd`);
+    fs.writeFileSync(
+      launcherPath,
+      [
+        '@echo off',
+        `cd /d ${JSON.stringify(REPO_ROOT)}`,
+        `${cmdToken(process.execPath)} ${JSON.stringify(__filename)} bridge --port ${port} > ${JSON.stringify(logPath)} 2> ${JSON.stringify(errPath)}`,
+        '',
+      ].join('\r\n'),
+      'utf8'
+    );
+    const command = [
+      "$p = Start-Process -FilePath 'cmd.exe'",
+      `-ArgumentList @('/d', '/c', ${psSingle(launcherPath)})`,
+      '-WindowStyle Hidden',
+      '-PassThru;',
+      '$p.Id',
+    ].join(' ');
+    const child = spawnSync('powershell.exe', ['-NoProfile', '-Command', command], {
+      encoding: 'utf8',
+    });
+    if (child.status !== 0) {
+      throw new Error(firstLine((child.stdout || '') + (child.stderr || 'Start-Process failed')));
+    }
+    return { pid: Number.parseInt(child.stdout.trim(), 10) || null, err_path: errPath };
+  }
+
+  const out = fs.openSync(logPath, 'a');
+  const child = spawn(process.execPath, [__filename, 'bridge', '--port', String(port)], {
+    cwd: REPO_ROOT,
+    detached: true,
+    stdio: ['ignore', out, out],
+  });
+  child.unref();
+  return { pid: child.pid, err_path: logPath };
+}
+
+function sendJson(res, status, payload) {
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  });
+  res.end(`${JSON.stringify(payload, null, 2)}\n`);
+}
+
+function readRequestJson(req, maxBytes = 1024 * 1024) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.setEncoding('utf8');
+    req.on('data', (chunk) => {
+      body += chunk;
+      if (body.length > maxBytes) reject(new Error('request body too large'));
+    });
+    req.on('end', () => {
+      if (!body.trim()) {
+        resolve({});
+        return;
+      }
+      try {
+        resolve(JSON.parse(body));
+      } catch (_err) {
+        reject(new Error('invalid JSON body'));
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
+function actionCatalogJson() {
+  const result = spawnSync(process.execPath, [ACTION_RUNNER, 'list', '--json'], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    timeout: 30_000,
+    maxBuffer: 4 * 1024 * 1024,
+  });
+  if (result.status !== 0) {
+    return {
+      schema_version: 'scbe_action_catalog_v1',
+      count: 0,
+      actions: [],
+      error: firstLine(result.stderr || result.stdout || 'action catalog failed'),
+    };
+  }
+  return JSON.parse(result.stdout);
+}
+
+function runActionJson(id, { dryRun = false } = {}) {
+  const args = ['run', String(id || ''), '--json'];
+  if (dryRun) args.push('--dry-run');
+  const result = spawnSync(process.execPath, [ACTION_RUNNER, ...args], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    timeout: 180_000,
+    maxBuffer: 12 * 1024 * 1024,
+  });
+  let payload;
+  try {
+    payload = JSON.parse(result.stdout || '{}');
+  } catch (_err) {
+    payload = {
+      schema_version: 'scbe_action_result_v1',
+      action_id: id || null,
+      success: false,
+      exit_code: typeof result.status === 'number' ? result.status : 1,
+      error: 'action runner returned non-JSON',
+      stdout_preview: firstLine(result.stdout || ''),
+      stderr_preview: firstLine(result.stderr || ''),
+    };
+  }
+  return { status: result.status === 0 ? 200 : 500, payload };
+}
+
+async function runBridge(args) {
+  const port = Number.parseInt(flagValue(args, '--port', '3678'), 10) || 3678;
+  ensureDir(ACTION_HISTORY_ROOT);
+  const server = http.createServer(async (req, res) => {
+    if (req.method === 'OPTIONS') {
+      sendJson(res, 200, { ok: true });
+      return;
+    }
+    const url = new URL(req.url || '/', `http://127.0.0.1:${port}`);
+    try {
+      if (req.method === 'GET' && url.pathname === '/health') {
+        sendJson(res, 200, {
+          schema_version: 'scbe_action_bridge_health_v1',
+          ok: true,
+          pid: process.pid,
+          repo_root: REPO_ROOT,
+          action_history_root: ACTION_HISTORY_ROOT,
+        });
+        return;
+      }
+      if (req.method === 'GET' && url.pathname === '/actions') {
+        sendJson(res, 200, actionCatalogJson());
+        return;
+      }
+      if (req.method === 'POST' && url.pathname === '/actions/run') {
+        const body = await readRequestJson(req);
+        const result = runActionJson(body.id, { dryRun: Boolean(body.dry_run) });
+        sendJson(res, result.status, result.payload);
+        return;
+      }
+      sendJson(res, 404, { error: 'not found', path: url.pathname });
+    } catch (err) {
+      sendJson(res, 500, { error: err.message || 'bridge error' });
+    }
+  });
+  server.listen(port, '127.0.0.1', () => {
+    process.stdout.write(`SCBE action bridge listening on http://127.0.0.1:${port}\n`);
+  });
 }
 
 async function runOpen(args) {
@@ -288,16 +456,23 @@ async function runOpen(args) {
   const asJson = hasFlag(args, '--json');
   const dryRun = hasFlag(args, '--dry-run');
   const preferredPort = Number.parseInt(flagValue(args, '--port', '3000'), 10) || 3000;
+  const preferredBridgePort = Number.parseInt(flagValue(args, '--bridge-port', '3678'), 10) || 3678;
   const port = dryRun ? preferredPort : await findPort(preferredPort);
+  const bridgePort = dryRun ? preferredBridgePort : await findPort(preferredBridgePort);
   const url = `http://127.0.0.1:${port}/`;
+  const bridgeUrl = `http://127.0.0.1:${bridgePort}`;
   const logPath = path.join(ARTIFACT_ROOT, `dev-server-${port}.log`);
+  const bridgeLogPath = path.join(ARTIFACT_ROOT, `action-bridge-${bridgePort}.log`);
   ensureDir(ARTIFACT_ROOT);
   const payload = {
     schema_version: 'scbe_portable_desktop_open_v1',
     desktop_root: DESKTOP_ROOT,
     url,
+    bridge_url: bridgeUrl,
     log_path: logPath,
+    bridge_log_path: bridgeLogPath,
     command: `npm --prefix ${DESKTOP_ROOT} run dev -- --host 127.0.0.1 --port ${port}`,
+    bridge_command: `node ${__filename} bridge --port ${bridgePort}`,
     dry_run: dryRun,
   };
 
@@ -306,10 +481,14 @@ async function runOpen(args) {
     return;
   }
 
-  const server = startDevServer(port, logPath);
+  const bridge = startActionBridgeProcess(bridgePort, bridgeLogPath);
+  const server = startDevServer(port, logPath, bridgeUrl);
   payload.pid = server.pid;
   payload.stderr_path = server.err_path;
+  payload.bridge_pid = bridge.pid;
+  payload.bridge_stderr_path = bridge.err_path;
   payload.ready = await waitForHttp(url);
+  payload.bridge_ready = await waitForHttp(`${bridgeUrl}/health`);
   if (!hasFlag(args, '--no-open')) openUrl(url);
 
   if (asJson) {
@@ -320,8 +499,11 @@ async function runOpen(args) {
         'SCBE portable desktop is running.',
         '',
         `url: ${url}`,
-        `pid: ${child.pid}`,
+        `bridge: ${bridgeUrl}`,
+        `pid: ${server.pid}`,
+        `bridge pid: ${bridge.pid}`,
         `log: ${logPath}`,
+        `bridge log: ${bridgeLogPath}`,
         '',
       ].join('\n')
     );
@@ -443,6 +625,10 @@ async function main() {
   }
   if (sub === 'status') {
     printStatus(hasFlag(args, '--json'));
+    return;
+  }
+  if (sub === 'bridge') {
+    await runBridge(rest);
     return;
   }
   if (sub === 'test') {

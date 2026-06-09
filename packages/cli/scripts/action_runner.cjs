@@ -55,6 +55,16 @@ function writeHistory(payload) {
   }
 }
 
+function parseJsonOutput(text) {
+  const value = String(text || '').trim();
+  if (!value) return null;
+  try {
+    return JSON.parse(value);
+  } catch (_err) {
+    return null;
+  }
+}
+
 function actionCommand(bundle) {
   const spec = bundle.command || {};
   if (spec.runner === 'scbe') {
@@ -225,6 +235,8 @@ function runAction(id, options = {}) {
     error: child.error ? child.error.message : null,
     history_path: HISTORY_PATH,
   };
+  const stdoutJson = parseJsonOutput(child.stdout);
+  if (stdoutJson) payload.stdout_json = stdoutJson;
   writeHistory(payload);
 
   if (asJson) {

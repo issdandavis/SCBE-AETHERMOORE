@@ -1,13 +1,16 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { spawnSync } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 const fs = require('node:fs');
+const http = require('node:http');
+const net = require('node:net');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
 
 const CLI = path.resolve(__dirname, '..', 'bin', 'scbe.js');
+const DESKTOP_SCRIPT = path.resolve(__dirname, '..', 'scripts', 'desktop_subsystem.cjs');
 
 function runCli(args, options = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-actions-'));
@@ -26,6 +29,83 @@ function runCli(args, options = {}) {
   });
   fs.rmSync(home, { recursive: true, force: true });
   return result;
+}
+
+function freePort() {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => {
+      const port = server.address().port;
+      server.close(() => resolve(port));
+    });
+  });
+}
+
+function getJson(url) {
+  return new Promise((resolve, reject) => {
+    const req = http.get(url, (res) => {
+      let body = '';
+      res.setEncoding('utf8');
+      res.on('data', (chunk) => {
+        body += chunk;
+      });
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(body));
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+    req.on('error', reject);
+    req.setTimeout(5000, () => req.destroy(new Error('request timed out')));
+  });
+}
+
+function postJson(url, payload) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify(payload);
+    const req = http.request(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        },
+      },
+      (res) => {
+        let text = '';
+        res.setEncoding('utf8');
+        res.on('data', (chunk) => {
+          text += chunk;
+        });
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(text));
+          } catch (err) {
+            reject(err);
+          }
+        });
+      }
+    );
+    req.on('error', reject);
+    req.setTimeout(30000, () => req.destroy(new Error('request timed out')));
+    req.write(body);
+    req.end();
+  });
+}
+
+async function waitForJson(url) {
+  for (let i = 0; i < 30; i += 1) {
+    try {
+      return await getJson(url);
+    } catch (_err) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+  }
+  throw new Error(`Timed out waiting for ${url}`);
 }
 
 test('actions --json lists true runnable bundles', () => {
@@ -69,8 +149,35 @@ test('action can run a governed receipt smoke', () => {
   assert.equal(payload.schema_version, 'scbe_action_result_v1');
   assert.equal(payload.action_id, 'receipt.node-version');
   assert.equal(payload.success, true);
+  assert.equal(payload.stdout_json.schema_version, 'scbe_terminal_run_v1');
   assert.match(payload.stdout_preview, /scbe_terminal_run_v1/);
   assert.match(payload.stdout_preview, /node --version/);
+});
+
+test('desktop action bridge exposes actions and runs one action over HTTP', async () => {
+  const port = await freePort();
+  const child = spawn(process.execPath, [DESKTOP_SCRIPT, 'bridge', '--port', String(port)], {
+    cwd: path.resolve(__dirname, '..', '..', '..'),
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  try {
+    const health = await waitForJson(`http://127.0.0.1:${port}/health`);
+    assert.equal(health.schema_version, 'scbe_action_bridge_health_v1');
+    assert.equal(health.ok, true);
+
+    const catalog = await getJson(`http://127.0.0.1:${port}/actions`);
+    assert.equal(catalog.schema_version, 'scbe_action_catalog_v1');
+    assert.ok(catalog.actions.some((entry) => entry.id === 'receipt.node-version'));
+
+    const result = await postJson(`http://127.0.0.1:${port}/actions/run`, {
+      id: 'receipt.node-version',
+    });
+    assert.equal(result.schema_version, 'scbe_action_result_v1');
+    assert.equal(result.success, true);
+    assert.equal(result.stdout_json.schema_version, 'scbe_terminal_run_v1');
+  } finally {
+    child.kill('SIGTERM');
+  }
 });
 
 test('unknown action returns a structured failure', () => {
