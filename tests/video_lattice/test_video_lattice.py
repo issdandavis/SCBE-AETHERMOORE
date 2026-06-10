@@ -592,8 +592,16 @@ def test_round_table_director_picks_most_coherent() -> None:
     assert len(report.all_results) == 2
 
 
+def _require_real_pillow() -> None:
+    pil = pytest.importorskip("PIL", reason="Pillow required for PNG/GIF export")
+    if not hasattr(pil, "__version__"):
+        # test_system_script_security.py stubs PIL into sys.modules at import
+        # time when Pillow is absent; the stub cannot render images.
+        pytest.skip("PIL in sys.modules is a test stub, not real Pillow")
+
+
 def test_pocket_drawing_tutor_writes_trace_artifacts(tmp_path) -> None:
-    pytest.importorskip("PIL", reason="Pillow required for PNG export")
+    _require_real_pillow()
     from scripts.video_lattice.pocket_drawing_tutor import run_lesson
 
     payload = run_lesson("hand", "open", Path(tmp_path))
@@ -609,7 +617,7 @@ def test_pocket_drawing_tutor_writes_trace_artifacts(tmp_path) -> None:
 
 
 def test_pocket_video_gen_writes_animation_and_reduces_drift(tmp_path) -> None:
-    pytest.importorskip("PIL", reason="Pillow required for GIF export")
+    _require_real_pillow()
     from scripts.video_lattice.pocket_video_gen import run_generation
 
     manifest = run_generation("hand", "fist", frames=5, out_dir=Path(tmp_path), duration_ms=20)
