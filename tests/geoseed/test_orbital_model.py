@@ -123,7 +123,7 @@ def test_inter_shell_phi_ratios_all_equal_phi(summary):
 
 
 @pytest.mark.parametrize(
-    "l,expected",
+    "ell,expected",
     [
         (0, -1.0),
         (1, -4.0),
@@ -133,9 +133,9 @@ def test_inter_shell_phi_ratios_all_equal_phi(summary):
         (5, -36.0),
     ],
 )
-def test_lb_eigenvalue(mod, l, expected):
+def test_lb_eigenvalue(mod, ell, expected):
     """LB eigenvalue on H³ = -(l+1)²."""
-    assert mod["lb_eigen"](l) == expected
+    assert mod["lb_eigen"](ell) == expected
 
 
 def test_orbital_lb_eigenvalues(orbitals):

@@ -18,8 +18,9 @@ The recorder itself has no tokenizer dependency.
 """
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 LN_PHI = math.log(PHI)
@@ -37,6 +38,20 @@ TONGUE_NAMES = {
 }
 
 
+# ── Normalisation ─────────────────────────────────────────────────────────────
+
+
+def normalize_tongue(value: str) -> str:
+    """
+    Canonicalise a tongue abbreviation: trim whitespace, uppercase, validate.
+    Raises ValueError for anything outside the six known tongues.
+    """
+    cleaned = value.strip().upper()
+    if cleaned not in TONGUE_INDEX:
+        raise ValueError(f"unknown tongue: {value!r} (expected one of {TONGUE_ORDER})")
+    return cleaned
+
+
 # ── Core types ────────────────────────────────────────────────────────────────
 
 
@@ -51,6 +66,22 @@ class TransferEvent:
     is_self: bool  # True when from == to (no hop)
     step: int  # sequence number within this recording session
     metadata: dict = field(default_factory=dict)
+
+    def to_dict(self) -> dict:
+        return {
+            "from_tongue": self.from_tongue,
+            "to_tongue": self.to_tongue,
+            "token": self.token,
+            "geodesic_cost": round(self.geodesic_cost, 12),
+            "is_self": self.is_self,
+            "step": self.step,
+            "metadata": dict(self.metadata),
+        }
+
+
+# A batch item is either a (from, to, token) triple or a mapping with the
+# same field names as TransferEvent (metadata optional).
+BatchItem = Union[Tuple[str, str, str], Mapping]
 
 
 @dataclass
@@ -100,10 +131,8 @@ def transfer_cost(from_tongue: str, to_tongue: str) -> float:
     Cost = |from_index - to_index| · ln(φ).
     Same-shell transfer costs 0.
     """
-    fi = TONGUE_INDEX.get(from_tongue, -1)
-    ti = TONGUE_INDEX.get(to_tongue, -1)
-    if fi < 0 or ti < 0:
-        raise ValueError(f"Unknown tongue: '{from_tongue}' or '{to_tongue}'")
+    fi = TONGUE_INDEX[normalize_tongue(from_tongue)]
+    ti = TONGUE_INDEX[normalize_tongue(to_tongue)]
     return abs(fi - ti) * LN_PHI
 
 
@@ -140,18 +169,16 @@ class AtomTransferRecorder:
         token: str,
         metadata: Optional[dict] = None,
     ) -> TransferEvent:
-        """Record one atom/token transfer between shells."""
-        if from_tongue not in TONGUE_INDEX:
-            raise ValueError(f"Unknown from_tongue: '{from_tongue}'")
-        if to_tongue not in TONGUE_INDEX:
-            raise ValueError(f"Unknown to_tongue: '{to_tongue}'")
-        cost = transfer_cost(from_tongue, to_tongue)
+        """Record one atom/token transfer between shells (tongue case/spacing tolerant)."""
+        from_t = normalize_tongue(from_tongue)
+        to_t = normalize_tongue(to_tongue)
+        cost = transfer_cost(from_t, to_t)
         evt = TransferEvent(
-            from_tongue=from_tongue,
-            to_tongue=to_tongue,
+            from_tongue=from_t,
+            to_tongue=to_t,
             token=token,
             geodesic_cost=cost,
-            is_self=(from_tongue == to_tongue),
+            is_self=(from_t == to_t),
             step=self._step,
             metadata=metadata or {},
         )
@@ -159,10 +186,23 @@ class AtomTransferRecorder:
         self._step += 1
         return evt
 
-    def record_batch(self, triples: List[Tuple[str, str, str]]) -> None:
-        """Record many (from_tongue, to_tongue, token) triples at once."""
-        for from_t, to_t, token in triples:
-            self.record(from_t, to_t, token)
+    def record_batch(self, items: Iterable[BatchItem]) -> List[TransferEvent]:
+        """Record many transfers; items are (from, to, token) triples or mappings."""
+        events: List[TransferEvent] = []
+        for item in items:
+            if isinstance(item, Mapping):
+                events.append(
+                    self.record(
+                        item["from_tongue"],
+                        item["to_tongue"],
+                        item["token"],
+                        metadata=item.get("metadata"),
+                    )
+                )
+            else:
+                from_t, to_t, token = item
+                events.append(self.record(from_t, to_t, token))
+        return events
 
     def reset(self) -> None:
         self._events.clear()
@@ -190,11 +230,11 @@ class AtomTransferRecorder:
     def total_geodesic_cost(self) -> float:
         return sum(e.geodesic_cost for e in self._events)
 
-    def mean_hop_distance(self) -> float:
-        cross = [e for e in self._events if not e.is_self]
-        if not cross:
+    def mean_hop_distance(self, include_self: bool = False) -> float:
+        pool = self._events if include_self else [e for e in self._events if not e.is_self]
+        if not pool:
             return 0.0
-        return sum(e.geodesic_cost for e in cross) / len(cross)
+        return sum(e.geodesic_cost for e in pool) / len(pool)
 
     # ── Matrix computation ─────────────────────────────────────────────────
 
@@ -215,7 +255,7 @@ class AtomTransferRecorder:
             else:
                 rates.append([c / row_sum for c in row])
 
-        costs = [[abs(i - j) * LN_PHI for j in range(n)] for i in range(n)]
+        costs = [[round(abs(i - j) * LN_PHI, 12) for j in range(n)] for i in range(n)]
 
         self_count = sum(counts[i][i] for i in range(n))
         cross_count = total - self_count
@@ -261,6 +301,18 @@ class AtomTransferRecorder:
 
     def to_dict(self) -> dict:
         mx = self.transfer_matrix()
+        dominant: Optional[dict] = None
+        flows = mx.dominant_flow()
+        if flows:
+            f, t, c = flows[0]
+            fi, ti = TONGUE_INDEX[f], TONGUE_INDEX[t]
+            dominant = {
+                "from_tongue": f,
+                "to_tongue": t,
+                "count": c,
+                "rate": mx.rates[fi][ti],
+                "geodesic_cost": mx.costs[fi][ti],
+            }
         return {
             "schema_version": "geoseed_transfer_recorder_v1",
             "session_id": self.session_id,
@@ -268,5 +320,12 @@ class AtomTransferRecorder:
             "total_geodesic_cost": round(self.total_geodesic_cost(), 6),
             "mean_hop_distance": round(self.mean_hop_distance(), 6),
             "ln_phi": round(LN_PHI, 9),
+            "summary": {
+                "event_count": self.event_count,
+                "total_geodesic_cost": round(self.total_geodesic_cost(), 12),
+                "mean_hop_distance": round(self.mean_hop_distance(), 12),
+                "dominant_flow": dominant,
+            },
+            "events": [e.to_dict() for e in self._events],
             "matrix": mx.to_dict(),
         }

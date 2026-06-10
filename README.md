@@ -1,5 +1,10 @@
 # SCBE-AETHERMOORE
 
+[![CI](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/ci.yml/badge.svg)](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/scbe-aethermoore)](https://www.npmjs.com/package/scbe-aethermoore)
+[![PyPI](https://img.shields.io/pypi/v/scbe-aethermoore)](https://pypi.org/project/scbe-aethermoore/)
+[![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE-NOTICE.md)
+
 Post-quantum AI governance through geometric adversarial cost scaling.
 
 Adversarial inputs cost exponentially more the further they drift from safe operation. The mechanism is hyperbolic geometry applied to semantic embeddings — not heuristic classifiers or blocklists. The pipeline runs locally, produces audit receipts, and composes with upstream safety tools.

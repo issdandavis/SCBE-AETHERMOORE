@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from src.video_lattice import (
     BodyLandmark,
@@ -515,8 +516,8 @@ def test_world_director_apply_delta_skips_solid_moves() -> None:
         model="stub",
         raw_response="{}",
     )
-    skipped = director.apply_delta(world, delta)
-    # Either blocked by solid tile or out of bounds — either way skipped is populated
+    director.apply_delta(world, delta)
+    # Either blocked by solid tile or out of bounds — either way skipped commands are returned
     # or hero stays >= 1 (wall at x=0)
     assert world.entities["hero"].x >= 1
 
@@ -592,6 +593,7 @@ def test_round_table_director_picks_most_coherent() -> None:
 
 
 def test_pocket_drawing_tutor_writes_trace_artifacts(tmp_path) -> None:
+    pytest.importorskip("PIL", reason="Pillow required for PNG export")
     from scripts.video_lattice.pocket_drawing_tutor import run_lesson
 
     payload = run_lesson("hand", "open", Path(tmp_path))
@@ -607,6 +609,7 @@ def test_pocket_drawing_tutor_writes_trace_artifacts(tmp_path) -> None:
 
 
 def test_pocket_video_gen_writes_animation_and_reduces_drift(tmp_path) -> None:
+    pytest.importorskip("PIL", reason="Pillow required for GIF export")
     from scripts.video_lattice.pocket_video_gen import run_generation
 
     manifest = run_generation("hand", "fist", frames=5, out_dir=Path(tmp_path), duration_ms=20)

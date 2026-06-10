@@ -6,9 +6,18 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "scripts" / "benchmark" / "arc_agi2_local_benchmark.py"
 DATA_ROOT = ROOT / "artifacts" / "arc-data" / "data"
+
+if not DATA_ROOT.exists():
+    pytest.skip(
+        "ARC-AGI-2 dataset not cloned — run: git clone --depth 1 "
+        "https://github.com/arcprize/ARC-AGI-2 artifacts/arc-data",
+        allow_module_level=True,
+    )
 
 
 def _load_module():

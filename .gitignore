@@ -51,6 +51,7 @@ pnpm-debug.log*
 # Environments / secrets
 .env
 .env.*
+!.env.example
 config/connector_oauth/*.json
 config/connector_oauth/.kaggle.env
 *.pem
@@ -252,11 +253,25 @@ external/cli-quests/
 
 # Symlink roots — points to full drives, never commit
 .roots/
-.home/.codex/
 .vercel
 
-# Per-developer agent skills (personal Claude/Codex skill installs, not repo work)
-.home/.agents/skills/
+# Per-developer home-directory mirror (personal Claude/Codex installs, not repo work)
+.home/
+
+# Generated docs build smoke output
+docs-build-smoke/
+
+# Notion/Obsidian export dumps
+exports/
+
+# Generated codebase analysis (rebuild via scripts/research/build_full_codebase_map.py)
+artifacts/research/full_codebase_map.json
+
+# Personal scratch space
+.scbe/scratch/
+
+# Telemetry written by tests/test_advanced_mathematics.py on every run
+tests/test_telemetry_advanced_math.json
 
 # Wildlife-flock runtime state: dispatch plans + result snapshots
 # (the dispatcher source itself lives under scripts/wildlife/)

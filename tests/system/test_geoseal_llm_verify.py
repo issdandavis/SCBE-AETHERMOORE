@@ -42,7 +42,7 @@ SAMPLE_RECORD = {
 
 def test_providers_have_required_fields() -> None:
     for p in PROVIDERS:
-        assert p.name, f"provider has no name"
+        assert p.name, "provider has no name"
         assert p.base_url.startswith("http"), f"{p.name}: bad base_url"
         assert p.phase in {1, 2}, f"{p.name}: phase must be 1 or 2"
         assert p.timeout_s > 0

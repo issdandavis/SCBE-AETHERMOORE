@@ -19,7 +19,18 @@ import os
 from pathlib import Path
 from typing import Literal
 
-from openai import OpenAI
+
+def _openai_client(api_key: str):
+    """Build an OpenAI client, importing the SDK lazily.
+
+    Lazy so that config helpers (model ids, preflight checks) work in
+    environments where the optional `openai` package is not installed.
+    """
+    try:
+        from openai import OpenAI
+    except ImportError as exc:  # pragma: no cover - depends on optional dep
+        raise RuntimeError("openai package not installed; run `pip install 'openai>=1.68.0'`.") from exc
+    return OpenAI(api_key=api_key)
 
 # ---------------------------------------------------------------------------
 # Model constants
@@ -194,7 +205,7 @@ def _call(
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY is not set; run `python patent_ai.py check` before live examination.")
     selected_model = model or primary_model()
-    client = OpenAI(api_key=api_key)
+    client = _openai_client(api_key)
     resp = client.responses.create(
         model=selected_model,
         reasoning=reasoning,
@@ -222,7 +233,7 @@ def check_openai_config(verify_models: bool = False) -> dict:
             payload["error"] = "OPENAI_API_KEY missing; cannot verify model IDs against the API."
             return payload
         try:
-            client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+            client = _openai_client(os.environ["OPENAI_API_KEY"])
             ids = {model.id for model in client.models.list().data}
             missing = [model_id for model_id in (primary_model(), draft_model()) if model_id not in ids]
             payload["verified_against_api"] = True

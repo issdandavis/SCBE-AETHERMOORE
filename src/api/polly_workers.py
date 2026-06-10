@@ -96,7 +96,7 @@ def kaggle_status() -> WorkerStatus:
     if username:
         detail.append(f"user={username}")
     if json_path.is_file():
-        detail.append(f"kaggle.json present")
+        detail.append("kaggle.json present")
     return WorkerStatus(
         name="kaggle",
         configured=configured,

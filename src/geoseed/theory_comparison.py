@@ -221,11 +221,11 @@ def theory_geoseed_lb() -> TheoryResult:
     GeoSeed Laplace-Beltrami ladder: |λ_l| = (l+1)² = 1,4,9,16,25,36.
     Normalise so shell 0 (KO, l=0) = Rydberg energy.
     """
-    lam = [(l + 1) ** 2 for l in range(6)]
+    lam = [(ell + 1) ** 2 for ell in range(6)]
     scale = RYDBERG_EV / lam[0]
     energies, freqs, radii = [], [], []
-    for l in range(6):
-        e_ev = scale * lam[l]
+    for ell in range(6):
+        e_ev = scale * lam[ell]
         f_hz = e_ev * EV / H_PLANCK
         r_m = HBAR / math.sqrt(2 * M_ELECTRON * e_ev * EV) if e_ev > 0 else 0.0
         energies.append(e_ev)

@@ -252,7 +252,7 @@ def ds_exact_boundary():
     decision = gate_decision(ds)
     if decision != "UNDEFINED":
         return False, f"Gate should return UNDEFINED for boundary, got {decision}"
-    return True, f"DS(1.0) = NaN, decision=UNDEFINED - correctly handled"
+    return True, "DS(1.0) = NaN, decision=UNDEFINED - correctly handled"
 
 
 @test("DS: R = 1 + 1e-15 (outside ball)")
@@ -261,7 +261,7 @@ def ds_outside_ball():
     ds = davis_score(1.0 + 1e-15)
     if not math.isnan(ds):
         return False, f"DS(1+e) should be NaN, got {ds}"
-    return True, f"DS(1+e) correctly returns NaN"
+    return True, "DS(1+e) correctly returns NaN"
 
 
 @test("DS: Negative R")
@@ -270,7 +270,7 @@ def ds_negative_r():
     ds = davis_score(-0.5)
     if not math.isnan(ds):
         return False, f"DS(-0.5) should be NaN, got {ds}"
-    return True, f"DS(-0.5) correctly returns NaN"
+    return True, "DS(-0.5) correctly returns NaN"
 
 
 @test("DS: R = 0.41 (from benchmark narrative)")
@@ -303,7 +303,7 @@ def ds_float_collapse():
             issues.append(f"DS({R}) = {ds} (suspiciously high for R~1)")
     if issues:
         return False, "; ".join(issues)
-    return True, f"All near-boundary DS values non-negative and small"
+    return True, "All near-boundary DS values non-negative and small"
 
 
 @test("DS: Adversarial radius to land exactly at tau_collapse boundary")
@@ -324,7 +324,8 @@ def ds_threshold_gaming():
     if precision_needed > 0.001:
         return (
             True,
-            f"Threshold gaming requires R={R_target:.6f} - coarse precision ({precision_needed:.4f} from boundary). {detail}",
+            f"Threshold gaming requires R={R_target:.6f} - "
+            f"coarse precision ({precision_needed:.4f} from boundary). {detail}",
         )
     else:
         return False, f"Threshold gaming feasible at very high precision. {detail}"
@@ -439,7 +440,8 @@ def tfdd_accumulation():
     if accumulated_excess < 0.01:
         return (
             False,
-            f"Slow-drip attack viable: 1000 barely-negative steps only accumulate {accumulated_excess:.6f} excess cost. {detail}",
+            f"Slow-drip attack viable: 1000 barely-negative steps "
+            f"only accumulate {accumulated_excess:.6f} excess cost. {detail}",
         )
     return True, detail
 
