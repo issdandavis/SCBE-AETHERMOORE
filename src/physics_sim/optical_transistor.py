@@ -474,30 +474,156 @@ def null_random_timing(p: Params = DEFAULT) -> dict:
 
 
 # =============================================================================
+# Material grounding (spec §8) -- self-reports where real devices land
+# =============================================================================
+# Cited, measured facts. Kept as data so material_regimes() can overlay the
+# model's OWN edges on them rather than asserting a hand-written verdict.
+#   beta_range  : spontaneous-emission coupling factor into the lasing mode
+#   tau_c_ps    : cavity photon lifetime (ps)
+#   arch        : "microcavity" (tau_rt ~ fs -> rho >> 1) or "long_cavity"
+#   temp        : operating temperature regime
+_MATERIAL_REGIMES = [
+    {
+        "name": "inorganic_gaas_microcavity",
+        "beta_range": [1e-5, 1e-4],
+        "tau_c_ps": [11.0, 135.0],
+        "polariton_ps": [10.0, 270.0],
+        "arch": "microcavity",
+        "temp": "cryogenic",
+        "cite": "GaAs microcavity / polariton-LED, Q~3.2e5 (arXiv:0712.1565; arXiv:0709.4372)",
+    },
+    {
+        "name": "organic_microcavity",
+        "beta_range": [1e-2, 1e-1],  # tiny mode volume + giant Rabi (100-225 meV)
+        "tau_c_ps": [0.5, 20.0],  # organics on the short end (few ps)
+        "polariton_ps": [0.5, 20.0],
+        "arch": "microcavity",
+        "temp": "room",
+        "cite": "Zasedatelev, Nat. Photonics 13, 378 (2019); cascadable gates, Nat. Comms 15 (2024)",
+        "device": "only demonstrated room-temp cascadable all-optical transistor (~10 dB/um, sub-ps)",
+    },
+    {
+        "name": "long_cavity_soa_fiber_logic",
+        "beta_range": None,  # not the binding edge for this architecture
+        "tau_rt_ns": [0.1, 5.0],
+        "tau2_ns": [0.01, 1.0],
+        "arch": "long_cavity",
+        "temp": "room",
+        "cite": "SOA gain recovery (tens ps - ns) in fiber-loop / ring resonators (textbook regime)",
+    },
+]
+
+
+def material_regimes(
+    p: Params = DEFAULT,
+    rho_crit: float | None = None,
+    beta_ceiling: float | None = None,
+) -> dict:
+    """Overlay the model's two falsification edges on cited material regimes.
+
+    Reads the model's OWN edges -- the Probe-1 recovery boundary ``rho_crit`` and
+    the Probe-2 near-edge bit-flip ceiling ``beta_ceiling`` -- and classifies each
+    cited regime against them, so a run self-reports its physical grounding next to
+    its numbers (instrument-family convention). Pass the edges in to avoid recompute
+    (``full_report`` does); omit them for lightweight standalone defaults.
+
+    The two edges live on different axes (spec §8):
+      * beta  -> MATERIAL axis (Probe 2): organic ~1e-2..1e-1 at the ceiling vs
+                 inorganic ~1e-4 below it.
+      * rho   -> ARCHITECTURE axis (Probe 1): microcavities sit at rho >> 1
+                 (averaged limit); only long-cavity logic binds at rho_crit.
+    """
+    if rho_crit is None:
+        rho_crit = probe_recovery_boundary(p=p)["rho_crit"]
+    if beta_ceiling is None:
+        # near-edge regime is where Probe 2 actually exercises the bit-flip; the
+        # ceiling is the largest beta still holding >=99% over the cascade.
+        beta_ceiling = probe_spontaneous_floor(
+            beta_grid=[0.0, 0.05, 0.1, 0.2, 0.3, 0.5],
+            p=replace(p, g0=0.30),
+            noise=0.05,
+        )["beta_max_99pct_survival"]
+
+    regimes = []
+    for m in _MATERIAL_REGIMES:
+        r = dict(m)
+        # --- beta (material) verdict ---
+        # beta_ceiling is the LARGEST beta still holding >=99%, so strictly-below
+        # is the only comfortable PASS; a range whose top touches/exceeds it is at
+        # the edge (realistic organics can run higher still).
+        br = m.get("beta_range")
+        if br is None:
+            r["beta_pass"] = None
+            r["beta_verdict"] = "n/a -- beta is not the binding edge for this architecture"
+        elif br[1] < beta_ceiling:
+            r["beta_pass"] = True
+            r["beta_verdict"] = f"PASS -- beta<=~{br[1]:g} sits below the bit-flip ceiling {beta_ceiling:g}"
+        elif br[0] > beta_ceiling:
+            r["beta_pass"] = False
+            r["beta_verdict"] = f"FAIL -- beta>={br[0]:g} exceeds the ceiling {beta_ceiling:g}"
+        else:
+            r["beta_pass"] = False
+            r["beta_verdict"] = f"AT EDGE -- beta {br[0]:g}..{br[1]:g} reaches the ceiling {beta_ceiling:g}"
+        # --- rho (architecture) verdict ---
+        if m["arch"] == "microcavity":
+            r["rho_verdict"] = "rho >> 1 (tau_rt ~ fs) -> averaged limit, NOT rho-limited"
+        else:
+            r["rho_verdict"] = f"rho ~ O(1) -> binds at rho_crit~{rho_crit:.2f}; the live design rule here"
+        # --- overall ---
+        if m["arch"] != "microcavity":
+            r["overall"] = "rho is the live constraint; beta not binding"
+        elif r["beta_pass"]:
+            r["overall"] = f"clears BOTH edges (cost: {m['temp']} operation)"
+        else:
+            r["overall"] = "clears rho but sits AT/over the beta edge -> predicts flip rate climbs with stage count"
+        regimes.append(r)
+
+    return {
+        "model_edges": {"rho_crit": rho_crit, "beta_ceiling": beta_ceiling},
+        "axes": {
+            "beta": "MATERIAL axis (Probe 2)",
+            "rho": "ARCHITECTURE axis (Probe 1)",
+            "note": "tau_c = tau_rt / l; l=%.3g => %.0f round-trips storage (finesse ~%.0f)"
+            % (p.l, 1.0 / p.l, 2.0 * math.pi / p.l),
+        },
+        "regimes": regimes,
+        "spec": "docs/superpowers/specs/2026-06-09-synchronous-pump-optical-transistor-spec.md (§8)",
+    }
+
+
+# =============================================================================
 # Report
 # =============================================================================
 def full_report(p: Params = DEFAULT) -> dict:
+    probe1 = probe_recovery_boundary(p=p)
+    # near-edge regime: small gain margin (g0 closer to l) puts the "1" close to the
+    # threshold, where the spontaneous floor CAN flip bits. Signal noise is held low
+    # (5%) here so beta is the variable actually being isolated -- this is where
+    # Probe 2 exercises the failure it was designed to find.
+    probe2_near = probe_spontaneous_floor(
+        beta_grid=[0.0, 0.05, 0.1, 0.2, 0.3, 0.5],
+        p=replace(p, g0=0.30),
+        noise=0.05,
+    )
     return {
         "params": asdict(p),
         "averaged_fixed_points": find_fixed_points(p),
         "cascade_noiseless": cascade_survival(p, beta=0.0),
         "anchor_reduces_to_averaged": reduces_to_averaged(p=p),
-        "probe1_recovery_boundary": probe_recovery_boundary(p=p),
+        "probe1_recovery_boundary": probe1,
         "probe2_spontaneous_floor": probe_spontaneous_floor(p=p),
-        # near-edge regime: small gain margin (g0 closer to l) puts the "1" close
-        # to the threshold, where the spontaneous floor CAN flip bits. Signal noise
-        # is held low (5%) here so beta is the variable actually being isolated --
-        # this is where Probe 2 exercises the failure it was designed to find.
-        "probe2_near_edge": probe_spontaneous_floor(
-            beta_grid=[0.0, 0.05, 0.1, 0.2, 0.3, 0.5],
-            p=replace(p, g0=0.30),
-            noise=0.05,
-        ),
+        "probe2_near_edge": probe2_near,
         "locking_window": locking_window(p=p),
         "null_no_absorber": null_no_absorber(p),
         "null_scrambled_phase": null_scrambled_phase(p),
         "null_severed_reservoir": null_severed_reservoir(p),
         "null_random_timing": null_random_timing(p),
+        # self-reported physical grounding, using the edges THIS run just measured
+        "material_regimes": material_regimes(
+            p=p,
+            rho_crit=probe1["rho_crit"],
+            beta_ceiling=probe2_near["beta_max_99pct_survival"],
+        ),
     }
 
 

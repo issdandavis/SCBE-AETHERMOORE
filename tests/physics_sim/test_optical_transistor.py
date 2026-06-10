@@ -91,3 +91,22 @@ def test_null_random_timing_collapses_gating():
 def test_locking_window_exists_and_is_bounded_by_K():
     lw = ot.locking_window()
     assert 0.0 < lw["locked_window_edge"] <= lw["K"]
+
+
+def test_material_regimes_classify_against_model_edges():
+    """The self-reported grounding must put each cited material on the right side
+    of the model's own edges (spec §8): inorganic clears beta, organic sits at it,
+    long-cavity is the only rho-bound architecture."""
+    mr = ot.material_regimes(rho_crit=1.47, beta_ceiling=0.1)  # edges passed in -> fast
+    by = {r["name"]: r for r in mr["regimes"]}
+
+    assert by["inorganic_gaas_microcavity"]["beta_pass"] is True  # beta ~1e-4 << ceiling
+    assert "BOTH" in by["inorganic_gaas_microcavity"]["overall"]
+
+    assert by["organic_microcavity"]["beta_pass"] is False  # high-beta room-temp tax
+    assert "beta edge" in by["organic_microcavity"]["overall"]
+
+    # microcavities are never rho-limited; only the long-cavity regime binds at rho_crit
+    assert "NOT rho-limited" in by["organic_microcavity"]["rho_verdict"]
+    assert by["long_cavity_soa_fiber_logic"]["beta_range"] is None
+    assert "rho_crit" in by["long_cavity_soa_fiber_logic"]["rho_verdict"]
