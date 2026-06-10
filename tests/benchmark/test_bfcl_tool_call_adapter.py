@@ -190,7 +190,6 @@ def test_no_duplicate_case_ids():
 
 def test_question_does_not_restate_tool_name():
     """A case whose question literally contains its expected tool name is tautological."""
-    tools = {c["ground_truth_tool"] for c in TEST_CASES if c["ground_truth_tool"]}
     for case in TEST_CASES:
         expected = case["ground_truth_tool"]
         if expected is None:

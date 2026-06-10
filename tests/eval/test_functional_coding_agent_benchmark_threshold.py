@@ -281,12 +281,14 @@ const testCases = [
 def test_extract_typescript_handles_typed_parameter_object_shapes():
     module = _load_module()
 
-    source = """function evaluate(input: { projectType: string; budget: number }, state: { offer?: string }): { offer: string } {
-  state.offer = "governance_snapshot";
-  return { offer: state.offer };
-}
-const testCases = [{ bad: true }];
-"""
+    source = (
+        "function evaluate(input: { projectType: string; budget: number }, "
+        "state: { offer?: string }): { offer: string } {\n"
+        '  state.offer = "governance_snapshot";\n'
+        "  return { offer: state.offer };\n"
+        "}\n"
+        "const testCases = [{ bad: true }];\n"
+    )
 
     extracted = module.extract_typescript(source)
 

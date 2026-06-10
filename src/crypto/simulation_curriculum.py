@@ -253,7 +253,7 @@ class SimulationBundle:
         gain = self.monty_hall_gain
         # Mean relevance across lessons
         if self.code.lessons:
-            mean_rel = sum(l.relevance for l in self.code.lessons) / len(self.code.lessons)
+            mean_rel = sum(lesson.relevance for lesson in self.code.lessons) / len(self.code.lessons)
         else:
             mean_rel = 0.1  # baseline even with no lessons
         return gain * mean_rel + mean_rel  # always at least relevance
@@ -320,15 +320,15 @@ class SimulationBundle:
                 "active_domains": list(self.code.active_domains),
                 "lessons": [
                     {
-                        "name": l.pattern.name,
-                        "domain": l.pattern.domain,
-                        "is_antipattern": l.pattern.is_antipattern,
-                        "relevance": round(l.relevance, 4),
-                        "compound_intent": round(l.compound_intent, 4),
-                        "tongue": l.tongue,
-                        "axis": l.axis,
+                        "name": lesson.pattern.name,
+                        "domain": lesson.pattern.domain,
+                        "is_antipattern": lesson.pattern.is_antipattern,
+                        "relevance": round(lesson.relevance, 4),
+                        "compound_intent": round(lesson.compound_intent, 4),
+                        "tongue": lesson.tongue,
+                        "axis": lesson.axis,
                     }
-                    for l in self.code.lessons
+                    for lesson in self.code.lessons
                 ],
             },
         }
@@ -457,9 +457,9 @@ def _level_2_sft(bundle: SimulationBundle) -> str:
 
     swear_detail = ""
     if swears > 0:
-        anti_lessons = [l for l in bundle.code.lessons if l.pattern.is_antipattern]
+        anti_lessons = [lesson for lesson in bundle.code.lessons if lesson.pattern.is_antipattern]
         if anti_lessons:
-            worst = max(anti_lessons, key=lambda l: l.compound_intent)
+            worst = max(anti_lessons, key=lambda lesson: lesson.compound_intent)
             swear_detail = (
                 f'Swear word detected: "{worst.pattern.name}" '
                 f"(severity {worst.compound_intent:.2f}). "
@@ -490,8 +490,8 @@ def _level_3_sft(bundle: SimulationBundle) -> str:
 
     swear_text = ""
     if swears > 0:
-        anti_lessons = [l for l in bundle.code.lessons if l.pattern.is_antipattern]
-        names = [l.pattern.name for l in anti_lessons[:3]]
+        anti_lessons = [lesson for lesson in bundle.code.lessons if lesson.pattern.is_antipattern]
+        names = [lesson.pattern.name for lesson in anti_lessons[:3]]
         swear_text = f"Swear words ({swears}): {', '.join(names)}. "
 
     recovery_count = len(flight.recovery_paths)
@@ -534,7 +534,7 @@ def _level_4_sft(bundle: SimulationBundle) -> str:
     # Code lattice cross-domain mapping
     cross_text = ""
     if bundle.code.lessons:
-        top_lesson = max(bundle.code.lessons, key=lambda l: l.compound_intent)
+        top_lesson = max(bundle.code.lessons, key=lambda lesson: lesson.compound_intent)
         cross_text = (
             f'Code lattice: "{top_lesson.pattern.name}" '
             f"({top_lesson.pattern.domain}) — "
@@ -822,12 +822,30 @@ if __name__ == "__main__":
         "The Riemann zeta function spun in the complex plane reveals non-trivial zeros",
         "Post-quantum cryptography uses lattice-based assumptions for security",
         # Level 3+ candidates (high complexity)
-        "Vortex ring state onset as the helicopter descended into its own downwash creating a toroidal recirculation pattern",
-        "The void between stars is not empty it is full of potential energy waiting for the right perturbation to cascade",
-        "Every pattern rune hums at its own frequency in the lattice binding structure to meaning across all six tongues simultaneously",
-        "Entangled photons maintain quantum harmony across arbitrary distance until observation forces state collapse into one of the basis vectors",
-        "Autorotation recovery from deep VRS requires immediate collective reduction plus forward cyclic displacement to exit the recirculation zone",
-        "The toroidal box turns inward until every lane speaks the same harmonic truth binding physics to magic to code in a single breath",
+        (
+            "Vortex ring state onset as the helicopter descended into its own downwash "
+            "creating a toroidal recirculation pattern"
+        ),
+        (
+            "The void between stars is not empty it is full of potential energy "
+            "waiting for the right perturbation to cascade"
+        ),
+        (
+            "Every pattern rune hums at its own frequency in the lattice binding "
+            "structure to meaning across all six tongues simultaneously"
+        ),
+        (
+            "Entangled photons maintain quantum harmony across arbitrary distance "
+            "until observation forces state collapse into one of the basis vectors"
+        ),
+        (
+            "Autorotation recovery from deep VRS requires immediate collective reduction "
+            "plus forward cyclic displacement to exit the recirculation zone"
+        ),
+        (
+            "The toroidal box turns inward until every lane speaks the same harmonic truth "
+            "binding physics to magic to code in a single breath"
+        ),
     ]
 
     print("=" * 70)

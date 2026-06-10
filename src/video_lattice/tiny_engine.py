@@ -116,7 +116,8 @@ class TinyWorld:
         width = self.width * cell
         height = self.height * cell
         lines = [
-            f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
+            f'viewBox="0 0 {width} {height}">',
             '<rect width="100%" height="100%" fill="#111827" />',
         ]
         for y, row in enumerate(self.grid):

@@ -83,7 +83,16 @@ def _operation_shape(command: str | None) -> dict[str, Any] | None:
 def _load_json(path: Path, default: Any) -> Any:
     if not path.exists():
         return default
-    return json.loads(path.read_text(encoding="utf-8"))
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        # Fail safe: a corrupt operator config must not take down the bus.
+        # discover_players always keeps the deterministic offline player.
+        print(
+            f"[mirror_room_agent_bus] unreadable JSON config {path}: {exc}; using default",
+            file=sys.stderr,
+        )
+        return default
 
 
 def _write_json(path: Path, payload: Any) -> None:

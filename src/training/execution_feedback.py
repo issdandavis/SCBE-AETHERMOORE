@@ -61,7 +61,7 @@ try:
     )
 
     _ATOMIC_AVAILABLE = True
-except Exception as _e:
+except Exception:
     _ATOMIC_AVAILABLE = False
     TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 

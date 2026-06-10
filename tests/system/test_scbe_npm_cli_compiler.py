@@ -108,6 +108,10 @@ def test_cli_run_wraps_normal_terminal_command_with_metadata() -> None:
 
 
 def test_cli_status_reports_terminal_capabilities() -> None:
+    # The flow workspace dirs are runtime-created (artifacts/ is gitignored);
+    # this test checks that status REPORTS them, so provision them first.
+    (REPO_ROOT / "artifacts" / "flow_status").mkdir(parents=True, exist_ok=True)
+
     proc = run_cli("status")
 
     assert proc.returncode == 0, proc.stderr

@@ -1,5 +1,30 @@
 # SCBE Production Pack Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **Repo hygiene**: untracked ~1,270 generated/junk files that violated `.gitignore` (docs-build-smoke/ build output, src/.hypothesis/ test caches, SQLite databases, Notion export dumps, the 17 MB generated `full_codebase_map.json`, personal `.home/` mirror, scratch files). `.gitignore` updated so they cannot return.
+- **package.json**: removed 22 dead npm scripts that referenced deleted files (training:*, repo:shape, patent:governance-benchmark, agent:coding-router:*, and others); normalized line endings to LF.
+- **CITATION.cff**: corrected repository URL (was pointing at a nonexistent org slug), declared dual MIT/Apache-2.0 license, added version field.
+- **NOTICE**: fixed broken reference to `CUSTOMER_LICENSE_AGREEMENT.md` (lives under `docs/`) and aligned the open-source license wording with the canonical `MIT OR Apache-2.0` dual license.
+- **geoseed transfer recorder**: implemented the audit API that `tests/test_geoseed_transfer_recorder.py` specified but was never wired (`normalize_tongue`, case/space-tolerant `record`, `record_batch` accepting mappings and returning events, `mean_hop_distance(include_self=)`, `TransferEvent.to_dict`, audit-shaped `to_dict` with `summary`/`events`). The full Python suite collects again.
+- **flake8**: repository is now flake8-clean (`--max-line-length 120`); fixed F821 undefined-name bugs and F541/F841/E401/E501 violations across `src/`, `tests/`, and `hydra/`.
+
+## [4.2.1] - 2026-06-02
+
+Versions 4.1.4 through 4.2.1 shipped as a consolidated bundle (PR #2069); this entry covers the delta since 4.1.3.
+
+### Added
+
+- **Polly offline mode (`POLLY_STATIC_ONLY`)**: fully-static deployments via `window.POLLY_STATIC_ONLY` / `data-polly-static="true"` — status chips render without polling, static command list, immediate backend notices, pre-AI reply paths intact.
+- **Proof workbench and product bundle site pages**: conversion-focused service ladder pages with live checkout.
+- **GeoSeed transfer recorder** (`src/geoseed/transfer_recorder.py`): isotope-tracing-style token transfer tracking between Sacred Tongue orbital shells with n·ln(φ) geodesic costs and 6×6 transfer matrices.
+
+### Changed
+
+- **Stripe checkout wired into all service ladder pages**: ai-workflow-snapshot ($99 SKU, direct CTA), governance-snapshot ($99/month subscription link), workflow-snapshot.
+
 ## [4.1.3] - 2026-05-14
 
 ### Added

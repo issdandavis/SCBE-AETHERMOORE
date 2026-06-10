@@ -270,15 +270,16 @@ def _has_invisible(name: str) -> Optional[str]:
 
 
 def _has_source_text_bidi(src: str) -> Optional[str]:
-    """Return the first BiDi control character found anywhere in source text.
+    """Return the first BiDi control or invisible codepoint found in source text.
 
     Trojan Source attacks commonly place BiDi controls in comments or string
-    literals, not only inside identifiers. Catch those before parsing so the
-    gate does not depend on AST identifier extraction to see source-text
-    directionality attacks.
+    literals, not only inside identifiers. Zero-width characters inside
+    identifiers can also break tokenization, so an AST-stage check would never
+    see them. Catch both classes before parsing so the gate does not depend on
+    AST identifier extraction.
     """
     for ch in src:
-        if ch in _BIDI_CODEPOINTS:
+        if ch in _BIDI_CODEPOINTS or ch in _INVISIBLE_CODEPOINTS:
             return ch
     return None
 
@@ -453,7 +454,7 @@ def evaluate_code(src: str, language: str = "python") -> CanonicalityResult:
                     name="<source>",
                     kind="invisible",
                     scripts=[],
-                    detail=f"source text contains BiDi control codepoint U+{ord(source_bidi):04X}",
+                    detail=f"source text contains invisible/BiDi codepoint U+{ord(source_bidi):04X}",
                 )
             ],
             identifier_count=0,

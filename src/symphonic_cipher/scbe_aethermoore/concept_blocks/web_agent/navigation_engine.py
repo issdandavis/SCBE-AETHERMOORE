@@ -271,7 +271,8 @@ class NavigationEngine:
         # Unknown page with no route — research what this page is
         if page.page_type == "unknown" and not self._state.planned_route:
             return ResearchQuery(
-                query=f"What type of page is {page.url}? How to navigate from here to {self._state.goal_description or self._state.goal_url}",
+                query=f"What type of page is {page.url}? How to navigate from here to "
+                f"{self._state.goal_description or self._state.goal_url}",
                 context=f"Title: {page.title}. Content preview: {page.text_summary[:200]}",
                 time_budget_seconds=3.0,
             )

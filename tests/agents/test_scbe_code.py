@@ -280,7 +280,11 @@ def test_safe_apply_apply_main_false_skips_main_tree(tmp_path):
 
     result = apply_patch_safely(
         patch,
-        smoke_cmd="python -c \"from pathlib import Path; assert Path('tests/_safe_apply_dry_run_probe_DELETE_ME.txt').exists(); print('sandbox ok')\"",
+        smoke_cmd=(
+            'python -c "from pathlib import Path; '
+            "assert Path('tests/_safe_apply_dry_run_probe_DELETE_ME.txt').exists(); "
+            "print('sandbox ok')\""
+        ),
         smoke_timeout=30,
         apply_main=False,
     )

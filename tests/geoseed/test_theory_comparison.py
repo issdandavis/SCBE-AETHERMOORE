@@ -188,12 +188,12 @@ def test_geoseed_lb_energies_grow_as_squares(mod):
     """LB ladder: E_l / E_0 = (l+1)² / 1."""
     result = mod["lb"]()
     e0 = result.shells[0].energy_ev
-    for l, shell in enumerate(result.shells):
-        expected_ratio = (l + 1) ** 2
+    for ell, shell in enumerate(result.shells):
+        expected_ratio = (ell + 1) ** 2
         actual_ratio = shell.energy_ev / e0
         assert (
             abs(actual_ratio - expected_ratio) < 1e-6
-        ), f"l={l}: energy ratio {actual_ratio} ≠ (l+1)²={expected_ratio}"
+        ), f"l={ell}: energy ratio {actual_ratio} ≠ (l+1)²={expected_ratio}"
 
 
 def test_geoseed_lb_energies_monotone_increasing(mod):

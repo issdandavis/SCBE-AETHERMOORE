@@ -242,7 +242,6 @@ def ensure_loaded(
     purchase_log: List[Row],
     valid_api_keys: Dict[str, str],
 ) -> None:
-    global _loaded
     if _loaded:
         return
     load_into_memory(billing_customers, billing_api_keys, purchase_log, valid_api_keys)

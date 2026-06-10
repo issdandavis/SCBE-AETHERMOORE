@@ -100,7 +100,8 @@ _BENIGN_REDIRECT = [
 _AUTHORITY_OVERRIDE = [
     re.compile(p, re.IGNORECASE)
     for p in [
-        r"\b(ignore|disregard|bypass|override|supersede)\b.*\b(system|developer|safety|security|policy|policies|rules|instructions)\b",
+        r"\b(ignore|disregard|bypass|override|supersede)\b.*"
+        r"\b(system|developer|safety|security|policy|policies|rules|instructions)\b",
         r"\bdisable\b.*\b(safety|security|policy|filter|guardrail|governance)\b",
         r"\bno\s+(rules|restrictions|policy|policies|ethics)\b",
         r"\bunrestricted\s+(mode|assistant|access|output)\b",

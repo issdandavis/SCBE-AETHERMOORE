@@ -109,6 +109,20 @@ def compact_json(value: Any, max_chars: int = 2400) -> str:
     return text[: max_chars - 20] + "...[truncated]"
 
 
+def committed_source_summary(path: Path, *, max_chars: int = 3200) -> str:
+    """Summarize a committed source file as a source-faithful response payload."""
+    text = path.read_text(encoding="utf-8", errors="replace")
+    exported = re.findall(r"^(?:class|def)\s+([A-Za-z_][A-Za-z0-9_]*)", text, flags=re.MULTILINE)
+    constants = re.findall(r"^([A-Z][A-Z0-9_]{2,})\s*=", text, flags=re.MULTILINE)
+    summary = {
+        "source_path": repo_rel(path),
+        "symbols": exported[:24],
+        "constants": constants[:16],
+        "excerpt": text[:max_chars],
+    }
+    return compact_json(summary, max_chars=max_chars + 900)
+
+
 def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     roots = [
         REPO_ROOT / "artifacts" / "ai2ai_bridge",
@@ -265,18 +279,14 @@ def extract_operator_source_fallback_records() -> tuple[list[dict[str, Any]], li
         ),
     ]
 
-    def _source_summary(path: Path, *, max_chars: int = 3200) -> str:
-        text = path.read_text(encoding="utf-8", errors="replace")
-        exported = re.findall(r"^(?:class|def)\s+([A-Za-z_][A-Za-z0-9_]*)", text, flags=re.MULTILINE)
-        constants = re.findall(r"^([A-Z][A-Z0-9_]{2,})\s*=", text, flags=re.MULTILINE)
-        summary = {
-            "source_path": repo_rel(path),
-            "symbols": exported[:24],
-            "constants": constants[:16],
-            "excerpt": text[:max_chars],
-        }
-        return compact_json(summary, max_chars=max_chars + 900)
+    return _fallback_records_from_specs("operator_agent_bus", train_specs, eval_specs)
 
+
+def _fallback_records_from_specs(
+    purpose: str,
+    train_specs: list[tuple[Path, str, list[str]]],
+    eval_specs: list[tuple[Path, str, list[str]]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     train: list[dict[str, Any]] = []
     evals: list[dict[str, Any]] = []
     for idx, (path, instruction, tags) in enumerate(train_specs):
@@ -284,11 +294,11 @@ def extract_operator_source_fallback_records() -> tuple[list[dict[str, Any]], li
             continue
         train.append(
             record(
-                purpose="operator_agent_bus",
+                purpose=purpose,
                 split="train",
                 source_path=path,
                 instruction=instruction,
-                response=_source_summary(path),
+                response=committed_source_summary(path),
                 tags=tags,
                 extra={"source_record_index": idx, "fallback_source": True},
             )
@@ -298,11 +308,11 @@ def extract_operator_source_fallback_records() -> tuple[list[dict[str, Any]], li
             continue
         evals.append(
             record(
-                purpose="operator_agent_bus",
+                purpose=purpose,
                 split="eval",
                 source_path=path,
                 instruction=instruction,
-                response=_source_summary(path),
+                response=committed_source_summary(path),
                 tags=tags,
                 extra={"source_record_index": idx, "fallback_source": True},
             )
@@ -356,9 +366,56 @@ def extract_research_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                     extra={"source_manifest": repo_rel(manifest_path), "source_record_index": idx},
                 )
             )
+    fallback_train, fallback_eval = extract_research_source_fallback_records()
+    records.extend(fallback_train)
+    records.extend(fallback_eval)
+
     return [r for r in records if r["metadata"]["split"] == "train"], [
         r for r in records if r["metadata"]["split"] == "eval"
     ]
+
+
+def extract_research_source_fallback_records() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Build research-bridge records from committed source when staged bundles are absent.
+
+    The research bridge stages its source bundles under the gitignored
+    training-data/ tree, so fresh checkouts and CI have no source_manifest.json
+    to extract from. Keep a reproducible source-grounded floor from the
+    committed bridge contract and its frozen evaluation tests, mirroring the
+    operator-bus fallback.
+    """
+
+    train_specs = [
+        (
+            REPO_ROOT / "scripts" / "system" / "research_training_bridge.py",
+            "Summarize the SCBE research training bridge contract from this committed source. "
+            "Return how arXiv evidence and markdown notes are staged into bundles, what the source "
+            "manifest records, and which provenance fields every staged source keeps.",
+            ["research_bridge", "source_staging", "committed_source"],
+        ),
+        (
+            REPO_ROOT / "scripts" / "benchmark" / "research_bridge_citation_eval.py",
+            "Summarize the citation-grounding contract for research bridge records from this committed "
+            "source. Return how records are scored against their cited source and when a record fails "
+            "source-evidence overlap.",
+            ["research_bridge", "citation_eval", "committed_source"],
+        ),
+    ]
+    eval_specs = [
+        (
+            REPO_ROOT / "tests" / "test_research_training_bridge.py",
+            "Extract the frozen research-bridge bundle invariants from this committed test source. "
+            "Return only the expected outputs, empty-source behavior, and vault-selection expectations.",
+            ["research_bridge", "bundle_eval", "committed_test"],
+        ),
+        (
+            REPO_ROOT / "tests" / "benchmark" / "test_research_bridge_citation_eval.py",
+            "Extract the frozen citation-eval invariants from this committed test source. "
+            "Return only the source-preservation checks and the evidence-overlap failure behavior.",
+            ["research_bridge", "citation_eval", "committed_test"],
+        ),
+    ]
+    return _fallback_records_from_specs("research_bridge", train_specs, eval_specs)
 
 
 def import_module(path: Path, module_name: str):
