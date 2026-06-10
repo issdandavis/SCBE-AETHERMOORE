@@ -166,11 +166,15 @@ def _load_auto_rows() -> list[list]:
         if len(auto_rows) >= 20:
             break
         name = tool.get("name", "")
-        desc = tool.get("description", "")
         if not name or name in existing_ops:
             continue
         category = name.split("-")[0]
-        triggers = [name] + desc.lower().split()[:4]
+        # Triggers are the tool NAME and its hyphen tokens only. Earlier this also
+        # folded in the first four description words, which let generic words
+        # ("verify", "route", "flow") in a tool's blurb out-score the curated
+        # GRID cell for that verb -- a tool named "geoseal-verify" would shadow
+        # the hand-built geoseal/verify. Name-only keeps auto-rows specific.
+        triggers = [name] + [tok for tok in name.replace("_", "-").split("-") if len(tok) > 2]
         cmd = ["python", "scripts/mython_bridge.py", "--passthrough", name]
         auto_rows.append([category, name, triggers, cmd, True])
         existing_ops.add(name)
@@ -179,6 +183,129 @@ def _load_auto_rows() -> list[list]:
 
 # Append auto-rows to GRID at module load time
 GRID.extend(_load_auto_rows())
+
+
+# ── Calibrated lexical scoring ──────────────────────────────────────────────
+#
+# The legacy scorer was a raw substring trigger-count with confidence =
+# score/(score+1), so ANY single keyword match landed at ~0.5 and the shell
+# auto-acted (lines 6472-6519 of packages/cli/bin/scbe.js fire a result at
+# confidence >= 0.5 with no confirmation). Two failure modes followed:
+#   * substring false positives -- "design" contains "sign" -> geoseal/seal
+#   * single common word auto-acting -- "let's plan our trip" -> geoseal/compile
+#
+# This replaces it with three structural fixes plus one small, explicit list:
+#   1. WORD-START matching: a trigger must begin at a word boundary (so "sign"
+#      no longer matches "design"), but may run into the rest of the word (so
+#      "threat" still matches "threats", "repo" still matches "repos").
+#   2. IDF weighting: a trigger shared by many cells (e.g. "route") is worth
+#      less than a cell-specific one (e.g. "arxiv").
+#   3. MARGIN + CORROBORATION confidence: a lone match by a COMMON English word
+#      is treated as uncertain (kept below the auto-act floor) -- it should fall
+#      through to the LLM/clarify path. A cell-specific term, or two
+#      corroborating words, or a clear lead over the runner-up, raises it.
+#
+# COMMON_TRIGGER_WORDS is the only hand-curated lever: genuinely common English
+# words that also happen to be triggers and so carry little intent on their own.
+# Keep it small; its marginal effect is measured separately in the eval.
+COMMON_TRIGGER_WORDS = frozenset(
+    {"plan", "explain", "model", "check", "route", "flow", "file", "why", "add", "show", "find"}
+)
+
+_AUTO_ACT_FLOOR = 0.5  # mirror of the shell's threshold; used only for calibration
+_K_SAT = 2.4  # saturation constant: a single specific trigger lands just over the floor
+_WEAK_CAP = 0.45  # a lone common-word match can never reach the auto-act floor
+
+
+def _trigger_df() -> dict:
+    df: dict[str, int] = {}
+    for _cat, _op, triggers, _cmd, _takes in GRID:
+        for t in {str(x).lower() for x in triggers}:
+            df[t] = df.get(t, 0) + 1
+    return df
+
+
+_TRIGGER_DF = _trigger_df()
+_N_CELLS = max(1, len(GRID))
+
+
+def _idf(trigger: str) -> float:
+    df = _TRIGGER_DF.get(trigger.lower(), 1)
+    return math.log((_N_CELLS + 1) / (df + 1)) + 1.0
+
+
+def _word_starts(text_lower: str):
+    """Yield (start_index, word) for each alphanumeric word in the text."""
+    for m in re.finditer(r"[a-z0-9]+(?:[-'][a-z0-9]+)*", text_lower):
+        yield m.start(), m.group(0)
+
+
+def _match_triggers(text_lower: str, triggers: list) -> list:
+    """Return matched triggers as (trigger, idf, is_strong), deduped by text word.
+
+    A trigger matches a word if the word starts with the trigger (word-start
+    anchored). Each text word contributes at most one match -- the most specific
+    (highest idf) trigger that fits -- so "models" is not double-counted by the
+    "model" and "models" triggers.
+    """
+    norm = [str(t).lower() for t in triggers]
+    best_per_word: dict[int, tuple] = {}
+    for start, word in _word_starts(text_lower):
+        for t in norm:
+            if not t:
+                continue
+            if word == t or (word.startswith(t) and len(t) >= 3):
+                idf = _idf(t)
+                is_strong = t not in COMMON_TRIGGER_WORDS and len(t) >= 3
+                prev = best_per_word.get(start)
+                if prev is None or idf > prev[1]:
+                    best_per_word[start] = (t, idf, is_strong)
+                break
+    return list(best_per_word.values())
+
+
+def route_scores(text: str) -> list:
+    """Rank every GRID cell against the text. Returns dicts sorted by raw score."""
+    tl = text.lower()
+    ranked = []
+    for cat, op, triggers, cmd, takes in GRID:
+        matches = _match_triggers(tl, triggers)
+        if not matches:
+            continue
+        raw = sum(idf for _t, idf, _s in matches)
+        ranked.append(
+            {
+                "category": cat,
+                "operation": op,
+                "command": cmd,
+                "takes_input": takes,
+                "raw": raw,
+                "n_total": len(matches),
+                "n_strong": sum(1 for _t, _i, s in matches if s),
+            }
+        )
+    ranked.sort(key=lambda r: r["raw"], reverse=True)
+    return ranked
+
+
+def confidence_for(text: str) -> float:
+    """Margin- and corroboration-aware confidence in [0, 1].
+
+    Calibrated so the shell's >=0.5 auto-act floor means "a specific term, two
+    corroborating words, or a clear lead" -- not "one keyword appeared".
+    """
+    ranked = route_scores(text)
+    if not ranked:
+        return 0.0
+    best = ranked[0]
+    second_raw = ranked[1]["raw"] if len(ranked) > 1 else 0.0
+    margin = (best["raw"] - second_raw) / best["raw"] if best["raw"] > 0 else 0.0
+    base = best["raw"] / (best["raw"] + _K_SAT)
+    conf = base * (0.55 + 0.45 * margin)
+    actionable = best["n_strong"] >= 1 or best["n_total"] >= 2
+    if not actionable:
+        conf = min(conf, _WEAK_CAP)
+    return round(max(0.0, min(1.0, conf)), 4)
 
 
 # ── Math layer (numeric triggers, like old trig lookup tables) ────────────────
@@ -416,8 +543,7 @@ def print_matrix():
 
     for cat in categories_ordered:
         cells = "  ".join(
-            f"{'✓':>3}" if (cat, ops_ordered[i]) in grid_cells else f"{'·':>3}"
-            for i in range(len(ops_ordered))
+            f"{'✓':>3}" if (cat, ops_ordered[i]) in grid_cells else f"{'·':>3}" for i in range(len(ops_ordered))
         )
         row_str = f"{cat.ljust(cat_width)} │ {cells}"
         lines.append(f"║ {row_str.ljust(total_w - 4)} ║")
@@ -450,59 +576,33 @@ def print_grid_index():
     print('  python scripts/mython_bridge.py "sin 45 → harmonic wall"   # layers')
     print('  python scripts/mython_bridge.py --json "scan this workspace"')
     print("  python scripts/mython_bridge.py --matrix")
-    print(
-        '  python scripts/mython_bridge.py --passthrough geoseal-compile "add logging"'
-    )
+    print('  python scripts/mython_bridge.py --passthrough geoseal-compile "add logging"')
     print()
 
 
 # ── Dispatch ──────────────────────────────────────────────────────────────────
 
 
-def _score(text_lower: str, triggers: list[str]) -> float:
-    """
-    Score a grid row against the input text.
-    - Count of trigger matches (primary)
-    - Bonus for earlier first-match position (earlier = better)
-    """
-    n = len(text_lower)
-    count = 0
-    earliest = n  # position of first match (lower is earlier)
-    for t in triggers:
-        idx = text_lower.find(t.lower())
-        if idx != -1:
-            count += 1
-            if idx < earliest:
-                earliest = idx
-    if count == 0:
-        return 0.0
-    # Tie-break: add a small fraction for earlier position (max 0.9 bonus)
-    position_bonus = (n - earliest) / (n + 1) * 0.9
-    return count + position_bonus
-
-
 def find_cell(text: str) -> tuple[str, str, list[str], bool, float] | None:
     """
-    Match the highest-scoring grid row.
-    Returns (category, operation, command, takes_input, score) or None.
+    Match the highest-scoring grid row via the calibrated scorer.
+    Returns (category, operation, command, takes_input, raw_score) or None.
+
+    The returned score is the IDF-weighted raw; callers wanting the auto-act
+    decision should use confidence_for(text), which is margin/corroboration
+    aware. dispatch() does exactly that.
     """
-    best_score = 0.0
-    best_cat = None
-    best_op = None
-    best_cmd = None
-    best_takes = None
-    t = text.lower()
-    for cat, op, triggers, cmd, takes_input in GRID:
-        s = _score(t, triggers)
-        if s > best_score:
-            best_score = s
-            best_cat = cat
-            best_op = op
-            best_cmd = cmd
-            best_takes = takes_input
-    if best_score <= 0 or best_cat is None:
+    ranked = route_scores(text)
+    if not ranked:
         return None
-    return (best_cat, best_op, best_cmd, best_takes, best_score)
+    best = ranked[0]
+    return (
+        best["category"],
+        best["operation"],
+        best["command"],
+        best["takes_input"],
+        best["raw"],
+    )
 
 
 def _build_cmd(cmd_template: list[str], payload: str) -> list[str]:
@@ -520,9 +620,7 @@ def _build_cmd(cmd_template: list[str], payload: str) -> list[str]:
     return out
 
 
-def run_cell(
-    cat: str, op: str, cmd_template: list[str], takes_input: bool, payload: str
-) -> dict:
+def run_cell(cat: str, op: str, cmd_template: list[str], takes_input: bool, payload: str) -> dict:
     """Execute a grid cell command and return a result dict (no confidence field — set by caller)."""
     cmd = _build_cmd(cmd_template, payload) if takes_input else list(cmd_template)
     t0 = time.monotonic()
@@ -629,9 +727,11 @@ def dispatch(text: str, prior_result: dict | None = None) -> dict:
             "elapsed": 0.0,
             "payload": text,
         }
-    cat, op, cmd, takes_input, score = cell
+    cat, op, cmd, takes_input, _score_raw = cell
     result = run_cell(cat, op, cmd, takes_input, payload if takes_input else "")
-    result["confidence"] = round(score / (score + 1), 4)
+    # Margin/corroboration-aware confidence: a lone common keyword stays below
+    # the shell's auto-act floor instead of silently firing the wrong command.
+    result["confidence"] = confidence_for(step_text)
     return result
 
 
@@ -657,9 +757,7 @@ def run_pipeline(raw_input: str, quiet: bool = False) -> list[dict]:
         prior = result
         if not quiet:
             status = "✓" if result["ok"] else "✗"
-            print(
-                f"  {status} {result['category']} · {result['operation']}  ({result['elapsed']}s)"
-            )
+            print(f"  {status} {result['category']} · {result['operation']}  ({result['elapsed']}s)")
     return results
 
 
@@ -772,9 +870,7 @@ def main() -> None:
         pt_idx = args.index("--passthrough")
         args_after = args[pt_idx + 1 :]
         if not args_after:
-            print(
-                "Usage: python scripts/mython_bridge.py --passthrough <tool-name> [payload]"
-            )
+            print("Usage: python scripts/mython_bridge.py --passthrough <tool-name> [payload]")
             return
         tool_name = args_after[0]
         payload = " ".join(args_after[1:])
