@@ -13,8 +13,8 @@ Single authority file for active mathematical formulas referenced by runtime and
 
 `d_H(u,v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2)))`
 
-- Used by: Layer 5 distance and downstream safety scoring
-- References: `src/harmonic/`, `src/scbe_math_reference.py`
+- Used by: Layer 5 distance and downstream safety scoring (canonical TS/L5 path; Möbius-invariant)
+- References: `src/harmonic/`, `src/scbe_math_reference.py`, `src/video_lattice/poincare_lattice.py`
 
 ### F2: Temporal Intent Multiplier
 
@@ -29,6 +29,11 @@ Single authority file for active mathematical formulas referenced by runtime and
 
 - Used by: canonical wall family in governance documentation
 - References: `docs/specs/CANONICAL_SYSTEM_STATE.md`, `docs/specs/SCBE_CANONICAL_CONSTANTS.md`
+- Distance input note: in the Python `RuntimeGate` (`src/governance/runtime_gate.py`), the `d*`
+  fed to this wall is a phi-weighted **Euclidean** drift from a learned centroid
+  (`_weighted_centroid_drift`), **not** F1's arcosh d_H. It is a monotone runtime-scoped
+  surrogate (fails Möbius-invariance; see `scripts/eval/gate_mobius_invariance.py`), related to
+  but not identical with the canonical hyperbolic metric.
 
 ### F4: Bounded Safety Scorer (Compatibility / Product Paths)
 

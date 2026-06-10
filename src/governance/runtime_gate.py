@@ -13,7 +13,7 @@ Decisions:
 The gate computes:
   1. Tongue coordinates from the action description
   2. Spin vector relative to session centroid
-  3. Harmonic cost from Poincare distance
+  3. Harmonic cost from weighted centroid drift
   4. Cross-check: spin + cost + tongue balance → decision
 
 This is not a filter. It's a cost function. Safe actions are cheap.
@@ -886,7 +886,13 @@ class RuntimeGate:
     #  Cost computation
     # ------------------------------------------------------------------ #
 
-    def _harmonic_cost(self, coords: List[float]) -> float:
+    def _weighted_centroid_drift(self, coords: List[float]) -> float:
+        """Current production drift metric.
+
+        This is the live runtime-gate distance surface: a phi-weighted
+        Euclidean distance from the learned centroid. It is a useful monotone
+        score, but it is not a Mobius-invariant hyperbolic metric.
+        """
         if self._centroid is None:
             centroid = np.array([0.4, 0.2, 0.5, 0.1, 0.2, 0.3])
         else:
@@ -894,8 +900,52 @@ class RuntimeGate:
 
         tc = np.array(coords)
         weights = np.array(TONGUE_WEIGHTS)
-        weighted_dist = float(np.sqrt(np.sum(weights * (tc - centroid) ** 2)))
-        d_star = min(weighted_dist, 5.0)  # clamp to avoid overflow
+        return float(np.sqrt(np.sum(weights * (tc - centroid) ** 2)))
+
+    @staticmethod
+    def _project_coords_to_unit_ball(coords: List[float], max_norm: float = 0.95) -> np.ndarray:
+        """Map [0,1]^6 tongue coordinates to a valid signed Poincare-ball point.
+
+        The live gate coords are bounded in [0,1] per axis and often exceed unit
+        norm in 6D, so a direct arcosh swap would be invalid. This helper is an
+        explicit experimental embedding for candidate true-hyperbolic probes.
+        """
+        point = 2.0 * np.asarray(coords, dtype=float) - 1.0
+        norm = float(np.linalg.norm(point))
+        if norm == 0.0:
+            return point
+        if norm >= max_norm:
+            point = point * (max_norm / norm)
+        return point
+
+    @staticmethod
+    def _poincare_distance(u: np.ndarray, v: np.ndarray) -> float:
+        """True hyperbolic distance in the open unit ball."""
+        u_norm_sq = float(np.dot(u, u))
+        v_norm_sq = float(np.dot(v, v))
+        diff_norm_sq = float(np.dot(u - v, u - v))
+        denom = (1.0 - u_norm_sq) * (1.0 - v_norm_sq)
+        arg = 1.0 + 2.0 * diff_norm_sq / max(denom, 1e-12)
+        return float(math.acosh(max(arg, 1.0)))
+
+    def _experimental_projected_hyperbolic_cost(self, coords: List[float]) -> float:
+        """Candidate true-hyperbolic cost over an explicit unit-ball projection.
+
+        This is intentionally not wired into production decisions. It exists so
+        we can compare decision deltas honestly before changing behavior.
+        """
+        if self._centroid is None:
+            centroid = [0.4, 0.2, 0.5, 0.1, 0.2, 0.3]
+        else:
+            centroid = self._centroid.tolist()
+        projected_coords = self._project_coords_to_unit_ball(coords)
+        projected_centroid = self._project_coords_to_unit_ball(centroid)
+        d_star = min(self._poincare_distance(projected_coords, projected_centroid), 5.0)
+        return PI ** (PHI * d_star)
+
+    def _harmonic_cost(self, coords: List[float]) -> float:
+        """Production harmonic wall over the live weighted-centroid drift."""
+        d_star = min(self._weighted_centroid_drift(coords), 5.0)  # clamp to avoid overflow
         return PI ** (PHI * d_star)
 
     # ------------------------------------------------------------------ #
