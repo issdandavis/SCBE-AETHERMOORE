@@ -280,23 +280,33 @@ explains and predicts.
 ### 8.2 β is the material axis (Probe 2 — REAL, binds organics)
 
 `β` in this model is the same physical quantity as in the polariton literature:
-the spontaneous-emission coupling factor into the lasing mode.
+the spontaneous-emission coupling factor into the lasing mode. β is set by mode
+volume and Rabi splitting: inorganic GaAs (large mode volume, small Rabi) → β ~
+10⁻⁴, cryogenic; organic (tiny mode volume + giant Rabi 100–225 meV) → β ~ 10⁻²–
+10⁻¹ in a planar microcavity, up to 0.3–0.5 in photonic-wire geometries, at room
+temperature.
 
-| Regime | β | Why | Temperature |
+**Verdict on Probe 2 — MEASURED across each band, not a single threshold call.**
+`material_regimes()` sweeps cascade survival across each regime's full cited β band
+(at the near-edge stress config), so the verdict is a *curve* that resolves exactly
+where the cascade stops surviving:
+
+| Regime | cited β band | measured survival(β) | verdict |
 |---|---|---|---|
-| Inorganic GaAs microcavity | ~10⁻⁴ | large mode volume, small Rabi | cryogenic |
-| Organic / small-mode-volume | ~10⁻²–10⁻¹ (up to ~0.3–0.5 in photonic-wire geometries) | tiny mode volume + giant Rabi (100–225 meV) forces a large spontaneous fraction into the mode | **room** |
+| Inorganic GaAs | 10⁻⁵–10⁻⁴ | 1.00, 1.00 | **PASS** across the band (deep sub-edge) |
+| Organic | 10⁻²–10⁻¹ (planar device) → 0.3–0.5 (photonic-wire) | β=0.01:1.0  0.03:1.0  0.1:1.0  0.2:0.97  0.3:≈0.5  0.5:0.0 | **STRADDLES** |
 
-GaAs β ~ 10⁻⁴ from microcavity-LED / polariton-LED studies (arXiv:0712.1565);
-organic/photonic-wire β up to 0.3–0.5 from waveguide-microcavity LED work
-(USPTO 5,878,070; organic strong-coupling reviews, Rabi up to 225 meV).
+The measured edge sits at **β ≈ 0.2** (survival 1.0 → 0.97 between 0.1 and 0.2,
+then collapsing by 0.3–0.5). This *refines* the earlier hand-written "organic sits
+at/over the edge": the **planar-microcavity device** (β ≤ ~0.1 — the actual
+Lagoudakis transistor) **clears** the bit-flip edge; only **photonic-wire**
+geometries (β ~ 0.3–0.5) flip bits. So β is geometry-dependent *within* the organic
+family, and the device geometry is on the safe side — with margin that shrinks
+toward the photonic-wire end. Inorganic clears it with orders of margin (β ~ 10⁻⁴).
 
-**Verdict on Probe 2:** the model says the cascade holds for `β ≲ 0.1` and flips
-bits above it (survival 1.0 → 0.97 → 0.17 → 0.0 across β = 0.1/0.2/0.3/0.5).
-Inorganic sits **deep inside PASS** (β ~ 10⁻⁴). Organic — the *only* room-temp
-cascadable material — sits **at or beyond the edge** (β ~ 10⁻²–10⁻¹). The same
-small-mode-volume/large-Rabi property that buys organics their low threshold and
-room-temperature operation is what pushes them onto the bit-flip ceiling.
+(GaAs β ~ 10⁻⁴ from microcavity-/polariton-LED studies, arXiv:0712.1565;
+organic/photonic-wire β up to 0.3–0.5 from waveguide-microcavity LED work,
+USPTO 5,878,070; organic strong-coupling reviews, Rabi up to 225 meV.)
 
 ### 8.3 ρ is the architecture axis (Probe 1 — REAL, but NOT a microcavity effect)
 
@@ -327,13 +337,17 @@ time approaches the gain-recovery time — exactly the regime the default
   ρ ≫ 1. The averaged model's clean 300-stage cascade is realistic **here**, at
   the price of cryogenic operation. (Photon lifetimes 11–135 ps, polariton 10–270
   ps; high-Q Q ~ 3.2×10⁵.)
-- **Organic microcavity (room temp):** clears the ρ edge (microcavity → averaged
-  limit) but sits **at/over the β edge**. The model predicts a room-temperature
-  high-β organic cascade accumulates spontaneous-emission-seeded bit flips over
-  ~tens–hundreds of stages **unless β is suppressed or per-stage margin widened**.
-  This is consistent with the demonstrated organic cascades being *short* rather
-  than 300-deep (§8.1) — a postdiction the model gets right, and a forward
-  prediction: deepen an organic cascade and watch flip rate climb with stage count.
+- **Organic planar microcavity (room temp, the demonstrated device):** clears the
+  ρ edge (microcavity → averaged limit) **and**, at β ≤ ~0.1, clears the measured
+  β edge too — so the model does **not** predict bit-level failure for the device
+  geometry by β alone. Margin shrinks toward the photonic-wire end.
+- **Organic photonic-wire (room temp, β ~ 0.3–0.5):** clears ρ but **fails the β
+  edge** — measured survival collapses to ≈0.5 at β = 0.3 and 0 at β = 0.5. The
+  forward prediction lives here: push β up the geometry ladder and watch
+  spontaneous-emission-seeded flip rate climb with stage count. (Note: measuring
+  *weakened* the earlier postdiction — short demonstrated cascades can't be pinned
+  on β for the planar device, since it sits below the edge; mundane causes like
+  pump geometry remain in play. The honest claim is the *photonic-wire* prediction.)
 - **Long-cavity SOA/fiber logic:** the only regime where Probe 1 binds; there the
   ρ_crit ≈ 1.5 timing constraint is the live design rule.
 

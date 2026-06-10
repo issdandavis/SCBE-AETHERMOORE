@@ -57,10 +57,11 @@ import numpy as np
 class Params:
     # Material grounding for rho / beta / Psat is in the spec, §8 "Material regimes":
     #   docs/superpowers/specs/2026-06-09-synchronous-pump-optical-transistor-spec.md
-    # Short version: beta is the MATERIAL edge (Probe 2) -- organic polariton
-    # transistors (Nat. Photonics 13, 378 (2019); Nat. Comms 15 (2024)) run at
-    # room temp but carry high beta ~1e-2..1e-1, sitting AT the bit-flip ceiling;
-    # inorganic GaAs has beta ~1e-4 but needs cryo. rho is the ARCHITECTURE edge
+    # Short version: beta is the MATERIAL edge (Probe 2). material_regimes() MEASURES
+    # survival across each cited band: organic planar microcavity (beta<=~0.1, the
+    # Nat. Photonics 13, 378 (2019) / Nat. Comms 15 (2024) device) CLEARS the edge;
+    # only photonic-wire organics (beta~0.3-0.5) flip bits. Inorganic GaAs (beta~1e-4)
+    # clears it with huge margin but needs cryo. rho is the ARCHITECTURE edge
     # (Probe 1): l=0.10 => 10 round-trips of photon storage (finesse ~63), a
     # long-cavity/fiber-loop element, NOT a lambda-microcavity -- so rho_crit~1.5
     # binds fiber/ring logic, never a monolithic microcavity (which sits at rho>>1).
@@ -500,7 +501,11 @@ _MATERIAL_REGIMES = [
     },
     {
         "name": "organic_microcavity",
-        "beta_range": [1e-2, 1e-1],  # tiny mode volume + giant Rabi (100-225 meV)
+        # Full cited geometry span: planar microcavity ~1e-2..1e-1 (the Lagoudakis
+        # transistor) up to photonic-wire ~3e-1..5e-1 (tiny mode volume + giant Rabi
+        # 100-225 meV). The verdict is a CURVE across this band, not a single call.
+        "beta_range": [1e-2, 5e-1],
+        "beta_geometry_note": "1e-2..1e-1 planar microcavity (device); 1e-1..5e-1 photonic-wire",
         "tau_c_ps": [0.5, 20.0],  # organics on the short end (few ps)
         "polariton_ps": [0.5, 20.0],
         "arch": "microcavity",
@@ -520,6 +525,40 @@ _MATERIAL_REGIMES = [
 ]
 
 
+# beta ladder for the per-regime sweep; clipped to each regime's cited band. Spans
+# the failure transition (the 0.2 -> 0.3 cliff Probe 2 found) so the curve resolves
+# WHERE in a band the cascade stops surviving.
+_BETA_LADDER = [1e-5, 1e-4, 1e-3, 1e-2, 3e-2, 1e-1, 2e-1, 3e-1, 5e-1]
+
+
+def regime_beta_sweep(beta_range, p: Params = DEFAULT, n_traj: int = 40) -> dict:
+    """MEASURE cascade survival across a regime's cited beta band, at the near-edge
+    (thin-margin, g0=0.30, 5% signal noise) stress config -- the regime where beta
+    actually bites. Returns the survival curve and the measured edge (largest beta
+    still holding >=99%), so the verdict is a curve, not a single threshold call."""
+    lo, hi = beta_range
+    betas = [b for b in _BETA_LADDER if lo <= b <= hi] or [lo, hi]
+    near = replace(p, g0=0.30)
+    curve = []
+    edge = None  # largest beta with survival >= 0.99 (contiguous from the bottom)
+    contiguous = True
+    for b in betas:
+        s = cascade_survival(near, beta=float(b), noise=0.05, n_traj=n_traj, n_stages=100, seed=7)
+        surv = s["survival"]
+        curve.append({"beta": float(b), "survival": surv})
+        if contiguous and surv >= 0.99:
+            edge = float(b)
+        elif surv < 0.99:
+            contiguous = False
+    survs = [c["survival"] for c in curve]
+    return {
+        "curve": curve,
+        "measured_edge": edge,  # survives up to here
+        "all_survive": min(survs) >= 0.99,
+        "none_survive": max(survs) < 0.99,
+    }
+
+
 def material_regimes(
     p: Params = DEFAULT,
     rho_crit: float | None = None,
@@ -534,54 +573,54 @@ def material_regimes(
     (``full_report`` does); omit them for lightweight standalone defaults.
 
     The two edges live on different axes (spec §8):
-      * beta  -> MATERIAL axis (Probe 2): organic ~1e-2..1e-1 at the ceiling vs
-                 inorganic ~1e-4 below it.
+      * beta  -> MATERIAL axis (Probe 2): survival is MEASURED across each cited
+                 band (regime_beta_sweep). Organic straddles -- planar microcavity
+                 (beta<=~0.1) survives, photonic-wire (beta>=~0.3) flips; inorganic
+                 (beta~1e-4) survives with margin.
       * rho   -> ARCHITECTURE axis (Probe 1): microcavities sit at rho >> 1
                  (averaged limit); only long-cavity logic binds at rho_crit.
     """
-    # When edges aren't supplied, compute them CHEAPLY: the verdict only needs the
-    # edge to within a factor (~rho_crit in [1,2], beta_ceiling in [0.1,0.2] all
-    # classify identically), so a coarse grid + small ensemble is enough. full_report
-    # passes the precise edges from its own full-size probes.
+    # rho edge: when not supplied, compute it cheaply (the verdict only needs which
+    # SIDE of rho_crit a regime sits on). beta_ceiling is informational here -- the
+    # per-regime sweeps below MEASURE survival directly, so if it isn't passed we
+    # derive it after the loop from the organic sweep rather than recomputing.
     if rho_crit is None:
         rho_grid = [0.3, 0.6, 1.0, 1.5, 2.5, 5.0, 20.0]
         rho_crit = probe_recovery_boundary(rho_grid=rho_grid, p=p)["rho_crit"]
-    if beta_ceiling is None:
-        # near-edge regime is where Probe 2 actually exercises the bit-flip; the
-        # ceiling is the largest beta still holding >=99% over the cascade.
-        beta_ceiling = probe_spontaneous_floor(
-            beta_grid=[0.0, 0.1, 0.2, 0.3, 0.5],
-            p=replace(p, g0=0.30),
-            noise=0.05,
-            n_traj=40,
-        )["beta_max_99pct_survival"]
 
     regimes = []
     for m in _MATERIAL_REGIMES:
         r = dict(m)
-        # --- beta (material) verdict ---
-        # beta_ceiling is the LARGEST beta still holding >=99%. The physical claim
-        # is order-of-magnitude, not knife-edge: PASS only with comfortable margin
-        # (>2x below), AT EDGE when the range top is within ~2x of the ceiling
-        # (organic ~1e-1 vs ceiling ~1e-1, regardless of whether the probe lands it
-        # at 0.1 or 0.2), FAIL when the whole range sits above. This keeps the
-        # verdict stable under the coarse/cheap edge estimate.
-        margin = 2.0
+        # --- beta (material) verdict: MEASURED across the cited band, not a single
+        # threshold call. Sweep survival across the regime's full geometry span and
+        # report where it crosses -- this replaces the old order-of-magnitude margin
+        # hack with the model's actual survival curve.
         br = m.get("beta_range")
         if br is None:
             r["beta_pass"] = None
+            r["beta_sweep"] = None
             r["beta_verdict"] = "n/a -- beta is not the binding edge for this architecture"
-        elif br[1] < beta_ceiling / margin:
-            r["beta_pass"] = True
-            r["beta_verdict"] = f"PASS -- beta<=~{br[1]:g} sits well below the bit-flip ceiling {beta_ceiling:g}"
-        elif br[0] > beta_ceiling:
-            r["beta_pass"] = False
-            r["beta_verdict"] = f"FAIL -- beta>={br[0]:g} exceeds the ceiling {beta_ceiling:g}"
         else:
-            r["beta_pass"] = False
-            r["beta_verdict"] = (
-                f"AT EDGE -- beta {br[0]:g}..{br[1]:g} is within ~{margin:g}x of the ceiling {beta_ceiling:g}"
-            )
+            sweep = regime_beta_sweep(br, p=p)
+            r["beta_sweep"] = sweep["curve"]
+            r["beta_measured_edge"] = sweep["measured_edge"]
+            if sweep["all_survive"]:
+                r["beta_pass"] = True
+                r["beta_verdict"] = (
+                    f"PASS -- measured survival >=99% across the full cited band beta={br[0]:g}..{br[1]:g}"
+                )
+            elif sweep["none_survive"]:
+                r["beta_pass"] = False
+                r["beta_verdict"] = (
+                    f"FAIL -- measured survival <99% across the whole cited band beta={br[0]:g}..{br[1]:g}"
+                )
+            else:
+                r["beta_pass"] = False  # straddles -> geometry-dependent
+                edge = sweep["measured_edge"]
+                note = m.get("beta_geometry_note", "")
+                r["beta_verdict"] = f"STRADDLES -- measured: survives to beta~{edge:g}, fails above it" + (
+                    f" ({note})" if note else ""
+                )
         # --- rho (architecture) verdict ---
         if m["arch"] == "microcavity":
             r["rho_verdict"] = "rho >> 1 (tau_rt ~ fs) -> averaged limit, NOT rho-limited"
@@ -592,9 +631,19 @@ def material_regimes(
             r["overall"] = "rho is the live constraint; beta not binding"
         elif r["beta_pass"]:
             r["overall"] = f"clears BOTH edges (cost: {m['temp']} operation)"
-        else:
-            r["overall"] = "clears rho but sits AT/over the beta edge -> predicts flip rate climbs with stage count"
+        elif r.get("beta_measured_edge"):  # straddles
+            r["overall"] = (
+                f"clears rho; beta survival is geometry-dependent -- holds up to "
+                f"beta~{r['beta_measured_edge']:g}, flips above it"
+            )
+        else:  # whole band fails
+            r["overall"] = "clears rho but the beta floor flips bits across its whole cited band"
         regimes.append(r)
+
+    if beta_ceiling is None:
+        # representative ceiling = the measured edge of the widest straddling band
+        edges = [r["beta_measured_edge"] for r in regimes if r.get("beta_measured_edge")]
+        beta_ceiling = max(edges) if edges else None
 
     return {
         "model_edges": {"rho_crit": rho_crit, "beta_ceiling": beta_ceiling},
@@ -653,6 +702,9 @@ def _print_regimes(mr: dict) -> None:
     for r in mr["regimes"]:
         print(f"\n  {r['name']}  [{r['temp']}, {r['arch']}]")
         print(f"    beta : {r['beta_verdict']}")
+        if r.get("beta_sweep"):
+            curve = "  ".join(f"{c['beta']:g}:{c['survival']:.2f}" for c in r["beta_sweep"])
+            print(f"           measured survival(beta) = {curve}")
         print(f"    rho  : {r['rho_verdict']}")
         print(f"    ==>  {r['overall']}")
         print(f"    cite : {r['cite']}")

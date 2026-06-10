@@ -112,20 +112,37 @@ def test_cli_regimes_flag_emits_classified_json():
     assert names == {"inorganic_gaas_microcavity", "organic_microcavity", "long_cavity_soa_fiber_logic"}
 
 
-def test_material_regimes_classify_against_model_edges():
-    """The self-reported grounding must put each cited material on the right side
-    of the model's own edges (spec §8): inorganic clears beta, organic sits at it,
-    long-cavity is the only rho-bound architecture."""
-    mr = ot.material_regimes(rho_crit=1.47, beta_ceiling=0.1)  # edges passed in -> fast
+def test_regime_beta_sweep_resolves_the_failure_edge():
+    """The sweep MEASURES survival across a band and finds where it crosses, instead
+    of comparing endpoints to a single threshold. Organic's band must show a clean
+    monotone-ish transition from surviving (low beta) to failing (high beta)."""
+    s = ot.regime_beta_sweep([1e-2, 5e-1])
+    survs = [c["survival"] for c in s["curve"]]
+    assert survs[0] >= 0.99  # low beta survives
+    assert survs[-1] < 0.5  # high beta (photonic-wire) fails
+    assert s["measured_edge"] is not None  # a finite survive-up-to edge exists
+    assert not s["all_survive"] and not s["none_survive"]  # it straddles
+
+
+def test_material_regimes_measured_verdicts():
+    """The self-reported grounding (spec §8), now MEASURED per band: inorganic
+    clears beta across its band; organic straddles (planar device survives,
+    photonic-wire fails); long-cavity is the only rho-bound architecture."""
+    mr = ot.material_regimes(rho_crit=1.47)  # rho passed in; beta MEASURED per regime
     by = {r["name"]: r for r in mr["regimes"]}
 
-    assert by["inorganic_gaas_microcavity"]["beta_pass"] is True  # beta ~1e-4 << ceiling
+    # inorganic: survives across its whole (deep-sub-edge) band
+    assert by["inorganic_gaas_microcavity"]["beta_pass"] is True
     assert "BOTH" in by["inorganic_gaas_microcavity"]["overall"]
 
-    assert by["organic_microcavity"]["beta_pass"] is False  # high-beta room-temp tax
-    assert "beta edge" in by["organic_microcavity"]["overall"]
+    # organic: measured straddle -- survives up to a finite edge, fails above it
+    org = by["organic_microcavity"]
+    assert org["beta_pass"] is False
+    assert org["beta_measured_edge"] is not None
+    assert "geometry-dependent" in org["overall"]
+    assert org["beta_sweep"][0]["survival"] >= 0.99 > org["beta_sweep"][-1]["survival"]
 
     # microcavities are never rho-limited; only the long-cavity regime binds at rho_crit
-    assert "NOT rho-limited" in by["organic_microcavity"]["rho_verdict"]
+    assert "NOT rho-limited" in org["rho_verdict"]
     assert by["long_cavity_soa_fiber_logic"]["beta_range"] is None
     assert "rho_crit" in by["long_cavity_soa_fiber_logic"]["rho_verdict"]
