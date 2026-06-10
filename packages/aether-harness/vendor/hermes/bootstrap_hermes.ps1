@@ -60,11 +60,19 @@ $Py = Join-Path $Venv "Scripts\python.exe"
 & $Py -m pip install --quiet -e $Dest
 & $Py -m pip install --quiet "numpy>=2"   # required by the SCBE governance gate
 
+# Make the SCBE governance package importable from inside the venv. The bridge
+# tries a direct `import scbe_governance_plugin` first, so a .pth pointing at the
+# package root is the cleanest wiring (no per-machine path baked into source).
+$SitePkgs = & $Py -c "import site,sys; print(site.getsitepackages()[0])"
+Set-Content -Path (Join-Path $SitePkgs "aether_harness.pth") -Value $Pkg -Encoding ascii
+Write-Host "   wrote aether_harness.pth -> $Pkg"
+
 # Install the governance plugin into the clone's bundled plugins dir.
 $PluginDest = Join-Path $Dest "plugins\scbe-governance"
 New-Item -ItemType Directory -Force -Path $PluginDest | Out-Null
 Copy-Item (Join-Path $Plugin "plugin.yaml") $PluginDest -Force
 Copy-Item (Join-Path $Plugin "__init__.py") $PluginDest -Force
+$env:AETHER_HARNESS_PKG = $Pkg   # belt-and-suspenders for the current session
 Write-Host "   governance plugin installed -> plugins\scbe-governance"
 
 Write-Host ""
