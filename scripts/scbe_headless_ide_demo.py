@@ -214,28 +214,25 @@ def _render_html(
             payload = _parse_json(t.get("payload_json"))
             action = payload.get("action", "task") if isinstance(payload, dict) else "task"
             status = str(t.get("status", "queued"))
-            cards.append(
-                f"""
+            cards.append(f"""
                 <div class="card status-{status}">
                   <div class="task-id">{t.get('task_id')}</div>
                   <div><b>{action}</b></div>
                   <div>status: {status}</div>
                 </div>
-                """
-            )
-        lane_html_parts.append(
-            f"""
+                """)
+        lane_html_parts.append(f"""
             <section class="lane">
               <h3>{role.upper()}</h3>
               {''.join(cards) if cards else '<div class="empty">No tasks</div>'}
             </section>
-            """
-        )
+            """)
 
     message_rows: List[str] = []
     for m in messages[-20:]:
         message_rows.append(
-            f"<tr><td>{m.get('id')}</td><td>{m.get('channel')}</td><td>{m.get('sender')}</td><td><pre>{json.dumps(_parse_json(m.get('message_json')), indent=2)}</pre></td></tr>"
+            f"<tr><td>{m.get('id')}</td><td>{m.get('channel')}</td><td>{m.get('sender')}</td>"
+            f"<td><pre>{json.dumps(_parse_json(m.get('message_json')), indent=2)}</pre></td></tr>"
         )
 
     return f"""<!doctype html>
@@ -258,7 +255,8 @@ def _render_html(
     table {{ width: 100%; border-collapse: collapse; margin-top: 16px; }}
     th, td {{ border: 1px solid #30363d; padding: 8px; text-align: left; vertical-align: top; }}
     pre {{ white-space: pre-wrap; margin: 0; font-size: 12px; }}
-    textarea {{ width: 100%; min-height: 220px; background: #0f172a; color: #e6edf3; border: 1px solid #30363d; border-radius: 6px; padding: 8px; }}
+    textarea {{ width: 100%; min-height: 220px; background: #0f172a; color: #e6edf3;
+                border: 1px solid #30363d; border-radius: 6px; padding: 8px; }}
   </style>
 </head>
 <body>

@@ -3,6 +3,7 @@
 Fixes from v1: OOM at step 206 due to batch_size=4 + fp32 optimizer.
 Changes: batch=1, paged_adamw_8bit, fp16, max_length=512, 3 full epochs.
 """
+
 from __future__ import annotations
 import gc
 import os
@@ -21,6 +22,7 @@ BASE_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 LOCAL_DATASET = str(Path(__file__).resolve().parents[1] / "training-data" / "sft" / "polly_combined_sft.jsonl")
 RUN_NAME = f"polly-v2-{datetime.now().strftime('%H%M')}"
 OUTPUT_DIR = f"artifacts/training/{RUN_NAME}"
+
 
 def main():
     # Clear any stale CUDA state
@@ -56,11 +58,17 @@ def main():
         device_map="auto",
     )
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
-    model = get_peft_model(model, LoraConfig(
-        r=16, lora_alpha=32, lora_dropout=0.05, bias="none",
-        task_type="CAUSAL_LM",
-        target_modules=["q_proj","k_proj","v_proj","o_proj","gate_proj","up_proj","down_proj"],
-    ))
+    model = get_peft_model(
+        model,
+        LoraConfig(
+            r=16,
+            lora_alpha=32,
+            lora_dropout=0.05,
+            bias="none",
+            task_type="CAUSAL_LM",
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+        ),
+    )
     model.print_trainable_parameters()
 
     free2, _ = torch.cuda.mem_get_info()
@@ -77,11 +85,11 @@ def main():
             output_dir=OUTPUT_DIR,
             num_train_epochs=3,
             # === VRAM-safe settings ===
-            per_device_train_batch_size=1,       # was 4 — caused OOM
+            per_device_train_batch_size=1,  # was 4 — caused OOM
             per_device_eval_batch_size=1,
-            gradient_accumulation_steps=8,        # effective batch = 8
-            optim="paged_adamw_8bit",             # was adamw_torch (fp32) — saves ~50% optimizer mem
-            fp16=False,                           # AMP broken on Python 3.14 torch (BFloat16 grad scaler bug)
+            gradient_accumulation_steps=8,  # effective batch = 8
+            optim="paged_adamw_8bit",  # was adamw_torch (fp32) — saves ~50% optimizer mem
+            fp16=False,  # AMP broken on Python 3.14 torch (BFloat16 grad scaler bug)
             bf16=False,
             dataloader_pin_memory=False,
             # === Training params ===
@@ -91,7 +99,7 @@ def main():
             lr_scheduler_type="cosine",
             max_grad_norm=0.3,
             # === Sequence ===
-            max_length=384,                       # reduced from 512 — fp32 activations need more VRAM
+            max_length=384,  # reduced from 512 — fp32 activations need more VRAM
             packing=True,
             # === Logging & saving ===
             logging_steps=10,
@@ -119,8 +127,8 @@ def main():
 
     # Log final metrics
     logs = trainer.state.log_history
-    train_logs = [l for l in logs if "loss" in l and "eval_loss" not in l]
-    eval_logs = [l for l in logs if "eval_loss" in l]
+    train_logs = [entry for entry in logs if "loss" in entry and "eval_loss" not in entry]
+    eval_logs = [entry for entry in logs if "eval_loss" in entry]
     print(f"\n{'='*60}")
     print(f"TRAINING COMPLETE — {RUN_NAME}")
     print(f"{'='*60}")

@@ -28,7 +28,6 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-
 DEFAULT_LIBRARY_URL = "https://www.perplexity.ai/library"
 DEFAULT_LOGIN_URL = "https://www.perplexity.ai/login"
 DEFAULT_RAW_DIR = "data/perplexity/raw_json"
@@ -313,14 +312,12 @@ def collect_links(page: Any, cfg: ExportConfig) -> list[dict[str, str]]:
                 if href not in collected:
                     collected[href] = {"url": href, "label": text}
 
-        anchors = page.evaluate(
-            """
+        anchors = page.evaluate("""
             () => Array.from(document.querySelectorAll("a[href]")).map(a => ({
               href: a.href || "",
               text: (a.textContent || "").trim()
             }))
-            """
-        )
+            """)
         for row in anchors:
             href = str(row.get("href") or "").strip()
             text = str(row.get("text") or "").strip()
@@ -351,8 +348,7 @@ def collect_links(page: Any, cfg: ExportConfig) -> list[dict[str, str]]:
 
 
 def extract_messages_fallback(page: Any) -> list[dict[str, str]]:
-    rows = page.evaluate(
-        """
+    rows = page.evaluate("""
         () => {
           const picked = [];
           const selectors = [
@@ -395,8 +391,7 @@ def extract_messages_fallback(page: Any) -> list[dict[str, str]]:
 
           return picked.slice(0, 800);
         }
-        """
-    )
+        """)
     out: list[dict[str, str]] = []
     for row in rows:
         role = str(row.get("role") or "unknown")

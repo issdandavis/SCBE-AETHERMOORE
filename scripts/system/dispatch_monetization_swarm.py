@@ -16,7 +16,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -80,7 +79,8 @@ DEFAULT_LANES: List[LaneAssignment] = [
             "Own messaging lane: produce outreach templates and discovery-call script mapped to three paid offers."
         ),
         next_action=(
-            "Commit outreach templates and one qualification script; emit packet with exact file paths and send-ready text."
+            "Commit outreach templates and one qualification script; "
+            "emit packet with exact file paths and send-ready text."
         ),
         proof=[
             "docs/monetization/2026-03-04-agent-swarm-revenue-sprint.md",

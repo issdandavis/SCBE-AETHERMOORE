@@ -11,7 +11,6 @@ if str(REPO_ROOT) not in sys.path:
 
 from src.tokenizer.atomic_workflow_units import ResourceBudget, compose_workflow
 
-
 DEFAULT_MARS_DRONE_SEQUENCE = (
     "scan_area",
     "measure_state",
@@ -57,4 +56,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

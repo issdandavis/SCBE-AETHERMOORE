@@ -89,7 +89,10 @@ def cmd_compile_ca(args: argparse.Namespace) -> int:
         for line in program.body_lines:
             source_lines.append("    " + line)
     elif args.target == "typescript":
-        sig = f"export function {program.fn_name}({', '.join(a + ': number' for a in program.arg_names)}): number | null {{"
+        sig = (
+            f"export function {program.fn_name}"
+            f"({', '.join(a + ': number' for a in program.arg_names)}): number | null {{"
+        )
         source_lines.append(sig)
         for line in program.body_lines:
             source_lines.append("  " + line)
@@ -258,9 +261,7 @@ def cmd_manifest(args: argparse.Namespace) -> int:
 
     manifest = {
         "system_prompt": SYSTEM_PROMPT,
-        "kinds": [
-            {"kind": k, "tokens": list(PREFIX_ORDER[k]), "forced_prefix": build_prefix(k)} for k in kinds
-        ],
+        "kinds": [{"kind": k, "tokens": list(PREFIX_ORDER[k]), "forced_prefix": build_prefix(k)} for k in kinds],
     }
     print(json.dumps(manifest, indent=2))
     return 0

@@ -237,7 +237,8 @@ def build_boss_retry_plan(
     if strategy == "constrained_decoding_plus_targeted_dpo":
         next_actions.insert(
             2,
-            "Add a decoding shim or response scaffold that forces a required-token checklist before prose, then train preferences around pass/fail responses.",
+            "Add a decoding shim or response scaffold that forces a required-token checklist before prose, "
+            "then train preferences around pass/fail responses.",
         )
 
     return {
@@ -269,10 +270,14 @@ def build_boss_retry_plan(
                 "analog_repair_rows",
                 "same_gate_retry",
             ],
-            "promotion_rule": "EXP counts only when the same frozen gate improves without training on the held-out prompt text.",
+            "promotion_rule": (
+                "EXP counts only when the same frozen gate improves " "without training on the held-out prompt text."
+            ),
         },
         "next_actions": next_actions,
-        "loop_rule": "train -> frozen gate -> mine failures -> analog repair data -> retry; publish only after gate pass",
+        "loop_rule": (
+            "train -> frozen gate -> mine failures -> analog repair data -> retry; publish only after gate pass"
+        ),
     }
 
 
@@ -293,7 +298,10 @@ def assess_job_health(inspect_summary: dict[str, Any], logs_payload: dict[str, A
         return {
             "state": "running_without_logs",
             "safe_for_full_train": False,
-            "recommendation": "cancel this smoke job and do not launch a full training run until a smoke job emits startup/train logs",
+            "recommendation": (
+                "cancel this smoke job and do not launch a full training run "
+                "until a smoke job emits startup/train logs"
+            ),
         }
     if stage in {"FAILED", "CANCELED", "ERROR"}:
         return {
@@ -486,7 +494,8 @@ def _generate(tokenizer, model, prompt: str, max_new_tokens: int) -> str:
     messages = [
         {{
             "role": "system",
-            "content": "You are an SCBE-AETHERMOORE GeoSeal coding agent. Obey the requested target language and preserve route/slot semantics.",
+            "content": "You are an SCBE-AETHERMOORE GeoSeal coding agent. "
+            "Obey the requested target language and preserve route/slot semantics.",
         }},
         {{"role": "user", "content": prompt}},
     ]

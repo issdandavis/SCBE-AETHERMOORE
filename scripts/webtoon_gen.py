@@ -27,7 +27,6 @@ import time
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "artifacts" / "webtoon"
 PROMPTS_DIR = OUT_DIR / "panel_prompts"
@@ -35,7 +34,8 @@ DEFAULT_MODEL_ID = "black-forest-labs/FLUX.1-schnell"
 DEFAULT_ADAPTER_NAME = "scbe-style"
 
 LEGACY_STYLE_PREFIXES = (
-    "manhwa webtoon panel, clean linework, soft atmospheric shading, Korean manhwa style, cinematic composition, high quality digital art. ",
+    "manhwa webtoon panel, clean linework, soft atmospheric shading, Korean manhwa style, "
+    "cinematic composition, high quality digital art. ",
     "manhwa webtoon panel, clean linework, soft atmospheric shading, Korean manhwa style, high quality digital art. ",
 )
 

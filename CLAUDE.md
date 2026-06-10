@@ -87,8 +87,8 @@ npm run build && npm run lint && npm test
 PYTHONPATH=. python -m pytest tests/ -v --ignore=tests/node_modules -x
 
 # 3. Python formatting (must pass in CI)
-black --check --target-version py311 --line-length 120 src/ tests/ hydra/
-flake8 --max-line-length 120 src/ tests/ hydra/
+black --check --target-version py311 --line-length 120 src/ tests/ hydra/ scripts/ agents/
+flake8 --max-line-length 120 src/ tests/ hydra/ scripts/ agents/
 
 # Quick smoke test (just the fast Python tests, ~5s)
 PYTHONPATH=. python -m pytest tests/ -x -q \

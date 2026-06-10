@@ -13,7 +13,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
 SCRIPT_PATH = Path(__file__).resolve()
 REPO_ROOT = SCRIPT_PATH.parents[2]
 WORKFLOW_NAME = "free-remote-worker.yml"
@@ -38,7 +37,8 @@ PRESETS: dict[str, dict[str, str]] = {
     "stasm-smoke": {
         "description": "Assemble and execute the STASM hello world sample",
         "task_label": "stasm-smoke",
-        "command": "python -m tools.stasm.assembler examples/hello_world.sts /tmp/hello.bin && python -m tools.stvm.vm /tmp/hello.bin",
+        "command": "python -m tools.stasm.assembler examples/hello_world.sts /tmp/hello.bin "
+        "&& python -m tools.stvm.vm /tmp/hello.bin",
         "install_mode": "auto",
         "working_directory": ".",
         "artifact_glob": "",
@@ -208,7 +208,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     dispatch.add_argument("--working-directory", default=".", help="Working directory relative to repo root")
     dispatch.add_argument("--artifact-glob", default="", help="Additional files or globs to upload")
-    dispatch.add_argument("--ref", help="Git ref or branch to run the workflow on; defaults to the remote repo default branch")
+    dispatch.add_argument(
+        "--ref", help="Git ref or branch to run the workflow on; defaults to the remote repo default branch"
+    )
     dispatch.add_argument("--watch", action="store_true", help="Watch the dispatched run until completion")
     dispatch.add_argument("--poll-seconds", type=int, default=10, help="Polling interval for watch mode")
     dispatch.add_argument("--dry-run", action="store_true", help="Print the gh command instead of dispatching")
@@ -229,7 +231,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     preset.add_argument("--working-directory", help="Override the preset working directory relative to repo root")
     preset.add_argument("--artifact-glob", default=None, help="Override the preset additional artifact glob")
-    preset.add_argument("--ref", help="Git ref or branch to run the workflow on; defaults to the remote repo default branch")
+    preset.add_argument(
+        "--ref", help="Git ref or branch to run the workflow on; defaults to the remote repo default branch"
+    )
     preset.add_argument("--watch", action="store_true", help="Watch the dispatched run until completion")
     preset.add_argument("--poll-seconds", type=int, default=10, help="Polling interval for watch mode")
     preset.add_argument("--dry-run", action="store_true", help="Print the gh command instead of dispatching")

@@ -274,7 +274,7 @@ def create_panel_prompts_from_chapter(
     max(1, target_panels // max(len(scenes), 1))
 
     for scene_idx, scene in enumerate(scenes):
-        lines = [l.strip() for l in scene.split("\n") if l.strip()]
+        lines = [ln.strip() for ln in scene.split("\n") if ln.strip()]
         if not lines:
             continue
 
@@ -347,7 +347,7 @@ def create_panel_prompts_from_chapter(
                 ptype = "QUIET"
 
             # Extract a key sentence for the prompt
-            key_sentences = [l for l in lines if len(l) > 30 and not l.startswith("*")][:3]
+            key_sentences = [ln for ln in lines if len(ln) > 30 and not ln.startswith("*")][:3]
             scene_summary = key_sentences[0][:150] if key_sentences else lines[0][:150]
 
             # Determine dimensions
@@ -375,7 +375,7 @@ def create_panel_prompts_from_chapter(
         if len(lines) > 10 and panel_num < target_panels:
             # Dialogue panel from middle of scene
             mid = len(lines) // 2
-            dialogue_lines = [l for l in lines[mid : mid + 5] if '"' in l or l.startswith("*")]
+            dialogue_lines = [ln for ln in lines[mid : mid + 5] if '"' in ln or ln.startswith("*")]
             if dialogue_lines:
                 panel_num += 1
                 panels.append(
@@ -592,7 +592,7 @@ def main():
         return
 
     # Phase 2: Generate images
-    print(f"\nLoading SDXL Turbo for generation...")
+    print("\nLoading SDXL Turbo for generation...")
     import torch
     from diffusers import AutoPipelineForText2Image
 

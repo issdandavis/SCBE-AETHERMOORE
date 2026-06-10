@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 
 
@@ -296,7 +295,9 @@ def sphere_rules() -> dict[tuple[str, int], dict[str, float]]:
     }
 
 
-def classify_skill(name: str, description: str, spheres: dict[tuple[str, int], Sphere]) -> tuple[Sphere, list[Candidate]]:
+def classify_skill(
+    name: str, description: str, spheres: dict[tuple[str, int], Sphere]
+) -> tuple[Sphere, list[Candidate]]:
     text = f"{name} {description}".lower()
     # normalize separators
     text = text.replace("_", " ").replace("-", " ")

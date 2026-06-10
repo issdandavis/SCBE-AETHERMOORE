@@ -7,7 +7,6 @@ import argparse
 import tarfile
 from pathlib import Path
 
-
 REQUIRED_FILES = ["paper.tex", "manifest.json"]
 
 

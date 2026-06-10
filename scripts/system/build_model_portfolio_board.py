@@ -313,7 +313,9 @@ def build_portfolio(hf_models: list[dict[str, Any]]) -> dict[str, Any]:
         "policy": {
             "do_not_merge_all": True,
             "merge_rule": "Only merge adapters that share the same base model and pass their frozen eval gates.",
-            "canonical_target": "one promoted coding model plus specialist adapters retained only as gated merge inputs",
+            "canonical_target": (
+                "one promoted coding model plus specialist adapters retained only as gated merge inputs"
+            ),
             "archive_rule": "Tag or document old experiments first; do not delete remote repos in this script.",
         },
         "local_training_profiles": profiles,

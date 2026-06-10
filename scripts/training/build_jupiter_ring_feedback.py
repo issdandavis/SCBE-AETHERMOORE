@@ -16,12 +16,8 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_OUT = (
-    REPO_ROOT / "training-data" / "agentic_coding" / "jupiter_ring_feedback.jsonl"
-)
-DEFAULT_MANIFEST = (
-    REPO_ROOT / "artifacts" / "training_hub" / "jupiter_ring_feedback_manifest.json"
-)
+DEFAULT_OUT = REPO_ROOT / "training-data" / "agentic_coding" / "jupiter_ring_feedback.jsonl"
+DEFAULT_MANIFEST = REPO_ROOT / "artifacts" / "training_hub" / "jupiter_ring_feedback_manifest.json"
 
 
 SYSTEM = (
@@ -69,9 +65,7 @@ def _coding_benchmark_records(path: Path) -> list[dict[str, Any]]:
             passed = bool(task.get("passed"))
             checks = task.get("checks") if isinstance(task.get("checks"), list) else []
             prompt = str(task.get("prompt", "")).strip()
-            output = str(
-                task.get("extracted_code") or task.get("raw_generation") or ""
-            ).strip()
+            output = str(task.get("extracted_code") or task.get("raw_generation") or "").strip()
             if not prompt or not output:
                 continue
             outcome = {
@@ -82,9 +76,7 @@ def _coding_benchmark_records(path: Path) -> list[dict[str, Any]]:
             }
             record = {
                 "source_type": "coding_agent_benchmark",
-                "id": _sha(
-                    [benchmark, adapter_id, task.get("task_id"), prompt, output]
-                )[:24],
+                "id": _sha([benchmark, adapter_id, task.get("task_id"), prompt, output])[:24],
                 "category": "agentic-feedback-ring",
                 "messages": [
                     {"role": "system", "content": SYSTEM},
@@ -98,17 +90,9 @@ def _coding_benchmark_records(path: Path) -> list[dict[str, Any]]:
                         "role": "assistant",
                         "content": (
                             "Decision: "
-                            + (
-                                "ACCEPT_AS_POSITIVE_EXAMPLE"
-                                if passed
-                                else "USE_AS_REPAIR_EXAMPLE"
-                            )
+                            + ("ACCEPT_AS_POSITIVE_EXAMPLE" if passed else "USE_AS_REPAIR_EXAMPLE")
                             + "\nReason: checks show "
-                            + (
-                                "the requested behavior passed."
-                                if passed
-                                else "at least one behavior failed."
-                            )
+                            + ("the requested behavior passed." if passed else "at least one behavior failed.")
                         ),
                     },
                 ],
@@ -163,11 +147,7 @@ def _operator_bus_records(path: Path) -> list[dict[str, Any]]:
                     {
                         "role": "assistant",
                         "content": "Decision: "
-                        + (
-                            "ACCEPT_AS_POSITIVE_EXAMPLE"
-                            if ok
-                            else "USE_AS_REPAIR_EXAMPLE"
-                        )
+                        + ("ACCEPT_AS_POSITIVE_EXAMPLE" if ok else "USE_AS_REPAIR_EXAMPLE")
                         + "\nReason: runtime bus checks "
                         + ("passed." if ok else "did not pass."),
                     },
@@ -222,11 +202,7 @@ def _governance_records(path: Path, limit: int = 40) -> list[dict[str, Any]]:
                     {
                         "role": "assistant",
                         "content": "Decision: "
-                        + (
-                            "ACCEPT_AS_POSITIVE_EXAMPLE"
-                            if ok
-                            else "USE_AS_REPAIR_EXAMPLE"
-                        )
+                        + ("ACCEPT_AS_POSITIVE_EXAMPLE" if ok else "USE_AS_REPAIR_EXAMPLE")
                         + "\nReason: governance classification "
                         + ("matched expectations." if ok else "needs repair."),
                     },
@@ -246,27 +222,13 @@ def _governance_records(path: Path, limit: int = 40) -> list[dict[str, Any]]:
 
 def build_records() -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
-    for path in sorted(
-        (REPO_ROOT / "artifacts" / "coding_agent_benchmarks").glob("*/report.json")
-    ):
+    for path in sorted((REPO_ROOT / "artifacts" / "coding_agent_benchmarks").glob("*/report.json")):
         records.extend(_coding_benchmark_records(path))
     records.extend(
-        _operator_bus_records(
-            REPO_ROOT
-            / "artifacts"
-            / "benchmarks"
-            / "operator_agent_bus_eval"
-            / "latest_report.json"
-        )
+        _operator_bus_records(REPO_ROOT / "artifacts" / "benchmarks" / "operator_agent_bus_eval" / "latest_report.json")
     )
     records.extend(
-        _governance_records(
-            REPO_ROOT
-            / "artifacts"
-            / "benchmarks"
-            / "governance_security_eval"
-            / "latest_report.json"
-        )
+        _governance_records(REPO_ROOT / "artifacts" / "benchmarks" / "governance_security_eval" / "latest_report.json")
     )
 
     dedup: dict[str, dict[str, Any]] = {}
@@ -275,9 +237,7 @@ def build_records() -> list[dict[str, Any]]:
     return list(dedup.values())
 
 
-def write_outputs(
-    out_path: Path = DEFAULT_OUT, manifest_path: Path = DEFAULT_MANIFEST
-) -> dict[str, Any]:
+def write_outputs(out_path: Path = DEFAULT_OUT, manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
     records = build_records()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -297,18 +257,15 @@ def write_outputs(
         "output": str(out_path.relative_to(REPO_ROOT)).replace("\\", "/"),
         "source_counts": counts,
         "quality_counts": qualities,
-        "principle": "pair user/task inputs with model outputs and outcome evidence; failed evals become repair data, not shipped claims",
+        "principle": "pair user/task inputs with model outputs and outcome evidence; "
+        "failed evals become repair data, not shipped claims",
     }
-    manifest_path.write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=True), encoding="utf-8"
-    )
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=True), encoding="utf-8")
     return manifest
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Build SCBE Jupiter-ring feedback training rows"
-    )
+    parser = argparse.ArgumentParser(description="Build SCBE Jupiter-ring feedback training rows")
     parser.add_argument("--output", default=str(DEFAULT_OUT))
     parser.add_argument("--manifest", default=str(DEFAULT_MANIFEST))
     parser.add_argument("--json", action="store_true")

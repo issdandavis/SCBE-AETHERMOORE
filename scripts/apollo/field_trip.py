@@ -276,7 +276,7 @@ def run_field_trip(route_name: str = "standard") -> FieldTripReport:
         )
         # Discard raw IP — only confirm connectivity
         _ = r.json().get("IP", "?")
-        print(f"  Tor: LIVE (exit: [REDACTED])")
+        print("  Tor: LIVE (exit: [REDACTED])")
     except Exception as e:
         print(f"  Tor: OFFLINE ({e})")
         print("  Start Tor first: tor --SocksPort 9050 &")
@@ -299,9 +299,9 @@ def run_field_trip(route_name: str = "standard") -> FieldTripReport:
             rotations += 1
             time.sleep(5)  # wait for new circuit
             if rotated:
-                print(f"         New circuit established")
+                print("         New circuit established")
             else:
-                print(f"         Soft rotation (new circuit on next request)")
+                print("         Soft rotation (new circuit on next request)")
             hop_num += 1
             continue
 
@@ -336,7 +336,10 @@ def run_field_trip(route_name: str = "standard") -> FieldTripReport:
         if hop.governance != "DENY" and hop.content_length > 100:
             sft_pairs.append(
                 {
-                    "instruction": f"What content is available at {hop.url} when accessed {'via Tor' if hop.network == 'tor' else 'directly'}?",
+                    "instruction": (
+                        f"What content is available at {hop.url} "
+                        f"when accessed {'via Tor' if hop.network == 'tor' else 'directly'}?"
+                    ),
                     "response": f"Accessed via {hop.network} (exit IP: [REDACTED]). "
                     f"Title: {hop.title}. Content size: {hop.content_length} bytes. "
                     f"Governance decision: {hop.governance}. "

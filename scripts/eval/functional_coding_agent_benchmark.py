@@ -35,9 +35,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 try:
     from src.tokenizer.atomic_workflow_units import build_atomic_workflow_unit
-except (
-    Exception
-):  # noqa: BLE001 - benchmark must remain runnable if optional tokenizer path drifts
+except Exception:  # noqa: BLE001 - benchmark must remain runnable if optional tokenizer path drifts
     build_atomic_workflow_unit = None
 
 
@@ -140,7 +138,8 @@ TASKS = [
         task_id="quest_flags",
         prompt=(
             "Write TypeScript only. Define function evaluate(input, state). "
-            "If every string in input.required is present in state.flags, add input.reward to state.rewards if it is not already present, then return true. "
+            "If every string in input.required is present in state.flags, "
+            "add input.reward to state.rewards if it is not already present, then return true. "
             "If any required flag is missing, do not change state.rewards and return false."
         ),
         checks=[
@@ -168,7 +167,8 @@ TASKS = [
         task_id="weighted_choice",
         prompt=(
             "Write TypeScript only. Define function evaluate(input, state). "
-            "input.options is an array of objects with id and weight. Return the id of the first option where the cumulative weight is greater than input.roll. "
+            "input.options is an array of objects with id and weight. "
+            "Return the id of the first option where the cumulative weight is greater than input.roll. "
             "If no option crosses the roll, return the final option id. Do not mutate state."
         ),
         checks=[
@@ -199,9 +199,7 @@ def load_task_file(path: Path) -> list[FunctionalTask]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     raw_tasks = payload.get("tasks") if isinstance(payload, dict) else payload
     if not isinstance(raw_tasks, list):
-        raise ValueError(
-            "task file must be a JSON list or an object with a 'tasks' list"
-        )
+        raise ValueError("task file must be a JSON list or an object with a 'tasks' list")
     tasks: list[FunctionalTask] = []
     for row in raw_tasks:
         tasks.append(
@@ -259,15 +257,9 @@ def _return_shape(value: Any) -> str:
 def _atomic_role_tokens_for_task(task: FunctionalTask) -> list[str]:
     text = f"{task.task_id} {task.prompt}".lower()
     tokens: list[str] = ["read"]
-    if any(
-        word in text
-        for word in ("if ", "select", "route", "choose", "classify", "gate")
-    ):
+    if any(word in text for word in ("if ", "select", "route", "choose", "classify", "gate")):
         tokens.append("route")
-    if any(
-        word in text
-        for word in ("count", "compute", "score", "highest", "lowest", "sort", "queue")
-    ):
+    if any(word in text for word in ("count", "compute", "score", "highest", "lowest", "sort", "queue")):
         tokens.append("compute")
     if any(
         word in text
@@ -294,9 +286,7 @@ def _atomic_role_tokens_for_task(task: FunctionalTask) -> list[str]:
 def _build_atomic_unit(token: str) -> dict[str, Any]:
     if build_atomic_workflow_unit is None:
         digest = (
-            _sha256_text(token)[:16]
-            if "_sha256_text" in globals()
-            else hashlib.sha256(token.encode()).hexdigest()[:16]
+            _sha256_text(token)[:16] if "_sha256_text" in globals() else hashlib.sha256(token.encode()).hexdigest()[:16]
         )
         return {
             "unit_id": digest,
@@ -339,14 +329,13 @@ def build_atomic_contract_packet(task: FunctionalTask) -> dict[str, Any]:
         "forbidden_patterns": forbidden_patterns,
         "instruction": (
             "Use this as a lookup-table contract before writing code: all expected_state_paths must be assigned "
-            "when required, the function return must match return_shapes, and forbidden_patterns are known failure modes."
+            "when required, the function return must match return_shapes, "
+            "and forbidden_patterns are known failure modes."
         ),
     }
 
 
-def audit_atomic_response(
-    source: str, task: FunctionalTask, packet: dict[str, Any] | None = None
-) -> dict[str, Any]:
+def audit_atomic_response(source: str, task: FunctionalTask, packet: dict[str, Any] | None = None) -> dict[str, Any]:
     packet = packet or build_atomic_contract_packet(task)
     compact = re.sub(r"\s+", "", source)
     state_path_hits = {}
@@ -371,9 +360,7 @@ def audit_atomic_response(
         "schema": "scbe_atomic_response_audit_v1",
         "task_id": task.task_id,
         "state_path_hits": state_path_hits,
-        "missing_state_paths": [
-            path for path, hit in state_path_hits.items() if not hit
-        ],
+        "missing_state_paths": [path for path, hit in state_path_hits.items() if not hit],
         "forbidden_hits": forbidden_hits,
         "lookup_role_tokens": packet.get("role_tokens") or [],
         "aligned": not forbidden_hits and all(state_path_hits.values()),
@@ -421,9 +408,7 @@ def trim_to_first_function(source: str, function_name: str = "evaluate") -> str:
 
 
 def extract_typescript(text: str) -> str:
-    fence = re.search(
-        r"```(?:typescript|ts|javascript|js)?\s*(.*?)```", text, flags=re.I | re.S
-    )
+    fence = re.search(r"```(?:typescript|ts|javascript|js)?\s*(.*?)```", text, flags=re.I | re.S)
     if fence:
         return trim_to_first_function(fence.group(1).strip())
     idx = text.find("function evaluate")
@@ -441,17 +426,11 @@ def load_model(base_model: str, adapter: str, dtype_arg: str, use_4bit: bool):
 
     cuda_avail = torch.cuda.is_available()
     if dtype_arg == "auto":
-        dtype = (
-            torch.bfloat16
-            if cuda_avail and torch.cuda.get_device_capability(0)[0] >= 8
-            else torch.float16
-        )
+        dtype = torch.bfloat16 if cuda_avail and torch.cuda.get_device_capability(0)[0] >= 8 else torch.float16
         if not cuda_avail:
             dtype = torch.float32
     else:
-        dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[
-            dtype_arg
-        ]
+        dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[dtype_arg]
 
     tokenizer = AutoTokenizer.from_pretrained(base_model, use_fast=True)
     if tokenizer.pad_token is None:
@@ -495,9 +474,7 @@ def generate_code(tokenizer, model, prompt: str, max_new_tokens: int) -> str:
         },
         {"role": "user", "content": prompt},
     ]
-    text = tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
-    )
+    text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     inputs = tokenizer(text, return_tensors="pt").to(next(model.parameters()).device)
     with torch.no_grad():
         out = model.generate(
@@ -527,15 +504,15 @@ def build_code_generation_prompt(
             for index, check in enumerate(checks)
         ]
         contract = (
-            "\nReturn/state separation examples. Return exactly the `return` value; mutate `state` to exactly `final_state`:\n"
+            "\nReturn/state separation examples. "
+            "Return exactly the `return` value; mutate `state` to exactly `final_state`:\n"
             f"{json.dumps(return_examples, ensure_ascii=False, indent=2)}\n"
             "\nExecutable contract examples. Your code must satisfy every expected result and expected final state:\n"
             f"{json.dumps(checks, ensure_ascii=False, indent=2)}\n"
         )
     if atomic_packet:
         atomic_contract = (
-            "\nAtomic/STISA lookup contract:\n"
-            f"{json.dumps(atomic_packet, ensure_ascii=False, indent=2)}\n"
+            "\nAtomic/STISA lookup contract:\n" f"{json.dumps(atomic_packet, ensure_ascii=False, indent=2)}\n"
         )
     return (
         "You are a coding agent. Return only plain JavaScript-compatible TypeScript code. Do not use markdown. "
@@ -543,8 +520,10 @@ def build_code_generation_prompt(
         "The benchmark checks both the returned value and the final mutated state exactly. "
         "If the task says to store or set a state field, mutate that field before returning; "
         "do not only return the correct value. The function return value must equal expectedResult; "
-        "the mutated state must equal expectedState. Do not return the state object unless expectedResult is the state object. "
-        "Avoid reserved JavaScript identifiers such as delete as variable names; use deleteList or deletePaths instead. "
+        "the mutated state must equal expectedState. "
+        "Do not return the state object unless expectedResult is the state object. "
+        "Avoid reserved JavaScript identifiers such as delete as variable names; "
+        "use deleteList or deletePaths instead. "
         "Use object fields such as task.priority, not bare variables such as priority. "
         "Avoid optional chaining, nullish coalescing, destructuring defaults, and TypeScript-only operators.\n\n"
         f"Task:\n{prompt}\n"
@@ -553,12 +532,8 @@ def build_code_generation_prompt(
     )
 
 
-def build_code_repair_prompt(
-    task: FunctionalTask, source: str, score: dict[str, Any]
-) -> str:
-    first_bad = next(
-        (check for check in score.get("checks", []) if not check.get("passed")), None
-    )
+def build_code_repair_prompt(task: FunctionalTask, source: str, score: dict[str, Any]) -> str:
+    first_bad = next((check for check in score.get("checks", []) if not check.get("passed")), None)
     failure = first_bad or {"error": score.get("error") or "unknown failure"}
     atomic_packet = build_atomic_contract_packet(task)
     atomic_audit = audit_atomic_response(source, task, atomic_packet)
@@ -576,7 +551,8 @@ def build_code_repair_prompt(
         "First failing check receipt:\n"
         f"{json.dumps(failure, ensure_ascii=False, indent=2)}\n\n"
         "Fix the exact contract. Pay attention to required state mutation, exact return value, "
-        "initializing missing state arrays or objects, exact enum/string values, and the difference between expectedResult and expectedState. "
+        "initializing missing state arrays or objects, exact enum/string values, "
+        "and the difference between expectedResult and expectedState. "
         "Do not return state or state arrays unless expectedResult explicitly requires that shape. "
         "Use plain JavaScript-compatible syntax and object field references."
     )
@@ -712,9 +688,7 @@ def build_compiler_receipt(
     checks_passed = sum(1 for check in checks if check.get("passed"))
     atomic_packet = atomic_packet or build_atomic_contract_packet(task)
     atomic_audit = audit_atomic_response(source, task, atomic_packet)
-    route_tongue = (
-        "AV"  # Avali maps to TypeScript in the GeoSeal tongue-language table.
-    )
+    route_tongue = "AV"  # Avali maps to TypeScript in the GeoSeal tongue-language table.
     code_hash = _sha256_text(source)
     prompt_hash = _sha256_text(task.prompt)
     seal_payload = json.dumps(
@@ -777,7 +751,10 @@ def build_compiler_receipt(
             "checks_passed": checks_passed,
             "checks_total": len(checks),
         },
-        "note": "Verification is one compiler output, not the whole CLI purpose. The receipt preserves semantic input, target code artifact, tongue route, and GeoSeal trace.",
+        "note": (
+            "Verification is one compiler output, not the whole CLI purpose. "
+            "The receipt preserves semantic input, target code artifact, tongue route, and GeoSeal trace."
+        ),
     }
 
 
@@ -795,10 +772,7 @@ def maybe_repair_ollama_candidate(
     repairs = []
     best_score = initial_score
     best_code = initial_code
-    repair_tokens = int(
-        getattr(args, "repair_max_new_tokens", 0)
-        or getattr(args, "max_new_tokens", 180)
-    )
+    repair_tokens = int(getattr(args, "repair_max_new_tokens", 0) or getattr(args, "max_new_tokens", 180))
     for attempt in range(1, repair_attempts + 1):
         started = time.time()
         repair_prompt = build_code_repair_prompt(task, best_code, best_score)
@@ -880,9 +854,7 @@ def maybe_apply_semantic_bridge_repair(
     bridge_record = {
         "kind": "common_return_shape_bridge",
         "passed": bool(bridged_score.get("passed")),
-        "checks_passed": sum(
-            1 for check in bridged_score.get("checks") or [] if check.get("passed")
-        ),
+        "checks_passed": sum(1 for check in bridged_score.get("checks") or [] if check.get("passed")),
         "checks_total": len(bridged_score.get("checks") or []),
     }
     if bridged_score.get("passed"):
@@ -934,7 +906,8 @@ def synthesize_contract_joint_code(
   for (const task of input.tasks) {
     if (task.blocked) continue;
     queueLength += 1;
-    if (best === null || task.priority > best.priority || (task.priority === best.priority && task.dueHours < best.dueHours)) {
+    if (best === null || task.priority > best.priority ||
+        (task.priority === best.priority && task.dueHours < best.dueHours)) {
       best = task;
     }
   }
@@ -999,7 +972,8 @@ def synthesize_contract_joint_code(
             """function evaluate(input, state) {
   const command = String(input.command || "");
   const lower = command.toLowerCase();
-  const denied = lower.indexOf("rm -rf") >= 0 || lower.indexOf("format ") >= 0 || lower.indexOf("del /s") >= 0 || lower.indexOf("shutdown") >= 0;
+  const denied = lower.indexOf("rm -rf") >= 0 || lower.indexOf("format ") >= 0 ||
+    lower.indexOf("del /s") >= 0 || lower.indexOf("shutdown") >= 0;
   if (denied) {
     state.allowed = false;
     state.reason = "destructive_command";
@@ -1224,7 +1198,8 @@ def synthesize_contract_joint_code(
         return (
             """function evaluate(input, state) {
   const metrics = input.metrics;
-  const erosion = metrics.duplicateBlocks * 2 + metrics.unusedFiles * 3 + metrics.fakeReports * 10 + metrics.changedFiles;
+  const erosion = metrics.duplicateBlocks * 2 + metrics.unusedFiles * 3 +
+    metrics.fakeReports * 10 + metrics.changedFiles;
   state.erosionScore = erosion;
   state.maintenanceGate = erosion > input.maxErosion ? "block" : "allow";
   return state.maintenanceGate;
@@ -1325,12 +1300,18 @@ def synthesize_contract_joint_code(
             """function evaluate(input, state) {
   const goal = String(input.goal || "").toLowerCase();
   let route = "KO";
-  if (goal.indexOf("code") >= 0 || goal.indexOf("build") >= 0 || goal.indexOf("patch") >= 0 || goal.indexOf("automate") >= 0) route = "AV";
-  else if (goal.indexOf("repair") >= 0 || goal.indexOf("recover") >= 0 || goal.indexOf("fault") >= 0 || goal.indexOf("debug") >= 0) route = "RU";
-  else if (goal.indexOf("home") >= 0 || goal.indexOf("return") >= 0 || goal.indexOf("navigate") >= 0 || goal.indexOf("base") >= 0) route = "CA";
-  else if (goal.indexOf("science") >= 0 || goal.indexOf("sample") >= 0 || goal.indexOf("analyze") >= 0 || goal.indexOf("optimize") >= 0) route = "UM";
-  else if (goal.indexOf("communicate") >= 0 || goal.indexOf("relay") >= 0 || goal.indexOf("compress") >= 0 || goal.indexOf("archive") >= 0 || goal.indexOf("handoff") >= 0) route = "DR";
-  else if (goal.indexOf("terrain") >= 0 || goal.indexOf("map") >= 0 || goal.indexOf("scan") >= 0 || goal.indexOf("search") >= 0) route = "KO";
+  if (goal.indexOf("code") >= 0 || goal.indexOf("build") >= 0 ||
+      goal.indexOf("patch") >= 0 || goal.indexOf("automate") >= 0) route = "AV";
+  else if (goal.indexOf("repair") >= 0 || goal.indexOf("recover") >= 0 ||
+      goal.indexOf("fault") >= 0 || goal.indexOf("debug") >= 0) route = "RU";
+  else if (goal.indexOf("home") >= 0 || goal.indexOf("return") >= 0 ||
+      goal.indexOf("navigate") >= 0 || goal.indexOf("base") >= 0) route = "CA";
+  else if (goal.indexOf("science") >= 0 || goal.indexOf("sample") >= 0 ||
+      goal.indexOf("analyze") >= 0 || goal.indexOf("optimize") >= 0) route = "UM";
+  else if (goal.indexOf("communicate") >= 0 || goal.indexOf("relay") >= 0 || goal.indexOf("compress") >= 0 ||
+      goal.indexOf("archive") >= 0 || goal.indexOf("handoff") >= 0) route = "DR";
+  else if (goal.indexOf("terrain") >= 0 || goal.indexOf("map") >= 0 ||
+      goal.indexOf("scan") >= 0 || goal.indexOf("search") >= 0) route = "KO";
   state.routeTongue = route;
   return route;
 }
@@ -1413,9 +1394,7 @@ def maybe_apply_contract_synthesis_joint(
     record = {
         "kind": kind,
         "passed": bool(joint_score.get("passed")),
-        "checks_passed": sum(
-            1 for check in joint_score.get("checks") or [] if check.get("passed")
-        ),
+        "checks_passed": sum(1 for check in joint_score.get("checks") or [] if check.get("passed")),
         "checks_total": len(joint_score.get("checks") or []),
         "source_code_sha256": _sha256_text(source),
         "joint_code_sha256": _sha256_text(joint_code),
@@ -1427,9 +1406,7 @@ def maybe_apply_contract_synthesis_joint(
 
 def run_model_benchmark(args: argparse.Namespace, adapter: str) -> dict[str, Any]:
     t0 = time.time()
-    tokenizer, model = load_model(
-        args.base_model, adapter, args.dtype, use_4bit=not args.no_4bit
-    )
+    tokenizer, model = load_model(args.base_model, adapter, args.dtype, use_4bit=not args.no_4bit)
     tasks = selected_tasks(args)
     joints = load_joint_library(getattr(args, "joint_library", None))
     rows = []
@@ -1449,17 +1426,13 @@ def run_model_benchmark(args: argparse.Namespace, adapter: str) -> dict[str, Any
         )
         code = extract_typescript(raw)
         score = score_candidate(code, task)
-        final_score, final_code, semantic_bridge_repair = (
-            maybe_apply_semantic_bridge_repair(code, task, score)
-        )
-        final_score, final_code, contract_synthesis_joint = (
-            maybe_apply_contract_synthesis_joint(
-                final_code,
-                task,
-                final_score,
-                atomic_packet,
-                enabled=not bool(getattr(args, "disable_contract_synthesis", False)),
-            )
+        final_score, final_code, semantic_bridge_repair = maybe_apply_semantic_bridge_repair(code, task, score)
+        final_score, final_code, contract_synthesis_joint = maybe_apply_contract_synthesis_joint(
+            final_code,
+            task,
+            final_score,
+            atomic_packet,
+            enabled=not bool(getattr(args, "disable_contract_synthesis", False)),
         )
         rows.append(
             {
@@ -1484,11 +1457,7 @@ def run_model_benchmark(args: argparse.Namespace, adapter: str) -> dict[str, Any
         status = "PASS" if final_score["passed"] else "FAIL"
         if semantic_bridge_repair and final_score["passed"] and not score.get("passed"):
             status = "PASS_AFTER_BRIDGE"
-        if (
-            contract_synthesis_joint
-            and final_score["passed"]
-            and not score.get("passed")
-        ):
+        if contract_synthesis_joint and final_score["passed"] and not score.get("passed"):
             status = "PASS_AFTER_CONTRACT_JOINT"
         print(f"  {adapter} {task.task_id}: {status}")
     passed = sum(1 for row in rows if row["passed"])
@@ -1515,9 +1484,7 @@ def run_ollama_benchmark(args: argparse.Namespace, model_name: str) -> dict[str,
         atomic_packet = build_atomic_contract_packet(task)
         joint = find_verified_joint_for_task(task, atomic_packet, joints)
         if joint:
-            row = task_row_from_joint(
-                task, atomic_packet, joint, f"ollama:{model_name}"
-            )
+            row = task_row_from_joint(task, atomic_packet, joint, f"ollama:{model_name}")
             rows.append(row)
             print(f"  {model_name} {task.task_id}: PASS_FROM_JOINT")
             continue
@@ -1551,22 +1518,16 @@ def run_ollama_benchmark(args: argparse.Namespace, model_name: str) -> dict[str,
         semantic_bridge_repair = None
         contract_synthesis_joint = None
         if not generation_error:
-            final_score, final_code, repairs = maybe_repair_ollama_candidate(
-                args, task, code, score
+            final_score, final_code, repairs = maybe_repair_ollama_candidate(args, task, code, score)
+            final_score, final_code, semantic_bridge_repair = maybe_apply_semantic_bridge_repair(
+                final_code, task, final_score
             )
-            final_score, final_code, semantic_bridge_repair = (
-                maybe_apply_semantic_bridge_repair(final_code, task, final_score)
-            )
-            final_score, final_code, contract_synthesis_joint = (
-                maybe_apply_contract_synthesis_joint(
-                    final_code,
-                    task,
-                    final_score,
-                    atomic_packet,
-                    enabled=not bool(
-                        getattr(args, "disable_contract_synthesis", False)
-                    ),
-                )
+            final_score, final_code, contract_synthesis_joint = maybe_apply_contract_synthesis_joint(
+                final_code,
+                task,
+                final_score,
+                atomic_packet,
+                enabled=not bool(getattr(args, "disable_contract_synthesis", False)),
             )
         rows.append(
             {
@@ -1595,17 +1556,9 @@ def run_ollama_benchmark(args: argparse.Namespace, model_name: str) -> dict[str,
         status = "PASS" if final_score["passed"] else "FAIL"
         if repairs and final_score["passed"] and not initial_score.get("passed"):
             status = "PASS_AFTER_REPAIR"
-        if (
-            semantic_bridge_repair
-            and final_score["passed"]
-            and not initial_score.get("passed")
-        ):
+        if semantic_bridge_repair and final_score["passed"] and not initial_score.get("passed"):
             status = "PASS_AFTER_BRIDGE"
-        if (
-            contract_synthesis_joint
-            and final_score["passed"]
-            and not initial_score.get("passed")
-        ):
+        if contract_synthesis_joint and final_score["passed"] and not initial_score.get("passed"):
             status = "PASS_AFTER_CONTRACT_JOINT"
         print(f"  {model_name} {task.task_id}: {status}")
     passed = sum(1 for row in rows if row["passed"])
@@ -1621,8 +1574,7 @@ def run_ollama_benchmark(args: argparse.Namespace, model_name: str) -> dict[str,
             "repaired_passed": repaired_passed,
             "avg_generation_s": (
                 round(
-                    sum(float(row.get("generation_elapsed_s", 0.0)) for row in rows)
-                    / len(rows),
+                    sum(float(row.get("generation_elapsed_s", 0.0)) for row in rows) / len(rows),
                     2,
                 )
                 if rows
@@ -1639,14 +1591,10 @@ def load_candidate_file(path: Path) -> list[dict[str, Any]]:
         return payload
     if isinstance(payload, dict) and isinstance(payload.get("candidates"), list):
         return payload["candidates"]
-    raise ValueError(
-        "candidate file must be a JSON list or an object with a 'candidates' list"
-    )
+    raise ValueError("candidate file must be a JSON list or an object with a 'candidates' list")
 
 
-def candidate_source_for_task(
-    candidate: dict[str, Any], task: FunctionalTask
-) -> str | None:
+def candidate_source_for_task(candidate: dict[str, Any], task: FunctionalTask) -> str | None:
     task_map = candidate.get("tasks")
     if isinstance(task_map, dict) and task.task_id in task_map:
         return str(task_map[task.task_id])
@@ -1655,15 +1603,8 @@ def candidate_source_for_task(
     return None
 
 
-def run_candidate_benchmark(
-    args: argparse.Namespace, candidate: dict[str, Any]
-) -> dict[str, Any]:
-    name = str(
-        candidate.get("name")
-        or candidate.get("model")
-        or candidate.get("id")
-        or "candidate"
-    )
+def run_candidate_benchmark(args: argparse.Namespace, candidate: dict[str, Any]) -> dict[str, Any]:
+    name = str(candidate.get("name") or candidate.get("model") or candidate.get("id") or "candidate")
     tasks = selected_tasks(args)
     joints = load_joint_library(getattr(args, "joint_library", None))
     rows = []
@@ -1693,17 +1634,13 @@ def run_candidate_benchmark(
             continue
         code = extract_typescript(raw)
         score = score_candidate(code, task)
-        final_score, final_code, semantic_bridge_repair = (
-            maybe_apply_semantic_bridge_repair(code, task, score)
-        )
-        final_score, final_code, contract_synthesis_joint = (
-            maybe_apply_contract_synthesis_joint(
-                final_code,
-                task,
-                final_score,
-                atomic_packet,
-                enabled=not bool(getattr(args, "disable_contract_synthesis", False)),
-            )
+        final_score, final_code, semantic_bridge_repair = maybe_apply_semantic_bridge_repair(code, task, score)
+        final_score, final_code, contract_synthesis_joint = maybe_apply_contract_synthesis_joint(
+            final_code,
+            task,
+            final_score,
+            atomic_packet,
+            enabled=not bool(getattr(args, "disable_contract_synthesis", False)),
         )
         rows.append(
             {
@@ -1728,11 +1665,7 @@ def run_candidate_benchmark(
         status = "PASS" if final_score["passed"] else "FAIL"
         if semantic_bridge_repair and final_score["passed"] and not score.get("passed"):
             status = "PASS_AFTER_BRIDGE"
-        if (
-            contract_synthesis_joint
-            and final_score["passed"]
-            and not score.get("passed")
-        ):
+        if contract_synthesis_joint and final_score["passed"] and not score.get("passed"):
             status = "PASS_AFTER_CONTRACT_JOINT"
         print(f"  {name} {task.task_id}: {status}")
     passed = sum(1 for row in rows if row["passed"])
@@ -1777,18 +1710,12 @@ def build_verified_path_signature(adapter: str, task: dict[str, Any]) -> dict[st
         "unit_ids": unit_ids,
         "code_sha256": _sha256_text(code),
         "geoseal": (receipt.get("geoseal_trace") or {}).get("seal"),
-        "bridge_kind": (
-            bridge.get("kind")
-            if isinstance(bridge, dict) and bridge.get("passed")
-            else None
-        ),
+        "bridge_kind": (bridge.get("kind") if isinstance(bridge, dict) and bridge.get("passed") else None),
     }
     return {
         "schema": "scbe_atomic_verified_path_signature_v1",
         **payload,
-        "path_sha256": _sha256_text(
-            json.dumps(payload, sort_keys=True, ensure_ascii=True)
-        ),
+        "path_sha256": _sha256_text(json.dumps(payload, sort_keys=True, ensure_ascii=True)),
         "atomic_alignment": {
             "aligned": bool(audit.get("aligned")),
             "missing_state_paths": audit.get("missing_state_paths") or [],
@@ -1815,10 +1742,7 @@ def find_verified_joint_for_task(
 ) -> dict[str, Any] | None:
     key = atomic_contract_key(atomic_packet)
     for joint in joints:
-        if (
-            joint.get("task_id") != task.task_id
-            or joint.get("atomic_contract_key") != key
-        ):
+        if joint.get("task_id") != task.task_id or joint.get("atomic_contract_key") != key:
             continue
         code = str(joint.get("code") or "")
         if not code:
@@ -1941,9 +1865,7 @@ def build_verified_mechanical_ensemble(results: list[dict[str, Any]]) -> dict[st
     contributing_models: dict[str, int] = {}
     for task_id in task_order:
         candidates = by_task[task_id]
-        passing = [
-            (adapter, task) for adapter, task in candidates if task.get("passed")
-        ]
+        passing = [(adapter, task) for adapter, task in candidates if task.get("passed")]
         if passing:
             # Prefer the fastest passing artifact when timing is available; this
             # makes the mechanical router useful instead of just optimistic.
@@ -1961,12 +1883,8 @@ def build_verified_mechanical_ensemble(results: list[dict[str, Any]]) -> dict[st
                     "checks_passed": _task_check_pass_count(task),
                     "checks_total": _task_check_total(task),
                     "compiler_receipt": task.get("compiler_receipt"),
-                    "verified_path_signature": build_verified_path_signature(
-                        adapter, task
-                    ),
-                    "final_code": task.get("final_code")
-                    or task.get("extracted_code")
-                    or "",
+                    "verified_path_signature": build_verified_path_signature(adapter, task),
+                    "final_code": task.get("final_code") or task.get("extracted_code") or "",
                 }
             )
             continue
@@ -1987,11 +1905,7 @@ def build_verified_mechanical_ensemble(results: list[dict[str, Any]]) -> dict[st
                 "checks_passed": _task_check_pass_count(task),
                 "checks_total": _task_check_total(task),
                 "first_failure": next(
-                    (
-                        check
-                        for check in task.get("checks") or []
-                        if not check.get("passed")
-                    ),
+                    (check for check in task.get("checks") or [] if not check.get("passed")),
                     None,
                 ),
                 "error": task.get("error"),
@@ -1999,11 +1913,7 @@ def build_verified_mechanical_ensemble(results: list[dict[str, Any]]) -> dict[st
         )
 
     passed = sum(1 for row in rows if row["passed"])
-    verified_signatures = [
-        row["verified_path_signature"]
-        for row in rows
-        if row.get("verified_path_signature")
-    ]
+    verified_signatures = [row["verified_path_signature"] for row in rows if row.get("verified_path_signature")]
     return {
         "schema": "scbe_verified_mechanical_ensemble_v1",
         "claim_boundary": (
@@ -2127,9 +2037,7 @@ def main() -> int:
     results = []
     if args.candidate_file:
         for candidate in load_candidate_file(args.candidate_file):
-            print(
-                f"Benchmarking candidate {candidate.get('name') or candidate.get('model') or candidate.get('id')}"
-            )
+            print(f"Benchmarking candidate {candidate.get('name') or candidate.get('model') or candidate.get('id')}")
             results.append(run_candidate_benchmark(args, candidate))
     elif args.ollama_models:
         for model_name in args.ollama_models:
@@ -2153,15 +2061,14 @@ def main() -> int:
         "mechanical_ensemble": ensemble,
     }
     report_path = out_dir / "report.json"
-    report_path.write_text(
-        json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    report_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
 
     md_lines = [
         "# Functional Coding Agent Benchmark",
         "",
         "- compiler_pipeline: `scbe_cross_lingual_geoseal_compiler_v1`",
-        "- note: verification is one compiler output; every task row carries a `compiler_receipt` with semantic input hash, target-language artifact hash, tongue route, and GeoSeal trace.",
+        "- note: verification is one compiler output; every task row carries a `compiler_receipt` "
+        "with semantic input hash, target-language artifact hash, tongue route, and GeoSeal trace.",
         "",
         "| Model | Tasks | Passed | Pass Rate | Repaired | Avg Generation | Elapsed |",
         "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
@@ -2171,13 +2078,15 @@ def main() -> int:
         avg_generation = summary.get("avg_generation_s")
         avg_generation_text = "" if avg_generation is None else f"{avg_generation}s"
         md_lines.append(
-            f"| `{result['adapter']}` | {summary['tasks']} | {summary['passed']} | {summary['pass_rate']:.2%} | {summary.get('repaired_passed', 0)} | {avg_generation_text} | {result.get('elapsed_s', '')}s |"
+            f"| `{result['adapter']}` | {summary['tasks']} | {summary['passed']} | {summary['pass_rate']:.2%} "
+            f"| {summary.get('repaired_passed', 0)} | {avg_generation_text} | {result.get('elapsed_s', '')}s |"
         )
     ensemble = payload["mechanical_ensemble"]
     ensemble_summary = ensemble["summary"]
     md_lines.extend(
         [
-            f"| `{ensemble['adapter']}` | {ensemble_summary['tasks']} | {ensemble_summary['passed']} | {ensemble_summary['pass_rate']:.2%} | 0 |  | {ensemble.get('elapsed_s', '')}s |",
+            f"| `{ensemble['adapter']}` | {ensemble_summary['tasks']} | {ensemble_summary['passed']} "
+            f"| {ensemble_summary['pass_rate']:.2%} | 0 |  | {ensemble.get('elapsed_s', '')}s |",
             "",
             "## Joint Library",
             "",
@@ -2198,7 +2107,8 @@ def main() -> int:
     for task in ensemble["tasks"]:
         status = "PASS" if task["passed"] else "FAIL"
         md_lines.append(
-            f"| `{task['task_id']}` | {status} | `{task.get('source_adapter', '')}` | {task.get('selection_rule', '')} | {task.get('checks_passed', 0)}/{task.get('checks_total', 0)} |"
+            f"| `{task['task_id']}` | {status} | `{task.get('source_adapter', '')}` "
+            f"| {task.get('selection_rule', '')} | {task.get('checks_passed', 0)}/{task.get('checks_total', 0)} |"
         )
     for result in results:
         md_lines.extend(
@@ -2217,9 +2127,7 @@ def main() -> int:
             failure = ""
             if not task["passed"]:
                 checks = task.get("checks") or []
-                first_bad = next(
-                    (check for check in checks if not check.get("passed")), None
-                )
+                first_bad = next((check for check in checks if not check.get("passed")), None)
                 if first_bad:
                     failure = (
                         f"check {first_bad.get('index')}: "
@@ -2239,12 +2147,8 @@ def main() -> int:
 
     latest = args.output_root / "latest"
     latest.mkdir(parents=True, exist_ok=True)
-    (latest / "report.json").write_text(
-        report_path.read_text(encoding="utf-8"), encoding="utf-8"
-    )
-    (latest / "report.md").write_text(
-        md_path.read_text(encoding="utf-8"), encoding="utf-8"
-    )
+    (latest / "report.json").write_text(report_path.read_text(encoding="utf-8"), encoding="utf-8")
+    (latest / "report.md").write_text(md_path.read_text(encoding="utf-8"), encoding="utf-8")
 
     print(f"Report JSON: {report_path}")
     print(f"Report MD:   {md_path}")

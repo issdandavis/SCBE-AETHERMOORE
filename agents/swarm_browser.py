@@ -18,6 +18,7 @@ Byzantine fault tolerant: survives 2/6 compromised agents.
 """
 
 import asyncio
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
@@ -26,9 +27,12 @@ import hashlib
 import json
 from pathlib import Path
 
+logger = logging.getLogger(__name__)
+
 try:
     from agents.antivirus_membrane import scan_text_for_threats, turnstile_action
 except Exception:  # noqa: BLE001
+
     class _Scan:
         def __init__(self) -> None:
             self.verdict = "CLEAN"
@@ -47,6 +51,7 @@ except Exception:  # noqa: BLE001
 
 class SacredTongue(str, Enum):
     """The Six Sacred Tongues - each maps to an agent role."""
+
     KO = "KO"  # Korean - Scout
     AV = "AV"  # Avestan - Vision
     RU = "RU"  # Russian - Reader
@@ -57,12 +62,13 @@ class SacredTongue(str, Enum):
 
 class AgentRole(str, Enum):
     """Agent specializations."""
-    SCOUT = "scout"      # KO - Navigation
-    VISION = "vision"    # AV - Visual analysis
-    READER = "reader"    # RU - Text extraction
+
+    SCOUT = "scout"  # KO - Navigation
+    VISION = "vision"  # AV - Visual analysis
+    READER = "reader"  # RU - Text extraction
     CLICKER = "clicker"  # CA - Click execution
-    TYPER = "typer"      # UM - Text input
-    JUDGE = "judge"      # DR - Decision authority
+    TYPER = "typer"  # UM - Text input
+    JUDGE = "judge"  # DR - Decision authority
 
 
 # Mapping tongues to roles
@@ -79,6 +85,7 @@ TONGUE_TO_ROLE = {
 @dataclass
 class SwarmMessage:
     """Message passed between swarm agents."""
+
     id: str
     from_agent: SacredTongue
     to_agent: Optional[SacredTongue]  # None = broadcast
@@ -102,6 +109,7 @@ class SwarmMessage:
 @dataclass
 class SwarmVote:
     """Vote from an agent in Roundtable consensus."""
+
     agent: SacredTongue
     action_id: str
     decision: str  # ALLOW, QUARANTINE, ESCALATE, DENY
@@ -173,8 +181,8 @@ class SwarmAgent:
     def __init__(
         self,
         tongue: SacredTongue,
-        swarm: 'SwarmBrowser',
-        model: str = "haiku"  # Small, fast models for specialized tasks
+        swarm: "SwarmBrowser",
+        model: str = "haiku",  # Small, fast models for specialized tasks
     ):
         self.tongue = tongue
         self.role = TONGUE_TO_ROLE[tongue]
@@ -207,18 +215,11 @@ class SwarmAgent:
         reasoning = f"{self.role.value} default approval"
 
         return SwarmVote(
-            agent=self.tongue,
-            action_id=action_id,
-            decision=decision,
-            confidence=confidence,
-            reasoning=reasoning
+            agent=self.tongue, action_id=action_id, decision=decision, confidence=confidence, reasoning=reasoning
         )
 
     def create_message(
-        self,
-        action: str,
-        payload: Dict[str, Any],
-        to_agent: Optional[SacredTongue] = None
+        self, action: str, payload: Dict[str, Any], to_agent: Optional[SacredTongue] = None
     ) -> SwarmMessage:
         """Create a signed message."""
         msg = SwarmMessage(
@@ -226,7 +227,7 @@ class SwarmAgent:
             from_agent=self.tongue,
             to_agent=to_agent,
             action=action,
-            payload=payload
+            payload=payload,
         )
         msg.sign(self._secret)
         self.action_count += 1
@@ -237,10 +238,11 @@ class SwarmAgent:
 # Specialized Agents
 # =============================================================================
 
+
 class ScoutAgent(SwarmAgent):
     """KO - Navigation and path planning specialist."""
 
-    def __init__(self, swarm: 'SwarmBrowser'):
+    def __init__(self, swarm: "SwarmBrowser"):
         super().__init__(SacredTongue.KO, swarm)
 
     async def process(self, message: SwarmMessage) -> Optional[SwarmMessage]:
@@ -268,9 +270,9 @@ class ScoutAgent(SwarmAgent):
                     "risk_score": risk,
                     "safe": risk < 0.7,
                     "navigated": nav_success,
-                    "recommendation": "proceed" if risk < 0.7 else "escalate"
+                    "recommendation": "proceed" if risk < 0.7 else "escalate",
                 },
-                to_agent=SacredTongue.DR  # Send to Judge
+                to_agent=SacredTongue.DR,  # Send to Judge
             )
 
         return None
@@ -301,7 +303,7 @@ class ScoutAgent(SwarmAgent):
 class VisionAgent(SwarmAgent):
     """AV - Visual analysis and element detection specialist."""
 
-    def __init__(self, swarm: 'SwarmBrowser'):
+    def __init__(self, swarm: "SwarmBrowser"):
         super().__init__(SacredTongue.AV, swarm)
 
     async def process(self, message: SwarmMessage) -> Optional[SwarmMessage]:
@@ -317,9 +319,9 @@ class VisionAgent(SwarmAgent):
                     "forms_detected": [],
                     "buttons_detected": [],
                     "suspicious_elements": [],
-                    "layout_safe": True
+                    "layout_safe": True,
                 },
-                to_agent=SacredTongue.DR
+                to_agent=SacredTongue.DR,
             )
 
         if action == "find_element":
@@ -327,13 +329,8 @@ class VisionAgent(SwarmAgent):
             # Would use vision to locate element
             return self.create_message(
                 "element_location",
-                {
-                    "target": target,
-                    "found": True,
-                    "coordinates": [100, 200],  # [x, y]
-                    "confidence": 0.95
-                },
-                to_agent=SacredTongue.CA  # Send to Clicker
+                {"target": target, "found": True, "coordinates": [100, 200], "confidence": 0.95},  # [x, y]
+                to_agent=SacredTongue.CA,  # Send to Clicker
             )
 
         return None
@@ -349,7 +346,7 @@ class VisionAgent(SwarmAgent):
                 action_id=action_id,
                 decision="DENY",
                 confidence=0.9,
-                reasoning=f"Suspicious visual elements detected: {suspicious}"
+                reasoning=f"Suspicious visual elements detected: {suspicious}",
             )
 
         return SwarmVote(
@@ -357,14 +354,14 @@ class VisionAgent(SwarmAgent):
             action_id=action_id,
             decision="ALLOW",
             confidence=0.85,
-            reasoning="Visual analysis shows no deceptive elements"
+            reasoning="Visual analysis shows no deceptive elements",
         )
 
 
 class ReaderAgent(SwarmAgent):
     """RU - Text extraction and parsing specialist."""
 
-    def __init__(self, swarm: 'SwarmBrowser'):
+    def __init__(self, swarm: "SwarmBrowser"):
         super().__init__(SacredTongue.RU, swarm)
 
     async def process(self, message: SwarmMessage) -> Optional[SwarmMessage]:
@@ -375,12 +372,7 @@ class ReaderAgent(SwarmAgent):
             # Would extract and parse page text
             return self.create_message(
                 "text_content",
-                {
-                    "text": payload.get("raw_text", ""),
-                    "structured_data": {},
-                    "forms": [],
-                    "injection_detected": False
-                }
+                {"text": payload.get("raw_text", ""), "structured_data": {}, "forms": [], "injection_detected": False},
             )
 
         if action == "analyze_form":
@@ -391,9 +383,9 @@ class ReaderAgent(SwarmAgent):
                     "fields": [],
                     "sensitive_fields": [],  # password, ssn, etc.
                     "hidden_fields": [],
-                    "safe_to_fill": True
+                    "safe_to_fill": True,
                 },
-                to_agent=SacredTongue.UM  # Send to Typer
+                to_agent=SacredTongue.UM,  # Send to Typer
             )
 
         return None
@@ -408,7 +400,7 @@ class ReaderAgent(SwarmAgent):
             "disregard all rules",
             "you are now",
             "system prompt",
-            "jailbreak"
+            "jailbreak",
         ]
 
         for pattern in injection_patterns:
@@ -418,7 +410,7 @@ class ReaderAgent(SwarmAgent):
                     action_id=action_id,
                     decision="DENY",
                     confidence=0.95,
-                    reasoning=f"Prompt injection detected: '{pattern}'"
+                    reasoning=f"Prompt injection detected: '{pattern}'",
                 )
 
         return SwarmVote(
@@ -426,14 +418,14 @@ class ReaderAgent(SwarmAgent):
             action_id=action_id,
             decision="ALLOW",
             confidence=0.8,
-            reasoning="No text-based injection detected"
+            reasoning="No text-based injection detected",
         )
 
 
 class ClickerAgent(SwarmAgent):
     """CA - Click and interaction execution specialist."""
 
-    def __init__(self, swarm: 'SwarmBrowser'):
+    def __init__(self, swarm: "SwarmBrowser"):
         super().__init__(SacredTongue.CA, swarm)
 
     async def process(self, message: SwarmMessage) -> Optional[SwarmMessage]:
@@ -452,11 +444,7 @@ class ClickerAgent(SwarmAgent):
                     success = False
             return self.create_message(
                 "click_result",
-                {
-                    "coordinates": coordinates,
-                    "success": success,
-                    "element_clicked": payload.get("target", "unknown")
-                }
+                {"coordinates": coordinates, "success": success, "element_clicked": payload.get("target", "unknown")},
             )
 
         return None
@@ -465,7 +453,7 @@ class ClickerAgent(SwarmAgent):
 class TyperAgent(SwarmAgent):
     """UM - Text input and form filling specialist."""
 
-    def __init__(self, swarm: 'SwarmBrowser'):
+    def __init__(self, swarm: "SwarmBrowser"):
         super().__init__(SacredTongue.UM, swarm)
 
     async def process(self, message: SwarmMessage) -> Optional[SwarmMessage]:
@@ -483,12 +471,7 @@ class TyperAgent(SwarmAgent):
                     logger.warning("TyperAgent: browser type failed: %s", exc)
                     success = False
             return self.create_message(
-                "type_result",
-                {
-                    "length": len(text),
-                    "success": success,
-                    "masked": True  # Never log actual text
-                }
+                "type_result", {"length": len(text), "success": success, "masked": True}  # Never log actual text
             )
 
         return None
@@ -504,22 +487,18 @@ class TyperAgent(SwarmAgent):
                 action_id=action_id,
                 decision="ESCALATE",
                 confidence=0.9,
-                reasoning=f"Sensitive field type: {field_type}"
+                reasoning=f"Sensitive field type: {field_type}",
             )
 
         return SwarmVote(
-            agent=self.tongue,
-            action_id=action_id,
-            decision="ALLOW",
-            confidence=0.85,
-            reasoning="Non-sensitive input"
+            agent=self.tongue, action_id=action_id, decision="ALLOW", confidence=0.85, reasoning="Non-sensitive input"
         )
 
 
 class JudgeAgent(SwarmAgent):
     """DR - Final decision and safety approval specialist."""
 
-    def __init__(self, swarm: 'SwarmBrowser'):
+    def __init__(self, swarm: "SwarmBrowser"):
         super().__init__(SacredTongue.DR, swarm)
         self.veto_count = 0
 
@@ -533,12 +512,7 @@ class JudgeAgent(SwarmAgent):
             decision = self._aggregate_votes(votes)
 
             return self.create_message(
-                "final_decision",
-                {
-                    "decision": decision,
-                    "votes": votes,
-                    "judge_override": False
-                }
+                "final_decision", {"decision": decision, "votes": votes, "judge_override": False}
             )
 
         return None
@@ -577,7 +551,7 @@ class JudgeAgent(SwarmAgent):
                 action_id=action_id,
                 decision="DENY",
                 confidence=0.99,
-                reasoning=f"Judge veto: risk score {risk_score} exceeds threshold"
+                reasoning=f"Judge veto: risk score {risk_score} exceeds threshold",
             )
 
         if risk_score > 0.7:
@@ -586,7 +560,7 @@ class JudgeAgent(SwarmAgent):
                 action_id=action_id,
                 decision="ESCALATE",
                 confidence=0.9,
-                reasoning=f"High risk ({risk_score}), requires human approval"
+                reasoning=f"High risk ({risk_score}), requires human approval",
             )
 
         return SwarmVote(
@@ -594,13 +568,14 @@ class JudgeAgent(SwarmAgent):
             action_id=action_id,
             decision="ALLOW",
             confidence=0.85,
-            reasoning=f"Risk score {risk_score} acceptable"
+            reasoning=f"Risk score {risk_score} acceptable",
         )
 
 
 # =============================================================================
 # Swarm Orchestrator
 # =============================================================================
+
 
 class SwarmBrowser:
     """
@@ -658,12 +633,7 @@ class SwarmBrowser:
         print("\n[SWARM] All agents active. Ready for commands.\n")
         return True
 
-    async def roundtable_consensus(
-        self,
-        action_id: str,
-        action: str,
-        context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def roundtable_consensus(self, action_id: str, action: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Gather votes from all agents for Byzantine-safe consensus.
 
@@ -675,12 +645,14 @@ class SwarmBrowser:
         votes = []
         for tongue, agent in self.agents.items():
             vote = await agent.vote(action_id, action, context)
-            votes.append({
-                "agent": vote.agent.value,
-                "decision": vote.decision,
-                "confidence": vote.confidence,
-                "reasoning": vote.reasoning
-            })
+            votes.append(
+                {
+                    "agent": vote.agent.value,
+                    "decision": vote.decision,
+                    "confidence": vote.confidence,
+                    "reasoning": vote.reasoning,
+                }
+            )
             print(f"  [{tongue.value}] {vote.decision} ({vote.confidence:.2f}): {vote.reasoning[:50]}...")
 
         # Judge aggregates
@@ -689,7 +661,7 @@ class SwarmBrowser:
             from_agent=SacredTongue.DR,
             to_agent=None,
             action="request_approval",
-            payload={"votes": votes}
+            payload={"votes": votes},
         )
 
         result_msg = await self.agents[SacredTongue.DR].process(judge_msg)
@@ -700,7 +672,7 @@ class SwarmBrowser:
             "action": action,
             "votes": votes,
             "final_decision": final_decision,
-            "timestamp": datetime.now(timezone.utc).isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
         self.consensus_log.append(consensus)
@@ -717,29 +689,21 @@ class SwarmBrowser:
 
         # Scout analyzes URL
         scout_msg = SwarmMessage(
-            id=action_id,
-            from_agent=SacredTongue.KO,
-            to_agent=None,
-            action="navigate",
-            payload={"url": url}
+            id=action_id, from_agent=SacredTongue.KO, to_agent=None, action="navigate", payload={"url": url}
         )
 
         scout_result = await self.agents[SacredTongue.KO].process(scout_msg)
         risk_score = scout_result.payload.get("risk_score", 0.5)
 
         # Get consensus
-        consensus = await self.roundtable_consensus(
-            action_id,
-            "navigate",
-            {"url": url, "risk_score": risk_score}
-        )
+        consensus = await self.roundtable_consensus(action_id, "navigate", {"url": url, "risk_score": risk_score})
 
         result = {
             "action": "navigate",
             "url": url,
             "decision": consensus["final_decision"],
             "risk_score": risk_score,
-            "executed": False
+            "executed": False,
         }
 
         if consensus["final_decision"] == "ALLOW":
@@ -758,29 +722,21 @@ class SwarmBrowser:
 
         # Vision finds element
         vision_msg = SwarmMessage(
-            id=action_id,
-            from_agent=SacredTongue.AV,
-            to_agent=None,
-            action="find_element",
-            payload={"target": target}
+            id=action_id, from_agent=SacredTongue.AV, to_agent=None, action="find_element", payload={"target": target}
         )
 
         vision_result = await self.agents[SacredTongue.AV].process(vision_msg)
         coordinates = vision_result.payload.get("coordinates", [0, 0])
 
         # Get consensus
-        consensus = await self.roundtable_consensus(
-            action_id,
-            "click",
-            {"target": target, "coordinates": coordinates}
-        )
+        consensus = await self.roundtable_consensus(action_id, "click", {"target": target, "coordinates": coordinates})
 
         result = {
             "action": "click",
             "target": target,
             "coordinates": coordinates,
             "decision": consensus["final_decision"],
-            "executed": False
+            "executed": False,
         }
 
         if consensus["final_decision"] == "ALLOW":
@@ -790,7 +746,7 @@ class SwarmBrowser:
                 from_agent=SacredTongue.CA,
                 to_agent=None,
                 action="click",
-                payload={"coordinates": coordinates, "target": target}
+                payload={"coordinates": coordinates, "target": target},
             )
             await self.agents[SacredTongue.CA].process(click_msg)
             result["executed"] = True
@@ -809,16 +765,14 @@ class SwarmBrowser:
             from_agent=SacredTongue.RU,
             to_agent=None,
             action="analyze_form",
-            payload={"selector": selector}
+            payload={"selector": selector},
         )
 
         await self.agents[SacredTongue.RU].process(reader_msg)
 
         # Get consensus (never include actual text in context)
         consensus = await self.roundtable_consensus(
-            action_id,
-            "type",
-            {"selector": selector, "text_length": len(text), "field_type": "text"}
+            action_id, "type", {"selector": selector, "text_length": len(text), "field_type": "text"}
         )
 
         result = {
@@ -826,17 +780,13 @@ class SwarmBrowser:
             "selector": selector,
             "text_length": len(text),
             "decision": consensus["final_decision"],
-            "executed": False
+            "executed": False,
         }
 
         if consensus["final_decision"] == "ALLOW":
             # Execute typing via Typer agent
             type_msg = SwarmMessage(
-                id=action_id,
-                from_agent=SacredTongue.UM,
-                to_agent=None,
-                action="type",
-                payload={"text": text}
+                id=action_id, from_agent=SacredTongue.UM, to_agent=None, action="type", payload={"text": text}
             )
             await self.agents[SacredTongue.UM].process(type_msg)
             result["executed"] = True
@@ -902,15 +852,13 @@ class SwarmBrowser:
                 page_text = ""
                 if extract_text and self.browser and nav.get("executed"):
                     try:
-                        page_text = await self.browser.execute_script(
-                            """
+                        page_text = await self.browser.execute_script("""
                             () => {
                               const main = document.querySelector("main");
                               if (main && main.innerText) return main.innerText;
                               return document.body ? document.body.innerText : "";
                             }
-                            """
-                        ) or ""
+                            """) or ""
                     except Exception:  # noqa: BLE001
                         page_text = ""
 
@@ -963,7 +911,7 @@ class SwarmBrowser:
             "total_actions": len(self.action_history),
             "decisions": decisions,
             "consensus_rounds": len(self.consensus_log),
-            "agents_active": sum(1 for a in self.agents.values() if a.active)
+            "agents_active": sum(1 for a in self.agents.values() if a.active),
         }
 
     def print_summary(self):
@@ -976,7 +924,7 @@ class SwarmBrowser:
         print(f"  Consensus Rounds: {s['consensus_rounds']}")
         print(f"  Active Agents: {s['agents_active']}/6")
         print("\n  Decisions:")
-        for decision, count in s['decisions'].items():
+        for decision, count in s["decisions"].items():
             print(f"    {decision}: {count}")
         print("=" * 60 + "\n")
 
@@ -984,6 +932,7 @@ class SwarmBrowser:
 # =============================================================================
 # Example Usage
 # =============================================================================
+
 
 async def demo():
     """Demonstrate the Swarm Browser."""

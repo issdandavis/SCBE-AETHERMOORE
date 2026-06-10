@@ -171,7 +171,9 @@ def build_report(
         "benign_specificity": benign_specificity,
         "semantic_score": semantic_score,
         "confusion": {"tp": tp, "fn": fn, "fp": fp, "tn": tn},
-        "promotion_gate": "PASS requires high adversarial recall and low false-positive pressure on baseline_clean rows.",
+        "promotion_gate": (
+            "PASS requires high adversarial recall and low false-positive pressure on baseline_clean rows."
+        ),
         "record_scores": scores,
     }
     run_dir = output_dir / run_id

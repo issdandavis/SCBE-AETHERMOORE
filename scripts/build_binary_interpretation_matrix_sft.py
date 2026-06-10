@@ -98,7 +98,7 @@ def record_to_sft(record: SheetRecord, idx: int) -> dict[str, Any]:
     content = _compact_values(record.values)
     instruction = (
         f"Use the Binary Interpretation Matrix sheet '{record.sheet}' to explain this row as deterministic "
-        f"coding substrate. Then state how a GeoSeal coding agent should use it."
+        "coding substrate. Then state how a GeoSeal coding agent should use it."
     )
     assistant = (
         f"Source sheet: {record.sheet}\n"
@@ -164,7 +164,9 @@ def main() -> int:
     if not args.workbook.exists():
         raise SystemExit(f"Workbook not found: {args.workbook}")
     manifest = build_dataset(args.workbook, args.output, args.manifest)
-    print(json.dumps(manifest, indent=2, ensure_ascii=True) if args.json else f"wrote {manifest['record_count']} records")
+    print(
+        json.dumps(manifest, indent=2, ensure_ascii=True) if args.json else f"wrote {manifest['record_count']} records"
+    )
     return 0
 
 

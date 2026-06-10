@@ -218,7 +218,9 @@ def build_status_summary(
                 tracked_other.append(path)
             continue
 
-        if any(path == pattern.rstrip("/") or path.startswith(pattern.rstrip("/") + "/") for pattern in untracked_defaults):
+        if any(
+            path == pattern.rstrip("/") or path.startswith(pattern.rstrip("/") + "/") for pattern in untracked_defaults
+        ):
             untracked_matches.append(path)
         else:
             untracked_other.append(path)
@@ -244,8 +246,12 @@ def parse_args() -> argparse.Namespace:
 
     for name in ("status", "apply", "clear"):
         cmd = sub.add_parser(name)
-        cmd.add_argument("--tracked", action="append", default=[], help="Extra tracked path or directory to quiet locally.")
-        cmd.add_argument("--exclude", action="append", default=[], help="Extra untracked path pattern for .git/info/exclude.")
+        cmd.add_argument(
+            "--tracked", action="append", default=[], help="Extra tracked path or directory to quiet locally."
+        )
+        cmd.add_argument(
+            "--exclude", action="append", default=[], help="Extra untracked path pattern for .git/info/exclude."
+        )
         cmd.add_argument("--json", action="store_true", help="Emit JSON.")
     return parser.parse_args()
 

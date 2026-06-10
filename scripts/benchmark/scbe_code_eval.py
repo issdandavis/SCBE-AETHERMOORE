@@ -176,10 +176,7 @@ class StubModel:
             return "def reverse_string(s: str) -> str:\n    return s[::-1]\n"
         if "safe_divide" in prompt_lower:
             return (
-                "def safe_divide(a: float, b: float):\n"
-                "    if b == 0:\n"
-                "        return None\n"
-                "    return a / b\n"
+                "def safe_divide(a: float, b: float):\n" "    if b == 0:\n" "        return None\n" "    return a / b\n"
             )
         if "extract_name" in prompt_lower:
             return (

@@ -126,7 +126,7 @@ def figure2():
             print(f"  |  {d:<4.1f}  |  {h:>12.2e}|  {logh:>7.3f} |  {interp:<28s} |")
     print("  +--------+--------------+----------+------------------------------+")
     print()
-    print(f"  Critical thresholds:")
+    print("  Critical thresholds:")
     print(f"  128-bit (post-quantum):  d_crit = {math.sqrt(128*math.log(2)):.4f}")
     print(f"  256-bit (classical):     d_crit = {math.sqrt(256*math.log(2)):.4f}")
     print()
@@ -294,10 +294,10 @@ def figure10():
             else:
                 line += " "
         print(f"{label}{line}")
-    print(f"  1.00 |" + "-" * 50)
-    print(f"       +" + "-" * 50)
-    print(f"        0.0       0.2       0.4       0.6       0.8       1.0")
-    print(f"                    Attack Pressure P")
+    print("  1.00 |" + "-" * 50)
+    print("       +" + "-" * 50)
+    print("        0.0       0.2       0.4       0.6       0.8       1.0")
+    print("                    Attack Pressure P")
     print()
     print("  P=0.0: Psi = 1.00 (no expansion)")
     print("  P=0.5: Psi ~ 1.38 (38% distance increase)")

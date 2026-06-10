@@ -14,7 +14,6 @@ from openpyxl import load_workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_WORKBOOK = Path(r"C:\Users\issda\Downloads\binary_interpretation_matrix.xlsx")
 DEFAULT_REPORT = REPO_ROOT / "artifacts" / "binary_interpretation_matrix" / "augment_report.json"
@@ -194,12 +193,42 @@ def augment_workbook(workbook_path: Path, *, backup: bool = True) -> dict[str, A
         ["Topic", "Formula / Pattern", "Example", "SCBE Use"],
         [
             ["Self-information", "I(x) = -log2(p(x))", "p=1/256 => 8 bits", "Byte rarity and token surprise scoring"],
-            ["Shannon entropy", "H(X) = -sum p(x) log2 p(x)", "Uniform byte distribution => 8 bits", "Tokenizer compression and lane diversity"],
-            ["Cross entropy", "H(P,Q) = -sum P(x) log2 Q(x)", "Compare expected vs observed lane tokens", "Training drift / corpus mismatch"],
-            ["KL divergence", "D_KL(P||Q)=sum P log2(P/Q)", "Measures distribution shift", "Null-control and benchmark separation"],
-            ["Mutual information", "I(X;Y)=H(X)-H(X|Y)", "Concept signal surviving translation", "Cross-primary code concept recovery"],
-            ["Hamming distance", "count differing bit positions", "10101010 vs 11110000 => 4", "Binary error and route-delta checks"],
-            ["Levenshtein distance", "edit operations between strings", "token vs decoded token", "Text/token transport validation"],
+            [
+                "Shannon entropy",
+                "H(X) = -sum p(x) log2 p(x)",
+                "Uniform byte distribution => 8 bits",
+                "Tokenizer compression and lane diversity",
+            ],
+            [
+                "Cross entropy",
+                "H(P,Q) = -sum P(x) log2 Q(x)",
+                "Compare expected vs observed lane tokens",
+                "Training drift / corpus mismatch",
+            ],
+            [
+                "KL divergence",
+                "D_KL(P||Q)=sum P log2(P/Q)",
+                "Measures distribution shift",
+                "Null-control and benchmark separation",
+            ],
+            [
+                "Mutual information",
+                "I(X;Y)=H(X)-H(X|Y)",
+                "Concept signal surviving translation",
+                "Cross-primary code concept recovery",
+            ],
+            [
+                "Hamming distance",
+                "count differing bit positions",
+                "10101010 vs 11110000 => 4",
+                "Binary error and route-delta checks",
+            ],
+            [
+                "Levenshtein distance",
+                "edit operations between strings",
+                "token vs decoded token",
+                "Text/token transport validation",
+            ],
             ["Kolmogorov proxy", "compressed_length(x)", "gzip bytes as rough MDL", "Workflow/tree complexity proxy"],
         ],
     )
@@ -213,10 +242,25 @@ def augment_workbook(workbook_path: Path, *, backup: bool = True) -> dict[str, A
             ["Checksum", "Sum or hash chunks", "mod-256 byte sum", "Fast packet sanity check"],
             ["CRC-8", "Polynomial remainder over GF(2)", "x^8+x^2+x+1", "Small packet corruption detection"],
             ["CRC-32", "32-bit polynomial checksum", "Ethernet / ZIP", "Artifact and bus-event guard"],
-            ["Hamming(7,4)", "4 data bits + 3 parity bits", "single-bit correction", "Tokenizer bit-lane teaching example"],
+            [
+                "Hamming(7,4)",
+                "4 data bits + 3 parity bits",
+                "single-bit correction",
+                "Tokenizer bit-lane teaching example",
+            ],
             ["Hamming(32,26)", "26 data bits + 6 parity bits", "single-error correction", "Longer packed route fields"],
-            ["Reed-Solomon", "Symbol-level correction over finite fields", "QR / storage media", "Burst-error and packet recovery analogy"],
-            ["DNA degeneracy", "multiple codons map to one amino acid", "64 codons -> 20 amino acids", "Biological redundancy bridge"],
+            [
+                "Reed-Solomon",
+                "Symbol-level correction over finite fields",
+                "QR / storage media",
+                "Burst-error and packet recovery analogy",
+            ],
+            [
+                "DNA degeneracy",
+                "multiple codons map to one amino acid",
+                "64 codons -> 20 amino acids",
+                "Biological redundancy bridge",
+            ],
         ],
     )
 
@@ -250,12 +294,27 @@ def augment_workbook(workbook_path: Path, *, backup: bool = True) -> dict[str, A
         [
             ["Classical bit", "0 or 1", "byte = 8 bits", "Binary substrate"],
             ["Qubit", "alpha|0> + beta|1>", "|alpha|^2 + |beta|^2 = 1", "Contrast with probabilistic tokenizer states"],
-            ["Bloch sphere", "3D unit-sphere state view", "|+> on equator", "State-geometry analogy with strict boundary"],
+            [
+                "Bloch sphere",
+                "3D unit-sphere state view",
+                "|+> on equator",
+                "State-geometry analogy with strict boundary",
+            ],
             ["Pauli-X", "[[0,1],[1,0]]", "bit flip", "Gate table teaching record"],
             ["Pauli-Z", "[[1,0],[0,-1]]", "phase flip", "Phase/sign lane analogy"],
-            ["Hadamard", "1/sqrt(2)[[1,1],[1,-1]]", "creates superposition", "Do not confuse with deterministic transport"],
+            [
+                "Hadamard",
+                "1/sqrt(2)[[1,1],[1,-1]]",
+                "creates superposition",
+                "Do not confuse with deterministic transport",
+            ],
             ["CNOT", "two-qubit controlled flip", "entangling gate", "Dependency/control-flow analogy"],
-            ["Surface code", "2D lattice error correction", "stabilizer checks", "Fault tolerance and bus verification analogy"],
+            [
+                "Surface code",
+                "2D lattice error correction",
+                "stabilizer checks",
+                "Fault tolerance and bus verification analogy",
+            ],
         ],
     )
 
@@ -289,4 +348,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

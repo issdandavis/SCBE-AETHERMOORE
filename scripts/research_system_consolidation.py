@@ -18,7 +18,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = "training/research_consolidation.json"
 DEFAULT_RUN_ROOT = "training/runs/research_consolidation"

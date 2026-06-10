@@ -3,7 +3,6 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
-
 _MODULE_PATH = Path(__file__).with_name("scbe-system-cli.py")
 _SPEC = importlib.util.spec_from_file_location("scbe_system_cli_runtime", _MODULE_PATH)
 if _SPEC is None or _SPEC.loader is None:

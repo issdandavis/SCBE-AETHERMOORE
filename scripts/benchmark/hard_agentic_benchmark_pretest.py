@@ -22,7 +22,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = REPO_ROOT / "artifacts" / "benchmarks" / "hard_agentic_pretest"
 
@@ -72,7 +71,10 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
         domain="code repair/control",
         official_url="docs/benchmarks/SWE_LOCAL_BENCHMARK.md",
         public_context="Repo-local control benchmark; not official SWE-bench.",
-        why_hard="Checks whether the agent control layer preserves task contracts instead of merely writing plausible code prose.",
+        why_hard=(
+            "Checks whether the agent control layer preserves task contracts instead of merely writing "
+            "plausible code prose."
+        ),
         defender_view="The task withholds easy credit unless the exact executable contract is satisfied.",
         non_leaky_assist=(
             "Expose the required output contract before execution.",
@@ -103,9 +105,17 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
         display_name="SCBE Pathfinding Suite",
         domain="partial-observation planning",
         official_url="packages/agent-bus/scripts/bench_pathfinding_suite.cjs",
-        public_context="Repo-local roll-stack, worm adapter, projection board, and vector-field navigation evidence suite.",
-        why_hard="Shortest path is not always visible or optimal under fog, security state, importance depth, pressure, and local sensor radius.",
-        defender_view="The maze defends itself by hiding global structure and rewarding robust penetration rather than perfect omniscience.",
+        public_context=(
+            "Repo-local roll-stack, worm adapter, projection board, and vector-field navigation " "evidence suite."
+        ),
+        why_hard=(
+            "Shortest path is not always visible or optimal under fog, security state, importance "
+            "depth, pressure, and local sensor radius."
+        ),
+        defender_view=(
+            "The maze defends itself by hiding global structure and rewarding robust penetration rather "
+            "than perfect omniscience."
+        ),
         non_leaky_assist=(
             "Expose local sensor readings and uncertainty bands.",
             "Provide frontier/visited/pressure heat maps without revealing the hidden goal path.",
@@ -122,7 +132,10 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
         official_url="docs/benchmarks/PUBLIC_AGENTIC_CLI_BENCHMARK_PLAN.md",
         public_context="Local readiness checks for Terminal-Bench, SWE-bench, Aider Polyglot, and Vexp SWE-bench.",
         why_hard="Public harnesses require Docker, exact agent adapters, and repeatable artifact packets.",
-        defender_view="The benchmark defends against inflated claims by refusing to score unless the public harness actually runs.",
+        defender_view=(
+            "The benchmark defends against inflated claims by refusing to score unless the public "
+            "harness actually runs."
+        ),
         non_leaky_assist=(
             "Install/readiness checks before attempting full scoring.",
             "Emit exact missing prerequisites.",
@@ -139,8 +152,14 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
         public_context=(
             "SWE-bench Verified remains useful but OpenAI has reported it is no longer a clean frontier-only measure."
         ),
-        why_hard="Requires reproducing real repository bugs inside Docker and producing patches that pass hidden/task tests.",
-        defender_view="The task blocks shallow agents with environment setup, repo scale, issue ambiguity, and test-only acceptance.",
+        why_hard=(
+            "Requires reproducing real repository bugs inside Docker and producing patches that pass "
+            "hidden/task tests."
+        ),
+        defender_view=(
+            "The task blocks shallow agents with environment setup, repo scale, issue ambiguity, and "
+            "test-only acceptance."
+        ),
         non_leaky_assist=(
             "Provide repository map and failing test commands.",
             "Expose allowed patch files and dependency setup.",
@@ -155,8 +174,12 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
         display_name="Terminal-Bench",
         domain="terminal execution",
         official_url="https://terminalbench.lol/",
-        public_context="Versioned terminal task benchmark with sandbox execution, verifier scripts, and public leaderboard.",
-        why_hard="Agents must operate in a shell, inspect files, run commands, fix state, and satisfy verifier scripts.",
+        public_context=(
+            "Versioned terminal task benchmark with sandbox execution, verifier scripts, and public " "leaderboard."
+        ),
+        why_hard=(
+            "Agents must operate in a shell, inspect files, run commands, fix state, and satisfy " "verifier scripts."
+        ),
         defender_view="The benchmark prevents answer-only success by validating final filesystem/process state.",
         non_leaky_assist=(
             "Expose safe command affordances and current working directory.",
@@ -172,15 +195,26 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
         display_name="ARC-AGI-2",
         domain="abstract reasoning",
         official_url="https://arcprize.org/arc-agi/2",
-        public_context="ARC-AGI-2 is calibrated for human solvability while remaining difficult for current AI systems.",
+        public_context=(
+            "ARC-AGI-2 is calibrated for human solvability while remaining difficult for current AI " "systems."
+        ),
         why_hard="Tasks require discovering new visual rules from tiny examples rather than retrieving known facts.",
-        defender_view="The task defends itself with novelty: no instruction text, few examples, and no reusable single algorithm.",
+        defender_view=(
+            "The task defends itself with novelty: no instruction text, few examples, and no reusable "
+            "single algorithm."
+        ),
         non_leaky_assist=(
             "Provide reversible grid transforms and hypothesis slots.",
             "Run candidate programs against public train examples.",
             "Expose contradiction traces when a hypothesis fails, without revealing test output.",
         ),
-        setup_checks=(("python", "-c", "from pathlib import Path; raise SystemExit(0 if Path('artifacts/arc-data').exists() else 1)"),),
+        setup_checks=(
+            (
+                "python",
+                "-c",
+                "from pathlib import Path; raise SystemExit(0 if Path('artifacts/arc-data').exists() else 1)",
+            ),
+        ),
         expected_blockers=("arc_agi_2_dataset_or_checkout",),
         source_refs=("https://arcprize.org/arc-agi/2", "https://arxiv.org/abs/2505.11831"),
     ),
@@ -189,8 +223,13 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
         display_name="MLE-bench",
         domain="ML engineering/Kaggle",
         official_url="https://openai.com/index/mle-bench/",
-        public_context="OpenAI reports o1-preview with AIDE reached at least Kaggle bronze level in 16.9% of competitions.",
-        why_hard="Requires data loading, experiment design, training, validation, submission formatting, and iteration under time/compute limits.",
+        public_context=(
+            "OpenAI reports o1-preview with AIDE reached at least Kaggle bronze level in 16.9% of " "competitions."
+        ),
+        why_hard=(
+            "Requires data loading, experiment design, training, validation, submission formatting, and "
+            "iteration under time/compute limits."
+        ),
         defender_view="The benchmark blocks agents that cannot execute experiments or learn from metric feedback.",
         non_leaky_assist=(
             "Expose dataset schema, scoring metric, and submission format.",
@@ -214,7 +253,12 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
             "Force source-backed candidate answers.",
             "Use best-of-N verification over independent search paths.",
         ),
-        pretest_command=("python", "scripts/benchmark/research_agent_fixture_benchmark.py", "--style", "BrowseComp-style"),
+        pretest_command=(
+            "python",
+            "scripts/benchmark/research_agent_fixture_benchmark.py",
+            "--style",
+            "BrowseComp-style",
+        ),
         source_refs=("https://openai.com/index/browsecomp/", "https://github.com/openai/simple-evals"),
     ),
     BenchmarkTarget(
@@ -222,9 +266,14 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
         display_name="GAIA",
         domain="general assistant/tool use",
         official_url="https://huggingface.co/learn/agents-course/unit4/what-is-gaia",
-        public_context="Hugging Face describes GAIA as 466 tasks; humans about 92%, GPT-4 with plugins about 15%, Deep Research 67.36% validation.",
+        public_context=(
+            "Hugging Face describes GAIA as 466 tasks; humans about 92%, GPT-4 with plugins about 15%, "
+            "Deep Research 67.36% validation."
+        ),
         why_hard="Requires planning across web, files, multimodal evidence, and precise answer formatting.",
-        defender_view="The task blocks single-shot chat by requiring grounded multi-tool execution and concise final answers.",
+        defender_view=(
+            "The task blocks single-shot chat by requiring grounded multi-tool execution and concise " "final answers."
+        ),
         non_leaky_assist=(
             "Provide a typed tool menu and evidence packet.",
             "Require each answer to cite retrieval or file evidence.",
@@ -266,9 +315,16 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
         display_name="WebArena / VisualWebArena",
         domain="browser operation",
         official_url="https://webarena.dev/",
-        public_context="WebArena paper reports best GPT-4-based agent at 14.41% task success versus 78.24% human performance.",
-        why_hard="Agents must operate long-horizon web tasks in stateful sites with DOM, visual grounding, and hidden success conditions.",
-        defender_view="The site defends itself with state, navigation depth, ambiguous UI labels, and irreversible actions.",
+        public_context=(
+            "WebArena paper reports best GPT-4-based agent at 14.41% task success versus 78.24% human " "performance."
+        ),
+        why_hard=(
+            "Agents must operate long-horizon web tasks in stateful sites with DOM, visual grounding, "
+            "and hidden success conditions."
+        ),
+        defender_view=(
+            "The site defends itself with state, navigation depth, ambiguous UI labels, and " "irreversible actions."
+        ),
         non_leaky_assist=(
             "Provide DOM snapshots, screenshots, and action receipts.",
             "Keep reversible navigation history and form-state diffs.",
@@ -285,7 +341,9 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
         official_url="https://os-world.github.io/",
         public_context="OSWorld evaluates real computer tasks across desktop applications and web interfaces.",
         why_hard="The agent must use GUI state, applications, files, and multi-step procedures rather than plain text.",
-        defender_view="The OS blocks agents through visual state, app-specific workflows, timing, and hidden verifier state.",
+        defender_view=(
+            "The OS blocks agents through visual state, app-specific workflows, timing, and hidden " "verifier state."
+        ),
         non_leaky_assist=(
             "Provide perception snapshots and active-window metadata.",
             "Record UI action receipts and reversible checkpoints.",
@@ -300,9 +358,18 @@ TARGETS: tuple[BenchmarkTarget, ...] = (
         display_name="Vending-Bench",
         domain="long-horizon coherence",
         official_url="https://arxiv.org/abs/2502.15840",
-        public_context="Long-term autonomous vending-machine business simulation for coherence and capital acquisition behavior.",
-        why_hard="Requires stable goals, inventory, pricing, memory, finance, and adaptation over long simulated horizons.",
-        defender_view="The environment punishes state drift, short-term greed, forgotten constraints, and inconsistent business policy.",
+        public_context=(
+            "Long-term autonomous vending-machine business simulation for coherence and capital "
+            "acquisition behavior."
+        ),
+        why_hard=(
+            "Requires stable goals, inventory, pricing, memory, finance, and adaptation over long "
+            "simulated horizons."
+        ),
+        defender_view=(
+            "The environment punishes state drift, short-term greed, forgotten constraints, and "
+            "inconsistent business policy."
+        ),
         non_leaky_assist=(
             "Provide durable business ledger state.",
             "Summarize invariant policies before each decision.",
@@ -427,7 +494,11 @@ def check_setup(target: BenchmarkTarget, timeout: int) -> tuple[str, list[str], 
             }
         )
         if not ok:
-            blockers.append(command[0] if command[0] != "python" else target.expected_blockers[0] if target.expected_blockers else "python_check")
+            blockers.append(
+                command[0]
+                if command[0] != "python"
+                else target.expected_blockers[0] if target.expected_blockers else "python_check"
+            )
     status = "READY_PRETEST" if not blockers else "BLOCKED_SETUP"
     return status, sorted(set(blockers)), checks, elapsed_total
 
@@ -503,9 +574,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     for row in payload["results"]:
         score = "" if row["score"] is None else f"{row['score']:.4f}"
         blockers = ", ".join(row["blockers"]) if row["blockers"] else "none"
-        lines.append(
-            f"| {row['display_name']} | {row['domain']} | `{row['status']}` | `{score}` | {blockers} |"
-        )
+        lines.append(f"| {row['display_name']} | {row['domain']} | `{row['status']}` | `{score}` | {blockers} |")
     cb = payload.get("claim_boundary", [])
     if isinstance(cb, list) and cb:
         lines.extend(["", "## Claim Boundary", ""])

@@ -16,7 +16,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
 
-
 TreeKind = Literal["one", "var", "eml"]
 
 
@@ -192,7 +191,8 @@ def build_sft_records(tolerance: float = 1e-10) -> list[dict[str, Any]]:
         records.append(
             _sft_record(
                 f"eml_operator_v1_ln_{idx:02d}",
-                "Construct ln(x) using only the EML operator and the constant 1. Include the positive-real domain boundary.",
+                "Construct ln(x) using only the EML operator and the constant 1. "
+                "Include the positive-real domain boundary.",
                 (
                     "Identity: ln(x) = eml(1, eml(eml(1, x), 1)) for this tested positive-real lane.\n"
                     f"Input x={row['x']}.\n"
@@ -273,7 +273,9 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.sft_output:
-        manifest_path = Path(args.sft_manifest) if args.sft_manifest else Path(args.sft_output).with_suffix(".manifest.json")
+        manifest_path = (
+            Path(args.sft_manifest) if args.sft_manifest else Path(args.sft_output).with_suffix(".manifest.json")
+        )
         manifest = write_sft_dataset(Path(args.sft_output), manifest_path, tolerance=args.tolerance)
         print(json.dumps(manifest, indent=2))
         return 0

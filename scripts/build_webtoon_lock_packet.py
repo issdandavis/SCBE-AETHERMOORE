@@ -17,7 +17,6 @@ from typing import Any
 
 from scripts.webtoon_gen import compile_panel_prompt
 
-
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUT_DIR = ROOT / "artifacts" / "webtoon" / "lock_packets"
 
@@ -62,12 +61,14 @@ def lock_prompt_reinforcement(panel: dict[str, Any], lock_type: str) -> str | No
 
     if lock_type == "character" and "marcus" in characters:
         reinforcements.append(
-            "Visible age cue: clearly early-30s Asian-American engineer, light stubble, under-eye fatigue, long-hour office weariness, not teenage, not idol-clean."
+            "Visible age cue: clearly early-30s Asian-American engineer, light stubble, "
+            "under-eye fatigue, long-hour office weariness, not teenage, not idol-clean."
         )
 
     if lock_type == "environment" and str(panel.get("environment") or "") == "crystal_corridor":
         reinforcements.append(
-            "Environment lock: corridor proportions must feel reusable and architecturally repeatable from panel to panel."
+            "Environment lock: corridor proportions must feel reusable "
+            "and architecturally repeatable from panel to panel."
         )
 
     return " ".join(reinforcements).strip() or None

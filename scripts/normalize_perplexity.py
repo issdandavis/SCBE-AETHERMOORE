@@ -20,7 +20,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 DEFAULT_RAW_DIR = "data/perplexity/raw_json"
 DEFAULT_OUTPUT_JSONL = "data/perplexity/normalized/perplexity_normalized.jsonl"
 DEFAULT_OUTPUT_STATS = "data/perplexity/normalized/normalize_stats.json"

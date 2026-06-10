@@ -11,14 +11,12 @@ import time
 from pathlib import Path
 from typing import Any, Dict
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.system.phone_navigation_telemetry import build_navigation_telemetry
 from src.browser.hydra_android_hand import HydraAndroidHand
-
 
 OUT_DIR = REPO_ROOT / "artifacts" / "kindle" / "emulator"
 LATEST = OUT_DIR / "eye_latest.png"

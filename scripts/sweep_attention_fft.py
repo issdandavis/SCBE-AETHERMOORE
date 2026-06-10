@@ -234,7 +234,8 @@ def main() -> int:
         print(f"  Layers analyzed: {len(report['layer_summary'])}")
         for layer_key, stats in report["layer_summary"].items():
             print(
-                f"    {layer_key}: mean={stats['mean_s_spec']:.4f} std={stats['std_s_spec']:.4f} range=[{stats['min_s_spec']:.4f}, {stats['max_s_spec']:.4f}]"
+                f"    {layer_key}: mean={stats['mean_s_spec']:.4f} std={stats['std_s_spec']:.4f} "
+                f"range=[{stats['min_s_spec']:.4f}, {stats['max_s_spec']:.4f}]"
             )
 
     return 0

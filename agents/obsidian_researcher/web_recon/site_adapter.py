@@ -17,19 +17,19 @@ from typing import Any, Dict, List
 
 from .recon_goggles import SemanticSkeleton
 
-
 # ------------------------------------------------------------------
 # Data structures
 # ------------------------------------------------------------------
+
 
 @dataclass
 class ExtractionRule:
     """A single extraction strategy for a named content region."""
 
     name: str
-    css_selector: str       # simplified CSS selector (for documentation)
-    regex_pattern: str      # actual extraction regex
-    attribute: str = ""     # "href", "src", "text", etc.
+    css_selector: str  # simplified CSS selector (for documentation)
+    regex_pattern: str  # actual extraction regex
+    attribute: str = ""  # "href", "src", "text", etc.
     confidence: float = 0.5
 
 
@@ -141,7 +141,10 @@ KNOWN_ADAPTERS: Dict[str, SiteAdapter] = {
             ExtractionRule(
                 name="accepted_answer",
                 css_selector="div.accepted-answer div.s-prose",
-                regex_pattern=r'<div[^>]*class="[^"]*accepted-answer[^"]*"[^>]*>.*?<div[^>]*class="[^"]*s-prose[^"]*"[^>]*>(.*?)</div>',
+                regex_pattern=(
+                    r'<div[^>]*class="[^"]*accepted-answer[^"]*"[^>]*>.*?'
+                    r'<div[^>]*class="[^"]*s-prose[^"]*"[^>]*>(.*?)</div>'
+                ),
                 attribute="text",
                 confidence=0.8,
             ),
@@ -163,7 +166,7 @@ KNOWN_ADAPTERS: Dict[str, SiteAdapter] = {
             ExtractionRule(
                 name="model_name",
                 css_selector="h1",
-                regex_pattern=r'<h1[^>]*>(.*?)</h1>',
+                regex_pattern=r"<h1[^>]*>(.*?)</h1>",
                 attribute="text",
                 confidence=0.8,
             ),
@@ -178,6 +181,7 @@ _STRIP_TAGS_RE = re.compile(r"<[^>]+>")
 # ------------------------------------------------------------------
 # AdaptiveToolBuilder
 # ------------------------------------------------------------------
+
 
 class AdaptiveToolBuilder:
     """Create or retrieve :class:`SiteAdapter` instances for domains.
@@ -236,71 +240,85 @@ class AdaptiveToolBuilder:
 
         dist = skeleton.tongue_distribution
         # Always add a body-text fallback
-        rules.append(ExtractionRule(
-            name="body_text",
-            css_selector="body",
-            regex_pattern=r"<body[^>]*>(.*?)</body>",
-            attribute="text",
-            confidence=0.3,
-        ))
+        rules.append(
+            ExtractionRule(
+                name="body_text",
+                css_selector="body",
+                regex_pattern=r"<body[^>]*>(.*?)</body>",
+                attribute="text",
+                confidence=0.3,
+            )
+        )
 
         # Content-heavy: headings + paragraphs
         if len(skeleton.headings) >= 3 or dist.get("RU", 0) > 0.4:
-            rules.append(ExtractionRule(
-                name="headings",
-                css_selector="h1, h2, h3",
-                regex_pattern=r"<h[1-3][^>]*>(.*?)</h[1-3]>",
-                attribute="text",
-                confidence=0.7,
-            ))
-            rules.append(ExtractionRule(
-                name="paragraphs",
-                css_selector="p",
-                regex_pattern=r"<p[^>]*>(.*?)</p>",
-                attribute="text",
-                confidence=0.6,
-            ))
+            rules.append(
+                ExtractionRule(
+                    name="headings",
+                    css_selector="h1, h2, h3",
+                    regex_pattern=r"<h[1-3][^>]*>(.*?)</h[1-3]>",
+                    attribute="text",
+                    confidence=0.7,
+                )
+            )
+            rules.append(
+                ExtractionRule(
+                    name="paragraphs",
+                    css_selector="p",
+                    regex_pattern=r"<p[^>]*>(.*?)</p>",
+                    attribute="text",
+                    confidence=0.6,
+                )
+            )
 
         # Navigation-heavy: links
         if len(skeleton.links) >= 20 or dist.get("KO", 0) > 0.3:
-            rules.append(ExtractionRule(
-                name="links",
-                css_selector="a[href]",
-                regex_pattern=r'<a\s[^>]*href="([^"]*)"[^>]*>(.*?)</a>',
-                attribute="href",
-                confidence=0.6,
-            ))
+            rules.append(
+                ExtractionRule(
+                    name="links",
+                    css_selector="a[href]",
+                    regex_pattern=r'<a\s[^>]*href="([^"]*)"[^>]*>(.*?)</a>',
+                    attribute="href",
+                    confidence=0.6,
+                )
+            )
 
         # Form-heavy
         if skeleton.forms >= 2 or dist.get("UM", 0) > 0.2:
-            rules.append(ExtractionRule(
-                name="forms",
-                css_selector="form",
-                regex_pattern=r"<form[^>]*>(.*?)</form>",
-                attribute="text",
-                confidence=0.5,
-            ))
+            rules.append(
+                ExtractionRule(
+                    name="forms",
+                    css_selector="form",
+                    regex_pattern=r"<form[^>]*>(.*?)</form>",
+                    attribute="text",
+                    confidence=0.5,
+                )
+            )
             rate_strategy = "moderate"
 
         # Media-heavy
         if skeleton.media >= 5 or dist.get("AV", 0) > 0.3:
-            rules.append(ExtractionRule(
-                name="images",
-                css_selector="img[src]",
-                regex_pattern=r'<img\s[^>]*src="([^"]*)"',
-                attribute="src",
-                confidence=0.5,
-            ))
+            rules.append(
+                ExtractionRule(
+                    name="images",
+                    css_selector="img[src]",
+                    regex_pattern=r'<img\s[^>]*src="([^"]*)"',
+                    attribute="src",
+                    confidence=0.5,
+                )
+            )
 
         # Table-heavy
         if skeleton.tables >= 2:
-            rules.append(ExtractionRule(
-                name="tables",
-                css_selector="table",
-                regex_pattern=r"<table[^>]*>(.*?)</table>",
-                attribute="text",
-                confidence=0.6,
-            ))
+            rules.append(
+                ExtractionRule(
+                    name="tables",
+                    css_selector="table",
+                    regex_pattern=r"<table[^>]*>(.*?)</table>",
+                    attribute="text",
+                    confidence=0.6,
+                )
+            )
 
         adapter = SiteAdapter(
             domain=domain,

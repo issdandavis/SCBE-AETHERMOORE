@@ -274,7 +274,9 @@ def validate_system_contract(data: dict[str, Any], source: str) -> list[CheckRes
         else fail_check(f"{source}:workspace_formation", "missing workspace formation")
     )
 
-    offers = payload.get("monetization", {}).get("live_offers") if isinstance(payload.get("monetization"), dict) else None
+    offers = (
+        payload.get("monetization", {}).get("live_offers") if isinstance(payload.get("monetization"), dict) else None
+    )
     checks.append(
         pass_check(f"{source}:live_offers", str(len(offers)))
         if isinstance(offers, list) and len(offers) >= len(REQUIRED_OFFER_IDS)

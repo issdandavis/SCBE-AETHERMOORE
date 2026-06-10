@@ -410,7 +410,7 @@ class AgentBus:
             return {"url": url, "error": page.error}
 
         prompt = (
-            f"Analyze this web page and provide a structured summary:\n\n"
+            "Analyze this web page and provide a structured summary:\n\n"
             f"Title: {page.title}\n"
             f"URL: {page.url}\n"
             f"Word count: {page.word_count}\n"
@@ -418,7 +418,7 @@ class AgentBus:
             f"Tables: {len(page.tables)}\n"
             f"Links: {len(page.links)}\n\n"
             f"Content:\n{page.text[:3000]}\n\n"
-            f"Provide: 1) What this page is about, 2) Key points, 3) Notable data"
+            "Provide: 1) What this page is about, 2) Key points, 3) Notable data"
         )
 
         answer = await self._llm_generate(prompt)
@@ -738,11 +738,11 @@ class AgentBus:
     def _build_prompt(self, question: str, context: str) -> str:
         if context:
             return (
-                f"Answer the following question using the provided context. "
-                f"Be concise, factual, and cite sources when possible.\n\n"
+                "Answer the following question using the provided context. "
+                "Be concise, factual, and cite sources when possible.\n\n"
                 f"Question: {question}\n\n"
                 f"Context:{context}\n\n"
-                f"Answer:"
+                "Answer:"
             )
         return f"Answer concisely: {question}"
 

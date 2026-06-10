@@ -19,12 +19,7 @@ DEFAULT_OUT = REPO_ROOT / "artifacts" / "benchmarks" / "harness_release_readines
 
 
 def _utc_now() -> str:
-    return (
-        datetime.now(timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -35,16 +30,10 @@ def _read_json(path: Path) -> dict[str, Any]:
     return data if isinstance(data, dict) else {}
 
 
-def _artifact(
-    path: Path, checks: dict[str, bool], details: dict[str, Any] | None = None
-) -> dict[str, Any]:
+def _artifact(path: Path, checks: dict[str, bool], details: dict[str, Any] | None = None) -> dict[str, Any]:
     ok = path.exists() and all(checks.values())
     return {
-        "path": str(
-            path.relative_to(REPO_ROOT)
-            if path.is_absolute() and path.is_relative_to(REPO_ROOT)
-            else path
-        ),
+        "path": str(path.relative_to(REPO_ROOT) if path.is_absolute() and path.is_relative_to(REPO_ROOT) else path),
         "exists": path.exists(),
         "ok": ok,
         "checks": checks,
@@ -53,40 +42,16 @@ def _artifact(
 
 
 def build_report(out_dir: Path = DEFAULT_OUT) -> dict[str, Any]:
-    cli_path = (
-        REPO_ROOT
-        / "artifacts"
-        / "benchmarks"
-        / "cli_competitive"
-        / "cli_competitive_benchmark_latest.json"
-    )
-    wedge_path = (
-        REPO_ROOT
-        / "artifacts"
-        / "benchmarks"
-        / "agentbus_competitive_wedge"
-        / "latest_report.json"
-    )
-    operator_path = (
-        REPO_ROOT
-        / "artifacts"
-        / "benchmarks"
-        / "operator_agent_bus_eval"
-        / "latest_report.json"
-    )
+    cli_path = REPO_ROOT / "artifacts" / "benchmarks" / "cli_competitive" / "cli_competitive_benchmark_latest.json"
+    wedge_path = REPO_ROOT / "artifacts" / "benchmarks" / "agentbus_competitive_wedge" / "latest_report.json"
+    operator_path = REPO_ROOT / "artifacts" / "benchmarks" / "operator_agent_bus_eval" / "latest_report.json"
     checklist_path = (
-        REPO_ROOT
-        / "artifacts"
-        / "benchmarks"
-        / "workflow_completion_checklist"
-        / "latest_completion_checklist.json"
+        REPO_ROOT / "artifacts" / "benchmarks" / "workflow_completion_checklist" / "latest_completion_checklist.json"
     )
 
     cli = _read_json(cli_path)
     ranking = cli.get("ranking", []) if isinstance(cli.get("ranking"), list) else []
-    scbe_cli = next(
-        (item for item in ranking if item.get("name") == "scbe-geoseal"), {}
-    )
+    scbe_cli = next((item for item in ranking if item.get("name") == "scbe-geoseal"), {})
 
     wedge = _read_json(wedge_path)
     operator = _read_json(operator_path)
@@ -109,8 +74,7 @@ def build_report(out_dir: Path = DEFAULT_OUT) -> dict[str, Any]:
                 "bus_wins_all_tasks": wedge.get("summary", {}).get("bus_wins")
                 == wedge.get("summary", {}).get("task_count"),
                 "local_zero_cost_surface": all(
-                    score.get("checks", {}).get("local_private")
-                    and score.get("checks", {}).get("zero_cost")
+                    score.get("checks", {}).get("local_private") and score.get("checks", {}).get("zero_cost")
                     for score in wedge.get("scbe_bus_scores", [])
                 ),
             },
@@ -120,10 +84,8 @@ def build_report(out_dir: Path = DEFAULT_OUT) -> dict[str, Any]:
             operator_path,
             {
                 "decision_pass": operator.get("decision") == "PASS",
-                "endpoint_score_full": float(operator.get("endpoint_score", 0.0) or 0.0)
-                >= 1.0,
-                "dataset_score_full": float(operator.get("dataset_score", 0.0) or 0.0)
-                >= 1.0,
+                "endpoint_score_full": float(operator.get("endpoint_score", 0.0) or 0.0) >= 1.0,
+                "dataset_score_full": float(operator.get("dataset_score", 0.0) or 0.0) >= 1.0,
             },
             {
                 "score": operator.get("score"),
@@ -134,8 +96,7 @@ def build_report(out_dir: Path = DEFAULT_OUT) -> dict[str, Any]:
         "workflow_completion_checklist": _artifact(
             checklist_path,
             {
-                "ready_to_claim_done": checklist.get("completion_status")
-                == "ready_to_claim_done",
+                "ready_to_claim_done": checklist.get("completion_status") == "ready_to_claim_done",
                 "no_known_failures": int(checklist.get("known_failure_count", -1)) == 0,
             },
             {
@@ -146,11 +107,7 @@ def build_report(out_dir: Path = DEFAULT_OUT) -> dict[str, Any]:
     }
 
     missing = [name for name, payload in artifacts.items() if not payload["exists"]]
-    failed = [
-        name
-        for name, payload in artifacts.items()
-        if payload["exists"] and not payload["ok"]
-    ]
+    failed = [name for name, payload in artifacts.items() if payload["exists"] and not payload["ok"]]
     decision = "PASS" if not missing and not failed else "BLOCK"
     payload = {
         "schema_version": "scbe_harness_release_readiness_v1",
@@ -170,9 +127,7 @@ def build_report(out_dir: Path = DEFAULT_OUT) -> dict[str, Any]:
     out_dir.mkdir(parents=True, exist_ok=True)
     json_path = out_dir / "latest_readiness.json"
     md_path = out_dir / "LATEST.md"
-    json_path.write_text(
-        json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8"
-    )
+    json_path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
     md_path.write_text(_render_markdown(payload), encoding="utf-8")
     payload["json"] = str(json_path.relative_to(REPO_ROOT))
     payload["markdown"] = str(md_path.relative_to(REPO_ROOT))
@@ -185,9 +140,7 @@ def _render_markdown(payload: dict[str, Any]) -> str:
         "|---|---:|---|",
     ]
     for name, item in payload["artifacts"].items():
-        rows.append(
-            f"| `{name}` | `{'PASS' if item['ok'] else 'FAIL'}` | `{item['path']}` |"
-        )
+        rows.append(f"| `{name}` | `{'PASS' if item['ok'] else 'FAIL'}` | `{item['path']}` |")
     return "\n".join(
         [
             "# SCBE Harness Release Readiness",

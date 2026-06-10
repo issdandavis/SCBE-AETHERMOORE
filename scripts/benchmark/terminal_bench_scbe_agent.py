@@ -28,8 +28,6 @@ from __future__ import annotations
 
 import json
 import math
-import os
-import re
 import sys
 import time
 from dataclasses import dataclass
@@ -54,7 +52,6 @@ _REPO = str(Path(__file__).parent.parent.parent)
 if _REPO not in sys.path:
     sys.path.insert(0, _REPO)
 from scripts.benchmark.scbe_governance_core import (
-    ask_llm,
     danger_drift,
     harmonic_score,
     output_deviation,
@@ -67,9 +64,7 @@ from scripts.benchmark.scbe_governance_core import (
 PHI = (1 + math.sqrt(5)) / 2  # ≈ 1.618
 
 # Re-export for external callers that still import from this module
-CommandPlan = __import__(
-    "scripts.benchmark.scbe_governance_core", fromlist=["CommandPlan"]
-).CommandPlan
+CommandPlan = __import__("scripts.benchmark.scbe_governance_core", fromlist=["CommandPlan"]).CommandPlan
 
 
 # ---------------------------------------------------------------------------
@@ -147,14 +142,10 @@ class ScbeGovernedAgent(BaseAgent):
                     self.ollama_host,
                 )
             except Exception as _exc:
-                _debug.append(
-                    f"t{turn}:plan_commands raised {type(_exc).__name__}:{_exc}"
-                )
+                _debug.append(f"t{turn}:plan_commands raised {type(_exc).__name__}:{_exc}")
                 break  # LLM unreachable — stop gracefully
 
-            _debug.append(
-                f"t{turn}:cmds={len(p.commands)} done={p.done} rat={p.rationale[:40]!r}"
-            )
+            _debug.append(f"t{turn}:cmds={len(p.commands)} done={p.done} rat={p.rationale[:40]!r}")
             in_toks += (len(task_description) + len(state)) // 4
             out_toks += (len(" ".join(p.commands)) + len(p.rationale)) // 4
 
@@ -164,9 +155,7 @@ class ScbeGovernedAgent(BaseAgent):
             for cmd in p.commands:
                 d = semantic_distance(cmd)
                 incremental = session.get_incremental_output() or ""
-                pd = max(
-                    danger_drift(cmd), output_deviation(task_description, incremental)
-                )
+                pd = max(danger_drift(cmd), output_deviation(task_description, incremental))
                 score = harmonic_score(d, pd)
                 tier = risk_tier(score)
 
@@ -188,24 +177,18 @@ class ScbeGovernedAgent(BaseAgent):
                     probes = polymerize_probes(cmd, post)
                     for probe in probes:
                         try:
-                            session.send_keys(
-                                [probe, "Enter"], block=True, max_timeout_sec=30.0
-                            )
+                            session.send_keys([probe, "Enter"], block=True, max_timeout_sec=30.0)
                         except Exception:
                             pass
                         time.sleep(0.2)
 
-                gov.append(
-                    _GovRecord(cmd, tier, score, d, pd, polymerized=bool(probes))
-                )
+                gov.append(_GovRecord(cmd, tier, score, d, pd, polymerized=bool(probes)))
 
             if p.done:
                 break
 
         if logging_dir:
-            _write_telemetry(
-                Path(logging_dir), gov, self.model, turn, task_description[:120], _debug
-            )
+            _write_telemetry(Path(logging_dir), gov, self.model, turn, task_description[:120], _debug)
 
         kwargs: dict = {"total_input_tokens": in_toks, "total_output_tokens": out_toks}
         if FailureMode is not None:

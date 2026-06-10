@@ -18,10 +18,10 @@ from typing import List, Optional
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-
 # ------------------------------------------------------------------
 # Rate-limit state
 # ------------------------------------------------------------------
+
 
 @dataclass
 class RateLimitState:
@@ -61,6 +61,7 @@ class RateLimitState:
 # ------------------------------------------------------------------
 # Site profile
 # ------------------------------------------------------------------
+
 
 @dataclass
 class SiteProfile:

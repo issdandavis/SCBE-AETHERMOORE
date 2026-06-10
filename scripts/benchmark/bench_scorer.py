@@ -120,9 +120,7 @@ def _score_generic(report: dict[str, Any], lane: str = "") -> BenchScore:
     """Best-effort extraction from an unknown schema."""
     summary = report.get("summary", {})
     total = summary.get("total", summary.get("target_count", 0))
-    passed = summary.get(
-        "passed", summary.get("pass_count", summary.get("ready_or_pass", 0))
-    )
+    passed = summary.get("passed", summary.get("pass_count", summary.get("ready_or_pass", 0)))
     failed = summary.get("failed", summary.get("fail_count", total - passed))
     return BenchScore(
         lane=lane,

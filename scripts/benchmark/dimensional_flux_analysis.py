@@ -390,7 +390,8 @@ def run_flux_analysis():
     for method, data in all_results.items():
         ratio = data["avg_adversarial_flux"] / max(data["avg_technical_flux"], 0.001)
         print(
-            f"{method:<15} {data['avg_technical_flux']:>10.4f} {data['avg_adversarial_flux']:>10.4f} {data['avg_story_flux']:>11.4f} {ratio:>9.1f}x"
+            f"{method:<15} {data['avg_technical_flux']:>10.4f} {data['avg_adversarial_flux']:>10.4f} "
+            f"{data['avg_story_flux']:>11.4f} {ratio:>9.1f}x"
         )
 
     # Save

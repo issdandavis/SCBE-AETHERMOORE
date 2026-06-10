@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Legal/patent documents moved to private storage**: `docs/legal/` (96 files — patent workbench, claims, prosecution material) plus the patent portfolio docs in `docs/` and `docs/business/` are no longer tracked in the public repo. The public site pages (`docs/legal/privacy.html`, `docs/legal/terms.html`) and the commercial license terms remain. `scbe-patent init` regenerates the workbench locally; its output is now gitignored. Note: prior revisions remain in git history until a history rewrite.
+- **scripts/ and agents/ brought under lint**: black-formatted (~250 files), flake8 violations fixed (3,574 → 0, including 8 F821 undefined-name bugs); SFT/corpus generator files carry documented per-file E501 ignores so training data stays byte-reproducible. CI lint gate extended to cover `scripts/` and `agents/`.
+- **Nightly full-suite workflow hardened**: on failure it now opens (or appends to) a `nightly-failure` issue automatically instead of relying on someone noticing a red scheduled run.
+
 ### Fixed
 
 - **Repo hygiene**: untracked ~1,270 generated/junk files that violated `.gitignore` (docs-build-smoke/ build output, src/.hypothesis/ test caches, SQLite databases, Notion export dumps, the 17 MB generated `full_codebase_map.json`, personal `.home/` mirror, scratch files). `.gitignore` updated so they cannot return.

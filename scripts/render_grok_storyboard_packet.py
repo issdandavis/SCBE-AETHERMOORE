@@ -17,7 +17,6 @@ from typing import Any
 from scripts.grok_image_gen import BACKENDS, check_backends, generate, pick_best_backend
 from scripts.webtoon_gen import compile_panel_prompt
 
-
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUTPUT_ROOT = ROOT / "artifacts" / "webtoon" / "generated_router"
 

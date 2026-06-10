@@ -10,13 +10,16 @@ KERNEL = sys.argv[1] if len(sys.argv) > 1 else "issacizrealdavis/polly-auto-r8"
 INTERVAL = int(sys.argv[2]) if len(sys.argv) > 2 else 120
 ROUND_NAME = KERNEL.split("/polly-auto-")[-1]
 
+
 def ts():
     return datetime.now(timezone.utc).strftime("%H:%M:%S UTC")
+
 
 def get_status():
     r = subprocess.run(
         ["kaggle", "kernels", "status", KERNEL],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     out = r.stdout + r.stderr
     if "RUNNING" in out or "running" in out.lower():
@@ -29,16 +32,19 @@ def get_status():
         return "queued"
     return out.strip()[:80]
 
+
 def pull_output():
     dest = f"artifacts/kaggle_output/{KERNEL.split('/')[-1]}"
     r = subprocess.run(
         ["kaggle", "kernels", "output", KERNEL, "-p", dest],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     print(r.stdout)
     if r.returncode != 0:
         print(f"Pull warning: {r.stderr[:200]}")
     return dest
+
 
 print(f"[{ts()}] Watching {KERNEL} every {INTERVAL}s")
 print("-" * 60)

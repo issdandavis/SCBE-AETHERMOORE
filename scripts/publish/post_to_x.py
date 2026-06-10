@@ -25,6 +25,7 @@ Environment (from config/connector_oauth/.env.connector.oauth):
       X_ACCESS_TOKEN         - User access token
       X_ACCESS_TOKEN_SECRET  - User access token secret
 """
+
 import argparse
 import base64
 import hashlib
@@ -280,7 +281,7 @@ def do_auth():
         resp = urllib.request.urlopen(req, context=ctx, timeout=30)
         tokens = json.loads(resp.read().decode())
         save_tokens(tokens)
-        print(f"\n  Access token obtained!")
+        print("\n  Access token obtained!")
         print(f"  Scopes: {tokens.get('scope', 'unknown')}")
         print(f"  Expires in: {tokens.get('expires_in', '?')}s")
         if tokens.get("refresh_token"):

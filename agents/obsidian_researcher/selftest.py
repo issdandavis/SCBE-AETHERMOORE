@@ -56,13 +56,11 @@ def test_vault_source():
     with tempfile.TemporaryDirectory() as tmpdir:
         # Create test files
         (Path(tmpdir) / "Test Page.md").write_text(
-            "---\ntags: [test, scbe]\n---\n# Test Page\n"
-            "Some content about [[Another Page]] and entropy.",
+            "---\ntags: [test, scbe]\n---\n# Test Page\n" "Some content about [[Another Page]] and entropy.",
             encoding="utf-8",
         )
         (Path(tmpdir) / "Another Page.md").write_text(
-            "---\nauthor: Issac Davis\n---\n# Another\n"
-            "Content about morphisms.",
+            "---\nauthor: Issac Davis\n---\n# Another\n" "Content about morphisms.",
             encoding="utf-8",
         )
 
@@ -77,9 +75,7 @@ def test_vault_source():
         assert results[0].source_type.value == "vault"
 
         wikilinks = vs.get_all_wikilinks()
-        assert "Another Page" in wikilinks.get("Test Page", []), (
-            "Expected wikilink to 'Another Page' from 'Test Page'"
-        )
+        assert "Another Page" in wikilinks.get("Test Page", []), "Expected wikilink to 'Another Page' from 'Test Page'"
 
     print("  [PASS] VaultSource")
 
@@ -116,17 +112,11 @@ def test_cross_reference_engine():
     )
 
     # Test keyword scan
-    links = engine.keyword_scan(
-        "The harmonic wall provides energy scaling protection"
-    )
-    assert any(
-        lnk.target_page == "Harmonic Wall" for lnk in links
-    ), "keyword_scan should find Harmonic Wall"
+    links = engine.keyword_scan("The harmonic wall provides energy scaling protection")
+    assert any(lnk.target_page == "Harmonic Wall" for lnk in links), "keyword_scan should find Harmonic Wall"
 
     # Test CDDM scan (Energy -> Authority morphism)
-    links = engine.cddm_scan(
-        "This paper discusses energy encryption and key management"
-    )
+    links = engine.cddm_scan("This paper discusses energy encryption and key management")
     # Should find cross-domain links (or at least not crash)
 
     # Test citation scan
@@ -137,9 +127,7 @@ def test_cross_reference_engine():
         identifiers={"arxiv_id": "2301.12345"},
     )
     links = engine.citation_scan(result.identifiers, result.raw_content)
-    assert any(
-        lnk.link_type == LinkType.CITATION for lnk in links
-    ), "citation_scan should find CITATION link"
+    assert any(lnk.link_type == LinkType.CITATION for lnk in links), "citation_scan should find CITATION link"
 
     # Test full find_links
     links = engine.find_links(result)
@@ -203,9 +191,7 @@ def test_vault_manager():
 
         # Test sanitize
         sanitized = vm.sanitize_filename("Test: A <Complex> Title")
-        assert sanitized == "Test-A-Complex-Title", (
-            f"Expected 'Test-A-Complex-Title', got '{sanitized}'"
-        )
+        assert sanitized == "Test-A-Complex-Title", f"Expected 'Test-A-Complex-Title', got '{sanitized}'"
 
         # Test write
         path = vm.write_note("# Test\nContent", "References/", "Test Paper")
@@ -213,12 +199,8 @@ def test_vault_manager():
         assert path.read_text(encoding="utf-8") == "# Test\nContent"
 
         # Test duplicate detection
-        assert vm.check_duplicate("Test Paper") is True, (
-            "check_duplicate should find 'Test Paper'"
-        )
-        assert vm.check_duplicate("Nonexistent") is False, (
-            "check_duplicate should not find 'Nonexistent'"
-        )
+        assert vm.check_duplicate("Test Paper") is True, "check_duplicate should find 'Test Paper'"
+        assert vm.check_duplicate("Nonexistent") is False, "check_duplicate should not find 'Nonexistent'"
 
     print("  [PASS] VaultManager")
 
@@ -229,9 +211,9 @@ def test_coverage_map():
 
     cm = CoverageMap()
     gaps = cm.get_gaps()
-    assert len(gaps) == len(SCBE_CONCEPTS), (
-        f"All concepts should be gaps initially; got {len(gaps)} of {len(SCBE_CONCEPTS)}"
-    )
+    assert len(gaps) == len(
+        SCBE_CONCEPTS
+    ), f"All concepts should be gaps initially; got {len(gaps)} of {len(SCBE_CONCEPTS)}"
 
     # Render dashboard
     md = cm.render_map()
@@ -266,9 +248,7 @@ def test_web_page_source():
     # Test with a local markdown file via fetch_by_id
     tmp_path = None
     try:
-        with tempfile.NamedTemporaryFile(
-            suffix=".md", mode="w", delete=False, encoding="utf-8"
-        ) as f:
+        with tempfile.NamedTemporaryFile(suffix=".md", mode="w", delete=False, encoding="utf-8") as f:
             f.write("# Test Research\nSome content about SCBE layers and governance.")
             tmp_path = f.name
 
@@ -332,9 +312,7 @@ def test_notebook_lm_source():
     # Test fetch_by_id with file
     tmp_path = None
     try:
-        with tempfile.NamedTemporaryFile(
-            suffix=".md", mode="w", delete=False, encoding="utf-8"
-        ) as f:
+        with tempfile.NamedTemporaryFile(suffix=".md", mode="w", delete=False, encoding="utf-8") as f:
             f.write(analysis)
             tmp_path = f.name
 
@@ -372,9 +350,7 @@ def test_notebook_lm_source():
 
 def main() -> int:
     # Add project root to path so `agents.obsidian_researcher` resolves
-    project_root = os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    )
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
 

@@ -13,7 +13,6 @@ from email.message import EmailMessage
 from pathlib import Path
 from typing import Optional
 
-
 ENV_FILE = Path(__file__).resolve().parent.parent.parent / "config" / "connector_oauth" / ".env.connector.oauth"
 
 
@@ -103,18 +102,18 @@ def send_contact_notification(
     owner = cfg["user"]
 
     body_lines = [
-        f"New contact form submission from aethermoore.com",
-        f"",
+        "New contact form submission from aethermoore.com",
+        "",
         f"Name:    {name}",
         f"Email:   {email}",
         f"Subject: {subject}",
         f"Page:    {page or 'contact.html'}",
-        f"",
-        f"Message:",
+        "",
+        "Message:",
         f"{message}",
-        f"",
-        f"---",
-        f"This email was sent by the SCBE website contact form.",
+        "",
+        "---",
+        "This email was sent by the SCBE website contact form.",
         f"To reply, use Reply-To: {email}",
     ]
 
@@ -122,10 +121,14 @@ def send_contact_notification(
 <html><body style="font-family:sans-serif;color:#333;">
 <h2>New contact form submission</h2>
 <table style="border-collapse:collapse;">
-<tr><td style="padding:8px;border:1px solid #ddd;"><strong>Name</strong></td><td style="padding:8px;border:1px solid #ddd;">{name}</td></tr>
-<tr><td style="padding:8px;border:1px solid #ddd;"><strong>Email</strong></td><td style="padding:8px;border:1px solid #ddd;">{email}</td></tr>
-<tr><td style="padding:8px;border:1px solid #ddd;"><strong>Subject</strong></td><td style="padding:8px;border:1px solid #ddd;">{subject}</td></tr>
-<tr><td style="padding:8px;border:1px solid #ddd;"><strong>Page</strong></td><td style="padding:8px;border:1px solid #ddd;">{page or 'contact.html'}</td></tr>
+<tr><td style="padding:8px;border:1px solid #ddd;"><strong>Name</strong></td>
+<td style="padding:8px;border:1px solid #ddd;">{name}</td></tr>
+<tr><td style="padding:8px;border:1px solid #ddd;"><strong>Email</strong></td>
+<td style="padding:8px;border:1px solid #ddd;">{email}</td></tr>
+<tr><td style="padding:8px;border:1px solid #ddd;"><strong>Subject</strong></td>
+<td style="padding:8px;border:1px solid #ddd;">{subject}</td></tr>
+<tr><td style="padding:8px;border:1px solid #ddd;"><strong>Page</strong></td>
+<td style="padding:8px;border:1px solid #ddd;">{page or 'contact.html'}</td></tr>
 </table>
 <h3>Message</h3>
 <div style="background:#f5f5f5;padding:16px;border-radius:8px;">{message.replace(chr(10), '<br>')}</div>

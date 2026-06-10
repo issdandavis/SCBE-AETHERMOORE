@@ -381,7 +381,6 @@ class FlatQueueBaseline:
         public_corruptions = 0
         faulty_events = 0
         trace_costs: list[int] = []
-        sample_receipts: list[dict[str, Any]] = []
 
         for operation, agent in zip(operations, agents):
             operation.agent_id = agent.agent_id

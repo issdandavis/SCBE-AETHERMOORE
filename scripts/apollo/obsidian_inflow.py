@@ -51,10 +51,7 @@ LORE_BIBLE = ROOT / "artifacts" / "book" / "LORE_BIBLE_COMPLETE.md"
 
 TRAINING_DATA_DIR = ROOT / "training-data"
 
-CHATGPT_ZIP = Path(
-    r"C:\Users\issda\OneDrive\Books\Avalon_Reference_Pack"
-    r"\chatgpt_data_export_20250608.zip"
-)
+CHATGPT_ZIP = Path(r"C:\Users\issda\OneDrive\Books\Avalon_Reference_Pack" r"\chatgpt_data_export_20250608.zip")
 
 REPORT_PATH = ROOT / "artifacts" / "apollo" / "obsidian_inflow_report.json"
 
@@ -127,7 +124,7 @@ class InflowNote:
         tags_str = "\n".join(f"  - {t}" for t in self.tags) if self.tags else "  - inflow"
         return (
             "---\n"
-            f"title: \"{self.title}\"\n"
+            f'title: "{self.title}"\n'
             f"type: {self.note_type}\n"
             f"source: {self.source}\n"
             f"date: {self.date}\n"
@@ -149,11 +146,7 @@ class InflowNote:
                     start = match.start()
                     before = content[max(0, start - 2) : start]
                     if "[[" not in before:
-                        content = (
-                            content[:start]
-                            + f"[[{entity}]]"
-                            + content[match.end() :]
-                        )
+                        content = content[:start] + f"[[{entity}]]" + content[match.end() :]
 
         # Add related notes section if there are links
         if self.links:
@@ -279,16 +272,19 @@ def inflow_gitlab() -> List[InflowNote]:
 
                 title = sanitize_title(scene_file.stem)
                 # Extract character names from *goto and *label lines
-                chars = set(
-                    re.findall(r"(?:^|\s)([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)", content[:2000])
-                )
+                chars = set(re.findall(r"(?:^|\s)([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)", content[:2000]))
                 links = [c for c in chars if len(c) > 3]
 
                 notes.append(
                     InflowNote(
                         title=f"Scene - {title} ({repo_name})",
                         folder="Writing",
-                        body=f"# Scene: {title}\n\nSource: `{repo_name}/choicescript_game/{scene_file.name}`\n\nCharacters mentioned: {', '.join(sorted(links)[:15])}\n\n```\n{content[:2000]}\n```",
+                        body=(
+                            f"# Scene: {title}\n\n"
+                            f"Source: `{repo_name}/choicescript_game/{scene_file.name}`\n\n"
+                            f"Characters mentioned: {', '.join(sorted(links)[:15])}\n\n"
+                            f"```\n{content[:2000]}\n```"
+                        ),
                         note_type="writing",
                         source="gitlab",
                         tags=[repo_name.lower(), "choicescript", "scene", "inflow"],
@@ -311,9 +307,7 @@ def inflow_gitlab() -> List[InflowNote]:
                     continue
 
                 # Extract character names (capitalized multi-word patterns)
-                char_matches = re.findall(
-                    r"\b([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,}){0,2})\b", content
-                )
+                char_matches = re.findall(r"\b([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,}){0,2})\b", content)
                 for name in set(char_matches):
                     if len(name) > 4:
                         KNOWN_ENTITIES.add(name)
@@ -474,7 +468,7 @@ def inflow_huggingface() -> List[InflowNote]:
         body = f"# {title}\n\n"
         body += f"**Repository**: [{repo_id}](https://huggingface.co/{repo_id})\n"
         body += f"**Type**: {repo_type}\n"
-        body += f"**Author**: issdandavis\n\n"
+        body += "**Author**: issdandavis\n\n"
 
         # Try to fetch model card / dataset card
         try:
@@ -484,13 +478,13 @@ def inflow_huggingface() -> List[InflowNote]:
             if repo_type == "model":
                 info = api.model_info(repo_id)
                 if hasattr(info, "card_data") and info.card_data:
-                    body += f"## Model Card\n\n"
+                    body += "## Model Card\n\n"
                     if hasattr(info.card_data, "tags") and info.card_data.tags:
                         body += f"**Tags**: {', '.join(info.card_data.tags)}\n\n"
             else:
                 info = api.dataset_info(repo_id)
                 if hasattr(info, "card_data") and info.card_data:
-                    body += f"## Dataset Card\n\n"
+                    body += "## Dataset Card\n\n"
                     if hasattr(info.card_data, "tags") and info.card_data.tags:
                         body += f"**Tags**: {', '.join(info.card_data.tags)}\n\n"
 
@@ -574,9 +568,7 @@ def inflow_training() -> List[InflowNote]:
                         concept_sources[q_clean].append(rel_path)
 
     # Create concept notes (limit to most interesting ones)
-    priority_concepts = sorted(
-        concept_sources.items(), key=lambda x: len(x[1]), reverse=True
-    )[:80]
+    priority_concepts = sorted(concept_sources.items(), key=lambda x: len(x[1]), reverse=True)[:80]
 
     for concept, sources in priority_concepts:
         title = f"Concept - {concept}"
@@ -628,9 +620,7 @@ def inflow_lore_bible() -> List[InflowNote]:
         if line.startswith("## PART"):
             # Save previous entry
             if current_h3 and current_body_lines:
-                _save_lore_entry(
-                    notes, current_section, current_h3, current_body_lines
-                )
+                _save_lore_entry(notes, current_section, current_h3, current_body_lines)
             current_section = line.strip("# ").strip()
             current_h3 = ""
             current_body_lines = []
@@ -639,9 +629,7 @@ def inflow_lore_bible() -> List[InflowNote]:
         if line.startswith("### "):
             # Save previous entry
             if current_h3 and current_body_lines:
-                _save_lore_entry(
-                    notes, current_section, current_h3, current_body_lines
-                )
+                _save_lore_entry(notes, current_section, current_h3, current_body_lines)
             current_h3 = line.strip("# ").strip()
             current_body_lines = []
             continue
@@ -790,9 +778,7 @@ def _extract_location_entries(content: str) -> List[InflowNote]:
     notes: List[InflowNote] = []
 
     # Find PART 6 section
-    part6_match = re.search(
-        r"## PART 6: WORLD GEOGRAPHY\s*\n(.*?)(?=\n## PART|\Z)", content, re.DOTALL
-    )
+    part6_match = re.search(r"## PART 6: WORLD GEOGRAPHY\s*\n(.*?)(?=\n## PART|\Z)", content, re.DOTALL)
     if not part6_match:
         return notes
 
@@ -840,9 +826,7 @@ def _extract_magic_entries(content: str) -> List[InflowNote]:
     """Extract magic system entries from PART 7."""
     notes: List[InflowNote] = []
 
-    part7_match = re.search(
-        r"## PART 7: MAGIC SYSTEM\s*\n(.*?)(?=\n## PART|\Z)", content, re.DOTALL
-    )
+    part7_match = re.search(r"## PART 7: MAGIC SYSTEM\s*\n(.*?)(?=\n## PART|\Z)", content, re.DOTALL)
     if not part7_match:
         return notes
 
@@ -890,9 +874,7 @@ def inflow_chatgpt() -> List[InflowNote]:
     try:
         with zipfile.ZipFile(str(CHATGPT_ZIP), "r") as zf:
             # Look for conversations.json inside the zip
-            json_files = [
-                n for n in zf.namelist() if n.endswith("conversations.json")
-            ]
+            json_files = [n for n in zf.namelist() if n.endswith("conversations.json")]
             if not json_files:
                 print("  SKIP: No conversations.json in zip")
                 return notes
@@ -932,9 +914,7 @@ def inflow_chatgpt() -> List[InflowNote]:
         create_time = conv.get("create_time")
 
         if create_time:
-            date_str = datetime.datetime.fromtimestamp(
-                create_time, tz=datetime.timezone.utc
-            ).strftime("%Y-%m-%d")
+            date_str = datetime.datetime.fromtimestamp(create_time, tz=datetime.timezone.utc).strftime("%Y-%m-%d")
         else:
             date_str = TODAY
 
@@ -969,7 +949,7 @@ def inflow_chatgpt() -> List[InflowNote]:
 
         body = f"# Research Session: {title}\n\n"
         body += f"**Date**: {date_str}\n"
-        body += f"**Source**: ChatGPT Export\n"
+        body += "**Source**: ChatGPT Export\n"
         body += f"**Messages**: {len(messages)}\n\n"
         body += "## Conversation Preview\n\n"
         body += "\n\n".join(messages[:20])  # First 20 message snippets
@@ -1088,9 +1068,7 @@ def run_inflow(sources: List[str], dry_run: bool = False) -> Dict[str, Any]:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Obsidian Inflow — push knowledge INTO the Obsidian vault"
-    )
+    parser = argparse.ArgumentParser(description="Obsidian Inflow — push knowledge INTO the Obsidian vault")
     parser.add_argument(
         "--source",
         choices=list(SOURCE_HANDLERS.keys()) + ["all"],
@@ -1115,13 +1093,13 @@ def main():
     if args.vault:
         VAULT_PATH = Path(args.vault)
 
-    print(f"OBSIDIAN INFLOW")
+    print("OBSIDIAN INFLOW")
     print(f"  Vault: {VAULT_PATH}")
     print(f"  Dry run: {args.dry_run}")
 
     if not VAULT_PATH.exists():
         print(f"  ERROR: Vault path does not exist: {VAULT_PATH}")
-        print(f"  Set OBSIDIAN_VAULT env var or use --vault flag")
+        print("  Set OBSIDIAN_VAULT env var or use --vault flag")
         sys.exit(1)
 
     if args.source == "all":
@@ -1131,7 +1109,7 @@ def main():
 
     report = run_inflow(sources, dry_run=args.dry_run)
 
-    print(f"\n=== INFLOW SUMMARY ===")
+    print("\n=== INFLOW SUMMARY ===")
     print(f"  Total notes:  {report['totals']['total_notes']}")
     print(f"  Created:      {report['totals']['created']}")
     print(f"  Skipped:      {report['totals']['skipped']} (already exist)")
