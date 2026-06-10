@@ -1,0 +1,92 @@
+{
+  "schema_version": "scbe_stage_eval_contract_v1",
+  "contract_id": "ca_geoseal_repair_eval_v1",
+  "profile_family": "coding-agent-qwen-ca-geoseal-repair",
+  "frozen_reason": "Required inline gate for CA/GeoSeal repair adapters. Empty evaluation contracts are invalid and must never be treated as a passing training run.",
+  "thresholds": {
+    "minimum_pass_rate": 1.0,
+    "must_pass": [
+      "ca_abs_add_opcode_exact",
+      "json_depth2_name_extractor",
+      "safe_divide_none_guard",
+      "parse_json_name_guard"
+    ],
+    "decision_rule": "Adapter pushes only if every CA/GeoSeal repair prompt passes; zero-prompt gates are invalid."
+  },
+  "failure_modes": [
+    {
+      "id": "ca_opcode_drift",
+      "counts_as_failure": "Uses any add opcode other than 0x00 or fails to identify abs as 0x09."
+    },
+    {
+      "id": "non_runnable_python",
+      "counts_as_failure": "Returns prose-only code, placeholder pass bodies, unsafe eval, or code that cannot handle invalid JSON."
+    },
+    {
+      "id": "missing_guard",
+      "counts_as_failure": "Omits explicit guard behavior for zero division, invalid JSON, or missing nested keys."
+    }
+  ],
+  "prompts": [
+    {
+      "id": "ca_abs_add_opcode_exact",
+      "prompt": "In SCBE CA arithmetic, emit the exact hex opcode sequence for abs(a)+abs(b). State the opcode for abs and the opcode for add, then provide the final three-byte sequence.",
+      "required": [
+        "abs",
+        "add",
+        "0x09",
+        "0x00"
+      ],
+      "forbidden": [
+        "0x0A",
+        "0x01",
+        "0x02"
+      ]
+    },
+    {
+      "id": "json_depth2_name_extractor",
+      "prompt": "Write runnable Python function extract_depth2_name(payload: str) that parses a JSON string and returns obj['user']['name'] when present, otherwise returns None on invalid JSON or missing keys.",
+      "required": [
+        "def extract_depth2_name",
+        "json.loads",
+        "try",
+        "except",
+        "return None",
+        "name"
+      ],
+      "forbidden": [
+        "eval(",
+        "pass"
+      ]
+    },
+    {
+      "id": "safe_divide_none_guard",
+      "prompt": "Write runnable Python function safe_divide(a, b) that returns None when b is zero and otherwise returns a divided by b.",
+      "required": [
+        "def safe_divide",
+        "b == 0",
+        "None",
+        "return"
+      ],
+      "forbidden": [
+        "pass"
+      ]
+    },
+    {
+      "id": "parse_json_name_guard",
+      "prompt": "Write runnable Python function parse_json_name(payload: str) that parses JSON, extracts a top-level name field, and returns None when the payload is invalid or the field is absent.",
+      "required": [
+        "def parse_json_name",
+        "json.loads",
+        "try",
+        "except",
+        "get",
+        "name"
+      ],
+      "forbidden": [
+        "eval(",
+        "pass"
+      ]
+    }
+  ]
+}

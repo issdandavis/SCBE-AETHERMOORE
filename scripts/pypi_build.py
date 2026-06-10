@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import importlib
+import importlib.util
 import shutil
 import subprocess
 import sys
@@ -23,10 +25,36 @@ def remove_path(path: Path) -> None:
         path.unlink()
 
 
+def ensure_build_module_available(auto_bootstrap: bool = True) -> bool:
+    if importlib.util.find_spec("build") is not None:
+        return True
+
+    if not auto_bootstrap:
+        print("[error] Python package 'build' is not installed. Re-run without --no-bootstrap-build.", file=sys.stderr)
+        return False
+
+    print("[info] Python package 'build' not found; installing via pip...")
+    install = subprocess.run([sys.executable, "-m", "pip", "install", "build"], check=False)
+    if install.returncode != 0:
+        print("[error] Failed to install Python package 'build'.", file=sys.stderr)
+        return False
+
+    importlib.invalidate_caches()
+    return importlib.util.find_spec("build") is not None
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build clean PyPI sdist and wheel artifacts.")
     parser.add_argument("--dist-dir", default="artifacts/pypi-dist", help="Output directory for PyPI artifacts.")
+    parser.add_argument(
+        "--no-bootstrap-build",
+        action="store_true",
+        help="Do not auto-install the Python 'build' package when missing.",
+    )
     args = parser.parse_args(argv)
+
+    if not ensure_build_module_available(auto_bootstrap=not args.no_bootstrap_build):
+        return 2
 
     for path in GENERATED_PATHS:
         remove_path(path)

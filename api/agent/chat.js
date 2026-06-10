@@ -1,48 +1,39 @@
-const HF_MODEL = "Qwen/Qwen2.5-72B-Instruct";
-const HF_URL = `https://router.huggingface.co/hf-inference/models/${HF_MODEL}/v1/chat/completions`;
+'use strict';
 
-const SYSTEM_PROMPT =
-  "You are Polly, the AI assistant for AetherMoore — an AI safety and governance framework " +
-  "using hyperbolic geometry with a 14-layer security pipeline. The framework makes adversarial " +
-  "AI behavior exponentially expensive using Poincare ball geometry. Be helpful, concise, and " +
-  "accurate. If asked about SCBE, explain the core innovation: adversarial intent costs " +
-  "exponentially more the further it drifts from safe operation.";
+const { readJsonBody, sendJson, setCors } = require('../_agent_common');
+const llm = require('../_chat_llm');
 
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
+module.exports = async function handler(req, res) {
+  setCors(res);
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'POST only' });
 
-  const { message, history } = req.body || {};
-  if (!message) return res.status(400).json({ error: "message required" });
-
-  const messages = [{ role: "system", content: SYSTEM_PROMPT }];
-  if (Array.isArray(history)) {
-    history.slice(-6).forEach((h) => {
-      if (h.role && h.content) messages.push({ role: h.role, content: h.content });
-    });
-  }
-  messages.push({ role: "user", content: message });
-
-  const headers = { "Content-Type": "application/json" };
-  if (process.env.HF_TOKEN) headers["Authorization"] = `Bearer ${process.env.HF_TOKEN}`;
-
+  let body;
   try {
-    const hfResp = await fetch(HF_URL, {
-      method: "POST", headers,
-      body: JSON.stringify({ model: HF_MODEL, messages, max_tokens: 512 }),
+    body = await readJsonBody(req);
+  } catch (error) {
+    return sendJson(res, 400, {
+      ok: false,
+      error: 'invalid JSON body',
+      detail: String(error.message || error),
     });
-    if (!hfResp.ok) {
-      return res.status(502).json({ error: "HF error", detail: (await hfResp.text()).substring(0, 200) });
-    }
-    const data = await hfResp.json();
-    return res.status(200).json({
-      text: data.choices?.[0]?.message?.content || "No response.",
-      model: HF_MODEL, provider: "huggingface",
-    });
-  } catch (err) {
-    return res.status(500).json({ error: String(err) });
   }
-}
+
+  const message = body && body.message;
+  if (!message || !String(message).trim())
+    return sendJson(res, 400, { ok: false, error: 'message required' });
+
+  const result = await llm.routeChat(llm.chatConfig(), message, body.history);
+  return sendJson(res, 200, {
+    ...result,
+    cost: result.provider === 'huggingface' ? 'hf-token-or-free-tier' : 'zero-local-or-offline',
+  });
+};
+
+module.exports._private = {
+  buildMessages: llm.buildMessages,
+  chatConfig: llm.chatConfig,
+  messagesToPrompt: llm.messagesToPrompt,
+  normalizeText: llm.normalizeText,
+  routeChat: llm.routeChat,
+};

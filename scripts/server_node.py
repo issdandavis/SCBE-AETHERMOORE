@@ -20,7 +20,6 @@ Environment:
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import os
@@ -32,7 +31,7 @@ import sys
 import time
 from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 # Add project root to path
 ROOT = Path(__file__).parent.parent
@@ -87,6 +86,7 @@ class ServiceStatus:
 # Process management
 # ---------------------------------------------------------------------------
 
+
 def _pid_file(name: str) -> Path:
     return PID_DIR / f"{name}.pid"
 
@@ -105,24 +105,32 @@ def _start_service(name: str, cfg: dict) -> Optional[int]:
         return None
 
     cmd = [
-        sys.executable, "-m", "uvicorn",
+        sys.executable,
+        "-m",
+        "uvicorn",
         cfg["module"],
-        "--host", HOST,
-        "--port", str(port),
-        "--log-level", "info",
+        "--host",
+        HOST,
+        "--port",
+        str(port),
+        "--log-level",
+        "info",
     ]
 
     log_file = PID_DIR / f"{name}.log"
     log_handle = open(log_file, "w")
 
-    proc = subprocess.Popen(
-        cmd,
-        cwd=str(ROOT),
-        stdout=log_handle,
-        stderr=subprocess.STDOUT,
-        env={**os.environ, "PYTHONPATH": str(ROOT)},
-        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == "win32" else 0,
-    )
+    try:
+        proc = subprocess.Popen(
+            cmd,
+            cwd=str(ROOT),
+            stdout=log_handle,
+            stderr=subprocess.STDOUT,
+            env={**os.environ, "PYTHONPATH": str(ROOT)},
+            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == "win32" else 0,
+        )
+    finally:
+        log_handle.close()
 
     _pid_file(name).write_text(str(proc.pid))
     logger.info("%s: started (pid=%d, port=%d)", name, proc.pid, port)
@@ -138,8 +146,7 @@ def _stop_service(name: str) -> bool:
     pid = int(pf.read_text().strip())
     try:
         if sys.platform == "win32":
-            subprocess.run(["taskkill", "/F", "/PID", str(pid)],
-                           capture_output=True, timeout=5)
+            subprocess.run(["taskkill", "/F", "/PID", str(pid)], capture_output=True, timeout=5)
         else:
             os.kill(pid, signal.SIGTERM)
         pf.unlink(missing_ok=True)
@@ -188,6 +195,7 @@ def _write_status(statuses: Dict[str, ServiceStatus]) -> None:
 # Commands
 # ---------------------------------------------------------------------------
 
+
 def cmd_start(api_only: bool = False) -> None:
     """Start all services."""
     PID_DIR.mkdir(parents=True, exist_ok=True)
@@ -225,8 +233,12 @@ def cmd_start(api_only: bool = False) -> None:
     # Print quick-start commands
     print("  Quick access:")
     print(f"    Browser tools: curl http://localhost:8003/tools")
-    print(f"    Scrape a page: curl -X POST http://localhost:8003/tools/scrape_page -H 'Content-Type: application/json' -d '{{\"url\":\"https://example.com\"}}'")
-    print(f"    Research:      curl -X POST http://localhost:8003/workflow/research -H 'Content-Type: application/json' -d '{{\"query\":\"your topic\"}}'")
+    print(
+        f"    Scrape a page: curl -X POST http://localhost:8003/tools/scrape_page -H 'Content-Type: application/json' -d '{{\"url\":\"https://example.com\"}}'"
+    )
+    print(
+        f"    Research:      curl -X POST http://localhost:8003/workflow/research -H 'Content-Type: application/json' -d '{{\"query\":\"your topic\"}}'"
+    )
     print()
 
 
@@ -255,6 +267,7 @@ def cmd_stop() -> None:
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
+
 
 def main():
     args = sys.argv[1:]

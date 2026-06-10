@@ -4,12 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scbe-aethermoore"
-version = "4.0.3"
+version = "4.2.1"
 description = "Hyperbolic Geometry AI Safety Framework with 14-Layer Architecture"
 readme = "README.md"
-license = "MIT"
-license-files = ["LICENSE"]
+license = "MIT OR Apache-2.0"
+license-files = ["LICENSE", "LICENSE-APACHE"]
 requires-python = ">=3.11"
+dependencies = [
+    # Keep Dependabot's Python dependency graph on a patched uv release.
+    "uv>=0.11.17",
+]
 authors = [
     {name = "Issac Daniel Davis", email = "issdandavis@gmail.com"},
 ]
@@ -41,6 +45,9 @@ classifiers = [
 Homepage = "https://github.com/issdandavis/SCBE-AETHERMOORE"
 Repository = "https://github.com/issdandavis/SCBE-AETHERMOORE"
 Issues = "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+Sponsor = "https://github.com/sponsors/issdandavis"
+Funding = "https://ko-fi.com/izdandavis"
+Supporter = "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html"
 
 [project.scripts]
 scbe = "scbe:main"

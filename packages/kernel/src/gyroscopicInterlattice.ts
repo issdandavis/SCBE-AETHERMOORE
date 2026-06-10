@@ -340,10 +340,7 @@ export function evolveStep(
  * @param sublattices - All 6 sublattices (for computing surrounding bond angles)
  * @returns Chern number (+1 or -1)
  */
-export function computeChernNumber(
-  tongue: TongueLabel,
-  sublattices: TongueSublattice[]
-): number {
+export function computeChernNumber(tongue: TongueLabel, sublattices: TongueSublattice[]): number {
   // Sum of bond angles to all neighbors
   let angleSum = 0;
   for (const neighbor of sublattices) {
@@ -496,9 +493,7 @@ export function gyroscopicBreathingFactor(
  * @param sublattices - Current sublattice states
  * @returns Array of 6 breathing factors, one per tongue
  */
-export function perTongueBreathingFactors(
-  sublattices: TongueSublattice[]
-): number[] {
+export function perTongueBreathingFactors(sublattices: TongueSublattice[]): number[] {
   return sublattices.map((sub) => {
     const psiSq = sub.state.real * sub.state.real + sub.state.imag * sub.state.imag;
     return Math.min(2.0, 1.0 + psiSq * sub.precessionFreq);
@@ -524,10 +519,7 @@ export function perTongueBreathingFactors(
  * @param gamma - Chern number influence strength (default: 0.2)
  * @returns Array of 6 Chern-modulated weights
  */
-export function chernWeights(
-  sublattices: TongueSublattice[],
-  gamma: number = 0.2
-): number[] {
+export function chernWeights(sublattices: TongueSublattice[], gamma: number = 0.2): number[] {
   const g = Math.max(0, Math.min(0.5, gamma));
   return sublattices.map((sub) => 1.0 + g * sub.chernNumber);
 }

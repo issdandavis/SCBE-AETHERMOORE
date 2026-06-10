@@ -16,8 +16,9 @@ import argparse
 import json
 import logging
 import os
+import re
 import sys
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
@@ -28,6 +29,14 @@ from typing import Optional
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
+
+_SAFE_LABEL_RE = re.compile(r"[^a-zA-Z0-9_. -]+")
+
+
+def _safe_label(value: str, *, default: str = "unknown") -> str:
+    cleaned = _SAFE_LABEL_RE.sub("", str(value or "")).strip()
+    return cleaned[:80] or default
+
 
 # Load env
 _env = ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
@@ -92,6 +101,7 @@ AGENTIC_EMPLOYEES = {
 # LLM Classification (Gemini fallback to local heuristic)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TriageResult:
     msg_id: str
@@ -107,6 +117,24 @@ class TriageResult:
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
+def _redacted_triage_result(result: TriageResult) -> dict:
+    """Return routing metadata without email bodies, drafts, sender PII, or subject text."""
+
+    return {
+        "msg_id": result.msg_id,
+        "agent": result.agent,
+        "confidence": result.confidence,
+        "urgency": result.urgency,
+        "action": result.action,
+        "tongue": result.tongue,
+        "timestamp": result.timestamp,
+        "summary_sha256": __import__("hashlib").sha256(result.summary.encode("utf-8", errors="replace")).hexdigest(),
+        "subject_chars": len(result.subject or ""),
+        "sender_domain": (result.sender.rsplit("@", 1)[-1] if "@" in result.sender else "unknown"),
+        "draft_reply_present": bool(result.draft_reply),
+    }
+
+
 def classify_with_llm(sender: str, subject: str, body: str, api_key: Optional[str] = None) -> dict:
     """Use Gemini to classify email intent and route to agentic employee.
 
@@ -118,12 +146,12 @@ def classify_with_llm(sender: str, subject: str, body: str, api_key: Optional[st
 
     try:
         import google.generativeai as genai
+
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel("gemini-1.5-flash")
 
         agent_descriptions = "\n".join(
-            f"- {k}: handles {', '.join(v['handles'])}"
-            for k, v in AGENTIC_EMPLOYEES.items()
+            f"- {k}: handles {', '.join(v['handles'])}" for k, v in AGENTIC_EMPLOYEES.items()
         )
 
         prompt = f"""You are an email triage specialist for SCBE-AETHERMOORE, an AI governance company.
@@ -154,7 +182,7 @@ Classify this email. Respond ONLY with valid JSON in this exact format:
         elif "```" in text:
             text = text.split("```")[1].split("```")[0].strip()
         return json.loads(text)
-    except Exception as e:
+    except Exception:
         logger.warning("LLM classification failed — falling back to heuristic")
         return classify_heuristic(sender, subject, body)
 
@@ -194,6 +222,7 @@ def classify_heuristic(sender: str, subject: str, body: str) -> dict:
 # ---------------------------------------------------------------------------
 # Triage Runner
 # ---------------------------------------------------------------------------
+
 
 def run_triage(dry_run: bool = False, days: int = 1, auto_reply: bool = False) -> list[TriageResult]:
     """Run agentic triage on recent emails.
@@ -272,7 +301,7 @@ def _dispatch_to_queue(triage: TriageResult):
                 triage.sender,
                 json.dumps(["inbox", triage.agent]),
                 json.dumps([]),
-                json.dumps(asdict(triage)),
+                json.dumps(_redacted_triage_result(triage)),
                 json.dumps({"queue": triage.agent, "action": triage.action}),
                 f"Agentic triage: {triage.agent} | confidence: {triage.confidence:.2f}",
                 True,
@@ -286,9 +315,9 @@ def _dispatch_to_queue(triage: TriageResult):
         )
         conn.commit()
         conn.close()
-        logger.info("Dispatched to %s (priority %s)", agent['name'], _urgency_to_priority(triage.urgency))
+        logger.info("Dispatched triage item (priority %s)", _urgency_to_priority(triage.urgency))
     except Exception as e:
-        logger.warning("Dispatch failed: %s", e)
+        logger.warning("Dispatch failed: %s", type(e).__name__)
 
 
 def _urgency_to_priority(urgency: str) -> int:
@@ -298,6 +327,7 @@ def _urgency_to_priority(urgency: str) -> int:
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
+
 
 def main():
     parser = argparse.ArgumentParser(description="Agentic Email Triage for SCBE-AETHERMOORE")
@@ -317,17 +347,15 @@ def main():
 
     print(f"\nTriage complete. {len(results)} emails processed.\n")
     for r in results:
-        agent = AGENTIC_EMPLOYEES.get(r.agent, {})
-        # Log only non-sensitive fields; subject may contain PII
-        logger.debug("Triage result: agent=%s urgency=%s action=%s", agent.get('name', r.agent), r.urgency, r.action)
-        print(f"  [{r.urgency.upper()}] {agent.get('name', r.agent)} | action: {r.action}")
+        logger.debug("Triage result captured")
+        print("  triage item captured in redacted output")
         print(f"           confidence: {r.confidence:.2f}")
         if r.draft_reply:
-            logger.debug("Draft reply generated for agent %s", r.agent)
+            logger.debug("Draft reply generated")
         print()
 
     if args.output:
-        Path(args.output).write_text(json.dumps([asdict(r) for r in results], indent=2))
+        Path(args.output).write_text(json.dumps([_redacted_triage_result(r) for r in results], indent=2))
         print(f"Results written to {args.output}")
 
 

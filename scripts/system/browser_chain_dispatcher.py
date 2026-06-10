@@ -105,7 +105,7 @@ def _is_local_preview_host(host: str) -> bool:
 
 def _make_assignment_id(domain: str, task: str, tentacle_id: str) -> str:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
-    digest = hashlib.sha1(f"{domain}|{task}|{tentacle_id}".encode("utf-8")).hexdigest()[:6]
+    digest = hashlib.sha256(f"{domain}|{task}|{tentacle_id}".encode("utf-8")).hexdigest()[:6]
     return f"bc-{stamp}-{digest}"
 
 

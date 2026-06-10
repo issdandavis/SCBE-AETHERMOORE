@@ -18,6 +18,19 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    exclude-paths:
+      # These are vendored or submodule lanes. Dependabot's recursive checkout can
+      # leave them dirty after root npm security updates, which turns a useful
+      # advisory check into a red background run.
+      - "external/**"
+      - "external_repos/**"
+      - "spiralverse-protocol/**"
+      - "aws-lambda-simple-web-app/**"
+      - "hioujhn/**"
+      - "scbe-aethermoore/**"
+      - "packages/six-tongues-geoseal/**"
+      - "archive/**"
+      - "test-install/**"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"

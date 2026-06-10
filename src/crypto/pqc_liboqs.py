@@ -21,6 +21,19 @@ import os
 from typing import Tuple, Optional
 from dataclasses import dataclass
 
+
+def _load_oqs_module():
+    """Load liboqs-python without letting optional backend bootstrap kill import."""
+    try:
+        import oqs as oqs_module
+
+        return oqs_module
+    except (Exception, SystemExit):
+        # liboqs-python can raise SystemExit while trying to bootstrap missing
+        # shared libraries. PQC is optional here, so fall back instead.
+        return None
+
+
 # Constants matching NIST specifications
 MLKEM768_PK_LEN = 1184  # ML-KEM-768 public key size
 MLKEM768_SK_LEN = 2400  # ML-KEM-768 secret key size
@@ -39,16 +52,16 @@ _FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in 
 }
 
 if not _FORCE_SKIP_LIBOQS:
-    try:
-        import oqs
-
+    oqs = _load_oqs_module()
+    if oqs is not None:
         LIBOQS_AVAILABLE = True
         _LIBOQS_VERSION = getattr(oqs, "__version__", "unknown")
-    except Exception:
+    else:
         # oqs may be installed without shared libs; treat as unavailable and fall back.
         LIBOQS_AVAILABLE = False
         _LIBOQS_VERSION = None
 else:
+    oqs = None
     LIBOQS_AVAILABLE = False
     _LIBOQS_VERSION = None
 

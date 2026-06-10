@@ -1,0 +1,112 @@
+{
+  "version": "scbe_distribution_package_map_v1",
+  "generated_for": "2026-05-02 repo cleanup and distribution planning",
+  "authority_doc": "docs/ops/DISTRIBUTION_PACKAGE_MAP_2026-05-02.md",
+  "default_excludes": [
+    ".git/**",
+    "node_modules/**",
+    "**/__pycache__/**",
+    "**/*.pyc",
+    "**/.pytest_cache/**",
+    "**/.ruff_cache/**",
+    "**/.hypothesis/**",
+    ".env",
+    ".env.*",
+    "**/*secret*",
+    "**/*token*",
+    "artifacts/**",
+    "training/runs/**",
+    "archive/**",
+    "backups/**"
+  ],
+  "buckets": {
+    "frontend": {
+      "purpose": "User-facing apps, demos, shell surfaces, static website.",
+      "paths": ["docs", "app", "public", "scbe-visual-system", "space"],
+      "ship_status": "ship_selectively"
+    },
+    "middleware": {
+      "purpose": "Agent routing, GeoSeal, HYDRA, policy, tokenizer bridges, and browser/API adapters.",
+      "paths": ["src/agentic", "src/coding_spine", "src/crypto", "agents", "scripts/agents", "bin"],
+      "ship_status": "ship_as_governed_runtime"
+    },
+    "backend": {
+      "purpose": "FastAPI services, API gateways, storage adapters, auth, and health checks.",
+      "paths": ["api", "src/api", "services", "scripts/system"],
+      "ship_status": "ship_with_deployment_profiles"
+    },
+    "infrastructure": {
+      "purpose": "Docker, compose, Kubernetes, Vercel, GitHub workflows, and deployment manifests.",
+      "paths": [".github/workflows", "deploy", "k8s", "Dockerfile", "Dockerfile.api", "Dockerfile.cloudrun", "Dockerfile.gateway", "docker-compose.yml", "vercel.json"],
+      "ship_status": "ship_by_environment"
+    },
+    "cli_operator_tools": {
+      "purpose": "Local operational CLI, bundle builder, smoke checks, agent tools.",
+      "paths": ["scripts/scbe-system-cli.py", "scripts/system", "scripts/benchmark", "scripts/agents", "config/offline_bundle_profiles.json"],
+      "ship_status": "ship_in_operator_package"
+    },
+    "training_evaluation": {
+      "purpose": "Datasets, configs, benchmarks, harnesses, and promotion gates.",
+      "paths": ["config/model_training", "training-data", "tests", "scripts/train", "scripts/training_data", "scripts/benchmark"],
+      "ship_status": "split_public_eval_from_internal_training"
+    },
+    "documentation_guides": {
+      "purpose": "User guides, operator guides, system guides, and architecture specs.",
+      "paths": ["README.md", "README_INDEX.md", "AGENTS.md", "docs"],
+      "ship_status": "ship_curated"
+    },
+    "research_doctrine": {
+      "purpose": "Notion exports, R&D specs, patent-sensitive notes, and exploratory material.",
+      "paths": ["docs/research", "notes", "exports"],
+      "ship_status": "private_or_internal_by_default"
+    },
+    "generated_archive": {
+      "purpose": "Build outputs, artifacts, caches, old branches, local run outputs.",
+      "paths": ["artifacts", "dist", "archive", "training/runs"],
+      "ship_status": "do_not_ship_by_default"
+    }
+  },
+  "packages": {
+    "public_website": {
+      "include": ["docs", "docs/static", "docs/demos", "README.md"],
+      "exclude": ["exports/**", "notes/**", "artifacts/**", "training-data/**"],
+      "verification": ["github_pages_build", "publish_surface_validator", "secret_scan"]
+    },
+    "geoshell_app": {
+      "include": ["scbe-visual-system", "app", "public", "space"],
+      "exclude": ["training-data/**", "artifacts/**", "exports/**"],
+      "verification": ["frontend_build", "typecheck", "render_smoke"]
+    },
+    "geoseal_middleware": {
+      "include": ["src/coding_spine", "src/agentic", "src/crypto", "agents", "bin/geoseal.cjs"],
+      "exclude": ["docs/research/**", "exports/**", "artifacts/**"],
+      "verification": ["npm run verify:geoseal-agent", "focused_policy_tests", "secret_scan"]
+    },
+    "backend_api": {
+      "include": ["api", "src/api", "services", "requirements.txt", "pyproject.toml", "Dockerfile.api", "docker-compose.api.yml"],
+      "exclude": ["*.db", "*.sqlite", "artifacts/**", "config/connector_oauth/**"],
+      "verification": ["health_smoke", "auth_fails_closed", "app_to_backend_smoke"]
+    },
+    "agent_harness_cli": {
+      "include": ["scripts/scbe-system-cli.py", "scripts/agents", "scripts/benchmark", "config/offline_bundle_profiles.json", "config/distribution_package_map.json", "docs/ops/AGENT_BUS_USER_GUIDE.md"],
+      "exclude": ["artifacts/**", "browser_profiles/**", "exports/**"],
+      "verification": ["cli_help", "cli_tests", "offline_bundle_smoke"]
+    },
+    "training_evaluation": {
+      "include": ["config/model_training", "training-data/schemas", "tests/training", "scripts/system/geoseal_coding_training_system.py", "scripts/benchmark"],
+      "exclude": ["training/runs/**", "artifacts/**", "exports/**"],
+      "verification": ["schema_validation", "small_eval_smoke", "promotion_gate_report"]
+    },
+    "infrastructure": {
+      "include": [".github/workflows", "deploy", "k8s", "Dockerfile*", "docker-compose*.yml", "vercel.json"],
+      "exclude": [".env", ".env.*", "config/connector_oauth/**"],
+      "verification": ["workflow_path_validation", "docker_compose_config", "deploy_smoke_when_credentials_exist"]
+    },
+    "private_doctrine": {
+      "private_repo": "issdandavis/SCBE-private",
+      "include": ["ops/notion-index", "ops/storage-ledgers", "proposal-packets", "patent", "business-private"],
+      "exclude_from_public": true,
+      "verification": ["private_git_push", "public_repo_has_only_sanitized_pointers"]
+    }
+  }
+}

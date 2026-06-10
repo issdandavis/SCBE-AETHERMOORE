@@ -62,6 +62,15 @@ def _parse_args() -> argparse.Namespace:
     decide.add_argument("action")
     decide.add_argument("--agent-id", default="agent-bus-cli")
 
+    verify = sub.add_parser("verify", help="Validate every event in events.jsonl against the schema")
+    verify.add_argument("path", nargs="?", default="artifacts/agent-bus/events.jsonl")
+
+    replay = sub.add_parser("replay", help="Reconstruct bus state from events.jsonl (read-only postmortem)")
+    replay.add_argument("path", nargs="?", default="artifacts/agent-bus/events.jsonl")
+    replay.add_argument("--from", dest="from_ts", default=None, help="ISO timestamp lower bound")
+    replay.add_argument("--to", dest="to_ts", default=None, help="ISO timestamp upper bound")
+    replay.add_argument("--by-task", action="store_true", help="Group output by task_type")
+
     return p.parse_args()
 
 
@@ -147,6 +156,37 @@ async def _decide(args: argparse.Namespace) -> Dict[str, Any]:
         await bus.stop()
 
 
+def _verify(args: argparse.Namespace) -> Dict[str, Any]:
+    from pathlib import Path
+
+    from agents.agent_bus_schema import validate_log, CURRENT_SCHEMA_VERSION
+
+    report = validate_log(Path(args.path))
+    return {
+        "path": args.path,
+        "current_schema_version": CURRENT_SCHEMA_VERSION,
+        "total": report.total,
+        "accepted": report.accepted,
+        "rejected": report.rejected,
+        "warnings": report.warnings,
+        "version_counts": report.version_counts,
+        "rejections": report.rejections[:20],  # cap CLI output
+    }
+
+
+def _replay(args: argparse.Namespace) -> Dict[str, Any]:
+    from pathlib import Path
+
+    from agents.agent_bus_replay import replay_log
+
+    return replay_log(
+        Path(args.path),
+        from_ts=args.from_ts,
+        to_ts=args.to_ts,
+        group_by_task=args.by_task,
+    )
+
+
 def main() -> int:
     args = _parse_args()
     if args.cmd == "run":
@@ -163,6 +203,10 @@ def main() -> int:
         result = asyncio.run(_generate_tool(args))
     elif args.cmd == "decide":
         result = asyncio.run(_decide(args))
+    elif args.cmd == "verify":
+        result = _verify(args)
+    elif args.cmd == "replay":
+        result = _replay(args)
     else:
         return 2
     print(json.dumps(result, indent=2, default=str))

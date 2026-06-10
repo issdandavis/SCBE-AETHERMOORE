@@ -1,0 +1,254 @@
+{
+  "schema_version": "scbe_functional_coding_tasks_v1",
+  "purpose": "Executable local tasks modeled after common public agent benchmarks: SWE-bench issue repair, Terminal-Bench command operation, Aider Polyglot editing, EvalPlus edge coverage, RepoBench context packing, and cost/time reporting.",
+  "tasks": [
+    {
+      "task_id": "swe_issue_file_focus",
+      "benchmark_family": "swe_bench",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.issue has title, body, and changedFiles. Select focus files whose path appears in the title or body, or whose extension is '.py' when input.issue.language is 'python'. Store selected paths in state.focusFiles in original order with no duplicates. Return the number of selected files.",
+      "checks": [
+        {
+          "input": {
+            "issue": {
+              "title": "Fix parser crash in reader.py",
+              "body": "The failure happens when parse_config calls reader.py on empty input.",
+              "language": "python",
+              "changedFiles": ["src/reader.py", "src/writer.py", "docs/usage.md", "tests/test_reader.py"]
+            }
+          },
+          "initialState": {},
+          "expectedResult": 3,
+          "expectedState": { "focusFiles": ["src/reader.py", "src/writer.py", "tests/test_reader.py"] }
+        },
+        {
+          "input": {
+            "issue": {
+              "title": "Update docs",
+              "body": "Only README.md needs a wording fix.",
+              "language": "markdown",
+              "changedFiles": ["README.md", "src/app.ts", "docs/api.md"]
+            }
+          },
+          "initialState": { "focusFiles": ["old"] },
+          "expectedResult": 1,
+          "expectedState": { "focusFiles": ["README.md"] }
+        }
+      ]
+    },
+    {
+      "task_id": "swe_patch_status_gate",
+      "benchmark_family": "swe_bench",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input has testsPassed, lintPassed, changedFiles, and maxFiles. If testsPassed and lintPassed are true and changedFiles.length is less than or equal to maxFiles, set state.patchStatus to 'ready' and return 'ready'. If testsPassed is false, set state.patchStatus to 'needs_tests' and return it. If lintPassed is false, set state.patchStatus to 'needs_lint' and return it. Otherwise set state.patchStatus to 'too_large' and return it.",
+      "checks": [
+        {
+          "input": { "testsPassed": true, "lintPassed": true, "changedFiles": ["a.py", "test_a.py"], "maxFiles": 3 },
+          "initialState": {},
+          "expectedResult": "ready",
+          "expectedState": { "patchStatus": "ready" }
+        },
+        {
+          "input": { "testsPassed": false, "lintPassed": true, "changedFiles": ["a.py"], "maxFiles": 3 },
+          "initialState": { "patchStatus": "old" },
+          "expectedResult": "needs_tests",
+          "expectedState": { "patchStatus": "needs_tests" }
+        },
+        {
+          "input": { "testsPassed": true, "lintPassed": false, "changedFiles": ["a.py"], "maxFiles": 3 },
+          "initialState": {},
+          "expectedResult": "needs_lint",
+          "expectedState": { "patchStatus": "needs_lint" }
+        }
+      ]
+    },
+    {
+      "task_id": "terminal_bench_command_guard",
+      "benchmark_family": "terminal_bench",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.command is a shell command string. Deny commands containing 'rm -rf', 'format ', 'del /s', or 'shutdown'. If denied, set state.allowed false, state.reason to 'destructive_command', and return false. Otherwise set state.allowed true, state.reason to 'ok', push the command into state.commandLog, and return true.",
+      "checks": [
+        {
+          "input": { "command": "python -m pytest tests/test_api.py -q" },
+          "initialState": { "commandLog": [] },
+          "expectedResult": true,
+          "expectedState": { "commandLog": ["python -m pytest tests/test_api.py -q"], "allowed": true, "reason": "ok" }
+        },
+        {
+          "input": { "command": "rm -rf C:\\Users\\issda" },
+          "initialState": { "commandLog": ["safe"] },
+          "expectedResult": false,
+          "expectedState": { "commandLog": ["safe"], "allowed": false, "reason": "destructive_command" }
+        }
+      ]
+    },
+    {
+      "task_id": "terminal_bench_log_parser",
+      "benchmark_family": "terminal_bench",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.lines is an array of terminal output lines. Count lines containing 'passed', 'failed', and 'error' case-insensitively. Store state.summary as an object with passed, failed, and errors counts. Return 'green' if failed and errors are both zero, otherwise return 'red'.",
+      "checks": [
+        {
+          "input": { "lines": ["12 passed in 3.1s", "cache warm"] },
+          "initialState": {},
+          "expectedResult": "green",
+          "expectedState": { "summary": { "passed": 1, "failed": 0, "errors": 0 } }
+        },
+        {
+          "input": { "lines": ["2 failed", "1 error", "10 passed"] },
+          "initialState": { "summary": {} },
+          "expectedResult": "red",
+          "expectedState": { "summary": { "passed": 1, "failed": 1, "errors": 1 } }
+        }
+      ]
+    },
+    {
+      "task_id": "aider_polyglot_edit_route",
+      "benchmark_family": "aider_polyglot",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input has language and changeKind. Choose editFormat. If language is 'python' or 'javascript', use 'diff'. If language is 'rust' or 'go', use 'whole'. If changeKind is 'rename', override to 'diff'. Store state.editFormat and state.language, then return editFormat.",
+      "checks": [
+        {
+          "input": { "language": "rust", "changeKind": "logic" },
+          "initialState": {},
+          "expectedResult": "whole",
+          "expectedState": { "editFormat": "whole", "language": "rust" }
+        },
+        {
+          "input": { "language": "go", "changeKind": "rename" },
+          "initialState": { "editFormat": "" },
+          "expectedResult": "diff",
+          "expectedState": { "editFormat": "diff", "language": "go" }
+        }
+      ]
+    },
+    {
+      "task_id": "aider_polyglot_test_command",
+      "benchmark_family": "aider_polyglot",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.language is one of python, javascript, rust, go, java, cpp. Set state.testCommand to the standard command: python -> 'python -m pytest', javascript -> 'npm test', rust -> 'cargo test', go -> 'go test ./...', java -> 'mvn test', cpp -> 'ctest'. Return state.testCommand. For unknown languages set state.testCommand to 'manual' and return 'manual'.",
+      "checks": [
+        {
+          "input": { "language": "go" },
+          "initialState": {},
+          "expectedResult": "go test ./...",
+          "expectedState": { "testCommand": "go test ./..." }
+        },
+        {
+          "input": { "language": "ruby" },
+          "initialState": { "testCommand": "old" },
+          "expectedResult": "manual",
+          "expectedState": { "testCommand": "manual" }
+        }
+      ]
+    },
+    {
+      "task_id": "evalplus_edge_case_counter",
+      "benchmark_family": "evalplus",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.cases is an array of objects with kind and passed. Count total cases, boundary cases where kind is 'boundary', and failed cases where passed is false. Store state.evalplus as { total, boundary, failed }. Return true if failed is 0 and boundary is greater than 0, otherwise false.",
+      "checks": [
+        {
+          "input": { "cases": [{ "kind": "base", "passed": true }, { "kind": "boundary", "passed": true }] },
+          "initialState": {},
+          "expectedResult": true,
+          "expectedState": { "evalplus": { "total": 2, "boundary": 1, "failed": 0 } }
+        },
+        {
+          "input": { "cases": [{ "kind": "base", "passed": true }, { "kind": "boundary", "passed": false }] },
+          "initialState": { "evalplus": {} },
+          "expectedResult": false,
+          "expectedState": { "evalplus": { "total": 2, "boundary": 1, "failed": 1 } }
+        }
+      ]
+    },
+    {
+      "task_id": "humaneval_signature_guard",
+      "benchmark_family": "humaneval",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.expectedName and input.actualName are strings, and input.requiredArgs and input.actualArgs are arrays. Set state.signatureOk true only when names match and both arg arrays have the same length. Set state.missingArgs to required args that do not appear in actualArgs. Return state.signatureOk.",
+      "checks": [
+        {
+          "input": { "expectedName": "solve", "actualName": "solve", "requiredArgs": ["nums", "target"], "actualArgs": ["nums", "target"] },
+          "initialState": {},
+          "expectedResult": true,
+          "expectedState": { "signatureOk": true, "missingArgs": [] }
+        },
+        {
+          "input": { "expectedName": "solve", "actualName": "answer", "requiredArgs": ["text"], "actualArgs": [] },
+          "initialState": { "signatureOk": true },
+          "expectedResult": false,
+          "expectedState": { "signatureOk": false, "missingArgs": ["text"] }
+        }
+      ]
+    },
+    {
+      "task_id": "repobench_context_budget",
+      "benchmark_family": "repobench",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.files is an array with path and tokens. Add files in original order to state.contextFiles while total tokens stays less than or equal to input.maxTokens. Store state.usedTokens. Return the number of selected files.",
+      "checks": [
+        {
+          "input": { "maxTokens": 100, "files": [{ "path": "a.py", "tokens": 40 }, { "path": "b.py", "tokens": 70 }, { "path": "c.py", "tokens": 20 }] },
+          "initialState": {},
+          "expectedResult": 2,
+          "expectedState": { "contextFiles": ["a.py", "c.py"], "usedTokens": 60 }
+        },
+        {
+          "input": { "maxTokens": 50, "files": [{ "path": "big.py", "tokens": 80 }, { "path": "small.py", "tokens": 10 }] },
+          "initialState": { "contextFiles": ["old"] },
+          "expectedResult": 1,
+          "expectedState": { "contextFiles": ["small.py"], "usedTokens": 10 }
+        }
+      ]
+    },
+    {
+      "task_id": "cost_duration_report",
+      "benchmark_family": "vexp_swe_bench",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.runs is an array with model, passed, costCents, and durationS. Store state.bestFreePassed as the model with passed true and costCents 0 with the shortest durationS, or 'none'. Store state.totalCostCents as the sum of all costCents. Return state.bestFreePassed.",
+      "checks": [
+        {
+          "input": { "runs": [{ "model": "small", "passed": true, "costCents": 0, "durationS": 9 }, { "model": "cloud", "passed": true, "costCents": 15, "durationS": 2 }, { "model": "openclaw", "passed": true, "costCents": 0, "durationS": 7 }] },
+          "initialState": {},
+          "expectedResult": "openclaw",
+          "expectedState": { "bestFreePassed": "openclaw", "totalCostCents": 15 }
+        },
+        {
+          "input": { "runs": [{ "model": "small", "passed": false, "costCents": 0, "durationS": 4 }] },
+          "initialState": { "bestFreePassed": "old" },
+          "expectedResult": "none",
+          "expectedState": { "bestFreePassed": "none", "totalCostCents": 0 }
+        }
+      ]
+    },
+    {
+      "task_id": "patch_diff_risk_score",
+      "benchmark_family": "swe_bench",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.diff has added, removed, filesChanged, and touchesSecurity. Compute risk = filesChanged * 2 + removed + (touchesSecurity ? 5 : 0). Store state.riskScore. If risk is 5 or less set state.reviewTier to 'auto', if 10 or less set 'human', otherwise set 'blocked'. Return state.reviewTier.",
+      "checks": [
+        {
+          "input": { "diff": { "added": 10, "removed": 1, "filesChanged": 2, "touchesSecurity": false } },
+          "initialState": {},
+          "expectedResult": "auto",
+          "expectedState": { "riskScore": 5, "reviewTier": "auto" }
+        },
+        {
+          "input": { "diff": { "added": 5, "removed": 3, "filesChanged": 3, "touchesSecurity": true } },
+          "initialState": { "reviewTier": "old" },
+          "expectedResult": "blocked",
+          "expectedState": { "riskScore": 14, "reviewTier": "blocked" }
+        }
+      ]
+    },
+    {
+      "task_id": "benchmark_claim_guard",
+      "benchmark_family": "public_claims",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input has terminalBenchRun, sweBenchRun, aiderRun, and localScore. If all three public run booleans are true, set state.claimLevel to 'public_comparable'. Else if localScore is 1, set state.claimLevel to 'local_harness_ready'. Otherwise set state.claimLevel to 'internal_only'. Return state.claimLevel.",
+      "checks": [
+        {
+          "input": { "terminalBenchRun": false, "sweBenchRun": false, "aiderRun": false, "localScore": 1 },
+          "initialState": {},
+          "expectedResult": "local_harness_ready",
+          "expectedState": { "claimLevel": "local_harness_ready" }
+        },
+        {
+          "input": { "terminalBenchRun": true, "sweBenchRun": true, "aiderRun": true, "localScore": 0.9 },
+          "initialState": { "claimLevel": "old" },
+          "expectedResult": "public_comparable",
+          "expectedState": { "claimLevel": "public_comparable" }
+        }
+      ]
+    }
+  ]
+}

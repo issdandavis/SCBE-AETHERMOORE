@@ -137,7 +137,7 @@ export const TONGUE_INDEX: Record<TongueCode, number> = {
 export const DEFAULT_CONFIG: TriDetectorConfig = {
   wPhase: 0.35,
   wTonic: 0.35,
-  wDrift: 0.30,
+  wDrift: 0.3,
   baseFreq: 0.1,
   chirpRate: 0.05,
   baselineSamples: 100,
@@ -172,11 +172,7 @@ export function phaseDeviation(observed: number, expected: number): number {
  * @param v - Point in the ball
  * @param eps - Numerical stability epsilon
  */
-export function hyperbolicDistance(
-  u: Float64Array,
-  v: Float64Array,
-  eps: number = 1e-10
-): number {
+export function hyperbolicDistance(u: Float64Array, v: Float64Array, eps: number = 1e-10): number {
   let diffNormSq = 0;
   let uNormSq = 0;
   let vNormSq = 0;
@@ -334,7 +330,7 @@ function computeFrequencyMatch(
   let peakFreq = 0;
 
   for (let k = 1; k <= numFreqs; k++) {
-    const freq = (k / radii.length) / dt;
+    const freq = k / radii.length / dt;
     let re = 0;
     let im = 0;
     for (let n = 0; n < centered.length; n++) {
@@ -457,7 +453,7 @@ export function computeDriftSignature(
       const mantissa = s.split('e')[0].replace('.', '').replace(/0+$/, '');
       totalPrecision += mantissa.length;
     }
-    sig[16] = (totalPrecision / inputData.length) / 15.0;
+    sig[16] = totalPrecision / inputData.length / 15.0;
   } else {
     sig[13] = 0.5;
     sig[14] = 0.5;
@@ -607,8 +603,7 @@ export class TriMechanismDetector {
     let sumSecond = 0;
     for (let i = 0; i < halfLen; i++) sumFirst += inputData[i];
     for (let i = halfLen; i < inputData.length; i++) sumSecond += inputData[i];
-    const observedPhase = Math.atan2(sumSecond / (inputData.length - halfLen),
-                                     sumFirst / halfLen);
+    const observedPhase = Math.atan2(sumSecond / (inputData.length - halfLen), sumFirst / halfLen);
     const phase = phaseDistanceScore(uFinal, tongueIdx, this.tongueCentroids, observedPhase);
 
     // Mechanism 2: 6-tonic temporal coherence

@@ -260,7 +260,7 @@ def make_record(system: str, user: str, assistant: str, tongues: dict, layers: l
         "difficulty": difficulty,
         "augmentation": augmentation,
         "tags": tags,
-        "source_hash": hashlib.md5(user.encode()).hexdigest()[:8],
+        "source_hash": hashlib.sha256(user.encode()).hexdigest()[:8],
     }
 
 

@@ -45,7 +45,10 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional
 logger = logging.getLogger("scbe.agent_bus")
 
 BUS_LOG = Path("artifacts/agent-bus/events.jsonl")
-SCHEMA_VERSION = "1.0.0"
+
+# Re-export the canonical schema version from the dedicated module so callers
+# see the single source of truth, even when importing from agent_bus directly.
+from agents.agent_bus_schema import CURRENT_SCHEMA_VERSION as SCHEMA_VERSION  # noqa: E402
 
 RETRY_BASE_SECONDS = 1.0
 RETRY_MAX_ATTEMPTS = 5

@@ -1,0 +1,190 @@
+{
+  "schema": "scbe_patent_claim_round_v1",
+  "round_id": "hyperbolic_governance_gate_round_001",
+  "created_at": "2026-05-28",
+  "skill_tested": "thats-a-good-skill",
+  "ball": "hyperbolic governance gate",
+  "renewal_menu": {
+    "need": "Test the renewal/nested-skill structure on a real SCBE patent drafting task.",
+    "task": "Review the hyperbolic governance gate as a primary non-provisional claim family.",
+    "current_moment": "Provisional 63/961,403 is filed; non-provisional drafting workbench is being structured.",
+    "source_material": [
+      "docs/legal/PATENT_FIELD_OF_PLAY_2026.md",
+      "docs/legal/patent-workbench/patent_game_roles.json",
+      "docs/legal/patent-workbench/claim_support_scan.md",
+      "docs/PATENT_DETAILED_DESCRIPTION.md",
+      "src/governance/runtime_gate.py",
+      "packages/kernel/src/hyperbolic.ts",
+      "src/symphonic_cipher/scbe_aethermoore/organic_hyperbolic.py"
+    ],
+    "desired_output": "A saved claim-round artifact with pitch, hit, umpire call, crowd signals, next action, and cleanup byproducts.",
+    "escalation": {
+      "bigger_model": "no",
+      "subagent": "no",
+      "search": "local",
+      "reason": "Official rule sources are already captured; this round only needs local support evidence."
+    },
+    "scope": {
+      "topics": [
+        "hyperbolic governance gate",
+        "runtime enforcement",
+        "support evidence",
+        "claim scope"
+      ],
+      "tools": [
+        "rg",
+        "draft_skill_packet.py",
+        "claim_support_scan"
+      ],
+      "quick_calls": [
+        "local support scan",
+        "JSON validation",
+        "diff whitespace check"
+      ],
+      "must_not_do": [
+        "do not claim legal conclusion of patentability",
+        "do not expose private Patent Center credentials",
+        "do not treat newer unsupported features as priority-supported"
+      ]
+    },
+    "workstation": {
+      "repo_or_folder": "C:/Users/issda/SCBE-AETHERMOORE",
+      "files_to_touch": [
+        "docs/legal/patent-workbench/rounds/hyperbolic_governance_gate_round_001.json",
+        "docs/legal/patent-workbench/rounds/hyperbolic_governance_gate_round_001.md",
+        "docs/legal/patent-workbench/manifest.json"
+      ],
+      "artifacts_to_create": [
+        "round JSON",
+        "round markdown"
+      ],
+      "validation": [
+        "JSON parse",
+        "git diff --check",
+        "support citations present"
+      ]
+    },
+    "token_budget_pct": {
+      "sense": 15,
+      "plan": 15,
+      "execute": 40,
+      "validate": 15,
+      "cleanup": 5,
+      "final": 10
+    }
+  },
+  "nested_skill_stack": {
+    "primary": "pro-se-patent-workbench",
+    "support": [
+      "thats-a-good-skill"
+    ],
+    "checker": [
+      "claim_support_scan",
+      "patent_game_roles"
+    ],
+    "cleanup": [
+      "manifest update",
+      "candidate follow-up list"
+    ]
+  },
+  "pitch": {
+    "role": "pitcher_invention_advocate",
+    "technical_definition": "A runtime gate receives an action and context, encodes or projects that input into a geometric state, measures distance or drift in a hyperbolic/Poincare domain from a trusted or session reference state, computes governance cost or risk, and selects an execution decision such as ALLOW, QUARANTINE, or DENY.",
+    "data_in": [
+      "candidate computational action",
+      "runtime context",
+      "session or trusted reference state",
+      "semantic/integrity/coherence signals"
+    ],
+    "state_changed": [
+      "execution decision",
+      "audit trail or receipt",
+      "session/reference gate state"
+    ],
+    "support_evidence": [
+      "docs/PATENT_DETAILED_DESCRIPTION.md line 24 describes Poincare embedding, hyperbolic distance, harmonic scaling, and ALLOW/QUARANTINE/DENY regions.",
+      "docs/PATENT_DETAILED_DESCRIPTION.md lines 100-106 define Poincare ball, hyperbolic distance, Mobius addition, and isometry terms.",
+      "src/governance/runtime_gate.py lines 1-16 describe the runtime gate between intent and execution, including ALLOW, DENY, QUARANTINE, and harmonic cost from Poincare distance.",
+      "packages/kernel/src/hyperbolic.ts lines 74-84 implement hyperbolicDistance for Poincare ball points.",
+      "claim_support_scan.md reports hyperbolic_governance_gate support hits: 120 in the patent description, 107 in organic_hyperbolic.py, 21 in hyperbolic.ts, 147 in runtime_gate.py."
+    ]
+  },
+  "hit": {
+    "role": "batter_client_advocate",
+    "broadened_claim_framing": "Claim a computer-implemented runtime authorization method using a bounded nonlinear geometric domain and distance/drift-based governance cost to control execution of computational actions. Keep Poincare ball and exact formula embodiments in dependent claims so competitors cannot trivially design around by changing the hyperbolic model or constants.",
+    "safe_generalizations": [
+      "Poincare ball -> bounded nonlinear geometric domain in the independent claim",
+      "Sacred Tongues -> semantic weighting axes or context channels",
+      "exact thresholds -> configured thresholds",
+      "specific CLI/API/agent bus -> computational action execution surface"
+    ],
+    "do_not_overclaim": [
+      "do not state the gate makes attack impossible",
+      "do not rely only on mathematical scoring without runtime enforcement",
+      "do not force newer narrative/fleet/admissibility-board concepts into this primary family without support review"
+    ]
+  },
+  "umpire_call": {
+    "role": "umpire",
+    "call": "PRIMARY",
+    "basis": "The feature is title-level, heavily supported in the patent description and implementation, and can be framed as a practical runtime enforcement method rather than only a mathematical idea.",
+    "risks": [
+      {
+        "tag": "101",
+        "risk": "If drafted as only measuring semantic or geometric distance, it may look abstract.",
+        "mitigation": "Recite controlling execution, quarantine/deny/allow states, audit receipt, and state update."
+      },
+      {
+        "tag": "102/103",
+        "risk": "Embeddings, anomaly detection, access control, and audit logs exist separately.",
+        "mitigation": "Claim the ordered combination and enforcement path, not isolated use of embeddings."
+      },
+      {
+        "tag": "112",
+        "risk": "Overbroad terms like 'geometric authorization' need definitions and examples.",
+        "mitigation": "Tie broad terms to formulas, state vectors, Poincare embodiment, and runtime gate examples."
+      }
+    ]
+  },
+  "crowd_signals": [
+    {
+      "model": "simulated-small-model-naive-reader-1",
+      "risk_tag": "confusing",
+      "opinion": "The phrase 'hyperbolic governance gate' sounds cool but unclear. Define it as a runtime gate that measures drift and controls execution."
+    },
+    {
+      "model": "simulated-small-model-designaround-2",
+      "risk_tag": "design_around",
+      "opinion": "If the claim requires Poincare ball only, a competitor might use another nonlinear geometry. Keep Poincare as a dependent embodiment."
+    },
+    {
+      "model": "simulated-small-model-legal-skeptic-3",
+      "risk_tag": "too_broad",
+      "opinion": "Do not claim all AI safety or all semantic distance gates. The claim should require execution control and state update."
+    },
+    {
+      "model": "simulated-small-model-engineer-4",
+      "risk_tag": "okay",
+      "opinion": "The implementation anchors make this feel buildable if the spec includes vector encoding, distance formula, thresholds, and decision states."
+    }
+  ],
+  "announcer_summary": "The first ball was the core hyperbolic governance gate. The pitch defined it as a runtime gate that turns action/context into geometric state, measures drift, computes cost, and controls execution. The hit broadened it to bounded nonlinear geometry while keeping Poincare and exact formulas as embodiments. The umpire called it PRIMARY, with 101 and 112 cautions that the claim must stay tied to runtime enforcement and concrete support.",
+  "next_action": "Draft independent method claim language for the hyperbolic governance gate, then map every element to provisional/spec/code support.",
+  "cleanup_byproducts": [
+    {
+      "target": "docs/PATENT_DETAILED_DESCRIPTION.md",
+      "action": "review_later",
+      "reason": "Some language says computationally infeasible/indistinguishable; verify support or soften in claim-facing text."
+    },
+    {
+      "target": "docs/legal/patent-workbench/claim_support_scan.md",
+      "action": "extend_later",
+      "reason": "Support scan gives hit counts and samples but not a full element-by-element claim chart."
+    },
+    {
+      "target": "patent_game_roles crowd",
+      "action": "wire_later",
+      "reason": "Crowd signals are simulated here; future test can call configured small models under cost thresholds."
+    }
+  ]
+}

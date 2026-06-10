@@ -702,5 +702,5 @@ class PodcastGenerator:
         Uses a hash so the same input always produces the same phrase,
         giving reproducible scripts.
         """
-        h = int(hashlib.md5(seed.encode("utf-8")).hexdigest(), 16)
+        h = int(hashlib.sha256(seed.encode("utf-8")).hexdigest(), 16)
         return phrases[h % len(phrases)]

@@ -7,16 +7,28 @@ from scripts.system import colab_worker_lease as worker
 
 
 def test_build_worker_lease_has_expiry() -> None:
+    scope = worker.build_intersection_scope(languages="en, ko", regions="us, asia", jurisdictions="public, export-safe")
     lease = worker.build_worker_lease(
         worker_id="worker-colab-01",
         notebook_name="scbe-pivot-v2",
         lease_seconds=900,
+        parallel_group="coding-swarm",
+        shard_index=1,
+        shard_count=4,
+        intersection_scope=scope,
     )
     assert lease["owner"] == "worker-colab-01"
     assert lease["provider"] == "colab"
     assert lease["resource_class"] == "browser-colab"
     assert lease["lease_seconds"] == 900
     assert lease["claimed_at_utc"] < lease["expires_at_utc"]
+    assert lease["parallel"]["group"] == "coding-swarm"
+    assert lease["parallel"]["shard_index"] == 1
+    assert lease["parallel"]["shard_count"] == 4
+    assert lease["intersection_scope"]["languages"] == ["en", "ko"]
+    assert lease["intersection_scope"]["regions"] == ["us", "asia"]
+    assert lease["intersection_scope"]["jurisdictions"] == ["public", "export-safe"]
+    assert lease["intersection_scope"]["intersection_count"] == 4
 
 
 def test_provision_colab_worker_dry_run_emits_packets(tmp_path: Path, monkeypatch) -> None:
@@ -42,6 +54,10 @@ def test_provision_colab_worker_dry_run_emits_packets(tmp_path: Path, monkeypatc
         keep_open=False,
         timeout_ms=1000,
         dry_run=True,
+        parallel_group="training-swarm",
+        shard_index=0,
+        shard_count=2,
+        intersection_scope=worker.build_intersection_scope(languages="en,ja", regions="global"),
     )
 
     assert artifact["state"] == "dry_run"
@@ -54,11 +70,15 @@ def test_provision_colab_worker_dry_run_emits_packets(tmp_path: Path, monkeypatc
     ]
     assert emitted[1]["worker_id"] == "worker-colab-01"
     assert emitted[1]["mission_id"] == "mission-1"
+    assert emitted[1]["lease"]["parallel"]["group"] == "training-swarm"
+    assert emitted[1]["lease"]["intersection_scope"]["languages"] == ["en", "ja"]
+    assert artifact["parallel"]["shard_count"] == 2
+    assert artifact["intersection_scope"]["regions"] == ["global"]
     assert Path(artifact["artifact_path"]).exists()
     saved = json.loads(Path(artifact["artifact_path"]).read_text(encoding="utf-8"))
-    assert saved["packets"]["claim"] == "pkt-1"
-    assert saved["packets"]["internal"] == "pkt-2"
-    assert saved["packets"]["evidence"] == "pkt-3"
+    assert saved["schema_version"] == "scbe_colab_worker_public_artifact_v1"
+    assert saved["packet_count"] == 3
+    assert saved["packet_classes"] == ["claim", "evidence", "internal"]
 
 
 def test_provision_colab_worker_with_fake_playwright_marks_auth_required(tmp_path: Path, monkeypatch) -> None:
@@ -169,6 +189,7 @@ def test_derive_runtime_state_detects_connected_and_disconnected() -> None:
             {
                 "usage_visible": True,
                 "connect_button_visible": False,
+                "connected_text_visible": True,
             },
         )
         == "runtime_connected"
@@ -179,17 +200,178 @@ def test_derive_runtime_state_detects_connected_and_disconnected() -> None:
             {
                 "usage_visible": False,
                 "connect_button_visible": True,
+                "sign_in_button_visible": False,
+                "body_has_connect": False,
             },
         )
         == "runtime_disconnected"
     )
     assert (
         worker._derive_runtime_state(
-            "auth_required",
+            "notebook_open",
             {
-                "usage_visible": True,
+                "usage_visible": False,
                 "connect_button_visible": False,
+                "sign_in_button_visible": False,
+                "body_has_connect": True,
+            },
+        )
+        == "runtime_disconnected"
+    )
+    assert (
+        worker._derive_runtime_state(
+            "notebook_open",
+            {
+                "usage_visible": False,
+                "connect_button_visible": True,
+                "sign_in_button_visible": True,
             },
         )
         == "auth_required"
     )
+
+
+def test_open_auth_bootstrap_launches_visible_chrome(tmp_path: Path, monkeypatch) -> None:
+    calls: list[list[str]] = []
+    chrome = tmp_path / "chrome.exe"
+    chrome.write_text("", encoding="utf-8")
+
+    def fake_popen(args, stdout=None, stderr=None):
+        calls.append(list(args))
+
+        class Proc:
+            pid = 123
+
+        return Proc()
+
+    monkeypatch.setenv("SCBE_COLAB_BRANCH", "test-branch")
+    monkeypatch.setattr(worker.subprocess, "Popen", fake_popen)
+
+    payload = worker.open_auth_bootstrap("zero-cost", tmp_path / "profile", str(chrome))
+
+    assert payload["state"] == "opened"
+    assert payload["notebook"]["name"] == "zero-cost-local-0p5b"
+    assert payload["profile_dir"].endswith("profile")
+    assert calls
+    assert calls[0][0] == str(chrome)
+    assert any(arg.startswith("--user-data-dir=") for arg in calls[0])
+    assert "--new-window" in calls[0]
+
+
+def test_attempt_runtime_connect_prefers_colab_toolbar_button() -> None:
+    calls: list[str] = []
+
+    class FakePage:
+        def evaluate(self, script: str) -> bool:
+            calls.append(script)
+            return True
+
+        def wait_for_timeout(self, delay: int) -> None:
+            assert delay == 12000
+
+    result = worker._attempt_runtime_connect(FakePage())
+
+    assert result["attempted"] is True
+    assert result["ok"] is True
+    assert result["method"] == "colab-toolbar-button"
+    assert "colab-toolbar-button#connect" in calls[0]
+
+
+def test_attempt_runtime_connect_force_clicks_toolbar_fallback() -> None:
+    clicked: list[dict[str, object]] = []
+
+    class FakeLocator:
+        def click(self, timeout: int, force: bool) -> None:
+            clicked.append({"timeout": timeout, "force": force})
+
+    class FakePage:
+        def evaluate(self, script: str) -> bool:
+            return False
+
+        def locator(self, selector: str) -> FakeLocator:
+            assert selector == "colab-toolbar-button#connect"
+            return FakeLocator()
+
+        def wait_for_timeout(self, delay: int) -> None:
+            assert delay == 12000
+
+    result = worker._attempt_runtime_connect(FakePage())
+
+    assert result["attempted"] is True
+    assert result["ok"] is True
+    assert clicked == [{"timeout": 8000, "force": True}]
+    assert (
+        worker._derive_runtime_state(
+            "auth_required",
+            {
+                "usage_visible": True,
+                "connect_button_visible": False,
+                "sign_in_button_visible": False,
+            },
+        )
+        == "auth_required"
+    )
+
+
+def test_attempt_run_all_prefers_visible_run_all_button() -> None:
+    calls: list[str] = []
+    waits: list[int] = []
+
+    class FakePage:
+        def evaluate(self, script: str) -> bool:
+            calls.append(script)
+            return len(calls) == 1
+
+        def wait_for_timeout(self, delay: int) -> None:
+            waits.append(delay)
+
+    result = worker._attempt_run_all(FakePage())
+
+    assert result["attempted"] is True
+    assert result["ok"] is True
+    assert result["method"] == "run-all-button"
+    assert "run all" in calls[0].lower()
+    assert "run anyway" in calls[1].lower()
+    assert result["warning_dismissed"] is False
+    assert result["secret_grants"] == 0
+    assert waits == [2500, 5000, 5000, 5000]
+
+
+def test_attempt_run_all_uses_keyboard_fallback() -> None:
+    keys: list[str] = []
+    clicked: list[dict[str, object]] = []
+
+    class FakeKeyboard:
+        def press(self, key: str) -> None:
+            keys.append(key)
+
+    class FakeButton:
+        def click(self, timeout: int) -> None:
+            clicked.append({"timeout": timeout})
+
+    class FakePage:
+        keyboard = FakeKeyboard()
+        calls = 0
+        waits: list[int] = []
+
+        def evaluate(self, script: str) -> bool:
+            self.calls += 1
+            return False
+
+        def get_by_text(self, text: str, exact: bool) -> FakeButton:
+            assert text in {"Run anyway", "Grant access"}
+            assert exact is True
+            return FakeButton()
+
+        def wait_for_timeout(self, delay: int) -> None:
+            self.waits.append(delay)
+
+    result = worker._attempt_run_all(FakePage())
+
+    assert result["attempted"] is True
+    assert result["ok"] is True
+    assert result["method"] == "keyboard-control-f9"
+    assert result["warning_dismissed"] is True
+    assert result["secret_grants"] == 3
+    assert keys == ["Control+F9"]
+    assert clicked == [{"timeout": 8000}, {"timeout": 1500}, {"timeout": 1500}, {"timeout": 1500}]

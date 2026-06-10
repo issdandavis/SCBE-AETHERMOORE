@@ -172,3 +172,84 @@ python scripts/apollo/video_review.py review-all
 Review scores: title (structure, length, searchability), description (depth, links, hashtags),
 transcript (speaking rate, vocabulary richness, technical density), tags (count, brand coverage).
 Reports saved to `artifacts/apollo/video_reviews/`.
+
+## SCBE Agent Bus (`packages/agent-bus/`)
+
+The agent bus is the governed execution surface for SCBE events. It routes tasks through plugins, queues, GeoSeal policy gates, and custom CLI tools.
+
+### Build & Test
+```bash
+cd packages/agent-bus
+npm run build          # compiles src/ → dist/
+npm test               # vitest run (68 tests)
+npm run typecheck      # tsc --noEmit
+```
+
+### Server Endpoints
+Start the server: `scbe-agent-bus serve --port 8787`
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health` | Queue counts + circuit breaker states |
+| GET | `/v1/events/:run_id` | Queue status by run ID |
+| POST | `/v1/events` | Run single event (`enqueue?: boolean`) |
+| POST | `/v1/batch` | Sequential batch (`continueOnError?: boolean`) |
+| POST | `/v1/fanout` | Concurrent fan-out (`concurrency?: number`) |
+| POST | `/v1/pipeline` | Full GeoSeal pipeline (compile → gate → exec) |
+| POST | `/v1/pipeline/compile` | Compile-only: returns `GeoSealPlan` |
+
+### GeoSeal Pipeline
+```bash
+# Compile + gate + exec in one shot
+scbe-agent-bus pipeline run --intent "summarize README"
+
+# Compile only (inspect plan before exec)
+scbe-agent-bus pipeline compile --intent "summarize README"
+```
+
+Pipeline decisions: `ALLOW` → execute, `DENY`/`QUARANTINE`/`ESCALATE` → blocked with reason.
+
+### CLI Tool Registry
+Tools live in `packages/agent-bus/tools.json`. Load via:
+```bash
+export SCBE_BUS_TOOLS=./packages/agent-bus/tools.json
+scbe-agent-bus tools list
+```
+
+12 tools are registered by default: `geoseal-compile`, `geoseal-exec`, `geoseal-seal`, `geoseal-explain-route`, `geoseal-encode`, `geoseal-verify`, `scbe-agentbus`, `scbe-antivirus`, `scbe-governance-fuse`, `scbe-runtime`, `scbe-flow`, `scbe-tongues`.
+
+Route an event to a tool by setting `event.tool = "geoseal-compile"`.
+
+### Plugins
+Load drop-in plugins via:
+```bash
+export SCBE_BUS_PLUGINS=./plugins/governance-gate.cjs
+```
+
+- `governance-gate.cjs` — `beforeRun` plugin calling `geoseal legitimacy-trial`. Blocks on `DENY`, fails open in dev.
+- Custom plugins implement `{ name, beforeRun?, afterRun? }`.
+
+### Filesystem Queue
+Durable async queue under `.aethermoor-bus/queue/` (`pending/` → `running/` → `completed/`/`failed/`).
+
+```bash
+scbe-agent-bus queue status
+scbe-agent-bus queue drain
+scbe-agent-bus queue worker       # foreground poller
+scbe-agent-bus serve --worker     # server + embedded worker
+```
+
+### Circuit Breakers
+Providers get per-name circuit breakers (`closed` → `open` → `half_open`).
+
+```typescript
+import { configureCircuitBreaker, withCircuitBreaker } from 'scbe-agent-bus';
+configureCircuitBreaker('geoseal-compile', { failureThreshold: 3, resetTimeoutMs: 15000 });
+await withCircuitBreaker('geoseal-compile', () => compilePlan(intent));
+```
+
+### Environment Variables
+- `SCBE_REPO_ROOT` — repo root for GeoSeal CLI resolution (auto-detected if omitted)
+- `SCBE_BUS_TOOLS` — path to JSON tool registry
+- `SCBE_BUS_PLUGINS` — semicolon-separated paths to plugin files
+- `PYTHON` — Python executable for geoseal/spawn calls

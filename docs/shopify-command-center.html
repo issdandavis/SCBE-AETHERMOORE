@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="static/polly-sidebar-agent.css" />
+    <title>Shopify Command Center | AetherMoore</title>
+    <meta
+      name="description"
+      content="A live Shopify Command Center demo and $99 store ops snapshot for payment, shipping, subscription, bundle, pricing, and marketing setup review."
+    />
+    <meta name="robots" content="index, follow" />
+    <link
+      rel="canonical"
+      href="https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html"
+    />
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --panel: rgba(18, 23, 32, 0.92);
+        --line: rgba(214, 167, 86, 0.2);
+        --text: #f2f0ea;
+        --muted: #aab3c0;
+        --accent: #d6a756;
+        --good: #2dd3a6;
+        --cool: #8cb4ff;
+        --max: 1120px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Georgia, 'Times New Roman', serif;
+        background:
+          radial-gradient(circle at 20% 0%, rgba(45, 211, 166, 0.12), transparent 28%),
+          radial-gradient(circle at 85% 15%, rgba(214, 167, 86, 0.12), transparent 32%),
+          linear-gradient(180deg, #0b0d12 0%, #111822 46%, #0b0d12 100%);
+        color: var(--text);
+        line-height: 1.6;
+      }
+      a {
+        color: inherit;
+      }
+      nav,
+      .wrap {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+      }
+      nav {
+        min-height: 68px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+      nav .brand {
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        text-decoration: none;
+      }
+      nav .links {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      nav a {
+        text-decoration: none;
+      }
+      .hero {
+        padding: 72px 0 42px;
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
+        gap: 28px;
+        align-items: center;
+      }
+      .eyebrow {
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        margin-bottom: 14px;
+      }
+      h1 {
+        max-width: 14ch;
+        margin: 0 0 18px;
+        font-size: clamp(40px, 7vw, 72px);
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+      }
+      h2 {
+        margin: 0 0 14px;
+        font-size: clamp(24px, 4vw, 38px);
+        line-height: 1.12;
+      }
+      h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+      p {
+        margin: 0;
+      }
+      .lead {
+        max-width: 60ch;
+        color: var(--muted);
+        font-size: clamp(17px, 2vw, 21px);
+        margin-bottom: 24px;
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 10px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        color: var(--text);
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .btn.primary {
+        background: var(--good);
+        border-color: transparent;
+        color: #071411;
+      }
+      .terminal {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(3, 7, 12, 0.78);
+        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.34);
+        overflow: hidden;
+      }
+      .terminal-top {
+        display: flex;
+        gap: 7px;
+        padding: 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--accent);
+        opacity: 0.8;
+      }
+      .screen {
+        padding: 22px;
+      }
+      .screen strong {
+        color: var(--good);
+      }
+      .screen ul {
+        margin: 14px 0 0;
+        padding-left: 20px;
+        color: var(--muted);
+      }
+      section {
+        padding: 34px 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel);
+        padding: 20px;
+      }
+      .panel p,
+      .panel li {
+        color: var(--muted);
+      }
+      .panel ul {
+        margin: 10px 0 0;
+        padding-left: 20px;
+      }
+      .split {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 0.82fr);
+        gap: 16px;
+        align-items: start;
+      }
+      .price {
+        color: var(--good);
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .note {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: var(--muted);
+        padding: 28px 0 46px;
+      }
+      @media (max-width: 760px) {
+        .hero-grid,
+        .split,
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .hero {
+          padding-top: 42px;
+        }
+      }
+    </style>
+  </head>
+  <body data-polly-context="shopify-command-center" data-polly-root=".">
+    <nav>
+      <a class="brand" href="index.html">AetherMoore</a>
+      <div class="links">
+        <a href="products.html">Products</a>
+        <a href="solutions.html">Solutions</a>
+        <a href="payments.html">Payments</a>
+        <a href="chat.html">Ask Polly</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="eyebrow">Merchant ops offer</div>
+          <h1>Turn store setup chaos into an operator checklist.</h1>
+          <p class="lead">
+            Shopify Command Center is a live store-ops dashboard for payments, subscriptions,
+            shipping, automation, marketing, analytics, bundles, wholesale, pricing, and launch
+            review. It is now packaged as a small fixed-scope service for store owners who need the
+            next clean step.
+          </p>
+          <div class="actions">
+            <a
+              class="btn primary"
+              href="https://shopify-command-center-165664533862.us-west2.run.app"
+              target="_blank"
+              rel="noopener"
+              >Open live demo</a
+            >
+            <a class="btn" href="#buy">Start $99 snapshot</a>
+            <a
+              class="btn"
+              href="https://github.com/issdandavis/Shopify-Command-Center"
+              target="_blank"
+              rel="noopener"
+              >View source</a
+            >
+          </div>
+        </div>
+        <div class="terminal" aria-label="Shopify Command Center feature preview">
+          <div class="terminal-top">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="screen">
+            <strong>Store ops checklist</strong>
+            <ul>
+              <li>Payment setup and checkout readiness</li>
+              <li>Subscription, bundle, and wholesale planning</li>
+              <li>Shipping zone and pricing review</li>
+              <li>Marketing campaign and analytics notes</li>
+              <li>One written next-action packet after intake</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <div class="wrap">
+          <div class="grid">
+            <article class="panel">
+              <h3>What the app does</h3>
+              <p>
+                Gives a merchant or operator one dashboard-like surface for the setup areas that
+                usually get scattered across tabs, docs, and half-finished launch notes.
+              </p>
+            </article>
+            <article class="panel">
+              <h3>What the service does</h3>
+              <p>
+                Uses the same checklist shape to review one store, one product line, or one launch
+                setup and return a concise store-ops snapshot.
+              </p>
+            </article>
+            <article class="panel">
+              <h3>Why it fits SCBE</h3>
+              <p>
+                It turns a messy workflow into routes, receipts, boundaries, and next actions. That
+                is the same control problem the agent bus solves for AI workflows.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="buy">
+        <div class="wrap split">
+          <div class="panel">
+            <div class="eyebrow">Fixed starter offer</div>
+            <h2>Shopify Store Ops Snapshot</h2>
+            <p class="lead">
+              Send a store link, product idea, or launch checklist. You get a short written review
+              covering payment path, subscription/bundle opportunities, shipping gaps, pricing
+              friction, analytics setup, and three next actions.
+            </p>
+            <ul>
+              <li>Best for a first store, messy rebuild, or one product launch.</li>
+              <li>No Shopify credentials required for the starter read.</li>
+              <li>Use Ko-fi, Cash App, or the payment center while card setup expands.</li>
+              <li>Cash App manual payment: $IzzyDDavis7.</li>
+            </ul>
+          </div>
+          <aside class="panel">
+            <div class="price">$99 starter</div>
+            <p class="note">
+              Include "Shopify Store Ops Snapshot" in the payment note, then send the store link or
+              brief through email or Polly.
+            </p>
+            <div class="actions" style="margin-top: 16px">
+              <a
+                class="btn primary"
+                href="https://ko-fi.com/izdandavis"
+                target="_blank"
+                rel="noopener"
+                >Pay with Ko-fi</a
+              >
+              <a class="btn" href="payments.html#cash-app">Cash App</a>
+              <a
+                class="btn"
+                href="mailto:aethermoregames@pm.me?subject=Shopify%20Store%20Ops%20Snapshot"
+                >Send brief</a
+              >
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap">
+          <div class="grid">
+            <article class="panel">
+              <h3>Good fit</h3>
+              <p>
+                Small ecommerce owners, creators, local sellers, and technical founders who have a
+                store idea but need payment, shipping, pricing, and launch steps cleaned up.
+              </p>
+            </article>
+            <article class="panel">
+              <h3>Not for</h3>
+              <p>
+                Emergency payment disputes, legal/accounting advice, full Shopify Plus
+                implementation, or any job that requires credentials before scope is agreed.
+              </p>
+            </article>
+            <article class="panel">
+              <h3>Delivery</h3>
+              <p>
+                One concise memo, checklist, and next-action list. If deeper build work is needed,
+                it can be scoped after the starter review.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        AetherMoore by Issac Davis. CAGE 1EXD5. UEI J4NXHM6N5F59. This is an independent operations
+        dashboard and review service, not an official Shopify app.
+      </div>
+    </footer>
+    <script
+      src="static/polly-sidebar-agent.js"
+      data-polly-api="https://scbe-agent-bridge-vercel.vercel.app"
+    ></script>
+    <script src="static/polly-funnel.js" data-page="shopify-command-center"></script>
+  </body>
+</html>

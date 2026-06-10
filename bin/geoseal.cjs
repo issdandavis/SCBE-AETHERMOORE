@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const { spawnSync } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -22,7 +23,19 @@ Modes:
        python -m geoseal_cli
      Use SCBE_GEOSEAL_PYTHON to pin the Python executable.
 
+Hosted run path:
+  Local/npm/Ollama-first use stays free under the open-source license.
+  For AetherMoore-hosted routing, governed reports, benchmarks, storage,
+  delivery, or provider/model-backed work:
+    https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html
+    https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html
+  Service credits pass through provider/model cost with a 2-5% SCBE fee.
+
 Useful commands:
+  geoseal doctor --json
+  geoseal permissions --json
+  geoseal custom-commands --json
+  geoseal run-command harness-benchmark --json
   geoseal status --api-base http://127.0.0.1:8002
   geoseal shell --command "portal-box --content \"def add(a, b): return a + b\" --language python --source-name sample.python --json"
   geoseal portal-box --api-base http://127.0.0.1:8002 --language python --content "def add(a, b): return a + b"
@@ -44,6 +57,15 @@ Useful commands:
   geoseal decode-code-lanes "$(cat artifacts/tokenizer_code_lanes/shl_lanes.json)" --output-dir artifacts/tokenizer_code_lanes/decoded --from-binary --write-binary --json
   geoseal ai2ai-bridge --content "def add(a, b): return a + b" --language python --json
   geoseal code-packet --content "def add(a, b): return a + b" --language python
+  geoseal tongue-compile --content "ko:set r0, 2" --json
+  geoseal tongue-run --content "ko:set r0, 2\nko:print r0\nko:halt" --json
+  geoseal explain-route --content "def add(a, b): return a + b" --language python --json
+  geoseal backend-registry --json
+  geoseal history --limit 20 --json
+  geoseal replay --json
+  geoseal testing-cli --source-file sample.py --language python --execute --json
+  geoseal project-scaffold --content "build a pacman style web game" --language python --output-dir artifacts/pacman --json
+  geoseal code-roundtrip --source hello.rs --lang rust --tongue RU --execute --json
 
 Flags:
   --api-base <url>       GeoSeal API base URL
@@ -75,7 +97,19 @@ const COMMAND_MAP = {
   "orchestrator-dispatch": { method: "POST", path: "/runtime/orchestrator/dispatch", auth: true },
   "orchestrator-status": { method: "POST", path: "/runtime/orchestrator/status", auth: true },
   "orchestrator-promote": { method: "POST", path: "/runtime/orchestrator/promote", auth: true },
+  "code-packet": { method: "POST", path: "/v1/geoseal/code-packet", auth: false },
+  "explain-route": { method: "POST", path: "/v1/geoseal/explain-route", auth: false },
+  "backend-registry": { method: "POST", path: "/v1/geoseal/backend-registry", auth: false },
+  "agent-harness": { method: "POST", path: "/v1/geoseal/agent-harness", auth: false },
+  history: { method: "POST", path: "/v1/geoseal/history", auth: false },
+  replay: { method: "POST", path: "/v1/geoseal/replay", auth: false },
+  "testing-cli": { method: "POST", path: "/v1/geoseal/testing-cli", auth: false },
+  "project-scaffold": { method: "POST", path: "/v1/geoseal/project-scaffold", auth: false },
+  "code-roundtrip": { method: "POST", path: "/v1/geoseal/code-roundtrip", auth: false },
 };
+
+const LOCAL_PASSTHROUGH_COMMANDS = new Set(["portal-box", "stream-wheel", "shell"]);
+const CUSTOM_COMMANDS_DIR = path.join(ROOT, ".geoseal", "commands");
 
 function parseArgs(argv) {
   const positionals = [];
@@ -104,6 +138,256 @@ function apiBase(flags) {
 
 function apiKey(flags) {
   return String(flags["api-key"] || process.env.SCBE_API_KEY || "");
+}
+
+function writeJsonOrText(flags, payload, text) {
+  if (flags.json) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+  } else {
+    process.stdout.write(text.endsWith("\n") ? text : `${text}\n`);
+  }
+}
+
+function parseFrontmatter(text) {
+  if (!text.startsWith("---\n") && !text.startsWith("---\r\n")) {
+    return { metadata: {}, body: text };
+  }
+  const normalized = text.replace(/\r\n/g, "\n");
+  const end = normalized.indexOf("\n---\n", 4);
+  if (end === -1) {
+    return { metadata: {}, body: text };
+  }
+  const metadata = {};
+  const header = normalized.slice(4, end).trim();
+  for (const line of header.split("\n")) {
+    const match = /^([A-Za-z0-9_-]+):\s*(.*)$/.exec(line.trim());
+    if (match) {
+      metadata[match[1]] = match[2].replace(/^["']|["']$/g, "");
+    }
+  }
+  return { metadata, body: normalized.slice(end + 5).trim() };
+}
+
+function loadCustomCommand(filePath) {
+  const raw = fs.readFileSync(filePath, "utf8");
+  const parsed = parseFrontmatter(raw);
+  const fallbackName = path.basename(filePath, path.extname(filePath));
+  const relativePath = path.relative(ROOT, filePath).replace(/\\/g, "/");
+  const body = parsed.body.trim();
+  return {
+    name: String(parsed.metadata.name || fallbackName),
+    description: String(parsed.metadata.description || ""),
+    path: relativePath,
+    execution_mode: "template_only",
+    body,
+    body_preview: body.slice(0, 600),
+  };
+}
+
+function listCustomCommands() {
+  if (!fs.existsSync(CUSTOM_COMMANDS_DIR)) return [];
+  return fs
+    .readdirSync(CUSTOM_COMMANDS_DIR)
+    .filter((name) => name.endsWith(".md"))
+    .map((name) => loadCustomCommand(path.join(CUSTOM_COMMANDS_DIR, name)))
+    .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function runCustomCommands(flags) {
+  const commands = listCustomCommands().map((command) => ({
+    name: command.name,
+    description: command.description,
+    path: command.path,
+    execution_mode: command.execution_mode,
+  }));
+  const payload = {
+    schema_version: "geoseal_custom_commands_v1",
+    ok: true,
+    command_dir: path.relative(ROOT, CUSTOM_COMMANDS_DIR).replace(/\\/g, "/"),
+    count: commands.length,
+    commands,
+  };
+  const text = commands.length
+    ? commands.map((command) => `${command.name}: ${command.description}`).join("\n")
+    : "No custom commands found.";
+  writeJsonOrText(flags, payload, text);
+}
+
+function runPermissions(flags) {
+  const payload = {
+    schema_version: "geoseal_permissions_v1",
+    ok: true,
+    default_profile: "local-first",
+    max_tier: "repo_write",
+    modes: [
+      {
+        name: "local_secret_review",
+        provider_policy: "local_only",
+        allowed_providers: ["ollama", "llamacpp", "lmstudio", "vllm"],
+        requires_signal: false,
+      },
+      {
+        name: "training_eval",
+        provider_policy: "remote_allowed_with_signal",
+        allowed_providers: ["nvidia", "huggingface", "deepseek", "openrouter", "openai"],
+        requires_signal: true,
+      },
+      {
+        name: "release_gate",
+        provider_policy: "evidence_required",
+        allowed_actions: ["test", "benchmark", "readiness", "package"],
+        requires_clean_harness: true,
+      },
+    ],
+    gates: {
+      destructive_filesystem: "forbid_without_explicit_user_request",
+      secrets_to_remote_models: "forbid",
+      repo_write: "allow_with_tests",
+      package_publish: "require_release_gate",
+    },
+  };
+  const text = [
+    `GeoSeal permissions ${payload.schema_version}`,
+    `Default profile: ${payload.default_profile}`,
+    `Max tier: ${payload.max_tier}`,
+    `Secrets to remote models: ${payload.gates.secrets_to_remote_models}`,
+  ].join("\n");
+  writeJsonOrText(flags, payload, text);
+}
+
+function runCustomCommand(name, flags) {
+  if (!name) {
+    const payload = {
+      schema_version: "geoseal_custom_command_v1",
+      ok: false,
+      error: "missing_custom_command",
+      message: "Pass a custom command name, for example: geoseal run-command harness-benchmark --json",
+    };
+    writeJsonOrText(flags, payload, payload.message);
+    process.exitCode = 2;
+    return;
+  }
+  const command = listCustomCommands().find((item) => item.name === name);
+  if (!command) {
+    const payload = {
+      schema_version: "geoseal_custom_command_v1",
+      ok: false,
+      error: "custom_command_not_found",
+      name,
+      available: listCustomCommands().map((item) => item.name),
+    };
+    writeJsonOrText(flags, payload, `Custom command not found: ${name}`);
+    process.exitCode = 2;
+    return;
+  }
+  const payload = {
+    schema_version: "geoseal_custom_command_v1",
+    ok: true,
+    command,
+    safety: {
+      executes_shell: false,
+      note: "This command surface returns a governed template packet; it does not execute shell commands.",
+    },
+  };
+  writeJsonOrText(flags, payload, command.body);
+}
+
+function sha256Hex(text) {
+  return crypto.createHash("sha256").update(String(text), "utf8").digest("hex");
+}
+
+function parseTongues(flags) {
+  const raw = String(flags.tongues || flags.tongue || "KO");
+  return raw
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function runTokenizerCodeLanes(flags) {
+  const command = String(flags.command || flags.content || "");
+  if (!command) {
+    throw new Error("--command is required for tokenizer-code-lanes");
+  }
+  const tongues = parseTongues(flags);
+  const lanes = tongues.map((tongue, index) => {
+    const source = `${tongue}:${command}`;
+    const binary = Buffer.from(source, "utf8").toString("hex");
+    return {
+      index,
+      tongue,
+      command,
+      source,
+      binary,
+      source_sha256: sha256Hex(source),
+      token_sha256: sha256Hex(`${tongue}:${binary}`),
+    };
+  });
+  const payload = {
+    schema_version: "geoseal_tokenizer_code_lanes_v1",
+    ok: true,
+    command,
+    tongues,
+    lanes,
+  };
+  if (flags.output) {
+    const outputPath = path.resolve(ROOT, String(flags.output));
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.writeFileSync(outputPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+    payload.output = path.relative(ROOT, outputPath).replace(/\\/g, "/");
+  }
+  writeJsonOrText(flags, payload, JSON.stringify(payload, null, 2));
+}
+
+function loadLanePacket(flags, positionals) {
+  if (flags["input-file"]) {
+    return JSON.parse(fs.readFileSync(path.resolve(ROOT, String(flags["input-file"])), "utf8"));
+  }
+  const raw = positionals.find((item) => item.trim().startsWith("{"));
+  if (raw) return JSON.parse(raw);
+  throw new Error("--input-file or a JSON packet argument is required");
+}
+
+function runVerifyCodeLanes(flags, positionals) {
+  const packet = loadLanePacket(flags, positionals);
+  const lanes = Array.isArray(packet.lanes) ? packet.lanes : [];
+  const payload = {
+    schema_version: "geoseal_verify_code_lanes_v1",
+    ok: packet.schema_version === "geoseal_tokenizer_code_lanes_v1" && lanes.length > 0,
+    decoded_count: lanes.length,
+    lane_count: lanes.length,
+  };
+  writeJsonOrText(flags, payload, payload.ok ? "Code lanes verified." : "Code lanes failed verification.");
+}
+
+function runDecodeCodeLanes(flags, positionals) {
+  const packet = loadLanePacket(flags, positionals);
+  const lanes = Array.isArray(packet.lanes) ? packet.lanes : [];
+  const outputDir = path.resolve(ROOT, String(flags["output-dir"] || "artifacts/tokenizer_code_lanes/decoded"));
+  fs.mkdirSync(outputDir, { recursive: true });
+  const written = [];
+  for (const lane of lanes) {
+    const base = `${String(lane.index).padStart(2, "0")}_${lane.tongue}_${lane.command}`;
+    const safeBase = base.replace(/[^A-Za-z0-9_.-]+/g, "_");
+    const textPath = path.join(outputDir, `${safeBase}.txt`);
+    const binaryPath = path.join(outputDir, `${safeBase}.bin`);
+    fs.writeFileSync(textPath, String(lane.source || lane.command || ""), "utf8");
+    if (flags["write-binary"]) {
+      fs.writeFileSync(binaryPath, String(lane.binary || ""), "utf8");
+    }
+    written.push({
+      path: path.relative(ROOT, textPath).replace(/\\/g, "/"),
+      binary_path: path.relative(ROOT, binaryPath).replace(/\\/g, "/"),
+      tongue: lane.tongue,
+    });
+  }
+  const payload = {
+    schema_version: "geoseal_decode_code_lanes_v1",
+    ok: true,
+    decoded_count: lanes.length,
+    written,
+  };
+  writeJsonOrText(flags, payload, `Decoded ${lanes.length} code lanes.`);
 }
 
 const DEFAULT_SERVICE_DIR = path.join(ROOT, "artifacts", "geoseal_service");
@@ -170,6 +454,87 @@ function resolveActiveServiceBase(flags) {
   return { apiBase: base, pid, authHeaders: headers, statePath };
 }
 
+function probePythonModule(moduleName) {
+  const executables = [];
+  if (process.env.SCBE_GEOSEAL_PYTHON) executables.push(process.env.SCBE_GEOSEAL_PYTHON);
+  if (process.platform === "win32") executables.push("py");
+  executables.push("python", "python3");
+
+  for (const executable of executables) {
+    const result = spawnSync(executable, ["-m", moduleName, "--help"], {
+      encoding: "utf8",
+      shell: false,
+      cwd: ROOT,
+      timeout: 8000,
+    });
+    if (!result.error) {
+      return {
+        executable,
+        module: moduleName,
+        ok: result.status === 0,
+        status: result.status,
+        stdout_preview: String(result.stdout || "").slice(0, 600),
+        stderr_preview: String(result.stderr || "").slice(0, 600),
+      };
+    }
+  }
+  return { module: moduleName, ok: false, error: "no usable Python executable found" };
+}
+
+function runDoctor(flags) {
+  const active = resolveActiveServiceBase(flags);
+  const advertisedCommands = [
+    "doctor",
+    "permissions",
+    "custom-commands",
+    "run-command",
+    "status",
+    "chat",
+    ...Object.keys(COMMAND_MAP).filter((name) => name !== "status" && name !== "chat"),
+    "service",
+    "service-status",
+    "service-stop",
+    "agent-io-contract",
+    "tokenizer-code-lanes",
+    "verify-code-lanes",
+    "decode-code-lanes",
+    "ai2ai-bridge",
+  ];
+  const payload = {
+    ok: true,
+    version: PACKAGE_JSON.version,
+    node: process.version,
+    platform: process.platform,
+    package_bin: PACKAGE_JSON.bin || {},
+    api_base_configured: Boolean(apiBase(flags)),
+    service_autodetect_enabled: String(process.env.SCBE_GEOSEAL_AUTODETECT || "").toLowerCase() !== "0",
+    active_service: active
+      ? { api_base: active.apiBase, pid: active.pid, state_path: active.statePath }
+      : null,
+    api_commands: Object.keys(COMMAND_MAP).sort(),
+    advertised_commands: advertisedCommands,
+    custom_commands: listCustomCommands().map((command) => ({
+      name: command.name,
+      description: command.description,
+      path: command.path,
+      execution_mode: command.execution_mode,
+    })),
+    python_modules: [probePythonModule("src.geoseal_cli"), probePythonModule("geoseal_cli")],
+    notes: [
+      "API commands require --api-base/SCBE_API_BASE or a live autodetected service.",
+      "Python passthrough commands are limited to the installed geoseal_cli parser.",
+    ],
+  };
+  const text = [
+    `GeoSeal doctor ${payload.version}`,
+    `Node: ${payload.node}`,
+    `Active service: ${payload.active_service ? payload.active_service.api_base : "none"}`,
+    `API commands: ${payload.api_commands.length}`,
+    `Python module src.geoseal_cli: ${payload.python_modules[0].ok ? "ok" : "fail"}`,
+  ].join("\n");
+  writeJsonOrText(flags, payload, text);
+}
+
 function buildBody(command, flags) {
   const body = {};
   if (flags.language) body.language = String(flags.language);
@@ -205,6 +570,26 @@ function buildBody(command, flags) {
     body.tentacle = String(flags.tentacle || "local");
     body.mode = String(flags.mode || "local-polypad");
   }
+  if (flags.source) body.source = String(flags.source);
+  if (flags["source-file"]) body.source_file = String(flags["source-file"]);
+  if (flags.ledger) body.ledger = String(flags.ledger);
+  if (flags.type) body.type = String(flags.type);
+  if (flags.op) body.op = String(flags.op);
+  if (flags.index !== undefined && flags.index !== true && Number.isFinite(Number(flags.index))) {
+    body.index = Number(flags.index);
+  }
+  if (flags["no-ledger"] !== undefined) {
+    body.no_ledger = flags["no-ledger"] === true || String(flags["no-ledger"]).toLowerCase() === "true";
+  }
+  if (flags.lang) body.lang = String(flags.lang);
+  if (flags.provider) body.provider = String(flags.provider);
+  if (flags["small-first"] !== undefined) {
+    body.small_first = flags["small-first"] === true || String(flags["small-first"]).toLowerCase() === "true";
+  }
+  if (flags["governance-tier"]) body.governance_tier = String(flags["governance-tier"]);
+  if (flags.backend) body.backend = String(flags.backend);
+  if (flags.goal) body.goal = String(flags.goal);
+  if (flags["permission-mode"]) body.permission_mode = String(flags["permission-mode"]);
   return body;
 }
 
@@ -240,6 +625,43 @@ function ensureBody(command, body) {
     }
   }
   if (command === "cursor-status" || command === "cursor-overlord" || command === "fleet-distributions") {
+    return;
+  }
+  if (command === "backend-registry") return;
+  if (command === "agent-harness") return;
+  if (command === "history") return;
+  if (command === "replay") return;
+  if (command === "code-packet") {
+    if (!body.content && !body.source_file) {
+      throw new Error("--content or --source-file is required for code-packet");
+    }
+    return;
+  }
+  if (command === "explain-route") {
+    if (!body.content && !body.source_file) {
+      throw new Error("--content or --source-file is required for explain-route");
+    }
+    return;
+  }
+  if (command === "testing-cli") {
+    if (!body.content && !body.source_file) {
+      throw new Error("--content or --source-file is required for testing-cli");
+    }
+    return;
+  }
+  if (command === "project-scaffold") {
+    if (!body.content) {
+      throw new Error("--content is required for project-scaffold");
+    }
+    if (!body.output_dir) {
+      throw new Error("--output-dir is required for project-scaffold");
+    }
+    return;
+  }
+  if (command === "code-roundtrip") {
+    if (!body.source && !body.content) {
+      throw new Error("--source or --content is required for code-roundtrip");
+    }
     return;
   }
   if (command === "orchestrator-dispatch" || command === "orchestrator-status" || command === "orchestrator-promote") {
@@ -347,6 +769,34 @@ async function main() {
     process.stdout.write(`${PACKAGE_JSON.version}\n`);
     return;
   }
+  if (command === "doctor") {
+    runDoctor(flags);
+    return;
+  }
+  if (command === "permissions") {
+    runPermissions(flags);
+    return;
+  }
+  if (command === "custom-commands") {
+    runCustomCommands(flags);
+    return;
+  }
+  if (command === "run-command") {
+    runCustomCommand(positionals[1], flags);
+    return;
+  }
+  if (command === "tokenizer-code-lanes") {
+    runTokenizerCodeLanes(flags);
+    return;
+  }
+  if (command === "verify-code-lanes") {
+    runVerifyCodeLanes(flags, positionals.slice(1));
+    return;
+  }
+  if (command === "decode-code-lanes") {
+    runDecodeCodeLanes(flags, positionals.slice(1));
+    return;
+  }
 
   const explicitBase = apiBase(flags);
   if (explicitBase && COMMAND_MAP[command]) {
@@ -354,7 +804,7 @@ async function main() {
     return;
   }
 
-  if (!explicitBase && COMMAND_MAP[command]) {
+  if (!explicitBase && COMMAND_MAP[command] && !LOCAL_PASSTHROUGH_COMMANDS.has(command)) {
     const active = resolveActiveServiceBase(flags);
     if (active) {
       process.stderr.write(
@@ -363,6 +813,20 @@ async function main() {
       await runApi(command, flags, { resolvedBase: active.apiBase, autoContext: active });
       return;
     }
+    const payload = {
+      ok: false,
+      error: "api_command_requires_service",
+      command,
+      message: `${command} is a GeoSeal API command. Start a service or pass --api-base.`,
+      fixes: [
+        "geoseal service --detach --allow-demo-keys --probe-health --json",
+        `geoseal ${command} --api-base http://127.0.0.1:8002 --json`,
+        "geoseal doctor --json",
+      ],
+    };
+    writeJsonOrText(flags, payload, `${payload.message}\nTry: ${payload.fixes[2]}`);
+    process.exitCode = 2;
+    return;
   }
 
   runPythonPassthrough(argv);

@@ -1,14 +1,11 @@
 name: Agent Router
 
 on:
-  # Run on schedule (every 6 hours)
-  schedule:
-    - cron: '0 */6 * * *'
   # Manual trigger with custom query
   workflow_dispatch:
     inputs:
       task:
-        description: 'Task type: research | monitor | ask | scrape'
+        description: 'Task type: research | monitor | ask | scrape | web_search | coding | system_build | agentic_ladder | pair_benchmark | poly_coding_seed | agent_bus'
         required: true
         default: 'monitor'
         type: string
@@ -39,7 +36,7 @@ jobs:
   route:
     name: Run Agent Task
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -54,7 +51,9 @@ jobs:
         run: |
           pip install playwright fastapi uvicorn pydantic huggingface_hub
           python -m playwright install chromium
-          pip install -r requirements.txt 2>/dev/null || true
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
 
       - name: Determine task
         id: task
@@ -108,9 +107,46 @@ jobs:
               python -m agents.browser_tools scrape_page "{\"url\": \"$QUERY\"}" \
                 > artifacts/agent-router/result.json
               ;;
-            search_and_summarize)
+            web_search|search_and_summarize)
               python -m agents.browser_tools search_and_summarize "{\"query\": \"$QUERY\"}" \
                 > artifacts/agent-router/result.json
+              ;;
+            coding)
+              python scripts/system/agent_router_smoke.py coding \
+                > artifacts/agent-router/result.json
+              ;;
+            system_build)
+              python scripts/system/agent_router_smoke.py system_build \
+                > artifacts/agent-router/result.json
+              ;;
+            agentic_ladder)
+              python scripts/benchmark/agentic_benchmark_ladder.py run --query "$QUERY" \
+                > artifacts/agent-router/result.json
+              ;;
+            pair_benchmark)
+              python scripts/system/agent_router_smoke.py pair_benchmark \
+                > artifacts/agent-router/result.json
+              ;;
+            poly_coding_seed)
+              python scripts/system/agent_router_smoke.py poly_coding_seed \
+                > artifacts/agent-router/result.json
+              ;;
+            agent_bus)
+              # Dispatch QUERY as one SCBE agent-bus event. Defaults
+              # taskType=general / privacy=remote_ok; advanced callers can
+              # override by passing a JSON-shaped QUERY whose task field
+              # carries the natural-language instruction.
+              if echo "$QUERY" | python -c 'import json,sys; json.loads(sys.stdin.read())' >/dev/null 2>&1; then
+                EVENT_JSON="$QUERY"
+              else
+                EVENT_JSON=$(python -c "import json,sys; print(json.dumps({'task': sys.argv[1], 'taskType': 'general', 'privacy': 'remote_ok'}))" "$QUERY")
+              fi
+              echo "$EVENT_JSON" | node scripts/system/agentbus_pipe.mjs \
+                > artifacts/agent-router/result.json || {
+                  echo "agent_bus event failed; emitting fallback envelope"
+                  echo '{"schema_version":"scbe-agentbus-pipe-result-v1","ok":false,"exit_code":null,"stderr_tail":"agentbus_pipe failed in CI","result":null}' \
+                    > artifacts/agent-router/result.json
+                }
               ;;
             *)
               echo "Unknown task: $TASK"
@@ -126,8 +162,11 @@ jobs:
           TASK="${{ steps.task.outputs.task }}"
           TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
-          # Copy result to pages-accessible location
-          cp artifacts/agent-router/result.json docs/static/agent-data/latest-${TASK}.json
+          # Copy a public-safe result to the pages-accessible location. The
+          # private workflow artifact keeps raw stderr/stdout for debugging.
+          python scripts/system/sanitize_agent_router_public_result.py \
+            --input artifacts/agent-router/result.json \
+            --output docs/static/agent-data/latest-${TASK}.json
 
           # Build index of all agent data
           python -c "
@@ -144,7 +183,7 @@ jobs:
               index['tasks'][name] = {
                 'file': os.path.basename(f),
                 'updated': '$TIMESTAMP',
-                'preview': str(data)[:200]
+                'preview': json.dumps(data, sort_keys=True)[:200]
               }
             except:
               pass
@@ -175,7 +214,7 @@ jobs:
         run: |
           git config user.name "SCBE Agent Router"
           git config user.email "agent@aethermoore.com"
-          git add docs/static/agent-data/ || true
+          git add docs/static/agent-data/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
@@ -186,7 +225,14 @@ jobs:
             gh pr create --base main --head "$BRANCH" \
               --title "chore(agent): publish ${{ steps.task.outputs.task }} results" \
               --body "Automated agent router output. Auto-merge enabled."
-            gh pr merge "$BRANCH" --squash --auto || gh pr merge "$BRANCH" --squash --admin || true
+            if gh pr merge "$BRANCH" --squash --auto; then
+              echo "Auto-merge enabled for $BRANCH"
+            elif gh pr merge "$BRANCH" --squash --admin; then
+              echo "Admin-merged $BRANCH"
+            else
+              echo "::error::Failed to merge agent data PR for $BRANCH"
+              exit 1
+            fi
           fi
 
       - name: Upload artifact
@@ -221,6 +267,29 @@ jobs:
               print(f'**Model**: {r.get(\"model\",\"?\")}')
               print(f'**Sources**: {len(r.get(\"sources\",[]))}')
               print(f'**Answer**: {r.get(\"answer\",\"\")[:500]}')
+            elif '$TASK' == 'agentic_ladder':
+              mr = r.get('metrics_rollup', {})
+              l6 = r.get('levels', {}).get('6', {})
+              print(f'**Ladder ok**: {r.get(\"ok\")}')
+              print(f'**Max level**: {r.get(\"max_level\")}')
+              print(f'**Level 6 (CLI/GeoSeal)**: skipped={l6.get(\"skipped\", False)} ok={l6.get(\"ok\")}')
+              print(f'**Tasks evaluated**: {mr.get(\"tasks_evaluated\")} passed={mr.get(\"tasks_passed\")} failed={mr.get(\"tasks_failed\")}')
+              print(f'**Secret leak count (heuristic)**: {mr.get(\"total_secret_leak_count\")}')
+              print(json.dumps(r, indent=2, default=str)[:1200])
+            elif '$TASK' == 'pair_benchmark':
+              summary = r.get('benchmark', {}).get('summary', {})
+              print(f'**Pair benchmark ok**: {r.get(\"ok\")}')
+              print(f'**Solo pass rate**: {summary.get(\"solo_pass_rate\")}')
+              print(f'**Pair pass rate**: {summary.get(\"pair_pass_rate\")}')
+              print(f'**Cost USD**: {summary.get(\"cost_usd\")}')
+              print(json.dumps(r, indent=2, default=str)[:1200])
+            elif '$TASK' == 'poly_coding_seed':
+              summary = r.get('builder', {}).get('summary', {})
+              print(f'**Poly coding seed ok**: {r.get(\"ok\")}')
+              print(f'**Train records**: {summary.get(\"train_count\")}')
+              print(f'**Holdout records**: {summary.get(\"holdout_count\")}')
+              print(f'**Source count**: {summary.get(\"source_count\")}')
+              print(json.dumps(r, indent=2, default=str)[:1200])
             else:
               print(json.dumps(r, indent=2, default=str)[:1000])
           except Exception as e:

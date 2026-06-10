@@ -1,0 +1,84 @@
+name: PQC Native liboqs
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  release:
+    types: [published]
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/pqc-native-liboqs.yml"
+      - "requirements.txt"
+      - "scripts/security/native_liboqs_smoke.py"
+      - "src/crypto/**"
+      - "tests/crypto/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/pqc-native-liboqs.yml"
+      - "requirements.txt"
+      - "scripts/security/native_liboqs_smoke.py"
+      - "src/crypto/**"
+      - "tests/crypto/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  LIBOQS_VERSION: "0.15.0"
+  LIBOQS_INSTALL: "${{ github.workspace }}/.oqs"
+  OQS_INSTALL_PATH: "${{ github.workspace }}/.oqs"
+  LD_LIBRARY_PATH: "${{ github.workspace }}/.oqs/lib:${{ github.workspace }}/.oqs/lib64"
+
+jobs:
+  native-liboqs:
+    name: Native liboqs Tier 1 smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake build-essential
+
+      - name: Cache native liboqs
+        id: cache-liboqs
+        uses: actions/cache@v4
+        with:
+          path: .oqs
+          key: ${{ runner.os }}-liboqs-${{ env.LIBOQS_VERSION }}-shared-v1
+
+      - name: Build and install native liboqs
+        if: steps.cache-liboqs.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch "${LIBOQS_VERSION}" https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
+          cmake -S /tmp/liboqs -B /tmp/liboqs/build -GNinja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="${LIBOQS_INSTALL}" \
+            -DBUILD_SHARED_LIBS=ON \
+            -DOQS_BUILD_ONLY_LIB=ON \
+            -DOQS_USE_OPENSSL=OFF
+          cmake --build /tmp/liboqs/build --target install --parallel 2
+
+      - name: Install Python native bindings
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install liboqs-python==0.14.1
+
+      - name: Prove native liboqs security backend
+        run: python scripts/security/native_liboqs_smoke.py

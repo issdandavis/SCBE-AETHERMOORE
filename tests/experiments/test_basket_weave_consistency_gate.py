@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-# basket_weave_consistency_gate transitively imports
-# scripts.mathbac_cross_primary_atomic, which is not present in the repo;
-# skip rather than fail collection until that module is restored.
-pytest.importorskip("scripts.mathbac_cross_primary_atomic")
+pytest.importorskip(
+    "scripts.mathbac_cross_primary_atomic",
+    reason="benchmark depends on uncommitted scripts/mathbac_cross_primary_atomic.py",
+)
 
 from scripts.experiments.basket_weave_consistency_gate import run
 

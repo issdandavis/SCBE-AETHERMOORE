@@ -1,0 +1,53 @@
+{
+  "schema": "scbe_security_event_policy_v1",
+  "trusted_hosts": [
+    "127.0.0.1",
+    "localhost",
+    "api.github.com",
+    "github.com",
+    "huggingface.co",
+    "registry.npmjs.org",
+    "pypi.org",
+    "files.pythonhosted.org",
+    "api.openai.com",
+    "api.stripe.com"
+  ],
+  "blocked_hosts": [],
+  "secret_env_markers": [
+    "API_KEY",
+    "APP_PASSWORD",
+    "AUTH_TOKEN",
+    "BEARER",
+    "CLIENT_SECRET",
+    "HF_TOKEN",
+    "PASSWORD",
+    "PRIVATE_KEY",
+    "SECRET",
+    "TOKEN"
+  ],
+  "dangerous_commands": [
+    "curl | sh",
+    "iwr | iex",
+    "powershell -enc",
+    "rm -rf /",
+    "Remove-Item -Recurse -Force C:\\",
+    "Invoke-Expression",
+    "wget | bash"
+  ],
+  "install_commands": [
+    "npm install",
+    "npm i",
+    "npx",
+    "pip install",
+    "pnpm add",
+    "yarn add"
+  ],
+  "sensitive_paths": [
+    ".env",
+    ".pem",
+    ".key",
+    "config/connector_oauth",
+    "credentials.json",
+    "id_rsa"
+  ]
+}

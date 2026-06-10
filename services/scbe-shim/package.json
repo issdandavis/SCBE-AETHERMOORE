@@ -1,0 +1,19 @@
+{
+  "name": "scbe-shim",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SCBE governance shim — OpenAI-compatible Cloudflare Worker that wraps any base LLM with axiom-grounded governed output.",
+  "main": "src/worker.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260101.0",
+    "typescript": "^5.4.0",
+    "wrangler": "^4.90.1"
+  }
+}

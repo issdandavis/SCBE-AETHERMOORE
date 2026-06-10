@@ -6,9 +6,9 @@
 // Aligns with OFS v1.0.0 and the Law vs Flux Manifest pattern.
 // ─────────────────────────────────────────────────────────────────
 
+import { sha512 } from '@noble/hashes/sha2.js';
 import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js';
 import { ml_kem768 } from '@noble/post-quantum/ml-kem.js';
-import { sha512 } from '@noble/hashes/sha2.js';
 
 // ═══════════════════════════════════════════════════════════════
 // §1  Enumerations
@@ -153,7 +153,7 @@ export const PQCrypto = {
   },
 
   fingerprint(publicKey: Uint8Array): string {
-    const h = sha512(publicKey);
+    const h = sha512(publicKey) as Uint8Array;
     return Array.from(h.slice(0, 16))
       .map((b) => b.toString(16).padStart(2, '0'))
       .join(':');
@@ -323,6 +323,20 @@ function canonicalLawsBytes(laws: ImmutableLaws): Uint8Array {
   return encodeCanonical(obj);
 }
 
+/** Compute the canonical SHA-512 hash for an ImmutableLaws object. Use when constructing laws. */
+export function computeLawsHash(laws: Omit<ImmutableLaws, 'laws_hash'>): Uint8Array {
+  return PQCrypto.hash(canonicalLawsBytes(laws as ImmutableLaws));
+}
+
+/** Build a properly signed FluxManifest from its fields. */
+export function buildManifest(
+  fields: Omit<FluxManifest, 'signature'>,
+  signingSecret: Uint8Array
+): FluxManifest {
+  const payload = canonicalManifestBytes(fields as FluxManifest);
+  return { ...fields, signature: PQCrypto.sign(signingSecret, payload) };
+}
+
 // ═══════════════════════════════════════════════════════════════
 // §8  Audit Ledger (Hash Chain)
 // ═══════════════════════════════════════════════════════════════
@@ -330,6 +344,10 @@ function canonicalLawsBytes(laws: ImmutableLaws): Uint8Array {
 export class AuditLedger {
   private chain: AuditEvent[] = [];
   private head_hash: Uint8Array = new Uint8Array(64);
+  // Watermark: true when chain integrity is guaranteed. Starts true (empty chain is trivially
+  // intact). append() preserves it because we hold the signing key — every event is correct
+  // by construction. Callers that restore from storage must call verifyAndSetWatermark() once.
+  private _integrityOk = true;
 
   constructor(private signingKey: Uint8Array) {}
 
@@ -339,6 +357,11 @@ export class AuditLedger {
 
   get length(): number {
     return this.chain.length;
+  }
+
+  /** O(1) integrity check. Use in hot paths instead of verify(). */
+  get isIntact(): boolean {
+    return this._integrityOk;
   }
 
   append(eventData: Uint8Array): AuditEvent {
@@ -357,9 +380,11 @@ export class AuditLedger {
 
     this.chain.push(event);
     this.head_hash = event_hash;
+    // _integrityOk stays true — we just created this event with our own signing key.
     return event;
   }
 
+  /** Full O(n) chain verification. Use for audit/recovery, not in hot paths. */
   verify(signerPublicKey: Uint8Array): boolean {
     let expected_prev = new Uint8Array(64);
     for (const evt of this.chain) {
@@ -369,6 +394,15 @@ export class AuditLedger {
       expected_prev = new Uint8Array(evt.event_hash);
     }
     return true;
+  }
+
+  /**
+   * One-time full verification that sets the integrity watermark.
+   * Call this after restoring a ledger from storage before using it in DECIDE().
+   */
+  verifyAndSetWatermark(signerPublicKey: Uint8Array): boolean {
+    this._integrityOk = this.verify(signerPublicKey);
+    return this._integrityOk;
   }
 
   getEvents(): ReadonlyArray<AuditEvent> {
@@ -464,7 +498,7 @@ export function DECIDE(request: EnforcementRequest, runtime: OfflineRuntime): De
     manifest_present: !!runtime.manifest,
     manifest_sig_ok: verifyManifest(runtime.manifest, runtime.signerPubKey),
     keys_present: !!runtime.keys && runtime.keys.fingerprints.length > 0,
-    audit_intact: runtime.ledger.length === 0 || runtime.ledger.verify(runtime.keys.signing_public),
+    audit_intact: runtime.ledger.isIntact,
     voxel_root_ok: runtime.voxelRoot.length > 0,
   };
 

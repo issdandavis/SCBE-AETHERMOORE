@@ -12,9 +12,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "training-data" / "sft"
+
+SECRET_LIKE_RE = re.compile(r"(?i)(api[_-]?key|token|secret|password|credential)(\s*[:=]\s*)(['\"]?)[^'\"\s,}]+")
 
 
 def utc_now() -> str:
@@ -32,12 +33,29 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8", errors="replace")).hexdigest()
 
 
+def redact_secret_like_text(text: str) -> str:
+    return SECRET_LIKE_RE.sub(r"\1\2\3<redacted>", text)
+
+
+def redact_record(value: Any) -> Any:
+    if isinstance(value, str):
+        return redact_secret_like_text(value)
+    if isinstance(value, list):
+        return [redact_record(item) for item in value]
+    if isinstance(value, dict):
+        return {key: redact_record(item) for key, item in value.items()}
+    return value
+
+
 def write_jsonl(path: Path, records: list[dict[str, Any]]) -> None:
     """Write training records to JSONL.  Records contain source-code excerpts, not secrets."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:  # nosec: training-data output, not credentials
         for record in records:
-            handle.write(json.dumps(record, ensure_ascii=True, sort_keys=True) + "\n")
+            sanitized_record = redact_record(record)
+            handle.write(  # lgtm[py/clear-text-storage-sensitive-data] records are redacted training examples
+                json.dumps(sanitized_record, ensure_ascii=True, sort_keys=True) + "\n"
+            )
 
 
 def load_json(path: Path) -> dict[str, Any] | list[Any] | None:
@@ -64,9 +82,11 @@ def record(
         "purpose": purpose,
         "split": split,
         "source_path": repo_rel(source_path),
-        "source_sha256": sha256_text(source_path.read_text(encoding="utf-8", errors="replace"))
-        if source_path.exists() and source_path.is_file()
-        else None,
+        "source_sha256": (
+            sha256_text(source_path.read_text(encoding="utf-8", errors="replace"))
+            if source_path.exists() and source_path.is_file()
+            else None
+        ),
         "tags": tags,
         "dedupe_key": sha256_text(content),
         "quality": "source_extracted",
@@ -145,7 +165,9 @@ def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                         ),
                         response=compact_json(
                             {
-                                "status": payload.get("status") or payload.get("workflow_status") or payload.get("ready_for_canary"),
+                                "status": payload.get("status")
+                                or payload.get("workflow_status")
+                                or payload.get("ready_for_canary"),
                                 "ready_for_canary": payload.get("ready_for_canary"),
                                 "ready_for_trusted": payload.get("ready_for_trusted"),
                                 "checks": payload.get("checks"),
@@ -190,8 +212,101 @@ def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                         extra={"source_record_index": idx},
                     )
                 )
+
+    fallback_train, fallback_eval = extract_operator_source_fallback_records()
+    records.extend(fallback_train)
+    records.extend(fallback_eval)
+
     train = [item for item in records if item["metadata"]["split"] == "train"]
     evals = [item for item in records if item["metadata"]["split"] == "eval"]
+    return train, evals
+
+
+def extract_operator_source_fallback_records() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Build operator-bus records from committed source when generated artifacts are absent.
+
+    CI starts without the ignored artifacts/ tree, but the specialist bucket
+    still needs a reproducible floor. These records preserve the committed bus
+    schema, replay, CLI, and eval contracts as source-faithful examples.
+    """
+
+    train_specs = [
+        (
+            REPO_ROOT / "agents" / "agent_bus_schema.py",
+            "Summarize the SCBE agent-bus schema validation contract from this committed source. "
+            "Return required fields, future-version behavior, and migration behavior only.",
+            ["agent_bus", "schema_validation", "committed_source"],
+        ),
+        (
+            REPO_ROOT / "agents" / "agent_bus_replay.py",
+            "Summarize the deterministic replay contract for SCBE agent-bus events from this committed source. "
+            "Return the replay inputs, skipped-event handling, and aggregate metrics only.",
+            ["agent_bus", "replay", "committed_source"],
+        ),
+        (
+            REPO_ROOT / "agents" / "agent_bus_cli.py",
+            "Summarize the operator-facing CLI actions for the SCBE agent bus from this committed source. "
+            "Return commands, safety posture, and audit outputs only.",
+            ["agent_bus", "operator_cli", "committed_source"],
+        ),
+    ]
+    eval_specs = [
+        (
+            REPO_ROOT / "tests" / "benchmark" / "test_operator_agent_bus_eval.py",
+            "Extract the frozen operator-agent-bus benchmark invariants from this committed test source. "
+            "Return the checks that must pass and the unsafe payload behavior.",
+            ["agent_bus", "benchmark_eval", "committed_test"],
+        ),
+        (
+            REPO_ROOT / "tests" / "agents" / "test_scbe_code.py",
+            "Extract the deployable coding-assistant operator invariants from this committed test source. "
+            "Return only dispatch, manifest, and safe-apply expectations.",
+            ["agent_bus", "coding_assistant_eval", "committed_test"],
+        ),
+    ]
+
+    def _source_summary(path: Path, *, max_chars: int = 3200) -> str:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        exported = re.findall(r"^(?:class|def)\s+([A-Za-z_][A-Za-z0-9_]*)", text, flags=re.MULTILINE)
+        constants = re.findall(r"^([A-Z][A-Z0-9_]{2,})\s*=", text, flags=re.MULTILINE)
+        summary = {
+            "source_path": repo_rel(path),
+            "symbols": exported[:24],
+            "constants": constants[:16],
+            "excerpt": text[:max_chars],
+        }
+        return compact_json(summary, max_chars=max_chars + 900)
+
+    train: list[dict[str, Any]] = []
+    evals: list[dict[str, Any]] = []
+    for idx, (path, instruction, tags) in enumerate(train_specs):
+        if not path.exists():
+            continue
+        train.append(
+            record(
+                purpose="operator_agent_bus",
+                split="train",
+                source_path=path,
+                instruction=instruction,
+                response=_source_summary(path),
+                tags=tags,
+                extra={"source_record_index": idx, "fallback_source": True},
+            )
+        )
+    for idx, (path, instruction, tags) in enumerate(eval_specs):
+        if not path.exists():
+            continue
+        evals.append(
+            record(
+                purpose="operator_agent_bus",
+                split="eval",
+                source_path=path,
+                instruction=instruction,
+                response=_source_summary(path),
+                tags=tags,
+                extra={"source_record_index": idx, "fallback_source": True},
+            )
+        )
     return train, evals
 
 
@@ -241,7 +356,9 @@ def extract_research_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                     extra={"source_manifest": repo_rel(manifest_path), "source_record_index": idx},
                 )
             )
-    return [r for r in records if r["metadata"]["split"] == "train"], [r for r in records if r["metadata"]["split"] == "eval"]
+    return [r for r in records if r["metadata"]["split"] == "train"], [
+        r for r in records if r["metadata"]["split"] == "eval"
+    ]
 
 
 def import_module(path: Path, module_name: str):

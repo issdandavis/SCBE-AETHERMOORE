@@ -7,7 +7,7 @@ Goal: Deep research + governed synthesis + training export.
 Packet order:
 1. A-discovery: `aetherbrowser-arxiv-nav`, `aetherbrowser-github-nav`
 2. B-build: `development-flow-loop`
-3. C-validate: `hydra-clawbot-synthesis`, `playwright`
+3. C-validate: `hydra-agent-relay-synthesis`, `playwright`
 4. D-publish: `hf-publish-workflow`
 5. E-log: `obsidian-vault-ops`, `notion`
 

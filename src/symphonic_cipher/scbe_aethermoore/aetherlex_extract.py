@@ -545,14 +545,14 @@ def _affinity_tokenize(
 
     if not ranked:
         # Fallback: hash-based deterministic assignment
-        h = int(hashlib.md5(text.encode()).hexdigest(), 16)
+        h = int(hashlib.sha256(text.encode()).hexdigest(), 16)
         return [(h >> (i * 5)) % len(name_to_idx) for i in range(max_tokens)]
 
     result = [idx for idx, _ in ranked[:max_tokens]]
 
     # Pad to max_tokens if needed (deterministic from text hash)
     while len(result) < max_tokens:
-        h = int(hashlib.md5(f"{text}:{len(result)}".encode()).hexdigest(), 16)
+        h = int(hashlib.sha256(f"{text}:{len(result)}".encode()).hexdigest(), 16)
         result.append(h % len(name_to_idx))
 
     return result

@@ -481,7 +481,7 @@ class TestDomainSafety:
     def test_trusted_domain(self):
         from src.browser.hydra_hand import check_domain_safety
 
-        decision, risk = check_domain_safety("https://github.com/openclaw")
+        decision, risk = check_domain_safety("https://github.com/issdandavis")
         assert decision == "ALLOW"
         assert risk == 0.0
 

@@ -1,0 +1,55 @@
+{
+  "schema_version": "scbe-triadic-operator-packages-v1",
+  "principle": "Companion packages are prompts, not forced dependencies. Keep local installs small and add only the feature pack the user requested.",
+  "default_mode": "local_first",
+  "cloud_policy": {
+    "use_cloud_when": [
+      "privacy is remote_ok",
+      "workload is large or long-running",
+      "local CPU, memory, disk, or battery pressure is high",
+      "the user explicitly approves Codespaces, VM, or hosted runner use"
+    ],
+    "do_not_upload": [
+      "secrets",
+      "private keys",
+      "local-only notes",
+      "unreviewed proprietary customer files"
+    ]
+  },
+  "packages": [
+    {
+      "name": "scbe-aethermoore",
+      "ecosystem": "npm",
+      "install": "npm install scbe-aethermoore",
+      "features": ["governance", "operator-manifold", "tokenizer", "browser", "node"],
+      "heavy": false
+    },
+    {
+      "name": "scbe-agent-bus",
+      "ecosystem": "pypi",
+      "install": "pip install scbe-agent-bus",
+      "features": ["agent-bus", "python", "batch-dispatch", "workspace"],
+      "heavy": false
+    },
+    {
+      "name": "@scbe/kernel",
+      "ecosystem": "npm",
+      "install": "npm install @scbe/kernel",
+      "features": ["kernel", "sacred-tongues", "lightweight-math"],
+      "heavy": false
+    },
+    {
+      "name": "scbe-sixtongues",
+      "ecosystem": "pypi",
+      "install": "pip install scbe-sixtongues",
+      "features": ["sacred-tongues", "python", "tokenizer"],
+      "heavy": false
+    }
+  ],
+  "receipts": [
+    "SCBE_OPERATOR_PLAN_READY=1",
+    "SCBE_WORKSPACE_READY=1",
+    "SCBE_GATE_ALLOW=1",
+    "SCBE_STORAGE_EXPORT_READY=1"
+  ]
+}

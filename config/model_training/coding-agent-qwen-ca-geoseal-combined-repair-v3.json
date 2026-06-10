@@ -1,0 +1,77 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-ca-geoseal-combined-repair-v3",
+  "title": "SCBE coding agent Qwen CA/GeoSeal combined repair v3",
+  "description": "Combined follow-up adapter after separate repairs each reached only 3/4 on direct smoke. Trains exact CA abs/add byte sequence and runnable depth-2 JSON key code together before any promoted full merge.",
+  "backend": "hf-jobs-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoSeal coding agent. Preserve exact CA hex bytes and return runnable Python when asked for code. For CA arithmetic, abs is opcode 0x09 and add is opcode 0x00. The sequence for abs(a)+abs(b) is exactly 0x09, 0x09, 0x00.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "ca_geoseal_combined_repair_v3_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "ca_geoseal_combined_repair_v3_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 512,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.04,
+    "learning_rate": 0.00018,
+    "num_train_epochs": 4,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.05,
+    "max_steps": 120,
+    "max_train_records": 144,
+    "max_eval_records": 4,
+    "logging_steps": 10,
+    "save_steps": 120,
+    "save_total_limit": 2,
+    "gradient_checkpointing": true,
+    "seed": 83,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-ca-geoseal-combined-repair-v3"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-ca-geoseal-combined-repair-v3",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-ca-geoseal-combined-repair-v3",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "1h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-ca-geoseal-combined-repair-v3-train.py"
+  },
+  "evaluation": {
+    "source_smoke_jobs": [
+      "69f2cc41d2c8bd8662bd3863",
+      "69f2ceb6d70108f37ace19b9"
+    ],
+    "post_training_gate": "Run direct adapter smoke with scripts/eval/smoke_merged_coding_model_hf.py and require 4/4 before adding this adapter to a promoted merge.",
+    "must_recall": {
+      "abs": "0x09",
+      "add": "0x00",
+      "abs_add_sequence": [
+        "0x09",
+        "0x09",
+        "0x00"
+      ]
+    }
+  }
+}

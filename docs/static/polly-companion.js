@@ -480,7 +480,6 @@
   }
 
   function attach(shell) {
-    const panel = shell.querySelector(".polly-panel");
     const thread = shell.querySelector('[data-role="thread"]');
     const input = shell.querySelector('[data-role="input"]');
     const sendBtn = shell.querySelector('[data-role="send"]');

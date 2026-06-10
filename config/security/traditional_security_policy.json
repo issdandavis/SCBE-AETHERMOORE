@@ -1,0 +1,45 @@
+{
+  "schema": "scbe_traditional_security_policy_v1",
+  "blocked_sha256": [],
+  "allowed_sha256": [],
+  "high_risk_extensions": [
+    ".bat",
+    ".cmd",
+    ".com",
+    ".dll",
+    ".exe",
+    ".hta",
+    ".jar",
+    ".js",
+    ".jse",
+    ".msi",
+    ".ps1",
+    ".scr",
+    ".vbe",
+    ".vbs",
+    ".wsf"
+  ],
+  "archive_extensions": [
+    ".7z",
+    ".gz",
+    ".rar",
+    ".tar",
+    ".tgz",
+    ".zip"
+  ],
+  "trusted_repo_prefixes": [
+    "docs",
+    "src",
+    "scripts",
+    "tests",
+    "config"
+  ],
+  "untrusted_path_markers": [
+    "AppData\\Local\\Temp",
+    "Downloads",
+    "\\Temp\\",
+    "/tmp/",
+    "/var/tmp/"
+  ],
+  "max_review_size_bytes": 52428800
+}

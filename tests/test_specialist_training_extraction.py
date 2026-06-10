@@ -92,9 +92,10 @@ def test_gain_board_promotes_bucket_with_eval_and_metrics() -> None:
             "purpose": "coding_model",
             "path": "artifacts/benchmark/example.json",
             "promotion_score": 77.0,
-            "quality_signal": 0.77,
+            "quality_signal": 0.97,
             "loss_signal": None,
             "metric_count": 1,
+            "decision": "PASS",
         }
     ]
 
@@ -102,6 +103,36 @@ def test_gain_board_promotes_bucket_with_eval_and_metrics() -> None:
 
     assert board["coding_model"]["status"] == "promote_candidate"
     assert board["coding_model"]["top_promotion_score"] == 77.0
+    assert board["coding_model"]["diamond_counts"]["diamond_promotion_ready"] == 1
+
+
+def test_gain_board_does_not_promote_metric_without_frozen_gate() -> None:
+    review = _load(REVIEW_PATH, "review_training_runs_polished_test")
+    plan = {
+        "specialists": [
+            {
+                "purpose": "coding_model",
+                "train_records": 10,
+                "eval_records": 2,
+            }
+        ]
+    }
+    reviews = [
+        {
+            "purpose": "coding_model",
+            "path": "artifacts/benchmark/example.json",
+            "promotion_score": 99.0,
+            "quality_signal": 0.99,
+            "loss_signal": None,
+            "metric_count": 1,
+        }
+    ]
+
+    board = review.build_gain_board(reviews, plan)
+
+    assert board["coding_model"]["status"] == "polished_needs_frozen_gate"
+    assert "quality signal exists but no explicit frozen gate PASS" in board["coding_model"]["blockers"]
+    assert board["coding_model"]["diamond_counts"]["polished_candidate"] == 1
 
 
 def test_gain_board_blocks_explicit_hold_eval_artifact() -> None:
@@ -132,6 +163,53 @@ def test_gain_board_blocks_explicit_hold_eval_artifact() -> None:
     assert board["governance_security"]["status"] == "needs_eval_gate"
     assert "explicit HOLD eval artifact" in board["governance_security"]["blockers"][0]
     assert "false-positive" in board["governance_security"]["recommended_action"]
+
+
+def test_diamond_state_marks_loss_only_as_cut_not_promoted() -> None:
+    review = _load(REVIEW_PATH, "review_training_runs_loss_only_test")
+
+    state = review.diamond_state_for_run(
+        {
+            "promotion_score": 15.0,
+            "quality_signal": None,
+            "loss_signal": 0.9,
+            "metric_count": 1,
+        }
+    )
+
+    assert state["state"] == "cut_loss_only"
+    assert state["promotion_ready"] is False
+
+
+def test_score_run_rejects_huge_config_quality_counts() -> None:
+    review = _load(REVIEW_PATH, "review_training_runs_score_guard_test")
+
+    scored = review.score_run(
+        [
+            review.MetricSignal(
+                name="score",
+                value=143548.0,
+                kind="quality",
+                json_path="model.vocab_score_like_config_count",
+            )
+        ]
+    )
+
+    assert scored["raw_quality_signal"] == 143548.0
+    assert scored["quality_signal"] is None
+    assert scored["promotion_score"] == 0.0
+
+
+def test_iter_json_artifacts_skips_tokenizer_config_files(tmp_path: Path) -> None:
+    review = _load(REVIEW_PATH, "review_training_runs_skip_tokenizer_test")
+    root = tmp_path / "runs"
+    root.mkdir()
+    (root / "tokenizer.json").write_text('{"score": 143548}', encoding="utf-8")
+    (root / "report.json").write_text('{"pass_rate": 1.0}', encoding="utf-8")
+
+    files = review.iter_json_artifacts((str(root),))
+
+    assert [path.name for path in files] == ["report.json"]
 
 
 def test_specialist_bucket_readiness_scores_valid_bucket(tmp_path: Path) -> None:

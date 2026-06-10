@@ -24,9 +24,10 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel, Field
 
 billing_router = APIRouter(prefix="/billing", tags=["Billing"])
@@ -65,14 +66,61 @@ PLANS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-# In-memory mapping: stripe_customer_id -> tenant record
-# In production this would be a database table.
-BILLING_CUSTOMERS: Dict[str, Dict[str, Any]] = {}
-
-# API keys issued via billing (api_key -> {customer_id, plan, tenant_id, ...})
-BILLING_API_KEYS: Dict[str, Dict[str, Any]] = {}
-
 LOGGER = logging.getLogger("scbe.billing")
+
+_KEYS_FILE = Path(__file__).resolve().parents[2] / "artifacts" / "revenue" / "api_keys.jsonl"
+
+
+def _load_keys() -> tuple[Dict[str, Any], Dict[str, Any]]:
+    """Load persisted billing records from disk on startup."""
+    customers: Dict[str, Any] = {}
+    keys: Dict[str, Any] = {}
+    if not _KEYS_FILE.exists():
+        return customers, keys
+    try:
+        with open(_KEYS_FILE, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                record = json.loads(line)
+                cid = record.get("customer_id", "")
+                key = record.get("api_key", "")
+                if cid:
+                    customers[cid] = record
+                if key:
+                    keys[key] = record
+    except Exception as exc:
+        LOGGER.warning("Failed to load billing keys from disk: %s", exc)
+    return customers, keys
+
+
+def _persist_key(record: Dict[str, Any]) -> None:
+    """Append an API key record to disk."""
+    _KEYS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with open(_KEYS_FILE, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
+    except Exception as exc:
+        LOGGER.warning("Failed to persist API key record: %s", exc)
+
+
+# Load persisted state on import
+BILLING_CUSTOMERS, BILLING_API_KEYS = _load_keys()
+
+
+def _owner_token() -> str:
+    token = os.getenv("SCBE_OWNER_API_TOKEN", "").strip()
+    if not token:
+        raise HTTPException(503, "Owner API token is not configured")
+    return token
+
+
+def _require_owner_token(x_owner_token: str | None) -> None:
+    expected = _owner_token()
+    provided = (x_owner_token or "").strip()
+    if not provided or not hmac.compare_digest(provided, expected):
+        raise HTTPException(401, "Unauthorized")
 
 
 # ---------------------------------------------------------------------------
@@ -278,8 +326,15 @@ async def stripe_webhook(request: Request):
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature", "")
 
-    # Verify signature (skip in dev if no secret configured)
+    # Verify signature. Unsigned webhooks are only allowed when explicitly enabled.
     webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "").strip()
+    allow_unsigned = os.getenv("SCBE_ALLOW_UNSIGNED_STRIPE_WEBHOOK", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    if not webhook_secret and not allow_unsigned:
+        raise HTTPException(503, "Webhook secret is not configured")
     if webhook_secret and not _verify_stripe_signature(payload, sig_header):
         raise HTTPException(400, "Invalid signature")
 
@@ -328,11 +383,15 @@ def _handle_checkout_completed(session: Dict[str, Any]) -> None:
 
     BILLING_CUSTOMERS[customer_id] = record
     BILLING_API_KEYS[api_key] = record
+    _persist_key(record)
 
     # Also register in the SaaS API key store so endpoints accept it
-    from src.api.saas_routes import VALID_API_KEYS
+    try:
+        from src.api.saas_routes import VALID_API_KEYS
 
-    VALID_API_KEYS[api_key] = email or customer_id
+        VALID_API_KEYS[api_key] = email or customer_id
+    except ImportError:
+        pass
 
 
 def _handle_subscription_updated(subscription: Dict[str, Any]) -> None:
@@ -370,28 +429,130 @@ def _handle_subscription_deleted(subscription: Dict[str, Any]) -> None:
 # One-time product purchases (Payment Links)
 # ---------------------------------------------------------------------------
 
-# Map Stripe Payment Link product IDs to delivery info.
-# These correspond to the buy.stripe.com links on the website.
-ONETIME_PRODUCTS: Dict[str, Dict[str, str]] = {
-    # AI Governance Toolkit - $29
-    "toolkit": {
-        "name": "SCBE AI Governance Toolkit",
-        "download_url": "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
-        "manual_url": "https://aethermoore.com/docs/product-manual/ai-governance-toolkit",
-    },
-    # AI Security Training Vault - $29
-    "vault": {
-        "name": "SCBE AI Security Training Vault",
-        "download_url": "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
-        "manual_url": "https://aethermoore.com/docs/research/",
-    },
-}
+DEFAULT_PRODUCT_RELEASE_URL = "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest"
+
+
+def _delivery_url(*env_names: str) -> str:
+    """Resolve a buyer delivery URL, with public release fallback for dev/smoke use."""
+    for env_name in env_names:
+        value = os.getenv(env_name, "").strip()
+        if value:
+            return value
+    return DEFAULT_PRODUCT_RELEASE_URL
+
+
+def get_onetime_products() -> Dict[str, Dict[str, str]]:
+    """Map one-time product keys to delivery info.
+
+    Payment Links should set metadata[scbe_product] to one of these keys.
+    Production should set buyer-only product URLs so paid packets do not depend
+    on the public open-source release surface.
+    """
+    return {
+        # AI Governance Toolkit - $29
+        "toolkit": {
+            "name": "SCBE AI Governance Toolkit",
+            "download_url": _delivery_url("SCBE_TOOLKIT_DOWNLOAD_URL"),
+            "manual_url": "https://aethermoore.com/product-manual/ai-governance-toolkit.html",
+            "package_filename": "SCBE_AI_Governance_Toolkit_v1.zip",
+            "support_url": "https://aethermoore.com/support.html",
+        },
+        # AI Security Training Vault - $29
+        "vault": {
+            "name": "SCBE AI Security Training Vault",
+            "download_url": _delivery_url("SCBE_TRAINING_VAULT_DOWNLOAD_URL", "SCBE_VAULT_DOWNLOAD_URL"),
+            "manual_url": "https://aethermoore.com/product-manual/training-vault.html",
+            "package_filename": "SCBE_AI_Security_Training_Vault_v1.zip",
+            "support_url": "https://aethermoore.com/support.html",
+        },
+    }
+
+
+# Backwards-compatible default snapshot for tests and diagnostics.
+ONETIME_PRODUCTS: Dict[str, Dict[str, str]] = get_onetime_products()
 
 # Purchase log for tracking (in production, use a database)
 PURCHASE_LOG: list = []
 
 
-def _send_delivery_email(to_email: str, product_name: str, download_url: str, manual_url: str) -> bool:
+def _payment_link_product_map() -> Dict[str, str]:
+    """Return optional Stripe Payment Link ID -> product key mapping from env."""
+    mapping: Dict[str, str] = {}
+    for product_key in ONETIME_PRODUCTS:
+        env_name = f"SCBE_PAYMENT_LINK_{product_key.upper()}"
+        payment_link_id = os.getenv(env_name, "").strip()
+        if payment_link_id:
+            mapping[payment_link_id] = product_key
+    return mapping
+
+
+def _normalize_product_key(value: object) -> str:
+    """Normalize product selector text into a known one-time product key."""
+    normalized = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+    aliases = {
+        "ai_governance_toolkit": "toolkit",
+        "governance_toolkit": "toolkit",
+        "scbe_ai_governance_toolkit": "toolkit",
+        "ai_security_training_vault": "vault",
+        "training_vault": "vault",
+        "security_training_vault": "vault",
+        "scbe_ai_security_training_vault": "vault",
+    }
+    return aliases.get(normalized, normalized)
+
+
+def _resolve_onetime_product_key(session: Dict[str, Any]) -> str:
+    """Resolve a one-time product from signed Stripe session data.
+
+    Metadata is the preferred path because it is explicit and deterministic.
+    Payment Link ID mapping is an operational fallback for existing links.
+    """
+    metadata = session.get("metadata", {}) or {}
+    for metadata_key in ("scbe_product", "product", "product_key", "offer"):
+        product_key = _normalize_product_key(metadata.get(metadata_key, ""))
+        if product_key in ONETIME_PRODUCTS:
+            return product_key
+
+    client_reference_id = _normalize_product_key(session.get("client_reference_id", ""))
+    if client_reference_id in ONETIME_PRODUCTS:
+        return client_reference_id
+
+    payment_link = str(session.get("payment_link", "") or "").strip()
+    if payment_link:
+        mapped_key = _payment_link_product_map().get(payment_link, "")
+        if mapped_key in ONETIME_PRODUCTS:
+            return mapped_key
+
+    return ""
+
+
+def _delivery_plaintext(product_name: str, download_url: str, manual_url: str, package_filename: str) -> str:
+    return "\n".join(
+        [
+            f"Thank you for your purchase. Your {product_name} is ready.",
+            "",
+            f"Download: {download_url}",
+            f"Manual:   {manual_url}",
+            f"Package:  {package_filename}",
+            "",
+            "First steps:",
+            "1. Download the package.",
+            "2. Open README.md or BUYER_START_GUIDE.md first.",
+            "3. Use the manual if you need the web instructions.",
+            "",
+            "Support: ai@aethermoore.com or https://aethermoore.com/support.html",
+        ]
+    )
+
+
+def _send_delivery_email(
+    to_email: str,
+    product_name: str,
+    download_url: str,
+    manual_url: str,
+    package_filename: str = "",
+    support_url: str = "https://aethermoore.com/support.html",
+) -> bool:
     """Send product delivery email via SMTP.
 
     Uses Porkbun email (ai@aethermoore.com) configured in .secrets/email_credentials.txt.
@@ -401,18 +562,20 @@ def _send_delivery_email(to_email: str, product_name: str, download_url: str, ma
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
 
-    smtp_host = os.getenv("SCBE_SMTP_HOST", "smtp.porkbun.com")
+    smtp_host = os.getenv("SCBE_SMTP_HOST", "smtp.protonmail.ch")
     smtp_port = int(os.getenv("SCBE_SMTP_PORT", "587"))
-    smtp_user = os.getenv("SCBE_SMTP_USER", "ai@aethermoore.com")
-    smtp_pass = os.getenv("SCBE_SMTP_PASS", "")
+    smtp_user = os.getenv("SCBE_SMTP_USER") or os.getenv("PM_USER", "")
+    smtp_pass = os.getenv("SCBE_SMTP_PASS") or os.getenv("PM_PW", "")
 
     subject = f"Your {product_name} is ready"
     html_body = f"""<html><body style="font-family: Georgia, serif; color: #333; max-width: 600px;">
 <h2 style="color: #d6a756;">Thank you for your purchase!</h2>
 <p>Your <strong>{product_name}</strong> is ready for download.</p>
+<p>Expected package: <code>{package_filename or 'product ZIP'}</code></p>
 <p><a href="{download_url}" style="display:inline-block;padding:12px 24px;background:#d6a756;color:#14110c;
 text-decoration:none;border-radius:6px;font-weight:bold;">Download Your Product</a></p>
 <p><a href="{manual_url}">Read the Manual</a></p>
+<p><a href="{support_url}">Delivery support</a></p>
 <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
 <p style="font-size:14px;color:#888;">
 If you have any questions, reply to this email or reach us at ai@aethermoore.com.<br>
@@ -422,10 +585,16 @@ If you have any questions, reply to this email or reach us at ai@aethermoore.com
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
-    msg["From"] = f"AetherMoore <{smtp_user}>"
+    from_addr = os.getenv("PM_FROM") or smtp_user
+    msg["From"] = f"AetherMoore <{from_addr}>"
     msg["To"] = to_email
     msg["Reply-To"] = "ai@aethermoore.com"
-    msg.attach(MIMEText(f"Your {product_name} is ready: {download_url}", "plain"))
+    msg.attach(
+        MIMEText(
+            _delivery_plaintext(product_name, download_url, manual_url, package_filename),
+            "plain",
+        )
+    )
     msg.attach(MIMEText(html_body, "html"))
 
     if not smtp_pass:
@@ -460,6 +629,7 @@ def _notify_owner(product_name: str, buyer_email: str, amount_cents: int) -> Non
         product_name=f"NEW SALE: {product_name}",
         download_url=f"Buyer: {buyer_email} | Amount: ${amount_cents / 100:.2f}",
         manual_url="https://dashboard.stripe.com/payments",
+        package_filename="owner-notification",
     )
 
 
@@ -472,23 +642,31 @@ def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
     if payment_status != "paid":
         return
 
-    # Determine which product was purchased based on amount or metadata
-    metadata = session.get("metadata", {})
-    product_key = metadata.get("scbe_product", "")
+    product_key = _resolve_onetime_product_key(session)
 
-    # If no metadata, guess from amount (both are $29 = 2900 cents, so default to toolkit)
-    if not product_key:
-        product_key = "toolkit"
-
-    product = ONETIME_PRODUCTS.get(product_key, ONETIME_PRODUCTS["toolkit"])
+    # Do not guess from amount to avoid mis-delivery between similarly priced products.
+    product = get_onetime_products().get(product_key) if product_key else None
+    unresolved_product = product is None
+    if unresolved_product:
+        product = {
+            "name": "UNRESOLVED_PRODUCT",
+            "download_url": "",
+            "manual_url": "",
+            "package_filename": "",
+            "support_url": "https://aethermoore.com/support.html",
+        }
 
     # Log the purchase
     record = {
         "session_id": session.get("id", ""),
         "email": email,
-        "product": product_key,
+        "product": product_key or "unknown",
         "product_name": product["name"],
+        "unresolved_product": unresolved_product,
         "amount_cents": amount,
+        "download_url": product["download_url"],
+        "manual_url": product["manual_url"],
+        "package_filename": product.get("package_filename", ""),
         "timestamp": int(time.time()),
     }
     PURCHASE_LOG.append(record)
@@ -497,9 +675,23 @@ def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
     _persist_purchase(record)
 
     # Send delivery email to buyer
-    if email:
-        _send_delivery_email(email, product["name"], product["download_url"], product["manual_url"])
+    if email and not unresolved_product:
+        _send_delivery_email(
+            email,
+            product["name"],
+            product["download_url"],
+            product["manual_url"],
+            product.get("package_filename", ""),
+            product.get("support_url", "https://aethermoore.com/support.html"),
+        )
         _notify_owner(product["name"], email, amount)
+    elif unresolved_product:
+        LOGGER.warning(
+            "One-time purchase unresolved product mapping; session=%s amount_cents=%s email=%s",
+            _safe_for_log(session.get("id", "")),
+            _safe_for_log(amount),
+            _safe_for_log(email),
+        )
 
 
 def _persist_purchase(record: Dict[str, Any]) -> None:
@@ -520,8 +712,9 @@ def _persist_purchase(record: Dict[str, Any]) -> None:
 
 
 @billing_router.get("/purchases")
-async def list_purchases():
-    """List recent purchases (owner-only, no auth for now)."""
+async def list_purchases(x_owner_token: str | None = Header(default=None)):
+    """List recent purchases (owner-only)."""
+    _require_owner_token(x_owner_token)
     return {"status": "ok", "count": len(PURCHASE_LOG), "purchases": PURCHASE_LOG[-20:]}
 
 

@@ -6,11 +6,9 @@ Uses Gemini as the primary reasoning engine with deterministic keyword fallback.
 
 from __future__ import annotations
 
-import json
 import os
 import re
-import urllib.parse
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 
 def _env_get(key: str, default: str = "") -> str:
@@ -71,17 +69,41 @@ INTENT_PATTERNS = {
         "route": "/pricing.html",
     },
     "cx_guardrail": {
-        "patterns": [r"refund", r"guardrail", r"cx", r"customer support", r"chatbot liability", r"moffatt", r"policy enforcement"],
+        "patterns": [
+            r"refund",
+            r"guardrail",
+            r"cx",
+            r"customer support",
+            r"chatbot liability",
+            r"moffatt",
+            r"policy enforcement",
+        ],
         "response": "The CX Refund Guardrail stops chatbots from promising refunds they can't deliver. It's policy-enforcement middleware between your LLM and customer. $500-5K/month. https://aethermoore.com/cx-guardrail.html",
         "route": "/cx-guardrail.html",
     },
     "iso_42001": {
-        "patterns": [r"iso.?42001", r"audit", r"compliance", r"regulatory", r"eu ai act", r"sr 11-7", r"governance framework"],
+        "patterns": [
+            r"iso.?42001",
+            r"audit",
+            r"compliance",
+            r"regulatory",
+            r"eu ai act",
+            r"sr 11-7",
+            r"governance framework",
+        ],
         "response": "ISO 42001 Evidence-as-a-Service provides adversarial testing, risk reports, drift monitoring, and audit response dossiers. $50-150K/year. https://aethermoore.com/iso-42001.html",
         "route": "/iso-42001.html",
     },
     "red_team": {
-        "patterns": [r"red team", r"penetration", r"adversarial", r"attack", r"security test", r"vulnerability", r"threat"],
+        "patterns": [
+            r"red team",
+            r"penetration",
+            r"adversarial",
+            r"attack",
+            r"security test",
+            r"vulnerability",
+            r"threat",
+        ],
         "response": "AI Red Team as a Service runs 6,000+ adversarial tests against your LLM application. Branded PDF report and remediation roadmap. $5-50K/engagement. https://aethermoore.com/red-team.html",
         "route": "/red-team.html",
     },
@@ -152,11 +174,17 @@ def classify_intent(text: str) -> tuple[str, dict]:
 
 # Multi-provider LLM support
 LLM_CONFIGS = [
-    ("GEMINI_API_KEY", "gemini-1.5-flash", "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}", "google"),
+    (
+        "GEMINI_API_KEY",
+        "gemini-1.5-flash",
+        "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}",
+        "google",
+    ),
     ("OPENAI_API_KEY", "gpt-4o-mini", "https://api.openai.com/v1/chat/completions", "openai"),
     ("GROQ_API_KEY", "llama-3.1-8b-instant", "https://api.groq.com/openai/v1/chat/completions", "openai"),
     ("ANTHROPIC_API_KEY", "claude-3-haiku-20240307", "https://api.anthropic.com/v1/messages", "anthropic"),
 ]
+
 
 async def _llm_generate(
     system_prompt: str,
@@ -235,8 +263,8 @@ async def generate_response(message: str, thinking: bool = False) -> dict:
     mode_label = "DEEP THINKING" if thinking else "STANDARD"
     mode_instruction = (
         "Think step by step. Analyze the user's request carefully, identify the domain, then provide a thorough, well-reasoned response. Use 2-4 paragraphs."
-        if thinking else
-        "Be concise and direct. Route first, explain second. Use 1-2 sentences for simple questions, 1 short paragraph for complex ones."
+        if thinking
+        else "Be concise and direct. Route first, explain second. Use 1-2 sentences for simple questions, 1 short paragraph for complex ones."
     )
     system = f"""{POLLY_LORE}
 
@@ -281,6 +309,7 @@ If you don't know something, say "I don't have that" — never invent.
 
 TAVILY_API_KEY = _env_get("TAVILY_API_KEY", "")
 
+
 async def web_search(query: str, max_results: int = 5) -> dict:
     """Search the web using Tavily API (free tier: 1000 req/month)."""
     if not TAVILY_API_KEY:
@@ -288,6 +317,7 @@ async def web_search(query: str, max_results: int = 5) -> dict:
 
     try:
         import httpx
+
         async with httpx.AsyncClient(timeout=15.0) as client:
             resp = await client.post(
                 "https://api.tavily.com/search",
@@ -305,11 +335,13 @@ async def web_search(query: str, max_results: int = 5) -> dict:
             data = resp.json()
             results = []
             for r in data.get("results", []):
-                results.append({
-                    "title": r.get("title", ""),
-                    "url": r.get("url", ""),
-                    "snippet": r.get("content", "")[:300],
-                })
+                results.append(
+                    {
+                        "title": r.get("title", ""),
+                        "url": r.get("url", ""),
+                        "snippet": r.get("content", "")[:300],
+                    }
+                )
 
             return {
                 "query": query,
@@ -325,10 +357,12 @@ async def web_search(query: str, max_results: int = 5) -> dict:
 #  Email via Proton SMTP
 # ---------------------------------------------------------------------------
 
+
 async def send_email_from_chat(to: str, subject: str, body: str) -> dict:
     """Send an email using the existing Proton SMTP service."""
     try:
         from scripts.system.email_service import send_contact_notification
+
         result = send_contact_notification(
             name="Polly Assistant",
             email=to,
@@ -347,6 +381,7 @@ async def send_email_from_chat(to: str, subject: str, body: str) -> dict:
 
 SLACK_WEBHOOK_URL = _env_get("SLACK_WEBHOOK_URL", "")
 
+
 async def notify_slack(message: str, channel: Optional[str] = None) -> dict:
     """Send a notification to Slack via webhook."""
     if not SLACK_WEBHOOK_URL:
@@ -354,6 +389,7 @@ async def notify_slack(message: str, channel: Optional[str] = None) -> dict:
 
     try:
         import httpx
+
         payload = {"text": f"🤖 Polly: {message}"}
         if channel:
             payload["channel"] = channel
@@ -370,6 +406,7 @@ async def notify_slack(message: str, channel: Optional[str] = None) -> dict:
 # ---------------------------------------------------------------------------
 #  Legacy Service Interface (API-compatible)
 # ---------------------------------------------------------------------------
+
 
 async def chat(message: str, context: str = "site", thinking: bool = False) -> dict:
     """Handle a chat message and return a response."""

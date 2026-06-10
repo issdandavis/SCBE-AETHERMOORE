@@ -1,0 +1,1675 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <title>Products — find your fit | AetherMoore</title>
+    <meta
+      name="description"
+      content="Compare every AetherMoore product in one page. Plain words, three questions, one recommendation — pick the tool that actually fits what you need."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/products.html" />
+    <link rel="stylesheet" href="static/polly-sidebar-agent.css" />
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --panel: rgba(18, 23, 32, 0.92);
+        --line: rgba(214, 167, 86, 0.18);
+        --text: #f2f0ea;
+        --muted: #a3acb9;
+        --accent: #d6a756;
+        --accent-strong: #f0bf67;
+        --cool: #8cb4ff;
+        --good: #2dd3a6;
+        --warn: #d29922;
+        --max: 1180px;
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: Georgia, 'Times New Roman', serif;
+        background:
+          radial-gradient(circle at top, rgba(214, 167, 86, 0.12), transparent 34%),
+          linear-gradient(180deg, #0b0d12 0%, #0e131b 40%, #0b0d12 100%);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        backdrop-filter: blur(14px);
+        background: rgba(11, 13, 18, 0.82);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .topbar-inner {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+        min-height: 68px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .brand {
+        font-size: 14px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .nav {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .nav a:hover {
+        color: var(--text);
+      }
+
+      .hero {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+        padding: 72px 0 24px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(260px, 0.95fr);
+        gap: 28px;
+        align-items: center;
+      }
+      .hero-copy {
+        min-width: 0;
+      }
+      .hero-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .hero-image {
+        width: 100%;
+        min-height: 280px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        object-fit: cover;
+        box-shadow: var(--shadow);
+      }
+      .eyebrow {
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 18px;
+      }
+      h1 {
+        font-size: clamp(38px, 6vw, 68px);
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+        max-width: 16ch;
+        margin-bottom: 18px;
+      }
+      h2 {
+        font-size: clamp(22px, 3vw, 32px);
+        margin: 48px 0 16px;
+        letter-spacing: -0.02em;
+      }
+      h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+      .lead {
+        color: var(--muted);
+        font-size: clamp(17px, 2vw, 21px);
+        max-width: 60ch;
+        margin-bottom: 28px;
+      }
+
+      .section-inner {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+        padding: 0 0 24px;
+      }
+
+      .decision-strip {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin: 0 0 22px;
+      }
+      @media (min-width: 880px) {
+        .decision-strip {
+          grid-template-columns: 1.25fr 0.75fr;
+          align-items: stretch;
+        }
+      }
+      .decision-main,
+      .decision-side {
+        background: rgba(45, 211, 166, 0.06);
+        border: 1px solid rgba(45, 211, 166, 0.28);
+        border-radius: 18px;
+        padding: 20px;
+      }
+      .decision-side {
+        background: rgba(255, 255, 255, 0.03);
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+      .decision-main strong,
+      .decision-side strong {
+        color: var(--text);
+      }
+      .decision-main p,
+      .decision-side p {
+        color: var(--muted);
+        font-size: 15px;
+        margin-top: 6px;
+      }
+      .decision-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+      }
+      .decision-actions a {
+        display: inline-block;
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .decision-actions a.primary {
+        background: var(--good);
+        color: #0a1714;
+        border-color: transparent;
+      }
+      .btn.btn-primary {
+        display: inline-block;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: var(--good);
+        color: #0a1714;
+        border: 1px solid transparent;
+        font-weight: 700;
+      }
+      .btn.btn-secondary {
+        display: inline-block;
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      /* Find your fit widget */
+      .fit-card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: var(--shadow);
+        margin: 16px 0 48px;
+      }
+      .fit-card .step-label {
+        font-size: 12px;
+        letter-spacing: 0.15em;
+        color: var(--accent);
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .fit-card .question {
+        font-size: 22px;
+        margin-bottom: 18px;
+        line-height: 1.3;
+      }
+      .fit-options {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .fit-options button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text);
+        border-radius: 14px;
+        padding: 14px 18px;
+        font: inherit;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 140ms ease;
+      }
+      .fit-options button:hover {
+        border-color: var(--accent);
+        background: rgba(214, 167, 86, 0.06);
+      }
+      .fit-options button .opt-label {
+        display: block;
+        font-weight: 700;
+      }
+      .fit-options button .opt-hint {
+        display: block;
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 4px;
+      }
+      .fit-result {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+      }
+      .fit-result.hidden,
+      .fit-step.hidden {
+        display: none;
+      }
+      .fit-result h3 {
+        font-size: 22px;
+        margin-bottom: 10px;
+        color: var(--accent-strong);
+      }
+      .fit-result .reco-card {
+        background: rgba(45, 211, 166, 0.05);
+        border: 1px solid rgba(45, 211, 166, 0.24);
+        border-radius: 16px;
+        padding: 18px;
+        margin: 12px 0;
+      }
+      .fit-result .reco-card .reco-name {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .fit-result .reco-card .reco-price {
+        color: var(--good);
+        font-weight: 700;
+        margin-left: 10px;
+      }
+      .fit-result .reco-card .reco-why {
+        color: var(--muted);
+        margin: 8px 0 12px;
+        font-size: 15px;
+      }
+      .fit-result .reco-actions a {
+        display: inline-block;
+        margin-right: 8px;
+        margin-top: 6px;
+        padding: 9px 16px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .fit-result .reco-actions a.primary {
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        color: #14110c;
+        border-color: transparent;
+      }
+      .fit-result .restart {
+        margin-top: 14px;
+        font-size: 14px;
+        color: var(--muted);
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      /* Ladder */
+      .ladder {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+        margin: 12px 0 32px;
+      }
+      .rung {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+        text-align: center;
+      }
+      .rung .price {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--accent-strong);
+      }
+      .rung .label {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+
+      /* Product grid */
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 16px;
+        margin: 16px 0 48px;
+      }
+      .product {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+      }
+      .product .pname {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .product .pprice {
+        color: var(--accent-strong);
+        font-weight: 700;
+        margin: 6px 0 10px;
+        font-size: 15px;
+      }
+      .product .ppitch {
+        font-size: 15px;
+        color: var(--text);
+        margin-bottom: 12px;
+      }
+      .product .pwho {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 14px;
+      }
+      .product .pwho strong {
+        color: var(--text);
+      }
+      .product .pgive {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 14px;
+      }
+      .product .pgive ul {
+        list-style: none;
+        padding: 0;
+        margin: 6px 0 0;
+      }
+      .product .pgive li {
+        padding: 3px 0 3px 16px;
+        position: relative;
+        color: var(--text);
+        font-size: 14px;
+      }
+      .product .pgive li::before {
+        content: '›';
+        position: absolute;
+        left: 0;
+        color: var(--accent);
+      }
+      .product .pactions {
+        margin-top: auto;
+        padding-top: 12px;
+      }
+      .product .pactions a {
+        display: inline-block;
+        margin-right: 6px;
+        margin-top: 6px;
+        padding: 9px 16px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .product .pactions a.primary {
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        color: #14110c;
+        border-color: transparent;
+      }
+      .product .pactions a:hover {
+        border-color: var(--accent);
+      }
+      .product.featured {
+        border-color: rgba(45, 211, 166, 0.4);
+      }
+      .product.featured .badge {
+        display: inline-block;
+        background: rgba(45, 211, 166, 0.14);
+        color: var(--good);
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 8px;
+      }
+
+      /* FAQs */
+      details {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px 18px;
+        margin-bottom: 10px;
+      }
+      details > summary {
+        cursor: pointer;
+        font-weight: 700;
+        list-style: none;
+        outline: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      details > summary::after {
+        content: '+';
+        color: var(--accent);
+        font-size: 22px;
+      }
+      details[open] > summary::after {
+        content: '–';
+      }
+      details > p {
+        margin-top: 12px;
+        color: var(--muted);
+      }
+
+      .delivery {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin: 18px 0 42px;
+      }
+      @media (min-width: 760px) {
+        .delivery {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+      .delivery-step {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        padding: 16px;
+      }
+      .delivery-step .num {
+        color: var(--good);
+        font-weight: 700;
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      .delivery-step strong {
+        display: block;
+        margin-bottom: 5px;
+      }
+      .delivery-step span {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .market-note {
+        background: rgba(140, 180, 255, 0.06);
+        border: 1px solid rgba(140, 180, 255, 0.22);
+        border-radius: 18px;
+        padding: 22px;
+        margin: 8px 0 38px;
+      }
+      .market-note h3 {
+        color: var(--cool);
+        font-size: 20px;
+        margin-bottom: 8px;
+      }
+      .market-note p {
+        color: var(--muted);
+        margin-bottom: 14px;
+      }
+      .market-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      @media (min-width: 780px) {
+        .market-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      .market-cell {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 12px;
+        padding: 13px;
+        font-size: 14px;
+      }
+      .market-cell strong {
+        display: block;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+      .market-cell span {
+        color: var(--muted);
+      }
+
+      .self-check {
+        background: rgba(214, 167, 86, 0.055);
+        border: 1px solid rgba(214, 167, 86, 0.22);
+        border-radius: 18px;
+        padding: 22px;
+        margin: 8px 0 42px;
+      }
+      .self-check ul {
+        margin: 12px 0 0;
+        padding-left: 18px;
+        color: var(--text);
+      }
+      .self-check li {
+        margin: 7px 0;
+      }
+
+      .stuck {
+        background: rgba(214, 167, 86, 0.06);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 22px;
+        margin: 32px 0 48px;
+        text-align: center;
+      }
+      .stuck h3 {
+        font-size: 20px;
+        margin-bottom: 8px;
+      }
+      .stuck p {
+        color: var(--muted);
+        margin-bottom: 14px;
+      }
+      .stuck a {
+        display: inline-block;
+        margin: 6px;
+        padding: 10px 18px;
+        border-radius: 999px;
+        border: 1px solid var(--accent);
+        font-weight: 700;
+      }
+      .stuck a.primary {
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        color: #14110c;
+        border-color: transparent;
+      }
+
+      footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 32px 0;
+        text-align: center;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      footer a {
+        color: var(--text);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      @media (min-width: 720px) {
+        .fit-options {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 760px) {
+        .hero {
+          grid-template-columns: 1fr;
+          padding-top: 48px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">AetherMoore</a>
+        <nav class="nav">
+          <a href="index.html">Home</a>
+          <a href="ai-agent-governance-toolkit.html">AI Governance</a>
+          <a href="start-here.html">Start Here</a>
+          <a href="products.html" style="color: var(--text)">Products</a>
+          <a href="solutions.html">Solutions</a>
+          <a href="hire.html">Hire</a>
+          <a href="chat.html">Chat with Polly</a>
+          <a href="agents.html">Agents</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section id="offer" class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">Find your fit</div>
+          <h1>Buy the right SCBE option for your AI agent workflow.</h1>
+          <p class="lead">
+            If you have an agent workflow and want a concrete first read, start with the $99
+            Workflow Snapshot. If you are here for the writing/build process, the $7
+            Behind-The-Scenes Process Pack is the fastest direct download.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="workflow-snapshot.html">Start at $99</a>
+            <a class="btn btn-secondary" href="guides.html#behind-the-scenes-pack">Writing pack</a>
+            <a class="btn btn-secondary" href="#fitCard">Use picker</a>
+          </div>
+        </div>
+        <img
+          class="hero-image"
+          src="hero.svg"
+          alt="AetherMoore SCBE product selection and workflow governance preview"
+        />
+      </section>
+
+      <section class="section-inner">
+        <div class="decision-strip">
+          <div class="decision-main">
+            <strong>Best first paid move: AI Agent Workflow Snapshot - $99 starter.</strong>
+            <p>
+              One workflow, one concise written read. You get drift risks, unsafe tool paths,
+              observability gaps, and three next fixes without buying a large engagement first.
+            </p>
+            <div class="decision-actions">
+              <a class="primary btn btn-primary" href="workflow-snapshot.html">Start at $99</a>
+              <a href="workflow-snapshot.html#cash-app">Cash App</a>
+              <a href="governance-snapshot.html">Compare the $500 scope</a>
+            </div>
+          </div>
+          <div class="decision-side">
+            <strong>Not ready to buy?</strong>
+            <p>
+              Use Polly or the picker. The low-cost products are for support, templates, training
+              materials, and the $7 making-of lane; the Snapshot is the service offer.
+            </p>
+            <div class="decision-actions">
+              <a href="chat.html">Ask Polly</a>
+              <a href="guides.html#behind-the-scenes-pack">Writing process pack</a>
+              <a href="#fitCard">Use picker</a>
+              <a href="shopify-command-center.html">Shopify store help</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="market-note">
+          <h3>Why this is priced lower than most AI governance work</h3>
+          <p>
+            Most AI governance platforms sell enterprise subscriptions or demo-led programs. Most AI
+            testing consultancies start with multi-thousand-dollar assessments. The $99 starter read
+            is deliberately smaller: one workflow, one concise read, one useful next step.
+          </p>
+          <div class="market-grid">
+            <div class="market-cell">
+              <strong>Enterprise platform</strong
+              ><span
+                >Best when you need a registry, dashboards, policy workflows, SSO, and
+                organization-wide rollout.</span
+              >
+            </div>
+            <div class="market-cell">
+              <strong>Full red-team engagement</strong
+              ><span
+                >Best when you need weeks of adversarial testing, exploit reproduction, and a large
+                evidence pack.</span
+              >
+            </div>
+            <div class="market-cell">
+              <strong>AetherMoore Workflow Snapshot</strong
+              ><span
+                >Best when you need the first defensible read quickly, before committing to a larger
+                platform or audit.</span
+              >
+            </div>
+          </div>
+          <p>
+            Want the market-language version? Open the
+            <a href="ai-agent-governance-toolkit.html" style="color: var(--cool)"
+              >AI Agent Governance Toolkit page</a
+            >
+            for the search-focused category view.
+          </p>
+        </div>
+
+        <!-- Find your fit picker -->
+        <div class="fit-card" id="fitCard">
+          <div class="fit-step" data-step="1">
+            <div class="step-label">Step 1 of 3</div>
+            <div class="question">What brings you here?</div>
+            <div class="fit-options">
+              <button data-answer="support">
+                <span class="opt-label">I want to support the work</span>
+                <span class="opt-hint"
+                  >Open-source AI safety / governance research that helps you</span
+                >
+              </button>
+              <button data-answer="read">
+                <span class="opt-label">I have an AI workflow and want to know if it's safe</span>
+                <span class="opt-hint">A team is using AI tools and you need a written read</span>
+              </button>
+              <button data-answer="build">
+                <span class="opt-label">I want to build with this myself</span>
+                <span class="opt-hint">Developer or researcher — you'll wire it in by hand</span>
+              </button>
+              <button data-answer="custom">
+                <span class="opt-label">My situation is custom — none of the above</span>
+                <span class="opt-hint">Talk to a human</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="fit-step hidden" data-step="2-support">
+            <div class="step-label">Step 2 of 3</div>
+            <div class="question">How would you like to help?</div>
+            <div class="fit-options">
+              <button data-answer="tip">
+                <span class="opt-label">A one-time tip</span>
+                <span class="opt-hint">Small, simple, one click</span>
+              </button>
+              <button data-answer="monthly">
+                <span class="opt-label">A small monthly subscription</span>
+                <span class="opt-hint">Steady, recurring support — keeps releases shipping</span>
+              </button>
+              <button data-answer="usage">
+                <span class="opt-label">Pay only when I use the hosted tools</span>
+                <span class="opt-hint">Top-up credits, no subscription</span>
+              </button>
+              <button data-answer="process">
+                <span class="opt-label">Buy the AI writing process pack</span>
+                <span class="opt-hint"
+                  >Behind-the-scenes writing guides and humanization notes</span
+                >
+              </button>
+            </div>
+          </div>
+
+          <div class="fit-step hidden" data-step="2-read">
+            <div class="step-label">Step 2 of 3</div>
+            <div class="question">How often do you need a read?</div>
+            <div class="fit-options">
+              <button data-answer="once">
+                <span class="opt-label">Just once — fixed scope, written report</span>
+                <span class="opt-hint">One workflow, one delivery, then we're done</span>
+              </button>
+              <button data-answer="recurring">
+                <span class="opt-label">Every month — keep an eye on it</span>
+                <span class="opt-hint">Delta vs last month, risk summary, action list</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="fit-step hidden" data-step="2-build">
+            <div class="step-label">Step 2 of 3</div>
+            <div class="question">What are you trying to build?</div>
+            <div class="fit-options">
+              <button data-answer="templates">
+                <span class="opt-label">Templates + decision records I can drop in</span>
+                <span class="opt-hint"
+                  >For shipping a governed workflow without writing it from scratch</span
+                >
+              </button>
+              <button data-answer="train">
+                <span class="opt-label">Training data + benchmarks for fine-tuning</span>
+                <span class="opt-hint">Datasets, projector weights, eval suite, notebook</span>
+              </button>
+              <button data-answer="freecode">
+                <span class="opt-label">Just give me the source code</span>
+                <span class="opt-hint">Open repo on GitHub — read, fork, build</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="fit-result hidden" id="fitResult">
+            <h3 id="fitResultTitle">Recommended for you</h3>
+            <div id="fitResultBody"></div>
+            <button class="restart" onclick="restartFit()">↻ Start over</button>
+          </div>
+        </div>
+
+        <section id="includes" aria-label="What the product path includes">
+          <h2>What the product path includes</h2>
+          <p class="lead">
+            The first paid service gives you concrete next steps, not an abstract platform pitch: a
+            decision record, threshold worksheet, pilot checklist, review notes format, manual
+            delivery path, and delivery recovery note.
+          </p>
+          <div class="market-grid">
+            <div class="market-cell">
+              <strong>Pick the fit</strong
+              ><span
+                >Use the picker or start with the $99 Workflow Snapshot when the workflow is
+                unclear.</span
+              >
+            </div>
+            <div class="market-cell">
+              <strong>Get the first win</strong
+              ><span
+                >Receive a short written read, missing controls, and three prioritized fixes.</span
+              >
+            </div>
+            <div class="market-cell">
+              <strong>Upgrade only if needed</strong
+              ><span
+                >Move to Heartbeat, Toolkit, or the $500 Snapshot after the first read proves
+                value.</span
+              >
+            </div>
+          </div>
+        </section>
+
+        <!-- Price ladder -->
+        <h2>What happens after a Snapshot purchase</h2>
+        <div class="delivery">
+          <div class="delivery-step">
+            <div class="num">Immediately</div>
+            <strong>Receipt + fast start</strong
+            ><span>You get checkout confirmation and a short packet so you know what to send.</span>
+          </div>
+          <div class="delivery-step">
+            <div class="num">1 business day</div>
+            <strong>Human intake check</strong
+            ><span
+              >We confirm the workflow, repo, prompt set, or tool surface that will be
+              reviewed.</span
+            >
+          </div>
+          <div class="delivery-step">
+            <div class="num">During review</div>
+            <strong>AI-assisted inspection</strong
+            ><span
+              >The SCBE harness produces the first pass; human inspection catches context and false
+              positives.</span
+            >
+          </div>
+          <div class="delivery-step">
+            <div class="num">5 business days</div>
+            <strong>Written memo</strong
+            ><span
+              >Two-page findings, three prioritized fixes, and an evidence checklist you can
+              reuse.</span
+            >
+          </div>
+        </div>
+
+        <div class="self-check">
+          <h3>Good fit / not for</h3>
+          <p class="pwho">
+            Good fit: teams with an AI workflow, agent tool path, MCP stack, repo automation, or
+            prompt chain that needs a practical governance read before it grows.
+          </p>
+          <p class="pwho">
+            Not for: emergency incident response, custom enterprise procurement before scope is
+            agreed, consulting before a basic fit check, or buyers who need a full platform
+            deployment on day one.
+          </p>
+          <h3>Success check</h3>
+          <p class="pwho">
+            Success means you leave with one chosen offer, one clear delivery path, and either a
+            written risk read, a reusable template pack, or a support route you can act on. Download
+            products use a delivery link after checkout; services use manual intake.
+          </p>
+          <h3>Free 60-second self-check before you buy</h3>
+          <p class="pwho">If three or more are true, the Snapshot is probably worth doing:</p>
+          <ul>
+            <li>
+              Your AI workflow touches customer, employee, legal, security, or financial
+              information.
+            </li>
+            <li>
+              A model or agent can call tools, browse, write files, send messages, or change
+              records.
+            </li>
+            <li>
+              You cannot explain what evidence you would show if a customer asked how the workflow
+              is controlled.
+            </li>
+            <li>
+              You have no written prompt-injection, data-retention, or escalation policy for this
+              workflow.
+            </li>
+            <li>
+              You need a buyer, boss, partner, or reviewer to trust the system before it expands.
+            </li>
+          </ul>
+        </div>
+
+        <h2>The ladder, at a glance</h2>
+        <div class="ladder">
+          <div class="rung">
+            <div class="price">$5</div>
+            <div class="label">Tip</div>
+          </div>
+          <div class="rung">
+            <div class="price">$5+</div>
+            <div class="label">Service credits</div>
+          </div>
+          <div class="rung">
+            <div class="price">$20/mo</div>
+            <div class="label">Supporter</div>
+          </div>
+          <div class="rung">
+            <div class="price">$29</div>
+            <div class="label">Toolkit</div>
+          </div>
+          <div class="rung">
+            <div class="price">$29</div>
+            <div class="label">Training Vault</div>
+          </div>
+          <div class="rung">
+            <div class="price">$99</div>
+            <div class="label">Workflow Snapshot</div>
+          </div>
+          <div class="rung">
+            <div class="price">$99</div>
+            <div class="label">Shopify Ops</div>
+          </div>
+          <div class="rung">
+            <div class="price">$99/mo</div>
+            <div class="label">Heartbeat</div>
+          </div>
+          <div class="rung">
+            <div class="price">$500</div>
+            <div class="label">Snapshot</div>
+          </div>
+          <div class="rung">
+            <div class="price">Custom</div>
+            <div class="label">Hire</div>
+          </div>
+        </div>
+
+        <!-- Comparison grid -->
+        <h2>Every product, in plain words</h2>
+        <div class="product-grid">
+          <article class="product">
+            <div class="pname">$5 SCBE Tip Jar</div>
+            <div class="pprice">$5 one time</div>
+            <p class="ppitch">
+              If the open work helped you and there's no formal engagement, a tip keeps the next
+              release shipping.
+            </p>
+            <p class="pwho">
+              <strong>Who it's for:</strong> anyone who's read the docs or used the tools and wants
+              to say thanks.
+            </p>
+            <div class="pactions">
+              <a
+                class="primary"
+                href="https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k"
+                target="_blank"
+                rel="noopener"
+                >Tip $5</a
+              >
+            </div>
+          </article>
+
+          <article class="product">
+            <div class="pname">SCBE Service Credits</div>
+            <div class="pprice">$5+ pay-as-you-go</div>
+            <p class="ppitch">
+              Top up small credits. We pass through provider/model cost and add a 2-5% coordination
+              fee only when usage is billable.
+            </p>
+            <p class="pwho">
+              <strong>Who it's for:</strong> people who want to use the hosted tools occasionally
+              without committing to a subscription.
+            </p>
+            <div class="pgive">
+              <strong>What you get:</strong>
+              <ul>
+                <li>Hosted SCBE routing</li>
+                <li>Governed runs + reports</li>
+                <li>Local-first preferred routing (Ollama, deterministic harness)</li>
+              </ul>
+            </div>
+            <div class="pactions">
+              <a class="primary" href="https://ko-fi.com/izdandavis" target="_blank" rel="noopener"
+                >Top up</a
+              >
+              <a href="workflow-snapshot.html#cash-app">Cash App: $IzzyDDavis7</a>
+              <a href="service-credits.html">How credits work</a>
+            </div>
+          </article>
+
+          <article class="product">
+            <div class="pname">AetherMoore Supporter</div>
+            <div class="pprice">$20/month</div>
+            <p class="ppitch">
+              A monthly subscription for people who want the open-source work to keep moving —
+              without scoping a formal service engagement.
+            </p>
+            <p class="pwho">
+              <strong>Who it's for:</strong> patrons who like the project and want recurring
+              support.
+            </p>
+            <div class="pactions">
+              <a
+                class="primary"
+                href="https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i"
+                target="_blank"
+                rel="noopener"
+                >Subscribe $20/mo</a
+              >
+              <a href="supporter.html">Details</a>
+            </div>
+          </article>
+
+          <article class="product featured">
+            <div class="badge">Best first service</div>
+            <div class="pname">AI Agent Workflow Snapshot</div>
+            <div class="pprice">$99 starter</div>
+            <p class="ppitch">
+              One concise first-pass read for an agent workflow, prompt chain, repo link, MCP stack,
+              automation flow, or workflow diagram.
+            </p>
+            <p class="pwho">
+              <strong>Who it's for:</strong> technical founders and small teams who need a clear
+              failure map before buying a full review.
+            </p>
+            <div class="pgive">
+              <strong>What you get:</strong>
+              <ul>
+                <li>Drift and unsafe tool-path risks</li>
+                <li>Missing recovery and observability gaps</li>
+                <li>Prompt-injection surface notes</li>
+                <li>Three prioritized fixes</li>
+                <li>Upgrade credit toward the $500 Governance Snapshot</li>
+              </ul>
+            </div>
+            <div class="pactions">
+              <a class="primary" href="workflow-snapshot.html">Start $99</a>
+              <a href="workflow-snapshot.html#cash-app">Cash App</a>
+              <a href="governance-snapshot.html">Compare $500</a>
+            </div>
+          </article>
+
+          <article class="product">
+            <div class="pname">Shopify Store Ops Snapshot</div>
+            <div class="pprice">$99 starter</div>
+            <p class="ppitch">
+              A fixed first read for one Shopify store, product line, or ecommerce launch setup. It
+              uses the live Shopify Command Center checklist to turn payments, shipping,
+              subscriptions, bundles, pricing, marketing, and analytics into a short action plan.
+            </p>
+            <p class="pwho">
+              <strong>Who it's for:</strong> small sellers and founders who need a store launch or
+              rebuild organized before paying for a full build.
+            </p>
+            <div class="pgive">
+              <strong>What you get:</strong>
+              <ul>
+                <li>One concise store-ops memo</li>
+                <li>Payment, shipping, pricing, and analytics notes</li>
+                <li>Subscription, bundle, and wholesale opportunities</li>
+                <li>Three prioritized next actions</li>
+                <li>Live demo and source links for the command center</li>
+              </ul>
+            </div>
+            <div class="pactions">
+              <a class="primary" href="shopify-command-center.html">Open offer</a>
+              <a
+                href="https://shopify-command-center-165664533862.us-west2.run.app"
+                target="_blank"
+                rel="noopener"
+                >Live demo</a
+              >
+              <a href="payments.html#cash-app">Cash App</a>
+            </div>
+          </article>
+
+          <article class="product">
+            <div class="pname">SCBE AI Governance Toolkit</div>
+            <div class="pprice">$29 one-time</div>
+            <p class="ppitch">
+              Templates, decision records, setup guidance, buyer manual, and a support route for
+              governed AI workflows.
+            </p>
+            <p class="pwho">
+              <strong>Who it's for:</strong> teams shipping a governed AI workflow who don't want to
+              write the templates from scratch.
+            </p>
+            <div class="pgive">
+              <strong>What you get:</strong>
+              <ul>
+                <li>Drop-in templates + decision records</li>
+                <li>Setup guidance</li>
+                <li>Buyer manual + support route</li>
+                <li>Downloadable ZIP after checkout</li>
+              </ul>
+            </div>
+            <div class="pactions">
+              <a
+                class="primary"
+                href="https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06"
+                target="_blank"
+                rel="noopener"
+                >Buy $29</a
+              >
+            </div>
+          </article>
+
+          <article class="product">
+            <div class="pname">SCBE AI Security Training Vault</div>
+            <div class="pprice">$29 one-time</div>
+            <p class="ppitch">
+              Training data, projector weights, benchmark suite, and notebook materials for governed
+              AI model work.
+            </p>
+            <p class="pwho">
+              <strong>Who it's for:</strong> developers and researchers fine-tuning their own
+              governed model.
+            </p>
+            <div class="pgive">
+              <strong>What you get:</strong>
+              <ul>
+                <li>SFT-ready training data</li>
+                <li>Projector weights</li>
+                <li>Benchmark / eval suite</li>
+                <li>Colab-style notebook</li>
+                <li>Downloadable ZIP after checkout</li>
+              </ul>
+            </div>
+            <div class="pactions">
+              <a
+                class="primary"
+                href="https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g"
+                target="_blank"
+                rel="noopener"
+                >Buy $29</a
+              >
+            </div>
+          </article>
+
+          <article class="product featured">
+            <div class="badge">New direct pack</div>
+            <div class="pname">AetherMoore Behind-The-Scenes Writing Process Pack</div>
+            <div class="pprice">$7 one-time</div>
+            <p class="ppitch">
+              The making-of lane for the AI writing process: guide downloads, process notes, site
+              source examples, and the humanization checklist used to turn drafts into book-shaped
+              work.
+            </p>
+            <p class="pwho">
+              <strong>Who it's for:</strong> writers and builders who want the workflow behind the
+              books while the book manuscripts stay on Amazon/KDP.
+            </p>
+            <div class="pgive">
+              <strong>What you get:</strong>
+              <ul>
+                <li>AI writing system guide</li>
+                <li>Humanization pass checklist</li>
+                <li>Security governance checklist</li>
+                <li>Behind-the-scenes process notes</li>
+                <li>Protected ZIP download after checkout</li>
+              </ul>
+            </div>
+            <div class="pactions">
+              <a
+                class="primary"
+                href="https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n"
+                target="_blank"
+                rel="noopener"
+                >Buy $7</a
+              >
+              <a href="guides.html#behind-the-scenes-pack">What's inside</a>
+            </div>
+          </article>
+
+          <article class="product featured">
+            <div class="badge">★ Flagship</div>
+            <div class="pname">AI Governance Snapshot</div>
+            <div class="pprice">$500 fixed scope</div>
+            <p class="ppitch">
+              One AI workflow, one written read. Findings memo, three prioritized fixes, evidence
+              checklist. Fixed scope, fixed price, 5-business-day delivery.
+            </p>
+            <p class="pwho">
+              <strong>Who it's for:</strong> a team adopting AI tools who needs a written
+              third-party read before the next review or audit.
+            </p>
+            <div class="pgive">
+              <strong>What you get:</strong>
+              <ul>
+                <li>2-page findings memo</li>
+                <li>Three prioritized fixes</li>
+                <li>Axiom-compliance summary</li>
+                <li>Evidence checklist</li>
+                <li>Refund any time before delivery</li>
+              </ul>
+            </div>
+            <div class="pactions">
+              <a
+                class="primary"
+                href="https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j"
+                target="_blank"
+                rel="noopener"
+                >Buy $500</a
+              >
+              <a href="governance-snapshot.html">What's inside</a>
+            </div>
+          </article>
+
+          <article class="product">
+            <div class="pname">Governance Heartbeat</div>
+            <div class="pprice">$99/month</div>
+            <p class="ppitch">
+              Monthly governance scan for one workflow. Delta report, risk/change summary,
+              recommended action list, optional training capture. Cancel any time.
+            </p>
+            <p class="pwho">
+              <strong>Who it's for:</strong> teams who already had a Snapshot and want to keep an
+              eye on it monthly.
+            </p>
+            <div class="pgive">
+              <strong>What you get monthly:</strong>
+              <ul>
+                <li>One scan per month</li>
+                <li>Delta vs. last month</li>
+                <li>Risk / change summary</li>
+                <li>Action list</li>
+                <li>First report in 14 days of signup</li>
+              </ul>
+            </div>
+            <div class="pactions">
+              <a
+                class="primary"
+                href="mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup"
+                >Sign up</a
+              >
+              <a href="governance-snapshot.html#heartbeat">Details</a>
+            </div>
+          </article>
+
+          <article class="product">
+            <div class="pname">Custom engagement</div>
+            <div class="pprice">$300 → $80,000</div>
+            <p class="ppitch">
+              Short advisory call, adversarial audit, custom governance overlay, or federal
+              subcontract role — scoped to your situation.
+            </p>
+            <p class="pwho">
+              <strong>Who it's for:</strong> teams or primes whose situation isn't in the stock
+              catalog.
+            </p>
+            <div class="pgive">
+              <strong>Tiers:</strong>
+              <ul>
+                <li>Short advisory call — $300 / 60 min</li>
+                <li>Adversarial audit — $5K-$15K / 1-3 weeks</li>
+                <li>Custom governance overlay — $25K-$80K / 4-10 weeks</li>
+                <li>Federal subcontract — $150-$250/hr, contract</li>
+              </ul>
+            </div>
+            <div class="pactions">
+              <a class="primary" href="hire.html">Hire details</a>
+              <a href="mailto:issdandavis7795@gmail.com?subject=Custom%20engagement%20inquiry"
+                >Email Issac</a
+              >
+            </div>
+          </article>
+        </div>
+
+        <section id="faq" aria-label="Product FAQ">
+          <h2>Common questions</h2>
+          <details>
+            <summary>I'm not technical. Is this for me?</summary>
+            <p>
+              Yes — for the Snapshot and Heartbeat. You give us one workflow, we give you a written
+              read in plain language. You don't need to install or configure anything. The Toolkit
+              and Training Vault are for developers; everything else is for any team using AI tools.
+            </p>
+          </details>
+          <details>
+            <summary>Do I need to install your full system?</summary>
+            <p>
+              No. The Snapshot and Heartbeat are services — we run the analysis on our side. The
+              Toolkit ships as a ZIP with templates you can drop into your existing project. Only
+              the open-source repo path requires you to set things up yourself.
+            </p>
+          </details>
+          <details>
+            <summary>Will buying break anything I already have?</summary>
+            <p>
+              No. Nothing here modifies your existing setup. The Toolkit adds files to a folder you
+              choose. The Snapshot is a written report — it never touches your systems unless you
+              ask it to.
+            </p>
+          </details>
+          <details>
+            <summary>What if I'm not sure which one fits?</summary>
+            <p>
+              Use the picker at the top of this page, then compare the
+              <a href="use-cases/governed-ai-workflows.html" style="color: var(--accent)"
+                >governed workflow use case</a
+              >,
+              <a href="comparison/toolkit-vs-full-repo.html" style="color: var(--accent)"
+                >Toolkit vs Full Repo</a
+              >, and
+              <a href="proof/why-the-manual-exists.html" style="color: var(--accent)"
+                >manual delivery proof</a
+              >.
+            </p>
+          </details>
+          <details>
+            <summary>Where is the proof surface?</summary>
+            <p>
+              Review the <a href="redteam.html" style="color: var(--accent)">red-team page</a> and
+              <a href="proof/red-team-summary.html" style="color: var(--accent)"
+                >red-team summary</a
+              >
+              before buying a deeper service.
+            </p>
+          </details>
+          <details>
+            <summary>Can I get a refund?</summary>
+            <p>
+              The Snapshot is refundable any time before delivery. The Heartbeat is cancelable any
+              time. Tips and supporter subscriptions are not refunded but can be canceled. Toolkit
+              and Training Vault are digital downloads — refundable on a case-by-case basis if you
+              can't use them.
+            </p>
+          </details>
+          <details>
+            <summary>What does "governance" mean here?</summary>
+            <p>
+              It means: when you use AI tools, can you point to a written record of what the model
+              did, why, what the risks were, and what fix went in? AetherMoore tools produce that
+              record automatically and grade the workflow against five mathematical safety axioms.
+            </p>
+          </details>
+          <details>
+            <summary>Does SCBE promise perfect AI safety?</summary>
+            <p>
+              No. SCBE is a governance and enforcement layer, not a magic shield around every model
+              in every context. A claim like "blocked 91/91" means the named gate denied all cases
+              in that test harness. For a customer workflow, the deliverable is configured policy
+              gates, evidence, failure analysis, regression tests, and clear DENY / QUARANTINE /
+              ESCALATE behavior where the system is wired to enforce those decisions.
+            </p>
+          </details>
+        </section>
+
+        <div class="stuck">
+          <h3>Final CTA</h3>
+          <p>
+            Still not sure? Start with the $99 Workflow Snapshot for one practical read, or let
+            Polly walk you through the catalog in chat.
+          </p>
+          <a class="primary btn btn-primary" href="workflow-snapshot.html">Start $99 Snapshot</a>
+          <a href="chat.html">Open Polly chat</a>
+          <a href="mailto:issdandavis7795@gmail.com?subject=Help%20me%20pick%20a%20product"
+            >Email Issac</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        SCBE-AETHERMOORE — governed AI workflow tools.<br />
+        <a href="index.html">Home</a> · <a href="start-here.html">Start Here</a> ·
+        <a href="solutions.html">Solutions</a> · <a href="hire.html">Hire</a> ·
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener"
+          >GitHub</a
+        >
+        ·
+        <a
+          href="https://www.youtube.com/channel/UCO9aJ-ZH0Ddg_F0Dr655WIQ"
+          target="_blank"
+          rel="noopener"
+          >YouTube</a
+        >
+        ·
+        <a href="https://huggingface.co/issdandavis" target="_blank" rel="noopener">Hugging Face</a>
+        · <a href="https://ko-fi.com/izdandavis" target="_blank" rel="noopener">Ko-fi</a>
+      </p>
+    </footer>
+
+    <script>
+      // Decision tree — pure client-side, no API needed.
+      const RECO = {
+        'support|tip': {
+          title: 'Tip $5',
+          cards: [
+            {
+              name: '$5 SCBE Tip Jar',
+              price: '$5 one time',
+              why: "Lowest-friction support. One click, one charge, you're done.",
+              actions: [
+                {
+                  label: 'Tip $5',
+                  url: 'https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k',
+                  primary: true,
+                },
+              ],
+            },
+          ],
+        },
+        'support|monthly': {
+          title: 'Subscribe at $20/month',
+          cards: [
+            {
+              name: 'AetherMoore Supporter',
+              price: '$20/month',
+              why: 'Steady recurring support. Keeps releases shipping. Cancel any time.',
+              actions: [
+                {
+                  label: 'Subscribe $20/mo',
+                  url: 'https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i',
+                  primary: true,
+                },
+                { label: 'Details', url: 'supporter.html' },
+              ],
+            },
+          ],
+        },
+        'support|usage': {
+          title: 'Top up Service Credits',
+          cards: [
+            {
+              name: 'SCBE Service Credits',
+              price: '$5+ pay-as-you-go',
+              why: 'No subscription. Pay only when you use the hosted tools. Provider cost passthrough + 2-5% coordination fee.',
+              actions: [
+                { label: 'Top up', url: 'https://ko-fi.com/izdandavis', primary: true },
+                { label: 'How credits work', url: 'service-credits.html' },
+              ],
+            },
+          ],
+        },
+        'read|once': {
+          title: 'AI Agent Workflow Snapshot - $99',
+          cards: [
+            {
+              name: 'AI Agent Workflow Snapshot',
+              price: '$99 starter',
+              why: 'One workflow, one concise first read. Drift risks, unsafe tool paths, observability gaps, and three next fixes.',
+              actions: [
+                { label: 'Start $99', url: 'workflow-snapshot.html', primary: true },
+                { label: 'Compare $500', url: 'governance-snapshot.html' },
+              ],
+            },
+          ],
+        },
+        'read|recurring': {
+          title: 'Snapshot + Heartbeat',
+          cards: [
+            {
+              name: 'AI Agent Workflow Snapshot (start here)',
+              price: '$99',
+              why: 'Get the first read so you have a baseline before committing to deeper review.',
+              actions: [{ label: 'Start $99', url: 'workflow-snapshot.html', primary: true }],
+            },
+            {
+              name: 'Governance Heartbeat (then add this)',
+              price: '$99/month',
+              why: 'Monthly delta vs. that baseline. Cancel any time.',
+              actions: [
+                {
+                  label: 'Sign up',
+                  url: 'mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup',
+                  primary: true,
+                },
+              ],
+            },
+          ],
+        },
+        'build|templates': {
+          title: 'SCBE AI Governance Toolkit — $29',
+          cards: [
+            {
+              name: 'SCBE AI Governance Toolkit',
+              price: '$29 one-time',
+              why: 'Templates, decision records, setup guidance, buyer manual. Drop into your existing project after checkout.',
+              actions: [
+                {
+                  label: 'Buy $29',
+                  url: 'https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06',
+                  primary: true,
+                },
+              ],
+            },
+          ],
+        },
+        'build|train': {
+          title: 'SCBE AI Security Training Vault — $29',
+          cards: [
+            {
+              name: 'SCBE AI Security Training Vault',
+              price: '$29 one-time',
+              why: 'Training data, projector weights, benchmarks, notebook. Fine-tune your own governed model.',
+              actions: [
+                {
+                  label: 'Buy $29',
+                  url: 'https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g',
+                  primary: true,
+                },
+              ],
+            },
+          ],
+        },
+        'support|process': {
+          title: 'AetherMoore Writing Process Pack — $7',
+          cards: [
+            {
+              name: 'Behind-The-Scenes Writing Process Pack',
+              price: '$7 one-time',
+              why: 'The direct AetherMoore making-of packet: writing guides, humanization checklist, process notes, and site-source examples. Books stay on KDP.',
+              actions: [
+                {
+                  label: 'Buy $7',
+                  url: 'https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n',
+                  primary: true,
+                },
+                { label: 'Guide hub', url: 'guides.html#behind-the-scenes-pack' },
+              ],
+            },
+          ],
+        },
+        'build|freecode': {
+          title: 'Open the GitHub repo',
+          cards: [
+            {
+              name: 'SCBE-AETHERMOORE on GitHub',
+              price: 'Free, open source',
+              why: 'Full source code, demos, docs. Read it, fork it, build with it. Stars and issues welcome.',
+              actions: [
+                {
+                  label: 'Open repo',
+                  url: 'https://github.com/issdandavis/SCBE-AETHERMOORE',
+                  primary: true,
+                },
+              ],
+            },
+          ],
+        },
+        custom: {
+          title: 'Custom engagement',
+          cards: [
+            {
+              name: 'Hire Issac directly',
+              price: '$300 → $80,000',
+              why: 'Short advisory call, audit, custom overlay, or federal subcontract role. Email with a one-paragraph description of the outcome you want.',
+              actions: [
+                { label: 'Hire details', url: 'hire.html', primary: true },
+                {
+                  label: 'Email Issac',
+                  url: 'mailto:issdandavis7795@gmail.com?subject=Custom%20engagement%20inquiry',
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      function showStep(stepName) {
+        document.querySelectorAll('.fit-step').forEach((s) => s.classList.add('hidden'));
+        const target = document.querySelector(`[data-step="${stepName}"]`);
+        if (target) target.classList.remove('hidden');
+      }
+
+      function showResult(key) {
+        const reco = RECO[key];
+        if (!reco) return;
+        document.querySelectorAll('.fit-step').forEach((s) => s.classList.add('hidden'));
+        document.getElementById('fitResultTitle').textContent = reco.title;
+        const body = document.getElementById('fitResultBody');
+        body.innerHTML = reco.cards
+          .map(
+            (c) => `
+      <div class="reco-card">
+        <div><span class="reco-name">${c.name}</span><span class="reco-price">${c.price}</span></div>
+        <div class="reco-why">${c.why}</div>
+        <div class="reco-actions">
+          ${c.actions.map((a) => `<a class="${a.primary ? 'primary' : ''}" href="${a.url}"${a.url.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${a.label}</a>`).join('')}
+        </div>
+      </div>
+    `
+          )
+          .join('');
+        document.getElementById('fitResult').classList.remove('hidden');
+        try {
+          if (window.dataLayer) window.dataLayer.push({ event: 'fit_picker_result', reco: key });
+          if (window.pollyFunnelTrack) window.pollyFunnelTrack('fit_picker_result_' + key);
+        } catch (_) {}
+      }
+
+      function restartFit() {
+        document.getElementById('fitResult').classList.add('hidden');
+        document.querySelectorAll('.fit-step').forEach((s) => s.classList.add('hidden'));
+        document.querySelector('[data-step="1"]').classList.remove('hidden');
+        document.getElementById('fitCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      let path = [];
+      document.getElementById('fitCard').addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-answer]');
+        if (!btn) return;
+        const ans = btn.dataset.answer;
+        if (path.length === 0) {
+          path.push(ans);
+          if (ans === 'custom') {
+            showResult('custom');
+          } else {
+            showStep(`2-${ans}`);
+          }
+        } else {
+          path.push(ans);
+          const key = path.join('|');
+          showResult(key);
+          path = [];
+        }
+      });
+    </script>
+
+    <script src="static/polly-funnel.js" defer></script>
+    <script src="static/polly-sidebar-agent.js"></script>
+  </body>
+</html>

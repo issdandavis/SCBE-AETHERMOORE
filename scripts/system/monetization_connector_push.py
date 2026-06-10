@@ -17,8 +17,8 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -28,7 +28,66 @@ if str(REPO_ROOT / "src") not in sys.path:
 
 from src.fleet.connector_bridge import ConnectorBridge, ConnectorResult
 from src.security.secret_store import get_secret
-from scripts.gumroad_publish import GumroadPublisher, PRODUCTS, STRIPE_LINKS
+
+try:
+    from scripts.gumroad_publish import GumroadPublisher, PRODUCTS, STRIPE_LINKS
+except ModuleNotFoundError:  # pragma: no cover - depends on optional local sales tooling
+    GumroadPublisher = None
+    PRODUCTS = {}
+    STRIPE_LINKS = {}
+
+
+@dataclass(frozen=True)
+class StaticOffer:
+    id: str
+    name: str
+    sku: str
+    price_usd: float
+    stripe_url: str
+    tags: List[str]
+    cadence: str
+    proof_url: str
+    intake_url: str = ""
+    fulfillment_command: str = ""
+
+
+STATIC_OFFERS: List[StaticOffer] = [
+    StaticOffer(
+        id="tip_jar",
+        name="AetherMoore Tip Jar",
+        sku="aethermoore-tip-jar-5",
+        price_usd=5.0,
+        stripe_url="https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k",
+        tags=["tip", "one-time", "low-friction", "support"],
+        cadence="one_time",
+        proof_url="https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
+    ),
+    StaticOffer(
+        id="supporter_monthly",
+        name="AetherMoore Supporter",
+        sku="aethermoore-supporter-monthly",
+        price_usd=20.0,
+        stripe_url="https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i",
+        tags=["supporter", "subscription", "operator-notes"],
+        cadence="monthly",
+        proof_url="https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
+    ),
+    StaticOffer(
+        id="governance_snapshot",
+        name="AI Governance Snapshot",
+        sku="aethermoore-governance-snapshot",
+        price_usd=500.0,
+        stripe_url="https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j",
+        tags=["consulting", "governance", "fixed-scope", "cash-sprint"],
+        cadence="one_time",
+        proof_url="https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html",
+        intake_url="https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#intake",
+        fulfillment_command=(
+            "python scripts/revenue/governance_snapshot_intake.py "
+            "--buyer-email <buyer-email> --workflow-name <workflow-name>"
+        ),
+    ),
+]
 
 
 def _utc_now() -> datetime:
@@ -43,7 +102,11 @@ def _latest_lead_file() -> Optional[Path]:
     sales_dir = REPO_ROOT / "artifacts" / "sales"
     if not sales_dir.exists():
         return None
-    files = sorted(sales_dir.glob("github_leads_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    files = sorted(
+        sales_dir.glob("github_leads_*.json"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
     return files[0] if files else None
 
 
@@ -61,7 +124,7 @@ def _build_offers(include_gumroad: bool) -> List[Dict[str, Any]]:
             os.environ["GUMROAD_API_TOKEN"] = token
 
     gumroad_map: Dict[str, str] = {}
-    if include_gumroad:
+    if include_gumroad and GumroadPublisher is not None:
         try:
             listing = GumroadPublisher().list_products()
             if listing.success and isinstance(listing.data, list):
@@ -70,9 +133,25 @@ def _build_offers(include_gumroad: bool) -> List[Dict[str, Any]]:
                     if name:
                         gumroad_map[name] = str(row.get("short_url", "")).strip()
         except Exception:
+            # Optional Gumroad enrichment should not block core offer packaging.
             pass
 
-    offers: List[Dict[str, Any]] = []
+    offers: List[Dict[str, Any]] = [
+        {
+            "id": offer.id,
+            "name": offer.name,
+            "sku": offer.sku,
+            "price_usd": offer.price_usd,
+            "stripe_url": offer.stripe_url,
+            "gumroad_url": "",
+            "tags": offer.tags,
+            "cadence": offer.cadence,
+            "proof_url": offer.proof_url,
+            "intake_url": offer.intake_url,
+            "fulfillment_command": offer.fulfillment_command,
+        }
+        for offer in STATIC_OFFERS
+    ]
     for key, spec in PRODUCTS.items():
         stripe = STRIPE_LINKS.get(key, {})
         offers.append(
@@ -127,14 +206,20 @@ async def _dispatch(
             out["n8n"] = {"status": "skipped", "reason": "not_configured"}
         else:
             res = await bridge.execute("n8n", "trigger", payload)
-            out["n8n"] = {"status": "sent" if res.success else "failed", **_result_to_dict(res)}
+            out["n8n"] = {
+                "status": "sent" if res.success else "failed",
+                **_result_to_dict(res),
+            }
 
     if route_zapier:
         if not bridge.is_configured("zapier"):
             out["zapier"] = {"status": "skipped", "reason": "not_configured"}
         else:
             res = await bridge.execute("zapier", "trigger", payload)
-            out["zapier"] = {"status": "sent" if res.success else "failed", **_result_to_dict(res)}
+            out["zapier"] = {
+                "status": "sent" if res.success else "failed",
+                **_result_to_dict(res),
+            }
 
     return out
 
@@ -142,9 +227,16 @@ async def _dispatch(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Push latest leads + offers to n8n/Zapier monetization connectors.")
     parser.add_argument("--leads-json", default="", help="Optional leads JSON file path.")
-    parser.add_argument("--top-leads", type=int, default=10, help="Number of leads to include in connector payload.")
     parser.add_argument(
-        "--include-gumroad", action="store_true", help="Attempt to enrich offers with Gumroad live URLs."
+        "--top-leads",
+        type=int,
+        default=10,
+        help="Number of leads to include in connector payload.",
+    )
+    parser.add_argument(
+        "--include-gumroad",
+        action="store_true",
+        help="Attempt to enrich offers with Gumroad live URLs.",
     )
 
     parser.add_argument("--route-n8n", dest="route_n8n", action="store_true")
@@ -156,7 +248,11 @@ def parse_args() -> argparse.Namespace:
     parser.set_defaults(route_zapier=True)
 
     parser.add_argument("--dry-run", action="store_true", help="Do not send connector traffic.")
-    parser.add_argument("--output-dir", default="artifacts/monetization", help="Output root for run artifacts.")
+    parser.add_argument(
+        "--output-dir",
+        default="artifacts/monetization",
+        help="Output root for run artifacts.",
+    )
     return parser.parse_args()
 
 

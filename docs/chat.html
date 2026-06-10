@@ -5,11 +5,182 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <title>Polly Chat | AetherMoore</title>
-  <meta name="description" content="Chat with Polly about AetherMoore lore and SCBE science. The assistant separates canon, story, governance math, and technical implementation details.">
+  <meta name="description" content="Chat with Polly. Walks you through picking the right tool, answers research questions about the SCBE pipeline, or routes you straight to a buy or hire path.">
   <link rel="canonical" href="https://aethermoore.com/chat.html">
-  <link rel="stylesheet" href="static/polly-sidebar.css">
+  <link rel="stylesheet" href="static/polly-sidebar-agent.css">
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --panel: rgba(18, 23, 32, 0.92);
+      --line: rgba(214, 167, 86, 0.18);
+      --text: #f2f0ea;
+      --muted: #a3acb9;
+      --accent: #d6a756;
+      --accent-strong: #f0bf67;
+      --good: #2dd3a6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body.polly-chat-page {
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top, rgba(214, 167, 86, 0.12), transparent 34%),
+        linear-gradient(180deg, #0b0d12 0%, #0e131b 40%, #0b0d12 100%);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: blur(14px);
+      background: rgba(11, 13, 18, 0.82);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .topbar-inner {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      min-height: 64px;
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    }
+    .brand {
+      font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent); font-weight: 700;
+    }
+    .nav { display: flex; gap: 16px; flex-wrap: wrap; justify-content: flex-end; font-size: 14px; color: var(--muted); }
+    .nav a:hover { color: var(--text); }
+    .nav a.current { color: var(--text); }
+
+    main { width: min(960px, calc(100% - 32px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow {
+      color: var(--accent); text-transform: uppercase;
+      letter-spacing: 0.18em; font-size: 12px; font-weight: 700; margin-bottom: 14px;
+    }
+    h1 { font-size: clamp(34px, 5vw, 52px); line-height: 1.04; letter-spacing: -0.03em; max-width: 18ch; margin-bottom: 14px; }
+    .lead { color: var(--muted); font-size: clamp(16px, 1.6vw, 18px); max-width: 60ch; margin-bottom: 28px; }
+
+    .welcome-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin: 16px 0 32px;
+    }
+    @media (min-width: 880px) {
+      .welcome-grid { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    .what-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    .what-card .tag {
+      display: inline-block;
+      background: rgba(214, 167, 86, 0.14);
+      color: var(--accent-strong);
+      font-size: 11px; font-weight: 700;
+      padding: 3px 8px; border-radius: 6px;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .what-card h3 { font-size: 16px; margin-bottom: 6px; letter-spacing: -0.01em; }
+    .what-card p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .what-card code {
+      background: rgba(255,255,255,0.06);
+      padding: 1px 6px; border-radius: 4px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 13px; color: var(--text);
+    }
+
+    .escape-row {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border: 1px dashed rgba(45, 211, 166, 0.3);
+      border-radius: 14px;
+      background: rgba(45, 211, 166, 0.04);
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      color: var(--text); font-size: 14px;
+    }
+    .escape-row strong { color: var(--good); }
+    .escape-row a {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(45, 211, 166, 0.4);
+      font-weight: 700; font-size: 13px;
+    }
+    .escape-row a:hover { background: rgba(45, 211, 166, 0.12); }
+
+    .chat-anchor { color: var(--muted); font-size: 14px; margin-top: 24px; }
+
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 28px 0;
+      text-align: center;
+      color: var(--muted); font-size: 13px;
+    }
+    footer a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+  </style>
 </head>
 <body class="polly-chat-page" data-polly-context="chat" data-polly-root=".">
-  <script src="static/polly-sidebar.js"></script>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">AetherMoore</a>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="start-here.html">Start Here</a>
+        <a href="products.html">Products</a>
+        <a href="hire.html">Hire</a>
+        <a href="chat.html" class="current">Chat with Polly</a>
+        <a href="agents.html">Agents</a>
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="eyebrow">Polly chat</div>
+    <h1>Talk to Polly. Pick a tool, ask a question, or buy.</h1>
+    <p class="lead">
+      Polly is the AetherMoore chat assistant. She routes your question to one of three deterministic answers
+      (no LLM cost) and falls back to a free LLM only when nothing matches.
+      Click the launcher in the bottom-right to start, or pick a starter below.
+    </p>
+
+    <div class="welcome-grid">
+      <div class="what-card">
+        <div class="tag">Pick a tool</div>
+        <h3>Find your fit</h3>
+        <p>Type <code>help me choose a product</code> and Polly walks you through three or four routes in chat. Or open the <a href="products.html" style="color:var(--accent-strong); text-decoration:underline;">picker page</a> directly.</p>
+      </div>
+      <div class="what-card">
+        <div class="tag">Ask a question</div>
+        <h3>Research mode</h3>
+        <p>Polly knows the canonical answers for the harmonic wall, the 14-layer pipeline, axiom mesh, Sacred Tongues, post-quantum primitives, and active federal proposals. Try <code>What is the harmonic wall?</code></p>
+      </div>
+      <div class="what-card">
+        <div class="tag">Buy or hire</div>
+        <h3>Commerce mode</h3>
+        <p>Type <code>buy the toolkit</code> or <code>I need a custom audit</code> and Polly returns the right Stripe link or hire path with one click. No sales pitch.</p>
+      </div>
+    </div>
+
+    <div class="escape-row">
+      <strong>Don't want to chat?</strong>
+      <span>Pick whichever route fits.</span>
+      <a href="products.html">Open the products picker</a>
+      <a href="start-here.html">See the three starter routes</a>
+      <a href="mailto:issdandavis7795@gmail.com?subject=AetherMoore%20question">Email Issac</a>
+    </div>
+
+    <p class="chat-anchor">↘ Polly's chat launcher is in the bottom-right corner. Conversation history stays in your browser; nothing is uploaded unless you opt in.</p>
+  </main>
+
+  <footer>
+    <p>SCBE-AETHERMOORE — governed AI workflow tools.<br>
+    <a href="index.html">Home</a> · <a href="start-here.html">Start Here</a> · <a href="products.html">Products</a> · <a href="hire.html">Hire</a> · <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener">GitHub</a></p>
+  </footer>
+
+  <script src="static/polly-sidebar-agent.js"></script>
 </body>
 </html>

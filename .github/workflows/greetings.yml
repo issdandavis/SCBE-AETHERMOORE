@@ -14,7 +14,9 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/first-interaction@v3
+      - name: Post first-interaction greeting
+        continue-on-error: true
+        uses: actions/first-interaction@v3
         with:
           issue_message: "👋 Welcome to SCBE-AETHERMOORE! Thanks for your first issue. Please review CONTRIBUTING.md and SECURITY.md. A maintainer will review soon."
           pr_message: "🎉 Thanks for your first PR to SCBE-AETHERMOORE! Ensure CI passes and changes align with ARCHITECTURE.md. A maintainer will review shortly."

@@ -4,7 +4,23 @@ const DEFAULT_REPO = "issdandavis/SCBE-AETHERMOORE";
 const DEFAULT_WORKFLOW = "agent-router.yml";
 const DEFAULT_REF = "main";
 const MAX_QUERY_LENGTH = 600;
-const ALLOWED_TASKS = new Set(["research", "monitor", "ask", "scrape"]);
+const ALLOWED_TASKS = new Set([
+  "research",
+  "monitor",
+  "ask",
+  "scrape",
+  "web_search",
+  "coding",
+  "system_build",
+  "agentic_ladder",
+  "pair_benchmark",
+  "poly_coding_seed",
+  // agent_bus dispatches the query as a single SCBE agent-bus event via
+  // scripts/system/agentbus_pipe.mjs in the GH Actions runner. Returns the
+  // typed envelope result. This is the bridge between the website's chat
+  // surface and the published scbe-agent-bus npm/PyPI package.
+  "agent_bus",
+]);
 const PAGES_DATA_BASE = "https://aethermoore.com/SCBE-AETHERMOORE/static/agent-data";
 
 function setCors(res) {
@@ -20,13 +36,13 @@ function sendJson(res, status, payload) {
   res.status(status).json(payload);
 }
 
-function readJsonBody(req) {
+function readJsonBody(req, maxBytes = 4096) {
   if (req.body && typeof req.body === "object") return Promise.resolve(req.body);
   return new Promise((resolve, reject) => {
     let raw = "";
     req.on("data", (chunk) => {
       raw += chunk;
-      if (raw.length > 4096) {
+      if (raw.length > maxBytes) {
         reject(new Error("request body too large"));
         req.destroy();
       }

@@ -42,6 +42,8 @@ These are delivered under paid commercial terms:
 
 Pricing available on request. Full terms: [CUSTOMER_LICENSE_AGREEMENT.md](CUSTOMER_LICENSE_AGREEMENT.md)
 
+Enterprise intake page: [enterprise-license.html](enterprise-license.html)
+
 ## Patent Notice
 
 Portions of this system are covered by US Provisional Patent Application No. 63/961,403. Commercial licenses include rights to practice the patented methods.
@@ -50,6 +52,7 @@ Portions of this system are covered by US Provisional Patent Application No. 63/
 
 **Issac Daniel Davis**
 Email: issdandavis@gmail.com
+Enterprise intake: [enterprise-license.html](enterprise-license.html)
 GitHub: [@issdandavis](https://github.com/issdandavis)
 
 ---

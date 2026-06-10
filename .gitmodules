@@ -10,9 +10,6 @@
 [submodule "external/designer-skills"]
 	path = external/designer-skills
 	url = https://github.com/Owl-Listener/designer-skills.git
-[submodule "external/openclaw"]
-	path = external/openclaw
-	url = https://github.com/openclaw/openclaw.git
 [submodule "external_repos/Spiralverse-AetherMoore"]
 	path = external_repos/Spiralverse-AetherMoore
 	url = https://github.com/issdandavis/Spiralverse-AetherMoore.git
@@ -46,10 +43,6 @@
 [submodule "external_repos/spiralverse-protocol"]
 	path = external_repos/spiralverse-protocol
 	url = https://github.com/issdandavis/spiralverse-protocol.git
-[submodule "shopify/aethermoore-creator-os"]
-	path = shopify/aethermoore-creator-os
-	url = https://github.com/issdandavis/aethermoore-creator-os.git
-
 [submodule "packages/six-tongues-geoseal"]
 	path = packages/six-tongues-geoseal
 	url = https://github.com/issdandavis/six-tongues-geoseal.git

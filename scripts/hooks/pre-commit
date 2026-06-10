@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+"""Pre-commit hook: secret scan + Prettier auto-format for staged TS/TSX files.
+
+Install:  npm run hooks:install
+Manual:   python scripts/check_secrets.py
+"""
+
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+# ── secret patterns ─────────────────────────────────────────────────────────
+
+PATTERNS = [
+    (r"sk-ant-api\S{10,}", "Anthropic API key"),
+    (r"sk-proj-\S{10,}", "OpenAI API key"),
+    (r"ghp_[A-Za-z0-9]{30,}", "GitHub PAT"),
+    (r"gho_[A-Za-z0-9]{30,}", "GitHub OAuth"),
+    (r"AKIA[A-Z0-9]{16}", "AWS Access Key"),
+    (r"(?:sk|rk)_live_[A-Za-z0-9_-]{20,}", "Stripe live key"),
+    (r"(?:sk|rk)_test_[A-Za-z0-9_-]{20,}", "Stripe test key"),
+    (r"hf_[A-Za-z0-9]{30,}", "HuggingFace token"),
+    (r"KGAT_[A-Za-z0-9]{20,}", "Kaggle token"),
+    (r"xai-[A-Za-z0-9]{20,}", "xAI API key"),
+    (r"SAM-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "SAM.gov API key"),
+    (r"glpat-[A-Za-z0-9_-]{20,}", "GitLab PAT"),
+    (r"eyJ[A-Za-z0-9_-]{50,}\.[A-Za-z0-9_-]{50,}", "JWT token"),
+]
+
+
+def staged_files() -> list[str]:
+    result = subprocess.run(
+        ["git", "diff", "--cached", "--name-only"],
+        capture_output=True, text=True
+    )
+    return [f.strip() for f in result.stdout.splitlines() if f.strip()]
+
+
+def check_secrets(files: list[str]) -> list[tuple[str, str, str]]:
+    found = []
+    for filepath in files:
+        try:
+            with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+            for pattern, name in PATTERNS:
+                for m in re.findall(pattern, content):
+                    if "[SCRUBBED" not in m:
+                        found.append((filepath, name, m[:20] + "..."))
+        except FileNotFoundError:
+            pass
+    return found
+
+
+# ── prettier auto-format ─────────────────────────────────────────────────────
+
+TS_EXTS = {".ts", ".tsx"}
+PRETTIER_BIN = Path("node_modules/prettier/bin/prettier.cjs")
+
+
+def run_prettier(files: list[str]) -> bool:
+    """Format staged TS/TSX files with Prettier and re-stage them. Returns True on success."""
+    ts_files = [f for f in files if Path(f).suffix in TS_EXTS and Path(f).exists()]
+    if not ts_files:
+        return True
+
+    if not PRETTIER_BIN.exists():
+        print("[pre-commit] prettier not found at node_modules/prettier/bin/prettier.cjs — skipping format step")
+        return True
+
+    result = subprocess.run(
+        ["node", str(PRETTIER_BIN), "--write", *ts_files],
+        capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        print(f"[pre-commit] prettier failed:\n{result.stderr}")
+        return False
+
+    # Re-stage any files prettier modified.
+    changed = [f for f in ts_files if result.stdout and f in result.stdout]
+    if not changed:
+        # prettier doesn't always print filenames when using --write; re-stage all to be safe.
+        subprocess.run(["git", "add", *ts_files], check=False)
+    else:
+        subprocess.run(["git", "add", *changed], check=False)
+
+    return True
+
+
+# ── main ────────────────────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    files = staged_files()
+
+    # 1. Format first so the secret scan sees the final content.
+    if not run_prettier(files):
+        sys.exit(1)
+
+    # 2. Secret scan on (potentially re-staged) files.
+    secrets = check_secrets(files)
+    if secrets:
+        print(f"\n{'='*60}")
+        print(f"BLOCKED: {len(secrets)} SECRET(S) DETECTED")
+        print(f"{'='*60}")
+        for path, name, preview in secrets:
+            print(f"  [{name}] {path}: {preview}")
+        print("\nReplace secrets with [SCRUBBED:type] before committing.")
+        print(f"{'='*60}")
+        sys.exit(1)
+
+    print("No secrets found. Safe to commit.")
+    sys.exit(0)

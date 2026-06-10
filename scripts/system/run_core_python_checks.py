@@ -13,6 +13,12 @@ ARTIFACT_DIR = REPO_ROOT / "artifacts" / "system-audit"
 
 # Fast, deterministic smoke lane for PR gating. This should finish quickly on
 # GitHub-hosted runners and avoid pulling in long-running "everything tests".
+#
+# When you add a new product surface, add the test path here so regressions
+# get caught on PR rather than discovered post-merge. The PR #1700
+# `_public_dispatch_payload` regression that stripped `bus_event.version`
+# from the public free-llm response sat undetected on main for two days
+# because `tests/api/test_free_llm_routes.py` wasn't in this list.
 CORE_SMOKE_PATHS: tuple[str, ...] = (
     "tests/test_api_header_compat.py",
     "tests/test_geoseal_v2.py",
@@ -24,6 +30,12 @@ CORE_SMOKE_PATHS: tuple[str, ...] = (
     "tests/test_semantic_projector_deep.py",
     "tests/test_triangulated_lattice.py",
     "tests/crypto",
+    # Active product surfaces — keep these in PR-gated CI.
+    "tests/api/test_free_llm_routes.py",
+    "tests/system/test_agent_bus_workspace_cli.py",
+    "tests/system/test_trap_redirect_cli.py",
+    "tests/system/test_trap_dispatch_cli.py",
+    "tests/system/test_trap_dispatch_workspace_cli.py",
 )
 
 # Optional or experimental lanes that currently pull in extra services,

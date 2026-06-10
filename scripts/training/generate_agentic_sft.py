@@ -3,7 +3,7 @@
 generate_agentic_sft.py - Convert SKILL.md files and agent definitions into
 agentic coding SFT training pairs.
 
-Scans skills/, .agents/, and training-data/clawhub-skills/ for agent
+Scans skills/, .agents/, and training-data/skillhub-skills/ for agent
 capability definitions, then synthesizes instruction/response pairs that
 teach tool use, file editing, git workflows, and multi-turn reasoning.
 
@@ -107,7 +107,7 @@ def find_all_skills() -> List[Path]:
     for pattern in [
         "skills/**/SKILL.md",
         ".agents/**/SKILL.md",
-        "training-data/clawhub-skills/**/SKILL.md",
+        "training-data/skillhub-skills/**/SKILL.md",
     ]:
         paths.extend(PROJECT_ROOT.glob(pattern))
     return sorted(set(paths))

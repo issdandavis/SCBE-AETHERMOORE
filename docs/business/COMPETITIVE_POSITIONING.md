@@ -8,7 +8,7 @@
 
 AI agents are going into production. Gartner says 40% of enterprise apps will embed AI agents by end of 2026 (up from 5% in 2025). Only 6% of organizations have an advanced AI security strategy. $392M+ poured into agentic AI security in Q1 2026 alone. Four AI security startups were acquired for $1.38B combined in 2024-2025.
 
-**The gap:** Nobody offers vendor-neutral, inference-time governance middleware that works with ANY model and provides mathematical proof of safety.
+**The gap:** Few teams have vendor-neutral, inference-time governance middleware that can sit in front of mixed models, enforce configured policy decisions, and produce evidence about why an action was allowed, denied, quarantined, or escalated.
 
 - OpenAI buys tools for their own platform (acquired Promptfoo).
 - Anthropic builds internally (Constitutional Classifiers).
@@ -17,11 +17,11 @@ AI agents are going into production. Gartner says 40% of enterprise apps will em
 
 ## Where SCBE Sits
 
-**Category:** AI Agent Governance (prevention, not detection)
+**Category:** AI Agent Governance (action-time policy enforcement, not just detection)
 
 **One-line pitch:** We make attacks 117,000x more expensive than authorized actions — not through rules, but through mathematical topology.
 
-**Positioning statement:** SCBE-AETHERMOORE is the only solution combining AI agent governance + post-quantum cryptography + explainable, mathematically-proven decisions at inference time.
+**Positioning statement:** SCBE-AETHERMOORE combines AI agent governance, post-quantum cryptography, and explainable mathematical decision records at inference/action time.
 
 ## The Four Pillars
 
@@ -40,20 +40,20 @@ No competitor has more than one. SCBE has all four.
 |--------|----------|---------------|----------|-----|------------|------------|
 | **Darktrace** | Network detection | Public (LSE) | Anomaly ML | No | No | No |
 | **CrowdStrike** | Endpoint + AIDR | $80B | Detection/response | No | No | Partial |
-| **Armadin** | Agentic AI sec | $190M | TBD (Mandiant DNA) | No | No | TBD |
+| **Armadin** | Agentic AI sec | $190M | Emerging (Mandiant DNA) | No | No | Emerging |
 | **7AI** | Agentic sec ops | $130M | Security ops | No | No | No |
 | **Aurascape** | AI governance | $62.8M | Policy/compliance | No | No | No |
 | **Surf AI** | Agentic sec ops | $57M | Platform | No | No | No |
 | **Manifold** | Runtime agent sec | $8M | Runtime enforcement | No | No | Partial |
 | **Cisco** (ex-Robust Intel) | Platform AI sec | ~$400M acq | Model security | No | No | Partial |
 | **Palo Alto** (ex-Protect AI) | Platform AI sec | ~$500M acq | Pipeline security | No | No | Partial |
-| **SCBE-AETHERMOORE** | **Agent governance** | **Pre-seed** | **Geometric prevention** | **Yes** | **Yes** | **Yes** |
+| **SCBE-AETHERMOORE** | **Agent governance** | **Pre-seed** | **Geometric policy enforcement** | **Yes** | **Yes** | **Configured gates** |
 
 ## Why We Win
 
-**Against detection players** (Darktrace, CrowdStrike, Armadin): They find threats after they happen. We prevent them before they execute. Different architecture, different value prop.
+**Against detection players** (Darktrace, CrowdStrike, Armadin): They find or respond to threats. We add a configured governance gate before agent actions execute. Different architecture, different value prop.
 
-**Against governance players** (Aurascape, Credo AI): They govern with policies and documentation. We govern with mathematics. Their governance is a checklist. Ours is a wall.
+**Against governance players** (Aurascape, Credo AI): They govern with policies and documentation. We turn policies into runtime decisions, thresholds, receipts, and tests.
 
 **Against runtime players** (Manifold): Same problem space, fundamentally different tools. They have conventional runtime security. We have patented geometric cost escalation.
 

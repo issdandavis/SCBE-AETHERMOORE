@@ -1,0 +1,71 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-stage6-repair-v11",
+  "title": "SCBE coding agent Qwen Stage 6 repair v11 (forced-prefix signal shape)",
+  "description": "v11 retry after v10 gate failed 2/5 (hex_trace + cost_propagation passed; jump_cancel, lane_separation, training_boundary failed on missing required tokens). v9->v10 trend: 1->2 pass, signal-concentration helped. v11 hypothesis: shape, not volume. Adds atomic_workflow_stage6_signal_shape_boost (forced-prefix shards: every response opens with `required-tokens: tok1 | tok2 | ... ::` checklist before prose). Coverage extended to all 5 contract prompts (v9/v10 must_pass_boost only covered 3 of 5). max_steps bumped 100->150 to give forced-prefix shape time to engrain. Inline gate against stage6_atomic_workflow_eval_contract.json blocks any HF push if score < 0.8 or any must_pass prompt fails.",
+  "backend": "local-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoSeal command-line coding agent. Preserve token-to-binary/hex flow across code, semantic overlay, structural chemistry frame, and resource-aware workflow composition. Keep material chemistry separate from structural chemistry templates, predict resource overruns before commit, and use steady-state fallback plus re-advance when a launch would exceed budget.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "atomic_workflow_stage6_train.sft.jsonl",
+      "atomic_workflow_stage6_repair_train.sft.jsonl",
+      "atomic_workflow_stage6_must_pass_boost_train.sft.jsonl",
+      "atomic_workflow_stage6_signal_shape_boost_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "atomic_workflow_stage6_holdout.sft.jsonl",
+      "atomic_workflow_stage6_repair_holdout.sft.jsonl",
+      "atomic_workflow_stage6_must_pass_boost_holdout.sft.jsonl",
+      "atomic_workflow_stage6_signal_shape_boost_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 768,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 8e-5,
+    "num_train_epochs": 1,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 16,
+    "warmup_ratio": 0.05,
+    "max_steps": 150,
+    "max_train_records": 705,
+    "max_eval_records": 176,
+    "logging_steps": 10,
+    "save_steps": 150,
+    "save_total_limit": 2,
+    "gradient_checkpointing": true,
+    "seed": 61,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-stage6-repair-v11"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v11",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-stage6-repair-v11",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "local",
+    "hf_flavor": "l4x1",
+    "timeout": "3h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-stage6-repair-v11-train.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/stage6_atomic_workflow_eval_contract.json",
+    "notes": "Must clear the frozen Stage 6 unseen contract via the inline gate (render_uv_training_script in dispatch_coding_agent_hf_job.py). v11 tests the signal-SHAPE hypothesis: every response in signal_shape_boost shards opens with `required-tokens: ... ::` checklist, training the model to enumerate required vocabulary before writing prose. If v11 still fails, v12 will compose forced-prefix with even higher must_pass_boost concentration."
+  }
+}

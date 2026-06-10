@@ -33,7 +33,8 @@ from src.coding_spine.router import (
     RouteResult,
     route_task,
 )
-from src.coding_spine.shared_ir import equivalent_ir, infer_semantic_ir
+from src.coding_spine.polly_client import explain_provider_chain
+from src.coding_spine.shared_ir import build_route_ir, equivalent_ir, infer_semantic_ir
 from src.geoseal_cli import (
     compute_seal,
     phi_wall_cost,
@@ -277,7 +278,15 @@ class TestGovernance:
 class TestGeoSeal:
     """GeoSeal stamps must be deterministic and tamper-evident."""
 
-    def _seal(self, op="agent", tongue="KO", code="print('hi')", payload="test", cost=1.0, tier="ALLOW") -> str:
+    def _seal(
+        self,
+        op="agent",
+        tongue="KO",
+        code="print('hi')",
+        payload="test",
+        cost=1.0,
+        tier="ALLOW",
+    ) -> str:
         return compute_seal(op, tongue, code, payload, cost, tier)
 
     def test_seal_is_deterministic(self):
@@ -492,7 +501,11 @@ class TestARCLane:
             r = route_task(task)
             # Both CA and UM are acceptable for symbolic/math grid work
             # KO is also fine if the trit system picks it
-            assert r.tongue in {"KO", "CA", "UM"}, f"ARC task routed to unexpected tongue {r.tongue}: {task!r}"
+            assert r.tongue in {
+                "KO",
+                "CA",
+                "UM",
+            }, f"ARC task routed to unexpected tongue {r.tongue}: {task!r}"
 
     def test_arc_synthesis_and_seal(self, tmp_path):
         """Full arc solve → seal pipeline on a real task JSON."""
@@ -1116,7 +1129,12 @@ class TestWorkflowRun:
             "default_max_tier": "ESCALATE",
             "steps": [
                 {"id": "gen", "op": "agent", "task": "write a python add ${input}"},
-                {"id": "stamp", "op": "seal", "task": "${steps.gen.code}", "tongue": "RU"},
+                {
+                    "id": "stamp",
+                    "op": "seal",
+                    "task": "${steps.gen.code}",
+                    "tongue": "RU",
+                },
             ],
         }
         spec.update(overrides)
@@ -1199,7 +1217,16 @@ class TestWorkflowCLISmoke:
     def test_list_finds_yaml(self, tmp_path):
         self._write_yaml(tmp_path)
         result = subprocess.run(
-            [sys.executable, "-m", "src.geoseal_cli", "workflow", "list", "--dir", str(tmp_path), "--json"],
+            [
+                sys.executable,
+                "-m",
+                "src.geoseal_cli",
+                "workflow",
+                "list",
+                "--dir",
+                str(tmp_path),
+                "--json",
+            ],
             capture_output=True,
             text=True,
             cwd=str(_REPO_ROOT),
@@ -1212,7 +1239,15 @@ class TestWorkflowCLISmoke:
     def test_validate_ok(self, tmp_path):
         path = self._write_yaml(tmp_path)
         result = subprocess.run(
-            [sys.executable, "-m", "src.geoseal_cli", "workflow", "validate", str(path), "--json"],
+            [
+                sys.executable,
+                "-m",
+                "src.geoseal_cli",
+                "workflow",
+                "validate",
+                str(path),
+                "--json",
+            ],
             capture_output=True,
             text=True,
             cwd=str(_REPO_ROOT),
@@ -1227,7 +1262,15 @@ class TestWorkflowCLISmoke:
         path = tmp_path / "bad.geoseal.yaml"
         path.write_text("steps: []\n", encoding="utf-8")  # missing name + empty steps
         result = subprocess.run(
-            [sys.executable, "-m", "src.geoseal_cli", "workflow", "validate", str(path), "--json"],
+            [
+                sys.executable,
+                "-m",
+                "src.geoseal_cli",
+                "workflow",
+                "validate",
+                str(path),
+                "--json",
+            ],
             capture_output=True,
             text=True,
             cwd=str(_REPO_ROOT),
@@ -1269,3 +1312,32 @@ class TestWorkflowCLISmoke:
         records = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip()]
         assert any(r["type"] == "workflow_step" for r in records)
         assert any(r["type"] == "workflow_run" for r in records)
+
+
+class TestRouteIRAndBackendExplain:
+    def test_build_route_ir_has_replayable_hashes(self):
+        route_ir = build_route_ir(
+            task="implement add in python",
+            source_text="def add(a, b):\n    return a + b\n",
+            source_language="python",
+            source_name="adder.py",
+            selected_backend="local",
+            available_backends=["local", "ollama", "hf", "claude"],
+        )
+        payload = route_ir.to_dict()
+        assert payload["schema_version"] == "scbe_route_ir_v1"
+        assert payload["route"]["tongue"] in {"KO", "AV", "RU", "CA", "UM", "DR"}
+        assert payload["hashes"]["source_sha256"]
+        assert payload["hashes"]["plan_sha256"]
+        assert payload["replay"]["replay_key"] == payload["hashes"]["plan_sha256"]
+
+    def test_explain_provider_chain_reports_registry_subset(self):
+        explain = explain_provider_chain(
+            force_provider=None,
+            forbidden_providers=["claude"],
+            small_first=True,
+            governance_tier="ALLOW",
+        )
+        assert explain["resolved_chain"]
+        assert "claude" not in explain["resolved_chain"]
+        assert explain["backends"]

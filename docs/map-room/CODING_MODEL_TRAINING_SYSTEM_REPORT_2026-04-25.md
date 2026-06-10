@@ -83,7 +83,7 @@ But lower training loss is not the final goal. The previous Stage 6 adapter fail
 ## Main Weaknesses
 
 1. The corpus has duplicate families: `_all`, `_train`, and related variants can overlap. This can lower loss while inflating confidence.
-2. Several files are tiny placeholder records, around `130` chars each, and should not be mixed into serious training unless regenerated.
+2. Several files are tiny stub records, around `130` chars each, and should not be mixed into serious training unless regenerated.
 3. Stage 6 repair data is high value but small: `36` train rows and `10` holdout rows.
 4. Training currently optimizes next-token loss, while the desired behavior is rule compliance: preserve byte/hex lane, separate semantic/material chemistry, predict budget overrun, fallback, re-advance.
 5. The merge profile exists, but full merge should stay blocked until a repair adapter passes frozen eval.

@@ -22,6 +22,14 @@ DEFAULT_OPERATION_LEXICON: dict[str, int] = {
     "ulmar": 6,
     "vexin": 7,
     "zephyr": 8,
+    "video": 9,
+    "story": 10,
+    "package": 11,
+    "quality": 12,
+    "gate": 13,
+    "manifest": 14,
+    "youtube": 15,
+    "upload": 16,
 }
 
 

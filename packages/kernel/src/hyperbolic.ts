@@ -489,10 +489,7 @@ export function multiWellGradient(p: number[], wells: Well[]): number[] {
  * @param phase2 - Second phase value (or null for unknown)
  * @returns Deviation in [0, 1]
  */
-export function phaseDeviation(
-  phase1: number | null,
-  phase2: number | null
-): number {
+export function phaseDeviation(phase1: number | null, phase2: number | null): number {
   // Unknown phase = maximum deviation
   if (phase1 === null || phase2 === null) return 1.0;
 

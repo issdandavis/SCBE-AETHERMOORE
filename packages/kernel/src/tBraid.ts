@@ -320,10 +320,7 @@ export function triadicBraidedDistance(projected: ProjectedVariants): number {
  * @param variants — Raw temporal variants
  * @param tetradic — If true, include predictive strand (default true)
  */
-export function braidedMetaTime(
-  variants: BraidVariants,
-  tetradic: boolean = true
-): number {
+export function braidedMetaTime(variants: BraidVariants, tetradic: boolean = true): number {
   const triadic = variants.immediate * variants.memory * variants.governance;
   return tetradic ? triadic * variants.predictive : triadic;
 }
@@ -343,11 +340,7 @@ export function braidedMetaTime(
  * @param x — Intent persistence factor (from computeXFactor)
  * @param R — Harmonic ratio (default 1.5)
  */
-export function harmonicWallBraid(
-  dBraid: number,
-  x: number = 1.0,
-  R: number = R_HARMONIC
-): number {
+export function harmonicWallBraid(dBraid: number, x: number = 1.0, R: number = R_HARMONIC): number {
   const exponent = dBraid * dBraid * x;
   // Cap exponent to prevent Infinity (log-safe up to ~700 for doubles)
   if (exponent > 500) return Number.MAX_VALUE;
@@ -408,16 +401,8 @@ function totalPairwiseDistance(values: number[]): number {
  * @param projected — Projected variant values
  * @param tolerance — Numerical tolerance (default 1e-8)
  */
-export function checkYangBaxter(
-  projected: ProjectedVariants,
-  tolerance: number = 1e-8
-): boolean {
-  const vals = [
-    projected.immediate,
-    projected.memory,
-    projected.governance,
-    projected.predictive,
-  ];
+export function checkYangBaxter(projected: ProjectedVariants, tolerance: number = 1e-8): boolean {
+  const vals = [projected.immediate, projected.memory, projected.governance, projected.predictive];
 
   // Check: σ_1 σ_2 σ_1 vs σ_2 σ_1 σ_2
   const lhs = applyGenerator(applyGenerator(applyGenerator(vals, 0), 1), 0);
@@ -535,9 +520,9 @@ export function variantsFromClocks(
 
   return computeVariants(
     T,
-    fastIntent,      // intent = fast clock's accumulated intent
-    govIntent,        // context = governance clock's accumulated intent
-    t                 // t = memory clock's tick count
+    fastIntent, // intent = fast clock's accumulated intent
+    govIntent, // context = governance clock's accumulated intent
+    t // t = memory clock's tick count
   );
 }
 
@@ -567,7 +552,11 @@ export function braidFromClocks(
   const skipYB = options.skipYangBaxter ?? true;
 
   const variants = variantsFromClocks(
-    fastIntent, memoryTick, memoryIntent, govIntent, breathingFactor
+    fastIntent,
+    memoryTick,
+    memoryIntent,
+    govIntent,
+    breathingFactor
   );
   const projected = projectVariants(variants, alpha);
   const edges = computePairwiseDistances(projected);
@@ -621,11 +610,7 @@ export function edgeWeight(from: BraidVariant, to: BraidVariant): number {
 /**
  * Look up weight from BraidEdgeWeights config for an edge.
  */
-function lookupWeight(
-  from: BraidVariant,
-  to: BraidVariant,
-  weights: BraidEdgeWeights
-): number {
+function lookupWeight(from: BraidVariant, to: BraidVariant, weights: BraidEdgeWeights): number {
   // Normalize order (alphabetical by variant name)
   const [a, b] = [from, to].sort();
   // Sorted pairs: governance < immediate < memory < predictive
@@ -655,10 +640,7 @@ export function weightedBraidedDistance(edges: BraidEdge[]): number {
 /**
  * Compute weighted braided distance using configurable BraidEdgeWeights.
  */
-function weightedBraidedDistanceWithConfig(
-  edges: BraidEdge[],
-  weights: BraidEdgeWeights
-): number {
+function weightedBraidedDistanceWithConfig(edges: BraidEdge[], weights: BraidEdgeWeights): number {
   let sum = 0;
   for (const edge of edges) {
     const w = lookupWeight(edge.from, edge.to, weights);

@@ -22,7 +22,7 @@ Pull up the relevant card when a prospect mentions a competitor by name, or when
 - $100K-500K+/year enterprise pricing
 
 **Where they fall short**:
-- **Detective, not preventive** — finds threats AFTER they happen
+- **Detective first** — finds threats and anomalies, but does not own the agent action gate
 - **Black-box ML** — cannot explain why it flagged something
 - **4-12 week tuning period** with high false positives during learning
 - **Not built for AI agents** — treats agents as generic endpoints
@@ -30,7 +30,7 @@ Pull up the relevant card when a prospect mentions a competitor by name, or when
 - **Expensive** — $10-100/entity/month vs SCBE's ~$0.003
 
 **Your line**:
-> "Darktrace tells you something went wrong. We prevent it from happening. Our math works on day one — no 12-week tuning period, no false positives during learning, and every decision is explainable to auditors."
+> "Darktrace tells you something went wrong. SCBE is designed to sit in front of configured agent actions and return ALLOW, DENY, QUARANTINE, or ESCALATE with evidence. The claim is enforceable gates and receipts, not a promise that every future model output is impossible."
 
 **Objection handling**:
 - "But Darktrace has 10K customers" → "They're the king of network detection. We're not competing there. We govern AI agents at inference time — a category they don't play in."
@@ -47,10 +47,10 @@ Pull up the relevant card when a prospect mentions a competitor by name, or when
 - Blocks prompt injection (180+ techniques)
 - Stops risky AI use in real-time
 - Agent-based deployment model
-- $60-185/device/year (AIDR pricing TBD)
+- $60-185/device/year (AIDR pricing not yet publicly fixed)
 
 **Where they fall short**:
-- **Still detection/response** — alerts and contains, doesn't prevent
+- **Endpoint-first detection/response** — strong security platform, but not a vendor-neutral agent policy gate
 - **AIDR is brand new** — launched Dec 2025, limited track record
 - **Agent-based deployment** — requires installing on every endpoint
 - **No PQC** — classical crypto only
@@ -58,7 +58,7 @@ Pull up the relevant card when a prospect mentions a competitor by name, or when
 - **No multi-agent consensus** — no governance for agent-to-agent coordination
 
 **Your line**:
-> "CrowdStrike is adding AI security on top of their endpoint platform. We built AI governance from the ground up — mathematically provable decisions, post-quantum crypto, and multi-agent consensus. They detect and respond. We prevent."
+> "CrowdStrike is adding AI security on top of their endpoint platform. SCBE is agent-native governance: mathematical decision records, post-quantum crypto, and multi-agent consensus around configured actions."
 
 **Objection handling**:
 - "CrowdStrike is a $80B company" → "They're defending endpoints. We're governing agents. Different problem, different architecture."
@@ -110,7 +110,7 @@ Pull up the relevant card when a prospect mentions a competitor by name, or when
 - **Massive burn rate** — $190M at seed stage means high expectations and expensive operations
 
 **Your line**:
-> "Kevin Mandia built the best incident response company in history. That's detection after the fact. We prevent unauthorized actions before they happen — using mathematics, not ML. Different philosophy, different architecture."
+> "Kevin Mandia built the best incident response company in history. SCBE is a different layer: it turns agent actions into governed decisions with mathematical scoring, policy thresholds, and evidence before the action runs."
 
 **Objection handling**:
 - "They have IQT and $190M" → "IQT also invested in SandboxAQ for PQC. When they see a governance layer that combines PQC with agent security, that's a complement to Armadin, not a conflict."
@@ -136,7 +136,7 @@ Pull up the relevant card when a prospect mentions a competitor by name, or when
 - **No agent-native architecture** — governance as oversight layer, not embedded in the action pipeline
 
 **Your line**:
-> "Aurascape governs AI with policies and documentation. We govern AI with mathematics — every action goes through a 14-layer pipeline that makes unauthorized behavior exponentially expensive. Their governance is a checklist. Ours is a wall."
+> "Aurascape governs AI with policies and documentation. SCBE is the runtime side: configured actions go through a 14-layer pipeline that can allow, deny, quarantine, or escalate with evidence."
 
 **Objection handling**:
 - "They just raised $63M" → "For policy governance. When their customers ask 'but how do I actually enforce this at runtime?' — that's us."
@@ -213,7 +213,7 @@ Pull up the relevant card when a prospect mentions a competitor by name, or when
 | Darktrace | Network detection | Public (LSE) | No | No | No | No | Prevention + explainability |
 | CrowdStrike | Endpoint + AIDR | $80B mktcap | No | No | Partial | Partial | Math-based + PQC |
 | Manifold | Runtime agent sec | $8M | No | No | Yes | Partial | Patent + depth |
-| Armadin | Agentic AI sec | $190M | No | No | TBD | TBD | Prevention + PQC |
+| Armadin | Agentic AI sec | $190M | No | No | Emerging | Emerging | Prevention + PQC |
 | Aurascape | AI governance | $62.8M | No | No | No | No | Runtime enforcement |
 | 7AI | Agentic security ops | $130M | No | No | Partial | No | Governance vs ops |
 | Surf AI | Agentic security ops | $57M | No | No | Partial | No | Math proofs |

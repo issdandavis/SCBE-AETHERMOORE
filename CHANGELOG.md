@@ -1,5 +1,86 @@
 # SCBE Production Pack Changelog
 
+## [4.1.3] - 2026-05-14
+
+### Added
+
+- **`scbe contract scan --emit-redirect-prompt` (trap-in-good-loops bridge)**: when the SCONE-class static prefilter finds DENY-tier vulnerabilities, it now emits a structured `redirect` payload (schema `scbe.contract_scan.redirect.v1`) containing a defensive audit prompt that names the specific findings by rule + line number. The caller can hand this prompt to a model in place of any attacker exploit prompt that references the same file — companion to `api/_governed_output.js::buildRedirectPrompt()` which already does the same on the input side. ESCALATE-tier-only findings produce no redirect; only the "guaranteed bad" class triggers the swap.
+- **New helper `build_redirect_prompt(result)`** in `scripts/contracts/scbe_contract_scan.py`: pure-function constructor for the redirect payload, mirrors the JS `buildRedirectPrompt` contract (no attacker text quoted, refuse-reverse anchor, defensive-task framing, bans exploit-output explicitly).
+- **4 new pytest tests** in `tests/contracts/test_scbe_contract_scan.py` (now 12 total) — verifies clean contracts emit no redirect, ESCALATE-only findings emit no redirect, DENY findings produce the correct schema + rule list, and the prompt carries every required defensive anchor (DEFENSIVE task / security auditor / remediation plan / no exploit calldata / reverse-redirect refusal).
+
+## [4.1.2] - 2026-05-14
+
+### Added
+
+- **Trap-in-good-loops gate (operational)**: the `redirect_to:` field reserved in 4.1.1 now actually rewrites the model-facing prompt. When `shouldPreBlock` or `buildGovernanceRecord` encounters a `DENY` decision that fired a SCONE-tagged rule with `redirect_to`, it returns a `redirect.to_prompt` containing a defensive audit task — the caller forwards this to the model **instead of** the original attacker prompt. The model only sees the defensive task; the original prompt is NOT quoted. Effect: a smart-contract exploit prompt is converted into an audit-and-patch task, so the bad agent is trapped in a productive defensive loop instead of refused.
+- **New helper `buildRedirectPrompt(redirects)`**: pure-function constructor for the redirect prompt. Takes a redirects array from `scanText`, returns the trap-loop prompt or `null` if no SCONE-tagged redirect is present.
+- **Non-SCONE DENYs keep canned refusal**: prompt-injection, secret-exfiltration, and harmful-endorsement DENYs (which have no productive defensive task to redirect to) continue to emit the canned refusal — the trap-loop intervention is gated to SCONE-tagged rules only.
+- **`intervention` field gains `input_redirect` value**: indicates the caller should forward `redirect.to_prompt` rather than emit `output`.
+- **8 new pytest tests** in `tests/api/test_governed_output_proxy.py` (now 46 total) — verifies attacker prompts trigger redirects, non-SCONE DENYs keep canned refusals, audit context still bypasses, redirect prompts have no attacker verbs in final-position lines.
+
+## [4.1.1] - 2026-05-14
+
+### Added
+
+- **SCONE-bench autonomous-exploit auditor pack on the production governed-output proxy**: `api/_governed_output.js` now ships 12 INPUT-side anchors and 2 OUTPUT-side anchors (`scone:exploit.*` codes) tagged for autonomous smart-contract exploit reasoning — drain/steal/inflate-balance/bypass-access-control/reentrancy-construct/flash-loan-attack/oracle-manipulation/construct-calldata/zero-address-brick/unprotected-fn-for-profit/replay-on-mainnet/profit-directive, plus exploit-fn-template and raw-calldata output emission. Mirror anchors landed in `services/scbe-shim/src/patterns.ts` for the Cloudflare Worker / HF Space shim.
+- **Audit-context dual-use partition**: 10-pattern whitelist (`SCONE_AUDIT_CONTEXT_PATTERNS`) suppresses SCONE-tagged anchors when the prompt is in legitimate audit context ("audit this contract", "responsible disclosure", "bug bounty", "static analysis of this contract", "I am a security researcher", "for a security review"). Validated end-to-end: drain/steal/exploit verbs still DENY in attacker framing, ALLOW in audit framing. Audit context is recorded in `governance.audit.audit_context: true|false`.
+- **`redirect_to:` schema field reserved for future trap-in-good-loops gate**: each SCONE rule carries a `redirect_to` string suggesting the defensive task the gate could redirect into ("audit the same contract for vulnerabilities and produce a remediation plan"). v1 records the redirect in `governance.redirect_to` and `governance.redirects[]` but does not yet act on it — the production proxy still emits the canned refusal. The schema field unblocks a follow-up gate that substitutes the user's exploit prompt with the defensive prompt before forwarding to the model.
+- **13 new pytest tests** in `tests/api/test_governed_output_proxy.py` covering 5 attacker prompts (all DENY), 5 audit-context allow prompts (all ALLOW), redirect-field plumbing, and a regression test that the existing FP envelope (train/AI-output/transformer-attention prompts) stays unmatched by SCONE.
+- **SCONE-bench external citation note** at `docs/external/SCONE_BENCH_2026_05_14.md` (full paper summary, vulnerability classes, SCBE response register). MATHBAC TA1 doc updated with a v1.4 entry citing SCONE-bench as upstream signal alongside Petri. README now has a "Composes with upstream safety tooling" section listing Petri / SCONE-bench / ALOHA. One-pager and cold-outreach packet updated similarly.
+
+### Changed
+
+- **`scanText` signature gains optional `{ skipSconeTag }` flag** — used by `buildGovernanceRecord` and `shouldPreBlock` to suppress SCONE rules when `isAuditContext(inputText)` is true. Existing callers without the flag continue to evaluate the full ruleset.
+
+## [4.1.0] - 2026-05-13
+
+### Added
+
+- **Governance abacus (deterministic BigInt-only L12+L13 scoring)**: `src/harmonic/governanceAbacus.ts` mechanically implements the canonical harmonic wall `H(d_h, pd) = 1/(1 + d_h + 2*pd)` and the L13 four-tier mapping (ALLOW / QUARANTINE / ESCALATE / DENY) in pure BigInt arithmetic at a configurable bead-grid scale (default 1e6). Same inputs produce bit-identical scores and tiers on every platform — no float drift, no NaN class, exact rational output also available. Public API: `runGovernanceAbacus`, `formatAbacusBoard`, `TIER_THRESHOLDS`. Re-exported from `scbe-aethermoore/harmonic`.
+- **Multi-abacus architecture doc** at `docs/ABACUS_ARCHITECTURE.md` parking the per-system roadmap (Roman tier-board, Egyptian unit-fraction tongue weights, schoty rolling-window breathing, soroban triadic temporal, suanpan composite) behind a documented contract — build only when a concrete consumer asks.
+- **Parity smoke** at `scripts/harmonic/abacus_smoke.cjs` (7/7 PASS within 1e-6, tier-identical across the full decision spectrum) verifying the abacus tracks the canonical `harmonicScale` formula exactly.
+
+### Changed
+
+- **`npm run clean` is now portable**: replaced `rimraf dist` with a pure-Node `fs.rmSync` one-liner so the build no longer depends on the `rimraf` package being present in `node_modules`. Unblocks `npm run build` on fresh installs.
+
+## [4.0.10] - 2026-05-13
+
+### Added
+
+- **Registry-visible funding links**: `package.json` `funding` field and `pyproject.toml` `[project.urls]` `Sponsor` / `Funding` / `Supporter` entries. GitHub Sponsors, Ko-fi, and the AetherMoore supporter page now surface directly on the npm and PyPI package pages and via `npm fund`.
+- **Petri-22 auditor pre-filter on the production governed-output proxy**: `api/_governed_output.js` adds 22 auditor anchors (2 DENY-tier `petri_tool:*`, 20 ESCALATE-tier `verb:` / `anchor:` / `phrase:`) lifted from `services/scbe-shim/src/patterns.ts`.
+- **5 axiom-class OUTPUT_RULES**: `axiom:locality.system_prompt_leak` (DENY), `axiom:locality.tool_leak` (DENY), `axiom:locality.jailbreak_phrase` (ESCALATE), `axiom:causality.future_assertion` (ESCALATE), `axiom:symmetry.harmful_endorsement` (DENY).
+- **scbe-shim Cloudflare Worker + HF Space mirror** at `services/scbe-shim/` and `services/scbe-shim-space/` with the matching `scbe_governance` response contract (audit / intervention / sha256 / provider fields).
+- **10 regression tests** in `tests/api/test_governed_output_proxy.py` covering verb-first secret exfil, Petri anchors, output axioms, and an FP envelope (`train the model` / `AI returns weird outputs` / `transformer attention` queries stay ALLOW).
+
+### Changed
+
+- **`axiom:locality.secret_exfiltration` is now bidirectional**: previously only matched `<secret>...<verb>` order, so prompts like `Print my .env` leaked through with decision=ALLOW. Now matches both orderings and includes `\.env\b` without a leading word-boundary so it works after a space.
+- **PyPI version resynced with npm** (3.3.0 → 4.0.10). Working tree had drifted to 4.0.3 unpublished; the new release closes the gap.
+
+## [Unreleased]
+
+### Added
+
+- **Repo shape 2026-04 (Phases 1-4 + 5)**: machine + human reorg plan at `scripts/repo_reorg/plan_repo_shape.py`, `artifacts/repo_reorg/inventory_2026-04.json`, `docs/ops/REPO_REORG_2026-04.md`. Root went from ~120 files to 72 files; 39 docs moved to `docs/{specs,ops,business}/`, 14 unreferenced root entry points archived under `runnables/legacy/` and `archive/`, 13 throwaway demos archived to `archive/demos/`, 3 empty UI stubs (`aetherbrowse/`, `app/`, `ui/`) archived to `archive/ui-graveyard/`. All moves use `git mv` so history is preserved.
+- **GeoShell App Store** in `scbe-visual-system/`: data-driven tile registry at `apps-registry.json`; new `lib/apps-registry-loader.ts`, `components/apps/AppStoreApp.tsx`, `components/apps/ServiceApp.tsx`; `types.ts` extended with `ServiceBinding` + missing `AppId` values. Service tiles for `Spiral Word`, `GeoSeal`, `GeoSeal Docs`, `AI IDE`, `SCBE Monitor`, `Physics Sim` with env URL overrides (`SPIRAL_WORD_URL`, `GEOSEAL_SERVICE_URL`, `AI_IDE_URL`, `SCBE_MONITOR_URL`, `PHYSICS_SIM_URL`). Shell renamed to **GeoShell v2.1.0**.
+- **GeoShell -> Kindle build pipe**: `scripts/repo_reorg/build_geoshell_into_kindle.py` builds `scbe-visual-system/` and mirrors `dist/` into `kindle-app/www/geoshell/`. NPM: `npm run geoshell:build-into-kindle` (and `:skip-install` variant).
+- **Registry contract tests**: `tests/visual_system/test_apps_registry.py` (9 tests) lock the App Store JSON shape, tile id uniqueness, service binding completeness, and AppId enum cross-check against `types.ts`. NPM: `npm run verify:geoshell-registry`.
+- **Active surface map**: `docs/specs/STRUCTURE.md` rewritten with the canonical UI-root map and the agent navigation guide.
+- **Harness skill tools**: `src/coding_spine/skill_harness_tools.py` discovers `SKILL.md` under `.claude/skills`, `.agents/skills`, `skills`, and optional `SCBE_HARNESS_SKILL_ROOTS`; embeds `harness_skill_tools_v1` + `openai_style_tools` in `agent-harness` manifest; GeoSeal `skill-tools` CLI/HTTP (`/v1/geoseal/skill-tools`) and npm `geoseal skill-tools`.
+- **Postgres lite (optional)**: `docker-compose.postgres-lite.yml` + `deploy/postgres-lite/init.sql`; `src/api/postgres_lite.py` probes `SCBE_POSTGRES_URL` / `DATABASE_URL`; `/health` includes `postgres_lite` on GeoSeal service and main API. Dependency: `psycopg[binary]`. NPM: `npm run postgres:lite:up` / `postgres:lite:down`.
+- **Billing persistence**: SQLite store (`src/api/billing_store.py`) for Stripe webhook dedupe and purchase records; default path `.scbe/billing.sqlite3` (override with `SCBE_BILLING_DB_PATH`).
+- **Agent operator rail**: `docs/ops/OPERATOR_SHIPPING_RAIL.md` and `docs/ops/MERGE_AND_STASH_PLAYBOOK.md` for merge hygiene, stash handling, and `scripts/agents/run_agent_task.py` + harness flows.
+
+### Changed
+
+- **Stripe billing API** (`src/api/stripe_billing.py`): owner-gated `GET /billing/purchases` (`x-owner-token` / `SCBE_OWNER_API_TOKEN`); webhook signature required unless `SCBE_ALLOW_UNSIGNED_STRIPE_WEBHOOK` is set for dev; idempotent checkout completion and event-id dedupe; unresolved one-time purchases when product metadata cannot be mapped (no silent default SKU).
+
+### Tests
+
+- `tests/api/test_stripe_billing_hardening.py`: owner auth, unsigned webhook policy, unresolved purchases, SQLite persistence, webhook dedupe.
+
 ## [4.0.2] - 2026-04-24
 
 ### Changed

@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SCBE Hosted Run Intake | AetherMoore</title>
+    <meta
+      name="description"
+      content="Submit a small SCBE hosted run request. Local and Ollama-first when possible; credits only apply to hosted/provider usage."
+    />
+    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html" />
+    <style>
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        background: #0b0d12;
+        color: #f2f0ea;
+        line-height: 1.55;
+      }
+      main {
+        width: min(920px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 44px 0;
+      }
+      a {
+        color: inherit;
+      }
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        color: #a3acb9;
+        margin-bottom: 36px;
+      }
+      h1 {
+        font-size: clamp(34px, 6vw, 64px);
+        line-height: 0.98;
+        margin: 0 0 16px;
+      }
+      h2 {
+        margin: 0 0 10px;
+      }
+      .lead {
+        color: #a3acb9;
+        max-width: 780px;
+        font-size: 18px;
+      }
+      .panel {
+        border: 1px solid rgba(214, 167, 86, 0.2);
+        background: #11161f;
+        border-radius: 8px;
+        padding: 22px;
+        margin-top: 24px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+      .card {
+        border: 1px solid rgba(214, 167, 86, 0.2);
+        background: #11161f;
+        border-radius: 8px;
+        padding: 20px;
+      }
+      .card p,
+      .card li {
+        color: #a3acb9;
+      }
+      .card ul {
+        margin: 10px 0 0;
+        padding-left: 20px;
+      }
+      .hero-image {
+        width: min(680px, 100%);
+        margin-top: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+      }
+      label {
+        display: grid;
+        gap: 6px;
+        font-weight: 800;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 6px;
+        background: #0b0d12;
+        color: #f2f0ea;
+        padding: 11px 12px;
+        font: inherit;
+      }
+      textarea {
+        min-height: 150px;
+        resize: vertical;
+      }
+      .hidden {
+        position: absolute;
+        left: -10000px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 16px;
+      }
+      button,
+      .btn {
+        border: 0;
+        border-radius: 6px;
+        padding: 11px 14px;
+        font-weight: 800;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      button,
+      .btn-primary {
+        background: #d6a756;
+        color: #14110c;
+      }
+      .btn-secondary {
+        background: #1a2230;
+        color: #d7dde8;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .status {
+        color: #d7dde8;
+        white-space: pre-wrap;
+      }
+      .fine {
+        color: #a3acb9;
+        font-size: 14px;
+      }
+      .section {
+        margin-top: 28px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav class="nav" aria-label="Hosted run navigation">
+        <a href="./index.html">Home</a>
+        <a href="./offers/">Offers</a>
+        <a href="./service-credits.html">Service Credits</a>
+        <a href="./payments.html">Payments</a>
+        <a href="./hire.html">Hire</a>
+        <a href="./legal/terms.html">Terms</a>
+      </nav>
+
+      <section id="offer">
+        <h1>SCBE hosted run intake</h1>
+        <p class="lead">
+          Use this when the npm packages or local/Ollama route are not enough and you want a small
+          governed run, report, benchmark, or routing pass handled through SCBE. Intake is free.
+          Credits are used only when hosted capacity, delivery, storage, or paid provider/model
+          usage is needed. No subscription is required for a one-time hosted run request.
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#hosted-run-form">Submit free intake</a>
+          <a class="btn btn-secondary" href="./service-credits.html">Top up $5+ credits</a>
+          <a class="btn btn-secondary" href="./payments.html">All payment paths</a>
+        </div>
+        <img
+          class="hero-image"
+          src="hero.svg"
+          alt="AetherMoore governed hosted run visual"
+        />
+      </section>
+
+      <section id="includes" class="section grid" aria-label="What hosted runs include">
+        <article class="card">
+          <h2>What you get</h2>
+          <ul>
+            <li>A decision record for the requested run, route, and result.</li>
+            <li>Threshold notes for when to stay local, retry, escalate, or use hosted capacity.</li>
+            <li>A pilot checklist for repeating the run safely later.</li>
+            <li>Review notes covering errors, evidence, model/provider use, and next fixes.</li>
+            <li>A short manual-style delivery note so the result can be reused.</li>
+            <li>Delivery through the listed contact route after the intake is matched.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h2>Good fit / not for</h2>
+          <p>
+            Good fit: small governed runs, reports, benchmark passes, routing checks, or
+            local-first attempts that may need hosted help.
+          </p>
+          <p>
+            Not for: emergency production incident response, secret handling without prior rules,
+            regulated customer data, or open-ended consulting from a tiny credit top-up.
+          </p>
+          <p>
+            Success check: the first win is a clear answer about what ran, what failed, what it
+            cost if paid providers were used, and what to try next.
+          </p>
+        </article>
+      </section>
+
+      <section class="panel" aria-label="Hosted run form">
+        <form id="hosted-run-form">
+          <div class="grid">
+            <label>
+              Contact
+              <input name="contact" type="text" autocomplete="email tel" required />
+            </label>
+            <label>
+              Run type
+              <select name="run_type">
+                <option value="governance-scan">Governance scan</option>
+                <option value="agent-routing">Agent routing</option>
+                <option value="report">Report</option>
+                <option value="benchmark">Benchmark</option>
+                <option value="training-capture">Training capture</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label>
+              Routing preference
+              <select name="route">
+                <option value="local-first">Local/free first</option>
+                <option value="ollama-first">Ollama first</option>
+                <option value="hosted-ok">Hosted is OK if useful</option>
+                <option value="hosted-required">Hosted required</option>
+              </select>
+            </label>
+            <label>
+              Budget / credits
+              <select name="budget">
+                <option value="open">Open / not sure</option>
+                <option value="credits-on-file">Credits already topped up</option>
+                <option value="5-20">$5-$20</option>
+                <option value="20-100">$20-$100</option>
+                <option value="100-plus">$100+</option>
+              </select>
+            </label>
+          </div>
+
+          <label style="margin-top: 16px">
+            What should SCBE run or inspect?
+            <textarea
+              name="task"
+              required
+              placeholder="Example: run a governed prompt audit on this workflow, summarize risk, and tell me whether local/Ollama is enough."
+            ></textarea>
+          </label>
+
+          <div class="grid" style="margin-top: 16px">
+            <label>
+              Repo URL (optional)
+              <input name="repo_url" type="url" />
+            </label>
+            <label>
+              Artifact URL (optional)
+              <input name="artifact_url" type="url" />
+            </label>
+          </div>
+
+          <label class="hidden">
+            Website
+            <input name="website" tabindex="-1" autocomplete="off" />
+          </label>
+
+          <label style="margin-top: 16px">
+            <span>
+              <input name="allow_training_capture" type="checkbox" value="true" />
+              Allow anonymized training capture for this intake
+            </span>
+          </label>
+
+          <div class="actions">
+            <button class="btn-primary" type="submit">Submit Hosted Run</button>
+            <a
+              class="btn btn-secondary"
+              href="https://ko-fi.com/izdandavis"
+              target="_blank"
+              rel="noopener"
+              >Top Up Credits</a
+            >
+            <a class="btn btn-secondary" href="./service-credits.html">How Credits Work</a>
+            <a class="btn btn-secondary" href="mailto:aethermoregames@pm.me">Support</a>
+          </div>
+          <p class="fine">
+            Do not paste secrets, private keys, passwords, customer data, or regulated data into
+            this form. Submit a description first; secure handoff is arranged only if needed.
+          </p>
+        </form>
+        <p id="hosted-run-status" class="status" role="status"></p>
+      </section>
+
+      <section id="faq" class="section grid" aria-label="Hosted run FAQ">
+        <article class="card">
+          <h2>Does intake cost money?</h2>
+          <p>
+            No. Intake is free. Credits apply only when the run needs hosted capacity, paid
+            provider/model usage, storage, delivery, or extra report work.
+          </p>
+        </article>
+        <article class="card">
+          <h2>How are costs handled?</h2>
+          <p>
+            The target rule is provider cost plus a small 2-5% SCBE coordination fee. Local,
+            deterministic, and Ollama-first paths are preferred when they are enough.
+          </p>
+        </article>
+        <article class="card">
+          <h2>What should I avoid sending?</h2>
+          <p>
+            Do not send passwords, private keys, regulated data, customer files, or confidential
+            third-party material through the form. Start with a description.
+          </p>
+        </article>
+        <article class="card">
+          <h2>Where can I inspect more?</h2>
+          <p>
+            See the <a href="use-cases/governed-ai-workflows.html">use cases</a>,
+            <a href="comparison/toolkit-vs-full-repo.html">toolkit comparison</a>,
+            <a href="proof/why-the-manual-exists.html">manual proof</a>,
+            <a href="redteam.html">red-team notes</a>, and
+            <a href="proof/red-team-summary.html">red-team summary</a>.
+          </p>
+        </article>
+      </section>
+
+      <section class="section panel final-cta" aria-label="Final CTA">
+        <h2>Start with the free intake.</h2>
+        <p class="lead">
+          If the request can stay local or Ollama-first, it should. If hosted help is useful, top up
+          service credits and keep the run small enough to verify.
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#hosted-run-form">Submit free intake</a>
+          <a class="btn btn-secondary" href="./service-credits.html">Read service-credit rules</a>
+          <a class="btn btn-secondary" href="./legal/privacy.html">Privacy</a>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const form = document.getElementById('hosted-run-form');
+      const statusEl = document.getElementById('hosted-run-status');
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        statusEl.textContent = 'Submitting hosted run intake...';
+        const data = Object.fromEntries(new FormData(form).entries());
+        data.allow_training_capture = form.elements.allow_training_capture.checked;
+        data.source = 'aethermoore.com/SCBE-AETHERMOORE/hosted-run.html';
+        try {
+          const response = await fetch(
+            'https://scbe-agent-bridge-vercel.vercel.app/v1/polly/hosted-run',
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data),
+            }
+          );
+          const payload = await response.json();
+          if (!response.ok || !payload.ok) {
+            throw new Error(payload.error || `Request failed with ${response.status}`);
+          }
+          statusEl.textContent = [
+            payload.message,
+            '',
+            ...(payload.next_steps || []).slice(0, 6).map((step) => `- ${step}`),
+          ].join('\n');
+          form.reset();
+        } catch (error) {
+          statusEl.textContent = `Could not submit: ${error.message || error}`;
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -5,10 +5,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CANONICAL_REPO = "issdandavis/SCBE-AETHERMOORE"
@@ -16,6 +17,20 @@ CANONICAL_BRANCH = "main"
 
 
 NOTEBOOKS: list[dict[str, Any]] = [
+    {
+        "name": "zero-cost-local-0p5b",
+        "aliases": [
+            "zero-cost",
+            "zero-cost-local",
+            "brick1",
+            "brick1-0p5b",
+            "0p5b",
+            "qwen-0p5b",
+        ],
+        "path": "notebooks/brick1_0p5b_colab.ipynb",
+        "category": "training",
+        "summary": "Zero-cost free-tier Colab notebook for the 0.5B Qwen2.5-Coder LoRA brick1 lane (recommended starting point).",
+    },
     {
         "name": "scbe-pivot-v2",
         "aliases": ["pivot", "pivot-v2", "conversation-pivot"],
@@ -39,7 +54,12 @@ NOTEBOOKS: list[dict[str, Any]] = [
     },
     {
         "name": "coder-code-primaries",
-        "aliases": ["code-primaries", "coder-primaries", "coding-primaries", "code-qlora"],
+        "aliases": [
+            "code-primaries",
+            "coder-primaries",
+            "coding-primaries",
+            "code-qlora",
+        ],
         "path": "notebooks/coder_qwen_code_primaries_colab.ipynb",
         "category": "training",
         "summary": "QLoRA notebook for the SCBE coding-primaries lane across Python, JavaScript, Rust, Mathematica, Haskell, and Markdown.",
@@ -105,6 +125,25 @@ def _github_repo() -> str:
 
 
 def _github_branch() -> str:
+    env_branch = os.environ.get("SCBE_COLAB_BRANCH", "").strip()
+    if env_branch:
+        return env_branch
+    try:
+        result = subprocess.run(
+            ["git", "branch", "--show-current"],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
+        branch = result.stdout.strip()
+        if result.returncode == 0 and branch:
+            return branch
+    except OSError:
+        # Git metadata is optional in packaged/catalog-only environments.
+        pass
     return CANONICAL_BRANCH
 
 
@@ -135,7 +174,10 @@ def _resolve_notebook(query: str) -> dict[str, Any]:
             return row
 
     for row in NOTEBOOKS:
-        haystack = [_normalize(row["name"]), *[_normalize(alias) for alias in row["aliases"]]]
+        haystack = [
+            _normalize(row["name"]),
+            *[_normalize(alias) for alias in row["aliases"]],
+        ]
         if any(term in item for item in haystack):
             return row
 
@@ -190,7 +232,12 @@ def main() -> int:
     payload = _record_payload(row)
     if args.action == "url":
         if args.json:
-            print(json.dumps({"name": payload["name"], "colab_url": payload["colab_url"]}, indent=2))
+            print(
+                json.dumps(
+                    {"name": payload["name"], "colab_url": payload["colab_url"]},
+                    indent=2,
+                )
+            )
         else:
             print(payload["colab_url"])
         return 0

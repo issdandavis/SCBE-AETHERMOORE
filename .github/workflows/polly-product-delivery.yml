@@ -1,0 +1,194 @@
+name: Polly Product Delivery Notify
+
+# Receives polly_product_delivery repository_dispatch events from the
+# Vercel-hosted Stripe webhook. Files an operator issue for every paid
+# digital product and, when live SMTP + delivery secrets exist, emails the
+# buyer a package link plus immediate-start instructions.
+
+on:
+  repository_dispatch:
+    types: [polly_product_delivery]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: polly-product-delivery-${{ github.event.client_payload.record.session_id }}
+  cancel-in-progress: false
+
+jobs:
+  notify-buyer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: File a product-delivery GitHub issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SESSION_ID: ${{ github.event.client_payload.record.session_id }}
+          PAYMENT_INTENT: ${{ github.event.client_payload.record.payment_intent }}
+          PRODUCT_KEY: ${{ github.event.client_payload.record.product_key }}
+          PRODUCT_NAME: ${{ github.event.client_payload.record.product_name }}
+          PACKAGE_NAME: ${{ github.event.client_payload.record.package_name }}
+          AMOUNT_CENTS: ${{ github.event.client_payload.record.amount_total }}
+          CURRENCY: ${{ github.event.client_payload.record.currency }}
+          CONTACT_EMAIL: ${{ github.event.client_payload.record.contact_email }}
+          CONTACT_NAME: ${{ github.event.client_payload.record.contact_name }}
+          LIVEMODE: ${{ github.event.client_payload.record.livemode }}
+        run: |
+          set -euo pipefail
+          existing=$(gh issue list --state all --search "product delivery: ${SESSION_ID} in:title" --json number --jq '.[0].number' --repo "${{ github.repository }}")
+          if [[ -n "$existing" && "$existing" != "null" ]]; then
+            echo "issue already exists for session ${SESSION_ID} (#${existing}); skipping"
+            echo "ALREADY_FILED=1" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          if [[ "${CURRENCY,,}" == "usd" && -n "${AMOUNT_CENTS:-}" ]]; then
+            price="\$$(awk "BEGIN { printf \"%.2f\", ${AMOUNT_CENTS}/100 }")"
+          else
+            price="${AMOUNT_CENTS:-?} ${CURRENCY:-?}"
+          fi
+
+          mode_tag="LIVE"
+          if [[ "${LIVEMODE,,}" != "true" ]]; then
+            mode_tag="TEST-MODE"
+          fi
+
+          if ! gh label view product-delivery --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh label create product-delivery --description "Paid digital product delivery" --color "6E56CF" --repo "${{ github.repository }}"
+          fi
+
+          title="product delivery: ${SESSION_ID} (${PRODUCT_KEY}, ${price}, ${mode_tag})"
+          body=$(cat <<EOF
+          A buyer just completed a paid digital-product checkout.
+
+          - session id: \`${SESSION_ID}\`
+          - payment intent: \`${PAYMENT_INTENT}\`
+          - product: ${PRODUCT_NAME} (\`${PRODUCT_KEY}\`)
+          - package: \`${PACKAGE_NAME}\`
+          - amount: ${price}
+          - mode: ${mode_tag}
+          - buyer name: ${CONTACT_NAME:-(not provided)}
+          - buyer email: ${CONTACT_EMAIL:-(not provided)}
+
+          **Operator action:**
+
+          1. Confirm the product access email landed if this was LIVE mode.
+          2. If SMTP or delivery secrets were missing, send the buyer the package link manually.
+          3. Watch for reply/support within 1 business day.
+          EOF
+          )
+          gh issue create \
+            --title "$title" \
+            --body "$body" \
+            --label "product-delivery" \
+            --repo "${{ github.repository }}"
+
+      - name: Email the buyer product access
+        if: ${{ env.ALREADY_FILED != '1' && github.event.client_payload.record.livemode == true }}
+        env:
+          SMTP_HOST: ${{ secrets.POLLY_LEAD_SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.POLLY_LEAD_SMTP_PORT }}
+          SMTP_USER: ${{ secrets.POLLY_LEAD_SMTP_USER }}
+          SMTP_PASS: ${{ secrets.POLLY_LEAD_SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.POLLY_LEAD_SMTP_FROM }}
+          SMTP_OPERATOR: ${{ secrets.POLLY_LEAD_SMTP_TO }}
+          SCBE_DELIVERY_BASE_URL: ${{ secrets.SCBE_DELIVERY_BASE_URL }}
+          SCBE_DELIVERY_TOKEN: ${{ secrets.SCBE_DELIVERY_TOKEN }}
+          PAYLOAD: ${{ toJSON(github.event.client_payload.record) }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${SMTP_HOST:-}" || -z "${SMTP_USER:-}" || -z "${SMTP_PASS:-}" ]]; then
+            echo "SMTP credentials missing; product email will need manual send (issue is filed)" >&2
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json
+          import os
+          import smtplib
+          import ssl
+          import sys
+          from email.message import EmailMessage
+          from urllib.parse import urlencode
+
+          record = json.loads(os.environ["PAYLOAD"])
+          host = os.environ["SMTP_HOST"]
+          port = int(os.environ.get("SMTP_PORT") or "587")
+          user = os.environ["SMTP_USER"]
+          password = os.environ["SMTP_PASS"]
+          sender = os.environ.get("SMTP_FROM") or user
+          operator_bcc = os.environ.get("SMTP_OPERATOR") or user
+          buyer = record.get("contact_email") or operator_bcc
+          name = record.get("contact_name") or "there"
+          product_key = record.get("product_key") or "product"
+          product_name = record.get("product_name") or "SCBE product"
+          package_name = record.get("package_name") or "SCBE package"
+          manual_url = record.get("manual_url") or "https://aethermoore.com/SCBE-AETHERMOORE/product-manual/delivery-and-access.html"
+
+          delivery_base = (os.environ.get("SCBE_DELIVERY_BASE_URL") or "https://scbe-agent-bridge-vercel.vercel.app/api/agent/download").rstrip()
+          delivery_token = os.environ.get("SCBE_DELIVERY_TOKEN") or ""
+          download_line = "Download link: reply to this email if your package link is missing."
+          if delivery_token:
+              query = urlencode({"product": product_key, "token": delivery_token})
+              sep = "&" if "?" in delivery_base else "?"
+              download_line = f"Download link: {delivery_base}{sep}{query}"
+
+          subject = f"Your {product_name} access (session {record.get('session_id','?')})"
+          body_lines = [
+              f"Hi {name},",
+              "",
+              f"Thanks for purchasing {product_name}.",
+              "",
+              download_line,
+              f"Package: {package_name}",
+              f"Manual: {manual_url}",
+              "Delivery help: https://aethermoore.com/SCBE-AETHERMOORE/product-manual/delivery-and-access.html",
+              "",
+              "START HERE",
+              "  1. Download the ZIP and keep the receipt email.",
+              "  2. Open the product README first.",
+              "  3. Skim the manual link above before running scripts.",
+              "  4. Reply with one question or blocker; support is handled by email.",
+              "",
+              "BONUS STARTER MATERIALS",
+              "  - Delivery + Access recovery page",
+              "  - Buyer manual for this product",
+              "  - Service fast-start packet",
+              "  - Upgrade path to Snapshot or Heartbeat if you want human review",
+              "",
+              f"Order ref: session {record.get('session_id','?')}, payment {record.get('payment_intent','?')}",
+              "",
+              "- Issac Davis",
+              "  https://aethermoore.com/",
+          ]
+
+          msg = EmailMessage()
+          msg["Subject"] = subject
+          msg["From"] = sender
+          msg["To"] = buyer
+          msg["Reply-To"] = sender
+          if operator_bcc and operator_bcc != buyer:
+              msg["Bcc"] = operator_bcc
+          msg.set_content("\n".join(body_lines))
+
+          context = ssl.create_default_context()
+          try:
+              if port == 465:
+                  with smtplib.SMTP_SSL(host, port, context=context, timeout=20) as s:
+                      s.login(user, password)
+                      s.send_message(msg)
+              else:
+                  with smtplib.SMTP(host, port, timeout=20) as s:
+                      s.starttls(context=context)
+                      s.login(user, password)
+                      s.send_message(msg)
+              print(f"product access emailed to {buyer}")
+          except Exception as exc:
+              print(
+                  f"SMTP send failed but product-delivery issue is already filed: "
+                  f"{type(exc).__name__}: {exc}",
+                  file=sys.stderr,
+              )
+              sys.exit(0)
+          PY

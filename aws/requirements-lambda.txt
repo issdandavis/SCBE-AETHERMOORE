@@ -2,16 +2,16 @@
 # Use: pip install -r requirements-lambda.txt -t ./package
 
 # FastAPI and ASGI adapter
-fastapi>=0.104.0
+fastapi>=0.136.1
 pydantic>=2.5.0
-mangum>=0.17.0
+mangum>=0.21.0
 
 # Core dependencies
-numpy>=1.26.0
+numpy>=2.4.6
 scipy>=1.11.0
 
 # Security (minimal set for Lambda)
-cryptography>=41.0.0
+cryptography>=48.0.0
 
 # Optional: Firebase persistence
 # firebase-admin>=6.2.0

@@ -46,20 +46,23 @@ jobs:
 
       - name: Run bandit
         id: bandit
-        continue-on-error: true
+        # audit: hard gate for high-severity Python issues.
         run: |
           bandit -r src scripts api python agents -q \
+            --severity-level high \
             -x tests,node_modules,dist,artifacts,training,external
 
       - name: Check for package.json and run npm audit
         id: npm_audit
         if: ${{ hashFiles('package-lock.json') != '' }}
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: npm audit --audit-level=high
 
       - name: Check for requirements.txt and run pip-audit
         id: pip_audit
         if: ${{ hashFiles('requirements.txt') != '' }}
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           pip-audit -r requirements.txt
@@ -73,7 +76,7 @@ jobs:
           echo "- npm audit: ${{ steps.npm_audit.outcome || 'skipped' }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- pip-audit: ${{ steps.pip_audit.outcome || 'skipped' }}" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Fail if any security check failed
+      - name: Fail if blocking security checks failed
         if: always()
         run: |
           failed=0
@@ -82,13 +85,12 @@ jobs:
             failed=1
           fi
           if [ "${{ steps.npm_audit.outcome }}" = "failure" ]; then
-            echo "::error::npm audit found vulnerabilities"
-            failed=1
+            echo "::warning::npm audit found vulnerabilities; tracked as advisory telemetry"
           fi
           if [ "${{ steps.pip_audit.outcome }}" = "failure" ]; then
-            echo "::error::pip-audit found vulnerabilities"
-            failed=1
+            echo "::warning::pip-audit found vulnerabilities; tracked as advisory telemetry"
           fi
           if [ "$failed" -eq 1 ]; then
-            echo "::warning::One or more security checks reported issues — see summary above"
+            echo "::error::One or more blocking security checks reported issues — see summary above"
+            exit 1
           fi

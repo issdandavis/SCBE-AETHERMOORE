@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>scbe-aethermoore-cli | SCBE Command Line</title>
+    <meta
+      name="description"
+      content="scbe-aethermoore-cli is the terminal interface for GeoSeal, tokenizer lanes, governance packets, web lookup, and verification."
+    />
+    <link rel="stylesheet" href="../static/packages/package-products.css" />
+  </head>
+  <body data-package-theme="cli">
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="../packages.html">Package Products</a>
+        <nav class="nav" aria-label="Primary">
+          <a href="../index.html">Home</a>
+          <a href="../packages.html">Packages</a>
+          <a href="scbe-aethermoore.html">Core</a>
+          <a href="scbe-agent-bus.html">Agent Bus</a>
+        </nav>
+      </header>
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Command line</p>
+            <h1>scbe-aethermoore-cli</h1>
+            <p class="lede">
+              A terminal-first package for humans and AI agents: run checks, call GeoSeal, route tokenizer work, and
+              keep command workflows tied to SCBE verification. Recent releases add abacus runs and no-auto-execute
+              typo suggestions for SCBE-owned commands.
+            </p>
+            <code class="command">npm install -g scbe-aethermoore-cli</code>
+            <div class="cta-row">
+              <a class="button" href="https://www.npmjs.com/package/scbe-aethermoore-cli">npm Package</a>
+              <a class="button secondary" href="../products.html">Buyer Products</a>
+            </div>
+          </div>
+          <div class="visual">
+            <div class="terminal-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="terminal-body">
+              <div><strong>$ scbe demo --json</strong></div>
+              <div>DENY: geoseal.execution_gate.connector-secret-path</div>
+              <div><strong>$ scbe selftest</strong></div>
+              <div>checks passed</div>
+              <div><strong>$ scbe version</strong></div>
+              <div>scbe-aethermoore-cli 4.4.0</div>
+              <div><strong>$ scbe abacus run --d-h 0.1 --pd 0 --json</strong></div>
+              <div>{ "tier": "ALLOW", "trit": 1 }</div>
+              <div><strong>$ geoseal verify-file build.zip</strong></div>
+              <div>receipt emitted</div>
+            </div>
+          </div>
+        </section>
+        <section class="band reveal">
+          <div class="detail-grid">
+            <article class="panel">
+              <h3>Who It Helps</h3>
+              <p>Operators, developers, and coding agents that need a nicer shell surface with SCBE checks attached.</p>
+            </article>
+            <article class="panel">
+              <h3>What It Gives</h3>
+              <p>Global <code>scbe</code>, <code>geoseal</code>, and <code>scbe-geoseal</code> commands backed by the core SCBE package.</p>
+            </article>
+            <article class="panel">
+              <h3>Use It With</h3>
+              <p>The agent bus for multi-agent routing and the core engine for local governance decisions.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+      <footer class="footer">scbe-aethermoore-cli. The terminal product surface.</footer>
+    </div>
+    <script src="../static/packages/package-products.js"></script>
+  </body>
+</html>

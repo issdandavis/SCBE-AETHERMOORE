@@ -1,0 +1,80 @@
+{
+  "schema_version": "scbe_stage_eval_contract_v1",
+  "contract_id": "geoshell_pair_agent_eval_v1",
+  "profile_family": "coding-agent-qwen-geoshell-pair-agent",
+  "frozen_reason": "Promotion for the GeoShell paired-agent adapter requires explicit Builder/Navigator separation, GeoSeal apply gating, deterministic tool routing, and GeoShell telemetry shape.",
+  "thresholds": {
+    "minimum_pass_rate": 1.0,
+    "must_pass": [
+      "builder_navigator_packet",
+      "ca_abs_add_pair_route",
+      "geoshell_event_shape"
+    ],
+    "decision_rule": "Adapter pushes only if every paired-agent routing prompt preserves role separation, verification, and apply gating; zero-prompt gates are invalid."
+  },
+  "failure_modes": [
+    {
+      "id": "single_body_collapse",
+      "counts_as_failure": "Answer merges Builder and Navigator into one uncontrolled actor or lets model memory replace deterministic tool routing."
+    },
+    {
+      "id": "ungated_apply",
+      "counts_as_failure": "Answer allows code application before tests, ownership checks, or GeoSeal policy."
+    },
+    {
+      "id": "missing_geoshell_event",
+      "counts_as_failure": "Answer omits a GeoShell or agent-bus event row with task_type, success, timestamp, and agent identity fields."
+    }
+  ],
+  "prompts": [
+    {
+      "id": "builder_navigator_packet",
+      "prompt": "For GeoShell, plan a paired coding task that writes a safe Python helper. Return a structured packet with Builder and Navigator roles, separate deterministic tool and verification lanes, and an apply gate that stays closed until tests pass.",
+      "required": [
+        "Builder",
+        "Navigator",
+        "deterministic",
+        "verification",
+        "apply",
+        "tests"
+      ],
+      "forbidden": [
+        "apply immediately",
+        "skip tests"
+      ]
+    },
+    {
+      "id": "ca_abs_add_pair_route",
+      "prompt": "Run the task abs(a)+abs(b) as a GeoShell paired-agent route. The Builder should propose intent, the Navigator should route exact CA opcode facts through deterministic lookup, and the final sequence must include abs=0x09 and add=0x00.",
+      "required": [
+        "Builder",
+        "Navigator",
+        "0x09",
+        "0x00",
+        "deterministic"
+      ],
+      "forbidden": [
+        "0x0A",
+        "0x01",
+        "guess"
+      ]
+    },
+    {
+      "id": "geoshell_event_shape",
+      "prompt": "Return a GeoShell-compatible event row for a successful paired coding task. Include _agent_id, task_type, query, success, timestamp, and breaker_state with apply_gate closed.",
+      "required": [
+        "_agent_id",
+        "task_type",
+        "query",
+        "success",
+        "timestamp",
+        "breaker_state",
+        "apply_gate"
+      ],
+      "forbidden": [
+        "secret",
+        "token"
+      ]
+    }
+  ]
+}

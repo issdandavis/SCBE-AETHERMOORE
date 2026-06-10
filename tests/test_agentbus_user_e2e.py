@@ -35,6 +35,8 @@ def test_user_cli_agentbus_run_shapes_dispatch_tracks_and_watches() -> None:
             "--budget-cents",
             "0",
             "--dispatch",
+            "--dispatch-provider",
+            "offline",
             "--json",
         ],
         cwd=ROOT,
@@ -52,9 +54,17 @@ def test_user_cli_agentbus_run_shapes_dispatch_tracks_and_watches() -> None:
     assert payload["dispatch"]["enabled"] is True
     assert payload["dispatch"]["provider"] == "offline"
     assert payload["dispatch"]["event_id"]
+    assert payload["hydra_tokenizer_bridge"]["enabled"] is True
+    assert payload["hydra_tokenizer_bridge"]["schema_version"] == "geoseal_hydra_tokenizer_bridge_v1"
+    assert payload["hydra_tokenizer_bridge"]["head_count"] == 6
+    assert payload["hydra_tokenizer_bridge"]["tokenizer_packet"]["row_count"] == 6
     assert (ROOT / payload["artifacts"]["latest_round"]).exists()
+    assert (ROOT / payload["artifacts"]["hydra_tokenizer_bridge"]).exists()
     assert (ROOT / payload["artifacts"]["watcher"]).exists()
     assert (ROOT / payload["artifacts"]["summary"]).exists()
+    watcher = json.loads((ROOT / payload["artifacts"]["watcher"]).read_text(encoding="utf-8"))
+    assert watcher["lanes"]["action"]["hydra_tokenizer_bridge"]["enabled"] is True
+    assert watcher["lanes"]["action"]["hydra_tokenizer_bridge"]["selected_tongue"] == "KO"
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")

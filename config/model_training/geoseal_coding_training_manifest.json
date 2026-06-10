@@ -1,7 +1,7 @@
 {
   "schema_version": "geoseal_coding_training_manifest_v1",
   "title": "GeoSeal dedicated coding-agent training system",
-  "default_profile": "coding-agent-qwen-online-v2",
+  "default_profile": "coding-agent-qwen-stage6-repair-v12",
   "artifact_root": "artifacts/hf_coding_agent_jobs",
   "profiles": [
     {
@@ -47,10 +47,76 @@
       "purpose": "Repair pass after frozen Stage 6 smoke eval failed. Adds analog records for byte/hex markers, lane separation, resource hold, steady-state fallback, momentum damping, and re-advance before any merged coding-model promotion."
     },
     {
+      "profile_id": "coding-agent-qwen-stage6-repair-v8",
+      "profile_path": "config/model_training/coding-agent-qwen-stage6-repair-v8.json",
+      "stage": "atomic_workflow_repair",
+      "purpose": "Stage 6 repair continuation retained for status, smoke-eval, and merge traceability."
+    },
+    {
+      "profile_id": "coding-agent-qwen-stage6-repair-v9",
+      "profile_path": "config/model_training/coding-agent-qwen-stage6-repair-v9.json",
+      "stage": "atomic_workflow_repair",
+      "purpose": "Stage 6 repair continuation retained for status, smoke-eval, and merge traceability."
+    },
+    {
+      "profile_id": "coding-agent-qwen-stage6-repair-v10",
+      "profile_path": "config/model_training/coding-agent-qwen-stage6-repair-v10.json",
+      "stage": "atomic_workflow_repair",
+      "purpose": "Stage 6 repair baseline that recovered part of the frozen gate and informs later constrained-decoding or DPO pivots."
+    },
+    {
+      "profile_id": "coding-agent-qwen-stage6-repair-v11",
+      "profile_path": "config/model_training/coding-agent-qwen-stage6-repair-v11.json",
+      "stage": "atomic_workflow_repair",
+      "purpose": "Stage 6 repair experiment retained for regression comparison against v10 and v12."
+    },
+    {
+      "profile_id": "coding-agent-qwen-stage6-repair-v12",
+      "profile_path": "config/model_training/coding-agent-qwen-stage6-repair-v12.json",
+      "stage": "atomic_workflow_repair_final_sft",
+      "purpose": "Current gated Stage 6 repair target. Trains asymmetric forced-prefix records and blocks adapter push unless the frozen Stage 6 contract passes."
+    },
+    {
+      "profile_id": "coding-agent-qwen-stage6-boss-dpo-v1",
+      "profile_path": "config/model_training/coding-agent-qwen-stage6-boss-dpo-v1.json",
+      "stage": "atomic_workflow_boss_retry_dpo",
+      "purpose": "Confirmed DPO adapter after v12 failed the frozen Stage 6 boss gate. Uses analog DPO rows plus the GeoSeal constrained-checklist scaffold, passed 5/5 in HF job 69f587579d85bec4d76f0297, and pushed to Hugging Face."
+    },
+    {
       "profile_id": "coding-agent-qwen-full-coding-system-v8",
       "profile_path": "config/model_training/coding-agent-qwen-full-coding-system-v8.json",
       "stage": "full_coding_system",
       "purpose": "Adds the full coding system as a gated lane: code primaries, music-theory harmony, atomic tokenizer rows, binary/hex transport, code-lane contracts, and workflow composition as separate aligned evidence lanes."
+    },
+    {
+      "profile_id": "coding-agent-qwen-geoshell-pair-agent-v1",
+      "profile_path": "config/model_training/coding-agent-qwen-geoshell-pair-agent-v1.json",
+      "stage": "geoshell_pair_agent",
+      "purpose": "Builder/Navigator pair-agent behavior for GeoShell. Useful after core Stage 6 and CA/GeoSeal command recall are stable."
+    },
+    {
+      "profile_id": "coding-agent-qwen-ca-geoseal-smoke-repair-v1",
+      "profile_path": "config/model_training/coding-agent-qwen-ca-geoseal-smoke-repair-v1.json",
+      "stage": "ca_geoseal_smoke_repair",
+      "purpose": "Focused repair adapter for merged-model smoke failures: CA abs/add opcode recall and runnable depth-2 JSON key extraction."
+    },
+    {
+      "profile_id": "coding-agent-qwen-ca-opcode-exact-repair-v2",
+      "profile_path": "config/model_training/coding-agent-qwen-ca-opcode-exact-repair-v2.json",
+      "stage": "ca_opcode_exact_repair",
+      "purpose": "Narrow exact-byte repair after direct adapter smoke reached 3/4 but confused CA add with abs; drills abs=0x09, add=0x00, sequence 0x09,0x09,0x00."
+    },
+    {
+      "profile_id": "coding-agent-qwen-ca-geoseal-combined-repair-v3",
+      "profile_path": "config/model_training/coding-agent-qwen-ca-geoseal-combined-repair-v3.json",
+      "stage": "ca_geoseal_combined_repair",
+      "purpose": "Combined direct-smoke repair for exact CA abs/add byte sequence and runnable depth-2 JSON key code after separate v1/v2 repairs each reached 3/4."
+    },
+    {
+      "profile_id": "coding-agent-qwen-geoseal-harness-merged-v1",
+      "profile_path": "config/model_training/coding-agent-qwen-geoseal-harness-merged-v1.json",
+      "stage": "geoseal_harness_merged_model",
+      "purpose": "First confirmed harnessed coding-agent full model. General coding is handled by merged model weights; exact CA opcode planning is routed through scbe_code.ca-plan. Passed 4/4 harness smoke in HF job 69f5a24298a8d679adfb8713."
     }
   ],
   "smoke_eval": {

@@ -28,19 +28,52 @@ DEFAULT_OUTPUT = REPO_ROOT / "products" / "packaged"
 # ---- Product: AI Governance Toolkit ----
 
 TOOLKIT_FILES = [
+    # Buyer-facing start guide
+    ("deliverables/SCBE_Production_Pack/BUYER_START_GUIDE.md", "BUYER_START_GUIDE.md"),
+    (
+        "deliverables/SCBE_Production_Pack/packages/ai-governance-toolkit/README.md",
+        "quickstart/README.md",
+    ),
+    # Practical buyer templates promised on the sales/manual pages
+    (
+        "deliverables/SCBE_Production_Pack/packages/ai-governance-toolkit/decision-record-template.md",
+        "templates/decision-record-template.md",
+    ),
+    (
+        "deliverables/SCBE_Production_Pack/packages/ai-governance-toolkit/threshold-worksheet.md",
+        "templates/threshold-worksheet.md",
+    ),
+    (
+        "deliverables/SCBE_Production_Pack/packages/ai-governance-toolkit/pilot-checklist.md",
+        "templates/pilot-checklist.md",
+    ),
+    (
+        "deliverables/SCBE_Production_Pack/packages/ai-governance-toolkit/review-notes-template.md",
+        "templates/review-notes-template.md",
+    ),
     # Architecture docs
-    ("LAYER_INDEX.md", "docs/LAYER_INDEX.md"),
-    ("SYSTEM_ARCHITECTURE.md", "docs/SYSTEM_ARCHITECTURE.md"),
-    ("ARCHITECTURE.md", "docs/ARCHITECTURE.md"),
-    ("docs/LANGUES_WEIGHTING_SYSTEM.md", "docs/LANGUES_WEIGHTING_SYSTEM.md"),
-    ("docs/CORE_AXIOMS_CANONICAL_INDEX.md", "docs/CORE_AXIOMS_CANONICAL_INDEX.md"),
-    ("docs/specs/LAYER_12_CANONICAL_FORMULA.md", "docs/LAYER_12_CANONICAL_FORMULA.md"),
+    ("docs/specs/LAYER_INDEX.md", "docs/LAYER_INDEX.md"),
+    ("docs/specs/SYSTEM_ARCHITECTURE.md", "docs/SYSTEM_ARCHITECTURE.md"),
+    ("docs/specs/ARCHITECTURE.md", "docs/ARCHITECTURE.md"),
+    ("docs/specs/SCBE_TECHNICAL_PACKET_v1.md", "docs/SCBE_TECHNICAL_PACKET_v1.md"),
+    ("docs/specs/SCBE_SYSTEM_OVERVIEW.md", "docs/SCBE_SYSTEM_OVERVIEW.md"),
+    ("docs/specs/CANONICAL_FORMULA_REGISTRY.md", "docs/CANONICAL_FORMULA_REGISTRY.md"),
+    ("docs/specs/LAYER_MATH_COMPRESSED.md", "docs/LAYER_MATH_COMPRESSED.md"),
     # Governance templates
     ("config/scbe_core_axioms_v1.yaml", "templates/scbe_core_axioms.yaml"),
-    ("training-data/schemas/training_schema.json", "templates/training_schema.json"),
     # Quickstart
-    ("docs/QUICKSTART_MONETIZATION.md", "quickstart/DEMO_FLOW.md"),
+    ("docs/PRODUCT_QUICKSTART.md", "quickstart/PRODUCT_QUICKSTART.md"),
 ]
+
+TRAINING_SCHEMA_JSON = json.dumps(
+    {
+        "schema": "scbe_training_record_v1",
+        "required": ["instruction", "response"],
+        "optional": ["metadata", "source", "source_type", "quality", "track"],
+        "note": "Full training-data files live in the external Hugging Face dataset referenced by DATASET_LOCATION.md.",
+    },
+    indent=2,
+)
 
 TOOLKIT_README = """# SCBE AI Governance Toolkit
 
@@ -49,14 +82,21 @@ Thank you for purchasing the AI Governance Toolkit from AetherMoore.
 ## What's Inside
 
 - `docs/` — Complete 14-layer architecture documentation
+- `BUYER_START_GUIDE.md` — First ten minutes and support path
+- `templates/decision-record-template.md` — Capture a governed decision
+- `templates/threshold-worksheet.md` — Set first allow/quarantine/deny thresholds
+- `templates/pilot-checklist.md` — Run one small pilot workflow
+- `templates/review-notes-template.md` — Record review findings
 - `templates/` — Governance configuration templates (YAML/JSON)
-- `quickstart/` — Demo flow to get started immediately
+- `quickstart/` — Package README and demo flow
 
 ## Quick Start
 
-1. Read `docs/LAYER_INDEX.md` for the full 14-layer pipeline overview
-2. Copy `templates/scbe_core_axioms.yaml` into your project
-3. Follow `quickstart/DEMO_FLOW.md` for a hands-on walkthrough
+1. Open `BUYER_START_GUIDE.md`
+2. Fill `templates/threshold-worksheet.md` for one real workflow
+3. Complete `templates/decision-record-template.md` for one allow/quarantine/deny decision
+4. Use `templates/pilot-checklist.md` to verify the workflow is ready for a small pilot
+5. Use `docs/LAYER_INDEX.md` after the first decision record is complete
 
 ## Support
 
@@ -72,29 +112,52 @@ MIT License — use commercially, modify freely, attribution appreciated.
 
 # ---- Product: AI Security Training Vault ----
 
-# We include a curated subset of SFT data (not the massive claude exports)
+# Local SFT data was moved out of the public repository to the external
+# training-data dataset. If these ignored local files exist, package them; CI
+# and clean public checkouts should still produce a usable vault with pointers.
 VAULT_SFT_FILES = [
     "training-data/sft/aetherbrowser_commands_v1.jsonl",
     "training-data/sft/api_usage_pairs.jsonl",
     "training-data/sft/architecture_explainer_v1.jsonl",
-    "training-data/sft/attention_residuals_sft.jsonl",
     "training-data/sft/biblical_null_space_probes.jsonl",
-    "training-data/sft/code_brushes_sft.jsonl",
-    "training-data/sft/code_substrate_l0_sft.jsonl",
-    "training-data/sft/codex_skill_tutorials_10th_grade.jsonl",
+    "training-data/sft/coding_system_full_v1_train.sft.jsonl",
+    "training-data/sft/ca_geoseal_combined_repair_v3_train.sft.jsonl",
+    "training-data/sft/governance_security_boundary_eval_v1.sft.jsonl",
+    "training-data/sft/operator_agent_bus_extracted_v1_train.sft.jsonl",
 ]
 
 VAULT_EXTRA_FILES = [
-    # Schema
-    ("training-data/schemas/training_schema.json", "schemas/training_schema.json"),
     # Benchmark scripts
     ("scripts/benchmark/scbe_vs_baseline.py", "benchmark/scbe_vs_baseline.py"),
     ("scripts/benchmark/scbe_vs_industry.py", "benchmark/scbe_vs_industry.py"),
-    ("scripts/benchmark/context_embedding_benchmark.py", "benchmark/context_embedding_benchmark.py"),
+    (
+        "scripts/benchmark/context_embedding_benchmark.py",
+        "benchmark/context_embedding_benchmark.py",
+    ),
     ("scripts/benchmark/null_space_ablation.py", "benchmark/null_space_ablation.py"),
     # Architecture reference
-    ("docs/specs/LAYER_12_CANONICAL_FORMULA.md", "docs/LAYER_12_CANONICAL_FORMULA.md"),
+    ("docs/specs/CANONICAL_FORMULA_REGISTRY.md", "docs/CANONICAL_FORMULA_REGISTRY.md"),
+    ("docs/specs/LAYER_MATH_COMPRESSED.md", "docs/LAYER_MATH_COMPRESSED.md"),
 ]
+
+TRAINING_DATASET_URL = "https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data"
+
+TRAINING_DATASET_NOTICE = f"""# SCBE Training Dataset Location
+
+The full SFT dataset is intentionally not stored in this public checkout.
+
+Dataset:
+{TRAINING_DATASET_URL}
+
+Why:
+- keeps the Git repository small
+- avoids committing local/generated training artifacts
+- gives buyers a stable dataset location that can be updated independently
+
+If local files under `training-data/sft/` are present when this pack is built,
+`scripts/package_products.py` includes them in `sft/`. In a clean checkout, this
+pack includes the schema, benchmark scripts, and this dataset pointer.
+"""
 
 VAULT_README = """# SCBE AI Security Training Vault
 
@@ -103,6 +166,7 @@ Thank you for purchasing the AI Security Training Vault from AetherMoore.
 ## What's Inside
 
 - `sft/` — Curated supervised fine-tuning pairs for AI safety tasks
+- `DATASET_LOCATION.md` — Link to the full external SFT dataset
 - `benchmark/` — Benchmark scripts to evaluate your fine-tuned model
 - `schemas/` — Data format documentation
 - `docs/` — Architecture reference
@@ -110,13 +174,14 @@ Thank you for purchasing the AI Security Training Vault from AetherMoore.
 ## Quick Start
 
 1. Install dependencies: `pip install transformers datasets`
-2. Load the data:
+2. Download or mount the dataset listed in `DATASET_LOCATION.md`
+3. Load the data:
    ```python
    from datasets import load_dataset
-   ds = load_dataset("json", data_files="sft/*.jsonl")
+   ds = load_dataset("json", data_files="/path/to/sft/*.jsonl")
    ```
-3. Fine-tune with any framework (HuggingFace, Axolotl, OpenAI API)
-4. Benchmark: `python benchmark/scbe_vs_baseline.py`
+4. Fine-tune with any framework (HuggingFace, Axolotl, OpenAI API)
+5. Benchmark: `python benchmark/scbe_vs_baseline.py`
 
 ## Data Format
 
@@ -134,6 +199,78 @@ suitable for standard SFT training pipelines.
 MIT License — use commercially, modify freely, attribution appreciated.
 
 (c) 2026 Issac Davis / AetherMoore
+"""
+
+# ---- Product: Behind-the-Scenes Writing Process Pack ----
+
+MAKING_OF_FILES = [
+    ("docs/downloads/ai-writing-system-guide.md", "guides/ai-writing-system-guide.md"),
+    ("docs/downloads/humanization-pass-checklist.md", "guides/humanization-pass-checklist.md"),
+    ("docs/downloads/security-governance-checklist.md", "guides/security-governance-checklist.md"),
+    (
+        "docs/downloads/aethermoore-writing-techniques-fieldbook.md",
+        "guides/aethermoore-writing-techniques-fieldbook.md",
+    ),
+    ("docs/books.html", "site-source/books.html"),
+    ("docs/guides.html", "site-source/guides.html"),
+    ("docs/books/six-tongues-protocol.html", "site-source/books/six-tongues-protocol.html"),
+    ("docs/books/miracle-memory.html", "site-source/books/miracle-memory.html"),
+]
+
+MAKING_OF_README = """# AetherMoore Behind-the-Scenes Writing Process Pack
+
+Thank you for purchasing the AetherMoore Behind-the-Scenes Writing Process Pack.
+
+## What This Is
+
+This is a process product: AI-assisted writing guides, humanization checklists,
+book-page source material, and practical notes on how the AetherMoore book and
+guide surfaces are built.
+
+## What This Is Not
+
+This package does NOT include the manuscript text of:
+
+- The Six Tongues Protocol
+- The Miracle Was The Memory
+
+Those books stay on Amazon/KDP. This packet is separate making-of/process
+material for readers and writers who want to study the workflow.
+
+## Start Here
+
+1. Read `PROCESS_NOTES.txt`.
+2. Open `guides/ai-writing-system-guide.md`.
+3. Open `guides/humanization-pass-checklist.md`.
+4. Open `guides/aethermoore-writing-techniques-fieldbook.md`.
+5. Use `site-source/` to see how the book pages and guide hub are positioned.
+
+## Support
+
+- Email: ai@aethermoore.com
+- Site: https://aethermoore.com/SCBE-AETHERMOORE/guides.html
+
+(c) 2026 Issac Davis / AetherMoore
+"""
+
+MAKING_OF_PROCESS_NOTES = """AETHERMOORE WRITING PROCESS NOTES
+
+The working method:
+
+1. Put the book into control documents instead of one giant prompt.
+2. Keep outline, continuity, character wants, voice notes, and scene fragments separate.
+3. Let AI draft too much, then cut and layer with human voice.
+4. Do not humanize by sprinkling typos. Humanize by repairing thought path, scene pressure, dialogue wants, body language, and object logic.
+5. Keep the book itself on KDP/KDP Select when enrolled there. Sell separate process material directly.
+
+The useful split:
+
+- Amazon/KDP sells the finished book.
+- AetherMoore sells the making-of lane, guide lane, checklists, and workflow.
+
+Why this packet exists:
+
+Readers and writers often want the process behind a book more than a vague prompt list. This packet preserves the practical layer: how scenes are scaffolded, how AI tells are detected, how voice is blended, and how the site routes books, guides, and paid process material without mixing up rights.
 """
 
 
@@ -158,6 +295,9 @@ def package_toolkit(output_dir: Path) -> Path:
     with ZipFile(zip_path, "w", ZIP_DEFLATED) as zf:
         zf.writestr("README.md", TOOLKIT_README)
         zf.writestr("LICENSE", "MIT License\n\nCopyright (c) 2026 Issac Davis / AetherMoore\n")
+        zf.write(REPO_ROOT / "LICENSE-APACHE", "LICENSE-APACHE")
+        zf.write(REPO_ROOT / "LICENSE-NOTICE.md", "LICENSE-NOTICE.md")
+        zf.writestr("templates/training_schema.json", TRAINING_SCHEMA_JSON)
 
         for src_rel, dst_rel in TOOLKIT_FILES:
             src = REPO_ROOT / src_rel
@@ -182,6 +322,10 @@ def package_vault(output_dir: Path) -> Path:
     with ZipFile(zip_path, "w", ZIP_DEFLATED) as zf:
         zf.writestr("README.md", VAULT_README)
         zf.writestr("LICENSE", "MIT License\n\nCopyright (c) 2026 Issac Davis / AetherMoore\n")
+        zf.write(REPO_ROOT / "LICENSE-APACHE", "LICENSE-APACHE")
+        zf.write(REPO_ROOT / "LICENSE-NOTICE.md", "LICENSE-NOTICE.md")
+        zf.writestr("DATASET_LOCATION.md", TRAINING_DATASET_NOTICE)
+        zf.writestr("schemas/training_schema.json", TRAINING_SCHEMA_JSON)
 
         # SFT data files
         for sft_rel in VAULT_SFT_FILES:
@@ -220,9 +364,46 @@ def package_vault(output_dir: Path) -> Path:
     return zip_path
 
 
+def package_making_of(output_dir: Path) -> Path:
+    """Package the behind-the-scenes writing process pack."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    zip_path = output_dir / "AetherMoore_Behind_The_Scenes_Writing_Process_Pack_v1.zip"
+
+    with ZipFile(zip_path, "w", ZIP_DEFLATED) as zf:
+        zf.writestr("README.md", MAKING_OF_README)
+        zf.writestr("PROCESS_NOTES.txt", MAKING_OF_PROCESS_NOTES)
+        zf.writestr("LICENSE", "Copyright (c) 2026 Issac Davis / AetherMoore. Personal reader/writer use allowed.\n")
+
+        for src_rel, dst_rel in MAKING_OF_FILES:
+            src = REPO_ROOT / src_rel
+            if src.exists():
+                zf.write(src, dst_rel)
+                print(f"  + {dst_rel}")
+            else:
+                print(f"  ! MISSING: {src_rel}")
+
+        metadata = {
+            "product": "AetherMoore Behind-the-Scenes Writing Process Pack",
+            "version": "1.0",
+            "packaged_at": datetime.now(timezone.utc).isoformat(),
+            "author": "Issac Davis",
+            "does_not_include": ["The Six Tongues Protocol manuscript", "The Miracle Was The Memory manuscript"],
+            "checkout_url": "https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n",
+        }
+        zf.writestr("metadata.json", json.dumps(metadata, indent=2))
+
+    size_mb = zip_path.stat().st_size / (1024 * 1024)
+    print(f"\nBehind-the-scenes pack packaged: {zip_path} ({size_mb:.1f} MB)")
+    return zip_path
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Package SCBE products for delivery")
-    parser.add_argument("--product", choices=["toolkit", "vault", "all"], default="all")
+    parser.add_argument(
+        "--product",
+        choices=["toolkit", "vault", "making-of", "writing", "all"],
+        default="all",
+    )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
 
@@ -236,6 +417,11 @@ def main() -> None:
     if args.product in ("vault", "all"):
         print("=== Packaging AI Security Training Vault ===")
         package_vault(args.output_dir)
+        print()
+
+    if args.product in ("making-of", "writing", "all"):
+        print("=== Packaging Behind-the-Scenes Writing Process Pack ===")
+        package_making_of(args.output_dir)
         print()
 
     print("Done. Upload these ZIPs to your delivery system (GitHub Releases, S3, or direct email).")

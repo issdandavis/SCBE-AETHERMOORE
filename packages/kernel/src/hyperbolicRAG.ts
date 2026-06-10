@@ -282,9 +282,7 @@ const TONGUE_NAMES = ['KO', 'AV', 'RU', 'CA', 'DR', 'UM'] as const;
  * @param position - 6D position in Poincaré ball
  * @returns { tongue, distance } of nearest anchor
  */
-export function nearestTongueAnchor(
-  position: Vector6D
-): { tongue: string; distance: number } {
+export function nearestTongueAnchor(position: Vector6D): { tongue: string; distance: number } {
   let bestTongue = 'KO';
   let bestDist = Infinity;
 
@@ -338,10 +336,7 @@ export function proximityScore(
  * @param queryPhase - Phase vector of the query (or expected alignment)
  * @returns Phase score in [0, 1]
  */
-export function phaseConsistencyScore(
-  chunkPhase: Vector6D,
-  queryPhase: Vector6D
-): number {
+export function phaseConsistencyScore(chunkPhase: Vector6D, queryPhase: Vector6D): number {
   let sum = 0;
   for (let i = 0; i < 6; i++) {
     sum += Math.cos(chunkPhase[i] - queryPhase[i]);
@@ -403,8 +398,7 @@ export function scoreChunk(
   const trustScore = Math.max(0, Math.min(1, raw));
   const anomalyProb = 1 - trustScore;
   const quarantineFlag =
-    trustScore < config.quarantineThreshold ||
-    chunk.uncertainty > config.maxUncertainty;
+    trustScore < config.quarantineThreshold || chunk.uncertainty > config.maxUncertainty;
 
   // Soft attention gating: trust² ensures quarantined chunks get near-zero weight
   const attentionWeight = quarantineFlag ? 0 : trustScore * trustScore;
@@ -521,12 +515,10 @@ export function quarantineReport(
   const trusted = scored.filter((s) => !s.quarantineFlag);
   const quarantined = scored.filter((s) => s.quarantineFlag);
 
-  const avgTrust = scored.length > 0
-    ? scored.reduce((s, t) => s + t.trustScore, 0) / scored.length
-    : 0;
-  const avgAnomaly = scored.length > 0
-    ? scored.reduce((s, t) => s + t.anomalyProb, 0) / scored.length
-    : 0;
+  const avgTrust =
+    scored.length > 0 ? scored.reduce((s, t) => s + t.trustScore, 0) / scored.length : 0;
+  const avgAnomaly =
+    scored.length > 0 ? scored.reduce((s, t) => s + t.anomalyProb, 0) / scored.length : 0;
 
   return {
     trusted,

@@ -1,19 +1,18 @@
 {
-  "name": "AetherCode",
-  "short_name": "AetherCode",
-  "id": "/",
-  "description": "Codex-native multi-model browser workspace with Everweave lore context.",
+  "name": "Aethermoor Bus",
+  "short_name": "AetherBus",
+  "id": "/aethermoor-bus",
+  "description": "Free-first mobile command surface for SCBE-AETHERMOORE agents and agent-bus exports.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "display_override": [
     "standalone",
-    "window-controls-overlay",
     "minimal-ui"
   ],
-  "background_color": "#070b12",
-  "theme_color": "#17c6cf",
-  "orientation": "any",
+  "background_color": "#07111d",
+  "theme_color": "#07111d",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "./static/icons/icon-192.png",
@@ -35,19 +34,18 @@
   "categories": [
     "developer",
     "productivity",
-    "utilities",
-    "education"
+    "utilities"
   ],
   "shortcuts": [
     {
-      "name": "Code Mode",
-      "url": "./?mode=code",
-      "description": "Open AetherCode in code mode"
+      "name": "Assistant",
+      "url": "./chat.html",
+      "description": "Open the no-key assistant"
     },
     {
-      "name": "Research Mode",
-      "url": "./?mode=research",
-      "description": "Open AetherCode in research mode"
+      "name": "Ops",
+      "url": "./ops.html",
+      "description": "Open the agent operations view"
     }
   ]
 }

@@ -9,7 +9,6 @@ import json
 import os
 import re
 import subprocess
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -76,18 +75,32 @@ def latest_packet(profile_id: str, manifest: dict[str, Any]) -> Path | None:
     return packets[0] if packets else None
 
 
-def _run_hf(args: list[str]) -> dict[str, Any]:
-    env = {**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"}
-    result = subprocess.run(
-        args,
-        cwd=str(REPO_ROOT),
-        env=env,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        check=False,
-    )
+def _run_hf(args: list[str], *, timeout_s: int = 60) -> dict[str, Any]:
+    env = {
+        **os.environ,
+        "HF_HUB_DISABLE_PROGRESS_BARS": "1",
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONUTF8": "1",
+    }
+    try:
+        result = subprocess.run(
+            args,
+            cwd=str(REPO_ROOT),
+            env=env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+            timeout=timeout_s,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "command": args,
+            "returncode": 124,
+            "stdout": (exc.stdout or "") if isinstance(exc.stdout, str) else "",
+            "stderr": ((exc.stderr or "") if isinstance(exc.stderr, str) else "") + f"\nTimed out after {timeout_s}s",
+        }
     return {
         "command": args,
         "returncode": result.returncode,
@@ -128,6 +141,179 @@ def summarize_training_log(text: str) -> dict[str, Any]:
     }
 
 
+def extract_gate_report(text: str) -> dict[str, Any] | None:
+    """Extract the last inline gate report from HF job logs.
+
+    The training script emits the promotion gate as a single JSON event before
+    it decides whether to push. Keeping this parser line-oriented avoids fragile
+    regex matching across tqdm progress output.
+    """
+    latest: dict[str, Any] | None = None
+    decoder = json.JSONDecoder()
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or '"gate_report"' not in line:
+            continue
+        start = line.find("{")
+        if start < 0:
+            continue
+        try:
+            event, _ = decoder.raw_decode(line[start:])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event, dict) and event.get("event") == "gate_report" and isinstance(event.get("report"), dict):
+            latest = event["report"]
+    return latest
+
+
+def _failure_kind_from_id(prompt_id: str) -> str:
+    if "resource_jump" in prompt_id:
+        return "resource_overrun_fallback"
+    if "lane_separation" in prompt_id:
+        return "byte_hex_semantic_lane_separation"
+    if "hex_trace" in prompt_id:
+        return "byte_hex_compute_trace"
+    if "cost_propagation" in prompt_id:
+        return "multi_budget_cost_propagation"
+    if "training_boundary" in prompt_id:
+        return "heldout_boundary_pollution_control"
+    return "unknown_contract_gap"
+
+
+def build_boss_retry_plan(
+    gate_report: dict[str, Any],
+    *,
+    profile_id: str = "",
+    source: str = "",
+) -> dict[str, Any]:
+    """Turn a failed promotion gate into the next bounded repair plan.
+
+    This is the video-game boss loop in repo terms: fight the gate, record
+    exactly which mechanics beat the model, generate analog repair curriculum,
+    retry, and only promote when the same frozen boss gate passes. It does not
+    copy frozen prompt text into training instructions.
+    """
+    results = [item for item in gate_report.get("results", []) if isinstance(item, dict)]
+    failed = [item for item in results if not item.get("ok")]
+    passed = [item for item in results if item.get("ok")]
+    n_total = int(gate_report.get("n_total") or len(results))
+    n_pass = int(gate_report.get("n_pass") or len(passed))
+    pass_rate = float(gate_report.get("pass_rate") or (n_pass / n_total if n_total else 0.0))
+    minimum = float(gate_report.get("minimum_pass_rate") or 0.8)
+    must_pass_results = gate_report.get("must_pass_results") or {}
+    must_pass_failed = [key for key, ok in must_pass_results.items() if ok is not True]
+
+    repair_targets = []
+    for item in failed:
+        prompt_id = str(item.get("id") or "")
+        missing = [str(token) for token in item.get("missing_required", item.get("missing", [])) if str(token)]
+        kind = _failure_kind_from_id(prompt_id)
+        repair_targets.append(
+            {
+                "id": prompt_id,
+                "kind": kind,
+                "missing_required": missing,
+                "must_pass": prompt_id in must_pass_failed,
+                "repair_rule": (
+                    "Generate new analog scenarios with different nouns and action chains, "
+                    "but preserve the missing required markers and the same forbidden-marker guard."
+                ),
+                "recommended_rows": 72 if prompt_id in must_pass_failed else 48,
+            }
+        )
+
+    strategy = "promote_or_merge"
+    if repair_targets:
+        strategy = "constrained_decoding_plus_targeted_dpo" if "v12" in profile_id.lower() else "targeted_repair_sft"
+    if pass_rate < 0.5 and repair_targets:
+        strategy = "constrained_decoding_plus_targeted_dpo"
+
+    next_actions = [
+        "Do not change the frozen eval contract.",
+        "Do not copy held-out prompt text into training data.",
+        "Generate analog repair rows only from missing marker classes and failure kinds.",
+        "Run the next candidate through the same inline gate and push only if the gate passes.",
+    ]
+    if strategy == "constrained_decoding_plus_targeted_dpo":
+        next_actions.insert(
+            2,
+            "Add a decoding shim or response scaffold that forces a required-token checklist before prose, then train preferences around pass/fail responses.",
+        )
+
+    return {
+        "schema_version": "geoseal_stage6_boss_retry_plan_v1",
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "source": source,
+        "profile_id": profile_id or gate_report.get("profile_id", ""),
+        "contract_id": gate_report.get("contract_id", ""),
+        "score": {
+            "n_pass": n_pass,
+            "n_total": n_total,
+            "pass_rate": pass_rate,
+            "minimum_pass_rate": minimum,
+            "must_pass_failed": must_pass_failed,
+            "promotion_ready": bool(pass_rate >= minimum and not must_pass_failed and n_total),
+        },
+        "strategy": strategy,
+        "passed_ids": [str(item.get("id") or "") for item in passed],
+        "repair_targets": repair_targets,
+        "experience_model": {
+            "definition": (
+                "EXP is aggregate micro-skill evidence: each failed gate records the small repeated behaviors "
+                "that must become routine before the agent earns promotion."
+            ),
+            "unit_fields": [
+                "failure_kind",
+                "missing_required_marker",
+                "must_pass_pressure",
+                "analog_repair_rows",
+                "same_gate_retry",
+            ],
+            "promotion_rule": "EXP counts only when the same frozen gate improves without training on the held-out prompt text.",
+        },
+        "next_actions": next_actions,
+        "loop_rule": "train -> frozen gate -> mine failures -> analog repair data -> retry; publish only after gate pass",
+    }
+
+
+def assess_job_health(inspect_summary: dict[str, Any], logs_payload: dict[str, Any] | None) -> dict[str, Any]:
+    """Classify common HF Jobs failure modes before a full train is launched."""
+    stage = str(inspect_summary.get("stage") or "").upper()
+    tail = str((logs_payload or {}).get("tail") or "").strip()
+    logs_returncode = (logs_payload or {}).get("returncode")
+    summary = (logs_payload or {}).get("summary") or {}
+    has_training_signal = bool(
+        tail
+        or (
+            isinstance(summary, dict)
+            and (summary.get("latest_loss") or summary.get("progress") or summary.get("training_complete"))
+        )
+    )
+    if stage == "RUNNING" and logs_payload is not None and not has_training_signal and logs_returncode == 0:
+        return {
+            "state": "running_without_logs",
+            "safe_for_full_train": False,
+            "recommendation": "cancel this smoke job and do not launch a full training run until a smoke job emits startup/train logs",
+        }
+    if stage in {"FAILED", "CANCELED", "ERROR"}:
+        return {
+            "state": stage.lower(),
+            "safe_for_full_train": False,
+            "recommendation": "inspect the failed smoke job before launching another training run",
+        }
+    if stage in {"COMPLETED", "SUCCEEDED"}:
+        return {
+            "state": "completed",
+            "safe_for_full_train": True,
+            "recommendation": "full training can be launched if the smoke eval gate also passes",
+        }
+    return {
+        "state": stage.lower() or "unknown",
+        "safe_for_full_train": False,
+        "recommendation": "wait for startup/train logs or a terminal job state before spending on full training",
+    }
+
+
 def list_profiles(manifest: dict[str, Any]) -> dict[str, Any]:
     rows = []
     for entry in profile_entries(manifest):
@@ -147,7 +333,16 @@ def list_profiles(manifest: dict[str, Any]) -> dict[str, Any]:
     return {"schema_version": "geoseal_coding_training_profiles_v1", "profiles": rows}
 
 
-def plan_or_dispatch(manifest: dict[str, Any], profile_id: str | None, *, dispatch: bool, flavor: str, timeout: str) -> dict[str, Any]:
+def plan_or_dispatch(
+    manifest: dict[str, Any],
+    profile_id: str | None,
+    *,
+    dispatch: bool,
+    flavor: str,
+    timeout: str,
+    smoke: bool = False,
+    backend: str = "cli-file",
+) -> dict[str, Any]:
     resolved = resolve_profile(manifest, profile_id)
     dispatcher = _dispatcher_module()
     packet = dispatcher.build_packet(
@@ -182,7 +377,9 @@ def status(manifest: dict[str, Any], profile_id: str | None, job_id: str | None,
                 first = inspected[0]
                 if isinstance(first, dict):
                     inspect_summary = {
-                        "stage": ((first.get("status") or {}) if isinstance(first.get("status"), dict) else {}).get("stage"),
+                        "stage": ((first.get("status") or {}) if isinstance(first.get("status"), dict) else {}).get(
+                            "stage"
+                        ),
                         "url": first.get("url"),
                         "flavor": first.get("flavor"),
                         "created_at": first.get("created_at"),
@@ -203,6 +400,7 @@ def status(manifest: dict[str, Any], profile_id: str | None, job_id: str | None,
                 "tail": combined[-12000:],
                 "summary": summarize_training_log(combined),
             }
+        payload["health"] = assess_job_health(inspect_summary, payload.get("logs"))
     return payload
 
 
@@ -384,7 +582,9 @@ if __name__ == "__main__":
 '''
 
 
-def dispatch_smoke_eval(manifest: dict[str, Any], profile_id: str | None, adapter_repo: str | None, timeout: str) -> dict[str, Any]:
+def dispatch_smoke_eval(
+    manifest: dict[str, Any], profile_id: str | None, adapter_repo: str | None, timeout: str
+) -> dict[str, Any]:
     plan = smoke_eval_plan(manifest, profile_id, adapter_repo)
     out_dir = Path(plan["output_dir"])
     script_path = out_dir / "smoke_eval_hf.py"
@@ -527,6 +727,42 @@ def reward_smoke_report(report_path: Path, manifest: dict[str, Any]) -> dict[str
     }
 
 
+def boss_retry_plan_from_report(
+    report_path: Path,
+    *,
+    profile_id: str = "",
+    output: Path | None = None,
+) -> dict[str, Any]:
+    payload = _load_json(report_path)
+    gate_report = payload.get("report") if payload.get("event") == "gate_report" else payload
+    if not isinstance(gate_report, dict) or "results" not in gate_report:
+        raise ValueError(f"Report does not look like a Stage 6 gate report: {report_path}")
+    plan = build_boss_retry_plan(gate_report, profile_id=profile_id, source=str(report_path))
+    if output is not None:
+        _write_json(output, plan)
+        plan["output_path"] = str(output)
+    return plan
+
+
+def boss_retry_plan_from_job(
+    job_id: str,
+    *,
+    profile_id: str = "",
+    output: Path | None = None,
+) -> dict[str, Any]:
+    logs_result = _run_hf(["hf", "jobs", "logs", job_id, "--tail", "400"], timeout_s=90)
+    combined = logs_result["stdout"] + "\n" + logs_result["stderr"]
+    gate_report = extract_gate_report(combined)
+    if gate_report is None:
+        raise ValueError(f"No gate_report event found in HF job logs: {job_id}")
+    plan = build_boss_retry_plan(gate_report, profile_id=profile_id, source=f"hf_job:{job_id}")
+    plan["logs_returncode"] = logs_result["returncode"]
+    if output is not None:
+        _write_json(output, plan)
+        plan["output_path"] = str(output)
+    return plan
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", default=str(MANIFEST_PATH))
@@ -537,6 +773,17 @@ def main() -> int:
         item.add_argument("--profile-id", default="")
         item.add_argument("--flavor", default="")
         item.add_argument("--timeout", default="")
+        item.add_argument(
+            "--smoke",
+            action="store_true",
+            help="Use the tiny no-push HF smoke profile before spending on a full train.",
+        )
+        item.add_argument(
+            "--backend",
+            choices=["cli-file", "api-inline"],
+            default="cli-file",
+            help="HF Jobs dispatch backend.",
+        )
     status_parser = sub.add_parser("status")
     status_parser.add_argument("--profile-id", default="")
     status_parser.add_argument("--job-id", default="")
@@ -552,15 +799,37 @@ def main() -> int:
     score_parser.add_argument("--report", required=True)
     reward_parser = sub.add_parser("reward-smoke-report")
     reward_parser.add_argument("--report", required=True)
+    boss_parser = sub.add_parser("boss-retry-plan")
+    boss_src = boss_parser.add_mutually_exclusive_group(required=True)
+    boss_src.add_argument("--report")
+    boss_src.add_argument("--job-id")
+    boss_parser.add_argument("--profile-id", default="")
+    boss_parser.add_argument("--output", default="")
     args = parser.parse_args()
 
     manifest = load_manifest(Path(args.manifest))
     if args.command == "profiles":
         payload = list_profiles(manifest)
     elif args.command == "plan":
-        payload = plan_or_dispatch(manifest, args.profile_id or None, dispatch=False, flavor=args.flavor, timeout=args.timeout)
+        payload = plan_or_dispatch(
+            manifest,
+            args.profile_id or None,
+            dispatch=False,
+            flavor=args.flavor,
+            timeout=args.timeout,
+            smoke=bool(args.smoke),
+            backend=args.backend,
+        )
     elif args.command == "dispatch":
-        payload = plan_or_dispatch(manifest, args.profile_id or None, dispatch=True, flavor=args.flavor, timeout=args.timeout)
+        payload = plan_or_dispatch(
+            manifest,
+            args.profile_id or None,
+            dispatch=True,
+            flavor=args.flavor,
+            timeout=args.timeout,
+            smoke=bool(args.smoke),
+            backend=args.backend,
+        )
     elif args.command == "status":
         payload = status(manifest, args.profile_id or None, args.job_id or None, args.logs)
     elif args.command == "smoke-eval-plan":
@@ -571,6 +840,12 @@ def main() -> int:
         payload = score_smoke_report(Path(args.report), manifest)
     elif args.command == "reward-smoke-report":
         payload = reward_smoke_report(Path(args.report), manifest)
+    elif args.command == "boss-retry-plan":
+        output = Path(args.output) if args.output else None
+        if args.report:
+            payload = boss_retry_plan_from_report(Path(args.report), profile_id=args.profile_id, output=output)
+        else:
+            payload = boss_retry_plan_from_job(str(args.job_id), profile_id=args.profile_id, output=output)
     else:
         raise AssertionError(args.command)
     print(json.dumps(payload, indent=2, ensure_ascii=True))

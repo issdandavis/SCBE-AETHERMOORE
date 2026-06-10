@@ -53,7 +53,6 @@ import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -873,14 +872,14 @@ def spec_pairs() -> List[Dict[str, Any]]:
             (
                 "The Six Sacred Tongues are domain-separation channels with specific "
                 "cryptographic responsibilities:\n\n"
-                "- KO (Aelindra -- Control Flow): Directive signature integrity. "
+                "- KO (Kor'aelin -- Control Flow): Directive signature integrity. "
                 "High impact under signature break. Critical tongue requiring hybrid signatures.\n\n"
-                "- AV (Voxmara -- Communication): Encrypted sentiment payload paths.\n\n"
-                "- RU (Thalassic -- Context): Hash-chain and timestamp integrity.\n\n"
-                "- CA (Numerith -- Math/Logic): Ceremony key operations. "
+                "- AV (Avali -- Communication): Encrypted sentiment payload paths.\n\n"
+                "- RU (Runethic -- Context): Hash-chain and timestamp integrity.\n\n"
+                "- CA (Cassisivadan -- Math/Logic): Ceremony key operations. "
                 "Critical tongue requiring hybrid signatures.\n\n"
-                "- UM (Glyphara -- Security): Derivation and shadow session key lineage.\n\n"
-                "- DR (Morphael -- Data Types): Multi-party key agreement and high-authority "
+                "- UM (Umbroth -- Security): Derivation and shadow session key lineage.\n\n"
+                "- DR (Draumric -- Data Types): Multi-party key agreement and high-authority "
                 "operations. Critical tongue requiring hybrid signatures.\n\n"
                 "Tongue weights follow golden ratio progression: w_k = PHI^k for k in [0..5]."
             ),
@@ -1219,8 +1218,7 @@ def main():
     print("=" * 72)
     print("  THE OUROBOROS CONCEPT")
     print("=" * 72)
-    print(
-        """
+    print("""
   Like the mythological serpent that eats its own tail, this script
   feeds the SCBE-AETHERMOORE system's own artifacts back into training
   data. The model learns not from external corpora but from:
@@ -1238,8 +1236,7 @@ def main():
     Code -> SFT Data -> Fine-Tuned Model -> Better Code -> Better SFT Data -> ...
 
   Patent: USPTO #63/961,403  |  Author: Issac Davis  |  v3.3.0
-"""
-    )
+""")
     print("=" * 72)
 
 

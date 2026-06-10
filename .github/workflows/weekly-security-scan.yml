@@ -23,6 +23,7 @@ jobs:
       - name: Run secret scanner
         id: secrets
         run: |
+          # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
           set +e
           python scripts/check_secrets.py --all > secrets-report.txt 2>&1
           EXIT_CODE=$?
@@ -103,6 +104,7 @@ jobs:
       - name: Run audit
         id: npm_audit
         run: |
+          # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
           set +e
           npm audit --json > npm-audit-report.json 2>&1
           set -e
@@ -160,6 +162,7 @@ jobs:
               pip install -e "$dir"
             fi
           done
+          # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
           set +e
           pip-audit --format json --output pip-audit-report.json 2>&1
           EXIT_CODE=$?

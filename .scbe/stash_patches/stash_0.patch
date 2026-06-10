@@ -835,9 +835,9 @@ index c95a4724..02573676 100644
 +# NOTE: Prefixes are split with string concat to avoid triggering the scanner
 +# on this file itself (the regex patterns above would match these literals).
 +FALSE_POSITIVE_PREFIXES = [
-+    "AKIAIOSFODNN7EXAMPLE",   # AWS official example key
-+    "sk_test_PLACEHOLDER",    # Stripe test placeholder
-+    "sk_test_abc123",         # Stripe test example
++    "[SCRUBBED:aws_access_key_example]",   # AWS official example key
++    "[SCRUBBED:stripe_test_key_placeholder]",    # Stripe test placeholder
++    "[SCRUBBED:stripe_test_key_example]",         # Stripe test example
 +    "ghp_abcdef",             # Fake test PAT
 +    "ghp_xxxx",               # Fake test PAT
 +    "sk-ant-" + "api03-real-ke",   # Test fixture (not real despite name)
@@ -2405,7 +2405,7 @@ index 1cd3b6aa..6a64e08b 100644
      def test_api_key_detection(self, validator):
          """API keys should be flagged."""
 -        output = "api_key=[SCRUBBED:stripe_test_key]"
-+        output = "api_key=sk_test_abc123def456ghi789jkl012mno"
++        output = "api_key=[SCRUBBED:stripe_test_key_example]"
          is_valid, issues = validator.validate(output)
 -        assert not is_valid or "api" in str(issues).lower()
 +        assert not is_valid or "api" in str(issues).lower() or "key" in str(issues).lower()
@@ -2674,10 +2674,10 @@ index e05029b2..7f5af9a2 100644
  
  
  class TestChemistryStyleEquilibrium:
-diff --git a/training-data/clawhub-skills/code-review-fix/lib/billing.ts b/training-data/clawhub-skills/code-review-fix/lib/billing.ts
+diff --git a/training-data/skillhub-skills/code-review-fix/lib/billing.ts b/training-data/skillhub-skills/code-review-fix/lib/billing.ts
 index b4e3907e..8d3f99f6 100644
---- a/training-data/clawhub-skills/code-review-fix/lib/billing.ts
-+++ b/training-data/clawhub-skills/code-review-fix/lib/billing.ts
+--- a/training-data/skillhub-skills/code-review-fix/lib/billing.ts
++++ b/training-data/skillhub-skills/code-review-fix/lib/billing.ts
 @@ -4,7 +4,7 @@
  // ═══════════════════════════════════════════════════
  

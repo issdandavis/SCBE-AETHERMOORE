@@ -14,7 +14,7 @@ Security Stack:
 5. Sacred Tongue encoding for semantic binding
 
 Dependencies:
-    pip install argon2-cffi pycryptodome liboqs-python
+    pip install argon2-cffi cryptography liboqs-python
 """
 
 import os
@@ -36,15 +36,13 @@ try:
     ARGON2_AVAILABLE = True
 except ImportError:
     ARGON2_AVAILABLE = False
-    print("Warning: argon2-cffi not installed. Install with: pip install argon2-cffi")
 
 try:
-    from Crypto.Cipher import ChaCha20_Poly1305
+    from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
     CHACHA_AVAILABLE = True
 except ImportError:
     CHACHA_AVAILABLE = False
-    print("Warning: pycryptodome not installed. Install with: pip install pycryptodome")
 
 _FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
     "1",
@@ -103,6 +101,24 @@ _SIG_ALG = _select_sig_algorithm()
 _HASH_SIG_ALG = _select_hash_sig_algorithm()  # FIPS 205 hash-based sig
 
 from .sacred_tongues import SACRED_TONGUE_TOKENIZER
+
+RWP_ENVELOPE_NONCE_LEN = 24
+CHACHA20_POLY1305_NONCE_LEN = 12
+
+
+def _derive_chacha20poly1305_nonce(envelope_nonce: bytes) -> bytes:
+    """Derive the 96-bit AEAD nonce from the RWP 24-byte envelope nonce.
+
+    RWP v3 serialized a 24-byte XChaCha-style nonce into the Sacred Tongues
+    envelope. The `cryptography` ChaCha20Poly1305 primitive uses the standard
+    12-byte nonce, so keep the wire contract stable and derive the AEAD nonce
+    from the full envelope nonce.
+    """
+    if len(envelope_nonce) == CHACHA20_POLY1305_NONCE_LEN:
+        return envelope_nonce
+    if len(envelope_nonce) != RWP_ENVELOPE_NONCE_LEN:
+        raise ValueError(f"RWP nonce must be {RWP_ENVELOPE_NONCE_LEN} bytes")
+    return hashlib.sha256(b"RWPv3-ChaCha20Poly1305 nonce\x00" + envelope_nonce).digest()[:CHACHA20_POLY1305_NONCE_LEN]
 
 
 def get_rwp_pqc_governance_status() -> Dict[str, Any]:
@@ -232,7 +248,7 @@ class RWPv3Protocol:
         if not ARGON2_AVAILABLE:
             raise ImportError("argon2-cffi required. Install with: pip install argon2-cffi")
         if not CHACHA_AVAILABLE:
-            raise ImportError("pycryptodome required. Install with: pip install pycryptodome")
+            raise ImportError("cryptography required. Install with: pip install cryptography")
 
         self.tokenizer = SACRED_TONGUE_TOKENIZER
         self.enable_pqc = enable_pqc
@@ -297,16 +313,17 @@ class RWPv3Protocol:
         """
         # Generate cryptographic material
         salt = secrets.token_bytes(ARGON2_PARAMS["salt_len"])
-        nonce = secrets.token_bytes(24)  # XChaCha20 requires 24 bytes
+        nonce = secrets.token_bytes(RWP_ENVELOPE_NONCE_LEN)
 
         # Derive encryption key
         key = self._derive_key(password, salt)
 
-        # AEAD encryption: XChaCha20-Poly1305
+        # AEAD encryption: ChaCha20-Poly1305
         if CHACHA_AVAILABLE:
-            cipher = ChaCha20_Poly1305.new(key=key, nonce=nonce)
-            cipher.update(aad)
-            ct, tag = cipher.encrypt_and_digest(plaintext)
+            aead_nonce = _derive_chacha20poly1305_nonce(nonce)
+            cipher = ChaCha20Poly1305(key)
+            ct_with_tag = cipher.encrypt(aead_nonce, plaintext, aad)
+            ct, tag = ct_with_tag[:-16], ct_with_tag[-16:]
         else:
             # Fallback: no encryption (NOT SECURE - for testing only)
             ct = plaintext
@@ -378,12 +395,12 @@ class RWPv3Protocol:
             if not is_valid:
                 raise ValueError("ML-DSA-65 signature verification failed")
 
-        # AEAD decryption: XChaCha20-Poly1305
+        # AEAD decryption: ChaCha20-Poly1305
         if CHACHA_AVAILABLE:
             try:
-                cipher = ChaCha20_Poly1305.new(key=key, nonce=nonce)
-                cipher.update(aad)
-                plaintext = cipher.decrypt_and_verify(ct, tag)
+                aead_nonce = _derive_chacha20poly1305_nonce(nonce)
+                cipher = ChaCha20Poly1305(key)
+                plaintext = cipher.decrypt(aead_nonce, ct + tag, aad)
             except Exception as e:
                 raise ValueError("AEAD authentication failed") from e
         else:

@@ -95,7 +95,7 @@ Skills dir: `C:\Users\issda\.codex\skills`
 | `scbe-monetization-thought-to-cash` | [[RU-Entropy/T1-Hypothesis-Generation/_sphere|RU T1 Hypothesis Generation]] | `scbe-monetization-thought-to-cash` |
 | `hf-publish-workflow` | [[RU-Entropy/T2-Data-Collection/_sphere|RU T2 Data Collection]] | `hf-publish-workflow` |
 | `hugging-face-datasets` | [[RU-Entropy/T2-Data-Collection/_sphere|RU T2 Data Collection]] | `hugging-face-datasets` |
-| `hydra-clawbot-synthesis` | [[RU-Entropy/T2-Data-Collection/_sphere|RU T2 Data Collection]] | `hydra-clawbot-synthesis` |
+| `hydra-agent-relay-synthesis` | [[RU-Entropy/T2-Data-Collection/_sphere|RU T2 Data Collection]] | `hydra-agent-relay-synthesis` |
 | `notion` | [[RU-Entropy/T2-Data-Collection/_sphere|RU T2 Data Collection]] | `notion` |
 | `notion-hf-curator` | [[RU-Entropy/T2-Data-Collection/_sphere|RU T2 Data Collection]] | `notion-hf-curator` |
 | `notion-knowledge-capture` | [[RU-Entropy/T2-Data-Collection/_sphere|RU T2 Data Collection]] | `notion-knowledge-capture` |
@@ -236,7 +236,7 @@ Skills dir: `C:\Users\issda\.codex\skills`
 - [[RU-Entropy/T2-Data-Collection/_sphere|RU T2 Data Collection]] score=4.0 hits=dataset
 - [[AV-Transport/T1-Web-Search/_sphere|AV T1 Web Search]] score=0.0 hits=
 
-### hydra-clawbot-synthesis
+### hydra-agent-relay-synthesis
 - [[RU-Entropy/T2-Data-Collection/_sphere|RU T2 Data Collection]] score=6.0 hits=dataset, obsidian
 - [[AV-Transport/T2-Navigation/_sphere|AV T2 Navigation]] score=4.0 hits=playwright
 - [[AV-Transport/T4-Fleet-Transport/_sphere|AV T4 Fleet Transport]] score=2.0 hits=handoff

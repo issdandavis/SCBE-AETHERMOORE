@@ -1,0 +1,277 @@
+{
+  "schema_version": "scbe_functional_coding_tasks_v1",
+  "purpose": "Executable tasks aimed at public coding-agent weak spots reported around Terminal-Bench, SWE-bench, ContextBench, Tau-Bench, long-horizon maintenance, and production evidence reliability.",
+  "tasks": [
+    {
+      "task_id": "context_precision_selector",
+      "benchmark_family": "contextbench_gap",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.files is an array with path, score, and used. Select files where score is at least input.minScore and used is true. Store selected paths in state.selectedContext in descending score order. Store state.recallWaste as the number of files with score at least minScore but used false. Return the number of selected files.",
+      "checks": [
+        {
+          "input": { "minScore": 0.7, "files": [{ "path": "a.py", "score": 0.9, "used": true }, { "path": "b.py", "score": 0.95, "used": false }, { "path": "c.py", "score": 0.8, "used": true }, { "path": "d.py", "score": 0.2, "used": true }] },
+          "initialState": {},
+          "expectedResult": 2,
+          "expectedState": { "selectedContext": ["a.py", "c.py"], "recallWaste": 1 }
+        },
+        {
+          "input": { "minScore": 0.5, "files": [{ "path": "x.ts", "score": 0.4, "used": true }] },
+          "initialState": { "selectedContext": ["old"], "recallWaste": 9 },
+          "expectedResult": 0,
+          "expectedState": { "selectedContext": [], "recallWaste": 0 }
+        }
+      ]
+    },
+    {
+      "task_id": "terminal_recovery_plan",
+      "benchmark_family": "terminal_bench_gap",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.steps is an array with command and exitCode. Find the first failing step where exitCode is not 0. If none fail, set state.recoveryCommand to 'none', state.failedStep to -1, and return 'complete'. If the failed command contains 'pytest', set recoveryCommand to 'rerun_failed_tests'. If it contains 'npm', use 'npm_install_then_test'. Otherwise use 'inspect_logs'. Store state.failedStep as the failing index and return recoveryCommand.",
+      "checks": [
+        {
+          "input": { "steps": [{ "command": "npm test", "exitCode": 1 }, { "command": "python -m pytest", "exitCode": 0 }] },
+          "initialState": {},
+          "expectedResult": "npm_install_then_test",
+          "expectedState": { "recoveryCommand": "npm_install_then_test", "failedStep": 0 }
+        },
+        {
+          "input": { "steps": [{ "command": "python -m pytest tests/test_api.py", "exitCode": 2 }] },
+          "initialState": { "failedStep": 99 },
+          "expectedResult": "rerun_failed_tests",
+          "expectedState": { "recoveryCommand": "rerun_failed_tests", "failedStep": 0 }
+        },
+        {
+          "input": { "steps": [{ "command": "echo ok", "exitCode": 0 }] },
+          "initialState": {},
+          "expectedResult": "complete",
+          "expectedState": { "recoveryCommand": "none", "failedStep": -1 }
+        }
+      ]
+    },
+    {
+      "task_id": "compound_request_completion",
+      "benchmark_family": "tau_bench_gap",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.requests is an array with id and done. Store state.completedIds as ids where done is true and state.missingIds as ids where done is false, both in original order. Set state.allDone to true only if no requests are missing. Return state.allDone.",
+      "checks": [
+        {
+          "input": { "requests": [{ "id": "refund", "done": true }, { "id": "email", "done": false }, { "id": "note", "done": true }] },
+          "initialState": {},
+          "expectedResult": false,
+          "expectedState": { "completedIds": ["refund", "note"], "missingIds": ["email"], "allDone": false }
+        },
+        {
+          "input": { "requests": [{ "id": "ship", "done": true }] },
+          "initialState": { "missingIds": ["old"] },
+          "expectedResult": true,
+          "expectedState": { "completedIds": ["ship"], "missingIds": [], "allDone": true }
+        }
+      ]
+    },
+    {
+      "task_id": "maintenance_erosion_guard",
+      "benchmark_family": "long_horizon_gap",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.metrics has duplicateBlocks, unusedFiles, fakeReports, and changedFiles. Compute erosion = duplicateBlocks * 2 + unusedFiles * 3 + fakeReports * 10 + changedFiles. Store state.erosionScore. If erosion is greater than input.maxErosion, set state.maintenanceGate to 'block', otherwise 'allow'. Return state.maintenanceGate.",
+      "checks": [
+        {
+          "input": { "maxErosion": 10, "metrics": { "duplicateBlocks": 2, "unusedFiles": 1, "fakeReports": 0, "changedFiles": 2 } },
+          "initialState": {},
+          "expectedResult": "allow",
+          "expectedState": { "erosionScore": 9, "maintenanceGate": "allow" }
+        },
+        {
+          "input": { "maxErosion": 10, "metrics": { "duplicateBlocks": 0, "unusedFiles": 0, "fakeReports": 1, "changedFiles": 2 } },
+          "initialState": { "maintenanceGate": "old" },
+          "expectedResult": "block",
+          "expectedState": { "erosionScore": 12, "maintenanceGate": "block" }
+        }
+      ]
+    },
+    {
+      "task_id": "evidence_truth_packet",
+      "benchmark_family": "production_reliability_gap",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.claims is an array with text, hasArtifact, and artifactExists. Store state.supportedClaims as claim text values where both booleans are true. Store state.unsupportedClaims as claim text values where either boolean is false. Return true only if unsupportedClaims is empty.",
+      "checks": [
+        {
+          "input": { "claims": [{ "text": "tests passed", "hasArtifact": true, "artifactExists": true }, { "text": "email sent", "hasArtifact": true, "artifactExists": false }] },
+          "initialState": {},
+          "expectedResult": false,
+          "expectedState": { "supportedClaims": ["tests passed"], "unsupportedClaims": ["email sent"] }
+        },
+        {
+          "input": { "claims": [{ "text": "report written", "hasArtifact": true, "artifactExists": true }] },
+          "initialState": { "unsupportedClaims": ["old"] },
+          "expectedResult": true,
+          "expectedState": { "supportedClaims": ["report written"], "unsupportedClaims": [] }
+        }
+      ]
+    },
+    {
+      "task_id": "environment_dependency_triage",
+      "benchmark_family": "skillsbench_terminal_gap",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.errors is an array of strings. If any error contains 'ModuleNotFoundError' or 'Cannot find module', choose 'install_dependency'. Else if any contains 'permission denied', choose 'fix_permissions'. Else if any contains 'docker' and 'not found', choose 'install_docker'. Otherwise choose 'inspect'. Store state.triage and return it.",
+      "checks": [
+        {
+          "input": { "errors": ["ModuleNotFoundError: No module named swebench"] },
+          "initialState": {},
+          "expectedResult": "install_dependency",
+          "expectedState": { "triage": "install_dependency" }
+        },
+        {
+          "input": { "errors": ["docker: command not found"] },
+          "initialState": { "triage": "old" },
+          "expectedResult": "install_docker",
+          "expectedState": { "triage": "install_docker" }
+        },
+        {
+          "input": { "errors": ["Permission denied: /var/run/docker.sock"] },
+          "initialState": {},
+          "expectedResult": "fix_permissions",
+          "expectedState": { "triage": "fix_permissions" }
+        }
+      ]
+    },
+    {
+      "task_id": "supervisor_executor_correction",
+      "benchmark_family": "swe_bench_failure_taxonomy_gap",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.executor has plan, touchedFiles, and failingReason. If failingReason is 'wrong_file', set state.directive to 'refocus_context'. If 'test_failure', set 'repair_against_receipt'. If 'overbroad_patch', set 'minimize_diff'. Otherwise set 'continue'. Store state.allowedFiles as input.expectedFiles. Return state.directive.",
+      "checks": [
+        {
+          "input": { "expectedFiles": ["src/parser.py"], "executor": { "plan": "patch utils", "touchedFiles": ["src/utils.py"], "failingReason": "wrong_file" } },
+          "initialState": {},
+          "expectedResult": "refocus_context",
+          "expectedState": { "directive": "refocus_context", "allowedFiles": ["src/parser.py"] }
+        },
+        {
+          "input": { "expectedFiles": ["src/a.py"], "executor": { "plan": "patch a", "touchedFiles": ["src/a.py"], "failingReason": "overbroad_patch" } },
+          "initialState": { "directive": "old" },
+          "expectedResult": "minimize_diff",
+          "expectedState": { "directive": "minimize_diff", "allowedFiles": ["src/a.py"] }
+        }
+      ]
+    },
+    {
+      "task_id": "multi_agent_handoff_integrity",
+      "benchmark_family": "multi_agent_compound_failure_gap",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.handoffs is an array with from, to, artifact, and verified. Store state.brokenHandoffs as artifacts where verified is false. Store state.readyHandoffs as artifacts where verified is true. Return true only if brokenHandoffs is empty.",
+      "checks": [
+        {
+          "input": { "handoffs": [{ "from": "research", "to": "coder", "artifact": "plan.md", "verified": true }, { "from": "coder", "to": "tester", "artifact": "patch.diff", "verified": false }] },
+          "initialState": {},
+          "expectedResult": false,
+          "expectedState": { "brokenHandoffs": ["patch.diff"], "readyHandoffs": ["plan.md"] }
+        },
+        {
+          "input": { "handoffs": [{ "from": "tester", "to": "ship", "artifact": "report.json", "verified": true }] },
+          "initialState": { "brokenHandoffs": ["old"] },
+          "expectedResult": true,
+          "expectedState": { "brokenHandoffs": [], "readyHandoffs": ["report.json"] }
+        }
+      ]
+    },
+    {
+      "task_id": "mars_sensor_truth_gate",
+      "benchmark_family": "mars_mission_compass_gap",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.requiredSensors and input.suppliedSensors are arrays of strings. Store state.availableSensors as required sensors that are supplied. Store state.missingSensors as required sensors that are not supplied. Set state.canClaimMeasurement true only when missingSensors is empty. Return state.canClaimMeasurement.",
+      "checks": [
+        {
+          "input": { "requiredSensors": ["navcam", "imu", "radar"], "suppliedSensors": ["navcam", "imu"] },
+          "initialState": {},
+          "expectedResult": false,
+          "expectedState": { "availableSensors": ["navcam", "imu"], "missingSensors": ["radar"], "canClaimMeasurement": false }
+        },
+        {
+          "input": { "requiredSensors": ["thermal", "radio"], "suppliedSensors": ["radio", "thermal", "navcam"] },
+          "initialState": { "missingSensors": ["old"] },
+          "expectedResult": true,
+          "expectedState": { "availableSensors": ["thermal", "radio"], "missingSensors": [], "canClaimMeasurement": true }
+        }
+      ]
+    },
+    {
+      "task_id": "mars_tongue_route_packet",
+      "benchmark_family": "mars_mission_compass_gap",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.goal is a mission goal string. Route it to a tongue: terrain/map/scan/search -> KO, code/build/patch/automate -> AV, repair/recover/fault/debug -> RU, home/return/navigate/base -> CA, science/sample/analyze/optimize -> UM, communicate/relay/compress/archive/handoff -> DR. Store state.routeTongue and return it. If no hint matches, use KO.",
+      "checks": [
+        {
+          "input": { "goal": "repair fault and recover rover route" },
+          "initialState": {},
+          "expectedResult": "RU",
+          "expectedState": { "routeTongue": "RU" }
+        },
+        {
+          "input": { "goal": "compress handoff packet for relay window" },
+          "initialState": { "routeTongue": "old" },
+          "expectedResult": "DR",
+          "expectedState": { "routeTongue": "DR" }
+        },
+        {
+          "input": { "goal": "survey terrain and map safe path" },
+          "initialState": {},
+          "expectedResult": "KO",
+          "expectedState": { "routeTongue": "KO" }
+        }
+      ]
+    },
+    {
+      "task_id": "mars_decision_envelope_gate",
+      "benchmark_family": "mars_decision_envelope_gap",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input has commsState and action with domain and riskLevel. input.rules is an array with pattern and boundary. Match the first rule where pattern is domain+'.*' or domain+'.'+riskLevel or '*'. If boundary is AUTO_ALLOW return 'EXECUTE'. If boundary is QUARANTINE return 'QUORUM_REQUIRED'. If boundary is DENY and commsState is BLACKOUT return 'QUEUED', otherwise return 'DENIED'. Store state.boundary and state.decision.",
+      "checks": [
+        {
+          "input": { "commsState": "LIVE", "action": { "domain": "navigation", "riskLevel": "low" }, "rules": [{ "pattern": "navigation.*", "boundary": "AUTO_ALLOW" }, { "pattern": "*", "boundary": "QUARANTINE" }] },
+          "initialState": {},
+          "expectedResult": "EXECUTE",
+          "expectedState": { "boundary": "AUTO_ALLOW", "decision": "EXECUTE" }
+        },
+        {
+          "input": { "commsState": "BLACKOUT", "action": { "domain": "power", "riskLevel": "critical" }, "rules": [{ "pattern": "power.critical", "boundary": "DENY" }, { "pattern": "*", "boundary": "AUTO_ALLOW" }] },
+          "initialState": { "decision": "old" },
+          "expectedResult": "QUEUED",
+          "expectedState": { "boundary": "DENY", "decision": "QUEUED" }
+        },
+        {
+          "input": { "commsState": "DELAYED", "action": { "domain": "sampling", "riskLevel": "medium" }, "rules": [{ "pattern": "sampling.*", "boundary": "QUARANTINE" }] },
+          "initialState": {},
+          "expectedResult": "QUORUM_REQUIRED",
+          "expectedState": { "boundary": "QUARANTINE", "decision": "QUORUM_REQUIRED" }
+        }
+      ]
+    },
+    {
+      "task_id": "mars_blackout_resume_reducer",
+      "benchmark_family": "mars_blackout_gap",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.memory is an array of snapshots with seq and trust. input.newEvents is an array. Resume after blackout by storing state.lastSeq as the last memory seq or 0, state.trustLevel as the last memory trust or 1, and state.resumeSeq as lastSeq plus newEvents.length. Return state.resumeSeq.",
+      "checks": [
+        {
+          "input": { "memory": [{ "seq": 45, "trust": 12.8 }, { "seq": 47, "trust": 13.09 }], "newEvents": [{ "id": "a" }, { "id": "b" }] },
+          "initialState": {},
+          "expectedResult": 49,
+          "expectedState": { "lastSeq": 47, "trustLevel": 13.09, "resumeSeq": 49 }
+        },
+        {
+          "input": { "memory": [], "newEvents": [{ "id": "x" }] },
+          "initialState": { "trustLevel": 9 },
+          "expectedResult": 1,
+          "expectedState": { "lastSeq": 0, "trustLevel": 1, "resumeSeq": 1 }
+        }
+      ]
+    },
+    {
+      "task_id": "mars_blackout_audit_sync",
+      "benchmark_family": "mars_blackout_gap",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.events is an array with seq, decision, and envelopeId. Store state.eventCount. Store state.envelopeIds as unique non-null envelope IDs in first-seen order. Store state.syncMode as 'peaks_only' if eventCount is greater than input.fullSyncLimit, otherwise 'full_events'. Return state.syncMode.",
+      "checks": [
+        {
+          "input": { "fullSyncLimit": 2, "events": [{ "seq": 1, "decision": "EXECUTE", "envelopeId": "env-a" }, { "seq": 2, "decision": "QUEUED", "envelopeId": "env-a" }, { "seq": 3, "decision": "DENIED", "envelopeId": null }] },
+          "initialState": {},
+          "expectedResult": "peaks_only",
+          "expectedState": { "eventCount": 3, "envelopeIds": ["env-a"], "syncMode": "peaks_only" }
+        },
+        {
+          "input": { "fullSyncLimit": 4, "events": [{ "seq": 1, "decision": "EXECUTE", "envelopeId": "env-b" }] },
+          "initialState": { "envelopeIds": ["old"] },
+          "expectedResult": "full_events",
+          "expectedState": { "eventCount": 1, "envelopeIds": ["env-b"], "syncMode": "full_events" }
+        }
+      ]
+    }
+  ]
+}

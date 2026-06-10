@@ -91,8 +91,8 @@ The auto-marker (Stage 3) scores each record by analyzing:
 - **AV activation**: Type annotations, schema definitions, knowledge declarations, explanatory content
 - **RU activation**: Validation logic, constraint checking, rule enforcement, governance patterns
 - **CA activation**: Mathematical operations, algorithmic complexity, raw computation
-- **UM activation**: Error handling, security checks, defensive patterns, threat mitigation
-- **DR activation**: Architectural patterns, module structure, composition, abstraction layers
+- **UM activation**: Error handling, redaction/privacy checks, defensive patterns, threat mitigation
+- **DR activation**: Authentication patterns, integrity verification, composition, abstraction layers
 
 ### Phi-Weighting
 
@@ -114,14 +114,14 @@ This means DR-heavy records dominate the distance metric by 11x, ensuring that a
 | AV (Avali) | TypeScript | Wisdom/Knowledge | 60 deg |
 | RU (Runethic) | Rust | Governance/Entropy | 120 deg |
 | CA (Cassisivadan) | C | Compute/Logic | 180 deg |
-| UM (Umbroth) | Julia | Security/Defense | 240 deg |
-| DR (Draumric) | Haskell | Structure/Architecture | 300 deg |
+| UM (Umbroth) | Julia | Redaction/Privacy | 240 deg |
+| DR (Draumric) | Haskell | Authentication/Integrity | 300 deg |
 
 ### Mirror Pairs
 
 - KO <-> DR (Python <-> Haskell): Intent vs Architecture
 - AV <-> CA (TypeScript <-> C): Knowledge vs Compute
-- RU <-> UM (Rust <-> Julia): Governance vs Security
+- RU <-> UM (Rust <-> Julia): Governance vs Redaction/Privacy
 
 ### Foundation Trio
 
@@ -198,8 +198,8 @@ The HYDRA system uses 6 language models, one per tongue:
 | AV | meta-llama/Llama-3.1-8B-Instruct | Knowledge synthesis |
 | RU | Qwen/Qwen2.5-72B-Instruct | Governance verification |
 | CA | meta-llama/Llama-3.3-70B-Instruct | Computation analysis |
-| UM | Qwen/Qwen2.5-7B-Instruct | Security assessment |
-| DR | Qwen/Qwen2.5-Coder-32B-Instruct | Architecture evaluation |
+| UM | Qwen/Qwen2.5-7B-Instruct | Redaction/privacy assessment |
+| DR | Qwen/Qwen2.5-Coder-32B-Instruct | Authentication/integrity evaluation |
 
 ### Consensus Protocol
 

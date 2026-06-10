@@ -372,9 +372,11 @@ export function planTriDirectional(
 ): TriDirectionalResult {
   const directions: TraceDirection[] = ['STRUCTURE', 'CONFLICT', 'TIME'];
 
-  const traces = directions.map((dir) =>
-    planTrace(graph, dir, state, dStar, configs?.[dir])
-  ) as [TraceOutput, TraceOutput, TraceOutput];
+  const traces = directions.map((dir) => planTrace(graph, dir, state, dStar, configs?.[dir])) as [
+    TraceOutput,
+    TraceOutput,
+    TraceOutput,
+  ];
 
   // Layer 11: triadic temporal aggregation
   const triadicDist = triadicTemporalDistance(traces[0].cost, traces[1].cost, traces[2].cost);

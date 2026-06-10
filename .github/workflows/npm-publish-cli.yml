@@ -1,0 +1,59 @@
+name: publish-cli
+
+on:
+  push:
+    tags:
+      - 'cli/v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g. 4.3.16). Must match packages/cli/package.json.'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish scbe-aethermoore-cli to npm
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/cli
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Verify version
+        run: |
+          PKG_VER=$(node -p "require('./package.json').version")
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${GITHUB_REF#refs/tags/cli/v}"
+          else
+            TAG="${{ inputs.version }}"
+          fi
+          if [ "$PKG_VER" != "$TAG" ]; then
+            echo "::error::package.json version ($PKG_VER) does not match expected ($TAG)"
+            exit 1
+          fi
+          echo "Publishing scbe-aethermoore-cli@$PKG_VER"
+
+      - name: Publish
+        run: |
+          PKG_VER=$(node -p "require('./package.json').version")
+          if npm view "scbe-aethermoore-cli@$PKG_VER" version 2>/dev/null | grep -qx "$PKG_VER"; then
+            echo "::notice::scbe-aethermoore-cli@$PKG_VER already published — skipping."
+            exit 0
+          fi
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

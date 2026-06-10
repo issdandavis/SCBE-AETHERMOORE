@@ -4,7 +4,7 @@
 **Purpose**: define what is canonical, what is legacy, and what is experimental so the working tree stops arguing with itself.
 
 For the practical repo operating map, read `REPO_SURFACE_MAP.md`.
-For the document classification and consolidation rules, read `docs/operations/DOCUMENT_MANAGEMENT_OPERATING_MODEL.md`.
+For the document classification and consolidation rules, read `docs/ops/DOCUMENT_MANAGEMENT_OPERATING_MODEL.md`.
 For expanded-first naming rules, read `docs/CANONICAL_NAMING_EXPANDED_FIRST.md`.
 
 ## Authority Order

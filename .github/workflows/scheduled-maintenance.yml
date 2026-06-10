@@ -3,8 +3,6 @@
 name: Scheduled Maintenance Dispatch
 
 on:
-  schedule:
-    - cron: '0 8 * * *'   # Daily at 08:00 UTC
   workflow_dispatch: {}    # Manual trigger
 
 permissions:

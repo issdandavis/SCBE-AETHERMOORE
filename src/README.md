@@ -40,9 +40,9 @@ ss = SpiralSealSS1(master_secret=secret, mode='hybrid')  # Kyber768 + AES-GCM
 
 ## Documentation
 
-- [Getting Started](../docs/GETTING_STARTED.md)
-- [SpiralSeal SS1 Spec](../docs/SPIRALSEAL_SS1_COMPLETE.md)
-- [Mathematical Foundations](../docs/COMPREHENSIVE_MATH_SCBE.md)
+- [Product Quickstart](../docs/PRODUCT_QUICKSTART.md)
+- [SpiralSeal implementation](symphonic_cipher/scbe_aethermoore/spiral_seal/)
+- [Compressed layer math](../docs/specs/LAYER_MATH_COMPRESSED.md)
 
 ## License
 

@@ -23,10 +23,12 @@ Dangerous actions are expensive. Impossible actions cost infinity.
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import os
 import re
 import time
+import warnings
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -135,6 +137,21 @@ class GateResult:
     trichromatic_flagged: bool = False
     trichromatic_state_hash: str = ""
     trichromatic_strongest_bridge: str = ""
+    # Optional bijective tamper overlay (encoding-level fingerprint)
+    bijective_tamper_score: float = 0.0
+    bijective_tamper_kind: str = ""
+    bijective_tamper_action: str = ""
+    semantic_fingerprint: Optional[str] = None
+    # Optional identifier-canonicality overlay (homoglyph / mixed-script / invisible char)
+    identifier_canonicality_score: float = 0.0
+    identifier_canonicality_kind: str = ""
+    identifier_canonicality_action: str = ""
+    identifier_canonicality_fingerprint: Optional[str] = None
+    # Optional Tree of Escalation observation (compilation-driven multi-tongue read)
+    toe_terminated_as: str = ""
+    toe_tier_reached: int = 0
+    toe_provisional_minted: bool = False
+    toe_abridged_form_hex: str = ""
     # Audit
     action_hash: str = ""
     timestamp: float = 0.0
@@ -247,7 +264,9 @@ DEFAULT_REROUTES: List[RerouteRule] = [
     ),
     RerouteRule("delete.*all|drop.*table|rm.*-rf", "soft_delete", "destructive op → soft delete"),
     RerouteRule(
-        "api.*key|client.*secret|secret.*key|access.*token|auth.*token|bearer.*token|oauth.*token|refresh.*token|session.*token|password|credential|seed.*phrase|wallet.*key|private.*key",
+        "api.*key|client.*secret|secret.*key|access.*token|auth.*token|"
+        "bearer.*token|oauth.*token|refresh.*token|session.*token|"
+        "password|credential|seed.*phrase|wallet.*key|private.*key",
         "redact_and_log",
         "credential access → redacted",
     ),
@@ -425,6 +444,12 @@ class RuntimeGate:
         trichromatic_deny_threshold: float = 0.76,
         use_council_manifold: bool = False,
         council_manifold_seeds_path: Optional[Path] = None,
+        use_bijective_tamper: Optional[bool] = None,
+        bijective_tamper_language: str = "python",
+        bijective_tamper_tokenizer_dir: Optional[Path] = None,
+        use_identifier_canonicality: Optional[bool] = None,
+        identifier_canonicality_language: str = "python",
+        use_tree_of_escalation: Optional[bool] = None,
     ):
         # Thresholds
         self.cost_allow = cost_allow
@@ -450,6 +475,10 @@ class RuntimeGate:
         # Fibonacci trust history: aggregate ternary signal per query
         # +1 if spin_magnitude == 0 (clean), 0 if 1-3, -1 if 4+
         self._trust_history: List[int] = []
+
+        # Signals queued by load_state() to surface in the next evaluate()
+        # result (e.g. a config-drift warning), so audit sees the load event.
+        self._pending_load_signals: List[str] = []
 
         # Tongue coordinate backend
         self._coords_backend = (coords_backend or "stats").strip().lower()
@@ -503,6 +532,44 @@ class RuntimeGate:
             except (FileNotFoundError, OSError):
                 self._council_manifold = None
                 self._council_manifold_enabled = False
+
+        # Bijective tamper overlay (encoding-level fingerprint via
+        # parse(decode(encode(src))) ≡ parse(src) substrate). Defaults to the
+        # SCBE_ENABLE_BIJECTIVE_TAMPER_GATE env var so production rollout is
+        # flag-driven without code changes; explicit constructor arg wins.
+        if use_bijective_tamper is None:
+            env_flag = os.environ.get("SCBE_ENABLE_BIJECTIVE_TAMPER_GATE", "").strip()
+            self._bijective_tamper_enabled = env_flag in ("1", "true", "TRUE", "yes", "on")
+        else:
+            self._bijective_tamper_enabled = bool(use_bijective_tamper)
+        self._bijective_tamper_language = (bijective_tamper_language or "python").lower()
+        self._bijective_tamper_tokenizer_dir = bijective_tamper_tokenizer_dir
+        self._bijective_tamper_evaluator: Optional[Callable[..., Any]] = None
+        self._bijective_tamper_action_map: Optional[Callable[[Any], str]] = None
+
+        # Identifier-canonicality overlay (sibling gate to bijective tamper).
+        # Catches homoglyph identifier attacks, mixed-script names, invisible
+        # characters in identifiers, and BiDi controls (Trojan Source class).
+        if use_identifier_canonicality is None:
+            env_flag = os.environ.get("SCBE_ENABLE_IDENTIFIER_CANONICALITY_GATE", "").strip()
+            self._identifier_canonicality_enabled = env_flag in ("1", "true", "TRUE", "yes", "on")
+        else:
+            self._identifier_canonicality_enabled = bool(use_identifier_canonicality)
+        self._identifier_canonicality_language = (identifier_canonicality_language or "python").lower()
+        self._identifier_canonicality_evaluator: Optional[Callable[..., Any]] = None
+        self._identifier_canonicality_action_map: Optional[Callable[[Any], str]] = None
+
+        # Tree of Escalation overlay (compilation-driven multi-tongue read).
+        # Observational at v1.0: populates GateResult.toe_* fields and a
+        # receipt signal but does NOT veto decisions. v1.1+ may add
+        # decision contribution once real lane-readers replace the default
+        # HashReader matrix.
+        if use_tree_of_escalation is None:
+            env_flag = os.environ.get("SCBE_ENABLE_TREE_OF_ESCALATION_GATE", "").strip()
+            self._tree_of_escalation_enabled = env_flag in ("1", "true", "TRUE", "yes", "on")
+        else:
+            self._tree_of_escalation_enabled = bool(use_tree_of_escalation)
+        self._tree_of_escalation_matrix: Optional[Any] = None
 
     @staticmethod
     def _map_council_tier(tier: str) -> "Decision":
@@ -914,6 +981,113 @@ class RuntimeGate:
         ts = time.time()
         action_hash = hashlib.blake2s(action_text.encode("utf-8", errors="replace"), digest_size=8).hexdigest()
 
+        # Drain any signals queued by load_state() (e.g. config-drift warning)
+        # so they land in this action's audit record on every decision path.
+        _carry = self._pending_load_signals
+        self._pending_load_signals = []
+
+        # ---- Bijective tamper + identifier canonicality overlays (top-of-evaluate) ----
+        # Both signals are monotonic — they can only RAISE severity. We compute
+        # them once at the top so calibration / immune / reflex / reroute all see
+        # them. Catastrophic results short-circuit immediately and learn the
+        # immune entry, preventing contamination of the calibration centroid.
+        tamper_data = self._evaluate_bijective_tamper(action_text)
+        bijective_tamper_score: float = 0.0
+        bijective_tamper_kind: str = ""
+        bijective_tamper_action: str = ""
+        bijective_tamper_fingerprint: Optional[str] = None
+        tamper_decision: Optional[Decision] = None
+        if tamper_data is not None:
+            tamper_decision, bijective_tamper_kind, bijective_tamper_score, bijective_tamper_fingerprint = tamper_data
+            bijective_tamper_action = tamper_decision.value
+
+        canonicality_data = self._evaluate_identifier_canonicality(action_text)
+        identifier_canonicality_score: float = 0.0
+        identifier_canonicality_kind: str = ""
+        identifier_canonicality_action: str = ""
+        identifier_canonicality_fingerprint: Optional[str] = None
+        canonicality_decision: Optional[Decision] = None
+        if canonicality_data is not None:
+            (
+                canonicality_decision,
+                identifier_canonicality_kind,
+                identifier_canonicality_score,
+                identifier_canonicality_fingerprint,
+            ) = canonicality_data
+            identifier_canonicality_action = canonicality_decision.value
+
+        # Tree of Escalation observation (v1.0: non-vetoing — populates fields
+        # and emits a receipt signal but does not contribute to the decision).
+        toe_data = self._evaluate_tree_of_escalation(action_text)
+        toe_terminated_as: str = ""
+        toe_tier_reached: int = 0
+        toe_provisional_minted: bool = False
+        toe_abridged_form_hex: str = ""
+        if toe_data is not None:
+            (
+                toe_terminated_as,
+                toe_tier_reached,
+                toe_provisional_minted,
+                toe_abridged_form_hex,
+            ) = toe_data
+
+        # Catastrophic short-circuit: either overlay recommending DENY ends here.
+        if (tamper_decision == Decision.DENY) or (canonicality_decision == Decision.DENY):
+            self._immune.add(action_hash)
+            signals_short: List[str] = list(_carry)
+            if tamper_data is not None:
+                signals_short.append(
+                    self._tamper_receipt_signal(
+                        bijective_tamper_kind,
+                        bijective_tamper_score,
+                        bijective_tamper_action,
+                        bijective_tamper_fingerprint,
+                    )
+                )
+            if canonicality_data is not None:
+                signals_short.append(
+                    self._canonicality_receipt_signal(
+                        identifier_canonicality_kind,
+                        identifier_canonicality_score,
+                        identifier_canonicality_action,
+                        identifier_canonicality_fingerprint,
+                    )
+                )
+            if tamper_decision == Decision.DENY:
+                signals_short.append(
+                    f"bijective_tamper_veto_deny(kind={bijective_tamper_kind},score={bijective_tamper_score:.2f})"
+                )
+            if canonicality_decision == Decision.DENY:
+                signals_short.append(
+                    f"identifier_canonicality_veto_deny(kind={identifier_canonicality_kind},score={identifier_canonicality_score:.2f})"  # noqa: E501
+                )
+            result = GateResult(
+                decision=Decision.DENY,
+                cost=float("inf"),
+                spin_magnitude=6,
+                tongue_coords=[0.0] * 6,
+                signals=signals_short,
+                noise=_fail_to_noise(action_hash),
+                bijective_tamper_score=bijective_tamper_score,
+                bijective_tamper_kind=bijective_tamper_kind,
+                bijective_tamper_action=bijective_tamper_action,
+                semantic_fingerprint=bijective_tamper_fingerprint,
+                identifier_canonicality_score=identifier_canonicality_score,
+                identifier_canonicality_kind=identifier_canonicality_kind,
+                identifier_canonicality_action=identifier_canonicality_action,
+                identifier_canonicality_fingerprint=identifier_canonicality_fingerprint,
+                toe_terminated_as=toe_terminated_as,
+                toe_tier_reached=toe_tier_reached,
+                toe_provisional_minted=toe_provisional_minted,
+                toe_abridged_form_hex=toe_abridged_form_hex,
+                action_hash=action_hash,
+                timestamp=ts,
+                session_query_count=self._query_count,
+                cumulative_cost=self._cumulative_cost,
+            )
+            self._audit_log.append(result)
+            return result
+
         # ---- Fast paths (O(1)) ----
 
         full_text = f"{tool_name} {action_text}" if tool_name else action_text
@@ -974,12 +1148,45 @@ class RuntimeGate:
             self._cumulative_cost += 1.0  # nominal cost during calibration
             self._trust_history.append(1)  # calibration = +1 trust
             fib = fibonacci_trust_level(self._trust_history)
+            calib_signals = [*_carry, "calibrating"]
+            calib_decision = Decision.ALLOW
+            if tamper_data is not None:
+                calib_signals.append(
+                    self._tamper_receipt_signal(
+                        bijective_tamper_kind,
+                        bijective_tamper_score,
+                        bijective_tamper_action,
+                        bijective_tamper_fingerprint,
+                    )
+                )
+                # tamper_decision is at most QUARANTINE here (DENY short-circuited above)
+                escalated = _escalate_decision(calib_decision, tamper_decision or Decision.ALLOW)
+                if escalated == Decision.QUARANTINE:
+                    calib_signals.append(
+                        f"bijective_tamper_veto_quarantine(kind={bijective_tamper_kind},score={bijective_tamper_score:.2f})"  # noqa: E501
+                    )
+                calib_decision = escalated
+            if canonicality_data is not None:
+                calib_signals.append(
+                    self._canonicality_receipt_signal(
+                        identifier_canonicality_kind,
+                        identifier_canonicality_score,
+                        identifier_canonicality_action,
+                        identifier_canonicality_fingerprint,
+                    )
+                )
+                escalated = _escalate_decision(calib_decision, canonicality_decision or Decision.ALLOW)
+                if escalated == Decision.QUARANTINE:
+                    calib_signals.append(
+                        f"identifier_canonicality_veto_quarantine(kind={identifier_canonicality_kind},score={identifier_canonicality_score:.2f})"  # noqa: E501
+                    )
+                calib_decision = escalated
             result = GateResult(
-                decision=Decision.ALLOW,
+                decision=calib_decision,
                 cost=1.0,
                 spin_magnitude=0,
                 tongue_coords=coords,
-                signals=["calibrating"],
+                signals=calib_signals,
                 trust_weight=fib["weight"],
                 trust_level=fib["level"],
                 trust_index=fib["index"],
@@ -989,6 +1196,18 @@ class RuntimeGate:
                 trichromatic_risk_score=trichromatic_risk,
                 trichromatic_state_hash=trichromatic_state_hash,
                 trichromatic_strongest_bridge=trichromatic_strongest_bridge,
+                bijective_tamper_score=bijective_tamper_score,
+                bijective_tamper_kind=bijective_tamper_kind,
+                bijective_tamper_action=bijective_tamper_action,
+                semantic_fingerprint=bijective_tamper_fingerprint,
+                identifier_canonicality_score=identifier_canonicality_score,
+                identifier_canonicality_kind=identifier_canonicality_kind,
+                identifier_canonicality_action=identifier_canonicality_action,
+                identifier_canonicality_fingerprint=identifier_canonicality_fingerprint,
+                toe_terminated_as=toe_terminated_as,
+                toe_tier_reached=toe_tier_reached,
+                toe_provisional_minted=toe_provisional_minted,
+                toe_abridged_form_hex=toe_abridged_form_hex,
                 action_hash=action_hash,
                 timestamp=ts,
                 session_query_count=self._query_count,
@@ -999,13 +1218,44 @@ class RuntimeGate:
 
         # Immune memory: known attack → instant DENY + noise
         if action_hash in self._immune:
+            immune_signals = [*_carry, "immune_memory_hit"]
+            if tamper_data is not None:
+                immune_signals.append(
+                    self._tamper_receipt_signal(
+                        bijective_tamper_kind,
+                        bijective_tamper_score,
+                        bijective_tamper_action,
+                        bijective_tamper_fingerprint,
+                    )
+                )
+            if canonicality_data is not None:
+                immune_signals.append(
+                    self._canonicality_receipt_signal(
+                        identifier_canonicality_kind,
+                        identifier_canonicality_score,
+                        identifier_canonicality_action,
+                        identifier_canonicality_fingerprint,
+                    )
+                )
             result = GateResult(
                 decision=Decision.DENY,
                 cost=float("inf"),
                 spin_magnitude=6,
                 tongue_coords=[0.0] * 6,
-                signals=["immune_memory_hit"],
+                signals=immune_signals,
                 noise=_fail_to_noise(action_hash),
+                bijective_tamper_score=bijective_tamper_score,
+                bijective_tamper_kind=bijective_tamper_kind,
+                bijective_tamper_action=bijective_tamper_action,
+                semantic_fingerprint=bijective_tamper_fingerprint,
+                identifier_canonicality_score=identifier_canonicality_score,
+                identifier_canonicality_kind=identifier_canonicality_kind,
+                identifier_canonicality_action=identifier_canonicality_action,
+                identifier_canonicality_fingerprint=identifier_canonicality_fingerprint,
+                toe_terminated_as=toe_terminated_as,
+                toe_tier_reached=toe_tier_reached,
+                toe_provisional_minted=toe_provisional_minted,
+                toe_abridged_form_hex=toe_abridged_form_hex,
                 action_hash=action_hash,
                 timestamp=ts,
                 session_query_count=self._query_count,
@@ -1018,15 +1268,59 @@ class RuntimeGate:
         if action_hash in self._reflex and not classifier_quarantine:
             self._trust_history.append(1)  # known-safe = +1 trust
             fib = fibonacci_trust_level(self._trust_history)
+            reflex_signals = [*_carry, "reflex_hit"]
+            reflex_decision = Decision.ALLOW
+            if tamper_data is not None:
+                reflex_signals.append(
+                    self._tamper_receipt_signal(
+                        bijective_tamper_kind,
+                        bijective_tamper_score,
+                        bijective_tamper_action,
+                        bijective_tamper_fingerprint,
+                    )
+                )
+                escalated = _escalate_decision(reflex_decision, tamper_decision or Decision.ALLOW)
+                if escalated == Decision.QUARANTINE:
+                    reflex_signals.append(
+                        f"bijective_tamper_veto_quarantine(kind={bijective_tamper_kind},score={bijective_tamper_score:.2f})"  # noqa: E501
+                    )
+                reflex_decision = escalated
+            if canonicality_data is not None:
+                reflex_signals.append(
+                    self._canonicality_receipt_signal(
+                        identifier_canonicality_kind,
+                        identifier_canonicality_score,
+                        identifier_canonicality_action,
+                        identifier_canonicality_fingerprint,
+                    )
+                )
+                escalated = _escalate_decision(reflex_decision, canonicality_decision or Decision.ALLOW)
+                if escalated == Decision.QUARANTINE:
+                    reflex_signals.append(
+                        f"identifier_canonicality_veto_quarantine(kind={identifier_canonicality_kind},score={identifier_canonicality_score:.2f})"  # noqa: E501
+                    )
+                reflex_decision = escalated
             result = GateResult(
-                decision=Decision.ALLOW,
+                decision=reflex_decision,
                 cost=1.0,
                 spin_magnitude=0,
                 tongue_coords=[0.5] * 6,
-                signals=["reflex_hit"],
+                signals=reflex_signals,
                 trust_weight=fib["weight"],
                 trust_level=fib["level"],
                 trust_index=fib["index"],
+                bijective_tamper_score=bijective_tamper_score,
+                bijective_tamper_kind=bijective_tamper_kind,
+                bijective_tamper_action=bijective_tamper_action,
+                semantic_fingerprint=bijective_tamper_fingerprint,
+                identifier_canonicality_score=identifier_canonicality_score,
+                identifier_canonicality_kind=identifier_canonicality_kind,
+                identifier_canonicality_action=identifier_canonicality_action,
+                identifier_canonicality_fingerprint=identifier_canonicality_fingerprint,
+                toe_terminated_as=toe_terminated_as,
+                toe_tier_reached=toe_tier_reached,
+                toe_provisional_minted=toe_provisional_minted,
+                toe_abridged_form_hex=toe_abridged_form_hex,
                 action_hash=action_hash,
                 timestamp=ts,
                 session_query_count=self._query_count,
@@ -1097,12 +1391,30 @@ class RuntimeGate:
             or classifier_quarantine
             or reroute_high_confidence
         ):
-            reroute_signals = [f"reroute_match({reroute_rule.pattern})"]
+            reroute_signals = [*_carry, f"reroute_match({reroute_rule.pattern})"]
             if reroute_high_confidence:
                 reroute_signals.append("high_confidence_match")
             else:
                 reroute_signals.append("semantic_confirmed")
             fib_trust = fibonacci_trust_level(self._trust_history)
+            if tamper_data is not None:
+                reroute_signals.append(
+                    self._tamper_receipt_signal(
+                        bijective_tamper_kind,
+                        bijective_tamper_score,
+                        bijective_tamper_action,
+                        bijective_tamper_fingerprint,
+                    )
+                )
+            if canonicality_data is not None:
+                reroute_signals.append(
+                    self._canonicality_receipt_signal(
+                        identifier_canonicality_kind,
+                        identifier_canonicality_score,
+                        identifier_canonicality_action,
+                        identifier_canonicality_fingerprint,
+                    )
+                )
             result = GateResult(
                 decision=Decision.REROUTE,
                 cost=cost,
@@ -1110,6 +1422,18 @@ class RuntimeGate:
                 tongue_coords=coords,
                 signals=reroute_signals,
                 reroute_to=reroute_rule.replacement,
+                bijective_tamper_score=bijective_tamper_score,
+                bijective_tamper_kind=bijective_tamper_kind,
+                bijective_tamper_action=bijective_tamper_action,
+                semantic_fingerprint=bijective_tamper_fingerprint,
+                identifier_canonicality_score=identifier_canonicality_score,
+                identifier_canonicality_kind=identifier_canonicality_kind,
+                identifier_canonicality_action=identifier_canonicality_action,
+                identifier_canonicality_fingerprint=identifier_canonicality_fingerprint,
+                toe_terminated_as=toe_terminated_as,
+                toe_tier_reached=toe_tier_reached,
+                toe_provisional_minted=toe_provisional_minted,
+                toe_abridged_form_hex=toe_abridged_form_hex,
                 action_hash=action_hash,
                 timestamp=ts,
                 session_query_count=self._query_count,
@@ -1154,7 +1478,7 @@ class RuntimeGate:
         effective_cost_quarantine = self.cost_quarantine * trust_multiplier
         effective_cost_deny = self.cost_deny * trust_multiplier
 
-        signals: List[str] = [f"fib_trust({trust_level},w={trust_weight},idx={trust_index})"]
+        signals: List[str] = [*_carry, f"fib_trust({trust_level},w={trust_weight},idx={trust_index})"]
 
         if _is_high_confidence_override_attempt(full_text):
             signals.append("override_quarantine(high_confidence)")
@@ -1288,6 +1612,63 @@ class RuntimeGate:
             if decision == Decision.ALLOW and self._trichromatic_engine is not None:
                 self._trichromatic_engine.update_baseline(tri_state)
 
+        # Bijective tamper + identifier canonicality overlays — receipt +
+        # monotonic escalation. Both were computed once at the top of evaluate();
+        # catastrophic DENY-recommended cases short-circuited there, so by the
+        # time we reach here neither overlay can recommend DENY. We still emit
+        # the receipt and apply QUARANTINE-or-REVIEW escalation so audit +
+        # governance see the signal.
+        if decision != Decision.REROUTE:
+            if tamper_data is not None:
+                signals.append(
+                    self._tamper_receipt_signal(
+                        bijective_tamper_kind,
+                        bijective_tamper_score,
+                        bijective_tamper_action,
+                        bijective_tamper_fingerprint,
+                    )
+                )
+                escalated = _escalate_decision(decision, tamper_decision or Decision.ALLOW)
+                if escalated != decision:
+                    if escalated == Decision.QUARANTINE:
+                        signals.append(
+                            f"bijective_tamper_veto_quarantine(kind={bijective_tamper_kind},score={bijective_tamper_score:.2f})"  # noqa: E501  # noqa: E501
+                        )
+                    elif escalated == Decision.REVIEW:
+                        signals.append(
+                            f"bijective_tamper_veto_review(kind={bijective_tamper_kind},score={bijective_tamper_score:.2f})"  # noqa: E501
+                        )
+                    decision = escalated
+            if canonicality_data is not None:
+                signals.append(
+                    self._canonicality_receipt_signal(
+                        identifier_canonicality_kind,
+                        identifier_canonicality_score,
+                        identifier_canonicality_action,
+                        identifier_canonicality_fingerprint,
+                    )
+                )
+                escalated = _escalate_decision(decision, canonicality_decision or Decision.ALLOW)
+                if escalated != decision:
+                    if escalated == Decision.QUARANTINE:
+                        signals.append(
+                            f"identifier_canonicality_veto_quarantine(kind={identifier_canonicality_kind},score={identifier_canonicality_score:.2f})"  # noqa: E501
+                        )
+                    elif escalated == Decision.REVIEW:
+                        signals.append(
+                            f"identifier_canonicality_veto_review(kind={identifier_canonicality_kind},score={identifier_canonicality_score:.2f})"  # noqa: E501
+                        )
+                    decision = escalated
+            if toe_data is not None:
+                signals.append(
+                    self._toe_receipt_signal(
+                        toe_terminated_as,
+                        toe_tier_reached,
+                        toe_provisional_minted,
+                        toe_abridged_form_hex,
+                    )
+                )
+
         # Clean → learn as safe reflex (fast-path for future)
         if decision == Decision.ALLOW and not any("council" in s for s in signals):
             self._reflex[action_hash] = True
@@ -1312,6 +1693,18 @@ class RuntimeGate:
             trichromatic_flagged=trichromatic_flagged,
             trichromatic_state_hash=trichromatic_state_hash,
             trichromatic_strongest_bridge=trichromatic_strongest_bridge,
+            bijective_tamper_score=bijective_tamper_score,
+            bijective_tamper_kind=bijective_tamper_kind,
+            bijective_tamper_action=bijective_tamper_action,
+            semantic_fingerprint=bijective_tamper_fingerprint,
+            identifier_canonicality_score=identifier_canonicality_score,
+            identifier_canonicality_kind=identifier_canonicality_kind,
+            identifier_canonicality_action=identifier_canonicality_action,
+            identifier_canonicality_fingerprint=identifier_canonicality_fingerprint,
+            toe_terminated_as=toe_terminated_as,
+            toe_tier_reached=toe_tier_reached,
+            toe_provisional_minted=toe_provisional_minted,
+            toe_abridged_form_hex=toe_abridged_form_hex,
             action_hash=action_hash,
             timestamp=ts,
             session_query_count=self._query_count,
@@ -1319,6 +1712,273 @@ class RuntimeGate:
         )
         self._audit_log.append(result)
         return result
+
+    # ------------------------------------------------------------------ #
+    #  Bijective tamper overlay (encoding-level fingerprint)
+    # ------------------------------------------------------------------ #
+
+    # Cheap heuristic: only ~plausible code triggers the AST/tokenizer pipeline.
+    # The tamper signal only makes sense when action_text IS source code; for
+    # plain prose this would just consume cycles to produce kind="input_invalid".
+    # We require TWO independent code signals to fire — a structural-keyword
+    # AND a syntax-token in the first 512 chars — because single-keyword
+    # substring matches catch prose like "write a function that sorts" or
+    # "import duty applies", which would otherwise false-positive into the
+    # parser pipeline and look like tampering.
+    _CODE_HEURISTIC_KEYWORDS = (
+        "def ",
+        "class ",
+        "import ",
+        "from ",
+        "return ",
+        "lambda ",
+        "async def ",
+        "function ",
+        "fn ",
+    )
+    _CODE_HEURISTIC_SYNTAX_TOKENS = (
+        "):",
+        "->",
+        "=>",
+        "{\n",
+        "};",
+        "==",
+        "!=",
+        "self.",
+        ":\n",
+        "):\n",
+    )
+
+    def _looks_like_code(self, text: str) -> bool:
+        if not text or len(text) < 4:
+            return False
+        head = text.lstrip()[:512]
+        has_keyword = any(pat in head for pat in self._CODE_HEURISTIC_KEYWORDS)
+        if not has_keyword:
+            return False
+        has_syntax = any(tok in head for tok in self._CODE_HEURISTIC_SYNTAX_TOKENS)
+        return has_syntax
+
+    def _ensure_bijective_tamper(self) -> bool:
+        """Lazy-load the tamper evaluator. Returns True if usable."""
+        if self._bijective_tamper_evaluator is not None:
+            return True
+        try:
+            from .bijective_tamper import (  # type: ignore[import-not-found]
+                evaluate_code,
+                recommended_l13_action,
+            )
+
+            self._bijective_tamper_evaluator = evaluate_code
+            self._bijective_tamper_action_map = recommended_l13_action
+            return True
+        except Exception:
+            self._bijective_tamper_evaluator = None
+            self._bijective_tamper_action_map = None
+            return False
+
+    def _tamper_receipt_signal(
+        self,
+        kind: str,
+        score: float,
+        action: str,
+        fingerprint: Optional[str],
+    ) -> str:
+        """Format the receipt envelope appended to GateResult.signals."""
+        return (
+            "bijective_tamper("
+            f"kind={kind},"
+            f"score={score:.3f},"
+            f"action={action}" + (f",fp={fingerprint[:12]}" if fingerprint else "") + ")"
+        )
+
+    def _evaluate_bijective_tamper(self, action_text: str) -> Optional[Tuple[Decision, str, float, Optional[str]]]:
+        """Run the bijective tamper signal. Returns None if skipped or unavailable.
+
+        Return tuple: (recommended_decision, kind, score, semantic_fingerprint)
+        """
+        if not self._bijective_tamper_enabled:
+            return None
+        if not self._looks_like_code(action_text):
+            return None
+        if not self._ensure_bijective_tamper():
+            return None
+
+        try:
+            assert self._bijective_tamper_evaluator is not None
+            assert self._bijective_tamper_action_map is not None
+            kwargs: Dict[str, Any] = {"language": self._bijective_tamper_language}
+            if self._bijective_tamper_tokenizer_dir is not None:
+                kwargs["tokenizer_dir"] = self._bijective_tamper_tokenizer_dir
+            result = self._bijective_tamper_evaluator(action_text, **kwargs)
+            action_str = self._bijective_tamper_action_map(result)
+        except Exception:
+            # Fail closed-to-noop: a tamper-overlay crash must never kill the gate.
+            return None
+
+        # input_invalid is NOT a tamper signal at this layer — it just means
+        # the action_text did not parse as the configured language. Prose
+        # actions and natural-language tool descriptions routinely fall here.
+        # Catastrophic encoding-level tamper is signaled by kind="syntax"
+        # (the original parsed but the decoded form did not). Skip the rest.
+        if str(result.kind) == "input_invalid":
+            return None
+
+        recommended = {
+            "ALLOW": Decision.ALLOW,
+            "QUARANTINE": Decision.QUARANTINE,
+            "DENY": Decision.DENY,
+            "REROUTE": Decision.REROUTE,
+            "REVIEW": Decision.REVIEW,
+        }.get(action_str, Decision.QUARANTINE)
+        return recommended, str(result.kind), float(result.score), result.semantic_fingerprint
+
+    # ------------------------------------------------------------------ #
+    #  Identifier canonicality overlay (sibling to bijective tamper)
+    # ------------------------------------------------------------------ #
+
+    def _ensure_identifier_canonicality(self) -> bool:
+        if self._identifier_canonicality_evaluator is not None:
+            return True
+        try:
+            from .identifier_canonicality import (  # type: ignore[import-not-found]
+                evaluate_code as _ic_eval,
+                recommended_l13_action as _ic_action,
+            )
+
+            self._identifier_canonicality_evaluator = _ic_eval
+            self._identifier_canonicality_action_map = _ic_action
+            return True
+        except Exception:
+            self._identifier_canonicality_evaluator = None
+            self._identifier_canonicality_action_map = None
+            return False
+
+    def _evaluate_identifier_canonicality(
+        self, action_text: str
+    ) -> Optional[Tuple[Decision, str, float, Optional[str]]]:
+        """Run the identifier-canonicality signal. Returns None if skipped."""
+        if not self._identifier_canonicality_enabled:
+            return None
+        if not self._looks_like_code(action_text):
+            return None
+        if not self._ensure_identifier_canonicality():
+            return None
+
+        try:
+            assert self._identifier_canonicality_evaluator is not None
+            assert self._identifier_canonicality_action_map is not None
+            result = self._identifier_canonicality_evaluator(
+                action_text, language=self._identifier_canonicality_language
+            )
+            action_str = self._identifier_canonicality_action_map(result)
+        except Exception:
+            return None
+
+        # Same policy as bijective tamper: input_invalid is not a canonicality
+        # signal at this layer (just means the parser couldn't read it).
+        if str(result.kind) == "input_invalid":
+            return None
+
+        recommended = {
+            "ALLOW": Decision.ALLOW,
+            "QUARANTINE": Decision.QUARANTINE,
+            "DENY": Decision.DENY,
+            "REROUTE": Decision.REROUTE,
+            "REVIEW": Decision.REVIEW,
+        }.get(action_str, Decision.QUARANTINE)
+        return recommended, str(result.kind), float(result.score), result.fingerprint
+
+    def _canonicality_receipt_signal(
+        self,
+        kind: str,
+        score: float,
+        action: str,
+        fingerprint: Optional[str],
+    ) -> str:
+        return (
+            "identifier_canonicality("
+            f"kind={kind},"
+            f"score={score:.3f},"
+            f"action={action}" + (f",fp={fingerprint[:12]}" if fingerprint else "") + ")"
+        )
+
+    # ------------------------------------------------------------------ #
+    #  Tree of Escalation overlay (compilation-driven multi-tongue read)
+    #
+    #  v1.0 wire-up is OBSERVATIONAL ONLY: populates GateResult.toe_*
+    #  fields and emits a receipt signal but does NOT veto decisions.
+    #  Production deployments wanting decision contribution must wait
+    #  for v1.1, after real lane-readers replace the default HashReader
+    #  matrix.
+    # ------------------------------------------------------------------ #
+
+    def _ensure_tree_of_escalation_matrix(self) -> bool:
+        """Lazy-build a default BridgeMatrix with HashReader for all six lanes."""
+        if self._tree_of_escalation_matrix is not None:
+            return True
+        try:
+            from .tree_of_escalation import (  # type: ignore[import-not-found]
+                DEFAULT_LADDER as _toe_ladder,
+                BridgeMatrix as _ToeBridgeMatrix,
+                HashReader as _ToeHashReader,
+            )
+
+            matrix = _ToeBridgeMatrix()
+            for lane in _toe_ladder:
+                matrix.register_reader(lane, _ToeHashReader(lane=lane))
+            self._tree_of_escalation_matrix = matrix
+            return True
+        except Exception:
+            self._tree_of_escalation_matrix = None
+            return False
+
+    def _evaluate_tree_of_escalation(self, action_text: str) -> Optional[Tuple[str, int, bool, str]]:
+        """Run a ToE walk on the action_text bytes. Returns None if skipped.
+
+        Returns: (terminated_as, tier_reached, provisional_minted, abridged_form_hex).
+        Observational only at v1.0 — no Decision is returned because no
+        veto is contributed.
+        """
+        if not self._tree_of_escalation_enabled:
+            return None
+        if not self._ensure_tree_of_escalation_matrix():
+            return None
+
+        try:
+            from .tree_of_escalation import walk as _toe_walk  # type: ignore[import-not-found]
+
+            tree = _toe_walk(
+                action_text.encode("utf-8", errors="replace"),
+                self._tree_of_escalation_matrix,
+            )
+        except Exception:
+            return None
+
+        terminated_as = tree.terminated_as.value if hasattr(tree.terminated_as, "value") else str(tree.terminated_as)
+        abridged_hex = tree.abridged_form.hex() if tree.abridged_form else ""
+        return (
+            terminated_as,
+            int(tree.tier_reached),
+            bool(tree.provisional_minted),
+            abridged_hex,
+        )
+
+    def _toe_receipt_signal(
+        self,
+        terminated_as: str,
+        tier_reached: int,
+        provisional_minted: bool,
+        abridged_form_hex: str,
+    ) -> str:
+        return (
+            "tree_of_escalation("
+            f"terminated_as={terminated_as},"
+            f"tier={tier_reached},"
+            f"provisional={int(provisional_minted)}"
+            + (f",abridged={abridged_form_hex[:12]}" if abridged_form_hex else "")
+            + ")"
+        )
 
     # ------------------------------------------------------------------ #
     #  Session management
@@ -1599,3 +2259,138 @@ class RuntimeGate:
             "trust_history_length": len(self._trust_history),
             "trichromatic_enabled": self._trichromatic_enabled,
         }
+
+    # ------------------------------------------------------------------ #
+    #  State persistence — durable home for accumulated session state
+    #
+    #  Persists the full drift trajectory (centroid, cumulative cost, query
+    #  count, trust history) plus immune memory, so a restarted gate continues
+    #  the same session instead of starting cold.
+    #
+    #  Deliberately NOT persisted:
+    #    - _reflex: a runtime-learned fast-path cache; rebuilt empty per
+    #      process so a tightened policy is never bypassed by a stale
+    #      "previously allowed" action.
+    #    - _audit_log: telemetry (durable audit belongs in the HYDRA Ledger).
+    #    - trichromatic engine baseline: known v1.1 gap.
+    # ------------------------------------------------------------------ #
+
+    STATE_SCHEMA = "runtime-gate-state/v1"
+
+    def _policy_fingerprint(self) -> Dict[str, Any]:
+        """Config the persisted state depends on, recorded for drift detection.
+
+        These are NOT restored by load_state (they come from the constructor).
+        They are stored so a snapshot built under one backend/threshold set can
+        be flagged — not refused — when loaded into a differently-configured gate.
+        """
+        return {
+            "coords_backend": self._coords_backend,
+            "cost_allow": self.cost_allow,
+            "cost_quarantine": self.cost_quarantine,
+            "cost_deny": self.cost_deny,
+            "spin_quarantine": self.spin_quarantine,
+            "spin_deny": self.spin_deny,
+            "cumulative_cost_quarantine": self.cumulative_cost_quarantine,
+            "cumulative_cost_deny": self.cumulative_cost_deny,
+        }
+
+    def save_state(self, path: Any, keep_previous: bool = False) -> None:
+        """Persist accumulated session state to a JSON file via an atomic write.
+
+        The caller chooses the path; there is no default location, because immune
+        hashes can fingerprint observed attack patterns and should not be written
+        into the repo by default.
+
+        When ``keep_previous`` is set, the prior good snapshot is copied to a
+        sibling ``<name>.prev`` before the new state is written, so a checkpoint
+        always leaves a one-deep rollback target on disk.
+        """
+        p = Path(path)
+        centroid = self._centroid.tolist() if self._centroid is not None else None
+        snapshot = {
+            "schema": self.STATE_SCHEMA,
+            "saved_at": time.time(),
+            "policy": self._policy_fingerprint(),
+            "state": {
+                "centroid": centroid,
+                "centroid_count": self._centroid_count,
+                "cumulative_cost": self._cumulative_cost,
+                "query_count": self._query_count,
+                "trust_history": list(self._trust_history),
+                "immune": sorted(self._immune),
+            },
+            "derived_not_persisted": ["reflex", "audit_log", "trichromatic_baseline"],
+            "notes": (
+                "reflex is rebuilt per-process; audit_log is telemetry (see HYDRA "
+                "Ledger); trichromatic baseline restore is a v1.1 gap."
+            ),
+        }
+        if p.parent and not p.parent.exists():
+            p.parent.mkdir(parents=True, exist_ok=True)
+        if keep_previous and p.exists():
+            prev = p.with_name(p.name + ".prev")
+            prev_tmp = p.with_name(p.name + ".prev.tmp")
+            try:
+                prev_tmp.write_bytes(p.read_bytes())
+                os.replace(prev_tmp, prev)
+            except OSError:
+                # best-effort rollback snapshot; never block the primary save
+                prev_tmp.unlink(missing_ok=True)
+        tmp = p.with_name(p.name + ".tmp")
+        tmp.write_text(json.dumps(snapshot, indent=2), encoding="utf-8")
+        os.replace(tmp, p)
+
+    def load_state(self, path: Any) -> None:
+        """Restore accumulated state from a save_state() snapshot into this gate.
+
+        Config (thresholds, backend, overlay flags) is NOT restored — it comes
+        from this gate's constructor. If the snapshot's policy fingerprint differs
+        from this gate's, the load still proceeds, but a RuntimeWarning is issued
+        and a ``state_loaded_config_drift`` signal is queued onto the next
+        evaluate() result so the audit trail records the mismatch.
+
+        Raises:
+            FileNotFoundError: the path does not exist.
+            ValueError: the file is empty, not valid JSON, or not a recognized
+                runtime-gate-state snapshot.
+        """
+        p = Path(path)
+        raw = p.read_text(encoding="utf-8")  # FileNotFoundError propagates if missing
+        if not raw.strip():
+            raise ValueError(f"empty runtime-gate state file: {p}")
+        try:
+            snapshot = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"corrupted runtime-gate state file {p}: {exc}") from exc
+        if not isinstance(snapshot, dict) or snapshot.get("schema") != self.STATE_SCHEMA:
+            got = snapshot.get("schema") if isinstance(snapshot, dict) else type(snapshot).__name__
+            raise ValueError(
+                f"unrecognized runtime-gate state in {p}: expected schema {self.STATE_SCHEMA!r}, got {got!r}"
+            )
+
+        state = snapshot.get("state", {})
+        centroid = state.get("centroid")
+        self._centroid = np.array(centroid, dtype=float) if centroid is not None else None
+        self._centroid_count = int(state.get("centroid_count", 0))
+        self._cumulative_cost = float(state.get("cumulative_cost", 0.0))
+        self._query_count = int(state.get("query_count", 0))
+        self._trust_history = [int(x) for x in state.get("trust_history", [])]
+        self._immune = set(state.get("immune", []))
+        # _reflex is a runtime-learned cache; rebuild empty so a tightened policy
+        # is never silently bypassed by a previously-allowed action.
+        self._reflex = {}
+
+        # Config-drift detection: warn (never refuse) and surface in audit.
+        saved_policy = snapshot.get("policy", {})
+        current_policy = self._policy_fingerprint()
+        all_keys = set(saved_policy) | set(current_policy)
+        drift = sorted(k for k in all_keys if saved_policy.get(k) != current_policy.get(k))
+        if drift:
+            warnings.warn(
+                f"runtime-gate state loaded from {p} was saved under different config; "
+                f"drifted fields: {', '.join(drift)}",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            self._pending_load_signals.append(f"state_loaded_config_drift(fields={'|'.join(drift)})")

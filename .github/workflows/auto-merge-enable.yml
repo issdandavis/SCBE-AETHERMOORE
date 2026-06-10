@@ -36,10 +36,6 @@ jobs:
             echo "Base branch changed while enabling auto-merge; treating as neutral."
             exit 0
           fi
-          if echo "$out" | grep -qi "is a draft"; then
-            echo "PR is a draft; auto-merge will be enabled when it is marked ready."
-            exit 0
-          fi
           exit "$rc"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}

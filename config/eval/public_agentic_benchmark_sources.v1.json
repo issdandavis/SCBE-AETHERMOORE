@@ -1,0 +1,69 @@
+{
+  "schema_version": "scbe_public_agentic_benchmark_sources_v1",
+  "source_root": "external/benchmarks",
+  "benchmarks": [
+    {
+      "benchmark_id": "terminal_bench",
+      "display_name": "Terminal-Bench",
+      "official_url": "https://terminalbench.lol/",
+      "repo_url": "https://github.com/harbor-framework/terminal-bench.git",
+      "local_dir": "terminal-bench",
+      "tool_checks": [
+        ["tb", "--help"],
+        ["tb", "datasets", "list"]
+      ],
+      "install_notes": [
+        "Requires Docker and the Terminal-Bench package.",
+        "Official harness examples use tb run with a selected agent and dataset."
+      ],
+      "dry_run_command": ["tb", "datasets", "list"]
+    },
+    {
+      "benchmark_id": "swe_bench",
+      "display_name": "SWE-bench",
+      "official_url": "https://www.swebench.com/original.html",
+      "repo_url": "https://github.com/princeton-nlp/SWE-bench.git",
+      "local_dir": "SWE-bench",
+      "tool_checks": [
+        ["python", "-m", "swebench.harness.run_evaluation", "--help"],
+        ["docker", "--version"]
+      ],
+      "install_notes": [
+        "Requires Python 3.9+ and Docker.",
+        "Official installation is git clone plus pip install -e . inside the SWE-bench checkout."
+      ],
+      "dry_run_command": ["python", "-m", "swebench.harness.run_evaluation", "--help"]
+    },
+    {
+      "benchmark_id": "aider_polyglot",
+      "display_name": "Aider Polyglot",
+      "official_url": "https://aider.chat/docs/leaderboards/",
+      "repo_url": "https://github.com/Aider-AI/aider.git",
+      "local_dir": "aider",
+      "tool_checks": [
+        ["python", "benchmark/benchmark.py", "--help"]
+      ],
+      "install_notes": [
+        "The Aider benchmark README documents running benchmark/benchmark.py with an exercises-dir such as polyglot-benchmark.",
+        "Full Polyglot runs are model/API-cost heavy; start with command-shape checks only."
+      ],
+      "dry_run_command": ["python", "benchmark/benchmark.py", "--help"]
+    },
+    {
+      "benchmark_id": "vexp_swe_bench",
+      "display_name": "Vexp SWE-bench Harness",
+      "official_url": "https://github.com/Vexp-ai/vexp-swe-bench",
+      "repo_url": "https://github.com/Vexp-ai/vexp-swe-bench.git",
+      "local_dir": "vexp-swe-bench",
+      "tool_checks": [
+        ["node", "dist/cli.js", "--help"],
+        ["docker", "--version"]
+      ],
+      "install_notes": [
+        "Compares coding agents on a curated SWE-bench Verified subset with pass rate, cost, duration, and token-use fields.",
+        "Requires Node.js, Python, Git, Docker, and an agent adapter. Keep first runs small and cost-capped."
+      ],
+      "dry_run_command": ["node", "dist/cli.js", "list"]
+    }
+  ]
+}

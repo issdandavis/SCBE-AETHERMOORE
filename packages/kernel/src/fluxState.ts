@@ -354,16 +354,21 @@ export class FluxStateGate {
    * @param ctx - Optional dynamics context for L6 breathing + phase-lock
    * @returns FluxGateResult with allowed/denied status
    */
-  checkNavigation(targetRealm: RealmID, stepVector: number[], ctx?: FluxDynamicsContext): FluxGateResult {
+  checkNavigation(
+    targetRealm: RealmID,
+    stepVector: number[],
+    ctx?: FluxDynamicsContext
+  ): FluxGateResult {
     const policy = this.deriveEffectivePolicy(ctx);
 
     // Check operation type
-    const requiredOp = policy.allowedRealms === null
-      ? NavigationOp.FULL_NAVIGATE
-      : NavigationOp.REALM_NAVIGATE;
+    const requiredOp =
+      policy.allowedRealms === null ? NavigationOp.FULL_NAVIGATE : NavigationOp.REALM_NAVIGATE;
 
-    if (!policy.allowedOps.includes(requiredOp) &&
-        !policy.allowedOps.includes(NavigationOp.LIMBIC_ONLY)) {
+    if (
+      !policy.allowedOps.includes(requiredOp) &&
+      !policy.allowedOps.includes(NavigationOp.LIMBIC_ONLY)
+    ) {
       return {
         allowed: false,
         reason: `Operation ${requiredOp} not permitted in ${this.state} state`,

@@ -113,7 +113,7 @@ class LibraryWingRoundTable:
             f"Round guidance: prioritize modular loops, compact context, and parallel lanes.\n"
             f"Selected notes:\n" + "\n".join(key_points)
         )
-        digest = hashlib.sha1((perspective.name + str(round_index) + summary).encode("utf-8")).hexdigest()[:12]
+        digest = hashlib.sha256((perspective.name + str(round_index) + summary).encode("utf-8")).hexdigest()[:12]
         avg_score = 0.0
         if top:
             avg_score = sum(self._score_item(i, role_terms, prompt_terms) for i in top) / len(top)

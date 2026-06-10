@@ -465,9 +465,9 @@ Docker Compose files: `docker-compose.yml`, `docker-compose.api.yml`, `docker-co
 
 | File | Purpose |
 |------|---------|
-| `LAYER_INDEX.md` | Complete 14-layer architecture reference |
-| `SPEC.md` | SCBE Kernel Specification (canonical) |
-| `SYSTEM_ARCHITECTURE.md` | Detailed architecture |
+| `docs/LAYER_INDEX.md` | Complete 14-layer architecture reference |
+| `docs/SPEC.md` | SCBE Kernel Specification (canonical) |
+| `docs/SYSTEM_ARCHITECTURE.md` | Detailed architecture |
 | `ARCHITECTURE.md` | High-level architecture overview |
 | `docs/LANGUES_WEIGHTING_SYSTEM.md` | Langues metric deep dive |
 | `docs/hydra/ARCHITECTURE.md` | HYDRA orchestration |

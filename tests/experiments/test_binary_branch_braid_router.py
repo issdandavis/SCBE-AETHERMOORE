@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-# Transitively requires scripts.mathbac_cross_primary_atomic, which is not
-# present in the repo; skip rather than fail collection until it is restored.
-pytest.importorskip("scripts.mathbac_cross_primary_atomic")
+pytest.importorskip(
+    "scripts.mathbac_cross_primary_atomic",
+    reason="binary_branch_braid_router transitively imports uncommitted scripts/mathbac_cross_primary_atomic.py",
+)
 
 from scripts.experiments.binary_branch_braid_router import (
     DEFAULT_INPUT,

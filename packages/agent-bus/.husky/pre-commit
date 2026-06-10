@@ -1,0 +1,6 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+if [ -x packages/agent-bus/node_modules/.bin/lint-staged ]; then
+  cd packages/agent-bus && ./node_modules/.bin/lint-staged
+fi

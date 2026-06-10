@@ -1,0 +1,195 @@
+{
+  "schema_version": "scbe_functional_coding_tasks_v1",
+  "purpose": "Useful executable coding-agent gauntlet tasks for SCBE routing, monetization, benchmark triage, and operator workflow acceleration.",
+  "tasks": [
+    {
+      "task_id": "model_router_select",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.models is an array of objects with id, passRate, avgGenerationS, and costCents. Compute score = passRate * 100 - avgGenerationS * 0.5 - costCents * 2. Select the model with the highest score. Mutate state.selectedModel to the winning id and state.selectedScore to the rounded score with two decimals. Return the winning id.",
+      "checks": [
+        {
+          "input": {
+            "models": [
+              { "id": "small", "passRate": 0.75, "avgGenerationS": 4, "costCents": 0 },
+              { "id": "openclaw", "passRate": 1, "avgGenerationS": 8, "costCents": 0 },
+              { "id": "cloud", "passRate": 1, "avgGenerationS": 2, "costCents": 15 }
+            ]
+          },
+          "initialState": {},
+          "expectedResult": "openclaw",
+          "expectedState": { "selectedModel": "openclaw", "selectedScore": 96 }
+        },
+        {
+          "input": {
+            "models": [
+              { "id": "free-fast", "passRate": 0.8, "avgGenerationS": 2, "costCents": 0 },
+              { "id": "paid", "passRate": 0.85, "avgGenerationS": 1, "costCents": 5 }
+            ]
+          },
+          "initialState": { "selectedModel": "" },
+          "expectedResult": "free-fast",
+          "expectedState": { "selectedModel": "free-fast", "selectedScore": 79 }
+        }
+      ]
+    },
+    {
+      "task_id": "failure_bucket_summary",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.results is an array of benchmark rows with failedTasks arrays. Count each failed task id across all rows, store the counts object in state.failureCounts, store the most frequent failed task id in state.topFailure, and return state.topFailure. If there are no failures, set state.topFailure to 'none' and return 'none'.",
+      "checks": [
+        {
+          "input": {
+            "results": [
+              { "model": "a", "failedTasks": ["quest_flags"] },
+              { "model": "b", "failedTasks": ["quest_flags", "weighted_choice"] },
+              { "model": "c", "failedTasks": ["heal_clamp"] }
+            ]
+          },
+          "initialState": {},
+          "expectedResult": "quest_flags",
+          "expectedState": {
+            "failureCounts": { "quest_flags": 2, "weighted_choice": 1, "heal_clamp": 1 },
+            "topFailure": "quest_flags"
+          }
+        },
+        {
+          "input": { "results": [{ "model": "openclaw", "failedTasks": [] }] },
+          "initialState": { "failureCounts": { "old": 9 } },
+          "expectedResult": "none",
+          "expectedState": { "failureCounts": {}, "topFailure": "none" }
+        }
+      ]
+    },
+    {
+      "task_id": "quality_dimension_next_step",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.dimensions is an object of quality dimension scores from 0 to 100. Find the lowest-scoring dimension. Set state.weakestDimension to that key. Set state.nextAction using this mapping: efficiency -> 'optimize_runtime', actionability -> 'tighten_next_action', traceability -> 'add_artifact_links', patch_readiness -> 'add_safe_apply_probe', evidence_integrity -> 'improve_evidence_parser', gate_contract -> 'repair_gate_contract'. Return state.nextAction.",
+      "checks": [
+        {
+          "input": {
+            "dimensions": {
+              "gate_contract": 100,
+              "evidence_integrity": 100,
+              "traceability": 100,
+              "actionability": 78.33,
+              "patch_readiness": 93.33,
+              "efficiency": 75
+            }
+          },
+          "initialState": {},
+          "expectedResult": "optimize_runtime",
+          "expectedState": { "weakestDimension": "efficiency", "nextAction": "optimize_runtime" }
+        },
+        {
+          "input": {
+            "dimensions": {
+              "gate_contract": 100,
+              "evidence_integrity": 70,
+              "traceability": 80,
+              "actionability": 90,
+              "patch_readiness": 95,
+              "efficiency": 85
+            }
+          },
+          "initialState": { "weakestDimension": "" },
+          "expectedResult": "improve_evidence_parser",
+          "expectedState": { "weakestDimension": "evidence_integrity", "nextAction": "improve_evidence_parser" }
+        }
+      ]
+    },
+    {
+      "task_id": "lead_offer_router",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). Route a lead into an offer. If input.budget is at least 500, choose 'governance_snapshot'. Else if input.recurring is true or input.budget is at least 99, choose 'governance_heartbeat'. Else if input.projectType is 'developer' choose 'toolkit'. Otherwise choose 'supporter_monthly'. Mutate state.offer and state.reason, then return the offer.",
+      "checks": [
+        {
+          "input": { "projectType": "agency", "budget": 500, "recurring": false },
+          "initialState": {},
+          "expectedResult": "governance_snapshot",
+          "expectedState": { "offer": "governance_snapshot", "reason": "budget_at_least_500" }
+        },
+        {
+          "input": { "projectType": "developer", "budget": 29, "recurring": false },
+          "initialState": { "offer": "" },
+          "expectedResult": "toolkit",
+          "expectedState": { "offer": "toolkit", "reason": "developer_toolkit" }
+        },
+        {
+          "input": { "projectType": "research", "budget": 20, "recurring": true },
+          "initialState": {},
+          "expectedResult": "governance_heartbeat",
+          "expectedState": { "offer": "governance_heartbeat", "reason": "recurring_or_99" }
+        }
+      ]
+    },
+    {
+      "task_id": "artifact_retention_gate",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.artifacts is an array of objects with path, bytes, and kind. Classify each artifact path into keep, offload, or delete. Keep if kind is 'report' or 'source'. Delete if kind is 'cache'. Offload if bytes is greater than input.offloadBytes. Otherwise keep. Store arrays state.keep, state.offload, state.delete containing paths in original order. Return an object with keep, offload, and delete counts.",
+      "checks": [
+        {
+          "input": {
+            "offloadBytes": 1000,
+            "artifacts": [
+              { "path": "report.json", "bytes": 500, "kind": "report" },
+              { "path": "run.bin", "bytes": 5000, "kind": "artifact" },
+              { "path": ".cache/tmp", "bytes": 10, "kind": "cache" }
+            ]
+          },
+          "initialState": {},
+          "expectedResult": { "keep": 1, "offload": 1, "delete": 1 },
+          "expectedState": { "keep": ["report.json"], "offload": ["run.bin"], "delete": [".cache/tmp"] }
+        },
+        {
+          "input": {
+            "offloadBytes": 1000,
+            "artifacts": [
+              { "path": "src/index.ts", "bytes": 3000, "kind": "source" },
+              { "path": "small.txt", "bytes": 50, "kind": "artifact" }
+            ]
+          },
+          "initialState": { "keep": [] },
+          "expectedResult": { "keep": 2, "offload": 0, "delete": 0 },
+          "expectedState": { "keep": ["src/index.ts", "small.txt"], "offload": [], "delete": [] }
+        }
+      ]
+    },
+    {
+      "task_id": "budget_guard",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input has budgetCents, spentCents, and requestedCents. If spentCents + requestedCents is less than or equal to budgetCents, set state.allowed true and state.remainingCents to budgetCents minus the sum, then return true. Otherwise set state.allowed false, state.remainingCents to budgetCents minus spentCents, push 'budget_exceeded' into state.flags, and return false.",
+      "checks": [
+        {
+          "input": { "budgetCents": 2000, "spentCents": 900, "requestedCents": 500 },
+          "initialState": { "flags": [] },
+          "expectedResult": true,
+          "expectedState": { "flags": [], "allowed": true, "remainingCents": 600 }
+        },
+        {
+          "input": { "budgetCents": 2000, "spentCents": 1800, "requestedCents": 500 },
+          "initialState": { "flags": ["started"] },
+          "expectedResult": false,
+          "expectedState": { "flags": ["started", "budget_exceeded"], "allowed": false, "remainingCents": 200 }
+        }
+      ]
+    },
+    {
+      "task_id": "task_priority_queue",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). input.tasks is an array with id, priority, dueHours, and blocked. Select the unblocked task with highest priority; break ties by lower dueHours. Mutate state.selectedTask to the selected id and state.queueLength to the number of unblocked tasks. Return the selected id. If all tasks are blocked, set state.selectedTask to 'none', state.queueLength to 0, and return 'none'.",
+      "checks": [
+        {
+          "input": {
+            "tasks": [
+              { "id": "docs", "priority": 2, "dueHours": 48, "blocked": false },
+              { "id": "benchmark", "priority": 5, "dueHours": 24, "blocked": false },
+              { "id": "contract", "priority": 5, "dueHours": 12, "blocked": false }
+            ]
+          },
+          "initialState": {},
+          "expectedResult": "contract",
+          "expectedState": { "selectedTask": "contract", "queueLength": 3 }
+        },
+        {
+          "input": { "tasks": [{ "id": "wait", "priority": 9, "dueHours": 1, "blocked": true }] },
+          "initialState": { "selectedTask": "old" },
+          "expectedResult": "none",
+          "expectedState": { "selectedTask": "none", "queueLength": 0 }
+        }
+      ]
+    }
+  ]
+}

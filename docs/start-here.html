@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Start here — three routes in | AetherMoore</title>
+<meta name="description" content="Three routes into AetherMoore: support the work, get a written read on your AI workflow, or build with the open code yourself. Pick the route that fits.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/start-here.html">
+<link rel="stylesheet" href="static/polly-sidebar-agent.css">
+<style>
+  :root {
+    --bg: #0b0d12;
+    --panel: rgba(18, 23, 32, 0.92);
+    --line: rgba(214, 167, 86, 0.18);
+    --text: #f2f0ea;
+    --muted: #a3acb9;
+    --accent: #d6a756;
+    --accent-strong: #f0bf67;
+    --good: #2dd3a6;
+    --max: 1080px;
+    --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    background:
+      radial-gradient(circle at top, rgba(214, 167, 86, 0.12), transparent 34%),
+      linear-gradient(180deg, #0b0d12 0%, #0e131b 40%, #0b0d12 100%);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: blur(14px);
+    background: rgba(11, 13, 18, 0.82);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .topbar-inner {
+    width: min(var(--max), calc(100% - 32px));
+    margin: 0 auto;
+    min-height: 68px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  }
+  .brand {
+    font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700;
+  }
+  .nav { display: flex; gap: 18px; flex-wrap: wrap; justify-content: flex-end; font-size: 14px; color: var(--muted); }
+  .nav a:hover { color: var(--text); }
+
+  .hero {
+    width: min(var(--max), calc(100% - 32px));
+    margin: 0 auto;
+    padding: 72px 0 36px;
+    text-align: center;
+  }
+  .eyebrow {
+    color: var(--accent); text-transform: uppercase;
+    letter-spacing: 0.18em; font-size: 12px; font-weight: 700; margin-bottom: 18px;
+  }
+  h1 { font-size: clamp(38px, 6vw, 64px); line-height: 1.04; letter-spacing: -0.03em; max-width: 18ch; margin: 0 auto 18px; }
+  h2 { font-size: 22px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .lead { color: var(--muted); font-size: clamp(17px, 2vw, 20px); max-width: 60ch; margin: 0 auto 24px; }
+  .section-inner { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; padding: 0 0 24px; }
+
+  .routes {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin: 16px 0 48px;
+  }
+  @media (min-width: 920px) {
+    .routes { grid-template-columns: 1fr 1fr 1fr; }
+  }
+  .route {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 26px 24px;
+    display: flex; flex-direction: column;
+    box-shadow: var(--shadow);
+  }
+  .route .route-tag {
+    font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700;
+    color: var(--accent); margin-bottom: 10px;
+  }
+  .route h2 { font-size: 22px; margin-bottom: 10px; }
+  .route .route-desc { color: var(--muted); font-size: 15px; margin-bottom: 16px; }
+
+  .steps { padding-left: 0; list-style: none; counter-reset: stepcount; margin: 0 0 18px; }
+  .steps li {
+    counter-increment: stepcount;
+    position: relative;
+    padding-left: 36px;
+    margin-bottom: 12px;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .steps li::before {
+    content: counter(stepcount);
+    position: absolute; left: 0; top: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(214, 167, 86, 0.18);
+    color: var(--accent-strong);
+    font-weight: 700; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: -apple-system, sans-serif;
+  }
+
+  .route-cta { margin-top: auto; padding-top: 8px; }
+  .route-cta a {
+    display: inline-block; margin-right: 8px; margin-top: 8px;
+    padding: 11px 18px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    font-size: 14px; font-weight: 700;
+  }
+  .route-cta a.primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: #14110c; border-color: transparent;
+  }
+  .route-cta a:hover { border-color: var(--accent); }
+
+  .price-row {
+    background: rgba(214, 167, 86, 0.04);
+    border: 1px dashed rgba(214, 167, 86, 0.3);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .price-row strong { color: var(--accent-strong); }
+
+  .helper {
+    background: rgba(45, 211, 166, 0.05);
+    border: 1px solid rgba(45, 211, 166, 0.24);
+    border-radius: 18px;
+    padding: 22px;
+    margin: 12px 0 36px;
+    text-align: center;
+  }
+  .helper h3 { font-size: 19px; margin-bottom: 8px; }
+  .helper p { color: var(--muted); margin-bottom: 14px; }
+  .helper a {
+    display: inline-block; margin: 6px;
+    padding: 10px 18px; border-radius: 999px;
+    border: 1px solid var(--good);
+    font-weight: 700; color: var(--text);
+  }
+  .helper a.primary {
+    background: var(--good); color: #0a1714; border-color: transparent;
+  }
+
+  .direct {
+    background: rgba(45, 211, 166, 0.06);
+    border: 1px solid rgba(45, 211, 166, 0.28);
+    border-radius: 20px;
+    padding: 22px;
+    margin: 0 0 24px;
+    text-align: left;
+    display: grid;
+    gap: 12px;
+  }
+  @media (min-width: 820px) {
+    .direct { grid-template-columns: 1fr auto; align-items: center; }
+  }
+  .direct strong { color: var(--text); font-size: 18px; }
+  .direct p { color: var(--muted); margin-top: 4px; }
+  .direct a {
+    display: inline-block;
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: var(--good);
+    color: #0a1714;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .micro {
+    text-align: center; color: var(--muted); font-size: 13px;
+    padding: 24px 0 12px;
+  }
+  .micro a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+
+  footer {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 32px 0;
+    text-align: center;
+    color: var(--muted); font-size: 14px;
+  }
+  footer a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">AetherMoore</a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="start-here.html" style="color:var(--text);">Start Here</a>
+      <a href="products.html">Products</a>
+      <a href="hire.html">Hire</a>
+      <a href="chat.html">Chat with Polly</a>
+      <a href="agents.html">Agents</a>
+      <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="eyebrow">Start here</div>
+    <h1>Choose your route: support, snapshot, or open code.</h1>
+    <p class="lead">
+      AetherMoore is a governed AI workflow toolkit. If you need a useful result,
+      the fastest path is the $500 Governance Snapshot. Everything else supports,
+      extends, or explains that work.
+    </p>
+  </section>
+
+  <section class="section-inner">
+    <div class="direct">
+      <div>
+        <strong>Most commercial visitors should start with the AI Governance Snapshot.</strong>
+        <p>Fixed scope, fixed price, five-business-day written read for one AI workflow.</p>
+      </div>
+      <a href="https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j" target="_blank" rel="noopener">Buy Snapshot $500</a>
+    </div>
+
+    <div class="routes">
+
+      <article class="route">
+        <div class="route-tag">Route A</div>
+        <h2>Support the work</h2>
+        <p class="route-desc">You've used the open-source tools or read the research, and you want the next release to ship.</p>
+        <div class="price-row"><strong>$5</strong> tip · <strong>$20/mo</strong> supporter · <strong>$5+</strong> service credits</div>
+        <ol class="steps">
+          <li>Pick the size that fits — one-time tip, monthly subscription, or pay-as-you-go credits.</li>
+          <li>Click the button. One Stripe or Ko-fi page later, you're done.</li>
+          <li>You'll get an emailed receipt. The work continues.</li>
+        </ol>
+        <div class="route-cta">
+          <a class="primary" href="https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k" target="_blank" rel="noopener">Tip $5</a>
+          <a href="supporter.html">Supporter $20/mo</a>
+          <a href="service-credits.html">Service credits</a>
+        </div>
+      </article>
+
+      <article class="route" style="border-color: rgba(45, 211, 166, 0.4);">
+        <div class="route-tag" style="color: var(--good);">Route B · Most teams</div>
+        <h2>Get a written read on an AI workflow</h2>
+        <p class="route-desc">Your team is using AI tools and you need a third-party written read — for an internal review, a client, or just for confidence.</p>
+        <div class="price-row"><strong>$500</strong> one-time read · <strong>$99/mo</strong> recurring monitor</div>
+        <ol class="steps">
+          <li>Buy the Governance Snapshot ($500). One workflow, one delivery, fixed scope.</li>
+          <li>You immediately get a fast-start packet, then an intake checklist within one business day. Reply with one workflow URL or repo path.</li>
+          <li>Five business days later, you receive a 2-page memo with three prioritized fixes and an evidence checklist.</li>
+        </ol>
+        <div class="route-cta">
+          <a class="primary" href="https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j" target="_blank" rel="noopener">Buy Snapshot $500</a>
+          <a href="governance-snapshot.html">What's inside</a>
+        </div>
+      </article>
+
+      <article class="route">
+        <div class="route-tag">Route C</div>
+        <h2>Build with the code yourself</h2>
+        <p class="route-desc">You're a developer or researcher and you want to wire the SCBE governance pipeline into your own work.</p>
+        <div class="price-row"><strong>$0</strong> open repo · <strong>$29</strong> toolkit · <strong>$29</strong> training vault</div>
+        <ol class="steps">
+          <li>Open the repo on GitHub — read the architecture, layer index, and axiom canon.</li>
+          <li>Buy the Toolkit ($29) for drop-in templates, or the Training Vault ($29) for fine-tuning materials.</li>
+          <li>Join the discussions, file issues, or email if you hit something the docs don't cover.</li>
+        </ol>
+        <div class="route-cta">
+          <a class="primary" href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener">Open the repo</a>
+          <a href="https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06" target="_blank" rel="noopener">Toolkit $29</a>
+          <a href="https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g" target="_blank" rel="noopener">Training Vault $29</a>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="helper">
+      <h3>None of these fit?</h3>
+      <p>Polly will walk you through 2-3 plain-language questions and recommend a product. Or send a one-paragraph note directly to Issac.</p>
+      <a class="primary" href="chat.html">Open Polly chat</a>
+      <a href="products.html">See every product</a>
+      <a href="mailto:issdandavis7795@gmail.com?subject=Help%20me%20pick%20a%20product">Email Issac</a>
+    </div>
+
+    <p class="micro">
+      Looking for the full architecture? <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/LAYER_INDEX.md" target="_blank" rel="noopener">14-layer index</a> ·
+      <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/CORE_AXIOMS_CANONICAL_INDEX.md" target="_blank" rel="noopener">5-axiom canon</a> ·
+      <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/M5_MESH_PRODUCT_SERVICE_BLUEPRINT.md" target="_blank" rel="noopener">M5 blueprint</a>
+    </p>
+  </section>
+</main>
+
+<footer>
+  <p>SCBE-AETHERMOORE — governed AI workflow tools.<br>
+  <a href="index.html">Home</a> · <a href="products.html">Products</a> · <a href="hire.html">Hire</a> · <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener">GitHub</a> · <a href="https://www.youtube.com/channel/UCO9aJ-ZH0Ddg_F0Dr655WIQ" target="_blank" rel="noopener">YouTube</a> · <a href="https://huggingface.co/issdandavis" target="_blank" rel="noopener">Hugging Face</a> · <a href="https://ko-fi.com/izdandavis" target="_blank" rel="noopener">Ko-fi</a></p>
+</footer>
+
+<script src="static/polly-funnel.js" defer></script>
+<script src="static/polly-sidebar-agent.js"></script>
+</body>
+</html>

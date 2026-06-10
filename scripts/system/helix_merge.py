@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shlex
 import subprocess
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -53,7 +54,7 @@ class HelixState:
 def run(cmd: str, cwd: str = None) -> Tuple[int, str]:
     """Run a shell command, return (exit_code, output)."""
     result = subprocess.run(
-        cmd, shell=True, capture_output=True, text=True,
+        shlex.split(cmd), capture_output=True, text=True,
         cwd=cwd or str(PROJECT_ROOT),
     )
     return result.returncode, (result.stdout + result.stderr).strip()

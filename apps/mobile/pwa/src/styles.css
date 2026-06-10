@@ -1,0 +1,136 @@
+:root {
+  --bg: #08101a;
+  --bg-2: #0e1638;
+  --fg: #e8eef7;
+  --fg-mute: #93a1bf;
+  --gold: #d4af37;
+  --cyan: #2dc8dc;
+  --line: #1c2546;
+  --safe-top: 0px;
+  --tabs-h: 60px;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--cyan); }
+button { font: inherit; cursor: pointer; }
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(8px + var(--safe-top)) 16px 8px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.link {
+  background: none;
+  border: none;
+  color: var(--fg-mute);
+  text-decoration: underline;
+}
+
+.content {
+  flex: 1;
+  padding: 16px;
+  padding-bottom: calc(16px + var(--tabs-h));
+  overflow-y: auto;
+}
+
+.tabs {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--tabs-h);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background: var(--bg-2);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tabs button {
+  background: none;
+  border: none;
+  color: var(--fg-mute);
+  font-size: 14px;
+}
+
+.tabs button.active {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.card {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.muted { color: var(--fg-mute); }
+.tight { margin: 0; }
+
+.verdict {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.verdict.ALLOW     { background: rgba(40,170,110,.18); color: #6fd3a0; }
+.verdict.QUARANTINE{ background: rgba(235,180,60,.18); color: #f0c861; }
+.verdict.ESCALATE  { background: rgba(140,90,200,.20); color: #b692ee; }
+.verdict.DENY      { background: rgba(210,60,70,.18);  color: #f08088; }
+
+.input, .textarea, .select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+}
+.textarea { min-height: 110px; resize: vertical; }
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--gold);
+  background: linear-gradient(180deg, #d4af37 0%, #ad8b27 100%);
+  color: #08101a;
+  font-weight: 700;
+}
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; }

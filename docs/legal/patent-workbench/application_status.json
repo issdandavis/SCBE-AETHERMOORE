@@ -1,0 +1,27 @@
+{
+  "schema": "scbe_patent_application_status_v1",
+  "recorded_at": "2026-05-30",
+  "docket": "SCBE-2026-0001",
+  "application_number": "19/691,526",
+  "application_number_compact": "19691526",
+  "title": "System and Method for Hyperbolic Geometry-Based Authorization with Topological Control-Flow Integrity",
+  "filing_date": "2026-05-28",
+  "filing_receipt_timestamp": "2026-05-28T22:54:51-04:00",
+  "application_type": "Utility - Nonprovisional Application under 35 USC 111(a)",
+  "status": "Filed and paid; waiting for formal filing receipt / next USPTO notice",
+  "confirmation_number": "1177",
+  "patent_center_number": "76776451",
+  "priority_provisional": "63/961,403",
+  "priority_provisional_filing_date": "2026-01-15",
+  "first_named_inventor": "Issac Daniel Davis",
+  "customer_record": "Inventor/customer address is on the Patent Center record and intentionally not duplicated in this repo workbench.",
+  "next_patent_center_action": "Check Patent Center for formal filing receipt and any Office of Patent Application Processing notice; calendar any stated deadline immediately.",
+  "local_filed_packet": "docs/legal/filing-packet-scbe-2026-0001/",
+  "local_payment_receipt": "docs/legal/filing-packet-scbe-2026-0001/04_FILED_RECEIPTS/USPTO_ELECTRONIC_PAYMENT_RECEIPT_APP_19-691526_2026-05-28.pdf",
+  "local_filing_receipt_snapshot": "docs/legal/filing-packet-scbe-2026-0001/04_FILED_RECEIPTS/FILING_RECEIPT_SNAPSHOT_APP_19-691526.md",
+  "notes": [
+    "This record captures procedural metadata only.",
+    "Do not store inventor address, credentials, card details, or Patent Center login details in this repository.",
+    "Use official Patent Center documents as the source of truth if any field differs."
+  ]
+}
