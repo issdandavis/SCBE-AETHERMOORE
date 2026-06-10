@@ -19,6 +19,25 @@ bootstrap a working clone on demand.
 | License | MIT (preserved in the clone) |
 | Python | 3.12 (upstream is incompatible with 3.14 — pydantic-core has no cp314 wheel) |
 
+## Durable full-source backup
+
+The complete patched engine source (not just the reference) is mirrored to a
+**private** repo, so a lost laptop or an upstream force-push/delete can't take it
+out:
+
+| Field | Value |
+|-------|-------|
+| Backup repo | `https://github.com/issdandavis/aether-harness-engine` (private) |
+| Branch | `aether-snapshot` (default) — self-contained orphan snapshot, full tree |
+| Contents | Hermes @ `a72bb037` + our patch (already applied) + `plugins/scbe-governance` |
+
+Recover anywhere with:
+
+```powershell
+git clone git@github.com:issdandavis/aether-harness-engine.git hermes-agent
+# then make a 3.12 venv + `pip install -e .` (the patch + plugin are already in the tree)
+```
+
 ## Our changes (the only reason this is a "fork")
 
 1. **`patches/0001-strip-reasoning-content-on-replay.patch`** — reasoning models
