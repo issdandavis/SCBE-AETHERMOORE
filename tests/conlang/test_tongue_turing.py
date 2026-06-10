@@ -521,7 +521,7 @@ def test_kor_aelin_lisp():
     result = eval_ko_vso(vm, tokens)
     print(f"  Result: {result}")
     assert result == 13, f"Expected 13, got {result}"
-    print(f"  PASS: (ADD 5 8) = 13")
+    print("  PASS: (ADD 5 8) = 13")
     return True
 
 
@@ -555,7 +555,7 @@ def test_avali_python():
     result = eval_av_svo(vm, tokens)
     print(f"  Result: {result}")
     assert result == 21, f"Expected 21, got {result}"
-    print(f"  PASS: 7.MUL(3) = 21")
+    print("  PASS: 7.MUL(3) = 21")
     return True
 
 
@@ -579,7 +579,7 @@ def test_runethic_forth():
     result = eval_ru_sov(vm, tokens)
     print(f"  Result: {result}")
     assert result == 6, f"Expected 6, got {result}"
-    print(f"  PASS: 10 4 SUB = 6")
+    print("  PASS: 10 4 SUB = 6")
     return True
 
 
@@ -603,7 +603,7 @@ def test_cassisivadan_sql():
     result = eval_ca_v2(vm, tokens)
     print(f"  Result: {result} ({'TRUE' if result else 'FALSE'})")
     assert result == 1, f"Expected 1 (TRUE), got {result}"
-    print(f"  PASS: (9 GT 5) = TRUE")
+    print("  PASS: (9 GT 5) = TRUE")
     return True
 
 
@@ -622,13 +622,13 @@ def test_umbroth_asm():
     tokens = make_instruction("um", verb_byte, src_byte, dest_byte)
     print(f"\n{'='*60}")
     print(f"UMBROTH (OSV/ASM): {' '.join(tokens)}")
-    print(f"  Decoded: MOV R0, 13  (SET R0 = 13)")
+    print("  Decoded: MOV R0, 13  (SET R0 = 13)")
 
     result = eval_um_osv(vm, tokens)
     print(f"  Result: {result}, R0 = {vm.registers[0]}")
     # SET returns b (the source value)
-    assert result == 13 or vm.registers[0] == 13, f"Expected R0=13"
-    print(f"  PASS: R0 now holds 13")
+    assert result == 13 or vm.registers[0] == 13, "Expected R0=13"
+    print("  PASS: R0 now holds 13")
     return True
 
 
@@ -648,12 +648,12 @@ def test_draumric_make():
     tokens = make_instruction("dr", verb_byte, target_byte, material_byte)
     print(f"\n{'='*60}")
     print(f"DRAUMRIC (SOV/Make): {' '.join(tokens)}")
-    print(f"  Decoded: R2(=3) 7 FORGE_ADD → R2 = 3 + 7")
+    print("  Decoded: R2(=3) 7 FORGE_ADD → R2 = 3 + 7")
 
     result = eval_dr_sov(vm, tokens)
     print(f"  Result: {result}, R2 = {vm.registers[2]}")
     assert vm.registers[2] == 10, f"Expected R2=10, got {vm.registers[2]}"
-    print(f"  PASS: R2 forged from 3 + 7 = 10")
+    print("  PASS: R2 forged from 3 + 7 = 10")
     return True
 
 
@@ -670,7 +670,7 @@ def test_cross_tongue_pipeline():
     Same bytes, different token sequences, same result.
     """
     print(f"\n{'='*60}")
-    print(f"CROSS-TONGUE PIPELINE: Compute 5 + 8 = 13 in all 6 tongues")
+    print("CROSS-TONGUE PIPELINE: Compute 5 + 8 = 13 in all 6 tongues")
     print(f"{'='*60}")
 
     results = {}
@@ -693,8 +693,8 @@ def test_cross_tongue_pipeline():
     for tc, val in results.items():
         assert val == 13, f"{tc} got {val}, expected 13"
 
-    print(f"\n  ALL 6 TONGUES COMPUTED 5 + 8 = 13")
-    print(f"  Same bytes → different tokens → same semantics → same result")
+    print("\n  ALL 6 TONGUES COMPUTED 5 + 8 = 13")
+    print("  Same bytes → different tokens → same semantics → same result")
     return True
 
 
@@ -706,31 +706,32 @@ def test_cross_tongue_pipeline():
 def display_token_anatomy():
     """Show the full computational anatomy of a single byte across all tongues."""
     print(f"\n{'='*60}")
-    print(f"TOKEN ANATOMY: Byte 0x80 (ADD operation) across 6 tongues")
+    print("TOKEN ANATOMY: Byte 0x80 (ADD operation) across 6 tongues")
     print(f"{'='*60}")
-    print(f"  Byte: 0x80 = 1000_0000")
-    print(f"  High nibble: 8 → Verb/Operation (Arithmetic)")
-    print(f"  Low nibble:  0 → Variant 0 (ADD)")
+    print("  Byte: 0x80 = 1000_0000")
+    print("  High nibble: 8 → Verb/Operation (Arithmetic)")
+    print("  Low nibble:  0 → Variant 0 (ADD)")
     print()
 
     for tc in ["ko", "av", "ru", "ca", "um", "dr"]:
         token = byte_to_token(tc, 0x80)
         spec = TONGUES[tc]
         print(
-            f"  {spec.name:15s}: {token:15s}  (prefix={spec.prefixes[8]}, suffix={spec.suffixes[0]}, freq={spec.harmonic_frequency}Hz)"
+            f"  {spec.name:15s}: {token:15s}  "
+            f"(prefix={spec.prefixes[8]}, suffix={spec.suffixes[0]}, freq={spec.harmonic_frequency}Hz)"
         )
 
-    print(f"\n  6 tokens, 1 meaning: ADD")
-    print(f"  This is the isomorphism — same operation, 6 phonetic representations")
+    print("\n  6 tokens, 1 meaning: ADD")
+    print("  This is the isomorphism — same operation, 6 phonetic representations")
 
 
 def display_instruction_set_summary():
     """Print the full instruction set carved from the nibble space."""
     print(f"\n{'='*60}")
-    print(f"SACRED TONGUE INSTRUCTION SET ARCHITECTURE (STISA)")
+    print("SACRED TONGUE INSTRUCTION SET ARCHITECTURE (STISA)")
     print(f"{'='*60}")
-    print(f"\n  256 bytes = 256 tokens per tongue")
-    print(f"  4 categories × 4 subcategories × 16 variants = 256 opcodes")
+    print("\n  256 bytes = 256 tokens per tongue")
+    print("  4 categories × 4 subcategories × 16 variants = 256 opcodes")
     print()
     print(f"  {'Nibble':>8s}  {'Category':12s}  {'Role':20s}  {'Count'}")
     print(f"  {'─'*8}  {'─'*12}  {'─'*20}  {'─'*5}")
@@ -750,8 +751,8 @@ def display_instruction_set_summary():
     print(f"  {'0xD_':>8s}  {'Modifier':12s}  {'Scope markers':20s}  16")
     print(f"  {'0xE_':>8s}  {'Modifier':12s}  {'Mode flags':20s}  16")
     print(f"  {'0xF_':>8s}  {'Modifier':12s}  {'Assertions':20s}  16")
-    print(f"\n  Total: 256 opcodes × 6 tongues = 1,536 unique tokens")
-    print(f"  Each tongue provides a different EVALUATION ORDER for the same opcodes")
+    print("\n  Total: 256 opcodes × 6 tongues = 1,536 unique tokens")
+    print("  Each tongue provides a different EVALUATION ORDER for the same opcodes")
 
 
 # ============================================================
@@ -769,7 +770,7 @@ def test_fibonacci_draumric():
       Loop 5 times: R2 = R0 + R1, R0 = R1, R1 = R2
     """
     print(f"\n{'='*60}")
-    print(f"DRAUMRIC MULTI-STEP: Fibonacci(6) via forge operations")
+    print("DRAUMRIC MULTI-STEP: Fibonacci(6) via forge operations")
     print(f"{'='*60}")
 
     vm = TongueVM(name="Draumric", tongue_code="dr")
@@ -800,7 +801,7 @@ def test_fibonacci_draumric():
 
     print(f"  Result: R1 = {vm.registers[1]}")
     assert vm.registers[1] == 8, f"Expected fib(6)=8, got {vm.registers[1]}"
-    print(f"  PASS: Fibonacci(6) = 8, forged in Draumric")
+    print("  PASS: Fibonacci(6) = 8, forged in Draumric")
     return True
 
 
@@ -816,7 +817,7 @@ def test_conditional_cassisivadan():
     Shows conditional evaluation using the evidential marker system.
     """
     print(f"\n{'='*60}")
-    print(f"CASSISIVADAN CONDITIONAL: IF R0 > 5 THEN R1 = R0*2 ELSE R1 = 0")
+    print("CASSISIVADAN CONDITIONAL: IF R0 > 5 THEN R1 = R0*2 ELSE R1 = 0")
     print(f"{'='*60}")
 
     for test_val in [3, 7, 5]:
@@ -844,7 +845,7 @@ def test_conditional_cassisivadan():
         branch = "THEN" if cmp_result else "ELSE"
         print(f"  R0={test_val}: {' '.join(cmp_tokens)} → {cmp_result} ({branch}) → R1={vm.registers[1]}")
 
-    print(f"  PASS: Conditional branching works in Cassisivadan")
+    print("  PASS: Conditional branching works in Cassisivadan")
     return True
 
 

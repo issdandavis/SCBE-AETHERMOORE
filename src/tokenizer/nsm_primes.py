@@ -303,13 +303,13 @@ NSM_PRIMES: tuple[NSMPrime, ...] = (
     NSMPrime("dr.when",     "WHEN/TIME",   ("when", "time", "temporal"),              0, 0.26, 5,  6,
              (PrimeSpan("DR", 0.90, "time as the domain of record"),
               PrimeSpan("CA", 0.10, "time as measurable quantity"))),
-    NSMPrime("dr.long_time","A LONG TIME", ("a long time", "for ages", "long"),       1, 0.28, 5,  7,
+    NSMPrime("dr.long_time", "A LONG TIME", ("a long time", "for ages", "long"),      1, 0.28, 5,  7,
              (PrimeSpan("DR", 0.80, "extended temporal record"),
               PrimeSpan("CA", 0.20, "large time quantity"))),
-    NSMPrime("dr.short_time","A SHORT TIME",("a short time", "briefly", "quickly"),   1, 0.28, 5,  8,
+    NSMPrime("dr.short_time", "A SHORT TIME", ("a short time", "briefly", "quickly"), 1, 0.28, 5,  8,
              (PrimeSpan("DR", 0.80, "brief temporal record"),
               PrimeSpan("CA", 0.20, "small time quantity"))),
-    NSMPrime("dr.for_time", "FOR SOME TIME",("for some time", "a while", "some time"),1, 0.30, 5,  9,
+    NSMPrime("dr.for_time", "FOR SOME TIME", ("for some time", "a while", "some time"), 1, 0.30, 5,  9,
              (PrimeSpan("DR", 0.80, "bounded temporal record"),
               PrimeSpan("RU", 0.20, "time-bound policy"))),
     NSMPrime("dr.moment",   "MOMENT",      ("moment", "instant", "point in time"),    1, 0.26, 5, 10,
@@ -389,9 +389,7 @@ def coverage_report() -> CoverageReport:
         notes.append("NOT spans KO/RU/UM — may be a meta-prime above the alphabet level")
     if "FEEL" in [p.label for p in NSM_PRIMES if p.is_cross_tongue]:
         notes.append("FEEL and THINK resist clean assignment — inner experience is genuinely cross-tongue")
-    notes.append(
-        f"BECAUSE appears under both KO and RU — causal relation is intent AND policy; " f"both isotopes needed"
-    )
+    notes.append("BECAUSE appears under both KO and RU — causal relation is intent AND policy; " "both isotopes needed")
 
     return CoverageReport(
         total=len(NSM_PRIMES),

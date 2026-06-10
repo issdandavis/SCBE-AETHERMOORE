@@ -404,12 +404,12 @@ def cmd_land_list(args) -> None:
         "count": len(landings),
         "landings": [
             {
-                "hash": l.landing_hash,
-                "ts": l.ts,
-                "brick_count": l.brick_count,
-                "verified": l.verify(),
+                "hash": landing.landing_hash,
+                "ts": landing.ts,
+                "brick_count": landing.brick_count,
+                "verified": landing.verify(),
             }
-            for l in landings
+            for landing in landings
         ],
     }
     _emit(result, args.json)

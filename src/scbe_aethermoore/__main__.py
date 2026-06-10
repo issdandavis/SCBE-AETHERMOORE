@@ -105,7 +105,7 @@ Examples:
     if args.batch:
         try:
             with open(args.batch, encoding="utf-8") as f:
-                lines = [l.rstrip("\n") for l in f if l.strip()]
+                lines = [line.rstrip("\n") for line in f if line.strip()]
         except FileNotFoundError:
             print(f"Error: file not found: {args.batch}", file=sys.stderr)
             return 1

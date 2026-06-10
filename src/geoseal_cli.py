@@ -104,7 +104,7 @@ from src.agentic.meet_in_the_middle import (
 )
 from src.cli.param_binding import BoundCommand, bind_subparser
 from pydantic import ConfigDict, Field
-from typing import Literal as _Literal
+from typing import Literal
 
 PHI = (1 + 5**0.5) / 2
 
@@ -1965,7 +1965,8 @@ def cmd_domino(args: argparse.Namespace) -> int:
         return 0
     chain = payload.get("chain") or []
     print(
-        f"{payload['schema']} complete={payload['summary']['complete']} chain_length={payload['summary']['chain_length']}"
+        f"{payload['schema']} complete={payload['summary']['complete']} "
+        f"chain_length={payload['summary']['chain_length']}"
     )
     print("chain=" + " -> ".join(f"{tile['tile_id']}({tile['left']}|{tile['right']})" for tile in chain))
     if payload.get("blocked"):
@@ -2648,14 +2649,14 @@ class SealHereCommand(BoundCommand):
         le=100.0,
         description="Fence radius in kilometers (1-100)",
     )
-    location_name: Optional[_Literal["port-angeles", "sequim", "seattle"]] = Field(
+    location_name: Optional[Literal["port-angeles", "sequim", "seattle"]] = Field(
         None,
         description="Use a known named location (port-angeles | sequim | seattle)",
     )
     lat: Optional[float] = Field(None, ge=-90.0, le=90.0, description="Latitude in degrees")
     lon: Optional[float] = Field(None, ge=-180.0, le=180.0, description="Longitude in degrees")
     label: str = Field("seal-here", description="Audit label for the sealed packet")
-    tongue: _Literal["ko", "av", "ru", "ca", "um", "dr"] = Field(
+    tongue: Literal["ko", "av", "ru", "ca", "um", "dr"] = Field(
         "ko",
         description="Sacred Tongue used as transport for the sealed bytes",
     )
@@ -2719,10 +2720,10 @@ class CrossBuildCommand(BoundCommand):
         None,
         description="Lexicon-rendered source snippet to lift into the lattice IR",
     )
-    src_tongue: Optional[_Literal["KO", "AV", "RU", "CA", "UM", "DR"]] = Field(
+    src_tongue: Optional[Literal["KO", "AV", "RU", "CA", "UM", "DR"]] = Field(
         None, description="Source tongue (one of KO|AV|RU|CA|UM|DR)"
     )
-    dst_tongue: Optional[_Literal["KO", "AV", "RU", "CA", "UM", "DR"]] = Field(
+    dst_tongue: Optional[Literal["KO", "AV", "RU", "CA", "UM", "DR"]] = Field(
         None, description="Destination tongue for single-target translation"
     )
     all_tongues: bool = Field(
@@ -2843,10 +2844,10 @@ class RouteCommand(BoundCommand):
         None,
         description="Pin the lexicon op (e.g. add, mul, xor) — skips band+op SLM stages",
     )
-    band: Optional[_Literal["ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION"]] = Field(
+    band: Optional[Literal["ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION"]] = Field(
         None, description="Pin the operation band — skips band SLM stage"
     )
-    dst_tongue: Optional[_Literal["KO", "AV", "RU", "CA", "UM", "DR"]] = Field(
+    dst_tongue: Optional[Literal["KO", "AV", "RU", "CA", "UM", "DR"]] = Field(
         None, description="Pin the destination tongue — skips tongue SLM stage"
     )
     arg: List[str] = Field(
@@ -4113,7 +4114,7 @@ def cmd_arc(args: argparse.Namespace) -> int:
         }
         print(json.dumps(record, indent=2))
     elif verbose:
-        print(f"\nprogram steps:")
+        print("\nprogram steps:")
         for i, step in enumerate(solution.program.steps):
             print(f"  {i}: {step.op}  {step.args}")
         print(f"\ntest outputs ({len(test_outputs)}):")
@@ -5100,7 +5101,7 @@ def _skill_tree_cmd_focus(tree: Dict[str, Any], cmd: str) -> str:
         f"  depth:   {n['depth']}",
         f"  phi:     φ{n['phi_weight']:.3f}  ({n['phi_tier']})",
         f"  entry:   {'yes ★' if n['entry_point'] else 'no'}",
-        f"",
+        "",
         f"  {n['description']}",
     ]
     if n["requires"]:
