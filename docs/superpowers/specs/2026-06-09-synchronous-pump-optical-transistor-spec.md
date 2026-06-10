@@ -247,4 +247,108 @@ and the wettability-diode threshold-gaming. Report the boundary, never tune to c
   scope (same posture as the transpiration-skin work).
 - **Parameter realism gates the verdict.** `ρ`, `β`, `S_sat` must be tied to a
   cited material regime (microcavity polariton organic semiconductor) before any
-  PASS is asserted; an arbitrary parameter set can make anything bistable.
+  PASS is asserted; an arbitrary parameter set can make anything bistable. See §8.
+
+---
+
+## 8. Material regimes — what the two edges mean physically
+
+The model has exactly two falsification edges (Probe 1: `ρ_crit ≈ 1.5`; Probe 2:
+`β ≲ 0.1`). Tying them to measured materials shows they live on **two different
+axes** — one architectural, one material — and they do *not* both bind the same
+device. The clean separation only became visible after fixing a conflation (see
+the τ_rt caveat below); it is the honest, load-bearing result of this section.
+
+### 8.1 The cited device family
+
+The only experimentally demonstrated **room-temperature, cascadable, all-optical**
+transistor is the organic exciton-polariton transistor:
+
+- Zasedatelev *et al.*, "A room-temperature organic polariton transistor,"
+  *Nature Photonics* **13**, 378 (2019) — ladder-type polymer in a microcavity,
+  vibron-mediated stimulated scattering, net gain **~10 dB·µm⁻¹** (≈330× the
+  inorganic counterpart), **sub-ps** switching, explicitly cascadable.
+- Zasedatelev/Lagoudakis *et al.*, "Room temperature, cascadable, all-optical
+  polariton universal gates," *Nature Communications* **15** (2024),
+  doi:10.1038/s41467-024-49690-3 — a cascadable NOT gate via non-ground-state
+  polariton amplification.
+
+Note the demonstrated organic cascades are **short** (a NOT gate, a few stages),
+not the 300-deep cascade the averaged model claimed. That gap is the thing §8.3
+explains and predicts.
+
+### 8.2 β is the material axis (Probe 2 — REAL, binds organics)
+
+`β` in this model is the same physical quantity as in the polariton literature:
+the spontaneous-emission coupling factor into the lasing mode.
+
+| Regime | β | Why | Temperature |
+|---|---|---|---|
+| Inorganic GaAs microcavity | ~10⁻⁴ | large mode volume, small Rabi | cryogenic |
+| Organic / small-mode-volume | ~10⁻²–10⁻¹ (up to ~0.3–0.5 in photonic-wire geometries) | tiny mode volume + giant Rabi (100–225 meV) forces a large spontaneous fraction into the mode | **room** |
+
+GaAs β ~ 10⁻⁴ from microcavity-LED / polariton-LED studies (arXiv:0712.1565);
+organic/photonic-wire β up to 0.3–0.5 from waveguide-microcavity LED work
+(USPTO 5,878,070; organic strong-coupling reviews, Rabi up to 225 meV).
+
+**Verdict on Probe 2:** the model says the cascade holds for `β ≲ 0.1` and flips
+bits above it (survival 1.0 → 0.97 → 0.17 → 0.0 across β = 0.1/0.2/0.3/0.5).
+Inorganic sits **deep inside PASS** (β ~ 10⁻⁴). Organic — the *only* room-temp
+cascadable material — sits **at or beyond the edge** (β ~ 10⁻²–10⁻¹). The same
+small-mode-volume/large-Rabi property that buys organics their low threshold and
+room-temperature operation is what pushes them onto the bit-flip ceiling.
+
+### 8.3 ρ is the architecture axis (Probe 1 — REAL, but NOT a microcavity effect)
+
+`ρ = τ₂/τ_rt` = gain-recovery time ÷ **one map iteration**. One iteration here is
+one **geometric** round trip (`τ_rt = 2L/v_g`), and the cavity photon lifetime is
+*already* carried by the loss term: a cold cavity decays as `P_n = P₀·e^{−l·n}`,
+so `τ_c = τ_rt / l`. At the default `l = 0.10` that is **10 round-trips of photon
+storage, finesse ≈ 63** — a low-finesse / long-cavity element, **not** a λ-thick
+microcavity (which would have finesse 10³–10⁵, `l ~ 10⁻³`–`10⁻⁵`).
+
+Consequence, by timescale:
+
+| Architecture | τ_rt | τ₂ (gain recovery) | ρ = τ₂/τ_rt | Probe 1 |
+|---|---|---|---|---|
+| λ-thick microcavity (organic or GaAs) | ~fs | ps–ns | ≫ 1 | never binds — averaged limit |
+| Long fiber loop / cm-scale ring + SOA-like gain | ~0.1–5 ns | ~10 ps–1 ns | ~0.01–1 | **binds at ρ_crit ≈ 1.5** |
+
+So Probe 1's boundary is **architectural, not material**: monolithic microcavities
+(the §8.1 devices) sit at `ρ ≫ 1` regardless of organic vs inorganic, and are
+never ρ-limited — their constraint is β (§8.2). The `ρ_crit ≈ 1.5` edge bites only
+for **long-cavity cavity-logic** (fiber loops, ring resonators) whose round-trip
+time approaches the gain-recovery time — exactly the regime the default
+`l = 0.10` parameter set actually describes.
+
+### 8.4 Combined verdict + falsifiable prediction
+
+- **Inorganic GaAs microcavity (cryo):** clears *both* edges — β ~ 10⁻⁴ ≪ 0.1 and
+  ρ ≫ 1. The averaged model's clean 300-stage cascade is realistic **here**, at
+  the price of cryogenic operation. (Photon lifetimes 11–135 ps, polariton 10–270
+  ps; high-Q Q ~ 3.2×10⁵.)
+- **Organic microcavity (room temp):** clears the ρ edge (microcavity → averaged
+  limit) but sits **at/over the β edge**. The model predicts a room-temperature
+  high-β organic cascade accumulates spontaneous-emission-seeded bit flips over
+  ~tens–hundreds of stages **unless β is suppressed or per-stage margin widened**.
+  This is consistent with the demonstrated organic cascades being *short* rather
+  than 300-deep (§8.1) — a postdiction the model gets right, and a forward
+  prediction: deepen an organic cascade and watch flip rate climb with stage count.
+- **Long-cavity SOA/fiber logic:** the only regime where Probe 1 binds; there the
+  ρ_crit ≈ 1.5 timing constraint is the live design rule.
+
+### 8.5 The τ_rt caveat (do not bury this)
+
+An earlier draft of this section read ρ off by identifying `τ_rt` with the cavity
+**photon lifetime** and concluded "organics sit on the ρ edge." That is wrong: the
+photon lifetime already lives in `l` (`τ_c = τ_rt/l`), so using it again for `τ_rt`
+double-books the same physics and would require `τ_rt` to be two values at once.
+The correct identification — `τ_rt` = one geometric round trip — moves the ρ story
+to the architecture axis (§8.3) and leaves β as the only **material** edge. The
+honesty cost of getting this right is that the tidy "organics fail on both knobs"
+story is false; the true story (β binds materials, ρ binds architectures) is the
+stronger one because the two edges are independent.
+
+`S_sat` (gain/absorber saturation) maps to the exciton-reservoir saturation
+density; it sets the upper fixed point `P*` but is not a falsification edge here,
+so it is left as a tunable scale rather than pinned to a single citation.

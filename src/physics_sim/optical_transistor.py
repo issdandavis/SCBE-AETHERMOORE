@@ -49,9 +49,18 @@ import numpy as np
 # =============================================================================
 @dataclass(frozen=True)
 class Params:
+    # Material grounding for rho / beta / Psat is in the spec, §8 "Material regimes":
+    #   docs/superpowers/specs/2026-06-09-synchronous-pump-optical-transistor-spec.md
+    # Short version: beta is the MATERIAL edge (Probe 2) -- organic polariton
+    # transistors (Nat. Photonics 13, 378 (2019); Nat. Comms 15 (2024)) run at
+    # room temp but carry high beta ~1e-2..1e-1, sitting AT the bit-flip ceiling;
+    # inorganic GaAs has beta ~1e-4 but needs cryo. rho is the ARCHITECTURE edge
+    # (Probe 1): l=0.10 => 10 round-trips of photon storage (finesse ~63), a
+    # long-cavity/fiber-loop element, NOT a lambda-microcavity -- so rho_crit~1.5
+    # binds fiber/ring logic, never a monolithic microcavity (which sits at rho>>1).
     g0: float = 0.40  # small-signal gain (per round trip, in ln units)
     q0: float = 0.50  # small-signal saturable-absorber loss
-    l: float = 0.10  # linear + mirror loss (combined, ln units)
+    l: float = 0.10  # linear + mirror loss (combined, ln units); tau_c = tau_rt / l
     Psat_g: float = 3.0  # gain saturation power
     Psat_a: float = 0.30  # absorber saturation power (< Psat_g => bistable)
     # time-domain only:
