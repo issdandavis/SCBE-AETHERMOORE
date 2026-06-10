@@ -1,0 +1,24 @@
+diff --git a/agent/agent_runtime_helpers.py b/agent/agent_runtime_helpers.py
+index daffc02..1a0767f 100644
+--- a/agent/agent_runtime_helpers.py
++++ b/agent/agent_runtime_helpers.py
+@@ -2076,6 +2076,19 @@ def copy_reasoning_content_for_api(agent, source_msg: dict, api_msg: dict) -> No
+     if source_msg.get("role") != "assistant":
+         return
+ 
++    # 0. Providers that do NOT enforce the thinking-mode echo (Cerebras,
++    # plain OpenAI-compatible "custom" endpoints, etc.) REJECT
++    # reasoning_content on replayed assistant messages with HTTP 400
++    # ("property 'messages.N.assistant.reasoning_content' is unsupported").
++    # When the active provider doesn't require the echo, strip any stored
++    # reasoning_content from the outgoing replay and skip the
++    # reasoning→reasoning_content promotion below. The source message keeps
++    # its reasoning_content/reasoning for trajectory storage; only this
++    # api_msg copy is sanitized. Content + tool_calls stay intact.
++    if not agent._needs_thinking_reasoning_pad():
++        api_msg.pop("reasoning_content", None)
++        return
++
+     # 1. Explicit reasoning_content already set — preserve it verbatim
+     # (includes DeepSeek/Kimi's own space-placeholder written at creation
+     # time, and any valid reasoning content from the same provider).
