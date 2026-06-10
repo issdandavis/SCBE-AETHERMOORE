@@ -222,7 +222,7 @@ strands-agents-tools==0.7.0
 sympy==1.14.0
 tenacity==9.1.4
 toml==0.10.2
-tqdm==4.67.3
+tqdm==4.68.2
 typeguard==4.5.2
 typer==0.26.4
 typing-inspection==0.4.2
