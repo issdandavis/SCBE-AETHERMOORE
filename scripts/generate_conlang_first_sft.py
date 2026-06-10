@@ -780,6 +780,7 @@ def generate_pipeline_order_record() -> list:
 
 
 def main():
+    """Generate all conlang-first SFT records and write the JSONL outputs."""
     print("=" * 70)
     print("Conlang-First Sacred Tongue SFT Generator")
     print("=" * 70)
