@@ -119,6 +119,8 @@ Formal spec defining the two concurrent continuous processes that run across L8�
 
 Where the current Layer 12 runtime score is `H_score(d*,pd) = 1/(1+d*+2·pd)` in `(0,1]`; downstream gates treat lower score as higher risk. The older `R^(d²)` wall is a legacy/theoretical variant, not the production L12 score.
 
+> **Distance metric note.** The `d*` in the Python `RuntimeGate` is a phi-weighted **Euclidean** drift from a learned centroid, not the canonical L5 Poincaré `arcosh` d_H (which the TS pipeline uses). They are related design surfaces, not the same metric — see the "Distance Metric: Canonical arcosh vs Runtime Centroid-Drift" section in `CANONICAL_SYSTEM_STATE.md`.
+
 This produces the observed metrics:
 - F1 0.813 via early geometric damping
 - Safety Score 34.5% via high-drag on dissonant tongues

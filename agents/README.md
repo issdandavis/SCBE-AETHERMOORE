@@ -1,14 +1,10 @@
-# agents/ — moved
+# agents/
 
-This directory was extracted from the monolith and now lives in its own repo:
+**Canonical home.** This directory is part of the SCBE-AETHERMOORE monorepo — the single
+source of truth for the agent runtime, the HYDRA swarm coordinator (`hydra/`), and the MCP
+servers (`mcp/`). Develop and run these here.
 
-**→ https://github.com/issdandavis/scbe-agents**
-
-The `scbe-agents` repo contains the former `agents/`, `hydra/`, and `mcp/` trees — the agent runtime, HYDRA 6-agent swarm coordinator, and MCP servers.
-
-Install:
-```bash
-git clone https://github.com/issdandavis/scbe-agents.git
-```
-
-The full pre-split state of SCBE-AETHERMOORE is preserved at tag `v-monolith-final` in this repo — checkout with `git checkout v-monolith-final`.
+> **Archived mirror:** a read-only snapshot of these trees (taken 2026-04-13) exists at
+> [issdandavis/scbe-agents](https://github.com/issdandavis/scbe-agents). It is kept for
+> historical reference only and is **not** maintained — do not clone it for current work.
+> See [../docs/ops/SPLIT_NOTICE.md](../docs/ops/SPLIT_NOTICE.md) for the full history.

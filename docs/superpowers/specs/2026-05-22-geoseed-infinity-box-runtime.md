@@ -30,7 +30,7 @@ The design composes existing surfaces rather than inventing a parallel subsystem
 
 | Layer | Current anchor | Role |
 |---|---|---|
-| M6 / GeoSeed direction | `docs/M6_SEED_MULTI_NODAL_NETWORK_SPEC.md` | Six-seed topology, 14-layer dressing, 21D lift, reserved `src/geoseed/` target |
+| M6 / GeoSeed direction | `docs/M6_SEED_MULTI_NODAL_NETWORK_SPEC.md` | Six-seed topology plus the current `src/geoseed/` orbital / prime-abacus implementation subset |
 | Sphere-grid behavior | `notes/sphere-grid/Agentic Sphere Grid.md` | Tongue domains, tiers, learning through need pressure |
 | Sacred flow geometry | `notes/sphere-grid/geometry/sacred-flows.md` | Tongue-to-shape mapping and vertical/horizontal/diagonal flow |
 | Phi spacing | `notes/sphere-grid/geometry/phi-spiral.md` | Tongue weights and tier spacing |
@@ -41,7 +41,7 @@ The design composes existing surfaces rather than inventing a parallel subsystem
 | GeoSeal / legitimacy | GeoSeal CLI and legitimacy-trial surfaces | Time/location/system-state legitimacy receipts |
 | Coding gate | `coding-trial` CLI path | Mechanical compiler/probe verdicts before mutation |
 
-Note: a Notion-exported GeoSeed note claims `src/geoseed/` modules are implemented. In this checkout, `src/geoseed/` is not present. Treat the Notion note as design/canon input and `docs/M6_SEED_MULTI_NODAL_NETWORK_SPEC.md` as the current repo-truth: `src/geoseed/` is the reserved future module path.
+Note: the old Notion-exported GeoSeed note overstates implementation status. In this checkout, `src/geoseed/` does exist and contains a real subset: orbital model, shell duality / theory-fit work, bit dressing, semantic abacus, prime atlas, prime seed init, transfer recorder, and visualization surfaces. What does **not** exist here is the full Notion-claimed 14-layer network stack (`sphere_grid.py`, `dressing_geometric.py`, `composition_geometric.py`, `model.py`). Treat the Notion note as design/canon input and this spec as the current repo-truth: GeoSeed is partially implemented, with orbital / prime-abacus code live and the larger network architecture still future work.
 
 ## 3. Core Invariant
 

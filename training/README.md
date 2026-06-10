@@ -1,14 +1,11 @@
-# training/ — moved
+# training/
 
-This directory was extracted from the monolith and now lives in its own repo:
+**Canonical home.** This directory is part of the SCBE-AETHERMOORE monorepo — the single
+source of truth for the QLoRA configs, Vertex/HF training scripts, dataset ingest pipelines,
+SFT records, the 21D PHDM embedding training rig, and the federated orchestrator. Develop
+and run these here.
 
-**→ https://github.com/issdandavis/scbe-training-lab**
-
-The `scbe-training-lab` repo contains the former `training/` tree — QLoRA configs, Vertex/HF training scripts, dataset ingest pipelines, SFT records, the 21D PHDM embedding training rig, and the federated orchestrator. This is the repo ML engineers should clone on HuggingFace / Colab without pulling the whole framework.
-
-Install:
-```bash
-git clone https://github.com/issdandavis/scbe-training-lab.git
-```
-
-The full pre-split state of SCBE-AETHERMOORE is preserved at tag `v-monolith-final` in this repo — checkout with `git checkout v-monolith-final`.
+> **Archived mirror:** a read-only snapshot of this tree (taken 2026-04-13) exists at
+> [issdandavis/scbe-training-lab](https://github.com/issdandavis/scbe-training-lab). It is
+> kept for historical reference only and is **not** maintained — do not clone it for current
+> work. See [../docs/ops/SPLIT_NOTICE.md](../docs/ops/SPLIT_NOTICE.md) for the full history.

@@ -73,6 +73,9 @@
   "files": [
     "bin",
     "dist/src",
+    "!dist/src/skills",
+    "!dist/src/game",
+    "!dist/src/video",
     "dist/packages",
     "README.md",
     "LICENSE",
@@ -341,5 +344,10 @@
     "minimatch@10.2.5": {
       "brace-expansion": "^5.0.6"
     }
+  },
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "test": "tests"
   }
 }

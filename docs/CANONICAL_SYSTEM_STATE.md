@@ -42,6 +42,21 @@ These should be treated as **legacy or bounded scoring variants**, not the curre
 - compatibility path,
 - or experiment.
 
+## Distance Metric: Canonical arcosh vs Runtime Centroid-Drift
+
+The canonical L5/TS hyperbolic path uses true Poincaré `arcosh` distance.
+The current Python `RuntimeGate` production cost is a separate weighted-centroid-drift
+surrogate used for runtime governance scoring. They are related design surfaces, not
+the same metric.
+
+- Canonical hyperbolic d_H: `arcosh(1 + 2‖u−v‖²/((1−‖u‖²)(1−‖v‖²)))` — TS L5 pipeline,
+  `src/video_lattice/poincare_lattice.py` (Möbius-invariant; passes the congruence test).
+- Runtime gate cost: `R^(φ · d*)` where `d* = sqrt(Σ_k φ^k (coords_k − centroid_k)²)` —
+  a phi-weighted **Euclidean** drift from a learned running centroid in
+  `src/governance/runtime_gate.py` (`_weighted_centroid_drift` → `_harmonic_cost`). It is a
+  monotone decision input, **not** a frame-free hyperbolic metric (it fails Möbius-invariance;
+  see `scripts/eval/gate_mobius_invariance.py`).
+
 ## Runtime Surface
 
 ### Governance Application Interface

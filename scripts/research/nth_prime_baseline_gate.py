@@ -4,10 +4,13 @@ This is the engineering comparator for the prime atlas work:
 
     n -> corridor for p_n -> count primes before corridor -> segmented wheel sieve -> p_n
 
-It is intentionally plain Python, so it is not trying to beat QueenJewels/LLVM.
-Its job is to provide a correct, instrumented baseline that future shell,
-Mobius, residue, or fog-of-war probes must beat before claiming operational
-value.
+The count-before-corridor step uses a sublinear prime_pi (Lucy_Hedgehog /
+Dirichlet-hyperbola method): it evaluates pi only at the ~2*sqrt(x) distinct
+floor(x/i) "ratio" points instead of sieving every integer up to x, so that
+step no longer scales with x. That count step -- not the corridor -- was the
+runtime floor; moving it is the only change that touches the dominant cost.
+The segmented wheel sieve over the narrow corridor stays plain Python; this is
+still a correctness/instrumentation baseline, not an LLVM-speed engine.
 
 Indexing: standard 1-based indexing, so nth_prime(1) == 2. QueenJewels uses the
 convention p_0 := 2, so subtract one when comparing command-line inputs.
@@ -43,6 +46,7 @@ class NthPrimeResult:
     corridor_upper: int
     corridor_width: int
     count_before_lower: int
+    count_step_keys: int
     remaining_index: int
     base_prime_count: int
     segments_scanned: int
@@ -60,14 +64,49 @@ def simple_sieve(limit: int) -> list[int]:
     for value in range(2, root + 1):
         if sieve[value]:
             start = value * value
-            sieve[start : limit + 1 : value] = b"\x00" * (
-                ((limit - start) // value) + 1
-            )
+            sieve[start : limit + 1 : value] = b"\x00" * (((limit - start) // value) + 1)
     return [idx for idx, is_prime in enumerate(sieve) if is_prime]
 
 
 def prime_count_sieve(limit: int) -> int:
+    """O(limit) reference count via full sieve. Kept as the exactness oracle."""
     return len(simple_sieve(limit))
+
+
+def lucy_key_count(x: int) -> int:
+    """Number of distinct floor(x/i) ratio-points Lucy evaluates (~2*sqrt(x))."""
+    if x < 1:
+        return 0
+    r = math.isqrt(x)
+    return r + (x // r) - 1
+
+
+def prime_pi_lucy(x: int) -> int:
+    """Sublinear prime count pi(x) via the Lucy_Hedgehog / Dirichlet-hyperbola method.
+
+    Instead of sieving every integer up to x (O(x) time and memory), evaluate the
+    running count only at the ~2*sqrt(x) DISTINCT values of floor(x/i) -- the
+    "ratios" -- and let the multiplicative atoms (primes <= sqrt(x)) sieve across
+    those few ratio-points in ever-larger steps. Time ~O(x^0.75), memory O(sqrt(x)).
+    Returns pi(x) exactly; this is the count-step floor-lever.
+    """
+    if x < 2:
+        return 0
+    r = math.isqrt(x)
+    keys = [x // i for i in range(1, r + 1)]
+    keys += list(range(keys[-1] - 1, 0, -1))
+    # counts[v] = (# integers in [2, v]); becomes pi(v) once all atoms are applied.
+    counts = {v: v - 1 for v in keys}
+    for p in range(2, r + 1):
+        if counts[p] == counts[p - 1]:
+            continue  # p is composite (no new prime between p-1 and p)
+        primes_below_p = counts[p - 1]
+        p_sq = p * p
+        for v in keys:
+            if v < p_sq:
+                break
+            counts[v] -= counts[v // p] - primes_below_p
+    return counts[x]
 
 
 def nth_prime_small(n: int) -> int:
@@ -104,9 +143,9 @@ def nth_prime_corridor(n: int) -> PrimeCorridor:
     upper = max(upper, lower + 256)
 
     # Widen if the lower bound was too aggressive for small n.
-    while prime_count_sieve(max(lower - 1, 1)) >= n:
+    while prime_pi_lucy(max(lower - 1, 1)) >= n:
         lower = max(2, lower - max(128, (upper - lower) // 2))
-    while prime_count_sieve(upper) < n:
+    while prime_pi_lucy(upper) < n:
         upper *= 2
     return PrimeCorridor(lower=lower, upper=upper, source="dusart_rosser")
 
@@ -158,11 +197,7 @@ def segmented_primes(
                 if multiple in is_candidate and is_candidate[multiple]:
                     is_candidate[multiple] = False
                     composites_marked += 1
-        found.extend(
-            value
-            for value in candidates
-            if is_candidate.get(value, False) and value >= start
-        )
+        found.extend(value for value in candidates if is_candidate.get(value, False) and value >= start)
         segments += 1
     return found, segments, candidates_touched, composites_marked
 
@@ -179,6 +214,7 @@ def nth_prime_baseline(n: int, segment_size: int = 262_144) -> NthPrimeResult:
             corridor_upper=corridor.upper,
             corridor_width=0,
             count_before_lower=n - 1,
+            count_step_keys=0,
             remaining_index=1,
             base_prime_count=0,
             segments_scanned=0,
@@ -187,7 +223,8 @@ def nth_prime_baseline(n: int, segment_size: int = 262_144) -> NthPrimeResult:
             elapsed_ms=elapsed_ms,
         )
 
-    count_before = prime_count_sieve(corridor.lower - 1)
+    count_before = prime_pi_lucy(corridor.lower - 1)
+    count_keys = lucy_key_count(corridor.lower - 1)
     remaining = n - count_before
     base_primes = simple_sieve(math.isqrt(corridor.upper) + 1)
     segment_primes, segments, candidates_touched, composites_marked = segmented_primes(
@@ -209,6 +246,7 @@ def nth_prime_baseline(n: int, segment_size: int = 262_144) -> NthPrimeResult:
         corridor_upper=corridor.upper,
         corridor_width=corridor.upper - corridor.lower + 1,
         count_before_lower=count_before,
+        count_step_keys=count_keys,
         remaining_index=remaining,
         base_prime_count=len(base_primes),
         segments_scanned=segments,
@@ -218,9 +256,7 @@ def nth_prime_baseline(n: int, segment_size: int = 262_144) -> NthPrimeResult:
     )
 
 
-def run_benchmark(
-    ns: list[int], segment_size: int = 262_144, out_dir: Path | None = None
-) -> dict[str, object]:
+def run_benchmark(ns: list[int], segment_size: int = 262_144, out_dir: Path | None = None) -> dict[str, object]:
     results = [nth_prime_baseline(n, segment_size=segment_size) for n in ns]
     summary: dict[str, object] = {
         "indexing": "1-based: nth_prime(1) == 2",
@@ -242,16 +278,12 @@ def run_benchmark(
 
 def write_artifacts(summary: dict[str, object], out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "summary.json").write_text(
-        json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8"
-    )
+    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "n", nargs="*", type=int, help="1-based prime indices to compute"
-    )
+    parser.add_argument("n", nargs="*", type=int, help="1-based prime indices to compute")
     parser.add_argument("--segment-size", type=int, default=262_144)
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     return parser.parse_args()

@@ -1,14 +1,11 @@
-# tools/stvm/ — moved
+# tools/stvm/
 
-This directory was extracted from the monolith and now lives in its own repo:
+**Canonical home.** This directory is part of the SCBE-AETHERMOORE monorepo — the single
+source of truth for the Sacred Tongue virtual machine that executes assembled programs.
+Develop and run it here.
 
-**→ https://github.com/issdandavis/scbe-tongues-toolchain**
-
-The `scbe-tongues-toolchain` repo contains the former `tools/stasm/` and `tools/stvm/` trees — the Sacred Tongue assembler and the Sacred Tongue virtual machine that executes the assembled binaries.
-
-Install:
-```bash
-git clone https://github.com/issdandavis/scbe-tongues-toolchain.git
-```
-
-The full pre-split state of SCBE-AETHERMOORE is preserved at tag `v-monolith-final` in this repo — checkout with `git checkout v-monolith-final`.
+> **Archived mirror:** a read-only snapshot of `tools/stasm/` and `tools/stvm/` (taken
+> 2026-04-13) exists at
+> [issdandavis/scbe-tongues-toolchain](https://github.com/issdandavis/scbe-tongues-toolchain).
+> It is kept for historical reference only and is **not** maintained — do not clone it for
+> current work. See [../../docs/ops/SPLIT_NOTICE.md](../../docs/ops/SPLIT_NOTICE.md) for history.

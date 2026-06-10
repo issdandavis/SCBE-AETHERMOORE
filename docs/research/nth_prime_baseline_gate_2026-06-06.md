@@ -72,3 +72,45 @@ QueenJewels LLVM implementation or a production-grade prime-counting engine.
 Artifacts:
 
 - `artifacts/nth_prime_baseline_gate/summary.json`
+
+## Update 2026-06-09 — sublinear count step (the floor-lever)
+
+The original "count primes below lower" step was a **full Eratosthenes sieve to
+~pₙ** (`len(simple_sieve(lower-1))`), and the corridor was validated by ~3 such
+sieves (`nth_prime_corridor` checks π(lower-1) and π(upper)). Profiling located
+the runtime floor there, not in the corridor:
+
+```text
+count-below-lower (full sieve to ~15.48M)   ~815 ms   <- the floor
+corridor segment sieve (962k-wide band)      ~54 ms
+ratio                                        ~15x
+```
+
+So the corridor's 256,526 candidate-touches were never the work budget; the
+count step was, and it scaled with x. The corridor being ~18x looser than a
+tight Dusart band only ever touched the ~2% segment stage.
+
+**Fix:** the count step now uses a **sublinear π(x)** — `prime_pi_lucy`
+(Lucy_Hedgehog / Dirichlet-hyperbola method). It evaluates the running count
+only at the ~2·√x distinct `floor(x/i)` "ratio" points and lets the primes ≤ √x
+sieve across them in ever-larger steps. Time ~O(x^0.75), memory O(√x).
+
+```text
+count step π(15,479,359):  full sieve 815 ms  ->  Lucy 26.6 ms   (31x, exact)
+end-to-end nth_prime(1e6):       2371 ms       ->      340 ms     (7x)
+count-step work (ratio-keys):    7,867   vs corridor candidates 256,526
+```
+
+**Acceptance gate** (`tests/research/test_nth_prime_baseline_gate.py`):
+1. exactness — `prime_pi_lucy` matches the full-sieve oracle and the π(x) table;
+   `nth_prime(10**6) == 15485863` preserved end-to-end;
+2. floor moved — `count_step_keys < candidates_touched` (the count is no longer
+   the dominant stage).
+
+**Honesty boundary.** This is not new mathematics. The ratio/hyperbola method is
+the **Meissel–Lehmer family** (1870s–1980s; the modern frontier is
+Lagarias–Miller–Odlyzko / Deléglise–Rivat at ~O(x^{2/3})). It is a *compute*
+lever on a known-solution count, not a *predict* lever — it adds zero signal to
+the fog-of-war search, which stays closed. With the count floor gone, the
+corridor segment is now the largest single stage, so tightening the corridor to
+a modern Dusart band is the next (and only then worthwhile) marginal lever.

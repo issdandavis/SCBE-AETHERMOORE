@@ -1,0 +1,14 @@
+{
+  "config": {
+    "N": 60,
+    "cover": 3,
+    "push": 5,
+    "backend": "semantic",
+    "classifier": false
+  },
+  "intruder_stopped_rate": 0.8,
+  "citizen_strangled_rate": 0.4,
+  "mean_malicious_depth_at_block": 3.2083333333333335,
+  "blocks_via_cumulative": 0,
+  "n_attack_blocked": 48
+}

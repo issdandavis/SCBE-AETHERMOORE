@@ -385,7 +385,7 @@
       "title": "3-Repo Split Plan",
       "path": "memory/project_3repo_split.md",
       "tags": ["split", "architecture", "plan"],
-      "excerpt": "Decision to split the monorepo into core, web, and labs. Full plan at docs/plans/THREE_REPO_SPLIT_PLAN.md. Not yet executed; current working tree is still the monorepo."
+      "excerpt": "A 3-repo (core/web/labs) split was considered but NOT adopted. As of 2026-06 the decision is monorepo-canonical: one repo is the single source of truth, and product-surface clarity is delivered through published-package boundaries (per-artifact files globs), not repo boundaries. The earlier 5-satellite split (scbe-agents, scbe-training-lab, etc.) is retained only as archived read-only mirrors; see docs/ops/SPLIT_NOTICE.md."
     },
     {
       "id": "aethermoore-moral-anchor",

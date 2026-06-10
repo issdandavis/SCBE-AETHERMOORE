@@ -1,0 +1,58 @@
+[
+  {
+    "rep": "char_tfidf",
+    "auc": 0.9833,
+    "tpr_at_1pct_fpr": 0.4151,
+    "n_test": 133,
+    "split": "deepset_in_domain"
+  },
+  {
+    "rep": "keyword",
+    "auc": 0.8276,
+    "tpr_at_1pct_fpr": 0.2264,
+    "n_test": 133,
+    "split": "deepset_in_domain"
+  },
+  {
+    "rep": "scbe_full",
+    "auc": 0.817,
+    "tpr_at_1pct_fpr": 0.1887,
+    "n_test": 133,
+    "split": "deepset_in_domain"
+  },
+  {
+    "rep": "scbe_nophi",
+    "auc": 0.8198,
+    "tpr_at_1pct_fpr": 0.2075,
+    "n_test": 133,
+    "split": "deepset_in_domain"
+  },
+  {
+    "rep": "char_tfidf",
+    "auc": 0.8988,
+    "tpr_at_1pct_fpr": 0.527,
+    "n_test": 1306,
+    "split": "train_deepset_test_jackhhao"
+  },
+  {
+    "rep": "keyword",
+    "auc": 0.8663,
+    "tpr_at_1pct_fpr": 0.0,
+    "n_test": 1306,
+    "split": "train_deepset_test_jackhhao"
+  },
+  {
+    "rep": "scbe_full",
+    "auc": 0.8723,
+    "tpr_at_1pct_fpr": 0.0826,
+    "n_test": 1306,
+    "split": "train_deepset_test_jackhhao"
+  },
+  {
+    "rep": "scbe_nophi",
+    "auc": 0.8723,
+    "tpr_at_1pct_fpr": 0.0811,
+    "n_test": 1306,
+    "split": "train_deepset_test_jackhhao"
+  }
+]

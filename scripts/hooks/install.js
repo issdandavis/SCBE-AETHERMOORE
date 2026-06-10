@@ -16,7 +16,12 @@ if (!fs.existsSync(HOOKS_DST)) {
     process.exit(0);
 }
 
-const hooks = fs.readdirSync(HOOKS_SRC).filter((f) => !f.endsWith('.js') && !f.endsWith('.md'));
+const hooks = fs.readdirSync(HOOKS_SRC).filter(
+    (f) =>
+        !f.endsWith('.js') &&
+        !f.endsWith('.md') &&
+        fs.statSync(path.join(HOOKS_SRC, f)).isFile() // skip dirs like __pycache__
+);
 
 for (const hook of hooks) {
     const src = path.join(HOOKS_SRC, hook);

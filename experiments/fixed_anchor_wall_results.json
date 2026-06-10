@@ -1,0 +1,10 @@
+{
+  "per_action_fixed_axis_auc": 0.8782,
+  "cumulative_auc_moving_anchor": 0.2383,
+  "cumulative_auc_fixed_anchor": 0.9986,
+  "intruder_stopped_rate": 0.99,
+  "citizen_strangled_rate": 0.035,
+  "mean_malicious_depth_at_block": 1.662,
+  "threshold": 6.974,
+  "K": 8.0
+}
