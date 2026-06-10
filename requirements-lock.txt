@@ -23,7 +23,7 @@ boto3==1.43.24
 botocore==1.43.24
 cachetools==7.1.4
 cattrs==26.1.0
-certifi==2026.1.4
+certifi==2026.5.20
 cffi==2.0.0
 cfgv==3.5.0
 chardet==7.4.3
