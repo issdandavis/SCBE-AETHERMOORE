@@ -152,3 +152,87 @@ def test_null_gate_collapse_is_large_not_marginal():
     by_name = {r.name: r for r in run_null_gates()}
     assert by_name["phase_coherence"].collapse_ratio > 10.0
     assert by_name["shared_gain_reservoir"].collapse_ratio > 10.0
+
+
+# ---------------------------------------------------------------------------
+# 5. Synchronous pump: time-domain pulsed model
+# ---------------------------------------------------------------------------
+
+from src.physics_sim.optical_transistor import (  # noqa: E402
+    AndGateConfig,
+    SyncPumpConfig,
+    and_gate_is_logical,
+    evaluate_and_gate,
+    integrate_sync_pump,
+    scan_bistability,
+)
+
+
+def test_sync_pump_amplifies_signal_above_seed():
+    """Pulsed pump with synchronous signal grows photons above the seed."""
+    cfg = SyncPumpConfig()
+    res = integrate_sync_pump(cfg)
+    assert res.n_signal > 10.0 * cfg.seed_photons
+    assert res.n_inversion_at_signal > 0.0
+
+
+def test_pump_jitter_collapses_synchronous_gain():
+    """Null gate: random pump timing wipes out the synchronous transistor action."""
+    sync = integrate_sync_pump(SyncPumpConfig())
+    jittered = integrate_sync_pump(SyncPumpConfig(pump_jitter=0.5))  # half-period jitter
+    assert sync.n_signal > 5.0 * jittered.n_signal
+
+
+# ---------------------------------------------------------------------------
+# 6. Bistability region: parameter-space scan
+# ---------------------------------------------------------------------------
+
+
+def test_bistability_region_is_a_bounded_wedge():
+    """Bistability fills part of (gain, absorber) space but not all of it."""
+    bmap = scan_bistability()
+    frac = bmap.fraction_bistable
+    assert 0.05 < frac < 0.95, f"bistability fraction {frac:.2f} suggests sweep is too narrow"
+
+
+def test_bistability_collapses_when_absorber_too_weak():
+    """Below the saddle-node fold (a0 << g0) the cavity is no longer bistable."""
+    weak_absorber = scan_bistability(
+        y_field="absorber_peak",
+        y_values=[0.05, 0.1, 0.15],
+        x_field="gain_peak",
+        x_values=[2.0, 2.5, 3.0],
+    )
+    flat = [cell for row in weak_absorber.bistable for cell in row]
+    assert sum(flat) == 0, "no point in the weak-absorber corner should be bistable"
+
+
+# ---------------------------------------------------------------------------
+# 7. Kappa-coupled AND gate
+# ---------------------------------------------------------------------------
+
+
+def test_and_gate_truth_table():
+    """Hold-biased bistable cavity AND'd by two equal kicks gives the AND function.
+
+    Needs bias + 1 kick BELOW threshold and bias + 2 kicks ABOVE: 0.6 + 0.3
+    threshold-fractions gives single=0.9 (no fire) and both=1.2 (latch).
+    """
+    rows = evaluate_and_gate(AndGateConfig(bias_fraction=0.6, input_kick=0.3))
+    table = {(r.a, r.b): r.is_high for r in rows}
+    assert table == {
+        (False, False): False,
+        (False, True): False,
+        (True, False): False,
+        (True, True): True,
+    }
+
+
+def test_and_gate_predicate_helper():
+    """Convenience predicate matches the explicit truth-table check."""
+    assert and_gate_is_logical(AndGateConfig(bias_fraction=0.6, input_kick=0.3))
+
+
+def test_and_gate_with_oversized_kick_degenerates_to_or():
+    """If one input alone already crosses threshold, the gate becomes OR (not AND)."""
+    assert not and_gate_is_logical(AndGateConfig(bias_fraction=0.5, input_kick=2.0))

@@ -34,7 +34,7 @@ from __future__ import annotations
 
 import math
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
 # =============================================================================
@@ -446,3 +446,229 @@ def run_null_gates(
     )
 
     return reports
+
+
+# =============================================================================
+# 5. SYNCHRONOUS PUMP: explicit time-domain model (one level deeper than the map)
+# =============================================================================
+
+
+@dataclass
+class SyncPumpConfig:
+    """Pulsed pump + gated signal + inversion in continuous time.
+
+    The averaged round-trip map collapses one cavity bounce into a single
+    multiplier G(P). Here we resolve time inside the bounce: the pump
+    arrives as a Gaussian pulse train at period T_pump; the inversion
+    N(t) integrates pump and decays with tau2; the signal is itself a
+    pulse train at period T_signal that amplifies by exp(sigma * N(t_k))
+    only at its arrival instants t_k = phase * T_pump + k * T_signal.
+
+    Synchronous (phase=0, no jitter) lands every signal pulse on the
+    pump-driven inversion peak. Pump jitter (or off-peak phase) makes
+    signal pulses sample average / trough inversion instead.
+    """
+
+    pump_pulse_amplitude: float = 8.0  # area of one pump pulse
+    pump_pulse_width: float = 0.02  # gaussian sigma of one pulse
+    pump_period: float = 1.0  # T_pump
+    signal_period: float = 1.0  # T_signal (synchronous when == pump_period)
+    signal_phase: float = 0.0  # phase offset (fraction of pump_period)
+    inversion_lifetime: float = 0.3  # tau2 (must be << T_pump for synchrony to matter)
+    cross_section: float = 0.5  # sigma
+    cavity_loss: float = 0.1  # per-pulse loss exponent on the signal
+    seed_photons: float = 1e-4
+    dt: float = 2e-3
+    n_pulses: int = 30
+    pump_jitter: float = 0.0  # null gate: jitter as fraction of pump_period
+
+
+@dataclass
+class SyncPumpResult:
+    """Output of one synchronous-pump integration."""
+
+    n_signal: float  # final signal photon number
+    n_inversion_peak: float  # max inversion ever reached
+    n_inversion_at_signal: float  # mean inversion seen by signal pulses
+
+
+def integrate_sync_pump(config: SyncPumpConfig, rng: Optional[random.Random] = None) -> SyncPumpResult:
+    """Integrate pump -> inversion, with signal gated to discrete arrival times.
+
+    The signal is gated: it amplifies only at its arrival instants, picking
+    up exp(sigma * N(t_k) - alpha) per pulse. This is what makes "synchronous"
+    vs "jittered" actually matter - a continuous signal would only see the
+    time-averaged inversion (which is unchanged by jitter), but a pulsed
+    signal samples N(t) at specific times and so cares about pulse alignment.
+    """
+    rng = rng or random.Random(2)
+    sigma_p = config.pump_pulse_width
+    norm_p = config.pump_pulse_amplitude / (sigma_p * math.sqrt(2.0 * math.pi))
+    jit_scale = config.pump_jitter * config.pump_period
+    pump_centers = [
+        k * config.pump_period + (rng.uniform(-jit_scale, jit_scale) if jit_scale else 0.0)
+        for k in range(config.n_pulses)
+    ]
+    signal_centers = [
+        config.signal_phase * config.pump_period + k * config.signal_period for k in range(config.n_pulses)
+    ]
+
+    t_max = max(max(pump_centers), max(signal_centers)) + 5.0 * config.pump_period
+    steps = int(t_max / config.dt)
+
+    N = 0.0
+    n_sig = config.seed_photons
+    inv_peak = 0.0
+    inv_at_signal_sum = 0.0
+    inv_at_signal_count = 0
+    next_signal_idx = 0
+
+    for step in range(steps):
+        t = step * config.dt
+        # Sum nearby pump pulses only (3-sigma window)
+        pump = 0.0
+        for tp in pump_centers:
+            dt_p = t - tp
+            if abs(dt_p) < 4.0 * sigma_p:
+                pump += norm_p * math.exp(-0.5 * (dt_p / sigma_p) ** 2)
+        # Inversion evolves between signal arrivals
+        N = max(0.0, N + (pump - N / config.inversion_lifetime) * config.dt)
+        inv_peak = max(inv_peak, N)
+        # Signal pulse arrival -> impulsive amplification reading current N
+        if next_signal_idx < len(signal_centers) and t >= signal_centers[next_signal_idx]:
+            n_sig = max(config.seed_photons, n_sig * math.exp(config.cross_section * N - config.cavity_loss))
+            # Depletion: this signal pulse takes some inversion with it
+            N = max(0.0, N - 0.05 * config.cross_section * N)
+            inv_at_signal_sum += N
+            inv_at_signal_count += 1
+            next_signal_idx += 1
+
+    return SyncPumpResult(
+        n_signal=n_sig,
+        n_inversion_peak=inv_peak,
+        n_inversion_at_signal=inv_at_signal_sum / max(inv_at_signal_count, 1),
+    )
+
+
+# =============================================================================
+# 6. BISTABILITY REGION: parameter-space scan (saddle-node boundaries)
+# =============================================================================
+
+
+@dataclass
+class BistabilityMap:
+    """Result of sweeping two cavity parameters and labeling each cell."""
+
+    x_name: str
+    x_values: List[float]
+    y_name: str
+    y_values: List[float]
+    bistable: List[List[bool]]  # bistable[j][i] aligned with y_values[j], x_values[i]
+
+    @property
+    def fraction_bistable(self) -> float:
+        """Share of grid cells that satisfy the bistability test."""
+        total = len(self.x_values) * len(self.y_values)
+        hits = sum(1 for row in self.bistable for cell in row if cell)
+        return hits / max(total, 1)
+
+
+def scan_bistability(
+    base: Optional[CavityConfig] = None,
+    x_field: str = "gain_peak",
+    x_values: Optional[Sequence[float]] = None,
+    y_field: str = "absorber_peak",
+    y_values: Optional[Sequence[float]] = None,
+) -> BistabilityMap:
+    """Sweep two CavityConfig fields and label each cell bistable or not.
+
+    Used to verify the saddle-node geometry: bistability lives inside a
+    wedge bounded by two folds (one where the upper stable point appears,
+    one where it merges with the threshold). Outside that wedge the cavity
+    is either a passive attenuator (low gain) or a free-running laser
+    (gain dominates with no absorber to clamp it).
+    """
+    base = base or CavityConfig()
+    x_values = list(x_values) if x_values is not None else [0.5 + 0.2 * i for i in range(15)]
+    y_values = list(y_values) if y_values is not None else [0.3 + 0.2 * i for i in range(12)]
+    rows: List[List[bool]] = []
+    for y in y_values:
+        row = []
+        for x in x_values:
+            kwargs = base.__dict__.copy()
+            kwargs[x_field] = x
+            kwargs[y_field] = y
+            row.append(is_bistable(CavityConfig(**kwargs)))
+        rows.append(row)
+    return BistabilityMap(
+        x_name=x_field,
+        x_values=x_values,
+        y_name=y_field,
+        y_values=y_values,
+        bistable=rows,
+    )
+
+
+# =============================================================================
+# 7. KAPPA-COUPLED AND GATE: held-just-below-threshold cavity with two inputs
+# =============================================================================
+
+
+@dataclass
+class AndGateConfig:
+    """Bistable cavity biased just below threshold, AND'd by two optical inputs.
+
+    Optical AND in a saturable-absorber cavity: a hold beam pins the cavity
+    just below the unstable threshold P_t. A single input pulse boosts the
+    instantaneous power but not enough to cross P_t -> the cavity relaxes
+    back to 0. Both inputs together push past P_t -> the cavity latches
+    onto the high stable branch. This works because the threshold is a
+    nonlinear all-or-nothing event, not a linear sum.
+    """
+
+    cavity: CavityConfig = field(default_factory=CavityConfig)
+    bias_fraction: float = 0.7  # hold beam = bias_fraction * threshold
+    input_kick: float = 0.5  # one input adds this * threshold
+    relax_stages: int = 80  # how many cavity bounces to let it settle
+
+
+@dataclass
+class AndGateRow:
+    """One row of the AND truth table."""
+
+    a: bool
+    b: bool
+    output: float
+    is_high: bool
+
+
+def evaluate_and_gate(config: AndGateConfig) -> List[AndGateRow]:
+    """Run all four (A, B) input combinations and report the cavity output.
+
+    Output is the cavity power after relax_stages bounces. The gate is real
+    iff only the (True, True) row latches high; the others must decay to 0.
+    """
+    pts = find_fixed_points(config.cavity)
+    threshold = min((p.power for p in pts if not p.stable and p.power > 0.0), default=None)
+    high = max((p.power for p in pts if p.stable), default=0.0)
+    if threshold is None or high == 0.0:
+        # Not bistable -> gate undefined; mark every row as low.
+        return [AndGateRow(a=bool(i & 2), b=bool(i & 1), output=0.0, is_high=False) for i in range(4)]
+    bias = config.bias_fraction * threshold
+    kick = config.input_kick * threshold
+    high_decision = 0.5 * high  # halfway between threshold and P*
+    rows = []
+    for a in (False, True):
+        for b in (False, True):
+            p = bias + (kick if a else 0.0) + (kick if b else 0.0)
+            trajectory = iterate_cascade(p, config.cavity, n_stages=config.relax_stages)
+            final = trajectory[-1]
+            rows.append(AndGateRow(a=a, b=b, output=final, is_high=final > high_decision))
+    return rows
+
+
+def and_gate_is_logical(config: AndGateConfig) -> bool:
+    """True iff the (A, B) truth table is exactly the AND function."""
+    table = {(r.a, r.b): r.is_high for r in evaluate_and_gate(config)}
+    expected = {(False, False): False, (False, True): False, (True, False): False, (True, True): True}
+    return table == expected
