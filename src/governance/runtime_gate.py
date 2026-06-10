@@ -54,6 +54,12 @@ TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 TONGUE_WEIGHTS = tuple(PHI**k for k in range(6))
 WORD_RE = re.compile(r"[A-Za-z0-9_']+")
 DEFAULT_SEMANTIC_EMBED_MODEL = "all-MiniLM-L6-v2"
+# Process-wide cache of loaded sentence-transformer models, keyed by model name.
+# Each RuntimeGate would otherwise load its own copy; loading the same native
+# model many times in one process can corrupt native memory (observed as a hard
+# segfault when many semantic-mode gates are constructed in a single pytest
+# run). Sharing one loaded model per name also makes the semantic suite faster.
+_SEMANTIC_MODEL_CACHE: Dict[str, Any] = {}
 DEFAULT_TONGUE_PROJECTOR_PATH = str(
     (Path(__file__).resolve().parents[2] / "artifacts" / "projectors" / "tongue_projector.npz")
 )
@@ -152,6 +158,11 @@ class GateResult:
     toe_tier_reached: int = 0
     toe_provisional_minted: bool = False
     toe_abridged_form_hex: str = ""
+    # Fixed-anchor enforcement wall (optional): bolted-down crystal, exponential
+    # approach cost. See src/governance/anchor_wall.py.
+    anchor_wall_cost: float = 0.0
+    anchor_wall_cumulative: float = 0.0
+    anchor_wall_decision: str = ""
     # Audit
     action_hash: str = ""
     timestamp: float = 0.0
@@ -450,6 +461,7 @@ class RuntimeGate:
         use_identifier_canonicality: Optional[bool] = None,
         identifier_canonicality_language: str = "python",
         use_tree_of_escalation: Optional[bool] = None,
+        anchor_wall: Optional[object] = None,
     ):
         # Thresholds
         self.cost_allow = cost_allow
@@ -469,6 +481,10 @@ class RuntimeGate:
         self._centroid_count: int = 0
         self._cumulative_cost: float = 0.0
         self._query_count: int = 0
+        # Optional fixed-anchor enforcement wall; reset for a fresh session.
+        self._anchor_wall = anchor_wall
+        if self._anchor_wall is not None and hasattr(self._anchor_wall, "reset"):
+            self._anchor_wall.reset()
         self._immune: set = set()  # known attack hashes → instant DENY
         self._reflex: dict = {}  # known safe hashes → instant ALLOW
         self._audit_log: List[GateResult] = []
@@ -610,9 +626,13 @@ class RuntimeGate:
         but it may download the model the first time it is used.
         """
         if self._semantic_model is None:
-            from sentence_transformers import SentenceTransformer  # type: ignore[import-untyped]
+            cached = _SEMANTIC_MODEL_CACHE.get(self._semantic_embed_model)
+            if cached is None:
+                from sentence_transformers import SentenceTransformer  # type: ignore[import-untyped]
 
-            self._semantic_model = SentenceTransformer(self._semantic_embed_model)
+                cached = SentenceTransformer(self._semantic_embed_model)
+                _SEMANTIC_MODEL_CACHE[self._semantic_embed_model] = cached
+            self._semantic_model = cached
 
         arr = self._semantic_model.encode(texts)  # type: ignore[no-untyped-call]
         emb = np.asarray(arr, dtype=np.float32)
@@ -1719,6 +1739,38 @@ class RuntimeGate:
                     )
                 )
 
+        # Fixed-anchor enforcement wall (optional): bolted-down crystal with
+        # exponential approach cost. Unlike the session centroid (which follows
+        # the agent), the anchor is fixed, so sustained approach to the forbidden
+        # region accrues cumulative cost that trips a calibrated threshold.
+        anchor_wall_cost = 0.0
+        anchor_wall_cumulative = 0.0
+        anchor_wall_decision = ""
+        if (
+            self._anchor_wall is not None
+            and getattr(self._anchor_wall, "fitted", False)
+            and getattr(self._anchor_wall, "threshold", None) is not None
+        ):
+            try:
+                ws = self._anchor_wall.step(action_text)
+                anchor_wall_cost = ws.cost
+                anchor_wall_cumulative = ws.cumulative
+                anchor_wall_decision = ws.decision
+                mapped = {
+                    "ALLOW": Decision.ALLOW,
+                    "QUARANTINE": Decision.QUARANTINE,
+                    "DENY": Decision.DENY,
+                }.get(ws.decision, Decision.ALLOW)
+                if mapped != Decision.ALLOW:
+                    escalated = _escalate_decision(decision, mapped)
+                    if escalated != decision:
+                        decision = escalated
+                        signals.append(f"anchor_wall:{ws.decision.lower()}:cum={ws.cumulative:.1f}")
+                        if decision == Decision.DENY and noise is None:
+                            noise = _fail_to_noise(action_hash)
+            except Exception:
+                pass
+
         # Clean → learn as safe reflex (fast-path for future)
         if decision == Decision.ALLOW and not any("council" in s for s in signals):
             self._reflex[action_hash] = True
@@ -1755,6 +1807,9 @@ class RuntimeGate:
             toe_tier_reached=toe_tier_reached,
             toe_provisional_minted=toe_provisional_minted,
             toe_abridged_form_hex=toe_abridged_form_hex,
+            anchor_wall_cost=anchor_wall_cost,
+            anchor_wall_cumulative=anchor_wall_cumulative,
+            anchor_wall_decision=anchor_wall_decision,
             action_hash=action_hash,
             timestamp=ts,
             session_query_count=self._query_count,
