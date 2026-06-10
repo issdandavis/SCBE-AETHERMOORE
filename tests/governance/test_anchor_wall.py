@@ -124,3 +124,95 @@ def test_fixed_anchor_separates_where_held_out(wall):
     atk_margins = [wall.margin(gen_attack(rng)) for _ in range(50)]
     ben_margins = [wall.margin(gen_benign(rng)) for _ in range(50)]
     assert min(atk_margins) > max(ben_margins), "fixed anchor must cleanly separate held-out attack vs benign"
+
+
+# ---------------------------------------------------------------------------
+# Sliding-window mode: bound cumulative cost over long sessions
+# ---------------------------------------------------------------------------
+
+WINDOW = 5
+LONG = 60  # far longer than the calibration session length
+
+
+def _fit_pools(seed=11):
+    rng = random.Random(seed)
+    benign_pool = [gen_benign(rng) for _ in range(200)]
+    attack_pool = [gen_attack(rng) for _ in range(200)]
+    return benign_pool, attack_pool
+
+
+def test_unbounded_wall_trips_on_long_benign_session():
+    """Premise check: without a window, a long-enough benign session eventually
+    trips the wall (cumulative cost grows with length). This is the gap the
+    window closes."""
+    bp, ap = _fit_pools()
+    w = FixedAnchorWall(embed_fn=toy_embed, k=4.0)  # window=None
+    w.fit(bp, ap)
+    rng = random.Random(11)
+    w.calibrate([benign_session(rng) for _ in range(300)], target_fpr=0.05)  # short sessions
+    rng2 = random.Random(123)
+    res = w.run_session(benign_session(rng2, n=LONG))
+    assert res.tripped, "unbounded cumulative should eventually trip a long benign session"
+
+
+def test_windowed_wall_passes_long_benign_session():
+    """A window keeps the score bounded, so the SAME long benign session that
+    trips the unbounded wall stays ALLOW when calibrated WITH the window."""
+    bp, ap = _fit_pools()
+    w = FixedAnchorWall(embed_fn=toy_embed, k=4.0, window=WINDOW)
+    w.fit(bp, ap)
+    rng = random.Random(11)
+    # calibrate with the window set (threshold must match the windowed accrual)
+    w.calibrate([benign_session(rng, n=LONG) for _ in range(300)], target_fpr=0.05)
+    rng2 = random.Random(123)
+    res = w.run_session(benign_session(rng2, n=LONG))
+    assert not res.tripped and res.decision == "ALLOW", "windowed wall should not strangle a long benign session"
+
+
+def test_windowed_wall_still_blocks_attack():
+    """Bounding the score must not blind the wall: a sustained attack inside the
+    window is still caught."""
+    bp, ap = _fit_pools()
+    w = FixedAnchorWall(embed_fn=toy_embed, k=4.0, window=WINDOW)
+    w.fit(bp, ap)
+    rng = random.Random(11)
+    w.calibrate([benign_session(rng, n=LONG) for _ in range(300)], target_fpr=0.05)
+    rng2 = random.Random(7)
+    # long benign run, then a burst of attacks at the end (within one window)
+    actions = benign_session(rng2, n=LONG) + [gen_attack(rng2) for _ in range(WINDOW)]
+    res = w.run_session(actions)
+    assert res.tripped and res.decision in ("QUARANTINE", "DENY")
+
+
+def test_windowed_enforcement_rates_on_holdout():
+    """Headline invariant still holds under the window: stops intruders, lets
+    citizens through, on held-out long sessions."""
+    bp, ap = _fit_pools()
+    w = FixedAnchorWall(embed_fn=toy_embed, k=4.0, window=WINDOW)
+    w.fit(bp, ap)
+    rng = random.Random(11)
+    w.calibrate([benign_session(rng, n=LONG) for _ in range(300)], target_fpr=0.05)
+    rng2 = random.Random(7)
+    N = 120
+    # attack sessions: long benign cover then a window of attacks
+    intruders = sum(
+        1
+        for _ in range(N)
+        if w.run_session(benign_session(rng2, n=LONG) + [gen_attack(rng2) for _ in range(WINDOW)]).tripped
+    )
+    citizens = sum(1 for _ in range(N) if w.run_session(benign_session(rng2, n=LONG)).tripped)
+    assert intruders / N >= 0.85, f"windowed intruder_stopped too low: {intruders / N}"
+    assert citizens / N <= 0.15, f"windowed citizen_strangled too high: {citizens / N}"
+
+
+def test_reset_clears_window_state():
+    bp, ap = _fit_pools()
+    w = FixedAnchorWall(embed_fn=toy_embed, k=4.0, window=WINDOW)
+    w.fit(bp, ap)
+    rng = random.Random(11)
+    w.calibrate([benign_session(rng, n=LONG) for _ in range(50)], target_fpr=0.05)
+    for _ in range(WINDOW + 3):
+        w.step(gen_attack(rng))
+    assert len(w._recent) == WINDOW  # window never exceeds its bound
+    w.reset()
+    assert w.cumulative == 0.0 and len(w._recent) == 0

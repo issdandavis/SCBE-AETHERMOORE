@@ -30,18 +30,23 @@ The embedder is injected (`embed_fn: List[str] -> np.ndarray [N, D]`, rows need
 not be normalized — the wall normalizes), so this module has no heavy
 dependency and is fully unit-testable offline.
 
-Caveat (honest): cumulative cost grows with session length, so the calibrated
-threshold is for an expected session length — calibrate on benign sessions of
-the length you expect. For unbounded/long-lived sessions, prefer a sliding
-window or a decay (a `window` mode is a planned extension); raw cumulative will
-eventually trip any sufficiently long benign session.
+Session length (honest): in the default unbounded mode the accrued cost grows
+with session length, so the calibrated threshold is for an expected length —
+calibrate on benign sessions of the length you expect, or raw cumulative will
+eventually trip any sufficiently long benign session. For unbounded/long-lived
+sessions set `window=N`: the wall then sums only the cost of the last N actions
+(a sliding window), so the score stays bounded regardless of session length.
+The window changes the score distribution, so the threshold must be calibrated
+WITH the window set — calibrate() and the live enforcement path share one
+windowed-accumulation routine so the threshold always matches what step() does.
 """
 
 from __future__ import annotations
 
 import math
+from collections import deque
 from dataclasses import dataclass, field
-from typing import Callable, List, Optional, Sequence
+from typing import Callable, Deque, List, Optional, Sequence
 
 import numpy as np
 
@@ -71,11 +76,13 @@ class FixedAnchorWall:
     embed_fn: EmbedFn
     k: float = 8.0
     deny_multiple: float = 3.0  # DENY threshold = deny_multiple * quarantine threshold
+    window: Optional[int] = None  # None = unbounded cumulative; N = sliding window of last N actions
 
     safe_anchor: Optional[np.ndarray] = None
     attack_anchor: Optional[np.ndarray] = None
-    threshold: Optional[float] = None  # cumulative-cost quarantine threshold
+    threshold: Optional[float] = None  # (windowed) cumulative-cost quarantine threshold
     _cumulative: float = field(default=0.0, init=False)
+    _recent: Deque[float] = field(default_factory=deque, init=False)
 
     # --- fitting -----------------------------------------------------------
     def fit(self, benign_texts: Sequence[str], malicious_texts: Sequence[str]) -> "FixedAnchorWall":
@@ -104,34 +111,64 @@ class FixedAnchorWall:
         """Exponential approach cost for one action."""
         return math.exp(self.k * self.margin(text))
 
+    def _session_peak(self, costs: Sequence[float]) -> float:
+        """Peak (windowed) cumulative cost reached while replaying a session.
+
+        Single source of truth for how cost accrues — used by calibrate() so the
+        threshold matches exactly what step() accrues live. With window=None this
+        is the final running sum (monotonic, so peak == final); with a window it
+        is the max over the session of the sum of the last `window` costs.
+        """
+        cum = 0.0
+        peak = 0.0
+        recent: Deque[float] = deque()
+        for c in costs:
+            cum += c
+            if self.window is not None:
+                recent.append(c)
+                if len(recent) > self.window:
+                    cum -= recent.popleft()
+            if cum > peak:
+                peak = cum
+        return peak
+
     # --- calibration -------------------------------------------------------
     def calibrate(self, benign_sessions: Sequence[Sequence[str]], target_fpr: float = 0.05) -> float:
         """Set the quarantine threshold from benign sessions so ~target_fpr of
-        legitimate sessions trip it. Returns the chosen threshold."""
+        legitimate sessions trip it. Returns the chosen threshold.
+
+        Calibrates against the same (windowed) accrual the live wall uses: the
+        per-session peak cumulative. With window=None this reduces to the final
+        session sum (unchanged from the original behavior)."""
         if not self.fitted:
             raise RuntimeError("fit() before calibrate()")
-        totals = []
+        peaks = []
         for sess in benign_sessions:
-            totals.append(sum(self.cost(t) for t in sess))
+            peaks.append(self._session_peak([self.cost(t) for t in sess]))
         pct = 100.0 * (1.0 - max(0.0, min(1.0, target_fpr)))
-        self.threshold = float(np.percentile(totals, pct))
+        self.threshold = float(np.percentile(peaks, pct))
         return self.threshold
 
     # --- session enforcement ----------------------------------------------
     def reset(self) -> None:
         self._cumulative = 0.0
+        self._recent.clear()
 
     @property
     def cumulative(self) -> float:
         return self._cumulative
 
     def step(self, text: str) -> WallStep:
-        """Feed one action; accrue cost; return decision for the session so far."""
+        """Feed one action; accrue (windowed) cost; return decision so far."""
         if self.threshold is None:
             raise RuntimeError("wall has no threshold; call calibrate() first")
         m = self.margin(text)
         c = math.exp(self.k * m)
         self._cumulative += c
+        if self.window is not None:
+            self._recent.append(c)
+            if len(self._recent) > self.window:
+                self._cumulative -= self._recent.popleft()
         deny_threshold = self.deny_multiple * self.threshold
         if self._cumulative >= deny_threshold:
             decision = "DENY"
