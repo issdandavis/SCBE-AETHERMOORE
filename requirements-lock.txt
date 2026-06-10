@@ -101,7 +101,7 @@ opentelemetry-instrumentation-aiohttp-client==0.61b0
 opentelemetry-instrumentation-aiokafka==0.63b1
 opentelemetry-instrumentation-aiopg==0.62b1
 opentelemetry-instrumentation-asgi==0.63b1
-opentelemetry-instrumentation-asyncpg==0.62b1
+opentelemetry-instrumentation-asyncpg==0.63b1
 opentelemetry-instrumentation-aws-lambda==0.63b1
 opentelemetry-instrumentation-boto==0.61b0
 opentelemetry-instrumentation-boto3sqs==0.62b1
