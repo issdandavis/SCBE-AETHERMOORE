@@ -155,7 +155,7 @@ SYSTEMS = (
             "packages/agent-bus/README.md",
             "packages/agent-bus-py/README.md",
         ],
-        obsidian_or_note_paths=["agents/AGENT_BUS_NOTES.md"],
+        obsidian_or_note_paths=["docs/archive/agent_bus_notes.md"],
         commands=["python agents/agent_bus_cli.py --help"],
         expected_outputs=["task route", "consensus record", "agent receipt"],
     ),
