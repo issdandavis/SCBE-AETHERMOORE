@@ -5,10 +5,23 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 EXTRACTOR_PATH = ROOT / "scripts" / "system" / "extract_specialist_training_records.py"
 REVIEW_PATH = ROOT / "scripts" / "system" / "review_training_runs.py"
 READINESS_PATH = ROOT / "scripts" / "benchmark" / "specialist_bucket_readiness.py"
+
+# Operator records are extracted from local run artifacts that are not
+# committed to the repo; the extractor yields zero operator records without
+# them, so the source-faithful test only runs where they exist.
+OPERATOR_ARTIFACT_ROOTS = [
+    ROOT / "artifacts" / "ai2ai_bridge",
+    ROOT / "artifacts" / "ai2ai_bridge_live",
+    ROOT / "artifacts" / "benchmark" / "orchestrator_live",
+    ROOT / "artifacts" / "benchmark" / "run_route_shell",
+    ROOT / "artifacts" / "benchmark" / "project_scaffold_run_route",
+]
 
 
 def _load(path: Path, name: str):
@@ -20,6 +33,10 @@ def _load(path: Path, name: str):
     return module
 
 
+@pytest.mark.skipif(
+    not any(root.exists() for root in OPERATOR_ARTIFACT_ROOTS),
+    reason="operator agent-bus run artifacts not present in this checkout",
+)
 def test_specialist_extractor_builds_source_faithful_records(tmp_path: Path) -> None:
     extractor = _load(EXTRACTOR_PATH, "extract_specialist_training_records_test")
 
