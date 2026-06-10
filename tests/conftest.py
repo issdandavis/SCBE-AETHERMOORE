@@ -87,17 +87,23 @@ def _repo_local_mkdtemp(suffix=None, prefix=None, dir=None):
 
 
 class _RepoLocalTemporaryDirectory:
+    """TemporaryDirectory replacement rooted inside the repo (sandbox-safe)."""
+
     def __init__(self, suffix=None, prefix=None, dir=None, ignore_cleanup_errors=False):
+        """Create the backing repo-local temp directory."""
         self.name = _repo_local_mkdtemp(suffix=suffix, prefix=prefix, dir=dir)
         self._ignore_cleanup_errors = ignore_cleanup_errors
 
     def __enter__(self):
+        """Return the temp directory path."""
         return self.name
 
     def __exit__(self, exc_type, exc, tb):
+        """Clean up the temp directory."""
         self.cleanup()
 
     def cleanup(self):
+        """Remove the temp directory tree."""
         shutil.rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
 
 
@@ -126,6 +132,7 @@ def tmp_path():
 # legacy/broken repo symlink paths. Uses threading timeout to prevent hangs
 # from heavy transitive imports (scipy, matplotlib) on Windows.
 def _register_ai_brain_aliases():
+    """Alias src.symphonic_cipher ai_brain modules under legacy import paths."""
     try:
         _ai_pkg = importlib.import_module("src.symphonic_cipher.scbe_aethermoore.ai_brain")
         sys.modules.setdefault("symphonic_cipher.scbe_aethermoore.ai_brain", _ai_pkg)
@@ -267,6 +274,7 @@ _POLLUTION_PATHS = (
 
 @pytest.fixture(scope="session", autouse=True)
 def _restore_tracked_files_polluted_by_tests():
+    """Snapshot known test-polluted repo files and restore them at session end."""
     repo_root = Path(__file__).resolve().parent.parent
     # None means the path did not exist at session start: delete it at the
     # end if a test created it. Otherwise restore the snapshotted bytes.
@@ -435,6 +443,7 @@ def harmonic_scaling():
     """Harmonic scaling: score = 1 / (1 + d + 2 * phase_deviation)."""
 
     def _harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
+        """Reference bounded harmonic score H = 1/(1 + d + 2*pd)."""
         return 1.0 / (1.0 + d + 2.0 * phase_deviation)
 
     return _harmonic_scaling
@@ -451,14 +460,19 @@ def performance_timer():
     import time
 
     class Timer:
+        """Context-manager stopwatch recording elapsed seconds."""
+
         def __init__(self):
+            """Initialize with zero elapsed time."""
             self.elapsed = 0.0
 
         def __enter__(self):
+            """Start the clock."""
             self.start = time.perf_counter()
             return self
 
         def __exit__(self, *args):
+            """Stop the clock and record elapsed seconds."""
             self.elapsed = time.perf_counter() - self.start
 
     return Timer
