@@ -39,6 +39,14 @@ sessions set `window=N`: the wall then sums only the cost of the last N actions
 The window changes the score distribution, so the threshold must be calibrated
 WITH the window set — calibrate() and the live enforcement path share one
 windowed-accumulation routine so the threshold always matches what step() does.
+
+Threat-model tradeoff (not strictly an upgrade): a window opens a low-and-slow
+evasion. An attacker who paces malicious actions so only a few land inside any
+single window can keep the windowed score under threshold indefinitely — the
+unbounded cumulative mode catches that (cost only ever accrues), the window does
+not. Choose the mode for the threat: unbounded (with length-matched calibration)
+when total drift over a session matters; window when you must bound false
+positives on long-lived sessions and can accept the paced-attack gap.
 """
 
 from __future__ import annotations
