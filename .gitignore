@@ -296,3 +296,6 @@ artifacts/arc-data/
 # May contain TIN/SSN or signatures; keep only README/package-control docs tracked.
 docs/proposals/DARPA_MATHBAC/package_work/99_final_zip_staging/**
 !docs/proposals/DARPA_MATHBAC/package_work/99_final_zip_staging/README.md
+
+# Aether harness demo scratch ledger
+packages/aether-harness/_demo_receipts.jsonl

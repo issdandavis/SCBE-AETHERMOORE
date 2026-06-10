@@ -32,8 +32,14 @@ from typing import Any, Callable, Optional
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
+# This package dir, so `import policy` resolves however the seam is loaded.
+_PKG_DIR = Path(__file__).resolve().parent
+if str(_PKG_DIR) not in sys.path:
+    sys.path.insert(0, str(_PKG_DIR))
 
 from src.governance.runtime_gate import Decision, RuntimeGate  # noqa: E402
+
+from policy import check_action  # noqa: E402  (the deterministic, blocking rulebook)
 
 try:  # GeoSeal execution scanner + sealed audit (optional, reused if present)
     from src.crypto.geoseal_execution_gate import (  # noqa: E402
@@ -120,31 +126,66 @@ class GovernanceSeam:
         )
     )
     receipts_path: Path = field(default_factory=lambda: _REPO_ROOT / ".scbe" / "aether" / "receipts.jsonl")
-    quarantine_blocks: bool = False  # autonomous default: only DENY blocks
+    quarantine_blocks: bool = False  # autonomous default: only an enforced block stops a call
+    gate_can_block: bool = False  # geometry gate is ADVISORY by default (see govern)
 
     def govern(self, tool_name: str, tool_args: Optional[dict] = None) -> SeamDecision:
+        """Judge one action ("one hand"). Blocking is deterministic; the
+        geometry gate only advises.
+
+        Poker model: each call is a fresh hand — the verdict is computed from
+        the stateless rulebook (policy catalog + GeoSeal scanner), so a risky
+        move earlier in the session can't contaminate a later harmless one.
+        The dealer still remembers: every hand is written to the receipt ledger.
+        """
         tool_args = tool_args or {}
         action = _action_text(tool_name, tool_args)
 
+        # 1. Geometry gate — ADVISORY by default. Its risk score is recorded on
+        #    the receipt but does not block, because on real embeddings it is
+        #    order-dependent and both over- and under-fires. Opt it into
+        #    blocking with gate_can_block=True.
         gate_result = self.gate.evaluate(action, tool_name=tool_name)
         gate_decision = getattr(gate_result.decision, "name", str(gate_result.decision)).upper()
-        verdicts = [gate_decision if gate_decision in _SEVERITY else "REVIEW"]
+        if gate_decision not in _SEVERITY:
+            gate_decision = "REVIEW"
         signals = list(getattr(gate_result, "signals", []) or [])
-        scan_tier = None
 
+        # 2. GeoSeal command scanner — deterministic, blocking (command tools).
+        scan_tier = None
         command = _command_of(tool_name, tool_args)
         if command is not None and scan_command is not None:
             scan = scan_command(command)
             scan_tier = scan.tier
-            if scan_tier in _SEVERITY:
-                verdicts.append(scan_tier)
             for f in getattr(scan, "findings", []) or []:
                 signals.append(f"geoseal:{f.rule}({f.tier})")
 
-        final = max(verdicts, key=lambda v: _SEVERITY.get(v, 1))
-        allowed = final != "DENY" and not (self.quarantine_blocks and final in ("QUARANTINE", "ESCALATE"))
-        tripped = final != "ALLOW"
-        reason = "; ".join(signals[:6]) or "clean"
+        # 3. Policy catalog — deterministic, blocking (every tool). The rulebook.
+        pol = check_action(tool_name, tool_args)
+        policy_tier = {"BLOCK": "DENY", "WARN": "REVIEW"}.get(pol.severity, "ALLOW")
+        for h in pol.hits:
+            signals.append(f"policy:{h.rule}({h.severity})")
+
+        # Enforced block = deterministic sources only, plus the gate iff the
+        # caller opted it in, plus the explicit quarantine override.
+        enforced = []
+        if scan_tier == "DENY":
+            enforced.append("DENY")
+        if pol.blocked:
+            enforced.append("DENY")
+        if self.gate_can_block and gate_decision == "DENY":
+            enforced.append("DENY")
+        if self.quarantine_blocks and gate_decision in ("QUARANTINE", "ESCALATE"):
+            enforced.append(gate_decision)
+
+        # Displayed verdict = worst across everything (gate advisory included), so
+        # a QUARANTINE still reads as "tripped" even when it is allowed to proceed.
+        all_tiers = [gate_decision, policy_tier] + ([scan_tier] if scan_tier else [])
+        final = max(all_tiers, key=lambda v: _SEVERITY.get(v, 1))
+
+        allowed = not enforced
+        tripped = enforced != [] or final != "ALLOW"
+        reason = pol.headline() if pol.hits else ("; ".join(signals[:6]) or "clean")
 
         receipt = {
             "audit_id": _sha256(f"{_now_iso()}|{tool_name}|{action}")[:16],
@@ -154,8 +195,11 @@ class GovernanceSeam:
             "action_preview": action[:200],
             "decision": final,
             "allowed": allowed,
+            "blocked_by": enforced[0] if enforced else None,
+            "advisory_gate": gate_decision,
             "cost": round(float(getattr(gate_result, "cost", 0.0)), 4),
             "scan_tier": scan_tier,
+            "policy": pol.severity if pol.hits else "ALLOW",
             "signals": signals[:12],
         }
         self._emit(receipt)
