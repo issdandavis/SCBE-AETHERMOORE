@@ -419,6 +419,66 @@ class TernaryNode:
             return self.depth
         return max(c.max_depth() for c in self.children)
 
+    def resolve(self, theta: float = 0.5) -> TritVector:
+        """Recursively fuse this subtree into a single resolved TritVector.
+
+        Leaf nodes resolve to their own ``trit_output`` (or, if absent, to
+        their tongue bundle).  Internal nodes fuse their children with
+        branch-typed semantics:
+
+          - positive child  -> constructive evidence (contributes as-is)
+          - witness child   -> tentative, ambiguity-preserving (low weight)
+          - negative child  -> adversarial probe; its resolved claim is
+            *negated* before fusion, so a strong adversarial finding pulls
+            the parent toward the opposite verdict (embedded red-team).
+
+        Branch weights decay by phi so the constructive branch dominates
+        unless the adversary finds strong counter-evidence.  A node's own
+        ``trit_output``, if set, is included as an anchor.
+
+        Raises:
+            ValueError: if the subtree carries no trit data to resolve.
+        """
+        own = self.trit_output
+        if own is None and self.tongue_bundle is not None:
+            own = self.tongue_bundle.to_trit_vector()
+
+        if self.is_leaf:
+            if own is None:
+                raise ValueError(f"Leaf node '{self.name}' has no trit data to resolve")
+            return own
+
+        contributions: List[TritVector] = []
+        weights: List[float] = []
+
+        if own is not None:
+            contributions.append(own)
+            weights.append(1.0)
+
+        branch_weights = {
+            BranchType.POSITIVE: 1.0,
+            BranchType.WITNESS: 1.0 / PHI,
+            BranchType.NEGATIVE: 1.0 / (PHI**2),
+        }
+        for branch in (BranchType.POSITIVE, BranchType.WITNESS, BranchType.NEGATIVE):
+            child = self.child_by_branch(branch)
+            if child is None:
+                continue
+            resolved = child.resolve(theta)
+            if branch == BranchType.NEGATIVE:
+                resolved = resolved.negate()
+            contributions.append(resolved)
+            weights.append(branch_weights[branch])
+
+        if not contributions:
+            raise ValueError(f"Internal node '{self.name}' has no resolvable children")
+
+        dims = {c.dim for c in contributions}
+        if len(dims) != 1:
+            raise ValueError(f"Node '{self.name}' children have mismatched dimensions: {dims}")
+
+        return trit_reconstruction(contributions, weights=weights, theta=theta)
+
 
 def build_ternary_tree(name_prefix: str, max_depth: int, current_depth: int = 0) -> TernaryNode:
     """Build a complete ternary tree.  N_L = (3^(L+1) - 1) / 2 nodes."""

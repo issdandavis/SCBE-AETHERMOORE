@@ -725,3 +725,128 @@ class TestFleetTernaryFusion:
         engine = FleetTernaryFusion(config)
         result = engine.fuse(agents)
         assert any("coherence" in w.lower() for w in result.warnings)
+
+
+# ═══════════════════════════════════════════════════
+#  TernaryNode.resolve — recursive bottom-up fusion
+# ═══════════════════════════════════════════════════
+
+
+class TestTernaryNodeResolve:
+    def test_leaf_resolves_to_own_output(self):
+        leaf = TernaryNode(name="leaf", trit_output=TritVector.from_list([1, 0, -1]))
+        assert leaf.resolve().values == (1, 0, -1)
+
+    def test_leaf_falls_back_to_tongue_bundle(self):
+        bundle = SacredTongueTritBundle(ko=1, av=0, ru=-1, ca=1, um=0, dr=1)
+        leaf = TernaryNode(name="leaf", tongue_bundle=bundle)
+        assert leaf.resolve().values == (1, 0, -1, 1, 0, 1)
+
+    def test_leaf_without_data_raises(self):
+        leaf = TernaryNode(name="bare")
+        with pytest.raises(ValueError):
+            leaf.resolve()
+
+    def test_positive_branch_dominates(self):
+        root = TernaryNode(name="root")
+        root.child_positive = TernaryNode(name="p", trit_output=TritVector.from_list([1, 1, 1]))
+        root.child_witness = TernaryNode(name="w", trit_output=TritVector.zeros(3))
+        root.child_negative = TernaryNode(name="n", trit_output=TritVector.zeros(3))
+        assert root.resolve().values == (1, 1, 1)
+
+    def test_adversarial_finding_pulls_opposite(self):
+        # Negative branch strongly affirms the attack (+1); after negation it
+        # opposes, dragging an otherwise-neutral parent toward -1.
+        root = TernaryNode(name="root")
+        root.child_positive = TernaryNode(name="p", trit_output=TritVector.zeros(3))
+        root.child_witness = TernaryNode(name="w", trit_output=TritVector.zeros(3))
+        root.child_negative = TernaryNode(name="n", trit_output=TritVector.from_list([1, 1, 1]))
+        resolved = root.resolve(theta=0.1)
+        assert all(v == -1 for v in resolved.values)
+
+    def test_mismatched_child_dims_raise(self):
+        root = TernaryNode(name="root")
+        root.child_positive = TernaryNode(name="p", trit_output=TritVector.from_list([1, 1]))
+        root.child_negative = TernaryNode(name="n", trit_output=TritVector.from_list([1, 1, 1]))
+        with pytest.raises(ValueError):
+            root.resolve()
+
+    def test_built_tree_with_leaf_outputs_resolves(self):
+        root = build_ternary_tree("r", max_depth=2)
+        # Populate every leaf with a positive vector.
+        stack = [root]
+        while stack:
+            node = stack.pop()
+            if node.is_leaf:
+                node.trit_output = TritVector.from_list([1, 1, 1])
+            else:
+                stack.extend(node.children)
+        assert root.resolve().dim == 3
+
+
+# ═══════════════════════════════════════════════════
+#  Quorum gate & deferred dimensions
+# ═══════════════════════════════════════════════════
+
+
+class TestQuorumGate:
+    def test_low_participation_defers(self):
+        # One agent affirms dim 0, the rest abstain (0). With quorum 0.5 the
+        # dimension cannot commit and is deferred to witness (0).
+        agents = [
+            AgentTritState("a1", TritVector.from_list([1, 0, 0, 0, 0, 0]), confidence=1.0),
+            AgentTritState("a2", TritVector.from_list([0, 0, 0, 0, 0, 0]), confidence=1.0),
+            AgentTritState("a3", TritVector.from_list([0, 0, 0, 0, 0, 0]), confidence=1.0),
+        ]
+        result = ternary_consensus(agents, theta=0.1, quorum=0.5)
+        assert result.fused_vector.values[0] == 0
+        assert 0 in result.deferred_dimensions
+
+    def test_quorum_met_commits(self):
+        agents = [
+            AgentTritState("a1", TritVector.from_list([1, 0, 0, 0, 0, 0]), confidence=1.0),
+            AgentTritState("a2", TritVector.from_list([1, 0, 0, 0, 0, 0]), confidence=1.0),
+            AgentTritState("a3", TritVector.from_list([0, 0, 0, 0, 0, 0]), confidence=1.0),
+        ]
+        result = ternary_consensus(agents, theta=0.1, quorum=0.5)
+        assert result.fused_vector.values[0] == 1
+        assert 0 not in result.deferred_dimensions
+
+    def test_zero_quorum_no_deferral(self):
+        agents = [
+            AgentTritState("a1", TritVector.from_list([1, 0, 0, 0, 0, 0]), confidence=1.0),
+            AgentTritState("a2", TritVector.from_list([0, 0, 0, 0, 0, 0]), confidence=1.0),
+        ]
+        result = ternary_consensus(agents, theta=0.1, quorum=0.0)
+        assert result.deferred_dimensions == []
+
+
+# ═══════════════════════════════════════════════════
+#  Faction detection robustness & precomputed matrix
+# ═══════════════════════════════════════════════════
+
+
+class TestFusionRobustness:
+    def test_faction_detection_duplicate_ids(self):
+        # Two agents share an id; detection must not crash or misroute.
+        agents = [
+            AgentTritState("dup", TritVector.from_list([1, 1, 1])),
+            AgentTritState("dup", TritVector.from_list([1, 1, 1])),
+            AgentTritState("other", TritVector.from_list([-1, -1, -1])),
+        ]
+        cm = compute_coherence_matrix(agents)
+        factions = cm.faction_detection(threshold=0.5)
+        sizes = sorted(len(f) for f in factions)
+        assert sizes == [1, 2]
+
+    def test_precomputed_matrix_matches_recomputed(self):
+        agents = [
+            AgentTritState("a1", TritVector.from_list([1, 1, -1, 0, 1, 1])),
+            AgentTritState("a2", TritVector.from_list([1, 0, -1, 0, 1, 1])),
+            AgentTritState("a3", TritVector.from_list([-1, -1, 1, 0, -1, -1])),
+        ]
+        cm = compute_coherence_matrix(agents)
+        with_pre = ternary_consensus(agents, coherence_matrix=cm)
+        without_pre = ternary_consensus(agents)
+        assert with_pre.fused_vector.values == without_pre.fused_vector.values
+        assert abs(with_pre.mean_coherence - without_pre.mean_coherence) < 1e-12

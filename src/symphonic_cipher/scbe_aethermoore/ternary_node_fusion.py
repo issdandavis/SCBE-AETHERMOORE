@@ -14,7 +14,7 @@ negative-base layer correction, and encoding bridges.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional, Sequence, Tuple
 
 from .trinary import BalancedTernary, Trit
@@ -106,7 +106,11 @@ class CoherenceMatrix:
         return self.min_coherence() >= threshold
 
     def faction_detection(self, threshold: float = 0.0) -> List[List[str]]:
-        """Greedy clustering of mutually agreeing agents."""
+        """Greedy clustering of mutually agreeing agents.
+
+        Works on positional indices (not id lookups), so it is O(n^2)
+        and robust to duplicate agent ids.
+        """
         n = self.size
         assigned = [False] * n
         factions: List[List[str]] = []
@@ -114,16 +118,15 @@ class CoherenceMatrix:
         for i in range(n):
             if assigned[i]:
                 continue
-            faction = [self.agent_ids[i]]
+            member_indices = [i]
             assigned[i] = True
             for j in range(i + 1, n):
                 if assigned[j]:
                     continue
-                all_agree = all(self.matrix[self.agent_ids.index(m)][j] >= threshold for m in faction)
-                if all_agree:
-                    faction.append(self.agent_ids[j])
+                if all(self.matrix[m][j] >= threshold for m in member_indices):
+                    member_indices.append(j)
                     assigned[j] = True
-            factions.append(faction)
+            factions.append([self.agent_ids[m] for m in member_indices])
 
         return factions
 
@@ -156,14 +159,28 @@ class ConsensusResult:
     consensus_strength: float
     contested_dimensions: List[int]
     decision: GovernanceDecision
+    deferred_dimensions: List[int] = field(default_factory=list)
 
 
 def ternary_consensus(
     agents: Sequence[AgentTritState],
     theta: float = 0.5,
-    quorum: float = 0.5,
+    quorum: float = 0.0,
+    coherence_matrix: Optional[CoherenceMatrix] = None,
 ) -> ConsensusResult:
-    """Fleet-level ternary consensus across N agents."""
+    """Fleet-level ternary consensus across N agents.
+
+    Args:
+        agents: Agents contributing trit outputs.
+        theta: Decision threshold for ``tri_fuse``.
+        quorum: Minimum fraction of total confidence weight that must
+            be non-abstaining (non-zero) on a dimension for it to reach
+            a committed decision.  Dimensions below quorum are forced to
+            0 (deferred / witness state) and recorded in
+            ``deferred_dimensions``.  Defaults to 0.0 (no quorum gate).
+        coherence_matrix: Optional precomputed matrix to avoid the
+            O(n^2) recomputation when the caller already has one.
+    """
     if not agents:
         raise ValueError("Need at least one agent for consensus")
 
@@ -178,15 +195,26 @@ def ternary_consensus(
             consensus_strength=0.0,
             contested_dimensions=list(range(d)),
             decision=GovernanceDecision.QUARANTINE,
+            deferred_dimensions=list(range(d)),
         )
 
     fused_values = []
     contested = []
+    deferred = []
     non_zero_count = 0
 
     for k in range(d):
         r_k = sum(a.confidence * a.trit_output.values[k] for a in agents) / total_weight
         z_hat = tri_fuse(r_k, theta)
+
+        # Quorum gate: a committed (non-zero) decision requires enough
+        # non-abstaining weight on this dimension, else defer to witness.
+        if z_hat != 0 and quorum > 0.0:
+            participating = sum(a.confidence for a in agents if a.trit_output.values[k] != 0)
+            if participating / total_weight < quorum:
+                z_hat = 0
+                deferred.append(k)
+
         fused_values.append(z_hat)
         if z_hat != 0:
             non_zero_count += 1
@@ -198,7 +226,8 @@ def ternary_consensus(
     fused = TritVector(tuple(fused_values))
     consensus_strength = non_zero_count / d if d > 0 else 0.0
 
-    coherence_matrix = compute_coherence_matrix(agents) if len(agents) >= 2 else None
+    if coherence_matrix is None and len(agents) >= 2:
+        coherence_matrix = compute_coherence_matrix(agents)
     mean_coh = coherence_matrix.mean_coherence() if coherence_matrix else 1.0
 
     if d >= 6:
@@ -220,6 +249,7 @@ def ternary_consensus(
         consensus_strength=consensus_strength,
         contested_dimensions=contested,
         decision=decision,
+        deferred_dimensions=deferred,
     )
 
 
@@ -377,7 +407,12 @@ class FleetTernaryFusion:
 
         adversarial = [a.agent_id for a in agents if a.is_adversarial]
 
-        consensus = ternary_consensus(agents, theta=self.config.consensus_theta)
+        consensus = ternary_consensus(
+            agents,
+            theta=self.config.consensus_theta,
+            quorum=self.config.consensus_quorum,
+            coherence_matrix=coh_matrix,
+        )
 
         aligned_scores = [a.confidence for a in agents if not a.is_adversarial]
         adversarial_scores = [a.confidence for a in agents if a.is_adversarial]
