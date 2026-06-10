@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       task:
-        description: 'Task type: research | monitor | ask | scrape | web_search | coding | system_build | agentic_ladder | pair_benchmark | poly_coding_seed | agent_bus'
+        description: 'Task type: research | monitor | ask | scrape | web_search | coding | system_build | agentic_ladder | pair_benchmark | poly_coding_seed | math_benchmark | agent_bus'
         required: true
         default: 'monitor'
         type: string
@@ -57,33 +57,58 @@ jobs:
 
       - name: Determine task
         id: task
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_TASK: ${{ inputs.task }}
+          DISPATCH_QUERY: ${{ inputs.query }}
+          DISPATCH_PUBLISH: ${{ inputs.publish }}
+          REPO_TASK: ${{ github.event.client_payload.task }}
+          REPO_QUERY: ${{ github.event.client_payload.query }}
+          REPO_PUBLISH: ${{ github.event.client_payload.publish || 'true' }}
         run: |
+          write_output() {
+            local name="$1"
+            local value="$2"
+            {
+              echo "${name}<<__SCBE_${name}__"
+              printf '%s\n' "$value"
+              echo "__SCBE_${name}__"
+            } >> "$GITHUB_OUTPUT"
+          }
+
           # From workflow_dispatch
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "task=${{ inputs.task }}" >> $GITHUB_OUTPUT
-            echo "query=${{ inputs.query }}" >> $GITHUB_OUTPUT
-            echo "publish=${{ inputs.publish }}" >> $GITHUB_OUTPUT
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            write_output "task" "$DISPATCH_TASK"
+            write_output "query" "$DISPATCH_QUERY"
+            write_output "publish" "$DISPATCH_PUBLISH"
           # From repository_dispatch
-          elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
-            echo "task=${{ github.event.client_payload.task }}" >> $GITHUB_OUTPUT
-            echo "query=${{ github.event.client_payload.query }}" >> $GITHUB_OUTPUT
-            echo "publish=${{ github.event.client_payload.publish || 'true' }}" >> $GITHUB_OUTPUT
+          elif [ "$EVENT_NAME" = "repository_dispatch" ]; then
+            write_output "task" "$REPO_TASK"
+            write_output "query" "$REPO_QUERY"
+            write_output "publish" "$REPO_PUBLISH"
           # From schedule — default monitor task
           else
-            echo "task=monitor" >> $GITHUB_OUTPUT
-            echo "query=https://aethermoore.com/SCBE-AETHERMOORE/,https://github.com/issdandavis/SCBE-AETHERMOORE,https://news.ycombinator.com,https://arxiv.org/list/cs.AI/recent" >> $GITHUB_OUTPUT
-            echo "publish=true" >> $GITHUB_OUTPUT
+            write_output "task" "monitor"
+            write_output "query" "https://aethermoore.com/SCBE-AETHERMOORE/,https://github.com/issdandavis/SCBE-AETHERMOORE,https://news.ycombinator.com,https://arxiv.org/list/cs.AI/recent"
+            write_output "publish" "true"
           fi
 
       - name: Run agent task
         env:
           PYTHONPATH: .
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          TASK_INPUT: ${{ steps.task.outputs.task }}
+          QUERY_INPUT: ${{ steps.task.outputs.query }}
         run: |
           mkdir -p artifacts/agent-router docs/static/agent-data
 
-          TASK="${{ steps.task.outputs.task }}"
-          QUERY="${{ steps.task.outputs.query }}"
+          TASK="$TASK_INPUT"
+          QUERY="$QUERY_INPUT"
 
           echo "Task: $TASK"
           echo "Query: $QUERY"
@@ -130,6 +155,9 @@ jobs:
             poly_coding_seed)
               python scripts/system/agent_router_smoke.py poly_coding_seed \
                 > artifacts/agent-router/result.json
+              ;;
+            math_benchmark)
+              python scripts/benchmark/agent_router_math_benchmark.py --query "$QUERY"
               ;;
             agent_bus)
               # Dispatch QUERY as one SCBE agent-bus event. Defaults
@@ -236,10 +264,13 @@ jobs:
           fi
 
       - name: Upload artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: agent-router-result
-          path: artifacts/agent-router/result.json
+          path: |
+            artifacts/agent-router/result.json
+            artifacts/benchmarks/math-reasoning/
           retention-days: 30
 
       - name: Write summary

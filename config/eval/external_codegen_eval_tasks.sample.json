@@ -1,0 +1,414 @@
+{
+  "schema_version": "scbe_external_agentic_eval_manifest_v1",
+  "description": "Repo-native code-generation verifier tasks for the SCBE CLI harness. These are host-sandbox checks for generated code artifacts, not public leaderboard parity claims.",
+  "tasks": [
+    {
+      "task_id": "scbe-codegen-js-clamp-module",
+      "suite": "repo_native",
+      "title": "Generate and verify a JavaScript clamp module",
+      "repo": "local",
+      "instructions": "Run the SCBE task-corpus codegen task that asks the harness to generate clamp.js and test-clamp.js, then rerun the generated test.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-js-clamp-module",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/clamp.js",
+        "{WORKDIR}/test-clamp.js",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-python-prime-coordinate",
+      "suite": "repo_native",
+      "title": "Generate and verify a Python prime-coordinate module",
+      "repo": "local",
+      "instructions": "Run the SCBE task-corpus codegen task that asks the harness to generate prime_coordinate.py and test_prime_coordinate.py, then rerun the generated test.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-python-prime-coordinate",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/prime_coordinate.py",
+        "{WORKDIR}/test_prime_coordinate.py",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-js-intent-router",
+      "suite": "repo_native",
+      "title": "Generate and verify a JavaScript intent router",
+      "repo": "local",
+      "instructions": "Run the SCBE task-corpus codegen task that asks the harness to generate intent_router.js and test-intent-router.js, then rerun the generated test.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-js-intent-router",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/intent_router.js",
+        "{WORKDIR}/test-intent-router.js",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-python-prime-abacus",
+      "suite": "repo_native",
+      "title": "Generate and verify a Python prime-line abacus",
+      "repo": "local",
+      "instructions": "Run the SCBE task-corpus codegen task that asks the harness to generate prime_abacus.py and test_prime_abacus.py, then rerun the generated test.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-python-prime-abacus",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/prime_abacus.py",
+        "{WORKDIR}/test_prime_abacus.py",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-python-chunk-worksheet",
+      "suite": "repo_native",
+      "title": "Generate and verify a Python chunk worksheet",
+      "repo": "local",
+      "instructions": "Run the SCBE task-corpus codegen task that asks the harness to generate chunk_worksheet.py and test_chunk_worksheet.py, then rerun the generated test.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-python-chunk-worksheet",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/chunk_worksheet.py",
+        "{WORKDIR}/test_chunk_worksheet.py",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-hard-js-fix-average",
+      "suite": "repo_native",
+      "title": "Repair a failing JavaScript average fixture",
+      "repo": "local",
+      "instructions": "Run the hard SCBE task-corpus task that creates a broken stats.js fixture, asks the harness to repair it, and independently verifies average behavior.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-hard-js-fix-average",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/stats.js",
+        "{WORKDIR}/test-stats.js",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-hard-python-fix-normalizer",
+      "suite": "repo_native",
+      "title": "Repair a failing Python command normalizer",
+      "repo": "local",
+      "instructions": "Run the hard SCBE task-corpus task that creates a broken normalizer.py fixture, asks the harness to repair it, and independently verifies command normalization.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-hard-python-fix-normalizer",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/normalizer.py",
+        "{WORKDIR}/test_normalizer.py",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-hard-js-safe-shell-filter",
+      "suite": "repo_native",
+      "title": "Generate a JavaScript safe-shell command filter",
+      "repo": "local",
+      "instructions": "Run the hard SCBE task-corpus task that asks the harness to generate shell_guard.js and verify destructive command rejection.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-hard-js-safe-shell-filter",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/shell_guard.js",
+        "{WORKDIR}/test-shell-guard.js",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-hard-python-geoseal-receipt",
+      "suite": "repo_native",
+      "title": "Generate a deterministic Python GeoSeal-style receipt",
+      "repo": "local",
+      "instructions": "Run the hard SCBE task-corpus task that asks the harness to generate receipt.py and verify deterministic canonical hashing.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-hard-python-geoseal-receipt",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/receipt.py",
+        "{WORKDIR}/test_receipt.py",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-hard-js-jsonl-redactor",
+      "suite": "repo_native",
+      "title": "Generate a JavaScript JSONL redactor",
+      "repo": "local",
+      "instructions": "Run the hard SCBE task-corpus task that asks the harness to generate jsonl_redactor.js and verify secret redaction.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-hard-js-jsonl-redactor",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/jsonl_redactor.js",
+        "{WORKDIR}/test-jsonl-redactor.js",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-hard-python-prime-window",
+      "suite": "repo_native",
+      "title": "Generate a Python nearest-prime window utility",
+      "repo": "local",
+      "instructions": "Run the hard SCBE task-corpus task that asks the harness to generate prime_window.py and verify nearest-prime behavior.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-hard-python-prime-window",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/prime_window.py",
+        "{WORKDIR}/test_prime_window.py",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-hard-js-autocorrect-router",
+      "suite": "repo_native",
+      "title": "Generate a JavaScript typo-tolerant command router",
+      "repo": "local",
+      "instructions": "Run the hard SCBE task-corpus task that asks the harness to generate autocorrect_router.js and verify one-edit command correction.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-hard-js-autocorrect-router",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/autocorrect_router.js",
+        "{WORKDIR}/test-autocorrect-router.js",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-hard-python-agent-worksheet",
+      "suite": "repo_native",
+      "title": "Generate a Python agent worksheet builder",
+      "repo": "local",
+      "instructions": "Run the hard SCBE task-corpus task that asks the harness to generate agent_worksheet.py and verify chunked action-step extraction.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-hard-python-agent-worksheet",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/agent_worksheet.py",
+        "{WORKDIR}/test_agent_worksheet.py",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-hard-js-dual-file-cli",
+      "suite": "repo_native",
+      "title": "Repair a two-file JavaScript CLI",
+      "repo": "local",
+      "instructions": "Run the hard SCBE task-corpus task that creates a two-file CLI fixture, asks the harness to implement math_ops.js, and verifies CLI output.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-hard-js-dual-file-cli",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/math_ops.js",
+        "{WORKDIR}/cli.js",
+        "{WORKDIR}/test-cli.js",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    },
+    {
+      "task_id": "scbe-codegen-hard-crosslang-prime-manifest",
+      "suite": "repo_native",
+      "title": "Generate matching Python and JavaScript prime manifests",
+      "repo": "local",
+      "instructions": "Run the hard SCBE task-corpus task that asks the harness to generate Python and JavaScript prime-coordinate manifests and verify both agree.",
+      "verify_command": [
+        "node",
+        "packages/cli/scripts/bench_task_corpus.cjs",
+        "--task",
+        "codegen-hard-crosslang-prime-manifest",
+        "--max-corpus-turns=4",
+        "--provider",
+        "offline",
+        "--fail-on-incomplete",
+        "--no-artifact"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "{WORKDIR}/prime_manifest.py",
+        "{WORKDIR}/prime_manifest.js",
+        "{WORKDIR}/test_prime_manifest.py",
+        "{WORKDIR}/test-prime-manifest.js",
+        "{WORKDIR}/answer.txt"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": false
+    }
+  ]
+}

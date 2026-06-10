@@ -1,0 +1,217 @@
+name: Math Reasoning Benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: 'Router provider'
+        required: true
+        default: 'openai'
+        type: choice
+        options:
+          - openai
+          - cerebras
+          - groq
+          - huggingface
+          - anthropic
+          - xai
+      model:
+        description: 'Provider model to force into the cheap tier for this run'
+        required: true
+        default: 'gpt-4o-mini'
+      mode:
+        description: 'Benchmark mode'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - raw
+          - tool-choice
+          - gated-tool-choice
+          - both
+      limit:
+        description: 'Number of fixture problems to run'
+        required: true
+        default: '8'
+      cost_mode:
+        description: 'Cost guard'
+        required: true
+        default: 'low_cost'
+        type: choice
+        options:
+          - low_cost
+          - paid_allowed
+
+permissions:
+  contents: read
+
+jobs:
+  math-reasoning:
+    name: ${{ inputs.provider }}:${{ inputs.model }} ${{ inputs.mode }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BENCH_PROVIDER: ${{ inputs.provider }}
+      BENCH_MODEL: ${{ inputs.model }}
+      BENCH_MODE: ${{ inputs.mode }}
+      BENCH_LIMIT: ${{ inputs.limit }}
+      BENCH_COST_MODE: ${{ inputs.cost_mode }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Enforce cost guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${BENCH_COST_MODE}:${BENCH_PROVIDER}:${BENCH_MODEL}" in
+            low_cost:openai:gpt-4o-mini|low_cost:openai:gpt-4.1-mini)
+              ;;
+            low_cost:cerebras:*|low_cost:groq:*|low_cost:huggingface:*)
+              ;;
+            paid_allowed:*)
+              echo "paid_allowed set explicitly for ${BENCH_PROVIDER}:${BENCH_MODEL}"
+              ;;
+            *)
+              echo "cost guard blocked ${BENCH_PROVIDER}:${BENCH_MODEL}; rerun with cost_mode=paid_allowed if intended" >&2
+              exit 2
+              ;;
+          esac
+
+      - name: Check required provider secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${BENCH_PROVIDER}" in
+            openai) test -n "${OPENAI_API_KEY:-}" || { echo "OPENAI_API_KEY secret is missing" >&2; exit 1; } ;;
+            anthropic) test -n "${ANTHROPIC_API_KEY:-}" || { echo "ANTHROPIC_API_KEY secret is missing" >&2; exit 1; } ;;
+            cerebras) test -n "${CEREBRAS_API_KEY:-}" || { echo "CEREBRAS_API_KEY secret is missing" >&2; exit 1; } ;;
+            groq) test -n "${GROQ_API_KEY:-}" || { echo "GROQ_API_KEY secret is missing" >&2; exit 1; } ;;
+            huggingface) test -n "${HF_TOKEN:-}" || { echo "HF_TOKEN secret is missing" >&2; exit 1; } ;;
+            xai) test -n "${XAI_API_KEY:-}" || { echo "XAI_API_KEY secret is missing" >&2; exit 1; } ;;
+            *) echo "unsupported provider ${BENCH_PROVIDER}" >&2; exit 1 ;;
+          esac
+
+      - name: Build single-model router config
+        shell: bash
+        run: |
+          set -euo pipefail
+          SAFE_MODEL="$(printf '%s' "${BENCH_MODEL}" | tr '/: ' '___' | tr -cd 'A-Za-z0-9_.-')"
+          echo "BENCH_ARTIFACT_NAME=math-reasoning-${BENCH_PROVIDER}-${SAFE_MODEL}-${BENCH_MODE}" >> "${GITHUB_ENV}"
+          mkdir -p artifacts/benchmarks/math-reasoning
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          provider = os.environ["BENCH_PROVIDER"]
+          model = os.environ["BENCH_MODEL"]
+          src = Path("config/governance/terminal_ai_router_profiles.json")
+          cfg = json.loads(src.read_text(encoding="utf-8"))
+          cfg["provider_order"] = [provider]
+          cfg["complexity_tiers"] = {"easy": ["cheap"], "medium": ["cheap"], "hard": ["cheap"]}
+          for name, provider_cfg in cfg.get("providers", {}).items():
+              provider_cfg["enabled"] = name == provider
+          selected = cfg["providers"][provider]
+          selected["daily_cap_usd"] = max(float(selected.get("daily_cap_usd", 0.0)), 20.0)
+          selected["tiers"] = {"cheap": {"model": model, "estimated_cents": 0.0}}
+          out = Path("artifacts/benchmarks/math-reasoning/router-config.generated.json")
+          out.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+          print(out)
+          PY
+
+      - name: Router health for selected provider
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/system/terminal_ai_router.py \
+            --config artifacts/benchmarks/math-reasoning/router-config.generated.json \
+            health \
+            --checks "${BENCH_PROVIDER}" \
+            --output artifacts/benchmarks/math-reasoning/router-health.json \
+            --strict
+
+      - name: Run raw math reasoning benchmark
+        if: ${{ inputs.mode == 'raw' || inputs.mode == 'both' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node packages/cli/scripts/bench_math_reasoning.cjs \
+            --mode raw \
+            --provider router \
+            --router-provider "${BENCH_PROVIDER}" \
+            --router-config artifacts/benchmarks/math-reasoning/router-config.generated.json \
+            --limit "${BENCH_LIMIT}" \
+            --json
+
+      - name: Run tool-choice math reasoning benchmark
+        if: ${{ inputs.mode == 'tool-choice' || inputs.mode == 'both' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node packages/cli/scripts/bench_math_reasoning.cjs \
+            --mode tool-choice \
+            --provider router \
+            --router-provider "${BENCH_PROVIDER}" \
+            --router-config artifacts/benchmarks/math-reasoning/router-config.generated.json \
+            --limit "${BENCH_LIMIT}" \
+            --json
+
+      - name: Run gated-tool-choice math reasoning benchmark
+        if: ${{ inputs.mode == 'gated-tool-choice' || inputs.mode == 'both' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node packages/cli/scripts/bench_math_reasoning.cjs \
+            --mode gated-tool-choice \
+            --provider router \
+            --router-provider "${BENCH_PROVIDER}" \
+            --router-config artifacts/benchmarks/math-reasoning/router-config.generated.json \
+            --limit "${BENCH_LIMIT}" \
+            --json
+
+      - name: Summarize benchmark artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          rows = []
+          for path in sorted(Path("artifacts/benchmarks/math-reasoning").glob("*.json")):
+              if path.name in {"router-config.generated.json", "router-health.json"}:
+                  continue
+              payload = json.loads(path.read_text(encoding="utf-8"))
+              if payload.get("schema_version") != "scbe_math_reasoning_benchmark_v1":
+                  continue
+              score = payload.get("score", {})
+              rows.append((payload.get("mode"), payload.get("model"), score.get("correct"), score.get("total"), path.name))
+          print("| mode | model | score | artifact |")
+          print("|---|---|---:|---|")
+          for mode, model, correct, total, name in rows:
+              print(f"| {mode} | {model} | {correct}/{total} | {name} |")
+          PY
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BENCH_ARTIFACT_NAME }}
+          path: artifacts/benchmarks/math-reasoning/

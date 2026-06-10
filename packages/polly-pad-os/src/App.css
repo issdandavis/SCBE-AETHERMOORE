@@ -1,0 +1,121 @@
+/* SCBE Tool Desktop Custom Styles */
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.25);
+}
+
+/* Hide scrollbar for taskbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Floating animation for background particles */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.1;
+  }
+  25% {
+    transform: translateY(-100px) translateX(50px);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translateY(-200px) translateX(-30px);
+    opacity: 0.05;
+  }
+  75% {
+    transform: translateY(-300px) translateX(80px);
+    opacity: 0.1;
+  }
+}
+
+/* Range input styling */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: none;
+}
+
+/* Color input styling */
+input[type='color'] {
+  -webkit-appearance: none;
+  appearance: none;
+  border: 2px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  padding: 2px;
+  background: #162032;
+  cursor: pointer;
+}
+
+input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type='color']::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+input[type='color']::-moz-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+/* Number input styling */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: #bfdbfe;
+}
+
+/* Canvas default background */
+canvas {
+  display: block;
+}

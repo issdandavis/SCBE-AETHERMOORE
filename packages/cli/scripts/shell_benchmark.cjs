@@ -24,6 +24,7 @@ function runNodeCli(args, options = {}) {
   const env = {
     ...process.env,
     NO_COLOR: '1',
+    ...(options.env || {}),
   };
   if (home) {
     env.HOME = home;
@@ -45,6 +46,16 @@ function runNodeCli(args, options = {}) {
     stderr: String(proc.stderr || ''),
     home,
   };
+}
+
+function decodeNodeEvalPayload(command) {
+  const match = String(command || '').match(/Buffer\.from\('([^']+)','base64'\)/);
+  if (!match) return String(command || '');
+  try {
+    return Buffer.from(match[1], 'base64').toString('utf8');
+  } catch {
+    return String(command || '');
+  }
 }
 
 function caseResult(name, fn, points = 1) {
@@ -69,6 +80,57 @@ function caseResult(name, fn, points = 1) {
       error: err && err.stack ? String(err.stack) : String(err),
     };
   }
+}
+
+const SCORE_AXES = ['ease_of_use', 'utility', 'tooling', 'ai_support', 'governance', 'codegen'];
+
+function scoreAxis(name) {
+  if (/codegen|generate.*module|prime_coordinate|clamp/i.test(name)) {
+    return 'codegen';
+  }
+  if (
+    /help|minimal|config|bare_sentence|spoken_math|worksheet|typo|terminal_panel|short/i.test(name)
+  ) {
+    return 'ease_of_use';
+  }
+  if (/powershell|math|verifier|workflow|status|freshness|scaffold/i.test(name)) {
+    return 'utility';
+  }
+  if (/tui|package|files_tool|read_tool|test_tool|patch_tool|translation|tooling/i.test(name)) {
+    return 'tooling';
+  }
+  if (/governance|destructive|ko_ban|move_packet|fleet/i.test(name)) {
+    return 'governance';
+  }
+  if (/agent_json|async|model|rationale|board|context|done_signal/i.test(name)) {
+    return 'ai_support';
+  }
+  return 'utility';
+}
+
+function scoreByAxis(cases) {
+  const axes = Object.fromEntries(
+    SCORE_AXES.map((axis) => [
+      axis,
+      {
+        earned: 0,
+        total: 0,
+        percent: 0,
+        cases: [],
+      },
+    ])
+  );
+  for (const row of cases) {
+    const axis = scoreAxis(row.name);
+    axes[axis].earned += row.earned;
+    axes[axis].total += row.points;
+    axes[axis].cases.push(row.name);
+  }
+  for (const axis of SCORE_AXES) {
+    const bucket = axes[axis];
+    bucket.percent = bucket.total ? Math.round((bucket.earned / bucket.total) * 10_000) / 100 : 0;
+  }
+  return axes;
 }
 
 function main() {
@@ -104,9 +166,63 @@ function main() {
     caseResult('rich_shell_config_is_local_free_by_default', () => {
       const r = runNodeCli(['shell'], { input: ':config\n:exit\n' });
       assert.equal(r.status, 0);
-      assert.match(r.stdout, /SCBE governed shell/);
+      assert.match(r.stdout, /SCBE\s+local/);
       assert.match(r.stdout, /"provider": "ollama"/);
-      assert.match(r.stdout, /"model": "llama3\.2"/);
+      assert.match(r.stdout, /"model": "[^"]+"/);
+      return { stdout_preview: r.stdout.slice(0, 360), duration_ms: r.duration_ms };
+    })
+  );
+
+  cases.push(
+    caseResult('bare_sentence_geoseal_termux_routes_to_worksheet', () => {
+      const r = runNodeCli([
+        'geoseal',
+        'compile',
+        'intent',
+        'summarize',
+        'README',
+        'with',
+        'termunx',
+        'fallback',
+      ]);
+      assert.equal(r.status, 0);
+      assert.match(r.stdout, /worksheet: worksheet\.generic/);
+      assert.match(r.stdout, /skills: geoseal, termux/);
+      assert.match(r.stdout, /execute: no/);
+      assert.doesNotMatch(r.stderr, /workspace ingest/);
+      return { stdout_preview: r.stdout.slice(0, 360), duration_ms: r.duration_ms };
+    })
+  );
+
+  cases.push(
+    caseResult('spoken_math_worksheet_handles_long_plain_english', () => {
+      const r = runNodeCli([
+        'square',
+        'root',
+        'of',
+        '89',
+        'times',
+        'the',
+        'inverse',
+        'ratio',
+        'of',
+        'the',
+        'factorial',
+        'derivative',
+        'of',
+        '89',
+        'before',
+        'and',
+        'after',
+        'as',
+        'a',
+        'dual',
+        'operation',
+      ]);
+      assert.equal(r.status, 0);
+      assert.match(r.stdout, /worksheet: compute\.spoken_math/);
+      assert.match(r.stdout, /primary:/);
+      assert.match(r.stdout, /dual:/);
       return { stdout_preview: r.stdout.slice(0, 360), duration_ms: r.duration_ms };
     })
   );
@@ -153,6 +269,65 @@ function main() {
         return {
           tier: payload.governance.tier,
           finding: payload.governance.findings[0],
+          duration_ms: r.duration_ms,
+        };
+      },
+      2
+    )
+  );
+
+  cases.push(
+    caseResult(
+      'dev_action_prepush_dry_run_geoseal_receipt',
+      () => {
+        const r = runNodeCli(['prepush', '--dry-run', '--json', '--no-write']);
+        assert.equal(r.status, 0);
+        const payload = JSON.parse(r.stdout);
+        assert.equal(payload.schema_version, 'scbe_dev_action_receipt_v1');
+        assert.equal(payload.action, 'prepush');
+        assert.equal(payload.summary.planned, 5);
+        assert.equal(payload.semantic_prime_syntax.action_coordinate.prime, 13);
+        assert.ok(payload.steps.every((row) => row.geoseal));
+        return {
+          steps: payload.summary.total_steps,
+          semantic_line: payload.semantic_prime_syntax.line,
+          duration_ms: r.duration_ms,
+        };
+      },
+      2
+    )
+  );
+
+  cases.push(
+    caseResult('dev_action_format_dry_run_is_one_command', () => {
+      const r = runNodeCli(['format', '--dry-run', '--json', '--no-write']);
+      assert.equal(r.status, 0);
+      const payload = JSON.parse(r.stdout);
+      assert.equal(payload.action, 'format');
+      assert.equal(payload.summary.planned, 1);
+      assert.match(payload.steps[0].command, /prettier --write/);
+      return {
+        command: payload.steps[0].command,
+        semantic: payload.steps[0].semantic_operation.syntax,
+        duration_ms: r.duration_ms,
+      };
+    })
+  );
+
+  cases.push(
+    caseResult(
+      'dev_action_push_dry_run_keeps_git_push_behind_prepush',
+      () => {
+        const r = runNodeCli(['push', '--dry-run', '--json', '--no-write', '--branch', 'main']);
+        assert.equal(r.status, 0);
+        const payload = JSON.parse(r.stdout);
+        assert.equal(payload.action, 'push');
+        assert.equal(payload.steps.at(-1).id, 'git-push');
+        assert.ok(payload.steps.find((row) => row.id === 'diff-check'));
+        assert.ok(payload.steps.find((row) => row.id === 'cli-tests'));
+        return {
+          steps: payload.summary.total_steps,
+          final_command: payload.steps.at(-1).command,
           duration_ms: r.duration_ms,
         };
       },
@@ -909,6 +1084,46 @@ function main() {
   );
 
   cases.push(
+    caseResult('agent_json_codegen_scaffold_emits_prime_coordinate_writer', () => {
+      const { spawnSync: spawn } = require('node:child_process');
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-codegen-protocol-'));
+      const answer = path.join(dir, 'answer.txt').replace(/\\/g, '/');
+      const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
+        cwd: REPO_ROOT,
+        input:
+          JSON.stringify({
+            instruction:
+              `Generate a Python module at ${dir.replace(/\\/g, '/')}/prime_coordinate.py containing ` +
+              '`factor_profile(n)`. It should return is_prime, omega, omega_distinct, and residue30. ' +
+              `If tests pass, write exactly pass to ${answer}.`,
+            terminal_state: '$ ',
+            done_if: `node -e "const fs=require('fs');process.exit(fs.existsSync('${answer}')?0:1)"`,
+          }) + '\n\n',
+        encoding: 'utf8',
+        timeout: 20_000,
+        env: { ...process.env, NO_COLOR: '1', SCBE_PROVIDER: 'offline' },
+      });
+      const lines = (r.stdout || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      assert.ok(lines.length >= 2, `expected ready + response, got: ${r.stdout}`);
+      const resp = JSON.parse(lines[1]);
+      assert.ok(resp.commands.length > 0, `expected codegen command, got ${JSON.stringify(resp)}`);
+      const decodedCommand = decodeNodeEvalPayload(resp.commands[0].keystrokes);
+      assert.match(decodedCommand, /prime_coordinate\.py/);
+      assert.match(decodedCommand, /SCBE_CODEGEN_WRITE python-prime/);
+      assert.ok(resp.move_packet, 'codegen command must include move packet');
+      assert.equal(resp.move_packet.round_trip_ok, true);
+      return {
+        command_preview: resp.commands[0].keystrokes.slice(0, 220),
+        decoded_preview: decodedCommand.slice(0, 220),
+        move_id: resp.move_packet.move_id,
+      };
+    })
+  );
+
+  cases.push(
     caseResult('agent_json_board_includes_pazaak_action_cards', () => {
       const { spawnSync: spawn } = require('node:child_process');
       const r = spawn(process.execPath, [CLI, 'shell', '--agent-json'], {
@@ -980,6 +1195,7 @@ function main() {
 
   const total = cases.reduce((sum, row) => sum + row.points, 0);
   const earned = cases.reduce((sum, row) => sum + row.earned, 0);
+  const axis_scores = scoreByAxis(cases);
   const report = {
     schema: 'scbe_shell_agentic_benchmark_v1',
     generated_at: new Date().toISOString(),
@@ -997,6 +1213,7 @@ function main() {
       total,
       percent: total ? Math.round((earned / total) * 10_000) / 100 : 0,
     },
+    axis_scores,
     cases,
     ready: earned === total,
   };

@@ -1,6 +1,9 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
 
-if [ -x packages/agent-bus/node_modules/.bin/lint-staged ]; then
-  cd packages/agent-bus && ./node_modules/.bin/lint-staged
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+agent_bus_dir="$repo_root/packages/agent-bus"
+lint_staged="$agent_bus_dir/node_modules/.bin/lint-staged"
+
+if [ -x "$lint_staged" ]; then
+  cd "$agent_bus_dir" && "$lint_staged"
 fi

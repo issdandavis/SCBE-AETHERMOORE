@@ -17,7 +17,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -129,18 +128,22 @@ def run_task(task: ExternalEvalTask, execute: bool) -> dict[str, Any]:
         task.verify_command,
         cwd=REPO_ROOT,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         timeout=600,
         check=False,
     )
+    stdout = proc.stdout or ""
+    stderr = proc.stderr or ""
     return {
         **base,
         "status": "executed",
         "ok": proc.returncode == 0,
         "returncode": proc.returncode,
-        "stdout_tail": proc.stdout[-2500:],
-        "stderr_tail": proc.stderr[-2500:],
+        "stdout_tail": stdout[-2500:],
+        "stderr_tail": stderr[-2500:],
     }
 
 
@@ -156,7 +159,10 @@ def write_report(
         "ok": all(row.get("ok") for row in results),
         "limits": [
             "SWE-bench and Terminal-Bench parity is not claimed until their official task runners are wired.",
-            "Docker/GitHub Actions sandboxes are represented as policy here; this local script only executes host verifiers.",
+            (
+                "Docker/GitHub Actions sandboxes are represented as policy here; "
+                "this local script only executes host verifiers."
+            ),
         ],
         "results": results,
     }
