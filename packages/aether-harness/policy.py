@@ -85,7 +85,8 @@ CATALOG: List[Rule] = [
     # --- destroy the filesystem -------------------------------------------- #
     Rule("recursive-force-delete", "destructive-fs", BLOCK,
          "recursively force-deletes files",
-         pattern=r"\brm\s+(-[a-z]*r[a-z]*f|-[a-z]*f[a-z]*r|-r\s+-f|-f\s+-r)\b"),
+         pattern=r"\brm\s+(-[a-z]*r[a-z]*f|-[a-z]*f[a-z]*r|-r\s+-f|-f\s+-r)\b"
+                 r"|\brm\b(?=[^\n]*--recursive)(?=[^\n]*--force)"),
     Rule("powershell-recursive-delete", "destructive-fs", BLOCK,
          "recursively force-deletes via PowerShell",
          pattern=r"\bremove-item\b.*-recurse\b|\bri\b.*-recurse\b.*-force\b"),
@@ -110,7 +111,16 @@ CATALOG: List[Rule] = [
     # --- exfiltrate secrets ------------------------------------------------ #
     Rule("secret-file-exfil", "exfiltration", BLOCK,
          "uploads a credential/secret file off-box",
-         pattern=r"\b(curl|wget|scp|rsync|nc|ncat)\b[^\n]*(@|\b)(id_rsa|id_ed25519|\.ssh/|\.aws/credentials|\.env\b|/etc/shadow|\.pem\b|\.p12\b|secret|password)"),
+         pattern=r"\b(curl|wget|scp|rsync|nc|ncat)\b[^\n]*(id_rsa|id_ed25519|\.ssh/|\.aws/credentials|\.env\b|/etc/shadow|\.pem\b|\.p12\b|secret|password)"),
+    Rule("reverse-shell", "remote-exec", BLOCK,
+         "opens a reverse shell to a remote host",
+         pattern=r"\bnc\b[^\n]*-e\b|\bncat\b[^\n]*-e\b|/dev/tcp/|\bbash\b[^\n]*-i\b[^\n]*>&|\bmkfifo\b[^\n]*\|[^\n]*(sh|bash)\b"),
+    Rule("decode-pipe-exec", "remote-exec", BLOCK,
+         "decodes obfuscated text straight into a shell",
+         pattern=r"\b(base64|xxd|openssl\s+enc)\b[^\n]*\|\s*(sh|bash|zsh|powershell|pwsh)\b"),
+    Rule("secret-sweep", "exfiltration", BLOCK,
+         "mass-reads secret files via find -exec",
+         pattern=r"\bfind\b[^\n]*(\.key|\.pem|id_rsa|id_ed25519|shadow|\.env)[^\n]*-exec[^\n]*\b(cat|cp|scp|nc|tee)\b"),
     Rule("download-pipe-exec", "remote-exec", BLOCK,
          "downloads code and pipes it straight into a shell",
          pattern=r"\b(curl|wget|iwr|invoke-webrequest)\b[^\n]*\|\s*(sh|bash|zsh|powershell|pwsh|iex|python)\b"),
