@@ -52,12 +52,11 @@ def spectral_coherence_demo():
     epsilon = 1e-10
     S_spec = E_low / (E_low + E_high + epsilon)
 
-    print(f"\nTest signal: sin(2pi*5t) + 0.3*sin(2pi*200t)")
+    print("\nTest signal: sin(2pi*5t) + 0.3*sin(2pi*200t)")
     print(f"Cutoff frequency: {f_cutoff} Hz")
 
-    print(f"\n--- CORRECT PROOF ---")
-    print(
-        f"""
+    print("\n--- CORRECT PROOF ---")
+    print("""
 Key Property: Energy partition is invariant (Parseval's theorem)
 
 Detailed Proof:
@@ -79,10 +78,9 @@ Detailed Proof:
    not on phase (|X[k]|^2 discards phase information)
 
 5. Stability: epsilon prevents division by zero for silent signals
-"""
-    )
+""")
 
-    print(f"\n--- NUMERICAL VERIFICATION ---")
+    print("\n--- NUMERICAL VERIFICATION ---")
     print(f"E_low  = {E_low:.4f}")
     print(f"E_high = {E_high:.4f}")
     print(f"E_total = {E_total:.4f}")
@@ -92,13 +90,13 @@ Detailed Proof:
     time_energy = np.sum(signal**2)
     freq_energy = np.sum(np.abs(X) ** 2) / N
 
-    print(f"\nParseval verification:")
+    print("\nParseval verification:")
     print(f"  Time-domain energy: {time_energy:.4f}")
     print(f"  Freq-domain energy: {freq_energy:.4f}")
     print(f"  Relative error: {abs(time_energy - freq_energy)/time_energy:.2e}")
 
     # Phase invariance check
-    print(f"\n--- PHASE INVARIANCE CHECK ---")
+    print("\n--- PHASE INVARIANCE CHECK ---")
     # Shift signal phase
     signal_shifted = np.sin(2 * np.pi * low_freq * t + np.pi / 3) + 0.3 * np.sin(2 * np.pi * high_freq * t + np.pi / 2)
     X_shifted = fft(signal_shifted)
@@ -111,7 +109,7 @@ Detailed Proof:
     print(f"Original S_spec:      {S_spec:.6f}")
     print(f"Phase-shifted S_spec: {S_spec_shifted:.6f}")
     print(f"|difference|:         {abs(S_spec - S_spec_shifted):.2e}")
-    print(f"Phase invariance: VERIFIED (S_spec depends only on |X[k]|^2)")
+    print("Phase invariance: VERIFIED (S_spec depends only on |X[k]|^2)")
 
     return S_spec
 
@@ -146,26 +144,24 @@ def stft_coherence():
     r_HF = np.sum(P[f_cutoff_idx:, :], axis=0) / (np.sum(P, axis=0) + 1e-10)
     S_audio = 1 - r_HF
 
-    print(f"\nChirp signal: frequency 10->200 Hz over 2 seconds")
-    print(f"Cutoff: 100 Hz")
+    print("\nChirp signal: frequency 10->200 Hz over 2 seconds")
+    print("Cutoff: 100 Hz")
 
-    print(f"\nS_audio over time (sampled frames):")
+    print("\nS_audio over time (sampled frames):")
     for i in [0, len(times) // 4, len(times) // 2, 3 * len(times) // 4, -1]:
         print(
             f"  t={times[i]:.2f}s: S_audio = {S_audio[i]:.4f} "
             f"({'low freq dominant' if S_audio[i] > 0.5 else 'high freq dominant'})"
         )
 
-    print(
-        f"""
+    print("""
 Proof (Parseval for STFT):
 - STFT: X[m,k] = Sum x[n] w[n-m] e^(-i2pi*k*n/N)
 - Per-frame energy: Sum_k |X[m,k]|^2 = Sum_n |x[n] w[n-m]|^2 (Parseval)
 - Overlap-add reconstruction preserves total energy
 - r_HF = (high-freq energy) / (total energy) in [0,1]
 - S_audio = 1 - r_HF in [0,1], decreases as signal shifts to high frequencies
-"""
-    )
+""")
 
 
 def compute_spectral_coherence(signal: np.ndarray, fs: float, f_cutoff: float) -> float:

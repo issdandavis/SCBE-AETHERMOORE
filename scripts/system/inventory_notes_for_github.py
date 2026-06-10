@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-
 DEFAULT_GLOBS = ("**/*.md", "**/*.txt")
 DEFAULT_EXCLUDES = {
     ".git",

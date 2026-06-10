@@ -22,7 +22,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_WORKSPACE_URL = "https://notebooklm.google.com/"
 DEFAULT_ARTIFACT_DIR = REPO_ROOT / "artifacts" / "notebooklm"
@@ -253,7 +252,7 @@ def _js_create_notebook(workspace_url: str, title: str) -> str:
     workspace_lit = json.dumps(workspace_url)
     title_lit = json.dumps(title)
     return (
-        f"const wait=(ms)=>new Promise(r=>setTimeout(r,ms));"
+        "const wait=(ms)=>new Promise(r=>setTimeout(r,ms));"
         f"await page.goto({workspace_lit},{{waitUntil:'domcontentloaded'}});"
         "await wait(1000);"
         "const buttons=["
@@ -272,7 +271,8 @@ def _js_create_notebook(workspace_url: str, title: str) -> str:
         "page.getByRole('textbox',{name:/title/i}),"
         "page.locator('[contenteditable=\"true\"]')"
         "];"
-        "for(const t of titleFields){if(await t.count()){try{await t.first().click();await t.first().fill(desiredTitle);break;}catch(_err){}}}"
+        "for(const t of titleFields){if(await t.count()){try{await t.first().click();"
+        "await t.first().fill(desiredTitle);break;}catch(_err){}}}"
         "}"
         "console.log(JSON.stringify({ok:true, notebook_url:page.url(), page_title:await page.title()}));"
     )
@@ -282,7 +282,7 @@ def _js_add_source_url(notebook_url: str, source_url: str) -> str:
     notebook_lit = json.dumps(notebook_url)
     source_lit = json.dumps(source_url)
     return (
-        f"const wait=(ms)=>new Promise(r=>setTimeout(r,ms));"
+        "const wait=(ms)=>new Promise(r=>setTimeout(r,ms));"
         f"await page.goto({notebook_lit},{{waitUntil:'domcontentloaded'}});"
         "await wait(1200);"
         "const addButtons=["
@@ -297,9 +297,11 @@ def _js_add_source_url(notebook_url: str, source_url: str) -> str:
         "const tabs=[page.getByRole('button',{name:/website|link|url/i}),page.getByText(/website|link|url/i)];"
         "for(const t of tabs){if(await t.count()){try{await t.first().click();break;}catch(_err){}}}"
         f"const src={source_lit};"
-        "const inputs=[page.locator('input[type=\"url\"]'),page.locator('input[placeholder*=\"http\" i]'),page.getByRole('textbox')];"
+        "const inputs=[page.locator('input[type=\"url\"]'),"
+        "page.locator('input[placeholder*=\"http\" i]'),page.getByRole('textbox')];"
         "let typed=false;"
-        "for(const i of inputs){if(await i.count()){try{await i.first().click();await i.first().fill(src);await i.first().press('Enter');typed=true;break;}catch(_err){}}}"
+        "for(const i of inputs){if(await i.count()){try{await i.first().click();"
+        "await i.first().fill(src);await i.first().press('Enter');typed=true;break;}catch(_err){}}}"
         "if(!typed){throw new Error('Source URL input not found.');}"
         "await wait(1400);"
         "console.log(JSON.stringify({ok:true, notebook_url:page.url(), source_url:src}));"
@@ -309,12 +311,13 @@ def _js_add_source_url(notebook_url: str, source_url: str) -> str:
 def _js_view_notebook(notebook_url: str, preview_chars: int) -> str:
     notebook_lit = json.dumps(notebook_url)
     return (
-        f"const wait=(ms)=>new Promise(r=>setTimeout(r,ms));"
+        "const wait=(ms)=>new Promise(r=>setTimeout(r,ms));"
         f"await page.goto({notebook_lit},{{waitUntil:'domcontentloaded'}});"
         "await wait(1200);"
         f"const maxChars={int(max(100, preview_chars))};"
         "const body=(document.body && document.body.innerText) ? document.body.innerText : '';"
-        "console.log(JSON.stringify({ok:true, notebook_url:page.url(), page_title:await page.title(), preview:body.slice(0,maxChars)}));"
+        "console.log(JSON.stringify({ok:true, notebook_url:page.url(), "
+        "page_title:await page.title(), preview:body.slice(0,maxChars)}));"
     )
 
 
@@ -322,7 +325,7 @@ def _js_submit_prompt(notebook_url: str, prompt: str) -> str:
     notebook_lit = json.dumps(notebook_url)
     prompt_lit = json.dumps(prompt)
     return (
-        f"const wait=(ms)=>new Promise(r=>setTimeout(r,ms));"
+        "const wait=(ms)=>new Promise(r=>setTimeout(r,ms));"
         f"await page.goto({notebook_lit},{{waitUntil:'domcontentloaded'}});"
         "await wait(1200);"
         f"const p={prompt_lit};"
@@ -332,11 +335,13 @@ def _js_submit_prompt(notebook_url: str, prompt: str) -> str:
         "page.locator('[contenteditable=\"true\"]')"
         "];"
         "let sent=false;"
-        "for(const i of inputs){if(await i.count()){try{await i.first().click();await i.first().fill(p);await i.first().press('Enter');sent=true;break;}catch(_err){}}}"
+        "for(const i of inputs){if(await i.count()){try{await i.first().click();"
+        "await i.first().fill(p);await i.first().press('Enter');sent=true;break;}catch(_err){}}}"
         "if(!sent){throw new Error('Notebook prompt input not found.');}"
         "await wait(2600);"
         "const body=(document.body && document.body.innerText) ? document.body.innerText : '';"
-        "console.log(JSON.stringify({ok:true, notebook_url:page.url(), prompt_submitted:true, preview:body.slice(0,1200)}));"
+        "console.log(JSON.stringify({ok:true, notebook_url:page.url(), "
+        "prompt_submitted:true, preview:body.slice(0,1200)}));"
     )
 
 

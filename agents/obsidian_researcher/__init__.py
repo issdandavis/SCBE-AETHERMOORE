@@ -15,11 +15,21 @@ from .knowledge_graph import KnowledgeGraph, GraphNode, GraphEdge
 from .byproduct_logger import ByproductLogger
 
 __all__ = [
-    "SourceType", "IngestionResult", "SourceAdapter",
-    "CrossReferenceEngine", "WikiLink", "LinkType",
-    "NoteRenderer", "VaultManager",
-    "CoverageMap", "ConceptCoverage",
-    "PodcastGenerator", "PodcastScript", "PodcastSegment",
-    "KnowledgeGraph", "GraphNode", "GraphEdge",
+    "SourceType",
+    "IngestionResult",
+    "SourceAdapter",
+    "CrossReferenceEngine",
+    "WikiLink",
+    "LinkType",
+    "NoteRenderer",
+    "VaultManager",
+    "CoverageMap",
+    "ConceptCoverage",
+    "PodcastGenerator",
+    "PodcastScript",
+    "PodcastSegment",
+    "KnowledgeGraph",
+    "GraphNode",
+    "GraphEdge",
     "ByproductLogger",
 ]

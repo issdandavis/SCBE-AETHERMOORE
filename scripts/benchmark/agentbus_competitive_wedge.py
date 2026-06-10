@@ -92,9 +92,7 @@ def _write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
 
 
-def _run_subprocess(
-    command: list[str], *, cwd: Path, timeout: int = 60
-) -> tuple[int, str, str, int]:
+def _run_subprocess(command: list[str], *, cwd: Path, timeout: int = 60) -> tuple[int, str, str, int]:
     start = time.perf_counter()
     proc = subprocess.run(
         command,
@@ -227,35 +225,20 @@ def score_baseline(result: LaneResult) -> dict[str, Any]:
 
 def score_bus(result: LaneResult) -> dict[str, Any]:
     payload = result.payload
-    artifacts = (
-        payload.get("artifacts", {})
-        if isinstance(payload.get("artifacts"), dict)
-        else {}
-    )
-    dispatch = (
-        payload.get("dispatch", {}) if isinstance(payload.get("dispatch"), dict) else {}
-    )
-    operation = (
-        payload.get("operation_shape", {})
-        if isinstance(payload.get("operation_shape"), dict)
-        else {}
-    )
+    artifacts = payload.get("artifacts", {}) if isinstance(payload.get("artifacts"), dict) else {}
+    dispatch = payload.get("dispatch", {}) if isinstance(payload.get("dispatch"), dict) else {}
+    operation = payload.get("operation_shape", {}) if isinstance(payload.get("operation_shape"), dict) else {}
     checks = {
-        "task_completed": result.ok
-        and payload.get("schema_version") == "scbe_agentbus_user_run_v1",
+        "task_completed": result.ok and payload.get("schema_version") == "scbe_agentbus_user_run_v1",
         "provider_selected": bool(payload.get("selected_provider")),
-        "operation_shape": operation.get("root_value") == 12026
-        and bool(operation.get("signature_hex")),
-        "dispatch_event": dispatch.get("enabled") is True
-        and bool(dispatch.get("event_id")),
+        "operation_shape": operation.get("root_value") == 12026 and bool(operation.get("signature_hex")),
+        "dispatch_event": dispatch.get("enabled") is True and bool(dispatch.get("event_id")),
         "mirror_round_artifact": _path_exists(artifacts.get("latest_round")),
         "file_snapshot_artifact": _path_exists(artifacts.get("tracker_snapshot")),
         "observable_state_artifact": _path_exists(artifacts.get("watcher")),
         "recovery_artifact": _path_exists(artifacts.get("summary")),
-        "deterministic_signature": operation.get("floating_point_policy")
-        == "forbidden for consensus signatures",
-        "local_private": payload.get("privacy") == "local_only"
-        and dispatch.get("route", {}).get("privacy") == "local",
+        "deterministic_signature": operation.get("floating_point_policy") == "forbidden for consensus signatures",
+        "local_private": payload.get("privacy") == "local_only" and dispatch.get("route", {}).get("privacy") == "local",
         "zero_cost": float(payload.get("budget_cents", 1.0)) == 0.0,
     }
     return _score_checks(result, checks)
@@ -276,9 +259,7 @@ def _score_checks(result: LaneResult, checks: dict[str, bool]) -> dict[str, Any]
     }
 
 
-def build_report(
-    *, out_dir: Path = DEFAULT_OUT, run_id: str | None = None
-) -> dict[str, Any]:
+def build_report(*, out_dir: Path = DEFAULT_OUT, run_id: str | None = None) -> dict[str, Any]:
     run_id = run_id or datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_dir = out_dir / run_id
     baseline_results = [run_baseline(task) for task in TASKS]
@@ -286,14 +267,10 @@ def build_report(
     baseline_scores = [score_baseline(result) for result in baseline_results]
     bus_scores = [score_bus(result) for result in bus_results]
 
-    baseline_avg = round(
-        sum(item["score"] for item in baseline_scores) / len(baseline_scores), 4
-    )
+    baseline_avg = round(sum(item["score"] for item in baseline_scores) / len(baseline_scores), 4)
     bus_avg = round(sum(item["score"] for item in bus_scores) / len(bus_scores), 4)
     lift = round(bus_avg - baseline_avg, 4)
-    bus_wins = sum(
-        1 for b, s in zip(baseline_scores, bus_scores) if s["score"] > b["score"]
-    )
+    bus_wins = sum(1 for b, s in zip(baseline_scores, bus_scores) if s["score"] > b["score"])
 
     report = {
         "schema_version": "scbe_agentbus_competitive_wedge_v1",
@@ -306,9 +283,7 @@ def build_report(
             "baseline_avg": baseline_avg,
             "scbe_bus_avg": bus_avg,
             "absolute_lift": lift,
-            "relative_lift_pct": (
-                round((lift / baseline_avg) * 100, 2) if baseline_avg else None
-            ),
+            "relative_lift_pct": (round((lift / baseline_avg) * 100, 2) if baseline_avg else None),
             "bus_wins": bus_wins,
             "task_count": len(TASKS),
             "decision": "PASS" if bus_wins == len(TASKS) and bus_avg >= 0.9 else "HOLD",
@@ -374,9 +349,7 @@ def _render_markdown(report: dict[str, Any]) -> str:
     baseline_by_id = {item["task_id"]: item for item in report["baseline_scores"]}
     for item in report["scbe_bus_scores"]:
         task_id = item["task_id"]
-        lines.append(
-            f"| `{task_id}` | `{baseline_by_id[task_id]['score']}` | `{item['score']}` |"
-        )
+        lines.append(f"| `{task_id}` | `{baseline_by_id[task_id]['score']}` | `{item['score']}` |")
     lines.extend(
         [
             "",

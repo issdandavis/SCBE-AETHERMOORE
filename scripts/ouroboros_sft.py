@@ -109,7 +109,8 @@ def governance_pairs() -> List[Dict[str, Any]]:
     pairs.append(
         _pair(
             "ouroboros-governance",
-            "What are the four governance symbols in the SCBE-AETHERMOORE FSGS (Four-State Governance Symbol) system, and how are they encoded?",
+            "What are the four governance symbols in the SCBE-AETHERMOORE FSGS "
+            "(Four-State Governance Symbol) system, and how are they encoded?",
             (
                 "The FSGS control alphabet consists of four symbols encoded as (magnitude, sign) bit-pairs "
                 "sigma = (m, s) in {0,1}^2:\n\n"
@@ -129,7 +130,8 @@ def governance_pairs() -> List[Dict[str, Any]]:
     pairs.append(
         _pair(
             "ouroboros-governance",
-            "What governance decision does SCBE-AETHERMOORE make when the MINUS_ZERO (-0) symbol is applied and the risk score is >= 0.5?",
+            "What governance decision does SCBE-AETHERMOORE make when the MINUS_ZERO (-0) symbol "
+            "is applied and the risk score is >= 0.5?",
             (
                 "When the MINUS_ZERO symbol is applied, the mode_transition function "
                 "delta(q, sigma, x) checks the risk_score parameter:\n\n"
@@ -655,7 +657,7 @@ def invariant_pairs() -> List[Dict[str, Any]]:
                 "6. Abstain votes do NOT count toward quorum -- they effectively reduce "
                 "the available vote pool, making consensus harder to reach."
             ),
-            f"src/symphonic_cipher/scbe_aethermoore/ai_brain/bft_consensus.py",
+            "src/symphonic_cipher/scbe_aethermoore/ai_brain/bft_consensus.py",
         )
     )
 
@@ -687,7 +689,8 @@ def invariant_pairs() -> List[Dict[str, Any]]:
     pairs.append(
         _pair(
             "ouroboros-invariants",
-            "What invariant does the safe_poincare_embed function guarantee, and how does it fix the Theorem 3 boundary failure?",
+            "What invariant does the safe_poincare_embed function guarantee, "
+            "and how does it fix the Theorem 3 boundary failure?",
             (
                 "safe_poincare_embed guarantees strict containment inside the Poincare ball:\n\n"
                 "Formula: exp_0(v) = tanh(||v||/2) * v/||v||\n\n"

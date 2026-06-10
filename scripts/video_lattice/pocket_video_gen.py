@@ -82,7 +82,11 @@ def _render_pose_png(
     verdict: str,
     worst_chain: str | None,
 ) -> None:
-    sketch = render_hand_sketch(landmarks, width=512, height=512) if pose_type == "hand" else render_body_sketch(landmarks, width=512, height=512)
+    sketch = (
+        render_hand_sketch(landmarks, width=512, height=512)
+        if pose_type == "hand"
+        else render_body_sketch(landmarks, width=512, height=512)
+    )
     tmp = path.with_suffix(".sketch.png")
     sketch.save_png(tmp)
 
@@ -232,13 +236,19 @@ def main(argv: list[str] | None = None) -> int:
         out_dir=args.out_dir,
         duration_ms=args.duration_ms,
     )
-    print(json.dumps({
-        "animation_gif": manifest["animation_gif"],
-        "frames_dir": manifest["frames_dir"],
-        "frame_count": manifest["frame_count"],
-        "first_drift": manifest["frames"][0]["drift"],
-        "last_drift": manifest["frames"][-1]["drift"],
-    }, indent=2, sort_keys=True))
+    print(
+        json.dumps(
+            {
+                "animation_gif": manifest["animation_gif"],
+                "frames_dir": manifest["frames_dir"],
+                "frame_count": manifest["frame_count"],
+                "first_drift": manifest["frames"][0]["drift"],
+                "last_drift": manifest["frames"][-1]["drift"],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
     return 0
 
 

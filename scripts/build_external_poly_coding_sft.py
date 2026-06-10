@@ -109,7 +109,9 @@ def _python_code(task_id: str) -> str:
 
 def _typescript_code(task_id: str) -> str:
     if task_id == "external_safe_divide":
-        return "export function safeDivide(a: number, b: number): number | null {\n  return b === 0 ? null : a / b;\n}\n"
+        return (
+            "export function safeDivide(a: number, b: number): number | null {\n  return b === 0 ? null : a / b;\n}\n"
+        )
     if task_id == "external_parse_json_name":
         return (
             "export function parseJsonName(payload: string): string | null {\n"
@@ -148,7 +150,7 @@ def _rust_code(task_id: str) -> str:
         return (
             "fn parse_json_name(payload: &str) -> Option<String> {\n"
             "    let data: serde_json::Value = serde_json::from_str(payload).ok()?;\n"
-            "    data.get(\"name\")?.as_str().map(|s| s.to_string())\n"
+            '    data.get("name")?.as_str().map(|s| s.to_string())\n'
             "}\n"
         )
     if task_id == "external_grid_neighbors":
@@ -190,7 +192,9 @@ def _c_code(task_id: str) -> str:
 
 def _haskell_code(task_id: str) -> str:
     if task_id == "external_safe_divide":
-        return "safeDivide :: Double -> Double -> Maybe Double\nsafeDivide _ 0 = Nothing\nsafeDivide a b = Just (a / b)\n"
+        return (
+            "safeDivide :: Double -> Double -> Maybe Double\nsafeDivide _ 0 = Nothing\nsafeDivide a b = Just (a / b)\n"
+        )
     if task_id == "external_patch_bounds_check":
         return "readAt :: [a] -> Int -> Maybe a\nreadAt xs i | i < 0 = Nothing\nreadAt xs i = if i >= length xs then Nothing else Just (xs !! i)\n"
     return "-- Haskell lens planned: preserve Maybe-based guard behavior.\n"

@@ -21,7 +21,6 @@ from argparse import ArgumentParser
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote_plus
 
-
 HF_ROOT = "https://huggingface.co"
 SURFACE_CONFIGS: Dict[str, Dict[str, str]] = {
     "models": {

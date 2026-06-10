@@ -29,6 +29,7 @@ from .vision_embedding import VisionEmbedder, create_vision_embedder
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 # API key validation (supports env-driven config + legacy defaults)
 def _load_browser_api_keys() -> Dict[str, str]:
     """
@@ -73,6 +74,7 @@ def _load_browser_api_keys() -> Dict[str, str]:
 
 VALID_API_KEYS = _load_browser_api_keys()
 
+
 # Optional token-decoding support for encoded keys.
 # Examples:
 # - Header-driven: X-SCBE-Token-Encoding: base64url
@@ -116,10 +118,7 @@ def _decode_with_mode(value: str, mode: str) -> Optional[str]:
             if not TOKEN_DECODER_SECRET:
                 return None
             blob = base64.urlsafe_b64decode(_b64pad(value))
-            plain = bytes(
-                b ^ TOKEN_DECODER_SECRET[i % len(TOKEN_DECODER_SECRET)]
-                for i, b in enumerate(blob)
-            )
+            plain = bytes(b ^ TOKEN_DECODER_SECRET[i % len(TOKEN_DECODER_SECRET)] for i, b in enumerate(blob))
             return plain.decode("utf-8")
     except Exception:
         return None
@@ -169,7 +168,9 @@ def _expand_api_key_candidates(token: str, encoding_hint: Optional[str]) -> List
     return candidates
 
 
-def _extract_api_key(x_api_key: Optional[str], scbe_api_key: Optional[str], authorization: Optional[str]) -> Optional[str]:
+def _extract_api_key(
+    x_api_key: Optional[str], scbe_api_key: Optional[str], authorization: Optional[str]
+) -> Optional[str]:
     if x_api_key:
         return x_api_key.strip()
     if scbe_api_key:
@@ -202,6 +203,7 @@ async def verify_api_key(
 
 class N8nBrowseAction(BaseModel):
     """Compact action payload accepted by n8n webhook bridge."""
+
     action: BrowseActionType
     target: str = Field(..., description="URL, CSS selector, or direction.")
     value: Optional[str] = None
@@ -218,6 +220,7 @@ class N8nBrowseAction(BaseModel):
 
 class N8nBrowseRequest(BaseModel):
     """Payload expected from n8n."""
+
     actions: List[N8nBrowseAction] = Field(..., min_length=1, max_length=10)
     session_id: Optional[str] = None
     dry_run: bool = False
@@ -246,9 +249,7 @@ async def lifespan(app: FastAPI):
     _phdm = create_phdm_brain(safe_radius=0.92, dim=16)
     _embedder = await create_vision_embedder(target_dim=16)
 
-    logger.info(
-        f"PHDM Brain initialized: safe_radius={_phdm.safe_radius}, dim={_phdm.dim}"
-    )
+    logger.info(f"PHDM Brain initialized: safe_radius={_phdm.safe_radius}, dim={_phdm.dim}")
 
     yield
 
@@ -277,7 +278,7 @@ app = FastAPI(
     Core loop: Observe → Embed to Poincaré ball → Check safety → Execute if safe
     """,
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 
@@ -285,8 +286,10 @@ app = FastAPI(
 # Request/Response Models
 # ============================================================================
 
+
 class BrowseActionType(str, Enum):
     """Supported browser action types."""
+
     NAVIGATE = "navigate"
     CLICK = "click"
     TYPE = "type"
@@ -297,13 +300,14 @@ class BrowseActionType(str, Enum):
 
 class BrowseAction(BaseModel):
     """Single browser action to execute."""
+
     action: BrowseActionType
     target: str = Field(..., description="URL, CSS selector, or scroll direction")
     value: Optional[str] = Field(None, description="Text to type (for TYPE action)")
     timeout_ms: Optional[int] = Field(None, ge=1000, le=60000)
     include_full_data: bool = Field(False, description="Include full screenshot payload for HITL inspection")
 
-    @field_validator('target')
+    @field_validator("target")
     @classmethod
     def validate_target(cls, v):
         if not v or not v.strip():
@@ -313,18 +317,15 @@ class BrowseAction(BaseModel):
 
 class BrowseRequest(BaseModel):
     """Request to execute browser actions."""
-    actions: List[BrowseAction] = Field(
-        ...,
-        min_length=1,
-        max_length=10,
-        description="List of actions to execute"
-    )
+
+    actions: List[BrowseAction] = Field(..., min_length=1, max_length=10, description="List of actions to execute")
     session_id: Optional[str] = Field(None, description="Session ID for continuity")
     dry_run: bool = Field(False, description="Check safety without executing")
 
 
 class ContainmentInfo(BaseModel):
     """Containment check information."""
+
     decision: str
     radius: float
     hyperbolic_distance: float
@@ -335,6 +336,7 @@ class ContainmentInfo(BaseModel):
 
 class ActionResult(BaseModel):
     """Result of a single action."""
+
     action: str
     target: str
     success: bool
@@ -346,6 +348,7 @@ class ActionResult(BaseModel):
 
 class BrowseResponse(BaseModel):
     """Response from browse endpoint."""
+
     status: str
     session_id: str
     total_actions: int
@@ -357,6 +360,7 @@ class BrowseResponse(BaseModel):
 
 class SafetyCheckRequest(BaseModel):
     """Request to check action safety without browser."""
+
     action: BrowseActionType
     target: str
     context: Optional[str] = Field(None, description="Optional page context")
@@ -364,6 +368,7 @@ class SafetyCheckRequest(BaseModel):
 
 class SafetyCheckResponse(BaseModel):
     """Safety check result."""
+
     containment: ContainmentInfo
     would_execute: bool
     trace: str
@@ -371,6 +376,7 @@ class SafetyCheckResponse(BaseModel):
 
 class HealthResponse(BaseModel):
     """Health check response."""
+
     status: str
     phdm_ready: bool
     embedder_ready: bool
@@ -383,6 +389,7 @@ class HealthResponse(BaseModel):
 # ============================================================================
 # Core Browse Logic
 # ============================================================================
+
 
 def _touch_browser_session(session_id: str) -> None:
     if session_id in _browser_lru:
@@ -409,11 +416,7 @@ async def ensure_browser(session_id: str) -> PlaywrightWrapper:
             except Exception:
                 logger.exception("Failed to close evicted browser session %s", evicted_sid)
 
-        config = BrowserConfig(
-            headless=True,
-            default_timeout_ms=30000,
-            max_actions_per_session=100
-        )
+        config = BrowserConfig(headless=True, default_timeout_ms=30000, max_actions_per_session=100)
         browser = PlaywrightWrapper(config)
         await browser.initialize()
         _session_browsers[session_id] = browser
@@ -422,10 +425,7 @@ async def ensure_browser(session_id: str) -> PlaywrightWrapper:
         return browser
 
 
-async def check_action_safety(
-    action: BrowseAction,
-    context_embedding: Optional[any] = None
-) -> ContainmentResult:
+async def check_action_safety(action: BrowseAction, context_embedding: Optional[any] = None) -> ContainmentResult:
     """
     Check if an action is safe to execute.
 
@@ -443,9 +443,7 @@ async def check_action_safety(
     """
     # Embed the action
     embedding_result = await _embedder.embed_action(
-        action_type=action.action.value,
-        target=action.target,
-        context_embedding=context_embedding
+        action_type=action.action.value, target=action.target, context_embedding=context_embedding
     )
 
     # Check containment
@@ -454,10 +452,7 @@ async def check_action_safety(
     return containment
 
 
-async def execute_action(
-    browser: PlaywrightWrapper,
-    action: BrowseAction
-) -> Dict[str, Any]:
+async def execute_action(browser: PlaywrightWrapper, action: BrowseAction) -> Dict[str, Any]:
     """
     Execute a browser action and return results.
 
@@ -484,8 +479,7 @@ async def execute_action(
 
     elif action.action == BrowseActionType.SCREENSHOT:
         screenshot = await browser.screenshot(
-            selector=action.target if action.target != "full_page" else None,
-            timeout_ms=action.timeout_ms
+            selector=action.target if action.target != "full_page" else None, timeout_ms=action.timeout_ms
         )
         encoded = screenshot.to_base64()
         return {
@@ -493,7 +487,7 @@ async def execute_action(
             "truncated": not action.include_full_data,
             "width": screenshot.width,
             "height": screenshot.height,
-            "full_data_length": len(screenshot.data)
+            "full_data_length": len(screenshot.data),
         }
 
     elif action.action == BrowseActionType.SCROLL:
@@ -512,11 +506,9 @@ async def execute_action(
 # API Endpoints
 # ============================================================================
 
+
 @app.post("/v1/browse", response_model=BrowseResponse, tags=["Browser Agent"])
-async def browse(
-    request: BrowseRequest,
-    user: str = Depends(verify_api_key)
-):
+async def browse(request: BrowseRequest, user: str = Depends(verify_api_key)):
     """
     Execute browser actions with geometric containment safety.
 
@@ -563,14 +555,14 @@ async def browse(
             hyperbolic_distance=containment.hyperbolic_distance,
             risk_score=containment.risk_score,
             safe_radius=_phdm.safe_radius,
-            message=containment.message
+            message=containment.message,
         )
 
         # Determine if we should execute
-        should_execute = (
-            not request.dry_run and
-            containment.decision in [SafetyDecision.ALLOW, SafetyDecision.QUARANTINE]
-        )
+        should_execute = not request.dry_run and containment.decision in [
+            SafetyDecision.ALLOW,
+            SafetyDecision.QUARANTINE,
+        ]
 
         result_data = None
         error = None
@@ -596,15 +588,17 @@ async def browse(
 
         execution_ms = (time.time() - start_time) * 1000
 
-        results.append(ActionResult(
-            action=action.action.value,
-            target=action.target,
-            success=should_execute and error is None,
-            containment=containment_info,
-            data=result_data,
-            error=error,
-            execution_ms=execution_ms
-        ))
+        results.append(
+            ActionResult(
+                action=action.action.value,
+                target=action.target,
+                success=should_execute and error is None,
+                containment=containment_info,
+                data=result_data,
+                error=error,
+                execution_ms=execution_ms,
+            )
+        )
 
         # Update context for next action
         if containment.embedding is not None:
@@ -617,15 +611,12 @@ async def browse(
         executed_actions=executed,
         blocked_actions=blocked,
         results=results,
-        trace=f"v1_browse_{session_id}_{executed}exec_{blocked}block"
+        trace=f"v1_browse_{session_id}_{executed}exec_{blocked}block",
     )
 
 
 @app.post("/v1/integrations/n8n/browse", tags=["Browser Agent"])
-async def n8n_browse(
-    request: N8nBrowseRequest,
-    user: str = Depends(verify_api_key)
-):
+async def n8n_browse(request: N8nBrowseRequest, user: str = Depends(verify_api_key)):
     """
     n8n-optimized browser bridge.
 
@@ -656,18 +647,14 @@ async def n8n_browse(
 
 
 @app.post("/v1/safety-check", response_model=SafetyCheckResponse, tags=["Safety"])
-async def safety_check(
-    request: SafetyCheckRequest,
-    user: str = Depends(verify_api_key)
-):
+async def safety_check(request: SafetyCheckRequest, user: str = Depends(verify_api_key)):
     """
     Check if an action would be allowed without executing.
 
     Use this to pre-validate actions before submission.
     """
     containment = await check_action_safety(
-        BrowseAction(action=request.action, target=request.target),
-        context_embedding=None
+        BrowseAction(action=request.action, target=request.target), context_embedding=None
     )
 
     return SafetyCheckResponse(
@@ -677,10 +664,10 @@ async def safety_check(
             hyperbolic_distance=containment.hyperbolic_distance,
             risk_score=containment.risk_score,
             safe_radius=_phdm.safe_radius,
-            message=containment.message
+            message=containment.message,
         ),
         would_execute=containment.decision in [SafetyDecision.ALLOW, SafetyDecision.QUARANTINE],
-        trace=f"v1_safety_{containment.decision.value}_{containment.radius:.4f}"
+        trace=f"v1_safety_{containment.decision.value}_{containment.radius:.4f}",
     )
 
 
@@ -699,10 +686,7 @@ async def containment_stats(user: str = Depends(verify_api_key)):
         "dimension": _phdm.dim,
         "harmonic_base": _phdm.harmonic_base,
         "stats": stats,
-        "thresholds": {
-            "allow": _phdm.allow_threshold,
-            "quarantine": _phdm.quarantine_threshold
-        }
+        "thresholds": {"allow": _phdm.allow_threshold, "quarantine": _phdm.quarantine_threshold},
     }
 
 
@@ -727,10 +711,7 @@ async def reset_session(user: str = Depends(verify_api_key)):
     if _embedder:
         _embedder.clear_cache()
 
-    return {
-        "status": "success",
-        "message": "Session reset complete"
-    }
+    return {"status": "success", "message": "Session reset complete"}
 
 
 @app.get("/health", response_model=HealthResponse, tags=["System"])
@@ -747,7 +728,7 @@ async def health():
         browser_ready=any(browser._is_initialized for browser in _session_browsers.values()),
         safe_radius=_phdm.safe_radius if _phdm else 0.0,
         dimension=_phdm.dim if _phdm else 0,
-        containment_stats=_phdm.get_containment_stats() if _phdm else {}
+        containment_stats=_phdm.get_containment_stats() if _phdm else {},
     )
 
 
@@ -766,9 +747,9 @@ async def root():
             "safety_check": "POST /v1/safety-check",
             "stats": "GET /v1/containment-stats",
             "reset": "POST /v1/reset-session",
-            "health": "GET /health"
+            "health": "GET /health",
         },
-        "documentation": "/docs"
+        "documentation": "/docs",
     }
 
 
@@ -778,9 +759,5 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "agents.browser.main:app",
-        host="0.0.0.0",
-        port=8001,
-        reload=True
-    )
+
+    uvicorn.run("agents.browser.main:app", host="0.0.0.0", port=8001, reload=True)

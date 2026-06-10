@@ -7,7 +7,6 @@ from pathlib import Path
 
 from scripts.webtoon_gen import compile_panel_prompt
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROMPTS_DIR = REPO_ROOT / "artifacts" / "webtoon" / "panel_prompts"
 NOTEBOOK_PATH = REPO_ROOT / "notebooks" / "webtoon_panel_generation_embedded_colab.ipynb"
@@ -270,9 +269,7 @@ if DOWNLOAD_ZIP_TO_LOCAL:
             "accelerator": "GPU",
         },
         "cells": [
-            markdown_cell(
-                textwrap.dedent(
-                    f"""
+            markdown_cell(textwrap.dedent(f"""
                     # Webtoon Panel Generation - Embedded Remote Offload
 
                     This notebook is the remote-first version of the panel generator.
@@ -286,9 +283,7 @@ if DOWNLOAD_ZIP_TO_LOCAL:
                     - save outputs to Google Drive by default
                     - resume by skipping any panel image that already exists
                     - keep the heavy generation on Colab GPU instead of your local machine
-                    """
-                )
-            ),
+                    """)),
             code_cell("import json"),
             code_cell(embedded_cell),
             code_cell(setup_cell),

@@ -82,9 +82,7 @@ def _field_bundle(path: str, source: str, tests: str, issue: str) -> dict[str, s
     }
 
 
-def _score_terms(
-    schematic: RepairSchematic, fields: dict[str, str]
-) -> SchematicCandidate:
+def _score_terms(schematic: RepairSchematic, fields: dict[str, str]) -> SchematicCandidate:
     matched: list[str] = []
     route: list[int] = [schematic.prime]
     score = 0
@@ -265,9 +263,7 @@ def select_schematic(
         raise ValueError("no repair schematic matched the task evidence")
 
     top = candidates[0]
-    selected = next(
-        item for item in SCHEMATICS if item.schematic_id == top.schematic_id
-    )
+    selected = next(item for item in SCHEMATICS if item.schematic_id == top.schematic_id)
     return selected, candidates
 
 

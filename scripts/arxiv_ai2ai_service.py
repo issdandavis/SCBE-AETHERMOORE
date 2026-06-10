@@ -21,7 +21,6 @@ from hydra.arxiv_retrieval import AI2AIRetrievalService, ArxivAPIError
 from hydra.ledger import Ledger
 from hydra.librarian import Librarian
 
-
 app = FastAPI(
     title="SCBE HYDRA AI2AI arXiv Retrieval Service",
     version="0.1.0",

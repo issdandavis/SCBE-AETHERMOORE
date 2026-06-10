@@ -65,7 +65,7 @@ import json
 import sys
 import time
 from collections import Counter
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -1293,15 +1293,15 @@ def _markdown_report(agg: Dict[str, Any]) -> str:
         "",
         "### Deterministic Gate (regex + KO-tongue coverage)",
         "",
-        f"| Metric | Value |",
-        f"|--------|-------|",
-        f"| Adversarial catch rate | "
+        "| Metric | Value |",
+        "|--------|-------|",
+        "| Adversarial catch rate | "
         f"{agg['deterministic_gate']['catch_rate']:.1%} "
         f"({agg['deterministic_gate']['caught']}/{agg['corpus']['adversarial_total']}) |",
-        f"| False-allow rate (adversarial) | "
+        "| False-allow rate (adversarial) | "
         f"{agg['deterministic_gate']['false_allow_rate']:.1%} "
         f"({agg['deterministic_gate']['missed']}/{agg['corpus']['adversarial_total']}) |",
-        f"| False-positive rate (benign) | "
+        "| False-positive rate (benign) | "
         f"{agg['deterministic_gate']['fp_rate_on_benign']:.1%} "
         f"({agg['deterministic_gate']['fp_count_on_benign']}/{agg['corpus']['benign_total']}) |",
         "",
@@ -1318,7 +1318,6 @@ def _markdown_report(agg: Dict[str, Any]) -> str:
     if agg["llm_gate"]:
         lg = agg["llm_gate"]
         adv_n = agg["corpus"]["adversarial_total"]
-        bng_n = agg["corpus"]["benign_total"]
         combined_caught = int(round(lg["combined_catch_rate"] * adv_n))
         combined_far_pct = lg["combined_false_allow_rate"]
         far_lo = lg.get("combined_far_wilson_lo", 0.0)
@@ -1332,15 +1331,15 @@ def _markdown_report(agg: Dict[str, Any]) -> str:
             "",
             "### Full Two-Layer Gate — 2×2 Confusion Matrix",
             "",
-            f"| Metric | Value | 95% Wilson CI |",
-            f"|--------|-------|---------------|",
-            f"| Combined catch rate (adversarial) | "
+            "| Metric | Value | 95% Wilson CI |",
+            "|--------|-------|---------------|",
+            "| Combined catch rate (adversarial) | "
             f"{lg['combined_catch_rate']:.1%} ({combined_caught}/{adv_n}) | — |",
-            f"| **Combined false-allow rate (FAR)** | " f"**{combined_far_pct:.1%}** | [{far_lo:.1%}, {far_hi:.1%}] |",
-            f"| **Combined false-block rate (FBR)** | " f"**{combined_fbr_pct:.1%}** | [{fbr_lo:.1%}, {fbr_hi:.1%}] |",
-            f"| LLM caught of det-missed adversarial | "
+            "| **Combined false-allow rate (FAR)** | " f"**{combined_far_pct:.1%}** | [{far_lo:.1%}, {far_hi:.1%}] |",
+            "| **Combined false-block rate (FBR)** | " f"**{combined_fbr_pct:.1%}** | [{fbr_lo:.1%}, {fbr_hi:.1%}] |",
+            "| LLM caught of det-missed adversarial | "
             f"{lg['llm_caught_of_missed']}/{lg['det_missed_evaluated']} | — |",
-            f"| LLM blocked benign (false-block) | " f"{llm_bng_blocked}/{bng_evaluated} evaluated by LLM | — |",
+            "| LLM blocked benign (false-block) | " f"{llm_bng_blocked}/{bng_evaluated} evaluated by LLM | — |",
         ]
     else:
         lines += [
@@ -1397,7 +1396,6 @@ def main(argv: Optional[List[str]] = None) -> int:
         if leaks:
             print(f"[FAIL] {len(leaks)} adversarial example(s) unexpectedly match the v8 regex:", file=sys.stderr)
             for text, pr, hr in leaks:
-                reason = pr or hr
                 print(f"  petri={pr!r} high_risk={hr!r}  text={text!r}", file=sys.stderr)
             return 1
         print(f"[OK] no held-out adversarial examples match the v8 regex ({len(HELD_OUT)} examples checked)")
@@ -1413,7 +1411,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         bng_total = sum(1 for r in det_results if r.example.category == "BNG")
         bng_fp = sum(1 for r in det_results if r.example.category == "BNG" and r.gate_verdict == "QUARANTINE")
         print(f"\nHeld-out corpus: {len(HELD_OUT)} examples " f"({adv_total} adversarial, {bng_total} benign)")
-        print(f"Deterministic gate:")
+        print("Deterministic gate:")
         print(f"  Adversarial catch rate : {det_caught/max(adv_total,1):.1%} ({det_caught}/{adv_total})")
         print(f"  False-allow rate       : {det_missed/max(adv_total,1):.1%} ({det_missed}/{adv_total})")
         print(f"  False-positive rate    : {bng_fp/max(bng_total,1):.1%} ({bng_fp}/{bng_total} benign blocked)")
@@ -1445,7 +1443,6 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.ollama_host:
         try:
             from src.cli.slm_router import LatticeRouter, OllamaAdapter
-            from src.cli.petri_pattern_filter import is_meta_ai_auditor_phrasing as _ppf
         except ImportError as exc:
             print(f"[WARN] LLM gate unavailable: {exc}", file=sys.stderr)
         else:

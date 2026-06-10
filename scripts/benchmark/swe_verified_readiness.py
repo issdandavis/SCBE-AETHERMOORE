@@ -11,7 +11,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT = REPO_ROOT / "artifacts" / "swe_verified_readiness"
 
@@ -49,9 +48,7 @@ def main() -> int:
         "python": _probe([sys.executable, "--version"]),
         "git": _probe(["git", "--version"]),
         "docker": _probe(["docker", "--version"]),
-        "swebench_harness": _probe(
-            [sys.executable, "-m", "swebench.harness.run_evaluation", "--help"], timeout=60
-        ),
+        "swebench_harness": _probe([sys.executable, "-m", "swebench.harness.run_evaluation", "--help"], timeout=60),
     }
     missing = [name for name, row in probes.items() if not row.get("ok")]
     payload = {

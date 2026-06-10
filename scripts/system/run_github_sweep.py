@@ -9,7 +9,6 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
-
 SCRIPT_REPO_ROOT = Path(__file__).resolve().parents[2]
 SKILL_ROOT = SCRIPT_REPO_ROOT / "skills" / "codex-mirror" / "scbe-github-sweep-sorter"
 CHOOSE_FORMATION = SKILL_ROOT / "scripts" / "choose_formation.py"

@@ -302,7 +302,7 @@ def output_deviation(instruction: str, observed: str) -> float:
     """How far observed output deviates from intent [0, 1]."""
     if not observed:
         return 0.0
-    lines = [l for l in observed.split("\n") if l.strip()]
+    lines = [line for line in observed.split("\n") if line.strip()]
     if not lines:
         return 0.0
     tail = "\n".join(lines[-8:])
@@ -369,9 +369,7 @@ def _provider_for(model: str) -> Optional[tuple[str, str, str]]:
         if lower.startswith(prefix):
             key = os.environ.get(key_env, "")
             if not key:
-                raise RuntimeError(
-                    f"Model {model!r} needs {key_env} but it is not set in environment"
-                )
+                raise RuntimeError(f"Model {model!r} needs {key_env} but it is not set in environment")
             return base, key, style
     return None
 
@@ -448,9 +446,7 @@ def ask_ollama(prompt: str, model: str, host: str) -> str:
 
     # PowerShell bridge for WSL2 → Windows Ollama
     if not os.path.exists(_PWSH):
-        raise RuntimeError(
-            f"Ollama unreachable at {host} and PowerShell bridge not found"
-        )
+        raise RuntimeError(f"Ollama unreachable at {host} and PowerShell bridge not found")
 
     pid = os.getpid()
     win_tmp_wsl = f"/mnt/c/Windows/Temp/ollama_bridge_{pid}.json"
@@ -459,11 +455,11 @@ def ask_ollama(prompt: str, model: str, host: str) -> str:
         with open(win_tmp_wsl, "wb") as f:
             f.write(payload)
         ps_cmd = (
-            f"$r = Invoke-RestMethod -Method Post "
+            "$r = Invoke-RestMethod -Method Post "
             f"-Uri '{host}/api/generate' "
-            f"-ContentType 'application/json' "
+            "-ContentType 'application/json' "
             f"-InFile '{win_tmp_ps}'; "
-            f"Write-Output $r.response"
+            "Write-Output $r.response"
         )
         result = subprocess.run(
             [_PWSH, "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
@@ -482,9 +478,7 @@ def ask_ollama(prompt: str, model: str, host: str) -> str:
     return result.stdout.strip()
 
 
-def ask_llm(
-    prompt: str, model: str, ollama_host: str = "http://127.0.0.1:11434"
-) -> str:
+def ask_llm(prompt: str, model: str, ollama_host: str = "http://127.0.0.1:11434") -> str:
     """Route to the right provider based on model name.
 
     Cloud models:   llama-*  → Groq
@@ -561,9 +555,7 @@ def _shell_quote_single(value: str) -> str:
     return "'" + value.replace("'", "'\"'\"'") + "'"
 
 
-def deterministic_task_plan(
-    instruction: str, terminal_state: str, turn: int
-) -> CommandPlan:
+def deterministic_task_plan(instruction: str, terminal_state: str, turn: int) -> CommandPlan:
     """Small local fallback for benchmark/simple terminal tasks.
 
     This is not a hidden answer key. It handles common task shapes using the
@@ -573,25 +565,19 @@ def deterministic_task_plan(
     text = instruction or ""
     lower = text.lower()
     if turn > 1:
-        return CommandPlan(
-            commands=[], done=True, rationale="deterministic-fallback complete"
-        )
+        return CommandPlan(commands=[], done=True, rationale="deterministic-fallback complete")
 
     create_match = re.search(
         r"(?:file (?:called|named)|called)\s+[`'\"]?([A-Za-z0-9_.\-/]+)[`'\"]?",
         text,
         re.IGNORECASE,
     )
-    write_match = re.search(
-        r"Write\s+[`'\"]([^`'\"]+)[`'\"]\s+to it", text, re.IGNORECASE
-    )
+    write_match = re.search(r"Write\s+[`'\"]([^`'\"]+)[`'\"]\s+to it", text, re.IGNORECASE)
     if create_match and write_match:
         target = create_match.group(1)
         content = write_match.group(1)
         return CommandPlan(
-            commands=[
-                f"printf '%s\\n' {_shell_quote_single(content)} > {_shell_quote_single(target)}"
-            ],
+            commands=[f"printf '%s\\n' {_shell_quote_single(content)} > {_shell_quote_single(target)}"],
             done=True,
             rationale="deterministic create-file instruction",
         )
@@ -618,11 +604,7 @@ def deterministic_task_plan(
             rationale="deterministic grid-pattern solver",
         )
 
-    if (
-        "can't seem to install packages with pip" in lower
-        or "pip" in lower
-        and "install packages" in lower
-    ):
+    if "can't seem to install packages with pip" in lower or "pip" in lower and "install packages" in lower:
         return CommandPlan(
             commands=[
                 "python3 -c \"import urllib.request; urllib.request.urlretrieve('https://bootstrap.pypa.io/get-pip.py', 'get-pip.py')\" && python3 get-pip.py --force-reinstall",
@@ -713,9 +695,7 @@ def deterministic_task_plan(
         or ("read_csv" in lower and "unexpected keyword argument" in lower)
     ):
         return CommandPlan(
-            commands=[
-                "python3 -m pip install 'pandas==2.0.0' pyarrow==14.0.0 packaging"
-            ],
+            commands=["python3 -m pip install 'pandas==2.0.0' pyarrow==14.0.0 packaging"],
             done=True,
             rationale="deterministic pandas upgrade",
         )

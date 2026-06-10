@@ -12,14 +12,15 @@ import json
 import time
 from typing import Any
 
-
 # ── Hashing ────────────────────────────────────────────────────────────────────
+
 
 def _sha256(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
 
 # ── Receipt chaining ───────────────────────────────────────────────────────────
+
 
 def make_receipt(
     case_id: str,
@@ -40,8 +41,7 @@ def make_receipt(
     `extra` carries adapter-specific detail (args, turns, category, etc.)
     """
     payload = json.dumps(
-        {"case_id": case_id, "expected": expected, "got": got,
-         "correct": correct, "ts": ts},
+        {"case_id": case_id, "expected": expected, "got": got, "correct": correct, "ts": ts},
         sort_keys=True,
     )
     receipt_hash = _sha256(prev_hash + payload)
@@ -65,6 +65,7 @@ def same_namespace(a: str, b: str) -> bool:
 
 
 # ── OpenAI-compatible model call ───────────────────────────────────────────────
+
 
 def call_model_once(
     endpoint: str,
@@ -125,6 +126,7 @@ def call_model_once(
 
 
 # ── Rate-limit courtesy ────────────────────────────────────────────────────────
+
 
 def rate_sleep(ms: int = 50) -> None:
     time.sleep(ms / 1000.0)

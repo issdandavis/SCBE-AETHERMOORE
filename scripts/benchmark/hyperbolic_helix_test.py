@@ -14,7 +14,10 @@ Like an astronaut playing basketball AND doing spacewalks.
 """
 
 from __future__ import annotations
-import hashlib, math, json, time
+import hashlib
+import math
+import json
+import time
 from pathlib import Path
 import numpy as np
 
@@ -286,7 +289,8 @@ def main():
     print("-" * 90)
     for r in results:
         print(
-            f"{r['name']:<35} {r['recall']:>7.0%} {r['separation']:>8.3f} {r['avg_intra']:>10.6f} {r['avg_inter']:>10.6f} {r['adv_radius']:>8.4f} {r['tech_radius']:>8.4f}"
+            f"{r['name']:<35} {r['recall']:>7.0%} {r['separation']:>8.3f} {r['avg_intra']:>10.6f} "
+            f"{r['avg_inter']:>10.6f} {r['adv_radius']:>8.4f} {r['tech_radius']:>8.4f}"
         )
 
     print()
@@ -305,7 +309,7 @@ def main():
         print(f"  Helix separation beats plain hyperbolic by {((helix['separation']/hyp['separation'])-1)*100:+.1f}%")
 
     if helix["recall"] >= flat["recall"]:
-        print(f"  Helix recall matches or beats flat")
+        print("  Helix recall matches or beats flat")
     else:
         print(f"  Helix recall tradeoff: {((flat['recall']-helix['recall'])/max(flat['recall'],0.01))*100:.0f}% lower")
 

@@ -1,5 +1,8 @@
 """Force-delete a directory, handling Windows reserved names (nul, con, etc)."""
-import os, sys, ctypes
+
+import ctypes
+import os
+import sys
 
 target = sys.argv[1] if len(sys.argv) > 1 else r"C:\Users\issda\Dropbox (Old)"
 

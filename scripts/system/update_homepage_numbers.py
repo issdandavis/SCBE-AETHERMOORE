@@ -8,6 +8,7 @@ Updates the 8-cell numbers strip in-place. Safe to run in CI — reads
 docs/static/badges/*.json for local counts, fetches HF API for model/dataset
 counts, falls back to current values if the network is unavailable.
 """
+
 from __future__ import annotations
 
 import json
@@ -70,13 +71,9 @@ def update_numbers_strip(counts: dict[str, str]) -> bool:
         nonlocal html
         # Find the cell by its label text, replace the number in the preceding div
         pattern = (
-            r'(<div style="font-size: 28px;[^>]+>)'
-            r'[^<]+'
-            r'(</div>\s*<div[^>]+>[^<]*'
-            + re.escape(label_text)
-            + r')'
+            r'(<div style="font-size: 28px;[^>]+>)' r"[^<]+" r"(</div>\s*<div[^>]+>[^<]*" + re.escape(label_text) + r")"
         )
-        replacement = rf'\g<1>{new_value}\2'
+        replacement = rf"\g<1>{new_value}\2"
         new_html, n = re.subn(pattern, replacement, html, count=1)
         if n:
             html = new_html

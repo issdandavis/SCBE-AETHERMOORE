@@ -56,12 +56,7 @@ def _existing(path: str) -> dict[str, Any]:
 
 
 def _latest_run_review() -> dict[str, Any]:
-    data = (
-        _safe_read_json(
-            REPO_ROOT / "artifacts" / "training_reports" / "run_review_latest.json"
-        )
-        or {}
-    )
+    data = _safe_read_json(REPO_ROOT / "artifacts" / "training_reports" / "run_review_latest.json") or {}
     records = data.get("records") if isinstance(data.get("records"), list) else []
     top = []
     for row in records[:12]:
@@ -110,7 +105,10 @@ def build_hub(*, run_preflight: bool) -> dict[str, Any]:
     return {
         "schema_version": "scbe_training_hub_v1",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
-        "principle": "local repo remains source of truth; Colab, Kaggle, Hugging Face, and Vercel are execution or publication surfaces",
+        "principle": (
+            "local repo remains source of truth; "
+            "Colab, Kaggle, Hugging Face, and Vercel are execution or publication surfaces"
+        ),
         "surfaces": surfaces,
         "run_review": run_review,
         "evidence": _evidence_links(),
@@ -156,9 +154,11 @@ def build_hub(*, run_preflight: bool) -> dict[str, Any]:
 
 def _css() -> str:
     return """
-    :root { color-scheme: dark; --bg:#0b0d12; --panel:#141922; --line:#2c3542; --text:#f4f0e8; --muted:#aeb7c2; --accent:#d6a756; --ok:#69d391; --warn:#f1c45d; }
+    :root { color-scheme: dark; --bg:#0b0d12; --panel:#141922; --line:#2c3542; --text:#f4f0e8;
+      --muted:#aeb7c2; --accent:#d6a756; --ok:#69d391; --warn:#f1c45d; }
     * { box-sizing: border-box; }
-    body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--text); line-height:1.55; }
+    body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", sans-serif; background:var(--bg); color:var(--text); line-height:1.55; }
     header, main { width:min(1120px, calc(100% - 32px)); margin:0 auto; }
     header { padding:42px 0 22px; border-bottom:1px solid var(--line); }
     h1 { margin:0 0 10px; font-size:clamp(32px, 6vw, 64px); line-height:.96; letter-spacing:0; }
@@ -170,11 +170,13 @@ def _css() -> str:
     .k { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
     .v { font-size:24px; font-weight:700; margin-top:4px; }
     code { background:#0f131a; border:1px solid var(--line); border-radius:6px; padding:2px 5px; color:#f8dfaa; }
-    table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+    table { width:100%; border-collapse:collapse; background:var(--panel);
+      border:1px solid var(--line); border-radius:8px; overflow:hidden; }
     th, td { padding:10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; font-size:14px; }
     th { color:var(--accent); font-weight:700; }
     tr:last-child td { border-bottom:0; }
-    .pill { display:inline-block; border:1px solid var(--line); border-radius:999px; padding:2px 8px; color:var(--muted); }
+    .pill { display:inline-block; border:1px solid var(--line); border-radius:999px;
+      padding:2px 8px; color:var(--muted); }
     footer { width:min(1120px, calc(100% - 32px)); margin:36px auto; color:var(--muted); font-size:13px; }
     """
 
@@ -184,9 +186,7 @@ def _table(headers: list[str], rows: list[list[str]]) -> str:
     body = []
     for row in rows:
         body.append("<tr>" + "".join(f"<td>{cell}</td>" for cell in row) + "</tr>")
-    return (
-        f"<table><thead><tr>{head}</tr></thead><tbody>{''.join(body)}</tbody></table>"
-    )
+    return f"<table><thead><tr>{head}</tr></thead><tbody>{''.join(body)}</tbody></table>"
 
 
 def render_html(hub: dict[str, Any]) -> str:
@@ -196,9 +196,7 @@ def render_html(hub: dict[str, Any]) -> str:
     hf = surfaces["huggingface"]["hub"]
     kaggle = surfaces["kaggle"]
     preflight = surfaces.get("local_preflight") or {}
-    preflight_result = (
-        preflight.get("result") if isinstance(preflight.get("result"), dict) else {}
-    )
+    preflight_result = preflight.get("result") if isinstance(preflight.get("result"), dict) else {}
 
     top_rows = []
     for row in review.get("top_queue", []):
@@ -216,7 +214,8 @@ def render_html(hub: dict[str, Any]) -> str:
     for nb in colab.get("recommended_first", []):
         notebook_rows.append(
             [
-                f"<a href=\"{html.escape(str(nb.get('colab_url') or '#'))}\">{html.escape(str(nb.get('name') or ''))}</a>",
+                f"<a href=\"{html.escape(str(nb.get('colab_url') or '#'))}\">"
+                f"{html.escape(str(nb.get('name') or ''))}</a>",
                 html.escape(str(nb.get("category") or "")),
                 html.escape(str(nb.get("summary") or "")),
             ]
@@ -226,9 +225,7 @@ def render_html(hub: dict[str, Any]) -> str:
     for ev in hub["evidence"]:
         label = html.escape(str(ev["path"]))
         link = f'<a href="../{label}">{label}</a>' if ev.get("exists") else label
-        evidence_rows.append(
-            [link, "yes" if ev.get("exists") else "no", str(ev.get("bytes") or "")]
-        )
+        evidence_rows.append([link, "yes" if ev.get("exists") else "no", str(ev.get("bytes") or "")])
 
     daily_rows = [
         [
@@ -238,6 +235,12 @@ def render_html(hub: dict[str, Any]) -> str:
         ]
         for item in hub["daily_stack"]
     ]
+
+    hf_token_state = "set" if hf.get("HF_TOKEN_set") else "not set"
+    kaggle_state = "present" if kaggle["credentials_file"].get("present") else "missing"
+    preflight_state = "ok" if preflight_result.get("ok") else "not run/blocked"
+    queue_rows = top_rows or [["", "", "", "", "Run npm run training:run-ledger first."]]
+    generated_at = html.escape(str(hub["generated_utc"]))
 
     return f"""<!doctype html>
 <html lang="en">
@@ -257,16 +260,16 @@ def render_html(hub: dict[str, Any]) -> str:
   <main>
     <section class="grid" aria-label="status cards">
       <div class="card"><div class="k">Colab notebooks</div><div class="v">{colab.get("notebooks_total")}</div></div>
-      <div class="card"><div class="k">Hugging Face token</div><div class="v">{"set" if hf.get("HF_TOKEN_set") else "not set"}</div></div>
-      <div class="card"><div class="k">Kaggle credentials</div><div class="v">{"present" if kaggle["credentials_file"].get("present") else "missing"}</div></div>
-      <div class="card"><div class="k">Zero-cost preflight</div><div class="v">{"ok" if preflight_result.get("ok") else "not run/blocked"}</div></div>
+      <div class="card"><div class="k">Hugging Face token</div><div class="v">{hf_token_state}</div></div>
+      <div class="card"><div class="k">Kaggle credentials</div><div class="v">{kaggle_state}</div></div>
+      <div class="card"><div class="k">Zero-cost preflight</div><div class="v">{preflight_state}</div></div>
     </section>
 
     <h2>Daily Stack</h2>
     {_table(["Step", "Command", "Cost"], daily_rows)}
 
     <h2>Highest-Value Run Queue</h2>
-    {_table(["Run", "Triage", "Platform", "Lane", "Next Step"], top_rows or [["", "", "", "", "Run npm run training:run-ledger first."]])}
+    {_table(["Run", "Triage", "Platform", "Lane", "Next Step"], queue_rows)}
 
     <h2>Remote Compute Lanes</h2>
     {_table(["Notebook", "Category", "Use"], notebook_rows)}
@@ -275,7 +278,7 @@ def render_html(hub: dict[str, Any]) -> str:
     {_table(["Path", "Exists", "Bytes"], evidence_rows)}
   </main>
   <footer>
-    Generated {html.escape(str(hub["generated_utc"]))}. This page is an operator map, not a certification or performance claim.
+    Generated {generated_at}. This page is an operator map, not a certification or performance claim.
   </footer>
 </body>
 </html>
@@ -301,10 +304,7 @@ def write_outputs(hub: dict[str, Any]) -> dict[str, str]:
                 "",
                 "## Commands",
                 "",
-                *[
-                    f"- `{item['command']}` - {item['step']}"
-                    for item in hub["daily_stack"]
-                ],
+                *[f"- `{item['command']}` - {item['step']}" for item in hub["daily_stack"]],
                 "",
                 "## Outputs",
                 "",
@@ -325,13 +325,9 @@ def write_outputs(hub: dict[str, Any]) -> dict[str, str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Build SCBE training hub artifacts and docs page"
-    )
+    parser = argparse.ArgumentParser(description="Build SCBE training hub artifacts and docs page")
     parser.add_argument("--json", action="store_true", help="Print hub JSON to stdout")
-    parser.add_argument(
-        "--no-preflight", action="store_true", help="Skip zero-cost preflight"
-    )
+    parser.add_argument("--no-preflight", action="store_true", help="Skip zero-cost preflight")
     parser.add_argument(
         "--write",
         action="store_true",

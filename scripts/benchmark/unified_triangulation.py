@@ -19,7 +19,10 @@ Reverse-engineers attack vectors from expected results:
 """
 
 from __future__ import annotations
-import math, json, time, sys
+import math
+import json
+import time
+import sys
 from pathlib import Path
 from typing import Dict
 import numpy as np
@@ -311,7 +314,8 @@ def main():
 
         pattern = Counter(data["null_patterns"]).most_common(1)[0][0]
         print(
-            f"{cls:<25} {data['detected']:>3}/{data['total']:<2} {rate:>6.0%} {avg_rem:>8.4f} {avg_rad:>8.4f} {pattern:>15}"
+            f"{cls:<25} {data['detected']:>3}/{data['total']:<2} {rate:>6.0%} "
+            f"{avg_rem:>8.4f} {avg_rad:>8.4f} {pattern:>15}"
         )
 
     # Null space signatures

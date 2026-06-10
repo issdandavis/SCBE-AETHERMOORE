@@ -17,7 +17,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_REPORT = REPO_ROOT / "artifacts" / "coding_agent_benchmarks" / "latest" / "report.json"
 DEFAULT_OUTPUT = REPO_ROOT / "artifacts" / "coding_agent_benchmarks" / "latest" / "geoseal_receipts.json"

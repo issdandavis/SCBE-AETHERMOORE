@@ -61,7 +61,8 @@ if (targetCell) {
   targetCell.click();
 
   // Find and click the run button
-  const runBtn = targetCell.querySelector('button[aria-label*="Run"], button[aria-label*="run"], .cell-execution-indicator');
+  const runBtn = targetCell.querySelector(
+    'button[aria-label*="Run"], button[aria-label*="run"], .cell-execution-indicator');
   if (runBtn) {
     runBtn.click();
     'clicked run button for cell CELL_INDEX'
@@ -146,7 +147,8 @@ JSON.stringify({
   runtimeType: runtimeMenu ? runtimeMenu.textContent.trim() : 'unknown',
   resourceInfo: resourceText ? resourceText.textContent.trim() : 'not visible',
   pageTitle: document.title,
-  pythonVersion: document.querySelector('[class*="python"]') ? document.querySelector('[class*="python"]').textContent : 'unknown',
+  pythonVersion: document.querySelector('[class*="python"]')
+    ? document.querySelector('[class*="python"]').textContent : 'unknown',
 });
 """
 

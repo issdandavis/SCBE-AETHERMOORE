@@ -39,10 +39,7 @@ def load_json(path: str) -> dict[str, Any]:
 def find_packets(value: Any) -> list[dict[str, Any]]:
     """Find reaction packets inside a packet file or benchmark report."""
 
-    if (
-        isinstance(value, dict)
-        and value.get("schema_version") == "scbe_reaction_state_packet_v1"
-    ):
+    if isinstance(value, dict) and value.get("schema_version") == "scbe_reaction_state_packet_v1":
         return [value]
     packets: list[dict[str, Any]] = []
     if isinstance(value, dict):
@@ -102,15 +99,9 @@ def compare_packets(left_path: str, right_path: str) -> dict[str, Any]:
         "right": right_path,
         "left_packet_count": len(left),
         "right_packet_count": len(right),
-        "shared_packet_hashes": sorted(
-            hash_value for hash_value in left_hashes & right_hashes if hash_value
-        ),
-        "left_only_packet_hashes": sorted(
-            hash_value for hash_value in left_hashes - right_hashes if hash_value
-        ),
-        "right_only_packet_hashes": sorted(
-            hash_value for hash_value in right_hashes - left_hashes if hash_value
-        ),
+        "shared_packet_hashes": sorted(hash_value for hash_value in left_hashes & right_hashes if hash_value),
+        "left_only_packet_hashes": sorted(hash_value for hash_value in left_hashes - right_hashes if hash_value),
+        "right_only_packet_hashes": sorted(hash_value for hash_value in right_hashes - left_hashes if hash_value),
         "classification_changed": left_classes != right_classes,
         "left_classifications": sorted(str(item) for item in left_classes if item),
         "right_classifications": sorted(str(item) for item in right_classes if item),
@@ -240,9 +231,7 @@ def build_audio_packet(
             f"field_relationship={observables.field_relationship}",
         ],
         loss_notes=(
-            []
-            if observables.field_coupling_proxy is not None
-            else ["no declared field coupling proxy emitted"]
+            [] if observables.field_coupling_proxy is not None else ["no declared field coupling proxy emitted"]
         ),
         recalculation=ReactionRecalculation(
             scientific_checks_ok=True,

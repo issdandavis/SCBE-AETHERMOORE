@@ -35,24 +35,18 @@ def _load_module(path: Path, name: str):
 
 
 def _colab_catalog() -> list[dict[str, Any]]:
-    mod = _load_module(
-        REPO_ROOT / "scripts" / "system" / "colab_workflow_catalog.py", "colab_catalog"
-    )
+    mod = _load_module(REPO_ROOT / "scripts" / "system" / "colab_workflow_catalog.py", "colab_catalog")
     return mod.list_notebook_payloads()
 
 
 def _kaggle_rounds() -> dict[str, str]:
-    mod = _load_module(
-        REPO_ROOT / "scripts" / "kaggle_auto" / "launch.py", "kaggle_launch"
-    )
+    mod = _load_module(REPO_ROOT / "scripts" / "kaggle_auto" / "launch.py", "kaggle_launch")
     rounds = getattr(mod, "ROUNDS", {})
     return {k: str(v.get("desc", "")) for k, v in rounds.items()}
 
 
 def _kaggle_config() -> dict[str, str]:
-    mod = _load_module(
-        REPO_ROOT / "scripts" / "kaggle_auto" / "launch.py", "kaggle_launch"
-    )
+    mod = _load_module(REPO_ROOT / "scripts" / "kaggle_auto" / "launch.py", "kaggle_launch")
     return {
         "kaggle_user": str(getattr(mod, "KAGGLE_USER", "")),
         "kaggle_dataset": str(getattr(mod, "KAGGLE_DATASET", "")),
@@ -155,11 +149,7 @@ def build_manifest(*, run_preflight: bool) -> dict[str, Any]:
             "other_notebooks": colab_rest,
             "all_notebooks": colab,
             "open_zero_cost_url": next(
-                (
-                    n["colab_url"]
-                    for n in colab
-                    if n.get("name") == "zero-cost-local-0p5b"
-                ),
+                (n["colab_url"] for n in colab if n.get("name") == "zero-cost-local-0p5b"),
                 None,
             ),
         },
@@ -201,9 +191,7 @@ def build_manifest(*, run_preflight: bool) -> dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Colab / Kaggle / HF training surface connector"
-    )
+    parser = argparse.ArgumentParser(description="Colab / Kaggle / HF training surface connector")
     parser.add_argument("--json", action="store_true", help="Print JSON manifest")
     parser.add_argument(
         "--preflight",
@@ -267,22 +255,16 @@ def main() -> int:
             print(f"  whoami: {w}")
     elif hf.get("whoami_error"):
         print(f"  whoami_error: {hf['whoami_error']}")
-    print(
-        f"  dispatch job: {manifest['huggingface']['cli_examples']['dispatch_coding_job']}"
-    )
+    print(f"  dispatch job: {manifest['huggingface']['cli_examples']['dispatch_coding_job']}")
 
     if args.preflight and manifest.get("local_preflight"):
         lp = manifest["local_preflight"]
         print("\n## Zero-cost preflight (dataset files)")
         print(f"  returncode: {lp.get('returncode')}")
         if isinstance(lp.get("result"), dict):
-            print(
-                f"  ok: {lp['result'].get('ok')} missing: {lp['result'].get('missing_count')}"
-            )
+            print(f"  ok: {lp['result'].get('ok')} missing: {lp['result'].get('missing_count')}")
 
-    print(
-        "\nFull machine-readable manifest: python scripts/system/training_surfaces_connect.py --json --preflight"
-    )
+    print("\nFull machine-readable manifest: python scripts/system/training_surfaces_connect.py --json --preflight")
     return 0
 
 

@@ -123,7 +123,7 @@ def generate_spin_conversations(n_sessions: int = 5) -> list[dict]:
                 f"{npc_tongue} domain. As a keeper of {ring.lower()} knowledge, "
                 f"I see how {topic} interweaves with Sacred Tongue {topic_tongue}. "
                 f"The {['fundamental', 'intermediate', 'advanced', 'masterful'][min(step, 3)]} "
-                f"understanding requires traversing the sphere grid."
+                "understanding requires traversing the sphere grid."
             )
             move = rng.choice(MOVES)
             if move == "OUTWARD" and ring_idx < 2:
@@ -412,7 +412,7 @@ def main():
     print(f"  Avg separation: {metrics['avg_separation']:.4f}")
     print(f"  Coord spread:  {metrics['coord_spread']:.4f}")
     print(f"  Octree buckets: {metrics['n_buckets']}")
-    print(f"  Tongue separation:")
+    print("  Tongue separation:")
     for t, sep in sorted(metrics["tongue_separation"].items()):
         grade = "GOOD" if sep > 0.3 else "OK" if sep > 0.1 else "WEAK"
         print(f"    {t}: {sep:+.4f} [{grade}]")

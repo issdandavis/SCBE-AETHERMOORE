@@ -11,7 +11,6 @@ import argparse
 import os
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ENV_FILE = REPO_ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
 
@@ -36,7 +35,9 @@ def load_env_best_effort() -> None:
 def main() -> int:
     load_env_best_effort()
 
-    p = argparse.ArgumentParser(description="Upload SCBE-AETHERMOORE Training Lab SFT JSONL to Hugging Face dataset repo")
+    p = argparse.ArgumentParser(
+        description="Upload SCBE-AETHERMOORE Training Lab SFT JSONL to Hugging Face dataset repo"
+    )
     p.add_argument("--path", default=str(REPO_ROOT / "training-data" / "sft" / "ai_ide_sft.jsonl"))
     p.add_argument("--repo", default="issdandavis/scbe-aethermoore-training-data")
     p.add_argument("--path-in-repo", default="sft/ai_ide_sft.jsonl")

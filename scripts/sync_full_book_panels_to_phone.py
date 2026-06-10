@@ -11,7 +11,6 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.build_webtoon_catalog import build_catalog, CATALOG_PATH, MANHWA_DIR
 
-
 SOURCE_ROOT = REPO_ROOT / "artifacts" / "webtoon" / "generated_router_hf_full_book"
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
 

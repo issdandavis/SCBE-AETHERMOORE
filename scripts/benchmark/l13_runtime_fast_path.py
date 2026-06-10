@@ -27,7 +27,6 @@ if str(REPO_ROOT) not in sys.path:
 
 from src.governance.runtime_gate import RuntimeGate
 
-
 SCHEMA = "scbe.l13_runtime_fast_path_benchmark.v1"
 DEFAULT_THRESHOLD_MS = 100.0
 DEFAULT_OUTPUT = Path("artifacts/benchmarks/l13_runtime_fast_path/latest_report.json")

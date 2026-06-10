@@ -17,7 +17,6 @@ from typing import Any
 
 from scripts.render_grok_storyboard_packet import build_render_jobs, load_packet
 
-
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUTPUT_ROOT = ROOT / "artifacts" / "webtoon" / "edit_packets"
 
@@ -56,7 +55,8 @@ def app_lane_notes(app_lane: str) -> list[str]:
             "Keep panel storytelling intact; this lane is for packaging and lightweight presentation changes.",
         ]
     return [
-        "Use Photoshop for anatomy fixes, lighting cleanup, paintovers, masking, and continuity-preserving image edits.",
+        "Use Photoshop for anatomy fixes, lighting cleanup, paintovers, masking, "
+        "and continuity-preserving image edits.",
         "Keep the beat, silhouette, and environment logic locked while repairing the frame.",
     ]
 
@@ -66,7 +66,8 @@ def preserve_notes(panel: dict[str, Any]) -> list[str]:
     characters = set(as_list(panel.get("characters")))
     if "marcus" in characters:
         notes.append(
-            "Preserve Marcus as early-30s Asian-American, tired, lean, dark messy hair, rumpled office-worker silhouette."
+            "Preserve Marcus as early-30s Asian-American, tired, lean, dark messy hair, "
+            "rumpled office-worker silhouette."
         )
     if "polly_raven" in characters:
         notes.append("Preserve Polly raven form: oversized raven, obsidian eyes, grad cap, monocle, black bowtie.")
@@ -222,7 +223,9 @@ def build_edit_packet(
     html_lines = [
         "<!doctype html>",
         "<html><head><meta charset='utf-8'><title>Fine Edit Packet</title>",
-        "<style>body{font-family:Arial,sans-serif;margin:24px;} .card{border:1px solid #ccc;padding:16px;margin:0 0 20px;} img{max-width:320px;display:block;margin:0 0 12px;}</style>",
+        "<style>body{font-family:Arial,sans-serif;margin:24px;} "
+        ".card{border:1px solid #ccc;padding:16px;margin:0 0 20px;} "
+        "img{max-width:320px;display:block;margin:0 0 12px;}</style>",
         "</head><body>",
         f"<h1>{chapter_id} Fine Edit Packet</h1>",
         f"<p>Edit goal: {edit_goal}</p>",

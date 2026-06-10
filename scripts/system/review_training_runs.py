@@ -18,7 +18,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONSOLIDATION_DIR = REPO_ROOT / "artifacts" / "ai_training_consolidation" / "latest"
 DEFAULT_OUTPUT_JSON = DEFAULT_CONSOLIDATION_DIR / "run_review.json"
@@ -346,12 +345,8 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
         ]
         if hold_runs and in_merge_plan:
             blockers.append(f"explicit HOLD eval artifact: {hold_runs[0]['path']}")
-        promotion_ready_runs = [
-            run for run in runs if (run.get("diamond_state") or {}).get("promotion_ready") is True
-        ]
-        polished_runs = [
-            run for run in runs if (run.get("diamond_state") or {}).get("state") == "polished_candidate"
-        ]
+        promotion_ready_runs = [run for run in runs if (run.get("diamond_state") or {}).get("promotion_ready") is True]
+        polished_runs = [run for run in runs if (run.get("diamond_state") or {}).get("state") == "polished_candidate"]
         status = "promote_candidate" if not blockers and promotion_ready_runs else "blocked"
         if not in_merge_plan and top_score > 0:
             status = "sidecar_signal_not_in_merge"
@@ -394,11 +389,17 @@ def recommend_action(purpose: str, status: str, blockers: list[str]) -> str:
         return "run the frozen eval gate; do not merge on metric score alone"
     if any(blocker.startswith("explicit HOLD eval artifact") for blocker in blockers):
         if purpose == "governance_security":
-            return "repair false-positive pressure in governance eval data, rerun governance_security_eval, and promote only after PASS"
+            return (
+                "repair false-positive pressure in governance eval data, "
+                "rerun governance_security_eval, and promote only after PASS"
+            )
         return "resolve the explicit HOLD eval artifact before adapter promotion"
     if "no regularized train records" in blockers:
         if purpose == "operator_agent_bus":
-            return "extract runnable command traces from agent bus, helpdesk loop, Apollo, and browser logs into messages records"
+            return (
+                "extract runnable command traces from agent bus, helpdesk loop, Apollo, "
+                "and browser logs into messages records"
+            )
         if purpose == "research_bridge":
             return "convert source-grounded research notes/transcripts into citation-backed instruction records"
         return "regularize train candidates before dispatch"
@@ -415,9 +416,12 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         "## External Lessons Applied",
         "",
-        "- DeepSeek-V3 pattern: staged high-quality data, SFT plus RL, stable training instrumentation, no rollback-driven chaos.",
-        "- DeepSeek-R1 pattern: use verifiable reward tasks for math/code/STEM instead of trusting demonstrations alone.",
-        "- Kimi K2/K2.5 pattern: agentic workflow data matters; tool-use, environment interaction, and parallel specialist agents are model capability data, not just orchestration code.",
+        "- DeepSeek-V3 pattern: staged high-quality data, SFT plus RL, stable training instrumentation, "
+        "no rollback-driven chaos.",
+        "- DeepSeek-R1 pattern: use verifiable reward tasks for math/code/STEM "
+        "instead of trusting demonstrations alone.",
+        "- Kimi K2/K2.5 pattern: agentic workflow data matters; tool-use, environment interaction, "
+        "and parallel specialist agents are model capability data, not just orchestration code.",
         "",
         "## Surface Counts",
         "",
@@ -452,14 +456,19 @@ def render_markdown(payload: dict[str, Any]) -> str:
             "## Merge Rule",
             "",
             "Merge gains by adapter and purpose bucket, not by dumping every record into one dataset.",
-            "A run can influence the final model only after its bucket has train data, frozen eval data, and a measurable promotion score.",
+            "A run can influence the final model only after its bucket has train data, frozen eval data, "
+            "and a measurable promotion score.",
             "",
             "## Next Extraction Targets",
             "",
-            "- Operator agent bus: convert helpdesk requests, agentbus pipe runs, mirror-room state, Apollo command logs, and browser route traces into runnable command SFT records.",
-            "- Research bridge: convert EML/Kimi/DeepSeek/source notes into claim/citation/verification records, then freeze a citation eval set.",
-            "- Governance security: add eval records before any adapter merge; current train signal is usable but under-gated.",
-            "- Coding model: keep as primary lane; train/evaluate coding and aligned-foundation adapters before final weighted merge.",
+            "- Operator agent bus: convert helpdesk requests, agentbus pipe runs, mirror-room state, "
+            "Apollo command logs, and browser route traces into runnable command SFT records.",
+            "- Research bridge: convert EML/Kimi/DeepSeek/source notes into claim/citation/verification records, "
+            "then freeze a citation eval set.",
+            "- Governance security: add eval records before any adapter merge; "
+            "current train signal is usable but under-gated.",
+            "- Coding model: keep as primary lane; train/evaluate coding and aligned-foundation adapters "
+            "before final weighted merge.",
             "",
         ]
     )

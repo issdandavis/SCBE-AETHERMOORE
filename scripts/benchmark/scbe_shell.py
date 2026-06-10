@@ -32,7 +32,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -43,7 +42,6 @@ from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from scripts.benchmark.scbe_governance_core import (
-    CommandPlan,
     GovRecord as _GovRecord,
     danger_drift,
     harmonic_score,
@@ -137,7 +135,7 @@ def run_governed_task(
         emit(f"[SCBE] cmd={cmd!r}  tier={tier}  score={score:.4f}")
         if tier == "DENY":
             gov.append(_GovRecord(cmd, "DENY", score, d, pd))
-            emit(f"[SCBE] DENIED — not executed")
+            emit("[SCBE] DENIED — not executed")
         else:
             out, rc = run_local(cmd)
             emit(out.rstrip())
@@ -177,7 +175,7 @@ def run_governed_task(
 
                 if tier == "DENY":
                     gov.append(_GovRecord(cmd, "DENY", score, d, pd))
-                    emit(f"  → DENIED — skipped")
+                    emit("  → DENIED — skipped")
                     continue
 
                 out, rc = run_local(cmd)
@@ -275,7 +273,8 @@ def main() -> None:
         print("\n[SCBE] ── Governance Receipt ──")
         s = receipt["governance_summary"]
         print(
-            f"  ALLOW={s['allow']}  QUARANTINE={s['quarantine']}  DENY={s['deny']}  polymerized={s['polymerized_events']}"
+            f"  ALLOW={s['allow']}  QUARANTINE={s['quarantine']}  DENY={s['deny']}  "
+            f"polymerized={s['polymerized_events']}"
         )
 
 

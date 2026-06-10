@@ -164,7 +164,10 @@ def _campaign_items(offer: dict[str, Any]) -> list[dict[str, Any]]:
             "format": "discussion_draft",
             "risk": "medium",
             "goal": "ask for workflows to review without sounding like spam",
-            "title": "I made a small AI-agent workflow review offer. What failure modes should the example report include?",
+            "title": (
+                "I made a small AI-agent workflow review offer. "
+                "What failure modes should the example report include?"
+            ),
             "text": (
                 "I am turning my AI-agent governance work into a small fixed-scope review: one workflow in, "
                 "one findings memo out.\n\n"
@@ -184,9 +187,11 @@ def _campaign_items(offer: dict[str, Any]) -> list[dict[str, Any]]:
             "goal": "convert npm/GitHub users into a service-credit buyer",
             "title": "New fixed-scope AI Agent Workflow Snapshot",
             "text": (
-                "I added a fixed-scope Workflow Snapshot for builders using the SCBE stack or similar agent workflows.\n\n"
+                "I added a fixed-scope Workflow Snapshot for builders using the SCBE stack "
+                "or similar agent workflows.\n\n"
                 f"{outcome}\n\n"
-                "Useful inputs include a repo link, agent routing diagram, prompt chain, MCP tool setup, or failed automation trace.\n\n"
+                "Useful inputs include a repo link, agent routing diagram, prompt chain, MCP tool setup, "
+                "or failed automation trace.\n\n"
                 f"Offer: {proof_url}\n"
                 f"Price: {price}\n"
                 f"Payment: Stripe checkout or Cash App {cash_app}\n\n"
@@ -222,7 +227,8 @@ def _campaign_items(offer: dict[str, Any]) -> list[dict[str, Any]]:
                 f"{short_offer}\n\n"
                 f"{outcome}\n\n"
                 f"It is {price}. The page is here: {proof_url}\n\n"
-                "If you have one workflow that keeps breaking, send the repo/diagram/prompt chain and I can do the first pass.\n\n"
+                "If you have one workflow that keeps breaking, send the repo/diagram/prompt chain "
+                "and I can do the first pass.\n\n"
                 "- Issac"
             ),
         },
@@ -458,8 +464,10 @@ def _operator_markdown(offer: dict[str, Any], drafts: list[dict[str, Any]], send
         [
             "",
             "## Connector Rule",
-            "- If X/n8n, GitHub, Hugging Face, Bluesky, or another publisher credential is connected, the queue can be consumed by an automation runner.",
-            "- If no publisher credential is connected in this shell, the campaign is still complete and waits in the queue.",
+            "- If X/n8n, GitHub, Hugging Face, Bluesky, or another publisher credential is connected, "
+            "the queue can be consumed by an automation runner.",
+            "- If no publisher credential is connected in this shell, the campaign is still complete "
+            "and waits in the queue.",
             "- Do not send cold private-message batches.",
             "- Do not fabricate customers, case studies, certifications, or guarantees.",
         ]

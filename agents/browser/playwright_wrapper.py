@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 class BrowserActionType(Enum):
     """Types of browser actions for governance tracking."""
+
     NAVIGATE = "navigate"
     CLICK = "click"
     TYPE = "type"
@@ -37,6 +38,7 @@ class BrowserActionType(Enum):
 @dataclass
 class BrowserAction:
     """Record of a browser action for audit trail."""
+
     action_type: BrowserActionType
     target: str
     params: Dict[str, Any]
@@ -49,6 +51,7 @@ class BrowserAction:
 @dataclass
 class BrowserConfig:
     """Configuration for the browser wrapper."""
+
     headless: bool = True
     default_timeout_ms: int = 30000
     navigation_timeout_ms: int = 60000
@@ -71,6 +74,7 @@ class BrowserConfig:
 @dataclass
 class ScreenshotResult:
     """Result of a screenshot operation."""
+
     data: bytes
     width: int
     height: int
@@ -79,7 +83,7 @@ class ScreenshotResult:
 
     def to_base64(self) -> str:
         """Convert screenshot to base64 string."""
-        return base64.b64encode(self.data).decode('utf-8')
+        return base64.b64encode(self.data).decode("utf-8")
 
 
 class PlaywrightWrapper:
@@ -137,6 +141,7 @@ class PlaywrightWrapper:
             return options
 
         from agents.browser.binary_resolver import resolve_browser_binary
+
         resolved_path, _ = resolve_browser_binary()
         options["executable_path"] = resolved_path
         return options
@@ -154,20 +159,13 @@ class PlaywrightWrapper:
         try:
             from playwright.async_api import async_playwright
         except ImportError:
-            raise RuntimeError(
-                "Playwright not installed. Run: pip install playwright && playwright install"
-            )
+            raise RuntimeError("Playwright not installed. Run: pip install playwright && playwright install")
 
         self._playwright = await async_playwright().start()
         launch_options = self._build_launch_options()
         self._browser = await self._playwright.chromium.launch(**launch_options)
 
-        context_options = {
-            "viewport": {
-                "width": self.config.viewport_width,
-                "height": self.config.viewport_height
-            }
-        }
+        context_options = {"viewport": {"width": self.config.viewport_width, "height": self.config.viewport_height}}
         if self.config.user_agent:
             context_options["user_agent"] = self.config.user_agent
 
@@ -203,9 +201,7 @@ class PlaywrightWrapper:
             RuntimeError: If action limits exceeded
         """
         if len(self._action_history) >= self.config.max_actions_per_session:
-            raise RuntimeError(
-                f"Max actions per session ({self.config.max_actions_per_session}) exceeded"
-            )
+            raise RuntimeError(f"Max actions per session ({self.config.max_actions_per_session}) exceeded")
 
     def _check_domain_allowed(self, url: str) -> bool:
         """
@@ -230,10 +226,7 @@ class PlaywrightWrapper:
 
             # Check allowed domains (if whitelist is set)
             if self.config.allowed_domains is not None:
-                return any(
-                    allowed.lower() in domain
-                    for allowed in self.config.allowed_domains
-                )
+                return any(allowed.lower() in domain for allowed in self.config.allowed_domains)
 
             return True
         except Exception:
@@ -246,26 +239,16 @@ class PlaywrightWrapper:
         params: Dict[str, Any],
         success: bool,
         error: Optional[str] = None,
-        duration_ms: float = 0.0
+        duration_ms: float = 0.0,
     ):
         """Record an action in the history."""
         action = BrowserAction(
-            action_type=action_type,
-            target=target,
-            params=params,
-            success=success,
-            error=error,
-            duration_ms=duration_ms
+            action_type=action_type, target=target, params=params, success=success, error=error, duration_ms=duration_ms
         )
         self._action_history.append(action)
 
     async def _execute_with_timeout(
-        self,
-        coro: Callable,
-        timeout_ms: int,
-        action_type: BrowserActionType,
-        target: str,
-        params: Dict[str, Any]
+        self, coro: Callable, timeout_ms: int, action_type: BrowserActionType, target: str, params: Dict[str, Any]
     ) -> Any:
         """
         Execute a coroutine with timeout and logging.
@@ -287,35 +270,21 @@ class PlaywrightWrapper:
 
         start_time = asyncio.get_event_loop().time()
         try:
-            result = await asyncio.wait_for(
-                coro,
-                timeout=timeout_ms / 1000.0
-            )
+            result = await asyncio.wait_for(coro, timeout=timeout_ms / 1000.0)
             duration = (asyncio.get_event_loop().time() - start_time) * 1000
             self._record_action(action_type, target, params, True, duration_ms=duration)
             return result
         except asyncio.TimeoutError:
             duration = (asyncio.get_event_loop().time() - start_time) * 1000
             error_msg = f"Operation timed out after {timeout_ms}ms"
-            self._record_action(
-                action_type, target, params, False,
-                error=error_msg, duration_ms=duration
-            )
+            self._record_action(action_type, target, params, False, error=error_msg, duration_ms=duration)
             raise
         except Exception as e:
             duration = (asyncio.get_event_loop().time() - start_time) * 1000
-            self._record_action(
-                action_type, target, params, False,
-                error=str(e), duration_ms=duration
-            )
+            self._record_action(action_type, target, params, False, error=str(e), duration_ms=duration)
             raise
 
-    async def navigate(
-        self,
-        url: str,
-        timeout_ms: Optional[int] = None,
-        wait_until: str = "domcontentloaded"
-    ) -> str:
+    async def navigate(self, url: str, timeout_ms: Optional[int] = None, wait_until: str = "domcontentloaded") -> str:
         """
         Navigate to a URL.
 
@@ -338,9 +307,7 @@ class PlaywrightWrapper:
             raise ValueError(f"Domain not allowed: {url}")
 
         if self._navigation_depth >= self.config.max_navigation_depth:
-            raise RuntimeError(
-                f"Max navigation depth ({self.config.max_navigation_depth}) exceeded"
-            )
+            raise RuntimeError(f"Max navigation depth ({self.config.max_navigation_depth}) exceeded")
 
         timeout = timeout_ms or self.config.navigation_timeout_ms
 
@@ -350,18 +317,10 @@ class PlaywrightWrapper:
             return self._page.url
 
         return await self._execute_with_timeout(
-            _nav(),
-            timeout,
-            BrowserActionType.NAVIGATE,
-            url,
-            {"wait_until": wait_until}
+            _nav(), timeout, BrowserActionType.NAVIGATE, url, {"wait_until": wait_until}
         )
 
-    async def click(
-        self,
-        selector: str,
-        timeout_ms: Optional[int] = None
-    ):
+    async def click(self, selector: str, timeout_ms: Optional[int] = None):
         """
         Click an element.
 
@@ -378,20 +337,10 @@ class PlaywrightWrapper:
         timeout = timeout_ms or self.config.default_timeout_ms
 
         return await self._execute_with_timeout(
-            self._page.click(selector, timeout=timeout),
-            timeout,
-            BrowserActionType.CLICK,
-            selector,
-            {}
+            self._page.click(selector, timeout=timeout), timeout, BrowserActionType.CLICK, selector, {}
         )
 
-    async def type_text(
-        self,
-        selector: str,
-        text: str,
-        timeout_ms: Optional[int] = None,
-        delay_ms: int = 50
-    ):
+    async def type_text(self, selector: str, text: str, timeout_ms: Optional[int] = None, delay_ms: int = 50):
         """
         Type text into an element.
 
@@ -413,18 +362,11 @@ class PlaywrightWrapper:
             await self._page.fill(selector, text, timeout=timeout)
 
         return await self._execute_with_timeout(
-            _type(),
-            timeout,
-            BrowserActionType.TYPE,
-            selector,
-            {"text_length": len(text)}
+            _type(), timeout, BrowserActionType.TYPE, selector, {"text_length": len(text)}
         )
 
     async def screenshot(
-        self,
-        selector: Optional[str] = None,
-        full_page: bool = False,
-        timeout_ms: Optional[int] = None
+        self, selector: Optional[str] = None, full_page: bool = False, timeout_ms: Optional[int] = None
     ) -> ScreenshotResult:
         """
         Take a screenshot.
@@ -461,23 +403,14 @@ class PlaywrightWrapper:
             return ScreenshotResult(
                 data=data,
                 width=viewport["width"] if viewport else self.config.viewport_width,
-                height=viewport["height"] if viewport else self.config.viewport_height
+                height=viewport["height"] if viewport else self.config.viewport_height,
             )
 
         return await self._execute_with_timeout(
-            _screenshot(),
-            timeout,
-            BrowserActionType.SCREENSHOT,
-            selector or "full_page",
-            {"full_page": full_page}
+            _screenshot(), timeout, BrowserActionType.SCREENSHOT, selector or "full_page", {"full_page": full_page}
         )
 
-    async def scroll(
-        self,
-        direction: str = "down",
-        amount: int = 300,
-        timeout_ms: Optional[int] = None
-    ):
+    async def scroll(self, direction: str = "down", amount: int = 300, timeout_ms: Optional[int] = None):
         """
         Scroll the page.
 
@@ -495,7 +428,7 @@ class PlaywrightWrapper:
             "down": f"window.scrollBy(0, {amount})",
             "up": f"window.scrollBy(0, -{amount})",
             "right": f"window.scrollBy({amount}, 0)",
-            "left": f"window.scrollBy(-{amount}, 0)"
+            "left": f"window.scrollBy(-{amount}, 0)",
         }
 
         script = scroll_map.get(direction.lower())
@@ -506,18 +439,10 @@ class PlaywrightWrapper:
             await self._page.evaluate(script)
 
         return await self._execute_with_timeout(
-            _scroll(),
-            timeout,
-            BrowserActionType.SCROLL,
-            direction,
-            {"amount": amount}
+            _scroll(), timeout, BrowserActionType.SCROLL, direction, {"amount": amount}
         )
 
-    async def extract_text(
-        self,
-        selector: str,
-        timeout_ms: Optional[int] = None
-    ) -> str:
+    async def extract_text(self, selector: str, timeout_ms: Optional[int] = None) -> str:
         """
         Extract text content from an element.
 
@@ -539,13 +464,7 @@ class PlaywrightWrapper:
                 return await element.text_content()
             return ""
 
-        return await self._execute_with_timeout(
-            _extract(),
-            timeout,
-            BrowserActionType.EXTRACT,
-            selector,
-            {}
-        )
+        return await self._execute_with_timeout(_extract(), timeout, BrowserActionType.EXTRACT, selector, {})
 
     async def get_page_content(self) -> str:
         """
@@ -559,11 +478,7 @@ class PlaywrightWrapper:
 
         return await self._page.content()
 
-    async def evaluate(
-        self,
-        script: str,
-        timeout_ms: Optional[int] = None
-    ) -> Any:
+    async def evaluate(self, script: str, timeout_ms: Optional[int] = None) -> Any:
         """
         Evaluate JavaScript in the page context.
 
@@ -583,11 +498,7 @@ class PlaywrightWrapper:
         timeout = timeout_ms or self.config.default_timeout_ms
 
         return await self._execute_with_timeout(
-            self._page.evaluate(script),
-            timeout,
-            BrowserActionType.EVALUATE,
-            "script",
-            {"script_length": len(script)}
+            self._page.evaluate(script), timeout, BrowserActionType.EVALUATE, "script", {"script_length": len(script)}
         )
 
     def get_action_history(self) -> List[BrowserAction]:

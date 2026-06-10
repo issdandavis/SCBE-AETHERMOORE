@@ -24,7 +24,8 @@ Usage:
   # With Python that has torch + transformers:
   C:/Users/issda/Python312/python.exe scripts/mirror_differential_telemetry.py
   C:/Users/issda/Python312/python.exe scripts/mirror_differential_telemetry.py --model distilbert-base-uncased
-  C:/Users/issda/Python312/python.exe scripts/mirror_differential_telemetry.py --model issdandavis/scbe-pivot-qwen-0.5b --json
+  C:/Users/issda/Python312/python.exe scripts/mirror_differential_telemetry.py \
+      --model issdandavis/scbe-pivot-qwen-0.5b --json
 """
 
 from __future__ import annotations
@@ -294,7 +295,8 @@ def main() -> int:
     print(f"\nMirror Differential Telemetry complete: {output_path}")
     for wtype, stats in result["summary"].items():
         print(
-            f"  {wtype}: S_spec={stats['mean_s_spec']:.4f} ({stats['mean_s_spec_vs_noise']:.2f}x noise), D_we={stats['mean_delta_we']:.4f}, iso={'YES' if stats['all_isometries_preserved'] else 'NO'}"
+            f"  {wtype}: S_spec={stats['mean_s_spec']:.4f} ({stats['mean_s_spec_vs_noise']:.2f}x noise), "
+            f"D_we={stats['mean_delta_we']:.4f}, iso={'YES' if stats['all_isometries_preserved'] else 'NO'}"
         )
 
     if args.json:

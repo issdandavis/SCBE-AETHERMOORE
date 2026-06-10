@@ -20,6 +20,7 @@ All outputs are JSON on stdout:
   {"ok": true, "api": "...", "count": N, "results": [...]}
   {"ok": false, "api": "...", "error": "...", "count": 0, "results": []}
 """
+
 from __future__ import annotations
 
 import argparse
@@ -30,7 +31,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote_plus, urlencode
+from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 import xml.etree.ElementTree as ET
 
@@ -64,6 +65,7 @@ def _error(api: str, msg: str) -> dict:
 # arXiv — free, no key required
 # ---------------------------------------------------------------------------
 
+
 def _search_arxiv(query: str, limit: int) -> dict:
     base = "https://export.arxiv.org/api/query"
     params = urlencode({"search_query": f"all:{query}", "max_results": limit, "sortBy": "relevance"})
@@ -83,6 +85,7 @@ def _search_arxiv(query: str, limit: int) -> dict:
 
     results = []
     for entry in root.findall("atom:entry", ns):
+
         def text(tag: str) -> str:
             el = entry.find(f"atom:{{http://www.w3.org/2005/Atom}}{tag}", ns)
             return el.text.strip() if el is not None and el.text else ""
@@ -93,19 +96,22 @@ def _search_arxiv(query: str, limit: int) -> dict:
             for a in entry.findall("{http://www.w3.org/2005/Atom}author")
             if a.find("{http://www.w3.org/2005/Atom}name") is not None
         ]
-        results.append({
-            "title": entry.findtext("{http://www.w3.org/2005/Atom}title", "").strip(),
-            "authors": authors[:3],
-            "summary": (entry.findtext("{http://www.w3.org/2005/Atom}summary", "") or "").strip()[:400],
-            "published": entry.findtext("{http://www.w3.org/2005/Atom}published", "")[:10],
-            "url": (arxiv_id_el.text or "").strip() if arxiv_id_el is not None else "",
-        })
+        results.append(
+            {
+                "title": entry.findtext("{http://www.w3.org/2005/Atom}title", "").strip(),
+                "authors": authors[:3],
+                "summary": (entry.findtext("{http://www.w3.org/2005/Atom}summary", "") or "").strip()[:400],
+                "published": entry.findtext("{http://www.w3.org/2005/Atom}published", "")[:10],
+                "url": (arxiv_id_el.text or "").strip() if arxiv_id_el is not None else "",
+            }
+        )
     return _result("arxiv", results)
 
 
 # ---------------------------------------------------------------------------
 # Semantic Scholar — free, no key required
 # ---------------------------------------------------------------------------
+
 
 def _search_semantic_scholar(query: str, limit: int) -> dict:
     fields = "title,authors,year,abstract,url,citationCount"
@@ -118,20 +124,23 @@ def _search_semantic_scholar(query: str, limit: int) -> dict:
 
     results = []
     for p in data.get("data", []):
-        results.append({
-            "title": p.get("title", ""),
-            "authors": [a.get("name", "") for a in p.get("authors", [])[:3]],
-            "year": p.get("year"),
-            "abstract": (p.get("abstract") or "")[:400],
-            "citations": p.get("citationCount", 0),
-            "url": p.get("url", ""),
-        })
+        results.append(
+            {
+                "title": p.get("title", ""),
+                "authors": [a.get("name", "") for a in p.get("authors", [])[:3]],
+                "year": p.get("year"),
+                "abstract": (p.get("abstract") or "")[:400],
+                "citations": p.get("citationCount", 0),
+                "url": p.get("url", ""),
+            }
+        )
     return _result("semantic_scholar", results)
 
 
 # ---------------------------------------------------------------------------
 # OpenAlex — free, no key (polite pool with email)
 # ---------------------------------------------------------------------------
+
 
 def _search_openalex(query: str, limit: int) -> dict:
     params = urlencode({"search": query, "per-page": limit, "mailto": _CONTACT_EMAIL})
@@ -143,25 +152,25 @@ def _search_openalex(query: str, limit: int) -> dict:
 
     results = []
     for w in data.get("results", []):
-        authors = [
-            a.get("author", {}).get("display_name", "")
-            for a in w.get("authorships", [])[:3]
-        ]
-        results.append({
-            "title": w.get("title", ""),
-            "authors": authors,
-            "year": w.get("publication_year"),
-            "doi": w.get("doi", ""),
-            "cited_by_count": w.get("cited_by_count", 0),
-            "open_access": w.get("open_access", {}).get("is_oa", False),
-            "url": w.get("id", ""),
-        })
+        authors = [a.get("author", {}).get("display_name", "") for a in w.get("authorships", [])[:3]]
+        results.append(
+            {
+                "title": w.get("title", ""),
+                "authors": authors,
+                "year": w.get("publication_year"),
+                "doi": w.get("doi", ""),
+                "cited_by_count": w.get("cited_by_count", 0),
+                "open_access": w.get("open_access", {}).get("is_oa", False),
+                "url": w.get("id", ""),
+            }
+        )
     return _result("openalex", results)
 
 
 # ---------------------------------------------------------------------------
 # CrossRef — free, no key (polite pool with email)
 # ---------------------------------------------------------------------------
+
 
 def _search_crossref(query: str, limit: int) -> dict:
     params = urlencode({"query": query, "rows": limit, "mailto": _CONTACT_EMAIL})
@@ -174,26 +183,26 @@ def _search_crossref(query: str, limit: int) -> dict:
     results = []
     for item in data.get("message", {}).get("items", []):
         title = " ".join(item.get("title", []))
-        authors = [
-            f"{a.get('given','')} {a.get('family','')}".strip()
-            for a in item.get("author", [])[:3]
-        ]
+        authors = [f"{a.get('given','')} {a.get('family','')}".strip() for a in item.get("author", [])[:3]]
         pub_date = item.get("published", {}).get("date-parts", [[None]])[0]
-        results.append({
-            "title": title,
-            "authors": authors,
-            "year": pub_date[0] if pub_date else None,
-            "doi": item.get("DOI", ""),
-            "publisher": item.get("publisher", ""),
-            "type": item.get("type", ""),
-            "url": item.get("URL", ""),
-        })
+        results.append(
+            {
+                "title": title,
+                "authors": authors,
+                "year": pub_date[0] if pub_date else None,
+                "doi": item.get("DOI", ""),
+                "publisher": item.get("publisher", ""),
+                "type": item.get("type", ""),
+                "url": item.get("URL", ""),
+            }
+        )
     return _result("crossref", results)
 
 
 # ---------------------------------------------------------------------------
 # PubMed (NCBI E-utilities) — free, no key
 # ---------------------------------------------------------------------------
+
 
 def _search_pubmed(query: str, limit: int) -> dict:
     base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
@@ -221,14 +230,16 @@ def _search_pubmed(query: str, limit: int) -> dict:
     for uid in uids:
         article = summary_data["result"].get(uid, {})
         authors = [a.get("name", "") for a in article.get("authors", [])[:3]]
-        results.append({
-            "title": article.get("title", ""),
-            "authors": authors,
-            "year": article.get("pubdate", "")[:4],
-            "journal": article.get("source", ""),
-            "pmid": uid,
-            "url": f"https://pubmed.ncbi.nlm.nih.gov/{uid}/",
-        })
+        results.append(
+            {
+                "title": article.get("title", ""),
+                "authors": authors,
+                "year": article.get("pubdate", "")[:4],
+                "journal": article.get("source", ""),
+                "pmid": uid,
+                "url": f"https://pubmed.ncbi.nlm.nih.gov/{uid}/",
+            }
+        )
     return _result("pubmed", results)
 
 
@@ -236,9 +247,11 @@ def _search_pubmed(query: str, limit: int) -> dict:
 # SAM.gov federal opportunities — SAM_GOV_API_KEY required
 # ---------------------------------------------------------------------------
 
+
 def _search_sam_gov(query: str, limit: int) -> dict:
     try:
         from api.darpa_prep.client import SamGovClient
+
         client = SamGovClient()
         raw = client.search_opportunities(query=query, limit=limit, active_only=True)
         normalized = [client.normalize_opportunity(item).model_dump() for item in raw]
@@ -267,6 +280,7 @@ def _search_sam_gov(query: str, limit: int) -> dict:
 # USPTO Patent File Wrapper — USPTO_ODP_API_KEY required
 # ---------------------------------------------------------------------------
 
+
 def _search_uspto(query: str, limit: int) -> dict:
     api_key = os.getenv("USPTO_ODP_API_KEY", "").strip()
     if not api_key:
@@ -283,20 +297,23 @@ def _search_uspto(query: str, limit: int) -> dict:
     patents = data.get("results", data.get("patentBiblio", []))
     results = []
     for p in patents[:limit]:
-        results.append({
-            "title": p.get("inventionTitle", p.get("title", "")),
-            "application_number": p.get("patentApplicationNumber", p.get("applicationNumber", "")),
-            "filing_date": p.get("filingDate", ""),
-            "status": p.get("applicationStatus", p.get("status", "")),
-            "inventors": p.get("inventorNameArrayText", p.get("inventors", "")),
-            "assignee": p.get("assigneeEntityName", p.get("assignee", "")),
-        })
+        results.append(
+            {
+                "title": p.get("inventionTitle", p.get("title", "")),
+                "application_number": p.get("patentApplicationNumber", p.get("applicationNumber", "")),
+                "filing_date": p.get("filingDate", ""),
+                "status": p.get("applicationStatus", p.get("status", "")),
+                "inventors": p.get("inventorNameArrayText", p.get("inventors", "")),
+                "assignee": p.get("assigneeEntityName", p.get("assignee", "")),
+            }
+        )
     return _result("uspto", results)
 
 
 # ---------------------------------------------------------------------------
 # HuggingFace model hub — HF_TOKEN optional
 # ---------------------------------------------------------------------------
+
 
 def _search_hf_models(query: str, limit: int) -> dict:
     params = urlencode({"search": query, "limit": limit, "sort": "downloads"})
@@ -310,21 +327,24 @@ def _search_hf_models(query: str, limit: int) -> dict:
 
     results = []
     for m in data[:limit]:
-        results.append({
-            "model_id": m.get("id", ""),
-            "author": m.get("author", ""),
-            "downloads": m.get("downloads", 0),
-            "likes": m.get("likes", 0),
-            "pipeline_tag": m.get("pipeline_tag", ""),
-            "tags": (m.get("tags") or [])[:5],
-            "url": f"https://huggingface.co/{m.get('id', '')}",
-        })
+        results.append(
+            {
+                "model_id": m.get("id", ""),
+                "author": m.get("author", ""),
+                "downloads": m.get("downloads", 0),
+                "likes": m.get("likes", 0),
+                "pipeline_tag": m.get("pipeline_tag", ""),
+                "tags": (m.get("tags") or [])[:5],
+                "url": f"https://huggingface.co/{m.get('id', '')}",
+            }
+        )
     return _result("hf_models", results)
 
 
 # ---------------------------------------------------------------------------
 # GitHub repository search — GITHUB_TOKEN recommended
 # ---------------------------------------------------------------------------
+
 
 def _search_github_repos(query: str, limit: int) -> dict:
     params = urlencode({"q": query, "sort": "stars", "order": "desc", "per_page": min(limit, 30)})
@@ -344,15 +364,17 @@ def _search_github_repos(query: str, limit: int) -> dict:
 
     results = []
     for r in data.get("items", [])[:limit]:
-        results.append({
-            "name": r.get("full_name", ""),
-            "description": (r.get("description") or "")[:200],
-            "stars": r.get("stargazers_count", 0),
-            "language": r.get("language", ""),
-            "topics": (r.get("topics") or [])[:5],
-            "updated": r.get("updated_at", "")[:10],
-            "url": r.get("html_url", ""),
-        })
+        results.append(
+            {
+                "name": r.get("full_name", ""),
+                "description": (r.get("description") or "")[:200],
+                "stars": r.get("stargazers_count", 0),
+                "language": r.get("language", ""),
+                "topics": (r.get("topics") or [])[:5],
+                "updated": r.get("updated_at", "")[:10],
+                "url": r.get("html_url", ""),
+            }
+        )
     return _result("github_repos", results)
 
 

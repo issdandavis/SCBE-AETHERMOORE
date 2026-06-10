@@ -541,7 +541,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--out-dir",
         default=None,
-        help="Optional output directory. Defaults to artifacts/webtoon/ch01/v3 or a tier-specific subdir when using non-standard tiers.",
+        help="Optional output directory. Defaults to artifacts/webtoon/ch01/v3 "
+        "or a tier-specific subdir when using non-standard tiers.",
     )
     parser.add_argument(
         "--force",
@@ -591,7 +592,7 @@ def generate(panel_id, data, *, out_dir: Path, model: str, force: bool):
             print(f"  OK   {img.size[0]}x{img.size[1]}")
             return "OK"
         else:
-            print(f"  FAIL no image returned")
+            print("  FAIL no image returned")
             return "FAIL"
     except Exception as e:
         print(f"  ERR  {e}")

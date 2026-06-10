@@ -15,14 +15,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.tokenizer.chemistry_command_stack import build_chemistry_command_stack  # noqa: E402
 from src.tokenizer.code_weight_packets import build_code_weight_packet  # noqa: E402
-
 
 SFT_ROOT = REPO_ROOT / "training-data" / "sft"
 TRAIN_OUT = SFT_ROOT / "coding_system_full_v1_train.sft.jsonl"
@@ -185,12 +183,12 @@ CONCEPTS: tuple[Concept, ...] = (
         "budget_fallback",
         ("power", "compute", "time", "comms", "wear"),
         {
-            "KO": "def route_or_hold(cost, budget):\n    if cost > budget:\n        return \"hold\"\n    return \"launch\"\n",
-            "AV": "export function routeOrHold(cost: number, budget: number): \"hold\" | \"launch\" {\n  return cost > budget ? \"hold\" : \"launch\";\n}\n",
-            "RU": "fn route_or_hold(cost: f32, budget: f32) -> &'static str {\n    if cost > budget { \"hold\" } else { \"launch\" }\n}\n",
-            "CA": "const char *route_or_hold(float cost, float budget) {\n    return cost > budget ? \"hold\" : \"launch\";\n}\n",
-            "UM": "route_or_hold(cost, budget) = cost > budget ? \"hold\" : \"launch\"\n",
-            "DR": "routeOrHold :: Float -> Float -> String\nrouteOrHold cost budget = if cost > budget then \"hold\" else \"launch\"\n",
+            "KO": 'def route_or_hold(cost, budget):\n    if cost > budget:\n        return "hold"\n    return "launch"\n',
+            "AV": 'export function routeOrHold(cost: number, budget: number): "hold" | "launch" {\n  return cost > budget ? "hold" : "launch";\n}\n',
+            "RU": 'fn route_or_hold(cost: f32, budget: f32) -> &\'static str {\n    if cost > budget { "hold" } else { "launch" }\n}\n',
+            "CA": 'const char *route_or_hold(float cost, float budget) {\n    return cost > budget ? "hold" : "launch";\n}\n',
+            "UM": 'route_or_hold(cost, budget) = cost > budget ? "hold" : "launch"\n',
+            "DR": 'routeOrHold :: Float -> Float -> String\nrouteOrHold cost budget = if cost > budget then "hold" else "launch"\n',
         },
     ),
     Concept(
@@ -201,7 +199,7 @@ CONCEPTS: tuple[Concept, ...] = (
         ("audit", "compute"),
         {
             "KO": "import hashlib\n\ndef hash_route(text):\n    return hashlib.sha256(text.encode()).hexdigest()\n",
-            "AV": "export async function hashRoute(text: string): Promise<string> {\n  const data = new TextEncoder().encode(text);\n  const digest = await crypto.subtle.digest(\"SHA-256\", data);\n  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, \"0\")).join(\"\");\n}\n",
+            "AV": 'export async function hashRoute(text: string): Promise<string> {\n  const data = new TextEncoder().encode(text);\n  const digest = await crypto.subtle.digest("SHA-256", data);\n  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");\n}\n',
             "RU": "fn hash_route(bytes: &[u8]) -> u64 {\n    bytes.iter().fold(0u64, |acc, b| acc.wrapping_mul(131).wrapping_add(*b as u64))\n}\n",
             "CA": "unsigned long hash_route(const unsigned char *bytes, int n) {\n    unsigned long acc = 0;\n    for (int i = 0; i < n; i++) acc = acc * 131u + bytes[i];\n    return acc;\n}\n",
             "UM": "hash_route(bytes) = foldl((acc, b) -> acc * UInt(131) + UInt(b), bytes; init=UInt(0))\n",
@@ -231,7 +229,7 @@ CONCEPTS: tuple[Concept, ...] = (
         ("proof", "compute"),
         {
             "KO": "def add(a, b):\n    return a + b\n\ndef test_add():\n    assert add(2, 3) == 5\n",
-            "AV": "export function add(a: number, b: number): number {\n  return a + b;\n}\n\nexport function testAdd(): void {\n  if (add(2, 3) !== 5) throw new Error(\"add failed\");\n}\n",
+            "AV": 'export function add(a: number, b: number): number {\n  return a + b;\n}\n\nexport function testAdd(): void {\n  if (add(2, 3) !== 5) throw new Error("add failed");\n}\n',
             "RU": "fn add(a: i32, b: i32) -> i32 {\n    a + b\n}\n\n#[test]\nfn test_add() {\n    assert_eq!(add(2, 3), 5);\n}\n",
             "CA": "int add(int a, int b) {\n    return a + b;\n}\n\nvoid test_add(void) {\n    assert(add(2, 3) == 5);\n}\n",
             "UM": "add(a, b) = a + b\n\nfunction test_add()\n    @assert add(2, 3) == 5\nend\n",
@@ -324,9 +322,7 @@ def _build_single_record(concept: Concept, concept_index: int, primary: str) -> 
         "mode": primary_cfg["mode"],
         "interval_pattern": primary_cfg["interval_pattern"],
         **_pitch_for(concept_index, primary),
-        "pseudo_harmony": (
-            "stable_primary" if primary in {"KO", "AV", "RU"} else "mirror_resolution"
-        ),
+        "pseudo_harmony": ("stable_primary" if primary in {"KO", "AV", "RU"} else "mirror_resolution"),
     }
     assistant_payload = {
         "schema_version": "scbe_full_coding_system_answer_v1",

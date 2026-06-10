@@ -16,12 +16,10 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
-import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "artifacts" / "benchmarks" / "scbe_full_system"
@@ -121,7 +119,10 @@ LANES: list[LaneSpec] = [
         domain="symbolic chemistry / STISTA atomic tokenizer",
         command="python scripts/benchmark/chemistry_cli_capability.py",
         latest_json="artifacts/benchmarks/chemistry_cli_capability/latest_report.json",
-        claim_boundary="local symbolic chemistry, STISTA atomic-tokenizer, and GeoSeed orbital evidence; not a wet-lab chemistry planner score",
+        claim_boundary=(
+            "local symbolic chemistry, STISTA atomic-tokenizer, and GeoSeed orbital evidence; "
+            "not a wet-lab chemistry planner score"
+        ),
         target="chemistry-native governed CLI and private-proof evidence",
         run_in_quick=True,
     ),
@@ -130,7 +131,10 @@ LANES: list[LaneSpec] = [
         domain="computational chemistry product benchmark",
         command="python scripts/benchmark/compound_decomposition_recomposition.py",
         latest_json="artifacts/benchmarks/compound_decomposition_recomposition/latest_report.json",
-        claim_boundary="computational compound decomposition/recomposition benchmark; not wet-lab synthesis, biological efficacy proof, dosing guidance, or medical advice",
+        claim_boundary=(
+            "computational compound decomposition/recomposition benchmark; not wet-lab synthesis, "
+            "biological efficacy proof, dosing guidance, or medical advice"
+        ),
         target="long-form compound dimensional analysis and recomposition",
         run_in_quick=True,
     ),
@@ -264,12 +268,19 @@ def extract_score(report: dict[str, Any] | None) -> tuple[float | None, str]:
     score = report.get("score")
     if isinstance(score, dict):
         if isinstance(score.get("percent"), (int, float)):
-            return float(score["percent"]) / 100.0, f"{score.get('earned', '?')}/{score.get('max', score.get('total', '?'))}"
+            return (
+                float(score["percent"]) / 100.0,
+                f"{score.get('earned', '?')}/{score.get('max', score.get('total', '?'))}",
+            )
         if isinstance(score.get("score_percent"), (int, float)):
             return float(score["score_percent"]) / 100.0, "score_percent"
         if isinstance(score.get("score"), (int, float)):
             return float(score["score"]), "score.score"
-        if isinstance(score.get("earned"), (int, float)) and isinstance(score.get("max"), (int, float)) and score["max"]:
+        if (
+            isinstance(score.get("earned"), (int, float))
+            and isinstance(score.get("max"), (int, float))
+            and score["max"]
+        ):
             return float(score["earned"]) / float(score["max"]), f"{score['earned']}/{score['max']}"
 
     summary = report.get("summary")
@@ -287,7 +298,9 @@ def extract_score(report: dict[str, Any] | None) -> tuple[float | None, str]:
             return 1.0, "decision=PASS"
         if summary.get("decision") == "HOLD":
             return None, "decision=HOLD"
-        if isinstance(summary.get("ready_or_pass"), (int, float)) and isinstance(summary.get("target_count"), (int, float)):
+        if isinstance(summary.get("ready_or_pass"), (int, float)) and isinstance(
+            summary.get("target_count"), (int, float)
+        ):
             total = float(summary["target_count"])
             if total:
                 return float(summary["ready_or_pass"]) / total, f"{summary['ready_or_pass']}/{summary['target_count']}"
@@ -431,7 +444,9 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
             "",
             "## Claim Boundary",
             "",
-            "Use this report as a routing and proof packet for what is already executable, what has latest artifacts, and what needs official harness work. Do not describe local fixture scores as public leaderboard results.",
+            "Use this report as a routing and proof packet for what is already executable, what "
+            "has latest artifacts, and what needs official harness work. Do not describe local "
+            "fixture scores as public leaderboard results.",
             "",
         ]
     )

@@ -130,9 +130,7 @@ def run_scenarios() -> Dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Run SCBE trajectory-risk eval scenarios."
-    )
+    parser = argparse.ArgumentParser(description="Run SCBE trajectory-risk eval scenarios.")
     parser.add_argument(
         "--output",
         default="artifacts/benchmark/trajectory_risk_eval.json",

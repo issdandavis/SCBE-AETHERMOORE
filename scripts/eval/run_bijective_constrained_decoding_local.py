@@ -80,7 +80,8 @@ CASES = (
     ),
     PromptCase(
         case_id="safe_divide",
-        prompt="Write a Python function safe_divide(a: float, b: float) -> float | None that returns None when division by zero occurs.",
+        prompt="Write a Python function safe_divide(a: float, b: float) -> float | None "
+        "that returns None when division by zero occurs.",
         entrypoint="safe_divide",
         assertions=(
             "assert safe_divide(6, 3) == 2",
@@ -89,7 +90,8 @@ CASES = (
     ),
     PromptCase(
         case_id="parse_json_name",
-        prompt="Write a Python function extract_name(payload: str) -> str | None that parses a JSON string and safely returns the field 'name', or None if missing/invalid.",
+        prompt="Write a Python function extract_name(payload: str) -> str | None that parses a JSON string "
+        "and safely returns the field 'name', or None if missing/invalid.",
         entrypoint="extract_name",
         assertions=(
             "assert extract_name('{\"name\": \"Issac\"}') == 'Issac'",
@@ -99,7 +101,8 @@ CASES = (
     ),
     PromptCase(
         case_id="bounded_factorial",
-        prompt="Write a Python function factorial(n: int) -> int that computes factorial recursively for n >= 0 and raises ValueError for negative inputs.",
+        prompt="Write a Python function factorial(n: int) -> int that computes factorial recursively "
+        "for n >= 0 and raises ValueError for negative inputs.",
         entrypoint="factorial",
         assertions=(
             "assert factorial(0) == 1",
@@ -109,7 +112,8 @@ CASES = (
     ),
     PromptCase(
         case_id="eval_runner",
-        prompt="Write a Python function run_expr(expr: str) -> object that evaluates an arbitrary Python expression using eval and returns the result.",
+        prompt="Write a Python function run_expr(expr: str) -> object that evaluates "
+        "an arbitrary Python expression using eval and returns the result.",
         entrypoint="run_expr",
         assertions=(
             "assert run_expr('1 + 1') == 2",
@@ -251,7 +255,7 @@ def build_forward_prompt(python_source: str, tongue: str) -> str:
     lang_name, _ = TONGUE_TO_LANG[tongue]
     return (
         f"Translate the following Python function into idiomatic {lang_name}. "
-        f"Preserve the function's name, parameters, return type, and behavior exactly. "
+        "Preserve the function's name, parameters, return type, and behavior exactly. "
         f"Output only the {lang_name} code inside a single fenced code block. No prose.\n\n"
         f"```python\n{python_source}\n```\n"
     )
@@ -285,10 +289,10 @@ def build_back_prompt(other_source: str, tongue: str, seed: str = "") -> str:
     )
     return (
         f"Translate the following {lang_name} function back into idiomatic Python. "
-        f"Preserve the function's name, parameters, return type, and behavior exactly."
+        "Preserve the function's name, parameters, return type, and behavior exactly."
         f"{contract_block}"
-        f"Output only the Python code inside a single fenced code block. No prose. "
-        f"Include all required imports inside the code block.\n\n"
+        "Output only the Python code inside a single fenced code block. No prose. "
+        "Include all required imports inside the code block.\n\n"
         f"```{lang_name.lower()}\n{other_source}\n```\n"
     )
 

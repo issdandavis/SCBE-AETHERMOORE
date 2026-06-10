@@ -21,7 +21,6 @@ from typing import Any
 
 import numpy as np
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
@@ -31,29 +30,40 @@ from neurogolf.arc_io import load_arc_task  # noqa: E402
 from neurogolf.family_lattice import task_topology  # noqa: E402
 from neurogolf.solver import execute_program, synthesize_program  # noqa: E402
 
-
 DEFAULT_OUT = REPO_ROOT / "artifacts" / "benchmarks" / "arc_style_grid"
 
 PATENT_PROVENANCE_REFS = (
     {
         "path": "docs/PATENT_DETAILED_DESCRIPTION.md",
         "claim_family": "geometric state evaluation and bounded decision gates",
-        "tie": "The benchmark records topology vectors, restricted programs, pass/fail results, and receipt hashes as executable evidence of state-to-decision processing.",
+        "tie": (
+            "The benchmark records topology vectors, restricted programs, pass/fail results, and "
+            "receipt hashes as executable evidence of state-to-decision processing."
+        ),
     },
     {
         "path": "docs/specs/EVALUATION_CONTRACT_v1.md",
         "claim_family": "reproducible evaluation envelope",
-        "tie": "The report emits a stable JSON schema with summary, per-task lanes, hidden expected comparison, and artifact paths.",
+        "tie": (
+            "The report emits a stable JSON schema with summary, per-task lanes, hidden expected "
+            "comparison, and artifact paths."
+        ),
     },
     {
         "path": "docs/legal/patent-workbench/claim_support_scan.md",
         "claim_family": "claim-support provenance",
-        "tie": "This local lane supplies a code-backed benchmark artifact that can be cited as implementation evidence, not as a new legal conclusion.",
+        "tie": (
+            "This local lane supplies a code-backed benchmark artifact that can be cited as "
+            "implementation evidence, not as a new legal conclusion."
+        ),
     },
     {
         "path": "docs/benchmarks/HARD_AGENTIC_BENCHMARK_PRETEST.md",
         "claim_family": "hard benchmark readiness and non-leaky assistance",
-        "tie": "The ARC-style lane closes one blocker from the hard benchmark pretest by adding a local grid-reasoning execution surface before official ARC-AGI-2 runs.",
+        "tie": (
+            "The ARC-style lane closes one blocker from the hard benchmark pretest by adding a local "
+            "grid-reasoning execution surface before official ARC-AGI-2 runs."
+        ),
     },
 )
 
@@ -107,8 +117,12 @@ FIXTURES: tuple[ArcStyleFixture, ...] = (
         expected_output=[[3, 0, 4], [4, 3, 0]],
         why_hard="Requires inducing a color mapping from examples instead of copying the input shape.",
         non_leaky_assist=("List observed color pairs.", "Check that zero/background remains stable."),
-        constructive_branch="Infer a total color substitution table from train input/output pairs, then apply it to the held-out grid.",
-        defender_branch="Reject mappings that alter background, collide inconsistently, or only fit one train occurrence.",
+        constructive_branch=(
+            "Infer a total color substitution table from train input/output pairs, then apply it to the held-out grid."
+        ),
+        defender_branch=(
+            "Reject mappings that alter background, collide inconsistently, or only fit one train occurrence."
+        ),
     ),
     ArcStyleFixture(
         task_id="arc_local_shift_color_remap",
@@ -124,7 +138,10 @@ FIXTURES: tuple[ArcStyleFixture, ...] = (
         why_hard="Requires separating motion from recoloring and preserving both in the held-out grid.",
         non_leaky_assist=("Expose candidate translation vectors.", "Validate remap after geometric move."),
         constructive_branch="Search small translations, then infer the color remap after the translated shape aligns.",
-        defender_branch="Reject any branch where remapping before motion fits train but changes spatial causality on held-out structure.",
+        defender_branch=(
+            "Reject any branch where remapping before motion fits train but changes spatial causality "
+            "on held-out structure."
+        ),
     ),
     ArcStyleFixture(
         task_id="arc_local_flip_x_color_remap",
@@ -139,7 +156,9 @@ FIXTURES: tuple[ArcStyleFixture, ...] = (
         expected_output=[[7, 8, 0], [0, 9, 0]],
         why_hard="Requires detecting a left-right symmetry before applying color semantics.",
         non_leaky_assist=("Try dihedral transforms as hypotheses.", "Score hypotheses on train examples only."),
-        constructive_branch="Try left-right reflection as the geometric carrier, then bind reflected source colors to output colors.",
+        constructive_branch=(
+            "Try left-right reflection as the geometric carrier, then bind reflected source colors to output colors."
+        ),
         defender_branch="Reject transforms that explain colors but fail the reflected coordinate relationship.",
     ),
     ArcStyleFixture(
@@ -171,7 +190,9 @@ FIXTURES: tuple[ArcStyleFixture, ...] = (
         expected_output=[[3, 0, 0, 3], [0, 4, 4, 0], [0, 3, 3, 0], [4, 0, 0, 4]],
         why_hard="Requires inferring a composed tiling pattern rather than a same-size transform.",
         non_leaky_assist=("Expose candidate tiling factors.", "Validate quadrant symmetries on train examples."),
-        constructive_branch="Infer a 2x2 tiling operation where quadrants are generated by mirrored variants of the input.",
+        constructive_branch=(
+            "Infer a 2x2 tiling operation where quadrants are generated by mirrored variants of the input."
+        ),
         defender_branch="Reject tile hypotheses unless all quadrants are explained by one reusable dihedral rule.",
     ),
 )
@@ -320,8 +341,10 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "| Lane | Passes | Pass rate |",
         "| --- | ---: | ---: |",
-        f"| Identity baseline | `{summary['identity_passes']} / {summary['task_count']}` | `{summary['identity_pass_rate']}` |",
-        f"| NeuroGolf restricted IR | `{summary['neurogolf_passes']} / {summary['task_count']}` | `{summary['neurogolf_pass_rate']}` |",
+        f"| Identity baseline | `{summary['identity_passes']} / {summary['task_count']}` "
+        f"| `{summary['identity_pass_rate']}` |",
+        f"| NeuroGolf restricted IR | `{summary['neurogolf_passes']} / {summary['task_count']}` "
+        f"| `{summary['neurogolf_pass_rate']}` |",
         "",
         "## Per-Task Results",
         "",
@@ -333,15 +356,17 @@ def render_markdown(report: dict[str, Any]) -> str:
     for task_id, fixture in fixtures.items():
         result = solver_by_task[task_id]
         lines.append(
-            f"| `{task_id}` | `{fixture['expected_family']}` | `{result['family']}` | `{result['passed']}` | `{result['receipt_hash'][:12]}` |"
+            f"| `{task_id}` | `{fixture['expected_family']}` | `{result['family']}` "
+            f"| `{result['passed']}` | `{result['receipt_hash'][:12]}` |"
         )
     lines.extend(
         [
             "",
-        "## Missing-Link Assistance",
-        "",
-        "These are acceptable supports because they expose process structure without revealing hidden test outputs.",
-        "",
+            "## Missing-Link Assistance",
+            "",
+            "These are acceptable supports because they expose process structure "
+            "without revealing hidden test outputs.",
+            "",
         ]
     )
     for fixture in report["fixtures"]:
@@ -353,7 +378,8 @@ def render_markdown(report: dict[str, Any]) -> str:
         lines.append(f"- Merge rule: {fixture['bifurcated_reasoning']['merge_rule']}")
         flow = fixture["bifurcated_reasoning"]["flow_model"]
         lines.append(
-            f"- Flow model: {flow['source']} -> {flow['branch_a']} / {flow['branch_b']} -> {flow['merge']} -> {flow['sink']}"
+            f"- Flow model: {flow['source']} -> {flow['branch_a']} / {flow['branch_b']} "
+            f"-> {flow['merge']} -> {flow['sink']}"
         )
         for item in fixture["non_leaky_assist"]:
             lines.append(f"- Assist: {item}")
@@ -400,10 +426,18 @@ def build_report(out_dir: Path) -> dict[str, Any]:
         "claim_boundary": "synthetic_arc_style_local_pretest_not_official_arc_agi_2",
         "repo_head": git_head(),
         "patent_provenance": {
-            "legal_boundary": "implementation evidence only; support found/missing still requires patent workbench review",
+            "legal_boundary": (
+                "implementation evidence only; support found/missing still requires patent workbench review"
+            ),
             "proof_goal_split": {
-                "proof_layer": "the auditable steps: fixtures, synthesized IR, topology vectors, hidden-output comparison, receipt hashes, and reports",
-                "goal_layer": "the capability destination: a generalizable grid-reasoning agent that can improve from failures and later run official ARC-AGI-2 tasks",
+                "proof_layer": (
+                    "the auditable steps: fixtures, synthesized IR, topology vectors, "
+                    "hidden-output comparison, receipt hashes, and reports"
+                ),
+                "goal_layer": (
+                    "the capability destination: a generalizable grid-reasoning agent that can "
+                    "improve from failures and later run official ARC-AGI-2 tasks"
+                ),
                 "boundary": "proof supports the path taken; it does not by itself prove the end goal has been reached",
             },
             "chain_of_provenance": [
@@ -425,7 +459,10 @@ def build_report(out_dir: Path) -> dict[str, Any]:
                 "bifurcated_reasoning": {
                     "constructive_branch": fixture.constructive_branch,
                     "defender_branch": fixture.defender_branch,
-                    "merge_rule": "accept only when the constructive program passes train examples and the defender branch finds no scope or invariant violation",
+                    "merge_rule": (
+                        "accept only when the constructive program passes train examples and the "
+                        "defender branch finds no scope or invariant violation"
+                    ),
                     "flow_model": {
                         "source": "train examples",
                         "branch_a": "constructive hypothesis flow",

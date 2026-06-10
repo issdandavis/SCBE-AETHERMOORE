@@ -187,9 +187,7 @@ def validate_artifact(artifact: dict) -> dict:
             code = row.get("code", {})
             missing = sorted(required_primary - set(code))
             if missing:
-                problems.append(
-                    f"{row.get('name')}: missing primary code templates {missing}"
-                )
+                problems.append(f"{row.get('name')}: missing primary code templates {missing}")
 
     return {"ok": not problems, "problems": problems}
 
@@ -198,26 +196,16 @@ def main() -> int:
     import argparse
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--check", action="store_true", help="Validate existing artifact and exit."
-    )
+    parser.add_argument("--check", action="store_true", help="Validate existing artifact and exit.")
     args = parser.parse_args()
 
     if args.check:
         if not OUT_PATH.exists():
-            print(
-                json.dumps(
-                    {"ok": False, "error": f"artifact missing: {OUT_PATH}"}, indent=2
-                )
-            )
+            print(json.dumps({"ok": False, "error": f"artifact missing: {OUT_PATH}"}, indent=2))
             return 1
         existing = json.loads(OUT_PATH.read_text(encoding="utf-8"))
         validation = validate_artifact(existing)
-        print(
-            json.dumps(
-                {"ok": validation["ok"], "problems": validation["problems"]}, indent=2
-            )
-        )
+        print(json.dumps({"ok": validation["ok"], "problems": validation["problems"]}, indent=2))
         return 0 if validation["ok"] else 1
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)

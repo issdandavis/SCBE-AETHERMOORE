@@ -12,11 +12,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SOURCE = (
-    REPO_ROOT
-    / "artifacts"
-    / "incoming"
-    / "kimi_agent_binary_cheat_sheet_feedback_20260425"
-    / "t_operator_sft.jsonl"
+    REPO_ROOT / "artifacts" / "incoming" / "kimi_agent_binary_cheat_sheet_feedback_20260425" / "t_operator_sft.jsonl"
 )
 DEFAULT_OUTPUT = REPO_ROOT / "training-data" / "sft" / "t_operator_v1.sft.jsonl"
 DEFAULT_MANIFEST = REPO_ROOT / "training-data" / "sft" / "t_operator_v1_manifest.json"
@@ -34,9 +30,7 @@ def _sha256(path: Path) -> str:
 
 def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    for line_no, line in enumerate(
-        path.read_text(encoding="utf-8", errors="replace").splitlines(), start=1
-    ):
+    for line_no, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), start=1):
         if not line.strip():
             continue
         parsed = json.loads(line)
@@ -48,18 +42,12 @@ def _load_jsonl(path: Path) -> list[dict[str, Any]]:
 
 def _record_id(index: int, row: dict[str, Any]) -> str:
     metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
-    key = (
-        metadata.get("function_key")
-        or metadata.get("function_name")
-        or f"row_{index:04d}"
-    )
+    key = metadata.get("function_key") or metadata.get("function_name") or f"row_{index:04d}"
     safe = "".join(ch.lower() if ch.isalnum() else "_" for ch in str(key)).strip("_")
     return f"t_operator_v1_{index:04d}_{safe[:48]}"
 
 
-def convert_record(
-    index: int, row: dict[str, Any], source_sha256: str
-) -> dict[str, Any]:
+def convert_record(index: int, row: dict[str, Any], source_sha256: str) -> dict[str, Any]:
     instruction = str(row.get("instruction", "")).strip()
     input_text = str(row.get("input", "")).strip()
     output_text = str(row.get("output", "")).strip()
@@ -91,10 +79,7 @@ def import_dataset(source: Path, output: Path, manifest: Path) -> dict[str, Any]
 
     source_sha = _sha256(source)
     source_rows = _load_jsonl(source)
-    converted = [
-        convert_record(index, row, source_sha)
-        for index, row in enumerate(source_rows, start=1)
-    ]
+    converted = [convert_record(index, row, source_sha) for index, row in enumerate(source_rows, start=1)]
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", encoding="utf-8", newline="\n") as handle:
@@ -117,9 +102,7 @@ def import_dataset(source: Path, output: Path, manifest: Path) -> dict[str, Any]
             "operator prototypes as research artifacts, not consensus signatures."
         ),
     }
-    manifest.write_text(
-        json.dumps(manifest_payload, indent=2, ensure_ascii=True), encoding="utf-8"
-    )
+    manifest.write_text(json.dumps(manifest_payload, indent=2, ensure_ascii=True), encoding="utf-8")
     return manifest_payload
 
 
@@ -132,11 +115,7 @@ def main() -> int:
     args = parser.parse_args()
 
     manifest = import_dataset(args.source, args.output, args.manifest)
-    print(
-        json.dumps(manifest, indent=2)
-        if args.json
-        else f"wrote {manifest['record_count']} records"
-    )
+    print(json.dumps(manifest, indent=2) if args.json else f"wrote {manifest['record_count']} records")
     return 0
 
 

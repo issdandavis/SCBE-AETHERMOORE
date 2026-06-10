@@ -50,7 +50,10 @@ def load_sft_pairs() -> list[dict]:
                     try:
                         pairs.append(json.loads(line))
                     except json.JSONDecodeError as exc:
-                        print(f"[pipeline_to_hf] Skipping malformed JSON at {jsonl_file}:{line_no}: {exc}", file=sys.stderr)
+                        print(
+                            f"[pipeline_to_hf] Skipping malformed JSON at {jsonl_file}:{line_no}: {exc}",
+                            file=sys.stderr,
+                        )
     return pairs
 
 
@@ -69,8 +72,8 @@ def to_chatml(pair: dict) -> dict:
         "pipeline": pair.get("pipeline", "news-pipeline"),
         "version": pair.get("version", "v1"),
         "conversations": [
-            {"role": "system",    "content": SYSTEM_PROMPT},
-            {"role": "user",      "content": user_content},
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_content},
             {"role": "assistant", "content": output},
         ],
         # Keep raw fields for filtering / re-use
@@ -144,8 +147,7 @@ def main() -> None:
             repo_id=HF_DATASET,
             repo_type="dataset",
             commit_message=(
-                f"news-pipeline SFT: {len(dataset)} pairs "
-                f"(8-stage PQC transport + semantic-atomic braid)"
+                f"news-pipeline SFT: {len(dataset)} pairs " "(8-stage PQC transport + semantic-atomic braid)"
             ),
         )
 

@@ -25,9 +25,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from src.tokenizer.topological_operator_tree import operator_signature_packet
 
-DEFAULT_ROUTER_CONFIG = (
-    REPO_ROOT / "config" / "governance" / "terminal_ai_router_profiles.json"
-)
+DEFAULT_ROUTER_CONFIG = REPO_ROOT / "config" / "governance" / "terminal_ai_router_profiles.json"
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "artifacts" / "agent_bus" / "mirror_room"
 
 ProviderRole = Literal["play", "watch", "rest"]
@@ -103,12 +101,7 @@ def _write_json(path: Path, payload: Any) -> None:
 def _append_jsonl(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
-        handle.write(
-            json.dumps(
-                payload, sort_keys=True, ensure_ascii=True, separators=(",", ":")
-            )
-            + "\n"
-        )
+        handle.write(json.dumps(payload, sort_keys=True, ensure_ascii=True, separators=(",", ":")) + "\n")
 
 
 def _env_present(keys: list[str]) -> bool:
@@ -175,23 +168,11 @@ def discover_players(config_path: Path = DEFAULT_ROUTER_CONFIG) -> list[Provider
         "huggingface": "huggingface",
     }
     for provider, family in provider_aliases.items():
-        cfg = (
-            providers_cfg.get(provider, {})
-            if isinstance(providers_cfg.get(provider, {}), dict)
-            else {}
-        )
-        env_keys = (
-            [str(key) for key in cfg.get("env_keys", [])]
-            if isinstance(cfg.get("env_keys"), list)
-            else []
-        )
+        cfg = providers_cfg.get(provider, {}) if isinstance(providers_cfg.get(provider, {}), dict) else {}
+        env_keys = [str(key) for key in cfg.get("env_keys", [])] if isinstance(cfg.get("env_keys"), list) else []
         tiers = cfg.get("tiers", {}) if isinstance(cfg.get("tiers", {}), dict) else {}
-        cheap = (
-            tiers.get("cheap", {}) if isinstance(tiers.get("cheap", {}), dict) else {}
-        )
-        est = float(
-            cheap.get("estimated_cents", 0.25 if provider == "huggingface" else 1.0)
-        )
+        cheap = tiers.get("cheap", {}) if isinstance(tiers.get("cheap", {}), dict) else {}
+        est = float(cheap.get("estimated_cents", 0.25 if provider == "huggingface" else 1.0))
         players.append(
             ProviderPlayer(
                 provider=provider,
@@ -217,22 +198,14 @@ def discover_players(config_path: Path = DEFAULT_ROUTER_CONFIG) -> list[Provider
                 if not isinstance(provider, str) or not isinstance(cfg, dict):
                     continue
                 endpoint = str(cfg.get("endpoint", ""))
-                privacy = (
-                    "local"
-                    if "localhost" in endpoint or "127.0.0.1" in endpoint
-                    else "remote"
-                )
+                privacy = "local" if "localhost" in endpoint or "127.0.0.1" in endpoint else "remote"
                 players.append(
                     ProviderPlayer(
                         provider=provider,
                         family="custom",
                         privacy=privacy,  # type: ignore[arg-type]
                         available=bool(cfg.get("enabled", True)),
-                        estimated_cents=float(
-                            cfg.get(
-                                "estimated_cents", 0.0 if privacy == "local" else 1.0
-                            )
-                        ),
+                        estimated_cents=float(cfg.get("estimated_cents", 0.0 if privacy == "local" else 1.0)),
                         strengths=tuple(cfg.get("strengths", ["general"])),
                         command_surface=_command_surface("custom"),
                         reason="SCBE_FREE_LLM_PROVIDERS",
@@ -258,12 +231,8 @@ def _load_series_history(output_root: Path, series_id: str) -> list[dict[str, An
     return rows
 
 
-def _recent_play_count(
-    history: list[dict[str, Any]], provider: str, window: int = 4
-) -> int:
-    return sum(
-        1 for row in history[-window:] if row.get("selected_provider") == provider
-    )
+def _recent_play_count(history: list[dict[str, Any]], provider: str, window: int = 4) -> int:
+    return sum(1 for row in history[-window:] if row.get("selected_provider") == provider)
 
 
 def _score_player(
@@ -326,17 +295,9 @@ def schedule_match_round(
     active = [item for item in scored if item[0] > -100.0][: max(1, max_players)]
     active_providers = {item[2].provider for item in active}
     watchers = [
-        item
-        for item in scored
-        if item[2].provider not in active_providers
-        and item[0] > -100.0
-        and item[2].available
+        item for item in scored if item[2].provider not in active_providers and item[0] > -100.0 and item[2].available
     ][:3]
-    rested = [
-        item
-        for item in scored
-        if item[2].provider not in active_providers and item not in watchers
-    ]
+    rested = [item for item in scored if item[2].provider not in active_providers and item not in watchers]
     selected = active[0][2]
 
     reflection = {
@@ -394,9 +355,7 @@ def schedule_match_round(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Schedule a mirror-room multi-provider agent-bus round"
-    )
+    parser = argparse.ArgumentParser(description="Schedule a mirror-room multi-provider agent-bus round")
     parser.add_argument("--task", required=True)
     parser.add_argument(
         "--task-type",
@@ -405,9 +364,7 @@ def main() -> int:
     )
     parser.add_argument("--series-id", default="default")
     parser.add_argument("--round-index", type=int, default=1)
-    parser.add_argument(
-        "--privacy", choices=["local_only", "remote_ok"], default="remote_ok"
-    )
+    parser.add_argument("--privacy", choices=["local_only", "remote_ok"], default="remote_ok")
     parser.add_argument("--budget-cents", type=float, default=2.0)
     parser.add_argument("--max-players", type=int, default=1)
     parser.add_argument("--output-root", default=str(DEFAULT_OUTPUT_ROOT))

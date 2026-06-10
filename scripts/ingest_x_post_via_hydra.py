@@ -177,8 +177,7 @@ async def fetch_x_content(url: str, backend: str) -> Dict[str, Any]:
         except Exception:  # noqa: BLE001
             pass
 
-        article_text = await backend_obj.execute_script(
-            """
+        article_text = await backend_obj.execute_script("""
             () => {
               const a = document.querySelector("article");
               if (a && a.innerText) return a.innerText;
@@ -186,8 +185,7 @@ async def fetch_x_content(url: str, backend: str) -> Dict[str, Any]:
               if (main && main.innerText) return main.innerText;
               return document.body ? document.body.innerText : "";
             }
-            """
-        )
+            """)
         page_html = await backend_obj.get_page_content()
         current_url = await backend_obj.get_current_url()
 

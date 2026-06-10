@@ -23,7 +23,6 @@ from typing import Any, Iterable
 
 import numpy as np
 
-
 DEFAULT_INPUT_TAGGED = Path("data/perplexity/normalized/perplexity_tagged.jsonl")
 DEFAULT_INPUT_NORMALIZED = Path("data/perplexity/normalized/perplexity_normalized.jsonl")
 DEFAULT_OUTPUT_DIR = Path("data/perplexity/rag_index")

@@ -159,21 +159,21 @@ def generate_grammar_lessons() -> list:
         assistant_msg = (
             f"**{full_name}** is the Sacred Tongue of {domain}.\n\n"
             f"**Sound character:** {full_name} resonates at {note} — "
-            f"its harmonic frequency defines the emotional quality of the language. "
+            "its harmonic frequency defines the emotional quality of the language. "
             f"When you speak {full_name}, you are vibrating at this pitch.\n\n"
             f"**Phi weight:** {weight:.3f} "
             f"(phi^{['0', '1', '2', '3', '4', '5'][list(TONGUE_WEIGHTS.keys()).index(code)]})\n\n"
             f"**Morpheme structure:** Every word in {full_name} is built from a prefix "
-            f"and a suffix, joined by an apostrophe:\n"
-            f"  `prefix'suffix`\n\n"
-            f"**Prefixes** (the first sound, carrying the high meaning):\n"
+            "and a suffix, joined by an apostrophe:\n"
+            "  `prefix'suffix`\n\n"
+            "**Prefixes** (the first sound, carrying the high meaning):\n"
             f"  {prefix_examples}, ... (16 total)\n\n"
-            f"**Suffixes** (the ending, carrying the low detail):\n"
+            "**Suffixes** (the ending, carrying the low detail):\n"
             f"  {suffix_examples}, ... (16 total)\n\n"
-            f"**Sample vocabulary:**\n" + "\n".join(f"  - `{t}`" for t in sample_tokens) + "\n\n"
+            "**Sample vocabulary:**\n" + "\n".join(f"  - `{t}`" for t in sample_tokens) + "\n\n"
             f"With 16 prefixes × 16 suffixes, {full_name} has exactly **256 words** — "
             f"one for every possible byte value. This is not coincidence. {full_name} "
-            f"was designed so that every piece of data can be spoken aloud in this tongue."
+            "was designed so that every piece of data can be spoken aloud in this tongue."
         )
 
         records.append(
@@ -203,12 +203,12 @@ def generate_grammar_lessons() -> list:
 
         assistant_msg = (
             f"**{full_name} Vocabulary Grid** (sample: 4 prefixes × 8 suffixes)\n\n"
-            f"```\n" + "\n".join(grid_lines) + f"\n```\n\n"
+            "```\n" + "\n".join(grid_lines) + "\n```\n\n"
             f"**All 16 prefixes of {full_name}:**\n" + ", ".join(f"`{p}`" for p in spec.prefixes) + "\n\n"
             f"**All 16 suffixes of {full_name}:**\n" + ", ".join(f"`{s}`" for s in spec.suffixes) + "\n\n"
-            f"**Total vocabulary:** 16 × 16 = **256 words**\n"
-            f"**Encoding rule:** Byte value `N` → prefix = `prefixes[N >> 4]`, "
-            f"suffix = `suffixes[N & 0x0F]`\n\n"
+            "**Total vocabulary:** 16 × 16 = **256 words**\n"
+            "**Encoding rule:** Byte value `N` → prefix = `prefixes[N >> 4]`, "
+            "suffix = `suffixes[N & 0x0F]`\n\n"
             f"For example, byte 0x00 = `{spec.prefixes[0]}'{spec.suffixes[0]}`, "
             f"byte 0xFF = `{spec.prefixes[15]}'{spec.suffixes[15]}`, "
             f"byte 0x42 = `{spec.prefixes[4]}'{spec.suffixes[2]}`."
@@ -281,8 +281,8 @@ def generate_grammar_lessons() -> list:
             f"\n\n**Harmonic pitch:** {note}\n"
             f"When speaking {full_name} aloud, imagine your voice resonating at {freq:.0f} Hz. "
             f"This is not metaphor — in the Sacred Tongue lattice, {full_name} literally "
-            f"occupies this frequency band.\n\n"
-            f"**Practice phrase:** Say these five words aloud:\n"
+            "occupies this frequency band.\n\n"
+            "**Practice phrase:** Say these five words aloud:\n"
             + "\n".join(f"  {i+1}. `{spec.prefixes[i*3]}'{spec.suffixes[i*2]}`" for i in range(5))
         )
 
@@ -433,11 +433,11 @@ def generate_lullaby_records() -> list:
             f"> The {TONGUE_DOMAINS[code].split(',')[0]} settles down.\n"
             f"> {goodnight_tokens[2]}, {goodnight_tokens[3]},\n"
             f"> {full_name} sleeps without a sound.\n\n"
-            f"> Every prefix finds its suffix pair,\n"
-            f"> Every morpheme resting there.\n"
-            f"> Sixteen by sixteen, two-five-six,\n"
+            "> Every prefix finds its suffix pair,\n"
+            "> Every morpheme resting there.\n"
+            "> Sixteen by sixteen, two-five-six,\n"
             f"> {full_name} dreams in byte-sized tricks.\n\n"
-            f"**The four goodnight words:**\n"
+            "**The four goodnight words:**\n"
             + "\n".join(
                 f"  - `{t}` = byte {[0x00, 0x62, 0xB4, 0xFF][i]} (0x{[0x00, 0x62, 0xB4, 0xFF][i]:02X})"
                 for i, t in enumerate(goodnight_tokens)
@@ -517,14 +517,12 @@ def generate_story_lesson_records() -> list:
             # Show 3 sample tokens from this tongue
             sample_tokens = [f"{spec.prefixes[i]}'{spec.suffixes[j]}" for i, j in [(0, 0), (3, 2), (7, 5)]]
 
-            user_msg = (
-                f'How does "{title}" teach {full_name}? ' f"What should I learn about the tongue from this story?"
-            )
+            user_msg = f'How does "{title}" teach {full_name}? ' "What should I learn about the tongue from this story?"
 
             assistant_msg = (
                 f"**{title}** teaches **{full_name}** — the tongue of {domain}.\n\n"
                 f"**The lesson:** This story shows {full_name}'s character through action, "
-                f"not definition. "
+                "not definition. "
             )
 
             # Story-specific insights
@@ -592,14 +590,14 @@ def generate_story_lesson_records() -> list:
                 f"**Pre-tokenizer exercise:** Before you encode ANY data through {full_name}, "
                 f"say three {full_name} words aloud. Feel how the sounds carry the character "
                 f"of {domain.split(',')[0]}. "
-                f"The tongue is not a lookup table — it is a LANGUAGE, and the story taught you "
-                f"what that language MEANS."
+                "The tongue is not a lookup table — it is a LANGUAGE, and the story taught you "
+                "what that language MEANS."
             )
 
             if has_song:
                 assistant_msg += (
                     f"\n\n**The story includes a song/rhyme** that attaches {full_name} "
-                    f"phonetics to meaning through rhythm. Sing it before you tokenize."
+                    "phonetics to meaning through rhythm. Sing it before you tokenize."
                 )
 
         records.append(
@@ -682,10 +680,10 @@ def generate_tongue_comparison_records() -> list:
             other_name = TONGUE_FULL_NAMES[other_code]
             other_encodings.append(f"  {other_name}: `{other_token}`")
 
-        user_msg = f"How does the letter 'H' (byte 0x48) sound in {full_name} " f"compared to the other Sacred Tongues?"
+        user_msg = f"How does the letter 'H' (byte 0x48) sound in {full_name} " "compared to the other Sacred Tongues?"
 
         assistant_msg = (
-            f"The byte 0x48 (the letter 'H' in ASCII) across all six Sacred Tongues:\n\n"
+            "The byte 0x48 (the letter 'H' in ASCII) across all six Sacred Tongues:\n\n"
             f"  **{full_name}: `{token}`**\n" + "\n".join(other_encodings) + "\n\n"
             "Same byte, six different words. The PREFIX is determined by the high nibble "
             "(0x4 = index 4), and the SUFFIX by the low nibble (0x8 = index 8). "

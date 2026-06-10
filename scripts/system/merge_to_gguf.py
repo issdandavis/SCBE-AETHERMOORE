@@ -39,8 +39,8 @@ MODEL_BASES = {
 }
 
 ADAPTER_BASE = "F:/scbe-rag/adapters"
-MERGED_BASE = "C:/Users/issda/tmp/scbe-merged"   # temp — 14GB for 7b, deleted after GGUF
-GGUF_BASE = "F:/scbe-rag/gguf"                   # final home — Q4_K_M is ~4.5GB, fits on F:
+MERGED_BASE = "C:/Users/issda/tmp/scbe-merged"  # temp — 14GB for 7b, deleted after GGUF
+GGUF_BASE = "F:/scbe-rag/gguf"  # final home — Q4_K_M is ~4.5GB, fits on F:
 
 ADAPTER_SYSTEM_PROMPTS = {
     "coder": "You are a precise coding assistant. Write clean, working code with brief explanations.",
@@ -59,12 +59,12 @@ LLAMA_CPP_PATH = os.environ.get("LLAMA_CPP_PATH", "C:/tools/llama.cpp")
 
 # Space requirements (bytes)
 SPACE_NEEDED_C = {
-    "360m": 2 * 1024**3,   # ~2GB merged
-    "7b":  16 * 1024**3,   # ~14-16GB merged (float16)
+    "360m": 2 * 1024**3,  # ~2GB merged
+    "7b": 16 * 1024**3,  # ~14-16GB merged (float16)
 }
 SPACE_NEEDED_F = {
     "360m": 500 * 1024**2,  # ~500MB GGUF
-    "7b":   5 * 1024**3,    # ~4.5GB GGUF
+    "7b": 5 * 1024**3,  # ~4.5GB GGUF
 }
 
 
@@ -84,13 +84,9 @@ def check_disk_space(model_key: str) -> None:
 
     problems = []
     if c_free < c_need:
-        problems.append(
-            f"C: only has {c_free/1e9:.1f} GB free — need ~{c_need/1e9:.0f} GB for merged weights."
-        )
+        problems.append(f"C: only has {c_free/1e9:.1f} GB free — need ~{c_need/1e9:.0f} GB for merged weights.")
     if f_free < f_need:
-        problems.append(
-            f"F: only has {f_free/1e9:.1f} GB free — need ~{f_need/1e9:.1f} GB for GGUF."
-        )
+        problems.append(f"F: only has {f_free/1e9:.1f} GB free — need ~{f_need/1e9:.1f} GB for GGUF.")
 
     if problems:
         print("\nERROR — not enough disk space:")
@@ -104,6 +100,7 @@ def check_disk_space(model_key: str) -> None:
 # ---------------------------------------------------------------------------
 # Steps
 # ---------------------------------------------------------------------------
+
 
 def merge_adapter(adapter_name: str, model_key: str) -> Path:
     """Merge LoRA into base, save merged model. Returns path."""
@@ -128,7 +125,7 @@ def merge_adapter(adapter_name: str, model_key: str) -> Path:
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_BASES[model_key],
         torch_dtype=torch.float16,
-        device_map="cpu",       # CPU merge is slow but safe on 6GB VRAM
+        device_map="cpu",  # CPU merge is slow but safe on 6GB VRAM
         trust_remote_code=True,
     )
 
@@ -168,7 +165,7 @@ def convert_to_gguf(merged_path: Path, adapter_name: str, model_key: str) -> Pat
     gguf_f16_path = gguf_dir / f"{adapter_name}-{model_key}-f16.gguf"
     gguf_q4_path = gguf_dir / f"{adapter_name}-{model_key}-q4_k_m.gguf"
 
-    print(f"\nConverting to GGUF (f16)...")
+    print("\nConverting to GGUF (f16)...")
     subprocess.run(
         [sys.executable, str(convert_script), str(merged_path), "--outfile", str(gguf_f16_path), "--outtype", "f16"],
         check=True,
@@ -180,7 +177,7 @@ def convert_to_gguf(merged_path: Path, adapter_name: str, model_key: str) -> Pat
         quantize_bin = Path(LLAMA_CPP_PATH) / "quantize"  # older path
 
     if quantize_bin.exists():
-        print(f"Quantizing to Q4_K_M...")
+        print("Quantizing to Q4_K_M...")
         subprocess.run(
             [str(quantize_bin), str(gguf_f16_path), str(gguf_q4_path), "Q4_K_M"],
             check=True,
@@ -220,7 +217,7 @@ PARAMETER num_ctx 4096
         check=True,
     )
 
-    print(f"\nModel ready. Test it:")
+    print("\nModel ready. Test it:")
     print(f"  ollama run {ollama_name}")
     print(f"  ollama run {ollama_name} 'How do I set up a Stripe webhook?'")
     return modelfile_path
@@ -229,6 +226,7 @@ PARAMETER num_ctx 4096
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Merge LoRA adapter and export to Ollama GGUF")
@@ -282,6 +280,7 @@ def main() -> None:
         shutil.rmtree(merged_path)
         print(f"Deleted: {merged_path}")
         import psutil
+
         drive = "C:\\"
         print(f"C: free after cleanup: {psutil.disk_usage(drive).free/1e9:.1f} GB")
 

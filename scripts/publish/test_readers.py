@@ -208,7 +208,8 @@ def run_panel(scene_name, prompt_type, num_readers, token):
 
     full_prompt = f"""{prompt_template}
 
-CONTEXT: This is from "The Six Tongues Protocol" — a portal fantasy where a burnt-out security engineer falls into a world where magic is cryptographic protocol architecture. ~132,000 words.
+CONTEXT: This is from "The Six Tongues Protocol" — a portal fantasy where a burnt-out security \
+engineer falls into a world where magic is cryptographic protocol architecture. ~132,000 words.
 
 SCENE ({desc}):
 {excerpt}"""
@@ -221,7 +222,7 @@ SCENE ({desc}):
         print(f"  [{name}] querying...", end=" ", flush=True)
         response = query_model(model_id, full_prompt, token)
         if response.startswith("ERROR"):
-            print(f"FAILED")
+            print("FAILED")
         else:
             print(f"OK ({len(response)} chars)")
         results.append(

@@ -26,7 +26,6 @@ Performance (non-scored):
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import shutil
@@ -34,18 +33,15 @@ import subprocess
 import sys
 import tempfile
 import time
-from copy import deepcopy
-from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.longform.context_bridge import (
-    ContextLanding,
     LedgerEvent,
     JsonlWorkflowLedger,
     PrincipleSet,
@@ -58,6 +54,7 @@ CHAIN_DEPTH = 20  # events for each attack scenario
 
 
 # ── Workspace helpers ────────────────────────────────────────────────────────
+
 
 def build_chain(n_events: int = CHAIN_DEPTH) -> tuple[str, JsonlWorkflowLedger]:
     """Create a temp workspace with an n_events-long chain. Caller must rmtree."""
@@ -103,6 +100,7 @@ def flip_hex_char(s: str, pos: int = 7) -> str:
 
 
 # ── Attack functions ─────────────────────────────────────────────────────────
+
 
 def attack_a1_payload_bitflip() -> tuple[bool, str]:
     """Flip one character in the payload dict of event 5.
@@ -230,10 +228,7 @@ def attack_a7_full_recompute() -> tuple[bool, str]:
     try:
         principles = ledger.load_principles() or PrincipleSet("Chain integrity stress test")
         landing = create_landing(ledger, principles)
-        events = [
-            LedgerEvent.from_dict(json.loads(line))
-            for line in read_lines(ledger)
-        ]
+        events = [LedgerEvent.from_dict(json.loads(line)) for line in read_lines(ledger)]
         # Mutate event 5 (index 4)
         events[4].payload["data"] = "RECOMPUTED_ATTACK"
         recompute_from(events, start=4)
@@ -283,6 +278,7 @@ def attack_a8_tail_truncation() -> tuple[bool, str]:
 
 
 # ── Cold-start resume fidelity ───────────────────────────────────────────────
+
 
 def test_r1_cold_start_resume() -> tuple[bool, str]:
     """
@@ -347,6 +343,7 @@ def test_r1_cold_start_resume() -> tuple[bool, str]:
 
 # ── Performance table (non-scored) ───────────────────────────────────────────
 
+
 def perf_depth_table(depths: list[int] | None = None) -> list[dict[str, Any]]:
     if depths is None:
         depths = [50, 100, 250, 500]
@@ -359,12 +356,14 @@ def perf_depth_table(depths: list[int] | None = None) -> list[dict[str, Any]]:
             t0 = time.perf_counter()
             valid = ledger.verify_chain()
             elapsed_ms = (time.perf_counter() - t0) * 1000
-            rows.append({
-                "requested_depth": n,
-                "actual_events": actual_depth,
-                "verify_chain_ok": valid,
-                "verify_chain_ms": round(elapsed_ms, 3),
-            })
+            rows.append(
+                {
+                    "requested_depth": n,
+                    "actual_events": actual_depth,
+                    "verify_chain_ok": valid,
+                    "verify_chain_ms": round(elapsed_ms, 3),
+                }
+            )
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
     return rows
@@ -374,12 +373,12 @@ def perf_depth_table(depths: list[int] | None = None) -> list[dict[str, Any]]:
 
 ATTACKS: list[tuple[str, str, int, Any]] = [
     # (id, label, points, fn)
-    ("A1", "payload byte-flip → detect",          15, attack_a1_payload_bitflip),
-    ("A2", "event_hash field flip → detect",       15, attack_a2_event_hash_field_flip),
+    ("A1", "payload byte-flip → detect", 15, attack_a1_payload_bitflip),
+    ("A2", "event_hash field flip → detect", 15, attack_a2_event_hash_field_flip),
     ("A3", "event insertion (no recompute) → detect", 15, attack_a3_event_insertion),
-    ("A4", "event deletion → detect",              15, attack_a4_event_deletion),
-    ("A5", "event swap → detect",                  10, attack_a5_event_swap),
-    ("A6", "hash-field substitution → detect",     10, attack_a6_hash_field_substitution),
+    ("A4", "event deletion → detect", 15, attack_a4_event_deletion),
+    ("A5", "event swap → detect", 10, attack_a5_event_swap),
+    ("A6", "hash-field substitution → detect", 10, attack_a6_hash_field_substitution),
     ("A7", "full recompute → chain passes, semantic detects", 10, attack_a7_full_recompute),
     ("A8", "anchored truncation → chain passes, semantic detects", 5, attack_a8_tail_truncation),
 ]
@@ -396,15 +395,17 @@ def run_benchmark(skip_perf: bool = False) -> dict[str, Any]:
         elapsed_ms = (time.perf_counter() - t0) * 1000
         got = points if passed else 0
         earned += got
-        results.append({
-            "id": attack_id,
-            "label": label,
-            "passed": passed,
-            "points_earned": got,
-            "points_max": points,
-            "note": note,
-            "elapsed_ms": round(elapsed_ms, 3),
-        })
+        results.append(
+            {
+                "id": attack_id,
+                "label": label,
+                "passed": passed,
+                "points_earned": got,
+                "points_max": points,
+                "note": note,
+                "elapsed_ms": round(elapsed_ms, 3),
+            }
+        )
 
     # Cold-start resume
     t0 = time.perf_counter()
@@ -470,9 +471,7 @@ def render_markdown(report: dict[str, Any]) -> str:
     for a in report["attacks"] + [report["resume"]]:
         tick = "✓" if a["passed"] else "✗"
         lines.append(
-            f"| {a['id']} | {a['label']} | {tick} "
-            f"| {a['points_earned']}/{a['points_max']} "
-            f"| {a['note'][:80]} |"
+            f"| {a['id']} | {a['label']} | {tick} " f"| {a['points_earned']}/{a['points_max']} " f"| {a['note'][:80]} |"
         )
 
     lines += ["", "## Semantic Anchor Layer", ""]
@@ -497,10 +496,8 @@ def render_markdown(report: dict[str, Any]) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", default=str(ROOT / "artifacts" / "benchmarks"))
-    parser.add_argument("--skip-perf", action="store_true",
-                        help="Skip the depth/time table (saves ~10 s)")
-    parser.add_argument("--json-only", action="store_true",
-                        help="Print JSON result to stdout, do not write files")
+    parser.add_argument("--skip-perf", action="store_true", help="Skip the depth/time table (saves ~10 s)")
+    parser.add_argument("--json-only", action="store_true", help="Print JSON result to stdout, do not write files")
     args = parser.parse_args()
 
     report = run_benchmark(skip_perf=args.skip_perf)

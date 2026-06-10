@@ -10,7 +10,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Sequence
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_GLOB = "artifacts/tenreary/*/tenreary-run-*.json"
 DEFAULT_OUT_DIR = REPO_ROOT / "artifacts" / "tenreary" / "benchmarks"

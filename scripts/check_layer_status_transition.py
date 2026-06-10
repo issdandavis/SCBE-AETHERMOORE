@@ -15,7 +15,6 @@ import json
 import sys
 from pathlib import Path
 
-
 STATUS_ORDER = {
     "conceptual": 0,
     "partial": 1,

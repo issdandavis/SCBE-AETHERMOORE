@@ -11,13 +11,11 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.browser.hydra_android_hand import HydraAndroidHand
-
 
 BOUNDS_RE = re.compile(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]")
 URL_RE = re.compile(r"^[a-z0-9.-]+(?::\d+)?/[^\s]+$", re.IGNORECASE)
