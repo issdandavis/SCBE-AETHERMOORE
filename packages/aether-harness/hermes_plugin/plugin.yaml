@@ -1,0 +1,6 @@
+name: scbe-governance
+version: 0.1.0
+description: "Route every tool call through the SCBE governance gate (ALLOW/QUARANTINE/ESCALATE/DENY) + GeoSeal command scan, emit a GeoSeal receipt per call, and block on DENY (deny-beats-bypass)."
+author: "SCBE-AETHERMOORE"
+provides_hooks:
+  - pre_tool_call

@@ -1,0 +1,7 @@
+# Minimal Hermes config that enables ONLY the SCBE governance plugin.
+# Point the engine at it via HERMES_HOME=<dir containing this file as config.yaml>.
+# Provider/model are passed on the CLI (see vendor/hermes/VENDORED.md), so this
+# file intentionally carries nothing but the plugin allow-list — no secrets.
+plugins:
+  enabled:
+    - scbe-governance
