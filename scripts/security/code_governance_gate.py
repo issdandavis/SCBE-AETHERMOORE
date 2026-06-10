@@ -34,8 +34,12 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 
 OWNER = {
     "github": "issdandavis",
-    "email": ["issdandavis@proton.me", "issdandavis7795@gmail.com",
-              "aethermoregames@pm.me", "issdandavis@users.noreply.github.com"],
+    "email": [
+        "issdandavis@proton.me",
+        "issdandavis7795@gmail.com",
+        "aethermoregames@pm.me",
+        "issdandavis@users.noreply.github.com",
+    ],
     "name": "Issac Daniel Davis",
 }
 
@@ -45,50 +49,97 @@ OWNER = {
 
 INJECTION_PATTERNS = [
     # Credential theft
-    (re.compile(r"eval\s*\(\s*['\"].*(?:fetch|http|xhr|ajax)", re.I), "CODE_INJECTION", "CRITICAL",
-     "Dynamic eval with network call — potential exfiltration"),
-    (re.compile(r"subprocess\.(?:call|run|Popen)\s*\([^)]*shell\s*=\s*True", re.I), "SHELL_INJECTION", "HIGH",
-     "Shell=True subprocess — command injection risk"),
-    (re.compile(r"os\.system\s*\(", re.I), "SHELL_INJECTION", "HIGH",
-     "os.system call — command injection risk"),
-
+    (
+        re.compile(r"eval\s*\(\s*['\"].*(?:fetch|http|xhr|ajax)", re.I),
+        "CODE_INJECTION",
+        "CRITICAL",
+        "Dynamic eval with network call — potential exfiltration",
+    ),
+    (
+        re.compile(r"subprocess\.(?:call|run|Popen)\s*\([^)]*shell\s*=\s*True", re.I),
+        "SHELL_INJECTION",
+        "HIGH",
+        "Shell=True subprocess — command injection risk",
+    ),
+    (re.compile(r"os\.system\s*\(", re.I), "SHELL_INJECTION", "HIGH", "os.system call — command injection risk"),
     # Backdoor patterns
-    (re.compile(r"socket\.connect\s*\(\s*\(['\"](?!127\.0\.0\.1|localhost)", re.I), "BACKDOOR", "CRITICAL",
-     "Outbound socket to external host — potential C2"),
-    (re.compile(r"exec\s*\(\s*(?:base64|codecs)\.(?:b64decode|decode)", re.I), "OBFUSCATED_EXEC", "CRITICAL",
-     "Executing base64-decoded content — obfuscated payload"),
-    (re.compile(r"__import__\s*\(\s*['\"](?:ctypes|subprocess|socket|http)", re.I), "DYNAMIC_IMPORT", "HIGH",
-     "Dynamic import of dangerous module"),
-
+    (
+        re.compile(r"socket\.connect\s*\(\s*\(['\"](?!127\.0\.0\.1|localhost)", re.I),
+        "BACKDOOR",
+        "CRITICAL",
+        "Outbound socket to external host — potential C2",
+    ),
+    (
+        re.compile(r"exec\s*\(\s*(?:base64|codecs)\.(?:b64decode|decode)", re.I),
+        "OBFUSCATED_EXEC",
+        "CRITICAL",
+        "Executing base64-decoded content — obfuscated payload",
+    ),
+    (
+        re.compile(r"__import__\s*\(\s*['\"](?:ctypes|subprocess|socket|http)", re.I),
+        "DYNAMIC_IMPORT",
+        "HIGH",
+        "Dynamic import of dangerous module",
+    ),
     # Exfiltration
-    (re.compile(r"requests\.(?:post|put)\s*\(\s*['\"]https?://(?!(?:127\.0\.0\.1|localhost|api\.github\.com|huggingface\.co|api\.stripe\.com))", re.I),
-     "EXFILTRATION", "MEDIUM", "HTTP POST to unknown external host"),
-    (re.compile(r"webhook\s*=\s*['\"]https?://(?!(?:hooks\.slack\.com|discord\.com))", re.I), "EXFILTRATION", "MEDIUM",
-     "Webhook to unknown host"),
-
+    (
+        re.compile(
+            r"requests\.(?:post|put)\s*\(\s*['\"]https?://"
+            r"(?!(?:127\.0\.0\.1|localhost|api\.github\.com|huggingface\.co|api\.stripe\.com))",
+            re.I,
+        ),
+        "EXFILTRATION",
+        "MEDIUM",
+        "HTTP POST to unknown external host",
+    ),
+    (
+        re.compile(r"webhook\s*=\s*['\"]https?://(?!(?:hooks\.slack\.com|discord\.com))", re.I),
+        "EXFILTRATION",
+        "MEDIUM",
+        "Webhook to unknown host",
+    ),
     # Token/secret injection
-    (re.compile(r"(?:password|secret|token|api_key)\s*=\s*['\"][^'\"]{8,}['\"]", re.I), "HARDCODED_SECRET", "HIGH",
-     "Hardcoded secret in source code"),
-    (re.compile(r"-----BEGIN (?:RSA |EC )?PRIVATE KEY-----"), "PRIVATE_KEY", "CRITICAL",
-     "Private key in source code"),
-
+    (
+        re.compile(r"(?:password|secret|token|api_key)\s*=\s*['\"][^'\"]{8,}['\"]", re.I),
+        "HARDCODED_SECRET",
+        "HIGH",
+        "Hardcoded secret in source code",
+    ),
+    (re.compile(r"-----BEGIN (?:RSA |EC )?PRIVATE KEY-----"), "PRIVATE_KEY", "CRITICAL", "Private key in source code"),
     # Workflow poisoning
-    (re.compile(r"actions/checkout@(?!v[34])", re.I), "UNSAFE_ACTION", "MEDIUM",
-     "GitHub Action checkout not pinned to v3/v4"),
-    (re.compile(r"\$\{\{\s*github\.event\.(?:issue|pull_request)\.(?:title|body)", re.I), "WORKFLOW_INJECTION", "HIGH",
-     "Untrusted input in GitHub Actions expression"),
-
+    (
+        re.compile(r"actions/checkout@(?!v[34])", re.I),
+        "UNSAFE_ACTION",
+        "MEDIUM",
+        "GitHub Action checkout not pinned to v3/v4",
+    ),
+    (
+        re.compile(r"\$\{\{\s*github\.event\.(?:issue|pull_request)\.(?:title|body)", re.I),
+        "WORKFLOW_INJECTION",
+        "HIGH",
+        "Untrusted input in GitHub Actions expression",
+    ),
     # Dependency attacks
-    (re.compile(r"pip install\s+(?!-r\s|-e\s).*--index-url\s+https?://(?!pypi\.org)", re.I), "SUPPLY_CHAIN", "HIGH",
-     "pip install from non-PyPI index"),
-    (re.compile(r"npm install\s+.*--registry\s+https?://(?!registry\.npmjs\.org)", re.I), "SUPPLY_CHAIN", "HIGH",
-     "npm install from non-npmjs registry"),
-
+    (
+        re.compile(r"pip install\s+(?!-r\s|-e\s).*--index-url\s+https?://(?!pypi\.org)", re.I),
+        "SUPPLY_CHAIN",
+        "HIGH",
+        "pip install from non-PyPI index",
+    ),
+    (
+        re.compile(r"npm install\s+.*--registry\s+https?://(?!registry\.npmjs\.org)", re.I),
+        "SUPPLY_CHAIN",
+        "HIGH",
+        "npm install from non-npmjs registry",
+    ),
     # File system attacks
-    (re.compile(r"(?:chmod|chown)\s+(?:777|666|a\+rwx)", re.I), "PERM_ESCALATION", "HIGH",
-     "World-writable permissions"),
-    (re.compile(r"rm\s+-rf\s+/(?!\w)", re.I), "DESTRUCTIVE", "CRITICAL",
-     "Recursive delete from root"),
+    (
+        re.compile(r"(?:chmod|chown)\s+(?:777|666|a\+rwx)", re.I),
+        "PERM_ESCALATION",
+        "HIGH",
+        "World-writable permissions",
+    ),
+    (re.compile(r"rm\s+-rf\s+/(?!\w)", re.I), "DESTRUCTIVE", "CRITICAL", "Recursive delete from root"),
 ]
 
 # Files that should NEVER be modified by non-owner
@@ -114,6 +165,7 @@ FORBIDDEN_FILE_PATTERNS = [
 @dataclass
 class Finding:
     """A single security finding."""
+
     severity: str  # CRITICAL, HIGH, MEDIUM, LOW, INFO
     category: str
     message: str
@@ -125,6 +177,7 @@ class Finding:
 @dataclass
 class GateResult:
     """Result of running the code governance gate."""
+
     decision: str  # PASS, WARN, BLOCK
     author_is_owner: bool
     findings: List[Finding] = field(default_factory=list)
@@ -191,14 +244,16 @@ def check_diff(diff_text: str, result: GateResult):
 
         for pattern, category, severity, message in INJECTION_PATTERNS:
             if pattern.search(added_content):
-                result.add(Finding(
-                    severity=severity,
-                    category=category,
-                    message=message,
-                    file=current_file,
-                    line=line_num,
-                    evidence=added_content[:100].strip(),
-                ))
+                result.add(
+                    Finding(
+                        severity=severity,
+                        category=category,
+                        message=message,
+                        file=current_file,
+                        line=line_num,
+                        evidence=added_content[:100].strip(),
+                    )
+                )
 
         line_num += 1
 
@@ -208,21 +263,25 @@ def check_diff(diff_text: str, result: GateResult):
         result.files_checked += 1
         for forbidden in FORBIDDEN_FILE_PATTERNS:
             if forbidden.search(f):
-                result.add(Finding(
-                    severity="CRITICAL",
-                    category="FORBIDDEN_FILE",
-                    message=f"Sensitive file type in diff: {f}",
-                    file=f,
-                ))
+                result.add(
+                    Finding(
+                        severity="CRITICAL",
+                        category="FORBIDDEN_FILE",
+                        message=f"Sensitive file type in diff: {f}",
+                        file=f,
+                    )
+                )
 
         # Protected files check (non-owner only)
         if not result.author_is_owner and f in PROTECTED_FILES:
-            result.add(Finding(
-                severity="HIGH",
-                category="PROTECTED_FILE",
-                message=f"Non-owner modifying protected file: {f}",
-                file=f,
-            ))
+            result.add(
+                Finding(
+                    severity="HIGH",
+                    category="PROTECTED_FILE",
+                    message=f"Non-owner modifying protected file: {f}",
+                    file=f,
+                )
+            )
 
 
 def decide(result: GateResult) -> str:
@@ -252,11 +311,13 @@ def check_pr(pr_number: int) -> GateResult:
 
     # Check author trust
     if not result.author_is_owner:
-        result.add(Finding(
-            severity="INFO",
-            category="EXTERNAL_AUTHOR",
-            message=f"PR by external contributor: {author}",
-        ))
+        result.add(
+            Finding(
+                severity="INFO",
+                category="EXTERNAL_AUTHOR",
+                message=f"PR by external contributor: {author}",
+            )
+        )
 
     result.decision = decide(result)
     return result, pr_data
@@ -408,8 +469,10 @@ def print_result(result: GateResult, context: str = ""):
     print(f"  Findings: {len(result.findings)} ({result.critical_count} critical, {result.high_count} high)")
 
     if result.findings:
-        print(f"\n  Findings:")
-        for f in sorted(result.findings, key=lambda x: {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3, "INFO": 4}[x.severity]):
+        print("\n  Findings:")
+        for f in sorted(
+            result.findings, key=lambda x: {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3, "INFO": 4}[x.severity]
+        ):
             marker = {"CRITICAL": "!!!", "HIGH": "!!", "MEDIUM": "!", "LOW": ".", "INFO": "i"}[f.severity]
             print(f"    {marker} [{f.severity:8s}] {f.category}: {f.message}")
             if f.file:
@@ -417,7 +480,7 @@ def print_result(result: GateResult, context: str = ""):
             if f.evidence:
                 print(f"              > {f.evidence[:80]}")
     else:
-        print(f"\n  No security findings. Clean.")
+        print("\n  No security findings. Clean.")
 
     print()
 

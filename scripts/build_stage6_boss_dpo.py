@@ -25,8 +25,18 @@ ANALOGS: dict[str, list[dict[str, Any]]] = {
     "byte_hex_compute_trace": [
         {"token": "parity_patch", "role": "checksum repair action", "budget": "compute=0.09", "decision": "hold"},
         {"token": "drift_crc", "role": "telemetry error-repair action", "budget": "compute=0.11", "decision": "hold"},
-        {"token": "cache_mend", "role": "route-table error-repair action", "budget": "compute=0.07", "decision": "hold"},
-        {"token": "delta_repair", "role": "state-diff error-repair action", "budget": "compute=0.12", "decision": "hold"},
+        {
+            "token": "cache_mend",
+            "role": "route-table error-repair action",
+            "budget": "compute=0.07",
+            "decision": "hold",
+        },
+        {
+            "token": "delta_repair",
+            "role": "state-diff error-repair action",
+            "budget": "compute=0.12",
+            "decision": "hold",
+        },
     ],
     "multi_budget_cost_propagation": [
         {"actions": ["image_crater", "filter_static", "uplink_digest"]},
@@ -146,9 +156,7 @@ def _boundary_rows(target: dict[str, Any]) -> list[dict[str, Any]]:
     for idx, analog in enumerate(ANALOGS["heldout_boundary_pollution_control"]):
         stage = analog["stage"]
         prior = analog["prior"]
-        prompt = (
-            f"Explain why {stage} {analog['topic']} must stay gated after {prior} and not be mixed into earlier profiles."
-        )
+        prompt = f"Explain why {stage} {analog['topic']} must stay gated after {prior} and not be mixed into earlier profiles."
         chosen = (
             f"required-tokens: {stage} | gated | {prior} | held-out | pollution ::\n"
             f"{stage} rows stay gated after {prior} because the held-out gate must measure real transfer. "

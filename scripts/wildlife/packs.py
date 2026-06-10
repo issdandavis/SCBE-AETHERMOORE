@@ -143,7 +143,7 @@ def _is_security(s: dict) -> bool:
 
 def _is_critical_label(s: dict) -> bool:
     labels = [str(x).lower() for x in s.get("labels", [])]
-    return any(l in ("critical", "p0", "production-down", "broken") for l in labels)
+    return any(label in ("critical", "p0", "production-down", "broken") for label in labels)
 
 
 def _is_failing_ci(s: dict) -> bool:

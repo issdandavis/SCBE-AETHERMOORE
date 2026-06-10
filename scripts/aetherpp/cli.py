@@ -51,12 +51,8 @@ def main() -> int:
                 {
                     "ok": True,
                     "statement_count": len(ast),
-                    "route_tongue": packet["shell_contract"]["route_packet"][
-                        "route_tongue"
-                    ],
-                    "command_key": packet["shell_contract"]["route_packet"][
-                        "command_key"
-                    ],
+                    "route_tongue": packet["shell_contract"]["route_packet"]["route_tongue"],
+                    "command_key": packet["shell_contract"]["route_packet"]["command_key"],
                     "bijection_ok": packet["build_bijection"]["ok"],
                 },
                 indent=2,
@@ -68,15 +64,9 @@ def main() -> int:
     args.out_dir.mkdir(parents=True, exist_ok=True)
     out_json = args.out_dir / "latest_route_packet.json"
     out_ast = args.out_dir / "latest_ast.json"
-    out_json.write_text(
-        json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-    out_ast.write_text(
-        json.dumps(ast, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-    print(
-        json.dumps({"ok": True, "packet": str(out_json), "ast": str(out_ast)}, indent=2)
-    )
+    out_json.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out_ast.write_text(json.dumps(ast, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps({"ok": True, "packet": str(out_json), "ast": str(out_ast)}, indent=2))
     return 0
 
 

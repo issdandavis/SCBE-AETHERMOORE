@@ -14,6 +14,7 @@ per epoch, the gradient distribution matches batch-level interleave.
 Usage:
     python scripts/train_brick1_continual.py
 """
+
 from __future__ import annotations
 
 import json
@@ -79,22 +80,36 @@ def launch_training(mix_stats: dict) -> int:
     cmd = [
         sys.executable,
         "scripts/train/lora_tongue_table.py",
-        "--base_model", "Qwen/Qwen2.5-0.5B",
-        "--data", str(MERGED.relative_to(REPO_ROOT)),
-        "--output", str(OUTPUT.relative_to(REPO_ROOT)),
-        "--resume_adapter", str(RESUME_ADAPTER),
-        "--max_steps", "750",
-        "--eval_every", "25",
-        "--lr", "3e-5",
-        "--lr_scheduler_type", "cosine",
-        "--warmup_steps", "25",
-        "--early_stop_score", "0.90",
-        "--map_weights", json.dumps({
-            "transport_atomic": 1.0,
-            "cartography_state": 2.0,
-            "cross_braid_code": 1.5,
-        }),
-        "--default_map_weight", "1.0",
+        "--base_model",
+        "Qwen/Qwen2.5-0.5B",
+        "--data",
+        str(MERGED.relative_to(REPO_ROOT)),
+        "--output",
+        str(OUTPUT.relative_to(REPO_ROOT)),
+        "--resume_adapter",
+        str(RESUME_ADAPTER),
+        "--max_steps",
+        "750",
+        "--eval_every",
+        "25",
+        "--lr",
+        "3e-5",
+        "--lr_scheduler_type",
+        "cosine",
+        "--warmup_steps",
+        "25",
+        "--early_stop_score",
+        "0.90",
+        "--map_weights",
+        json.dumps(
+            {
+                "transport_atomic": 1.0,
+                "cartography_state": 2.0,
+                "cross_braid_code": 1.5,
+            }
+        ),
+        "--default_map_weight",
+        "1.0",
     ]
     print("[BRICK1] launching:", " ".join(cmd))
     return subprocess.call(cmd, cwd=str(REPO_ROOT))
@@ -103,9 +118,7 @@ def launch_training(mix_stats: dict) -> int:
 def verify_and_eval(output_dir: Path) -> int:
     resolution = resolve_best_available_adapter(output_dir)
     if resolution is None:
-        raise SystemExit(
-            f"Brick 1 training exited without any recoverable adapter under: {output_dir}"
-        )
+        raise SystemExit(f"Brick 1 training exited without any recoverable adapter under: {output_dir}")
     final_adapter = resolution.adapter_dir
     print(f"[BRICK1] using adapter from {resolution.source}: {final_adapter}")
 
@@ -123,9 +136,7 @@ def main() -> int:
     if not REPLAY.exists():
         raise SystemExit(f"Replay source missing: {REPLAY}")
     if not BOOST.exists():
-        raise SystemExit(
-            f"Boost file missing: {BOOST}. Run scripts/build_brick1_boost.py first."
-        )
+        raise SystemExit(f"Boost file missing: {BOOST}. Run scripts/build_brick1_boost.py first.")
 
     print(f"[BRICK1] replay: {REPLAY}")
     print(f"[BRICK1] boost:  {BOOST}")

@@ -36,7 +36,6 @@ from email.utils import parseaddr
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -104,12 +103,10 @@ class MessageSummary:
     suggested_action: str = "move"
 
 
-
 def _now_iso() -> str:
     from datetime import datetime, timezone
 
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
 
 
 def load_config() -> BridgeConfig:
@@ -132,7 +129,6 @@ def load_config() -> BridgeConfig:
     )
 
 
-
 def _emit(payload: dict[str, Any], json_output: bool) -> int:
     if json_output:
         print(json.dumps(payload, indent=2, ensure_ascii=True))
@@ -142,13 +138,11 @@ def _emit(payload: dict[str, Any], json_output: bool) -> int:
     return 0
 
 
-
 def _audit(event: str, payload: dict[str, Any]) -> None:
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     record = {"timestamp": _now_iso(), "event": event, **payload}
     with AUDIT_LOG.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(record, ensure_ascii=True) + "\n")
-
 
 
 def _probe_tcp(host: str, port: int, timeout: float = 1.5) -> bool:
@@ -157,7 +151,6 @@ def _probe_tcp(host: str, port: int, timeout: float = 1.5) -> bool:
             return True
     except OSError:
         return False
-
 
 
 def _bridge_installation_candidates() -> list[str]:
@@ -176,7 +169,6 @@ def _load_rules() -> dict[str, Any]:
         return payload if isinstance(payload, dict) else {}
     except json.JSONDecodeError:
         return {}
-
 
 
 def doctor(config: BridgeConfig) -> dict[str, Any]:
@@ -212,14 +204,12 @@ def doctor(config: BridgeConfig) -> dict[str, Any]:
     return payload
 
 
-
 def _connect_imap(config: BridgeConfig) -> imaplib.IMAP4:
     if not config.has_credentials:
         raise RuntimeError("Bridge credentials are required. Set PROTON_BRIDGE_USERNAME and PROTON_BRIDGE_PASSWORD.")
     client = imaplib.IMAP4(config.host, config.imap_port)
     client.login(config.username, config.password)
     return client
-
 
 
 def _connect_smtp(config: BridgeConfig) -> smtplib.SMTP:
@@ -231,14 +221,12 @@ def _connect_smtp(config: BridgeConfig) -> smtplib.SMTP:
     return client
 
 
-
 def _decode_imap_value(raw: bytes | str | None) -> str:
     if raw is None:
         return ""
     if isinstance(raw, bytes):
         return raw.decode("utf-8", errors="replace")
     return raw
-
 
 
 def list_folders(config: BridgeConfig) -> dict[str, Any]:
@@ -260,12 +248,10 @@ def list_folders(config: BridgeConfig) -> dict[str, Any]:
     }
 
 
-
 def _decode_header(value: str | None) -> str:
     if not value:
         return ""
     return str(email.header.make_header(email.header.decode_header(value)))
-
 
 
 def _parse_flags(fetch_meta: bytes | str | None) -> list[str]:
@@ -274,7 +260,6 @@ def _parse_flags(fetch_meta: bytes | str | None) -> list[str]:
     if not match:
         return []
     return [flag for flag in match.group(1).split() if flag]
-
 
 
 def fetch_summaries(config: BridgeConfig, folder: str, limit: int = 25) -> list[MessageSummary]:
@@ -322,7 +307,6 @@ def fetch_summaries(config: BridgeConfig, folder: str, limit: int = 25) -> list[
                 )
             )
     return summaries
-
 
 
 def _route_target(config: BridgeConfig, target: str, action: str) -> str:
@@ -409,12 +393,48 @@ def _classify_message(summary: MessageSummary, config: BridgeConfig) -> MessageS
         )
 
     rules_table: list[tuple[str, tuple[str, ...], float, str, str]] = [
-        ("delivery_failure", ("delivery", "undeliver", "mail delivery", "bounce", "returned to sender"), 0.97, "Delivery Failures", "delivery-status markers in subject/header"),
-        ("access_keys", ("license", "api key", "access key", "activation", "download link"), 0.93, "Access Keys", "access or key distribution markers"),
-        ("orders", ("order", "receipt", "invoice", "payment", "checkout", "gumroad", "stripe", "shopify"), 0.9, "Orders", "commerce markers"),
-        ("support", ("help", "issue", "bug", "support", "can't", "cannot", "problem", "trouble"), 0.84, "Support", "support/problem markers"),
-        ("partnerships", ("partnership", "collab", "collaboration", "meeting", "demo", "proposal", "investor"), 0.82, "Partnerships", "business development markers"),
-        ("admin", ("github", "notification", "ci", "workflow", "build failed", "security alert"), 0.8, "Admin", "ops/admin markers"),
+        (
+            "delivery_failure",
+            ("delivery", "undeliver", "mail delivery", "bounce", "returned to sender"),
+            0.97,
+            "Delivery Failures",
+            "delivery-status markers in subject/header",
+        ),
+        (
+            "access_keys",
+            ("license", "api key", "access key", "activation", "download link"),
+            0.93,
+            "Access Keys",
+            "access or key distribution markers",
+        ),
+        (
+            "orders",
+            ("order", "receipt", "invoice", "payment", "checkout", "gumroad", "stripe", "shopify"),
+            0.9,
+            "Orders",
+            "commerce markers",
+        ),
+        (
+            "support",
+            ("help", "issue", "bug", "support", "can't", "cannot", "problem", "trouble"),
+            0.84,
+            "Support",
+            "support/problem markers",
+        ),
+        (
+            "partnerships",
+            ("partnership", "collab", "collaboration", "meeting", "demo", "proposal", "investor"),
+            0.82,
+            "Partnerships",
+            "business development markers",
+        ),
+        (
+            "admin",
+            ("github", "notification", "ci", "workflow", "build failed", "security alert"),
+            0.8,
+            "Admin",
+            "ops/admin markers",
+        ),
     ]
     for label, needles, confidence, target, rationale in rules_table:
         if any(needle in text for needle in needles):
@@ -431,11 +451,9 @@ def _classify_message(summary: MessageSummary, config: BridgeConfig) -> MessageS
     )
 
 
-
 def _qualify_target(config: BridgeConfig, label: str) -> str:
     prefix = config.folder_prefix.strip().strip("/")
     return f"{prefix}/{label}" if prefix else label
-
 
 
 def triage_messages(config: BridgeConfig, folder: str, limit: int) -> dict[str, Any]:
@@ -455,12 +473,10 @@ def triage_messages(config: BridgeConfig, folder: str, limit: int) -> dict[str, 
     }
 
 
-
 def _ensure_target_allowed(target: str, allowed_targets: tuple[str, ...], config: BridgeConfig) -> None:
     allowed = {_qualify_target(config, label) for label in allowed_targets}
     if target not in allowed:
         raise RuntimeError(f"Target folder '{target}' is not in the allowlist: {sorted(allowed)}")
-
 
 
 def apply_triage_plan(
@@ -527,7 +543,8 @@ def apply_triage_plan(
         "move_count": len(moves),
         "moves": moves,
         "lines": [
-            f"Applied triage plan for {folder}: {len(moves)} move(s), filtered={filtered_count}, execute={'yes' if execute else 'no'}"
+            f"Applied triage plan for {folder}: {len(moves)} move(s), "
+            f"filtered={filtered_count}, execute={'yes' if execute else 'no'}"
         ],
     }
 
@@ -544,13 +561,12 @@ def sweep_messages(config: BridgeConfig, folder: str, limit: int) -> dict[str, A
     payload["schema_version"] = "proton_mail_bridge_sweep_v1"
     payload["by_target"] = by_target
     payload["by_action"] = by_action
-    payload["lines"] = [f"Sweep for {folder}: {payload['count']} message(s)"] + [
-        f"  action {name}: {count}" for name, count in sorted(by_action.items())
-    ] + [
-        f"  target {name}: {count}" for name, count in sorted(by_target.items())
-    ]
+    payload["lines"] = (
+        [f"Sweep for {folder}: {payload['count']} message(s)"]
+        + [f"  action {name}: {count}" for name, count in sorted(by_action.items())]
+        + [f"  target {name}: {count}" for name, count in sorted(by_target.items())]
+    )
     return payload
-
 
 
 def send_mail(config: BridgeConfig, to: str, subject: str, body: str, execute: bool) -> dict[str, Any]:
@@ -584,7 +600,6 @@ def send_mail(config: BridgeConfig, to: str, subject: str, body: str, execute: b
     }
 
 
-
 def store_credentials(username: str, password: str) -> dict[str, Any]:
     clean_username = username.strip()
     clean_password = password.strip()
@@ -613,10 +628,8 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     return _emit(doctor(load_config()), args.json)
 
 
-
 def cmd_folders(args: argparse.Namespace) -> int:
     return _emit(list_folders(load_config()), args.json)
-
 
 
 def cmd_inbox(args: argparse.Namespace) -> int:
@@ -637,7 +650,6 @@ def cmd_inbox(args: argparse.Namespace) -> int:
     return _emit(payload, args.json)
 
 
-
 def cmd_triage(args: argparse.Namespace) -> int:
     return _emit(triage_messages(load_config(), args.folder, args.limit), args.json)
 
@@ -649,10 +661,11 @@ def cmd_sweep(args: argparse.Namespace) -> int:
 def cmd_apply(args: argparse.Namespace) -> int:
     only_targets = set(args.only_target or [])
     return _emit(
-        apply_triage_plan(load_config(), args.folder, args.limit, execute=args.execute, only_targets=only_targets or None),
+        apply_triage_plan(
+            load_config(), args.folder, args.limit, execute=args.execute, only_targets=only_targets or None
+        ),
         args.json,
     )
-
 
 
 def cmd_send(args: argparse.Namespace) -> int:
@@ -712,7 +725,12 @@ def build_parser() -> argparse.ArgumentParser:
     add_common_flags(apply_cmd)
     apply_cmd.add_argument("--folder", default="INBOX")
     apply_cmd.add_argument("--limit", type=int, default=25)
-    apply_cmd.add_argument("--only-target", action="append", default=[], help="Apply only messages whose suggested target matches this value")
+    apply_cmd.add_argument(
+        "--only-target",
+        action="append",
+        default=[],
+        help="Apply only messages whose suggested target matches this value",
+    )
     apply_cmd.add_argument("--execute", action="store_true", help="Actually move messages")
     apply_cmd.set_defaults(func=cmd_apply)
 
@@ -725,7 +743,6 @@ def build_parser() -> argparse.ArgumentParser:
     send_cmd.add_argument("--execute", action="store_true", help="Actually send the mail")
     send_cmd.set_defaults(func=cmd_send)
     return parser
-
 
 
 def main() -> int:

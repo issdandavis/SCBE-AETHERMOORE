@@ -15,7 +15,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT = REPO_ROOT / "docs" / "research" / "SCBE_CODING_SYSTEM_REGISTRY_2026-05-10.json"
 
@@ -79,7 +78,11 @@ SYSTEMS = (
         purpose="Wrap coding tasks in signed canonical packets with SS1 proof and routeable receipts.",
         best_for=["auditable coding tasks", "handoff receipts", "safe agent execution", "precision task packets"],
         benchmark_role="packet_surface",
-        primary_paths=["src/geoseal_cli.py", "scripts/agents/run_agent_task.py", "tests/test_agent_task_run_and_external_eval.py"],
+        primary_paths=[
+            "src/geoseal_cli.py",
+            "scripts/agents/run_agent_task.py",
+            "tests/test_agent_task_run_and_external_eval.py",
+        ],
         obsidian_or_note_paths=[],
         commands=["npm run agent:task"],
         expected_outputs=["canonical task JSON", "SS1 proof", "task receipt", "route decision"],
@@ -178,7 +181,8 @@ SYSTEMS = (
     CodingSystem(
         system_id="trust_self_tune_loop",
         name="Fibonacci Trust Ladder + Turing Self-Tune Loop",
-        purpose="Convert accepted/rejected agent turns into trust-weighted SFT/DPO feedback for later model improvement.",
+        purpose="Convert accepted/rejected agent turns into trust-weighted SFT/DPO feedback "
+        "for later model improvement.",
         best_for=["self-tuning", "DPO pair weighting", "trust decay", "benchmark rerun closure"],
         benchmark_role="feedback_surface",
         primary_paths=[
@@ -227,7 +231,8 @@ SYSTEMS = (
         primary_paths=["packages/kernel/src/sacredEggs.ts", "tests/test_sacred_egg_registry.py"],
         obsidian_or_note_paths=[
             "notes/round-table/2026-03-17-sacred-egg-model-genesis.md",
-            "training-data/research_bridge_smoke/avalon-bridge-20260318T091500Z/sources/obsidian/b6d29f9c26_2026-03-17-sacred-egg-model-genesis.md",
+            "training-data/research_bridge_smoke/avalon-bridge-20260318T091500Z/sources/obsidian/"
+            "b6d29f9c26_2026-03-17-sacred-egg-model-genesis.md",
         ],
         commands=["python scripts/sacred_egg_benchmark.py"],
         expected_outputs=["egg registry", "concept mapping", "benchmark notes"],

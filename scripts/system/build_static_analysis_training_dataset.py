@@ -31,7 +31,9 @@ DEFAULT_HF_REPO = "issdandavis/scbe-static-analysis-training"
 DEFAULT_KAGGLE_OWNER = os.environ.get("KAGGLE_USERNAME", "issacizrealdavis")
 DEFAULT_KAGGLE_SLUG = "scbe-static-analysis-training"
 REVERSE_ENGINEERING_VIDEO_ID = "8vk5z9VAaBQ"
-REVERSE_ENGINEERING_TRANSCRIPT_PATH = REPO_ROOT / "artifacts" / "apollo" / "youtube_transcripts" / f"{REVERSE_ENGINEERING_VIDEO_ID}.txt"
+REVERSE_ENGINEERING_TRANSCRIPT_PATH = (
+    REPO_ROOT / "artifacts" / "apollo" / "youtube_transcripts" / f"{REVERSE_ENGINEERING_VIDEO_ID}.txt"
+)
 
 SECRET_PATTERNS = [
     re.compile(r"hf_[A-Za-z0-9_=-]{12,}"),
@@ -261,7 +263,8 @@ def build_scenarios() -> list[TrainingScenario]:
                 "existing system. What boundaries keep the training safe?"
             ),
             analysis_steps=[
-                "Define reverse engineering as system comprehension, interface recovery, dependency mapping, and failure analysis.",
+                "Define reverse engineering as system comprehension, interface recovery, dependency mapping, "
+                "and failure analysis.",
                 "Classify offensive exploit building, credential abuse, persistence, and stealth as blocked content.",
                 "Prefer metadata, manifests, tests, logs with secrets removed, and small synthetic examples.",
             ],
@@ -289,21 +292,26 @@ def build_scenarios() -> list[TrainingScenario]:
             ),
             analysis_steps=[
                 "Use the video as a topic anchor, not as permission to copy transcript text.",
-                "Extract the transcript's ladder as defensive learning stages: strings, static analysis, dynamic analysis, symbolic execution, and real software or firmware investigation.",
-                "Treat reverse engineering as progressive comprehension: identify inputs, outputs, file formats, dependencies, interfaces, and behavior.",
+                "Extract the transcript's ladder as defensive learning stages: strings, static analysis, "
+                "dynamic analysis, symbolic execution, and real software or firmware investigation.",
+                "Treat reverse engineering as progressive comprehension: identify inputs, outputs, file formats, "
+                "dependencies, interfaces, and behavior.",
                 "Prefer tasks that ask the agent to explain what a program does and how to verify a fix.",
                 "Avoid tasks that ask for bypass, stealth, unauthorized access, or offensive payload construction.",
             ],
             remediation_steps=[
-                "Create records for manifest reading, dependency mapping, build artifact inspection, log interpretation, and patch verification.",
+                "Create records for manifest reading, dependency mapping, build artifact inspection, "
+                "log interpretation, and patch verification.",
                 "Require the answer to include analysis, safe remediation, and verification sections.",
                 "Add provenance metadata with the public source URL and a short source title.",
-                "Keep the content synthetic or metadata-only unless a transcript and license review explicitly allow more.",
+                "Keep the content synthetic or metadata-only "
+                "unless a transcript and license review explicitly allow more.",
             ],
             verification_steps=[
                 "Scan generated records for secrets and blocked offensive terms.",
                 "Assert that every record keeps a defensive purpose.",
-                "Hold out eval prompts that ask the model to redirect unsafe reverse-engineering requests to defensive analysis.",
+                "Hold out eval prompts that ask the model to redirect unsafe reverse-engineering requests "
+                "to defensive analysis.",
             ],
             tags=["reverse-engineering", "static-analysis", "video-derived", "training-policy"],
             evidence={
@@ -363,7 +371,10 @@ def build_record(scenario: TrainingScenario, created_at: str) -> dict[str, Any]:
         "risk_level": scenario.risk_level,
         "tags": scenario.tags,
         "privacy": "metadata_or_synthetic_only",
-        "blocked_use": "Do not use this record to generate offensive payloads, credential abuse workflows, stealth, persistence, or unauthorized access instructions.",
+        "blocked_use": (
+            "Do not use this record to generate offensive payloads, credential abuse workflows, "
+            "stealth, persistence, or unauthorized access instructions."
+        ),
         "evidence": scenario.evidence,
         "messages": [
             {

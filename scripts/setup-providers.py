@@ -60,14 +60,12 @@ ENV_EXAMPLE = Path(__file__).parent / ".env.example"
 
 
 def print_banner():
-    print(
-        """
+    print("""
 ╔═══════════════════════════════════════════════════════════╗
 ║        SCBE-AETHERMOORE Provider Setup                    ║
 ║        One-click configuration for AI providers           ║
 ╚═══════════════════════════════════════════════════════════╝
-    """
-    )
+    """)
 
 
 def load_env():
@@ -176,7 +174,7 @@ def setup_provider(provider_id, env):
         if change != "y":
             return
 
-    key = getpass(f"Enter API key (or press Enter to skip): ").strip()
+    key = getpass("Enter API key (or press Enter to skip): ").strip()
 
     if key:
         env[info["key_var"]] = key
@@ -223,7 +221,7 @@ def interactive_setup():
     # Set priority
     connected = [p for p in PROVIDERS if env.get(PROVIDERS[p]["key_var"])]
     if connected:
-        print(f"\n--- Priority Order ---")
+        print("\n--- Priority Order ---")
         print(f"Current priority: {env.get('SCBE_PROVIDER_PRIORITY', 'anthropic,openai,google')}")
         print(f"Connected providers: {', '.join(connected)}")
 

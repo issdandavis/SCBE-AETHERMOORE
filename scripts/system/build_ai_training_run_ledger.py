@@ -6,17 +6,17 @@ Hugging Face Jobs reports, Colab receipts, local runs, and eval artifacts, then
 classifies each item into what it should become next: promotion evidence, repair
 data, ops/development-interaction data, or non-quantized merge readiness input.
 """
+
 from __future__ import annotations
 
 import argparse
 import json
 import re
 import subprocess
-from collections import Counter, defaultdict
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / "artifacts" / "training_run_ledger" / "latest"
@@ -78,8 +78,13 @@ def infer_conversion(item: dict[str, Any]) -> dict[str, str]:
     if "dsl_failure_math" in text or "format_repair_result" in text:
         return {
             "conversion": "convert_diagnostics_to_training_controls",
-            "why": "Failure math and format-repair reports should update samplers, token weights, and repair curricula.",
-            "next_step": "Keep these as trainer-control evidence; verify matching kernel/config patches exist before another run.",
+            "why": (
+                "Failure math and format-repair reports should update samplers, token weights, and repair curricula."
+            ),
+            "next_step": (
+                "Keep these as trainer-control evidence; "
+                "verify matching kernel/config patches exist before another run."
+            ),
         }
     if "merge" in text and ("plan" in text or "readiness" in text):
         return {
@@ -91,7 +96,9 @@ def infer_conversion(item: dict[str, Any]) -> dict[str, str]:
         return {
             "conversion": "mine_failure_rows_to_repair_sft",
             "why": "Failed adapter output is most useful as targeted repair data, not merge input.",
-            "next_step": "Run/extend scorer failure mining, add rows to contract repair corpus, retrain small repair lane.",
+            "next_step": (
+                "Run/extend scorer failure mining, add rows to contract repair corpus, retrain small repair lane."
+            ),
         }
     if "eval-pending" in text or "adapter pushed" in text or item.get("has_adapter"):
         return {
@@ -121,7 +128,10 @@ def infer_conversion(item: dict[str, Any]) -> dict[str, str]:
         return {
             "conversion": "bucket_and_balance_dataset",
             "why": "Raw SFT files need bucket assignment and imbalance checks before training.",
-            "next_step": "Regularize into train/eval buckets, cap dominant classes, preserve aligned multi-representation links.",
+            "next_step": (
+                "Regularize into train/eval buckets, cap dominant classes, "
+                "preserve aligned multi-representation links."
+            ),
         }
     return {
         "conversion": "needs_classification",
@@ -193,7 +203,10 @@ def collect_kaggle(live: bool) -> list[dict[str, Any]]:
             "base_model": cfg.get("base_model", ""),
             "dataset_files": cfg.get("files", []),
             "eval_files": cfg.get("eval_files", []),
-            "non_quantized_policy": "do_not_quantize_for_merge; Kaggle training may use low-bit loading only as remote training implementation detail",
+            "non_quantized_policy": (
+                "do_not_quantize_for_merge; "
+                "Kaggle training may use low-bit loading only as remote training implementation detail"
+            ),
         }
 
     for output_dir in sorted((ROOT / "artifacts" / "kaggle_output").glob("polly-auto-*")):
@@ -275,7 +288,10 @@ def collect_huggingface() -> list[dict[str, Any]]:
                     "lane": "ops",
                     "status": "no_live_jobs_found",
                     "report": "",
-                    "next_observation": "Local reports still contain completed HF Jobs evidence; live CLI currently reports no active jobs.",
+                    "next_observation": (
+                        "Local reports still contain completed HF Jobs evidence; "
+                        "live CLI currently reports no active jobs."
+                    ),
                 }
             )
         )
@@ -408,7 +424,10 @@ def build_ledger(live_kaggle: bool) -> dict[str, Any]:
         "generated_at_utc": utc_now(),
         "policy": {
             "no_quantization": True,
-            "merge_rule": "Do not quantize or merge adapters until route/eval gates pass. Prefer routing first; use non-quantized PEFT merge only after gates.",
+            "merge_rule": (
+                "Do not quantize or merge adapters until route/eval gates pass. "
+                "Prefer routing first; use non-quantized PEFT merge only after gates."
+            ),
             "source_of_truth": "Repo manifests, training reports, frozen evals, and pulled remote artifacts.",
         },
         "summary": {
@@ -443,7 +462,12 @@ def build_work_order(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "lane": item.get("lane"),
                 "conversion": item.get("conversion"),
                 "next_step": item.get("next_step"),
-                "evidence": item.get("report") or item.get("output_dir") or item.get("kernel_dir") or item.get("path") or item.get("notebook") or "",
+                "evidence": item.get("report")
+                or item.get("output_dir")
+                or item.get("kernel_dir")
+                or item.get("path")
+                or item.get("notebook")
+                or "",
             }
         )
     return sorted(rows, key=lambda row: (row["priority"], str(row["platform"]), str(row["id"])))
@@ -458,7 +482,8 @@ def render_md(payload: dict[str, Any]) -> str:
         "## Policy",
         "",
         "- No quantization for merge or final model consolidation.",
-        "- Route first. Non-quantized PEFT merge only after frozen eval, executable, Stage 6, and functional gates pass.",
+        "- Route first. Non-quantized PEFT merge only after frozen eval, executable, Stage 6, "
+        "and functional gates pass.",
         "- Failed outputs become repair data. Colab control-plane receipts become development-interaction data.",
         "",
         "## Summary",
@@ -478,9 +503,24 @@ def render_md(payload: dict[str, Any]) -> str:
         )
 
     for platform, rows in payload["platforms"].items():
-        lines.extend(["", f"## {platform.title()}", "", "| ID | Lane | Status | Conversion | Evidence |", "| --- | --- | --- | --- | --- |"])
+        lines.extend(
+            [
+                "",
+                f"## {platform.title()}",
+                "",
+                "| ID | Lane | Status | Conversion | Evidence |",
+                "| --- | --- | --- | --- | --- |",
+            ]
+        )
         for item in rows[:80]:
-            evidence = item.get("report") or item.get("output_dir") or item.get("kernel_dir") or item.get("path") or item.get("notebook") or ""
+            evidence = (
+                item.get("report")
+                or item.get("output_dir")
+                or item.get("kernel_dir")
+                or item.get("path")
+                or item.get("notebook")
+                or ""
+            )
             status = str(item.get("status", "")).replace("\n", " ")[:120]
             lines.append(
                 f"| `{item.get('id')}` | {item.get('lane')} | {status} | {item.get('conversion')} | `{evidence}` |"

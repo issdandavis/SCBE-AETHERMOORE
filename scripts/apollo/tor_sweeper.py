@@ -237,9 +237,9 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
     tor_status = check_tor()
     if not tor_status.get("socks_proxy"):
         print(f"  Tor not available: {tor_status.get('error', 'SOCKS proxy unreachable')}")
-        print(f"  Install Tor: https://www.torproject.org/download/")
-        print(f"  Or on Windows: choco install tor")
-        print(f"\n  Running in DRY RUN mode (showing what would be swept)...")
+        print("  Install Tor: https://www.torproject.org/download/")
+        print("  Or on Windows: choco install tor")
+        print("\n  Running in DRY RUN mode (showing what would be swept)...")
         print()
 
         # Dry run — show the plan
@@ -302,8 +302,17 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
         if r["governance_decision"] != "DENY" and r.get("snippet"):
             sft_pairs.append(
                 {
-                    "instruction": f"What kind of content is available at {r.get('site_name', 'this site')} on the dark web, and why is it legitimate?",
-                    "response": f"{r.get('site_name', 'This site')} ({r.get('tier', 'unknown tier')}, trust level: {r.get('trust', '?')}) provides: {r.get('snippet', 'content not available')[:200]}. This is legitimate because {r.get('site_name', 'it')} is operated by a verified organization with a known clearnet presence at {r.get('url', 'unknown')}.",
+                    "instruction": (
+                        f"What kind of content is available at {r.get('site_name', 'this site')} "
+                        "on the dark web, and why is it legitimate?"
+                    ),
+                    "response": (
+                        f"{r.get('site_name', 'This site')} ({r.get('tier', 'unknown tier')}, "
+                        f"trust level: {r.get('trust', '?')}) provides: "
+                        f"{r.get('snippet', 'content not available')[:200]}. "
+                        f"This is legitimate because {r.get('site_name', 'it')} is operated by a "
+                        f"verified organization with a known clearnet presence at {r.get('url', 'unknown')}."
+                    ),
                     "source": "tor_sweeper",
                     "category": "dark_web_legitimate",
                 }

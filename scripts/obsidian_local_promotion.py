@@ -26,7 +26,6 @@ if str(REPO_ROOT) not in sys.path:
 from scripts.build_route_consistency_records import build_route_consistency_outputs
 from scripts.extract_model_trace_records import extract_records, load_schema as load_trace_schema
 
-
 DEFAULT_NOTE_PATTERNS = (
     "notes/_inbox.md",
     "notes/GROk*.md",
@@ -375,7 +374,9 @@ def parse_args() -> argparse.Namespace:
     discover.add_argument("--input", action="append", help="Specific markdown file or directory to scan.")
     discover.add_argument("--json", action="store_true", help="Emit JSON instead of plain text.")
 
-    extract = subparsers.add_parser("extract", help="Extract low-trust traces from Obsidian notes and build a review queue.")
+    extract = subparsers.add_parser(
+        "extract", help="Extract low-trust traces from Obsidian notes and build a review queue."
+    )
     extract.add_argument("--input", action="append", help="Specific markdown file or directory to extract from.")
     extract.add_argument("--source-model", help="Override inferred source model for all extracted traces.")
     extract.add_argument("--output-jsonl", default=DEFAULT_TRACE_OUTPUT)
@@ -383,7 +384,9 @@ def parse_args() -> argparse.Namespace:
     extract.add_argument("--decisions-path", default=DEFAULT_DECISIONS_PATH)
     extract.add_argument("--overwrite-decisions", action="store_true")
 
-    promote = subparsers.add_parser("promote", help="Promote reviewed traces into verified traces and route-consistency records.")
+    promote = subparsers.add_parser(
+        "promote", help="Promote reviewed traces into verified traces and route-consistency records."
+    )
     promote.add_argument("--trace-jsonl", default=DEFAULT_TRACE_OUTPUT)
     promote.add_argument("--decisions-path", default=DEFAULT_DECISIONS_PATH)
     promote.add_argument("--verified-output", default=DEFAULT_VERIFIED_TRACE_OUTPUT)

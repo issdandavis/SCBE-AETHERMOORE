@@ -80,11 +80,16 @@ def parse_chapters(book_path: Path) -> List[Chapter]:
         text = re.sub(r"---+", "", text)  # horizontal rules
         text = re.sub(r"\n{3,}", "\n\n", text)  # excessive newlines
         word_count = len(text.split())
-        chapters.append(Chapter(
-            number=num, title=title, text=text,
-            line_start=start_line, line_end=end_line,
-            word_count=word_count,
-        ))
+        chapters.append(
+            Chapter(
+                number=num,
+                title=title,
+                text=text,
+                line_start=start_line,
+                line_end=end_line,
+                word_count=word_count,
+            )
+        )
 
     return chapters
 
@@ -92,7 +97,7 @@ def parse_chapters(book_path: Path) -> List[Chapter]:
 def split_text_for_tts(text: str, max_chars: int = MAX_CHARS_PER_SEGMENT) -> List[str]:
     """Split text into TTS-friendly segments at sentence boundaries."""
     # Split into sentences
-    sentences = re.split(r'(?<=[.!?])\s+', text)
+    sentences = re.split(r"(?<=[.!?])\s+", text)
     segments = []
     current = ""
 
@@ -219,17 +224,27 @@ def create_video(
 ) -> bool:
     """Combine title card + audio into an MP4 video."""
     cmd = [
-        "ffmpeg", "-y",
-        "-loop", "1",
-        "-i", str(title_card_path),
-        "-i", str(audio_path),
-        "-c:v", "libx264",
-        "-tune", "stillimage",
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-pix_fmt", "yuv420p",
+        "ffmpeg",
+        "-y",
+        "-loop",
+        "1",
+        "-i",
+        str(title_card_path),
+        "-i",
+        str(audio_path),
+        "-c:v",
+        "libx264",
+        "-tune",
+        "stillimage",
+        "-c:a",
+        "aac",
+        "-b:a",
+        "192k",
+        "-pix_fmt",
+        "yuv420p",
         "-shortest",
-        "-t", str(duration + 1),  # pad 1s
+        "-t",
+        str(duration + 1),  # pad 1s
         str(output_path),
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
@@ -257,7 +272,7 @@ def process_chapter(chapter: Chapter, dry_run: bool = False) -> dict:
 
     # Step 1: Title card
     card_path = ch_dir / "title_card.png"
-    print(f"  Creating title card...")
+    print("  Creating title card...")
     create_title_card(chapter, card_path)
     result["title_card"] = str(card_path)
 

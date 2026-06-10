@@ -270,7 +270,8 @@ def report() -> str:
         "- Intel SGX remains the clearer secret-in-use baseline.",
         "",
         "## Practical interpretation",
-        "If the SCBE idea is real, it is not replacing one of these systems. It is trying to compose several of their strengths into one hatch object.",
+        "If the SCBE idea is real, it is not replacing one of these systems. "
+        "It is trying to compose several of their strengths into one hatch object.",
     ]
     return "\n".join(sections)
 

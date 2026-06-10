@@ -21,7 +21,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT_DIR = REPO_ROOT / "training-data" / "npc_roundtable_sessions"
 
@@ -204,7 +203,7 @@ def _npc_card_rows(npc: NPCRecord, owner_brand: str) -> list[dict[str, Any]]:
                 f"NPC: {npc.name}\n"
                 f"Role: {npc.role}\n"
                 f"Canon: {npc.canon_status}\n"
-                f"Voice Rules: Speak consistently with known lore, avoid out-of-world references, "
+                "Voice Rules: Speak consistently with known lore, avoid out-of-world references, "
                 "and keep motivations aligned to the established arc.\n"
                 f"Memory Anchor: { _first_sentence(npc.summary, max_len=260) }"
             ),

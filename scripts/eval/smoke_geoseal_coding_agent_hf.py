@@ -25,7 +25,6 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
-
 DEFAULT_BASE_MODEL = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
 DEFAULT_MODEL = "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v3"
 torch: Any = None

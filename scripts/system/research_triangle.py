@@ -54,6 +54,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 try:
     from src.training.tongue_scorer import TongueScorer, get_layer_alignment
+
     _SCORER = TongueScorer()
     TONGUE_SCORING = True
 except ImportError as _e:
@@ -77,18 +78,28 @@ if _ENV_PATH.exists():
 
 RESEARCH_QUERIES = [
     # Core architecture alignment — arXiv only (SAM.gov not relevant)
-    {"label": "hyperbolic_geometry_safety",  "arxiv": "hyperbolic geometry neural network safety",      "sam": None},
-    {"label": "agentic_governance",          "arxiv": "agentic AI governance multi-agent safety",       "sam": None},
-    {"label": "formal_verification_ml",      "arxiv": "formal verification neural network verification", "sam": None},
-    {"label": "adversarial_robustness",      "arxiv": "adversarial robustness certified defense",       "sam": None},
-    {"label": "energy_based_training",       "arxiv": "energy based models training dynamics",          "sam": None},
+    {"label": "hyperbolic_geometry_safety", "arxiv": "hyperbolic geometry neural network safety", "sam": None},
+    {"label": "agentic_governance", "arxiv": "agentic AI governance multi-agent safety", "sam": None},
+    {"label": "formal_verification_ml", "arxiv": "formal verification neural network verification", "sam": None},
+    {"label": "adversarial_robustness", "arxiv": "adversarial robustness certified defense", "sam": None},
+    {"label": "energy_based_training", "arxiv": "energy based models training dynamics", "sam": None},
     # DARPA-specific — fetch SAM.gov with DARPA org filter
-    {"label": "darpa_math_agentic",          "arxiv": "multi-agent communication protocol formal",      "sam": "mathematical agentic communication",  "darpa": True},
-    {"label": "darpa_trustworthy_ai",        "arxiv": "trustworthy AI interpretability alignment",      "sam": "trustworthy AI steerable",           "darpa": True},
+    {
+        "label": "darpa_math_agentic",
+        "arxiv": "multi-agent communication protocol formal",
+        "sam": "mathematical agentic communication",
+        "darpa": True,
+    },
+    {
+        "label": "darpa_trustworthy_ai",
+        "arxiv": "trustworthy AI interpretability alignment",
+        "sam": "trustworthy AI steerable",
+        "darpa": True,
+    },
     # General queries — arXiv only
-    {"label": "composable_reasoning",        "arxiv": "compositional reasoning neural symbolic",        "sam": None},
-    {"label": "curriculum_learning",         "arxiv": "curriculum learning training dynamics convergence", "sam": None},
-    {"label": "geometric_deep_learning",     "arxiv": "geometric deep learning equivariant networks",   "sam": None},
+    {"label": "composable_reasoning", "arxiv": "compositional reasoning neural symbolic", "sam": None},
+    {"label": "curriculum_learning", "arxiv": "curriculum learning training dynamics convergence", "sam": None},
+    {"label": "geometric_deep_learning", "arxiv": "geometric deep learning equivariant networks", "sam": None},
 ]
 
 # SAM.gov NAICS codes relevant to SCBE work
@@ -101,6 +112,7 @@ DARPA_ORG_ID = "97AS"
 # =============================================================================
 # SAM.GOV CLIENT
 # =============================================================================
+
 
 class SamGovClient:
     BASE = "https://api.sam.gov/opportunities/v2/search"
@@ -119,17 +131,17 @@ class SamGovClient:
         since = (now - timedelta(days=days_back)).strftime("%m/%d/%Y")
         until = now.strftime("%m/%d/%Y")
         params = {
-            "api_key":    self.api_key,
-            "q":          keywords,
+            "api_key": self.api_key,
+            "q": keywords,
             "postedFrom": since,
-            "postedTo":   until,
-            "limit":      str(limit),
-            "offset":     "0",
+            "postedTo": until,
+            "limit": str(limit),
+            "offset": "0",
             # R&D-relevant notice types only:
             # p=Presolicitation, k=Combined Synopsis, r=Sources Sought, s=Special Notice
-            "ptype":      "p,k,r,s",
+            "ptype": "p,k,r,s",
             # R&D and software NAICS codes
-            "naicscode":  ",".join(SAM_NAICS),
+            "naicscode": ",".join(SAM_NAICS),
         }
         if darpa_only:
             params["organizationId"] = DARPA_ORG_ID
@@ -149,15 +161,15 @@ class SamGovClient:
     @staticmethod
     def extract_fields(opp: dict) -> dict:
         return {
-            "id":           opp.get("noticeId", ""),
-            "title":        opp.get("title", ""),
-            "agency":       opp.get("fullParentPathName", ""),
-            "type":         opp.get("type", ""),
-            "posted":       opp.get("postedDate", ""),
-            "deadline":     opp.get("responseDeadLine", ""),
-            "description":  (opp.get("description") or "")[:800],
-            "sol_number":   opp.get("solicitationNumber", ""),
-            "url":          opp.get("uiLink", ""),
+            "id": opp.get("noticeId", ""),
+            "title": opp.get("title", ""),
+            "agency": opp.get("fullParentPathName", ""),
+            "type": opp.get("type", ""),
+            "posted": opp.get("postedDate", ""),
+            "deadline": opp.get("responseDeadLine", ""),
+            "description": (opp.get("description") or "")[:800],
+            "sol_number": opp.get("solicitationNumber", ""),
+            "url": opp.get("uiLink", ""),
         }
 
 
@@ -165,14 +177,18 @@ class SamGovClient:
 # ARXIV CLIENT
 # =============================================================================
 
+
 class ArxivClient:
     BASE = "https://export.arxiv.org/api/query"
-    NS   = {"atom": "http://www.w3.org/2005/Atom"}
+    NS = {"atom": "http://www.w3.org/2005/Atom"}
 
     def fetch(self, query: str, max_results: int = 10, days_back: int = 180) -> List[dict]:
         # arXiv search: title+abstract, restrict to cs.AI cs.LG cs.CR stat.ML
         full_q = f"({query}) AND (cat:cs.AI OR cat:cs.LG OR cat:cs.CR OR cat:stat.ML)"
-        qs = f"search_query={quote_plus(full_q)}&start=0&max_results={max_results}&sortBy=submittedDate&sortOrder=descending"
+        qs = (
+            f"search_query={quote_plus(full_q)}&start=0&max_results={max_results}"
+            "&sortBy=submittedDate&sortOrder=descending"
+        )
         url = f"{self.BASE}?{qs}"
 
         try:
@@ -191,26 +207,25 @@ class ArxivClient:
 
         papers = []
         for entry in root.findall("atom:entry", self.NS):
-            title   = _clean(entry.findtext("atom:title",   "", self.NS) or "")
+            title = _clean(entry.findtext("atom:title", "", self.NS) or "")
             summary = _clean(entry.findtext("atom:summary", "", self.NS) or "")
             arxiv_id = ""
             id_el = entry.find("atom:id", self.NS)
             if id_el is not None and id_el.text:
                 arxiv_id = id_el.text.split("/abs/")[-1].strip()
             published = entry.findtext("atom:published", "", self.NS)
-            authors = [
-                a.findtext("atom:name", "", self.NS)
-                for a in entry.findall("atom:author", self.NS)
-            ]
-            papers.append({
-                "arxiv_id":  arxiv_id,
-                "title":     title,
-                "abstract":  summary[:600],
-                "authors":   authors[:5],
-                "published": published[:10],
-                "url":       f"https://arxiv.org/abs/{arxiv_id}",
-            })
-            time.sleep(0.3)   # arXiv rate limit: 3 req/s
+            authors = [a.findtext("atom:name", "", self.NS) for a in entry.findall("atom:author", self.NS)]
+            papers.append(
+                {
+                    "arxiv_id": arxiv_id,
+                    "title": title,
+                    "abstract": summary[:600],
+                    "authors": authors[:5],
+                    "published": published[:10],
+                    "url": f"https://arxiv.org/abs/{arxiv_id}",
+                }
+            )
+            time.sleep(0.3)  # arXiv rate limit: 3 req/s
 
         return papers
 
@@ -219,10 +234,13 @@ class ArxivClient:
 # RELEVANCE SCORING — lightweight keyword overlap, no model needed
 # =============================================================================
 
+
 def keyword_overlap(text_a: str, text_b: str) -> float:
     """Normalized unigram overlap between two texts."""
+
     def tokens(t):
         return set(re.findall(r"\b[a-z]{4,}\b", t.lower()))
+
     a, b = tokens(text_a), tokens(text_b)
     if not a or not b:
         return 0.0
@@ -230,7 +248,7 @@ def keyword_overlap(text_a: str, text_b: str) -> float:
 
 
 def score_paper_vs_opp(paper: dict, opp: dict) -> float:
-    title_score    = keyword_overlap(paper["title"],    opp["title"])
+    title_score = keyword_overlap(paper["title"], opp["title"])
     abstract_score = keyword_overlap(paper["abstract"], opp["description"])
     return round(0.4 * title_score + 0.6 * abstract_score, 4)
 
@@ -242,12 +260,13 @@ def score_paper_vs_opp(paper: dict, opp: dict) -> float:
 #   Section pair:  INTENT / MENTAL_MODEL / EXEC_TRACE / WHY_WORKS / SCBE_LAYER
 # =============================================================================
 
+
 @dataclass
 class ResearchMatch:
-    query_label:  str
-    opportunity:  dict
-    paper:        dict
-    score:        float
+    query_label: str
+    opportunity: dict
+    paper: dict
+    score: float
 
 
 def _truncate(text: str, n: int = 400) -> str:
@@ -290,6 +309,7 @@ def _TONGUE_SCORING_SS1_AVAILABLE() -> bool:
     """Check if SS1 encoding is available (sixtongues package imported)."""
     try:
         from packages.sixtongues.sixtongues import encode_bytes  # noqa: F401
+
         return True
     except ImportError:
         return False
@@ -299,6 +319,7 @@ def _encode_ss1(text: str, primary_tongue: str) -> str:
     """Encode text as SS1 tongue tokens using the primary tongue's bijection."""
     try:
         from packages.sixtongues.sixtongues import encode_bytes
+
         raw = text.encode("utf-8", errors="replace")
         return encode_bytes(raw, tongue_code=primary_tongue.lower())
     except (ImportError, LookupError, UnicodeError, ValueError) as exc:
@@ -308,31 +329,33 @@ def _encode_ss1(text: str, primary_tongue: str) -> str:
 
 def make_arxiv_sft_pair(paper: dict, query_label: str, query_keywords: str) -> dict:
     """SFT pair from arXiv paper — with layer-specific response and L2 orientation header."""
-    layers = get_layer_alignment(query_label) if TONGUE_SCORING else [
-        "L5 (hyperbolic distance d_H)", "L12 (harmonic wall)", "L13 (governance gate)"
-    ]
+    layers = (
+        get_layer_alignment(query_label)
+        if TONGUE_SCORING
+        else ["L5 (hyperbolic distance d_H)", "L12 (harmonic wall)", "L13 (governance gate)"]
+    )
     domain = query_label.replace("_", " ")
 
     instruction = (
-        f"A research paper has been identified as relevant to SCBE-AETHERMOORE "
+        "A research paper has been identified as relevant to SCBE-AETHERMOORE "
         f"({domain}):\n\n"
         f"PAPER: {paper['title']} ({paper['published']})\n"
         f"AUTHORS: {', '.join(paper['authors'][:3])}\n"
         f"ABSTRACT: {_truncate(paper['abstract'], 400)}\n\n"
-        f"Explain the paper's core technical contribution and which SCBE-AETHERMOORE "
-        f"pipeline layers it most directly validates or extends."
+        "Explain the paper's core technical contribution and which SCBE-AETHERMOORE "
+        "pipeline layers it most directly validates or extends."
     )
 
-    layer_bullets = "\n".join(f"• {l}" for l in layers)
+    layer_bullets = "\n".join(f"• {layer}" for layer in layers)
     abstract_claim = _truncate(paper["abstract"], 300)
     response = (
         f"{paper['title']} advances the {domain} domain by showing that {abstract_claim}\n\n"
-        f"The most directly relevant SCBE pipeline layers are:\n"
+        "The most directly relevant SCBE pipeline layers are:\n"
         f"{layer_bullets}\n\n"
-        f"This work strengthens the SCBE argument because the exponential cost structure "
-        f"d_H = arcosh(1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²))) makes adversarial behavior "
-        f"computationally infeasible — a claim this paper's approach either directly "
-        f"demonstrates or provides additional formal grounding for.\n\n"
+        "This work strengthens the SCBE argument because the exponential cost structure "
+        "d_H = arcosh(1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²))) makes adversarial behavior "
+        "computationally infeasible — a claim this paper's approach either directly "
+        "demonstrates or provides additional formal grounding for.\n\n"
         f"arXiv: {paper['url']}"
     )
 
@@ -343,13 +366,13 @@ def make_arxiv_sft_pair(paper: dict, query_label: str, query_keywords: str) -> d
 
     return {
         "instruction": header + instruction,
-        "response":    response,
+        "response": response,
         "query_label": query_label,
-        "opp_id":      "",
-        "arxiv_id":    paper["arxiv_id"],
-        "score":       kw_score,
-        "source":      "research_triangle_arxiv",
-        "stage":       7,
+        "opp_id": "",
+        "arxiv_id": paper["arxiv_id"],
+        "score": kw_score,
+        "source": "research_triangle_arxiv",
+        "stage": 7,
         **orientation,
     }
 
@@ -357,50 +380,48 @@ def make_arxiv_sft_pair(paper: dict, query_label: str, query_keywords: str) -> d
 def make_arxiv_section_pair(paper: dict, query_label: str, query_keywords: str) -> dict:
     """Section pair from arXiv paper — layer-specific, with L2 orientation header."""
     kw_score = keyword_overlap(paper["title"] + " " + paper["abstract"], query_keywords)
-    layers = get_layer_alignment(query_label) if TONGUE_SCORING else [
-        "L5 (d_H)", "L12 (harmonic wall)", "L13 (governance gate)"
-    ]
+    layers = (
+        get_layer_alignment(query_label)
+        if TONGUE_SCORING
+        else ["L5 (d_H)", "L12 (harmonic wall)", "L13 (governance gate)"]
+    )
     layer_list = " | ".join(layers)
     domain = query_label.replace("_", " ")
 
     # Pick the most specific axiom tie-in per layer set
     axiom_map = {
-        "hyperbolic_geometry_safety":  "Symmetry (A4) — gauge invariance across tongue dimensions",
-        "agentic_governance":          "Composition (A5) — pipeline integrity across multi-agent coordination",
-        "formal_verification_ml":      "Unitarity (A1) — norm preservation through all transforms",
-        "adversarial_robustness":      "Locality (A2) — spatial bounds confine adversarial drift",
-        "energy_based_training":       "Causality (A3) — time-ordering of energy state transitions",
-        "darpa_math_agentic":          "Composition (A5) — multi-tongue communication protocol integrity",
-        "darpa_trustworthy_ai":        "Symmetry (A4) — interpretable bounded score H(d,pd) ∈ (0,1]",
-        "composable_reasoning":        "Composition (A5) — composable pipeline from L1 context to L14 telemetry",
-        "curriculum_learning":         "Causality (A3) — governance tier progression TRICKLE→BURST→ECHO",
-        "geometric_deep_learning":     "Symmetry (A4) — equivariant phi-scaling across tongue dimensions",
+        "hyperbolic_geometry_safety": "Symmetry (A4) — gauge invariance across tongue dimensions",
+        "agentic_governance": "Composition (A5) — pipeline integrity across multi-agent coordination",
+        "formal_verification_ml": "Unitarity (A1) — norm preservation through all transforms",
+        "adversarial_robustness": "Locality (A2) — spatial bounds confine adversarial drift",
+        "energy_based_training": "Causality (A3) — time-ordering of energy state transitions",
+        "darpa_math_agentic": "Composition (A5) — multi-tongue communication protocol integrity",
+        "darpa_trustworthy_ai": "Symmetry (A4) — interpretable bounded score H(d,pd) ∈ (0,1]",
+        "composable_reasoning": "Composition (A5) — composable pipeline from L1 context to L14 telemetry",
+        "curriculum_learning": "Causality (A3) — governance tier progression TRICKLE→BURST→ECHO",
+        "geometric_deep_learning": "Symmetry (A4) — equivariant phi-scaling across tongue dimensions",
     }
     axiom = axiom_map.get(query_label, "Symmetry (A4) — gauge invariance")
 
     body = (
-        f"[INTENT]\n"
+        "[INTENT]\n"
         f"Map research paper to SCBE pipeline layer — domain: {domain}.\n"
         f"Paper: {paper['title']} — {paper['published']}\n\n"
-
-        f"[MENTAL_MODEL]\n"
+        "[MENTAL_MODEL]\n"
         f"Core contribution: {_truncate(paper['abstract'], 280)}\n"
         f"Relevance score (keyword overlap): {kw_score:.3f}\n\n"
-
-        f"[EXEC_TRACE]\n"
-        f"Step 1: Identify the paper's primary technical claim from the abstract.\n"
+        "[EXEC_TRACE]\n"
+        "Step 1: Identify the paper's primary technical claim from the abstract.\n"
         f"Step 2: Find the SCBE layer where this claim plugs in ({layer_list}).\n"
         f"Step 3: State which axiom the paper implicitly satisfies: {axiom}.\n"
-        f"Step 4: Write one sentence on whether this strengthens or challenges SCBE.\n\n"
-
-        f"[WHY_WORKS]\n"
-        f"The Poincaré ball model makes adversarial drift exponentially costly: "
-        f"distance grows as arcosh(1 + 2‖u-v‖²/…), not linearly. Any paper that "
-        f"formalizes structure in this space — geometric, statistical, or governance — "
-        f"directly validates the core SCBE claim. The harmonic wall H(d,pd) then "
-        f"translates that distance into a bounded, auditable safety score.\n\n"
-
-        f"[SCBE_LAYER]\n"
+        "Step 4: Write one sentence on whether this strengthens or challenges SCBE.\n\n"
+        "[WHY_WORKS]\n"
+        "The Poincaré ball model makes adversarial drift exponentially costly: "
+        "distance grows as arcosh(1 + 2‖u-v‖²/…), not linearly. Any paper that "
+        "formalizes structure in this space — geometric, statistical, or governance — "
+        "directly validates the core SCBE claim. The harmonic wall H(d,pd) then "
+        "translates that distance into a bounded, auditable safety score.\n\n"
+        "[SCBE_LAYER]\n"
         f"Primary layers: {layer_list}\n"
         f"Axiom: {axiom}\n"
         f"Query: {query_label} | arXiv: {paper['arxiv_id']} | {paper['published']}\n"
@@ -411,47 +432,49 @@ def make_arxiv_section_pair(paper: dict, query_label: str, query_keywords: str) 
     header = _orientation_header(body, query_label)
 
     return {
-        "text":        header + body,
+        "text": header + body,
         "query_label": query_label,
-        "opp_id":      "",
-        "arxiv_id":    paper["arxiv_id"],
-        "score":       kw_score,
-        "source":      "research_triangle_arxiv_sections",
-        "stage":       7,
+        "opp_id": "",
+        "arxiv_id": paper["arxiv_id"],
+        "score": kw_score,
+        "source": "research_triangle_arxiv_sections",
+        "stage": 7,
         **orientation,
     }
 
 
 def make_sft_pair(match: ResearchMatch) -> dict:
     """Enriched SFT pair: SAM opportunity × arXiv paper, with layer routing + orientation."""
-    opp   = match.opportunity
+    opp = match.opportunity
     paper = match.paper
-    layers = get_layer_alignment(match.query_label) if TONGUE_SCORING else [
-        "L5 (hyperbolic distance d_H)", "L12 (harmonic wall)", "L13 (governance gate)"
-    ]
-    layer_bullets = "\n".join(f"• {l}" for l in layers)
+    layers = (
+        get_layer_alignment(match.query_label)
+        if TONGUE_SCORING
+        else ["L5 (hyperbolic distance d_H)", "L12 (harmonic wall)", "L13 (governance gate)"]
+    )
+    layer_bullets = "\n".join(f"• {layer}" for layer in layers)
 
     instruction = (
-        f"A government research opportunity has been matched to a relevant paper.\n\n"
+        "A government research opportunity has been matched to a relevant paper.\n\n"
         f"OPPORTUNITY: {opp['title']}\n"
         f"AGENCY: {opp['agency']}\n"
         f"SOLICITATION: {opp['sol_number']}\n\n"
         f"PAPER: {paper['title']} ({paper['published']})\n"
         f"AUTHORS: {', '.join(paper['authors'][:3])}\n"
         f"ABSTRACT: {_truncate(paper['abstract'], 300)}\n\n"
-        f"Describe a technical approach using SCBE-AETHERMOORE that addresses both the "
-        f"opportunity's requirements and the paper's findings."
+        "Describe a technical approach using SCBE-AETHERMOORE that addresses both the "
+        "opportunity's requirements and the paper's findings."
     )
     response = (
         f"{paper['title']} demonstrates {_truncate(paper['abstract'], 200)}\n\n"
-        f"This directly maps to the solicitation's requirements through SCBE's:\n"
+        "This directly maps to the solicitation's requirements through SCBE's:\n"
         f"{layer_bullets}\n\n"
-        f"Technical approach: apply the Poincaré ball hyperbolic geometry pipeline "
-        f"(L4-L5) to embed the problem space, then score safety posture continuously "
-        f"via H(d,pd) = 1/(1+d_H+2·pd) ∈ (0,1] (L12). The governance tier gate (L13) "
-        f"then provides the auditable ALLOW/QUARANTINE/ESCALATE/DENY classification "
-        f"the solicitation requires, with exponential cost scaling making adversarial "
-        f"manipulation computationally infeasible.\n\n"
+        "Technical approach: apply the Poincaré ball hyperbolic geometry pipeline "
+        "(L4-L5) to embed the problem space, then score safety posture continuously "
+        "via H(d,pd) = 1/(1+d_H+2·pd) ∈ (0,1] (L12). The governance tier gate (L13) "
+        "then provides the auditable ALLOW/QUARANTINE/ESCALATE/DENY classification "
+        "the solicitation requires, with exponential cost scaling making adversarial "
+        "manipulation computationally infeasible.\n\n"
         f"Alignment score: {match.score:.3f} | arXiv: {paper['url']}"
     )
 
@@ -461,52 +484,50 @@ def make_sft_pair(match: ResearchMatch) -> dict:
 
     return {
         "instruction": header + instruction,
-        "response":    response,
+        "response": response,
         "query_label": match.query_label,
-        "opp_id":      opp["id"],
-        "arxiv_id":    paper["arxiv_id"],
-        "score":       match.score,
-        "source":      "research_triangle",
-        "stage":       7,
+        "opp_id": opp["id"],
+        "arxiv_id": paper["arxiv_id"],
+        "score": match.score,
+        "source": "research_triangle",
+        "stage": 7,
         **orientation,
     }
 
 
 def make_section_pair(match: ResearchMatch) -> dict:
     """Section-tagged DARPA×arXiv pair — layer-specific, with L2 orientation header."""
-    opp   = match.opportunity
+    opp = match.opportunity
     paper = match.paper
-    layers = get_layer_alignment(match.query_label) if TONGUE_SCORING else [
-        "L5 (d_H)", "L12 (harmonic wall)", "L13 (governance gate)"
-    ]
+    layers = (
+        get_layer_alignment(match.query_label)
+        if TONGUE_SCORING
+        else ["L5 (d_H)", "L12 (harmonic wall)", "L13 (governance gate)"]
+    )
     layer_list = " | ".join(layers)
     domain = match.query_label.replace("_", " ")
 
     body = (
-        f"[INTENT]\n"
-        f"Map DARPA opportunity to SCBE technical approach via aligned research.\n"
+        "[INTENT]\n"
+        "Map DARPA opportunity to SCBE technical approach via aligned research.\n"
         f"Opportunity: {opp['title']} ({_truncate(opp['agency'], 60)})\n"
         f"Paper: {paper['title']} — {paper['published']}\n\n"
-
-        f"[MENTAL_MODEL]\n"
+        "[MENTAL_MODEL]\n"
         f"The opportunity's domain ({domain}) requires: {_truncate(opp['description'], 180)}\n"
         f"The paper demonstrates: {_truncate(paper['abstract'], 200)}\n"
         f"Alignment score: {match.score:.3f}\n\n"
-
-        f"[EXEC_TRACE]\n"
-        f"Step 1: Extract the solicitation's core technical requirement.\n"
-        f"Step 2: Match to paper's technical contribution.\n"
+        "[EXEC_TRACE]\n"
+        "Step 1: Extract the solicitation's core technical requirement.\n"
+        "Step 2: Match to paper's technical contribution.\n"
         f"Step 3: Map the combined approach to SCBE layers: {layer_list}\n"
-        f"Step 4: Identify the governance posture this solution provides (L13 tier).\n\n"
-
-        f"[WHY_WORKS]\n"
-        f"SCBE's hyperbolic geometry provides exponential cost scaling — adversarial "
-        f"drift costs grow as arcosh(1 + 2‖u-v‖²/…), not linearly. This geometric "
-        f"guarantee satisfies formal verifiability requirements without exhaustive "
-        f"enumeration of attack vectors. The paper's approach plugs into this framework "
-        f"at the identified layers, strengthening the total system claim.\n\n"
-
-        f"[SCBE_LAYER]\n"
+        "Step 4: Identify the governance posture this solution provides (L13 tier).\n\n"
+        "[WHY_WORKS]\n"
+        "SCBE's hyperbolic geometry provides exponential cost scaling — adversarial "
+        "drift costs grow as arcosh(1 + 2‖u-v‖²/…), not linearly. This geometric "
+        "guarantee satisfies formal verifiability requirements without exhaustive "
+        "enumeration of attack vectors. The paper's approach plugs into this framework "
+        "at the identified layers, strengthening the total system claim.\n\n"
+        "[SCBE_LAYER]\n"
         f"Layers: {layer_list}\n"
         f"SAM ID: {opp['id']} | arXiv: {paper['arxiv_id']} | {paper['published']}\n"
         f"Query: {match.query_label} | Score: {match.score:.3f}\n"
@@ -517,13 +538,13 @@ def make_section_pair(match: ResearchMatch) -> dict:
     header = _orientation_header(body, match.query_label)
 
     return {
-        "text":        header + body,
+        "text": header + body,
         "query_label": match.query_label,
-        "opp_id":      opp["id"],
-        "arxiv_id":    paper["arxiv_id"],
-        "score":       match.score,
-        "source":      "research_triangle_sections",
-        "stage":       7,
+        "opp_id": opp["id"],
+        "arxiv_id": paper["arxiv_id"],
+        "score": match.score,
+        "source": "research_triangle_sections",
+        "stage": 7,
         **orientation,
     }
 
@@ -532,33 +553,33 @@ def make_section_pair(match: ResearchMatch) -> dict:
 # MAIN PIPELINE
 # =============================================================================
 
-import math   # placed here to avoid top-level import before we know it's needed
+import math  # placed here to avoid top-level import before we know it's needed
 
 
 def run(
-    max_opps:    int  = 10,
-    max_papers:  int  = 20,
-    days_back:   int  = 180,
-    min_score:   float = 0.02,
-    darpa_only:  bool = False,
-    dry_run:     bool = False,
+    max_opps: int = 10,
+    max_papers: int = 20,
+    days_back: int = 180,
+    min_score: float = 0.02,
+    darpa_only: bool = False,
+    dry_run: bool = False,
 ) -> Tuple[List[dict], List[dict]]:
 
     sam_key = os.environ.get("SAM_GOV_API_KEY", "")
     if not sam_key:
         print("[WARN] SAM_GOV_API_KEY not set — skipping SAM.gov/DARPA fetch")
 
-    sam    = SamGovClient(sam_key) if sam_key else None
-    arxiv  = ArxivClient()
+    sam = SamGovClient(sam_key) if sam_key else None
+    arxiv = ArxivClient()
 
-    sft_records:     List[dict] = []
+    sft_records: List[dict] = []
     section_records: List[dict] = []
-    sam_matches:     List[ResearchMatch] = []
+    sam_matches: List[ResearchMatch] = []
 
     for q in RESEARCH_QUERIES:
-        label       = q["label"]
-        sam_kw      = q.get("sam")
-        is_darpa    = q.get("darpa", False)
+        label = q["label"]
+        sam_kw = q.get("sam")
+        is_darpa = q.get("darpa", False)
         print(f"\n[{label}]")
 
         # --- arXiv papers (primary for all queries) ---
@@ -570,7 +591,7 @@ def run(
         for paper in papers:
             kw = keyword_overlap(paper["title"] + " " + paper["abstract"], q["arxiv"])
             if kw < min_score:
-                continue   # skip papers with no keyword overlap — they're noise
+                continue  # skip papers with no keyword overlap — they're noise
             sft_records.append(make_arxiv_sft_pair(paper, label, q["arxiv"]))
             section_records.append(make_arxiv_section_pair(paper, label, q["arxiv"]))
             kept += 1
@@ -589,14 +610,16 @@ def run(
                 for paper in papers:
                     score = score_paper_vs_opp(paper, opp)
                     if score >= min_score:
-                        sam_matches.append(ResearchMatch(
-                            query_label=label,
-                            opportunity=opp,
-                            paper=paper,
-                            score=score,
-                        ))
+                        sam_matches.append(
+                            ResearchMatch(
+                                query_label=label,
+                                opportunity=opp,
+                                paper=paper,
+                                score=score,
+                            )
+                        )
         elif sam_kw is None:
-            print(f"  SAM:   skipped (arXiv-only query)")
+            print("  SAM:   skipped (arXiv-only query)")
 
     # Add enriched SAM×arXiv pairs (deduped)
     sam_matches.sort(key=lambda m: m.score, reverse=True)
@@ -638,12 +661,12 @@ def run(
 
 def main():
     parser = argparse.ArgumentParser(description="Research triangle: SAM + DARPA + arXiv → training pairs")
-    parser.add_argument("--max-opps",   type=int,   default=10,   help="Max SAM opportunities per query")
-    parser.add_argument("--max-papers", type=int,   default=20,   help="Max arXiv papers per query")
-    parser.add_argument("--days-back",  type=int,   default=180,  help="How far back to search (days)")
-    parser.add_argument("--min-score",  type=float, default=0.02, help="Minimum relevance score to include")
-    parser.add_argument("--darpa-only", action="store_true",       help="SAM.gov: DARPA opportunities only")
-    parser.add_argument("--dry-run",    action="store_true",       help="Fetch and score but don't write files")
+    parser.add_argument("--max-opps", type=int, default=10, help="Max SAM opportunities per query")
+    parser.add_argument("--max-papers", type=int, default=20, help="Max arXiv papers per query")
+    parser.add_argument("--days-back", type=int, default=180, help="How far back to search (days)")
+    parser.add_argument("--min-score", type=float, default=0.02, help="Minimum relevance score to include")
+    parser.add_argument("--darpa-only", action="store_true", help="SAM.gov: DARPA opportunities only")
+    parser.add_argument("--dry-run", action="store_true", help="Fetch and score but don't write files")
     args = parser.parse_args()
 
     sft, sections = run(
@@ -656,7 +679,7 @@ def main():
     )
 
     if sft:
-        print(f"\n--- Top 3 by score ---")
+        print("\n--- Top 3 by score ---")
         for r in sorted(sft, key=lambda x: x["score"], reverse=True)[:3]:
             src = r["source"].replace("research_triangle_", "")
             print(f"  [{r['query_label']}] score={r['score']:.3f}  arXiv:{r['arxiv_id']}  ({src})")

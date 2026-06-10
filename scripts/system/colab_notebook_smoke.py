@@ -13,7 +13,6 @@ from typing import Any
 from scripts.system import colab_workflow_catalog as catalog
 from scripts.system import colab_worker_lease as worker
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "colab_smoke"
 DEFAULT_PROFILE_DIR = Path.home() / ".scbe-playwright-colab"
@@ -101,7 +100,8 @@ RUNTIME_PROBE_JS = """
     connect_button_visible: connectVisible,
     button_samples: buttons.slice(0, 20),
     kernel_state: typeof kernel?.state === 'string' ? kernel.state : '',
-    kernel_last_connected_time_ms: typeof notebook?.kernelLastConnectedTimeMs === 'number' ? notebook.kernelLastConnectedTimeMs : null,
+    kernel_last_connected_time_ms: typeof notebook?.kernelLastConnectedTimeMs === 'number'
+      ? notebook.kernelLastConnectedTimeMs : null,
     runtime_monitor_running: runtimeMonitorRunning,
     cached_usage_preview: cachedUsagePreview,
   };

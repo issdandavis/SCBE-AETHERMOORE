@@ -30,7 +30,7 @@ updates:
       - "scbe-aethermoore/**"
       - "packages/six-tongues-geoseal/**"
       - "archive/**"
-      - "test-install/**"
+      - "archive/test-install/**"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"

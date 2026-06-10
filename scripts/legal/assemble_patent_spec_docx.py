@@ -18,7 +18,6 @@ from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt
 
-
 ROOT = Path(__file__).resolve().parents[2]
 TITLE = "System and Method for Hyperbolic Geometry-Based Authorization with Topological Control-Flow Integrity"
 APPLICATION = "63/961,403"
@@ -34,15 +33,36 @@ OUT_JSON = OUT_DIR / "SCBE_NONPROVISIONAL_SPEC_DRAFT_v1.manifest.json"
 
 
 FIGURE_DESCRIPTIONS = [
-    "FIG. 1 is a block diagram of a fourteen-layer authorization pipeline from complex context ingestion through risk decision gating and telemetry.",
-    "FIG. 2 is a graph of a harmonic wall cost function showing nonlinear governance cost as a function of hyperbolic distance.",
-    "FIG. 3 is a Poincare ball cross-section showing concentric security zones, realm centers, a session centroid, and example authorized and adversarial trajectories.",
+    (
+        "FIG. 1 is a block diagram of a fourteen-layer authorization pipeline from complex context "
+        "ingestion through risk decision gating and telemetry."
+    ),
+    (
+        "FIG. 2 is a graph of a harmonic wall cost function showing nonlinear governance cost "
+        "as a function of hyperbolic distance."
+    ),
+    (
+        "FIG. 3 is a Poincare ball cross-section showing concentric security zones, realm centers, "
+        "a session centroid, and example authorized and adversarial trajectories."
+    ),
     "FIG. 4 is a six-axis semantic weighting diagram showing phi-scaled context channels and orthogonal semantic axes.",
-    "FIG. 5 is a deferred-authorization container flow showing multi-predicate gating and fail-to-noise output on predicate failure.",
-    "FIG. 6 is a cheapest-reject-first pre-filter stack showing ordered governance filters before expensive execution or cryptographic operations.",
+    (
+        "FIG. 5 is a deferred-authorization container flow showing multi-predicate gating "
+        "and fail-to-noise output on predicate failure."
+    ),
+    (
+        "FIG. 6 is a cheapest-reject-first pre-filter stack showing ordered governance filters "
+        "before expensive execution or cryptographic operations."
+    ),
     "FIG. 7 is a runtime decision gate diagram showing allow, quarantine, escalate, and deny routing paths.",
-    "FIG. 8 is a bijective tamper detection flow showing encode/decode round-trip, AST canonicalization, identifier canonicality, and governance escalation.",
-    "FIG. 9 is a system deployment architecture diagram showing client, API, command-line, agent-bus, governance, receipt, and audit components.",
+    (
+        "FIG. 8 is a bijective tamper detection flow showing encode/decode round-trip, "
+        "AST canonicalization, identifier canonicality, and governance escalation."
+    ),
+    (
+        "FIG. 9 is a system deployment architecture diagram showing client, API, command-line, "
+        "agent-bus, governance, receipt, and audit components."
+    ),
 ]
 
 
@@ -232,29 +252,32 @@ def configure_doc(doc: Document) -> None:
 
 
 def make_markdown(background: str, detailed_description: str, claims: str, abstract: str) -> str:
-    return "\n\n".join(
-        [
-            f"# {TITLE}",
-            "## CROSS-REFERENCE TO RELATED APPLICATIONS",
-            (
-                f"This application claims priority to U.S. Provisional Application No. {APPLICATION}, "
-                f"filed {FILING_DATE}, entitled \"{TITLE}\", the entire disclosure of which is "
-                "incorporated herein by reference."
-            ),
-            "## BACKGROUND OF THE INVENTION",
-            background,
-            "## SUMMARY OF THE INVENTION",
-            "\n\n".join(SUMMARY_PARAGRAPHS),
-            "## BRIEF DESCRIPTION OF THE DRAWINGS",
-            "\n\n".join(FIGURE_DESCRIPTIONS),
-            "## DETAILED DESCRIPTION OF THE PREFERRED EMBODIMENTS",
-            detailed_description,
-            "## CLAIMS",
-            claims,
-            "## ABSTRACT OF THE DISCLOSURE",
-            abstract,
-        ]
-    ) + "\n"
+    return (
+        "\n\n".join(
+            [
+                f"# {TITLE}",
+                "## CROSS-REFERENCE TO RELATED APPLICATIONS",
+                (
+                    f"This application claims priority to U.S. Provisional Application No. {APPLICATION}, "
+                    f'filed {FILING_DATE}, entitled "{TITLE}", the entire disclosure of which is '
+                    "incorporated herein by reference."
+                ),
+                "## BACKGROUND OF THE INVENTION",
+                background,
+                "## SUMMARY OF THE INVENTION",
+                "\n\n".join(SUMMARY_PARAGRAPHS),
+                "## BRIEF DESCRIPTION OF THE DRAWINGS",
+                "\n\n".join(FIGURE_DESCRIPTIONS),
+                "## DETAILED DESCRIPTION OF THE PREFERRED EMBODIMENTS",
+                detailed_description,
+                "## CLAIMS",
+                claims,
+                "## ABSTRACT OF THE DISCLOSURE",
+                abstract,
+            ]
+        )
+        + "\n"
+    )
 
 
 def build() -> dict:
@@ -278,7 +301,7 @@ def build() -> dict:
     doc.add_heading("CROSS-REFERENCE TO RELATED APPLICATIONS", level=1)
     doc.add_paragraph(
         f"This application claims priority to U.S. Provisional Application No. {APPLICATION}, "
-        f"filed {FILING_DATE}, entitled \"{TITLE}\", the entire disclosure of which is "
+        f'filed {FILING_DATE}, entitled "{TITLE}", the entire disclosure of which is '
         "incorporated herein by reference."
     )
 

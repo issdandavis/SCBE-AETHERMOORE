@@ -55,13 +55,13 @@ MODEL_CONFIGS = {
         # Qwen2.5 uses these attention projection names
         "target_modules": ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
         "batch_size": 1,
-        "grad_accum": 8,    # effective batch = 8 to compensate for tiny real batch
-        "lr": 1e-4,          # lower LR for larger model
+        "grad_accum": 8,  # effective batch = 8 to compensate for tiny real batch
+        "lr": 1e-4,  # lower LR for larger model
         "max_seq_length": 512,
         "fp16": False,
-        "bf16": True,        # 7B needs bf16 for numerical stability
+        "bf16": True,  # 7B needs bf16 for numerical stability
         "gradient_checkpointing": True,  # essential for 6GB VRAM
-        "optim": "paged_adamw_8bit",     # 8-bit optimizer = ~2GB VRAM saved
+        "optim": "paged_adamw_8bit",  # 8-bit optimizer = ~2GB VRAM saved
     },
 }
 
@@ -75,7 +75,10 @@ ADAPTER_CONFIGS = {
     "lawbot": {
         "data_plain": "training-data/hand_tune/lawbot/examples.jsonl",
         "data_scbe": None,
-        "system": "You are a helpful legal information assistant. Always clarify you provide general information, not legal advice, and recommend consulting an attorney for specific situations.",
+        "system": (
+            "You are a helpful legal information assistant. Always clarify you provide general information, "
+            "not legal advice, and recommend consulting an attorney for specific situations."
+        ),
         "description": "Legal information assistant — business structure, contracts, compliance",
     },
     "commerce": {
@@ -95,6 +98,7 @@ ADAPTER_CONFIGS = {
 # Data loading
 # ---------------------------------------------------------------------------
 
+
 def load_plain_examples(jsonl_path: str, system_prompt: str) -> list[dict]:
     """Load simple {prompt, response} pairs and format as chat."""
     examples = []
@@ -104,13 +108,15 @@ def load_plain_examples(jsonl_path: str, system_prompt: str) -> list[dict]:
             if not line:
                 continue
             ex = json.loads(line)
-            examples.append({
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": ex["prompt"]},
-                    {"role": "assistant", "content": ex["response"]},
-                ]
-            })
+            examples.append(
+                {
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": ex["prompt"]},
+                        {"role": "assistant", "content": ex["response"]},
+                    ]
+                }
+            )
     return examples
 
 
@@ -157,6 +163,7 @@ def load_examples(adapter_name: str, use_scbe: bool) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Training
 # ---------------------------------------------------------------------------
+
 
 def train(adapter_name: str, model_key: str, epochs: int, dry_run: bool, use_scbe: bool) -> None:
     adapter_cfg = ADAPTER_CONFIGS[adapter_name]
@@ -225,9 +232,7 @@ def train(adapter_name: str, model_key: str, epochs: int, dry_run: bool, use_scb
 
     # Format as text
     def format_example(ex: dict) -> str:
-        return tokenizer.apply_chat_template(
-            ex["messages"], tokenize=False, add_generation_prompt=False
-        )
+        return tokenizer.apply_chat_template(ex["messages"], tokenize=False, add_generation_prompt=False)
 
     texts = [format_example(e) for e in examples]
     dataset = Dataset.from_dict({"text": texts})
@@ -272,42 +277,32 @@ def train(adapter_name: str, model_key: str, epochs: int, dry_run: bool, use_scb
     trainer.save_model(output_dir)
     tokenizer.save_pretrained(output_dir)
     print(f"\nAdapter saved to: {output_dir}")
-    print(f"\nNext steps:")
+    print("\nNext steps:")
     if model_key == "7b":
-        print(f"  Merge + export for Ollama:")
+        print("  Merge + export for Ollama:")
         print(f"    python scripts/system/merge_to_gguf.py --adapter {adapter_name}")
-        print(f"  Or serve via model_server.py:")
-        print(f"    python scripts/system/model_server.py  (port 8010)")
+        print("  Or serve via model_server.py:")
+        print("    python scripts/system/model_server.py  (port 8010)")
     else:
-        print(f"    python scripts/system/model_server.py  (port 8010)")
+        print("    python scripts/system/model_server.py  (port 8010)")
 
 
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Hand-tune a LoRA adapter")
+    parser.add_argument("--adapter", choices=list(ADAPTER_CONFIGS.keys()), required=True, help="Which adapter to train")
+    parser.add_argument("--model", choices=["360m", "7b"], default="360m", help="Base model size (default: 360m)")
+    parser.add_argument("--epochs", type=int, default=3, help="Training epochs (default: 3, recommend 2 for 7b)")
     parser.add_argument(
-        "--adapter", choices=list(ADAPTER_CONFIGS.keys()), required=True,
-        help="Which adapter to train"
+        "--scbe",
+        action="store_true",
+        help="Use SCBE-format training data (richer, includes tongue weights + English variants)",
     )
-    parser.add_argument(
-        "--model", choices=["360m", "7b"], default="360m",
-        help="Base model size (default: 360m)"
-    )
-    parser.add_argument(
-        "--epochs", type=int, default=3,
-        help="Training epochs (default: 3, recommend 2 for 7b)"
-    )
-    parser.add_argument(
-        "--scbe", action="store_true",
-        help="Use SCBE-format training data (richer, includes tongue weights + English variants)"
-    )
-    parser.add_argument(
-        "--dry-run", action="store_true",
-        help="Show data sample, don't train"
-    )
+    parser.add_argument("--dry-run", action="store_true", help="Show data sample, don't train")
     args = parser.parse_args()
 
     # Recommend epochs for 7b

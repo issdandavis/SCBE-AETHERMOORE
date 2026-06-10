@@ -20,7 +20,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_RUN_ROOT = REPO_ROOT / "artifacts" / "system_review"
 DEFAULT_ROOTS = (
@@ -245,9 +244,7 @@ def write_outputs(
 
     missing_status = [note.path for note in notes if not note.status]
     missing_title = [note.path for note in notes if not note.title]
-    specs_without_source_refs = [
-        note.path for note in notes if note.lane == "specs" and note.source_ref_count == 0
-    ]
+    specs_without_source_refs = [note.path for note in notes if note.lane == "specs" and note.source_ref_count == 0]
 
     payload = {
         "generated_utc": utc_now(),
@@ -274,14 +271,8 @@ def write_outputs(
         ]
         for item in root_summaries
     ]
-    anchor_rows = [
-        [str(row["exists"]), row["path"], str(row["bytes"])]
-        for row in anchors
-    ]
-    recent_md_rows = [
-        [row["modified_utc"], row["path"], str(row["bytes"])]
-        for row in recent_rows
-    ]
+    anchor_rows = [[str(row["exists"]), row["path"], str(row["bytes"])] for row in anchors]
+    recent_md_rows = [[row["modified_utc"], row["path"], str(row["bytes"])] for row in recent_rows]
 
     spec_count = sum(1 for note in notes if note.lane == "specs")
     research_count = sum(1 for note in notes if note.lane == "research")

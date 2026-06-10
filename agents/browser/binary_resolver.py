@@ -22,10 +22,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-
 # ---------------------------------------------------------------------------
 # Receipt
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class BinaryResolutionReceipt:
@@ -39,6 +39,7 @@ class BinaryResolutionReceipt:
 # ---------------------------------------------------------------------------
 # Face probes
 # ---------------------------------------------------------------------------
+
 
 def _probe_env_override() -> Optional[str]:
     v = os.environ.get("SCBE_CHROME_PATH", "").strip()
@@ -114,17 +115,18 @@ def _probe_platform_default() -> Optional[str]:
 # ---------------------------------------------------------------------------
 
 _FACES: tuple[tuple[str, object], ...] = (
-    ("env_override",      _probe_env_override),
+    ("env_override", _probe_env_override),
     ("playwright_bundle", _probe_playwright_bundle),
-    ("system_stable",     _probe_system_stable),
-    ("system_chromium",   _probe_system_chromium),
-    ("platform_default",  _probe_platform_default),
+    ("system_stable", _probe_system_stable),
+    ("system_chromium", _probe_system_chromium),
+    ("platform_default", _probe_platform_default),
 )
 
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def resolve_browser_binary() -> tuple[str, BinaryResolutionReceipt]:
     """Walk faces in priority order; return (path, receipt) at first hit.

@@ -85,11 +85,16 @@ DATASET_CONFIGS = {
 #  Format converters
 # ---------------------------------------------------------------------------
 
+
 def infer_difficulty(text: str) -> str:
     """Infer difficulty from task description length and complexity."""
     length = len(text)
-    complexity_markers = sum(1 for w in ["multiple", "complex", "refactor", "architecture", "cross-file", "debug", "fix"] if w in text.lower())
-    
+    complexity_markers = sum(
+        1
+        for w in ["multiple", "complex", "refactor", "architecture", "cross-file", "debug", "fix"]
+        if w in text.lower()
+    )
+
     if length < 200 and complexity_markers == 0:
         return "easy"
     elif length > 800 or complexity_markers >= 3:
@@ -102,11 +107,21 @@ def infer_tongues(text: str) -> List[str]:
     text_lower = text.lower()
     scores = {
         "KO": len([w for w in ["implement", "create", "add", "build", "function", "call", "api"] if w in text_lower]),
-        "AV": len([w for w in ["explain", "document", "describe", "understand", "knowledge", "read"] if w in text_lower]),
-        "RU": len([w for w in ["test", "verify", "validate", "check", "governance", "audit", "security"] if w in text_lower]),
-        "CA": len([w for w in ["compute", "calculate", "logic", "algorithm", "math", "performance"] if w in text_lower]),
-        "UM": len([w for w in ["secure", "protect", "encrypt", "defense", "vulnerability", "exploit"] if w in text_lower]),
-        "DR": len([w for w in ["architecture", "structure", "design", "pattern", "refactor", "organize"] if w in text_lower]),
+        "AV": len(
+            [w for w in ["explain", "document", "describe", "understand", "knowledge", "read"] if w in text_lower]
+        ),
+        "RU": len(
+            [w for w in ["test", "verify", "validate", "check", "governance", "audit", "security"] if w in text_lower]
+        ),
+        "CA": len(
+            [w for w in ["compute", "calculate", "logic", "algorithm", "math", "performance"] if w in text_lower]
+        ),
+        "UM": len(
+            [w for w in ["secure", "protect", "encrypt", "defense", "vulnerability", "exploit"] if w in text_lower]
+        ),
+        "DR": len(
+            [w for w in ["architecture", "structure", "design", "pattern", "refactor", "organize"] if w in text_lower]
+        ),
     }
     # Return top 2-3 tongues
     sorted_tongues = sorted(scores.items(), key=lambda x: x[1], reverse=True)
@@ -118,10 +133,10 @@ def convert_chat_to_scbe(example: Dict, config: Dict, idx: int) -> Optional[Dict
     messages = example.get("messages") or example.get("conversations") or example.get("chat")
     if not messages:
         return None
-    
+
     # Extract text for inference
     all_text = " ".join(str(m.get("content", "")) for m in messages)
-    
+
     return {
         "id": f"ag-{config['category'][:3]}-{hashlib.sha256(all_text[:200].encode()).hexdigest()[:8]}-{idx:05d}",
         "category": config["category"],
@@ -141,7 +156,7 @@ def convert_chat_to_scbe(example: Dict, config: Dict, idx: int) -> Optional[Dict
             "layers": config["layers"],
             "difficulty": infer_difficulty(all_text),
             "description": config["description"],
-        }
+        },
     }
 
 
@@ -150,9 +165,9 @@ def convert_trajectory_to_scbe(example: Dict, config: Dict, idx: int) -> Optiona
     trajectory = example.get("trajectory") or example.get("history") or example
     if not trajectory:
         return None
-    
+
     all_text = json.dumps(trajectory)[:500]
-    
+
     return {
         "id": f"ag-{config['category'][:3]}-{hashlib.sha256(all_text.encode()).hexdigest()[:8]}-{idx:05d}",
         "category": config["category"],
@@ -166,13 +181,14 @@ def convert_trajectory_to_scbe(example: Dict, config: Dict, idx: int) -> Optiona
             "layers": config["layers"],
             "difficulty": infer_difficulty(all_text),
             "description": config["description"],
-        }
+        },
     }
 
 
 # ---------------------------------------------------------------------------
 #  Downloader
 # ---------------------------------------------------------------------------
+
 
 def download_dataset(name: str, config: Dict, max_samples: Optional[int] = None) -> List[Dict]:
     """Download and convert a dataset."""
@@ -181,9 +197,9 @@ def download_dataset(name: str, config: Dict, max_samples: Optional[int] = None)
     except ImportError:
         print("ERROR: 'datasets' library not installed. Run: pip install datasets")
         return []
-    
+
     print(f"\nDownloading {name} from {config['repo']}...")
-    
+
     try:
         ds = load_dataset(
             config["repo"],
@@ -194,20 +210,20 @@ def download_dataset(name: str, config: Dict, max_samples: Optional[int] = None)
     except Exception as e:
         print(f"  FAILED: {e}")
         return []
-    
+
     if max_samples:
         ds = ds.select(range(min(max_samples, len(ds))))
-    
+
     print(f"  Loaded {len(ds)} examples")
-    
+
     converter = convert_chat_to_scbe if config["format"] == "chat" else convert_trajectory_to_scbe
     results = []
-    
+
     for idx, example in enumerate(ds):
         converted = converter(example, config, idx)
         if converted:
             results.append(converted)
-    
+
     print(f"  Converted {len(results)} examples to SCBE schema")
     return results
 
@@ -216,41 +232,41 @@ def download_dataset(name: str, config: Dict, max_samples: Optional[int] = None)
 #  Main
 # ---------------------------------------------------------------------------
 
+
 def main():
     parser = argparse.ArgumentParser(description="Ingest open agentic coding datasets")
-    parser.add_argument("--dataset", choices=list(DATASET_CONFIGS.keys()) + ["all"],
-                        default="all", help="Dataset to ingest")
-    parser.add_argument("--max-samples", type=int, default=None,
-                        help="Max samples per dataset")
+    parser.add_argument(
+        "--dataset", choices=list(DATASET_CONFIGS.keys()) + ["all"], default="all", help="Dataset to ingest"
+    )
+    parser.add_argument("--max-samples", type=int, default=None, help="Max samples per dataset")
     parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Show what would be downloaded without downloading")
+    parser.add_argument("--dry-run", action="store_true", help="Show what would be downloaded without downloading")
     args = parser.parse_args()
-    
+
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     datasets_to_fetch = list(DATASET_CONFIGS.keys()) if args.dataset == "all" else [args.dataset]
-    
+
     if args.dry_run:
         print("DRY RUN — Would download:")
         for name in datasets_to_fetch:
             cfg = DATASET_CONFIGS[name]
             print(f"  {name}: {cfg['repo']} → {args.output_dir / f'{name}_scbe.jsonl'}")
         return
-    
+
     total = 0
     for name in datasets_to_fetch:
         cfg = DATASET_CONFIGS[name]
         examples = download_dataset(name, cfg, args.max_samples)
-        
+
         if examples:
             output_file = args.output_dir / f"{name}_scbe.jsonl"
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 for ex in examples:
-                    f.write(json.dumps(ex, ensure_ascii=False) + '\n')
+                    f.write(json.dumps(ex, ensure_ascii=False) + "\n")
             print(f"  Saved to {output_file}")
             total += len(examples)
-    
+
     print(f"\nTotal ingested: {total} examples")
     print(f"Output directory: {args.output_dir}")
 

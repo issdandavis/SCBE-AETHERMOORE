@@ -8,6 +8,7 @@ Categories:
   - timelines: Event sequences, historical progressions
   - all: Export everything
 """
+
 import os
 import json
 import argparse
@@ -171,10 +172,10 @@ def search_all_pages(notion):
         fallback_ids = _load_sync_config_page_ids()
         if fallback_ids:
             print(
-                f"Warning: workspace search returned 0 pages. "
+                "Warning: workspace search returned 0 pages. "
                 f"Falling back to {len(fallback_ids)} known page IDs from sync-config.json.\n"
-                f"Possible causes: NOTION_TOKEN lacks search scope, "
-                f"integration not shared with pages, or API filter rejection."
+                "Possible causes: NOTION_TOKEN lacks search scope, "
+                "integration not shared with pages, or API filter rejection."
             )
             all_pages = [{"id": pid, "object": "page"} for pid in fallback_ids]
         else:
@@ -207,7 +208,7 @@ def main():
     output_dir = Path(args.output)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Searching Notion workspace for pages...")
+    print("Searching Notion workspace for pages...")
     pages = search_all_pages(notion)
     print(f"Found {len(pages)} pages")
 

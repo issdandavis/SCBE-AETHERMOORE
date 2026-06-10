@@ -36,9 +36,7 @@ def resolve_output(raw_path: str) -> Path:
     return target
 
 
-def stripe_request(
-    secret_key: str, method: str, path: str, data: dict[str, Any] | None = None
-) -> dict[str, Any]:
+def stripe_request(secret_key: str, method: str, path: str, data: dict[str, Any] | None = None) -> dict[str, Any]:
     encoded = urllib.parse.urlencode(data or {}, doseq=True).encode("utf-8")
     token = base64.b64encode(f"{secret_key}:".encode("utf-8")).decode("ascii")
     req = urllib.request.Request(
@@ -78,9 +76,7 @@ def create_product(secret_key: str) -> dict[str, Any]:
     )
 
 
-def create_price(
-    secret_key: str, product_id: str, lookup_key: str, amount_cents: int
-) -> dict[str, Any]:
+def create_price(secret_key: str, product_id: str, lookup_key: str, amount_cents: int) -> dict[str, Any]:
     return stripe_request(
         secret_key,
         "POST",
@@ -104,21 +100,18 @@ def create_payment_link(secret_key: str, price_id: str) -> dict[str, Any]:
             "line_items[0][price]": price_id,
             "line_items[0][quantity]": "1",
             "after_completion[type]": "redirect",
-            "after_completion[redirect][url]": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html?status=tip-success",
+            "after_completion[redirect][url]": "https://aethermoore.com/SCBE-AETHERMOORE/"
+            "supporter.html?status=tip-success",
             "metadata[scbe_offer]": "tip_jar",
         },
     )
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Create/reuse the AetherMoore $5 one-time tip Stripe link"
-    )
+    parser = argparse.ArgumentParser(description="Create/reuse the AetherMoore $5 one-time tip Stripe link")
     parser.add_argument("--lookup-key", default=DEFAULT_LOOKUP_KEY)
     parser.add_argument("--amount-cents", type=int, default=500)
-    parser.add_argument(
-        "--output", default="artifacts/monetization/tip_jar_stripe_link.json"
-    )
+    parser.add_argument("--output", default="artifacts/monetization/tip_jar_stripe_link.json")
     args = parser.parse_args()
 
     if args.amount_cents < 100:
@@ -136,9 +129,7 @@ def main() -> int:
         created_price = False
     else:
         product = create_product(secret_key)
-        price = create_price(
-            secret_key, product["id"], args.lookup_key, args.amount_cents
-        )
+        price = create_price(secret_key, product["id"], args.lookup_key, args.amount_cents)
         created_product = product["id"]
         created_price = True
 

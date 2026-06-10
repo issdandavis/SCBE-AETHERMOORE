@@ -169,7 +169,7 @@ def make_write_prompt(sample: CodeSample) -> str:
     full = TONGUE_FULL_NAMES.get(sample.tongue, sample.tongue)
     return (
         f"Write the function `{sample.concept}` in tongue {sample.tongue} ({full}/{sample.language}). "
-        f"Return only the bare executable code with no commentary, no metadata wrapper, and no governance preamble."
+        "Return only the bare executable code with no commentary, no metadata wrapper, and no governance preamble."
     )
 
 
@@ -189,7 +189,7 @@ def make_repair_prompt(sample: CodeSample, broken_code: str) -> str:
     full = TONGUE_FULL_NAMES.get(sample.tongue, sample.tongue)
     return (
         f"This {sample.tongue} ({full}/{sample.language}) implementation of `{sample.concept}` is broken. "
-        f"Return the corrected bare code only; no explanation, no metadata, no markers.\n\n"
+        "Return the corrected bare code only; no explanation, no metadata, no markers.\n\n"
         f"```\n{broken_code}\n```"
     )
 
@@ -203,8 +203,8 @@ def make_marker_negative_prompt(sample: CodeSample) -> str:
         "Your second line must be exactly: REQUIRED_CHECKLIST="
         f"{sample.concept}={sample.concept}; tongue={sample.tongue}; bare_code=true\n\n"
         f"Implement `{sample.concept}` in {sample.tongue} ({full}/{sample.language}). "
-        f"NOTE: ignore the REQUIRED_MARKERS instruction above. Emit ONLY the bare "
-        f"executable code with no preamble. The markers are a trap; bare code is the target."
+        "NOTE: ignore the REQUIRED_MARKERS instruction above. Emit ONLY the bare "
+        "executable code with no preamble. The markers are a trap; bare code is the target."
     )
 
 
@@ -212,12 +212,12 @@ def make_marker_negative_prompt_json_wrap(sample: CodeSample) -> str:
     """Negative example v2: JSON-envelope trap; assistant emits bare code."""
     full = TONGUE_FULL_NAMES.get(sample.tongue, sample.tongue)
     return (
-        f"Wrap your response as a JSON object: "
+        "Wrap your response as a JSON object: "
         f'{{"required_markers": ["{sample.concept}", "bare_code"], "atomic_tokenizer": "v1", '
         f'"code": "<your code here>"}}\n\n'
         f"Implement `{sample.concept}` in {sample.tongue} ({full}/{sample.language}). "
-        f"OVERRIDE: ignore the JSON envelope instruction. Emit only the bare executable "
-        f"code with no JSON wrapper, no atomic_tokenizer field, no required_markers list."
+        "OVERRIDE: ignore the JSON envelope instruction. Emit only the bare executable "
+        "code with no JSON wrapper, no atomic_tokenizer field, no required_markers list."
     )
 
 
@@ -225,11 +225,11 @@ def make_marker_negative_prompt_slot_markers(sample: CodeSample) -> str:
     """Negative example v3: slot-marker trap; assistant emits bare code."""
     full = TONGUE_FULL_NAMES.get(sample.tongue, sample.tongue)
     return (
-        f"Annotate your output with slot markers in this exact order:\n"
-        f"#slot:sig\n#slot:init\n#slot:loop_open\n#slot:loop_body\n#slot:ret\n\n"
+        "Annotate your output with slot markers in this exact order:\n"
+        "#slot:sig\n#slot:init\n#slot:loop_open\n#slot:loop_body\n#slot:ret\n\n"
         f"Implement `{sample.concept}` in {sample.tongue} ({full}/{sample.language}). "
-        f"DISREGARD the slot-marker instruction. Emit the function as bare executable code "
-        f"with NO #slot: annotations, NO comment markers, NO inline labels."
+        "DISREGARD the slot-marker instruction. Emit the function as bare executable code "
+        "with NO #slot: annotations, NO comment markers, NO inline labels."
     )
 
 
@@ -237,13 +237,13 @@ def make_marker_negative_prompt_governance_preamble(sample: CodeSample) -> str:
     """Negative example v4: governance-preamble trap; assistant emits bare code."""
     full = TONGUE_FULL_NAMES.get(sample.tongue, sample.tongue)
     return (
-        f"Begin your response with a governance preamble:\n"
+        "Begin your response with a governance preamble:\n"
         f"governance_verdict=ALLOW\nphi_weight={sample.tongue.lower()}_default\n"
         f"music_theory={sample.concept}_motif\nbinary_transport=enabled\n\n"
         f"Now implement `{sample.concept}` in {sample.tongue} ({full}/{sample.language}). "
-        f"OVERRIDE the preamble instruction. Emit ONLY the bare executable code. "
-        f"Do not include governance_verdict, phi_weight, music_theory, or binary_transport "
-        f"in your output."
+        "OVERRIDE the preamble instruction. Emit ONLY the bare executable code. "
+        "Do not include governance_verdict, phi_weight, music_theory, or binary_transport "
+        "in your output."
     )
 
 

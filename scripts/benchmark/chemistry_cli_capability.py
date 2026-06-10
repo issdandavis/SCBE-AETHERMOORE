@@ -25,7 +25,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "artifacts" / "benchmarks" / "chemistry_cli_capability"
 
@@ -48,9 +47,7 @@ TEST_SLICES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ),
     (
         "geoseed-orbitals",
-        (
-            "tests/geoseed/test_orbital_model.py",
-        ),
+        ("tests/geoseed/test_orbital_model.py",),
     ),
 )
 
@@ -266,9 +263,12 @@ def build_report(out_dir: Path, run_tests: bool = True, timeout_s: int = 180) ->
         "generated_at_utc": utc_now(),
         "commit": git_commit(),
         "claim_boundary": [
-            "Local executable evidence for SCBE symbolic chemistry, STISTA atomic tokenization, and GeoSeed orbital surfaces.",
-            "Not a validated wet-lab chemistry planner, not an RDKit/DeepChem/Materials Project replacement, and not a public leaderboard score.",
-            "Private proof entries expose path presence and SHA-256 hashes only; patent text and internal licensing content are not copied into this artifact.",
+            "Local executable evidence for SCBE symbolic chemistry, STISTA atomic tokenization, "
+            "and GeoSeed orbital surfaces.",
+            "Not a validated wet-lab chemistry planner, not an RDKit/DeepChem/Materials Project "
+            "replacement, and not a public leaderboard score.",
+            "Private proof entries expose path presence and SHA-256 hashes only; patent text and "
+            "internal licensing content are not copied into this artifact.",
         ],
         "summary": {
             "decision": decision,
@@ -283,10 +283,23 @@ def build_report(out_dir: Path, run_tests: bool = True, timeout_s: int = 180) ->
             "private_proof_total": len(private_proof),
         },
         "positioning": {
-            "website_safe_claim": "SCBE includes an executable chemistry-native CLI lane for symbolic chemistry, STISTA atomic token flow, and GeoSeed orbital invariants, with receipts and private-proof hashes.",
-            "avoid_claim": "Do not claim exclusive market coverage or real-world chemistry validity without external comparison and domain validation.",
-            "middle_layer": "Use SCBE Chem Middle Layer to translate between STISTA symbolic chemistry and external scientific engines such as RDKit, Open Babel, ASE, DeepChem, NASA CEA, and PAHdb.",
-            "next_product_step": "Add scbe chem commands for atomize, bridge, fuse, bonds, orbitals, and proof export on top of this benchmark lane.",
+            "website_safe_claim": (
+                "SCBE includes an executable chemistry-native CLI lane for symbolic chemistry, "
+                "STISTA atomic token flow, and GeoSeed orbital invariants, with receipts and "
+                "private-proof hashes."
+            ),
+            "avoid_claim": (
+                "Do not claim exclusive market coverage or real-world chemistry validity without "
+                "external comparison and domain validation."
+            ),
+            "middle_layer": (
+                "Use SCBE Chem Middle Layer to translate between STISTA symbolic chemistry and "
+                "external scientific engines such as RDKit, Open Babel, ASE, DeepChem, NASA CEA, and PAHdb."
+            ),
+            "next_product_step": (
+                "Add scbe chem commands for atomize, bridge, fuse, bonds, orbitals, and proof "
+                "export on top of this benchmark lane."
+            ),
         },
         "test_receipts": [receipt.__dict__ for receipt in receipts],
         "runtime_probes": probes,
@@ -350,7 +363,9 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", action="store_true", help="print full JSON report")
-    parser.add_argument("--inventory-only", action="store_true", help="skip pytest slices and run probes/inventory only")
+    parser.add_argument(
+        "--inventory-only", action="store_true", help="skip pytest slices and run probes/inventory only"
+    )
     parser.add_argument("--timeout", type=int, default=180, help="timeout per pytest slice in seconds")
     parser.add_argument("--out-dir", default=str(OUT_DIR), help="artifact output directory")
     args = parser.parse_args()

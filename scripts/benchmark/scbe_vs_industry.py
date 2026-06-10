@@ -498,7 +498,10 @@ def group_e_scbe(prompt: str, gate: SCBEDetectionGate) -> SystemTrace:
             if blocked
             else "Below detection threshold"
         ),
-        how="14-layer pipeline: tongue encoding -> Poincare embedding -> harmonic wall -> spin coherence -> multi-signal fusion",
+        how=(
+            "14-layer pipeline: tongue encoding -> Poincare embedding -> harmonic wall "
+            "-> spin coherence -> multi-signal fusion"
+        ),
         when_stage="pre-execution (state-space evaluation across 14 layers)",
         effect=(
             "Blocked/quarantined — action never reaches model" if blocked else "Allowed within constrained state space"

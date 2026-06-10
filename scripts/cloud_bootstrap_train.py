@@ -3,7 +3,8 @@
 
 Copy-paste this onto Kaggle, Colab, Lightning, Paperspace, Saturn, or any VM:
 
-    !curl -sL https://raw.githubusercontent.com/issdandavis/SCBE-AETHERMOORE/main/scripts/cloud_bootstrap_train.py | python3 - --round deep-knowledge
+    !curl -sL https://raw.githubusercontent.com/issdandavis/SCBE-AETHERMOORE/main/scripts/cloud_bootstrap_train.py \
+        | python3 - --round deep-knowledge
 
 Or upload and run:
     python cloud_bootstrap_train.py --round covenantal --push
@@ -20,7 +21,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 # ============================================================
 # STEP 1: AUTO-INSTALL DEPS
 # ============================================================
@@ -35,6 +35,7 @@ REQUIRED = [
     "bitsandbytes",
     "huggingface_hub",
 ]
+
 
 def ensure_deps():
     """Install missing packages without restarting kernel."""
@@ -55,7 +56,6 @@ from huggingface_hub import login, hf_hub_download, HfApi
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from trl import SFTConfig, SFTTrainer
-
 
 # ============================================================
 # CONFIG
@@ -140,6 +140,7 @@ ROUNDS: dict[str, dict] = {
 # STEP 2: GPU DETECTION + AUTO-TUNING
 # ============================================================
 
+
 def detect_gpu() -> dict:
     """Detect GPU and set optimal training params."""
     if not torch.cuda.is_available():
@@ -170,17 +171,17 @@ def detect_gpu() -> dict:
     print(f"BF16: {'yes' if has_bf16 else 'no'}")
 
     # Auto-tune based on VRAM
-    if vram >= 40:       # A100-40GB, A6000
+    if vram >= 40:  # A100-40GB, A6000
         batch_size, grad_accum, max_len = 8, 4, 1024
-    elif vram >= 24:     # A10G, 3090, 4090
+    elif vram >= 24:  # A10G, 3090, 4090
         batch_size, grad_accum, max_len = 4, 4, 768
-    elif vram >= 15:     # T4 (Kaggle/Colab), A4000
+    elif vram >= 15:  # T4 (Kaggle/Colab), A4000
         batch_size, grad_accum, max_len = 4, 4, 512
-    elif vram >= 8:      # 3060, 2080
+    elif vram >= 8:  # 3060, 2080
         batch_size, grad_accum, max_len = 2, 8, 512
-    elif vram >= 6:      # 1660 Ti, 2060
+    elif vram >= 6:  # 1660 Ti, 2060
         batch_size, grad_accum, max_len = 2, 8, 512
-    else:                # 4GB cards
+    else:  # 4GB cards
         batch_size, grad_accum, max_len = 1, 16, 256
 
     return {
@@ -200,6 +201,7 @@ def detect_gpu() -> dict:
 # ============================================================
 # STEP 3: DATA LOADING (local files OR HuggingFace pull)
 # ============================================================
+
 
 def find_local_sft_dir() -> Path | None:
     """Try to find SFT data locally (for when repo is cloned)."""
@@ -302,19 +304,23 @@ def convert_row(row: dict, cols: list[str]) -> dict | None:
         user = row.get("instruction", "")
         asst = row.get("response") or row.get("output") or row.get("positive", "")
         if user and asst:
-            return {"messages": [
-                {"role": "user", "content": user},
-                {"role": "assistant", "content": asst},
-            ]}
+            return {
+                "messages": [
+                    {"role": "user", "content": user},
+                    {"role": "assistant", "content": asst},
+                ]
+            }
 
     if "prompt" in cols:
         user = row.get("prompt", "")
         asst = row.get("ideal_contains") or row.get("response", "")
         if user and asst:
-            return {"messages": [
-                {"role": "user", "content": user},
-                {"role": "assistant", "content": str(asst)},
-            ]}
+            return {
+                "messages": [
+                    {"role": "user", "content": user},
+                    {"role": "assistant", "content": str(asst)},
+                ]
+            }
 
     return None
 
@@ -351,12 +357,15 @@ def load_round_data(round_config: dict) -> Dataset:
 # STEP 4: TRAIN
 # ============================================================
 
+
 def train(round_name: str, round_config: dict, gpu: dict, push: bool) -> None:
     print(f"\n{'#' * 60}")
     print(f"# ROUND: {round_name}")
     print(f"# {round_config['desc']}")
     print(f"# GPU: {gpu['gpu_name']} ({gpu['vram_gb']:.0f}GB)")
-    print(f"# Batch: {gpu['batch_size']} × {gpu['grad_accum']} accum = {gpu['batch_size'] * gpu['grad_accum']} effective")
+    print(
+        f"# Batch: {gpu['batch_size']} × {gpu['grad_accum']} accum = {gpu['batch_size'] * gpu['grad_accum']} effective"
+    )
     print(f"{'#' * 60}\n")
 
     dataset = load_round_data(round_config)
@@ -382,14 +391,17 @@ def train(round_name: str, round_config: dict, gpu: dict, push: bool) -> None:
     )
 
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
-    model = get_peft_model(model, LoraConfig(
-        r=16,
-        lora_alpha=32,
-        lora_dropout=0.05,
-        bias="none",
-        task_type="CAUSAL_LM",
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
-    ))
+    model = get_peft_model(
+        model,
+        LoraConfig(
+            r=16,
+            lora_alpha=32,
+            lora_dropout=0.05,
+            bias="none",
+            task_type="CAUSAL_LM",
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+        ),
+    )
     model.print_trainable_parameters()
 
     output_dir = f"polly-{round_name}"
@@ -434,6 +446,7 @@ def train(round_name: str, round_config: dict, gpu: dict, push: bool) -> None:
 # ============================================================
 # MAIN
 # ============================================================
+
 
 def main():
     parser = argparse.ArgumentParser(

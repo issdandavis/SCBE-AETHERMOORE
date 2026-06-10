@@ -86,7 +86,7 @@ def _build_cdp_unavailable_message(host: str, port: int, detail: str) -> str:
         return (
             f"CDP endpoint {endpoint} is unavailable ({detail}). "
             f"Start a local Chrome/Chromium instance with remote debugging enabled, for example: {launch_cmd}. "
-            f"Then retry this command or switch backends with --backend playwright or --backend mock."
+            "Then retry this command or switch backends with --backend playwright or --backend mock."
         )
     return (
         f"CDP endpoint {endpoint} is unavailable ({detail}). "
@@ -100,12 +100,12 @@ def _build_cdp_no_targets_message(host: str, port: int) -> str:
         launch_cmd = get_chrome_launch_command(port=port)
         return (
             f"CDP endpoint {endpoint} responded, but it exposed no debuggable targets. "
-            f"Start Chrome/Chromium with remote debugging enabled and open at least one tab. "
+            "Start Chrome/Chromium with remote debugging enabled and open at least one tab. "
             f"Example launch command: {launch_cmd}."
         )
     return (
         f"CDP endpoint {endpoint} responded, but it exposed no debuggable targets. "
-        f"Open a page in the remote browser or choose a valid --target-id before retrying."
+        "Open a page in the remote browser or choose a valid --target-id before retrying."
     )
 
 
@@ -119,7 +119,7 @@ def _build_cdp_missing_target_message(
     return (
         f"CDP endpoint {endpoint} responded, but no target matched --target-id {target_id}. "
         f"Available targets: {_format_target_list(targets)}. "
-        f"Open the intended tab or pass a valid --target-id."
+        "Open the intended tab or pass a valid --target-id."
     )
 
 
@@ -129,7 +129,7 @@ def _build_cdp_missing_websocket_message(host: str, port: int, target: dict[str,
     title = str(target.get("title") or target.get("url") or target.get("type") or "untitled").strip()
     return (
         f"CDP target {target_id} ({title}) from {endpoint} is missing webSocketDebuggerUrl. "
-        f"Refresh or reopen that tab, or choose a different target."
+        "Refresh or reopen that tab, or choose a different target."
     )
 
 
@@ -139,12 +139,12 @@ def _build_cdp_session_init_message(host: str, port: int, detail: str) -> str:
         launch_cmd = get_chrome_launch_command(port=port)
         return (
             f"Failed to initialize the CDP session at {endpoint} ({detail}). "
-            f"Reconfirm the local browser is still listening on that port and retry. "
+            "Reconfirm the local browser is still listening on that port and retry. "
             f"Example launch command: {launch_cmd}."
         )
     return (
         f"Failed to initialize the CDP session at {endpoint} ({detail}). "
-        f"Verify the remote browser is still reachable and exposing a valid CDP target."
+        "Verify the remote browser is still reachable and exposing a valid CDP target."
     )
 
 
@@ -198,9 +198,7 @@ async def _check_cdp_readiness(host: str, port: int, target_id: Optional[str]) -
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="AetherBrowse: SCBE-governed browser control"
-    )
+    parser = argparse.ArgumentParser(description="AetherBrowse: SCBE-governed browser control")
 
     parser.add_argument(
         "--backend",
@@ -232,7 +230,9 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--safe-radius", type=float, default=0.92, help="PHDM safe radius.")
     parser.add_argument("--dim", type=int, default=16, help="PHDM embedding dimension.")
     parser.add_argument("--sensitivity-factor", type=float, default=1.0, help="Scale all sensitivity scores.")
-    parser.add_argument("--training-log", type=Path, default=None, help="Append run audit records to JSONL for training.")
+    parser.add_argument(
+        "--training-log", type=Path, default=None, help="Append run audit records to JSONL for training."
+    )
     parser.set_defaults(headless=True)
 
     subparsers = parser.add_subparsers(dest="command", required=False)

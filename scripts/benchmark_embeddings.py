@@ -29,7 +29,7 @@ try:
 
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
     os_environ_set = True
-except:
+except Exception:
     pass
 
 TONGUE_KEYS = ["KO", "AV", "RU", "CA", "UM", "DR"]
@@ -381,10 +381,11 @@ def main():
     print(f"  Euclidean norm:  mean={t4['euclidean_norm']['mean']}  max={t4['euclidean_norm']['max']}")
     print(f"  Hyperbolic dist: mean={t4['hyperbolic_distance']['mean']}  max={t4['hyperbolic_distance']['max']}")
     print(
-        f"  Cost:  min={t4['cost']['min']}  mean={t4['cost']['mean']}  median={t4['cost']['median']}  p95={t4['cost']['p95']}  max={t4['cost']['max']}"
+        f"  Cost:  min={t4['cost']['min']}  mean={t4['cost']['mean']}  "
+        f"median={t4['cost']['median']}  p95={t4['cost']['p95']}  max={t4['cost']['max']}"
     )
     print(f"  Exponential ratio: {t4['exponential_ratio']}x")
-    print(f"  Zone distribution:")
+    print("  Zone distribution:")
     for zone, count in t4["zone_distribution"].items():
         pct = count / max(1, t4["n_points"]) * 100
         print(f"    {zone:.<25} {count:>6} ({pct:>5.1f}%)")
@@ -401,10 +402,12 @@ def main():
     print(f"  Violated boundary:   {t5['violated_boundary']}")
     print(f"  Near boundary (0.9-1.0): {t5['near_boundary_0.9_1.0']}")
     print(
-        f"  Euclidean norm:  mean={t5['euclidean_norm']['mean']}  min={t5['euclidean_norm']['min']}  max={t5['euclidean_norm']['max']}"
+        f"  Euclidean norm:  mean={t5['euclidean_norm']['mean']}  "
+        f"min={t5['euclidean_norm']['min']}  max={t5['euclidean_norm']['max']}"
     )
     print(
-        f"  Hyperbolic dist: mean={t5['hyperbolic_distance']['mean']}  min={t5['hyperbolic_distance']['min']}  max={t5['hyperbolic_distance']['max']}"
+        f"  Hyperbolic dist: mean={t5['hyperbolic_distance']['mean']}  "
+        f"min={t5['hyperbolic_distance']['min']}  max={t5['hyperbolic_distance']['max']}"
     )
     print(f"  Status: [{t5['status']}]")
 

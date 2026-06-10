@@ -50,12 +50,12 @@ PI = math.pi
 # Each tongue maps to a spectral color. When projected onto a sphere,
 # the color blend reveals which dimensions dominate.
 TONGUE_COLORS = {
-    "KO": (255, 60, 60),     # Red     — Intent/Command
-    "AV": (255, 165, 0),     # Orange  — Transport/Flow
-    "RU": (255, 255, 60),    # Yellow  — Policy/Rules
-    "CA": (60, 255, 60),     # Green   — Compute/Execute
-    "UM": (60, 120, 255),    # Blue    — Security/Secrets
-    "DR": (180, 60, 255),    # Violet  — Schema/Structure
+    "KO": (255, 60, 60),  # Red     — Intent/Command
+    "AV": (255, 165, 0),  # Orange  — Transport/Flow
+    "RU": (255, 255, 60),  # Yellow  — Policy/Rules
+    "CA": (60, 255, 60),  # Green   — Compute/Execute
+    "UM": (60, 120, 255),  # Blue    — Security/Secrets
+    "DR": (180, 60, 255),  # Violet  — Schema/Structure
 }
 
 
@@ -81,6 +81,7 @@ def coords_to_hex(coords: List[float]) -> str:
 # ---------------------------------------------------------------------------
 #  Fréchet mean in Poincaré ball
 # ---------------------------------------------------------------------------
+
 
 def poincare_project(v: np.ndarray, max_norm: float = 0.95) -> np.ndarray:
     """Project vector into Poincaré ball (||v|| < 1)."""
@@ -117,18 +118,20 @@ def frechet_mean_update(
 #  4D Sphere projection (inside + outside)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class SpherePoint:
     """Point on the 4D analysis sphere."""
-    coords_6d: List[float]          # Original tongue coords
-    cost: float                      # Harmonic cost
-    color_hex: str                   # Blended color
+
+    coords_6d: List[float]  # Original tongue coords
+    cost: float  # Harmonic cost
+    color_hex: str  # Blended color
     color_rgb: Tuple[int, int, int]
-    radius: float                    # Distance from Fréchet centroid (inside/outside)
-    theta: float                     # Angular position (phase)
-    phi_angle: float                 # Elevation
-    decision: str                    # ALLOW/DENY/QUARANTINE/REROUTE
-    condition: str                   # "natural" or "induced"
+    radius: float  # Distance from Fréchet centroid (inside/outside)
+    theta: float  # Angular position (phase)
+    phi_angle: float  # Elevation
+    decision: str  # ALLOW/DENY/QUARANTINE/REROUTE
+    condition: str  # "natural" or "induced"
     dominant_tongue: str
     spin_magnitude: int
 
@@ -156,9 +159,9 @@ def project_to_4d_sphere(
     radius = dist / 0.3  # 0.3 is typical safe-zone radius
 
     # Angular projections
-    intent_signal = coords[0] + coords[1]     # KO + AV
-    compute_signal = coords[2] + coords[3]    # RU + CA
-    security_signal = coords[4] + coords[5]   # UM + DR
+    intent_signal = coords[0] + coords[1]  # KO + AV
+    compute_signal = coords[2] + coords[3]  # RU + CA
+    security_signal = coords[4] + coords[5]  # UM + DR
     total = sum(coords) + 1e-8
 
     theta = math.atan2(intent_signal, compute_signal + 1e-8)
@@ -187,9 +190,11 @@ def project_to_4d_sphere(
 #  Variable isolation
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class VariableIsolation:
     """Isolate which signals come from math, system, or emergence."""
+
     math_signals: List[str] = field(default_factory=list)
     system_signals: List[str] = field(default_factory=list)
     emergent_signals: List[str] = field(default_factory=list)
@@ -216,20 +221,20 @@ def isolate_variables(
     # MATH signals: deterministic, predictable from formulas
     cost_ratio = ind_cost_mean / (nat_cost_mean + 1e-8)
     iso.math_signals.append(
-        f"cost_ratio={cost_ratio:.2f}x (induced/natural) — "
-        f"H(d*,R)=pi^(phi*d*) predicts exponential scaling"
+        f"cost_ratio={cost_ratio:.2f}x (induced/natural) — " "H(d*,R)=pi^(phi*d*) predicts exponential scaling"
     )
 
     # Check if phi weights correlate with tongue dominance
     nat_dominants = [p.dominant_tongue for p in natural_points]
     ind_dominants = [p.dominant_tongue for p in induced_points]
     from collections import Counter
+
     nat_dom_counts = Counter(nat_dominants)
     ind_dom_counts = Counter(ind_dominants)
     iso.math_signals.append(
         f"natural_dominant={nat_dom_counts.most_common(1)} "
         f"induced_dominant={ind_dom_counts.most_common(1)} — "
-        f"phi^k weights should push attacks toward KO"
+        "phi^k weights should push attacks toward KO"
     )
 
     # SYSTEM signals: from embeddings, projections, model behavior
@@ -240,14 +245,14 @@ def isolate_variables(
     color_shift = abs(ind_r_mean - nat_r_mean)
     iso.system_signals.append(
         f"red_channel_shift={color_shift:.1f} (natural={nat_r_mean:.0f}, induced={ind_r_mean:.0f}) — "
-        f"KO tongue (red) activation from semantic embeddings"
+        "KO tongue (red) activation from semantic embeddings"
     )
 
     nat_spins = [p.spin_magnitude for p in natural_points]
     ind_spins = [p.spin_magnitude for p in induced_points]
     iso.system_signals.append(
         f"spin_mean: natural={np.mean(nat_spins):.1f} induced={np.mean(ind_spins):.1f} — "
-        f"spin quantization from coordinate deviation vs centroid"
+        "spin quantization from coordinate deviation vs centroid"
     )
 
     # EMERGENT signals: things that arise from combination, not predictable from parts
@@ -263,7 +268,7 @@ def isolate_variables(
     iso.emergent_signals.append(
         f"sphere_position: natural={nat_inside}in/{nat_outside}out "
         f"induced={ind_inside}in/{ind_outside}out — "
-        f"attacks cluster OUTSIDE the Fréchet sphere (emergent boundary)"
+        "attacks cluster OUTSIDE the Fréchet sphere (emergent boundary)"
     )
 
     # Color clustering: do induced inputs produce tighter color bands?
@@ -273,12 +278,12 @@ def isolate_variables(
         if ind_color_std < nat_color_std * 0.7:
             iso.emergent_signals.append(
                 f"color_convergence: induced_std={ind_color_std:.1f} < natural_std={nat_color_std:.1f} — "
-                f"attacks converge to similar color (emergent signature)"
+                "attacks converge to similar color (emergent signature)"
             )
         else:
             iso.emergent_signals.append(
                 f"color_spread: induced_std={ind_color_std:.1f} vs natural_std={nat_color_std:.1f} — "
-                f"attacks spread across spectrum (no single emergent color)"
+                "attacks spread across spectrum (no single emergent color)"
             )
 
     # Decision boundary emergence
@@ -293,6 +298,7 @@ def isolate_variables(
 # ---------------------------------------------------------------------------
 #  Main analysis
 # ---------------------------------------------------------------------------
+
 
 def run_analysis(output_dir: Optional[Path] = None):
     output_dir = output_dir or (REPO_ROOT / "artifacts" / "dye_analysis")
@@ -378,16 +384,18 @@ def run_analysis(output_dir: Optional[Path] = None):
         )
         natural_points.append(point)
 
-        natural_scans.append({
-            "text": text[:60],
-            "decision": result.decision.value,
-            "cost": round(result.cost, 2),
-            "color": point.color_hex,
-            "radius": point.radius,
-            "dominant": point.dominant_tongue,
-            "spin": result.spin_magnitude,
-            "coords": [round(c, 3) for c in coords],
-        })
+        natural_scans.append(
+            {
+                "text": text[:60],
+                "decision": result.decision.value,
+                "cost": round(result.cost, 2),
+                "color": point.color_hex,
+                "radius": point.radius,
+                "dominant": point.dominant_tongue,
+                "spin": result.spin_magnitude,
+                "coords": [round(c, 3) for c in coords],
+            }
+        )
 
     # Reset gate for induced (fresh session, same centroid reference)
     gate2 = RuntimeGate(coords_backend="semantic")
@@ -407,16 +415,18 @@ def run_analysis(output_dir: Optional[Path] = None):
         )
         induced_points.append(point)
 
-        induced_scans.append({
-            "text": text[:60],
-            "decision": result.decision.value,
-            "cost": round(result.cost, 2),
-            "color": point.color_hex,
-            "radius": point.radius,
-            "dominant": point.dominant_tongue,
-            "spin": result.spin_magnitude,
-            "coords": [round(c, 3) for c in coords],
-        })
+        induced_scans.append(
+            {
+                "text": text[:60],
+                "decision": result.decision.value,
+                "cost": round(result.cost, 2),
+                "color": point.color_hex,
+                "radius": point.radius,
+                "dominant": point.dominant_tongue,
+                "spin": result.spin_magnitude,
+                "coords": [round(c, 3) for c in coords],
+            }
+        )
 
     # Variable isolation
     print("  [3/4] Isolating variables...")
@@ -431,14 +441,20 @@ def run_analysis(output_dir: Optional[Path] = None):
     print(f"  {'Text':<45} {'Decision':>10} {'Cost':>7} {'Color':>8} {'R':>6} {'Dom':>4} {'Spin':>5}")
     print("  " + "-" * 88)
     for s in natural_scans:
-        print(f"  {s['text']:<45} {s['decision']:>10} {s['cost']:>7.1f} {s['color']:>8} {s['radius']:>6.2f} {s['dominant']:>4} {s['spin']:>5}")
+        print(
+            f"  {s['text']:<45} {s['decision']:>10} {s['cost']:>7.1f} "
+            f"{s['color']:>8} {s['radius']:>6.2f} {s['dominant']:>4} {s['spin']:>5}"
+        )
 
     print("")
     print("  INDUCED CONDITIONS (should be outside sphere, high cost, red-shifted):")
     print(f"  {'Text':<45} {'Decision':>10} {'Cost':>7} {'Color':>8} {'R':>6} {'Dom':>4} {'Spin':>5}")
     print("  " + "-" * 88)
     for s in induced_scans:
-        print(f"  {s['text']:<45} {s['decision']:>10} {s['cost']:>7.1f} {s['color']:>8} {s['radius']:>6.2f} {s['dominant']:>4} {s['spin']:>5}")
+        print(
+            f"  {s['text']:<45} {s['decision']:>10} {s['cost']:>7.1f} "
+            f"{s['color']:>8} {s['radius']:>6.2f} {s['dominant']:>4} {s['spin']:>5}"
+        )
 
     print("")
     print("  VARIABLE ISOLATION:")
@@ -501,6 +517,7 @@ def run_analysis(output_dir: Optional[Path] = None):
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=str, default=None)
     args = parser.parse_args()

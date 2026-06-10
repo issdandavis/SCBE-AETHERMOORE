@@ -13,7 +13,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 DEFAULT_INPUT = "data/perplexity/normalized/perplexity_normalized.jsonl"
 DEFAULT_OUTPUT = "data/perplexity/normalized/perplexity_tagged.jsonl"
 DEFAULT_STATS = "data/perplexity/normalized/tag_stats.json"

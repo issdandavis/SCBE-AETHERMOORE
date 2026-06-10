@@ -27,7 +27,6 @@ from typing import Any, Dict, List, Tuple
 
 import numpy as np
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUT = REPO_ROOT / "artifacts" / "projectors" / "tongue_projector.npz"
 DEFAULT_EMBED_MODEL = "all-MiniLM-L6-v2"
@@ -71,10 +70,10 @@ def _ridge_solve(X: np.ndarray, Y: np.ndarray, l2: float) -> np.ndarray:
     """
     XtX = X.T @ X
     XtY = X.T @ Y
-    I = np.eye(XtX.shape[0], dtype=np.float32)
+    identity = np.eye(XtX.shape[0], dtype=np.float32)
     # Do not regularize the bias term (last column of X is ones).
-    I[-1, -1] = 0.0
-    return np.linalg.solve(XtX + float(l2) * I, XtY).astype(np.float32)
+    identity[-1, -1] = 0.0
+    return np.linalg.solve(XtX + float(l2) * identity, XtY).astype(np.float32)
 
 
 def _embed_texts(texts: List[str], model_name: str) -> np.ndarray:

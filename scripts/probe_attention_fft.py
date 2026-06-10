@@ -23,7 +23,6 @@ from src.minimal.mirror_problem_fft import (
     make_uniform_control,
 )
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "artifacts" / "attention_fft"
 DEFAULT_MODEL_ID = "issdandavis/scbe-pivot-qwen-0.5b"

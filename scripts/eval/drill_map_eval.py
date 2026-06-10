@@ -309,10 +309,7 @@ def main(argv: list[str] | None = None) -> int:
         f"= {structural['_summary']['structural_ratio']:.1%}"
     )
     for map_name, stats in summary["by_map"].items():
-        print(
-            f"  {map_name}: {stats['count']} rows  "
-            f"loss={stats['avg_loss']:.4f}  ppl={stats['perplexity']:.2f}"
-        )
+        print(f"  {map_name}: {stats['count']} rows  " f"loss={stats['avg_loss']:.4f}  ppl={stats['perplexity']:.2f}")
 
     if args.output:
         Path(args.output).write_text(json.dumps(summary, indent=2), encoding="utf-8")

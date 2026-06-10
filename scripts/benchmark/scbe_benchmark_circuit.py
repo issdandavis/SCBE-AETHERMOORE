@@ -16,7 +16,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "artifacts" / "benchmarks" / "scbe_benchmark_circuit"
 
@@ -46,7 +45,9 @@ CIRCUIT: list[CircuitLane] = [
         latest_json="artifacts/benchmarks/terminal_bench_adapter/latest_report.json",
         fail_origin="official Terminal-Bench harness access",
         obstacle="local answer-file adapter exists; official tb runner still needs to call the same contract",
-        improve_target="map official Terminal-Bench task import to the local setup/execute/answer/verifier/receipt adapter",
+        improve_target=(
+            "map official Terminal-Bench task import to the local setup/execute/answer/verifier/receipt adapter"
+        ),
         cross_test="real-patch-tasks",
         claim_boundary="adapter/readiness work only until official Terminal-Bench tasks run",
     ),
@@ -59,7 +60,10 @@ CIRCUIT: list[CircuitLane] = [
         latest_json="artifacts/benchmarks/scbe_full_system/latest_report.json",
         fail_origin="tools.json is governed but not exported in BFCL function-call eval format",
         obstacle="missing schema normalizer, argument verifier, and multi-turn tool-call transcript scorer",
-        improve_target="convert packages/agent-bus/tools.json into BFCL-compatible schemas and replay fixtures against local tool calls",
+        improve_target=(
+            "convert packages/agent-bus/tools.json into BFCL-compatible schemas and replay fixtures against local "
+            "tool calls"
+        ),
         cross_test="tau-bench-policy",
         claim_boundary="local BFCL adapter fixture until official BFCL runner executes",
     ),
@@ -69,10 +73,15 @@ CIRCUIT: list[CircuitLane] = [
         benchmark="MLE-bench",
         company_value="autonomous ML engineering: data prep, training, scoring, notebook/submission loop",
         local_probe="kaggle kernels status issacizrealdavis/scbe-longform-chain-integrity-benchmark",
-        latest_json="artifacts/kaggle/scbe-longform-chain-integrity/remote-output-v3/longform_chain_integrity_latest.json",
+        latest_json=(
+            "artifacts/kaggle/scbe-longform-chain-integrity/remote-output-v3/longform_chain_integrity_latest.json"
+        ),
         fail_origin="Kaggle execution loop exists for custom kernels, but not yet competition tasks",
         obstacle="needs competition dataset selection, scorer wiring, time budget, and submission artifact contract",
-        improve_target="start with one small Kaggle dataset lane: download, train baseline, score, write receipt, compare to public baseline",
+        improve_target=(
+            "start with one small Kaggle dataset lane: download, train baseline, score, write receipt, compare to "
+            "public baseline"
+        ),
         cross_test="terminal-bench-adapter",
         claim_boundary="custom Kaggle kernel evidence until official MLE-bench competition subset runs",
     ),
@@ -85,7 +94,9 @@ CIRCUIT: list[CircuitLane] = [
         latest_json="artifacts/benchmarks/rubix_browser_hypercube/latest_report.json",
         fail_origin="Rubix permission geometry exists locally; official browser task APIs are not bridged",
         obstacle="missing observation adapter, action adapter, login/session policy, and official success verifier",
-        improve_target="map Rubix faces to browser actions: observe, click, type, wait, backtrack, permission-veto, receipt",
+        improve_target=(
+            "map Rubix faces to browser actions: observe, click, type, wait, backtrack, permission-veto, receipt"
+        ),
         cross_test="osworld-adapter",
         claim_boundary="local Rubix Browser fixture until official browser benchmarks run",
     ),
@@ -98,7 +109,9 @@ CIRCUIT: list[CircuitLane] = [
         latest_json="artifacts/benchmarks/real_patch_tasks/latest_report.json",
         fail_origin="local patch fixtures pass, but official multilingual issue/task import is not wired",
         obstacle="needs repo checkout sandbox, language-specific test runners, patch extraction, and result scorer",
-        improve_target="add one polyglot lane per language: Python, JS/TS, Rust, Go, Java, C++ with same repair contract",
+        improve_target=(
+            "add one polyglot lane per language: Python, JS/TS, Rust, Go, Java, C++ with same repair contract"
+        ),
         cross_test="bfcl-tool-call-adapter",
         claim_boundary="local deterministic repair fixtures until public multilingual suites run",
     ),
@@ -123,7 +136,10 @@ CIRCUIT: list[CircuitLane] = [
         local_probe="python scripts/benchmark/hard_agentic_benchmark_pretest.py --filter osworld",
         latest_json="artifacts/benchmarks/hard_agentic_pretest/latest_report.json",
         fail_origin="desktop adapter needs stable observation/action boundary and environment reset",
-        obstacle="official OSWorld environment not running; local control needs screenshot, action, receipt, and rollback loop",
+        obstacle=(
+            "official OSWorld environment not running; local control needs screenshot, action, receipt, and "
+            "rollback loop"
+        ),
         improve_target="add SCBE desktop-control contract: observe_screen, act, verify_state, rollback, receipt",
         cross_test="browsergym-webarena-adapter",
         claim_boundary="adapter/readiness work only until official OSWorld tasks run",
@@ -137,7 +153,9 @@ CIRCUIT: list[CircuitLane] = [
         latest_json="artifacts/benchmarks/research_agent_fixtures/latest_report.json",
         fail_origin="local fixtures pass, but official question sets and answer validators are not wired",
         obstacle="needs official task import, source receipts, answer verifier, and anti-hallucination scorer",
-        improve_target="build source-backed answer packet: query plan, fetched sources, citations, final answer, verifier",
+        improve_target=(
+            "build source-backed answer packet: query plan, fetched sources, citations, final answer, verifier"
+        ),
         cross_test="mle-bench-kaggle-mini",
         claim_boundary="local BrowseComp/GAIA-style fixtures until official sets run",
     ),
@@ -149,8 +167,12 @@ CIRCUIT: list[CircuitLane] = [
         local_probe="python scripts/benchmark/arc_style_grid_benchmark.py",
         latest_json="artifacts/benchmarks/arc_style_grid/latest_report.json",
         fail_origin="partial local grid solving; official/private generalization remains unproven",
-        obstacle="needs broader primitive families, rejection tests, blind split discipline, and anti-overfit reporting",
-        improve_target="add one primitive family at a time, with positive, negative, malformed, and neighboring task tests",
+        obstacle=(
+            "needs broader primitive families, rejection tests, blind split discipline, and anti-overfit reporting"
+        ),
+        improve_target=(
+            "add one primitive family at a time, with positive, negative, malformed, and neighboring task tests"
+        ),
         cross_test="swe-multilingual-aider-polyglot",
         claim_boundary="local/synthetic grid evidence unless submitted to official competition or held-out split",
     ),
@@ -291,7 +313,8 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
         "",
         "## Circuit Rule",
         "",
-        "Test one lane, isolate the failure, make one scoped improvement, then test a different lane so the system gets stronger instead of overfitting.",
+        "Test one lane, isolate the failure, make one scoped improvement, then test a different "
+        "lane so the system gets stronger instead of overfitting.",
         "",
         "## Ordered Lanes",
         "",
@@ -317,7 +340,8 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
             "",
             "## Claim Boundary",
             "",
-            "This circuit is an engineering map, not a public leaderboard claim. Each lane must cite its command, artifact, commit, and claim boundary before being used in public copy.",
+            "This circuit is an engineering map, not a public leaderboard claim. Each lane must "
+            "cite its command, artifact, commit, and claim boundary before being used in public copy.",
             "",
         ]
     )

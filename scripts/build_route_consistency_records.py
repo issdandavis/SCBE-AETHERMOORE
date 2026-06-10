@@ -23,7 +23,6 @@ from jsonschema import Draft202012Validator
 
 from python.scbe.atomic_tokenization import map_token_to_atomic_state
 
-
 SCHEMA_VERSION = "scbe_route_consistency_record_v1"
 HASH_LENGTH = 16
 TOKEN_PATTERN = re.compile(r"\w+|[^\w\s]", re.UNICODE)
@@ -272,10 +271,7 @@ def build_record(example: NormalizedExample) -> dict[str, Any]:
     target_cluster = _hash_id("cluster", normalized_expected or normalized_input)
 
     tokens = _tokenize(example.input_text)
-    states = [
-        map_token_to_atomic_state(token, language=example.language, context_class="operator")
-        for token in tokens
-    ]
+    states = [map_token_to_atomic_state(token, language=example.language, context_class="operator") for token in tokens]
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -451,7 +447,9 @@ def build_route_consistency_outputs(
                     route_family_counts[record["route_family"]] += 1
                     governance_counts[record["route_metadata"]["governance"]] += 1
                     token_count += len(record["atomic_features"]["tokens"])
-                    witness_stable_count += sum(1 for element in record["atomic_features"]["elements"] if element["witness_stable"])
+                    witness_stable_count += sum(
+                        1 for element in record["atomic_features"]["elements"] if element["witness_stable"]
+                    )
                     record_count += 1
                     processed_for_file += 1
                     intent_ids.add(record["intent_id"])
@@ -461,7 +459,10 @@ def build_route_consistency_outputs(
                     if processed_for_file and processed_for_file % 1000 == 0:
                         _progress(processed_for_file, path)
 
-    with spool_path.open("r", encoding="utf-8") as source_handle, output_jsonl.open("w", encoding="utf-8") as output_handle:
+    with (
+        spool_path.open("r", encoding="utf-8") as source_handle,
+        output_jsonl.open("w", encoding="utf-8") as output_handle,
+    ):
         for line in source_handle:
             record = json.loads(line)
             linked = [value for value in intent_map[record["intent_id"]] if value != record["record_id"]]

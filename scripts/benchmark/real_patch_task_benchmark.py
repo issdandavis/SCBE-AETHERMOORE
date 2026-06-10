@@ -277,12 +277,7 @@ def test_code_lane_and_default_lane():
 
 
 def _utc_now() -> str:
-    return (
-        datetime.now(timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _sha256_text(text: str) -> str:
@@ -303,8 +298,7 @@ def _write_fixture(root: Path, task: PatchTask) -> dict[str, str]:
         path.write_text(content, encoding="utf-8")
     (root / "src" / "__init__.py").write_text("", encoding="utf-8")
     manifest = {
-        relative: _sha256_text((root / relative).read_text(encoding="utf-8"))
-        for relative in sorted(task.files)
+        relative: _sha256_text((root / relative).read_text(encoding="utf-8")) for relative in sorted(task.files)
     }
     _write_json(
         root / "challenge_task.json",
@@ -332,17 +326,13 @@ def _run_tests(root: Path) -> tuple[bool, str, str]:
     return proc.returncode == 0, proc.stdout, proc.stderr
 
 
-def _changed_files(
-    root: Path, task: PatchTask, before: dict[str, str]
-) -> tuple[list[str], str]:
+def _changed_files(root: Path, task: PatchTask, before: dict[str, str]) -> tuple[list[str], str]:
     changed = []
     patch_parts = []
     for relative in sorted(task.files):
         before_text = task.files[relative]
         after_path = root / relative
-        after_text = (
-            after_path.read_text(encoding="utf-8") if after_path.exists() else ""
-        )
+        after_text = after_path.read_text(encoding="utf-8") if after_path.exists() else ""
         digest = _sha256_text(after_text)
         if digest != before[relative]:
             changed.append(relative)
@@ -434,9 +424,7 @@ def _call_agent(prompt: str, *, provider: str = "cerebras", timeout: int = 90) -
         raise ValueError(f"unknown provider {provider!r}; choices: {list(PROVIDERS)}")
     api_key = os.environ.get(cfg["env_var"])
     if not api_key:
-        raise RuntimeError(
-            f"{cfg['env_var']} is not set; export it before running with --provider {provider}"
-        )
+        raise RuntimeError(f"{cfg['env_var']} is not set; export it before running with --provider {provider}")
     client = openai.OpenAI(base_url=cfg["base_url"], api_key=api_key, timeout=timeout)
     resp = client.chat.completions.create(
         model=cfg["model"],
@@ -456,9 +444,7 @@ def _call_agent(prompt: str, *, provider: str = "cerebras", timeout: int = 90) -
     return resp.choices[0].message.content or ""
 
 
-def agent_repair(
-    root: Path, task: PatchTask, *, provider: str = "cerebras"
-) -> dict[str, Any]:
+def agent_repair(root: Path, task: PatchTask, *, provider: str = "cerebras") -> dict[str, Any]:
     """Call a live AI model to repair the task's broken source file.
 
     Returns metadata about the call (provider, model, timing, raw response head).
@@ -495,9 +481,7 @@ def agent_repair(
         }
 
 
-def _make_agent_repair_fn(
-    provider: str, meta_out: list[dict[str, Any]]
-) -> Callable[[Path, PatchTask], None]:
+def _make_agent_repair_fn(provider: str, meta_out: list[dict[str, Any]]) -> Callable[[Path, PatchTask], None]:
     """Return a repair callable that appends agent metadata to meta_out."""
 
     def _repair(root: Path, task: PatchTask) -> None:
@@ -669,50 +653,30 @@ def build_report(
     baseline_scores = [score_result(result) for result in baseline_results]
     scbe_scores = [score_result(result) for result in scbe_results]
     schematic_scores = [score_result(result) for result in schematic_results]
-    baseline_passes = sum(
-        1 for item in baseline_scores if item["checks"]["tests_passed"]
-    )
+    baseline_passes = sum(1 for item in baseline_scores if item["checks"]["tests_passed"])
     scbe_passes = sum(
-        1
-        for item in scbe_scores
-        if item["checks"]["tests_passed"] and item["checks"]["edit_scope_clean"]
+        1 for item in scbe_scores if item["checks"]["tests_passed"] and item["checks"]["edit_scope_clean"]
     )
     schematic_passes = sum(
-        1
-        for item in schematic_scores
-        if item["checks"]["tests_passed"] and item["checks"]["edit_scope_clean"]
+        1 for item in schematic_scores if item["checks"]["tests_passed"] and item["checks"]["edit_scope_clean"]
     )
     task_count = len(TASKS)
     summary = {
         "decision": (
             "PASS"
-            if (
-                scbe_passes == task_count
-                and schematic_passes == task_count
-                and baseline_passes < task_count
-            )
+            if (scbe_passes == task_count and schematic_passes == task_count and baseline_passes < task_count)
             else "HOLD"
         ),
         "task_count": task_count,
         "baseline_test_passes": baseline_passes,
         "scbe_test_passes": scbe_passes,
         "schematic_test_passes": schematic_passes,
-        "baseline_avg": round(
-            sum(item["score"] for item in baseline_scores) / task_count, 4
-        ),
+        "baseline_avg": round(sum(item["score"] for item in baseline_scores) / task_count, 4),
         "scbe_avg": round(sum(item["score"] for item in scbe_scores) / task_count, 4),
-        "schematic_avg": round(
-            sum(item["score"] for item in schematic_scores) / task_count, 4
-        ),
-        "scbe_wins": sum(
-            1
-            for base, scbe in zip(baseline_scores, scbe_scores)
-            if scbe["score"] > base["score"]
-        ),
+        "schematic_avg": round(sum(item["score"] for item in schematic_scores) / task_count, 4),
+        "scbe_wins": sum(1 for base, scbe in zip(baseline_scores, scbe_scores) if scbe["score"] > base["score"]),
         "schematic_wins": sum(
-            1
-            for base, schematic in zip(baseline_scores, schematic_scores)
-            if schematic["score"] > base["score"]
+            1 for base, schematic in zip(baseline_scores, schematic_scores) if schematic["score"] > base["score"]
         ),
     }
 
@@ -729,9 +693,7 @@ def build_report(
                 repair=_make_agent_repair_fn(agent_provider, meta_out),
             )
             agent_results.append(result)
-            agent_metas.append(
-                meta_out[0] if meta_out else {"error": "repair not called"}
-            )
+            agent_metas.append(meta_out[0] if meta_out else {"error": "repair not called"})
 
     agent_scores = [score_result(r) for r in agent_results]
 
@@ -772,28 +734,18 @@ def build_report(
     # Attach agent lane results when a live provider was used
     if agent_provider is not None:
         agent_passes = sum(
-            1
-            for item in agent_scores
-            if item["checks"]["tests_passed"] and item["checks"]["edit_scope_clean"]
+            1 for item in agent_scores if item["checks"]["tests_passed"] and item["checks"]["edit_scope_clean"]
         )
         agent_summary: dict[str, Any] = {
             "provider": agent_provider,
             "model": PROVIDERS.get(agent_provider, {}).get("model", "unknown"),
             "agent_test_passes": agent_passes,
-            "agent_avg": round(
-                sum(item["score"] for item in agent_scores) / task_count, 4
-            ),
-            "agent_wins": sum(
-                1
-                for base, ag in zip(baseline_scores, agent_scores)
-                if ag["score"] > base["score"]
-            ),
+            "agent_avg": round(sum(item["score"] for item in agent_scores) / task_count, 4),
+            "agent_wins": sum(1 for base, ag in zip(baseline_scores, agent_scores) if ag["score"] > base["score"]),
         }
         report["agent_summary"] = agent_summary
         report["agent_scores"] = agent_scores
-        report["agent_meta"] = [
-            {"task_id": task.task_id, **meta} for task, meta in zip(TASKS, agent_metas)
-        ]
+        report["agent_meta"] = [{"task_id": task.task_id, **meta} for task, meta in zip(TASKS, agent_metas)]
         raw_results["agent"] = [asdict(r) for r in agent_results]
         claim_boundary.append(
             f"Agent lane provider={agent_provider} model={agent_summary['model']}; "
@@ -903,9 +855,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     agent_provider = None if args.provider == "none" else args.provider
-    report = build_report(
-        out_dir=args.out_dir, run_id=args.run_id or None, agent_provider=agent_provider
-    )
+    report = build_report(out_dir=args.out_dir, run_id=args.run_id or None, agent_provider=agent_provider)
     if args.json:
         print(json.dumps(report, indent=2, ensure_ascii=True))
     else:
@@ -920,8 +870,7 @@ def main(argv: list[str] | None = None) -> int:
         if "agent_summary" in report:
             ag = report["agent_summary"]
             print(
-                f"agent ({ag['provider']}/{ag['model']}): "
-                f"{ag['agent_test_passes']}/{summary['task_count']} passes"
+                f"agent ({ag['provider']}/{ag['model']}): " f"{ag['agent_test_passes']}/{summary['task_count']} passes"
             )
         print(f"report={args.out_dir / report['run_id'] / 'report.json'}")
     return 0 if report["summary"]["decision"] == "PASS" else 1

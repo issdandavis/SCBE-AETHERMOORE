@@ -16,7 +16,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_TASK_FILE = REPO_ROOT / "config" / "eval" / "common_agentic_benchmark_tasks.v1.json"
 DEFAULT_CANDIDATE_FILE = REPO_ROOT / "artifacts" / "benchmarks" / "scbe_harness_controls" / "stub_candidate.json"
@@ -117,13 +116,9 @@ def _write_summary(summary: dict[str, Any], output_root: Path) -> None:
         "| --- | ---: | ---: | ---: |",
     ]
     for row in summary["results"]:
-        md.append(
-            f"| `{row['adapter']}` | {row['tasks']} | {row['passed']} | {float(row['pass_rate']):.2%} |"
-        )
+        md.append(f"| `{row['adapter']}` | {row['tasks']} | {row['passed']} | {float(row['pass_rate']):.2%} |")
     ens = summary["mechanical_ensemble"]
-    md.append(
-        f"| `mechanical_ensemble` | {ens['tasks']} | {ens['passed']} | {float(ens['pass_rate']):.2%} |"
-    )
+    md.append(f"| `mechanical_ensemble` | {ens['tasks']} | {ens['passed']} | {float(ens['pass_rate']):.2%} |")
     md.extend(
         [
             "",

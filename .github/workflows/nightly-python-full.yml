@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: ${{ github.workflow }}
@@ -60,3 +61,41 @@ jobs:
             --ignore=tests/aetherbrowser/test_red_zone_integration.py \
             -m "not slow" \
             --continue-on-collection-errors
+
+      # A red X on a scheduled run is easy to miss — surface failures as a
+      # labeled issue so they land in triage instead of rotting silently.
+      - name: Open or update failure issue
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const label = "nightly-failure";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `The scheduled full pytest run failed: ${runUrl}`,
+              "",
+              "The PR smoke lane does not cover these tests, so this failure is",
+              "invisible to PR CI — triage before it compounds.",
+            ].join("\n");
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              labels: label,
+            });
+            if (issues.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues[0].number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: "Nightly full Python suite failed",
+                body,
+                labels: [label],
+              });
+            }

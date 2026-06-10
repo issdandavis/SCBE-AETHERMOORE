@@ -146,7 +146,7 @@
     "aetherbrowser:service:start": "node ./scripts/system/start_aetherbrowser_extension_service.mjs",
     "aetherbrowser:service:verify": "python scripts/verify_aetherbrowser_extension_service.py --run-backend-smoke",
     "aetherbrowser:service:stop": "node ./scripts/system/stop_aetherbrowser_extension_service.mjs",
-    "demo": "npx open-cli scbe-aethermoore/customer-demo.html",
+    "demo": "npx open-cli demos/site-demos/customer-demo.html",
     "agentic:demo": "ts-node src/agentic/demo-runner.ts",
     "game:debug-ts": "node scripts/run_typescript_debug_scenario.cjs",
     "benchmark:coding-agents": "python scripts/eval/functional_coding_agent_benchmark.py",

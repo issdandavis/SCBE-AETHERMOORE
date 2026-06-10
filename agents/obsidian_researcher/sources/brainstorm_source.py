@@ -133,10 +133,10 @@ class BrainstormSource(SourceAdapter):
 
             # Problem statement
             if lower.startswith("problem:"):
-                problem_statements.append(line[len("problem:"):].strip())
+                problem_statements.append(line[len("problem:") :].strip())
             # Open questions
             elif lower.startswith("question:"):
-                open_questions.append(line[len("question:"):].strip())
+                open_questions.append(line[len("question:") :].strip())
             elif line.startswith("?"):
                 question_text = line[1:].strip()
                 if question_text:

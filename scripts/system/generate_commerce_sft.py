@@ -42,43 +42,43 @@ from pathlib import Path
 TONGUE_PROFILES = {
     "negotiation": {"KO": 0.45, "AV": 0.25, "RU": 0.20, "CA": 0.05, "UM": 0.02, "DR": 0.03},
     "payment_code": {"KO": 0.05, "AV": 0.20, "RU": 0.10, "CA": 0.45, "UM": 0.10, "DR": 0.10},
-    "checkout_ui":  {"KO": 0.10, "AV": 0.40, "RU": 0.10, "CA": 0.20, "UM": 0.10, "DR": 0.10},
-    "security":     {"KO": 0.02, "AV": 0.08, "RU": 0.15, "CA": 0.10, "UM": 0.55, "DR": 0.10},
+    "checkout_ui": {"KO": 0.10, "AV": 0.40, "RU": 0.10, "CA": 0.20, "UM": 0.10, "DR": 0.10},
+    "security": {"KO": 0.02, "AV": 0.08, "RU": 0.15, "CA": 0.10, "UM": 0.55, "DR": 0.10},
     "webhook_auth": {"KO": 0.03, "AV": 0.10, "RU": 0.10, "CA": 0.15, "UM": 0.20, "DR": 0.42},
     "legal_policy": {"KO": 0.05, "AV": 0.15, "RU": 0.65, "CA": 0.02, "UM": 0.08, "DR": 0.05},
     "training_gen": {"KO": 0.30, "AV": 0.15, "RU": 0.25, "CA": 0.20, "UM": 0.05, "DR": 0.05},
-    "react_ui":     {"KO": 0.10, "AV": 0.50, "RU": 0.10, "CA": 0.10, "UM": 0.10, "DR": 0.10},
-    "stripe_test":  {"KO": 0.05, "AV": 0.15, "RU": 0.15, "CA": 0.30, "UM": 0.15, "DR": 0.20},
+    "react_ui": {"KO": 0.10, "AV": 0.50, "RU": 0.10, "CA": 0.10, "UM": 0.10, "DR": 0.10},
+    "stripe_test": {"KO": 0.05, "AV": 0.15, "RU": 0.15, "CA": 0.30, "UM": 0.15, "DR": 0.20},
     "discount_floor": {"KO": 0.15, "AV": 0.10, "RU": 0.45, "CA": 0.20, "UM": 0.05, "DR": 0.05},
-    "haggle_stripe":  {"KO": 0.35, "AV": 0.15, "RU": 0.25, "CA": 0.15, "UM": 0.05, "DR": 0.05},
+    "haggle_stripe": {"KO": 0.35, "AV": 0.15, "RU": 0.25, "CA": 0.15, "UM": 0.05, "DR": 0.05},
 }
 
 # Layer assignments — which SCBE layers are activated by each topic
 LAYER_MAP = {
-    "negotiation":   [1, 3, 11, 12, 13],   # intent (L1), weighting (L3), temporal (L11), wall (L12), decision (L13)
-    "payment_code":  [1, 2, 3, 4, 8],      # context ingestion → compute realm
-    "checkout_ui":   [1, 2, 3, 6],          # surface-level, breathing transform
-    "security":      [1, 5, 8, 12, 13],    # distance (L5), hamiltonian (L8), wall (L12), gate (L13)
-    "webhook_auth":  [1, 3, 7, 12, 13, 14],# mobius phase (L7), audio telemetry (L14)
-    "legal_policy":  [1, 3, 11, 12, 13],   # policy = temporal + wall + gate
-    "training_gen":  [1, 2, 3, 9, 10],     # spectral + spin coherence for data generation
-    "react_ui":      [1, 2, 3, 6],
-    "stripe_test":   [1, 3, 8, 12, 13],
-    "discount_floor":[1, 3, 11, 12, 13],   # floor = wall enforcement
+    "negotiation": [1, 3, 11, 12, 13],  # intent (L1), weighting (L3), temporal (L11), wall (L12), decision (L13)
+    "payment_code": [1, 2, 3, 4, 8],  # context ingestion → compute realm
+    "checkout_ui": [1, 2, 3, 6],  # surface-level, breathing transform
+    "security": [1, 5, 8, 12, 13],  # distance (L5), hamiltonian (L8), wall (L12), gate (L13)
+    "webhook_auth": [1, 3, 7, 12, 13, 14],  # mobius phase (L7), audio telemetry (L14)
+    "legal_policy": [1, 3, 11, 12, 13],  # policy = temporal + wall + gate
+    "training_gen": [1, 2, 3, 9, 10],  # spectral + spin coherence for data generation
+    "react_ui": [1, 2, 3, 6],
+    "stripe_test": [1, 3, 8, 12, 13],
+    "discount_floor": [1, 3, 11, 12, 13],  # floor = wall enforcement
     "haggle_stripe": [1, 3, 11, 12, 13],
 }
 
 AXIOM_MAP = {
-    "negotiation":   ["causality", "composition"],   # time-ordered negotiation, composed outcome
-    "payment_code":  ["unitarity", "composition"],   # norm-preserving state, pipeline integrity
-    "checkout_ui":   ["composition"],
-    "security":      ["locality", "symmetry", "unitarity"],  # spatial bounds, gauge, norm
-    "webhook_auth":  ["unitarity", "symmetry"],
-    "legal_policy":  ["causality", "locality"],      # time-ordered policy, spatial scope
-    "training_gen":  ["composition", "causality"],
-    "react_ui":      ["composition"],
-    "stripe_test":   ["unitarity", "composition"],
-    "discount_floor":["causality", "locality"],      # floor = local bound + causal enforcement
+    "negotiation": ["causality", "composition"],  # time-ordered negotiation, composed outcome
+    "payment_code": ["unitarity", "composition"],  # norm-preserving state, pipeline integrity
+    "checkout_ui": ["composition"],
+    "security": ["locality", "symmetry", "unitarity"],  # spatial bounds, gauge, norm
+    "webhook_auth": ["unitarity", "symmetry"],
+    "legal_policy": ["causality", "locality"],  # time-ordered policy, spatial scope
+    "training_gen": ["composition", "causality"],
+    "react_ui": ["composition"],
+    "stripe_test": ["unitarity", "composition"],
+    "discount_floor": ["causality", "locality"],  # floor = local bound + causal enforcement
     "haggle_stripe": ["causality", "composition"],
 }
 
@@ -114,7 +114,7 @@ def charge_card(amount_cents: int, source_id: str, note: str = '') -> dict:
     return {'success': False, 'errors': result.errors}
 ```
 Always use `idempotency_key` so retries don't double-charge. Store the payment_id for refunds.""",
-        """To charge a card through Square, you call their API with the card token (source_id) and the dollar amount in cents ($1.00 = 100 cents). You also include a random idempotency key — this is like a ticket number that Square uses to recognize duplicate requests, so if your internet cuts out and you retry, the customer only gets charged once. If the charge works, you get back a payment ID to keep on file in case you ever need to issue a refund."""
+        """To charge a card through Square, you call their API with the card token (source_id) and the dollar amount in cents ($1.00 = 100 cents). You also include a random idempotency key — this is like a ticket number that Square uses to recognize duplicate requests, so if your internet cuts out and you retry, the customer only gets charged once. If the charge works, you get back a payment ID to keep on file in case you ever need to issue a refund.""",
     ),
     (
         "negotiation",
@@ -136,7 +136,7 @@ def evaluate_offer(offer: float, cost: float, min_profit: float = 3.0) -> dict:
         return {'decision': 'decline', 'price': floor, 'message': f'Lowest is ${floor:.2f}'}
 ```
 The floor is hard — never go below cost + $3.""",
-        """When a customer tries to haggle, you follow a simple five-step dance: first you show them the full price, then if their offer covers your costs plus at least $3 in profit you just say yes. If they're close to the floor but not quite there, you meet them halfway at exactly your floor price. If they're way below, you politely decline and tell them your lowest possible price. The $3 floor is a hard rule — it's not a guideline, it's a line you never cross, because selling below it means you're actually losing money once you factor in your costs."""
+        """When a customer tries to haggle, you follow a simple five-step dance: first you show them the full price, then if their offer covers your costs plus at least $3 in profit you just say yes. If they're close to the floor but not quite there, you meet them halfway at exactly your floor price. If they're way below, you politely decline and tell them your lowest possible price. The $3 floor is a hard rule — it's not a guideline, it's a line you never cross, because selling below it means you're actually losing money once you factor in your costs.""",
     ),
     (
         "checkout_ui",
@@ -172,7 +172,7 @@ The floor is hard — never go below cost + $3.""",
 </html>
 ```
 The card number never touches your server — Square converts it to a single-use token that expires in 24 hours.""",
-        """The Square Web Payments SDK builds the card entry form for you — you don't handle raw card numbers at all. When a customer types their card info, Square's servers convert it to a short token (like a temporary code), and that token is what gets sent to your server. Your server then forwards the token to Square's API to complete the charge. This design means your server never sees actual card data, which keeps you out of the most serious PCI compliance requirements and protects your customers if your server is ever compromised."""
+        """The Square Web Payments SDK builds the card entry form for you — you don't handle raw card numbers at all. When a customer types their card info, Square's servers convert it to a short token (like a temporary code), and that token is what gets sent to your server. Your server then forwards the token to Square's API to complete the charge. This design means your server never sees actual card data, which keeps you out of the most serious PCI compliance requirements and protects your customers if your server is ever compromised.""",
     ),
     (
         "security",
@@ -193,7 +193,7 @@ class SecurityHeaders(BaseHTTPMiddleware):
         return response
 ```
 Also: HTTPS only, cookies with `Secure; HttpOnly; SameSite=Strict`, rate-limit auth endpoints.""",
-        """Security headers are instructions you attach to every page your server sends out. They tell the visitor's browser how to behave in ways that protect against common attacks. For example, one header stops your site from being embedded inside another website (which bad actors use for 'clickjacking' attacks). Another forces browsers to only communicate with your server over encrypted HTTPS connections. Content Security Policy tells the browser which scripts are allowed to run, blocking injected malicious code. Setting these up takes about ten lines of code and protects against entire categories of attacks automatically."""
+        """Security headers are instructions you attach to every page your server sends out. They tell the visitor's browser how to behave in ways that protect against common attacks. For example, one header stops your site from being embedded inside another website (which bad actors use for 'clickjacking' attacks). Another forces browsers to only communicate with your server over encrypted HTTPS connections. Content Security Policy tells the browser which scripts are allowed to run, blocking injected malicious code. Setting these up takes about ten lines of code and protects against entire categories of attacks automatically.""",
     ),
     (
         "training_gen",
@@ -218,7 +218,7 @@ def _seller_response(offer, list_price, floor):
     else: return f'I appreciate the offer but I can\\'t go below ${floor:.2f}.'
 ```
 Run this 1000 times across different price points to build a haggling dataset.""",
-        """This script plays out a price negotiation as if a real customer and seller were talking, then saves the conversation as training examples for your AI. You tell it the sticker price and your cost, and it randomly generates a customer offer. The seller's reply is determined by whether the offer covers your costs plus $3 profit. If not, the seller holds firm or gently declines. Running this thousands of times across different products gives you a rich dataset of realistic negotiations where the AI always learns the same lesson: the profit floor is non-negotiable."""
+        """This script plays out a price negotiation as if a real customer and seller were talking, then saves the conversation as training examples for your AI. You tell it the sticker price and your cost, and it randomly generates a customer offer. The seller's reply is determined by whether the offer covers your costs plus $3 profit. If not, the seller holds firm or gently declines. Running this thousands of times across different products gives you a rich dataset of realistic negotiations where the AI always learns the same lesson: the profit floor is non-negotiable.""",
     ),
     (
         "react_ui",
@@ -251,7 +251,7 @@ function ProductCard({ name, price, cost, onBuy }) {
     );
 }
 ```""",
-        """This React component shows a product with two ways to buy it: a straightforward 'buy now' button at full price, or a custom offer input where the customer can try to negotiate. When they submit an offer, the code checks it against the profit floor ($3 above cost). If the offer is acceptable, the sale goes through at that price. If not, the buyer sees a message telling them the lowest possible price. The component handles all the negotiation logic in the browser itself — no server round-trip needed — making it fast and responsive for the customer."""
+        """This React component shows a product with two ways to buy it: a straightforward 'buy now' button at full price, or a custom offer input where the customer can try to negotiate. When they submit an offer, the code checks it against the profit floor ($3 above cost). If the offer is acceptable, the sale goes through at that price. If not, the buyer sees a message telling them the lowest possible price. The component handles all the negotiation logic in the browser itself — no server round-trip needed — making it fast and responsive for the customer.""",
     ),
     (
         "webhook_auth",
@@ -281,7 +281,7 @@ async def square_webhook(request: Request):
     return {'received': True}
 ```
 Always verify the signature before processing. Never trust the payload alone.""",
-        """A webhook is a notification Square sends to your server the moment a payment goes through. The problem is anyone could fake that notification — a bad actor could send your server a fake 'payment completed' message and trick you into shipping a product that was never actually paid for. The signature check prevents this: Square attaches a special code to every notification that's calculated using a secret key only you and Square know. Your server recalculates that code from the message and checks it matches. If it doesn't match, you reject the notification entirely."""
+        """A webhook is a notification Square sends to your server the moment a payment goes through. The problem is anyone could fake that notification — a bad actor could send your server a fake 'payment completed' message and trick you into shipping a product that was never actually paid for. The signature check prevents this: Square attaches a special code to every notification that's calculated using a secret key only you and Square know. Your server recalculates that code from the message and checks it matches. If it doesn't match, you reject the notification entirely.""",
     ),
     (
         "payment_code",
@@ -305,7 +305,7 @@ def charge_card(amount_cents: int, payment_method_id: str, description: str = ''
         return {'success': False, 'error': str(e)}
 ```
 Use `rk_test_...` keys in sandbox — no real money moves. Store the key in `.env`, never in code.""",
-        """To charge a card through Stripe, you create a PaymentIntent — think of it as an instruction to Stripe saying 'charge this card this much money.' You set the amount in cents (so $15 = 1500), attach the customer's card token, and confirm it all in one call. Stripe handles the actual card network communication. If the card works you get back a confirmation ID. If the card is declined, Stripe gives you a plain-English reason you can show the customer. The test API key (starts with rk_test_) lets you run all of this without real money during development."""
+        """To charge a card through Stripe, you create a PaymentIntent — think of it as an instruction to Stripe saying 'charge this card this much money.' You set the amount in cents (so $15 = 1500), attach the customer's card token, and confirm it all in one call. Stripe handles the actual card network communication. If the card works you get back a confirmation ID. If the card is declined, Stripe gives you a plain-English reason you can show the customer. The test API key (starts with rk_test_) lets you run all of this without real money during development.""",
     ),
     (
         "checkout_ui",
@@ -328,7 +328,7 @@ def create_checkout_session(price_cents: int, product_name: str, success_url: st
 url = create_checkout_session(1500, 'Aethermoor Print', 'https://yoursite.com/success', 'https://yoursite.com/cancel')
 ```
 Checkout Sessions handle the entire payment UI. Verify the webhook after payment — don't trust the success URL alone.""",
-        """Stripe Checkout is a pre-built payment page that Stripe hosts for you. Instead of building a card form yourself, you create a Checkout Session on your server (telling it what the product is and how much it costs), and Stripe gives you back a URL. You redirect your customer to that URL, they enter their card details on Stripe's secure page, and then Stripe redirects them back to your site when done. Because it's Stripe's page, you never handle card data at all. Always verify the payment through a webhook though — the success page redirect can be faked, but a webhook with a valid signature cannot."""
+        """Stripe Checkout is a pre-built payment page that Stripe hosts for you. Instead of building a card form yourself, you create a Checkout Session on your server (telling it what the product is and how much it costs), and Stripe gives you back a URL. You redirect your customer to that URL, they enter their card details on Stripe's secure page, and then Stripe redirects them back to your site when done. Because it's Stripe's page, you never handle card data at all. Always verify the payment through a webhook though — the success page redirect can be faked, but a webhook with a valid signature cannot.""",
     ),
     (
         "webhook_auth",
@@ -355,7 +355,7 @@ async def stripe_webhook(request: Request):
     return {'status': 'ok'}
 ```
 Test locally with `stripe listen --forward-to localhost:8000/webhooks/stripe`. The `whsec_` secret is separate from your API key.""",
-        """Stripe's webhook verification works similarly to Square's — Stripe attaches a signature to every notification it sends you, and you verify it before acting on the message. The `stripe.Webhook.construct_event()` call does all the cryptographic checking for you; if the signature is wrong it raises an error and you return a 400 response (which tells Stripe to retry later). You need two different secrets: your API key for making Stripe API calls, and a separate webhook secret (starts with `whsec_`) specifically for verifying incoming notifications. During development, the Stripe CLI can forward real webhook events to your local machine so you can test without deploying."""
+        """Stripe's webhook verification works similarly to Square's — Stripe attaches a signature to every notification it sends you, and you verify it before acting on the message. The `stripe.Webhook.construct_event()` call does all the cryptographic checking for you; if the signature is wrong it raises an error and you return a 400 response (which tells Stripe to retry later). You need two different secrets: your API key for making Stripe API calls, and a separate webhook secret (starts with `whsec_`) specifically for verifying incoming notifications. During development, the Stripe CLI can forward real webhook events to your local machine so you can test without deploying.""",
     ),
     (
         "discount_floor",
@@ -381,7 +381,7 @@ def create_discounted_session(list_price_cents, cost_cents, discount_pct, produc
     return {'error': False, 'url': session.url, 'final_price_cents': discounted}
 ```
 Never skip the floor check — Stripe will happily charge $0.01 if you tell it to.""",
-        """When you run a discount, your code has to check the math before Stripe ever gets involved. Here's why: Stripe doesn't know anything about your costs or profit requirements — it just charges whatever price you tell it to. So if you blindly apply a 70% discount on a $10 item that cost you $8, you'd charge the customer $3 but actually lose $5 on the sale. The floor check calculates the lowest safe price ($3 above your cost), compares it to the discounted price, and blocks the checkout session from being created if the discount goes too deep. It also tells you the maximum discount percentage that's actually safe, so you can show that to the customer or adjust your promotion accordingly."""
+        """When you run a discount, your code has to check the math before Stripe ever gets involved. Here's why: Stripe doesn't know anything about your costs or profit requirements — it just charges whatever price you tell it to. So if you blindly apply a 70% discount on a $10 item that cost you $8, you'd charge the customer $3 but actually lose $5 on the sale. The floor check calculates the lowest safe price ($3 above your cost), compares it to the discounted price, and blocks the checkout session from being created if the discount goes too deep. It also tells you the maximum discount percentage that's actually safe, so you can show that to the customer or adjust your promotion accordingly.""",
     ),
     (
         "stripe_test",
@@ -409,7 +409,7 @@ stripe.PaymentIntent.create(
 )
 ```
 Switch to `rk_test_...` key and all charges are simulated with no real money.""",
-        """Stripe gives you fake card numbers for testing so you can make sure your payment system handles every scenario correctly before going live. The magic number 4242 4242 4242 4242 always succeeds — use it to test the happy path. Other numbers simulate failures: one acts like the customer's card has no funds, another triggers a 3D Secure challenge (where the bank texts a code to verify identity), and another simulates an expired card. In code you can skip even the fake card numbers entirely and use named payment method tokens like `pm_card_visa` — Stripe swaps in the test behavior automatically. None of these test charges cost real money or show up on anyone's statement."""
+        """Stripe gives you fake card numbers for testing so you can make sure your payment system handles every scenario correctly before going live. The magic number 4242 4242 4242 4242 always succeeds — use it to test the happy path. Other numbers simulate failures: one acts like the customer's card has no funds, another triggers a 3D Secure challenge (where the bank texts a code to verify identity), and another simulates an expired card. In code you can skip even the fake card numbers entirely and use named payment method tokens like `pm_card_visa` — Stripe swaps in the test behavior automatically. None of these test charges cost real money or show up on anyone's statement.""",
     ),
     (
         "haggle_stripe",
@@ -443,7 +443,7 @@ with open('training-data/hand_tune/commerce/stripe_haggle.jsonl', 'w') as f:
     for p in pairs:
         f.write(json.dumps({'prompt': p['prompt'], 'response': p['response']}) + '\\n')
 ```""",
-        """This script plays out hundreds of simulated sales with real Stripe test API calls (no actual money), then saves each conversation as a training example for your commerce AI. It picks a random offer amount, checks it against the profit floor, and if the sale can proceed it actually tries to run a test charge through Stripe. That way each training example includes a realistic Stripe confirmation ID, making the AI's responses feel authentic rather than made-up. Failed cards are also simulated — roughly 10% of accepted offers get a card decline, which teaches the AI how to handle payment failures gracefully. Run it for 100-200 examples to build a solid dataset."""
+        """This script plays out hundreds of simulated sales with real Stripe test API calls (no actual money), then saves each conversation as a training example for your commerce AI. It picks a random offer amount, checks it against the profit floor, and if the sale can proceed it actually tries to run a test charge through Stripe. That way each training example includes a realistic Stripe confirmation ID, making the AI's responses feel authentic rather than made-up. Failed cards are also simulated — roughly 10% of accepted offers get a card decline, which teaches the AI how to handle payment failures gracefully. Run it for 100-200 examples to build a solid dataset.""",
     ),
 ]
 
@@ -455,10 +455,17 @@ def dominant_tongue(weights: dict) -> str:
 def difficulty_from_profile(profile: str) -> float:
     """Assign difficulty based on how technically complex the topic is."""
     d = {
-        "negotiation": 0.35, "payment_code": 0.55, "checkout_ui": 0.45,
-        "security": 0.70, "webhook_auth": 0.75, "legal_policy": 0.40,
-        "training_gen": 0.60, "react_ui": 0.50, "stripe_test": 0.30,
-        "discount_floor": 0.65, "haggle_stripe": 0.70,
+        "negotiation": 0.35,
+        "payment_code": 0.55,
+        "checkout_ui": 0.45,
+        "security": 0.70,
+        "webhook_auth": 0.75,
+        "legal_policy": 0.40,
+        "training_gen": 0.60,
+        "react_ui": 0.50,
+        "stripe_test": 0.30,
+        "discount_floor": 0.65,
+        "haggle_stripe": 0.70,
     }
     base = d.get(profile, 0.50)
     return round(base + random.uniform(-0.05, 0.05), 3)
@@ -470,16 +477,16 @@ def source_hash(prompt: str) -> str:
 
 def make_system_header(weights: dict, layers: list, axioms: list, difficulty: float) -> str:
     tongue_str = " ".join(f"{k}={v:.3f}" for k, v in weights.items())
-    layer_str = " ".join(f"L{l}" for l in sorted(layers))
+    layer_str = " ".join(f"L{layer}" for layer in sorted(layers))
     axiom_str = " ".join(axioms)
     return (
         f"[TONGUES: {tongue_str}]\n"
         f"[LAYERS: {layer_str}]\n"
         f"[AXIOMS: {axiom_str}]\n"
         f"[DIFFICULTY: {difficulty:.3f}]\n"
-        f"You are a commerce and web development assistant. "
-        f"You help with Square payments, Stripe, frontend/backend code, security, and checkout processing. "
-        f"You NEVER recommend selling below cost + $3 minimum profit."
+        "You are a commerce and web development assistant. "
+        "You help with Square payments, Stripe, frontend/backend code, security, and checkout processing. "
+        "You NEVER recommend selling below cost + $3 minimum profit."
     )
 
 
@@ -495,7 +502,7 @@ def make_scbe_record(profile: str, prompt: str, response: str, english: str, idx
 
     # Randomly choose whether to give code or English response for variety
     # Always store both; primary response alternates
-    use_english = (idx % 3 == 2)  # every 3rd record use English version
+    use_english = idx % 3 == 2  # every 3rd record use English version
     primary_response = english if use_english else response
 
     record = {
@@ -620,24 +627,23 @@ def load_stripe_haggle(path: str) -> list[tuple]:
                 r = response.lower()
                 if "confirmation" in r:
                     english = (
-                        f"The customer's offer was accepted and the payment went through successfully. "
+                        "The customer's offer was accepted and the payment went through successfully. "
                         f"A Stripe confirmation ID was issued. Outcome: {response}"
                     )
                 elif "declined" in r or "card" in r:
                     english = (
-                        f"The offer was acceptable price-wise but the card failed. "
-                        f"The seller needs to handle this gracefully and ask for another payment method. "
+                        "The offer was acceptable price-wise but the card failed. "
+                        "The seller needs to handle this gracefully and ask for another payment method. "
                         f"Outcome: {response}"
                     )
                 elif "floor" in r.lower() or "can't go below" in r:
                     english = (
-                        f"The customer's offer was below the $3 profit floor and was declined. "
+                        "The customer's offer was below the $3 profit floor and was declined. "
                         f"The seller enforced the minimum price policy. Outcome: {response}"
                     )
                 else:
                     english = (
-                        f"The seller evaluated the customer's offer against the profit floor. "
-                        f"Outcome: {response}"
+                        "The seller evaluated the customer's offer against the profit floor. " f"Outcome: {response}"
                     )
 
                 results.append((profile, prompt, response, english))
@@ -688,7 +694,14 @@ def run(merge_stripe: bool, output_scbe: str, output_plain: str) -> None:
     for r in scbe_records:
         dt = r["dominant_tongue"]
         tongue_counts[dt] = tongue_counts.get(dt, 0) + 1
-    tongue_names = {"KO": "Kor'aelin", "AV": "Avali", "RU": "Runethic", "CA": "Cassisivadan", "UM": "Umbroth", "DR": "Draumric"}
+    tongue_names = {
+        "KO": "Kor'aelin",
+        "AV": "Avali",
+        "RU": "Runethic",
+        "CA": "Cassisivadan",
+        "UM": "Umbroth",
+        "DR": "Draumric",
+    }
     for t, c in sorted(tongue_counts.items(), key=lambda x: -x[1]):
         name = tongue_names.get(t, t)
         print(f"  {t} ({name}): {'#' * c} {c}")

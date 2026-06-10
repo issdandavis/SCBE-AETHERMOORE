@@ -33,7 +33,8 @@ BEARER_RULE = PatternRule("bearer_header", re.compile(r"(?i)\bAuthorization\s*:\
 ACCOUNT_RULE = PatternRule(
     "account_id",
     re.compile(
-        r"(?i)\b(?:account|acct|customer|user|session|record|identifier|id)\s*(?:id|number|no\.?|#)?\s*[:=]\s*[A-Za-z0-9][A-Za-z0-9_\-./]{5,}"
+        r"(?i)\b(?:account|acct|customer|user|session|record|identifier|id)"
+        r"\s*(?:id|number|no\.?|#)?\s*[:=]\s*[A-Za-z0-9][A-Za-z0-9_\-./]{5,}"
     ),
 )
 API_KEY_RULES = [
@@ -43,7 +44,8 @@ API_KEY_RULES = [
     PatternRule(
         "api_key",
         re.compile(
-            r"(?i)\b(?:api[_-]?key|access[_-]?token|auth[_-]?token|secret|session[_-]?token)\s*[:=]\s*[A-Za-z0-9._\-+/=]{12,}"
+            r"(?i)\b(?:api[_-]?key|access[_-]?token|auth[_-]?token|secret|session[_-]?token)"
+            r"\s*[:=]\s*[A-Za-z0-9._\-+/=]{12,}"
         ),
     ),
 ]

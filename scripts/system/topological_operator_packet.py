@@ -35,16 +35,12 @@ def build_artifact(command: str) -> dict:
 
 def write_artifact(artifact: dict, output_path: Path = DEFAULT_OUTPUT) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
-        json.dumps(artifact, indent=2, ensure_ascii=True), encoding="utf-8"
-    )
+    output_path.write_text(json.dumps(artifact, indent=2, ensure_ascii=True), encoding="utf-8")
     return output_path
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Build a deterministic SCBE topological T-tree packet"
-    )
+    parser = argparse.ArgumentParser(description="Build a deterministic SCBE topological T-tree packet")
     parser.add_argument(
         "--command",
         required=True,

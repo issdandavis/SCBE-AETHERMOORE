@@ -9,6 +9,7 @@ Usage:
 
 The output is a structured failure report that can be piped to the auto-fixer.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -18,7 +19,6 @@ import subprocess
 import sys
 from dataclasses import dataclass, field, asdict
 from typing import Optional
-
 
 # ── Known failure patterns mapped to fix strategies ──────────────────────────
 
@@ -34,7 +34,10 @@ FAILURE_PATTERNS = [
     {
         "id": "py_import_error",
         "pattern": r"(?:ModuleNotFoundError|ImportError): (?:No module named|cannot import name)",
-        "extract": r"(?:ModuleNotFoundError|ImportError): (?:No module named '([^']+)'|cannot import name '([^']+)' from '([^']+)')",
+        "extract": (
+            r"(?:ModuleNotFoundError|ImportError): "
+            r"(?:No module named '([^']+)'|cannot import name '([^']+)' from '([^']+)')"
+        ),
         "category": "python",
         "fix_strategy": "import_fix",
         "description": "Python missing module or import",
@@ -143,17 +146,25 @@ def get_latest_failed_run(branch: Optional[str] = None) -> Optional[dict]:
 
 
 def get_failing_jobs(run_id: int) -> list[str]:
-    output = run_gh([
-        "run", "view", str(run_id), "--json", "jobs",
-        "--jq", '.jobs[] | select(.conclusion == "failure") | .name',
-    ])
+    output = run_gh(
+        [
+            "run",
+            "view",
+            str(run_id),
+            "--json",
+            "jobs",
+            "--jq",
+            '.jobs[] | select(.conclusion == "failure") | .name',
+        ]
+    )
     return [j for j in output.split("\n") if j.strip()]
 
 
 def get_run_logs(run_id: int) -> str:
     result = subprocess.run(
         ["gh", "run", "view", str(run_id), "--log"],
-        capture_output=True, timeout=120,
+        capture_output=True,
+        timeout=120,
     )
     # Handle encoding issues on Windows
     try:
@@ -232,28 +243,29 @@ def generate_fix_commands(failures: list[FailureMatch]) -> list[str]:
         elif f.fix_strategy == "typecheck_fix":
             commands.append(
                 f'claude -p "Fix the TypeScript type error in {f.file_path or "the codebase"}: {f.raw_match}. '
-                f'Read the file, understand the error, apply minimal fix."'
+                'Read the file, understand the error, apply minimal fix."'
             )
         elif f.fix_strategy == "import_fix":
             commands.append(
                 f'claude -p "Fix the Python import error: {f.raw_match}. '
-                f'Add try/except with pytest.importorskip or fix the import path."'
+                'Add try/except with pytest.importorskip or fix the import path."'
             )
         elif f.fix_strategy == "test_collection_fix":
             commands.append(
                 f'claude -p "Fix pytest collection error in {f.file_path}: {f.details or f.raw_match}. '
-                f'Add conditional import guards so the test skips gracefully."'
+                'Add conditional import guards so the test skips gracefully."'
             )
         elif f.fix_strategy == "lint_fix":
             commands.append("python -m flake8 --max-line-length=120 src/ tests/ --select=E,W,F --statistics")
         elif f.fix_strategy == "action_ref_fix":
             commands.append(
                 f'claude -p "Fix broken GitHub Action reference: {f.raw_match}. '
-                f'Update the action version in .github/workflows/ to a valid ref."'
+                'Update the action version in .github/workflows/ to a valid ref."'
             )
         elif f.fix_strategy == "test_fix":
             commands.append(
-                f'claude -p "Fix failing test {f.file_path}: read the test, understand what changed, fix the assertion."'
+                f'claude -p "Fix failing test {f.file_path}: '
+                'read the test, understand what changed, fix the assertion."'
             )
         elif f.fix_strategy == "npm_audit_fix":
             commands.append("npm audit fix")
@@ -359,7 +371,15 @@ def main():
         fix_report_path = f"artifacts/ci/failure_report_{report.run_id}.json"
         subprocess.run(["mkdir", "-p", "artifacts/ci"], capture_output=True)
         with open(fix_report_path, "w") as f:
-            json.dump({"run_id": report.run_id, "failures": [asdict(x) for x in report.failures], "fix_commands": report.fix_commands}, f, indent=2)
+            json.dump(
+                {
+                    "run_id": report.run_id,
+                    "failures": [asdict(x) for x in report.failures],
+                    "fix_commands": report.fix_commands,
+                },
+                f,
+                indent=2,
+            )
         print(f"  Report saved to {fix_report_path}")
         # Dispatch to auto_fix.py
         subprocess.run([sys.executable, "scripts/ci/auto_fix.py", "--report", fix_report_path])

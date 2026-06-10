@@ -41,15 +41,15 @@ from urllib.request import Request, urlopen
 _DSAPI_FORM_DATASETS = frozenset({"oa_rejections"})
 
 PFW_URL = "https://api.uspto.gov/api/v1/patent/applications/search"
-OA_URL  = "https://api.uspto.gov/api/v1/patent/oa/oa_rejections/v2/records"
-EC_URL  = "https://api.uspto.gov/api/v1/patent/oa/enriched_cited_reference_metadata/v3/records"
+OA_URL = "https://api.uspto.gov/api/v1/patent/oa/oa_rejections/v2/records"
+EC_URL = "https://api.uspto.gov/api/v1/patent/oa/enriched_cited_reference_metadata/v3/records"
 STATE_DIR = Path(__file__).parent.parent.parent / "artifacts" / "patent_monitor"
 
 # Document codes → human labels
 DOC_CODE_LABELS = {
     "CTNF": "Non-Final Action",
     "CTFR": "Final Action",
-    "NOA":  "Notice of Allowance",
+    "NOA": "Notice of Allowance",
     "N271": "§ 371(c) Notice",
     "SRNT": "Search Report",
 }
@@ -62,8 +62,8 @@ SCBE_INDEPENDENT_CLAIMS: frozenset = frozenset({"1", "9", "15"})
 
 # Citation category codes (EPO/WIPO IPCR standard, used by USPTO OA examiners)
 CITATION_CATEGORY_LABELS = {
-    "X": "Anticipates claim (§102)",          # single reference — highest threat
-    "Y": "Obviousness combination (§103)",    # used in combination with another Y ref
+    "X": "Anticipates claim (§102)",  # single reference — highest threat
+    "Y": "Obviousness combination (§103)",  # used in combination with another Y ref
     "A": "Background / general state of art",
     "E": "Earlier-filed document (§102(e))",
     "O": "Non-written disclosure",
@@ -83,15 +83,15 @@ CITATION_CATEGORY_LABELS = {
 #   Rate  = 4–15 req/s depending on API type
 #   429 retry: minimum 5 second delay required before retrying
 #   Weekly quota resets Sunday 00:00 UTC
-_RETRY_MAX   = 5
-_RETRY_SLEEP = 5.0   # seconds — ODP strongly discourages < 5s retry delay
-_PAGE_SLEEP  = 0.25  # seconds between pagination hops (burst=1, sequential only)
+_RETRY_MAX = 5
+_RETRY_SLEEP = 5.0  # seconds — ODP strongly discourages < 5s retry delay
+_PAGE_SLEEP = 0.25  # seconds between pagination hops (burst=1, sequential only)
 
 
 def _base_headers(api_key: Optional[str]) -> Dict[str, str]:
     h = {"Accept": "application/json"}
     if api_key:
-        h["x-api-key"] = api_key   # lowercase per ODP API syntax examples
+        h["x-api-key"] = api_key  # lowercase per ODP API syntax examples
     return h
 
 
@@ -166,6 +166,7 @@ def _post_form(
 #  Patent File Wrapper fetch
 # ---------------------------------------------------------------------------
 
+
 def fetch_file_wrapper(app_number: str, api_key: Optional[str]) -> Optional[Dict]:
     data = _get_json(PFW_URL, {"q": f"applicationNumberText:{app_number}", "rows": 1}, api_key)
     if not data:
@@ -180,6 +181,7 @@ def fetch_file_wrapper(app_number: str, api_key: Optional[str]) -> Optional[Dict
 # ---------------------------------------------------------------------------
 #  OA Rejections fetch
 # ---------------------------------------------------------------------------
+
 
 def fetch_oa_rejections(app_number: str, api_key: Optional[str]) -> List[Dict]:
     # DSAPI form-encoded POST: criteria= Lucene query (GET /fields, POST /records)
@@ -232,6 +234,7 @@ def fetch_enriched_citations(app_number: str, api_key: Optional[str]) -> List[Di
 #  State persistence
 # ---------------------------------------------------------------------------
 
+
 def _state_path(app_number: str) -> Path:
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     return STATE_DIR / f"{app_number}_state.json"
@@ -261,20 +264,20 @@ def save_state(
 #  Diffing
 # ---------------------------------------------------------------------------
 
+
 def _wrapper_key_fields(wrapper: Dict) -> Dict[str, Any]:
     meta = wrapper.get("applicationMetaData", {})
     events: List[Dict] = wrapper.get("eventDataBag", [])
     return {
-        "status_code":  meta.get("applicationStatusCode"),
-        "status_text":  meta.get("applicationStatusDescriptionText"),
-        "status_date":  meta.get("applicationStatusDate"),
-        "examiner":     meta.get("examinerNameText"),
-        "art_unit":     meta.get("groupArtUnitNumber"),
-        "grant_date":   meta.get("grantDate"),
-        "patent_number":meta.get("patentNumber"),
+        "status_code": meta.get("applicationStatusCode"),
+        "status_text": meta.get("applicationStatusDescriptionText"),
+        "status_date": meta.get("applicationStatusDate"),
+        "examiner": meta.get("examinerNameText"),
+        "art_unit": meta.get("groupArtUnitNumber"),
+        "grant_date": meta.get("grantDate"),
+        "patent_number": meta.get("patentNumber"),
         "events": sorted(
-            (e.get("eventDate",""), e.get("eventCode",""), e.get("eventDescriptionText",""))
-            for e in events
+            (e.get("eventDate", ""), e.get("eventCode", ""), e.get("eventDescriptionText", "")) for e in events
         ),
     }
 
@@ -314,10 +317,13 @@ def diff_state(
     of = _wrapper_key_fields(old["wrapper"])
     nf = _wrapper_key_fields(new_wrapper)
     for key, label in [
-        ("status_code","Status code"), ("status_text","Status"),
-        ("status_date","Status date"), ("examiner","Examiner"),
-        ("art_unit","Art unit"), ("grant_date","Grant date"),
-        ("patent_number","Patent number"),
+        ("status_code", "Status code"),
+        ("status_text", "Status"),
+        ("status_date", "Status date"),
+        ("examiner", "Examiner"),
+        ("art_unit", "Art unit"),
+        ("grant_date", "Grant date"),
+        ("patent_number", "Patent number"),
     ]:
         if of.get(key) != nf.get(key):
             changes.append(f"  {label}: {of.get(key)!r} → {nf.get(key)!r}")
@@ -357,13 +363,19 @@ def diff_state(
 #  Summary printer
 # ---------------------------------------------------------------------------
 
+
 def _rej_flags(doc: Dict) -> str:
     flags = []
-    if doc.get("hasRej101"): flags.append("§101")
-    if doc.get("hasRej102"): flags.append("§102")
-    if doc.get("hasRej103"): flags.append("§103")
-    if doc.get("hasRej112"): flags.append("§112")
-    if any(doc.get(f) for f in ALICE_RISK_FIELDS): flags.append("ALICE")
+    if doc.get("hasRej101"):
+        flags.append("§101")
+    if doc.get("hasRej102"):
+        flags.append("§102")
+    if doc.get("hasRej103"):
+        flags.append("§103")
+    if doc.get("hasRej112"):
+        flags.append("§112")
+    if any(doc.get(f) for f in ALICE_RISK_FIELDS):
+        flags.append("ALICE")
     return " ".join(flags) if flags else "—"
 
 
@@ -386,7 +398,7 @@ def print_summary(
     citations: Optional[List[Dict]] = None,
     changes: Optional[List[str]] = None,
 ) -> None:
-    meta  = wrapper.get("applicationMetaData", {})
+    meta = wrapper.get("applicationMetaData", {})
     events: List[Dict] = wrapper.get("eventDataBag", [])
     children = wrapper.get("childContinuityBag", [])
 
@@ -404,16 +416,18 @@ def print_summary(
     # Events (most recent first)
     if events:
         print(f"\nEvents ({len(events)} total, 8 shown):")
-        for ev in sorted(events, key=lambda e: e.get("eventDate",""), reverse=True)[:8]:
-            print(f"  {ev.get('eventDate','?'):12s}  [{ev.get('eventCode','?'):6s}]  "
-                  f"{ev.get('eventDescriptionText','')}")
+        for ev in sorted(events, key=lambda e: e.get("eventDate", ""), reverse=True)[:8]:
+            print(
+                f"  {ev.get('eventDate','?'):12s}  [{ev.get('eventCode','?'):6s}]  "
+                f"{ev.get('eventDescriptionText','')}"
+            )
 
     # OA rejection breakdown
     if oa_docs:
         # Group by submission date + doc code
         grouped: Dict[Tuple, List[Dict]] = {}
         for doc in oa_docs:
-            key = ((doc.get("submissionDate","") or "")[:10], _oa_doc_code(doc))
+            key = ((doc.get("submissionDate", "") or "")[:10], _oa_doc_code(doc))
             grouped.setdefault(key, []).append(doc)
 
         print(f"\nOffice Action rejections ({len(oa_docs)} records):")
@@ -424,15 +438,26 @@ def print_summary(
             agg_102 = any(d.get("hasRej102") for d in docs)
             agg_103 = any(d.get("hasRej103") for d in docs)
             agg_112 = any(d.get("hasRej112") for d in docs)
-            alice   = any(d.get("aliceIndicator") for d in docs)
-            flags   = " ".join(f for f, v in [
-                ("§101",agg_101),("§102",agg_102),("§103",agg_103),("§112",agg_112),("ALICE",alice)
-            ] if v) or "—"
+            alice = any(d.get("aliceIndicator") for d in docs)
+            flags = (
+                " ".join(
+                    f
+                    for f, v in [
+                        ("§101", agg_101),
+                        ("§102", agg_102),
+                        ("§103", agg_103),
+                        ("§112", agg_112),
+                        ("ALICE", alice),
+                    ]
+                    if v
+                )
+                or "—"
+            )
             # Collect all claim numbers mentioned
-            all_claims = sorted({c.strip() for d in docs
-                                  for cs in d.get("claimNumberArrayDocument",[])
-                                  for c in cs.split(",")},
-                                 key=lambda x: int(x) if x.isdigit() else 0)
+            all_claims = sorted(
+                {c.strip() for d in docs for cs in d.get("claimNumberArrayDocument", []) for c in cs.split(",")},
+                key=lambda x: int(x) if x.isdigit() else 0,
+            )
             print(f"  {date}  {label:<20s}  {flags:<26s}  claims: {','.join(all_claims)}")
 
         # SCBE-specific risk callout
@@ -441,10 +466,10 @@ def print_summary(
         if alice_oas:
             print(f"\n  ⚑ Alice/§101 doctrine applied in {len(alice_oas)} rejection paragraph(s)")
         if sec112_oas:
-            claim_set = sorted({c.strip() for d in sec112_oas
-                                 for cs in d.get("claimNumberArrayDocument",[])
-                                 for c in cs.split(",")},
-                                key=lambda x: int(x) if x.isdigit() else 0)
+            claim_set = sorted(
+                {c.strip() for d in sec112_oas for cs in d.get("claimNumberArrayDocument", []) for c in cs.split(",")},
+                key=lambda x: int(x) if x.isdigit() else 0,
+            )
             print(f"  ⚑ §112 rejections touching claims: {','.join(claim_set)}")
     else:
         print("\nNo OA rejection records found.")
@@ -463,19 +488,22 @@ def print_summary(
         for oa_date in sorted(cite_groups.keys(), reverse=True):
             docs = cite_groups[oa_date]
             # Sort: X first, then Y, then others
-            docs_sorted = sorted(docs, key=lambda d: (
-                {"X": 0, "Y": 1}.get(d.get("citationCategoryCode", ""), 2),
-                d.get("citedDocumentIdentifier", ""),
-            ))
+            docs_sorted = sorted(
+                docs,
+                key=lambda d: (
+                    {"X": 0, "Y": 1}.get(d.get("citationCategoryCode", ""), 2),
+                    d.get("citedDocumentIdentifier", ""),
+                ),
+            )
             print(f"  OA {oa_date}  ({len(docs)} reference(s)):")
             for doc in docs_sorted:
-                ref_id   = doc.get("citedDocumentIdentifier") or doc.get("publicationNumber") or "?"
-                cat      = doc.get("citationCategoryCode", "?")
-                label    = CITATION_CATEGORY_LABELS.get(cat, cat)
+                ref_id = doc.get("citedDocumentIdentifier") or doc.get("publicationNumber") or "?"
+                cat = doc.get("citationCategoryCode", "?")
+                label = CITATION_CATEGORY_LABELS.get(cat, cat)
                 inventor = doc.get("inventorNameText", "") or ""
-                claims   = doc.get("relatedClaimNumberText", "") or ""
-                passage  = doc.get("passageLocationText", "") or ""
-                is_npl   = doc.get("nplIndicator") or doc.get("applicantCitedExaminerReferenceIndicator")
+                claims = doc.get("relatedClaimNumberText", "") or ""
+                passage = doc.get("passageLocationText", "") or ""
+                is_npl = doc.get("nplIndicator") or doc.get("applicantCitedExaminerReferenceIndicator")
                 examiner = doc.get("examinerCitedReferenceIndicator", False)
 
                 src_tag = "[PTO-892]" if examiner else "[IDS]"
@@ -498,12 +526,10 @@ def print_summary(
                 if cat in ("X", "Y") and claims:
                     hit = _claims_hit(claims) & SCBE_INDEPENDENT_CLAIMS
                     if hit:
-                        indep_hits.append(
-                            f"[{cat}] {ref_id}  → indep claim(s) {','.join(sorted(hit, key=int))}"
-                        )
+                        indep_hits.append(f"[{cat}] {ref_id}  → indep claim(s) {','.join(sorted(hit, key=int))}")
 
         if indep_hits:
-            print(f"\n  ⚑ CRITICAL — prior art cited against independent claim(s):")
+            print("\n  ⚑ CRITICAL — prior art cited against independent claim(s):")
             for h in indep_hits:
                 print(f"    {h}")
 
@@ -514,15 +540,17 @@ def print_summary(
     if children:
         print(f"\nChild applications ({len(children)}):")
         for ch in children:
-            print(f"  {ch.get('childApplicationNumberText')}  "
-                  f"filed {ch.get('childApplicationFilingDate')}  "
-                  f"[{ch.get('childApplicationStatusCode')}] "
-                  f"{ch.get('childApplicationStatusDescriptionText')}")
+            print(
+                f"  {ch.get('childApplicationNumberText')}  "
+                f"filed {ch.get('childApplicationFilingDate')}  "
+                f"[{ch.get('childApplicationStatusCode')}] "
+                f"{ch.get('childApplicationStatusDescriptionText')}"
+            )
 
     # Changes
     if changes is not None:
         if changes:
-            print(f"\n*** CHANGES SINCE LAST CHECK ***")
+            print("\n*** CHANGES SINCE LAST CHECK ***")
             for c in changes:
                 print(c)
         else:
@@ -535,14 +563,14 @@ def print_summary(
 #  Main
 # ---------------------------------------------------------------------------
 
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="USPTO prosecution monitor")
-    parser.add_argument("--app", required=True,
-                        help="Application number, digits only (e.g. 18045436)")
-    parser.add_argument("--api-key", default=os.environ.get("USPTO_ODP_API_KEY"),
-                        help="ODP API key (or set USPTO_ODP_API_KEY env var)")
-    parser.add_argument("--reset", action="store_true",
-                        help="Clear saved state baseline and exit")
+    parser.add_argument("--app", required=True, help="Application number, digits only (e.g. 18045436)")
+    parser.add_argument(
+        "--api-key", default=os.environ.get("USPTO_ODP_API_KEY"), help="ODP API key (or set USPTO_ODP_API_KEY env var)"
+    )
+    parser.add_argument("--reset", action="store_true", help="Clear saved state baseline and exit")
     args = parser.parse_args()
 
     app_number = args.app.replace("/", "").replace("-", "").strip()
@@ -561,7 +589,7 @@ def main() -> int:
     if wrapper is None:
         return 2
 
-    oa_docs   = fetch_oa_rejections(app_number, args.api_key)
+    oa_docs = fetch_oa_rejections(app_number, args.api_key)
     citations = fetch_enriched_citations(app_number, args.api_key)
 
     old_snap = load_state(app_number)

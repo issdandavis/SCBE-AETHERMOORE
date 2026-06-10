@@ -24,11 +24,7 @@ MANIFEST = SFT / "bijective_dsl_v5_holdout_manifest.json"
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         return []
-    return [
-        json.loads(line)
-        for line in path.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
 def category(row: dict[str, Any]) -> str:
@@ -37,20 +33,12 @@ def category(row: dict[str, Any]) -> str:
 
 
 def signature(row: dict[str, Any]) -> str:
-    user = "\n".join(
-        m.get("content", "") for m in row.get("messages", []) if m.get("role") == "user"
-    )
-    assistant = "\n".join(
-        m.get("content", "")
-        for m in row.get("messages", [])
-        if m.get("role") == "assistant"
-    )
+    user = "\n".join(m.get("content", "") for m in row.get("messages", []) if m.get("role") == "user")
+    assistant = "\n".join(m.get("content", "") for m in row.get("messages", []) if m.get("role") == "assistant")
     return hashlib.sha256(f"{user}\n---\n{assistant}".encode("utf-8")).hexdigest()
 
 
-def make_record(
-    task: str, user: str, assistant: str, meta: dict[str, Any]
-) -> dict[str, Any]:
+def make_record(task: str, user: str, assistant: str, meta: dict[str, Any]) -> dict[str, Any]:
     merged_meta = {
         "task": task,
         "category": task,
@@ -85,7 +73,8 @@ def floor_patch_rows() -> list[dict[str, Any]]:
             "identify",
             "linear_search",
             "CA",
-            "Identify the algorithm and slot structure: hexadecimal lane linear scan returning the first matching index.",
+            "Identify the algorithm and slot structure: "
+            "hexadecimal lane linear scan returning the first matching index.",
             "well_select(IDENTIFIED)\n# expected: algorithm: linear_search",
             {"slot": "scan"},
         ),
@@ -198,7 +187,8 @@ def floor_patch_rows() -> list[dict[str, Any]]:
             "reverse_string",
             "CA",
             "Translate reverse_string through KO, AV, RU, and CA while preserving the canonical signature.",
-            "tongue_shift(KO -> AV)\ntongue_shift(AV -> RU)\ntongue_shift(RU -> CA)\nseal()\n# expected: all target tongues covered",
+            "tongue_shift(KO -> AV)\ntongue_shift(AV -> RU)\ntongue_shift(RU -> CA)\nseal()\n"
+            "# expected: all target tongues covered",
             {"src": "KO", "dst": "CA"},
         ),
         (
@@ -206,7 +196,8 @@ def floor_patch_rows() -> list[dict[str, Any]]:
             "safe_divide",
             "UM",
             "Translate safe_divide through AV, CA, RU, and UM while preserving the zero guard.",
-            "tongue_shift(AV -> CA)\ntongue_shift(CA -> RU)\ntongue_shift(RU -> UM)\nseal()\n# expected: all target tongues covered",
+            "tongue_shift(AV -> CA)\ntongue_shift(CA -> RU)\ntongue_shift(RU -> UM)\nseal()\n"
+            "# expected: all target tongues covered",
             {"src": "AV", "dst": "UM"},
         ),
         (
@@ -214,7 +205,8 @@ def floor_patch_rows() -> list[dict[str, Any]]:
             "count_words",
             "RU",
             "Translate count_words through CA, KO, UM, and RU while preserving whitespace behavior.",
-            "tongue_shift(CA -> KO)\ntongue_shift(KO -> UM)\ntongue_shift(UM -> RU)\nseal()\n# expected: all target tongues covered",
+            "tongue_shift(CA -> KO)\ntongue_shift(KO -> UM)\ntongue_shift(UM -> RU)\nseal()\n"
+            "# expected: all target tongues covered",
             {"src": "CA", "dst": "RU"},
         ),
         (
@@ -313,9 +305,7 @@ def normalize_dialogue_contract(row: dict[str, Any]) -> dict[str, Any]:
     if src == dst:
         program = "seal()\n# expected: sealed dialogue handoff"
     else:
-        program = (
-            f"tongue_shift({src} -> {dst})\nseal()\n# expected: sealed dialogue handoff"
-        )
+        program = f"tongue_shift({src} -> {dst})\nseal()\n# expected: sealed dialogue handoff"
     patched = json.loads(json.dumps(row))
     for message in patched.get("messages", []):
         if message.get("role") == "assistant":

@@ -222,12 +222,7 @@ def _hydra_swarm_run(
 
 def _browse_evidence_run(repo_root: Path, url: str, browse_path: Path) -> dict[str, Any]:
     skill_script = (
-        Path.home()
-        / ".codex"
-        / "skills"
-        / "hydra-node-terminal-browsing"
-        / "scripts"
-        / "hydra_terminal_browse.mjs"
+        Path.home() / ".codex" / "skills" / "hydra-node-terminal-browsing" / "scripts" / "hydra_terminal_browse.mjs"
     )
     if not skill_script.exists():
         return {
@@ -254,9 +249,7 @@ def _colab_bridge_run(repo_root: Path, subcommand: str, bridge_name: str) -> dic
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Packetize Octo Arms swarm work and launch a selected execution lane."
-    )
+    parser = argparse.ArgumentParser(description="Packetize Octo Arms swarm work and launch a selected execution lane.")
     parser.add_argument(
         "--repo-root",
         default="C:/Users/issda/SCBE-AETHERMOORE",
@@ -274,7 +267,9 @@ def _parse_args() -> argparse.Namespace:
         default="implementation-loop",
         choices=["architecture-enhancement", "implementation-loop", "training-center-loop"],
     )
-    parser.add_argument("--support-units", type=int, default=0, help="Extra support units per step during packetization")
+    parser.add_argument(
+        "--support-units", type=int, default=0, help="Extra support units per step during packetization"
+    )
     parser.add_argument(
         "--provider",
         default="auto",
@@ -288,7 +283,9 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--bridge-name", default="pivot", help="Colab bridge profile name")
     parser.add_argument("--url", default=None, help="URL for browse-evidence lane")
     parser.add_argument("--dry-run", action="store_true", help="Use dry-run where the selected lane supports it")
-    parser.add_argument("--no-action-map", action="store_true", help="Skip action-map emission in flow plan and packetization")
+    parser.add_argument(
+        "--no-action-map", action="store_true", help="Skip action-map emission in flow plan and packetization"
+    )
     parser.add_argument("--json", action="store_true", help="Print the final summary JSON to stdout")
     return parser.parse_args()
 

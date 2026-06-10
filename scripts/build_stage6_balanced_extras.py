@@ -72,9 +72,7 @@ def _lattice_row(
         "messages": [
             {
                 "role": "system",
-                "content": LATTICE_SYSTEM.format(
-                    ko=ko, av=av, ru=ru, ca=ca, um=um, dr=dr
-                ),
+                "content": LATTICE_SYSTEM.format(ko=ko, av=av, ru=ru, ca=ca, um=um, dr=dr),
             },
             {"role": "user", "content": user},
             {"role": "assistant", "content": assistant},
@@ -676,9 +674,7 @@ def build_cross_rows() -> list[dict[str, Any]]:
         ),
     ]
     return [
-        _dialogue_packet(
-            semantic_id=sid, scene=sc, speaker=sp, listener=ls, english_gloss=gloss
-        )
+        _dialogue_packet(semantic_id=sid, scene=sc, speaker=sp, listener=ls, english_gloss=gloss)
         for sid, sc, sp, ls, gloss in scenes
     ]
 

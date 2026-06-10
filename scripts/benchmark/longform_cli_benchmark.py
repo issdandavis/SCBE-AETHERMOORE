@@ -29,7 +29,6 @@ from pathlib import Path
 from statistics import median
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[2]
 CLI = ROOT / "packages" / "cli" / "bin" / "scbe.js"
 ARTIFACT_DIR = ROOT / "artifacts" / "benchmarks"
@@ -131,16 +130,20 @@ def score(report: dict[str, Any]) -> dict[str, Any]:
         "chain_integrity": weights["chain_integrity"] if checks["chain_integrity"]["ok"] else 0,
         "landing_resume": weights["landing_resume"] if checks["landing_resume"]["ok"] else 0,
         "tamper_detection": weights["tamper_detection"] if checks["tamper_detection"]["ok"] else 0,
-        "latency": weights["latency"] if checks["latency"]["p95_ms"] < 1000 else 5 if checks["latency"]["p95_ms"] < 3000 else 0,
-        "execution_depth": weights["execution_depth"]
-        if checks["execution_depth"]["actual_tool_or_bus_dispatch"]
-        else 0,
+        "latency": (
+            weights["latency"] if checks["latency"]["p95_ms"] < 1000 else 5 if checks["latency"]["p95_ms"] < 3000 else 0
+        ),
+        "execution_depth": (
+            weights["execution_depth"] if checks["execution_depth"]["actual_tool_or_bus_dispatch"] else 0
+        ),
     }
     total = sum(weights.values())
     got = sum(earned.values())
     blockers = []
     if earned["execution_depth"] == 0:
-        blockers.append("Squad/task execution is still stubbed; benchmark proves durability, not autonomous task completion.")
+        blockers.append(
+            "Squad/task execution is still stubbed; benchmark proves durability, not autonomous task completion."
+        )
     if not checks["tamper_detection"]["ok"]:
         blockers.append("Tamper detection did not trip as expected.")
     return {
@@ -199,7 +202,6 @@ def run_benchmark(keep_workspace: bool = False) -> dict[str, Any]:
         "--json",
     )
     commands.append(do.preview())
-    do_body = do.json_body() if do.ok else {}
 
     status_runs = [run_scbe(workspace, "work", "status", "--json") for _ in range(7)]
     commands.extend(item.preview() for item in status_runs)
@@ -313,12 +315,20 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "| Gate | Result | Evidence |",
         "|---|---:|---|",
-        f"| Command surface | {checks['command_surface']['ok']} | {', '.join(checks['command_surface']['commands_checked'])} |",
-        f"| Chain integrity | {checks['chain_integrity']['ok']} | events={checks['chain_integrity']['event_count']}, bricks={checks['chain_integrity']['brick_count']} |",
+        f"| Command surface | {checks['command_surface']['ok']} "
+        f"| {', '.join(checks['command_surface']['commands_checked'])} |",
+        f"| Chain integrity | {checks['chain_integrity']['ok']} "
+        f"| events={checks['chain_integrity']['event_count']}, bricks={checks['chain_integrity']['brick_count']} |",
         f"| Landing/resume | {checks['landing_resume']['ok']} | landings={checks['landing_resume']['landing_count']} |",
-        f"| Tamper detection | {checks['tamper_detection']['ok']} | chain_after_tamper={checks['tamper_detection']['chain_valid_after_ledger_mutation']}, landing_verified={checks['tamper_detection']['landing_verified_values']} |",
-        f"| Latency | p95 {checks['latency']['p95_ms']} ms | median={checks['latency']['median_ms']} ms, max={checks['latency']['max_ms']} ms |",
-        f"| Execution depth | {checks['execution_depth']['actual_tool_or_bus_dispatch']} | dispatched={checks['execution_depth']['dispatched_stage_count']}, dispatch_receipts={checks['execution_depth']['agentbus_dispatch_count']}, stubbed={checks['execution_depth']['stubbed_stage_count']} |",
+        f"| Tamper detection | {checks['tamper_detection']['ok']} "
+        f"| chain_after_tamper={checks['tamper_detection']['chain_valid_after_ledger_mutation']}, "
+        f"landing_verified={checks['tamper_detection']['landing_verified_values']} |",
+        f"| Latency | p95 {checks['latency']['p95_ms']} ms "
+        f"| median={checks['latency']['median_ms']} ms, max={checks['latency']['max_ms']} ms |",
+        f"| Execution depth | {checks['execution_depth']['actual_tool_or_bus_dispatch']} "
+        f"| dispatched={checks['execution_depth']['dispatched_stage_count']}, "
+        f"dispatch_receipts={checks['execution_depth']['agentbus_dispatch_count']}, "
+        f"stubbed={checks['execution_depth']['stubbed_stage_count']} |",
         "",
         "## Blockers",
         "",
@@ -335,7 +345,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", default=str(ARTIFACT_DIR))
     parser.add_argument("--keep-workspace", action="store_true")
-    parser.add_argument("--json", action="store_true", help="Accepted for scbe bench compatibility; output is JSON by default")
+    parser.add_argument(
+        "--json", action="store_true", help="Accepted for scbe bench compatibility; output is JSON by default"
+    )
     args = parser.parse_args()
 
     report = run_benchmark(keep_workspace=args.keep_workspace)
@@ -354,15 +366,20 @@ def main() -> int:
     latest_json.write_text(json_text + "\n", encoding="utf-8")
     latest_md.write_text(md_text + "\n", encoding="utf-8")
 
-    print(json.dumps({
-        "ok": not report["score"]["blockers"],
-        "score_percent": report["score"]["score_percent"],
-        "json": str(json_path),
-        "markdown": str(md_path),
-        "latest_json": str(latest_json),
-        "latest_markdown": str(latest_md),
-        "blockers": report["score"]["blockers"],
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "ok": not report["score"]["blockers"],
+                "score_percent": report["score"]["score_percent"],
+                "json": str(json_path),
+                "markdown": str(md_path),
+                "latest_json": str(latest_json),
+                "latest_markdown": str(latest_md),
+                "blockers": report["score"]["blockers"],
+            },
+            indent=2,
+        )
+    )
     return 0
 
 
