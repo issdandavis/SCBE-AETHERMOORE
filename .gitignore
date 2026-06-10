@@ -270,6 +270,17 @@ artifacts/research/full_codebase_map.json
 # Personal scratch space
 .scbe/scratch/
 
+# Legal/patent work product lives in private storage, not the public repo.
+# Only the public site pages stay tracked. `scbe-patent init` regenerates
+# the workbench locally; its output must never be committed.
+docs/legal/*
+!docs/legal/privacy.html
+!docs/legal/terms.html
+docs/PATENT_*.md
+docs/SCBE_PATENT_PORTFOLIO.md
+docs/business/PATENT_*
+docs/business/SCBE_PATENT_PORTFOLIO.md
+
 # Telemetry written by tests/test_advanced_mathematics.py on every run
 tests/test_telemetry_advanced_math.json
 
