@@ -672,3 +672,267 @@ def and_gate_is_logical(config: AndGateConfig) -> bool:
     table = {(r.a, r.b): r.is_high for r in evaluate_and_gate(config)}
     expected = {(False, False): False, (False, True): False, (True, False): False, (True, True): True}
     return table == expected
+
+
+# =============================================================================
+# 8. MATERIAL GROUNDING -- self-reports where real devices land vs this model
+# =============================================================================
+# Ties the model's two falsification edges to cited materials. The edges live on
+# DIFFERENT axes:
+#   * beta -> MATERIAL axis: the spontaneous-emission coupling factor. Measured
+#     here as false-trigger survival of the "0" line (spontaneous photons seeding
+#     a clean "0" up over the threshold into a false "1").
+#   * rho  -> ARCHITECTURE axis: rho = tau2 / T_pump in the synchronous-pump model.
+#     Microcavities (round trip ~ fs) sit at rho >> 1 (gain effectively CW, the
+#     averaged limit); only long-cavity logic (fiber loops, rings) has rho ~ O(1)
+#     where the gain can sag between pulses and the sync-vs-jitter gate appears.
+# Cited, measured facts kept as data so the verdict is computed, not asserted.
+
+_BETA_LADDER = [1e-5, 1e-4, 1e-3, 1e-2, 3e-2, 1e-1, 2e-1, 3e-1, 5e-1]
+
+_MATERIAL_REGIMES = [
+    {
+        "name": "inorganic_gaas_microcavity",
+        "beta_range": [1e-5, 1e-4],  # large mode volume, small Rabi
+        "tau_c_ps": [11.0, 135.0],
+        "arch": "microcavity",
+        "temp": "cryogenic",
+        "cite": "GaAs microcavity / polariton-LED, Q~3.2e5 (arXiv:0712.1565; arXiv:0709.4372)",
+    },
+    {
+        "name": "organic_microcavity",
+        # planar microcavity ~1e-2..1e-1 (the Lagoudakis transistor) up to
+        # photonic-wire ~3e-1..5e-1 (tiny mode volume + giant Rabi 100-225 meV).
+        "beta_range": [1e-2, 5e-1],
+        "beta_geometry_note": "1e-2..1e-1 planar microcavity (device); 1e-1..5e-1 photonic-wire",
+        "tau_c_ps": [0.5, 20.0],
+        "arch": "microcavity",
+        "temp": "room",
+        "cite": "Zasedatelev, Nat. Photonics 13, 378 (2019); cascadable gates, Nat. Comms 15 (2024)",
+        "device": "only demonstrated room-temp cascadable all-optical transistor (~10 dB/um, sub-ps)",
+    },
+    {
+        "name": "long_cavity_soa_fiber_logic",
+        "beta_range": None,  # not the binding edge for this architecture
+        "tau_rt_ns": [0.1, 5.0],
+        "tau2_ns": [0.01, 1.0],
+        "arch": "long_cavity",
+        "temp": "room",
+        "cite": "SOA gain recovery (tens ps - ns) in fiber-loop / ring resonators (textbook regime)",
+    },
+]
+
+
+def spontaneous_floor_cascade(
+    cavity: CavityConfig,
+    beta: float,
+    n_stages: int = 100,
+    n_traj: int = 40,
+    seed: int = 7,
+) -> float:
+    """MEASURE how well a clean "0" survives a spontaneous-emission floor.
+
+    beta is the spontaneous-emission coupling factor: each stage adds up to
+    ``beta * P_threshold`` of incoherent seed power to the "0" line. If a stage's
+    accumulated power crosses the unstable threshold, the bistable map latches it
+    onto the high branch -- a false "1". Returns the fraction of trajectories that
+    stay low ("0") through ``n_stages``. 1.0 = the floor never false-triggers;
+    lower = spontaneous emission is flipping bits. Returns None if not bistable.
+    """
+    pts = find_fixed_points(cavity)
+    stable_hi = [p.power for p in pts if p.stable and p.power > 0.0]
+    threshold = [p.power for p in pts if not p.stable and p.power > 0.0]
+    if not stable_hi or not threshold:
+        return None
+    high = max(stable_hi)
+    p_t = min(threshold)
+    decision = 0.5 * high  # halfway between threshold and P*
+    survivors = 0
+    for k in range(n_traj):
+        rng = random.Random(seed + k)
+        p = 0.0
+        for _ in range(n_stages):
+            p = round_trip_map(p, cavity)
+            p += beta * p_t * rng.random()  # spontaneous photons (always additive)
+        if p < decision:
+            survivors += 1
+    return survivors / n_traj
+
+
+def regime_beta_sweep(beta_range, cavity: Optional[CavityConfig] = None, n_traj: int = 40) -> Dict:
+    """MEASURE "0"-line survival across a regime's cited beta band (not a single
+    threshold call). Returns the survival curve and the measured edge (largest
+    beta still holding >=99%), so the verdict is a curve that resolves WHERE in a
+    band the cascade starts false-triggering."""
+    cavity = cavity or CavityConfig()
+    lo, hi = beta_range
+    betas = [b for b in _BETA_LADDER if lo <= b <= hi] or [lo, hi]
+    curve = []
+    edge = None
+    contiguous = True
+    for b in betas:
+        surv = spontaneous_floor_cascade(cavity, beta=float(b), n_traj=n_traj)
+        curve.append({"beta": float(b), "survival": surv})
+        if contiguous and surv is not None and surv >= 0.99:
+            edge = float(b)
+        elif surv is None or surv < 0.99:
+            contiguous = False
+    survs = [c["survival"] for c in curve if c["survival"] is not None]
+    return {
+        "curve": curve,
+        "measured_edge": edge,
+        "all_survive": bool(survs) and min(survs) >= 0.99,
+        "none_survive": bool(survs) and max(survs) < 0.99,
+    }
+
+
+def measure_sync_rho_crit(
+    rho_grid: Optional[Sequence[float]] = None,
+    advantage: float = 10.0,
+) -> Optional[float]:
+    """MEASURE the rho = tau2/T_pump boundary from the synchronous-pump model:
+    the smallest rho at which the synchronous signal still beats a fully jittered
+    pump by ``advantage`` x. Below it the gain has recovered between pulses (CW-like,
+    no synchrony advantage); above it sync gating appears. Returns None if no
+    crossing in the grid."""
+    rho_grid = list(rho_grid) if rho_grid is not None else [0.05, 0.1, 0.3, 1.0, 3.0]
+    period = 1.0
+    rho_crit = None
+    for rho in sorted(rho_grid):
+        tau2 = rho * period
+        sync = integrate_sync_pump(SyncPumpConfig(inversion_lifetime=tau2, pump_jitter=0.0)).n_signal
+        jit = integrate_sync_pump(SyncPumpConfig(inversion_lifetime=tau2, pump_jitter=1.0)).n_signal
+        if sync > advantage * max(jit, 1e-300):
+            rho_crit = float(rho)
+            break
+    return rho_crit
+
+
+def material_regimes(
+    cavity: Optional[CavityConfig] = None,
+    rho_crit: Optional[float] = None,
+) -> Dict:
+    """Overlay the model's two falsification edges on cited material regimes.
+
+    beta (MATERIAL axis) is MEASURED per regime via regime_beta_sweep (false-trigger
+    survival of the "0" line). rho (ARCHITECTURE axis) is the sync-pump boundary:
+    microcavities sit at rho >> 1 (averaged limit, not rho-limited), only long-cavity
+    logic binds at rho_crit. Every regime self-reports its classification next to the
+    cited numbers -- the verdict is computed, not asserted.
+    """
+    cavity = cavity or CavityConfig()
+    if rho_crit is None:
+        rho_crit = measure_sync_rho_crit()
+
+    regimes = []
+    for m in _MATERIAL_REGIMES:
+        r = dict(m)
+        br = m.get("beta_range")
+        if br is None:
+            r["beta_pass"] = None
+            r["beta_sweep"] = None
+            r["beta_verdict"] = "n/a -- beta is not the binding edge for this architecture"
+        else:
+            sweep = regime_beta_sweep(br, cavity=cavity)
+            r["beta_sweep"] = sweep["curve"]
+            r["beta_measured_edge"] = sweep["measured_edge"]
+            if sweep["all_survive"]:
+                r["beta_pass"] = True
+                r["beta_verdict"] = (
+                    f"PASS -- 0-line survives spontaneous floor across the full band beta={br[0]:g}..{br[1]:g}"
+                )
+            elif sweep["none_survive"]:
+                r["beta_pass"] = False
+                r["beta_verdict"] = (
+                    f"FAIL -- spontaneous floor false-triggers across the whole band beta={br[0]:g}..{br[1]:g}"
+                )
+            else:
+                r["beta_pass"] = False
+                edge = sweep["measured_edge"]
+                note = m.get("beta_geometry_note", "")
+                r["beta_verdict"] = f"STRADDLES -- survives to beta~{edge}, false-triggers above it" + (
+                    f" ({note})" if note else ""
+                )
+        if m["arch"] == "microcavity":
+            r["rho_verdict"] = "rho >> 1 (round trip ~ fs) -> averaged/CW limit, NOT rho-limited"
+        else:
+            rc = f"~{rho_crit:.2g}" if rho_crit is not None else "(no crossing in grid)"
+            r["rho_verdict"] = f"rho ~ O(1) -> binds at rho_crit {rc}; the live design rule here"
+        if m["arch"] != "microcavity":
+            r["overall"] = "rho is the live constraint; beta not binding"
+        elif r["beta_pass"]:
+            r["overall"] = f"clears BOTH edges (cost: {m['temp']} operation)"
+        elif r.get("beta_measured_edge"):
+            r["overall"] = (
+                f"clears rho; beta survival is geometry-dependent -- holds up to "
+                f"beta~{r['beta_measured_edge']}, false-triggers above it"
+            )
+        else:
+            r["overall"] = "clears rho but the spontaneous floor false-triggers across its whole band"
+        regimes.append(r)
+
+    return {
+        "model_edges": {"rho_crit": rho_crit, "beta_axis": "measured per regime (0-line survival)"},
+        "axes": {"beta": "MATERIAL axis", "rho": "ARCHITECTURE axis"},
+        "regimes": regimes,
+    }
+
+
+def _print_regimes(mr: Dict) -> None:
+    e = mr["model_edges"]
+    rc = e["rho_crit"]
+    print("material grounding -- cited regimes vs THIS model's edges")
+    print(f"  rho_crit (sync-pump boundary) = {rc if rc is not None else '(none in grid)'}")
+    for r in mr["regimes"]:
+        print(f"\n  {r['name']}  [{r['temp']}, {r['arch']}]")
+        print(f"    beta : {r['beta_verdict']}")
+        if r.get("beta_sweep"):
+            curve = "  ".join(f"{c['beta']:g}:{c['survival']:.2f}" for c in r["beta_sweep"])
+            print(f"           measured survival(beta) = {curve}")
+        print(f"    rho  : {r['rho_verdict']}")
+        print(f"    ==>  {r['overall']}")
+        print(f"    cite : {r['cite']}")
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    """CLI. `--regimes` prints the material grounding; `--json` emits JSON."""
+    import json
+    import sys
+
+    argv = list(sys.argv[1:] if argv is None else argv)
+    as_json = "--json" in argv
+
+    if "--regimes" in argv:
+        mr = material_regimes()
+        print(json.dumps(mr, indent=2, default=str) if as_json else "", end="")
+        if not as_json:
+            _print_regimes(mr)
+        return 0
+
+    # default: the cascadability verdict + null gates on the default cavity
+    verdict = evaluate_transistor(CavityConfig())
+    gates = run_null_gates()
+    report = {
+        "cascadable": verdict.cascadable,
+        "gain_above_unity": verdict.gain_above_unity,
+        "fan_out": verdict.fan_out,
+        "contraction": verdict.contraction,
+        "bistable": verdict.bistable,
+        "null_gates": [{"name": g.name, "collapse_ratio": g.collapse_ratio, "passed": g.passed} for g in gates],
+    }
+    if as_json:
+        print(json.dumps(report, indent=2, default=str))
+    else:
+        print(
+            f"cascadable={verdict.cascadable}  G>=1={verdict.gain_above_unity}  "
+            f"F={verdict.fan_out}  |f'(P*)|={verdict.contraction:.3f}  bistable={verdict.bistable}"
+        )
+        for g in gates:
+            print(f"  null[{g.name}]: collapse={g.collapse_ratio:.3g}  passed={g.passed}")
+        print()
+        _print_regimes(material_regimes())
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
