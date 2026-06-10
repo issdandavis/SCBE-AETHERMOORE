@@ -20,7 +20,10 @@ from src.physics_sim.optical_transistor import (
     is_bistable,
     iterate_cascade,
     locking_window,
+    material_regimes,
+    regime_beta_sweep,
     run_null_gates,
+    spontaneous_floor_cascade,
 )
 
 # ---------------------------------------------------------------------------
@@ -236,3 +239,68 @@ def test_and_gate_predicate_helper():
 def test_and_gate_with_oversized_kick_degenerates_to_or():
     """If one input alone already crosses threshold, the gate becomes OR (not AND)."""
     assert not and_gate_is_logical(AndGateConfig(bias_fraction=0.5, input_kick=2.0))
+
+
+# ---------------------------------------------------------------------------
+# 8. Material grounding: cited regimes vs the model's measured edges
+# ---------------------------------------------------------------------------
+
+
+def test_spontaneous_floor_monotone_in_beta():
+    """A larger spontaneous-emission floor can only hurt 0-line survival."""
+    cav = CavityConfig()
+    lo = spontaneous_floor_cascade(cav, beta=1e-4, n_traj=20)
+    hi = spontaneous_floor_cascade(cav, beta=0.5, n_traj=20)
+    assert lo >= hi  # more spontaneous floor -> more false triggers
+    assert lo == 1.0  # negligible floor never false-triggers
+
+
+def test_regime_beta_sweep_resolves_the_failure_edge():
+    """Sweep MEASURES survival across a band and finds where it crosses, instead
+    of comparing endpoints to a single threshold."""
+    s = regime_beta_sweep([1e-2, 5e-1])
+    survs = [c["survival"] for c in s["curve"]]
+    assert survs[0] >= 0.99  # low beta survives
+    assert survs[-1] < 0.5  # high beta (photonic-wire) false-triggers
+    assert s["measured_edge"] is not None
+    assert not s["all_survive"] and not s["none_survive"]  # straddles
+
+
+def test_material_regimes_measured_verdicts():
+    """Cited grounding, MEASURED per band: inorganic clears beta, organic straddles
+    (planar device survives, photonic-wire fails), long-cavity is the only
+    rho-bound architecture."""
+    mr = material_regimes()
+    by = {r["name"]: r for r in mr["regimes"]}
+
+    assert by["inorganic_gaas_microcavity"]["beta_pass"] is True
+    assert "BOTH" in by["inorganic_gaas_microcavity"]["overall"]
+
+    org = by["organic_microcavity"]
+    assert org["beta_pass"] is False
+    assert org["beta_measured_edge"] is not None
+    assert org["beta_sweep"][0]["survival"] >= 0.99 > org["beta_sweep"][-1]["survival"]
+    assert "NOT rho-limited" in org["rho_verdict"]
+
+    assert by["long_cavity_soa_fiber_logic"]["beta_range"] is None
+    assert "rho_crit" in by["long_cavity_soa_fiber_logic"]["rho_verdict"]
+
+
+def test_cli_regimes_flag_emits_json():
+    """`--regimes --json` runs the grounding path and emits valid JSON."""
+    import json
+    import subprocess
+    import sys
+
+    from src.physics_sim import optical_transistor as ot
+
+    out = subprocess.run(
+        [sys.executable, ot.__file__, "--regimes", "--json"],
+        capture_output=True,
+        text=True,
+        timeout=180,
+    )
+    assert out.returncode == 0, out.stderr
+    d = json.loads(out.stdout)
+    names = {r["name"] for r in d["regimes"]}
+    assert names == {"inorganic_gaas_microcavity", "organic_microcavity", "long_cavity_soa_fiber_logic"}
