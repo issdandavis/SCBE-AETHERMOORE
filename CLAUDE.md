@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **Property Testing** | fast-check (TS), Hypothesis (Python) |
 | **API** | FastAPI + Uvicorn (Python), Express 5 (TypeScript) |
 | **TypeScript** | ^6.0.2, target ES2022, CommonJS (`ignoreDeprecations: "6.0"`) |
-| **Package Version** | 4.0.3 (npm + PyPI synced) |
+| **Package Version** | 4.2.1 (npm + PyPI synced) |
 | **Package Entry** | `./dist/src/index.js` |
 
 ## Common Commands
@@ -103,7 +103,7 @@ PYTHONPATH=. python -m pytest tests/ -x -q \
 - **`SCBE_FORCE_SKIP_LIBOQS`**: No longer needed — `liboqs-python` (0.14.1) and `liboqs` C lib (0.15.0) are installed. The env var still exists as a fallback in source code for environments without C bindings, but should not be set by default.
 - **`PYTHONPATH=.`**: CI sets this so `import src.foo` and `import symphonic_cipher` resolve correctly.
 - **Hanging tests**: `test_integration.py` and `test_red_zone_integration.py` in `tests/aetherbrowser/` require Playwright browsers installed. They hang if browsers aren't present. Safe to `--ignore` locally.
-- **Optional provider SDKs**: Tests in `tests/aetherbrowser/test_provider_executor.py` require `openai` and `huggingface_hub` packages (listed in `requirements.txt`). Install with `pip install -r requirements.txt`.
+- **Optional provider SDKs**: Tests in `tests/aetherbrowser/test_provider_executor.py` require the `openai` and `huggingface_hub` packages, which are NOT in `requirements.txt`. Install separately (`pip install openai huggingface_hub`) or let those tests skip.
 - **Black formatting**: Always run `black --target-version py311 --line-length 120` on new Python files. CI rejects unformatted code.
 - **Prettier formatting**: Always run `npm run format` on new TypeScript files. CI rejects unformatted code.
 - **Unused imports/variables**: TypeScript compilation catches these. Run `npm run build` before pushing.
@@ -408,7 +408,7 @@ chore(deps): bump dependency version
 
 ### Dev (npm)
 - `vitest` ^4.0.17, `fast-check` ^4.5.3 — Testing
-- `typescript` ^5.8.3 — Compiler
+- `typescript` ^6.0.2 — Compiler
 - `@playwright/test` ^1.58.2 — E2E testing
 - `prettier` ^3.2.0 — Formatting
 - `madge` ^8.0.0 — Circular dependency detection

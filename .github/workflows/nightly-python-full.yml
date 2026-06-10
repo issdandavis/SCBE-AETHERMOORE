@@ -1,0 +1,62 @@
+name: Nightly Full Python Suite
+
+# The PR-gated lane (scripts/system/run_core_python_checks.py) runs a fast
+# smoke subset; this nightly run executes the ENTIRE pytest suite so broken
+# tests can't sit invisible on main. Mirrors the documented local command in
+# CLAUDE.md ("Pre-Push Verification").
+
+on:
+  schedule:
+    - cron: '17 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  full-pytest:
+    name: Full pytest (-m "not slow")
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Several Python tests shell out to the npm CLIs
+      # (packages/cli/bin/scbe.js, api/agent/search.js).
+      - name: Install npm dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov hypothesis
+
+      - name: Run full suite
+        env:
+          PYTHONPATH: .
+        run: |
+          python -m pytest tests/ -q \
+            --ignore=tests/node_modules \
+            --ignore=tests/aetherbrowser/test_integration.py \
+            --ignore=tests/aetherbrowser/test_red_zone_integration.py \
+            -m "not slow" \
+            --continue-on-collection-errors

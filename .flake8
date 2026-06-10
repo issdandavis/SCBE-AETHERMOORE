@@ -14,6 +14,9 @@ per-file-ignores =
     # Single-line JSON gate_report log fixture (474 chars) must stay one literal
     # line so it mirrors real per-line log parsing and stays copy-pasteable JSON
     tests/test_geoseal_coding_training_system.py: E501
+    # SFT system prompt contains long teaching-corpus prose lines that must
+    # stay literal so generated training data is reproducible
+    scripts/generate_conlang_first_sft.py: E501
     # Test files with sys.path manipulation before imports
     tests/conftest.py: E402
     src/symphonic_cipher/__init__.py: E402
