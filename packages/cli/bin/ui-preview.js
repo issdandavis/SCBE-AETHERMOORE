@@ -157,6 +157,44 @@ console.log(
   }
 }
 
+// ── geoseal stamp → the signature governance receipt ────────────────────────
+{
+  const { data, live } = fetchJson(['demo'], {
+    decision: 'DENY',
+    geoseal: {
+      audit_id: 'geoseal_3f2a9c4d1e7b08a5c6d2',
+      command_sha256: 'a1b2c3d4e5f6',
+      tier: 'DENY',
+      findings: ['geoseal.execution_gate.env-secret-path'],
+    },
+  });
+  const g = data.geoseal || {};
+  console.log('\n' + u.heading('geoseal stamp') + '  ' + liveTag(live));
+  console.log(
+    u.seal(data.decision || 'ALLOW', {
+      fields: [
+        ['audit', u.dim(g.audit_id || 'geoseal_…')],
+        ['sha256', u.dim(`${String(g.command_sha256 || '').slice(0, 12)}…`)],
+        ['tier', g.tier || data.decision || 'ALLOW'],
+        ['findings', String((g.findings || []).length)],
+      ],
+      stamp: '18:42:07Z',
+    })
+  );
+  // a contrasting ALLOW seal so both tones are visible at a glance
+  console.log(
+    '\n' +
+      u.seal('ALLOW', {
+        fields: [
+          ['audit', u.dim('geoseal_0a1b2c3d4e5f6a7b8c9d')],
+          ['sha256', u.dim('9f8e7d6c5b4a…')],
+          ['lane', 'build · code'],
+        ],
+        stamp: '18:42:09Z',
+      })
+  );
+}
+
 // ── doctor → pass/fail checks ────────────────────────────────────────────────
 {
   const { data, live } = fetchJson(['doctor'], {

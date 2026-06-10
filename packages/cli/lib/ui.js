@@ -245,6 +245,62 @@ function ui(opts = {}) {
     return [bColor(top), ...mid, bColor(bot)].join('\n');
   };
 
+  // ── GeoSeal stamp ─────────────────────────────────────────────────────────
+  //   An embossed governance seal: hexagon corners (geo = the 6-tongue mesh),
+  //   heavy rule, a decision tier whose tone colors the whole frame, aligned
+  //   receipt fields, and a "sealed <stamp>" band across the base. This is the
+  //   signature surface — the visual proof that a command passed the gate.
+  const HEX_CORNER = unicode ? '⬢' : '#';
+  const HEX_MARK = unicode ? '⬡' : '#';
+  const SEAL_HZ = unicode ? '━' : '=';
+  const SEAL_VT = unicode ? '┃' : '|';
+  const SEAL_DV = unicode ? '─' : '-';
+  const seal = (decision, { tone, fields = [], stamp = '', mark } = {}) => {
+    const dec = String(decision || 'ALLOW').toUpperCase();
+    const toneKey = String(tone || dec).toLowerCase();
+    const styler = TONE[toneKey] || cyan;
+    const MK = mark || HEX_MARK;
+    const LP = '  ';
+    const RP = '  ';
+
+    const rows = fields.filter(Boolean).map(([k, v]) => [String(k), v == null ? '' : String(v)]);
+    const labelW = rows.reduce((m, [k]) => Math.max(m, visLen(k)), 0);
+    const titleText = `${MK} GEOSEAL · ${dec}`;
+
+    // pass 1 — widest visible content line
+    let inner = visLen(titleText);
+    const rowParts = rows.map(([k, v]) => {
+      const gap = ' '.repeat(labelW - visLen(k) + 2);
+      inner = Math.max(inner, visLen(k) + gap.length + visLen(v));
+      return { k, gap, v };
+    });
+    const span = LP.length + inner + RP.length;
+
+    // pass 2 — render
+    const pad = (vis) => ' '.repeat(Math.max(0, inner - vis));
+    const mid = (content, vis) =>
+      `${styler(SEAL_VT)}${LP}${content}${pad(vis)}${RP}${styler(SEAL_VT)}`;
+    const titleStyled = `${bold(styler(MK))} ${bold('GEOSEAL')} ${dim('·')} ${bold(styler(dec))}`;
+
+    const out = [styler(HEX_CORNER) + styler(SEAL_HZ.repeat(span)) + styler(HEX_CORNER)];
+    out.push(mid(titleStyled, visLen(titleText)));
+    if (rowParts.length) out.push(mid(dim(SEAL_DV.repeat(inner)), inner));
+    for (const { k, gap, v } of rowParts) {
+      out.push(mid(`${gray(k)}${gap}${v}`, visLen(k) + gap.length + visLen(v)));
+    }
+    const footer = stamp ? ` sealed ${stamp} ` : '';
+    const rem = Math.max(0, span - visLen(footer));
+    const left = Math.floor(rem / 2);
+    out.push(
+      styler(HEX_CORNER) +
+        styler(SEAL_HZ.repeat(left)) +
+        (footer ? dim(footer) : '') +
+        styler(SEAL_HZ.repeat(rem - left)) +
+        styler(HEX_CORNER)
+    );
+    return out.join('\n');
+  };
+
   // ── Spinner (no-op-friendly; silent when not a TTY / json) ─────────────────
   const spinner = (label = '') => {
     let i = 0;
@@ -306,6 +362,7 @@ function ui(opts = {}) {
     table,
     badge,
     box,
+    seal,
     spinner,
   };
 }

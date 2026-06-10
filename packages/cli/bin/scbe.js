@@ -969,22 +969,33 @@ function runMagicDemo(args) {
     process.stdout.write(`${JSON.stringify(packet, null, 2)}\n`);
   } else {
     const u = ui({});
+    const g = packet.geoseal;
+    const shortSha = String(g.command_sha256 || '').slice(0, 12);
+    const stamp = `${nowIso().slice(11, 19)}Z`;
     process.stdout.write(
       [
-        u.bold(u.cyan('SCBE 5-minute agent safety demo')),
+        u.bold(u.cyan('SCBE · 5-minute agent safety demo')),
         '',
         packet.product_moment,
         '',
-        `${u.gray('Input:')}    ${packet.input.prompt}`,
-        `${u.gray('Tool:')}     ${packet.input.proposed_tool_call}`,
-        `${u.gray('Decision:')} ${u.badge(packet.decision, packet.decision)}`,
-        `${u.gray('Output:')}   ${packet.output}`,
+        `${u.gray('Input:')}  ${packet.input.prompt}`,
+        `${u.gray('Tool:')}   ${packet.input.proposed_tool_call}`,
+        `${u.gray('Output:')} ${packet.output}`,
+        '',
+        u.seal(packet.decision, {
+          fields: [
+            ['audit', u.dim(g.audit_id)],
+            ['sha256', u.dim(`${shortSha}…`)],
+            ['tier', g.tier],
+            ['findings', String((g.findings || []).length)],
+          ],
+          stamp,
+        }),
         '',
         u.bold('Reasons:'),
         ...packet.reasons.map((reason) => `  ${u.bullet(u.dim(reason))}`),
         '',
-        `${u.gray('Fix:')}      ${u.italic(packet.suggested_correction)}`,
-        `${u.gray('Audit:')}    ${u.dim(packet.geoseal.audit_id)}`,
+        `${u.gray('Fix:')}    ${u.italic(packet.suggested_correction)}`,
         '',
         u.cyan(packet.next_step),
         '',
@@ -1025,15 +1036,33 @@ function runShellCommand(command, options = {}) {
     };
     appendHistory(row);
     if (!options.json) {
-      process.stderr.write(`SCBE BLOCKED: GeoSeal ${gate.tier}\n`);
-      for (const finding of gate.findings || []) process.stderr.write(`- ${finding}\n`);
+      const ue = ui({ stream: process.stderr });
+      const tone = String(gate.tier).toLowerCase() === 'quarantine' ? 'quarantine' : 'deny';
+      const findingRows = normalizeFindings(gate)
+        .slice(0, 4)
+        .map((f) => ['finding', ue.dim(f)]);
+      process.stderr.write(
+        `${ue.seal(gate.tier, {
+          tone,
+          fields: [
+            ['blocked', ue.truncate(command, 52)],
+            ['lane', `${compass.intent} · ${compass.lane}`],
+            ...(findingRows.length ? findingRows : [['finding', ue.dim('command failed the GeoSeal gate')]]),
+          ],
+          stamp: `${startedAt.slice(11, 19)}Z`,
+        })}\n`
+      );
     }
     return row;
   }
 
   if (!options.quiet && !options.json) {
+    const uo = ui({ stream: process.stdout });
+    const mk = uo.unicode ? '⬡' : '#';
     process.stdout.write(
-      `SCBE ${compass.intent}/${compass.lane} | GeoSeal ${gate.tier} | ${startedAt}\n`
+      `${uo.cyan(mk)} ${uo.bold('SCBE')} ${uo.dim(`${compass.intent}·${compass.lane}`)} ${uo.dim(
+        '·'
+      )} ${uo.badge(gate.tier, 'allow')} ${uo.dim('·')} ${uo.dim(`${startedAt.slice(11, 19)}Z`)}\n`
     );
   }
   const child = spawnShellCommand(command, {

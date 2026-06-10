@@ -95,6 +95,45 @@ test('truncate adds ellipsis only when over length', () => {
   assert.equal(ascii.truncate('abcdefghij', 5), 'ab...');
 });
 
+test('seal frames a tone-colored governance stamp with aligned fields', () => {
+  const u = ui({ stream: tty, color: true, env: {}, unicode: true });
+  const out = u.seal('DENY', {
+    fields: [
+      ['audit', 'geoseal_abc'],
+      ['sha256', 'a1b2c3…'],
+    ],
+    stamp: '18:42:07Z',
+  });
+  const lines = out.split('\n');
+  // hexagon corners top + bottom, vertical sides, title, divider, 2 fields
+  assert.ok(lines[0].includes('⬢') && lines[lines.length - 1].includes('⬢'));
+  assert.ok(out.includes('GEOSEAL') && out.includes('DENY'));
+  assert.ok(out.includes('31')); // deny tone == red border
+  assert.ok(out.includes('sealed 18:42:07Z'));
+  // every rendered line is the same visible width (box stays square)
+  const widths = new Set(lines.map((l) => stripAnsi(l).length));
+  assert.equal(widths.size, 1);
+});
+
+test('seal tone follows the decision when tone is omitted', () => {
+  const u = ui({ stream: tty, color: true, env: {} });
+  assert.ok(u.seal('ALLOW', { fields: [['k', 'v']] }).includes('32')); // green
+  assert.ok(u.seal('QUARANTINE', { fields: [['k', 'v']] }).includes('33')); // yellow
+});
+
+test('seal degrades to ASCII + no ANSI when color/unicode disabled', () => {
+  const u = ui({ color: false, env: {}, unicode: false });
+  const out = u.seal('ALLOW', { fields: [['audit', 'x']], stamp: 't' });
+  assert.ok(!out.includes('\x1b'));
+  assert.ok(out.includes('#') && !out.includes('⬢'));
+  assert.ok(out.includes('GEOSEAL'));
+});
+
+test('seal is inert in json mode (never leaks ANSI into machine output)', () => {
+  const u = ui({ json: true, stream: tty, env: { FORCE_COLOR: '1' } });
+  assert.ok(!u.seal('DENY', { fields: [['k', 'v']] }).includes('\x1b'));
+});
+
 test('unicode capability falls back to ASCII symbols', () => {
   const a = ui({ color: false, env: {}, unicode: false });
   assert.equal(a.sym.ok, '+');
