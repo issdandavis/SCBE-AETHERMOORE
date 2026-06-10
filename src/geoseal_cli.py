@@ -6194,22 +6194,20 @@ def cmd_pair_agent_training(args: argparse.Namespace) -> int:
     return 0
 
 
-_KWARG_TOKEN = re.compile(r"[A-Za-z_][\w.\-]*=.*", re.DOTALL)
-
-
 def main(argv: Optional[List[str]] = None) -> int:
     parser = build_parser()
-    # argparse fills consecutive positionals (op + args*) in a single greedy
-    # pass, so `emit add --tongue KO a=x b=y` strands the trailing key=value
-    # pairs as "unrecognized". Recover kwarg-shaped extras into the args
-    # bucket when the subcommand declares one; reject anything else as usual.
+    # On Python < 3.13 argparse cannot match trailing positionals once an
+    # optional flag interrupts the positional stream (e.g.
+    # `emit add --json a=2 b=3`); 3.13+ defers them correctly. Fold any
+    # leftover non-flag tokens into the subcommand's `args` list so kv-pair
+    # positionals work on every supported Python version.
     args, extras = parser.parse_known_args(argv)
     if extras:
-        bucket = getattr(args, "args", None)
-        if isinstance(bucket, list) and all(_KWARG_TOKEN.fullmatch(tok) for tok in extras):
-            bucket.extend(extras)
+        rest = getattr(args, "args", None)
+        if isinstance(rest, list) and not any(tok.startswith("-") for tok in extras):
+            rest.extend(extras)
         else:
-            parser.error(f"unrecognized arguments: {' '.join(extras)}")
+            parser.error("unrecognized arguments: %s" % " ".join(extras))
     return args.func(args)
 
 

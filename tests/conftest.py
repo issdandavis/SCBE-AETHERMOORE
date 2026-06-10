@@ -15,7 +15,7 @@ import shutil
 import uuid
 from pathlib import Path
 from ctypes.util import find_library
-from typing import List
+from typing import Dict, List, Optional
 from dataclasses import dataclass
 
 try:
@@ -238,6 +238,68 @@ class TestVector:
     context: str
     expected_decision: str
     description: str
+
+
+# ---------------------------------------------------------------------------
+# Restore tracked files that some tests overwrite in place.
+#
+# A handful of tests invoke scripts that write into the repo at hardcoded
+# paths (sealed_blobs/*, .scbe/cli-context.json, training-data/sft/*,
+# workflows/n8n/*, .github/workflows/nightly-ops.yml) and do not clean up.
+# Until each script accepts an --output-dir override (a wider change that
+# would touch ~5 scripts and conflict with main), snapshot the originals at
+# session start and revert any divergence at session end. Also delete files
+# that did not exist before the run but were created by it.
+# ---------------------------------------------------------------------------
+
+_POLLUTION_PATHS = (
+    ".github/workflows/nightly-ops.yml",
+    ".scbe/cli-context.json",
+    "sealed_blobs/1_2_3_5_8_13.json",
+    "tests/test_telemetry_advanced_math.json",
+    "training-data/sft/bijective_dsl_v5_holdout_manifest.json",
+    "training-data/sft/coding_system_full_v1_holdout.sft.jsonl",
+    "training-data/sft/coding_system_full_v1_manifest.json",
+    "training-data/sft/coding_system_full_v1_train.sft.jsonl",
+    "workflows/n8n/nightly-ops.queue.json",
+)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _restore_tracked_files_polluted_by_tests():
+    repo_root = Path(__file__).resolve().parent.parent
+    # None means the path did not exist at session start: delete it at the
+    # end if a test created it. Otherwise restore the snapshotted bytes.
+    snapshots: Dict[Path, Optional[bytes]] = {}
+    for rel in _POLLUTION_PATHS:
+        path = repo_root / rel
+        try:
+            snapshots[path] = path.read_bytes()
+        except FileNotFoundError:
+            snapshots[path] = None
+        except OSError:
+            pass
+    yield
+    for path, original in snapshots.items():
+        if original is None:
+            if path.exists():
+                try:
+                    path.unlink()
+                except OSError:
+                    pass
+            continue
+        try:
+            current = path.read_bytes()
+        except FileNotFoundError:
+            current = None
+        except OSError:
+            continue
+        if current != original:
+            try:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(original)
+            except OSError:
+                pass
 
 
 @pytest.fixture
