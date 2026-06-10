@@ -155,6 +155,7 @@ dist-gateway/
 # Runtime/session noise
 .firebase/
 .playwright-profile-*/
+.scbe/aether/
 .scbe/lanes/
 .scbe/ops/
 .scbe/packets/
