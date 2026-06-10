@@ -15,7 +15,7 @@ import shutil
 import uuid
 from pathlib import Path
 from ctypes.util import find_library
-from typing import Dict, List
+from typing import Dict, List, Optional
 from dataclasses import dataclass
 
 try:
@@ -252,7 +252,8 @@ class TestVector:
 # that did not exist before the run but were created by it.
 # ---------------------------------------------------------------------------
 
-_POLLUTION_OVERWRITTEN = (
+_POLLUTION_PATHS = (
+    ".github/workflows/nightly-ops.yml",
     ".scbe/cli-context.json",
     "sealed_blobs/1_2_3_5_8_13.json",
     "tests/test_telemetry_advanced_math.json",
@@ -263,44 +264,40 @@ _POLLUTION_OVERWRITTEN = (
     "workflows/n8n/nightly-ops.queue.json",
 )
 
-_POLLUTION_CREATED = (".github/workflows/nightly-ops.yml",)
-
 
 @pytest.fixture(scope="session", autouse=True)
 def _restore_tracked_files_polluted_by_tests():
     repo_root = Path(__file__).resolve().parent.parent
-    snapshots: Dict[Path, bytes] = {}
-    for rel in _POLLUTION_OVERWRITTEN:
+    # None means the path did not exist at session start: delete it at the
+    # end if a test created it. Otherwise restore the snapshotted bytes.
+    snapshots: Dict[Path, Optional[bytes]] = {}
+    for rel in _POLLUTION_PATHS:
         path = repo_root / rel
-        if path.exists():
-            try:
-                snapshots[path] = path.read_bytes()
-            except OSError:
-                pass
+        try:
+            snapshots[path] = path.read_bytes()
+        except FileNotFoundError:
+            snapshots[path] = None
+        except OSError:
+            pass
     yield
     for path, original in snapshots.items():
+        if original is None:
+            if path.exists():
+                try:
+                    path.unlink()
+                except OSError:
+                    pass
+            continue
         try:
             current = path.read_bytes()
         except FileNotFoundError:
-            # File was deleted during the test; restore it.
-            try:
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_bytes(original)
-            except OSError:
-                pass
-            continue
+            current = None
         except OSError:
             continue
         if current != original:
             try:
+                path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes(original)
-            except OSError:
-                pass
-    for rel in _POLLUTION_CREATED:
-        path = repo_root / rel
-        if path.exists():
-            try:
-                path.unlink()
             except OSError:
                 pass
 
