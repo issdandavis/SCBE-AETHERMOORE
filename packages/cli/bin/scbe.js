@@ -3747,43 +3747,68 @@ function classifyShellInput(input) {
   return 'intent';
 }
 
-function shellHelpText() {
+function shellHelpText(u = ui({})) {
+  // Grouped, colored, scannable. Section headers are one compact line (the full
+  // ruled u.heading is reserved for top-level command output); rows go through
+  // u.kv so labels align and gray-key/example styling degrades to clean plain
+  // text under NO_COLOR / piped / --json. Literal strings the smoke tests pin
+  // ("SCBE shell commands", "Raw tab grammar") are preserved verbatim.
+  const sep = ` ${u.sym.dot} `; // " · " (unicode) / " . " (ascii)
+  const head = (t) => `\n  ${u.bold(u.cyan(t))}`;
   return [
     '',
-    ansi('bold', 'SCBE shell commands'),
-    '',
-    '  Ask normally:        hey, explain this repo',
-    '  Run a command:       run git status --short',
-    '  Slash nav:           /term | /status | /models | /run git status --short',
-    '                       /browser https://example.com | /capture http://127.0.0.1:3000/',
-    '  Repo actions:        /format --dry-run | /test --dry-run | /prepush --dry-run',
-    '  Agent lanes:         advisor review next step  |  /advisor suggest a command',
-    '                       /claude review this file  |  /codex fix the failing test',
-    '  Worksheet:           infer pull then fetch docs  |  infer square root of 89...',
-    '  Bracket tag:         [verify] npm test  |  [format] packages/cli/bin/scbe.js',
-    '  PowerShell direct:   !git status --short',
-    '  Time/date:           now | time | date',
-    '  Location:            location',
-    '  Math:                math 2 + 2 * sqrt(9)  |  math square root of 89...',
-    '  Chemistry:           chem H2O2  |  chem C9H8O4',
-    '  Prime check:         prime 7  |  prime 13  |  prime 11',
-    '  Cross-compile:       emit RU factorial(5)  |  emit CA gcd(48,18)',
-    '  Files:               read README.md | write note.txt hello | count README.md',
-    '  Build:               build | build cli | build agent-bus',
-    '  Ship gate:           prepush --dry-run | commit -m "feat: ..." | push --dry-run',
-    '  New agent room:      room builder',
-    '  Switch room:         use builder',
-    '  Agent chat:          ask builder review the plan',
-    '  Agent command:       cmd builder git status --short',
-    '  List rooms:          rooms',
-    '  Local models:        models',
-    '  Tool list:           tools',
-    '  Aliases:             :alias  |  :alias g git status --short',
-    '  Config:              config',
-    '  Leave:               exit',
-    '',
-    '  Raw tab grammar:     tab:new:name | tab:2:chat:<message> | tab:2:run:<command>',
-    '  Front end:           scbe term  |  scbe term tui  |  scbe term --json',
+    `  ${u.bold('SCBE shell commands')}`,
+    u.dim('  talk normally, or use a lane below — every action runs through the GeoSeal gate'),
+    head('NATURAL'),
+    u.kv([
+      ['ask', 'hey, explain this repo'],
+      ['run', 'run git status --short'],
+      ['worksheet', 'infer pull then fetch docs'],
+      ['tag', '[verify] npm test'],
+    ]),
+    head('NAVIGATE'),
+    u.kv([
+      ['slash', `/term${sep}/status${sep}/models${sep}/run <cmd>`],
+      ['web', `/browser <url>${sep}/capture <url>`],
+    ]),
+    head('REPO & SHIP'),
+    u.kv([
+      ['checks', `/format${sep}/test${sep}/prepush   (--dry-run)`],
+      ['ship', `prepush --dry-run${sep}commit -m "…"${sep}push --dry-run`],
+      ['build', `build${sep}build cli${sep}build agent-bus`],
+    ]),
+    head('AGENTS'),
+    u.kv([
+      ['advisor', `advisor review next step${sep}/advisor <q>`],
+      ['lanes', `/claude review this file${sep}/codex fix the test`],
+      ['rooms', `room builder${sep}use builder${sep}ask builder <msg>${sep}cmd builder <cmd>${sep}rooms`],
+    ]),
+    head('COMPUTE'),
+    u.kv([
+      ['math', 'math 2 + 2 * sqrt(9)'],
+      ['chem', `chem H2O2${sep}chem C9H8O4`],
+      ['prime', `prime 7${sep}prime 13`],
+      ['emit', `emit RU factorial(5)${sep}emit CA gcd(48,18)`],
+    ]),
+    head('FILES'),
+    u.kv([
+      ['files', `read README.md${sep}write note.txt hello${sep}count README.md`],
+      ['find', 'find <text>'],
+    ]),
+    head('SHELL'),
+    u.kv([
+      ['time', `now${sep}time${sep}date`],
+      ['where', 'location'],
+      ['pwsh', '!git status --short'],
+      ['env', `models${sep}tools${sep}config${sep}history`],
+      ['alias', `:alias${sep}:alias g git status --short`],
+      ['leave', 'exit'],
+    ]),
+    head('ADVANCED'),
+    u.kv([
+      ['Raw tab grammar', `tab:new:name${sep}tab:2:chat:<message>${sep}tab:2:run:<command>`],
+      ['front end', `scbe term${sep}scbe term tui${sep}scbe term --json`],
+    ]),
     '',
   ].join('\n');
 }
@@ -6167,18 +6192,17 @@ function runInteractiveShell(flags = {}) {
   process.stdout.write('\n');
   const branch = gitPosture().branch || 'no-git';
   const activeModel = `${activeTab().cfg.provider}:${activeTab().cfg.model}`;
-  if (flags.squad) {
-    process.stdout.write(
-      `${ansi('bold', 'SCBE')}` +
-        ansi('gray', `  squad  ${activeModel}  ${branch}\n`) +
-        ansi('gray', '  try: now, math 2+2, read file, run cmd, build, room builder\n\n')
+  {
+    const ub = ui({});
+    const sep = ub.dim(` ${ub.sym.dot} `);
+    const mode = flags.squad ? ub.cyan('squad') : ub.gray('local');
+    const head = [ub.bold(ub.cyan('SCBE')), mode, ub.dim(activeModel), ub.gray(branch)].join(sep);
+    const hint = ub.dim(
+      ['try', 'now', 'math 2+2', 'read file', 'run cmd', 'build', 'room builder'].join(
+        ` ${ub.sym.dot} `
+      )
     );
-  } else {
-    process.stdout.write(
-      `${ansi('bold', 'SCBE')}` +
-        ansi('gray', `  local  ${activeModel}  ${branch}\n`) +
-        ansi('gray', '  try: now, math 2+2, read file, run cmd, build, room builder\n\n')
-    );
+    process.stdout.write(`${head}\n  ${hint}\n\n`);
   }
   rl.prompt();
 

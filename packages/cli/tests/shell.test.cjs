@@ -382,7 +382,7 @@ test('rich shell supports config inspection without touching real home config', 
   const result = runCli(['shell'], { input: ':config\n:exit\n' });
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /SCBE\s+local/);
+  assert.match(result.stdout, /SCBE\b[^\n]*\blocal\b/);
   assert.match(result.stdout, /"provider": "ollama"/);
   assert.match(result.stdout, /"model": "[^"]+"/);
 });
@@ -400,7 +400,7 @@ test('rich shell lists local models without leaving the shell', () => {
   const result = runCli(['shell'], { input: ':models\n:exit\n' });
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /SCBE\s+local/);
+  assert.match(result.stdout, /SCBE\b[^\n]*\blocal\b/);
   assert.match(result.stdout, /local Ollama models|no local Ollama models found/);
 });
 
@@ -409,10 +409,14 @@ test('rich shell help is shell-specific and does not dump full CLI manual', () =
 
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /SCBE shell commands/);
-  assert.match(result.stdout, /Time\/date:/);
-  assert.match(result.stdout, /Math:/);
-  assert.match(result.stdout, /Files:/);
-  assert.match(result.stdout, /Build:/);
+  // grouped into scannable sections
+  assert.match(result.stdout, /NATURAL/);
+  assert.match(result.stdout, /COMPUTE/);
+  assert.match(result.stdout, /FILES/);
+  assert.match(result.stdout, /REPO & SHIP/);
+  // representative lane examples survive the regroup
+  assert.match(result.stdout, /math 2 \+ 2/);
+  assert.match(result.stdout, /build agent-bus/);
   assert.match(result.stdout, /room builder/);
   assert.match(result.stdout, /Raw tab grammar/);
   assert.doesNotMatch(result.stdout, /scbe-aethermoore-cli/);
