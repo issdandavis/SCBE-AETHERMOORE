@@ -6195,7 +6195,18 @@ def cmd_pair_agent_training(args: argparse.Namespace) -> int:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = build_parser()
-    args = parser.parse_args(argv)
+    # On Python < 3.13 argparse cannot match trailing positionals once an
+    # optional flag interrupts the positional stream (e.g.
+    # `emit add --json a=2 b=3`); 3.13+ defers them correctly. Fold any
+    # leftover non-flag tokens into the subcommand's `args` list so kv-pair
+    # positionals work on every supported Python version.
+    args, extras = parser.parse_known_args(argv)
+    if extras:
+        rest = getattr(args, "args", None)
+        if isinstance(rest, list) and not any(tok.startswith("-") for tok in extras):
+            rest.extend(extras)
+        else:
+            parser.error("unrecognized arguments: %s" % " ".join(extras))
     return args.func(args)
 
 

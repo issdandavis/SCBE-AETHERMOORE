@@ -115,6 +115,7 @@ def harmonic_key_stretch(
     salt: Optional[bytes] = None,
     info: bytes = b"aethermoore-harmonic-key",
     output_length: int = 32,
+    max_iterations: int = 10_000_000,
 ) -> HarmonicKeyMaterial:
     """
     Stretch a key using harmonic scaling for enhanced security.
@@ -129,6 +130,12 @@ def harmonic_key_stretch(
         salt: Optional salt for derivation
         info: Context info for derivation
         output_length: Output key length in bytes
+        max_iterations: Upper bound on SHAKE-256 iterations. The default 10M
+            keeps derivation practical, but caps the super-exponential cost
+            curve: beyond it, attacker and defender pay the same flat cost.
+            Raise it to preserve the cost-scaling claim at high (d, R), at the
+            expense of wall-clock time. ``HarmonicKeyMaterial.cap_engaged``
+            reports whether the cap actually bound the iteration count.
 
     Returns:
         HarmonicKeyMaterial with enhanced key
@@ -141,6 +148,9 @@ def harmonic_key_stretch(
     if dimension < 1 or dimension > 6:
         raise ValueError(f"Dimension must be 1-6, got {dimension}")
 
+    if max_iterations < 1:
+        raise ValueError(f"max_iterations must be >= 1, got {max_iterations}")
+
     if salt is None:
         salt = secrets.token_bytes(16)
 
@@ -149,9 +159,8 @@ def harmonic_key_stretch(
     h_value = harmonic_scale(dimension, R)
     iteration_count = int(math.ceil(h_value))
 
-    # Cap iterations at a reasonable maximum (10M) for practicality
-    # while maintaining the security claim
-    max_iterations = 10_000_000
+    # Cap iterations at max_iterations for practicality. Beyond the cap the
+    # super-exponential cost curve flattens, so we record cap_engaged and warn.
     actual_iterations = min(iteration_count, max_iterations)
     cap_engaged = iteration_count > max_iterations
     if cap_engaged:
