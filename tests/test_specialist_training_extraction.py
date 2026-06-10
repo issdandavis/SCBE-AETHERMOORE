@@ -25,6 +25,7 @@ OPERATOR_ARTIFACT_ROOTS = [
 
 
 def _load(path: Path, name: str):
+    """Import a script file as a module under ``name``."""
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
@@ -38,6 +39,7 @@ def _load(path: Path, name: str):
     reason="operator agent-bus run artifacts not present in this checkout",
 )
 def test_specialist_extractor_builds_source_faithful_records(tmp_path: Path) -> None:
+    """Extractor builds manifests with operator/research records from artifacts."""
     extractor = _load(EXTRACTOR_PATH, "extract_specialist_training_records_test")
 
     manifest = extractor.build(tmp_path)
@@ -59,6 +61,7 @@ def test_specialist_extractor_builds_source_faithful_records(tmp_path: Path) -> 
 
 
 def test_gain_board_marks_data_ready_buckets_as_needing_benchmark() -> None:
+    """Buckets with data but no benchmark are marked as needing one."""
     review = _load(REVIEW_PATH, "review_training_runs_test")
     plan = {
         "specialists": [
@@ -77,6 +80,7 @@ def test_gain_board_marks_data_ready_buckets_as_needing_benchmark() -> None:
 
 
 def test_gain_board_promotes_bucket_with_eval_and_metrics() -> None:
+    """Buckets with eval coverage and metrics get promoted."""
     review = _load(REVIEW_PATH, "review_training_runs_promote_test")
     plan = {
         "specialists": [
@@ -107,6 +111,7 @@ def test_gain_board_promotes_bucket_with_eval_and_metrics() -> None:
 
 
 def test_gain_board_does_not_promote_metric_without_frozen_gate() -> None:
+    """Metrics without a frozen gate must not trigger promotion."""
     review = _load(REVIEW_PATH, "review_training_runs_polished_test")
     plan = {
         "specialists": [
@@ -136,6 +141,7 @@ def test_gain_board_does_not_promote_metric_without_frozen_gate() -> None:
 
 
 def test_gain_board_blocks_explicit_hold_eval_artifact() -> None:
+    """An explicit hold eval artifact blocks promotion."""
     review = _load(REVIEW_PATH, "review_training_runs_hold_test")
     plan = {
         "specialists": [
@@ -166,6 +172,7 @@ def test_gain_board_blocks_explicit_hold_eval_artifact() -> None:
 
 
 def test_diamond_state_marks_loss_only_as_cut_not_promoted() -> None:
+    """Loss-only runs are marked cut, not promoted."""
     review = _load(REVIEW_PATH, "review_training_runs_loss_only_test")
 
     state = review.diamond_state_for_run(
@@ -182,6 +189,7 @@ def test_diamond_state_marks_loss_only_as_cut_not_promoted() -> None:
 
 
 def test_score_run_rejects_huge_config_quality_counts() -> None:
+    """score_run rejects implausibly huge config-quality counts."""
     review = _load(REVIEW_PATH, "review_training_runs_score_guard_test")
 
     scored = review.score_run(
@@ -201,6 +209,7 @@ def test_score_run_rejects_huge_config_quality_counts() -> None:
 
 
 def test_iter_json_artifacts_skips_tokenizer_config_files(tmp_path: Path) -> None:
+    """Tokenizer config JSONs are skipped when iterating artifacts."""
     review = _load(REVIEW_PATH, "review_training_runs_skip_tokenizer_test")
     root = tmp_path / "runs"
     root.mkdir()
@@ -213,12 +222,14 @@ def test_iter_json_artifacts_skips_tokenizer_config_files(tmp_path: Path) -> Non
 
 
 def test_specialist_bucket_readiness_scores_valid_bucket(tmp_path: Path) -> None:
+    """Readiness scoring accepts a structurally valid bucket."""
     readiness = _load(READINESS_PATH, "specialist_bucket_readiness_test")
     train_path = tmp_path / "train.jsonl"
     eval_path = tmp_path / "eval.jsonl"
     manifest_path = tmp_path / "manifest.json"
 
     def row(idx: int, split: str) -> dict:
+        """Build one synthetic SFT record row."""
         return {
             "messages": [
                 {"role": "user", "content": f"request {idx}"},
