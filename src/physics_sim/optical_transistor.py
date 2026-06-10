@@ -28,14 +28,20 @@ effects the averaged model is blind to: finite gain recovery (rho) and a
 spontaneous-emission floor (beta).
 
 Every routine returns a JSON-serializable dict and reports its own null/collapse
-next to the positive number -- never a bare metric. Run `python -m
-physics_sim.optical_transistor` (or the file directly) for the full report.
+next to the positive number -- never a bare metric.
+
+CLI (run the file directly, or `-m physics_sim.optical_transistor` with src on path):
+    python src/physics_sim/optical_transistor.py              # full report (~110s)
+    python src/physics_sim/optical_transistor.py --regimes    # just the §8 grounding (~9s)
+    python src/physics_sim/optical_transistor.py --regimes --json
+    python src/physics_sim/optical_transistor.py --json        # full report as JSON
 """
 
 from __future__ import annotations
 
 import json
 import math
+import sys
 from dataclasses import dataclass, asdict, replace
 
 import numpy as np
@@ -533,37 +539,49 @@ def material_regimes(
       * rho   -> ARCHITECTURE axis (Probe 1): microcavities sit at rho >> 1
                  (averaged limit); only long-cavity logic binds at rho_crit.
     """
+    # When edges aren't supplied, compute them CHEAPLY: the verdict only needs the
+    # edge to within a factor (~rho_crit in [1,2], beta_ceiling in [0.1,0.2] all
+    # classify identically), so a coarse grid + small ensemble is enough. full_report
+    # passes the precise edges from its own full-size probes.
     if rho_crit is None:
-        rho_crit = probe_recovery_boundary(p=p)["rho_crit"]
+        rho_grid = [0.3, 0.6, 1.0, 1.5, 2.5, 5.0, 20.0]
+        rho_crit = probe_recovery_boundary(rho_grid=rho_grid, p=p)["rho_crit"]
     if beta_ceiling is None:
         # near-edge regime is where Probe 2 actually exercises the bit-flip; the
         # ceiling is the largest beta still holding >=99% over the cascade.
         beta_ceiling = probe_spontaneous_floor(
-            beta_grid=[0.0, 0.05, 0.1, 0.2, 0.3, 0.5],
+            beta_grid=[0.0, 0.1, 0.2, 0.3, 0.5],
             p=replace(p, g0=0.30),
             noise=0.05,
+            n_traj=40,
         )["beta_max_99pct_survival"]
 
     regimes = []
     for m in _MATERIAL_REGIMES:
         r = dict(m)
         # --- beta (material) verdict ---
-        # beta_ceiling is the LARGEST beta still holding >=99%, so strictly-below
-        # is the only comfortable PASS; a range whose top touches/exceeds it is at
-        # the edge (realistic organics can run higher still).
+        # beta_ceiling is the LARGEST beta still holding >=99%. The physical claim
+        # is order-of-magnitude, not knife-edge: PASS only with comfortable margin
+        # (>2x below), AT EDGE when the range top is within ~2x of the ceiling
+        # (organic ~1e-1 vs ceiling ~1e-1, regardless of whether the probe lands it
+        # at 0.1 or 0.2), FAIL when the whole range sits above. This keeps the
+        # verdict stable under the coarse/cheap edge estimate.
+        margin = 2.0
         br = m.get("beta_range")
         if br is None:
             r["beta_pass"] = None
             r["beta_verdict"] = "n/a -- beta is not the binding edge for this architecture"
-        elif br[1] < beta_ceiling:
+        elif br[1] < beta_ceiling / margin:
             r["beta_pass"] = True
-            r["beta_verdict"] = f"PASS -- beta<=~{br[1]:g} sits below the bit-flip ceiling {beta_ceiling:g}"
+            r["beta_verdict"] = f"PASS -- beta<=~{br[1]:g} sits well below the bit-flip ceiling {beta_ceiling:g}"
         elif br[0] > beta_ceiling:
             r["beta_pass"] = False
             r["beta_verdict"] = f"FAIL -- beta>={br[0]:g} exceeds the ceiling {beta_ceiling:g}"
         else:
             r["beta_pass"] = False
-            r["beta_verdict"] = f"AT EDGE -- beta {br[0]:g}..{br[1]:g} reaches the ceiling {beta_ceiling:g}"
+            r["beta_verdict"] = (
+                f"AT EDGE -- beta {br[0]:g}..{br[1]:g} is within ~{margin:g}x of the ceiling {beta_ceiling:g}"
+            )
         # --- rho (architecture) verdict ---
         if m["arch"] == "microcavity":
             r["rho_verdict"] = "rho >> 1 (tau_rt ~ fs) -> averaged limit, NOT rho-limited"
@@ -627,8 +645,38 @@ def full_report(p: Params = DEFAULT) -> dict:
     }
 
 
-def main() -> int:
+def _print_regimes(mr: dict) -> None:
+    e = mr["model_edges"]
+    print("material grounding (spec §8) — cited regimes vs THIS model's edges")
+    print(f"  edges measured: rho_crit={e['rho_crit']:.2f}  beta_ceiling={e['beta_ceiling']:g}")
+    print(f"  {mr['axes']['note']}")
+    for r in mr["regimes"]:
+        print(f"\n  {r['name']}  [{r['temp']}, {r['arch']}]")
+        print(f"    beta : {r['beta_verdict']}")
+        print(f"    rho  : {r['rho_verdict']}")
+        print(f"    ==>  {r['overall']}")
+        print(f"    cite : {r['cite']}")
+
+
+def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    as_json = "--json" in argv
+
+    # --regimes: just the material grounding, no 110s full report. material_regimes()
+    # computes the two edges itself (Probe-1 boundary + Probe-2 near-edge ceiling),
+    # which is far cheaper than the full probe/null sweep.
+    if "--regimes" in argv:
+        mr = material_regimes()
+        if as_json:
+            print(json.dumps(mr, indent=2, default=str))
+        else:
+            _print_regimes(mr)
+        return 0
+
     rep = full_report()
+    if as_json:
+        print(json.dumps(rep, indent=2, default=str))
+        return 0
     fp = rep["averaged_fixed_points"]
     print("optical transistor — synchronous-pump time-domain model")
     print(
@@ -660,6 +708,8 @@ def main() -> int:
         print(
             f"  {k}: passes={rep[k]['passes']}  {json.dumps({kk: vv for kk, vv in rep[k].items() if kk != 'passes'})}"
         )
+    print()
+    _print_regimes(rep["material_regimes"])
     return 0
 
 

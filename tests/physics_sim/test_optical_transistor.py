@@ -93,6 +93,25 @@ def test_locking_window_exists_and_is_bounded_by_K():
     assert 0.0 < lw["locked_window_edge"] <= lw["K"]
 
 
+def test_cli_regimes_flag_emits_classified_json():
+    """`--regimes --json` runs the fast grounding path and emits valid JSON with
+    the edges and the three classified regimes (no 110s full report)."""
+    import json
+    import subprocess
+
+    out = subprocess.run(
+        [sys.executable, os.path.abspath(ot.__file__), "--regimes", "--json"],
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert out.returncode == 0, out.stderr
+    d = json.loads(out.stdout)
+    assert "rho_crit" in d["model_edges"] and "beta_ceiling" in d["model_edges"]
+    names = {r["name"] for r in d["regimes"]}
+    assert names == {"inorganic_gaas_microcavity", "organic_microcavity", "long_cavity_soa_fiber_logic"}
+
+
 def test_material_regimes_classify_against_model_edges():
     """The self-reported grounding must put each cited material on the right side
     of the model's own edges (spec §8): inorganic clears beta, organic sits at it,
