@@ -49,6 +49,7 @@ BUS_LOG = Path("artifacts/agent-bus/events.jsonl")
 # Re-export the canonical schema version from the dedicated module so callers
 # see the single source of truth, even when importing from agent_bus directly.
 from agents.agent_bus_schema import CURRENT_SCHEMA_VERSION as SCHEMA_VERSION  # noqa: E402
+from agents.agent_bus_cost import CostMeter  # noqa: E402
 
 RETRY_BASE_SECONDS = 1.0
 RETRY_MAX_ATTEMPTS = 5
@@ -170,6 +171,7 @@ class BusEvent:
     llm_model: str = ""
     tokens_in: int = 0
     tokens_out: int = 0
+    cost_usd: float = 0.0
     duration_seconds: float = 0
     success: bool = True
     error: Optional[str] = None
@@ -200,6 +202,7 @@ class AgentBus:
         agent_id: str = "agent-bus-default",
         sign_events: bool = True,
         write_to_ledger: bool = True,
+        budget_usd: float = 0.0,
     ) -> None:
         self.hf_model = hf_model
         self.ollama_model = ollama_model
@@ -209,6 +212,8 @@ class AgentBus:
         self.agent_id = agent_id
         self.sign_events = sign_events
         self.write_to_ledger = write_to_ledger
+        # Session cost meter; budget_usd == 0 keeps the historical unbounded behavior.
+        self.cost = CostMeter(budget_usd=budget_usd)
 
         self._runtime = None
         self._scraper = None
@@ -324,6 +329,7 @@ class AgentBus:
         event.llm_model = answer["model"]
         event.tokens_in = int(answer.get("tokens_in", 0) or 0)
         event.tokens_out = int(answer.get("tokens_out", 0) or 0)
+        event.cost_usd = float(answer.get("cost_usd", 0.0) or 0.0)
         event.duration_seconds = time.monotonic() - start
         event.success = not answer.get("error")
         event.error = answer.get("error")
@@ -338,6 +344,7 @@ class AgentBus:
             "model": answer["model"],
             "tokens_in": event.tokens_in,
             "tokens_out": event.tokens_out,
+            "cost_usd": event.cost_usd,
             "duration_seconds": round(event.duration_seconds, 1),
         }
 
@@ -378,6 +385,7 @@ class AgentBus:
         event.llm_model = answer["model"]
         event.tokens_in = int(answer.get("tokens_in", 0) or 0)
         event.tokens_out = int(answer.get("tokens_out", 0) or 0)
+        event.cost_usd = float(answer.get("cost_usd", 0.0) or 0.0)
         event.duration_seconds = time.monotonic() - start
         event.breaker_state = self._breaker_snapshot()
         self._log_event(event)
@@ -391,6 +399,7 @@ class AgentBus:
             "provider": answer["provider"],
             "tokens_in": event.tokens_in,
             "tokens_out": event.tokens_out,
+            "cost_usd": event.cost_usd,
             "duration_seconds": round(event.duration_seconds, 1),
         }
 
@@ -426,6 +435,7 @@ class AgentBus:
         event.llm_model = answer["model"]
         event.tokens_in = int(answer.get("tokens_in", 0) or 0)
         event.tokens_out = int(answer.get("tokens_out", 0) or 0)
+        event.cost_usd = float(answer.get("cost_usd", 0.0) or 0.0)
         event.duration_seconds = time.monotonic() - start
         event.breaker_state = self._breaker_snapshot()
         self._log_event(event)
@@ -441,6 +451,7 @@ class AgentBus:
             "provider": answer["provider"],
             "tokens_in": event.tokens_in,
             "tokens_out": event.tokens_out,
+            "cost_usd": event.cost_usd,
         }
 
     async def monitor(self, urls: List[str]) -> Dict[str, Any]:
@@ -627,31 +638,48 @@ class AgentBus:
         Generate text using free LLMs.
 
         Priority: Ollama (local) → HuggingFace (free API) → Offline fallback
+
+        Budget-gated: once the session cost meter reaches the configured
+        budget, no further provider calls are made and a budget_exceeded
+        result is returned (logged like any other failed event).
         """
+        if self.cost.exceeded:
+            return {
+                "text": "[budget exceeded — no LLM call made]",
+                "provider": "budget",
+                "model": "none",
+                "cost_usd": 0.0,
+                "error": (f"budget_exceeded: spent ${self.cost.spent_usd:.4f} of ${self.cost.budget_usd:.2f} budget"),
+            }
+
+        result: Optional[Dict[str, Any]] = None
         # Try Ollama first if prefer_local
         if self.prefer_local:
             result = await self._try_ollama(prompt)
-            if result:
-                return result
 
         # Try HuggingFace
-        result = await self._try_huggingface(prompt)
-        if result:
-            return result
+        if not result:
+            result = await self._try_huggingface(prompt)
 
         # Try Ollama as fallback if not preferred
-        if not self.prefer_local:
+        if not result and not self.prefer_local:
             result = await self._try_ollama(prompt)
-            if result:
-                return result
 
-        # Offline fallback
-        return {
-            "text": f"[LLM unavailable — raw context returned]\n\n{prompt[:2000]}",
-            "provider": "offline",
-            "model": "none",
-            "error": "No LLM provider available (set HF_TOKEN or run Ollama)",
-        }
+        if not result:
+            # Offline fallback
+            result = {
+                "text": f"[LLM unavailable — raw context returned]\n\n{prompt[:2000]}",
+                "provider": "offline",
+                "model": "none",
+                "error": "No LLM provider available (set HF_TOKEN or run Ollama)",
+            }
+
+        result["cost_usd"] = self.cost.charge(
+            result["provider"],
+            int(result.get("tokens_in", 0) or 0),
+            int(result.get("tokens_out", 0) or 0),
+        )
+        return result
 
     async def _try_ollama(self, prompt: str) -> Optional[Dict[str, Any]]:
         """Try Ollama local inference (async via httpx, retried, breaker-gated)."""
