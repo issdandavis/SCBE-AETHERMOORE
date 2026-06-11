@@ -67,28 +67,33 @@ print(json.dumps(result))
 
 describe.skipIf(!pythonNumpyAvailable)('Cross-Language: Hyperbolic Geometry Parity', () => {
   describe('Hyperbolic Distance', () => {
-    const testCases = [
+    // Cross-check the TypeScript implementation against the REAL canonical
+    // Python reference (src/scbe_math_reference.py, the documented hyperbolic.ts
+    // mirror) — not an inline re-implementation — so the test actually exercises
+    // the production code path. Interior points (including genuinely near the
+    // boundary) must agree to full double precision.
+    const interiorCases = [
       { u: [0.1, 0.2], v: [0.3, 0.4], name: 'simple 2D points' },
       { u: [0, 0], v: [0.5, 0], name: 'origin to point' },
-      { u: [0.9, 0], v: [-0.9, 0], name: 'near boundary points' },
+      { u: [0.9, 0], v: [-0.9, 0], name: 'moderate norm 0.9' },
+      { u: [0.99, 0], v: [-0.99, 0], name: 'near boundary 0.99' },
+      { u: [0.999, 0], v: [0, 0.999], name: 'very near boundary 0.999' },
       { u: [0.1, 0.1, 0.1], v: [0.2, 0.2, 0.2], name: '3D points' },
+      {
+        u: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4],
+        v: [-0.4, -0.4, -0.4, -0.4, -0.4, -0.4],
+        name: '6D near boundary',
+      },
     ];
 
-    for (const { u, v, name } of testCases) {
-      it(`should match Python for ${name}`, () => {
+    for (const { u, v, name } of interiorCases) {
+      it(`should match the canonical Python reference for ${name}`, () => {
         const tsResult = hyperbolicDistance(u, v);
 
         const pyResult = execPython(
           `
-import numpy as np
-u = np.array(args['u'])
-v = np.array(args['v'])
-norm_u = np.linalg.norm(u)
-norm_v = np.linalg.norm(v)
-diff = u - v
-norm_diff = np.linalg.norm(diff)
-delta = 2 * norm_diff**2 / ((1 - norm_u**2) * (1 - norm_v**2))
-result = float(np.arccosh(1 + delta))
+from scbe_math_reference import hyperbolic_distance_poincare
+result = hyperbolic_distance_poincare(args['u'], args['v'])
 `,
           { u, v }
         );
@@ -98,6 +103,33 @@ result = float(np.arccosh(1 + delta))
         }
       });
     }
+
+    // Out-of-ball (malformed) input: both runtimes must REFUSE to return a
+    // misleading finite distance. The canonical Python reference rejects via
+    // ValueError; the TypeScript implementation rejects via a non-finite
+    // (+Infinity) sentinel when both points are outside the ball. Production
+    // never reaches this (L4 projects into the ball before L5), but the two
+    // runtimes must still agree on rejecting malformed geometry.
+    it('both runtimes reject out-of-ball input', () => {
+      const tsResult = hyperbolicDistance([1.2, 0.0], [0.0, 1.3]);
+      expect(Number.isFinite(tsResult)).toBe(false);
+
+      const pyResult = execPython(
+        `
+from scbe_math_reference import hyperbolic_distance_poincare
+try:
+    hyperbolic_distance_poincare(args['u'], args['v'])
+    result = {'rejected': False}
+except ValueError:
+    result = {'rejected': True}
+`,
+        { u: [1.0, 0.0], v: [0.0, 0.0] }
+      );
+
+      if (pyResult !== null) {
+        expect((pyResult as { rejected: boolean }).rejected).toBe(true);
+      }
+    });
   });
 
   describe('Möbius Addition', () => {
