@@ -12,6 +12,9 @@ defaults:
   run:
     working-directory: packages/agent-bus
 
+permissions:
+  contents: write
+
 jobs:
   auto-format:
     if: ${{ github.actor != 'github-actions[bot]' }}

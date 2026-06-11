@@ -11,6 +11,9 @@ on:
       - 'tests/benchmark/test_swe_local_benchmark.py'
       - 'package.json'
 
+permissions:
+  contents: read
+
 jobs:
   swe-local:
     runs-on: ubuntu-latest
