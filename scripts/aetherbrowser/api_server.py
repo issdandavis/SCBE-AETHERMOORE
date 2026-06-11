@@ -5,7 +5,7 @@ Serves the five tab surfaces (Browse, Chat, Rooms, Vault, Ops) as REST endpoints
 Start:
     python scripts/aetherbrowser/api_server.py
     # or
-    python -m uvicorn scripts.aetherbrowser.api_server:app --host 0.0.0.0 --port 8100
+    python -m uvicorn scripts.aetherbrowser.api_server:app --host 127.0.0.1 --port 8100
 
 Default port: 8100
 """
@@ -36,7 +36,7 @@ from functools import lru_cache
 from pathlib import Path, PurePosixPath
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -483,13 +483,44 @@ app = FastAPI(
     version="1.0.0",
 )
 
+_allowed_origins = [
+    o.strip()
+    for o in os.environ.get(
+        "AETHERBROWSER_ALLOWED_ORIGINS",
+        "http://localhost:8100,http://127.0.0.1:8100",
+    ).split(",")
+    if o.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def require_ops_api_key(x_api_key: Optional[str] = Header(default=None)) -> None:
+    """Gate /api/ops/* endpoints behind a shared secret (CWE-306 hardening).
+
+    The ops endpoints trigger local subprocesses (email reader, test runner,
+    tor sweep, git status, momentum) and can disclose operator data, so they
+    must never be reachable unauthenticated. The key is read from the
+    AETHERBROWSER_OPS_API_KEY environment variable; if it is unset the ops
+    surface fails closed (HTTP 503) rather than open.
+    """
+    expected = os.environ.get("AETHERBROWSER_OPS_API_KEY", "").strip()
+    if not expected:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="ops endpoints disabled: set AETHERBROWSER_OPS_API_KEY to enable",
+        )
+    if not x_api_key or not hmac.compare_digest(x_api_key, expected):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="invalid or missing X-API-Key",
+        )
+
 
 if PUBLIC_DIR.exists():
     static_dir = PUBLIC_DIR / "static"
@@ -2984,7 +3015,7 @@ async def contact_submit(payload: ContactFormPayload):
         return {"ok": False, "error": "Unable to send message. Please try again later."}
 
 
-@app.post("/api/ops/check-email")
+@app.post("/api/ops/check-email", dependencies=[Depends(require_ops_api_key)])
 async def ops_check_email():
     """Run the Apollo email reader and return classified digests."""
     script = ROOT / "scripts" / "apollo" / "email_reader.py"
@@ -3003,7 +3034,7 @@ async def ops_check_email():
     }
 
 
-@app.post("/api/ops/youtube-review")
+@app.post("/api/ops/youtube-review", dependencies=[Depends(require_ops_api_key)])
 async def ops_youtube_review():
     """Run video_review.py review-all."""
     script = ROOT / "scripts" / "apollo" / "video_review.py"
@@ -3022,7 +3053,7 @@ async def ops_youtube_review():
     }
 
 
-@app.post("/api/ops/tor-sweep")
+@app.post("/api/ops/tor-sweep", dependencies=[Depends(require_ops_api_key)])
 async def ops_tor_sweep():
     """Run tor_sweeper.py sweep."""
     script = ROOT / "scripts" / "apollo" / "tor_sweeper.py"
@@ -3041,7 +3072,7 @@ async def ops_tor_sweep():
     }
 
 
-@app.post("/api/ops/run-tests")
+@app.post("/api/ops/run-tests", dependencies=[Depends(require_ops_api_key)])
 async def ops_run_tests():
     """Run pytest and return pass/fail summary."""
     cmd = [sys.executable, "-m", "pytest", "tests/", "-v", "--tb=short", "-q", "--no-header"]
@@ -3067,7 +3098,7 @@ async def ops_run_tests():
     }
 
 
-@app.get("/api/ops/git-status")
+@app.get("/api/ops/git-status", dependencies=[Depends(require_ops_api_key)])
 async def ops_git_status():
     """Return git status + recent log."""
     status_result = await asyncio.to_thread(
@@ -3125,7 +3156,7 @@ def _parse_last_json(stdout: str) -> dict[str, Any] | None:
     return None
 
 
-@app.post("/api/ops/momentum/run")
+@app.post("/api/ops/momentum/run", dependencies=[Depends(require_ops_api_key)])
 async def ops_momentum_run(req: MomentumRunRequest = MomentumRunRequest()):
     """Run a configured Momentum Train by id (safe allowlist)."""
     cfg = MOMENTUM_TRAIN_CONFIGS.get(req.train_id)
@@ -3161,7 +3192,7 @@ async def ops_momentum_run(req: MomentumRunRequest = MomentumRunRequest()):
     }
 
 
-@app.get("/api/ops/momentum/latest")
+@app.get("/api/ops/momentum/latest", dependencies=[Depends(require_ops_api_key)])
 async def ops_momentum_latest(train_id: str = "daily_ops"):
     """Return the latest Momentum Train state.json summary (no execution)."""
     momentum_run_roots = {
@@ -3212,7 +3243,7 @@ class ChessboardGenerateRequest(BaseModel):
     goal: str = "Improve SCBE long-running agentic workflows with governed momentum trains."
 
 
-@app.post("/api/ops/chessboard/generate")
+@app.post("/api/ops/chessboard/generate", dependencies=[Depends(require_ops_api_key)])
 async def ops_chessboard_generate(req: ChessboardGenerateRequest = ChessboardGenerateRequest()):
     """Generate a chessboard dev-stack packet set for a given goal."""
     script = ROOT / "scripts" / "system" / "chessboard_dev_stack.py"
@@ -3238,7 +3269,7 @@ async def ops_chessboard_generate(req: ChessboardGenerateRequest = ChessboardGen
     }
 
 
-@app.get("/api/ops/chessboard/latest")
+@app.get("/api/ops/chessboard/latest", dependencies=[Depends(require_ops_api_key)])
 async def ops_chessboard_latest():
     """Return the latest generated chessboard packet set."""
     if not CHESSBOARD_ARTIFACTS_DIR.exists():
@@ -4046,4 +4077,7 @@ if __name__ == "__main__":
     print(f"  Root: {ROOT}")
     print(f"  Trusted sites: {TRUSTED_SITES_PATH}")
     print(f"  Env file: {ENV_FILE}")
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    host = os.environ.get("AETHERBROWSER_HOST", "127.0.0.1")
+    if host != "127.0.0.1" and not os.environ.get("AETHERBROWSER_OPS_API_KEY", "").strip():
+        print("  WARNING: non-localhost bind without AETHERBROWSER_OPS_API_KEY set; ops endpoints will return 503")
+    uvicorn.run(app, host=host, port=port)
