@@ -76,6 +76,7 @@ Thumbs.db
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
+.benchmarks/
 
 # Test temp artifacts
 artifacts/pytest_tmp/
