@@ -53,6 +53,11 @@ _RING_ORDER: Dict[str, int] = {
 
 DEFAULT_EGG_SELF_TAG = "SCBE-AETHERMOORE:SacredEggGenesis:v1"
 
+# AES-256-GCM appends a 16-byte authentication tag to the ciphertext. A
+# successful hatch tokenizes only the plaintext, so the fail-to-noise path
+# subtracts this to keep the noise token count equal to the success count.
+_AEAD_TAG_LEN = 16
+
 
 def self_detect_shape(egg_id: str, self_tag: str = DEFAULT_EGG_SELF_TAG) -> str:
     """Deterministic self-identity fingerprint for an egg.
@@ -299,10 +304,13 @@ class SacredEggIntegrator:
         P, margin = toolkit.potentials(u, v)
         path = toolkit.classify(h, z, P, margin)
 
-        # Pre-compute noise output length for consistent fail-to-noise
+        # Pre-compute noise output length for consistent fail-to-noise. The stored
+        # ct_spec is AES-256-GCM (plaintext + a 16-byte tag); a successful hatch
+        # tokenizes only the plaintext, so subtract the tag to match token counts.
         ct_spec_b64 = egg.yolk_ct.get("ct_spec", "")
-        ct_spec_len = len(base64.b64decode(ct_spec_b64)) if ct_spec_b64 else 16
-        fail_tokens = _sealed_noise_tokens(self.xt, agent_tongue, nbytes=ct_spec_len)
+        ct_spec_len = len(base64.b64decode(ct_spec_b64)) if ct_spec_b64 else _AEAD_TAG_LEN
+        pt_len = max(ct_spec_len - _AEAD_TAG_LEN, 0)
+        fail_tokens = _sealed_noise_tokens(self.xt, agent_tongue, nbytes=pt_len)
 
         # --- Self-identity integrity check (genesis-bound) ---
         # Back-compat: if fields are missing/empty, do not fail here.
