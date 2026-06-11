@@ -528,8 +528,8 @@ class TestRingDescent:
     """Tests for the Ring Descent ritual."""
 
     def test_outer_to_inner(self, outer_egg):
-        """Should descend from OUTER to INNER with valid auth."""
-        auth_secret = secrets.token_bytes(32)
+        """Should descend from OUTER to INNER with the valid secret (the yolk)."""
+        auth_secret = outer_egg._yolk  # the yolk reproduces shell_hash -> authorized
         result = SacredRituals.ring_descent(outer_egg, EggRing.INNER, auth_secret)
 
         assert isinstance(result, RingDescentResult)
@@ -538,8 +538,8 @@ class TestRingDescent:
         assert outer_egg.ring == EggRing.INNER
 
     def test_outer_to_core(self, outer_egg):
-        """Should descend from OUTER to CORE."""
-        auth_secret = secrets.token_bytes(32)
+        """Should descend from OUTER to CORE with the valid secret (the yolk)."""
+        auth_secret = outer_egg._yolk
         result = SacredRituals.ring_descent(outer_egg, EggRing.CORE, auth_secret)
         assert result.new_ring == "CORE"
         assert outer_egg.ring == EggRing.CORE
@@ -557,17 +557,50 @@ class TestRingDescent:
             SacredRituals.ring_descent(outer_egg, EggRing.OUTER, auth_secret)
 
     def test_auth_hash_is_deterministic(self, outer_egg):
-        """Same auth_secret should produce same auth_hash."""
-        auth_secret = secrets.token_bytes(32)
-
-        # Create two identical eggs
+        """Same (valid) auth_secret should produce same auth_hash."""
+        # Two identical eggs share a yolk; the yolk is the authorizing secret.
         yolk = outer_egg._yolk
+        auth_secret = yolk
         egg1 = SacredEgg.create(context=outer_egg.context, yolk=yolk, ring=EggRing.OUTER)
         egg2 = SacredEgg.create(context=outer_egg.context, yolk=yolk, ring=EggRing.OUTER)
 
         r1 = SacredRituals.ring_descent(egg1, EggRing.INNER, auth_secret)
         r2 = SacredRituals.ring_descent(egg2, EggRing.INNER, auth_secret)
         assert r1.auth_hash == r2.auth_hash
+
+    def test_rejects_wrong_auth_secret(self, outer_egg):
+        """A wrong secret MUST be denied — it cannot escalate the ring.
+
+        Regression guard for the unconditional-escalation bug: ring_descent
+        used to compute an HMAC and then mutate the ring no matter what, so any
+        random 32 bytes granted OUTER -> CORE. The descent must fail-closed.
+        """
+        wrong_secret = secrets.token_bytes(32)
+        assert wrong_secret != outer_egg._yolk  # astronomically certain
+        with pytest.raises(PermissionError):
+            SacredRituals.ring_descent(outer_egg, EggRing.CORE, wrong_secret)
+        # The ring must NOT have changed on a denied descent.
+        assert outer_egg.ring == EggRing.OUTER
+
+    def test_wrong_secret_burns_shell_to_noise(self, outer_egg):
+        """A denied descent triggers the documented Fail-to-Noise ritual."""
+        old_shell = outer_egg.shell_hash
+        with pytest.raises(PermissionError):
+            SacredRituals.ring_descent(outer_egg, EggRing.INNER, secrets.token_bytes(32))
+        # Shell handle was burned, so a rejected attempt can't be replayed.
+        assert outer_egg.shell_hash != old_shell
+
+    def test_valid_secret_authorizes_but_wrong_one_does_not(self, outer_egg):
+        """The yolk authorizes; a single bit-flip of it does not."""
+        good = outer_egg._yolk
+        bad = bytes([good[0] ^ 0x01]) + good[1:]  # flip one bit
+        egg_good = SacredEgg.create(context="t", yolk=good, ring=EggRing.OUTER)
+        egg_bad = SacredEgg.create(context="t", yolk=good, ring=EggRing.OUTER)
+        # Correct secret -> descends.
+        assert SacredRituals.ring_descent(egg_good, EggRing.CORE, good).new_ring == "CORE"
+        # One-bit-wrong secret -> denied.
+        with pytest.raises(PermissionError):
+            SacredRituals.ring_descent(egg_bad, EggRing.CORE, bad)
 
 
 # =============================================================================
@@ -671,10 +704,9 @@ class TestIntegration:
         binding = SacredRituals.triadic_binding(*eggs)
         assert binding.binding_strength == 1.0  # same context
 
-        # Ring descent on first egg
-        auth = secrets.token_bytes(32)
+        # Ring descent on first egg (authorize with the egg's own secret).
         egg_outer = SacredEgg.create(context="test", ring=EggRing.OUTER)
-        descent = SacredRituals.ring_descent(egg_outer, EggRing.INNER, auth)
+        descent = SacredRituals.ring_descent(egg_outer, EggRing.INNER, egg_outer._yolk)
         assert descent.new_ring == "INNER"
 
         # Fail-to-noise on one egg
