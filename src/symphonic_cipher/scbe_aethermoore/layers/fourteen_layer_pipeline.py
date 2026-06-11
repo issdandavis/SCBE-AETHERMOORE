@@ -270,13 +270,21 @@ def layer_6_breathing(u: np.ndarray, t: float) -> np.ndarray:
 
     T_breath(u; t) = tanh(b(t) · artanh(||u||)) · u/||u||
 
-    Properties:
-        - Diffeomorphism of 𝔹ⁿ onto itself
-        - Preserves hyperbolic distance (isometry)
-        - Expands/contracts based on breathing cycle
-        - b > 1 expands, b < 1 contracts
+    This is a radial HYPERBOLIC DILATION: it scales each point's hyperbolic
+    radius artanh(||u||) by the breathing factor b(t). Its job is to expand or
+    contract the ball with the breathing cycle, so it deliberately MOVES points
+    in d_H — it is not distance-preserving.
 
-    Theorem: T_breath is an isometry of (𝔹ⁿ, d_H)
+    Properties:
+        - Diffeomorphism of 𝔹ⁿ onto itself (smooth, invertible).
+        - Radial dilation by b(t): scales hyperbolic distance-from-origin by b.
+        - b > 1 expands, b < 1 contracts, b = 1 is the identity.
+        - NOT an isometry of (𝔹ⁿ, d_H) for b ≠ 1.
+
+    Verified: under breathing a fixed pair's d_H scales by a constant ratio ≈ b
+    (e.g. 1.05 ± 0.00 at t=0.3) — see scripts/eval/layer_role_bench.py. An earlier
+    docstring claimed this was a distance-preserving isometry; that was incorrect,
+    because a non-trivial dilation changes d_H by design.
     """
     norm = np.linalg.norm(u)
     if norm < EPS:

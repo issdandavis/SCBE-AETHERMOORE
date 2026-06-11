@@ -274,7 +274,8 @@ class HyperbolicEngine:
     """
     Organic hyperbolic embedding and transformations.
 
-    Axioms A4-A7: Embedding, breathing, phase, isometries.
+    Axioms A4-A7: Poincaré embedding, breathing (radial dilation, NOT an
+    isometry), phase (Möbius isometry).
 
     Key insight: Hyperbolic space naturally handles hierarchical/threat
     scaling - close to center = low risk, near boundary = high risk.
