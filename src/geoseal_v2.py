@@ -112,8 +112,19 @@ def fuse_scores(
     anchor: MixedAgent,
     candidate: MixedAgent,
     weights: Tuple[float, float, float] = DEFAULT_WEIGHTS,
+    *,
+    allow_threshold: float = MEMORY_WRITE_THRESHOLD,
+    quarantine_threshold: float = QUARANTINE_TRUST_THRESHOLD,
 ) -> FusedScore:
-    """Fuse three geometry scores into a single trust value."""
+    """Fuse three geometry scores into a single trust value.
+
+    Action thresholds are tunable per call site; defaults preserve the
+    historical ALLOW >= 0.7 / QUARANTINE >= 0.3 / DENY bands.
+    """
+    if allow_threshold < quarantine_threshold:
+        raise ValueError(
+            f"allow_threshold ({allow_threshold}) must be >= quarantine_threshold ({quarantine_threshold})"
+        )
     w_h, w_s, w_g = weights
     s_h = score_hyperbolic(anchor, candidate)
     s_s = score_phase(anchor, candidate)
@@ -122,9 +133,9 @@ def fuse_scores(
     trust = w_h * s_h + w_s * s_s + w_g * s_g
     anomaly = s_s < 0.5 or s_g < 0.5
 
-    if trust >= MEMORY_WRITE_THRESHOLD:
+    if trust >= allow_threshold:
         action: Action = "ALLOW"
-    elif trust >= QUARANTINE_TRUST_THRESHOLD:
+    elif trust >= quarantine_threshold:
         action = "QUARANTINE"
     else:
         action = "DENY"
@@ -219,7 +230,14 @@ def swarm_step_v2(
     sigma_decay: float = 0.01,
     weights: Tuple[float, float, float] = DEFAULT_WEIGHTS,
 ) -> List[MixedAgent]:
-    """One v2 swarm update step with uncertainty evolution."""
+    """One v2 swarm update step with uncertainty evolution.
+
+    sigma_decay must be >= 0: it is a decay magnitude, and a negative value
+    would invert the uncertainty dynamics (suspected agents would become
+    MORE certain).
+    """
+    if sigma_decay < 0:
+        raise ValueError(f"sigma_decay must be >= 0, got {sigma_decay}")
     n = len(agents)
     if n == 0:
         return agents
@@ -291,7 +309,14 @@ def score_all_candidates(
     candidates: List[MixedAgent],
     weights: Tuple[float, float, float] = DEFAULT_WEIGHTS,
 ) -> List[ScoredCandidate]:
-    """Score all candidates against tongue anchors. Returns sorted by trust desc."""
+    """Score all candidates against tongue anchors. Returns sorted by trust desc.
+
+    Raises ValueError when candidates exist but the anchor list is empty —
+    previously every candidate was silently dropped, which callers could
+    not distinguish from "nothing scored well".
+    """
+    if candidates and not anchors:
+        raise ValueError("score_all_candidates: anchors list is empty — every candidate would be silently dropped")
     results: List[ScoredCandidate] = []
 
     for candidate in candidates:
