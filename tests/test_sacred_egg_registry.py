@@ -12,8 +12,6 @@ Tests cover:
 @component Sacred Egg Registry Tests
 """
 
-import base64
-import os
 import time
 
 import pytest
@@ -44,9 +42,16 @@ def integrator():
 
 @pytest.fixture
 def key_pair():
-    pk = base64.b64encode(os.urandom(32)).decode()
-    sk = pk
-    return pk, sk
+    """Real ML-KEM-768 + ML-DSA-65 key bundles (public, secret) for the egg seal path.
+
+    Skips dependent tests where native liboqs is unavailable (the seal fails closed).
+    """
+    from src.symphonic_cipher.scbe_aethermoore.cli_toolkit import geoseal_keygen
+
+    try:
+        return geoseal_keygen()
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
 
 
 @pytest.fixture

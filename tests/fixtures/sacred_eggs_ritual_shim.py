@@ -1,7 +1,12 @@
 """
-Sacred Eggs ritual reference implementation.
+Sacred Eggs ritual reference shim — test fixture for test_sacred_eggs_rituals.py.
 
-This module exposes a small ritual API compatible with the SCBE test harness:
+This is a self-contained, dependency-light reference implementation of the
+ritual API the conformance test probes for. It is NOT a production module
+(it formerly lived at src/sacred_eggs.py); it is loaded by path from the
+conformance test and exists only to exercise that test's contract.
+
+It exposes a small ritual API compatible with the SCBE test harness:
 - `solitary_incubation`
 - `triadic_binding` / `manifold_binding`
 - `verify_binding`
