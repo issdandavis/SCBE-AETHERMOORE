@@ -552,19 +552,36 @@ class SacredRituals:
                 f"{egg.ring.value} → {target_ring.value} is not a descent"
             )
 
-        # Verify authorization: HMAC(auth_secret, shell_hash) must match
-        expected = hmac.new(
+        # Verify authorization: the caller must prove knowledge of the egg's
+        # secret (the yolk). shell_hash == SHA-256(yolk || context) is the
+        # PUBLIC commitment to that secret, so re-deriving the shell from the
+        # presented auth_secret and constant-time comparing it to the stored
+        # shell_hash is a sound proof-of-knowledge check: a caller who does not
+        # know the yolk cannot reproduce shell_hash and is denied.
+        #
+        # SECURITY (fail-closed): this comparison is the gate. A prior revision
+        # computed an HMAC and then mutated the ring UNCONDITIONALLY — any
+        # 32-byte auth_secret, including a random wrong one, escalated
+        # OUTER -> CORE. The descent must reject when the secret does not match.
+        recomputed_shell = hashlib.sha256(auth_secret + egg.context.encode("utf-8")).digest()
+        if not hmac.compare_digest(recomputed_shell, egg.shell_hash):
+            # Documented ritual (Fail-to-Noise): a rejected attempt burns the
+            # shell handle to random noise so it cannot be replayed or
+            # correlated, then the descent is denied.
+            SacredRituals.fail_to_noise(egg)
+            raise PermissionError(
+                f"Ring descent denied: auth_secret does not authorize " f"{egg.ring.value} -> {target_ring.value}"
+            )
+
+        # Authorized — bind the proof into a receipt over (shell, target ring).
+        auth_hash = hmac.new(
             auth_secret,
             egg.shell_hash + target_ring.value.encode(),
             hashlib.sha256,
-        ).digest()
+        ).hexdigest()[:16]
 
-        auth_hash = expected.hex()[:16]
-
-        # Record old ring
+        # Record old ring, then perform the descent (mutate egg's ring).
         old_ring = egg.ring.value
-
-        # Perform descent (mutate egg's ring)
         egg.ring = target_ring
 
         return RingDescentResult(
