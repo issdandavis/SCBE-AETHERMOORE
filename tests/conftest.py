@@ -168,7 +168,6 @@ def _register_ai_brain_aliases():
         "gate_swap",
         "flock_shepherd",
         "quasicrystal_lattice",
-        "sacred_eggs",
         "sacred_eggs_ref",
         "sacred_egg_registry",
         "sacred_egg_integrator",

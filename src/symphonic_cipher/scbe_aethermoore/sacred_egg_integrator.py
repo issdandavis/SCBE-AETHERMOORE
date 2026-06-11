@@ -13,8 +13,7 @@ On failure, returns noise tokens of identical length (fail-to-noise).
 
 Integrates:
   - cli_toolkit: CrossTokenizer, ConcentricRingPolicy, geoseal_encrypt/decrypt
-  - sacred_eggs.py: predicate-gated AEAD foundation
-  - sacred_eggs_ref.py: patent-hardened decrypt-or-noise semantics
+  - sacred_eggs_ref.py: predicate-gated AEAD + patent-hardened decrypt-or-noise
 
 @layer Layer 12, Layer 13
 @component Sacred Egg Integrator
