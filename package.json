@@ -59,6 +59,11 @@
       "import": "./dist/src/ai_brain/index.js",
       "require": "./dist/src/ai_brain/index.js"
     },
+    "./aethermon": {
+      "types": "./dist/src/aethermon/index.d.ts",
+      "import": "./dist/src/aethermon/index.js",
+      "require": "./dist/src/aethermon/index.js"
+    },
     "./governance": {
       "types": "./dist/src/governance/index.d.ts",
       "import": "./dist/src/governance/index.js",
@@ -149,6 +154,8 @@
     "demo": "npx open-cli demos/site-demos/customer-demo.html",
     "agentic:demo": "ts-node src/agentic/demo-runner.ts",
     "game:debug-ts": "node scripts/run_typescript_debug_scenario.cjs",
+    "game:aethermon": "tsc -p tsconfig.json && node dist/src/aethermon/cli.js",
+    "game:aethermon:demo": "tsc -p tsconfig.json && node dist/src/aethermon/cli.js --demo",
     "benchmark:coding-agents": "python scripts/eval/functional_coding_agent_benchmark.py",
     "benchmark:coding-agents:college": "python scripts/eval/functional_coding_agent_benchmark.py --task-file config/training/coding_agent_benchmarks/college_choice_eval_tasks_v1.json --replace-default-tasks",
     "benchmark:coding-agents:college:gold": "python scripts/eval/functional_coding_agent_benchmark.py --candidate-file config/training/coding_agent_benchmarks/college_choice_candidate_template_v1.json --task-file config/training/coding_agent_benchmarks/college_choice_eval_tasks_v1.json --replace-default-tasks",

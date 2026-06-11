@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **AETHERMON creature-raising game** (`src/aethermon/`, exported as `scbe-aethermoore/aethermon`): a Digimon-style virtual-pet battler — hatch one of three starter eggs, manage hunger/energy/mood/bond/discipline, train stats, and climb the ten-rung Spiral Arena. 28-species evolution graph (EGG → MOTE → SPRITE → GUARDIAN → PARAGON → APEX) that branches on care mistakes, bond, discipline, and training focus, with a guaranteed fallback path. Battles use a golden-ratio alignment triangle (AEGIS > VENOM > FLUX, ×φ / ×1/φ) crossed with the six-Sacred-Tongue element wheel. Fully deterministic from the save file (seeded mulberry32 RNG). Play via `npm run game:aethermon` (interactive) or `npm run game:aethermon:demo` (scripted). 57 new tests in `tests/aethermon/` (unit + integration + fast-check properties); guide in `docs/AETHERMON_GAME.md`.
+
 ### Changed
 
 - **Legal/patent documents moved to private storage**: `docs/legal/` (96 files — patent workbench, claims, prosecution material) plus the patent portfolio docs in `docs/` and `docs/business/` are no longer tracked in the public repo. The public site pages (`docs/legal/privacy.html`, `docs/legal/terms.html`) and the commercial license terms remain. `scbe-patent init` regenerates the workbench locally; its output is now gitignored. Note: prior revisions remain in git history until a history rewrite.
