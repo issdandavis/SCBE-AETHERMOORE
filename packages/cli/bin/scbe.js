@@ -12,6 +12,12 @@ const {
   buildTerminalFrontendPayload,
   renderTerminalFrontend,
 } = require('../lib/terminal-frontend');
+const {
+  manifestCommandNames,
+  buildToolsManifest,
+  renderToolsHuman,
+} = require('../lib/tools-manifest');
+const { ErrorCodes, emitError, wantsJson, installGlobalErrorHandlers } = require('../lib/errors');
 
 let utteranceLog = null;
 try {
@@ -61,6 +67,8 @@ Usage:
 ─────────────────────────────────────────────────────────────────────────────
   CORE
 ─────────────────────────────────────────────────────────────────────────────
+  tools [--json]          List every command as a machine-readable manifest
+                          (for AI/tool callers); --json is the discovery surface
   version [--json]        Print version + build metadata (pkg, node, platform,
                           liboqs status, provider availability)
   demo [--json]           Run governance safety demo: L12 harmonic wall scoring
@@ -835,13 +843,17 @@ function inferCompass(command) {
   return { lane, language, intent };
 }
 
-function gateCommand(command) {
+function gateCommand(command, options = {}) {
+  // shellContext=true relaxes the blanket pipe/`;` block for paths that run the
+  // command THROUGH a shell (scbe run -> PowerShell), while the dangerous-pattern
+  // denies (recursive delete, curl|iex, encoded PS, secret paths) still apply.
+  const shellContext = options.shellContext ? '1' : '0';
   const code = [
     'import json, sys',
     'from src.crypto.geoseal_execution_gate import scan_command',
-    'print(json.dumps(scan_command(sys.argv[1]).to_dict()))',
+    'print(json.dumps(scan_command(sys.argv[1], shell_context=(sys.argv[2] == "1")).to_dict()))',
   ].join('\n');
-  const child = spawnSync(pythonCommand(), ['-c', code, command], {
+  const child = spawnSync(pythonCommand(), ['-c', code, command, shellContext], {
     cwd: repoRoot(),
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -1009,7 +1021,9 @@ function runShellCommand(command, options = {}) {
   const cwd = options.cwd || process.cwd();
   const start = Date.now();
   const compass = inferCompass(command);
-  const gate = gateCommand(command);
+  // scbe run executes through the platform shell (PowerShell on Windows), so
+  // pipelines are legitimate — gate in shell context.
+  const gate = gateCommand(command, { shellContext: true });
   const startedAt = nowIso();
   const row = {
     schema_version: 'scbe_terminal_run_v1',
@@ -6670,6 +6684,17 @@ function runInteractiveShell(flags = {}) {
 function runPythonScript(relativePath, args) {
   const script = resolveRepoScript(relativePath);
   if (!script) {
+    if (wantsJson(args)) {
+      emitError(
+        {
+          code: ErrorCodes.SOURCE_CHECKOUT_REQUIRED,
+          message: `scbe could not find ${relativePath}.`,
+          details: { script: relativePath },
+          hint: 'This command needs a local SCBE-AETHERMOORE source checkout.',
+        },
+        { json: true }
+      );
+    }
     process.stderr.write(
       [
         `scbe could not find ${relativePath}.`,
@@ -6690,6 +6715,17 @@ function runPythonScript(relativePath, args) {
 function runNodeScript(relativePath, args) {
   const script = resolveRepoScript(relativePath);
   if (!script) {
+    if (wantsJson(args)) {
+      emitError(
+        {
+          code: ErrorCodes.SOURCE_CHECKOUT_REQUIRED,
+          message: `scbe could not find ${relativePath}.`,
+          details: { script: relativePath },
+          hint: 'This command needs a local SCBE-AETHERMOORE source checkout.',
+        },
+        { json: true }
+      );
+    }
     process.stderr.write(
       [
         `scbe could not find ${relativePath}.`,
@@ -9748,85 +9784,12 @@ function runBundleCli(args) {
   createBundleFromArgs(args);
 }
 
-// Top-level commands scbe handles directly. Used by the typo-suggestion guard.
-// Order doesn't matter; this list is the complete set of scbe-owned verbs.
-const KNOWN_COMMANDS = [
-  'help',
-  'version',
-  'demo',
-  'magic',
-  'selftest',
-  'doctor',
-  'platform',
-  'tourney',
-  'credits',
-  'hosted-run',
-  'upgrade',
-  'do',
-  'work',
-  'agent',
-  'land',
-  'shell',
-  'advisor',
-  'terminal',
-  'term',
-  'ui',
-  'actions',
-  'action',
-  'desktop',
-  'desk',
-  'run',
-  'exec',
-  'x',
-  'format',
-  'test',
-  'fix',
-  'prepush',
-  'ship',
-  'commit',
-  'push',
-  'alias',
-  'aliases',
-  'status',
-  'liboqs',
-  'history',
-  'bench',
-  'benchmark',
-  'bundle',
-  'youtube',
-  'foundry',
-  'flow',
-  'workspace',
-  'agent-bus',
-  'agentbus',
-  'abacus',
-  'contract',
-  'trap-redirect',
-  'trap-dispatch',
-  'compile-ca',
-  'ca-plan',
-  'render-op',
-  'compile',
-  'route',
-  'aetherpp',
-  'squad',
-  'xval',
-  'utterances',
-  // Longform Bridge
-  'do',
-  'work',
-  'land',
-  'agent',
-  'bench',
-  'benchmark',
-  // Tier 2 computation
-  'calc',
-  'math',
-  'infer',
-  'chem',
-  'prime',
-  'emit',
-];
+// Top-level commands scbe handles directly. Used by the typo-suggestion guard
+// and the natural-language router. Derived from the single canonical command
+// spec in lib/tools-manifest.js so this list can never drift from `scbe tools`.
+// (A drift test in tests/tools-manifest.test.cjs asserts every dispatched verb
+// is present in the spec.)
+const KNOWN_COMMANDS = manifestCommandNames();
 
 function levenshtein(a, b) {
   if (a === b) return 0;
@@ -10668,12 +10631,54 @@ function runUtterances(args) {
 }
 
 const argv = process.argv.slice(2);
+// Backstop: any uncaught throw becomes a structured scbe_error_v1 object under
+// --json instead of a raw stack trace (SCBE_DEBUG=1 keeps the stack in human mode).
+installGlobalErrorHandlers(argv);
 if (argv.length === 0) {
   runTerminalFrontend([]);
 }
 if (argv[0] === '--help' || argv[0] === '-h' || argv[0] === 'help') {
   process.stdout.write(colorizeHelp(CLI_HELP, ui({})));
   process.exit(0);
+}
+
+if (argv[0] === 'tools' || argv[0] === 'list-tools') {
+  const manifest = buildToolsManifest();
+  if (argv.includes('--json')) {
+    process.stdout.write(`${JSON.stringify(manifest, null, 2)}\n`);
+  } else {
+    process.stdout.write(`${renderToolsHuman(manifest)}\n`);
+  }
+  process.exit(0);
+}
+
+if (argv[0] === 'rns') {
+  // Exact carry-free Residue Number System arithmetic over Fermat primes.
+  runPythonScript('scripts/research/fermat_rns.py', argv.slice(1));
+}
+
+if (argv[0] === 'geoseal' || argv[0] === 'geocli') {
+  // GeoSeal coding toolchain (weighted code packets, tongue compile/run,
+  // code round-trip, project scaffold, atomic tokenizer) — each step receipted.
+  // bin/geoseal.cjs sets up the `python -m geoseal_cli` passthrough.
+  runNodeScript('bin/geoseal.cjs', argv.slice(1));
+}
+
+if (argv[0] === 'stasm') {
+  // Sacred Tongue assembler: .sts source -> .stv bytecode.
+  runPythonScript('scripts/stasm.py', argv.slice(1));
+}
+
+if (argv[0] === 'store') {
+  // Unified governed storage over rclone remotes (gdrive/onedrive/...).
+  // Safe by default: list/read/pull/copy-up only — never deletes.
+  runPythonScript('scripts/tools/scbe_store.py', argv.slice(1));
+}
+
+if (argv[0] === 'mason') {
+  // Build working code by setting pre-verified procedural stones into a schematic.
+  // Every block is verified in place by real execution; stubs are captured, not placed.
+  runPythonScript('scripts/tools/mason.py', argv.slice(1));
 }
 
 if (argv[0] === 'utterances' || argv[0] === 'utterance-log') {
@@ -11151,6 +11156,18 @@ if (!KNOWN_COMMANDS.includes(argv[0]) && argv[0] && !argv[0].startsWith('--')) {
 {
   const suggestion = suggestCommand(argv[0]);
   if (suggestion) {
+    if (wantsJson(argv)) {
+      emitError(
+        {
+          code: ErrorCodes.UNKNOWN_COMMAND,
+          message: `'${argv[0]}' is not a scbe command.`,
+          command: argv[0],
+          suggestions: [suggestion],
+          hint: "Run 'scbe tools --json' for the full command list.",
+        },
+        { json: true }
+      );
+    }
     process.stderr.write(
       `scbe: '${argv[0]}' is not a scbe command. Did you mean 'scbe ${suggestion}'?\n` +
         `      Run 'scbe help' for the full command list.\n`

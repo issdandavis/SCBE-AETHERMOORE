@@ -1,7 +1,7 @@
 {
   "name": "scbe-aethermoore-cli",
   "version": "4.4.0",
-  "description": "SCBE Aethermoor CLI — governed AI operations platform with 30 commands: 14-layer harmonic pipeline, Sacred Tongues tokenizer, post-quantum receipts (ML-KEM-768 + ML-DSA-65), multi-agent bus with audit-chain workspaces, deterministic BigInt governance abacus, SCONE-class Solidity contract scanner, adversarial prompt inspector, squad routing with multi-provider cross-validation, flow operator loop, and AI-first governed shell.",
+  "description": "SCBE Aethermoor CLI — governed AI operations platform with 60+ governed commands: 14-layer harmonic pipeline, Sacred Tongues tokenizer, post-quantum receipts (ML-KEM-768 + ML-DSA-65), multi-agent bus with audit-chain workspaces, deterministic BigInt governance abacus, SCONE-class Solidity contract scanner, adversarial prompt inspector, squad routing with multi-provider cross-validation, flow operator loop, and AI-first governed shell.",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT OR Apache-2.0",
   "type": "commonjs",
@@ -13,6 +13,7 @@
   "files": [
     "bin",
     "lib",
+    "mcp",
     "skills",
     "scripts/scbe_tb_agent.py",
     "scripts/shell_benchmark.cjs",
@@ -33,6 +34,7 @@
   "scripts": {
     "help": "node ./bin/scbe.js --help",
     "selftest": "node ./bin/scbe.js selftest",
+    "mcp": "node mcp/scbe-mcp-server.cjs",
     "test": "node --test tests/*.test.cjs",
     "bench:shell": "node scripts/shell_benchmark.cjs",
     "bench:corpus": "node scripts/bench_task_corpus.cjs",
@@ -49,6 +51,7 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "ink": "^4.4.1",
     "playwright-core": "^1.58.2",
     "react": "^18.3.1",
