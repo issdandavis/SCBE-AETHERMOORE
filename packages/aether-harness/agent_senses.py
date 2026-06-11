@@ -31,7 +31,6 @@ from __future__ import annotations
 
 import argparse
 import contextlib
-import hashlib
 import json
 import os
 import sys
@@ -69,36 +68,22 @@ with _silence_native_stdout():  # the governance seam pulls in liboqs
     from src.video_lattice.tiny_engine import Entity, TinyWorld, demo_world  # noqa: E402,F401
     from src.video_lattice.vector_index import LocalVectorIndex  # noqa: E402
     from governance_seam import GovernanceSeam, SeamDecision  # noqa: E402
+    from tongue_embed import dominant_tongue, tongue_embed  # noqa: E402
 
 _STATE_DIR = _REPO_ROOT / ".scbe" / "aether" / "senses"
 _WORLD_PATH = _STATE_DIR / "world.json"
 _MEMORY_PATH = _STATE_DIR / "memory.json"
-_EMBED_DIM = 64
+_EMBED_DIM = 96  # the tongue embedding's dimension (6 governance axes + fingerprint)
 
 
 # --------------------------------------------------------------------------- #
-# Deterministic, dependency-free text embedding (stable across processes).
+# Memory embedding: the Six Sacred Tongues basis (see tongue_embed.py). The
+# governance channel is load-bearing (null-tested in bench_tongue_embed.py); the
+# fingerprint channel is a graceful fallback for text the tongue lexicon doesn't
+# cover. Deterministic across processes so memory survives separate CLI calls.
 # --------------------------------------------------------------------------- #
 def embed_text(text: str, dim: int = _EMBED_DIM) -> np.ndarray:
-    """Hash word unigrams + char trigrams into a fixed vector.
-
-    Uses hashlib (not Python's salted ``hash``) so the same text maps to the
-    same vector in every process — required for the memory to survive across
-    separate CLI calls.
-    """
-    vec = np.zeros(dim, dtype=np.float64)
-    tokens = [t for t in text.lower().split() if t]
-    for tok in tokens:
-        vec[_stable_hash(tok) % dim] += 2.0  # whole word carries most weight
-        for i in range(len(tok) - 2):  # char trigrams add fuzzy overlap
-            vec[_stable_hash(tok[i : i + 3]) % dim] += 1.0
-    if not np.any(vec):  # never hand a zero vector to the (normalizing) index
-        vec[_stable_hash(text) % dim] = 1.0
-    return vec
-
-
-def _stable_hash(s: str) -> int:
-    return int.from_bytes(hashlib.md5(s.encode("utf-8")).digest()[:8], "big")
+    return tongue_embed(text, dim=dim)
 
 
 # --------------------------------------------------------------------------- #
@@ -124,7 +109,9 @@ class AgentSenses:
 
     def _load_memory(self) -> LocalVectorIndex:
         if _MEMORY_PATH.exists():
-            return LocalVectorIndex.load(_MEMORY_PATH)
+            idx = LocalVectorIndex.load(_MEMORY_PATH)
+            if idx.dim == _EMBED_DIM:
+                return idx  # else fall through: old-dim memory, start fresh
         return LocalVectorIndex(dim=_EMBED_DIM)
 
     def _save_memory(self) -> None:
@@ -163,9 +150,10 @@ class AgentSenses:
         d = self.seam.govern("write_memory", {"key": key, "text": text})
         if not d.allowed:
             return _blocked(d)
-        self.memory.add(key, embed_text(text), modality="note", metadata={"key": key, "text": text})
+        tongue = dominant_tongue(text)  # governance tag: which tongue the note speaks
+        self.memory.add(key, embed_text(text), modality="note", metadata={"key": key, "text": text, "tongue": tongue})
         self._save_memory()
-        return {"ok": True, "stored": key, "count": len(self.memory.records), "receipt": d.receipt}
+        return {"ok": True, "stored": key, "tongue": tongue, "count": len(self.memory.records), "receipt": d.receipt}
 
     def recall(self, query: str, k: int = 3) -> dict[str, Any]:
         """RECALL: retrieve the closest notes by meaning (governed)."""
@@ -173,8 +161,16 @@ class AgentSenses:
         if not d.allowed:
             return _blocked(d)
         hits = self.memory.search(embed_text(query), top_k=k)
-        matches = [{"key": h.record_id, "score": round(h.score, 3), "text": h.metadata.get("text", "")} for h in hits]
-        return {"ok": True, "query": query, "matches": matches, "receipt": d.receipt}
+        matches = [
+            {
+                "key": h.record_id,
+                "score": round(h.score, 3),
+                "tongue": h.metadata.get("tongue"),
+                "text": h.metadata.get("text", ""),
+            }
+            for h in hits
+        ]
+        return {"ok": True, "query": query, "tongue": dominant_tongue(query), "matches": matches, "receipt": d.receipt}
 
     def reset(self) -> dict[str, Any]:
         """Fresh world + empty memory."""
@@ -207,11 +203,14 @@ def _print_human(cmd: str, result: dict[str, Any], seam: GovernanceSeam) -> None
         verb = "moved" if result["moved"] else "could not move (blocked by terrain)"
         print(f"  {verb}: {result['entity']}  → frame {result.get('frame')}")
     elif cmd == "remember" and result.get("ok"):
-        print(f"  remembered '{result['stored']}'  (memory holds {result['count']} notes)")
+        tag = f" · speaks {result['tongue']}" if result.get("tongue") else ""
+        print(f"  remembered '{result['stored']}'{tag}  (memory holds {result['count']} notes)")
     elif cmd == "recall" and result.get("ok"):
-        print(f"\n  recall \"{result['query']}\":")
+        qtag = f" (query speaks {result['tongue']})" if result.get("tongue") else ""
+        print(f"\n  recall \"{result['query']}\"{qtag}:")
         for m in result["matches"]:
-            print(f"    {m['score']:+.2f}  [{m['key']}] {m['text']}")
+            mtag = f" {m['tongue']}" if m.get("tongue") else ""
+            print(f"    {m['score']:+.2f} [{mtag.strip() or '··'}] {m['text']}")
         if not result["matches"]:
             print("    (nothing remembered yet)")
     elif cmd == "reset":
