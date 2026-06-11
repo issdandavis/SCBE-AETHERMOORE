@@ -7,6 +7,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   update-changelog:
     runs-on: ubuntu-latest
