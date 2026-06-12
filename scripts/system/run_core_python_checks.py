@@ -39,6 +39,9 @@ CORE_SMOKE_PATHS: tuple[str, ...] = (
     # exact units, balancer, geometry view). rdkit-dependent geometry
     # tests importorskip cleanly where rdkit is absent.
     "tests/test_reaction_state_packet.py",
+    "tests/test_reaction_ledger_checkpoint.py",
+    "tests/test_jcs_canonicalization.py",
+    "tests/test_acta_receipt_export.py",
     "tests/test_units.py",
     "tests/test_reaction_balance.py",
     "tests/test_geometry_view.py",

@@ -28,9 +28,11 @@ from python.scbe.geometry_view import GeometryEngineError, geometry_view_packet
 from python.scbe.reaction_balance import BalanceError, balance_reaction_packet
 from python.scbe.reaction_state import (
     ReactionEndpoint,
+    ReactionLedger,
     ReactionRecalculation,
     build_reaction_state_packet,
     packet_from_dict,
+    rekor_hashedrekord_entry,
 )
 
 # Every packet this CLI emits is signed under one stable identity so receipts
@@ -362,6 +364,51 @@ def print_human_geometry(payload: dict[str, Any]) -> None:
     )
 
 
+def build_checkpoint(path: str, rekor_dry_run: bool = False) -> dict[str, Any]:
+    """Merkle-checkpoint every packet found in a packet/report file.
+
+    The checkpoint commits to the exact set, order, and count (the omission
+    attack a linear prev-hash chain cannot see) and is signed under the CLI
+    identity. chain_verified is True only when the packets form an unbroken
+    prev-hash chain in file order.
+    """
+    data = load_json(path)
+    found = find_packets(data)
+    if not found:
+        return {"schema_version": "scbe_react_checkpoint_v1", "ok": False, "error": "no packets found", "path": path}
+    ledger = ReactionLedger(agent_id=SIGNER_AGENT_ID)
+    ledger.packets = [packet_from_dict(p) for p in found]
+    ledger._last_hash = ledger.packets[-1].packet_hash
+    checkpoint = ledger.checkpoint()
+    payload: dict[str, Any] = {
+        "schema_version": "scbe_react_checkpoint_v1",
+        "ok": True,
+        "path": path,
+        "packets": len(found),
+        "checkpoint": checkpoint,
+        "inclusion_proofs": [ledger.inclusion_proof(i) for i in range(len(found))],
+    }
+    if rekor_dry_run:
+        # Anchor-READY only: no network I/O, and the public Rekor instance
+        # verifies PKIX keys (ECDSA/Ed25519ph), not ML-DSA - countersign the
+        # digest with a PKIX identity before actually submitting.
+        payload["rekor_dry_run"] = rekor_hashedrekord_entry(checkpoint)
+    return payload
+
+
+def print_human_checkpoint(payload: dict[str, Any]) -> None:
+    if not payload.get("ok"):
+        print(f"reaction checkpoint: FAILED {payload.get('error', '')}")
+        return
+    cp = payload["checkpoint"]
+    print(f"reaction checkpoint: {payload['packets']} packets")
+    print(f"merkle root: {cp['merkle_root']}")
+    print(f"chain verified: {cp['chain_verified']}")
+    print(f"signed: {cp['signature_alg'] or 'no'}")
+    if payload.get("rekor_dry_run"):
+        print(f"rekor digest (dry-run): {payload['rekor_dry_run']['spec']['data']['hash']['value']}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog="scbe react")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -383,6 +430,10 @@ def main() -> int:
     geometry_parser = sub.add_parser("geometry")
     geometry_parser.add_argument("--smiles", required=True, help="SMILES string, e.g. CCO")
     geometry_parser.add_argument("--json", action="store_true")
+    checkpoint_parser = sub.add_parser("checkpoint")
+    checkpoint_parser.add_argument("--packets", required=True, help="packet or report JSON file to checkpoint")
+    checkpoint_parser.add_argument("--rekor-dry-run", action="store_true")
+    checkpoint_parser.add_argument("--json", action="store_true")
     audio = sub.add_parser("audio")
     audio.add_argument("--frequency", type=float, default=440.0)
     audio.add_argument("--sample-rate", type=float, default=4096.0)
@@ -433,6 +484,13 @@ def main() -> int:
             print(json.dumps(payload, indent=2))
         else:
             print_human_geometry(payload)
+        return 0 if payload["ok"] else 1
+    if args.cmd == "checkpoint":
+        payload = build_checkpoint(args.packets, rekor_dry_run=args.rekor_dry_run)
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_human_checkpoint(payload)
         return 0 if payload["ok"] else 1
     if args.cmd == "audio":
         payload = build_audio_packet(

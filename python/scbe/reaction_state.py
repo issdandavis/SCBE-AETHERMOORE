@@ -9,6 +9,7 @@ declared representation.
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 from dataclasses import asdict, dataclass, field, replace
@@ -319,3 +320,353 @@ class ReactionLedger:
                 return False
             prev = packet.packet_hash
         return True
+
+    def merkle_root(self) -> str:
+        return merkle_tree_head([p.packet_hash or "" for p in self.packets])
+
+    def inclusion_proof(self, index: int) -> dict[str, Any]:
+        """Compact proof that packet ``index`` is committed by the current root —
+        verifiable with ``verify_merkle_inclusion`` and nothing else."""
+        hashes = [p.packet_hash or "" for p in self.packets]
+        return {
+            "schema_version": "scbe_merkle_inclusion_proof_v1",
+            "packet_hash": hashes[index],
+            "leaf_index": index,
+            "tree_size": len(hashes),
+            "audit_path": merkle_audit_path(hashes, index),
+            "merkle_root": merkle_tree_head(hashes),
+        }
+
+    def checkpoint(self) -> dict[str, Any]:
+        """Signed commitment to the exact set and count of packets so far.
+
+        The linear chain proves order; the checkpoint adds omission-resistance
+        (a dropped or truncated packet changes the root and the tree_size).
+        Signed with the same EventSigner identity as the packets; unsigned
+        (signature None) when no signer backend is available — never raises.
+        """
+        unsigned: dict[str, Any] = {
+            "schema_version": "scbe_reaction_ledger_checkpoint_v1",
+            "generated_at_utc": utc_now(),
+            "agent_id": self.agent_id,
+            "tree_size": len(self.packets),
+            "merkle_root": self.merkle_root(),
+            "first_packet_hash": self.packets[0].packet_hash if self.packets else None,
+            "last_packet_hash": self._last_hash,
+            "chain_verified": self.verify(),
+        }
+        signed = dict(unsigned)
+        signed.update({"signature": None, "signature_alg": None, "signer_public_key": None})
+        if not self.sign:
+            return signed
+        try:
+            from agents.agent_bus_signing import EventSigner
+
+            signer = EventSigner(self.agent_id)
+            if signer.initialize():
+                sig_b64, pk_b64, alg = signer.sign(unsigned)
+                if sig_b64:
+                    signed.update({"signature": sig_b64, "signature_alg": alg, "signer_public_key": pk_b64})
+        except Exception:  # pragma: no cover - checkpointing must not break a flow
+            pass
+        return signed
+
+    def acta_chain(self, issuer_id: str | None = None) -> list[dict[str, Any]]:
+        """Export the ledger as an ACTA-compatible receipt chain (one signed
+        envelope per packet, linked by previousReceiptHash per the draft)."""
+        receipts: list[dict[str, Any]] = []
+        prev: str | None = None
+        for packet in self.packets:
+            receipt = packet_to_acta_receipt(packet, issuer_id or self.agent_id, prev)
+            receipts.append(receipt)
+            prev = acta_receipt_hash(receipt)
+        return receipts
+
+
+def verify_checkpoint(checkpoint: dict[str, Any]) -> bool | None:
+    """Public-key verify a ledger checkpoint. True/False for asymmetric
+    signatures; None when unsigned or symmetric (mirrors verify_signature)."""
+    signature = checkpoint.get("signature")
+    alg = checkpoint.get("signature_alg")
+    if not signature or alg in (None, "unsigned", "HMAC-SHA512-sim"):
+        return None
+    payload = {k: v for k, v in checkpoint.items() if k not in ("signature", "signature_alg", "signer_public_key")}
+    try:
+        from agents.agent_bus_signing import EventSigner
+    except Exception:  # pragma: no cover
+        return None
+    return bool(EventSigner.verify(payload, signature, checkpoint.get("signer_public_key") or "", alg))
+
+
+# --------------------------------------------------------------------------- #
+# Merkle checkpointing (RFC 6962 tree shape)
+# --------------------------------------------------------------------------- #
+#
+# A linear hash chain proves order and linkage but cannot prove COMPLETENESS:
+# an operator who drops the tail of a chain (or a contiguous suffix) leaves no
+# trace. A signed Merkle checkpoint over the packet hashes fixes that — the
+# root commits to the exact set and count, and any packet can carry a compact
+# inclusion proof against it. Leaf/node inputs are domain-separated (0x00/0x01
+# prefixes, RFC 6962) so a node can never be replayed as a leaf.
+
+
+def _merkle_leaf_hash(packet_hash: str) -> str:
+    return hashlib.sha256(b"\x00" + bytes.fromhex(packet_hash)).hexdigest()
+
+
+def _merkle_node_hash(left: str, right: str) -> str:
+    return hashlib.sha256(b"\x01" + bytes.fromhex(left) + bytes.fromhex(right)).hexdigest()
+
+
+def merkle_tree_head(packet_hashes: list[str]) -> str:
+    """RFC 6962 Merkle Tree Head over an ordered list of packet hashes."""
+    n = len(packet_hashes)
+    if n == 0:
+        return hashlib.sha256(b"").hexdigest()
+    if n == 1:
+        return _merkle_leaf_hash(packet_hashes[0])
+    k = 1
+    while k * 2 < n:
+        k *= 2
+    return _merkle_node_hash(merkle_tree_head(packet_hashes[:k]), merkle_tree_head(packet_hashes[k:]))
+
+
+def merkle_audit_path(packet_hashes: list[str], index: int) -> list[str]:
+    """RFC 6962 section 2.1.1 inclusion (audit) path for the leaf at ``index``."""
+    n = len(packet_hashes)
+    if not 0 <= index < n:
+        raise IndexError(f"leaf index {index} out of range for tree of size {n}")
+    if n == 1:
+        return []
+    k = 1
+    while k * 2 < n:
+        k *= 2
+    if index < k:
+        return merkle_audit_path(packet_hashes[:k], index) + [merkle_tree_head(packet_hashes[k:])]
+    return merkle_audit_path(packet_hashes[k:], index - k) + [merkle_tree_head(packet_hashes[:k])]
+
+
+def verify_merkle_inclusion(
+    packet_hash: str,
+    leaf_index: int,
+    tree_size: int,
+    audit_path: list[str],
+    merkle_root: str,
+) -> bool:
+    """RFC 9162 section 2.1.3.2 inclusion-proof verification."""
+    if not 0 <= leaf_index < tree_size:
+        return False
+    fn, sn = leaf_index, tree_size - 1
+    result = _merkle_leaf_hash(packet_hash)
+    for sibling in audit_path:
+        if sn == 0:
+            return False
+        if fn % 2 == 1 or fn == sn:
+            result = _merkle_node_hash(sibling, result)
+            if fn % 2 == 0:
+                while fn % 2 == 0 and fn != 0:
+                    fn >>= 1
+                    sn >>= 1
+        else:
+            result = _merkle_node_hash(result, sibling)
+        fn >>= 1
+        sn >>= 1
+    return sn == 0 and result == merkle_root
+
+
+# --------------------------------------------------------------------------- #
+# RFC 8785 (JCS) canonicalization + ACTA receipt interop
+# --------------------------------------------------------------------------- #
+#
+# ``canonical_json``/``sha256_value`` above are this module's frozen internal
+# convention — existing packet hashes must stay byte-identical, so they are
+# untouched. JCS (RFC 8785) is the canonicalization the receipt-interop field
+# converged on (the ACTA signed-receipts draft mandates it); it differs from
+# json.dumps in number formatting (ECMA-262 shortest round-trip), raw-UTF-8
+# strings, and UTF-16-code-unit key order. It is used ONLY for the new export
+# views below, never for packet hashing.
+
+_JCS_ESCAPES = {0x08: "\\b", 0x09: "\\t", 0x0A: "\\n", 0x0C: "\\f", 0x0D: "\\r", 0x22: '\\"', 0x5C: "\\\\"}
+
+
+def _jcs_number(value: float) -> str:
+    """ECMA-262 Number::toString (shortest round-trip form), per RFC 8785 3.2.2.3."""
+    if value != value or value in (float("inf"), float("-inf")):
+        raise ValueError("NaN and Infinity are not allowed in JCS (RFC 8785)")
+    if value == 0:
+        return "0"  # IEEE -0 serializes as "0"
+    sign = "-" if value < 0 else ""
+    rep = repr(abs(value))  # Python repr is already shortest-round-trip
+    if "e" in rep:
+        mantissa, _, exp_str = rep.partition("e")
+        exponent = int(exp_str)
+    else:
+        mantissa, exponent = rep, 0
+    int_part, _, frac_part = mantissa.partition(".")
+    if int_part != "0":
+        point = len(int_part) + exponent  # decimal point position vs first significant digit
+    else:
+        point = exponent - (len(frac_part) - len(frac_part.lstrip("0")))
+    digits = (int_part + frac_part).strip("0")
+    k = len(digits)
+    if k <= point <= 21:
+        body = digits + "0" * (point - k)
+    elif 0 < point <= 21:
+        body = digits[:point] + "." + digits[point:]
+    elif -6 < point <= 0:
+        body = "0." + "0" * (-point) + digits
+    else:
+        e = point - 1
+        suffix = f"e+{e}" if e >= 0 else f"e-{-e}"
+        body = digits[0] + ("." + digits[1:] if k > 1 else "") + suffix
+    return sign + body
+
+
+def _jcs_string(value: str) -> str:
+    parts = ['"']
+    for ch in value:
+        cp = ord(ch)
+        esc = _JCS_ESCAPES.get(cp)
+        if esc is not None:
+            parts.append(esc)
+        elif cp < 0x20:
+            parts.append(f"\\u{cp:04x}")
+        else:
+            parts.append(ch)
+    parts.append('"')
+    return "".join(parts)
+
+
+def jcs_dumps(value: Any) -> str:
+    """RFC 8785 JSON Canonicalization Scheme serializer (stdlib-only)."""
+    if value is None:
+        return "null"
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    if isinstance(value, str):
+        return _jcs_string(value)
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        return _jcs_number(value)
+    if isinstance(value, (list, tuple)):
+        return "[" + ",".join(jcs_dumps(item) for item in value) + "]"
+    if isinstance(value, dict):
+        # RFC 8785 3.2.3: keys sorted as arrays of UTF-16 code units.
+        keys = sorted(value.keys(), key=lambda k: k.encode("utf-16-be"))
+        return "{" + ",".join(_jcs_string(k) + ":" + jcs_dumps(value[k]) for k in keys) + "}"
+    raise TypeError(f"type not representable in JCS: {type(value).__name__}")
+
+
+# ACTA = draft-farley-acta-signed-receipts-01 (IETF, Apr 2026): signed decision
+# receipts with JCS canonicalization, hex-encoded signatures, and
+# previousReceiptHash chaining. It RECOMMENDS ML-DSA-65 for new deployments —
+# which is exactly our primary signer tier, so the mapping is direct.
+
+ACTA_RECEIPT_TYPE = "scbe:reaction-state"
+_ACTA_ALG_BY_SIGNER = {"Ed25519": "EdDSA", "ML-DSA-65": "ML-DSA-65"}
+
+
+def acta_receipt_hash(receipt: dict[str, Any]) -> str:
+    """draft 5.7: lowercase hex SHA-256 of JCS of the ENTIRE signed receipt
+    (payload + signature), so re-signing an identical payload still yields a
+    distinct chain link."""
+    return hashlib.sha256(jcs_dumps(receipt).encode("utf-8")).hexdigest()
+
+
+def packet_to_acta_receipt(
+    packet: ReactionStatePacket,
+    issuer_id: str = "scbe-reaction-state",
+    previous_receipt_hash: str | None = None,
+) -> dict[str, Any]:
+    """Export a packet as an ACTA-compatible signed receipt envelope.
+
+    The signature is computed over the exact JCS bytes of the payload (the
+    draft's signing procedure), hex-encoded. Unsigned envelopes (signature
+    None) are returned when no asymmetric signer backend is available.
+    """
+    payload: dict[str, Any] = {
+        "type": ACTA_RECEIPT_TYPE,
+        "issued_at": packet.generated_at_utc,
+        "issuer_id": issuer_id,
+        "action_ref": hashlib.sha256(jcs_dumps(packet.unsigned_dict()).encode("utf-8")).hexdigest(),
+        "packet_hash": packet.packet_hash,
+        "bounded_operation": packet.bounded_operation,
+        "domain": packet.domain,
+        "classification": packet.classification,
+    }
+    if previous_receipt_hash:
+        payload["previousReceiptHash"] = previous_receipt_hash
+    receipt: dict[str, Any] = {"payload": payload, "signature": None}
+    try:
+        from agents.agent_bus_signing import EventSigner
+
+        signer = EventSigner(issuer_id)
+        if signer.initialize():
+            sig_b64, _pk_b64, alg = signer.sign_bytes(jcs_dumps(payload).encode("utf-8"))
+            acta_alg = _ACTA_ALG_BY_SIGNER.get(alg)
+            if sig_b64 and acta_alg:
+                receipt["signature"] = {
+                    "alg": acta_alg,
+                    "kid": issuer_id,
+                    "sig": base64.b64decode(sig_b64).hex(),
+                }
+    except Exception:  # pragma: no cover - export must not break a flow
+        pass
+    return receipt
+
+
+def verify_acta_receipt(receipt: dict[str, Any], public_key_b64: str) -> bool | None:
+    """Verify an ACTA receipt's signature over JCS(payload). The caller resolves
+    ``kid`` to a public key (the draft keeps keys out of the receipt). Returns
+    None for unsigned envelopes."""
+    signature = receipt.get("signature")
+    if not signature:
+        return None
+    signer_alg = {v: k for k, v in _ACTA_ALG_BY_SIGNER.items()}.get(signature.get("alg"))
+    if not signer_alg:
+        return False
+    try:
+        from agents.agent_bus_signing import EventSigner
+    except Exception:  # pragma: no cover
+        return None
+    sig_b64 = base64.b64encode(bytes.fromhex(signature.get("sig", ""))).decode()
+    message = jcs_dumps(receipt.get("payload", {})).encode("utf-8")
+    return bool(EventSigner.verify_bytes(message, sig_b64, public_key_b64, signer_alg))
+
+
+def verify_acta_chain(receipts: list[dict[str, Any]]) -> bool:
+    """Keyless integrity check of the previousReceiptHash linkage (signature
+    verification is per-receipt via ``verify_acta_receipt``)."""
+    prev: str | None = None
+    for receipt in receipts:
+        link = receipt.get("payload", {}).get("previousReceiptHash")
+        if link != prev:
+            return False
+        prev = acta_receipt_hash(receipt)
+    return True
+
+
+def rekor_hashedrekord_entry(
+    checkpoint: dict[str, Any],
+    signature_b64: str | None = None,
+    public_key_pem_b64: str | None = None,
+) -> dict[str, Any]:
+    """Anchor-READY Sigstore Rekor proposed entry over the checkpoint's JCS digest.
+
+    Dry-run by design: this module performs no network I/O, and the public
+    Rekor instance only verifies PKIX keys (ECDSA / Ed25519ph) — it cannot
+    verify ML-DSA today — so submission requires the caller to countersign the
+    digest with a PKIX identity and POST the entry explicitly.
+    """
+    digest = hashlib.sha256(jcs_dumps(checkpoint).encode("utf-8")).hexdigest()
+    return {
+        "apiVersion": "0.0.1",
+        "kind": "hashedrekord",
+        "spec": {
+            "data": {"hash": {"algorithm": "sha256", "value": digest}},
+            "signature": {"content": signature_b64, "publicKey": {"content": public_key_pem_b64}},
+        },
+    }
