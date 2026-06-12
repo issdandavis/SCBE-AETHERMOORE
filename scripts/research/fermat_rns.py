@@ -29,6 +29,8 @@ Usage:  PYTHONPATH=. python scripts/research/fermat_rns.py
 
 from __future__ import annotations
 
+import argparse
+import json
 from dataclasses import dataclass
 from functools import reduce
 from math import gcd
@@ -200,5 +202,109 @@ def main() -> int:
     return 0
 
 
+def _op_payload(op_name: str, a: int, b: int) -> dict:
+    """Exact RNS op result as a structured, JSON-serializable payload."""
+    r = FermatRNS()
+    ra, rb = r.encode(a), r.encode(b)
+    op = {"add": r.add, "sub": r.sub, "mul": r.mul}[op_name]
+    out = op(ra, rb)
+    true = {"add": a + b, "sub": a - b, "mul": a * b}[op_name]
+    decoded = r.decode(out)
+    return {
+        "ok": True,
+        "op": op_name,
+        "a": a,
+        "b": b,
+        "a_residues": list(ra.residues),
+        "b_residues": list(rb.residues),
+        "result_residues": list(out.residues),
+        "decoded": decoded,
+        "exact_true": true,
+        "exact": decoded == true and r.detection_safe(true),
+        "overflow": out.overflow,
+        "detection_safe": r.detection_safe(true),
+        "moduli": list(r.MODULI),
+        "guard": r.GUARD,
+        "legal_range": [r.legal_lo, r.legal_hi],
+        "guarded_range": r.M_total,
+    }
+
+
+def cli(argv: list[str]) -> int:
+    """Arg-driven entry point so `scbe rns ...` is a real tool, not just a demo."""
+    p = argparse.ArgumentParser(
+        prog="scbe rns",
+        description="Exact carry-free RNS arithmetic over Fermat primes, with overflow detection.",
+    )
+    sub = p.add_subparsers(dest="cmd")
+    pr = sub.add_parser("report", help="Run self-checks and print the capability report")
+    pr.add_argument("--json", action="store_true")
+    pe = sub.add_parser("encode", help="Encode an integer to RNS residues")
+    pe.add_argument("value", type=int)
+    pe.add_argument("--json", action="store_true")
+    for name in ("add", "sub", "mul"):
+        ps = sub.add_parser(name, help=f"Exact {name} of two integers via RNS (overflow-detected)")
+        ps.add_argument("a", type=int)
+        ps.add_argument("b", type=int)
+        ps.add_argument("--json", action="store_true")
+    args = p.parse_args(argv)
+
+    if args.cmd in (None, "report"):
+        if getattr(args, "json", False):
+            r = FermatRNS()
+            _self_check()
+            print(
+                json.dumps(
+                    {
+                        "ok": True,
+                        "tool": "fermat_rns",
+                        "info_moduli": list(r.INFO_MODULI),
+                        "guard": r.GUARD,
+                        "legal_range": [r.legal_lo, r.legal_hi],
+                        "guarded_range": r.M_total,
+                        "self_checks": "passed",
+                    },
+                    indent=2,
+                )
+            )
+            return 0
+        return main()
+
+    if args.cmd == "encode":
+        r = FermatRNS()
+        try:
+            v = r.encode(args.value)
+        except ValueError as exc:
+            out = {"ok": False, "error": str(exc)}
+            print(json.dumps(out, indent=2) if args.json else f"error: {exc}")
+            return 2
+        if args.json:
+            print(
+                json.dumps(
+                    {"ok": True, "value": args.value, "residues": list(v.residues), "moduli": list(r.MODULI)}, indent=2
+                )
+            )
+        else:
+            print(f"{args.value} -> residues {v.residues}  (moduli {r.MODULI})")
+        return 0
+
+    # add / sub / mul
+    try:
+        payload = _op_payload(args.cmd, args.a, args.b)
+    except ValueError as exc:
+        out = {"ok": False, "error": str(exc)}
+        print(json.dumps(out, indent=2) if args.json else f"error: {exc}")
+        return 2
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        flag = "OVERFLOW (detected, exact)" if payload["overflow"] else "ok"
+        print(
+            f"{payload['a']} {payload['op']} {payload['b']} = {payload['decoded']}  (true {payload['exact_true']})  -> {flag}"
+        )
+        print(f"  result residues {payload['result_residues']}  moduli {payload['moduli']}")
+    return 0
+
+
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(cli(sys.argv[1:]))
