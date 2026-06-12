@@ -321,6 +321,7 @@ def build_balance(reactants: str, products: str) -> dict[str, Any]:
         "ok": bool(packet.recalculation.identity_ok),
         "equation": packet.target.metadata.get("equation"),
         "coefficients": packet.target.metadata.get("coefficients"),
+        "hazards": packet.target.metadata.get("hazards", []),
         "reaction_state_packet": packet.to_dict(),
     }
 
@@ -331,6 +332,8 @@ def print_human_balance(payload: dict[str, Any]) -> None:
         return
     print(f"reaction balance: {payload['equation']}")
     print(f"coefficients: {payload['coefficients']}")
+    for flag in payload.get("hazards", []):
+        print(f"WARNING {flag}")
 
 
 def build_geometry(smiles: str) -> dict[str, Any]:

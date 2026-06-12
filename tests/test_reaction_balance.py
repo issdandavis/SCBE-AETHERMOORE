@@ -6,11 +6,13 @@ import pytest
 
 from python.scbe.reaction_balance import (
     BalanceError,
+    HazardDenied,
     balance,
     balance_reaction_packet,
     format_equation,
     is_conserved,
     parse_formula,
+    screen_species_hazards,
 )
 
 
@@ -56,3 +58,43 @@ def test_balance_packet_is_bijective_and_hash_verifies():
     assert packet.verify_hash()
     assert packet.recalculation.identity_ok is True
     assert packet.target.metadata["coefficients"] == [1, 5, 3, 4]
+
+
+def test_bleach_acid_reaction_carries_hazard_flags():
+    """The use-case-audit gap: NaOCl + HCl -> Cl2 balanced with zero warning."""
+    packet = balance_reaction_packet(["NaOCl", "HCl"], ["Cl2", "NaCl", "H2O"])
+    hazards = packet.target.metadata["hazards"]
+    assert any("Cl2" in flag and "(product)" in flag for flag in hazards)
+    assert any("chlorine" in flag for flag in hazards)
+    # Hazard is a warning, not a correctness failure: stoichiometry stays exact.
+    assert packet.classification == "BIJECTIVE"
+    assert packet.target.metadata["coefficients"] == [1, 2, 1, 1, 1]
+    assert any(flag in packet.semantic_engravings for flag in hazards)
+    assert any("not a safety claim" in line for line in packet.claim_boundary)
+
+
+def test_benign_reaction_has_empty_hazard_list():
+    packet = balance_reaction_packet(["C3H8", "O2"], ["CO2", "H2O"])
+    assert packet.target.metadata["hazards"] == []
+    assert any("not a safety claim" in line for line in packet.claim_boundary)
+
+
+def test_hazard_screen_strips_charge_notation():
+    flags = screen_species_hazards(["CN^-"], ["HCN"])
+    assert len(flags) == 2
+    assert "hazard (reactant): CN^- — cyanide — highly toxic" in flags[0]
+    assert "hazard (product): HCN" in flags[1]
+
+
+def test_hazard_screen_is_case_sensitive_about_elements():
+    # CO (carbon monoxide) flags; Co (cobalt) must not.
+    assert screen_species_hazards(["CO"], []) != []
+    assert screen_species_hazards(["Co"], []) == []
+
+
+def test_forbidden_request_text_is_denied_before_balancing():
+    """chem_code's FORBIDDEN_PATTERNS deny the request as a governed refusal,
+    not a parse error. Only active in checkouts that carry chem_code."""
+    pytest.importorskip("python.scbe.chem_code")
+    with pytest.raises(HazardDenied, match="denied unsafe chemistry request"):
+        balance_reaction_packet(["sarin"], ["H2O"])
