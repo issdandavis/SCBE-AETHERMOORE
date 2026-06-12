@@ -17,6 +17,7 @@ const zlib = require('node:zlib');
 
 const { allSpecies, getSpecies } = require('../dist/src/aethermon/species.js');
 const { spriteForSpecies, ELEMENT_HEX } = require('../dist/src/aethermon/web/sprites.js');
+const { sceneGrid } = require('../dist/src/aethermon/web/scenes.js');
 const { STAGE_ORDER } = require('../dist/src/aethermon/types.js');
 
 // ── Minimal PNG encoder ─────────────────────────────────────────────────
@@ -174,8 +175,9 @@ function textWidth(text, scale = 2) {
 
 function drawSpriteGrid(raster, grid, x, y, scale) {
   for (let gy = 0; gy < grid.length; gy++) {
-    for (let gx = 0; gx < grid.length; gx++) {
-      const color = grid[gy][gx];
+    const row = grid[gy] ?? [];
+    for (let gx = 0; gx < row.length; gx++) {
+      const color = row[gx];
       if (!color) continue;
       raster.rect(x + gx * scale, y + gy * scale, scale, scale, parseColor(color));
     }
@@ -262,17 +264,16 @@ function renderBattleMock(outFile) {
   const height = 600;
   const raster = new Raster(width, height);
 
-  // Region-tinted backdrop (Aerial Expanse).
-  const tint = hexToRgb(ELEMENT_HEX.AV);
-  for (let y = 0; y < height; y++) {
-    const t = Math.max(0, 1 - y / (height * 0.7));
-    raster.rect(0, y, width, 1, [
-      Math.round(10 + tint[0] * 0.14 * t),
-      Math.round(10 + tint[1] * 0.14 * t),
-      Math.round(18 + tint[2] * 0.1 * t),
-      255,
-    ]);
-  }
+  // Procedural region backdrop (Aerial Expanse) from the scene engine.
+  const sceneScale = 14;
+  const scene = sceneGrid(
+    'aerial_expanse',
+    Math.ceil(width / sceneScale),
+    Math.ceil(height / sceneScale),
+    0
+  );
+  raster.rect(0, 0, width, height, BG);
+  drawSpriteGrid(raster, scene, 0, 0, sceneScale);
 
   drawText(raster, 'AETHERMON', 30, 22, GOLD, 4);
   drawText(raster, 'AERIAL EXPANSE - WILD BATTLE', 30, 52, DIM, 2);

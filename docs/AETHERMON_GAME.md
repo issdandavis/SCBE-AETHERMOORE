@@ -25,7 +25,9 @@ scenes, animated battles with HP bars and screen shake, evolution flashes, and c
 synesthesia tones — every tongue sounds its note (KO=A 220Hz … DR=G 392Hz). Saves live in
 localStorage. Rebuild the bundle after code changes with `npm run game:aethermon:web:build`;
 regenerate preview PNGs (sprite sheet + battle mock, no browser needed) with
-`node scripts/aethermon_render_preview.cjs`.
+`node scripts/aethermon_render_preview.cjs` — the preview script imports compiled output, so
+run `npm run build` (or any `game:aethermon*` CLI script, which runs `tsc`) first to
+populate `dist/`.
 
 CLI flags (after `--`): `--seed <n>` fixed RNG seed, `--save <path>` custom save location.
 

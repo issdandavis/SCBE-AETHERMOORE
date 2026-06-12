@@ -63,6 +63,8 @@ import {
 } from '../game.js';
 import { createRng, nextInt } from '../rng.js';
 import { ALIGNMENT_HEX, ELEMENT_HEX, drawSprite, spriteForSpecies } from './sprites.js';
+import { sceneGrid } from './scenes.js';
+import type { RegionId } from '../regions.js';
 
 // ---------------------------------------------------------------------------
 //  Tiny DOM + audio toolkit
@@ -148,12 +150,38 @@ const sfx = {
 let state: GameState | null = null;
 let spriteFrame = 0;
 
+// Persistence is optional — blocked/sandboxed storage must never crash
+// the game, so every localStorage touch goes through these guards.
+function safeGetItem(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeSetItem(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* storage unavailable; keep playing in memory */
+  }
+}
+
+function safeRemoveItem(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    /* ignore */
+  }
+}
+
 function saveState(): void {
-  if (state) localStorage.setItem(SAVE_KEY, serializeGame(state));
+  if (state) safeSetItem(SAVE_KEY, serializeGame(state));
 }
 
 function loadState(): GameState | null {
-  const raw = localStorage.getItem(SAVE_KEY);
+  const raw = safeGetItem(SAVE_KEY);
   if (!raw) return null;
   try {
     return deserializeGame(raw);
@@ -182,6 +210,20 @@ function setScreen(id: 'screen-title' | 'screen-egg' | 'screen-main' | 'screen-b
 function applyRegionTint(): void {
   const tongue = state ? getRegion(state.region).tongue : 'KO';
   document.documentElement.style.setProperty('--tint', ELEMENT_HEX[tongue]);
+}
+
+/** Paint the current region's backdrop onto a scene canvas. */
+function drawScene(canvasId: string): void {
+  if (!state) return;
+  const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
+  if (!canvas) return;
+  drawSprite(canvas, sceneGrid(state.region as RegionId, 64, 34, spriteFrame), 1);
+}
+
+/** Element-colored glow around a sprite canvas. */
+function applyGlow(canvasId: string, element: TongueCode): void {
+  const canvas = document.getElementById(canvasId);
+  if (canvas) canvas.style.filter = `drop-shadow(0 0 7px ${ELEMENT_HEX[element]})`;
 }
 
 function renderButtons(
@@ -234,6 +276,10 @@ function pushLog(text: string, cls = ''): void {
 // ── Title screen ─────────────────────────────────────────────────────────
 
 function renderTitle(): void {
+  // Fresh line, fresh screen: clear old messages and the region tint.
+  logLines.length = 0;
+  $('log').replaceChildren();
+  document.documentElement.style.setProperty('--tint', ELEMENT_HEX.KO);
   setScreen('screen-title');
   const eggRow = $('egg-row');
   eggRow.replaceChildren();
@@ -329,7 +375,9 @@ function renderMain(): void {
 
   const species = getSpecies(monster.speciesId);
   const stats = effectiveStats(monster);
-  drawSprite($('monster-canvas') as HTMLCanvasElement, spriteForSpecies(species, spriteFrame), 9);
+  drawScene('main-scene');
+  drawSprite($('monster-canvas') as HTMLCanvasElement, spriteForSpecies(species, spriteFrame), 8);
+  applyGlow('monster-canvas', species.element);
   $('monster-name').textContent = `${monster.nickname}`;
   $('monster-species').textContent =
     `${species.name} · ${species.stage} · ${species.element}/${species.alignment}`;
@@ -382,7 +430,7 @@ function renderMain(): void {
     title: 'Abandon this save and start over',
     onClick: () => {
       if (window.confirm('Abandon this line and start a new game?')) {
-        localStorage.removeItem(SAVE_KEY);
+        safeRemoveItem(SAVE_KEY);
         state = null;
         renderTitle();
       }
@@ -555,16 +603,19 @@ function battleHp(side: 'a' | 'b', combatant: Combatant): void {
 function renderBattle(): void {
   if (!session || !state?.monster) return;
   const { battle } = session;
+  drawScene('battle-scene');
   drawSprite(
     $('battle-mine') as HTMLCanvasElement,
     spriteForSpecies(getSpecies(battle.a.speciesId), spriteFrame),
-    7
+    6
   );
   drawSprite(
     $('battle-foe') as HTMLCanvasElement,
     spriteForSpecies(getSpecies(battle.b.speciesId), spriteFrame),
-    7
+    6
   );
+  applyGlow('battle-mine', battle.a.element);
+  applyGlow('battle-foe', battle.b.element);
   $('battle-mine-name').textContent = `${battle.a.name} Lv.${battle.a.level}`;
   $('battle-foe-name').textContent = `${battle.b.name} Lv.${battle.b.level}`;
   battleHp('a', battle.a);
@@ -593,6 +644,37 @@ function renderBattle(): void {
   );
 }
 
+/** Restartable CSS animation: remove, reflow, add. */
+function replayClass(node: HTMLElement, className: string): void {
+  node.classList.remove(className);
+  void node.offsetWidth;
+  node.classList.add(className);
+}
+
+/** Floating combat number over a fighter (visual only — no game RNG). */
+function damageFloat(fighterId: string, text: string, cls: string): void {
+  const fighter = $(fighterId);
+  const float = el('span', `dmg-float ${cls}`.trim(), text);
+  float.style.left = `${30 + Math.random() * 40}%`;
+  fighter.append(float);
+  setTimeout(() => float.remove(), 950);
+}
+
+/** Burst of element-colored sparks on impact (visual only). */
+function sparkBurst(fighterId: string, element: TongueCode): void {
+  const fighter = $(fighterId);
+  for (let i = 0; i < 7; i++) {
+    const spark = el('span', 'spark');
+    spark.style.background = ELEMENT_HEX[element];
+    spark.style.setProperty('--dx', `${(Math.random() - 0.5) * 70}px`);
+    spark.style.setProperty('--dy', `${-20 - Math.random() * 50}px`);
+    spark.style.left = '50%';
+    spark.style.top = '40%';
+    fighter.append(spark);
+    setTimeout(() => spark.remove(), 650);
+  }
+}
+
 async function playerTurn(action: BattleAction): Promise<void> {
   if (!session || session.busy || !state?.monster) return;
   session.busy = true;
@@ -602,24 +684,31 @@ async function playerTurn(action: BattleAction): Promise<void> {
   for (const event of events) {
     pushLog(event.text, event.kind === 'crit' ? 'good' : '');
     const actorCombatant = event.actor === 'A' ? battle.a : battle.b;
+    const actorFighter = event.actor === 'A' ? 'fighter-a' : 'fighter-b';
+    const targetFighter = event.actor === 'A' ? 'fighter-b' : 'fighter-a';
     const targetCanvas = event.actor === 'A' ? 'battle-foe' : 'battle-mine';
     if (event.kind === 'move' || event.kind === 'crit') {
-      sfx.hit(event.moveId ? getMove(event.moveId).element : actorCombatant.element);
-      const canvas = $(targetCanvas);
-      canvas.classList.remove('shake');
-      void canvas.offsetWidth;
-      canvas.classList.add('shake');
+      const moveElement = event.moveId ? getMove(event.moveId).element : actorCombatant.element;
+      sfx.hit(moveElement);
+      replayClass($(actorFighter), event.actor === 'A' ? 'lunge-right' : 'lunge-left');
+      replayClass($(targetCanvas), 'shake');
+      if (event.damage !== undefined) {
+        damageFloat(targetFighter, `-${event.damage}`, event.kind === 'crit' ? 'crit' : '');
+        sparkBurst(targetFighter, moveElement);
+      }
     } else if (event.kind === 'miss') {
       sfx.miss();
+      damageFloat(targetFighter, 'MISS', 'miss');
     } else if (event.kind === 'heal' || event.kind === 'drain') {
       sfx.heal(actorCombatant.element);
+      if (event.healed !== undefined) damageFloat(actorFighter, `+${event.healed}`, 'heal');
     } else if (event.kind === 'faint') {
       sfx.faint();
       $(event.actor === 'A' ? 'battle-mine' : 'battle-foe').classList.add('fainted');
     }
     battleHp('a', battle.a);
     battleHp('b', battle.b);
-    await sleep(380);
+    await sleep(420);
   }
   session.busy = false;
   if (battle.over) {
@@ -681,10 +770,11 @@ function boot(): void {
       drawSprite($('egg-canvas') as HTMLCanvasElement, spriteForSpecies(species, spriteFrame), 10);
     } else if (state?.monster && !$('screen-main').classList.contains('hidden')) {
       const species = getSpecies(state.monster.speciesId);
+      drawScene('main-scene');
       drawSprite(
         $('monster-canvas') as HTMLCanvasElement,
         spriteForSpecies(species, spriteFrame),
-        9
+        8
       );
     }
   }, 650);
