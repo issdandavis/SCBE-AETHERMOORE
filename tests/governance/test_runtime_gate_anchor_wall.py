@@ -10,7 +10,7 @@ from __future__ import annotations
 import random
 
 import numpy as np
-import pytest
+
 
 from src.governance.anchor_wall import FixedAnchorWall
 from src.governance.runtime_gate import Decision, RuntimeGate

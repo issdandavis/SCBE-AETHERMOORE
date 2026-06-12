@@ -7,6 +7,8 @@ from typing import Iterable, Dict, Any
 
 import numpy as np
 
+from src.governance.gate_witness import gate_witness
+
 EPS = 1e-10
 
 
@@ -35,6 +37,8 @@ def scan_boundary_state(
     d_h = _hyperbolic_distance_to_origin(u)
     harmonic_cost = float(harmonic_base ** (d_h**2))
     status = "QUARANTINE" if norm >= float(boundary_threshold) else "ALLOW"
+    if status == "QUARANTINE":
+        gate_witness("hyperbolic_scanner", "quarantine", detail={"norm": round(norm, 6)})
 
     return {
         "status": status,
@@ -44,4 +48,3 @@ def scan_boundary_state(
         "harmonic_cost": round(harmonic_cost, 6),
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
     }
-

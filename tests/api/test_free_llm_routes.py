@@ -23,6 +23,10 @@ def test_free_llm_provider_registry_lists_default_open_lanes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("HF_TOKEN", raising=False)
+    # The registry's ollama default falls back through these env vars; clear
+    # them so the test asserts the documented default on any machine.
+    monkeypatch.delenv("AGENT_OLLAMA_MODEL", raising=False)
+    monkeypatch.delenv("OLLAMA_MODEL", raising=False)
     client = _client(monkeypatch)
 
     response = client.get("/hydra/free-llm/providers", headers={"x-api-key": "test-key"})

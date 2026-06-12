@@ -15,6 +15,8 @@ import logging
 import os
 from typing import Dict
 
+from src.governance.gate_witness import gate_witness
+
 logger = logging.getLogger(__name__)
 
 _DEMO_KEYS: Dict[str, str] = {
@@ -42,6 +44,7 @@ def load_api_keys() -> Dict[str, str]:
     scbe_env = os.environ.get("SCBE_ENV", os.environ.get("NODE_ENV", "production"))
     if _env_flag("SCBE_ALLOW_DEMO_KEYS"):
         logger.warning("Using explicit demo API keys (SCBE_ENV=%s)", scbe_env)
+        gate_witness("api.auth_config", "bypass_flag", detail={"flag": "SCBE_ALLOW_DEMO_KEYS"})
         return dict(_DEMO_KEYS)
 
     logger.warning(

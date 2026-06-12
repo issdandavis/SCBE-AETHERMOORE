@@ -13,6 +13,8 @@ from typing import Any, Optional
 from fastapi import Body, Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 
+from src.governance.gate_witness import gate_witness, hash_subject
+
 GEOSEAL_CLI_COMMANDS = frozenset(
     {
         "code-packet",
@@ -88,6 +90,9 @@ class AgentHarnessRequest(BaseModel):
 
 async def verify_api_key(x_api_key: str = Header(...)) -> str:
     if x_api_key != DEMO_API_KEY:
+        gate_witness(
+            "api.auth", "auth_reject", subject=hash_subject(x_api_key), detail={"route_family": "geoseal_service"}
+        )
         raise HTTPException(status_code=401, detail="Invalid API key")
     return "demo"
 

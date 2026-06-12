@@ -13,6 +13,7 @@ import re
 from dataclasses import dataclass, asdict
 from typing import Iterable
 
+from src.governance.gate_witness import gate_witness
 
 PROMPT_INJECTION_PATTERNS = (
     r"ignore\s+(all\s+)?previous\s+instructions",
@@ -49,11 +50,7 @@ class ThreatScan:
 
 def _external_links(text: str) -> list[str]:
     links = re.findall(r"https?://[^\s)>\"]+", text)
-    return [
-        x
-        for x in links
-        if "x.com" not in x.lower() and "twitter.com" not in x.lower()
-    ]
+    return [x for x in links if "x.com" not in x.lower() and "twitter.com" not in x.lower()]
 
 
 def scan_text_for_threats(
@@ -96,6 +93,10 @@ def scan_text_for_threats(
     else:
         verdict = "CLEAN"
 
+    if verdict in ("MALICIOUS", "SUSPICIOUS"):
+        indicators = ",".join(prompt_hits + malware_hits)[:60]
+        gate_witness("antivirus_membrane", "deny" if verdict == "MALICIOUS" else "quarantine", subject=indicators)
+
     return ThreatScan(
         verdict=verdict,
         risk_score=risk,
@@ -104,6 +105,16 @@ def scan_text_for_threats(
         external_link_count=len(ext_links),
         reasons=tuple(reasons),
     )
+
+
+_TURNSTILE_EVENT = {"HONEYPOT": "honeypot", "ISOLATE": "quarantine", "HOLD": "quarantine"}
+
+
+def _witness_turnstile(action: str, domain: str, risk: float) -> str:
+    gate_witness(
+        "antivirus_membrane", _TURNSTILE_EVENT.get(action, "block"), subject=f"domain:{domain}", detail={"risk": risk}
+    )
+    return action
 
 
 def turnstile_action(domain: str, scan: ThreatScan) -> str:
@@ -120,36 +131,36 @@ def turnstile_action(domain: str, scan: ThreatScan) -> str:
 
     if d == "browser":
         if r >= 0.85:
-            return "HONEYPOT"
+            return _witness_turnstile("HONEYPOT", d, r)
         if r >= 0.55:
-            return "ISOLATE"
+            return _witness_turnstile("ISOLATE", d, r)
         if r >= 0.25:
-            return "HOLD"
+            return _witness_turnstile("HOLD", d, r)
         return "ALLOW"
 
     if d == "vehicle":
         if r >= 0.75:
-            return "DEGRADE"
+            return _witness_turnstile("DEGRADE", d, r)
         if r >= 0.35:
-            return "PIVOT"
+            return _witness_turnstile("PIVOT", d, r)
         return "ALLOW"
 
     if d == "fleet":
         if r >= 0.85:
-            return "HONEYPOT"
+            return _witness_turnstile("HONEYPOT", d, r)
         if r >= 0.55:
-            return "ISOLATE"
+            return _witness_turnstile("ISOLATE", d, r)
         if r >= 0.25:
-            return "DEGRADE"
+            return _witness_turnstile("DEGRADE", d, r)
         return "ALLOW"
 
     if d == "antivirus":
         if r >= 0.85:
-            return "HONEYPOT"
+            return _witness_turnstile("HONEYPOT", d, r)
         if r >= 0.25:
-            return "ISOLATE"
+            return _witness_turnstile("ISOLATE", d, r)
         return "ALLOW"
 
     if r >= 0.60:
-        return "DEGRADE"
+        return _witness_turnstile("DEGRADE", d, r)
     return "ALLOW"

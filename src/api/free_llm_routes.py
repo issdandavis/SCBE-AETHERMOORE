@@ -19,6 +19,7 @@ from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
 
 from src.api.auth_config import VALID_API_KEYS
+from src.governance.gate_witness import gate_witness, hash_subject
 
 free_llm_router = APIRouter(prefix="/hydra/free-llm", tags=["HYDRA Free LLM"])
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -57,6 +58,9 @@ class OllamaLaunchPlanRequest(BaseModel):
 
 async def verify_api_key(x_api_key: str = Header(...)) -> str:
     if x_api_key not in VALID_API_KEYS:
+        gate_witness(
+            "api.auth", "auth_reject", subject=hash_subject(x_api_key), detail={"route_family": "free_llm_routes"}
+        )
         raise HTTPException(status_code=401, detail="Invalid API key")
     return VALID_API_KEYS[x_api_key]
 

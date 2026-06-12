@@ -104,11 +104,15 @@ def get_spine() -> Any:
 # Import at module level is safe; the dict is defined in main.py and we
 # re-use the same validation logic here without coupling tightly.
 from src.api.auth_config import VALID_API_KEYS
+from src.governance.gate_witness import gate_witness, hash_subject
 
 
 async def verify_api_key(x_api_key: str = Header(...)) -> str:
     """Verify API key and return user identifier."""
     if x_api_key not in VALID_API_KEYS:
+        gate_witness(
+            "api.auth", "auth_reject", subject=hash_subject(x_api_key), detail={"route_family": "hydra_routes"}
+        )
         raise HTTPException(401, "Invalid API key")
     return VALID_API_KEYS[x_api_key]
 

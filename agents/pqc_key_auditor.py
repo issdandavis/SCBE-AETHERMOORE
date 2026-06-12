@@ -11,6 +11,8 @@ import json
 from datetime import datetime, timezone
 from typing import Any, Dict
 
+from src.governance.gate_witness import gate_witness, hash_subject
+
 
 def _hash_to_unit(text: str) -> float:
     digest = hashlib.sha256(text.encode("utf-8")).digest()
@@ -38,6 +40,7 @@ def audit_pqc_keyset(
     age_hours = float(keyset.get("last_rotated_hours", keyset.get("age_hours", 0)) or 0)
 
     if not kyber_id or not dilithium_id:
+        gate_witness("pqc_key_auditor", "quarantine", detail={"reason": "missing_keys"})
         return {
             "status": "QUARANTINE",
             "reason": "missing kyber_id or dilithium_id",
@@ -65,6 +68,12 @@ def audit_pqc_keyset(
         status = "QUARANTINE"
         reason = f"pqc drift score {drift_score:.4f} >= threshold {drift_threshold:.4f}"
         action = "rotate_keys_and_revalidate"
+        gate_witness(
+            "pqc_key_auditor",
+            "quarantine",
+            subject=hash_subject(f"{kyber_id}|{dilithium_id}"),
+            detail={"reason": "drift", "drift_score": round(float(drift_score), 6)},
+        )
     elif rotation_due:
         status = "REVIEW"
         reason = f"key age {age_hours:.1f}h >= rotation policy {rotation_hours}h"
@@ -85,4 +94,3 @@ def audit_pqc_keyset(
         "key_fingerprint": hashlib.sha256(f"{kyber_id}|{dilithium_id}".encode("utf-8")).hexdigest()[:20],
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
     }
-

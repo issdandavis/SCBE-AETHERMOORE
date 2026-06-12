@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from src.governance.gate_witness import gate_witness
+
 
 @dataclass(frozen=True)
 class TurnstileOutcome:
@@ -43,7 +45,9 @@ def resolve_turnstile(
     membrane_stress reflects current load: a weighted blend of suspicion and
     geometry_norm that indicates how hard the membrane is working right now.
     """
-    _clamp = lambda x: min(1.0, max(0.0, float(x)))
+
+    def _clamp(x):
+        return min(1.0, max(0.0, float(x)))
 
     antibody_load = _clamp(0.65 * previous_antibody_load + 0.35 * suspicion)
     membrane_stress = _clamp(0.60 * suspicion + 0.40 * geometry_norm)
@@ -56,6 +60,10 @@ def resolve_turnstile(
         # Downgrade ALLOW to HOLD when quorum is not satisfied.
         if not quorum_ok and action == "ALLOW":
             action = "HOLD"
+
+    if action != "ALLOW":
+        event = {"HONEYPOT": "honeypot", "HOLD": "quarantine"}.get(action, "block")
+        gate_witness("hydra_turnstile", event, subject=f"domain:{domain}", detail={"action": action})
 
     return TurnstileOutcome(
         action=action,

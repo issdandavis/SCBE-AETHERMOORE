@@ -25,6 +25,7 @@ from src.symphonic_cipher.scbe_aethermoore.flock_shepherd import (
 saas_router = APIRouter(prefix="/saas")
 
 from src.api.auth_config import VALID_API_KEYS
+from src.governance.gate_witness import gate_witness, hash_subject
 
 PLAN_LIMITS: Dict[str, Dict[str, int]] = {
     "starter": {"flocks": 1, "agents": 8, "monthly_governance": 5000},
@@ -49,6 +50,7 @@ def set_saas_metering_store(store: MeteringStore) -> None:
 
 async def verify_saas_api_key(x_api_key: str = Header(...)) -> str:
     if x_api_key not in VALID_API_KEYS:
+        gate_witness("api.auth", "auth_reject", subject=hash_subject(x_api_key), detail={"route_family": "saas_routes"})
         raise HTTPException(401, "Invalid API key")
     return VALID_API_KEYS[x_api_key]
 

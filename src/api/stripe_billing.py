@@ -30,6 +30,8 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel, Field
 
+from src.governance.gate_witness import gate_witness, hash_subject
+
 billing_router = APIRouter(prefix="/billing", tags=["Billing"])
 
 # ---------------------------------------------------------------------------
@@ -120,6 +122,7 @@ def _require_owner_token(x_owner_token: str | None) -> None:
     expected = _owner_token()
     provided = (x_owner_token or "").strip()
     if not provided or not hmac.compare_digest(provided, expected):
+        gate_witness("stripe.owner", "auth_reject", subject=hash_subject(provided or "<empty>"))
         raise HTTPException(401, "Unauthorized")
 
 
@@ -335,7 +338,10 @@ async def stripe_webhook(request: Request):
     }
     if not webhook_secret and not allow_unsigned:
         raise HTTPException(503, "Webhook secret is not configured")
+    if not webhook_secret and allow_unsigned:
+        gate_witness("stripe.webhook", "bypass_flag", detail={"flag": "SCBE_ALLOW_UNSIGNED_STRIPE_WEBHOOK"})
     if webhook_secret and not _verify_stripe_signature(payload, sig_header):
+        gate_witness("stripe.webhook", "auth_reject")
         raise HTTPException(400, "Invalid signature")
 
     try:
@@ -388,6 +394,7 @@ def _handle_checkout_completed(session: Dict[str, Any]) -> None:
     # Also register in the SaaS API key store so endpoints accept it
     try:
         from src.api.saas_routes import VALID_API_KEYS
+
         VALID_API_KEYS[api_key] = email or customer_id
     except ImportError:
         pass
