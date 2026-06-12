@@ -229,7 +229,7 @@ def balance(reactants: Sequence[str], products: Sequence[str]) -> List[int]:
     rows.append([Fraction(sign * q) for (_, q), sign in zip(comps, signs)])  # charge row
     null = _rational_nullspace(rows, len(species))
     if len(null) != 1:
-        raise BalanceError(f"reaction has no unique balance (nullity={len(null)})")
+        raise BalanceError(_diagnose_no_unique_balance(comps, signs, rows, null, len(species)))
     vec = null[0]
     lcm = 1
     for v in vec:
@@ -243,8 +243,57 @@ def balance(reactants: Sequence[str], products: Sequence[str]) -> List[int]:
     if all(v <= 0 for v in ints):
         ints = [-v for v in ints]
     if not all(v > 0 for v in ints):
+        one_sided = _one_sided_elements(comps, signs)
+        if one_sided:
+            raise BalanceError(f"no balance exists: element(s) appear on one side only — {', '.join(one_sided)}")
         raise BalanceError(f"no positive balance with the given sides: {ints}")
     return ints
+
+
+def _one_sided_elements(comps: List[Tuple[Counter, int]], signs: List[int]) -> List[str]:
+    """Elements present among reactants xor products — instantly unbalanceable."""
+    one_sided = []
+    for el in sorted({el for comp, _ in comps for el in comp}):
+        on_left = any(comp.get(el) for (comp, _), sign in zip(comps, signs) if sign > 0)
+        on_right = any(comp.get(el) for (comp, _), sign in zip(comps, signs) if sign < 0)
+        if on_left != on_right:
+            side = "reactants" if on_left else "products"
+            one_sided.append(f"{el} (only in {side})")
+    return one_sided
+
+
+def _diagnose_no_unique_balance(
+    comps: List[Tuple[Counter, int]],
+    signs: List[int],
+    rows: List[List[Fraction]],
+    null: List[List[Fraction]],
+    n_species: int,
+) -> str:
+    """Name the actual conservation failure instead of reporting raw nullity.
+
+    The use-case audit flagged this: a charge-violating ionic reaction was
+    rejected with ``nullity=0``, which tells a chemist nothing. Diagnose in
+    order of usefulness: an element present on only one side, then a charge
+    row that alone blocks an otherwise-balanceable reaction, then the
+    underdetermined (multiple independent reactions) case.
+    """
+    if len(null) == 0:
+        one_sided = _one_sided_elements(comps, signs)
+        if one_sided:
+            return f"no balance exists: element(s) appear on one side only — {', '.join(one_sided)}"
+        # rows[-1] is the charge row; if dropping it makes the reaction
+        # balanceable, charge conservation is the specific blocker.
+        if len(_rational_nullspace(rows[:-1], n_species)) >= 1:
+            return (
+                "no balance exists: charge is not conserved as written "
+                "(atoms can balance, net charge cannot); check ion charges or "
+                "add the missing charge carriers (e.g. H^+, OH^-, e^-)"
+            )
+        return "no balance exists: element conservation cannot be satisfied with these species"
+    return (
+        f"reaction is underdetermined: it mixes {len(null)} independent reactions; "
+        "balance each sub-reaction separately or fix more species"
+    )
 
 
 def _rational_nullspace(matrix: List[List[Fraction]], ncols: int) -> List[List[Fraction]]:
