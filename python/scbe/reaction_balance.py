@@ -37,6 +37,83 @@ class BalanceError(ValueError):
     """Raised when a reaction cannot be uniquely balanced as written."""
 
 
+class HazardDenied(BalanceError):
+    """Raised when the request text matches the chem governance deny patterns."""
+
+
+# --------------------------------------------------------------------------- #
+# Hazard governance
+# --------------------------------------------------------------------------- #
+#
+# Species-level lexical screen: acutely hazardous species flagged by formula as
+# written (after stripping charge notation). This is a warning layer, not a
+# block — a correctly balanced hazardous reaction is still exact stoichiometry
+# (e.g. NaOCl + 2 HCl -> Cl2 + NaCl + H2O is the textbook bleach+acid accident
+# and MUST carry a flag). Absence of a flag is not a safety claim.
+
+HAZARDOUS_SPECIES = {
+    "Cl2": "chlorine — toxic gas (bleach + acid releases it)",
+    "HCN": "hydrogen cyanide — highly toxic gas",
+    "CN": "cyanide — highly toxic",
+    "COCl2": "phosgene — highly toxic gas",
+    "H2S": "hydrogen sulfide — toxic gas",
+    "CO": "carbon monoxide — toxic gas",
+    "F2": "fluorine — highly toxic, corrosive gas",
+    "HF": "hydrogen fluoride — highly toxic, corrosive",
+    "ClO2": "chlorine dioxide — toxic, explosively unstable gas",
+    "NO2": "nitrogen dioxide — toxic gas",
+    "SO2": "sulfur dioxide — toxic gas",
+    "NH3": "ammonia — toxic gas (mixing with bleach forms chloramines)",
+    "NH2Cl": "chloramine — toxic gas (bleach + ammonia product)",
+    "O3": "ozone — toxic gas",
+    "PH3": "phosphine — highly toxic gas",
+    "AsH3": "arsine — highly toxic gas",
+    "N2H4": "hydrazine — highly toxic, flammable",
+    "HN3": "hydrazoic acid — toxic, explosive",
+    "NCl3": "nitrogen trichloride — explosive",
+    "ClF3": "chlorine trifluoride — violently reactive",
+}
+
+HAZARD_CLAIM_BOUNDARY = (
+    "hazard flags are a lexical screen over species formulas as written; " "absence of a flag is not a safety claim"
+)
+
+
+def _bare_formula(formula: str) -> str:
+    return re.sub(r"(\^\d*[+-]|\(\d*[+-]\)|[+-])$", "", formula.strip())
+
+
+def screen_species_hazards(reactants: Sequence[str], products: Sequence[str]) -> List[str]:
+    """Side-labelled hazard flags for every species with a HAZARDOUS_SPECIES entry."""
+    flags: List[str] = []
+    for side, formulas in (("reactant", reactants), ("product", products)):
+        for formula in formulas:
+            note = HAZARDOUS_SPECIES.get(_bare_formula(formula))
+            if note:
+                flags.append(f"hazard ({side}): {formula} — {note}")
+    return flags
+
+
+def _request_text_problems(reactants: Sequence[str], products: Sequence[str]) -> List[str]:
+    """Deny screen over the raw request text, reusing chem_code's governance.
+
+    ``chem_code`` carries the canonical FORBIDDEN_PATTERNS (synthesis routes,
+    dosing, weaponization, named agents). It is not present in every checkout;
+    where it is missing the species screen above still runs, so the lane never
+    goes hazard-blind — this hook only adds the request-text deny.
+    """
+    try:
+        from .chem_code import FORBIDDEN_PATTERNS
+    except Exception:  # never let an optional governance import break balancing
+        return []
+    text = " ".join(list(reactants) + list(products)).lower()
+    return [
+        f"denied unsafe chemistry request pattern: {pattern}"
+        for pattern in FORBIDDEN_PATTERNS
+        if re.search(pattern, text, flags=re.IGNORECASE)
+    ]
+
+
 # --------------------------------------------------------------------------- #
 # Formula parsing
 # --------------------------------------------------------------------------- #
@@ -212,6 +289,10 @@ def format_equation(coeffs: Sequence[int], reactants: Sequence[str], products: S
 
 def balance_reaction_packet(reactants: Sequence[str], products: Sequence[str]) -> ReactionStatePacket:
     """Balance a reaction and wrap the result in a hash-signed ReactionStatePacket."""
+    denied = _request_text_problems(reactants, products)
+    if denied:
+        raise HazardDenied("; ".join(denied))
+    hazards = screen_species_hazards(reactants, products)
     coeffs = balance(reactants, products)
     nr = len(reactants)
     equation = format_equation(coeffs, reactants, products)
@@ -231,12 +312,13 @@ def balance_reaction_packet(reactants: Sequence[str], products: Sequence[str]) -
             representation="product_formulas",
             language="chem",
             tongue="DR",
-            metadata={"equation": equation, "coefficients": list(coeffs)},
+            metadata={"equation": equation, "coefficients": list(coeffs), "hazards": hazards},
         ),
         semantic_engravings=[
             f"balanced: {equation}",
             f"coefficients: {list(coeffs)}",
             "atom + charge conservation by exact rational nullspace",
+            *hazards,
         ],
         loss_notes=[] if ok else [f"not conserved: {deltas}"],
         recalculation=ReactionRecalculation(scientific_checks_ok=ok, identity_ok=ok),
@@ -244,5 +326,6 @@ def balance_reaction_packet(reactants: Sequence[str], products: Sequence[str]) -
         claim_boundary=[
             "exact atom + charge conservation (stoichiometry) only",
             "not a thermodynamic-feasibility, equilibrium, or kinetics claim",
+            HAZARD_CLAIM_BOUNDARY,
         ],
     )
