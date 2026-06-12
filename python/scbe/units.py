@@ -19,7 +19,13 @@ Design:
     pattern used elsewhere in this repo (RDKit, liboqs).
 
 It does not (v1) model affine units (degC/degF offsets) -- temperature is treated
-as kelvin-scaled only; that limitation is explicit, not silent.
+as kelvin-scaled only -- nor distinguish quantity kinds that share a dimension
+(radian vs steradian, Hz vs Bq). Those limitations are explicit, not silent, and
+pinned in tests/test_units_pathology.py against the NIST TN 1943 taxonomy.
+
+Named units also carry their canonical QUDT IRI (``Unit.qudt``) so a receipt can
+state unit semantics in a resolvable, machine-checkable form via
+``unit_descriptor()``; derived units carry ``None`` rather than a fabricated IRI.
 """
 
 from __future__ import annotations
@@ -76,6 +82,16 @@ def dim_name(d: Dimension) -> str:
     return "·".join(parts) if parts else "1"
 
 
+# QUDT (qudt.org) unit-vocabulary IRIs for the named units below. QUDT is
+# CC BY 4.0 (https://qudt.org); these are stable vocab IRIs of the form
+# http://qudt.org/vocab/unit/<CODE>. Carrying the IRI in a packet lets an
+# external verifier resolve exact unit semantics instead of guessing from a
+# free-text symbol -- the interop half of the Orbiter lesson. Units composed by
+# Unit.__mul__/__truediv__ carry no IRI (None): a derived scale has no single
+# canonical QUDT term, and inventing one would be a false claim.
+_QUDT = "http://qudt.org/vocab/unit/"
+
+
 @dataclass(frozen=True)
 class Unit:
     """A named unit: a dimension plus an EXACT multiplicative scale to SI base."""
@@ -83,6 +99,7 @@ class Unit:
     name: str
     dimension: Dimension
     to_si: Fraction  # SI_magnitude = magnitude * to_si
+    qudt: str | None = None  # canonical QUDT IRI for named units; None when derived
 
     def __mul__(self, other: "Unit") -> "Unit":
         return Unit(f"({self.name}*{other.name})", dim_mul(self.dimension, other.dimension), self.to_si * other.to_si)
@@ -92,24 +109,24 @@ class Unit:
 
 
 # ---- registry: SI + the two force/impulse units that demonstrate the catch --- #
-KILOGRAM = Unit("kg", MASS, Fraction(1))
-GRAM = Unit("g", MASS, Fraction(1, 1000))
-METER = Unit("m", LENGTH, Fraction(1))
-SECOND = Unit("s", TIME, Fraction(1))
-KELVIN = Unit("K", TEMPERATURE, Fraction(1))
-MOLE = Unit("mol", AMOUNT, Fraction(1))
-PER_MOLE = Unit("1/mol", dim(mol=-1), Fraction(1))
-DIMLESS = Unit("1", DIMENSIONLESS, Fraction(1))
+KILOGRAM = Unit("kg", MASS, Fraction(1), _QUDT + "KiloGM")
+GRAM = Unit("g", MASS, Fraction(1, 1000), _QUDT + "GM")
+METER = Unit("m", LENGTH, Fraction(1), _QUDT + "M")
+SECOND = Unit("s", TIME, Fraction(1), _QUDT + "SEC")
+KELVIN = Unit("K", TEMPERATURE, Fraction(1), _QUDT + "K")
+MOLE = Unit("mol", AMOUNT, Fraction(1), _QUDT + "MOL")
+PER_MOLE = Unit("1/mol", dim(mol=-1), Fraction(1), _QUDT + "PER-MOL")
+DIMLESS = Unit("1", DIMENSIONLESS, Fraction(1), _QUDT + "UNITLESS")
 
-NEWTON = Unit("N", FORCE, Fraction(1))
-POUND_FORCE = Unit("lbf", FORCE, Fraction(444822, 100000))  # 4.44822 N (exact rational)
-NEWTON_SECOND = Unit("N*s", IMPULSE, Fraction(1))
-LBF_SECOND = Unit("lbf*s", IMPULSE, POUND_FORCE.to_si)  # same dimension, 4.448x scale
+NEWTON = Unit("N", FORCE, Fraction(1), _QUDT + "N")
+POUND_FORCE = Unit("lbf", FORCE, Fraction(444822, 100000), _QUDT + "LB_F")  # 4.44822 N (exact rational)
+NEWTON_SECOND = Unit("N*s", IMPULSE, Fraction(1), _QUDT + "N-SEC")
+LBF_SECOND = Unit("lbf*s", IMPULSE, POUND_FORCE.to_si)  # no canonical QUDT term; the Orbiter "wrong unit"
 
-JOULE = Unit("J", ENERGY, Fraction(1))
-G_PER_MOL = Unit("g/mol", MOLAR_MASS, Fraction(1, 1000))  # kg/mol = (g/mol)/1000
-LITER = Unit("L", VOLUME, Fraction(1, 1000))
-MOL_PER_L = Unit("mol/L", CONCENTRATION, Fraction(1000))  # mol/L = 1000 mol/m^3
+JOULE = Unit("J", ENERGY, Fraction(1), _QUDT + "J")
+G_PER_MOL = Unit("g/mol", MOLAR_MASS, Fraction(1, 1000), _QUDT + "GM-PER-MOL")  # kg/mol = (g/mol)/1000
+LITER = Unit("L", VOLUME, Fraction(1, 1000), _QUDT + "L")
+MOL_PER_L = Unit("mol/L", CONCENTRATION, Fraction(1000), _QUDT + "MOL-PER-L")  # mol/L = 1000 mol/m^3
 
 AVOGADRO = Unit("1/mol", dim(mol=-1), Fraction(602214076, 1) * Fraction(10) ** 15)  # 6.02214076e23 /mol
 
@@ -172,6 +189,25 @@ def mul(a: Quantity, b: Quantity) -> Quantity:
 
 def div(a: Quantity, b: Quantity) -> Quantity:
     return Quantity(a.magnitude / b.magnitude, a.unit / b.unit)
+
+
+def unit_descriptor(unit: Unit) -> dict:
+    """A packet-ready, self-describing view of a unit for receipt metadata.
+
+    Carries the QUDT IRI (``None`` for derived units), the base-dimension
+    exponent vector, and the exact SI scale as a string ``"num/den"`` so a
+    verifier reconstructs the Fraction without float drift::
+
+        {"symbol": "g/mol", "qudt": "http://qudt.org/vocab/unit/GM-PER-MOL",
+         "dimension": "kg^1·mol^-1", "si_scale": "1/1000"}
+    """
+    scale = Fraction(unit.to_si)
+    return {
+        "symbol": unit.name,
+        "qudt": unit.qudt,
+        "dimension": dim_name(unit.dimension),
+        "si_scale": f"{scale.numerator}/{scale.denominator}",
+    }
 
 
 def assert_dim(value: Quantity, expected: Dimension) -> Quantity:
