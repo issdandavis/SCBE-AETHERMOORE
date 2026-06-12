@@ -24,8 +24,16 @@ from dataclasses import dataclass
 
 def _load_oqs_module():
     """Load liboqs-python without letting optional backend bootstrap kill import."""
+    import contextlib
+    import sys
+
     try:
-        import oqs as oqs_module
+        # liboqs-python prints an informational banner to STDOUT on import
+        # ("liboqs-python faulthandler is disabled"). Consumers of this module
+        # sign lazily from CLIs whose stdout is a machine-readable JSON
+        # contract, so route the banner to stderr where diagnostics belong.
+        with contextlib.redirect_stdout(sys.stderr):
+            import oqs as oqs_module
 
         return oqs_module
     except (Exception, SystemExit):

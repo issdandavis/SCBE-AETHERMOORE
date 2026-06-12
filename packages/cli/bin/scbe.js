@@ -278,6 +278,13 @@ Core commands:
     --source <file>
     --target <file>
     [--json]
+  react balance          Balance a chemical reaction exactly (atom + charge)
+    --reactants <A,B>      Comma-separated formulas, e.g. C3H8,O2
+    --products <C,D>       e.g. CO2,H2O
+    [--json]
+  react geometry         3D geometry view of a molecule (RDKit)
+    --smiles <SMILES>      e.g. CCO
+    [--json]
   react audio            Emit an audio-field observable reaction packet
     [--frequency Hz]       Default: 440
     [--model generic|magnetoelastic|magnetosonic]
@@ -9292,6 +9299,8 @@ function runReactionCli(args) {
         '  scbe react audit --packet <file> [--json]',
         '  scbe react compare --left <file> --right <file> [--json]',
         '  scbe react code --source <file> --target <file> [--json]',
+        '  scbe react balance --reactants <A,B> --products <C,D> [--json]',
+        '  scbe react geometry --smiles <SMILES> [--json]',
         '  scbe react audio [--frequency Hz] [--model generic|magnetoelastic|magnetosonic] [--json]',
         '',
         'Reaction packets classify bounded transforms as BIJECTIVE, LOSSY_RECOVERABLE,',

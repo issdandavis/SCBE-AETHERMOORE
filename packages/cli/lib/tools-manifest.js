@@ -749,12 +749,20 @@ const COMMAND_SPECS = [
     category: 'content',
     json: true,
     stability: 'real',
-    summary: 'Reaction packets: audit, compare, code-transform, audio-field observables.',
-    usage: 'scbe react <audit|compare|code|audio> [--json]',
+    summary: 'Reaction packets: audit, compare, code-transform, chemistry, audio-field observables.',
+    usage: 'scbe react <audit|compare|code|balance|geometry|audio> [--json]',
     subcommands: [
       { name: 'audit', summary: 'Audit a reaction packet or benchmark report.' },
       { name: 'compare', summary: 'Compare two reaction packet files.' },
       { name: 'code', summary: 'Emit a code/file transform reaction packet.' },
+      {
+        name: 'balance',
+        summary: 'Balance a chemical reaction exactly (atom + charge conservation, signed receipt).',
+      },
+      {
+        name: 'geometry',
+        summary: '3D molecular geometry view via RDKit (rotor type, point group, signed receipt).',
+      },
       { name: 'audio', summary: 'Audio-field observable reaction packet.' },
     ],
   },
