@@ -329,3 +329,6 @@ apps/aether-desktop/.scbe/
 
 # ARC-AGI-2 dataset clone -- large binary, fetched separately via git clone
 artifacts/arc-data/
+
+# AETHERMON game save files (npm run game:aethermon)
+.aethermon-save.json
