@@ -31,7 +31,7 @@ This file documents what is in place and what is staged for later work.
 
 ### Tier 1 — needed for production / NASA-SpaceX bar
 
-- [ ] **Schema versioning enforcement** — `_schema_version` is written, but the reader currently doesn't gate on it. Add a migration table and reject events with unknown future versions.
+- [x] **Schema versioning enforcement** — DONE. `_schema_version` is written by `agent_bus.py`, and `agent_bus_schema.validate_event` rejects unknown future-major versions (with a migration registry for old-major events). Enforced on read by `agent_bus_replay.replay_log` and by the `validate_log` verify CLI. Guarantee locked by `tests/test_agent_bus_schema_gate.py`.
 - [ ] **Store-and-forward for deep-space comms** — local queue with priority lanes, sync when uplink is available. DTN-compatible. Build on top of existing JSONL.
 - [ ] **Bandwidth-aware compression** — compress `events.jsonl` deltas with zstd before transmit; protobuf encoding for the ledger sync wire format.
 - [ ] **Time discipline** — split monotonic clock for ordering vs. wall clock for display. Already mostly in place; add explicit field separation.
@@ -50,7 +50,7 @@ This file documents what is in place and what is staged for later work.
 
 - [ ] **Trace export** — Playwright traces uploaded as Tier-1 audit substrate per 2026 SOTA. Wrap each browser action in `tracing.start()/stop()` and link to the BusEvent.
 - [ ] **Metrics endpoint** — Prometheus-format metrics: requests, success rate, latency p50/p99, tokens, breaker state, by-task-type.
-- [ ] **Replay tool** — read `events.jsonl`, deterministically replay any operation. Critical for postmortems and for training replayability.
+- [x] **Replay tool** — DONE. `agent_bus_replay.replay_log` deterministically reconstructs per-task/provider counts, success rates, token totals, latency p50/p95, and breaker transitions from `events.jsonl` (read-only, schema-version aware — skips rejected events).
 - [ ] **Cost tracking** — populate USD-equivalent cost per call; the `--budget` flag is currently advisory.
 
 ### Tier 4 — research-y / nice-to-have
@@ -65,7 +65,7 @@ This file documents what is in place and what is staged for later work.
 - **No live test of generated tools** — only static validation. Don't expose `generate_tool` to untrusted callers.
 - **Training trigger is conservative** — by design, but means perf can degrade for up to one cooldown window before retraining kicks in.
 - **HYDRA ledger uses HMAC, not PQC** — the existing ledger signs with HMAC-SHA256. Bus events ride on top with ML-DSA-65 signatures, so they're double-protected, but the ledger itself isn't quantum-resistant. Tier 1 future work.
-- **Schema versioning not enforced on read** — `SCHEMA_VERSION = "1.0.0"` is written; the reader doesn't yet reject unknown versions.
+- ~~**Schema versioning not enforced on read**~~ — RESOLVED. `SCHEMA_VERSION = "1.0.0"` is written and the read path (`replay_log`) now rejects unknown future-major versions via `validate_event`. See `tests/test_agent_bus_schema_gate.py`.
 
 ## Pre-flight before each release
 
