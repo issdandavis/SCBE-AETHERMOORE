@@ -66,17 +66,22 @@ class _SignerImpl:
 
 def _try_mldsa65(sk: Optional[bytes], pk: Optional[bytes]) -> Optional[_SignerImpl]:
     try:
-        from src.crypto.pqc_liboqs import MLDSA65, LIBOQS_AVAILABLE, PURE_PQC_AVAILABLE
+        from src.crypto.pqc_liboqs import MLDSA65, MLDSAKeyPair, LIBOQS_AVAILABLE, PURE_PQC_AVAILABLE
 
         if not (LIBOQS_AVAILABLE or PURE_PQC_AVAILABLE):
             return None
     except (ImportError, RuntimeError, OSError):
         return None
 
-    impl = MLDSA65() if (sk is None or pk is None) else MLDSA65()
+    # Loading a persisted identity must go through from_keypair so the loaded
+    # secret key is bound into the underlying liboqs Signature object. The old
+    # path (MLDSA65() then overwriting ._secret_key) left the liboqs object
+    # signing with a fresh, throwaway key — signatures never verified after a
+    # process restart, silently downgrading cross-process auth.
     if sk is not None and pk is not None:
-        impl._secret_key = sk
-        impl._public_key = pk
+        impl = MLDSA65.from_keypair(MLDSAKeyPair(public_key=pk, secret_key=sk))
+    else:
+        impl = MLDSA65()
 
     class _MLDSA65Signer(_SignerImpl):
         algorithm = ALG_MLDSA65
