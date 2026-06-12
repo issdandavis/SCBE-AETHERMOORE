@@ -26,9 +26,17 @@ try:
 except Exception:
     _HAVE_OQS = False
 
-from src.crypto.rwp_v3 import _KEM_ALG, _SIG_ALG, RWPv3Protocol  # noqa: E402
+from src.crypto.rwp_v3 import _KEM_ALG, _SIG_ALG, OQS_AVAILABLE, RWPv3Protocol  # noqa: E402
 
-pytestmark = pytest.mark.skipif(not _HAVE_OQS, reason="native liboqs not available")
+# Gate on the module's EFFECTIVE PQC availability, not just `import oqs`:
+# rwp_v3 honors SCBE_FORCE_SKIP_LIBOQS (set by the CI python job, which tests
+# the deterministic fallback path), so with liboqs-python installed but the
+# env var set, `import oqs` succeeds while RWPv3Protocol(enable_pqc=True)
+# raises ImportError. Real-PQC coverage lives in the native-liboqs workflow.
+pytestmark = pytest.mark.skipif(
+    not (_HAVE_OQS and OQS_AVAILABLE),
+    reason="native liboqs not available (or PQC disabled via SCBE_FORCE_SKIP_LIBOQS)",
+)
 
 SECRET = b"correct horse battery staple"
 PLAINTEXT = b'{"decision":"ALLOW","score":0.07,"audit_id":"c04741dbc3c8165c"}'

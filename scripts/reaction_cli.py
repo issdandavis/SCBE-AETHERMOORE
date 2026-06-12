@@ -24,12 +24,19 @@ from python.scbe.audio_field_observables import (
     generate_decaying_sine,
     generate_sine,
 )
+from python.scbe.geometry_view import GeometryEngineError, geometry_view_packet
+from python.scbe.reaction_balance import BalanceError, balance_reaction_packet
 from python.scbe.reaction_state import (
     ReactionEndpoint,
     ReactionRecalculation,
     build_reaction_state_packet,
     packet_from_dict,
 )
+
+# Every packet this CLI emits is signed under one stable identity so receipts
+# are attributable and chainable across runs. sign() degrades to an unsigned
+# packet (signature stays None) where no signer backend is available.
+SIGNER_AGENT_ID = "scbe-react-cli"
 
 
 def load_json(path: str) -> dict[str, Any]:
@@ -75,6 +82,8 @@ def audit_packet(path: str) -> dict[str, Any]:
                 "loss_count": len(packet.loss_notes),
                 "engraving_count": len(packet.semantic_engravings),
                 "claim_boundary": packet.claim_boundary,
+                "signature_alg": packet.signature_alg,
+                "signature_verified": packet.verify_signature(),
             }
         )
     return {
@@ -156,7 +165,7 @@ def build_code_packet(source_path: str, target_path: str) -> dict[str, Any]:
             "hash equality proves byte identity only",
             "semantic equivalence requires tests or a language-specific analyzer",
         ],
-    )
+    ).sign(SIGNER_AGENT_ID)
     return {
         "schema_version": "scbe_react_code_v1",
         "ok": identity_preserved,
@@ -242,7 +251,7 @@ def build_audio_packet(
         identity_preserved=observables.modal_count_state.ok,
         recovery_evidence=["field coupling proxy emitted"] if observables.field_coupling_proxy is not None else (),
         claim_boundary=list(observables.claim_boundary),
-    )
+    ).sign(SIGNER_AGENT_ID)
     return {
         "schema_version": "scbe_react_audio_v1",
         "ok": observables.modal_count_state.ok,
@@ -254,8 +263,9 @@ def build_audio_packet(
 def print_human_audit(payload: dict[str, Any]) -> None:
     print(f"reaction audit: ok={payload['ok']} packets={payload['packet_count']}")
     for row in payload["packets"]:
+        sig = f" sig={row['signature_alg']}/{row['signature_verified']}" if row.get("signature_alg") else ""
         print(
-            f"- #{row['index']} {row['classification']} hash_ok={row['hash_ok']} "
+            f"- #{row['index']} {row['classification']} hash_ok={row['hash_ok']}{sig} "
             f"{row['source_identity']} -> {row['target_identity']}"
         )
 
@@ -293,6 +303,62 @@ def print_human_audio(payload: dict[str, Any]) -> None:
     )
 
 
+def build_balance(reactants: str, products: str) -> dict[str, Any]:
+    react = [s.strip() for s in reactants.split(",") if s.strip()]
+    prod = [s.strip() for s in products.split(",") if s.strip()]
+    try:
+        packet = balance_reaction_packet(react, prod).sign(SIGNER_AGENT_ID)
+    except BalanceError as exc:
+        return {
+            "schema_version": "scbe_react_balance_v1",
+            "ok": False,
+            "error": str(exc),
+            "reactants": react,
+            "products": prod,
+        }
+    return {
+        "schema_version": "scbe_react_balance_v1",
+        "ok": bool(packet.recalculation.identity_ok),
+        "equation": packet.target.metadata.get("equation"),
+        "coefficients": packet.target.metadata.get("coefficients"),
+        "reaction_state_packet": packet.to_dict(),
+    }
+
+
+def print_human_balance(payload: dict[str, Any]) -> None:
+    if not payload.get("ok"):
+        print(f"reaction balance: FAILED {payload.get('error', '')}")
+        return
+    print(f"reaction balance: {payload['equation']}")
+    print(f"coefficients: {payload['coefficients']}")
+
+
+def build_geometry(smiles: str) -> dict[str, Any]:
+    try:
+        packet = geometry_view_packet(smiles).sign(SIGNER_AGENT_ID)
+    except GeometryEngineError as exc:
+        return {"schema_version": "scbe_react_geometry_v1", "ok": False, "error": str(exc), "smiles": smiles}
+    meta = packet.target.metadata
+    return {
+        "schema_version": "scbe_react_geometry_v1",
+        "ok": True,
+        "formula": meta.get("formula"),
+        "rotor_type": meta.get("rotor_type"),
+        "point_group": meta.get("point_group"),
+        "reaction_state_packet": packet.to_dict(),
+    }
+
+
+def print_human_geometry(payload: dict[str, Any]) -> None:
+    if not payload.get("ok"):
+        print(f"reaction geometry: FAILED {payload.get('error', '')}")
+        return
+    print(
+        f"reaction geometry: {payload['formula']} "
+        f"rotor={payload['rotor_type']} point_group={payload['point_group']}"
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog="scbe react")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -307,6 +373,13 @@ def main() -> int:
     code.add_argument("--source", required=True)
     code.add_argument("--target", required=True)
     code.add_argument("--json", action="store_true")
+    balance_parser = sub.add_parser("balance")
+    balance_parser.add_argument("--reactants", required=True, help="comma-separated formulas, e.g. C3H8,O2")
+    balance_parser.add_argument("--products", required=True, help="comma-separated formulas, e.g. CO2,H2O")
+    balance_parser.add_argument("--json", action="store_true")
+    geometry_parser = sub.add_parser("geometry")
+    geometry_parser.add_argument("--smiles", required=True, help="SMILES string, e.g. CCO")
+    geometry_parser.add_argument("--json", action="store_true")
     audio = sub.add_parser("audio")
     audio.add_argument("--frequency", type=float, default=440.0)
     audio.add_argument("--sample-rate", type=float, default=4096.0)
@@ -343,6 +416,20 @@ def main() -> int:
             print(json.dumps(payload, indent=2))
         else:
             print_human_code(payload)
+        return 0 if payload["ok"] else 1
+    if args.cmd == "balance":
+        payload = build_balance(args.reactants, args.products)
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_human_balance(payload)
+        return 0 if payload["ok"] else 1
+    if args.cmd == "geometry":
+        payload = build_geometry(args.smiles)
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_human_geometry(payload)
         return 0 if payload["ok"] else 1
     if args.cmd == "audio":
         payload = build_audio_packet(

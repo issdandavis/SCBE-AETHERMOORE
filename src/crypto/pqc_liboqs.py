@@ -24,8 +24,16 @@ from dataclasses import dataclass
 
 def _load_oqs_module():
     """Load liboqs-python without letting optional backend bootstrap kill import."""
+    import contextlib
+    import sys
+
     try:
-        import oqs as oqs_module
+        # liboqs-python prints an informational banner to STDOUT on import
+        # ("liboqs-python faulthandler is disabled"). Consumers of this module
+        # sign lazily from CLIs whose stdout is a machine-readable JSON
+        # contract, so route the banner to stderr where diagnostics belong.
+        with contextlib.redirect_stdout(sys.stderr):
+            import oqs as oqs_module
 
         return oqs_module
     except (Exception, SystemExit):
@@ -437,9 +445,17 @@ class MLDSA65:
 
     @classmethod
     def from_keypair(cls, keypair: MLDSAKeyPair) -> "MLDSA65":
-        """Create instance from existing key pair."""
+        """Create instance from an existing key pair (e.g. loaded from disk).
+
+        Critically, the loaded secret key is bound into the liboqs ``Signature``
+        object via ``secret_key=`` so that ``sign()`` uses *this* key. Constructing
+        ``oqs.Signature(alg)`` without it leaves the object with no usable signing
+        key, and signatures it produces will not verify against ``public_key`` —
+        which silently breaks cross-process / persisted-identity signing.
+        """
         instance = cls.__new__(cls)
         instance._using_real = LIBOQS_AVAILABLE
+        instance._using_pure = not LIBOQS_AVAILABLE and PURE_PQC_AVAILABLE
         instance._public_key = keypair.public_key
         instance._secret_key = keypair.secret_key
         instance._seed = None
@@ -449,8 +465,9 @@ class MLDSA65:
             instance._algorithm = _select_mldsa_algorithm()
             if instance._algorithm is None:
                 instance._using_real = False
+                instance._using_pure = PURE_PQC_AVAILABLE
             else:
-                instance._sig = oqs.Signature(instance._algorithm)
+                instance._sig = oqs.Signature(instance._algorithm, secret_key=keypair.secret_key)
 
         return instance
 
