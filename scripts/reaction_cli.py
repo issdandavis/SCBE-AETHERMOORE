@@ -33,6 +33,11 @@ from python.scbe.reaction_state import (
     packet_from_dict,
 )
 
+# Every packet this CLI emits is signed under one stable identity so receipts
+# are attributable and chainable across runs. sign() degrades to an unsigned
+# packet (signature stays None) where no signer backend is available.
+SIGNER_AGENT_ID = "scbe-react-cli"
+
 
 def load_json(path: str) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
@@ -160,7 +165,7 @@ def build_code_packet(source_path: str, target_path: str) -> dict[str, Any]:
             "hash equality proves byte identity only",
             "semantic equivalence requires tests or a language-specific analyzer",
         ],
-    )
+    ).sign(SIGNER_AGENT_ID)
     return {
         "schema_version": "scbe_react_code_v1",
         "ok": identity_preserved,
@@ -246,7 +251,7 @@ def build_audio_packet(
         identity_preserved=observables.modal_count_state.ok,
         recovery_evidence=["field coupling proxy emitted"] if observables.field_coupling_proxy is not None else (),
         claim_boundary=list(observables.claim_boundary),
-    )
+    ).sign(SIGNER_AGENT_ID)
     return {
         "schema_version": "scbe_react_audio_v1",
         "ok": observables.modal_count_state.ok,
@@ -302,7 +307,7 @@ def build_balance(reactants: str, products: str) -> dict[str, Any]:
     react = [s.strip() for s in reactants.split(",") if s.strip()]
     prod = [s.strip() for s in products.split(",") if s.strip()]
     try:
-        packet = balance_reaction_packet(react, prod)
+        packet = balance_reaction_packet(react, prod).sign(SIGNER_AGENT_ID)
     except BalanceError as exc:
         return {
             "schema_version": "scbe_react_balance_v1",
@@ -330,7 +335,7 @@ def print_human_balance(payload: dict[str, Any]) -> None:
 
 def build_geometry(smiles: str) -> dict[str, Any]:
     try:
-        packet = geometry_view_packet(smiles)
+        packet = geometry_view_packet(smiles).sign(SIGNER_AGENT_ID)
     except GeometryEngineError as exc:
         return {"schema_version": "scbe_react_geometry_v1", "ok": False, "error": str(exc), "smiles": smiles}
     meta = packet.target.metadata
