@@ -98,3 +98,22 @@ def test_forbidden_request_text_is_denied_before_balancing():
     pytest.importorskip("python.scbe.chem_code")
     with pytest.raises(HazardDenied, match="denied unsafe chemistry request"):
         balance_reaction_packet(["sarin"], ["H2O"])
+
+
+def test_charge_violation_names_charge_not_nullity():
+    """The use-case-audit gap: charge violations used to say 'nullity=0'."""
+    with pytest.raises(BalanceError, match="charge is not conserved"):
+        balance(["Fe^2+"], ["Fe^3+"])
+
+
+def test_one_sided_element_is_named():
+    with pytest.raises(BalanceError, match=r"N \(only in products\)"):
+        balance(["H2", "O2"], ["H2O", "N2"])
+    with pytest.raises(BalanceError, match=r"O \(only in products\)"):
+        balance(["H2"], ["H2O"])
+
+
+def test_underdetermined_reaction_says_so():
+    # C + O2 -> CO + CO2 mixes two independent oxidations (nullity 2).
+    with pytest.raises(BalanceError, match="underdetermined: it mixes 2 independent reactions"):
+        balance(["C", "O2"], ["CO", "CO2"])
