@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Optional, Sequence
 
 from src.crypto.sealed_memory_packets import seal_memory_packet
+from src.governance.gate_witness import gate_witness
 
 TIER_RANK = {"ALLOW": 0, "QUARANTINE": 1, "ESCALATE": 2, "DENY": 3}
 DEFAULT_EXEC_AUDIT_LOG = Path(".scbe/geoseal_exec_audit.sealed.jsonl")
@@ -134,8 +135,23 @@ def _windows_command_line_to_argv(command: str) -> list[str]:
         kernel32.LocalFree(argv_ptr)
 
 
-def scan_command(command: str, *, claimed_paths: Optional[Sequence[str]] = None) -> ExecGateDecision:
-    """Parse and scan a command without executing it."""
+def scan_command(
+    command: str,
+    *,
+    claimed_paths: Optional[Sequence[str]] = None,
+    shell_context: bool = False,
+) -> ExecGateDecision:
+    """Parse and scan a command without executing it.
+
+    shell_context=False (default): the command is run with shell=False, so shell
+    chaining/pipe metacharacters are meaningless and any are blocked (geoseal exec).
+
+    shell_context=True: the command is intentionally run through a shell (e.g.
+    `scbe run` -> PowerShell -Command), where pipelines and `;` are normal. Chaining
+    is allowed but still recorded, and the dangerous-pattern denies below scan the
+    WHOLE string (across pipes), so `curl | iex` or `... ; Remove-Item -Recurse`
+    are still denied — only the blanket metachar block is relaxed.
+    """
 
     findings: list[GateFinding] = []
     argv, parse_findings = _parse_command(command)
@@ -143,18 +159,30 @@ def scan_command(command: str, *, claimed_paths: Optional[Sequence[str]] = None)
     command_l = command.lower()
 
     if any(marker in command for marker in ("|", "&&", "||", ";")):
-        findings.append(
-            GateFinding(
-                "shell-metachar",
-                "DENY",
-                "shell chaining and pipe metacharacters are blocked by geoseal exec",
-                evidence=command,
+        if shell_context:
+            findings.append(
+                GateFinding(
+                    "shell-pipeline",
+                    "ALLOW",
+                    "shell pipeline/chaining present; scanned against dangerous-pattern rules",
+                    evidence=command,
+                )
             )
-        )
+        else:
+            findings.append(
+                GateFinding(
+                    "shell-metachar",
+                    "DENY",
+                    "shell chaining and pipe metacharacters are blocked by geoseal exec",
+                    evidence=command,
+                )
+            )
 
     deny_patterns: list[tuple[str, str, str]] = [
         (r"\brm\s+-rf\b", "destructive-rm", "recursive force delete"),
-        (r"\bremove-item\b.*\b-recurse\b", "destructive-remove-item", "recursive PowerShell delete"),
+        # NOTE: the leading boundary before "-recurse" must NOT be \b — \b never
+        # matches between a space and a hyphen, which silently disabled this rule.
+        (r"\b(?:remove-item|ri|rm)\b.*(?:\s|^)-recurse\b", "destructive-remove-item", "recursive PowerShell delete"),
         (r"\binvoke-expression\b|\biex\b", "powershell-iex", "dynamic PowerShell execution"),
         (r"\bcurl\b.*\|\s*(sh|bash|powershell|pwsh|iex)\b", "curl-pipe-exec", "download-to-exec chain"),
         (r"\bwget\b.*\|\s*(sh|bash|powershell|pwsh|iex)\b", "wget-pipe-exec", "download-to-exec chain"),
@@ -218,10 +246,21 @@ def append_sealed_exec_audit(
     audit_secret: Optional[str] = None,
     audit_secret_env: str = DEFAULT_AUDIT_SECRET_ENV,
 ) -> bool:
-    """Append a sealed execution audit record when a secret is available."""
+    """Append a sealed execution audit record when a secret is available.
+
+    When no secret is available the record is NOT sealed and False is returned
+    (the SEALED contract is unchanged), but an unsealed witness row is left via
+    ``gate_witness`` so the no-secret path leaves a durable trace instead of nothing.
+    """
 
     secret = _resolve_audit_secret(audit_secret=audit_secret, audit_secret_env=audit_secret_env)
     if not secret:
+        gate_witness(
+            "geoseal_exec",
+            "unsealed_audit",
+            subject=record.get("decision", {}).get("command_sha256") or "",
+            detail={"tier": record.get("decision", {}).get("tier"), "sealed": False},
+        )
         return False
     audit_log.parent.mkdir(parents=True, exist_ok=True)
     packet = seal_memory_packet(

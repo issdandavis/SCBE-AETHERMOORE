@@ -27,6 +27,11 @@ Every swarm / run call is written as a governance record to
     .scbe/geoseal_calls.jsonl
 so the training pipeline can replay every swarm invocation as SFT data.
 
+boundary: this command spans the two Six-Tongues roles that must not be conflated
+(docs/BOUNDARIES.md §1). The ROUTE/TYPE stage (atomic tokenizer -> route_task ->
+tongue/language) decides where work goes; the ENCODE stage (SacredTongueTokenizer
+seal/verify) only maps bytes <-> tokens. Keep the two stages in separate blocks.
+
 Usage:
     python -m src.geoseal_cli ops
     python -m src.geoseal_cli emit div --a x --b y
@@ -266,9 +271,7 @@ def inspect_runtime_packet(payload: dict[str, Any]) -> dict[str, Any]:
     content = str(payload.get("content", ""))
     language = str(payload.get("language", "python"))
     source_name = str(payload.get("source_name", "inline"))
-    portal = _build_portal_box_payload(
-        content=content, language=language, source_name=source_name
-    )
+    portal = _build_portal_box_payload(content=content, language=language, source_name=source_name)
     route_packet = (portal.get("shell_contract") or {}).get("route_packet", {})
     return {
         "version": "geoseal-runtime-inspect-v1",
@@ -293,9 +296,7 @@ def _build_execution_shell_payload(
         source_name=source_name,
         include_extended=include_extended,
     )
-    deck = build_system_deck(
-        resolution, source_text=content, source_name=source_name, max_cards=deck_size
-    )
+    deck = build_system_deck(resolution, source_text=content, source_name=source_name, max_cards=deck_size)
     return {
         "version": "geoseal-execution-shell-v1",
         "resolution": resolution,
@@ -310,14 +311,10 @@ def _execute_execution_shell_payload(
     timeout: float = 10.0,
     tongue: Optional[str] = None,
 ) -> dict[str, Any]:
-    route_packet = (
-        (shell_payload.get("resolution") or {}).get("shell_contract") or {}
-    ).get("route_packet", {})
+    route_packet = ((shell_payload.get("resolution") or {}).get("shell_contract") or {}).get("route_packet", {})
     exec_tongue = (tongue or route_packet.get("route_tongue") or "KO").upper()
     command_key = route_packet.get("command_key", "add")
-    replay = run_tongue_call(
-        command_key, exec_tongue, {"a": "7", "b": "3"}, execute=True, timeout=timeout
-    )
+    replay = run_tongue_call(command_key, exec_tongue, {"a": "7", "b": "3"}, execute=True, timeout=timeout)
     return {
         "version": "geoseal-execution-run-v1",
         "route_packet": route_packet,
@@ -560,9 +557,7 @@ def syntax_check(tongue: str, code: str, timeout: float = 5.0) -> Tuple[bool, st
 
     Uses real compilers when available, falls back to structural brace-balance check.
     """
-    compiler_map: Dict[
-        str, Tuple[Optional[str], Optional[List[str]], Optional[str]]
-    ] = {
+    compiler_map: Dict[str, Tuple[Optional[str], Optional[List[str]], Optional[str]]] = {
         "RU": (
             shutil.which("rustc"),
             ["rustc", "--edition=2021", "--crate-type=lib", "-"],
@@ -585,16 +580,10 @@ def syntax_check(tongue: str, code: str, timeout: float = 5.0) -> Tuple[bool, st
         balanced = opens == closes
         return (
             balanced,
-            (
-                "structural-ok"
-                if balanced
-                else f"unbalanced: {opens} opens vs {closes} closes"
-            ),
+            ("structural-ok" if balanced else f"unbalanced: {opens} opens vs {closes} closes"),
         )
     try:
-        proc = subprocess.run(
-            argv, input=wrapper, capture_output=True, text=True, timeout=timeout
-        )
+        proc = subprocess.run(argv, input=wrapper, capture_output=True, text=True, timeout=timeout)
         return (proc.returncode == 0, proc.stderr.strip() or "ok")
     except (FileNotFoundError, subprocess.TimeoutExpired) as exc:
         return (False, str(exc))
@@ -685,9 +674,7 @@ def run_tongue_call(
     gate_command = shlex.join(str(part) for part in argv)
     gate_decision = scan_command(gate_command)
     if TIER_RANK[gate_decision.tier] > TIER_RANK[gate_max_tier]:
-        result.error = (
-            f"execution gate {gate_decision.tier}: exceeds max tier {gate_max_tier}"
-        )
+        result.error = f"execution gate {gate_decision.tier}: exceeds max tier {gate_max_tier}"
         if gate_audit_log is not None:
             append_sealed_exec_audit(
                 {
@@ -741,12 +728,8 @@ def run_tongue_call(
                 "decision": gate_decision.to_dict(),
                 "ran": result.ran,
                 "returncode": result.returncode,
-                "stdout_sha256": hashlib.sha256(
-                    result.stdout.encode("utf-8")
-                ).hexdigest(),
-                "stderr_sha256": hashlib.sha256(
-                    result.stderr.encode("utf-8")
-                ).hexdigest(),
+                "stdout_sha256": hashlib.sha256(result.stdout.encode("utf-8")).hexdigest(),
+                "stderr_sha256": hashlib.sha256(result.stderr.encode("utf-8")).hexdigest(),
                 "error": result.error,
             },
             audit_log=gate_audit_log,
@@ -776,9 +759,7 @@ def swarm_dispatch(
         outputs = sorted({c.stdout for c in successful if c.stdout})
         if len(outputs) == 1:
             result.quorum_ok = True
-            result.consensus_hash = hashlib.sha256(
-                outputs[0].encode("utf-8")
-            ).hexdigest()
+            result.consensus_hash = hashlib.sha256(outputs[0].encode("utf-8")).hexdigest()
         elif len(outputs) > 1:
             tally: Dict[str, int] = {}
             for c in successful:
@@ -848,11 +829,7 @@ def _is_prime_for_phase(value: int) -> bool:
 def _small_factor_pressure(value: int) -> int:
     if value < 2:
         return 0
-    return sum(
-        1
-        for prime in _PRIME_ATLAS_RESIDUE_PRIMES
-        if value != prime and value % prime == 0
-    )
+    return sum(1 for prime in _PRIME_ATLAS_RESIDUE_PRIMES if value != prime and value % prime == 0)
 
 
 def _prime_composite_phase(center: int, radius: int) -> Dict[str, Any]:
@@ -878,9 +855,7 @@ def _prime_composite_phase(center: int, radius: int) -> Dict[str, Any]:
     integer_count = end - start + 1
     nonprime_count = composite_count + special_count
     expected_prime_count = integer_count / max(math.log(center), 1.0)
-    pressure_mean = (
-        sum(pressure_values) / len(pressure_values) if pressure_values else 0.0
-    )
+    pressure_mean = sum(pressure_values) / len(pressure_values) if pressure_values else 0.0
     return {
         "radius": radius,
         "window": [start, end],
@@ -889,12 +864,8 @@ def _prime_composite_phase(center: int, radius: int) -> Dict[str, Any]:
         "composite_count": composite_count,
         "special_count": special_count,
         "nonprime_count": nonprime_count,
-        "prime_to_nonprime_ratio": (
-            round(prime_count / nonprime_count, 12) if nonprime_count else None
-        ),
-        "composite_to_prime_ratio": (
-            round(composite_count / prime_count, 12) if prime_count else None
-        ),
+        "prime_to_nonprime_ratio": (round(prime_count / nonprime_count, 12) if nonprime_count else None),
+        "composite_to_prime_ratio": (round(composite_count / prime_count, 12) if prime_count else None),
         "pnt_expected_prime_count": round(expected_prime_count, 12),
         "prime_excess_vs_pnt": round(prime_count - expected_prime_count, 12),
         "small_factor_pressure_mean": round(pressure_mean, 12),
@@ -913,21 +884,11 @@ def _global_prime_composite_balance(address: Any) -> Dict[str, Any]:
         "pi_x": prime_count,
         "composite_count": composite_count,
         "special_count": 1,
-        "prime_to_composite_ratio": (
-            round(prime_count / composite_count, 12) if composite_count else None
-        ),
-        "composite_to_prime_ratio": (
-            round(composite_count / prime_count, 12) if prime_count else None
-        ),
-        "prime_fraction_positive_non_special": round(
-            prime_count / positive_non_special_count, 12
-        ),
-        "composite_fraction_positive_non_special": round(
-            composite_count / positive_non_special_count, 12
-        ),
-        "global_phase_balance": round(
-            (prime_count - composite_count) / positive_non_special_count, 12
-        ),
+        "prime_to_composite_ratio": (round(prime_count / composite_count, 12) if composite_count else None),
+        "composite_to_prime_ratio": (round(composite_count / prime_count, 12) if prime_count else None),
+        "prime_fraction_positive_non_special": round(prime_count / positive_non_special_count, 12),
+        "composite_fraction_positive_non_special": round(composite_count / positive_non_special_count, 12),
+        "global_phase_balance": round((prime_count - composite_count) / positive_non_special_count, 12),
     }
 
 
@@ -1039,9 +1000,7 @@ def _build_prime_atlas_lookup_payload(
     }
 
     if include_region:
-        region = build_prime_seed_region(
-            index, mode=mode, max_sieve_limit=max_sieve_limit
-        )
+        region = build_prime_seed_region(index, mode=mode, max_sieve_limit=max_sieve_limit)
         sample_addresses = list(region.addresses[:region_sample])
         if region_sample and region.target_value is not None:
             target_address = next(
@@ -1059,9 +1018,7 @@ def _build_prime_atlas_lookup_payload(
             "known_prime_count": len(region.addresses),
             "structure_counts": dict(region.structure_counts),
             "sample_count": len(sample_addresses),
-            "sample_rows": [
-                _prime_atlas_row(address, phase_radius) for address in sample_addresses
-            ],
+            "sample_rows": [_prime_atlas_row(address, phase_radius) for address in sample_addresses],
         }
 
     return payload
@@ -1187,8 +1144,7 @@ def cmd_portal_box(args: argparse.Namespace) -> int:
     payload = _build_portal_box_payload(
         content=content or "",
         language=args.language,
-        source_name=args.source_name
-        or (Path(args.source_file).name if args.source_file else "inline"),
+        source_name=args.source_name or (Path(args.source_file).name if args.source_file else "inline"),
         include_extended=args.include_extended,
     )
     print(json.dumps(payload, indent=2 if args.json else None))
@@ -1202,8 +1158,7 @@ def cmd_stream_wheel(args: argparse.Namespace) -> int:
     payload = _build_stream_wheel_payload(
         content=content or "",
         language=args.language,
-        source_name=args.source_name
-        or (Path(args.source_file).name if args.source_file else "inline"),
+        source_name=args.source_name or (Path(args.source_file).name if args.source_file else "inline"),
         include_extended=args.include_extended,
     )
     print(json.dumps(payload, indent=2 if args.json else None))
@@ -1242,21 +1197,16 @@ def cmd_binary_to_tokenizer(args: argparse.Namespace) -> int:
         b = int(bits, 2)
         raw.append(b)
         token = SACRED_TONGUE_TOKENIZER.encode_bytes(transport, bytes([b]))[0]
-        rows.append(
-            {"bits": bits, "byte_int": b, "byte_hex": f"0x{b:02X}", "token": token}
-        )
+        rows.append({"bits": bits, "byte_int": b, "byte_hex": f"0x{b:02X}", "token": token})
 
-    decoded = SACRED_TONGUE_TOKENIZER.decode_tokens(
-        transport, [row["token"] for row in rows]
-    )
+    decoded = SACRED_TONGUE_TOKENIZER.decode_tokens(transport, [row["token"] for row in rows])
     payload = {
         "version": "geoseal-binary-tokenizer-map-v1",
         "tongue": tongue,
         "conlang": CONLANG_NAME_MAP.get(tongue, tongue),
         "prime_language": LANG_MAP.get(tongue, ""),
         "requested_language": (args.language or "").lower() if args.language else None,
-        "language_matches_prime": (args.language or "").lower()
-        in {"", LANG_MAP.get(tongue, "")},
+        "language_matches_prime": (args.language or "").lower() in {"", LANG_MAP.get(tongue, "")},
         "byte_count": len(rows),
         "rows": rows,
         "harmonic_spiral": {
@@ -1306,9 +1256,7 @@ def cmd_prime_atlas(args: argparse.Namespace) -> int:
     return 0
 
 
-def _json_list_arg(
-    value: Optional[str], file_path: Optional[str], *, label: str
-) -> list[dict[str, Any]]:
+def _json_list_arg(value: Optional[str], file_path: Optional[str], *, label: str) -> list[dict[str, Any]]:
     if value and file_path:
         raise ValueError(f"use either --{label}-json or --{label}-file, not both")
     if file_path:
@@ -1318,9 +1266,7 @@ def _json_list_arg(
     else:
         return []
     payload = json.loads(raw)
-    if not isinstance(payload, list) or not all(
-        isinstance(item, dict) for item in payload
-    ):
+    if not isinstance(payload, list) or not all(isinstance(item, dict) for item in payload):
         raise ValueError(f"{label} must be a JSON array of objects")
     return payload
 
@@ -1329,23 +1275,15 @@ def cmd_browse_atlas(args: argparse.Namespace) -> int:
     from src.aetherbrowser.corridor_atlas import build_corridor_graph
 
     try:
-        text = (
-            Path(args.text_file).read_text(encoding="utf-8")
-            if args.text_file
-            else args.text
-        )
+        text = Path(args.text_file).read_text(encoding="utf-8") if args.text_file else args.text
         graph = build_corridor_graph(
             url=args.url,
             title=args.title,
             text=text or "",
             goal=args.goal or "",
-            headings=_json_list_arg(
-                args.headings_json, args.headings_file, label="headings"
-            ),
+            headings=_json_list_arg(args.headings_json, args.headings_file, label="headings"),
             links=_json_list_arg(args.links_json, args.links_file, label="links"),
-            buttons=_json_list_arg(
-                args.buttons_json, args.buttons_file, label="buttons"
-            ),
+            buttons=_json_list_arg(args.buttons_json, args.buttons_file, label="buttons"),
             forms=_json_list_arg(args.forms_json, args.forms_file, label="forms"),
             tabs=_json_list_arg(args.tabs_json, args.tabs_file, label="tabs"),
             max_edges=args.max_edges,
@@ -1362,9 +1300,7 @@ def cmd_browse_atlas(args: argparse.Namespace) -> int:
         print("GeoSeal Browser Corridor Atlas")
         print(f"safety_contract: {payload['safety_contract']}")
         print(f"page: {node['title']} ({node['url']})")
-        print(
-            f"intent: {node['intent']}  risk: {node['risk_level']}  elements: {payload['element_count']}"
-        )
+        print(f"intent: {node['intent']}  risk: {node['risk_level']}  elements: {payload['element_count']}")
         print("")
         print("score | risk | action | role | label | selector")
         print("---: | --- | --- | --- | --- | ---")
@@ -1481,24 +1417,16 @@ def _token_digest_for_tongue(tongue: str, payload: bytes) -> dict[str, Any]:
     }
 
 
-def _build_native_tokenization_surface(
-    *, input_bytes: bytes, language_views: list[dict[str, str]]
-) -> dict[str, Any]:
+def _build_native_tokenization_surface(*, input_bytes: bytes, language_views: list[dict[str, str]]) -> dict[str, Any]:
     outputs: list[dict[str, Any]] = []
     for lane in language_views:
         tongue, lang = next(iter(lane.items()))
         snippet = lane.get("snippet", "")
-        digest = _token_digest_for_tongue(
-            tongue, snippet.encode("utf-8", errors="replace")
-        )
-        outputs.append(
-            {**digest, "output_kind": "language_view_snippet", "language_view": lang}
-        )
+        digest = _token_digest_for_tongue(tongue, snippet.encode("utf-8", errors="replace"))
+        outputs.append({**digest, "output_kind": "language_view_snippet", "language_view": lang})
     return {
         "schema_version": "scbe_native_tokenization_surface_v1",
-        "inputs": [
-            _token_digest_for_tongue(tongue, input_bytes) for tongue in TONGUE_NAMES
-        ],
+        "inputs": [_token_digest_for_tongue(tongue, input_bytes) for tongue in TONGUE_NAMES],
         "outputs": outputs,
     }
 
@@ -1536,9 +1464,7 @@ def cmd_tongue_compile(args: argparse.Namespace) -> int:
             if getattr(args, "output_format", "json") == "bin":
                 out_path.write_bytes(bytes(packet["bytecode"]))
             else:
-                out_path.write_text(
-                    json.dumps(packet["bytecode"], indent=2) + "\n", encoding="utf-8"
-                )
+                out_path.write_text(json.dumps(packet["bytecode"], indent=2) + "\n", encoding="utf-8")
             packet["output_path"] = str(out_path)
         print(json.dumps(packet))
         return 0
@@ -1565,9 +1491,7 @@ def cmd_tongue_run(args: argparse.Namespace) -> int:
             source, source_name = _read_tongue_program_source(args)
             compile_payload = compile_packet(source, source_name=source_name)
             program = compile_payload["bytecode"]
-        run_payload = run_packet(
-            program, max_steps=int(getattr(args, "max_steps", 10000))
-        )
+        run_payload = run_packet(program, max_steps=int(getattr(args, "max_steps", 10000)))
         payload = {
             "schema_version": "geoseal_tongue_run_v1",
             "source_name": source_name,
@@ -1625,17 +1549,13 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
     lexical_tokens = re.findall(r"[A-Za-z_][A-Za-z0-9_]*|==|!=|<=|>=|[^\s]", source)
     transport_tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(transport, source_bytes)
     semantic = _compute_semantic_expression(source)
-    semantic_operation = semantic_operation_signature_from_tokens(
-        lexical_tokens, language=language
-    )
+    semantic_operation = semantic_operation_signature_from_tokens(lexical_tokens, language=language)
     semantic["operation_signature"] = semantic_operation
     semantic["operation_path"] = semantic_operation["operation_path"]
     semantic["interchange_key"] = semantic_operation["interchange_key"]
     definitions = [
         {"symbol": name, "kind": kind}
-        for kind, name in re.findall(
-            r"\b(import|class|def)\s+([A-Za-z_][A-Za-z0-9_]*)", source
-        )
+        for kind, name in re.findall(r"\b(import|class|def)\s+([A-Za-z_][A-Za-z0-9_]*)", source)
     ]
     class_names = set(re.findall(r"\bclass\s+([A-Za-z_][A-Za-z0-9_]*)", source))
     function_names = set(re.findall(r"\bdef\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", source))
@@ -1657,10 +1577,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
         stisa_elements,
         operation_path=semantic_operation["operation_path"],
     )
-    language_views = [
-        {code: LANG_MAP[code], "snippet": emit_code("add", code, a="x", b="y")}
-        for code in TONGUE_NAMES
-    ]
+    language_views = [{code: LANG_MAP[code], "snippet": emit_code("add", code, a="x", b="y")} for code in TONGUE_NAMES]
     return {
         "version": "scbe-code-weight-packet-v1",
         "source_name": source_name,
@@ -1670,9 +1587,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
         "transport": {
             "tongue": tongue,
             "source_sha256": hashlib.sha256(source_bytes).hexdigest(),
-            "token_sha256": hashlib.sha256(
-                " ".join(transport_tokens).encode("utf-8")
-            ).hexdigest(),
+            "token_sha256": hashlib.sha256(" ".join(transport_tokens).encode("utf-8")).hexdigest(),
         },
         "binary": {
             "byte_count": len(source_bytes),
@@ -1705,11 +1620,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
                 ]
             ],
             "token_rows": stisa_rows,
-            "binary_groups": (
-                [{"group_id": "g0", "tokens": lexical_tokens[:8]}]
-                if lexical_tokens
-                else []
-            ),
+            "binary_groups": ([{"group_id": "g0", "tokens": lexical_tokens[:8]}] if lexical_tokens else []),
             "chemical_composition": stisa_chemistry,
         },
         "chemical_composition": stisa_chemistry,
@@ -1719,9 +1630,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
             "captures": {
                 "imports": re.findall(r"\bimport\s+([A-Za-z_][A-Za-z0-9_]*)", source),
                 "classes": re.findall(r"\bclass\s+([A-Za-z_][A-Za-z0-9_]*)", source),
-                "functions": re.findall(
-                    r"\bdef\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", source
-                ),
+                "functions": re.findall(r"\bdef\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", source),
             },
         },
         "scip_symbol_index": {
@@ -1739,9 +1648,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
                         "keyword"
                         if tok in {"def", "class", "import", "return"}
                         else (
-                            "class"
-                            if tok in class_names
-                            else ("function" if tok in function_names else "identifier")
+                            "class" if tok in class_names else ("function" if tok in function_names else "identifier")
                         )
                     ),
                 }
@@ -1763,10 +1670,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
             "route_tongue": tongue,
             "route_language": language,
         },
-        "atomic_states": [
-            {"token": tok, "tau": ((i % 3) - 1)}
-            for i, tok in enumerate(lexical_tokens[:64])
-        ],
+        "atomic_states": [{"token": tok, "tau": ((i % 3) - 1)} for i, tok in enumerate(lexical_tokens[:64])],
         "ternary_semantics": {
             "version": "scbe-ternary-semantics-v1",
             "checksum": (
@@ -1794,9 +1698,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
-def _build_interaction_graph(
-    packet: dict[str, Any], max_binary_nodes: int = 8
-) -> dict[str, Any]:
+def _build_interaction_graph(packet: dict[str, Any], max_binary_nodes: int = 8) -> dict[str, Any]:
     tongue = packet["route"]["tongue"]
     semantic = packet.get("semantic_expression", {})
     nodes: list[dict[str, Any]] = [
@@ -1836,33 +1738,21 @@ def _build_interaction_graph(
     for i, tok in enumerate(packet.get("lexical_tokens", [])[:max_binary_nodes]):
         tid = f"token:{i}:{tok}"
         nodes.append({"id": tid, "label": tok, "kind": "token"})
-        edges.append(
-            {"source": "source:program", "target": tid, "relation": "contains_token"}
-        )
+        edges.append({"source": "source:program", "target": tid, "relation": "contains_token"})
         if i < len(packet.get("stisa", {}).get("token_rows", [])):
             sid = f"stisa:{i}"
             nodes.append({"id": sid, "label": f"stisa:{tok}", "kind": "stisa"})
-            edges.append(
-                {"source": tid, "target": sid, "relation": "maps_to_stisa_row"}
-            )
+            edges.append({"source": tid, "target": sid, "relation": "maps_to_stisa_row"})
         if i < len(packet.get("atomic_states", [])):
             aid = f"atom:{i}"
             nodes.append({"id": aid, "label": f"atom:{tok}", "kind": "atom"})
-            edges.append(
-                {"source": tid, "target": aid, "relation": "maps_to_atomic_state"}
-            )
+            edges.append({"source": tid, "target": aid, "relation": "maps_to_atomic_state"})
     for i, token in enumerate(packet.get("transport_tokens", [])[:max_binary_nodes]):
-        nodes.append(
-            {"id": f"transport_token:{i}", "label": token, "kind": "transport_token"}
-        )
+        nodes.append({"id": f"transport_token:{i}", "label": token, "kind": "transport_token"})
     for group in packet.get("stisa", {}).get("binary_groups", []):
         gid = f"binary_group:{group.get('group_id', 'g0')}"
         nodes.append({"id": gid, "label": gid, "kind": "binary_group"})
-    for cell in (
-        packet.get("braille_lane", {})
-        .get("binary_surface", {})
-        .get("cells", [])[:max_binary_nodes]
-    ):
+    for cell in packet.get("braille_lane", {}).get("binary_surface", {}).get("cells", [])[:max_binary_nodes]:
         bid = f"braille:{cell['index']}"
         nodes.append({"id": bid, "label": f"braille:{cell['bits']}", "kind": "braille"})
         edges.append(
@@ -1872,11 +1762,7 @@ def _build_interaction_graph(
                 "relation": "projects_to_braille_cell",
             }
         )
-    for state in (
-        packet.get("braille_lane", {})
-        .get("harmonic_spiral", {})
-        .get("states", [])[:max_binary_nodes]
-    ):
+    for state in packet.get("braille_lane", {}).get("harmonic_spiral", {}).get("states", [])[:max_binary_nodes]:
         hid = f"spiral:{state['index']}"
         nodes.append({"id": hid, "label": hid, "kind": "spiral"})
         edges.append(
@@ -1907,9 +1793,7 @@ def _build_interaction_graph(
             "language_view_count": len(packet.get("language_views", [])),
             "binary_group_count": len(packet.get("stisa", {}).get("binary_groups", [])),
             "harmonic_spiral_state_count": len(
-                packet.get("braille_lane", {})
-                .get("harmonic_spiral", {})
-                .get("states", [])
+                packet.get("braille_lane", {}).get("harmonic_spiral", {}).get("states", [])
             ),
         },
         "nodes": nodes,
@@ -1957,23 +1841,16 @@ def _command_binding() -> dict[str, Any]:
             for code in TONGUE_NAMES
         },
         "primary_transport_tokens": {
-            code: " ".join(
-                SACRED_TONGUE_TOKENIZER.encode_bytes(TONGUE_CODE_MAP[code], b"add")
-            )
-            for code in TONGUE_NAMES
+            code: " ".join(SACRED_TONGUE_TOKENIZER.encode_bytes(TONGUE_CODE_MAP[code], b"add")) for code in TONGUE_NAMES
         },
         "topology_local_relevance_score": 0.92,
     }
 
 
-def _build_topology_view(
-    packet: dict[str, Any], max_binary_nodes: int = 8
-) -> dict[str, Any]:
+def _build_topology_view(packet: dict[str, Any], max_binary_nodes: int = 8) -> dict[str, Any]:
     graph = _build_interaction_graph(packet, max_binary_nodes=max_binary_nodes)
     polygons = []
-    for i, row in enumerate(
-        packet.get("stisa", {}).get("token_rows", [])[:max_binary_nodes]
-    ):
+    for i, row in enumerate(packet.get("stisa", {}).get("token_rows", [])[:max_binary_nodes]):
         vec = row.get("feature_vector", [0.0] * 8)[:8]
         total = max(sum(abs(float(v)) for v in vec), 1.0)
         normalized = [round(float(v) / total, 6) for v in vec]
@@ -1981,9 +1858,7 @@ def _build_topology_view(
             {
                 "token": row["token"],
                 "normalized_vector": normalized,
-                "vertices": [
-                    {"axis": j, "value": value} for j, value in enumerate(normalized)
-                ],
+                "vertices": [{"axis": j, "value": value} for j, value in enumerate(normalized)],
                 "centroid": {
                     "x": normalized[0],
                     "y": normalized[1],
@@ -2015,12 +1890,10 @@ def _build_topology_view(
         }
     ]
     leylines = [
-        {"kind": k, "weight": i + 1}
-        for i, k in enumerate(["semantic_backbone", "binary_spine", "harmonic_spine"])
+        {"kind": k, "weight": i + 1} for i, k in enumerate(["semantic_backbone", "binary_spine", "harmonic_spine"])
     ]
     nodes = graph["nodes"] + [
-        {"id": f"polygon:{i}", "kind": "data_polygon", "label": f"polygon:{p['token']}"}
-        for i, p in enumerate(polygons)
+        {"id": f"polygon:{i}", "kind": "data_polygon", "label": f"polygon:{p['token']}"} for i, p in enumerate(polygons)
     ]
     edges = graph["edges"] + [
         {
@@ -2055,9 +1928,7 @@ def _build_topology_view(
         "surfaces": {
             "stisa_row_count": len(packet.get("stisa", {}).get("token_rows", [])),
             "harmonic_spiral_state_count": len(
-                packet.get("braille_lane", {})
-                .get("harmonic_spiral", {})
-                .get("states", [])
+                packet.get("braille_lane", {}).get("harmonic_spiral", {}).get("states", [])
             ),
         },
         "dictionaries": {
@@ -2102,9 +1973,7 @@ def cmd_braille_lane(args: argparse.Namespace) -> int:
 
 
 def cmd_interaction_graph(args: argparse.Namespace) -> int:
-    graph = _build_interaction_graph(
-        _packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes
-    )
+    graph = _build_interaction_graph(_packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes)
     if args.format == "mermaid":
         print(_graph_to_mermaid(graph, direction="TD"), end="")
     elif args.format == "dot":
@@ -2115,14 +1984,10 @@ def cmd_interaction_graph(args: argparse.Namespace) -> int:
 
 
 def cmd_topology_view(args: argparse.Namespace) -> int:
-    topology = _build_topology_view(
-        _packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes
-    )
+    topology = _build_topology_view(_packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes)
     if args.format == "mermaid":
         print(
-            _graph_to_mermaid(
-                {"nodes": topology["nodes"], "edges": topology["edges"]}, direction="LR"
-            ),
+            _graph_to_mermaid({"nodes": topology["nodes"], "edges": topology["edges"]}, direction="LR"),
             end="",
         )
     elif args.format == "dot":
@@ -2171,9 +2036,7 @@ def cmd_cross_domain_sequence(args: argparse.Namespace) -> int:
     if args.topology_file:
         topology = json.loads(Path(args.topology_file).read_text(encoding="utf-8"))
     else:
-        topology = _build_topology_view(
-            _packet_from_surface_args(args), max_binary_nodes=8
-        )
+        topology = _build_topology_view(_packet_from_surface_args(args), max_binary_nodes=8)
     print(
         json.dumps(
             {"sequence": _build_cross_domain_sequence(topology)},
@@ -2214,9 +2077,7 @@ def cmd_cognition_map(args: argparse.Namespace) -> int:
     quarks = set(packet.get("semantic_expression", {}).get("quarks", []))
     payload = {
         "version": "scbe-cognition-map-v1",
-        "semantic_label": packet.get("semantic_expression", {}).get(
-            "label", "generic_program_bin"
-        ),
+        "semantic_label": packet.get("semantic_expression", {}).get("label", "generic_program_bin"),
         "well_scores": {
             "measurement": 1.0 if "measurement_signal" in quarks else 0.4,
             "governance": 1.0 if "risk_gate" in quarks else 0.4,
@@ -2227,9 +2088,7 @@ def cmd_cognition_map(args: argparse.Namespace) -> int:
             "counts": {"positive": 3, "zero": 2, "negative": 1},
             "tongue_projection": packet["ternary_semantics"]["route_projection"],
         },
-        "dual_ternary": {
-            "history_length": max(1, len(packet.get("atomic_states", [])))
-        },
+        "dual_ternary": {"history_length": max(1, len(packet.get("atomic_states", [])))},
         "tri_manifold": {"tick": max(1, len(packet.get("lexical_tokens", [])))},
     }
     print(json.dumps(payload, indent=2))
@@ -2276,9 +2135,7 @@ def _build_cluster_graph(
 def cmd_cluster_graph(args: argparse.Namespace) -> int:
     print(
         json.dumps(
-            _build_cluster_graph(
-                _packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes
-            ),
+            _build_cluster_graph(_packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes),
             indent=2,
         )
     )
@@ -2327,9 +2184,7 @@ def cmd_agent_harness(args: argparse.Namespace) -> int:
         print(json.dumps(payload, indent=2))
         return 0
     selected = payload["selected_language"]
-    print(
-        f"schema={payload['schema_version']} language={selected['language']} tongue={selected['tongue']}"
-    )
+    print(f"schema={payload['schema_version']} language={selected['language']} tongue={selected['tongue']}")
     print(f"permission_mode={payload['permission_mode']}")
     print("flow=" + " -> ".join(payload["standard_flow"]))
     return 0
@@ -2354,9 +2209,7 @@ def cmd_agent_endurance_pack(args: argparse.Namespace) -> int:
     round_id = args.round_id
     regimen = _load_agent_endurance_example("agent_endurance_regimen_v1.example.json")
     taskset = _load_agent_endurance_example("agent_endurance_taskset_v1.example.json")
-    run_report = _load_agent_endurance_example(
-        "agent_endurance_run_report_v1.example.json"
-    )
+    run_report = _load_agent_endurance_example("agent_endurance_run_report_v1.example.json")
 
     regimen["created_at_utc"] = now
     regimen["default_permission_mode"] = args.permission_mode
@@ -2488,16 +2341,8 @@ def cmd_domino(args: argparse.Namespace) -> int:
         return 0
     chain = payload.get("chain") or []
     summary = payload["summary"]
-    print(
-        f"{payload['schema']} complete={summary['complete']} "
-        f"chain_length={summary['chain_length']}"
-    )
-    print(
-        "chain="
-        + " -> ".join(
-            f"{tile['tile_id']}({tile['left']}|{tile['right']})" for tile in chain
-        )
-    )
+    print(f"{payload['schema']} complete={summary['complete']} " f"chain_length={summary['chain_length']}")
+    print("chain=" + " -> ".join(f"{tile['tile_id']}({tile['left']}|{tile['right']})" for tile in chain))
     if payload.get("blocked"):
         print("blocked=" + ",".join(tile["tile_id"] for tile in payload["blocked"]))
     if payload.get("contacts"):
@@ -2511,9 +2356,7 @@ def cmd_loop_dispatch(args: argparse.Namespace) -> int:
         geoseal_command_to_tool_class,
     )
 
-    tool_class = geoseal_command_to_tool_class(
-        "loop-dispatch", execute=bool(args.execute)
-    )
+    tool_class = geoseal_command_to_tool_class("loop-dispatch", execute=bool(args.execute))
     policy = evaluate_harness_tool_policy(
         permission_mode=args.permission_mode,
         tool_class=tool_class,
@@ -2526,9 +2369,7 @@ def cmd_loop_dispatch(args: argparse.Namespace) -> int:
         "policy": policy,
     }
     if args.execute and policy.get("ok"):
-        execute_armed = os.environ.get(
-            "SCBE_AGENTIC_LOOP_EXECUTE", ""
-        ).strip().lower() in (
+        execute_armed = os.environ.get("SCBE_AGENTIC_LOOP_EXECUTE", "").strip().lower() in (
             "1",
             "true",
             "yes",
@@ -2549,8 +2390,7 @@ def cmd_loop_dispatch(args: argparse.Namespace) -> int:
         print(json.dumps(payload, indent=2))
     else:
         print(
-            f"{payload['schema_version']} provider={args.provider} task={args.task} "
-            f"decision={policy['decision']}"
+            f"{payload['schema_version']} provider={args.provider} task={args.task} " f"decision={policy['decision']}"
         )
     return 0 if policy.get("ok") else 2
 
@@ -2614,11 +2454,7 @@ def cmd_explain_route(args: argparse.Namespace) -> int:
         source_name=source_name,
         language=language,
         force_tongue=force_tongue,
-        selected_backend=(
-            provider_explain["resolved_chain"][0]
-            if provider_explain["resolved_chain"]
-            else None
-        ),
+        selected_backend=(provider_explain["resolved_chain"][0] if provider_explain["resolved_chain"] else None),
     )
     payload = {
         "version": "geoseal-route-explain-v1",
@@ -2631,9 +2467,7 @@ def cmd_explain_route(args: argparse.Namespace) -> int:
         print(json.dumps(payload, indent=2))
         return 0
     print(f"source={source_name} language={language}")
-    print(
-        f"signature={route_ir['route']['signature']} tongue={route_ir['route']['tongue']}"
-    )
+    print(f"signature={route_ir['route']['signature']} tongue={route_ir['route']['tongue']}")
     print(f"backend={route_ir['backend']['selected']}")
     return 0
 
@@ -2659,9 +2493,7 @@ def cmd_history(args: argparse.Namespace) -> int:
     ledger = Path(args.ledger)
     rows = _read_ledger_records(ledger)
     if args.type:
-        rows = [
-            row for row in rows if str(row.get("type", "swarm_result")) == args.type
-        ]
+        rows = [row for row in rows if str(row.get("type", "swarm_result")) == args.type]
     if args.op:
         rows = [row for row in rows if str(row.get("op", "")) == args.op]
     if args.limit > 0:
@@ -2695,18 +2527,12 @@ def cmd_replay(args: argparse.Namespace) -> int:
 
     if row.get("type") == "swarm_tokens":
         op = str(row.get("op", "add"))
-        tongues = [
-            str(item.get("tongue", "KO")).upper()
-            for item in row.get("calls", [])
-            if isinstance(item, dict)
-        ]
+        tongues = [str(item.get("tongue", "KO")).upper() for item in row.get("calls", []) if isinstance(item, dict)]
         prior_swarm = next(
             (
                 candidate
                 for candidate in reversed(rows)
-                if candidate is not row
-                and candidate.get("type") == "swarm_result"
-                and candidate.get("op") == op
+                if candidate is not row and candidate.get("type") == "swarm_result" and candidate.get("op") == op
             ),
             None,
         )
@@ -2731,11 +2557,7 @@ def cmd_replay(args: argparse.Namespace) -> int:
 
     if "op" in row and "calls" in row and isinstance(row["calls"], list):
         op = str(row.get("op", "add"))
-        tongues = [
-            str(item.get("tongue", "KO")).upper()
-            for item in row.get("calls", [])
-            if isinstance(item, dict)
-        ]
+        tongues = [str(item.get("tongue", "KO")).upper() for item in row.get("calls", []) if isinstance(item, dict)]
         args_map = row.get("args", {})
         result = swarm_dispatch(
             op,
@@ -2761,11 +2583,7 @@ def _command_key_and_route_packet(source: str, language: str) -> dict[str, Any]:
     command_key = _extract_command_key(source, fallback="add")
     if command_key == "code":
         command_key = "add"
-    operative = (
-        f"arithmetic:{command_key}"
-        if command_key in {"add", "sub", "mul", "div", "mod"}
-        else command_key
-    )
+    operative = f"arithmetic:{command_key}" if command_key in {"add", "sub", "mul", "div", "mod"} else command_key
     return {
         "operative_command": operative,
         "command_key": command_key,
@@ -2780,9 +2598,7 @@ def _command_key_and_route_packet(source: str, language: str) -> dict[str, Any]:
 def _run_python_add(a: int = 7, b: int = 3) -> SwarmCallResult:
     code = f"print({a} + {b})"
     t0 = time.time()
-    proc = subprocess.run(
-        [sys.executable, "-c", code], capture_output=True, text=True, timeout=10.0
-    )
+    proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=10.0)
     return SwarmCallResult(
         op="add",
         tongue="KO",
@@ -2807,9 +2623,7 @@ def cmd_testing_cli(args: argparse.Namespace) -> int:
     playback_exec = (
         _run_python_add()
         if args.execute
-        else SwarmCallResult(
-            op="add", tongue="KO", language="python", code="", ran=False
-        )
+        else SwarmCallResult(op="add", tongue="KO", language="python", code="", ran=False)
     )
     payload = {
         "version": "geoseal-testing-cli-v1",
@@ -2822,23 +2636,17 @@ def cmd_testing_cli(args: argparse.Namespace) -> int:
             },
             "execution": playback_exec.to_dict(),
         },
-        "honeycomb_analysis": {
-            "matched_output": playback_exec.stdout if playback_exec.ran else ""
-        },
+        "honeycomb_analysis": {"matched_output": playback_exec.stdout if playback_exec.ran else ""},
         "topology": {
             "route_packet": route_packet,
             "operative_command": {
                 "phase_operation": "arithmetic:add",
-                "stability_adjusted_route_score": route_packet[
-                    "stability_adjusted_route_score"
-                ],
+                "stability_adjusted_route_score": route_packet["stability_adjusted_route_score"],
             },
         },
         "native_tokenization": {
             "schema_version": "scbe_testing_cli_native_tokenization_v1",
-            "input": _token_digest_for_tongue(
-                route_packet["route_tongue"], source.encode("utf-8", errors="replace")
-            ),
+            "input": _token_digest_for_tongue(route_packet["route_tongue"], source.encode("utf-8", errors="replace")),
             "output": _token_digest_for_tongue(
                 route_packet["route_tongue"],
                 playback_exec.stdout.encode("utf-8", errors="replace"),
@@ -2852,9 +2660,7 @@ def cmd_testing_cli(args: argparse.Namespace) -> int:
 def cmd_project_scaffold(args: argparse.Namespace) -> int:
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    route_packet = _command_key_and_route_packet(
-        args.content or "", (args.language or "python").lower()
-    )
+    route_packet = _command_key_and_route_packet(args.content or "", (args.language or "python").lower())
     (out_dir / "index.html").write_text(
         "<!doctype html><html><head><title>Pacman Scaffold</title><link rel='stylesheet' href='style.css'></head>"
         "<body><h1>Pacman Scaffold</h1><canvas id='game'></canvas><script src='game.js'></script></body></html>",
@@ -2874,9 +2680,7 @@ def cmd_project_scaffold(args: argparse.Namespace) -> int:
         "route_packet": {"command_key": route_packet["command_key"]},
         "honeycomb_feedback": {"route_confidence": route_packet["route_confidence"]},
     }
-    (out_dir / "project_manifest.json").write_text(
-        json.dumps(manifest, indent=2), encoding="utf-8"
-    )
+    (out_dir / "project_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     payload = {
         "version": "geoseal-project-scaffold-v1",
         "project_kind": "pacman_web",
@@ -2917,9 +2721,7 @@ def _execute_rust_source(source_path: Path) -> tuple[bool, dict[str, Any]]:
             "stdout": "",
             "stderr": compile_proc.stderr,
         }
-    run_proc = subprocess.run(
-        [str(exe_path)], capture_output=True, text=True, timeout=30.0
-    )
+    run_proc = subprocess.run([str(exe_path)], capture_output=True, text=True, timeout=30.0)
     return True, {
         "ran": True,
         "returncode": run_proc.returncode,
@@ -2951,9 +2753,7 @@ def cmd_code_roundtrip(args: argparse.Namespace) -> int:
     }
     if args.execute and language == "rust":
         ran, original_exec = _execute_rust_source(source_path)
-        decoded_path = source_path.with_name(
-            source_path.stem + ".decoded" + source_path.suffix
-        )
+        decoded_path = source_path.with_name(source_path.stem + ".decoded" + source_path.suffix)
         decoded_path.write_bytes(back)
         _, decoded_exec = _execute_rust_source(decoded_path)
         if decoded_path.exists():
@@ -2967,19 +2767,12 @@ def cmd_code_roundtrip(args: argparse.Namespace) -> int:
         "execution": {
             "original": original_exec,
             "decoded": decoded_exec,
-            "stdout_identical": original_exec.get("stdout")
-            == decoded_exec.get("stdout"),
-            "returncode_identical": original_exec.get("returncode")
-            == decoded_exec.get("returncode"),
+            "stdout_identical": original_exec.get("stdout") == decoded_exec.get("stdout"),
+            "returncode_identical": original_exec.get("returncode") == decoded_exec.get("returncode"),
         },
     }
     print(json.dumps(payload, indent=2 if args.json else None))
-    return (
-        0
-        if payload["byte_identical"]
-        and (not args.execute or payload["execution"]["returncode_identical"])
-        else 1
-    )
+    return 0 if payload["byte_identical"] and (not args.execute or payload["execution"]["returncode_identical"]) else 1
 
 
 def cmd_shell(args: argparse.Namespace) -> int:
@@ -3051,9 +2844,7 @@ def cmd_exec(args: argparse.Namespace) -> int:
         print(json.dumps(payload, indent=2))
     else:
         decision = result.decision
-        print(
-            f"[gate] tier={decision.tier} allowed={decision.allowed} ran={result.ran}"
-        )
+        print(f"[gate] tier={decision.tier} allowed={decision.allowed} ran={result.ran}")
         for finding in decision.findings:
             print(f"  - {finding.rule}: {finding.message}")
         if result.stdout:
@@ -3076,11 +2867,7 @@ def cmd_legitimacy_trial(args: argparse.Namespace) -> int:
         confidence=args.location_confidence,
     )
     cleaned = _strip_argv_separator(args.command)
-    command = (
-        subprocess.list2cmdline(cleaned)
-        if isinstance(cleaned, list) and cleaned
-        else None
-    )
+    command = subprocess.list2cmdline(cleaned) if isinstance(cleaned, list) and cleaned else None
     payload = run_legitimacy_trial(
         goal=args.goal,
         expected_tool=args.tool,
@@ -3128,9 +2915,7 @@ def cmd_research_nav(args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps(packet, indent=2, ensure_ascii=False))
     else:
-        print(
-            f"[research-nav] status={packet['status']} title={packet['title'] or '-'}"
-        )
+        print(f"[research-nav] status={packet['status']} title={packet['title'] or '-'}")
         print(f"[research-nav] url={packet['resolved_url']}")
         print(
             f"[research-nav] verdict={packet['security'].get('verdict')} "
@@ -3161,9 +2946,7 @@ def cmd_youtube_nav(args: argparse.Namespace) -> int:
         if transcript["text_excerpt"]:
             print(transcript["text_excerpt"][:500])
         if transcript["error"]:
-            print(
-                f"[youtube-nav] transcript_error={transcript['error']}", file=sys.stderr
-            )
+            print(f"[youtube-nav] transcript_error={transcript['error']}", file=sys.stderr)
     return 0 if not packet["transcript"]["error"] else 1
 
 
@@ -3244,12 +3027,8 @@ class SealHereCommand(BoundCommand):
         None,
         description="Use a known named location (port-angeles | sequim | seattle)",
     )
-    lat: Optional[float] = Field(
-        None, ge=-90.0, le=90.0, description="Latitude in degrees"
-    )
-    lon: Optional[float] = Field(
-        None, ge=-180.0, le=180.0, description="Longitude in degrees"
-    )
+    lat: Optional[float] = Field(None, ge=-90.0, le=90.0, description="Latitude in degrees")
+    lon: Optional[float] = Field(None, ge=-180.0, le=180.0, description="Longitude in degrees")
     label: str = Field("seal-here", description="Audit label for the sealed packet")
     tongue: Literal["ko", "av", "ru", "ca", "um", "dr"] = Field(
         "ko",
@@ -3378,9 +3157,7 @@ def _handle_cross_build(bound: BoundCommand, ns: argparse.Namespace) -> int:
                 "translations": translations,
             }
         else:
-            result = cross_build(
-                cmd.src_code or "", cmd.src_tongue or "", cmd.dst_tongue or ""
-            )
+            result = cross_build(cmd.src_code or "", cmd.src_tongue or "", cmd.dst_tongue or "")
             payload = {
                 "version": "geoseal-cross-build-v1",
                 "mode": "single",
@@ -3471,12 +3248,8 @@ class RouteCommand(BoundCommand):
         description="Override Ollama model name (default qwen2.5:1.5b-instruct-q4_K_M)",
     )
     ollama_host: str = Field("http://localhost:11434", description="Ollama server URL")
-    min_confidence: float = Field(
-        0.5, ge=0.0, le=1.0, description="Reject SLM stages below this confidence"
-    )
-    timeout_seconds: float = Field(
-        30.0, ge=0.1, le=300.0, description="Per-classify timeout"
-    )
+    min_confidence: float = Field(0.5, ge=0.0, le=1.0, description="Reject SLM stages below this confidence")
+    timeout_seconds: float = Field(30.0, ge=0.1, le=300.0, description="Per-classify timeout")
     no_ledger: bool = Field(
         False,
         description="Skip persisting this dispatch to the promotion ledger (stateless mode)",
@@ -3610,9 +3383,7 @@ def _handle_route(bound: BoundCommand, ns: argparse.Namespace) -> int:
         try:
             if cmd.emit_all:
                 tongues = ("KO", "AV", "RU", "CA", "UM", "DR")
-                payload["translations"] = {
-                    t: emit_from_ir(result.op, t) for t in tongues
-                }
+                payload["translations"] = {t: emit_from_ir(result.op, t) for t in tongues}
                 # The "primary" dst_code is still the routed tongue.
                 payload["dst_code"] = payload["translations"][result.dst_tongue]
             else:
@@ -3637,14 +3408,8 @@ def _handle_route(bound: BoundCommand, ns: argparse.Namespace) -> int:
         try:
             from src.cli.command_trace import PromotionLedger, record_session
 
-            ledger_path = (
-                Path(cmd.ledger_path)
-                if cmd.ledger_path
-                else Path(".scbe/route_ledger.jsonl")
-            )
-            ledger = PromotionLedger.load(
-                ledger_path, threshold=cmd.promotion_threshold
-            )
+            ledger_path = Path(cmd.ledger_path) if cmd.ledger_path else Path(".scbe/route_ledger.jsonl")
+            ledger = PromotionLedger.load(ledger_path, threshold=cmd.promotion_threshold)
             # Build a synthetic argv that captures the *normalised* dispatch
             # rather than the raw CLI flags. Two invocations that resolve to
             # the same op + args + tongue should hash identically regardless
@@ -3656,11 +3421,7 @@ def _handle_route(bound: BoundCommand, ns: argparse.Namespace) -> int:
                 result.op.op_name,
                 "--dst-tongue",
                 result.dst_tongue,
-            ) + tuple(
-                flag
-                for k, v in sorted(result.op.args.items())
-                for flag in ("--arg", f"{k}={v}")
-            )
+            ) + tuple(flag for k, v in sorted(result.op.args.items()) for flag in ("--arg", f"{k}={v}"))
             trace = record_session(normalised_argv, env=os.environ)
             entry = ledger.observe(trace)
             ledger.save(ledger_path)
@@ -3720,18 +3481,10 @@ class PromoteCommand(BoundCommand):
         None,
         description="Specific ledger digest to promote (use `geoseal promotions` to list)",
     )
-    latest: bool = Field(
-        False, description="Promote the current top candidate (highest count)"
-    )
-    ledger_path: str = Field(
-        ".scbe/route_ledger.jsonl", description="Path to the route promotion ledger"
-    )
-    registry_path: str = Field(
-        ".scbe/route_aliases.json", description="Path to the alias registry"
-    )
-    overwrite: bool = Field(
-        False, description="Replace an existing alias with the same name"
-    )
+    latest: bool = Field(False, description="Promote the current top candidate (highest count)")
+    ledger_path: str = Field(".scbe/route_ledger.jsonl", description="Path to the route promotion ledger")
+    registry_path: str = Field(".scbe/route_aliases.json", description="Path to the alias registry")
+    overwrite: bool = Field(False, description="Replace an existing alias with the same name")
     threshold: int = Field(
         3,
         ge=1,
@@ -3745,9 +3498,7 @@ class AliasesCommand(BoundCommand):
 
     model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
-    registry_path: str = Field(
-        ".scbe/route_aliases.json", description="Path to the alias registry"
-    )
+    registry_path: str = Field(".scbe/route_aliases.json", description="Path to the alias registry")
 
 
 class AliasCommand(BoundCommand):
@@ -3761,14 +3512,10 @@ class AliasCommand(BoundCommand):
         default_factory=list,
         description="Repeatable arg override `name=value`; missing keys fall back to alias defaults",
     )
-    emit: bool = Field(
-        False, description="Render LatticeOp into dst_tongue (adds dst_code)"
-    )
+    emit: bool = Field(False, description="Render LatticeOp into dst_tongue (adds dst_code)")
     emit_all: bool = Field(False, description="Render in all 6 tongues")
     raw: bool = Field(False, description="Emit code to stdout, envelope to stderr")
-    registry_path: str = Field(
-        ".scbe/route_aliases.json", description="Path to the alias registry"
-    )
+    registry_path: str = Field(".scbe/route_aliases.json", description="Path to the alias registry")
 
 
 class UnpromoteCommand(BoundCommand):
@@ -3777,9 +3524,7 @@ class UnpromoteCommand(BoundCommand):
     model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
     alias: str = Field(..., description="Alias name to remove")
-    registry_path: str = Field(
-        ".scbe/route_aliases.json", description="Path to the alias registry"
-    )
+    registry_path: str = Field(".scbe/route_aliases.json", description="Path to the alias registry")
 
 
 def _handle_promote(bound: BoundCommand, ns: argparse.Namespace) -> int:
@@ -3799,10 +3544,7 @@ def _handle_promote(bound: BoundCommand, ns: argparse.Namespace) -> int:
                 "version": "geoseal-promote-v1",
                 "verdict": "QUARANTINE",
                 "error_type": "NoCandidate",
-                "message": (
-                    f"no ledger entry has crossed threshold={cmd.threshold} "
-                    f"in {cmd.ledger_path}"
-                ),
+                "message": (f"no ledger entry has crossed threshold={cmd.threshold} " f"in {cmd.ledger_path}"),
             }
             print(json.dumps(err, indent=2))
             return 2
@@ -3823,10 +3565,7 @@ def _handle_promote(bound: BoundCommand, ns: argparse.Namespace) -> int:
                 "version": "geoseal-promote-v1",
                 "verdict": "QUARANTINE",
                 "error_type": "BelowThreshold",
-                "message": (
-                    f"digest {cmd.digest} has count={target.count}, "
-                    f"below threshold={cmd.threshold}"
-                ),
+                "message": (f"digest {cmd.digest} has count={target.count}, " f"below threshold={cmd.threshold}"),
             }
             print(json.dumps(err, indent=2))
             return 2
@@ -4134,15 +3873,11 @@ def cmd_swarm_exec(args: argparse.Namespace) -> int:
         print(f"reverse half not found: {reverse_path}", file=sys.stderr)
         return 2
 
-    seam_names = tuple(
-        n.strip() for n in (args.seam_names or "").split(",") if n.strip()
-    )
+    seam_names = tuple(n.strip() for n in (args.seam_names or "").split(",") if n.strip())
     if not seam_names:
         print("--seam-names is required (comma-separated identifiers)", file=sys.stderr)
         return 2
-    seam_types = tuple(
-        t.strip() for t in (args.seam_types or "").split(",") if t.strip()
-    )
+    seam_types = tuple(t.strip() for t in (args.seam_types or "").split(",") if t.strip())
     if seam_types and len(seam_types) != len(seam_names):
         print("--seam-types must be empty or parallel to --seam-names", file=sys.stderr)
         return 2
@@ -4187,9 +3922,7 @@ def cmd_swarm_exec(args: argparse.Namespace) -> int:
         if args.json:
             print(json.dumps(base_payload, indent=2))
         else:
-            print(
-                f"[swarm-exec] converged=False  seam_tongue_hash={base_payload['seam_contract']['tongue_hash'][:16]}"
-            )
+            print(f"[swarm-exec] converged=False  seam_tongue_hash={base_payload['seam_contract']['tongue_hash'][:16]}")
             for diag in report.diagnostics:
                 print(f"  - {diag}")
         return 2
@@ -4199,14 +3932,10 @@ def cmd_swarm_exec(args: argparse.Namespace) -> int:
         if args.json:
             print(json.dumps(base_payload, indent=2))
         else:
-            print(
-                f"[swarm-exec] converged=True  seam_tongue_hash={base_payload['seam_contract']['tongue_hash'][:16]}"
-            )
+            print(f"[swarm-exec] converged=True  seam_tongue_hash={base_payload['seam_contract']['tongue_hash'][:16]}")
             print(f"  forward_hash: {report.forward_seam_hash[:16]}")
             print(f"  reverse_hash: {report.reverse_seam_hash[:16]}")
-            print(
-                f"  merged source: {len(report.merged_source or '')} bytes (use --execute to run)"
-            )
+            print(f"  merged source: {len(report.merged_source or '')} bytes (use --execute to run)")
         return 0
 
     # Execute the merged module through the SCBE execution gate.
@@ -4236,12 +3965,8 @@ def cmd_swarm_exec(args: argparse.Namespace) -> int:
         print(json.dumps(payload, indent=2))
     else:
         decision = gate_result.decision
-        print(
-            f"[swarm-exec] converged=True  seam_tongue_hash={base_payload['seam_contract']['tongue_hash'][:16]}"
-        )
-        print(
-            f"[gate] tier={decision.tier} allowed={decision.allowed} ran={gate_result.ran}"
-        )
+        print(f"[swarm-exec] converged=True  seam_tongue_hash={base_payload['seam_contract']['tongue_hash'][:16]}")
+        print(f"[gate] tier={decision.tier} allowed={decision.allowed} ran={gate_result.ran}")
         for finding in decision.findings:
             print(f"  - {finding.rule}: {finding.message}")
         if gate_result.stdout:
@@ -4331,9 +4056,7 @@ def cmd_emit(args: argparse.Namespace) -> int:
             payload = {
                 "version": "geoseal-emit-v1",
                 "op": args.op,
-                "semantic_expression": {
-                    "gloss": "add x and y" if args.op == "add" else args.op
-                },
+                "semantic_expression": {"gloss": "add x and y" if args.op == "add" else args.op},
                 "variants": [
                     {
                         "tongue": tongue,
@@ -4342,11 +4065,7 @@ def cmd_emit(args: argparse.Namespace) -> int:
                         "code": code,
                         "seal": seal,
                         "binary": {"byte_count": len(code.encode("utf-8"))},
-                        "tokenizer": {
-                            "token_count": tongue_token_digest(tongue, code).get(
-                                "n_tokens", 0
-                            )
-                        },
+                        "tokenizer": {"token_count": tongue_token_digest(tongue, code).get("n_tokens", 0)},
                     }
                 ],
             }
@@ -4367,9 +4086,7 @@ def cmd_emit(args: argparse.Namespace) -> int:
                     "code": code,
                     "seal": compute_seal(args.op, t, code),
                     "binary": {"byte_count": len(code.encode("utf-8"))},
-                    "tokenizer": {
-                        "token_count": tongue_token_digest(t, code).get("n_tokens", 0)
-                    },
+                    "tokenizer": {"token_count": tongue_token_digest(t, code).get("n_tokens", 0)},
                 }
             )
         print(
@@ -4377,9 +4094,7 @@ def cmd_emit(args: argparse.Namespace) -> int:
                 {
                     "version": "geoseal-emit-v1",
                     "op": args.op,
-                    "semantic_expression": {
-                        "gloss": "add x and y" if args.op == "add" else args.op
-                    },
+                    "semantic_expression": {"gloss": "add x and y" if args.op == "add" else args.op},
                     "variants": rows,
                 },
                 indent=2,
@@ -4425,9 +4140,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 + "\n"
             )
     if args.json:
-        print(
-            json.dumps({"version": "geoseal-run-v1", "call": call.to_dict()}, indent=2)
-        )
+        print(json.dumps({"version": "geoseal-run-v1", "call": call.to_dict()}, indent=2))
         return 0 if (call.ran and call.returncode == 0) else 1
     print(f"op={call.op} tongue={call.tongue} lang={call.language}")
     print(f"code: {call.code}")
@@ -4444,11 +4157,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 def cmd_swarm(args: argparse.Namespace) -> int:
     kv = _parse_kv_args(args.args)
-    tongues = (
-        [t.strip().upper() for t in args.tongues.split(",") if t.strip()]
-        if args.tongues
-        else list(TONGUE_NAMES)
-    )
+    tongues = [t.strip().upper() for t in args.tongues.split(",") if t.strip()] if args.tongues else list(TONGUE_NAMES)
     unknown = [t for t in tongues if t not in ALL_TONGUE_NAMES]
     if unknown:
         print(f"unknown tongues: {unknown}", file=sys.stderr)
@@ -4467,9 +4176,7 @@ def cmd_swarm(args: argparse.Namespace) -> int:
         status = "ok" if (call.ran and call.returncode == 0) else (call.error or "skip")
         out = call.stdout or ""
         print(f"  {call.tongue} ({call.language:>10}): {status:<20} {out}")
-    print(
-        f"quorum_ok={result.quorum_ok}  consensus={result.consensus_hash[:12] or '-'}"
-    )
+    print(f"quorum_ok={result.quorum_ok}  consensus={result.consensus_hash[:12] or '-'}")
 
     # Per-call sacred-tongue boundary digests for downstream parity training.
     # Written as a single 'swarm_tokens' summary record so we don't disturb the
@@ -4511,12 +4218,8 @@ def cmd_seal(args: argparse.Namespace) -> int:
     tongue = (args.tongue or "KO").upper()
     phi_cost = getattr(args, "phi_cost", 0.0)
     tier = getattr(args, "tier", "ALLOW")
-    seal = compute_seal(
-        args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier
-    )
-    print(
-        f"tongue={tongue} phase={ALL_TONGUE_PHASES.get(tongue, 0.0):.6f} phi_cost={phi_cost:.4f} tier={tier}"
-    )
+    seal = compute_seal(args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier)
+    print(f"tongue={tongue} phase={ALL_TONGUE_PHASES.get(tongue, 0.0):.6f} phi_cost={phi_cost:.4f} tier={tier}")
     print(f"seal={seal}")
     return 0
 
@@ -4525,9 +4228,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
     tongue = (args.tongue or "KO").upper()
     phi_cost = getattr(args, "phi_cost", 0.0)
     tier = getattr(args, "tier", "ALLOW")
-    ok = verify_seal(
-        args.seal, args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier
-    )
+    ok = verify_seal(args.seal, args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier)
     print("OK" if ok else "MISMATCH")
     return 0 if ok else 1
 
@@ -4565,9 +4266,7 @@ def cmd_agent(args: argparse.Namespace) -> int:
     semantic_ir = infer_semantic_ir(task, force_tongue=force_tongue)
     if verbose:
         kw = f" (keyword: {route.override_keyword!r})" if route.override_keyword else ""
-        print(
-            f"[route] {route.full_name} ({route.tongue}) -> {route.language} | conf={route.confidence:.2f}{kw}"
-        )
+        print(f"[route] {route.full_name} ({route.tongue}) -> {route.language} | conf={route.confidence:.2f}{kw}")
         print(f"[route] trits: {route.trit_scores}")
         print(f"[ir] {semantic_ir.signature}")
 
@@ -4623,9 +4322,7 @@ def cmd_agent(args: argparse.Namespace) -> int:
         while not ok and result.provider != "none":
             forbidden.append(result.provider)
             if verbose:
-                print(
-                    f"[escalate] syntax_check failed on {result.provider}; retrying with forbid={forbidden}"
-                )
+                print(f"[escalate] syntax_check failed on {result.provider}; retrying with forbid={forbidden}")
             result = generate(
                 task,
                 language=route.language,
@@ -4651,9 +4348,7 @@ def cmd_agent(args: argparse.Namespace) -> int:
 
     if verbose:
         print(f"[generate] provider={result.provider} model={result.model}")
-        print(
-            f"[generate] prompt_tokens={result.prompt_tokens} completion_tokens={result.completion_tokens}"
-        )
+        print(f"[generate] prompt_tokens={result.prompt_tokens} completion_tokens={result.completion_tokens}")
         if result.attempted_providers:
             chain = " -> ".join(
                 f"{a['provider']}({'ok' if a['success'] else (a.get('skipped_reason') or 'err')})"
@@ -4665,9 +4360,7 @@ def cmd_agent(args: argparse.Namespace) -> int:
     seal = compute_seal("agent", route.tongue, result.code, task, phi_cost, tier)
 
     # 5. Print output
-    print(
-        f"# tongue={route.full_name} ({route.tongue}) lang={route.language} tier={tier} seal={seal[:16]}..."
-    )
+    print(f"# tongue={route.full_name} ({route.tongue}) lang={route.language} tier={tier} seal={seal[:16]}...")
     _write_stdout_safe(result.code)
 
     # 6. SFT log — write as governance record to .scbe/geoseal_calls.jsonl
@@ -4747,9 +4440,7 @@ def cmd_arc(args: argparse.Namespace) -> int:
     verbose = args.verbose
 
     if verbose:
-        print(
-            f"[arc] task_id={task.task_id}  train={len(task.train)}  test_inputs={len(task.test_inputs)}"
-        )
+        print(f"[arc] task_id={task.task_id}  train={len(task.train)}  test_inputs={len(task.test_inputs)}")
 
     # Synthesize program
     solution = synthesize_program(task)
@@ -4823,9 +4514,7 @@ def cmd_arc(args: argparse.Namespace) -> int:
         ledger.parent.mkdir(parents=True, exist_ok=True)
         # Boundary digests: input is the task identity + family seed; output is the
         # serialized synthesized program (deterministic, semantic-preserving).
-        arc_in_payload = json.dumps(
-            {"task_id": task.task_id, "n_train": total}, sort_keys=True
-        )
+        arc_in_payload = json.dumps({"task_id": task.task_id, "n_train": total}, sort_keys=True)
         arc_out_payload = json.dumps(
             {
                 "family": solution.family,
@@ -5023,9 +4712,7 @@ def validate_workflow_spec(spec: Dict[str, Any]) -> List[str]:
             seen_ids.add(sid)
         op = step.get("op")
         if op not in WORKFLOW_OP_KINDS:
-            errors.append(
-                f"{prefix}({sid}): op must be one of {sorted(WORKFLOW_OP_KINDS)}, got {op!r}"
-            )
+            errors.append(f"{prefix}({sid}): op must be one of {sorted(WORKFLOW_OP_KINDS)}, got {op!r}")
         if "task" not in step:
             errors.append(f"{prefix}({sid}): missing required field 'task'")
         tongue = step.get("tongue")
@@ -5044,9 +4731,7 @@ def validate_workflow_spec(spec: Dict[str, Any]) -> List[str]:
             else:
                 for fp in forbid:
                     if fp not in WORKFLOW_VALID_PROVIDERS:
-                        errors.append(
-                            f"{prefix}({sid}): forbid_provider entry invalid {fp!r}"
-                        )
+                        errors.append(f"{prefix}({sid}): forbid_provider entry invalid {fp!r}")
     return errors
 
 
@@ -5083,9 +4768,7 @@ def substitute_workflow_refs(
     return _WORKFLOW_REF_PATTERN.sub(_resolve, template)
 
 
-def _resolve_step_setting(
-    step: Dict[str, Any], spec: Dict[str, Any], key: str, default: Any = None
-) -> Any:
+def _resolve_step_setting(step: Dict[str, Any], spec: Dict[str, Any], key: str, default: Any = None) -> Any:
     if key in step and step[key] is not None:
         return step[key]
     default_key = f"default_{key}"
@@ -5127,18 +4810,14 @@ def _run_workflow_step_agent(
         budget_tokens = int(budget_tokens)
     max_tier = _resolve_step_setting(step, spec, "max_tier")
     small_first = bool(_resolve_step_setting(step, spec, "small_first", default=False))
-    forbid_provider = list(
-        _resolve_step_setting(step, spec, "forbid_provider", default=[]) or []
-    )
+    forbid_provider = list(_resolve_step_setting(step, spec, "forbid_provider", default=[]) or [])
     chi = float(_resolve_step_setting(step, spec, "chi", default=0.2))
 
     route = route_task(task, force_tongue=force_tongue)
     phi_cost = phi_wall_cost(chi, route.tongue)
     tier = phi_wall_tier(phi_cost)
     if verbose:
-        print(
-            f"[workflow:{sid}] route={route.full_name}({route.tongue}) tier={tier} cost={phi_cost:.4f}"
-        )
+        print(f"[workflow:{sid}] route={route.full_name}({route.tongue}) tier={tier} cost={phi_cost:.4f}")
     if tier == "DENY":
         return WorkflowStepResult(
             step_id=sid,
@@ -5270,13 +4949,9 @@ def run_workflow(
     for idx, step in enumerate(spec["steps"]):
         op = step["op"]
         if op == "agent":
-            result = _run_workflow_step_agent(
-                step, spec, input_text, step_outputs, verbose=verbose
-            )
+            result = _run_workflow_step_agent(step, spec, input_text, step_outputs, verbose=verbose)
         elif op == "seal":
-            result = _run_workflow_step_seal(
-                step, spec, input_text, step_outputs, verbose=verbose
-            )
+            result = _run_workflow_step_seal(step, spec, input_text, step_outputs, verbose=verbose)
         else:  # pragma: no cover - already validated
             raise SystemExit(f"workflow op kind not implemented: {op}")
         step_outputs[result.step_id] = result
@@ -5313,9 +4988,7 @@ def run_workflow(
                 )
             break
         prev_step_id = result.step_id
-        prev_tongue_out_sha = (
-            (result.tongue_out or {}).get("sha256") if result.tongue_out else None
-        )
+        prev_tongue_out_sha = (result.tongue_out or {}).get("sha256") if result.tongue_out else None
 
     summary = {
         "type": "workflow_run",
@@ -5390,9 +5063,7 @@ def cmd_workflow(args: argparse.Namespace) -> int:
         if args.input_file:
             input_text = Path(args.input_file).read_text(encoding="utf-8")
         ledger = None if args.no_ledger else Path(args.ledger)
-        summary = run_workflow(
-            spec, input_text=input_text, ledger=ledger, verbose=args.verbose
-        )
+        summary = run_workflow(spec, input_text=input_text, ledger=ledger, verbose=args.verbose)
         if args.json:
             payload = {k: v for k, v in summary.items() if not k.startswith("_")}
             print(json.dumps(payload))
@@ -5871,9 +5542,7 @@ def _build_api_skill_tree(
             p = build_parser()
             for action_group in p._subparsers._group_actions:
                 for name, sub_p in action_group.choices.items():
-                    param_counts[name] = sum(
-                        1 for a in sub_p._actions if a.dest not in ("help",)
-                    )
+                    param_counts[name] = sum(1 for a in sub_p._actions if a.dest not in ("help",))
         except Exception:
             pass
 
@@ -5960,9 +5629,7 @@ def _build_api_skill_tree(
             "total_edges": len(edges),
             "entry_points": all_entries,
             "max_depth": max_depth,
-            "top_unlocking": [
-                {"cmd": n["cmd"], "unlocks": n["unlocks_count"]} for n in top_unlocks
-            ],
+            "top_unlocking": [{"cmd": n["cmd"], "unlocks": n["unlocks_count"]} for n in top_unlocks],
             "tiers": {t: len(c) for t, c in sorted(by_tier.items())},
             "bands": {b: len(c) for b, c in sorted(by_band.items())},
             "tongues": {t: len(c) for t, c in sorted(by_tongue.items())},
@@ -5994,9 +5661,7 @@ def _skill_tree_to_mermaid(tree: Dict[str, Any], *, direction: str = "LR") -> st
             nid = re.sub(r"[^A-Za-z0-9_]", "_", n["id"])
             entry_mark = " ★" if n["entry_point"] else ""
             unlock_mark = f" +{n['unlocks_count']}" if n["unlocks_count"] else ""
-            lines.append(
-                f'    {nid}["{n["cmd"]}{entry_mark}{unlock_mark}<br/>{n["tongue"]} {n["band"]}"]:::{tier}'
-            )
+            lines.append(f'    {nid}["{n["cmd"]}{entry_mark}{unlock_mark}<br/>{n["tongue"]} {n["band"]}"]:::{tier}')
         lines.append("  end")
     for edge in tree["edges"]:
         src = re.sub(r"[^A-Za-z0-9_]", "_", edge["source"])
@@ -6036,9 +5701,7 @@ def _skill_tree_to_dot(tree: Dict[str, Any]) -> str:
         border = tier_borders.get(tier, "#999999")
         lines.append(f"  subgraph cluster_{tier} {{")
         lines.append(f'    label="{tier}: {tier_label}";')
-        lines.append(
-            f'    style=filled; fillcolor="{fill}"; color="{border}"; penwidth=2;'
-        )
+        lines.append(f'    style=filled; fillcolor="{fill}"; color="{border}"; penwidth=2;')
         for n in tier_nodes:
             nid = re.sub(r"[^A-Za-z0-9_]", "_", n["id"])
             entry = "★ " if n["entry_point"] else ""
@@ -6067,15 +5730,11 @@ def _skill_tree_to_ascii(tree: Dict[str, Any]) -> str:
     s = tree["summary"]
 
     # Header stats
-    entries = ", ".join(s["entry_points"][:6]) + (
-        "…" if len(s["entry_points"]) > 6 else ""
-    )
+    entries = ", ".join(s["entry_points"][:6]) + ("…" if len(s["entry_points"]) > 6 else "")
     lines.append(
         f"  {s['total_commands']} commands  {s['total_edges']} edges  depth={s['max_depth']}  entries: {entries}"
     )
-    top = "  top: " + "  ".join(
-        f"{r['cmd']}(+{r['unlocks']})" for r in s["top_unlocking"][:5]
-    )
+    top = "  top: " + "  ".join(f"{r['cmd']}(+{r['unlocks']})" for r in s["top_unlocking"][:5])
     lines.append(top)
     lines.append("─" * W)
 
@@ -6144,9 +5803,7 @@ def _skill_tree_cmd_focus(tree: Dict[str, Any], cmd: str) -> str:
         for dep in n["requires"]:
             dep_n = node_map.get(dep)
             if dep_n:
-                lines.append(
-                    f"    ← {dep:<28} {dep_n['tier']} {dep_n['tongue']}  {dep_n['description'][:40]}"
-                )
+                lines.append(f"    ← {dep:<28} {dep_n['tier']} {dep_n['tongue']}  {dep_n['description'][:40]}")
             else:
                 lines.append(f"    ← {dep}  (outside current filter)")
     if n["unlocks"]:
@@ -6154,9 +5811,7 @@ def _skill_tree_cmd_focus(tree: Dict[str, Any], cmd: str) -> str:
         for child in sorted(n["unlocks"]):
             child_n = node_map.get(child)
             if child_n:
-                lines.append(
-                    f"    → {child:<28} {child_n['tier']} {child_n['tongue']}  {child_n['description'][:40]}"
-                )
+                lines.append(f"    → {child:<28} {child_n['tier']} {child_n['tongue']}  {child_n['description'][:40]}")
             else:
                 lines.append(f"    → {child}")
     return "\n".join(lines) + "\n"
@@ -6194,9 +5849,7 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
     r = _time_n(_build_full, N)
     results.append({"label": "build (62 cmd, no filter)", **r})
     if verbose:
-        print(
-            f"  build          min={r['min_ms']}ms  med={r['med_ms']}ms  max={r['max_ms']}ms"
-        )
+        print(f"  build          min={r['min_ms']}ms  med={r['med_ms']}ms  max={r['max_ms']}ms")
 
     # --- format rendering ---
     tree_full = _build_api_skill_tree()
@@ -6215,9 +5868,7 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
         r = _time_n(_render, N)
         results.append({"label": f"render:{fmt}", **r})
         if verbose:
-            print(
-                f"  render:{fmt:<8} min={r['min_ms']}ms  med={r['med_ms']}ms  max={r['max_ms']}ms"
-            )
+            print(f"  render:{fmt:<8} min={r['min_ms']}ms  med={r['med_ms']}ms  max={r['max_ms']}ms")
 
     # --- tier filters ---
     for tf in ["L1", "L3", "L6"]:
@@ -6312,23 +5963,15 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     p_ops = sub.add_parser("ops", help="List tokenizer ops")
-    p_ops.add_argument(
-        "--band", default=None, help="ARITHMETIC|LOGIC|COMPARISON|AGGREGATION"
-    )
+    p_ops.add_argument("--band", default=None, help="ARITHMETIC|LOGIC|COMPARISON|AGGREGATION")
     p_ops.set_defaults(func=cmd_ops)
 
-    p_encode = sub.add_parser(
-        "encode-cmd", help="Encode payload through Sacred Tongues transport"
-    )
+    p_encode = sub.add_parser("encode-cmd", help="Encode payload through Sacred Tongues transport")
     p_encode.add_argument("--tongue", required=True, help="KO|AV|RU|CA|UM|DR")
-    p_encode.add_argument(
-        "payload", nargs="?", default=None, help="Plaintext payload (defaults to stdin)"
-    )
+    p_encode.add_argument("payload", nargs="?", default=None, help="Plaintext payload (defaults to stdin)")
     p_encode.set_defaults(func=cmd_encode_cmd)
 
-    p_binary = sub.add_parser(
-        "binary-to-tokenizer", help="Map binary bytes into Sacred Tongue tokenizer rows"
-    )
+    p_binary = sub.add_parser("binary-to-tokenizer", help="Map binary bytes into Sacred Tongue tokenizer rows")
     p_binary.add_argument("--tongue", required=True, help="KO|AV|RU|CA|UM|DR")
     p_binary.add_argument(
         "--bits",
@@ -6342,17 +5985,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional requested language for prime-lane check",
     )
     p_binary.add_argument("--json", action="store_true")
-    p_binary.add_argument(
-        "bits", nargs="?", default="", help="Space/comma separated 8-bit chunks"
-    )
+    p_binary.add_argument("bits", nargs="?", default="", help="Space/comma separated 8-bit chunks")
     p_binary.set_defaults(func=cmd_binary_to_tokenizer)
 
-    p_prime_atlas = sub.add_parser(
-        "prime-atlas", help="Build a known-prime lookup/chart from the GeoSeed atlas"
-    )
-    p_prime_atlas.add_argument(
-        "index", type=int, help="1-based prime index, e.g. 10000 -> 104729"
-    )
+    p_prime_atlas = sub.add_parser("prime-atlas", help="Build a known-prime lookup/chart from the GeoSeed atlas")
+    p_prime_atlas.add_argument("index", type=int, help="1-based prime index, e.g. 10000 -> 104729")
     p_prime_atlas.add_argument(
         "--count",
         type=int,
@@ -6391,108 +6028,58 @@ def build_parser() -> argparse.ArgumentParser:
     p_prime_atlas.add_argument("--json", action="store_true")
     p_prime_atlas.set_defaults(func=cmd_prime_atlas)
 
-    p_browse_atlas = sub.add_parser(
-        "browse-atlas", help="Build a read-only browser page/corridor atlas"
-    )
+    p_browse_atlas = sub.add_parser("browse-atlas", help="Build a read-only browser page/corridor atlas")
     p_browse_atlas.add_argument("--url", required=True, help="Current page URL")
     p_browse_atlas.add_argument("--title", default="", help="Current page title")
     p_browse_atlas.add_argument("--text", default="", help="Visible page text")
-    p_browse_atlas.add_argument(
-        "--text-file", default=None, help="Read visible page text from a file"
-    )
-    p_browse_atlas.add_argument(
-        "--goal", default="", help="Navigation goal used to rank corridors"
-    )
-    p_browse_atlas.add_argument(
-        "--headings-json", default=None, help="JSON array of heading objects"
-    )
-    p_browse_atlas.add_argument(
-        "--headings-file", default=None, help="File containing heading JSON array"
-    )
-    p_browse_atlas.add_argument(
-        "--links-json", default=None, help="JSON array of link objects"
-    )
-    p_browse_atlas.add_argument(
-        "--links-file", default=None, help="File containing link JSON array"
-    )
-    p_browse_atlas.add_argument(
-        "--buttons-json", default=None, help="JSON array of button objects"
-    )
-    p_browse_atlas.add_argument(
-        "--buttons-file", default=None, help="File containing button JSON array"
-    )
-    p_browse_atlas.add_argument(
-        "--forms-json", default=None, help="JSON array of form objects"
-    )
-    p_browse_atlas.add_argument(
-        "--forms-file", default=None, help="File containing form JSON array"
-    )
-    p_browse_atlas.add_argument(
-        "--tabs-json", default=None, help="JSON array of tab objects"
-    )
-    p_browse_atlas.add_argument(
-        "--tabs-file", default=None, help="File containing tab JSON array"
-    )
-    p_browse_atlas.add_argument(
-        "--max-edges", type=int, default=20, help="Maximum ranked corridors to emit"
-    )
+    p_browse_atlas.add_argument("--text-file", default=None, help="Read visible page text from a file")
+    p_browse_atlas.add_argument("--goal", default="", help="Navigation goal used to rank corridors")
+    p_browse_atlas.add_argument("--headings-json", default=None, help="JSON array of heading objects")
+    p_browse_atlas.add_argument("--headings-file", default=None, help="File containing heading JSON array")
+    p_browse_atlas.add_argument("--links-json", default=None, help="JSON array of link objects")
+    p_browse_atlas.add_argument("--links-file", default=None, help="File containing link JSON array")
+    p_browse_atlas.add_argument("--buttons-json", default=None, help="JSON array of button objects")
+    p_browse_atlas.add_argument("--buttons-file", default=None, help="File containing button JSON array")
+    p_browse_atlas.add_argument("--forms-json", default=None, help="JSON array of form objects")
+    p_browse_atlas.add_argument("--forms-file", default=None, help="File containing form JSON array")
+    p_browse_atlas.add_argument("--tabs-json", default=None, help="JSON array of tab objects")
+    p_browse_atlas.add_argument("--tabs-file", default=None, help="File containing tab JSON array")
+    p_browse_atlas.add_argument("--max-edges", type=int, default=20, help="Maximum ranked corridors to emit")
     p_browse_atlas.add_argument("--json", action="store_true")
     p_browse_atlas.set_defaults(func=cmd_browse_atlas)
 
-    p_code_packet = sub.add_parser(
-        "code-packet", help="Build SCBE weighted code packet from source"
-    )
+    p_code_packet = sub.add_parser("code-packet", help="Build SCBE weighted code packet from source")
     p_code_packet.add_argument("--content", default="", help="Inline source content")
-    p_code_packet.add_argument(
-        "--source-file", default=None, help="Read source content from file"
-    )
+    p_code_packet.add_argument("--source-file", default=None, help="Read source content from file")
     p_code_packet.add_argument("--source-name", default=None)
     p_code_packet.add_argument("--language", default="python")
-    p_code_packet.add_argument(
-        "--backend", default=None, choices=["local", "ollama", "hf", "claude"]
-    )
+    p_code_packet.add_argument("--backend", default=None, choices=["local", "ollama", "hf", "claude"])
     p_code_packet.set_defaults(func=cmd_code_packet)
 
     p_tongue_compile = sub.add_parser(
         "tongue-compile",
         help="Compile Sacred Tongues .sts assembly into bounded VM bytecode",
     )
-    p_tongue_compile.add_argument(
-        "--content", default=None, help="Inline .sts source; defaults to stdin"
-    )
-    p_tongue_compile.add_argument(
-        "--source-file", default=None, help="Read .sts source from file"
-    )
+    p_tongue_compile.add_argument("--content", default=None, help="Inline .sts source; defaults to stdin")
+    p_tongue_compile.add_argument("--source-file", default=None, help="Read .sts source from file")
     p_tongue_compile.add_argument("--source-name", default=None)
-    p_tongue_compile.add_argument(
-        "--output", default=None, help="Optional bytecode output path"
-    )
-    p_tongue_compile.add_argument(
-        "--output-format", default="json", choices=["json", "bin"]
-    )
+    p_tongue_compile.add_argument("--output", default=None, help="Optional bytecode output path")
+    p_tongue_compile.add_argument("--output-format", default="json", choices=["json", "bin"])
     p_tongue_compile.set_defaults(func=cmd_tongue_compile)
 
     p_tongue_run = sub.add_parser(
         "tongue-run",
         help="Compile/run Sacred Tongues .sts assembly in the bounded VM",
     )
-    p_tongue_run.add_argument(
-        "--content", default=None, help="Inline .sts source; defaults to stdin"
-    )
-    p_tongue_run.add_argument(
-        "--source-file", default=None, help="Read .sts source from file"
-    )
-    p_tongue_run.add_argument(
-        "--program-file", default=None, help="Run existing bytecode .json or .bin"
-    )
+    p_tongue_run.add_argument("--content", default=None, help="Inline .sts source; defaults to stdin")
+    p_tongue_run.add_argument("--source-file", default=None, help="Read .sts source from file")
+    p_tongue_run.add_argument("--program-file", default=None, help="Run existing bytecode .json or .bin")
     p_tongue_run.add_argument("--source-name", default=None)
     p_tongue_run.add_argument("--max-steps", type=int, default=10000)
     p_tongue_run.add_argument("--json", action="store_true")
     p_tongue_run.set_defaults(func=cmd_tongue_run)
 
-    p_braille = sub.add_parser(
-        "braille-lane", help="Build braille/polyhedral lane from source or code packet"
-    )
+    p_braille = sub.add_parser("braille-lane", help="Build braille/polyhedral lane from source or code packet")
     p_braille.add_argument("--content", default="")
     p_braille.add_argument("--source-file", default=None)
     p_braille.add_argument("--packet-file", default=None)
@@ -6501,41 +6088,27 @@ def build_parser() -> argparse.ArgumentParser:
     p_braille.add_argument("--json", action="store_true")
     p_braille.set_defaults(func=cmd_braille_lane)
 
-    p_igraph = sub.add_parser(
-        "interaction-graph", help="Build source/token/STISA/atomic interaction graph"
-    )
+    p_igraph = sub.add_parser("interaction-graph", help="Build source/token/STISA/atomic interaction graph")
     p_igraph.add_argument("--content", default="")
     p_igraph.add_argument("--source-file", default=None)
     p_igraph.add_argument("--packet-file", default=None)
     p_igraph.add_argument("--source-name", default=None)
     p_igraph.add_argument("--language", default="python")
-    p_igraph.add_argument(
-        "--max-binary-nodes", type=int, default=8, dest="max_binary_nodes"
-    )
-    p_igraph.add_argument(
-        "--format", default="json", choices=["json", "mermaid", "dot"]
-    )
+    p_igraph.add_argument("--max-binary-nodes", type=int, default=8, dest="max_binary_nodes")
+    p_igraph.add_argument("--format", default="json", choices=["json", "mermaid", "dot"])
     p_igraph.set_defaults(func=cmd_interaction_graph)
 
-    p_topology = sub.add_parser(
-        "topology-view", help="Build topology view from source or packet"
-    )
+    p_topology = sub.add_parser("topology-view", help="Build topology view from source or packet")
     p_topology.add_argument("--content", default="")
     p_topology.add_argument("--source-file", default=None)
     p_topology.add_argument("--packet-file", default=None)
     p_topology.add_argument("--source-name", default=None)
     p_topology.add_argument("--language", default="python")
-    p_topology.add_argument(
-        "--max-binary-nodes", type=int, default=8, dest="max_binary_nodes"
-    )
-    p_topology.add_argument(
-        "--format", default="json", choices=["json", "mermaid", "dot"]
-    )
+    p_topology.add_argument("--max-binary-nodes", type=int, default=8, dest="max_binary_nodes")
+    p_topology.add_argument("--format", default="json", choices=["json", "mermaid", "dot"])
     p_topology.set_defaults(func=cmd_topology_view)
 
-    p_sequence = sub.add_parser(
-        "cross-domain-sequence", help="Build near-related cross-domain route sequence"
-    )
+    p_sequence = sub.add_parser("cross-domain-sequence", help="Build near-related cross-domain route sequence")
     p_sequence.add_argument("--content", default="")
     p_sequence.add_argument("--source-file", default=None)
     p_sequence.add_argument("--packet-file", default=None)
@@ -6545,9 +6118,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_sequence.add_argument("--json", action="store_true")
     p_sequence.set_defaults(func=cmd_cross_domain_sequence)
 
-    p_honeycomb = sub.add_parser(
-        "honeycomb-analysis", help="Analyze route cells and execution stability"
-    )
+    p_honeycomb = sub.add_parser("honeycomb-analysis", help="Analyze route cells and execution stability")
     p_honeycomb.add_argument("--content", default="")
     p_honeycomb.add_argument("--source-file", default=None)
     p_honeycomb.add_argument("--packet-file", default=None)
@@ -6557,9 +6128,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_honeycomb.add_argument("--json", action="store_true")
     p_honeycomb.set_defaults(func=cmd_honeycomb_analysis)
 
-    p_cognition = sub.add_parser(
-        "cognition-map", help="Build cognitive well/ternary map"
-    )
+    p_cognition = sub.add_parser("cognition-map", help="Build cognitive well/ternary map")
     p_cognition.add_argument("--content", default="")
     p_cognition.add_argument("--source-file", default=None)
     p_cognition.add_argument("--packet-file", default=None)
@@ -6567,45 +6136,31 @@ def build_parser() -> argparse.ArgumentParser:
     p_cognition.add_argument("--language", default="python")
     p_cognition.set_defaults(func=cmd_cognition_map)
 
-    p_cluster = sub.add_parser(
-        "cluster-graph", help="Build cross-lattice cluster graph"
-    )
+    p_cluster = sub.add_parser("cluster-graph", help="Build cross-lattice cluster graph")
     p_cluster.add_argument("--content", default="")
     p_cluster.add_argument("--source-file", default=None)
     p_cluster.add_argument("--packet-file", default=None)
     p_cluster.add_argument("--source-name", default=None)
     p_cluster.add_argument("--language", default="python")
-    p_cluster.add_argument(
-        "--max-binary-nodes", type=int, default=8, dest="max_binary_nodes"
-    )
+    p_cluster.add_argument("--max-binary-nodes", type=int, default=8, dest="max_binary_nodes")
     p_cluster.set_defaults(func=cmd_cluster_graph)
 
-    p_formation = sub.add_parser(
-        "formation-graph", help="Build cross-lattice formation graph"
-    )
+    p_formation = sub.add_parser("formation-graph", help="Build cross-lattice formation graph")
     p_formation.add_argument("--content", default="")
     p_formation.add_argument("--source-file", default=None)
     p_formation.add_argument("--packet-file", default=None)
     p_formation.add_argument("--source-name", default=None)
     p_formation.add_argument("--language", default="python")
-    p_formation.add_argument(
-        "--max-binary-nodes", type=int, default=8, dest="max_binary_nodes"
-    )
+    p_formation.add_argument("--max-binary-nodes", type=int, default=8, dest="max_binary_nodes")
     p_formation.set_defaults(func=cmd_formation_graph)
 
-    p_explain = sub.add_parser(
-        "explain-route", help="Explain route IR + backend chain for a source/task"
-    )
+    p_explain = sub.add_parser("explain-route", help="Explain route IR + backend chain for a source/task")
     p_explain.add_argument("--content", default="", help="Inline source content")
-    p_explain.add_argument(
-        "--source-file", default=None, help="Read source content from file"
-    )
+    p_explain.add_argument("--source-file", default=None, help="Read source content from file")
     p_explain.add_argument("--source-name", default=None)
     p_explain.add_argument("--language", default="python")
     p_explain.add_argument("--tongue", default=None, help="Force tongue")
-    p_explain.add_argument(
-        "--provider", default=None, choices=["local", "ollama", "hf", "claude"]
-    )
+    p_explain.add_argument("--provider", default=None, choices=["local", "ollama", "hf", "claude"])
     p_explain.add_argument(
         "--forbid-provider",
         action="append",
@@ -6622,15 +6177,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_explain.add_argument("--json", action="store_true")
     p_explain.set_defaults(func=cmd_explain_route)
 
-    p_backends = sub.add_parser(
-        "backend-registry", help="List backend providers and lane support"
-    )
+    p_backends = sub.add_parser("backend-registry", help="List backend providers and lane support")
     p_backends.add_argument("--json", action="store_true")
     p_backends.set_defaults(func=cmd_backend_registry)
 
-    p_harness = sub.add_parser(
-        "agent-harness", help="Emit model-neutral agent harness manifest"
-    )
+    p_harness = sub.add_parser("agent-harness", help="Emit model-neutral agent harness manifest")
     p_harness.add_argument("--goal", default="", help="Agent goal or task intent")
     p_harness.add_argument(
         "--language",
@@ -6647,12 +6198,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_harness.add_argument("--json", action="store_true")
     p_harness.set_defaults(func=cmd_agent_harness)
 
-    p_endurance = sub.add_parser(
-        "agent-endurance-pack", help="Generate Agent Endurance v1 spec bundle"
-    )
-    p_endurance.add_argument(
-        "--round-id", required=True, help="Round/taskset identifier"
-    )
+    p_endurance = sub.add_parser("agent-endurance-pack", help="Generate Agent Endurance v1 spec bundle")
+    p_endurance.add_argument("--round-id", required=True, help="Round/taskset identifier")
     p_endurance.add_argument(
         "--permission-mode",
         default="workspace-write",
@@ -6668,40 +6215,24 @@ def build_parser() -> argparse.ArgumentParser:
     p_endurance.add_argument("--json", action="store_true")
     p_endurance.set_defaults(func=cmd_agent_endurance_pack)
 
-    p_switchboard = sub.add_parser(
-        "call-switchboard", help="Evaluate a multi-agent call reservation"
-    )
-    p_switchboard.add_argument(
-        "--calls", default=None, help="Existing call reservations JSON array"
-    )
-    p_switchboard.add_argument(
-        "--inline-calls", default=None, help="Existing call reservations JSON array"
-    )
-    p_switchboard.add_argument(
-        "--request", required=True, help="Requested call JSON object"
-    )
+    p_switchboard = sub.add_parser("call-switchboard", help="Evaluate a multi-agent call reservation")
+    p_switchboard.add_argument("--calls", default=None, help="Existing call reservations JSON array")
+    p_switchboard.add_argument("--inline-calls", default=None, help="Existing call reservations JSON array")
+    p_switchboard.add_argument("--request", required=True, help="Requested call JSON object")
     p_switchboard.add_argument("--json", action="store_true")
     p_switchboard.set_defaults(func=cmd_call_switchboard)
 
-    p_indexer = sub.add_parser(
-        "lightning-indexer", help="Select sparse agent context candidates"
-    )
+    p_indexer = sub.add_parser("lightning-indexer", help="Select sparse agent context candidates")
     p_indexer.add_argument("--goal", required=True)
-    p_indexer.add_argument(
-        "--inline-candidates", default=None, help="Candidate JSON array"
-    )
-    p_indexer.add_argument(
-        "--candidates-file", default=None, help="Candidate JSON array file"
-    )
+    p_indexer.add_argument("--inline-candidates", default=None, help="Candidate JSON array")
+    p_indexer.add_argument("--candidates-file", default=None, help="Candidate JSON array file")
     p_indexer.add_argument("--top-k", type=int, default=8)
     p_indexer.add_argument("--block-size", type=int, default=16)
     p_indexer.add_argument("--channel-budget", type=int, default=3)
     p_indexer.add_argument("--json", action="store_true")
     p_indexer.set_defaults(func=cmd_lightning_indexer)
 
-    p_compile = sub.add_parser(
-        "compile", help="Compile intent into an SCBE agent-bus command plan"
-    )
+    p_compile = sub.add_parser("compile", help="Compile intent into an SCBE agent-bus command plan")
     p_compile.add_argument("intent", nargs=argparse.REMAINDER)
     p_compile.add_argument(
         "--permission-mode",
@@ -6713,26 +6244,18 @@ def build_parser() -> argparse.ArgumentParser:
     p_compile.add_argument("--json", action="store_true")
     p_compile.set_defaults(func=cmd_compile)
 
-    p_domino = sub.add_parser(
-        "domino", help="Arrange domino workflow tiles with contact dot transfer"
-    )
+    p_domino = sub.add_parser("domino", help="Arrange domino workflow tiles with contact dot transfer")
     p_domino.add_argument(
         "tile",
         nargs="+",
         help="Tile specs like gather:intent|evidence:1/3 or evidence|patch",
     )
-    p_domino.add_argument(
-        "--start", default=None, help="Start tile id or left contract"
-    )
-    p_domino.add_argument(
-        "--no-rotate", action="store_true", help="Disable automatic tile rotation"
-    )
+    p_domino.add_argument("--start", default=None, help="Start tile id or left contract")
+    p_domino.add_argument("--no-rotate", action="store_true", help="Disable automatic tile rotation")
     p_domino.add_argument("--json", action="store_true")
     p_domino.set_defaults(func=cmd_domino)
 
-    p_loop_dispatch = sub.add_parser(
-        "loop-dispatch", help="Policy-gated external agent loop dispatch"
-    )
+    p_loop_dispatch = sub.add_parser("loop-dispatch", help="Policy-gated external agent loop dispatch")
     p_loop_dispatch.add_argument("--provider", required=True)
     p_loop_dispatch.add_argument("--task", required=True)
     p_loop_dispatch.add_argument(
@@ -6744,17 +6267,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_loop_dispatch.add_argument("--json", action="store_true")
     p_loop_dispatch.set_defaults(func=cmd_loop_dispatch)
 
-    p_assist = sub.add_parser(
-        "assist", help="Run local micro-assist for terminal agents"
-    )
+    p_assist = sub.add_parser("assist", help="Run local micro-assist for terminal agents")
     p_assist.add_argument("task", help="Task text to classify and route")
     p_assist.add_argument("--agent", default="agent.codex")
     p_assist.add_argument("--recipient", default="agent.claude")
     p_assist.add_argument("--repo-root", default=str(Path.cwd()))
     p_assist.add_argument("--bus", default=None)
-    p_assist.add_argument(
-        "--post", action="store_true", help="Post advice to centerline bus"
-    )
+    p_assist.add_argument("--post", action="store_true", help="Post advice to centerline bus")
     p_assist.add_argument("--json", action="store_true")
     p_assist.set_defaults(func=cmd_assist)
 
@@ -6768,29 +6287,21 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_replay = sub.add_parser("replay", help="Replay a previous ledger record")
     p_replay.add_argument("--ledger", default=str(DEFAULT_LEDGER))
-    p_replay.add_argument(
-        "--index", type=int, default=None, help="Record index (default: last)"
-    )
+    p_replay.add_argument("--index", type=int, default=None, help="Record index (default: last)")
     p_replay.add_argument("--timeout", type=float, default=10.0)
     p_replay.add_argument("--no-ledger", action="store_true")
     p_replay.add_argument("--json", action="store_true")
     p_replay.set_defaults(func=cmd_replay)
 
-    p_testing = sub.add_parser(
-        "testing-cli", help="Build testing playback packet and optionally execute"
-    )
+    p_testing = sub.add_parser("testing-cli", help="Build testing playback packet and optionally execute")
     p_testing.add_argument("--content", default="", help="Inline source content")
-    p_testing.add_argument(
-        "--source-file", default=None, help="Read source content from file"
-    )
+    p_testing.add_argument("--source-file", default=None, help="Read source content from file")
     p_testing.add_argument("--language", default="python")
     p_testing.add_argument("--execute", action="store_true")
     p_testing.add_argument("--json", action="store_true")
     p_testing.set_defaults(func=cmd_testing_cli)
 
-    p_scaffold = sub.add_parser(
-        "project-scaffold", help="Create lightweight project scaffold from task intent"
-    )
+    p_scaffold = sub.add_parser("project-scaffold", help="Create lightweight project scaffold from task intent")
     p_scaffold.add_argument("--content", required=True)
     p_scaffold.add_argument("--language", default="python")
     p_scaffold.add_argument("--output-dir", required=True, dest="output_dir")
@@ -6808,35 +6319,25 @@ def build_parser() -> argparse.ArgumentParser:
     p_roundtrip.add_argument("--json", action="store_true")
     p_roundtrip.set_defaults(func=cmd_code_roundtrip)
 
-    p_portal = sub.add_parser(
-        "portal-box", help="Build a local Polly portal-box route packet"
-    )
+    p_portal = sub.add_parser("portal-box", help="Build a local Polly portal-box route packet")
     p_portal.add_argument("--content", default="", help="Inline source content")
-    p_portal.add_argument(
-        "--source-file", default=None, help="Read source content from file"
-    )
+    p_portal.add_argument("--source-file", default=None, help="Read source content from file")
     p_portal.add_argument("--language", default="python")
     p_portal.add_argument("--source-name", default=None)
     p_portal.add_argument("--include-extended", action="store_true")
     p_portal.add_argument("--json", action="store_true")
     p_portal.set_defaults(func=cmd_portal_box)
 
-    p_stream = sub.add_parser(
-        "stream-wheel", help="Build a local Polly stream-wheel route packet"
-    )
+    p_stream = sub.add_parser("stream-wheel", help="Build a local Polly stream-wheel route packet")
     p_stream.add_argument("--content", default="", help="Inline source content")
-    p_stream.add_argument(
-        "--source-file", default=None, help="Read source content from file"
-    )
+    p_stream.add_argument("--source-file", default=None, help="Read source content from file")
     p_stream.add_argument("--language", default="python")
     p_stream.add_argument("--source-name", default=None)
     p_stream.add_argument("--include-extended", action="store_true")
     p_stream.add_argument("--json", action="store_true")
     p_stream.set_defaults(func=cmd_stream_wheel)
 
-    p_mars = sub.add_parser(
-        "mars-mission", help="Build a GeoSeal Mars mission compass/minimap packet"
-    )
+    p_mars = sub.add_parser("mars-mission", help="Build a GeoSeal Mars mission compass/minimap packet")
     p_mars.add_argument("--input", default=None, help="Mission telemetry JSON file")
     p_mars.add_argument("--payload", default=None, help="Inline mission telemetry JSON")
     p_mars.add_argument("--json", action="store_true")
@@ -6857,15 +6358,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_shell.add_argument("--json", action="store_true")
     p_shell.set_defaults(func=cmd_shell)
 
-    p_exec = sub.add_parser(
-        "exec", help="Run an external command through the GeoSeal execution gate"
-    )
-    p_exec.add_argument(
-        "command", nargs=argparse.REMAINDER, help="Command to parse, scan, and execute"
-    )
-    p_exec.add_argument(
-        "--cwd", default=None, help="Working directory for the subprocess"
-    )
+    p_exec = sub.add_parser("exec", help="Run an external command through the GeoSeal execution gate")
+    p_exec.add_argument("command", nargs=argparse.REMAINDER, help="Command to parse, scan, and execute")
+    p_exec.add_argument("--cwd", default=None, help="Working directory for the subprocess")
     p_exec.add_argument("--timeout", type=float, default=30.0)
     p_exec.add_argument(
         "--max-tier",
@@ -6892,12 +6387,8 @@ def build_parser() -> argparse.ArgumentParser:
         "legitimacy-trial",
         help="Evaluate time/location/workspace/intent context before opening CLI/tool authority",
     )
-    p_legitimacy.add_argument(
-        "--goal", required=True, help="Human-readable goal or command intent"
-    )
-    p_legitimacy.add_argument(
-        "--tool", required=True, help="Expected tool/op, e.g. terminal.command.request"
-    )
+    p_legitimacy.add_argument("--goal", required=True, help="Human-readable goal or command intent")
+    p_legitimacy.add_argument("--tool", required=True, help="Expected tool/op, e.g. terminal.command.request")
     p_legitimacy.add_argument(
         "--origin",
         default="user",
@@ -6905,12 +6396,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="Who is requesting authority",
     )
     p_legitimacy.add_argument("--expected-state", default="unspecified")
-    p_legitimacy.add_argument(
-        "--privacy", default="local_only", choices=["local_only", "hosted"]
-    )
-    p_legitimacy.add_argument(
-        "--workspace", default=None, help="Workspace root for write/execute authority"
-    )
+    p_legitimacy.add_argument("--privacy", default="local_only", choices=["local_only", "hosted"])
+    p_legitimacy.add_argument("--workspace", default=None, help="Workspace root for write/execute authority")
     p_legitimacy.add_argument(
         "--location-source",
         default="unknown",
@@ -6936,12 +6423,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="Build a structured evidence packet for a web source without ad-hoc scraping output",
     )
     p_research_nav.add_argument("--url", required=True)
-    p_research_nav.add_argument(
-        "--content", default=None, help="Inline content for offline packet tests"
-    )
-    p_research_nav.add_argument(
-        "--content-file", default=None, help="Read source content from a local file"
-    )
+    p_research_nav.add_argument("--content", default=None, help="Inline content for offline packet tests")
+    p_research_nav.add_argument("--content-file", default=None, help="Read source content from a local file")
     p_research_nav.add_argument(
         "--no-fetch",
         action="store_true",
@@ -6957,9 +6440,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Build a structured YouTube navigation packet with optional transcript evidence",
     )
     p_youtube_nav.add_argument("target", help="YouTube URL or 11-character video ID")
-    p_youtube_nav.add_argument(
-        "--fetch-metadata", action="store_true", help="Fetch the YouTube watch page"
-    )
+    p_youtube_nav.add_argument("--fetch-metadata", action="store_true", help="Fetch the YouTube watch page")
     p_youtube_nav.add_argument(
         "--fetch-transcript",
         action="store_true",
@@ -6981,13 +6462,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_coding_trial.add_argument("--goal", required=True)
     p_coding_trial.add_argument("--tool", default="terminal.command.request")
-    p_coding_trial.add_argument(
-        "--origin", default="user", choices=["user", "agent", "workflow"]
-    )
+    p_coding_trial.add_argument("--origin", default="user", choices=["user", "agent", "workflow"])
     p_coding_trial.add_argument("--expected-state", default="unspecified")
-    p_coding_trial.add_argument(
-        "--privacy", default="local_only", choices=["local_only", "hosted"]
-    )
+    p_coding_trial.add_argument("--privacy", default="local_only", choices=["local_only", "hosted"])
     p_coding_trial.add_argument("--workspace", default=None)
     p_coding_trial.add_argument(
         "--location-source",
@@ -7072,12 +6549,8 @@ def build_parser() -> argparse.ArgumentParser:
         "swarm-exec",
         help="Meet-in-the-middle codegen: merge two halves through the bijective seam, then run through the gate",
     )
-    p_swarm_exec.add_argument(
-        "--forward", required=True, help="Path to the forward (input → seam) half"
-    )
-    p_swarm_exec.add_argument(
-        "--reverse", required=True, help="Path to the reverse (seam → output) half"
-    )
+    p_swarm_exec.add_argument("--forward", required=True, help="Path to the forward (input → seam) half")
+    p_swarm_exec.add_argument("--reverse", required=True, help="Path to the reverse (seam → output) half")
     p_swarm_exec.add_argument(
         "--seam-names",
         required=True,
@@ -7100,9 +6573,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Actually run the merged module through the gate",
     )
-    p_swarm_exec.add_argument(
-        "--cwd", default=None, help="Working directory for the merged-module subprocess"
-    )
+    p_swarm_exec.add_argument("--cwd", default=None, help="Working directory for the merged-module subprocess")
     p_swarm_exec.add_argument("--timeout", type=float, default=30.0)
     p_swarm_exec.add_argument(
         "--max-tier",
@@ -7140,30 +6611,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_validate_line.add_argument("--json", action="store_true")
     p_validate_line.set_defaults(func=cmd_validate_line)
 
-    p_decode = sub.add_parser(
-        "decode-cmd", help="Decode Sacred Tongue tokens back to plaintext"
-    )
+    p_decode = sub.add_parser("decode-cmd", help="Decode Sacred Tongue tokens back to plaintext")
     p_decode.add_argument("--tongue", required=True, help="KO|AV|RU|CA|UM|DR")
-    p_decode.add_argument(
-        "tokens", nargs="?", default=None, help="Token stream (defaults to stdin)"
-    )
+    p_decode.add_argument("tokens", nargs="?", default=None, help="Token stream (defaults to stdin)")
     p_decode.set_defaults(func=cmd_decode_cmd)
 
-    p_xlate = sub.add_parser(
-        "xlate-cmd", help="Translate Sacred Tongue token stream across tongues"
-    )
+    p_xlate = sub.add_parser("xlate-cmd", help="Translate Sacred Tongue token stream across tongues")
     p_xlate.add_argument("--src", required=True, help="Source tongue")
     p_xlate.add_argument("--dst", required=True, help="Destination tongue")
-    p_xlate.add_argument(
-        "tokens", nargs="?", default=None, help="Token stream (defaults to stdin)"
-    )
+    p_xlate.add_argument("tokens", nargs="?", default=None, help="Token stream (defaults to stdin)")
     p_xlate.set_defaults(func=cmd_xlate_cmd)
 
     p_atomic = sub.add_parser("atomic", help="Inspect atomic substrate row for an op")
     p_atomic.add_argument("op")
-    p_atomic.add_argument(
-        "--show-code", action="store_true", help="Include all code templates"
-    )
+    p_atomic.add_argument("--show-code", action="store_true", help="Include all code templates")
     p_atomic.set_defaults(func=cmd_atomic)
 
     p_emit = sub.add_parser("emit", help="Emit code for an op")
@@ -7197,13 +6658,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_swarm = sub.add_parser("swarm", help="Dispatch an op to a swarm of tongue bots")
     p_swarm.add_argument("op")
-    p_swarm.add_argument(
-        "--tongues", default=None, help="comma-separated (default: all 6)"
-    )
+    p_swarm.add_argument("--tongues", default=None, help="comma-separated (default: all 6)")
     p_swarm.add_argument("--timeout", type=float, default=10.0)
-    p_swarm.add_argument(
-        "--no-run", action="store_true", help="Emit only, don't execute"
-    )
+    p_swarm.add_argument("--no-run", action="store_true", help="Emit only, don't execute")
     p_swarm.add_argument("--no-ledger", action="store_true", help="Skip writing ledger")
     p_swarm.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_swarm.add_argument("--json", action="store_true")
@@ -7249,9 +6706,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_agent = sub.add_parser("agent", help="Route a coding task via Polly + GeoSeal")
     p_agent.add_argument("task", help="Natural language coding task")
-    p_agent.add_argument(
-        "--tongue", default=None, help="Force tongue (KO/AV/RU/CA/UM/DR)"
-    )
+    p_agent.add_argument("--tongue", default=None, help="Force tongue (KO/AV/RU/CA/UM/DR)")
     p_agent.add_argument(
         "--provider",
         default=None,
@@ -7302,28 +6757,18 @@ def build_parser() -> argparse.ArgumentParser:
     p_arc.add_argument("task_file", help="Path to ARC task JSON")
     p_arc.add_argument("--json", action="store_true", help="Machine-readable output")
     p_arc.add_argument("--onnx", action="store_true", help="Export program as ONNX")
-    p_arc.add_argument(
-        "--onnx-out", default=None, dest="onnx_out", help="ONNX output path"
-    )
+    p_arc.add_argument("--onnx-out", default=None, dest="onnx_out", help="ONNX output path")
     p_arc.add_argument("--no-ledger", action="store_true", help="Skip ledger write")
     p_arc.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_arc.add_argument("--verbose", "-v", action="store_true")
     p_arc.set_defaults(func=cmd_arc)
 
-    p_cursor = sub.add_parser(
-        "cursor", help="Delegate a bounded repo task to Cursor Agent"
-    )
+    p_cursor = sub.add_parser("cursor", help="Delegate a bounded repo task to Cursor Agent")
     p_cursor.add_argument("task", help="Repo task to hand to Cursor Agent")
-    p_cursor.add_argument(
-        "--workspace", default=str(Path.cwd()), help="Workspace directory"
-    )
+    p_cursor.add_argument("--workspace", default=str(Path.cwd()), help="Workspace directory")
     p_cursor.add_argument("--model", default=None, help="Cursor model override")
-    p_cursor.add_argument(
-        "--mode", default=None, choices=["plan", "ask"], help="Cursor execution mode"
-    )
-    p_cursor.add_argument(
-        "--force", action="store_true", help="Pass --force to Cursor Agent"
-    )
+    p_cursor.add_argument("--mode", default=None, choices=["plan", "ask"], help="Cursor execution mode")
+    p_cursor.add_argument("--force", action="store_true", help="Pass --force to Cursor Agent")
     p_cursor.add_argument(
         "--output-format",
         default="text",
@@ -7337,22 +6782,16 @@ def build_parser() -> argparse.ArgumentParser:
         dest="stream_partial_output",
         help="Enable stream-json partial output deltas",
     )
-    p_cursor.add_argument(
-        "--continue-session", action="store_true", dest="continue_session"
-    )
+    p_cursor.add_argument("--continue-session", action="store_true", dest="continue_session")
     p_cursor.add_argument("--no-ledger", action="store_true", help="Skip ledger write")
     p_cursor.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_cursor.add_argument("--verbose", "-v", action="store_true")
     p_cursor.set_defaults(func=cmd_cursor)
 
-    p_workflow = sub.add_parser(
-        "workflow", help="Declarative .geoseal.yaml workflow runner"
-    )
+    p_workflow = sub.add_parser("workflow", help="Declarative .geoseal.yaml workflow runner")
     wf_sub = p_workflow.add_subparsers(dest="workflow_cmd", required=True)
 
-    p_wf_list = wf_sub.add_parser(
-        "list", help="List .geoseal.yaml workflows in a directory"
-    )
+    p_wf_list = wf_sub.add_parser("list", help="List .geoseal.yaml workflows in a directory")
     p_wf_list.add_argument("--dir", default=".", help="Directory to scan")
     p_wf_list.add_argument("--json", action="store_true")
     p_wf_list.set_defaults(func=cmd_workflow, workflow_cmd="list")
@@ -7376,25 +6815,17 @@ def build_parser() -> argparse.ArgumentParser:
         "terminus-training",
         help="Run Terminus guild agent training (benchmark or scripted scenario)",
     )
-    p_terminus.add_argument(
-        "--mode", choices=["benchmark", "scripted"], default="benchmark"
-    )
-    p_terminus.add_argument(
-        "--scenario", default="guild_math_intro", help="Scenario name for scripted mode"
-    )
+    p_terminus.add_argument("--mode", choices=["benchmark", "scripted"], default="benchmark")
+    p_terminus.add_argument("--scenario", default="guild_math_intro", help="Scenario name for scripted mode")
     p_terminus.add_argument("--agent-id", default="benchmark-agent")
     p_terminus.add_argument("--out-dir", default="artifacts/terminus_training")
     p_terminus.add_argument("--json", action="store_true")
     p_terminus.set_defaults(func=cmd_terminus_training)
 
-    p_yy = sub.add_parser(
-        "yin-yang-dual", help="Build a KO/DR yin-yang dual token packet"
-    )
+    p_yy = sub.add_parser("yin-yang-dual", help="Build a KO/DR yin-yang dual token packet")
     p_yy.add_argument("--ko-text", required=True)
     p_yy.add_argument("--dr-text", required=True)
-    p_yy.add_argument(
-        "--frame", type=int, choices=[0, 1], default=0, help="Active frame: 0=KO, 1=DR"
-    )
+    p_yy.add_argument("--frame", type=int, choices=[0, 1], default=0, help="Active frame: 0=KO, 1=DR")
     p_yy.add_argument("--size", type=int, default=9, help="Odd surface size >= 5")
     p_yy.add_argument("--json", action="store_true")
     p_yy.set_defaults(func=cmd_yin_yang_dual)
@@ -7404,9 +6835,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Build the GeoShell Builder/Navigator pair-agent SFT dataset",
     )
     p_pair.add_argument("--output-dir", default="training-data/sft")
-    p_pair.add_argument(
-        "--event-path", default="artifacts/geoshell/pair_agent/latest_events.json"
-    )
+    p_pair.add_argument("--event-path", default="artifacts/geoshell/pair_agent/latest_events.json")
     p_pair.add_argument("--json", action="store_true")
     p_pair.set_defaults(func=cmd_pair_agent_training)
 
@@ -7421,9 +6850,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output format: json | mermaid | dot | tree (ASCII)",
     )
     p_api_graph.add_argument("--tier", default=None, help="Filter by skill tier L1-L6")
-    p_api_graph.add_argument(
-        "--tongue", default=None, help="Filter by tongue KO|AV|RU|CA|UM|DR"
-    )
+    p_api_graph.add_argument("--tongue", default=None, help="Filter by tongue KO|AV|RU|CA|UM|DR")
     p_api_graph.add_argument(
         "--band",
         default=None,
@@ -7445,15 +6872,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_api_graph.add_argument("--json", action="store_true")
     p_api_graph.set_defaults(func=cmd_api_graph)
 
-    p_bench_api = sub.add_parser(
-        "bench-api", help="Benchmark api-graph build + render performance"
-    )
-    p_bench_api.add_argument(
-        "--runs", type=int, default=5, help="Iterations per variant (default 5)"
-    )
-    p_bench_api.add_argument(
-        "--verbose", action="store_true", help="Print each variant as it runs"
-    )
+    p_bench_api = sub.add_parser("bench-api", help="Benchmark api-graph build + render performance")
+    p_bench_api.add_argument("--runs", type=int, default=5, help="Iterations per variant (default 5)")
+    p_bench_api.add_argument("--verbose", action="store_true", help="Print each variant as it runs")
     p_bench_api.add_argument("--json", action="store_true", help="Emit JSON report")
     p_bench_api.set_defaults(func=cmd_bench_api)
 
@@ -7536,10 +6957,7 @@ def cmd_pair_agent_training(args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps(payload, indent=2))
     else:
-        print(
-            f"ok train={payload['train_count']} holdout={payload['holdout_count']} "
-            f"manifest={paths['manifest']}"
-        )
+        print(f"ok train={payload['train_count']} holdout={payload['holdout_count']} " f"manifest={paths['manifest']}")
     return 0
 
 

