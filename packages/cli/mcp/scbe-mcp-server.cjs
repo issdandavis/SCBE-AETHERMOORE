@@ -25,7 +25,7 @@
  */
 
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+const { execFile } = require('node:child_process');
 
 const { Server } = require('@modelcontextprotocol/sdk/server/index.js');
 const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
@@ -102,16 +102,37 @@ function buildToolDefinitions() {
   return { manifest, tools, commandFor };
 }
 
+// Async on purpose: spawnSync blocked the server's event loop, so concurrent
+// tool calls from agent fleets serialized (N x slowest-call tail latency, the
+// "~36s/call" seen under 10-agent load). execFile keeps the loop free, so
+// concurrent calls run concurrently. Resolves with a spawnSync-shaped result.
 function runScbe(commandName, args, wantJson, timeoutMs) {
   const finalArgs = [SCBE_BIN, commandName, ...args];
   if (wantJson) finalArgs.push('--json');
-  const res = spawnSync(process.execPath, finalArgs, {
-    cwd: REPO_ROOT,
-    encoding: 'utf8',
-    timeout: timeoutMs || 120000,
-    maxBuffer: 16 * 1024 * 1024,
+  return new Promise((resolve) => {
+    execFile(
+      process.execPath,
+      finalArgs,
+      {
+        cwd: REPO_ROOT,
+        encoding: 'utf8',
+        timeout: timeoutMs || 120000,
+        maxBuffer: 16 * 1024 * 1024,
+      },
+      (error, stdout, stderr) => {
+        if (!error) {
+          resolve({ error: null, status: 0, stdout, stderr });
+        } else if (error.killed && error.signal) {
+          resolve({ error: { code: 'ETIMEDOUT', message: error.message }, status: null, stdout, stderr });
+        } else if (typeof error.code === 'number') {
+          // Normal nonzero exit: not a spawn failure.
+          resolve({ error: null, status: error.code, stdout, stderr });
+        } else {
+          resolve({ error, status: null, stdout, stderr });
+        }
+      }
+    );
   });
-  return res;
 }
 
 async function main() {
@@ -133,7 +154,7 @@ async function main() {
     const args = Array.isArray(callArgs && callArgs.args) ? callArgs.args.map(String) : [];
     const wantJson = Boolean(callArgs && callArgs.json);
 
-    const res = runScbe(commandName, args, wantJson);
+    const res = await runScbe(commandName, args, wantJson);
     if (res.error) {
       const reason =
         res.error.code === 'ETIMEDOUT'
