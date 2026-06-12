@@ -45,6 +45,7 @@ CORE_SMOKE_PATHS: tuple[str, ...] = (
     "tests/test_units.py",
     "tests/test_reaction_balance.py",
     "tests/test_geometry_view.py",
+    "tests/test_controlled_substance_screen.py",
 )
 
 # Optional or experimental lanes that currently pull in extra services,
