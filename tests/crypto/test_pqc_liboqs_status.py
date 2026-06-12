@@ -83,3 +83,26 @@ def test_mldsa65_from_keypair_loaded_key_signs_and_verifies():
     assert verifier.verify(message, signature) is True
     # Tamper is still caught.
     assert loaded.verify(message + b"x", signature) is False
+
+
+def test_oqs_import_keeps_stdout_clean():
+    """Regression: liboqs-python prints an informational banner to STDOUT on
+    import ("liboqs-python faulthandler is disabled"). Consumers sign lazily
+    from CLIs whose stdout is a machine-readable JSON contract (e.g.
+    ``scbe react balance --json``), so the loader must route the banner to
+    stderr. A fresh interpreter is required because oqs may already be in
+    sys.modules here."""
+    import subprocess
+    import sys
+
+    probe = (
+        "import sys; sys.path.insert(0, '.'); " "from src.crypto.pqc_liboqs import _load_oqs_module; _load_oqs_module()"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", probe],
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "", f"oqs import leaked onto stdout: {result.stdout!r}"
