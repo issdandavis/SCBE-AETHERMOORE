@@ -34,15 +34,15 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from python.scbe import units as _U
 from python.scbe.reaction_state import (
     ReactionEndpoint,
     ReactionRecalculation,
     build_reaction_state_packet,
+    unit_check,
 )
 
-OUT_DIR = (
-    REPO_ROOT / "artifacts" / "benchmarks" / "compound_decomposition_recomposition"
-)
+OUT_DIR = REPO_ROOT / "artifacts" / "benchmarks" / "compound_decomposition_recomposition"
 AVOGADRO = 6.02214076e23
 
 
@@ -379,12 +379,7 @@ CANDIDATES: tuple[Candidate, ...] = (
 
 
 def utc_now() -> str:
-    return (
-        datetime.now(timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def sha256_text(text: str) -> str:
@@ -453,9 +448,7 @@ def descriptor_cards(smiles: str) -> dict[str, Any]:
     }
 
 
-def required_fragment_hits(
-    smiles: str, smarts_list: tuple[str, ...]
-) -> dict[str, bool]:
+def required_fragment_hits(smiles: str, smarts_list: tuple[str, ...]) -> dict[str, bool]:
     Chem, _, _, _ = require_rdkit()
     mol = mol_from_smiles(smiles)
     hits = {}
@@ -465,9 +458,7 @@ def required_fragment_hits(
     return hits
 
 
-def dimensional_path(
-    sample_grams: float, mol_wt: float, atom_counts: dict[str, int]
-) -> dict[str, Any]:
+def dimensional_path(sample_grams: float, mol_wt: float, atom_counts: dict[str, int]) -> dict[str, Any]:
     moles = sample_grams / mol_wt
     molecules = moles * AVOGADRO
     return {
@@ -475,15 +466,11 @@ def dimensional_path(
         "molar_mass_g_per_mol": mol_wt,
         "moles": moles,
         "molecules": molecules,
-        "atom_totals": {
-            element: molecules * count for element, count in atom_counts.items()
-        },
+        "atom_totals": {element: molecules * count for element, count in atom_counts.items()},
     }
 
 
-def candidate_score(
-    candidate: Candidate, mud: dict[str, Any], required_smarts: tuple[str, ...]
-) -> dict[str, Any]:
+def candidate_score(candidate: Candidate, mud: dict[str, Any], required_smarts: tuple[str, ...]) -> dict[str, Any]:
     desc = descriptor_cards(candidate.smiles)
     fragment_hits = required_fragment_hits(candidate.smiles, required_smarts)
     formula_match = desc["formula"] == mud["atom_bag"]["formula"]
@@ -495,13 +482,9 @@ def candidate_score(
         "carbonyl_count",
         "hydroxyl_count",
     )
-    descriptor_matches = sum(
-        1 for key in descriptor_keys if desc[key] == mud["descriptor_cards"][key]
-    )
+    descriptor_matches = sum(1 for key in descriptor_keys if desc[key] == mud["descriptor_cards"][key])
     fragment_matches = sum(1 for ok in fragment_hits.values() if ok)
-    exact_mw_delta = abs(
-        float(desc["exact_mw"]) - float(mud["descriptor_cards"]["exact_mw"])
-    )
+    exact_mw_delta = abs(float(desc["exact_mw"]) - float(mud["descriptor_cards"]["exact_mw"]))
     score = 0
     score += 100 if formula_match else 0
     score += descriptor_matches * 10
@@ -566,20 +549,12 @@ def run_case(case: CompoundCase) -> dict[str, Any]:
         "required_smarts": case.required_smarts,
     }
     atom_only_candidates = [
-        candidate.name
-        for candidate in CANDIDATES
-        if descriptor_cards(candidate.smiles)["formula"] == desc["formula"]
+        candidate.name for candidate in CANDIDATES if descriptor_cards(candidate.smiles)["formula"] == desc["formula"]
     ]
-    scored = [
-        candidate_score(candidate, mud, case.required_smarts)
-        for candidate in CANDIDATES
-    ]
+    scored = [candidate_score(candidate, mud, case.required_smarts) for candidate in CANDIDATES]
     scored.sort(key=lambda item: item["score"], reverse=True)
     selected = scored[0]
-    ok = (
-        selected["canonical_smiles"] == expected_canonical
-        and desc["formula"] == case.expected_formula
-    )
+    ok = selected["canonical_smiles"] == expected_canonical and desc["formula"] == case.expected_formula
 
     steps.append(
         {
@@ -640,7 +615,21 @@ def run_case(case: CompoundCase) -> dict[str, Any]:
         ],
         recalculation=ReactionRecalculation(
             scientific_checks_ok=ok,
-            unit_checks_ok=math.isfinite(dim["moles"])
+            # Real dimensional check (not just isfinite): grams / (g/mol) must be
+            # moles, and moles * Avogadro must be a dimensionless molecule count.
+            unit_checks_ok=unit_check(
+                lambda: _U.assert_dim(
+                    _U.mul(
+                        _U.div(
+                            _U.q(case.sample_grams, _U.GRAM),
+                            _U.q(desc["mol_wt"], _U.G_PER_MOL),
+                        ),
+                        _U.q(1, _U.AVOGADRO),
+                    ),
+                    _U.DIMENSIONLESS,
+                )
+            )[0]
+            and math.isfinite(dim["moles"])
             and math.isfinite(dim["molecules"]),
             identity_ok=selected["canonical_smiles"] == expected_canonical,
             extra={
@@ -727,9 +716,7 @@ def build_report(out_dir: Path) -> dict[str, Any]:
     out_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     payload = json.dumps(report, indent=2)
-    (out_dir / f"compound_decomposition_recomposition_{stamp}.json").write_text(
-        payload, encoding="utf-8"
-    )
+    (out_dir / f"compound_decomposition_recomposition_{stamp}.json").write_text(payload, encoding="utf-8")
     (out_dir / "latest_report.json").write_text(payload, encoding="utf-8")
     write_markdown(report, out_dir / f"compound_decomposition_recomposition_{stamp}.md")
     write_markdown(report, out_dir / "LATEST.md")
@@ -752,14 +739,10 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
         "| --- | --- | ---: | --- | --- |",
     ]
     for case in report["cases"]:
-        recomposition = next(
-            step for step in case["steps"] if step["name"] == "recomposition_search"
-        )
+        recomposition = next(step for step in case["steps"] if step["name"] == "recomposition_search")
         selected = recomposition["output"]["selected"]["name"]
         ambiguous = recomposition["output"]["atom_only_ambiguous"]
-        lines.append(
-            f"| {case['case_id']} | {case['ok']} | {case['mud_step']} | {ambiguous} | {selected} |"
-        )
+        lines.append(f"| {case['case_id']} | {case['ok']} | {case['mud_step']} | {ambiguous} | {selected} |")
     lines.extend(
         [
             "",
