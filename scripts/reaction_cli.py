@@ -24,6 +24,7 @@ from python.scbe.audio_field_observables import (
     generate_decaying_sine,
     generate_sine,
 )
+from python.scbe.controlled_substances import ControlledSubstanceDenied, screen_input
 from python.scbe.geometry_view import GeometryEngineError, geometry_view_packet
 from python.scbe.reaction_balance import BalanceError, balance_reaction_packet
 from python.scbe.reaction_state import (
@@ -341,6 +342,15 @@ def print_human_balance(payload: dict[str, Any]) -> None:
 def build_geometry(smiles: str) -> dict[str, Any]:
     try:
         packet = geometry_view_packet(smiles).sign(SIGNER_AGENT_ID)
+    except ControlledSubstanceDenied as exc:
+        return {
+            "schema_version": "scbe_react_geometry_v1",
+            "ok": False,
+            "denied": True,
+            "error": str(exc),
+            "screen": exc.report,
+            "smiles": smiles,
+        }
     except GeometryEngineError as exc:
         return {"schema_version": "scbe_react_geometry_v1", "ok": False, "error": str(exc), "smiles": smiles}
     meta = packet.target.metadata
@@ -355,6 +365,9 @@ def build_geometry(smiles: str) -> dict[str, Any]:
 
 
 def print_human_geometry(payload: dict[str, Any]) -> None:
+    if payload.get("denied"):
+        print(f"reaction geometry: DENIED {payload.get('error', '')}")
+        return
     if not payload.get("ok"):
         print(f"reaction geometry: FAILED {payload.get('error', '')}")
         return
@@ -362,6 +375,27 @@ def print_human_geometry(payload: dict[str, Any]) -> None:
         f"reaction geometry: {payload['formula']} "
         f"rotor={payload['rotor_type']} point_group={payload['point_group']}"
     )
+
+
+def build_screen(text: str) -> dict[str, Any]:
+    """Defensive controlled-substance screen over a SMILES string or CAS number.
+
+    Reports flagged/clear, the match kind, and the screen level that actually
+    ran (exact_string without RDKit, similarity with it) — never the matched
+    list entry.
+    """
+    report = screen_input(text)
+    return {"schema_version": "scbe_react_screen_v1", "ok": True, "input": text, **report}
+
+
+def print_human_screen(payload: dict[str, Any]) -> None:
+    verdict = "FLAGGED" if payload["flagged"] else "clear"
+    print(f"controlled-substance screen: {verdict}")
+    if payload["flagged"]:
+        print(f"match kind: {payload['match_kind']}")
+    if payload.get("max_similarity") is not None:
+        print(f"max similarity vs list: {payload['max_similarity']} (threshold 0.35)")
+    print(f"screen level: {payload['screen_level']} (list n={payload['list_size']})")
 
 
 def build_checkpoint(path: str, rekor_dry_run: bool = False) -> dict[str, Any]:
@@ -430,6 +464,9 @@ def main() -> int:
     geometry_parser = sub.add_parser("geometry")
     geometry_parser.add_argument("--smiles", required=True, help="SMILES string, e.g. CCO")
     geometry_parser.add_argument("--json", action="store_true")
+    screen_parser = sub.add_parser("screen")
+    screen_parser.add_argument("--input", required=True, help="SMILES string or CAS number to screen")
+    screen_parser.add_argument("--json", action="store_true")
     checkpoint_parser = sub.add_parser("checkpoint")
     checkpoint_parser.add_argument("--packets", required=True, help="packet or report JSON file to checkpoint")
     checkpoint_parser.add_argument("--rekor-dry-run", action="store_true")
@@ -485,6 +522,13 @@ def main() -> int:
         else:
             print_human_geometry(payload)
         return 0 if payload["ok"] else 1
+    if args.cmd == "screen":
+        payload = build_screen(args.input)
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_human_screen(payload)
+        return 1 if payload["flagged"] else 0
     if args.cmd == "checkpoint":
         payload = build_checkpoint(args.packets, rekor_dry_run=args.rekor_dry_run)
         if args.json:
