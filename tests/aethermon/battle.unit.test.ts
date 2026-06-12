@@ -138,13 +138,19 @@ describe('combatant snapshots & bookkeeping', () => {
     expect(high.stats.atk).toBeGreaterThan(low.stats.atk);
   });
 
-  it('applyBattleResult updates record and drains meters', () => {
+  it('applyBattleResult updates record, drains meters and ages the creature', () => {
     const monster = createMonster('pyreling', 'Sunny');
     const energy = monster.care.energy;
-    applyBattleResult(monster, true);
+    const age = monster.ageTicks;
+    const aftermath = applyBattleResult(monster, true);
     expect(monster.battlesWon).toBe(1);
-    expect(monster.care.energy).toBe(energy - 10);
-    applyBattleResult(monster, false);
+    // One care tick passes (-4 energy), then battle fatigue (-10).
+    expect(monster.care.energy).toBe(energy - 14);
+    expect(monster.ageTicks).toBe(age + 1);
+    expect(aftermath.scarred).toBe(false);
+    const lossAftermath = applyBattleResult(monster, false);
     expect(monster.battlesLost).toBe(1);
+    expect(lossAftermath.scarred).toBe(true);
+    expect(monster.scars).toBe(1);
   });
 });

@@ -25,14 +25,17 @@ import type {
 import {
   CRIT_CHANCE,
   CRIT_MULTIPLIER,
+  HODGE_DUALS,
+  HODGE_RESONANCE,
   MAX_BATTLE_TURNS,
   STAB_BONUS,
+  STRAIN_THRESHOLD,
   alignmentMultiplier,
   elementMultiplier,
 } from './types.js';
 import { getMove } from './moves.js';
 import { getSpecies } from './species.js';
-import { effectiveStats } from './monster.js';
+import { effectiveStats, tick } from './monster.js';
 import { chance, createRng, nextFloat, type Rng } from './rng.js';
 
 // ---------------------------------------------------------------------------
@@ -94,12 +97,27 @@ export interface DamageRoll {
   readonly damage: number;
   readonly elementMult: number;
   readonly alignmentMult: number;
+  /** True when the move spoke the attacker's Hodge dual tongue. */
+  readonly resonance: boolean;
+}
+
+/**
+ * Same-element bonus or Hodge-dual resonance for a move. STAB (×1.2)
+ * when the move matches the attacker's tongue; resonance (×1.3, canon:
+ * duals bond 30% stronger) when it matches the attacker's Hodge dual
+ * (KO↔DR, AV↔UM, RU↔CA). Mutually exclusive by construction.
+ */
+export function affinityMultiplier(attacker: Combatant, move: MoveDef): number {
+  if (move.element === attacker.element) return STAB_BONUS;
+  if (HODGE_DUALS[attacker.element] === move.element) return HODGE_RESONANCE;
+  return 1.0;
 }
 
 /**
  * Roll damage for one move. Multiplier stack:
  * raw = power × (atk/def) × 0.25 + 2
- * dmg = raw × alignment(φ|1|1/φ) × element(1.25|1|0.8) × STAB × crit × variance
+ * dmg = raw × alignment(φ|1|1/φ) × element(1.25|1|0.8) × affinity(STAB|resonance)
+ *       × crit × variance
  * Tuned so evenly matched creatures trade ~3–5 hits per knockout.
  */
 export function rollDamage(
@@ -109,15 +127,23 @@ export function rollDamage(
   rng: Rng
 ): DamageRoll {
   if (nextFloat(rng) >= move.accuracy) {
-    return { miss: true, crit: false, damage: 0, elementMult: 1, alignmentMult: 1 };
+    return {
+      miss: true,
+      crit: false,
+      damage: 0,
+      elementMult: 1,
+      alignmentMult: 1,
+      resonance: false,
+    };
   }
   const raw = move.power * (attacker.stats.atk / Math.max(1, defender.stats.def)) * 0.25 + 2;
   const alignMult = alignmentMultiplier(attacker.alignment, defender.alignment);
   const elemMult = elementMultiplier(move.element, defender.element);
-  const stab = move.element === attacker.element ? STAB_BONUS : 1.0;
+  const affinity = affinityMultiplier(attacker, move);
+  const resonance = affinity === HODGE_RESONANCE;
   const crit = chance(rng, CRIT_CHANCE);
   const variance = 0.85 + 0.15 * nextFloat(rng);
-  let damage = raw * alignMult * elemMult * stab * variance;
+  let damage = raw * alignMult * elemMult * affinity * variance;
   if (crit) damage *= CRIT_MULTIPLIER;
   if (defender.guarding) damage *= 0.5;
   return {
@@ -126,6 +152,7 @@ export function rollDamage(
     damage: Math.max(1, Math.floor(damage)),
     elementMult: elemMult,
     alignmentMult: alignMult,
+    resonance,
   };
 }
 
@@ -181,7 +208,7 @@ export function chooseAiAction(state: BattleState, side: 'A' | 'B'): BattleActio
       move.accuracy *
       alignmentMultiplier(self.alignment, foe.alignment) *
       elementMultiplier(move.element, foe.element) *
-      (move.element === self.element ? STAB_BONUS : 1);
+      affinityMultiplier(self, move);
     if (score > bestScore) {
       bestScore = score;
       best = id;
@@ -247,6 +274,7 @@ function applyAction(
   foe.hp = Math.max(0, foe.hp - roll.damage);
   const tags: string[] = [];
   if (roll.crit) tags.push('CRIT!');
+  if (roll.resonance) tags.push('dual resonance!');
   if (roll.alignmentMult > 1 || roll.elementMult > 1) tags.push("it's super effective!");
   if (roll.alignmentMult < 1 || roll.elementMult < 1) tags.push("it's not very effective...");
   events.push({
@@ -355,17 +383,42 @@ export function autoBattle(a: Combatant, b: Combatant, seed: number): BattleStat
 //  Post-battle bookkeeping
 // ---------------------------------------------------------------------------
 
-/** Apply a battle result to the tamed creature's history and meters. */
-export function applyBattleResult(monster: MonsterState, won: boolean): void {
+/** Outcome details from post-battle bookkeeping, for the UI. */
+export interface BattleAftermath {
+  /** A scar was earned (loss — immune memory hardens). */
+  readonly scarred: boolean;
+  /** The creature fought past its limit (V-Pet over-battling rule). */
+  readonly strained: boolean;
+}
+
+/**
+ * Apply a battle result to the tamed creature's history and meters.
+ * A battle takes time (one care tick — creatures age in the arena).
+ * Losses leave scars (immune memory: +DEF, capped, and keys to dark
+ * evolutions). Battling repeatedly without rest causes strain.
+ */
+export function applyBattleResult(monster: MonsterState, won: boolean): BattleAftermath {
   const care = monster.care;
+  tick(monster);
+  monster.consecutiveBattles += 1;
+  let scarred = false;
   if (won) {
     monster.battlesWon += 1;
     care.mood = Math.min(100, care.mood + 10);
     care.bond = Math.min(100, care.bond + 5);
   } else {
     monster.battlesLost += 1;
+    monster.scars += 1;
+    scarred = true;
     care.mood = Math.max(0, care.mood - 15);
   }
   care.energy = Math.max(0, care.energy - 10);
   care.hunger = Math.max(0, care.hunger - 10);
+
+  const strained = monster.consecutiveBattles >= STRAIN_THRESHOLD;
+  if (strained) {
+    care.energy = Math.max(0, care.energy - 15);
+    care.mood = Math.max(0, care.mood - 10);
+  }
+  return { scarred, strained };
 }

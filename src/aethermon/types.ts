@@ -110,6 +110,40 @@ export function elementMultiplier(moveElement: TongueCode, defenderElement: Tong
 }
 
 // ---------------------------------------------------------------------------
+//  Hodge dual pairs (canon: Cl(4,0) — e_ij ∧ e_kl = e_1234)
+// ---------------------------------------------------------------------------
+
+/**
+ * Hodge dual partner of each tongue. Canon: "Hodge duals bond 30%
+ * stronger" — KO↔DR (Command↔Structure), AV↔UM (Transport↔Security),
+ * RU↔CA (Entropy↔Compute).
+ */
+export const HODGE_DUALS: Record<TongueCode, TongueCode> = {
+  KO: 'DR',
+  DR: 'KO',
+  AV: 'UM',
+  UM: 'AV',
+  RU: 'CA',
+  CA: 'RU',
+};
+
+/**
+ * Damage multiplier when a creature uses a move of its Hodge dual
+ * element — the dual carries it almost as well as its own voice.
+ */
+export const HODGE_RESONANCE = 1.3;
+
+/** Canon synesthesia: the musical note each tongue sounds as. */
+export const TONGUE_NOTES: Record<TongueCode, string> = {
+  KO: 'A',
+  AV: 'B',
+  RU: 'C#',
+  CA: 'D#',
+  UM: 'F',
+  DR: 'G',
+};
+
+// ---------------------------------------------------------------------------
 //  Stats
 // ---------------------------------------------------------------------------
 
@@ -182,6 +216,10 @@ export interface EvolutionRequirement {
   readonly minBattlesWon?: number;
   /** Which training bonus must be strictly largest ('balanced' = no bonus > 1.5× another). */
   readonly dominantStat?: DominantStat;
+  /** Battle scars carried (canon: losses leave marks that gate dark paths). */
+  readonly minScars?: number;
+  /** Contact with the Hollow — the gap between the tongues (Null Vale). */
+  readonly minHollowExposure?: number;
 }
 
 /** A species (one node in the evolution graph). */
@@ -242,9 +280,57 @@ export interface MonsterState {
   battlesLost: number;
   /** Total care ticks lived. */
   ageTicks: number;
+  /** Ticks lived in the current stage (drives lifespan). */
+  stageAgeTicks: number;
+  /**
+   * Battle scars — immune memory. Each loss leaves a scar; scars harden
+   * defense (capped) and gate dark evolutions. The system gets stronger
+   * from attacks.
+   */
+  scars: number;
+  /** Battles since the last proper rest (drives strain). */
+  consecutiveBattles: number;
+  /** Contact with the Hollow, the gap between the tongues. */
+  hollowExposure: number;
+  /** Which generation of the tamer's line this creature is. */
+  generation: number;
+  /** Stats inherited from the previous generation at hatch. */
+  heirloom: Stats;
   /** Species ids this creature has passed through. */
   lineage: string[];
 }
+
+/**
+ * Battles fought without resting. At STRAIN_THRESHOLD and beyond, each
+ * battle strains the creature (V-Pet rule: over-battling causes harm).
+ */
+export const STRAIN_THRESHOLD = 4;
+
+/** Defense gained per scar (immune memory). */
+export const SCAR_DEFENSE_BONUS = 1;
+
+/** Maximum defense gained from scars. */
+export const SCAR_DEFENSE_CAP = 10;
+
+/**
+ * Lifespan per stage, in care ticks. When a creature has lived this
+ * long in its current stage without evolving, it returns to an egg —
+ * and the next generation inherits part of its strength.
+ */
+export const STAGE_LIFESPAN_TICKS: Record<Stage, number> = {
+  EGG: Number.POSITIVE_INFINITY,
+  MOTE: 140,
+  SPRITE: 180,
+  GUARDIAN: 220,
+  PARAGON: 260,
+  APEX: 320,
+};
+
+/** Fraction of training bonuses inherited by the next generation. */
+export const HEIRLOOM_FRACTION = 0.4;
+
+/** Cap on inherited heirloom points per stat (keeps lines honest). */
+export const HEIRLOOM_CAP = 30;
 
 // ---------------------------------------------------------------------------
 //  Battle
@@ -306,6 +392,10 @@ export interface EggState {
   speciesId: string;
   /** Warmth accumulated; hatches at WARMTH_TO_HATCH. */
   warmth: number;
+  /** Stats inherited from the previous generation (rebirth eggs). */
+  heirloom?: Stats;
+  /** Generation this egg will hatch into (1 = first). */
+  generation?: number;
 }
 
 /** Warm actions required to hatch an egg. */
@@ -321,7 +411,7 @@ export interface ArenaRival {
 
 /** Top-level save-game state. */
 export interface GameState {
-  readonly version: 1;
+  readonly version: 2;
   tamerName: string;
   egg: EggState | null;
   monster: MonsterState | null;
@@ -333,4 +423,10 @@ export interface GameState {
   rngState: number;
   /** Names of creatures that reached APEX. */
   hallOfFame: string[];
+  /** Current region of Aethermoore (affects wild encounters). */
+  region: string;
+  /** Generation counter for the tamer's creature line. */
+  generation: number;
+  /** Memorial of past generations: "name the Species (Gen N)". */
+  lineageMemorial: string[];
 }

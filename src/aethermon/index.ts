@@ -23,12 +23,18 @@ export { MOVES, allMoveIds, getMove } from './moves.js';
 // Species catalog & evolution graph
 export { SPECIES, STARTER_EGG_IDS, allSpecies, speciesByStage, getSpecies } from './species.js';
 
-// Creature lifecycle (care, training, leveling)
+// Regions of Aethermoore (canon geography)
+export { REGIONS, REGION_IDS, getRegion } from './regions.js';
+export type { RegionDef, RegionId } from './regions.js';
+
+// Creature lifecycle (care, training, leveling, lifespan)
 export {
   HUNGER_DECAY,
   ENERGY_DECAY,
   createMonster,
   effectiveStats,
+  lifespanRemaining,
+  isLifespanExpired,
   xpToNext,
   xpReward,
   gainXp,
@@ -43,7 +49,7 @@ export {
   describeCare,
   isStatKey,
 } from './monster.js';
-export type { CareResult } from './monster.js';
+export type { CareResult, CreateMonsterOptions } from './monster.js';
 
 // Branching evolution engine
 export {
@@ -59,6 +65,7 @@ export type { EvolutionOption, EvolutionResult } from './evolution.js';
 export {
   toCombatant,
   wildCombatant,
+  affinityMultiplier,
   rollDamage,
   createBattle,
   chooseAiAction,
@@ -66,19 +73,22 @@ export {
   autoBattle,
   applyBattleResult,
 } from './battle.js';
-export type { DamageRoll } from './battle.js';
+export type { DamageRoll, BattleAftermath } from './battle.js';
 
-// Game orchestration (eggs, encounters, arena, saves)
+// Game orchestration (eggs, regions, encounters, arena, generations, saves)
 export {
   ARENA_LADDER,
   newGame,
   warmEgg,
+  travel,
+  communeWithGap,
   generateWildEncounter,
   nextArenaRival,
   arenaCombatant,
   recordBattleOutcome,
   isChampion,
+  checkRebirth,
   serializeGame,
   deserializeGame,
 } from './game.js';
-export type { WarmResult } from './game.js';
+export type { WarmResult, HollowResult, RebirthResult } from './game.js';

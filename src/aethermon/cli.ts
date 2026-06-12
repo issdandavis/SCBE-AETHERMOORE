@@ -14,14 +14,16 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as readline from 'node:readline';
 import type { BattleAction, Combatant, GameState, MonsterState, Stage } from './types.js';
-import { STAGE_MIN_LEVEL } from './types.js';
+import { STAGE_MIN_LEVEL, TONGUE_NOTES } from './types.js';
 import { getMove } from './moves.js';
 import { STARTER_EGG_IDS, getSpecies } from './species.js';
+import { REGIONS, getRegion } from './regions.js';
 import {
   describeCare,
   effectiveStats,
   feed,
   isStatKey,
+  lifespanRemaining,
   play,
   praise,
   rest,
@@ -41,6 +43,8 @@ import {
 import {
   ARENA_LADDER,
   arenaCombatant,
+  checkRebirth,
+  communeWithGap,
   deserializeGame,
   generateWildEncounter,
   isChampion,
@@ -48,6 +52,7 @@ import {
   nextArenaRival,
   recordBattleOutcome,
   serializeGame,
+  travel,
   warmEgg,
 } from './game.js';
 import { createRng, nextInt } from './rng.js';
@@ -160,6 +165,11 @@ function showMonsterCard(monster: MonsterState): void {
       `W${monster.battlesWon}/L${monster.battlesLost}  Age ${monster.ageTicks} ticks`
   );
   console.log(
+    `Gen ${monster.generation}  Scars ${monster.scars}  Hollow ${monster.hollowExposure}  ` +
+      `Lifespan ${lifespanRemaining(monster)} ticks left  ` +
+      dim(`sounds in ${TONGUE_NOTES[species.element]}`)
+  );
+  console.log(
     `HP ${stats.hp}  ATK ${stats.atk}  DEF ${stats.def}  SPD ${stats.spd} ` +
       dim(
         `(trained +${monster.trainBonus.hp}/+${monster.trainBonus.atk}/` +
@@ -183,6 +193,27 @@ function announceEvolutionPaths(monster: MonsterState): void {
     const status = option.eligible ? paint('32', 'READY') : dim(option.blockedBy.join(', '));
     console.log(`  → ${target.name} ${dim(`(${target.alignment})`)} — ${status}`);
   }
+}
+
+/**
+ * Check the lifespan clock; if the generation has ended, hold the
+ * memorial and hand the tamer the next egg. Returns true on rebirth.
+ */
+function announceRebirth(state: GameState): boolean {
+  const rebirth = checkRebirth(state);
+  if (!rebirth) return false;
+  const heirloom = rebirth.heirloom;
+  console.log('');
+  console.log(paint('35', '☾ ☾ ☾  THE SPIRAL TURNS  ☾ ☾ ☾'));
+  console.log(`${rebirth.memorialEntry} has lived out its season and returns to the egg.`);
+  if (heirloom.hp + heirloom.atk + heirloom.def + heirloom.spd > 0) {
+    console.log(
+      `Its strength echoes forward to Generation ${rebirth.nextGeneration}: ` +
+        `+${heirloom.hp} HP, +${heirloom.atk} ATK, +${heirloom.def} DEF, +${heirloom.spd} SPD.`
+    );
+  }
+  console.log(`A ${getSpecies(rebirth.eggSpeciesId).name} rests in your hands once more.`);
+  return true;
 }
 
 function maybeEvolve(state: GameState, monster: MonsterState): void {
@@ -240,8 +271,11 @@ async function interactiveBattle(
 
     if (answer === 'r') {
       console.log(`${mine.name} retreats! ${dim('(counts as a loss)')}`);
-      applyBattleResult(monster, false);
+      const aftermath = applyBattleResult(monster, false);
       recordBattleOutcome(state, monster, enemy.level, false, wasArena);
+      if (aftermath.scarred) {
+        console.log(dim(`${monster.nickname} carries a new scar. (${monster.scars} total)`));
+      }
       return;
     }
     let action: BattleAction;
@@ -263,11 +297,21 @@ async function interactiveBattle(
   }
 
   const won = battle.winner === 'A';
-  applyBattleResult(monster, won);
+  const aftermath = applyBattleResult(monster, won);
   const levels = recordBattleOutcome(state, monster, enemy.level, won, wasArena);
   console.log('');
   if (battle.winner === 'DRAW') console.log(bold('A draw!'));
   else console.log(won ? paint('32', bold('VICTORY!')) : paint('31', bold('Defeat...')));
+  if (aftermath.scarred) {
+    console.log(
+      dim(`${monster.nickname} carries a new scar. (${monster.scars} total — its guard hardens.)`)
+    );
+  }
+  if (aftermath.strained) {
+    console.log(
+      paint('33', `${monster.nickname} is overworked — it needs a proper rest before fighting on.`)
+    );
+  }
   if (levels > 0) console.log(bold(`${monster.nickname} grew to Lv.${monster.level}!`));
   maybeEvolve(state, monster);
   if (wasArena && won) {
@@ -340,98 +384,133 @@ async function interactiveMain(argv: string[]): Promise<void> {
     state = newGame(tamer, eggId, seed);
   }
 
-  // Egg phase
-  while (state.egg) {
-    const species = getSpecies(state.egg.speciesId);
-    console.log(`\nYou hold a ${elementPaint(species.element, bold(species.name))}.`);
-    console.log('  [1] Warm the egg   [2] Save & quit');
-    const answer = ((await reader.ask('> ')) ?? '2').trim();
-    if (answer === '2') {
-      saveGame(state, file);
-      reader.close();
-      return;
-    }
-    const nickname =
-      state.egg.warmth + 1 >= 3 ? ((await reader.ask('Name it> ')) ?? '').trim() : '';
-    const result = warmEgg(state, nickname || 'Aether');
-    console.log(result.message);
-  }
-
-  // Raising phase
-  while (state.monster) {
-    const monster = state.monster;
-    console.log('');
-    console.log(
-      bold(`${monster.nickname}`) +
-        dim(
-          ` · Lv.${monster.level} · arena ${state.arenaRank}/${ARENA_LADDER.length}` +
-            (isChampion(state) ? ' · CHAMPION' : '')
-        )
-    );
-    console.log(
-      '  [1] Status   [2] Feed    [3] Train   [4] Play    [5] Rest\n' +
-        '  [6] Praise   [7] Scold   [8] Wild battle   [9] Arena\n' +
-        '  [e] Evolution paths      [s] Save    [q] Save & quit'
-    );
-    const choice = ((await reader.ask('> ')) ?? 'q').trim().toLowerCase();
-    switch (choice) {
-      case '1':
-        showMonsterCard(monster);
-        break;
-      case '2':
-        console.log(feed(monster).message);
-        break;
-      case '3': {
-        const stat = ((await reader.ask('Train which? (hp/atk/def/spd)> ')) ?? '')
-          .trim()
-          .toLowerCase();
-        if (isStatKey(stat)) console.log(train(monster, stat).message);
-        else console.log(dim('Unknown stat.'));
-        break;
-      }
-      case '4':
-        console.log(play(monster).message);
-        break;
-      case '5':
-        console.log(rest(monster).message);
-        break;
-      case '6':
-        console.log(praise(monster).message);
-        break;
-      case '7':
-        console.log(scold(monster).message);
-        break;
-      case '8': {
-        const enemy = generateWildEncounter(state, monster);
-        await interactiveBattle(reader, state, enemy, false);
-        break;
-      }
-      case '9': {
-        const rival = nextArenaRival(state);
-        if (!rival) {
-          console.log(paint('33', 'You have already conquered the Spiral Arena!'));
-          break;
-        }
-        console.log(`Arena rung ${state.arenaRank + 1}: ${rival.name}, ${rival.title}`);
-        await interactiveBattle(reader, state, arenaCombatant(rival), true);
-        break;
-      }
-      case 'e':
-        announceEvolutionPaths(monster);
-        break;
-      case 's':
-        saveGame(state, file);
-        break;
-      case 'q':
+  // Generational loop: raise a creature; when its season ends it
+  // returns to the egg and the line continues.
+  while (true) {
+    // Egg phase (rebirth eggs re-enter here)
+    while (state.egg) {
+      const species = getSpecies(state.egg.speciesId);
+      console.log(
+        `\nYou hold a ${elementPaint(species.element, bold(species.name))} ` +
+          dim(`(Generation ${state.egg.generation ?? state.generation})`)
+      );
+      console.log('  [1] Warm the egg   [2] Save & quit');
+      const eggAnswer = ((await reader.ask('> ')) ?? '2').trim();
+      if (eggAnswer === '2') {
         saveGame(state, file);
         reader.close();
         return;
-      default:
-        console.log(dim('Pick an option from the menu.'));
+      }
+      const eggNickname =
+        state.egg.warmth + 1 >= 3 ? ((await reader.ask('Name it> ')) ?? '').trim() : '';
+      console.log(warmEgg(state, eggNickname || 'Aether').message);
     }
-    maybeEvolve(state, monster);
+    if (!state.monster) {
+      reader.close();
+      return;
+    }
+
+    // Raising phase
+    let reborn = false;
+    while (state.monster && !reborn) {
+      const monster = state.monster;
+      const region = getRegion(state.region);
+      console.log('');
+      console.log(
+        bold(`${monster.nickname}`) +
+          dim(
+            ` · Lv.${monster.level} · Gen ${monster.generation} · ${region.name}` +
+              ` · arena ${state.arenaRank}/${ARENA_LADDER.length}` +
+              (isChampion(state) ? ' · CHAMPION' : '')
+          )
+      );
+      console.log(
+        '  [1] Status   [2] Feed    [3] Train   [4] Play    [5] Rest\n' +
+          '  [6] Praise   [7] Scold   [8] Wild battle   [9] Arena\n' +
+          '  [t] Travel   [e] Evolution paths   [s] Save   [q] Save & quit' +
+          (region.touchesHollow ? '\n  ' + paint('35', '[h] Approach the gap') : '')
+      );
+      const choice = ((await reader.ask('> ')) ?? 'q').trim().toLowerCase();
+      switch (choice) {
+        case '1':
+          showMonsterCard(monster);
+          break;
+        case '2':
+          console.log(feed(monster).message);
+          break;
+        case '3': {
+          const stat = ((await reader.ask('Train which? (hp/atk/def/spd)> ')) ?? '')
+            .trim()
+            .toLowerCase();
+          if (isStatKey(stat)) console.log(train(monster, stat).message);
+          else console.log(dim('Unknown stat.'));
+          break;
+        }
+        case '4':
+          console.log(play(monster).message);
+          break;
+        case '5':
+          console.log(rest(monster).message);
+          break;
+        case '6':
+          console.log(praise(monster).message);
+          break;
+        case '7':
+          console.log(scold(monster).message);
+          break;
+        case '8': {
+          const enemy = generateWildEncounter(state, monster);
+          await interactiveBattle(reader, state, enemy, false);
+          break;
+        }
+        case '9': {
+          const rival = nextArenaRival(state);
+          if (!rival) {
+            console.log(paint('33', 'You have already conquered the Spiral Arena!'));
+            break;
+          }
+          console.log(`Arena rung ${state.arenaRank + 1}: ${rival.name}, ${rival.title}`);
+          await interactiveBattle(reader, state, arenaCombatant(rival), true);
+          break;
+        }
+        case 't': {
+          console.log('Where to?');
+          REGIONS.forEach((r, i) => {
+            const marker = r.id === state.region ? ' (here)' : '';
+            console.log(
+              `  [${i + 1}] ${elementPaint(r.tongue, r.name)}${marker} — ${dim(r.description)}`
+            );
+          });
+          const destination = ((await reader.ask('Region> ')) ?? '').trim();
+          const target = REGIONS[Number.parseInt(destination, 10) - 1];
+          if (target) console.log(travel(state, target.id));
+          else console.log(dim('You stay where you are.'));
+          break;
+        }
+        case 'h': {
+          const result = communeWithGap(state, monster);
+          console.log(result.ok ? paint('35', result.message) : dim(result.message));
+          break;
+        }
+        case 'e':
+          announceEvolutionPaths(monster);
+          break;
+        case 's':
+          saveGame(state, file);
+          break;
+        case 'q':
+          saveGame(state, file);
+          reader.close();
+          return;
+        default:
+          console.log(dim('Pick an option from the menu.'));
+      }
+      if (state.monster) {
+        maybeEvolve(state, monster);
+        reborn = announceRebirth(state);
+      }
+    }
   }
-  reader.close();
 }
 
 // ---------------------------------------------------------------------------
@@ -451,12 +530,18 @@ function demoMain(argv: string[]): void {
   if (!monster) throw new Error('demo: hatch failed');
   showMonsterCard(monster);
 
+  console.log(travel(state, 'aerial_expanse'));
+
   let battles = 0;
   while (monster.level < STAGE_MIN_LEVEL.GUARDIAN && battles < 60) {
     // Care loop: keep meters healthy, train ATK toward the VENOM branch.
     if (monster.care.hunger < 40) console.log(dim(feed(monster).message));
     if (monster.care.energy < 30) console.log(dim(rest(monster).message));
     if (battles % 3 === 0) train(monster, 'atk');
+    if (battles === 20) {
+      console.log(travel(state, 'null_vale'));
+      console.log(paint('35', communeWithGap(state, monster).message));
+    }
 
     const enemy = generateWildEncounter(state, monster);
     const rng = createRng(state.rngState);
@@ -464,19 +549,20 @@ function demoMain(argv: string[]): void {
     state.rngState = rng.state;
     battles += 1;
     const won = battle.winner === 'A';
-    applyBattleResult(monster, won);
+    const aftermath = applyBattleResult(monster, won);
     recordBattleOutcome(state, monster, enemy.level, won, false);
     console.log(
       `Battle ${battles}: vs ${enemy.name} (Lv.${enemy.level}) — ` +
         `${won ? paint('32', 'WIN') : paint('31', 'LOSS')} in ${battle.turn} ` +
         `turn${battle.turn === 1 ? '' : 's'} ` +
-        dim(`→ Lv.${monster.level}`)
+        dim(`→ Lv.${monster.level}${aftermath.scarred ? ` · scar #${monster.scars}` : ''}`)
     );
     maybeEvolve(state, monster);
+    if (announceRebirth(state)) break;
   }
 
   // Take a swing at the arena ladder.
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 4 && state.monster; i++) {
     const rival = nextArenaRival(state);
     if (!rival || rival.level > monster.level + 4) break;
     const rng = createRng(state.rngState);
@@ -502,7 +588,9 @@ function demoMain(argv: string[]): void {
   announceEvolutionPaths(monster);
   console.log(
     `\nDemo complete: ${state.totalBattlesWon} wins / ${state.totalBattlesLost} losses, ` +
-      `arena ${state.arenaRank}/${ARENA_LADDER.length}, lineage ${monster.lineage.join(' → ')}.`
+      `arena ${state.arenaRank}/${ARENA_LADDER.length}, ` +
+      `${monster.scars} scars, hollow ${monster.hollowExposure}, ` +
+      `lineage ${monster.lineage.join(' → ')}.`
   );
   console.log(dim('Run `npm run game:aethermon` to play interactively.'));
 }

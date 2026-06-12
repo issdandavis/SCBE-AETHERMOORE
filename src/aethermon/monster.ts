@@ -13,7 +13,15 @@
  */
 
 import type { CareState, MonsterState, StatKey, Stats } from './types.js';
-import { MAX_LEVEL, MAX_TRAIN_BONUS, STAT_KEYS, TRAIN_POINTS_PER_SESSION } from './types.js';
+import {
+  MAX_LEVEL,
+  MAX_TRAIN_BONUS,
+  SCAR_DEFENSE_BONUS,
+  SCAR_DEFENSE_CAP,
+  STAGE_LIFESPAN_TICKS,
+  STAT_KEYS,
+  TRAIN_POINTS_PER_SESSION,
+} from './types.js';
 import { getSpecies } from './species.js';
 
 // ---------------------------------------------------------------------------
@@ -36,8 +44,20 @@ function clamp100(x: number): number {
 
 let nextMonsterSerial = 1;
 
+/** Options for creating a creature (rebirth eggs pass these). */
+export interface CreateMonsterOptions {
+  /** Generation number (1 = first of the line). */
+  generation?: number;
+  /** Stats inherited from the previous generation. */
+  heirloom?: Stats;
+}
+
 /** Create a fresh creature of the given species at level 1. */
-export function createMonster(speciesId: string, nickname: string): MonsterState {
+export function createMonster(
+  speciesId: string,
+  nickname: string,
+  options: CreateMonsterOptions = {}
+): MonsterState {
   getSpecies(speciesId); // validate id
   return {
     id: `mon_${Date.now().toString(36)}_${nextMonsterSerial++}`,
@@ -60,6 +80,12 @@ export function createMonster(speciesId: string, nickname: string): MonsterState
     battlesWon: 0,
     battlesLost: 0,
     ageTicks: 0,
+    stageAgeTicks: 0,
+    scars: 0,
+    consecutiveBattles: 0,
+    hollowExposure: 0,
+    generation: options.generation ?? 1,
+    heirloom: options.heirloom ?? { hp: 0, atk: 0, def: 0, spd: 0 },
     lineage: [speciesId],
   };
 }
@@ -69,16 +95,38 @@ export function createMonster(speciesId: string, nickname: string): MonsterState
 // ---------------------------------------------------------------------------
 
 /**
- * Effective stats: base scaled by level growth, plus the flat training
- * bonus. stat(L) = floor(base * (1 + growth * (L - 1))) + bonus
- * (Flat bonus keeps training meaningful without compounding with level.)
+ * Effective stats: base scaled by level growth, plus flat training and
+ * heirloom bonuses. stat(L) = floor(base * (1 + growth * (L - 1))) +
+ * trainBonus + heirloom. Scars harden defense (immune memory, capped) —
+ * the line gets stronger from the attacks it survives.
  */
 export function effectiveStats(monster: MonsterState): Stats {
   const species = getSpecies(monster.speciesId);
   const scale = 1 + species.growth * (monster.level - 1);
   const stat = (key: StatKey): number =>
-    Math.floor(species.baseStats[key] * scale) + monster.trainBonus[key];
-  return { hp: stat('hp'), atk: stat('atk'), def: stat('def'), spd: stat('spd') };
+    Math.floor(species.baseStats[key] * scale) + monster.trainBonus[key] + monster.heirloom[key];
+  const stats = { hp: stat('hp'), atk: stat('atk'), def: stat('def'), spd: stat('spd') };
+  stats.def += Math.min(SCAR_DEFENSE_CAP, monster.scars * SCAR_DEFENSE_BONUS);
+  return stats;
+}
+
+// ---------------------------------------------------------------------------
+//  Lifespan (V-Pet rule: every form has its season)
+// ---------------------------------------------------------------------------
+
+/** Care ticks remaining before this form's lifespan ends. */
+export function lifespanRemaining(monster: MonsterState): number {
+  const species = getSpecies(monster.speciesId);
+  return Math.max(0, STAGE_LIFESPAN_TICKS[species.stage] - monster.stageAgeTicks);
+}
+
+/**
+ * True when the creature has outlived its current form. Evolving renews
+ * the lifespan (power buys time); otherwise it returns to an egg and
+ * the next generation inherits part of its strength.
+ */
+export function isLifespanExpired(monster: MonsterState): boolean {
+  return lifespanRemaining(monster) <= 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -122,6 +170,7 @@ export function gainXp(monster: MonsterState, amount: number): number {
 export function tick(monster: MonsterState): void {
   const care = monster.care;
   monster.ageTicks += 1;
+  monster.stageAgeTicks += 1;
   care.hunger = clamp100(care.hunger - HUNGER_DECAY);
   care.energy = clamp100(care.energy - ENERGY_DECAY);
 
@@ -161,11 +210,12 @@ export function feed(monster: MonsterState): CareResult {
   return { ok: true, message: `${monster.nickname} devours the data-ration. Hunger restored.` };
 }
 
-/** Rest: +50 energy. */
+/** Rest: +50 energy. Also resets battle strain. */
 export function rest(monster: MonsterState): CareResult {
   tick(monster);
   monster.care.energy = clamp100(monster.care.energy + 50);
   monster.care.exhausted = false;
+  monster.consecutiveBattles = 0;
   return { ok: true, message: `${monster.nickname} curls up and recharges.` };
 }
 

@@ -4,8 +4,8 @@
  * @layer Layer 5, Layer 13
  * @component AETHERMON — Species Catalog & Evolution Graph
  *
- * 28 species across six stages (EGG → MOTE → SPRITE → GUARDIAN → PARAGON
- * → APEX) in three starter lines that branch and re-merge. Every
+ * 39 species across six stages (EGG → MOTE → SPRITE → GUARDIAN → PARAGON
+ * → APEX) in four starter lines that branch and re-merge. Every
  * non-terminal species has exactly one `fallback` evolution edge (only a
  * level requirement), so creatures never get stuck; better-raised
  * creatures qualify for higher-priority branches.
@@ -14,6 +14,9 @@
  *  - Few care mistakes + bond/discipline → AEGIS branches
  *  - Neglect or aggression-heavy training → VENOM branches
  *  - Speed/logic-focused training        → FLUX branches
+ *  - Scars + Hollow exposure             → the hidden Hollow branch
+ *    (canon: Fracture Shade, Paradox Wraith — born in the gap between
+ *    the tongues, gated on battle scars and Null Vale exposure)
  */
 
 import type { SpeciesDef, Stage } from './types.js';
@@ -55,6 +58,18 @@ const SPECIES_LIST: readonly SpeciesDef[] = [
     moves: [],
     evolvesTo: [{ targetId: 'shademote', minLevel: 1, fallback: true, priority: 1 }],
     lore: 'Casts a shadow even in total darkness.',
+  },
+  {
+    id: 'gale_egg',
+    name: 'Gale Egg',
+    stage: 'EGG',
+    element: 'AV',
+    alignment: 'FLUX',
+    baseStats: { hp: 1, atk: 0, def: 0, spd: 0 },
+    growth: 0,
+    moves: [],
+    evolvesTo: [{ targetId: 'galewing', minLevel: 1, fallback: true, priority: 1 }],
+    lore: 'Light as a held breath. It rocks toward whichever window is open.',
   },
 
   // ═══════════════════════════ MOTES ═══════════════════════════
@@ -116,6 +131,27 @@ const SPECIES_LIST: readonly SpeciesDef[] = [
       { targetId: 'gloomkit', minLevel: 5, fallback: true, priority: 1 },
     ],
     lore: 'A soft dark spot that hides behind its own tamer.',
+  },
+  {
+    id: 'galewing',
+    name: 'Galewing',
+    stage: 'MOTE',
+    element: 'AV',
+    alignment: 'FLUX',
+    baseStats: { hp: 31, atk: 9, def: 8, spd: 12 },
+    growth: 0.06,
+    moves: ['gale_jab'],
+    evolvesTo: [
+      {
+        targetId: 'zephyrkit',
+        minLevel: 5,
+        fallback: false,
+        priority: 2,
+        maxCareMistakes: 2,
+      },
+      { targetId: 'squallkin', minLevel: 5, fallback: true, priority: 1 },
+    ],
+    lore: 'A scrap of wind with feathers it has not strictly earned yet.',
   },
 
   // ═══════════════════════════ SPRITES ═══════════════════════════
@@ -196,6 +232,7 @@ const SPECIES_LIST: readonly SpeciesDef[] = [
     growth: 0.07,
     moves: ['shade_tap', 'veil_strike'],
     evolvesTo: [
+      { targetId: 'fracture_shade', minLevel: 12, fallback: false, priority: 3, minScars: 3 },
       { targetId: 'umbrawarden', minLevel: 12, fallback: false, priority: 2, minDiscipline: 35 },
       { targetId: 'nullshade', minLevel: 12, fallback: true, priority: 1 },
     ],
@@ -211,10 +248,48 @@ const SPECIES_LIST: readonly SpeciesDef[] = [
     growth: 0.07,
     moves: ['static_nip', 'shade_tap', 'chaos_bite'],
     evolvesTo: [
+      { targetId: 'fracture_shade', minLevel: 12, fallback: false, priority: 3, minScars: 3 },
       { targetId: 'vexmaw', minLevel: 12, fallback: false, priority: 2, dominantStat: 'atk' },
       { targetId: 'nullshade', minLevel: 12, fallback: true, priority: 1 },
     ],
     lore: 'Sulks professionally. Bites semi-professionally.',
+  },
+  {
+    id: 'zephyrkit',
+    name: 'Zephyrkit',
+    stage: 'SPRITE',
+    element: 'AV',
+    alignment: 'AEGIS',
+    baseStats: { hp: 44, atk: 14, def: 13, spd: 19 },
+    growth: 0.07,
+    moves: ['gale_jab', 'wind_shear'],
+    evolvesTo: [
+      { targetId: 'stormherald', minLevel: 12, fallback: false, priority: 2, dominantStat: 'atk' },
+      { targetId: 'skywarden', minLevel: 12, fallback: true, priority: 1 },
+    ],
+    lore: 'Rides thermals it makes up on the spot. Lands apologetically.',
+  },
+  {
+    id: 'squallkin',
+    name: 'Squallkin',
+    stage: 'SPRITE',
+    element: 'AV',
+    alignment: 'VENOM',
+    baseStats: { hp: 42, atk: 17, def: 10, spd: 18 },
+    growth: 0.07,
+    moves: ['gale_jab', 'chaos_bite', 'wind_shear'],
+    evolvesTo: [
+      {
+        targetId: 'skywarden',
+        minLevel: 12,
+        fallback: false,
+        priority: 2,
+        maxCareMistakes: 2,
+        minDiscipline: 30,
+      },
+      { targetId: 'stormherald', minLevel: 12, fallback: true, priority: 1 },
+    ],
+    lore: 'A pocket storm with opinions. The opinions are mostly thunder.',
   },
 
   // ═══════════════════════════ GUARDIANS ═══════════════════════════
@@ -324,10 +399,54 @@ const SPECIES_LIST: readonly SpeciesDef[] = [
     growth: 0.08,
     moves: ['veil_strike', 'umbral_edge', 'siphon_hex'],
     evolvesTo: [
+      {
+        targetId: 'paradox_wraith',
+        minLevel: 22,
+        fallback: false,
+        priority: 3,
+        minScars: 5,
+        minHollowExposure: 1,
+      },
       { targetId: 'chaosdrake', minLevel: 22, fallback: false, priority: 2, dominantStat: 'atk' },
       { targetId: 'duskmonarch', minLevel: 22, fallback: true, priority: 1 },
     ],
     lore: 'The space where something used to be, holding a grudge.',
+  },
+  {
+    id: 'skywarden',
+    name: 'Skywarden',
+    stage: 'GUARDIAN',
+    element: 'AV',
+    alignment: 'AEGIS',
+    baseStats: { hp: 74, atk: 24, def: 23, spd: 29 },
+    growth: 0.08,
+    moves: ['wind_shear', 'skyfall_dive', 'mend_protocol'],
+    evolvesTo: [{ targetId: 'zephyrarchon', minLevel: 22, fallback: true, priority: 1 }],
+    lore: 'Patrols the wind-bridges of the Aerial Expanse. Nothing falls on its watch.',
+  },
+  {
+    id: 'stormherald',
+    name: 'Stormherald',
+    stage: 'GUARDIAN',
+    element: 'AV',
+    alignment: 'VENOM',
+    baseStats: { hp: 70, atk: 28, def: 18, spd: 27 },
+    growth: 0.08,
+    moves: ['wind_shear', 'skyfall_dive', 'siphon_hex'],
+    evolvesTo: [{ targetId: 'tempest_regent', minLevel: 22, fallback: true, priority: 1 }],
+    lore: 'Arrives before the bad weather, because it is the bad weather.',
+  },
+  {
+    id: 'fracture_shade',
+    name: 'Fracture Shade',
+    stage: 'GUARDIAN',
+    element: 'UM',
+    alignment: 'VENOM',
+    baseStats: { hp: 70, atk: 29, def: 19, spd: 26 },
+    growth: 0.08,
+    moves: ['veil_strike', 'chaos_bite', 'siphon_hex'],
+    evolvesTo: [{ targetId: 'paradox_wraith', minLevel: 22, fallback: true, priority: 1 }],
+    lore: 'Born where the tongues fall silent. Every scar it carries is a door.',
   },
 
   // ═══════════════════════════ PARAGONS ═══════════════════════════
@@ -400,6 +519,45 @@ const SPECIES_LIST: readonly SpeciesDef[] = [
     evolvesTo: [{ targetId: 'void_sovereign', minLevel: 35, fallback: true, priority: 1 }],
     lore: 'Rules the hour when all the lights agree to look away.',
   },
+  {
+    id: 'zephyrarchon',
+    name: 'Zephyrarchon',
+    stage: 'PARAGON',
+    element: 'AV',
+    alignment: 'AEGIS',
+    baseStats: { hp: 104, atk: 35, def: 33, spd: 40 },
+    growth: 0.09,
+    moves: ['skyfall_dive', 'tempest_crown', 'mend_protocol', 'wind_shear'],
+    evolvesTo: [{ targetId: 'storm_sovereign', minLevel: 35, fallback: true, priority: 1 }],
+    lore: 'The high wind given a throne and the good sense not to sit still on it.',
+  },
+  {
+    id: 'tempest_regent',
+    name: 'Tempest Regent',
+    stage: 'PARAGON',
+    element: 'AV',
+    alignment: 'VENOM',
+    baseStats: { hp: 100, atk: 39, def: 28, spd: 38 },
+    growth: 0.09,
+    moves: ['skyfall_dive', 'tempest_crown', 'siphon_hex', 'entropy_storm'],
+    evolvesTo: [
+      { targetId: 'void_sovereign', minLevel: 35, fallback: false, priority: 2, minScars: 4 },
+      { targetId: 'storm_sovereign', minLevel: 35, fallback: true, priority: 1 },
+    ],
+    lore: 'Wears lightning the way other royalty wears jewelry.',
+  },
+  {
+    id: 'paradox_wraith',
+    name: 'Paradox Wraith',
+    stage: 'PARAGON',
+    element: 'RU',
+    alignment: 'VENOM',
+    baseStats: { hp: 104, atk: 42, def: 26, spd: 37 },
+    growth: 0.09,
+    moves: ['entropy_storm', 'null_cascade', 'umbral_edge', 'siphon_hex'],
+    evolvesTo: [{ targetId: 'void_sovereign', minLevel: 35, fallback: true, priority: 1 }],
+    lore: 'It remembers the gap between the tongues — and the gap remembers back.',
+  },
 
   // ═══════════════════════════ APEXES ═══════════════════════════
   {
@@ -438,13 +596,30 @@ const SPECIES_LIST: readonly SpeciesDef[] = [
     evolvesTo: [],
     lore: 'Entropy, enthroned. Surprisingly polite about it.',
   },
+  {
+    id: 'storm_sovereign',
+    name: 'Storm Sovereign',
+    stage: 'APEX',
+    element: 'AV',
+    alignment: 'FLUX',
+    baseStats: { hp: 146, atk: 50, def: 42, spd: 50 },
+    growth: 0.1,
+    moves: ['tempest_crown', 'skyfall_dive', 'eclipse_ward', 'mend_protocol'],
+    evolvesTo: [],
+    lore: 'The Storm pair made flesh: Transport and Security, AV and UM, one crown.',
+  },
 ];
 
 /** Species catalog keyed by id. */
 export const SPECIES: ReadonlyMap<string, SpeciesDef> = new Map(SPECIES_LIST.map((s) => [s.id, s]));
 
 /** Eggs offered to a new tamer. */
-export const STARTER_EGG_IDS: readonly string[] = ['ember_egg', 'cipher_egg', 'umbral_egg'];
+export const STARTER_EGG_IDS: readonly string[] = [
+  'ember_egg',
+  'cipher_egg',
+  'umbral_egg',
+  'gale_egg',
+];
 
 /** All species definitions. */
 export function allSpecies(): readonly SpeciesDef[] {

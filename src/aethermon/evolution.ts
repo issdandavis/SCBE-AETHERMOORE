@@ -53,6 +53,12 @@ export function evaluateRequirement(
     if (req.dominantStat !== undefined && dominantTrainedStat(monster) !== req.dominantStat) {
       blockedBy.push(`needs ${req.dominantStat.toUpperCase()}-focused training`);
     }
+    if (req.minScars !== undefined && monster.scars < req.minScars) {
+      blockedBy.push(`needs ${req.minScars}+ battle scars`);
+    }
+    if (req.minHollowExposure !== undefined && monster.hollowExposure < req.minHollowExposure) {
+      blockedBy.push(`needs to touch the Hollow (Null Vale)`);
+    }
   }
 
   return { requirement: req, eligible: blockedBy.length === 0, blockedBy };
@@ -86,7 +92,9 @@ export interface EvolutionResult {
 /**
  * Evolve the creature along its selected edge. Mutates the monster:
  * species changes, care meters refresh, lineage is recorded. Training
- * bonuses and level carry over. Returns null if no edge is eligible.
+ * bonuses, scars and level carry over. The care-mistake counter resets —
+ * every stage is a fresh test — and the new form's lifespan begins.
+ * Returns null if no edge is eligible.
  */
 export function evolve(monster: MonsterState): EvolutionResult | null {
   const edge = selectEvolution(monster);
@@ -96,10 +104,12 @@ export function evolve(monster: MonsterState): EvolutionResult | null {
 
   monster.speciesId = to.id;
   monster.lineage.push(to.id);
+  monster.stageAgeTicks = 0; // new form, new lifespan
   // Evolution is taxing but invigorating: full meters, mood spike.
   monster.care.hunger = 100;
   monster.care.energy = 100;
   monster.care.mood = Math.min(100, monster.care.mood + 20);
+  monster.care.careMistakes = 0; // fresh test for the new form
   monster.care.starving = false;
   monster.care.exhausted = false;
 
