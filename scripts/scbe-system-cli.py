@@ -1272,6 +1272,11 @@ def _packet_workingness_gate(step: dict[str, object]) -> dict[str, object]:
         "authority": "workingness_over_consensus",
         "consensus_role": "advisory_signal_only",
         "pass_condition": str(step["acceptance"]),
+        # Honest verifiability flag: True only when the packet ships a command the
+        # gate can actually RUN. When False, `pass_condition` is prose a human/agent
+        # must judge — it is NOT machine-verified, and run-next will say so.
+        "executable": bool(step.get("acceptance_command")),
+        "acceptance_command": step.get("acceptance_command"),
         "evidence_required": [
             "changed_files_or_none",
             "commands_run",
@@ -1384,6 +1389,8 @@ def _build_work_packets(flow_packet: dict[str, object], support_units: int) -> l
                 },
                 "handoff_contract": _packet_handoff_contract(step, task),
                 "workingness_gate": _packet_workingness_gate(step),
+                "acceptance_command": step.get("acceptance_command"),
+                "acceptance_expect": step.get("acceptance_expect"),
                 "support_cells": _step_support_cells(step, support_units),
                 "telemetry": {
                     "lane": "system-cli",
@@ -3332,6 +3339,8 @@ def _build_flow_status_board(
                 "blocked_paths": packet.get("blocked_paths", []),
                 "workingness_gate": packet.get("workingness_gate", {}),
                 "dispatch_command": _packet_dispatch_command(packet, repo_root),
+                "acceptance_command": packet.get("acceptance_command"),
+                "acceptance_expect": packet.get("acceptance_expect"),
             }
         )
     counts = {
@@ -3400,40 +3409,166 @@ def _write_flow_status_outputs(
     markdown_path.write_text(_render_flow_status_markdown(board), encoding="utf-8")
 
 
-def _execute_flow_packet(
-    packet: dict[str, object],
-    repo_root: Path,
-    timeout_seconds: int,
-    *,
-    dry_run: bool = False,
+_RUNTIME_GATE_CACHE: dict[str, object] = {}
+
+
+def _flow_decision_str(decision: object) -> str:
+    return str(getattr(decision, "value", decision))
+
+
+def _load_runtime_gate(repo_root: Path):
+    """Lazily import the RuntimeGate. Returns (gate_cls, decision_cls, load_error).
+
+    Never raises: a governance import failure must not dead-stop real work. The
+    caller records gate availability in the receipt so a run is never *silently*
+    ungoverned — an unavailable gate is loud, not invisible.
+    """
+    key = str(repo_root)
+    if key in _RUNTIME_GATE_CACHE:
+        return _RUNTIME_GATE_CACHE[key]  # type: ignore[return-value]
+    result: tuple[object, object, str] = (None, None, "")
+    try:
+        root = str(repo_root)
+        if root not in sys.path:
+            sys.path.insert(0, root)
+        from src.governance.runtime_gate import RuntimeGate, Decision  # type: ignore
+
+        result = (RuntimeGate, Decision, "")
+    except Exception as exc:  # pragma: no cover - environment dependent
+        result = (None, None, f"{type(exc).__name__}: {exc}")
+    _RUNTIME_GATE_CACHE[key] = result  # type: ignore[assignment]
+    return result
+
+
+def _evaluate_packet_gate(command: list[str], packet: dict[str, object], repo_root: Path) -> dict[str, object]:
+    """Run the packet's command intent through the RuntimeGate.
+
+    Additive + non-fatal. The returned dict always carries an ``available`` flag so
+    the receipt is honest about whether a real governance decision was made.
+    """
+    action_text = " ".join(str(part) for part in command).strip()
+    gate_cls, _decision_cls, load_err = _load_runtime_gate(repo_root)
+    if gate_cls is None:
+        return {
+            "available": False,
+            "reason": load_err or "RuntimeGate unavailable",
+            "decision": "UNGOVERNED",
+            "action_text": action_text,
+        }
+    try:
+        gate = gate_cls()  # type: ignore[operator]
+        res = gate.evaluate(action_text, tool_name=str(packet.get("owner_role") or "flow"))
+        return {
+            "available": True,
+            "decision": _flow_decision_str(res.decision),
+            "cost": round(float(res.cost), 4),
+            "spin_magnitude": int(res.spin_magnitude),
+            "signals": [str(s) for s in list(res.signals)[:8]],
+            "reroute_to": res.reroute_to,
+            "action_hash": res.action_hash,
+            "action_text": action_text,
+        }
+    except Exception as exc:  # pragma: no cover - defensive
+        return {
+            "available": False,
+            "reason": f"evaluate failed: {type(exc).__name__}: {exc}",
+            "decision": "UNGOVERNED",
+            "action_text": action_text,
+        }
+
+
+def _flow_recovery_plan(
+    gate: dict[str, object], returncode: int, *, acceptance_failed: bool = False
 ) -> dict[str, object]:
-    command = [str(part) for part in packet.get("dispatch_command", [])]
-    if not command:
-        return {
-            "schema_version": "scbe_flow_run_next_result_v1",
-            "executed": False,
-            "dry_run": dry_run,
-            "step_id": packet.get("step_id"),
-            "task_id": packet.get("task_id"),
-            "command": command,
-            "returncode": 2,
-            "stdout_tail": "",
-            "stderr_tail": "Ready packet is missing dispatch_command.",
-        }
+    """Map a failed/blocked packet to a self-healing strategy (RETRY -> FALLBACK -> REROUTE).
 
-    if dry_run:
+    The 'help move past failure' surface: a receipt never just records a dead-stop —
+    it always carries the recommended next move.
+    """
+    if str(gate.get("decision")) == "DENY":
         return {
-            "schema_version": "scbe_flow_run_next_result_v1",
-            "executed": False,
-            "dry_run": True,
-            "step_id": packet["step_id"],
-            "task_id": packet["task_id"],
-            "command": command,
-            "returncode": None,
-            "stdout_tail": "",
-            "stderr_tail": "",
+            "needed": True,
+            "strategy": "REROUTE",
+            "reroute_to": gate.get("reroute_to"),
+            "reason": "Gate denied the action; do not retry as-is. Route to the safer alternative or request approval.",
         }
+    if acceptance_failed:
+        # The command itself ran clean, but the *executable acceptance check* failed:
+        # the artifact is a stub or wrong. This is the honest "not working" signal that
+        # drives rework on the next loop — never mark the packet complete.
+        return {
+            "needed": True,
+            "strategy": "REWORK",
+            "reason": (
+                "Command ran but the executable acceptance check failed — the artifact is a "
+                "stub or incorrect. Rework from the smallest affected packet on the next loop; "
+                "do not mark this packet complete."
+            ),
+        }
+    if returncode == 124:
+        return {
+            "needed": True,
+            "strategy": "RETRY",
+            "reason": "Execution timed out; retry with a longer timeout or a smaller scope.",
+        }
+    return {
+        "needed": True,
+        "strategy": "RETRY_THEN_FALLBACK",
+        "reason": "Command exited non-zero; bounded retry, then fall back to an alternative command or escalate.",
+    }
 
+
+def _acceptance_expectation_met(expect: dict[str, object], rc: int, stdout: str) -> tuple[bool, str]:
+    """Evaluate an acceptance command's outcome against its declared expectation.
+
+    Default expectation is exit 0. Optional keys:
+      - returncode: int        required exit code (default 0)
+      - stdout_contains: str   substring that must appear in stdout
+    Returns (passed, reason).
+    """
+    want_rc = int(expect.get("returncode", 0)) if isinstance(expect, dict) else 0
+    if rc != want_rc:
+        return False, f"acceptance exit {rc} != expected {want_rc}"
+    needle = expect.get("stdout_contains") if isinstance(expect, dict) else None
+    if needle:
+        if str(needle) not in (stdout or ""):
+            return False, f"acceptance stdout missing required substring {str(needle)!r}"
+        return True, f"exit {rc} and stdout contains {str(needle)!r}"
+    return True, f"acceptance exited {rc} as expected"
+
+
+def _run_acceptance_check(packet: dict[str, object], repo_root: Path, timeout_seconds: int) -> dict[str, object]:
+    """Run a packet's executable acceptance check, if it declares one.
+
+    This is what makes 'workingness' real instead of asserted: a packet whose
+    `acceptance_command` runs and meets its `acceptance_expect` is verified working;
+    one without an acceptance_command is honestly reported as NOT verified.
+    """
+    raw = packet.get("acceptance_command")
+    if not raw:
+        return {
+            "checked": False,
+            "verified": False,
+            "reason": "no executable acceptance_command — workingness asserted, not verified",
+        }
+    command = [str(part) for part in raw]
+    expect = packet.get("acceptance_expect") or {}
+    rc, out_tail, err_tail = _run_flow_command_once(command, repo_root, timeout_seconds)
+    passed, reason = _acceptance_expectation_met(expect if isinstance(expect, dict) else {}, rc, out_tail)
+    return {
+        "checked": True,
+        "verified": bool(passed),
+        "command": command,
+        "expect": expect if isinstance(expect, dict) else {},
+        "returncode": rc,
+        "stdout_tail": out_tail,
+        "stderr_tail": err_tail,
+        "reason": reason,
+    }
+
+
+def _run_flow_command_once(command: list[str], repo_root: Path, timeout_seconds: int):
+    """Run one command attempt. Returns (returncode, stdout_tail, stderr_tail)."""
     try:
         proc = subprocess.run(
             command,
@@ -3444,29 +3579,122 @@ def _execute_flow_packet(
             timeout=max(1, int(timeout_seconds)),
             check=False,
         )
-        return {
-            "schema_version": "scbe_flow_run_next_result_v1",
-            "executed": True,
-            "dry_run": False,
-            "step_id": packet["step_id"],
-            "task_id": packet["task_id"],
-            "command": command,
-            "returncode": proc.returncode,
-            "stdout_tail": _flow_tail(proc.stdout),
-            "stderr_tail": _flow_tail(proc.stderr),
-        }
+        return proc.returncode, _flow_tail(proc.stdout), _flow_tail(proc.stderr)
     except subprocess.TimeoutExpired as exc:
+        return 124, _flow_tail(exc.stdout or ""), _flow_tail(exc.stderr or "flow packet execution timed out")
+
+
+def _execute_flow_packet(
+    packet: dict[str, object],
+    repo_root: Path,
+    timeout_seconds: int,
+    *,
+    dry_run: bool = False,
+    heal_retries: int = 0,
+) -> dict[str, object]:
+    command = [str(part) for part in packet.get("dispatch_command", [])]
+    base = {
+        "schema_version": "scbe_flow_run_next_result_v1",
+        "executed": False,
+        "dry_run": dry_run,
+        "step_id": packet.get("step_id"),
+        "task_id": packet.get("task_id"),
+        "command": command,
+    }
+    if not command:
         return {
-            "schema_version": "scbe_flow_run_next_result_v1",
-            "executed": True,
-            "dry_run": False,
-            "step_id": packet["step_id"],
-            "task_id": packet["task_id"],
-            "command": command,
-            "returncode": 124,
-            "stdout_tail": _flow_tail(exc.stdout or ""),
-            "stderr_tail": _flow_tail(exc.stderr or "flow packet execution timed out"),
+            **base,
+            "returncode": 2,
+            "stdout_tail": "",
+            "stderr_tail": "Ready packet is missing dispatch_command.",
+            "gate": {"available": False, "decision": "UNGOVERNED", "reason": "no command to evaluate"},
         }
+
+    # Governance decision on the packet intent — every run carries a real receipt.
+    gate = _evaluate_packet_gate(command, packet, repo_root)
+
+    if dry_run:
+        # Preview: show the decision that *would* govern this packet, without running it.
+        return {
+            **base,
+            "returncode": None,
+            "stdout_tail": "",
+            "stderr_tail": "",
+            "gate": gate,
+            "acceptance": {
+                "checked": False,
+                "would_run": bool(packet.get("acceptance_command")),
+                "command": [str(part) for part in packet.get("acceptance_command") or []],
+                "reason": "dry-run: acceptance not executed",
+            },
+        }
+
+    # Fail-to-safe: a real DENY blocks execution and hands back a reroute, not a dead-stop.
+    if gate.get("available") and gate.get("decision") == "DENY":
+        return {
+            **base,
+            "executed": False,
+            "returncode": 126,
+            "stdout_tail": "",
+            "stderr_tail": "Blocked by RuntimeGate (DENY) before execution.",
+            "blocked_by_gate": True,
+            "gate": gate,
+            "recovery": _flow_recovery_plan(gate, 126),
+        }
+
+    # Execute (ALLOW / QUARANTINE / REVIEW / ungoverned) with bounded self-healing.
+    attempts: list[dict[str, object]] = []
+    rc, out_tail, err_tail = _run_flow_command_once(command, repo_root, timeout_seconds)
+    attempts.append({"attempt": 1, "returncode": rc})
+    max_attempts = 1 + max(0, int(heal_retries))
+    while rc != 0 and len(attempts) < max_attempts:
+        rc, out_tail, err_tail = _run_flow_command_once(command, repo_root, timeout_seconds)
+        attempts.append({"attempt": len(attempts) + 1, "returncode": rc})
+
+    # Workingness check: the command exiting 0 is necessary but NOT sufficient.
+    # If the packet declares an executable acceptance, run it — only then is the
+    # packet truly "passed". With no acceptance command we say so honestly rather
+    # than implying the work is verified.
+    command_ok = rc == 0
+    if command_ok:
+        acceptance = _run_acceptance_check(packet, repo_root, timeout_seconds)
+    else:
+        acceptance = {
+            "checked": False,
+            "verified": False,
+            "reason": "work command exited non-zero; acceptance check not reached",
+        }
+
+    acceptance_failed = bool(acceptance.get("checked")) and not bool(acceptance.get("verified"))
+    if acceptance.get("checked"):
+        passed = command_ok and bool(acceptance.get("verified"))
+        workingness_verified = True
+    else:
+        passed = command_ok
+        workingness_verified = False
+
+    result = {
+        **base,
+        "executed": True,
+        "returncode": rc,
+        "passed": passed,
+        "workingness_verified": workingness_verified,
+        "stdout_tail": out_tail,
+        "stderr_tail": err_tail,
+        "gate": gate,
+        "acceptance": acceptance,
+    }
+    if not passed or len(attempts) > 1:
+        recovery = _flow_recovery_plan(gate, rc, acceptance_failed=acceptance_failed)
+        recovery.update(
+            {
+                "attempts": attempts,
+                "auto_retries": max(0, int(heal_retries)),
+                "recovered": passed and len(attempts) > 1,
+            }
+        )
+        result["recovery"] = recovery
+    return result
 
 
 def cmd_flow_status(args: argparse.Namespace) -> int:
@@ -3573,6 +3801,7 @@ def cmd_flow_run_next(args: argparse.Namespace) -> int:
         repo_root,
         args.timeout_seconds,
         dry_run=bool(args.dry_run),
+        heal_retries=int(getattr(args, "heal_retries", 0) or 0),
     )
     after_completed = set(completed_steps)
     after_blocked = set(blocked_steps)
@@ -3603,6 +3832,10 @@ def cmd_flow_run_next(args: argparse.Namespace) -> int:
         "step_id": run_result["step_id"],
         "task_id": run_result["task_id"],
         "returncode": run_result["returncode"],
+        "gate_decision": run_result.get("gate", {}).get("decision"),
+        "gate_available": run_result.get("gate", {}).get("available", False),
+        "blocked_by_gate": run_result.get("blocked_by_gate", False),
+        "recovery_strategy": run_result.get("recovery", {}).get("strategy"),
         "completed_steps": after_board["completed_steps"],
         "blocked_steps": after_board["blocked_steps"],
         "ready_count": after_board["ready_count"],
@@ -5832,6 +6065,12 @@ def build_parser() -> argparse.ArgumentParser:
     flow_run_next.add_argument("--run-output", default="", help="Output JSON path for the selected packet run result")
     flow_run_next.add_argument("--timeout-seconds", type=int, default=120)
     flow_run_next.add_argument("--dry-run", action="store_true", help="Show the selected packet without running it")
+    flow_run_next.add_argument(
+        "--heal-retries",
+        type=int,
+        default=0,
+        help="On non-zero exit, auto-retry the packet up to N times (self-healing). Default 0 = record a recovery plan only.",
+    )
     flow_run_next.set_defaults(func=cmd_flow_run_next)
     flow_continue = flow_sub.add_parser("continue", help="Run ready work packets until completion, block, or limit")
     add_runtime_cli_flags(flow_continue)
