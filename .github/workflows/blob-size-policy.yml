@@ -1,0 +1,63 @@
+name: blob-size-policy
+
+# Backstop against large binaries leaking into git history (model weights,
+# datasets, videos, packaged zips). Only inspects files ADDED or MODIFIED in the
+# pull request diff, so the existing large-asset trees never trip it — only new
+# oversized blobs do. Complements .gitignore (which can be overridden by an
+# explicit `git add -f`); this gate cannot be silently bypassed.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  blob-size:
+    name: Reject oversized new blobs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check added/modified file sizes
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          # 5 MB. Above any legitimate source/image/PDF in the tree; below the
+          # model/dataset/video dumps this gate exists to stop.
+          MAX_BYTES: '5242880'
+          # Paths that legitimately carry large assets. Extend deliberately.
+          ALLOW_PREFIXES: 'kindle-app/ docs/proposals/'
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+          base="$(git merge-base HEAD "origin/$BASE_REF")"
+          echo "Comparing against base $base ($BASE_REF)"
+
+          violations=0
+          # NUL-delimited to survive spaces in paths.
+          while IFS= read -r -d '' f; do
+            [ -f "$f" ] || continue
+            skip=0
+            for p in $ALLOW_PREFIXES; do
+              case "$f" in "$p"*) skip=1; break;; esac
+            done
+            [ "$skip" -eq 1 ] && continue
+            size=$(wc -c < "$f")
+            if [ "$size" -gt "$MAX_BYTES" ]; then
+              echo "::error file=$f::$f is $size bytes (> $MAX_BYTES). Large binaries do not belong in git."
+              violations=$((violations + 1))
+            fi
+          done < <(git diff -z --name-only --diff-filter=AM "$base" HEAD)
+
+          if [ "$violations" -gt 0 ]; then
+            echo ""
+            echo "Found $violations oversized blob(s). Options:"
+            echo "  - Keep the artifact out of git (regenerate it, or store via release/LFS)."
+            echo "  - If it is a genuine large asset, add its directory to ALLOW_PREFIXES"
+            echo "    in .github/workflows/blob-size-policy.yml in the same PR."
+            exit 1
+          fi
+          echo "No oversized new blobs."
