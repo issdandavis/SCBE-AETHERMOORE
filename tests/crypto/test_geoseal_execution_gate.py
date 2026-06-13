@@ -33,6 +33,56 @@ def test_recursive_powershell_delete_is_denied() -> None:
         assert any(f.rule == "destructive-remove-item" for f in decision.findings), cmd
 
 
+def test_recursive_force_rm_is_denied_in_any_flag_form() -> None:
+    # Regression: the destructive-rm rule used the literal `\brm\s+-rf\b`, which ONLY
+    # matched `rm -rf` and silently ALLOWED every other spelling of the same command
+    # (a real bypass: `rm -fr`, `rm -r -f`, `rm --recursive --force`, bundles, capital R).
+    # Lock that the rule now requires a recursive flag AND a force flag in any order/form.
+    for cmd in (
+        "rm -rf /tmp/x",
+        "rm -fr /tmp/x",
+        "rm -r -f /tmp/x",
+        "rm -f -r /tmp/x",
+        "rm --recursive --force /tmp/x",
+        "rm --force --recursive /tmp/x",
+        "rm -rfv /tmp/x",
+        "rm -vrf /tmp/x",
+        "rm -R -f /tmp/x",
+        "rm --recursive -f /tmp/x",
+        "rm -r --force /tmp/x",
+    ):
+        decision = scan_command(cmd)
+        assert decision.tier == "DENY", cmd
+        assert not decision.allowed, cmd
+        assert any(f.rule == "destructive-rm" for f in decision.findings), cmd
+
+
+def test_non_recursive_rm_is_not_flagged_as_destructive() -> None:
+    # The fix must not over-block: plain delete, force-only, and recursive-only each
+    # lack the other required flag and must NOT raise the destructive-rm finding.
+    for cmd in (
+        "rm /tmp/x",
+        "rm -f /tmp/x",
+        "rm -r /tmp/x",
+        "rm -i /tmp/x",
+        "ls -rf",
+    ):
+        decision = scan_command(cmd)
+        assert not any(f.rule == "destructive-rm" for f in decision.findings), cmd
+
+
+def test_recursive_force_rm_is_denied_across_a_pipe_or_chain() -> None:
+    # The deny scan runs across the whole command string, so a recursive-force rm
+    # hidden after a pipe or `;` in a shell context must still die.
+    for cmd in (
+        "find . -type f | rm -fr",
+        "echo go ; rm --recursive --force /data",
+    ):
+        decision = scan_command(cmd, shell_context=True)
+        assert decision.tier == "DENY", cmd
+        assert any(f.rule == "destructive-rm" for f in decision.findings), cmd
+
+
 def test_shell_context_allows_pipelines_but_keeps_dangerous_denies() -> None:
     # scbe run -> PowerShell: benign pipelines/chaining must be allowed...
     benign = scan_command("Get-ChildItem | Select-Object Name", shell_context=True)
