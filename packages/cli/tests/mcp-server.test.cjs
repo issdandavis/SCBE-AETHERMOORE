@@ -112,21 +112,28 @@ test('server lists and runs tools over real MCP stdio', { timeout: 60000 }, asyn
     assert.equal(rnsObj.overflow, true);
     assert.equal(rnsObj.exact, true);
 
-    // Call scbe_rns with STRUCTURED params (no raw args) — proves the bridge
+    // Call scbe_abacus with STRUCTURED params (no raw args) — proves the bridge
     // serializes the typed param contract into a real, runnable invocation.
-    const rnsTyped = await client.callTool({
-      name: 'scbe_rns',
-      arguments: { subcommand: 'add', operands: [30000, 30000], json: true },
+    // abacus runs via the npm dep (scbe-aethermoore), so this is portable: it
+    // works from a fresh install of the package, with no repo-root checkout.
+    const abacusTyped = await client.callTool({
+      name: 'scbe_abacus',
+      arguments: { subcommand: 'run', d_h: 0.4, pd: 0.1, json: true },
     });
-    assert.equal(rnsTyped.isError || false, false);
-    const rnsTypedObj = JSON.parse(rnsTyped.content.map((c) => c.text).join(''));
-    assert.equal(rnsTypedObj.decoded, 60000);
-    assert.equal(rnsTypedObj.exact, true);
+    assert.equal(abacusTyped.isError || false, false);
+    const abacusObj = JSON.parse(abacusTyped.content.map((c) => c.text).join(''));
+    assert.ok(abacusObj.score, 'abacus should return a score');
+    assert.ok(
+      ['ALLOW', 'QUARANTINE', 'ESCALATE', 'DENY'].includes(abacusObj.tier),
+      `abacus tier should be a risk tier (got ${abacusObj.tier})`
+    );
 
     // A bad structured call is rejected cleanly (clear error, no malformed run).
+    // The enum check fires in serializeParams BEFORE any command is spawned, so
+    // this holds on any checkout regardless of a command's backing scripts.
     const bad = await client.callTool({
-      name: 'scbe_rns',
-      arguments: { subcommand: 'divide', operands: [1, 2] },
+      name: 'scbe_abacus',
+      arguments: { subcommand: 'walk', d_h: 0.4, pd: 0.1 },
     });
     assert.equal(bad.isError, true);
     assert.match(bad.content.map((c) => c.text).join(''), /must be one of/);
