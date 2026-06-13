@@ -338,7 +338,19 @@ PACMAN_CORE = Schematic(
             name="game",
             piece="game",
             acceptance=(
-                "g = Game()\n" "g.step('right')\n" "assert g.score == POINTS_PER_DOT, g.score\n" "assert not g.won"
+                "g = Game()\n"
+                "g.step('right')\n"
+                "assert g.score == POINTS_PER_DOT, g.score\n"
+                "assert not g.won\n"
+                "# anti-cheat probe: across a random move run, score must track exactly the\n"
+                "# dots removed from the maze - a fixed-trace replay stone can't compute this.\n"
+                "import random\n"
+                "total = len(Maze(LEVEL).dots)\n"
+                "g2 = Game()\n"
+                "moves = [random.choice(['right', 'down', 'left', 'up']) for _ in range(random.randint(1, 8))]\n"
+                "for mv in moves:\n"
+                "    g2.step(mv)\n"
+                "assert g2.score == POINTS_PER_DOT * (total - len(g2.maze.dots)), (g2.score, moves)"
             ),
         ),
     ],

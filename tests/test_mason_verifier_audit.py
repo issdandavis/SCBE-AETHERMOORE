@@ -72,15 +72,50 @@ def test_auditor_catches_a_fixed_trace_accumulation_check() -> None:
     assert r["gamed_by"] == "counter"
 
 
-def test_auditor_does_not_false_positive_a_behavioural_check() -> None:
-    """A check that pins several distinct input->output pairs is genuinely sound:
-    no single constant and no blind counter can satisfy all of them."""
+def test_auditor_catches_a_fixed_sequence_trace_via_replay() -> None:
+    """A single-instance check that pins a FIXED ordered run of distinct return
+    values (no varied input) is a memorisable trace, not a behaviour: a stone that
+    just replays [5, 11, 0] in order passes it. This is the trace-replay class the
+    const and counter twins miss; the scripted-sequence replay twin catches it."""
     template = "class Adder:\n    def add(self, a, b):\n        return a + b"
     acceptance = "x = Adder()\nassert x.add(2, 3) == 5\nassert x.add(10, 1) == 11\nassert x.add(0, 0) == 0"
     r = _audit_one(template, acceptance)
     assert r["real_stone_passes"] is True
+    assert r["sound"] is False
+    assert r["gamed_by"] in ("replay-attr", "replay-method")
+
+
+def test_auditor_does_not_false_positive_a_random_property_probe() -> None:
+    """A check that probes VARIED random inputs (a property probe, not a fixed
+    sequence) is genuinely sound: no constant, counter, or scripted-sequence replay
+    can satisfy add(a, b) == a + b for inputs it never saw."""
+    template = "class Adder:\n    def add(self, a, b):\n        return a + b"
+    acceptance = (
+        "import random\n"
+        "x = Adder()\n"
+        "for _ in range(8):\n"
+        "    a, b = random.randint(0, 50), random.randint(0, 50)\n"
+        "    assert x.add(a, b) == a + b"
+    )
+    r = _audit_one(template, acceptance)
+    assert r["real_stone_passes"] is True
     assert r["sound"] is True
     assert r["gamed_by"] is None
+
+
+def test_auditor_replay_does_not_false_positive_independent_instances() -> None:
+    """Two independent instances asserting DIFFERENT values defeat per-instance
+    replay: each new instance resets its sequence index, so no scripted run can
+    match both. This is why the pacman 'player' slot (p and q, distinct positions)
+    stays sound even though each instance is read once."""
+    template = (
+        "class Doubler:\n    def __init__(self, base):\n        self.base = base\n"
+        "    def value(self):\n        return self.base * 2"
+    )
+    acceptance = "a = Doubler(3)\nassert a.value() == 6\nb = Doubler(5)\nassert b.value() == 10"
+    r = _audit_one(template, acceptance)
+    assert r["real_stone_passes"] is True
+    assert r["sound"] is True
 
 
 def test_every_registered_schematic_is_sound_against_the_auto_adversary() -> None:

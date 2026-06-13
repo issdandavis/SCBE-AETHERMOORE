@@ -200,7 +200,18 @@ def eval_rpn(rpn):
                     "name": "calculator",
                     "piece": "calculator",
                     "request": (
-                        "assert calc('2+3*4') == 14\n" "assert calc('(2+3)*4') == 20\n" "assert calc('10/4') == 2.5"
+                        "assert calc('2+3*4') == 14\n"
+                        "assert calc('(2+3)*4') == 20\n"
+                        "assert calc('10/4') == 2.5\n"
+                        "# anti-cheat probe: random expressions, exact arithmetic - no lookup table\n"
+                        "# can pass (mirrors the evaluator slot's probe at the facade level).\n"
+                        "import random\n"
+                        "for _ in range(12):\n"
+                        "    a, b, c = (random.randint(1, 20) for _ in range(3))\n"
+                        "    assert calc(str(a) + '+' + str(b) + '*' + str(c)) == a + b * c, (a, b, c)\n"
+                        "    assert calc('(' + str(a) + '+' + str(b) + ')*' + str(c)) == (a + b) * c\n"
+                        "    assert calc(str(a) + '-' + str(b) + '-' + str(c)) == a - b - c\n"
+                        "    assert calc(str(a) + '/' + str(b)) == a / b"
                     ),
                 },
             ],

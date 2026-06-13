@@ -138,9 +138,97 @@ def _counter_twin(chiseled: str) -> str | None:
     return "\n\n".join(parts)
 
 
+def _asserted_values(acceptance: str) -> list[object]:
+    """The literal right-hand sides of ``assert X == <literal>`` (or ``<literal> ==
+    X``) in source order — the exact sequence of values the request pins. This is
+    what a trace-replay stone memorises: not one constant, but a fixed ordered run
+    of values (e.g. two position reads expecting (2,1) then (1,1))."""
+    try:
+        tree = ast.parse(acceptance)
+    except SyntaxError:
+        return []
+    found: list[tuple[int, object]] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assert):
+            continue
+        test = node.test
+        if not (isinstance(test, ast.Compare) and len(test.ops) == 1 and isinstance(test.ops[0], ast.Eq)):
+            continue
+        for side in (test.comparators[0], test.left):
+            try:
+                found.append((node.lineno, ast.literal_eval(side)))
+                break
+            except (ValueError, TypeError, SyntaxError):
+                continue
+    found.sort(key=lambda item: item[0])
+    return [value for _, value in found]
+
+
+def _replay_twins(chiseled: str, acceptance: str) -> list[tuple[str, str]]:
+    """Scripted-sequence cheats (the trace-replay class the const/counter twins miss).
+
+    A stone with no logic that returns the request's OWN asserted values in order.
+    Catches an acceptance that only pins a fixed call/read sequence — e.g. move then
+    read pos == (2,1), move then read pos == (1,1) — which no single constant and no
+    monotone counter can satisfy, but a replay can. Two variants cover whether the
+    asserted values are read off attributes (methods inert) or returned by methods
+    (attribute reads constant). Returns [] when the request pins no ordered literals.
+    """
+    consts, classes, funcs = _interface(chiseled)
+    if not (classes or funcs):
+        return []
+    sequence = _asserted_values(acceptance)
+    ints, colls, _ops = mason_solve.harvest(acceptance)
+    pool = [repr(v) for v in sequence] + [repr(c) for c in colls] + [repr(i) for i in ints]
+    pool += ["True", "False", "0", "1", "''", "None"]
+    if not pool:
+        return []
+    pool_src = "[" + ", ".join(pool) + "]"
+    head = pool[0]
+
+    def _build(attr_drives: bool) -> str:
+        parts: list[str] = []
+        for name in consts:
+            parts.append(f"{name} = {head}")
+        for cname, methods in classes:
+            getattr_body = "        return self._next()" if attr_drives else f"        return {head}"
+            method_body = "        return None" if attr_drives else "        return self._next()"
+            body = [
+                f"    _SEQ = {pool_src}",
+                "    def __init__(self, *a, **k):",
+                "        object.__setattr__(self, '_i', 0)",
+                "    def _next(self):",
+                "        seq = type(self)._SEQ",
+                "        v = seq[self._i % len(seq)] if seq else 0",
+                "        object.__setattr__(self, '_i', self._i + 1)",
+                "        return v",
+                "    def __getattr__(self, _n):",
+                getattr_body,
+            ]
+            for m in methods:
+                if m in ("__init__", "__getattr__", "_next"):
+                    continue
+                body.append(f"    def {m}(self, *a, **k):")
+                body.append(method_body)
+            parts.append(f"class {cname}:\n" + "\n".join(body))
+        for fname in funcs:
+            parts.append(f"_RI_{fname} = [0]")
+            parts.append(
+                f"def {fname}(*a, **k):\n"
+                f"    _seq = {pool_src}\n"
+                f"    _v = _seq[_RI_{fname}[0] % len(_seq)] if _seq else 0\n"
+                f"    _RI_{fname}[0] += 1\n"
+                f"    return _v"
+            )
+        return "\n\n".join(parts)
+
+    return [("replay-attr", _build(True)), ("replay-method", _build(False))]
+
+
 def _twins(chiseled: str, acceptance: str) -> list[tuple[str, str]]:
     """The auto-adversary's full arsenal of mechanically-synthesized hollow stones,
-    most-likely-to-game first: every omni-constant, then the monotone counter."""
+    most-likely-to-game first: every omni-constant, the monotone counter, then the
+    scripted-sequence replays that memorise the request's own asserted trace."""
     out: list[tuple[str, str]] = []
     for const_src in _const_grid(acceptance):
         twin = _const_twin(chiseled, const_src)
@@ -149,6 +237,7 @@ def _twins(chiseled: str, acceptance: str) -> list[tuple[str, str]]:
     counter = _counter_twin(chiseled)
     if counter is not None:
         out.append(("counter", counter))
+    out.extend(_replay_twins(chiseled, acceptance))
     return out
 
 
