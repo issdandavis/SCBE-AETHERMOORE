@@ -193,8 +193,9 @@ test('action can run the integrated desktop bridge smoke', () => {
 
 test('desktop action bridge exposes actions and runs one action over HTTP', async () => {
   const port = await freePort();
+  const launchCwd = path.resolve(__dirname, '..', '..', '..');
   const child = spawn(process.execPath, [DESKTOP_SCRIPT, 'bridge', '--port', String(port)], {
-    cwd: path.resolve(__dirname, '..', '..', '..'),
+    cwd: launchCwd,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   try {
@@ -221,7 +222,10 @@ test('desktop action bridge exposes actions and runs one action over HTTP', asyn
     const session = await getJson(`http://127.0.0.1:${port}/terminal/session`);
     assert.equal(session.schema_version, 'scbe_terminal_session_v1');
     assert.match(session.shell, /powershell|pwsh/i);
-    assert.match(session.cwd, /SCBE-AETHERMOORE/);
+    // The bridge reports the cwd it was launched in. Assert against that exact
+    // dir (case-insensitive for Windows drive letters) rather than a hard-coded
+    // repo name, so the test holds in any checkout or git worktree.
+    assert.equal(path.resolve(session.cwd).toLowerCase(), launchCwd.toLowerCase());
     assert.equal(session.endpoints.capture, '/screen/capture');
     assert.equal(session.endpoints.browser, '/browser/open');
     assert.equal(session.endpoints.artifact, '/artifact');
@@ -232,7 +236,7 @@ test('desktop action bridge exposes actions and runs one action over HTTP', asyn
     assert.equal(terminalRun.schema_version, 'scbe_terminal_command_result_v1');
     assert.equal(terminalRun.success, true);
     assert.match(terminalRun.stdout, /SCBE_TERMINAL_TEST/);
-    assert.match(terminalRun.next_cwd, /SCBE-AETHERMOORE/);
+    assert.equal(path.resolve(terminalRun.next_cwd).toLowerCase(), launchCwd.toLowerCase());
 
     const browserRun = await postJson(`http://127.0.0.1:${port}/browser/open`, {
       url: 'https://example.com',

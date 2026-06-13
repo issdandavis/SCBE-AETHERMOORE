@@ -10,6 +10,19 @@ const test = require('node:test');
 const CLI = path.resolve(__dirname, '..', 'bin', 'scbe.js');
 const ESC = '\x1b';
 
+// The `scbe desktop` subsystem is backed by packages/polly-pad-os, an R&D
+// package that is intentionally NOT shipped on main / in the published CLI
+// package (see CLAUDE.md push policy). When it is absent the command degrades
+// honestly (exit 0, package_exists:false), so these backing-dependent tests
+// skip rather than fail. A full source checkout that has the package runs them
+// for real.
+const DESKTOP_BACKING = fs.existsSync(
+  path.resolve(__dirname, '..', '..', 'polly-pad-os', 'package.json')
+);
+const DESKTOP_SKIP = DESKTOP_BACKING
+  ? false
+  : 'requires packages/polly-pad-os (full source checkout, not shipped on main)';
+
 function runCli(args, options = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-cli-terminal-'));
   const env = {
@@ -78,7 +91,9 @@ test('terminal --json emits parseable frontend state for agents', () => {
       (entry) => entry.command === 'scbe desktop browse https://example.com --json'
     )
   );
-  assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe desktop capture --json'));
+  assert.ok(
+    payload.quick_commands.some((entry) => entry.command === 'scbe desktop capture --json')
+  );
   assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe actions'));
   assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe x <cmd>'));
   assert.ok(payload.quick_commands.some((entry) => entry.command === 'scbe alias g <cmd>'));
@@ -167,7 +182,7 @@ test('terminal bench emits measured JSON scenarios', () => {
   assert.ok(payload.scenarios.every((scenario) => scenario.median_ms > 0));
 });
 
-test('desktop subsystem emits portable desktop status JSON', () => {
+test('desktop subsystem emits portable desktop status JSON', { skip: DESKTOP_SKIP }, () => {
   const result = runCli(['desktop', '--json']);
 
   assert.equal(result.status, 0, result.stderr);
@@ -179,7 +194,7 @@ test('desktop subsystem emits portable desktop status JSON', () => {
   assert.equal(payload.launcher_commands.open, 'scbe desktop open');
 });
 
-test('desktop subsystem emits app capability benchmark JSON', () => {
+test('desktop subsystem emits app capability benchmark JSON', { skip: DESKTOP_SKIP }, () => {
   const result = runCli(['desktop', 'app-bench', '--json']);
 
   assert.equal(result.status, 0, result.stderr);
@@ -228,23 +243,27 @@ test('desktop subsystem can capture a real page as JSON', () => {
   assert.ok(payload.bytes > 0);
 });
 
-test('desktop subsystem dry-runs open and pack without launching a browser', () => {
-  const open = runCli(['desktop', 'open', '--dry-run', '--json', '--port', '3111']);
-  assert.equal(open.status, 0, open.stderr);
-  const openPayload = JSON.parse(open.stdout);
-  assert.equal(openPayload.schema_version, 'scbe_portable_desktop_open_v1');
-  assert.equal(openPayload.url, 'http://127.0.0.1:3111/');
-  assert.equal(openPayload.bridge_url, 'http://127.0.0.1:3678');
-  assert.match(openPayload.bridge_command, /desktop_subsystem\.cjs bridge --port 3678/);
-  assert.equal(openPayload.dry_run, true);
+test(
+  'desktop subsystem dry-runs open and pack without launching a browser',
+  { skip: DESKTOP_SKIP },
+  () => {
+    const open = runCli(['desktop', 'open', '--dry-run', '--json', '--port', '3111']);
+    assert.equal(open.status, 0, open.stderr);
+    const openPayload = JSON.parse(open.stdout);
+    assert.equal(openPayload.schema_version, 'scbe_portable_desktop_open_v1');
+    assert.equal(openPayload.url, 'http://127.0.0.1:3111/');
+    assert.equal(openPayload.bridge_url, 'http://127.0.0.1:3678');
+    assert.match(openPayload.bridge_command, /desktop_subsystem\.cjs bridge --port 3678/);
+    assert.equal(openPayload.dry_run, true);
 
-  const pack = runCli(['desktop', 'pack', '--dry-run', '--json']);
-  assert.equal(pack.status, 0, pack.stderr);
-  const packPayload = JSON.parse(pack.stdout);
-  assert.equal(packPayload.schema_version, 'scbe_portable_desktop_pack_v1');
-  assert.match(packPayload.out_path, /scbe-portable-desktop\.zip$/);
-  assert.equal(packPayload.dry_run, true);
-});
+    const pack = runCli(['desktop', 'pack', '--dry-run', '--json']);
+    assert.equal(pack.status, 0, pack.stderr);
+    const packPayload = JSON.parse(pack.stdout);
+    assert.equal(packPayload.schema_version, 'scbe_portable_desktop_pack_v1');
+    assert.match(packPayload.out_path, /scbe-portable-desktop\.zip$/);
+    assert.equal(packPayload.dry_run, true);
+  }
+);
 
 test('rich shell accepts slash terminal navigation', () => {
   const result = runCli(['shell'], {
