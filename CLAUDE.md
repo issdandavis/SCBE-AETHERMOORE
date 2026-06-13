@@ -372,6 +372,11 @@ Add axiom compliance comments where applicable: `// A4: Clamping` or `# A2: Unit
 - **TypeScript is canonical** (production). Update TS first, then Python.
 - Cross-language parity tests in `tests/cross-language/` and `tests/interop/`.
 
+### Code Locality
+- A command's logic lives **inside its package** (e.g. `packages/cli/`, `packages/agent-bus/`), not scattered into root-level scripts or a parallel sibling file. Fold new behavior into the existing module that owns that surface.
+- The repo root is for **standard project files only** (README, LICENSE, CHANGELOG, CONTRIBUTING, SECURITY, agent-instruction files, build/config manifests). Do not add new top-level scripts or docs there — put scripts under `scripts/`, docs under `docs/`.
+- Before declaring a path a submodule, confirm there is a tracked gitlink for it; a `.gitmodules` stanza with no gitlink is dead and should not be added.
+
 ### When Adding Features
 1. Tag files with `@layer` comments
 2. Document which axiom your code satisfies
