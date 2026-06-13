@@ -43,8 +43,17 @@ from python.scbe.reaction_state import (
 SIGNER_AGENT_ID = "scbe-react-cli"
 
 
+class InputFileError(ValueError):
+    """A packet/report file is missing or not valid JSON."""
+
+
 def load_json(path: str) -> dict[str, Any]:
-    return json.loads(Path(path).read_text(encoding="utf-8"))
+    try:
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        raise InputFileError(f"file not found: {path}")
+    except json.JSONDecodeError as exc:
+        raise InputFileError(f"not valid JSON ({path}): {exc}")
 
 
 def find_packets(value: Any) -> list[dict[str, Any]]:
@@ -68,7 +77,10 @@ def find_packets(value: Any) -> list[dict[str, Any]]:
 
 
 def audit_packet(path: str) -> dict[str, Any]:
-    data = load_json(path)
+    try:
+        data = load_json(path)
+    except InputFileError as exc:
+        return {"schema_version": "scbe_reaction_audit_v1", "path": path, "ok": False, "error": str(exc)}
     packets = find_packets(data)
     rows = []
     for index, packet_data in enumerate(packets):
@@ -100,8 +112,17 @@ def audit_packet(path: str) -> dict[str, Any]:
 
 
 def compare_packets(left_path: str, right_path: str) -> dict[str, Any]:
-    left = find_packets(load_json(left_path))
-    right = find_packets(load_json(right_path))
+    try:
+        left = find_packets(load_json(left_path))
+        right = find_packets(load_json(right_path))
+    except InputFileError as exc:
+        return {
+            "schema_version": "scbe_reaction_compare_v1",
+            "left": left_path,
+            "right": right_path,
+            "ok": False,
+            "error": str(exc),
+        }
     left_hashes = {packet.get("packet_hash") for packet in left}
     right_hashes = {packet.get("packet_hash") for packet in right}
     left_classes = {packet.get("classification") for packet in left}
@@ -265,6 +286,9 @@ def build_audio_packet(
 
 
 def print_human_audit(payload: dict[str, Any]) -> None:
+    if payload.get("error"):
+        print(f"reaction audit: FAILED {payload['error']}")
+        return
     print(f"reaction audit: ok={payload['ok']} packets={payload['packet_count']}")
     for row in payload["packets"]:
         sig = f" sig={row['signature_alg']}/{row['signature_verified']}" if row.get("signature_alg") else ""
@@ -275,6 +299,9 @@ def print_human_audit(payload: dict[str, Any]) -> None:
 
 
 def print_human_compare(payload: dict[str, Any]) -> None:
+    if payload.get("error"):
+        print(f"reaction compare: FAILED {payload['error']}")
+        return
     print(
         "reaction compare: "
         f"left={payload['left_packet_count']} right={payload['right_packet_count']} "
@@ -407,7 +434,10 @@ def build_checkpoint(path: str, rekor_dry_run: bool = False) -> dict[str, Any]:
     identity. chain_verified is True only when the packets form an unbroken
     prev-hash chain in file order.
     """
-    data = load_json(path)
+    try:
+        data = load_json(path)
+    except InputFileError as exc:
+        return {"schema_version": "scbe_react_checkpoint_v1", "ok": False, "error": str(exc), "path": path}
     found = find_packets(data)
     if not found:
         return {"schema_version": "scbe_react_checkpoint_v1", "ok": False, "error": "no packets found", "path": path}
@@ -483,7 +513,12 @@ def build_ask(text: str, *, execute: bool = True) -> dict[str, Any]:
     if not execute:
         payload["ok"] = True
         return payload
-    result = _execute_plan(plan)
+    # The NL layer must never crash: a builder raising (bad input, missing
+    # engine) becomes a clean error payload, not a traceback.
+    try:
+        result = _execute_plan(plan)
+    except Exception as exc:  # noqa: BLE001 - surface any builder failure as data
+        result = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
     payload["executed"] = True
     payload["ok"] = bool(result.get("ok"))
     payload["result"] = result
@@ -577,7 +612,9 @@ def main() -> int:
             print(json.dumps(payload, indent=2))
         else:
             print_human_compare(payload)
-        return 0
+        # a missing/invalid file is a failure; a successful compare is always 0
+        # (it reports differences, it does not "fail" on them).
+        return 1 if payload.get("error") else 0
     if args.cmd == "code":
         payload = build_code_packet(args.source, args.target)
         if args.json:
