@@ -19,6 +19,61 @@ def test_scan_blocks_shell_chaining_before_execution() -> None:
     assert any(finding.rule == "shell-metachar" for finding in decision.findings)
 
 
+def test_recursive_force_rm_is_denied_in_any_flag_form() -> None:
+    # Security regression: the destructive-rm rule used the literal `\brm\s+-rf\b`,
+    # which ONLY matched `rm -rf` and silently ALLOWED every other spelling of the same
+    # recursive-force delete: `rm -fr`, `rm -r -f`, `rm --recursive --force`, flag
+    # bundles, and capital -R. Lock that the rule now requires a recursive flag AND a
+    # force flag in any order/form.
+    for cmd in (
+        "rm -rf /tmp/x",
+        "rm -fr /tmp/x",
+        "rm -r -f /tmp/x",
+        "rm -f -r /tmp/x",
+        "rm --recursive --force /tmp/x",
+        "rm --force --recursive /tmp/x",
+        "rm -rfv /tmp/x",
+        "rm -vrf /tmp/x",
+        "rm -R -f /tmp/x",
+        "rm --recursive -f /tmp/x",
+        "rm -r --force /tmp/x",
+    ):
+        decision = scan_command(cmd)
+        assert decision.tier == "DENY", cmd
+        assert not decision.allowed, cmd
+        assert any(f.rule == "destructive-rm" for f in decision.findings), cmd
+
+
+def test_non_recursive_rm_is_not_flagged_as_destructive() -> None:
+    # The broadened rule must not over-block: plain delete, force-only, and
+    # recursive-only each lack the other required flag and must NOT be flagged.
+    for cmd in (
+        "rm /tmp/x",
+        "rm -f /tmp/x",
+        "rm -r /tmp/x",
+        "rm -i /tmp/x",
+        "ls -rf",
+    ):
+        decision = scan_command(cmd)
+        assert not any(f.rule == "destructive-rm" for f in decision.findings), cmd
+
+
+def test_recursive_powershell_delete_is_denied() -> None:
+    # Security regression: the deny rule used `\b-recurse`, but \b never matches
+    # between a space and a hyphen, so the rule was dead and `Remove-Item -Recurse
+    # -Force` (plus the `rm`/`ri` aliases) were silently ALLOWED. Lock the fix.
+    for cmd in (
+        "Remove-Item -Recurse -Force C:\\Users",
+        "remove-item -recurse -force C:/Users",
+        "rm -Recurse -Force ./build",
+        "ri -Recurse ./dist",
+    ):
+        decision = scan_command(cmd)
+        assert decision.tier == "DENY", cmd
+        assert not decision.allowed, cmd
+        assert any(f.rule == "destructive-remove-item" for f in decision.findings), cmd
+
+
 def test_inline_interpreter_is_quarantine_not_deny() -> None:
     decision = scan_command(f"{sys.executable} -c \"print('ok')\"")
 
