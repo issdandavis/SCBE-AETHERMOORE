@@ -101,16 +101,17 @@ test('server lists and runs tools over real MCP stdio', { timeout: 60000 }, asyn
     const verObj = JSON.parse(verText);
     assert.ok(verObj && typeof verObj === 'object');
 
-    // Call scbe_rns add 30000 30000 --json — exercises arg passing + the new command.
-    const rns = await client.callTool({
-      name: 'scbe_rns',
-      arguments: { args: ['add', '30000', '30000'], json: true },
+    // Call scbe_abacus via raw args (the escape hatch) — exercises raw arg passing.
+    // abacus runs via the npm dep (scbe-aethermoore), so this holds from a fresh
+    // package install with no repo-root checkout (unlike rns, whose Python backing
+    // is a repo-root script that isn't shipped in the package `files`).
+    const abacusRaw = await client.callTool({
+      name: 'scbe_abacus',
+      arguments: { args: ['run', '--d-h', '0.4', '--pd', '0.1'], json: true },
     });
-    assert.equal(rns.isError || false, false);
-    const rnsObj = JSON.parse(rns.content.map((c) => c.text).join(''));
-    assert.equal(rnsObj.decoded, 60000);
-    assert.equal(rnsObj.overflow, true);
-    assert.equal(rnsObj.exact, true);
+    assert.equal(abacusRaw.isError || false, false);
+    const abacusRawObj = JSON.parse(abacusRaw.content.map((c) => c.text).join(''));
+    assert.ok(abacusRawObj.score, 'abacus (raw args) should return a score');
 
     // Call scbe_abacus with STRUCTURED params (no raw args) — proves the bridge
     // serializes the typed param contract into a real, runnable invocation.
