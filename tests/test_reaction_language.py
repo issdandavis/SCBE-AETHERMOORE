@@ -182,3 +182,78 @@ def test_build_ask_checkpoint_missing_file_does_not_crash():
     assert payload["verb"] == "checkpoint" and payload["executed"] is True
     assert payload["ok"] is False
     assert "file not found" in payload["result"]["error"]
+
+
+# --- audio-packet recalculation honesty (unit/scientific checks must be REAL) --- #
+
+
+def _audio_recalc(model_kind, sound=None, alfven=None):
+    from scripts.reaction_cli import build_audio_packet
+
+    packet = build_audio_packet(
+        frequency_hz=440.0,
+        sample_rate_hz=8000.0,
+        duration_s=0.02,
+        decay_seconds=None,
+        model_kind=model_kind,
+        coupling_gain=1.0,
+        sound_speed_mps=sound,
+        alfven_speed_mps=alfven,
+    )
+    return packet["reaction_state_packet"]["recalculation"]
+
+
+def test_audio_unit_check_is_real_for_magnetosonic_model():
+    # A magnetosonic packet runs a genuine dimensional check on the velocity
+    # combination sqrt(v_s^2 + v_a^2); unit_checks_ok=True means it HELD, not that
+    # a flag was set. scientific_checks_ok=True means every observable was finite
+    # and in range.
+    recalc = _audio_recalc("magnetosonic", sound=340.0, alfven=1200.0)
+    assert recalc["unit_checks_ok"] is True
+    assert recalc["scientific_checks_ok"] is True
+
+
+def test_audio_unit_check_is_none_when_no_dimensional_chain_exists():
+    # Generic and magnetoelastic projections do only dimensionless arithmetic, and a
+    # magnetosonic model missing its wave speeds has nothing to combine. The honest
+    # value is None ("not computed") -- never a fabricated True.
+    assert _audio_recalc("generic")["unit_checks_ok"] is None
+    assert _audio_recalc("magnetoelastic", sound=340.0, alfven=1200.0)["unit_checks_ok"] is None
+    assert _audio_recalc("magnetosonic", sound=340.0, alfven=None)["unit_checks_ok"] is None
+
+
+def test_audio_unit_check_has_teeth_against_a_mixed_unit_velocity_combination():
+    # Soundness: the magnetosonic dimensional check would FAIL if the two speeds
+    # carried the same dimension but a different unit (the Mars Climate Orbiter
+    # class). Re-run the same add() shape with a km/h speed and assert it is caught.
+    from fractions import Fraction
+
+    from python.scbe import units as _U
+    from python.scbe.reaction_state import unit_check
+
+    kmph = _U.Unit("km/h", _U.VELOCITY, Fraction(1000, 3600))
+
+    def mixed():
+        v_s = _U.q(340.0, _U.METER / _U.SECOND)
+        v_a = _U.q(4320.0, kmph)  # same dimension (velocity), different unit
+        return _U.add(_U.mul(v_s, v_s), _U.mul(v_a, v_a))
+
+    ok, problems = unit_check(mixed)
+    assert ok is False
+    assert problems and "Mars Climate Orbiter" in problems[0]
+
+
+def test_audio_scientific_check_rejects_a_non_finite_observable():
+    # Soundness: scientific_checks_ok must drop to False on a degenerate spectrum.
+    from scripts.reaction_cli import _audio_scientific_checks_ok
+
+    class _Obs:
+        energy_log = float("nan")
+        spectral_centroid_hz = 1.0
+        spectral_bandwidth_hz = 1.0
+        high_frequency_ratio = 0.5
+        stability = 0.5
+        dispersion_proxy = 0.1
+        field_coupling_proxy = None
+
+    assert _audio_scientific_checks_ok(_Obs()) is False
