@@ -15,9 +15,6 @@ Requirements:
 import asyncio
 import base64
 import json
-import os
-import platform
-import shutil
 import time
 from typing import Optional, Dict, Any, List
 from .base import BrowserBackend
@@ -25,6 +22,7 @@ from .base import BrowserBackend
 try:
     import websockets
     import aiohttp
+
     CDP_AVAILABLE = True
 except ImportError:
     CDP_AVAILABLE = False
@@ -46,12 +44,7 @@ class CDPBackend(BrowserBackend):
 
     name = "cdp"
 
-    def __init__(
-        self,
-        host: str = "127.0.0.1",
-        port: int = 9222,
-        target_id: Optional[str] = None
-    ):
+    def __init__(self, host: str = "127.0.0.1", port: int = 9222, target_id: Optional[str] = None):
         self.host = host
         self.port = port
         self.target_id = target_id
@@ -123,11 +116,7 @@ class CDPBackend(BrowserBackend):
         self._command_id += 1
         cmd_id = self._command_id
 
-        message = {
-            "id": cmd_id,
-            "method": method,
-            "params": params or {}
-        }
+        message = {"id": cmd_id, "method": method, "params": params or {}}
 
         # Create future for response
         future = asyncio.get_event_loop().create_future()
@@ -195,11 +184,7 @@ class CDPBackend(BrowserBackend):
 
         await self._wait_for_ready_state()
 
-        return {
-            "url": url,
-            "frameId": result.get("frameId"),
-            "loaderId": result.get("loaderId")
-        }
+        return {"url": url, "frameId": result.get("frameId"), "loaderId": result.get("loaderId")}
 
     async def _wait_for_ready_state(self, timeout: float = 10.0, settle_seconds: float = 0.2) -> None:
         """Wait until the document is interactive/complete after navigation."""
@@ -230,10 +215,7 @@ class CDPBackend(BrowserBackend):
             root_id = doc["root"]["nodeId"]
 
             # Query selector
-            result = await self._send("DOM.querySelector", {
-                "nodeId": root_id,
-                "selector": selector
-            })
+            result = await self._send("DOM.querySelector", {"nodeId": root_id, "selector": selector})
 
             node_id = result.get("nodeId")
             if not node_id:
@@ -248,21 +230,13 @@ class CDPBackend(BrowserBackend):
             y = (quad[1] + quad[3] + quad[5] + quad[7]) / 4
 
             # Click at coordinates
-            await self._send("Input.dispatchMouseEvent", {
-                "type": "mousePressed",
-                "x": x,
-                "y": y,
-                "button": "left",
-                "clickCount": 1
-            })
+            await self._send(
+                "Input.dispatchMouseEvent", {"type": "mousePressed", "x": x, "y": y, "button": "left", "clickCount": 1}
+            )
 
-            await self._send("Input.dispatchMouseEvent", {
-                "type": "mouseReleased",
-                "x": x,
-                "y": y,
-                "button": "left",
-                "clickCount": 1
-            })
+            await self._send(
+                "Input.dispatchMouseEvent", {"type": "mouseReleased", "x": x, "y": y, "button": "left", "clickCount": 1}
+            )
 
             return {"selector": selector, "clicked": True, "coordinates": [x, y]}
 
@@ -278,16 +252,16 @@ class CDPBackend(BrowserBackend):
 
             # Type each character
             for char in text:
-                await self._send("Input.dispatchKeyEvent", {
-                    "type": "keyDown",
-                    "text": char,
-                    "key": char,
-                    "code": f"Key{char.upper()}" if char.isalpha() else char
-                })
-                await self._send("Input.dispatchKeyEvent", {
-                    "type": "keyUp",
-                    "key": char
-                })
+                await self._send(
+                    "Input.dispatchKeyEvent",
+                    {
+                        "type": "keyDown",
+                        "text": char,
+                        "key": char,
+                        "code": f"Key{char.upper()}" if char.isalpha() else char,
+                    },
+                )
+                await self._send("Input.dispatchKeyEvent", {"type": "keyUp", "key": char})
 
             return {"selector": selector, "typed": True, "length": len(text)}
 
@@ -311,11 +285,9 @@ class CDPBackend(BrowserBackend):
 
     async def execute_script(self, script: str) -> Any:
         """Execute JavaScript."""
-        result = await self._send("Runtime.evaluate", {
-            "expression": script,
-            "returnByValue": True,
-            "awaitPromise": True
-        })
+        result = await self._send(
+            "Runtime.evaluate", {"expression": script, "returnByValue": True, "awaitPromise": True}
+        )
 
         if "exceptionDetails" in result:
             raise Exception(result["exceptionDetails"].get("text", "Script error"))
@@ -338,10 +310,7 @@ class CDPBackend(BrowserBackend):
             doc = await self._send("DOM.getDocument")
             root_id = doc["root"]["nodeId"]
 
-            result = await self._send("DOM.querySelector", {
-                "nodeId": root_id,
-                "selector": selector
-            })
+            result = await self._send("DOM.querySelector", {"nodeId": root_id, "selector": selector})
 
             node_id = result.get("nodeId")
             if not node_id:
@@ -354,12 +323,7 @@ class CDPBackend(BrowserBackend):
             except Exception:
                 box = None
 
-            return {
-                "selector": selector,
-                "found": True,
-                "nodeId": node_id,
-                "box": box
-            }
+            return {"selector": selector, "found": True, "nodeId": node_id, "box": box}
 
         except Exception as e:
             return {"selector": selector, "found": False, "error": str(e)}
@@ -429,45 +393,30 @@ class CDPBackend(BrowserBackend):
 
     async def fail_intercepted_request(self, request_id: str, reason: str = "Failed") -> None:
         """Fail an intercepted request."""
-        await self._send("Fetch.failRequest", {
-            "requestId": request_id,
-            "errorReason": reason
-        })
+        await self._send("Fetch.failRequest", {"requestId": request_id, "errorReason": reason})
 
     async def set_user_agent(self, user_agent: str) -> None:
         """Override user agent."""
-        await self._send("Network.setUserAgentOverride", {
-            "userAgent": user_agent
-        })
+        await self._send("Network.setUserAgentOverride", {"userAgent": user_agent})
 
     async def set_extra_headers(self, headers: Dict[str, str]) -> None:
         """Set extra HTTP headers."""
-        await self._send("Network.setExtraHTTPHeaders", {
-            "headers": headers
-        })
+        await self._send("Network.setExtraHTTPHeaders", {"headers": headers})
 
     async def emulate_device(
-        self,
-        width: int,
-        height: int,
-        device_scale_factor: float = 1.0,
-        mobile: bool = False
+        self, width: int, height: int, device_scale_factor: float = 1.0, mobile: bool = False
     ) -> None:
         """Emulate device viewport."""
-        await self._send("Emulation.setDeviceMetricsOverride", {
-            "width": width,
-            "height": height,
-            "deviceScaleFactor": device_scale_factor,
-            "mobile": mobile
-        })
+        await self._send(
+            "Emulation.setDeviceMetricsOverride",
+            {"width": width, "height": height, "deviceScaleFactor": device_scale_factor, "mobile": mobile},
+        )
 
     async def emulate_geolocation(self, latitude: float, longitude: float, accuracy: float = 100) -> None:
         """Emulate geolocation."""
-        await self._send("Emulation.setGeolocationOverride", {
-            "latitude": latitude,
-            "longitude": longitude,
-            "accuracy": accuracy
-        })
+        await self._send(
+            "Emulation.setGeolocationOverride", {"latitude": latitude, "longitude": longitude, "accuracy": accuracy}
+        )
 
     async def clear_geolocation(self) -> None:
         """Clear geolocation override."""
@@ -475,9 +424,7 @@ class CDPBackend(BrowserBackend):
 
     async def set_timezone(self, timezone_id: str) -> None:
         """Override timezone."""
-        await self._send("Emulation.setTimezoneOverride", {
-            "timezoneId": timezone_id
-        })
+        await self._send("Emulation.setTimezoneOverride", {"timezoneId": timezone_id})
 
     async def get_security_state(self) -> Dict[str, Any]:
         """Get page security state."""
@@ -493,9 +440,7 @@ class CDPBackend(BrowserBackend):
     async def get_heap_snapshot(self) -> Dict[str, Any]:
         """Take heap snapshot for memory analysis."""
         await self._send("HeapProfiler.enable")
-        result = await self._send("HeapProfiler.takeHeapSnapshot", {
-            "reportProgress": False
-        })
+        result = await self._send("HeapProfiler.takeHeapSnapshot", {"reportProgress": False})
         return result
 
     async def get_cpu_profile(self, duration_ms: int = 5000) -> Dict[str, Any]:
@@ -508,9 +453,7 @@ class CDPBackend(BrowserBackend):
 
     async def start_tracing(self, categories: List[str] = None) -> None:
         """Start Chrome tracing."""
-        await self._send("Tracing.start", {
-            "categories": ",".join(categories or ["devtools.timeline"])
-        })
+        await self._send("Tracing.start", {"categories": ",".join(categories or ["devtools.timeline"])})
 
     async def stop_tracing(self) -> Dict[str, Any]:
         """Stop tracing and get data."""
@@ -524,12 +467,10 @@ class CDPBackend(BrowserBackend):
 
     async def set_offline(self, offline: bool = True) -> None:
         """Emulate offline mode."""
-        await self._send("Network.emulateNetworkConditions", {
-            "offline": offline,
-            "latency": 0,
-            "downloadThroughput": -1,
-            "uploadThroughput": -1
-        })
+        await self._send(
+            "Network.emulateNetworkConditions",
+            {"offline": offline, "latency": 0, "downloadThroughput": -1, "uploadThroughput": -1},
+        )
 
     async def clear_browser_cache(self) -> None:
         """Clear browser cache."""
@@ -545,10 +486,7 @@ class CDPBackend(BrowserBackend):
             doc = await self._send("DOM.getDocument")
             root_id = doc["root"]["nodeId"]
 
-            result = await self._send("DOM.querySelector", {
-                "nodeId": root_id,
-                "selector": selector
-            })
+            result = await self._send("DOM.querySelector", {"nodeId": root_id, "selector": selector})
 
             node_id = result.get("nodeId")
             if node_id:
@@ -565,19 +503,13 @@ class CDPBackend(BrowserBackend):
         doc = await self._send("DOM.getDocument")
         root_id = doc["root"]["nodeId"]
 
-        result = await self._send("DOM.querySelector", {
-            "nodeId": root_id,
-            "selector": selector
-        })
+        result = await self._send("DOM.querySelector", {"nodeId": root_id, "selector": selector})
 
         if result.get("nodeId"):
-            await self._send("Overlay.highlightNode", {
-                "highlightConfig": {
-                    "contentColor": color,
-                    "showInfo": True
-                },
-                "nodeId": result["nodeId"]
-            })
+            await self._send(
+                "Overlay.highlightNode",
+                {"highlightConfig": {"contentColor": color, "showInfo": True}, "nodeId": result["nodeId"]},
+            )
 
     async def clear_highlight(self) -> None:
         """Clear element highlighting."""
@@ -588,10 +520,11 @@ class CDPBackend(BrowserBackend):
 # Helper to Start Chrome with Remote Debugging
 # =============================================================================
 
+
 def resolve_chrome_binary(system: Optional[str] = None) -> str:  # noqa: ARG001
-    """Resolve a Chrome/Chromium executable path. Delegates to binary_resolver."""
     """Resolve a Chrome/Chromium executable path via the shared binary resolver."""
     from agents.browser.binary_resolver import resolve_browser_binary
+
     path, _ = resolve_browser_binary()
     return path
 
@@ -602,22 +535,19 @@ def get_chrome_launch_command(port: int = 9222, user_data_dir: str = None) -> st
     Prefer build_launch_command() for new code — it returns a shell-safe tuple.
     """
     from agents.browser.binary_resolver import build_launch_command
+
     cmd_tuple, _ = build_launch_command(port=port, user_data_dir=user_data_dir)
     # Reconstruct a shell string only for legacy compatibility.
     parts = []
     for part in cmd_tuple:
         parts.append(f'"{part}"' if " " in part else part)
     return " ".join(parts)
-    """Get command to launch Chrome with remote debugging."""
-    from agents.browser.binary_resolver import build_launch_command
-    cmd_tuple, _ = build_launch_command(port=port, user_data_dir=user_data_dir)
-    # Reconstruct as shell string for legacy callers that expect a string.
-    return " ".join(f'"{p}"' if " " in p else p for p in cmd_tuple)
 
 
 # =============================================================================
 # Example Usage
 # =============================================================================
+
 
 async def example_usage():
     """Example of using CDPBackend with GovernedBrowser."""
@@ -628,16 +558,10 @@ async def example_usage():
     print()
 
     # Create backend
-    backend = CDPBackend(
-        host="127.0.0.1",
-        port=9222
-    )
+    backend = CDPBackend(host="127.0.0.1", port=9222)
 
     # Wrap with governance
-    browser = GovernedBrowser(
-        backend,
-        agent_id="cdp-agent-001"
-    )
+    browser = GovernedBrowser(backend, agent_id="cdp-agent-001")
 
     # Initialize
     if await browser.initialize():

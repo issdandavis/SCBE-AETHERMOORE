@@ -44,11 +44,11 @@ def check_patent_center():
 
     if today < follow_up:
         print(f"  STATUS: Waiting. {days_until_followup} business days until follow-up date.")
-        print(f"  ACTION: Check Patent Center — can you see the application?")
-        print(f"          https://patentcenter.uspto.gov/")
+        print("  ACTION: Check Patent Center — can you see the application?")
+        print("          https://patentcenter.uspto.gov/")
     elif today == follow_up:
-        print(f"  STATUS: FOLLOW-UP DAY.")
-        print(f"  ACTION: If app is NOT visible in Patent Center, CALL NOW:")
+        print("  STATUS: FOLLOW-UP DAY.")
+        print("  ACTION: If app is NOT visible in Patent Center, CALL NOW:")
         print(f"          {PATENT_INFO['follow_up_phone']} (Applications Assistance Unit)")
         print(f"          Reference: application {PATENT_INFO['application_number']}")
         print(f"          Receipt: #{PATENT_INFO['receipt_number']}")
@@ -74,7 +74,9 @@ def check_protonmail():
 
         # Also load from connector env if available
         if not password:
-            env_path = os.path.join(os.path.dirname(__file__), "..", "..", "config", "connector_oauth", ".env.connector.oauth")
+            env_path = os.path.join(
+                os.path.dirname(__file__), "..", "..", "config", "connector_oauth", ".env.connector.oauth"
+            )
             if os.path.exists(env_path):
                 with open(env_path) as f:
                     for line in f.read().splitlines():
@@ -92,7 +94,7 @@ def check_protonmail():
 
         # Search for USPTO-related emails
         for search_term in ["FROM ebc@uspto.gov", "FROM HelpAAU@uspto.gov", "SUBJECT patent"]:
-            _, msg_ids = mail.search(None, f'({search_term})')
+            _, msg_ids = mail.search(None, f"({search_term})")
             if msg_ids[0]:
                 ids = msg_ids[0].split()
                 print(f"  EMAIL: Found {len(ids)} messages matching '{search_term}'")

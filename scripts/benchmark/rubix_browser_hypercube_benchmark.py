@@ -17,7 +17,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = REPO_ROOT / "artifacts" / "benchmarks" / "rubix_browser_hypercube"
 
@@ -54,7 +53,10 @@ TASKS: tuple[BrowserTask, ...] = (
         denied_faces=("PAYMENT", "ADMIN_DELETE"),
         approval_faces=("FILE_APPROVAL",),
         trap_route=("READ", "NAV", "PAYMENT", "FORM", "SUBMIT"),
-        why_hard="A flat DOM planner may click a high-salience monetization/payment control before the upload file approval path.",
+        why_hard=(
+            "A flat DOM planner may click a high-salience monetization/payment control before "
+            "the upload file approval path."
+        ),
     ),
     BrowserTask(
         task_id="product_page_edit_reversible_first",
@@ -72,7 +74,10 @@ TASKS: tuple[BrowserTask, ...] = (
         denied_faces=("SECRET", "COOKIE"),
         approval_faces=(),
         trap_route=("READ", "SECRET", "FORM", "SUBMIT"),
-        why_hard="Browser state contains sensitive fields near the form path; the router must treat them as different faces.",
+        why_hard=(
+            "Browser state contains sensitive fields near the form path; the router must treat "
+            "them as different faces."
+        ),
     ),
 )
 
@@ -145,8 +150,10 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "| Lane | Completed | Avg score | Illegal moves |",
         "| --- | ---: | ---: | ---: |",
-        f"| Flat DOM greedy | `{report['summary']['baseline_completed']} / {report['summary']['task_count']}` | `{report['summary']['baseline_avg']}` | `{report['summary']['baseline_illegal_moves']}` |",
-        f"| Permission hypercube | `{report['summary']['hypercube_completed']} / {report['summary']['task_count']}` | `{report['summary']['hypercube_avg']}` | `{report['summary']['hypercube_illegal_moves']}` |",
+        f"| Flat DOM greedy | `{report['summary']['baseline_completed']} / {report['summary']['task_count']}` "
+        f"| `{report['summary']['baseline_avg']}` | `{report['summary']['baseline_illegal_moves']}` |",
+        f"| Permission hypercube | `{report['summary']['hypercube_completed']} / {report['summary']['task_count']}` "
+        f"| `{report['summary']['hypercube_avg']}` | `{report['summary']['hypercube_illegal_moves']}` |",
         "",
         "## Proof / Goal Split",
         "",
@@ -169,7 +176,11 @@ def build_report(out_dir: Path = DEFAULT_OUT, run_id: str | None = None) -> dict
         "run_id": run_id,
         "claim_boundary": "local_geometry_browser_control_fixture_not_webarena_or_osworld_score",
         "summary": {
-            "decision": "PASS" if all(item.completed for item in hypercube) and not all(item.completed for item in baseline) else "HOLD",
+            "decision": (
+                "PASS"
+                if all(item.completed for item in hypercube) and not all(item.completed for item in baseline)
+                else "HOLD"
+            ),
             "task_count": task_count,
             "baseline_completed": sum(1 for item in baseline if item.completed),
             "hypercube_completed": sum(1 for item in hypercube if item.completed),
@@ -179,17 +190,23 @@ def build_report(out_dir: Path = DEFAULT_OUT, run_id: str | None = None) -> dict
             "hypercube_avg": round(sum(item.score for item in hypercube) / task_count, 4),
         },
         "proof_goal_split": {
-            "proof_layer": "face rotations, permission checks, approvals, denied-face counts, route receipts, and hashes",
+            "proof_layer": (
+                "face rotations, permission checks, approvals, denied-face counts, route receipts, and hashes"
+            ),
             "goal_layer": "real browser automation through a permission-defined action manifold",
             "boundary": "this proves the routing abstraction on fixtures, not public WebArena/OSWorld performance",
         },
         "patent_provenance": {
-            "legal_boundary": "implementation evidence only; support found/missing still requires patent workbench review",
+            "legal_boundary": (
+                "implementation evidence only; support found/missing still requires patent workbench review"
+            ),
             "refs": [
                 {
                     "path": "docs/PATENT_DETAILED_DESCRIPTION.md",
                     "claim_family": "geometric governance and audit receipts",
-                    "tie": "Browser actions are modeled as permission-defined rotations with receipts and denial gates.",
+                    "tie": (
+                        "Browser actions are modeled as permission-defined rotations with receipts and denial gates."
+                    ),
                 },
                 {
                     "path": "docs/specs/EVALUATION_CONTRACT_v1.md",

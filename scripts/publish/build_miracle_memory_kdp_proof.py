@@ -33,7 +33,6 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PROJECT_DIR = REPO_ROOT / "content" / "projects" / "miracle-memory"
 DEFAULT_PROFILE = PROJECT_DIR / "kdp-proof-profile.json"
@@ -414,13 +413,29 @@ def build_pdf(blocks: list[Block], profile: dict, out_path: Path) -> int:
         spaceAfter=0.2 * rl_inch,
     )
     title_style = ParagraphStyle("Title", parent=chapter, fontSize=24, leading=30, spaceBefore=1.2 * rl_inch)
-    half_title_style = ParagraphStyle("HalfTitle", parent=chapter, fontName="Georgia", fontSize=19, leading=24, spaceBefore=2.45 * rl_inch)
-    subtitle_style = ParagraphStyle("Subtitle", parent=styles["Normal"], fontName="Georgia-Italic", fontSize=10.5, leading=14, alignment=TA_CENTER)
+    half_title_style = ParagraphStyle(
+        "HalfTitle", parent=chapter, fontName="Georgia", fontSize=19, leading=24, spaceBefore=2.45 * rl_inch
+    )
+    subtitle_style = ParagraphStyle(
+        "Subtitle", parent=styles["Normal"], fontName="Georgia-Italic", fontSize=10.5, leading=14, alignment=TA_CENTER
+    )
     center = ParagraphStyle("Center", parent=body_first, alignment=TA_CENTER, firstLineIndent=0)
     small = ParagraphStyle("Small", parent=body_first, fontSize=8.5, leading=11, alignment=TA_LEFT)
-    contents_title = ParagraphStyle("ContentsTitle", parent=chapter, fontSize=17, leading=22, spaceBefore=0.3 * rl_inch, spaceAfter=0.2 * rl_inch)
-    contents_part = ParagraphStyle("ContentsPart", parent=body_first, fontName="Georgia-Bold", fontSize=10, leading=13, spaceBefore=8, spaceAfter=2)
-    contents_item = ParagraphStyle("ContentsItem", parent=body_first, fontSize=9.2, leading=11.5, leftIndent=0.16 * rl_inch, spaceBefore=0, spaceAfter=1)
+    contents_title = ParagraphStyle(
+        "ContentsTitle", parent=chapter, fontSize=17, leading=22, spaceBefore=0.3 * rl_inch, spaceAfter=0.2 * rl_inch
+    )
+    contents_part = ParagraphStyle(
+        "ContentsPart", parent=body_first, fontName="Georgia-Bold", fontSize=10, leading=13, spaceBefore=8, spaceAfter=2
+    )
+    contents_item = ParagraphStyle(
+        "ContentsItem",
+        parent=body_first,
+        fontSize=9.2,
+        leading=11.5,
+        leftIndent=0.16 * rl_inch,
+        spaceBefore=0,
+        spaceAfter=1,
+    )
     copyright_text = (
         f"Copyright © {html.escape(str(profile['copyright_year']))} {html.escape(profile['author'])}. "
         "All rights reserved.<br/><br/>"

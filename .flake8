@@ -11,6 +11,44 @@ per-file-ignores =
     tests/test_phone_eye.py: E501
     tests/test_phone_navigation_telemetry.py: E501
     tests/test_playwriter_lane_runner.py: E501
+    # Single-line JSON gate_report log fixture (474 chars) must stay one literal
+    # line so it mirrors real per-line log parsing and stays copy-pasteable JSON
+    tests/test_geoseal_coding_training_system.py: E501
+    # SFT/corpus generator family: long literal prompt and content strings
+    # must stay unwrapped so generated training data is byte-reproducible
+    scripts/generate_*.py: E501
+    scripts/system/generate_*.py: E501
+    scripts/training/generate_*.py: E501
+    # Synthetic agentic trajectory corpus: literal diff/command/thought strings
+    # feed seeded (random.seed(42)) training-data JSONL and must stay byte-reproducible
+    scripts/training/build_agentic_seed.py: E501
+    scripts/gen_ch01_hq.py: E501
+    scripts/gen_ch01_panels.py: E501
+    scripts/gen_full_book_panels.py: E501
+    scripts/build_ch01_prompts_v4.py: E501
+    scripts/build_coding_system_full_sft.py: E501
+    scripts/build_ca_*.py: E501
+    scripts/build_stage6_*.py: E501
+    scripts/build_external_poly_coding_sft.py: E501
+    scripts/augment_curriculum_sft.py: E501
+    scripts/merge_text_layer_v4.py: E501
+    scripts/update_hf_model_cards.py: E501
+    # Adversarial benchmark corpus: intentionally long attack prompt literals
+    scripts/patent_benchmark.py: E501
+    # deterministic_task_plan() repair-command corpus: literal shell/python -c
+    # payloads (nested quoting, up to 1142 chars) must stay byte-exact for sandbox replay
+    scripts/benchmark/scbe_governance_core.py: E501
+    # Generated-document templates (LaTeX paper prose, product packet prose,
+    # model-card JSONL examples, Colab cells with single-token URLs): lines live
+    # inside triple-quoted templates and cannot wrap without changing output
+    scripts/arxiv_synthesize_paper.py: E501
+    scripts/package_products.py: E501
+    scripts/merge_and_upload.py: E501
+    scripts/train_art_lora_colab.py: E501
+    # Outreach campaign content: email-body paragraphs live inside triple-quoted
+    # f-string templates (plus citation URLs) and cannot wrap without changing
+    # the generated email text
+    scripts/outreach/cold_outreach_pipeline.py: E501
     # Test files with sys.path manipulation before imports
     tests/conftest.py: E402
     src/symphonic_cipher/__init__.py: E402

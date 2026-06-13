@@ -13,6 +13,7 @@ Usage:
     python scripts/merge_and_upload.py --upload           # merge + upload to HF
     python scripts/merge_and_upload.py --upload --repo-id issdandavis/scbe-aethermoore-training-data
 """
+
 import argparse
 import json
 import sys
@@ -265,19 +266,19 @@ def print_summary(records: list[dict]) -> None:
     legacy_count = sum(1 for r in records if is_legacy_record(r))
     legacy_ratio = legacy_count / max(len(records), 1)
 
-    print(f"\n--- Merge Summary ---", file=sys.stderr)
+    print("\n--- Merge Summary ---", file=sys.stderr)
     print(f"Total records:     {len(records)}", file=sys.stderr)
     print(f"Avg response len:  {avg_response} chars", file=sys.stderr)
 
-    print(f"\nBy category:", file=sys.stderr)
+    print("\nBy category:", file=sys.stderr)
     for cat, count in sorted(cats.items(), key=lambda x: -x[1]):
         print(f"  {cat}: {count}", file=sys.stderr)
 
-    print(f"\nBy track:", file=sys.stderr)
+    print("\nBy track:", file=sys.stderr)
     for track, count in sorted(tracks.items(), key=lambda x: -x[1]):
         print(f"  {track}: {count}", file=sys.stderr)
 
-    print(f"\nBy origin:", file=sys.stderr)
+    print("\nBy origin:", file=sys.stderr)
     for origin, count in sorted(origins.items(), key=lambda x: -x[1]):
         print(f"  {origin}: {count}", file=sys.stderr)
 
@@ -343,7 +344,7 @@ def upload_to_hf(repo_id: str, sft_path: Path, chat_path: Path) -> None:
             )
 
     # Create dataset card
-    card = f"""---
+    card = """---
 license: mit
 language:
 - en
@@ -392,12 +393,12 @@ geometry, harmonic scaling, trust tubes, topology, Spiralverse lore, and more.
 
 ### SFT Format
 ```json
-{{"id": "sft-00001", "category": "architecture", "instruction": "...", "response": "...", "metadata": {{...}}}}
+{"id": "sft-00001", "category": "architecture", "instruction": "...", "response": "...", "metadata": {...}}
 ```
 
 ### Chat Format
 ```json
-{{"messages": [{{"role": "system", "content": "..."}}, {{"role": "user", "content": "..."}}, {{"role": "assistant", "content": "..."}}]}}
+{"messages": [{"role": "system", "content": "..."}, {"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}]}
 ```
 
 ## License
@@ -463,7 +464,7 @@ def main():
 
     # Upload
     if args.upload:
-        print(f"\n--- Uploading to HuggingFace ---", file=sys.stderr)
+        print("\n--- Uploading to HuggingFace ---", file=sys.stderr)
         upload_to_hf(args.repo_id, sft_path, chat_path)
 
 

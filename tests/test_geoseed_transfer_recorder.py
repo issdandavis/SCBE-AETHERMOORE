@@ -86,7 +86,17 @@ def test_transfer_matrix_counts_rates_and_dominant_flow() -> None:
     assert matrix.total_events == 4
     assert matrix.self_transfer_count == 1
     assert matrix.cross_transfer_count == 3
-    assert matrix.dominant_flow() == {
+    assert matrix.dominant_flow()[0] == ("KO", "RU", 2)
+
+
+def test_recorder_to_dict_reports_dominant_flow_with_rate_and_cost() -> None:
+    recorder = AtomTransferRecorder()
+    recorder.record("KO", "RU", "a")
+    recorder.record("KO", "RU", "b")
+    recorder.record("KO", "KO", "hold")
+    recorder.record("AV", "CA", "c")
+
+    assert recorder.to_dict()["summary"]["dominant_flow"] == {
         "from_tongue": "KO",
         "to_tongue": "RU",
         "count": 2,
@@ -97,7 +107,8 @@ def test_transfer_matrix_counts_rates_and_dominant_flow() -> None:
 
 def test_empty_matrix_has_no_dominant_flow() -> None:
     matrix = AtomTransferRecorder().transfer_matrix()
-    assert matrix.dominant_flow() is None
+    assert matrix.dominant_flow() == []
+    assert AtomTransferRecorder().to_dict()["summary"]["dominant_flow"] is None
 
 
 def test_mean_hop_distance_defaults_to_cross_shell_events() -> None:

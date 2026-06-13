@@ -21,7 +21,6 @@ from src.aetherbrowser.provider_executor import ProviderExecutor
 from src.aetherbrowser.router import ModelProvider, OctoArmorRouter
 from src.aetherbrowser.ws_feed import WsFeed
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_LOG_PATH = PROJECT_ROOT / "training-data" / "browser" / "aetherbrowser_model_cli_calls.jsonl"
 

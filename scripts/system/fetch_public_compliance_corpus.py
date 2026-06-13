@@ -27,9 +27,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = REPO_ROOT / "config" / "compliance" / "public_sources.json"
 DEFAULT_OUT = REPO_ROOT / "docs" / "compliance" / "corpus" / "fetched"
-USER_AGENT = (
-    "SCBE-AETHERMOORE-compliance-corpus/1.0 (+local research; contact via repo)"
-)
+USER_AGENT = "SCBE-AETHERMOORE-compliance-corpus/1.0 (+local research; contact via repo)"
 
 
 def _load_manifest(path: Path) -> dict[str, Any]:
@@ -63,9 +61,7 @@ def _fetch_url(url: str, dest: Path, timeout_s: float = 120.0) -> dict[str, Any]
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     ctx = ssl.create_default_context()
     dest.parent.mkdir(parents=True, exist_ok=True)
-    with urllib.request.urlopen(
-        req, timeout=timeout_s, context=ctx
-    ) as resp:  # noqa: S310 — curated URLs only
+    with urllib.request.urlopen(req, timeout=timeout_s, context=ctx) as resp:  # noqa: S310 — curated URLs only
         body = resp.read()
     dest.write_bytes(body)
     digest = hashlib.sha256(body).hexdigest()
@@ -75,12 +71,8 @@ def _fetch_url(url: str, dest: Path, timeout_s: float = 120.0) -> dict[str, Any]
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
-    parser.add_argument(
-        "--out", type=Path, default=DEFAULT_OUT, help="Directory for downloaded files"
-    )
-    parser.add_argument(
-        "--only", type=str, default="", help="Comma-separated source ids"
-    )
+    parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="Directory for downloaded files")
+    parser.add_argument("--only", type=str, default="", help="Comma-separated source ids")
     parser.add_argument(
         "--include-large",
         action="store_true",
@@ -98,9 +90,7 @@ def main() -> int:
     if args.only.strip():
         only_ids = {x.strip() for x in args.only.split(",") if x.strip()}
 
-    selected = _filter_sources(
-        sources, only_ids=only_ids, include_large=args.include_large
-    )
+    selected = _filter_sources(sources, only_ids=only_ids, include_large=args.include_large)
     if not selected:
         print(
             "No http_get sources selected (check --only, or use --include-large for EUR-Lex pages).",

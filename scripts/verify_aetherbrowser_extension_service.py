@@ -14,7 +14,6 @@ import httpx
 
 from scripts.aetherbrowser_live_smoke import run_ws_smoke
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 

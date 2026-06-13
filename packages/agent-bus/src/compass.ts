@@ -1069,3 +1069,56 @@ function cliExamplesForMode(mode: CompassTaskMode, task: string): string[] {
   }
   return examples;
 }
+
+// ─── Hermes backward-compatibility surface (preserved from main on catch-up) ───
+// This branch renamed the bus router Hermes→Compass; main kept a Hermes compat
+// alias for external bus integrations (the `scbe-hermes` tool and `--hermes`
+// flag). These thin wrappers re-expose the shared Compass core under the legacy
+// Hermes names so both command surfaces keep working. Types alias the Compass
+// equivalents (structurally identical); the route plan keeps its own schema tag.
+export type HermesTaskMode = CompassTaskMode;
+export type HermesModelLane = CompassModelLane;
+
+export interface HermesRoutePlan {
+  schema_version: 'scbe.agent_bus.hermes_route_plan.v1';
+  generated_at: string;
+  task: string;
+  mode: HermesTaskMode;
+  objective: string;
+  primary_tools: string[];
+  helper_actions: string[];
+  model_lanes: HermesModelLane[];
+  governance: {
+    privacy: 'local_only';
+    budget_cents: 0;
+    first_gate: string;
+    blocked_actions: string[];
+  };
+  cli_examples: string[];
+}
+
+export function classifyHermesTask(task: string): HermesTaskMode {
+  return classifyScbeCompassTask(task);
+}
+
+export function hermesModelLanes(): readonly HermesModelLane[] {
+  return scbeCompassModelLanes();
+}
+
+export function planHermesRoute(task: string): HermesRoutePlan {
+  const compass = planScbeCompassRoute(task);
+  return {
+    schema_version: 'scbe.agent_bus.hermes_route_plan.v1',
+    generated_at: compass.generated_at,
+    task: compass.task,
+    mode: compass.mode,
+    objective: compass.objective,
+    primary_tools: compass.primary_tools,
+    helper_actions: compass.helper_actions,
+    model_lanes: compass.model_lanes,
+    governance: compass.governance,
+    cli_examples: compass.cli_examples.map((example) =>
+      example.replace('scbe-agent-bus compass', 'scbe-agent-bus hermes')
+    ),
+  };
+}

@@ -81,6 +81,7 @@ WEIGHT_DECAY = 0.01
 # Data loading
 # ---------------------------------------------------------------------------
 
+
 def load_training_data(data_root: Path, max_records: int = 0) -> list[dict]:
     """Load messages-format JSONL files."""
     records = []
@@ -112,9 +113,11 @@ def format_for_sft(record: dict, tokenizer) -> str:
     """Format a messages record into a single string using the chat template."""
     return tokenizer.apply_chat_template(record["messages"], tokenize=False, add_generation_prompt=False)
 
+
 # ---------------------------------------------------------------------------
 # Training
 # ---------------------------------------------------------------------------
+
 
 def train(dry_run: bool = False, max_records: int = 0):
     import torch
@@ -265,7 +268,7 @@ def train(dry_run: bool = False, max_records: int = 0):
         inputs = tokenizer(input_text, return_tensors="pt").to(model.device)
         with torch.no_grad():
             out = model.generate(**inputs, max_new_tokens=100, temperature=0.7, do_sample=True)
-        response = tokenizer.decode(out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+        response = tokenizer.decode(out[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True)
         log.info(f"\n  Q: {prompt}\n  A: {response[:200]}")
 
     # Push to HF if token available

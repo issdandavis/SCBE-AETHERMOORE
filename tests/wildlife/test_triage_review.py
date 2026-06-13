@@ -54,7 +54,11 @@ def _mini_results() -> dict:
                 "pack": "WOLF",
                 "ok": True,
                 "title": "RCE in upload",
-                "response": "(1) likely root cause: missing input sanitization\n(2) edit src/api/upload.py\n(3) test_upload_rejects_shell.py",
+                "response": (
+                    "(1) likely root cause: missing input sanitization\n"
+                    "(2) edit src/api/upload.py\n"
+                    "(3) test_upload_rejects_shell.py"
+                ),
             },
             {
                 "animal_id": "issue-broken",

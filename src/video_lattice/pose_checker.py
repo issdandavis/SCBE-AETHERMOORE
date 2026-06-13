@@ -78,9 +78,7 @@ class PoseCheckResult:
                     "angle_delta_deg": round(math.degrees(c.angle_delta), 2),
                     "hyperbolic_distance": round(c.hyperbolic_distance, 5),
                 }
-                for c in sorted(
-                    self.chain_checks, key=lambda c: c.hyperbolic_distance, reverse=True
-                )
+                for c in sorted(self.chain_checks, key=lambda c: c.hyperbolic_distance, reverse=True)
             ],
         }
 
@@ -222,12 +220,8 @@ class PoseChecker:
         gen_mapped = {i: lm for i, lm in enumerate(generated)}
         chain_lattice = PoincareLattice(dim=2, name="body_chain")
         for name, chain in BODY_CHAINS.items():
-            ref_pts = np.array(
-                [ref_mapped[int(i)].xy() for i in chain if int(i) in ref_mapped]
-            )
-            gen_pts = np.array(
-                [gen_mapped[int(i)].xy() for i in chain if int(i) in gen_mapped]
-            )
+            ref_pts = np.array([ref_mapped[int(i)].xy() for i in chain if int(i) in ref_mapped])
+            gen_pts = np.array([gen_mapped[int(i)].xy() for i in chain if int(i) in gen_mapped])
             if len(ref_pts) < 3 or len(gen_pts) < 3:
                 continue
             ref_angle = angle_at(ref_pts[0], ref_pts[1], ref_pts[2])

@@ -26,8 +26,6 @@ from typing import Optional, Dict, Any, List
 from enum import Enum
 from datetime import datetime, timezone
 
-from src.governance.gate_witness import gate_witness
-
 # =============================================================================
 # Configuration
 # =============================================================================
@@ -473,7 +471,6 @@ class SCBEBrowserAgent:
             )
             # Only auto-execute quarantined actions on low-risk domains
             domain_risk = self._get_domain_risk(action.target)
-            gate_witness("browser_agent", "quarantine", subject=action.action_type, detail={"risk": domain_risk})
             can_execute = domain_risk < 0.5
             if not can_execute:
                 print(f"         [QUARANTINE-BLOCKED] Domain risk {domain_risk:.2f} too high for auto-execute")
@@ -501,7 +498,6 @@ class SCBEBrowserAgent:
 
         elif result.denied:
             print("         [DENY] Action blocked")
-            gate_witness("browser_agent", "deny", subject=action.action_type, detail={"risk": action.sensitivity})
             can_execute = False
 
         # Log the action
@@ -645,10 +641,10 @@ class SCBEBrowserAgent:
         print(f"             Tongues: {result.get('tongues_used', [])}")
 
         if result.get("status") == "APPROVED":
-            print(f"             [APPROVED] Proceeding with critical action")
+            print("             [APPROVED] Proceeding with critical action")
             return True
         elif result.get("status") == "ESCALATE_TO_HUMAN":
-            print(f"             [ESCALATE] Requires human approval")
+            print("             [ESCALATE] Requires human approval")
             # Ask human (handle non-interactive mode)
             try:
                 human_input = input("             Human approval required [y/n]: ").strip().lower()
@@ -657,7 +653,7 @@ class SCBEBrowserAgent:
                 print("             [NON-INTERACTIVE] Defaulting to DENY")
                 return False
         else:
-            print(f"             [REJECTED] Critical action blocked")
+            print("             [REJECTED] Critical action blocked")
             return False
 
     # =========================================================================

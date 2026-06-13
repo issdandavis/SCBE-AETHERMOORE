@@ -120,9 +120,7 @@ def build_records(root: Path) -> list[FileRecord]:
 
 def write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def append_catalog(manifest: dict, records: list[FileRecord]) -> None:
@@ -156,14 +154,17 @@ def copy_tree(src: Path, dest: Path) -> None:
 def remove_tree(path: Path) -> list[str]:
     errors: list[str] = []
 
-    def onexc(function, failing_path, excinfo) -> None:
+    def retry_then_record(function, failing_path, _excinfo) -> None:
         try:
             Path(failing_path).chmod(stat.S_IWRITE)
             function(failing_path)
         except Exception as exc:  # pragma: no cover - platform-specific fallback
             errors.append(f"{failing_path}: {type(exc).__name__}: {exc}")
 
-    shutil.rmtree(path, onexc=onexc)
+    if sys.version_info >= (3, 12):
+        shutil.rmtree(path, onexc=retry_then_record)
+    else:  # rmtree(onexc=...) requires Python 3.12; repo supports 3.11
+        shutil.rmtree(path, onerror=retry_then_record)
     return errors
 
 
@@ -179,9 +180,7 @@ def directory_size(root: Path) -> tuple[int, int]:
     return files, total
 
 
-def compare_records(
-    src_records: list[FileRecord], dest_records: list[FileRecord]
-) -> list[str]:
+def compare_records(src_records: list[FileRecord], dest_records: list[FileRecord]) -> list[str]:
     errors: list[str] = []
     src_map = {r.relative_path: r for r in src_records}
     dest_map = {r.relative_path: r for r in dest_records}
@@ -260,9 +259,7 @@ def plan_archive(args: argparse.Namespace, *, write_plan: bool = True) -> dict:
         fail(f"source is not a directory: {src}")
 
     cloud_root = Path(args.cloud_root)
-    archive_id = (
-        args.archive_id or f"{src.name}_{datetime.now().strftime('%Y%m%d-%H%M%S')}"
-    )
+    archive_id = args.archive_id or f"{src.name}_{datetime.now().strftime('%Y%m%d-%H%M%S')}"
     dest = cloud_root / args.bucket / args.lane / archive_id
     files, source_bytes = directory_size(src)
     free_bytes = shutil.disk_usage(src.anchor or str(src)).free
@@ -301,9 +298,7 @@ def archive(args: argparse.Namespace) -> None:
     if not cloud_root.exists() or not cloud_root.is_dir():
         fail(f"cloud root is not mounted or not a directory: {cloud_root}")
 
-    archive_id = (
-        args.archive_id or f"{src.name}_{datetime.now().strftime('%Y%m%d-%H%M%S')}"
-    )
+    archive_id = args.archive_id or f"{src.name}_{datetime.now().strftime('%Y%m%d-%H%M%S')}"
     dest = cloud_root / args.bucket / args.lane / archive_id
     if dest.exists() and any(dest.iterdir()):
         fail(f"destination already exists and is not empty: {dest}")
@@ -360,13 +355,9 @@ def archive(args: argparse.Namespace) -> None:
                 f"{len(delete_errors)} errors. Reclaimed bytes: {after_free - before_free}"
             )
         else:
-            print(
-                f"Deleted verified source. Reclaimed bytes: {after_free - before_free}"
-            )
+            print(f"Deleted verified source. Reclaimed bytes: {after_free - before_free}")
     else:
-        print(
-            "Verified copy complete. Source preserved because --delete-source was not set."
-        )
+        print("Verified copy complete. Source preserved because --delete-source was not set.")
 
 
 def cleanup_verified(args: argparse.Namespace) -> None:
@@ -391,9 +382,7 @@ def cleanup_verified(args: argparse.Namespace) -> None:
     manifest["cleanup_free_bytes_before"] = before_free
     manifest["cleanup_reclaimed_bytes"] = after_free - before_free
     manifest["delete_errors"] = delete_errors[:200]
-    manifest["reclaimed_bytes"] = after_free - int(
-        manifest.get("before_free_bytes") or before_free
-    )
+    manifest["reclaimed_bytes"] = after_free - int(manifest.get("before_free_bytes") or before_free)
     manifest["source_deleted"] = not src.exists()
     write_json(dest / MANIFEST_NAME, manifest)
     write_json(manifest_path, manifest)
@@ -415,25 +404,19 @@ def main() -> None:
 
     sub.add_parser("discover", help="Print likely mounted cloud roots as JSON lines")
 
-    inventory_p = sub.add_parser(
-        "inventory", help="Rank local generated/archive candidates"
-    )
+    inventory_p = sub.add_parser("inventory", help="Rank local generated/archive candidates")
     inventory_p.add_argument("--roots", nargs="*", default=None)
     inventory_p.add_argument("--depth", type=int, default=1)
     inventory_p.add_argument("--min-bytes", type=int, default=1_000_000)
     inventory_p.add_argument("--limit", type=int, default=25)
 
-    archive_p = sub.add_parser(
-        "archive", help="Copy, verify, catalog, and optionally delete a folder"
-    )
+    archive_p = sub.add_parser("archive", help="Copy, verify, catalog, and optionally delete a folder")
     archive_p.add_argument("--source", required=True)
     archive_p.add_argument("--cloud-root", required=True)
     archive_p.add_argument("--bucket", default="SCBE_RAG_ARCHIVE")
     archive_p.add_argument("--lane", default="cold")
     archive_p.add_argument("--archive-id")
-    archive_p.add_argument(
-        "--local-manifest", default=".scbe/cloud_rag/latest_offload_manifest.json"
-    )
+    archive_p.add_argument("--local-manifest", default=".scbe/cloud_rag/latest_offload_manifest.json")
     archive_p.add_argument("--delete-source", action="store_true")
     archive_p.add_argument(
         "--dry-run",
@@ -441,12 +424,8 @@ def main() -> None:
         help="write/print an archive plan without copying",
     )
 
-    cleanup_p = sub.add_parser(
-        "cleanup-verified", help="Delete source from an already verified manifest"
-    )
-    cleanup_p.add_argument(
-        "--manifest", default=".scbe/cloud_rag/latest_offload_manifest.json"
-    )
+    cleanup_p = sub.add_parser("cleanup-verified", help="Delete source from an already verified manifest")
+    cleanup_p.add_argument("--manifest", default=".scbe/cloud_rag/latest_offload_manifest.json")
 
     args = parser.parse_args()
     if args.cmd == "discover":

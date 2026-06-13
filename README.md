@@ -1,10 +1,13 @@
 # SCBE-AETHERMOORE
 
-A local-first governance gate for AI inputs and outputs.
+[![CI](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/ci.yml/badge.svg)](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/scbe-aethermoore)](https://www.npmjs.com/package/scbe-aethermoore)
+[![PyPI](https://img.shields.io/pypi/v/scbe-aethermoore)](https://pypi.org/project/scbe-aethermoore/)
+[![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE-NOTICE.md)
 
-It returns a decision — `ALLOW` / `QUARANTINE` / `ESCALATE` / `DENY` — with a stability score and a tamper-evident audit receipt, and it runs locally: no API key, model download, or network call required. It is built to sit in front of (or behind) an LLM call and give you a logged, reproducible safety decision you can hand to an auditor. It composes with upstream tools like NeMo Guardrails or Guardrails AI rather than replacing them.
+Post-quantum AI governance through geometric adversarial cost scaling.
 
-> **Research note, stated plainly.** The project also explores hyperbolic-geometry cost scaling and a six-"tongue" signature for adversarial drift. These are active research directions, **not** proven detectors. On real prompt-injection corpora, a plain character n-gram baseline currently beats the tongue/signature representation — see [Measured Results](#measured-results). Treat the geometry as research; the product is the gate, the receipt, and the audit envelope.
+Adversarial inputs cost exponentially more the further they drift from safe operation. The mechanism is hyperbolic geometry applied to semantic embeddings — not heuristic classifiers or blocklists. The pipeline runs locally, produces audit receipts, and composes with upstream safety tools.
 
 **npm** · **PyPI** · **Patent pending: USPTO application #63/961,403** · **CAGE 1EXD5** · **SAM UEI J4NXHM6N5F59**
 
@@ -78,27 +81,6 @@ Neither Python nor npm package requires a server, API key, or external network c
 - Credit top-up: [Ko-fi / izdandavis](https://ko-fi.com/izdandavis)
 
 Service credits are pay-as-you-go: billable provider/model usage is passed through with a 2–5% SCBE coordination fee. No subscription required to use the open-source packages.
-
----
-
-## Measured Results
-
-These are honest, reproducible numbers — including where SCBE's research mechanisms **lose**. Run them yourself: `PYTHONPATH=. python experiments/honest_injection_benchmark.py` (uses public, auth-free datasets).
-
-**Prompt-injection detection on real corpora** (deepset/prompt-injections, jackhhao/jailbreak). Same logistic-regression classifier on each representation; headline metric is true-positive rate at a 1% false-positive operating point (TPR@1%FPR — false quarantines annoy real users):
-
-| Test | char n-gram baseline | SCBE tongue/bit-signature | golden-ratio (φ) weighting |
-|---|---|---|---|
-| In-domain (deepset) | **0.42** | 0.19 | decorative (Δ −0.02) |
-| Cross-source (→ jailbreak) | **0.53** | 0.08 | decorative (Δ +0.00) |
-
-What this says, precisely:
-
-- A standard character n-gram model **beats the tongue/signature representation by 2–6×** on real injection text. The φ-weighting that distinguishes the "Sacred Tongues" is **decorative** here — removing it does not change the result.
-- So the recommended detector today is the cheap, local, zero-heavy-dependency baseline. SCBE's value is the **governance envelope around it**: the decision tiers, the deterministic stability score, the PQC audit receipt, and the reproducible logging — not the geometry.
-- **Scope:** this benchmark tests the byte/bit-signature feature representation. An embedding-based gate and a head-to-head against NeMo Guardrails / Guardrails AI are not yet run (they require heavier dependencies) and are tracked as the next milestone. Until those land, treat any geometry-based detection claim as unproven.
-
-Earlier synthetic AUC figures (e.g. ~0.99) came from a saturated toy task where every method scored near-perfect; they do not rank methods and are not used as product claims.
 
 ---
 

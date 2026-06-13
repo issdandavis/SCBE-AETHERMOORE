@@ -41,11 +41,16 @@ def test_agent_search_zero_credit_fanout_with_mocked_fetch() -> None:
               return { query: { search: [{ title: 'SCBE', snippet: 'governed <b>agent</b> overlay' }] } };
             }
             if (String(url).includes('openalex')) {
-              return { results: [{ display_name: 'Low Resource Computing', id: 'https://openalex.org/W1', publication_year: 2026 }] };
+              return {
+                results: [
+                  { display_name: 'Low Resource Computing', id: 'https://openalex.org/W1', publication_year: 2026 }
+                ]
+              };
             }
             return { AbstractURL: 'https://example.com/scbe', Heading: 'SCBE', Abstract: 'Local first agent bus' };
           },
-          text: async () => '<feed><entry><title>Agent overlay</title><id>https://arxiv.org/abs/0000.00000</id><summary>test</summary></entry></feed>'
+          text: async () => '<feed><entry><title>Agent overlay</title>' +
+            '<id>https://arxiv.org/abs/0000.00000</id><summary>test</summary></entry></feed>'
         });
         const { searchAll } = require('./api/agent/search.js')._private;
         searchAll('scbe low resource', { sources: ['duckduckgo', 'wikipedia', 'openalex', 'arxiv'], maxResults: 8 })

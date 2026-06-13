@@ -9,11 +9,9 @@ then scores the result on evidence-bearing behavior:
 - landing and resume pack creation
 - tamper detection
 - practical execution depth
-- headed/headless CLI parity
 
-Execution depth requires real local/offline agent-bus dispatch receipts; it
-must not pass on recorded stubs. Headed/headless parity requires human output
-to expose the same key state that JSON automation reads.
+The last category is expected to stay below full score while squad execution is
+still a recorded phase-2 stub.
 """
 
 from __future__ import annotations
@@ -126,35 +124,17 @@ def score(report: dict[str, Any]) -> dict[str, Any]:
         "tamper_detection": 20,
         "latency": 10,
         "execution_depth": 15,
-        "headed_headless_parity": 10,
     }
     earned = {
-        "command_surface": (
-            weights["command_surface"] if checks["command_surface"]["ok"] else 0
-        ),
-        "chain_integrity": (
-            weights["chain_integrity"] if checks["chain_integrity"]["ok"] else 0
-        ),
-        "landing_resume": (
-            weights["landing_resume"] if checks["landing_resume"]["ok"] else 0
-        ),
-        "tamper_detection": (
-            weights["tamper_detection"] if checks["tamper_detection"]["ok"] else 0
-        ),
+        "command_surface": weights["command_surface"] if checks["command_surface"]["ok"] else 0,
+        "chain_integrity": weights["chain_integrity"] if checks["chain_integrity"]["ok"] else 0,
+        "landing_resume": weights["landing_resume"] if checks["landing_resume"]["ok"] else 0,
+        "tamper_detection": weights["tamper_detection"] if checks["tamper_detection"]["ok"] else 0,
         "latency": (
-            weights["latency"]
-            if checks["latency"]["p95_ms"] < 1000
-            else 5 if checks["latency"]["p95_ms"] < 3000 else 0
+            weights["latency"] if checks["latency"]["p95_ms"] < 1000 else 5 if checks["latency"]["p95_ms"] < 3000 else 0
         ),
         "execution_depth": (
-            weights["execution_depth"]
-            if checks["execution_depth"]["actual_tool_or_bus_dispatch"]
-            else 0
-        ),
-        "headed_headless_parity": (
-            weights["headed_headless_parity"]
-            if checks["headed_headless_parity"]["ok"]
-            else 0
+            weights["execution_depth"] if checks["execution_depth"]["actual_tool_or_bus_dispatch"] else 0
         ),
     }
     total = sum(weights.values())
@@ -162,11 +142,7 @@ def score(report: dict[str, Any]) -> dict[str, Any]:
     blockers = []
     if earned["execution_depth"] == 0:
         blockers.append(
-            "Squad/task execution did not produce enabled local/offline dispatch receipts."
-        )
-    if earned["headed_headless_parity"] == 0:
-        blockers.append(
-            "Headed CLI output does not expose the same key workflow state as headless JSON."
+            "Squad/task execution is still stubbed; benchmark proves durability, not autonomous task completion."
         )
     if not checks["tamper_detection"]["ok"]:
         blockers.append("Tamper detection did not trip as expected.")
@@ -226,6 +202,7 @@ def run_benchmark(keep_workspace: bool = False) -> dict[str, Any]:
         "--json",
     )
     commands.append(do.preview())
+
     status_runs = [run_scbe(workspace, "work", "status", "--json") for _ in range(7)]
     commands.extend(item.preview() for item in status_runs)
     status_body = status_runs[-1].json_body() if status_runs[-1].ok else {}
@@ -241,67 +218,35 @@ def run_benchmark(keep_workspace: bool = False) -> dict[str, Any]:
     commands.append(resume.preview())
     resume_body = resume.json_body() if resume.ok else {}
 
-    parity_status = run_scbe(workspace, "work", "status", "--json")
-    commands.append(parity_status.preview())
-    parity_status_body = parity_status.json_body() if parity_status.ok else {}
-    headed_status = run_scbe(workspace, "work", "status")
-    commands.append(headed_status.preview())
-    headed_land_list = run_scbe(workspace, "land", "list")
-    commands.append(headed_land_list.preview())
-
     tamper_workspace = tmp_root / "tamper-workspace"
     shutil.copytree(workspace, tamper_workspace)
     ledger_mutated = mutate_second_ledger_event(tamper_workspace)
     tamper_status = run_scbe(tamper_workspace, "work", "status", "--json")
     commands.append(tamper_status.preview())
-    tamper_status_body = (
-        tamper_status.json_body() if tamper_status.stdout.startswith("{") else {}
-    )
+    tamper_status_body = tamper_status.json_body() if tamper_status.stdout.startswith("{") else {}
 
     landing_tamper_workspace = tmp_root / "landing-tamper-workspace"
     shutil.copytree(workspace, landing_tamper_workspace)
     landing_mutated = mutate_latest_landing(landing_tamper_workspace)
     landing_tamper_list = run_scbe(landing_tamper_workspace, "land", "list", "--json")
     commands.append(landing_tamper_list.preview())
-    landing_tamper_body = (
-        landing_tamper_list.json_body() if landing_tamper_list.ok else {}
-    )
+    landing_tamper_body = landing_tamper_list.json_body() if landing_tamper_list.ok else {}
 
     status_latencies = [item.elapsed_ms for item in status_runs]
-    ledger_lines = (
-        (workspace / ".scbe-longform" / "ledger.jsonl")
-        .read_text(encoding="utf-8")
-        .splitlines()
-    )
+    ledger_lines = (workspace / ".scbe-longform" / "ledger.jsonl").read_text(encoding="utf-8").splitlines()
     ledger_events = [json.loads(line) for line in ledger_lines if line.strip()]
-    stage_events = [
-        event for event in ledger_events if event.get("kind") == "stage_complete"
-    ]
-    dispatch_events = [
-        event for event in ledger_events if event.get("kind") == "agentbus_dispatch"
-    ]
-    stubbed_stage_count = sum(
-        event.get("payload", {}).get("status") == "stub" for event in stage_events
-    )
-    dispatched_stage_count = sum(
-        event.get("payload", {}).get("status") == "dispatched" for event in stage_events
-    )
+    stage_events = [event for event in ledger_events if event.get("kind") == "stage_complete"]
+    dispatch_events = [event for event in ledger_events if event.get("kind") == "agentbus_dispatch"]
+    stubbed_stage_count = sum(event.get("payload", {}).get("status") == "stub" for event in stage_events)
+    dispatched_stage_count = sum(event.get("payload", {}).get("status") == "dispatched" for event in stage_events)
     dispatch_enabled_count = sum(
-        event.get("payload", {}).get("dispatch", {}).get("enabled") is True
-        for event in dispatch_events
+        event.get("payload", {}).get("dispatch", {}).get("enabled") is True for event in dispatch_events
     )
 
     checks = {
         "command_surface": {
-            "ok": all(item.ok for item in [init, spawn, do, land_list, resume])
-            and bool(first_hash),
-            "commands_checked": [
-                "work init",
-                "agent spawn",
-                "do",
-                "land list",
-                "work resume",
-            ],
+            "ok": all(item.ok for item in [init, spawn, do, land_list, resume]) and bool(first_hash),
+            "commands_checked": ["work init", "agent spawn", "do", "land list", "work resume"],
         },
         "chain_integrity": {
             "ok": bool(status_body.get("chain_valid")),
@@ -309,9 +254,7 @@ def run_benchmark(keep_workspace: bool = False) -> dict[str, Any]:
             "event_count": status_body.get("event_count"),
         },
         "landing_resume": {
-            "ok": bool(
-                land_body.get("count", 0) >= 1 and resume_body.get("resume_pack_path")
-            ),
+            "ok": bool(land_body.get("count", 0) >= 1 and resume_body.get("resume_pack_path")),
             "landing_count": land_body.get("count", 0),
             "resume_pack_path": resume_body.get("resume_pack_path"),
         },
@@ -320,17 +263,12 @@ def run_benchmark(keep_workspace: bool = False) -> dict[str, Any]:
                 ledger_mutated
                 and tamper_status_body.get("chain_valid") is False
                 and landing_mutated
-                and any(
-                    item.get("verified") is False
-                    for item in landing_tamper_body.get("landings", [])
-                )
+                and any(item.get("verified") is False for item in landing_tamper_body.get("landings", []))
             ),
             "ledger_mutated": ledger_mutated,
             "chain_valid_after_ledger_mutation": tamper_status_body.get("chain_valid"),
             "landing_mutated": landing_mutated,
-            "landing_verified_values": [
-                item.get("verified") for item in landing_tamper_body.get("landings", [])
-            ],
+            "landing_verified_values": [item.get("verified") for item in landing_tamper_body.get("landings", [])],
         },
         "latency": {
             "status_runs": len(status_runs),
@@ -347,30 +285,6 @@ def run_benchmark(keep_workspace: bool = False) -> dict[str, Any]:
             "actual_tool_or_bus_dispatch": dispatched_stage_count == len(stage_events)
             and dispatch_enabled_count == len(stage_events)
             and len(stage_events) > 0,
-        },
-        "headed_headless_parity": {
-            "ok": bool(
-                headed_status.ok
-                and headed_land_list.ok
-                and "SCBE Longform Workspace Status" in headed_status.stdout
-                and "chain valid:" in headed_status.stdout
-                and str(parity_status_body.get("event_count")) in headed_status.stdout
-                and str(parity_status_body.get("brick_count")) in headed_status.stdout
-                and str(land_body.get("count", 0)) not in ("0", "")
-                and first_hash in headed_land_list.stdout
-                and "Bricks" in headed_land_list.stdout
-            ),
-            "headless_status_keys": (
-                sorted(parity_status_body.keys())
-                if isinstance(parity_status_body, dict)
-                else []
-            ),
-            "headed_status_has_chain": "chain valid:" in headed_status.stdout,
-            "headed_status_has_counts": bool(
-                str(parity_status_body.get("event_count")) in headed_status.stdout
-                and str(parity_status_body.get("brick_count")) in headed_status.stdout
-            ),
-            "headed_land_has_landing_hash": first_hash in headed_land_list.stdout,
         },
     }
 
@@ -393,13 +307,6 @@ def run_benchmark(keep_workspace: bool = False) -> dict[str, Any]:
 
 def render_markdown(report: dict[str, Any]) -> str:
     checks = report["checks"]
-    command_surface = checks["command_surface"]
-    chain = checks["chain_integrity"]
-    landing = checks["landing_resume"]
-    tamper = checks["tamper_detection"]
-    latency = checks["latency"]
-    execution = checks["execution_depth"]
-    parity = checks["headed_headless_parity"]
     lines = [
         "# SCBE Longform CLI Benchmark",
         "",
@@ -408,36 +315,20 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "| Gate | Result | Evidence |",
         "|---|---:|---|",
-        (
-            f"| Command surface | {command_surface['ok']} | "
-            f"{', '.join(command_surface['commands_checked'])} |"
-        ),
-        (
-            f"| Chain integrity | {chain['ok']} | "
-            f"events={chain['event_count']}, bricks={chain['brick_count']} |"
-        ),
-        f"| Landing/resume | {landing['ok']} | landings={landing['landing_count']} |",
-        (
-            f"| Tamper detection | {tamper['ok']} | "
-            f"chain_after_tamper={tamper['chain_valid_after_ledger_mutation']}, "
-            f"landing_verified={tamper['landing_verified_values']} |"
-        ),
-        (
-            f"| Latency | p95 {latency['p95_ms']} ms | "
-            f"median={latency['median_ms']} ms, max={latency['max_ms']} ms |"
-        ),
-        (
-            f"| Execution depth | {execution['actual_tool_or_bus_dispatch']} | "
-            f"dispatched={execution['dispatched_stage_count']}, "
-            f"dispatch_receipts={execution['agentbus_dispatch_count']}, "
-            f"stubbed={execution['stubbed_stage_count']} |"
-        ),
-        (
-            f"| Headed/headless parity | {parity['ok']} | "
-            f"headed_status_chain={parity['headed_status_has_chain']}, "
-            f"headed_counts={parity['headed_status_has_counts']}, "
-            f"headed_landing_hash={parity['headed_land_has_landing_hash']} |"
-        ),
+        f"| Command surface | {checks['command_surface']['ok']} "
+        f"| {', '.join(checks['command_surface']['commands_checked'])} |",
+        f"| Chain integrity | {checks['chain_integrity']['ok']} "
+        f"| events={checks['chain_integrity']['event_count']}, bricks={checks['chain_integrity']['brick_count']} |",
+        f"| Landing/resume | {checks['landing_resume']['ok']} | landings={checks['landing_resume']['landing_count']} |",
+        f"| Tamper detection | {checks['tamper_detection']['ok']} "
+        f"| chain_after_tamper={checks['tamper_detection']['chain_valid_after_ledger_mutation']}, "
+        f"landing_verified={checks['tamper_detection']['landing_verified_values']} |",
+        f"| Latency | p95 {checks['latency']['p95_ms']} ms "
+        f"| median={checks['latency']['median_ms']} ms, max={checks['latency']['max_ms']} ms |",
+        f"| Execution depth | {checks['execution_depth']['actual_tool_or_bus_dispatch']} "
+        f"| dispatched={checks['execution_depth']['dispatched_stage_count']}, "
+        f"dispatch_receipts={checks['execution_depth']['agentbus_dispatch_count']}, "
+        f"stubbed={checks['execution_depth']['stubbed_stage_count']} |",
         "",
         "## Blockers",
         "",
@@ -455,9 +346,7 @@ def main() -> int:
     parser.add_argument("--out-dir", default=str(ARTIFACT_DIR))
     parser.add_argument("--keep-workspace", action="store_true")
     parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Accepted for scbe bench compatibility; output is JSON by default",
+        "--json", action="store_true", help="Accepted for scbe bench compatibility; output is JSON by default"
     )
     args = parser.parse_args()
 

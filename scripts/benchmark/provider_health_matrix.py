@@ -23,23 +23,23 @@ import json
 import os
 import sys
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
-
 
 # ---------------------------------------------------------------------------
 # Provider definitions
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ProviderSpec:
     name: str
-    tier: str          # "local" | "free" | "paid"
+    tier: str  # "local" | "free" | "paid"
     env_vars: list[str]
     sdk_package: str
-    probe_fn: str      # name of the probe function
+    probe_fn: str  # name of the probe function
     base_url: Optional[str] = None
     default_model: Optional[str] = None
 
@@ -114,17 +114,18 @@ PROVIDERS: list[ProviderSpec] = [
 # Health result
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ProviderHealth:
     name: str
     tier: str
     key_configured: bool
     sdk_installed: bool
-    reachable: Optional[bool] = None    # None = not checked (no key / no sdk)
+    reachable: Optional[bool] = None  # None = not checked (no key / no sdk)
     latency_ms: Optional[int] = None
     error: Optional[str] = None
-    status: str = "UNKNOWN"             # READY | KEY_MISSING | SDK_MISSING | UNREACHABLE | ERROR
-    free_first_rank: int = 0            # lower = try first; 0 = local, 1-2 = free, 3+ = paid
+    status: str = "UNKNOWN"  # READY | KEY_MISSING | SDK_MISSING | UNREACHABLE | ERROR
+    free_first_rank: int = 0  # lower = try first; 0 = local, 1-2 = free, 3+ = paid
 
 
 def _env_key(spec: ProviderSpec) -> Optional[str]:
@@ -137,6 +138,7 @@ def _env_key(spec: ProviderSpec) -> Optional[str]:
 
 def _sdk_installed(package: str) -> bool:
     import importlib.util
+
     return importlib.util.find_spec(package) is not None
 
 
@@ -144,9 +146,11 @@ def _sdk_installed(package: str) -> bool:
 # Probe functions — each returns (reachable, latency_ms, error)
 # ---------------------------------------------------------------------------
 
+
 def _probe_ollama(spec: ProviderSpec) -> tuple[bool, Optional[int], Optional[str]]:
     try:
         import urllib.request
+
         t0 = time.monotonic()
         req = urllib.request.Request(f"{spec.base_url}/api/tags", method="GET")
         with urllib.request.urlopen(req, timeout=5) as resp:
@@ -162,6 +166,7 @@ def _probe_openai_compat(spec: ProviderSpec) -> tuple[bool, Optional[int], Optio
         return False, None, "no API key"
     try:
         import urllib.request
+
         t0 = time.monotonic()
         req = urllib.request.Request(
             f"{spec.base_url}/models",
@@ -183,6 +188,7 @@ def _probe_huggingface(spec: ProviderSpec) -> tuple[bool, Optional[int], Optiona
     key = _env_key(spec)
     try:
         import urllib.request
+
         t0 = time.monotonic()
         headers = {}
         if key:
@@ -208,6 +214,7 @@ def _probe_anthropic(spec: ProviderSpec) -> tuple[bool, Optional[int], Optional[
         return False, None, "no API key"
     try:
         import urllib.request
+
         t0 = time.monotonic()
         req = urllib.request.Request(
             "https://api.anthropic.com/v1/messages",

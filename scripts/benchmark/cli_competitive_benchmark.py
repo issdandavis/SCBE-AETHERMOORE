@@ -216,15 +216,21 @@ def benchmark_scbe() -> dict[str, Any]:
     possible_improvements = [
         {
             "gap": "custom_commands",
-            "recommendation": "Add a repo-local .geoseal/commands/*.md prompt-command loader similar to slash-command CLIs.",
+            "recommendation": (
+                "Add a repo-local .geoseal/commands/*.md prompt-command loader similar to slash-command CLIs."
+            ),
         },
         {
             "gap": "permission_model",
-            "recommendation": "Promote max-tier/forbid-provider into a visible geoseal permissions command and persisted profile.",
+            "recommendation": (
+                "Promote max-tier/forbid-provider into a visible geoseal permissions command and persisted profile."
+            ),
         },
         {
             "gap": "help_accuracy",
-            "recommendation": "Separate API-only examples from local passthrough commands and add tests for advertised commands.",
+            "recommendation": (
+                "Separate API-only examples from local passthrough commands and add tests for advertised commands."
+            ),
         },
     ]
     improvements = [item for item in possible_improvements if item["gap"] in gaps or item["gap"] == "help_accuracy"]

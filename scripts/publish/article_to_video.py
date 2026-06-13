@@ -21,6 +21,7 @@ Requirements:
 Environment:
     FFmpeg must be on PATH for final video composition.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -78,12 +79,13 @@ def _safe_console(text: str) -> str:
 # Markdown parsing
 # ---------------------------------------------------------------------------
 
+
 def _strip_frontmatter(text: str) -> str:
     """Remove YAML frontmatter delimited by ---."""
     if text.startswith("---"):
         end = text.find("---", 3)
         if end != -1:
-            return text[end + 3:].strip()
+            return text[end + 3 :].strip()
     return text.strip()
 
 
@@ -173,11 +175,13 @@ def _split_into_segments(
         if current_text.strip():
             narration = _clean_for_tts(current_text)
             if narration.strip():
-                segments.append({
-                    "type": "content",
-                    "narration": narration,
-                    "display_lines": current_display_lines[:] if current_display_lines else [narration[:200]],
-                })
+                segments.append(
+                    {
+                        "type": "content",
+                        "narration": narration,
+                        "display_lines": current_display_lines[:] if current_display_lines else [narration[:200]],
+                    }
+                )
         current_text = ""
         current_display_lines = []
 
@@ -193,13 +197,17 @@ def _split_into_segments(
             idx = int(code_match.group(1))
             block = next((b for b in code_blocks if b["index"] == idx), None)
             if block:
-                narration = f"Here is a code example. {block['lang']} code." if block["lang"] else "Here is a code example."
-                segments.append({
-                    "type": "code",
-                    "narration": narration,
-                    "code": block["code"],
-                    "lang": block["lang"],
-                })
+                narration = (
+                    f"Here is a code example. {block['lang']} code." if block["lang"] else "Here is a code example."
+                )
+                segments.append(
+                    {
+                        "type": "code",
+                        "narration": narration,
+                        "code": block["code"],
+                        "lang": block["lang"],
+                    }
+                )
             continue
 
         # Heading
@@ -281,11 +289,13 @@ def parse_article(
 # TTS audio generation (edge-tts)
 # ---------------------------------------------------------------------------
 
+
 def _get_kokoro():
     """Lazy-load Kokoro TTS model (singleton)."""
     global _KOKORO_INSTANCE
     if _KOKORO_INSTANCE is None:
         from kokoro_onnx import Kokoro
+
         _KOKORO_INSTANCE = Kokoro(str(KOKORO_MODEL), str(KOKORO_VOICES))
     return _KOKORO_INSTANCE
 
@@ -305,6 +315,7 @@ async def _generate_tts_segment(
         kokoro_voice = voice.split(":", 1)[1]
         try:
             import soundfile as sf
+
             kokoro = _get_kokoro()
             samples, sr = kokoro.create(text, voice=kokoro_voice, speed=kokoro_speed)
             sf.write(str(output_path), samples, sr)
@@ -314,6 +325,7 @@ async def _generate_tts_segment(
         except Exception as e:
             print(f"  Kokoro error, falling back to edge-tts: {e}")
             import edge_tts
+
             communicate = edge_tts.Communicate(
                 text,
                 "en-US-AndrewMultilingualNeural",
@@ -354,10 +366,18 @@ def _get_audio_duration(audio_path: Path) -> float:
     try:
         result = subprocess.run(
             [
-                ffprobe, "-v", "error", "-show_entries", "format=duration",
-                "-of", "default=noprint_wrappers=1:nokey=1", str(audio_path),
+                ffprobe,
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "default=noprint_wrappers=1:nokey=1",
+                str(audio_path),
             ],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         return float(result.stdout.strip()) if result.returncode == 0 else 0.0
     except Exception:
@@ -412,11 +432,7 @@ def concatenate_audio(segments: list[dict], work_dir: Path) -> Path:
         sys.exit(1)
 
     # Detect if segments are WAV (Kokoro) or MP3 (edge-tts)
-    is_wav = any(
-        seg.get("audio_path", "").endswith(".wav")
-        for seg in segments
-        if seg.get("audio_path")
-    )
+    is_wav = any(seg.get("audio_path", "").endswith(".wav") for seg in segments if seg.get("audio_path"))
     ext = "wav" if is_wav else "mp3"
     silence_path = work_dir / f"silence.{ext}"
 
@@ -424,22 +440,38 @@ def concatenate_audio(segments: list[dict], work_dir: Path) -> Path:
     if is_wav:
         subprocess.run(
             [
-                ffmpeg, "-y", "-f", "lavfi", "-i",
+                ffmpeg,
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
                 "anullsrc=r=24000:cl=mono",
-                "-t", str(PAUSE_BETWEEN_SEGMENTS_S),
-                "-c:a", "pcm_s16le", str(silence_path),
+                "-t",
+                str(PAUSE_BETWEEN_SEGMENTS_S),
+                "-c:a",
+                "pcm_s16le",
+                str(silence_path),
             ],
-            capture_output=True, timeout=10,
+            capture_output=True,
+            timeout=10,
         )
     else:
         subprocess.run(
             [
-                ffmpeg, "-y", "-f", "lavfi", "-i",
+                ffmpeg,
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
                 "anullsrc=r=44100:cl=mono",
-                "-t", str(PAUSE_BETWEEN_SEGMENTS_S),
-                "-q:a", "9", str(silence_path),
+                "-t",
+                str(PAUSE_BETWEEN_SEGMENTS_S),
+                "-q:a",
+                "9",
+                str(silence_path),
             ],
-            capture_output=True, timeout=10,
+            capture_output=True,
+            timeout=10,
         )
 
     lines: list[str] = []
@@ -458,12 +490,24 @@ def concatenate_audio(segments: list[dict], work_dir: Path) -> Path:
     output = work_dir / "full_audio.wav"
     subprocess.run(
         [
-            ffmpeg, "-y", "-f", "concat", "-safe", "0",
-            "-i", str(concat_list),
-            "-c:a", "pcm_s16le", "-ar", "24000", "-ac", "1",
+            ffmpeg,
+            "-y",
+            "-f",
+            "concat",
+            "-safe",
+            "0",
+            "-i",
+            str(concat_list),
+            "-c:a",
+            "pcm_s16le",
+            "-ar",
+            "24000",
+            "-ac",
+            "1",
             str(output),
         ],
-        capture_output=True, timeout=120,
+        capture_output=True,
+        timeout=120,
     )
     return output
 
@@ -471,6 +515,7 @@ def concatenate_audio(segments: list[dict], work_dir: Path) -> Path:
 # ---------------------------------------------------------------------------
 # Visual slide generation (Pillow)
 # ---------------------------------------------------------------------------
+
 
 def _get_font(size: int, bold: bool = False):
     """Get a TrueType font, falling back to default if needed."""
@@ -480,13 +525,19 @@ def _get_font(size: int, bold: bool = False):
     font_names = []
     if bold:
         font_names = [
-            "arialbd.ttf", "Arial Bold.ttf", "DejaVuSans-Bold.ttf",
-            "LiberationSans-Bold.ttf", "calibrib.ttf",
+            "arialbd.ttf",
+            "Arial Bold.ttf",
+            "DejaVuSans-Bold.ttf",
+            "LiberationSans-Bold.ttf",
+            "calibrib.ttf",
         ]
     else:
         font_names = [
-            "arial.ttf", "Arial.ttf", "DejaVuSans.ttf",
-            "LiberationSans-Regular.ttf", "calibri.ttf",
+            "arial.ttf",
+            "Arial.ttf",
+            "DejaVuSans.ttf",
+            "LiberationSans-Regular.ttf",
+            "calibri.ttf",
         ]
 
     for name in font_names:
@@ -516,8 +567,12 @@ def _get_mono_font(size: int):
     from PIL import ImageFont
 
     mono_names = [
-        "consola.ttf", "Consolas.ttf", "DejaVuSansMono.ttf",
-        "LiberationMono-Regular.ttf", "cour.ttf", "Courier New.ttf",
+        "consola.ttf",
+        "Consolas.ttf",
+        "DejaVuSansMono.ttf",
+        "LiberationMono-Regular.ttf",
+        "cour.ttf",
+        "Courier New.ttf",
     ]
     win_fonts = Path("C:/Windows/Fonts")
     for name in mono_names:
@@ -952,6 +1007,7 @@ def generate_all_slides(
 # Video composition (FFmpeg)
 # ---------------------------------------------------------------------------
 
+
 def compose_video(slides: list[dict], segments: list[dict], audio_path: Path, output_path: Path) -> bool:
     """Compose final video from slides + audio using FFmpeg."""
     ffmpeg = shutil.which("ffmpeg")
@@ -989,27 +1045,50 @@ def compose_video(slides: list[dict], segments: list[dict], audio_path: Path, ou
 
     # Compose: images + audio -> MP4
     cmd = [
-        ffmpeg, "-y",
-        "-f", "concat", "-safe", "0", "-i", str(concat_file),
+        ffmpeg,
+        "-y",
+        "-f",
+        "concat",
+        "-safe",
+        "0",
+        "-i",
+        str(concat_file),
     ]
 
     if audio_path.exists() and audio_path.stat().st_size > 0:
         cmd.extend(["-i", str(audio_path)])
-        cmd.extend([
-            "-c:v", "libx264", "-pix_fmt", "yuv420p",
-            "-c:a", "aac", "-b:a", "192k",
-            "-shortest",
-            "-r", "30",
-            "-s", f"{RESOLUTION[0]}x{RESOLUTION[1]}",
-            str(output_path),
-        ])
+        cmd.extend(
+            [
+                "-c:v",
+                "libx264",
+                "-pix_fmt",
+                "yuv420p",
+                "-c:a",
+                "aac",
+                "-b:a",
+                "192k",
+                "-shortest",
+                "-r",
+                "30",
+                "-s",
+                f"{RESOLUTION[0]}x{RESOLUTION[1]}",
+                str(output_path),
+            ]
+        )
     else:
-        cmd.extend([
-            "-c:v", "libx264", "-pix_fmt", "yuv420p",
-            "-r", "30",
-            "-s", f"{RESOLUTION[0]}x{RESOLUTION[1]}",
-            str(output_path),
-        ])
+        cmd.extend(
+            [
+                "-c:v",
+                "libx264",
+                "-pix_fmt",
+                "yuv420p",
+                "-r",
+                "30",
+                "-s",
+                f"{RESOLUTION[0]}x{RESOLUTION[1]}",
+                str(output_path),
+            ]
+        )
 
     print(f"  Composing video: {output_path.name}")
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
@@ -1026,13 +1105,16 @@ def compose_video(slides: list[dict], segments: list[dict], audio_path: Path, ou
 # Main pipeline
 # ---------------------------------------------------------------------------
 
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Convert a markdown article into a narrated YouTube video.")
     parser.add_argument("--file", required=True, help="Path to the input markdown article")
     parser.add_argument("--voice", default=DEFAULT_VOICE, help=f"TTS voice name (default: {DEFAULT_VOICE})")
     parser.add_argument("--output", default="", help="Output video path (default: artifacts/youtube/<filename>.mp4)")
     parser.add_argument("--segment-seconds", type=float, default=20.0, help="Target narration seconds per segment.")
-    parser.add_argument("--words-per-second", type=float, default=WORDS_PER_SECOND, help="Words/sec estimate for segmentation.")
+    parser.add_argument(
+        "--words-per-second", type=float, default=WORDS_PER_SECOND, help="Words/sec estimate for segmentation."
+    )
     parser.add_argument("--rate", default="-4%", help="edge-tts speaking rate (e.g. -8%%, +0%%, +6%%).")
     parser.add_argument("--pitch", default="+0Hz", help="edge-tts pitch (e.g. -10Hz, +0Hz, +12Hz).")
     parser.add_argument("--volume", default="+0%", help="edge-tts volume (e.g. -5%%, +0%%, +10%%).")
@@ -1044,7 +1126,9 @@ def main() -> int:
         help="Visual style for generated background imagery.",
     )
     parser.add_argument("--panel-opacity", type=int, default=196, help="Text panel opacity (0-255).")
-    parser.add_argument("--bg-images-dir", default="", help="Optional folder of background images to cycle per segment.")
+    parser.add_argument(
+        "--bg-images-dir", default="", help="Optional folder of background images to cycle per segment."
+    )
     parser.add_argument("--audio-track", default="", help="Optional external narration track (wav/mp3). Skips TTS.")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be generated without creating files")
     parser.add_argument("--thumbnail-only", action="store_true", help="Only generate the thumbnail image")
@@ -1087,8 +1171,14 @@ def main() -> int:
             print(_safe_console(f"  Background images: {args.bg_images_dir}"))
         for i, seg in enumerate(parsed["segments"]):
             est_dur = max(2.0, len(seg.get("narration", "").split()) / max(args.words_per_second, 0.1))
-            print(_safe_console(f"  Segment {i + 1}: [{seg['type']}] ~{est_dur:.0f}s - {seg.get('narration', '')[:80]}..."))
-        total_est = sum(max(2.0, len(s.get("narration", "").split()) / max(args.words_per_second, 0.1)) for s in parsed["segments"])
+            print(
+                _safe_console(
+                    f"  Segment {i + 1}: [{seg['type']}] ~{est_dur:.0f}s - {seg.get('narration', '')[:80]}..."
+                )
+            )
+        total_est = sum(
+            max(2.0, len(s.get("narration", "").split()) / max(args.words_per_second, 0.1)) for s in parsed["segments"]
+        )
         print(_safe_console(f"\n  Estimated total duration: {total_est:.0f}s ({total_est / 60:.1f} min)"))
 
         # Write evidence
@@ -1097,7 +1187,7 @@ def main() -> int:
 
     # Thumbnail
     thumb_path = output_path.with_suffix(".thumb.png")
-    print(f"\n[article_to_video] Generating thumbnail...")
+    print("\n[article_to_video] Generating thumbnail...")
     generate_thumbnail(parsed["title"], thumb_path)
     print(f"  Thumbnail: {thumb_path}")
 
@@ -1111,7 +1201,7 @@ def main() -> int:
 
     try:
         # Generate slides
-        print(f"\n[article_to_video] Generating slides...")
+        print("\n[article_to_video] Generating slides...")
         slides = generate_all_slides(
             parsed,
             work_dir,
@@ -1155,7 +1245,7 @@ def main() -> int:
                 return 1
 
             _write_evidence(parsed, args, output_path, dry_run=False)
-            print(f"\n[article_to_video] Done!")
+            print("\n[article_to_video] Done!")
             print(f"  Video: {output_path}")
             print(f"  Thumbnail: {thumb_path}")
             return 0
@@ -1175,12 +1265,12 @@ def main() -> int:
         )
 
         # Concatenate audio
-        print(f"\n[article_to_video] Concatenating audio...")
+        print("\n[article_to_video] Concatenating audio...")
         full_audio = concatenate_audio(segments, work_dir)
         print(f"  Full audio: {full_audio}")
 
         # Compose video
-        print(f"\n[article_to_video] Composing video...")
+        print("\n[article_to_video] Composing video...")
         ok = compose_video(slides, segments, full_audio, output_path)
         if not ok:
             print("ERROR: Video composition failed.")
@@ -1188,7 +1278,7 @@ def main() -> int:
             return 1
 
         _write_evidence(parsed, args, output_path, dry_run=False)
-        print(f"\n[article_to_video] Done!")
+        print("\n[article_to_video] Done!")
         print(f"  Video: {output_path}")
         print(f"  Thumbnail: {thumb_path}")
         return 0

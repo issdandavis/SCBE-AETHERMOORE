@@ -23,9 +23,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from src.crypto.sacred_tongue_payload_bijection import prove_dict  # noqa: E402
 
-DEFAULT_MANIFEST = (
-    REPO_ROOT / "config" / "eval" / "external_agentic_eval_tasks.sample.json"
-)
+DEFAULT_MANIFEST = REPO_ROOT / "config" / "eval" / "external_agentic_eval_tasks.sample.json"
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "artifacts" / "external_agentic_eval"
 SUITES = {"swe_bench", "terminal_bench", "repo_native"}
 SANDBOXES = {"host", "docker", "github_actions"}
@@ -61,9 +59,7 @@ def load_manifest(path: Path) -> list[ExternalEvalTask]:
             raise ValueError(f"unknown sandbox for {row.get('task_id')}: {sandbox}")
         verify = row.get("verify_command", [])
         if not isinstance(verify, list) or not all(isinstance(x, str) for x in verify):
-            raise ValueError(
-                f"verify_command must be list[str] for {row.get('task_id')}"
-            )
+            raise ValueError(f"verify_command must be list[str] for {row.get('task_id')}")
         tasks.append(
             ExternalEvalTask(
                 task_id=str(row["task_id"]),
@@ -90,9 +86,7 @@ def validate_tasks(tasks: list[ExternalEvalTask]) -> dict[str, Any]:
             problems.append(f"duplicate task_id: {task.task_id}")
         seen.add(task.task_id)
         if task.suite in {"swe_bench", "terminal_bench"} and task.sandbox == "host":
-            problems.append(
-                f"{task.task_id}: external evals should not default to host sandbox"
-            )
+            problems.append(f"{task.task_id}: external evals should not default to host sandbox")
         if not task.instructions:
             problems.append(f"{task.task_id}: missing instructions")
         if not task.verify_command:
@@ -128,28 +122,22 @@ def run_task(task: ExternalEvalTask, execute: bool) -> dict[str, Any]:
         task.verify_command,
         cwd=REPO_ROOT,
         text=True,
-        encoding="utf-8",
-        errors="replace",
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         timeout=600,
         check=False,
     )
-    stdout = proc.stdout or ""
-    stderr = proc.stderr or ""
     return {
         **base,
         "status": "executed",
         "ok": proc.returncode == 0,
         "returncode": proc.returncode,
-        "stdout_tail": stdout[-2500:],
-        "stderr_tail": stderr[-2500:],
+        "stdout_tail": proc.stdout[-2500:],
+        "stderr_tail": proc.stderr[-2500:],
     }
 
 
-def write_report(
-    tasks: list[ExternalEvalTask], output_root: Path, execute: bool
-) -> dict[str, Any]:
+def write_report(tasks: list[ExternalEvalTask], output_root: Path, execute: bool) -> dict[str, Any]:
     output_root.mkdir(parents=True, exist_ok=True)
     results = [run_task(task, execute) for task in tasks]
     payload = {
@@ -159,19 +147,15 @@ def write_report(
         "ok": all(row.get("ok") for row in results),
         "limits": [
             "SWE-bench and Terminal-Bench parity is not claimed until their official task runners are wired.",
-            (
-                "Docker/GitHub Actions sandboxes are represented as policy here; "
-                "this local script only executes host verifiers."
-            ),
+            "Docker/GitHub Actions sandboxes are represented as policy here; this local script "
+            "only executes host verifiers.",
         ],
         "results": results,
     }
     core = {k: v for k, v in payload.items() if k != "sacred_tongue_bijection"}
     payload["sacred_tongue_bijection"] = prove_dict(core)
     report_path = output_root / "latest_report.json"
-    report_path.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    report_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     md = [
         "# External Agentic Eval Adapter",
         "",
@@ -204,9 +188,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--validate-only", action="store_true")
-    parser.add_argument(
-        "--execute", action="store_true", help="Execute host-sandbox verifier commands."
-    )
+    parser.add_argument("--execute", action="store_true", help="Execute host-sandbox verifier commands.")
     return parser
 
 

@@ -83,8 +83,8 @@ def run_six_tongues(x0: float, x1: float, base_theta_fn, n_steps: int):
     out = {t: [x0, x1] for t in TONGUES}
     for i in range(2, n_steps):
         base = base_theta_fn(i, out)
-        for l, tongue in enumerate(TONGUES):
-            theta_l = tongue_theta(base, l)
+        for idx, tongue in enumerate(TONGUES):
+            theta_l = tongue_theta(base, idx)
             hist = out[tongue]
             hist.append(step(hist[-1], hist[-2], theta_l))
     return out

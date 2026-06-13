@@ -95,6 +95,7 @@ def _extract_params(args: list[str]) -> list[str]:
 
 # ── Schema export ──────────────────────────────────────────────────────────────
 
+
 def tools_to_bfcl_schemas(tools_path: Path) -> list[dict[str, Any]]:
     """Convert tools.json → list of OpenAI function-calling schemas (BFCL-adjacent format)."""
     tools: list[dict[str, Any]] = json.loads(tools_path.read_text(encoding="utf-8"))
@@ -124,6 +125,7 @@ def tools_to_bfcl_schemas(tools_path: Path) -> list[dict[str, Any]]:
 
 
 # ── AST validation ─────────────────────────────────────────────────────────────
+
 
 @dataclass
 class SchemaValidationResult:
@@ -161,9 +163,7 @@ def validate_bfcl_schema(schema: dict[str, Any]) -> SchemaValidationResult:
     return SchemaValidationResult(name=name, ok=not errors, errors=errors)
 
 
-def validate_all_schemas(
-    schemas: list[dict[str, Any]]
-) -> dict[str, Any]:
+def validate_all_schemas(schemas: list[dict[str, Any]]) -> dict[str, Any]:
     results = [validate_bfcl_schema(s) for s in schemas]
     ok_count = sum(1 for r in results if r.ok)
     return {
@@ -171,9 +171,7 @@ def validate_all_schemas(
         "ok": ok_count,
         "failed": len(results) - ok_count,
         "pass_rate": round(ok_count / len(results), 4) if results else 0.0,
-        "failures": [
-            {"name": r.name, "errors": r.errors} for r in results if not r.ok
-        ],
+        "failures": [{"name": r.name, "errors": r.errors} for r in results if not r.ok],
     }
 
 
@@ -195,14 +193,19 @@ TEST_CASES: list[dict[str, Any]] = [
     },
     {
         "id": "tc_02",
-        "question": "I want to stamp this payload with its permission tier before routing it: {\"action\":\"deploy\",\"env\":\"prod\"}",
+        "question": (
+            "I want to stamp this payload with its permission tier before routing it: "
+            '{"action":"deploy","env":"prod"}'
+        ),
         "ground_truth_tool": "geoseal-seal",
-        "ground_truth_args": {"task": "{\"action\":\"deploy\",\"env\":\"prod\"}"},
+        "ground_truth_args": {"task": '{"action":"deploy","env":"prod"}'},
         "category": "governance",
     },
     {
         "id": "tc_03",
-        "question": "Which Sacred Tongue language is best for this Python snippet and why? `def add(x, y): return x + y`",
+        "question": (
+            "Which Sacred Tongue language is best for this Python snippet and why? `def add(x, y): return x + y`"
+        ),
         "ground_truth_tool": "geoseal-explain-route",
         "ground_truth_args": {"task": "def add(x, y): return x + y"},
         "category": "governance",
@@ -341,6 +344,7 @@ TEST_CASES: list[dict[str, Any]] = [
 
 # ── Receipt chaining ───────────────────────────────────────────────────────────
 
+
 def _make_receipt(
     case_id: str,
     question: str,
@@ -379,6 +383,7 @@ def _make_receipt(
 
 # ── Ollama model call ──────────────────────────────────────────────────────────
 
+
 def _call_model(
     endpoint: str,
     model: str,
@@ -391,9 +396,7 @@ def _call_model(
     try:
         import openai  # type: ignore[import]
     except ImportError as exc:
-        raise ConnectionError(
-            "openai SDK not installed; run: pip install openai"
-        ) from exc
+        raise ConnectionError("openai SDK not installed; run: pip install openai") from exc
 
     try:
         client = openai.OpenAI(
@@ -401,9 +404,7 @@ def _call_model(
             api_key=auth_token or "no-key",
             timeout=timeout,
         )
-        tools_payload = [
-            {"type": "function", "function": s} for s in tool_schemas
-        ]
+        tools_payload = [{"type": "function", "function": s} for s in tool_schemas]
         resp = client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": question}],
@@ -432,14 +433,14 @@ def _call_model(
 
 # ── Scoring ────────────────────────────────────────────────────────────────────
 
-def _score_tool_selection(
-    expected: str | None, got: str | None
-) -> bool:
+
+def _score_tool_selection(expected: str | None, got: str | None) -> bool:
     """A call is correct when expected == got (both None counts as correct abstention)."""
     return expected == got
 
 
 # ── Main benchmark flow ────────────────────────────────────────────────────────
+
 
 def run_export_and_validate(
     tools_path: Path,
@@ -473,15 +474,18 @@ def run_model_eval(
         ts = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         try:
             model_tool, model_args, _ = _call_model(
-                endpoint, model, case["question"], schemas,
-                timeout=timeout, auth_token=auth_token,
+                endpoint,
+                model,
+                case["question"],
+                schemas,
+                timeout=timeout,
+                auth_token=auth_token,
             )
         except ConnectionError as exc:
             err_str = str(exc)
             errors.append(f"{case['id']}: {err_str}")
             # Auth/connectivity errors affect all cases — stop early.
-            stop_keywords = ("401", "403", "AuthenticationError", "unreachable",
-                             "not installed", "Connection")
+            stop_keywords = ("401", "403", "AuthenticationError", "unreachable", "not installed", "Connection")
             if any(kw in err_str for kw in stop_keywords):
                 break
             model_tool, model_args = None, {}
@@ -530,9 +534,7 @@ def run_model_eval(
         "correct": correct,
         "near_misses": near_miss_count,
         "accuracy": round(correct / total_run, 4) if total_run else 0.0,
-        "category_accuracy": {
-            cat: round(sum(v) / len(v), 4) for cat, v in category_scores.items()
-        },
+        "category_accuracy": {cat: round(sum(v) / len(v), 4) for cat, v in category_scores.items()},
         "receipts": receipts,
         "errors": errors,
         "caveat": (
@@ -567,7 +569,10 @@ def run_benchmark(
 
     try:
         eval_result = run_model_eval(
-            export["schema_export"]["schemas"], endpoint, model, timeout,
+            export["schema_export"]["schemas"],
+            endpoint,
+            model,
+            timeout,
             auth_token=auth_token,
         )
         report["model_eval"] = eval_result
@@ -589,6 +594,7 @@ def run_benchmark(
 
 # ── Markdown report ────────────────────────────────────────────────────────────
 
+
 def render_markdown(report: dict[str, Any]) -> str:
     val = report["ast_validation"]
     lines = [
@@ -600,8 +606,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         f"- Tools source: `{report['tools_source']}`",
         f"- Tool count: **{report['schema_export']['tool_count']}**",
-        f"- AST pass rate: **{val['pass_rate'] * 100:.1f}%** "
-        f"({val['ok']}/{val['total']})",
+        f"- AST pass rate: **{val['pass_rate'] * 100:.1f}%** " f"({val['ok']}/{val['total']})",
         "",
     ]
     if val["failures"]:
@@ -632,10 +637,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         cases_run = model_eval.get("cases_run", 0)
         correct = model_eval.get("correct", 0)
         wrong = cases_run - correct
-        nm_note = (
-            f" ({near_misses} near-miss — wrong tool, same namespace)"
-            if near_misses else ""
-        )
+        nm_note = f" ({near_misses} near-miss — wrong tool, same namespace)" if near_misses else ""
         lines += [
             "## Model Eval",
             "",
@@ -684,23 +686,22 @@ def render_markdown(report: dict[str, Any]) -> str:
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
 
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tools-json", default=str(TOOLS_JSON))
-    parser.add_argument("--export-only", action="store_true",
-                        help="Skip model eval; only export + validate schemas")
-    parser.add_argument("--endpoint", default="http://localhost:11434/v1",
-                        help="OpenAI-compatible endpoint (default: Ollama)")
-    parser.add_argument("--model", default="llama3.2",
-                        help="Model name to use for eval (default: llama3.2)")
-    parser.add_argument("--timeout", type=int, default=60,
-                        help="Per-call timeout in seconds (default: 60)")
+    parser.add_argument("--export-only", action="store_true", help="Skip model eval; only export + validate schemas")
+    parser.add_argument(
+        "--endpoint", default="http://localhost:11434/v1", help="OpenAI-compatible endpoint (default: Ollama)"
+    )
+    parser.add_argument("--model", default="llama3.2", help="Model name to use for eval (default: llama3.2)")
+    parser.add_argument("--timeout", type=int, default=60, help="Per-call timeout in seconds (default: 60)")
     parser.add_argument(
         "--auth-env",
         default=None,
         metavar="ENV_VAR",
         help="Name of env var holding the Bearer token (e.g. GROQ_API_KEY). "
-             "Never pass the token itself on the command line.",
+        "Never pass the token itself on the command line.",
     )
     parser.add_argument("--out-dir", default=str(ARTIFACT_DIR))
     args = parser.parse_args()
@@ -709,10 +710,15 @@ def main() -> int:
     if args.auth_env:
         auth_token = os.environ.get(args.auth_env)
         if not auth_token:
-            print(json.dumps({
-                "ok": False,
-                "error": f"--auth-env '{args.auth_env}' is set but the env var is empty or missing",
-            }, indent=2))
+            print(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "error": f"--auth-env '{args.auth_env}' is set but the env var is empty or missing",
+                    },
+                    indent=2,
+                )
+            )
             return 1
 
     report = run_benchmark(

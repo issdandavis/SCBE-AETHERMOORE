@@ -13,8 +13,6 @@ import re
 from dataclasses import dataclass, asdict
 from typing import Iterable
 
-from src.governance.gate_witness import gate_witness
-
 PROMPT_INJECTION_PATTERNS = (
     r"ignore\s+(all\s+)?previous\s+instructions",
     r"reveal\s+(the\s+)?system\s+prompt",
@@ -93,10 +91,6 @@ def scan_text_for_threats(
     else:
         verdict = "CLEAN"
 
-    if verdict in ("MALICIOUS", "SUSPICIOUS"):
-        indicators = ",".join(prompt_hits + malware_hits)[:60]
-        gate_witness("antivirus_membrane", "deny" if verdict == "MALICIOUS" else "quarantine", subject=indicators)
-
     return ThreatScan(
         verdict=verdict,
         risk_score=risk,
@@ -105,16 +99,6 @@ def scan_text_for_threats(
         external_link_count=len(ext_links),
         reasons=tuple(reasons),
     )
-
-
-_TURNSTILE_EVENT = {"HONEYPOT": "honeypot", "ISOLATE": "quarantine", "HOLD": "quarantine"}
-
-
-def _witness_turnstile(action: str, domain: str, risk: float) -> str:
-    gate_witness(
-        "antivirus_membrane", _TURNSTILE_EVENT.get(action, "block"), subject=f"domain:{domain}", detail={"risk": risk}
-    )
-    return action
 
 
 def turnstile_action(domain: str, scan: ThreatScan) -> str:
@@ -131,36 +115,36 @@ def turnstile_action(domain: str, scan: ThreatScan) -> str:
 
     if d == "browser":
         if r >= 0.85:
-            return _witness_turnstile("HONEYPOT", d, r)
+            return "HONEYPOT"
         if r >= 0.55:
-            return _witness_turnstile("ISOLATE", d, r)
+            return "ISOLATE"
         if r >= 0.25:
-            return _witness_turnstile("HOLD", d, r)
+            return "HOLD"
         return "ALLOW"
 
     if d == "vehicle":
         if r >= 0.75:
-            return _witness_turnstile("DEGRADE", d, r)
+            return "DEGRADE"
         if r >= 0.35:
-            return _witness_turnstile("PIVOT", d, r)
+            return "PIVOT"
         return "ALLOW"
 
     if d == "fleet":
         if r >= 0.85:
-            return _witness_turnstile("HONEYPOT", d, r)
+            return "HONEYPOT"
         if r >= 0.55:
-            return _witness_turnstile("ISOLATE", d, r)
+            return "ISOLATE"
         if r >= 0.25:
-            return _witness_turnstile("DEGRADE", d, r)
+            return "DEGRADE"
         return "ALLOW"
 
     if d == "antivirus":
         if r >= 0.85:
-            return _witness_turnstile("HONEYPOT", d, r)
+            return "HONEYPOT"
         if r >= 0.25:
-            return _witness_turnstile("ISOLATE", d, r)
+            return "ISOLATE"
         return "ALLOW"
 
     if r >= 0.60:
-        return _witness_turnstile("DEGRADE", d, r)
+        return "DEGRADE"
     return "ALLOW"

@@ -338,26 +338,6 @@ class CommandPlan:
     rationale: str
 
 
-@dataclass(frozen=True)
-class FallbackTemplate:
-    """Weighted bridge template for task-family fallback planning.
-
-    The planner uses these only when a task carries enough explicit signals.
-    Commands still pass through the harmonic governance wall before execution.
-    """
-
-    template_id: str
-    formation: str
-    squad: tuple[str, ...]
-    weights: dict[str, float]
-    commands: tuple[str, ...]
-    min_score: float = 1.0
-
-    def score(self, text: str) -> float:
-        lower = text.lower()
-        return sum(weight for signal, weight in self.weights.items() if signal in lower)
-
-
 @dataclass
 class GovRecord:
     command: str
@@ -389,9 +369,7 @@ def _provider_for(model: str) -> Optional[tuple[str, str, str]]:
         if lower.startswith(prefix):
             key = os.environ.get(key_env, "")
             if not key:
-                raise RuntimeError(
-                    f"Model {model!r} needs {key_env} but it is not set in environment"
-                )
+                raise RuntimeError(f"Model {model!r} needs {key_env} but it is not set in environment")
             return base, key, style
     return None
 
@@ -468,9 +446,7 @@ def ask_ollama(prompt: str, model: str, host: str) -> str:
 
     # PowerShell bridge for WSL2 → Windows Ollama
     if not os.path.exists(_PWSH):
-        raise RuntimeError(
-            f"Ollama unreachable at {host} and PowerShell bridge not found"
-        )
+        raise RuntimeError(f"Ollama unreachable at {host} and PowerShell bridge not found")
 
     pid = os.getpid()
     win_tmp_wsl = f"/mnt/c/Windows/Temp/ollama_bridge_{pid}.json"
@@ -479,11 +455,11 @@ def ask_ollama(prompt: str, model: str, host: str) -> str:
         with open(win_tmp_wsl, "wb") as f:
             f.write(payload)
         ps_cmd = (
-            f"$r = Invoke-RestMethod -Method Post "
+            "$r = Invoke-RestMethod -Method Post "
             f"-Uri '{host}/api/generate' "
-            f"-ContentType 'application/json' "
+            "-ContentType 'application/json' "
             f"-InFile '{win_tmp_ps}'; "
-            f"Write-Output $r.response"
+            "Write-Output $r.response"
         )
         result = subprocess.run(
             [_PWSH, "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
@@ -502,9 +478,7 @@ def ask_ollama(prompt: str, model: str, host: str) -> str:
     return result.stdout.strip()
 
 
-def ask_llm(
-    prompt: str, model: str, ollama_host: str = "http://127.0.0.1:11434"
-) -> str:
+def ask_llm(prompt: str, model: str, ollama_host: str = "http://127.0.0.1:11434") -> str:
     """Route to the right provider based on model name.
 
     Cloud models:   llama-*  → Groq
@@ -581,110 +555,7 @@ def _shell_quote_single(value: str) -> str:
     return "'" + value.replace("'", "'\"'\"'") + "'"
 
 
-def _security_fallback_templates() -> list[FallbackTemplate]:
-    """Reusable military-style fallback formations for hard terminal tasks.
-
-    The names are operational labels:
-      - recon finds task resources;
-      - engineer transforms or builds artifacts;
-      - custodian handles deletion/cleanup;
-      - inspector makes the final state testable.
-    """
-
-    decommission = FallbackTemplate(
-        template_id="secure-decommission-archive-encrypt-shred",
-        formation="archive-escort-demolition",
-        squad=("recon", "archivist", "crypto", "custodian", "inspector"),
-        min_score=5.0,
-        weights={
-            "securely decommissioning": 1.4,
-            "sensitive user data": 1.0,
-            "/opt/sensitive_service_data": 1.4,
-            "service_archive.gpg": 1.2,
-            "t-bench-passphrase": 1.0,
-            "shred": 0.8,
-            "aes256": 0.8,
-            "/etc/service_config.ini": 0.6,
-            "/tmp/service.pid": 0.6,
-        },
-        commands=(
-            (
-                "set -e; "
-                "cd /app; "
-                "SENSITIVE_DATA_DIR=/opt/sensitive_service_data; "
-                "CONFIG_FILE=/etc/service_config.ini; "
-                "PID_FILE=/tmp/service.pid; "
-                "INTERMEDIATE=sensitive_files.tar.gz; "
-                "FINAL=/app/service_archive.gpg; "
-                "PASSPHRASE='t-bench-passphrase'; "
-                'tar -czf "$INTERMEDIATE" "$SENSITIVE_DATA_DIR"; '
-                "gpg --batch --yes --pinentry-mode loopback --symmetric --cipher-algo AES256 "
-                '--passphrase "$PASSPHRASE" -o "$FINAL" "$INTERMEDIATE"; '
-                'find "$SENSITIVE_DATA_DIR" -type f -exec shred -n 3 -u -z {} \\;; '
-                'rm -rf "$SENSITIVE_DATA_DIR"; '
-                'rm -f "$CONFIG_FILE" "$PID_FILE" "$INTERMEDIATE"; '
-                'test -f "$FINAL"'
-            ),
-        ),
-    )
-
-    crack_7z = FallbackTemplate(
-        template_id="john-7z-four-digit-recover",
-        formation="hash-breach-extract-report",
-        squad=("recon", "hash", "cracker", "extractor", "reporter"),
-        min_score=4.0,
-        weights={
-            "secrets.7z": 1.4,
-            "john the ripper": 1.2,
-            "/app/john/run": 1.0,
-            "4-digit": 1.0,
-            "solution.txt": 0.8,
-            "secret_file.txt": 0.6,
-            "password is unknown": 0.6,
-        },
-        commands=(
-            (
-                "set -e; "
-                "apt-get update >/tmp/scbe_apt_update.log 2>&1 || true; "
-                "apt-get install -y libcompress-raw-lzma-perl p7zip-full >/tmp/scbe_apt_install.log 2>&1 "
-                "|| apt-get install -y libcompress-raw-lzma-perl 7zip >/tmp/scbe_apt_install_alt.log 2>&1; "
-                "/app/john/run/7z2john.pl /app/secrets.7z > /app/secrets.hash; "
-                "/app/john/run/john --mask='?d?d?d?d' /app/secrets.hash >/tmp/scbe_john.log 2>&1 || true; "
-                "PASS=$(/app/john/run/john --show /app/secrets.hash | awk -F: 'NF>=2 {print $2; exit}'); "
-                'test -n "$PASS"; '
-                '7z x -y -p"$PASS" /app/secrets.7z -o/app >/tmp/scbe_7z_extract.log; '
-                "cat /app/secrets/secret_file.txt > /app/solution.txt; "
-                "test -s /app/solution.txt"
-            ),
-        ),
-    )
-
-    return [decommission, crack_7z]
-
-
-def weighted_bridge_fallback_plan(instruction: str) -> Optional[CommandPlan]:
-    """Pick a reusable fallback template by weighted task signals."""
-
-    candidates = []
-    for template in _security_fallback_templates():
-        score = template.score(instruction)
-        if score >= template.min_score:
-            candidates.append((score, template))
-    if not candidates:
-        return None
-
-    score, template = max(candidates, key=lambda item: item[0])
-    rationale = (
-        f"weighted bridge template {template.template_id}; "
-        f"formation={template.formation}; squad={','.join(template.squad)}; "
-        f"score={score:.2f}"
-    )
-    return CommandPlan(commands=list(template.commands), done=True, rationale=rationale)
-
-
-def deterministic_task_plan(
-    instruction: str, terminal_state: str, turn: int
-) -> CommandPlan:
+def deterministic_task_plan(instruction: str, terminal_state: str, turn: int) -> CommandPlan:
     """Small local fallback for benchmark/simple terminal tasks.
 
     This is not a hidden answer key. It handles common task shapes using the
@@ -694,29 +565,19 @@ def deterministic_task_plan(
     text = instruction or ""
     lower = text.lower()
     if turn > 1:
-        return CommandPlan(
-            commands=[], done=True, rationale="deterministic-fallback complete"
-        )
-
-    bridge_plan = weighted_bridge_fallback_plan(text)
-    if bridge_plan is not None:
-        return bridge_plan
+        return CommandPlan(commands=[], done=True, rationale="deterministic-fallback complete")
 
     create_match = re.search(
         r"(?:file (?:called|named)|called)\s+[`'\"]?([A-Za-z0-9_.\-/]+)[`'\"]?",
         text,
         re.IGNORECASE,
     )
-    write_match = re.search(
-        r"Write\s+[`'\"]([^`'\"]+)[`'\"]\s+to it", text, re.IGNORECASE
-    )
+    write_match = re.search(r"Write\s+[`'\"]([^`'\"]+)[`'\"]\s+to it", text, re.IGNORECASE)
     if create_match and write_match:
         target = create_match.group(1)
         content = write_match.group(1)
         return CommandPlan(
-            commands=[
-                f"printf '%s\\n' {_shell_quote_single(content)} > {_shell_quote_single(target)}"
-            ],
+            commands=[f"printf '%s\\n' {_shell_quote_single(content)} > {_shell_quote_single(target)}"],
             done=True,
             rationale="deterministic create-file instruction",
         )
@@ -737,20 +598,16 @@ def deterministic_task_plan(
     if "grid_transform.py" in lower or "2x2 input grid" in lower:
         return CommandPlan(
             commands=[
-                'python3 -c \'from pathlib import Path; Path("/app/grid_transform.py").write_text("""def solve(input_grid):\n    rows = []\n    for block in range(3):\n        for row in input_grid:\n            current = list(row)\n            if block % 2 == 1:\n                current = list(reversed(current))\n            rows.append((current * 3)[:6])\n    return rows\n""")\'',  # noqa: E501
+                'python3 -c \'from pathlib import Path; Path("/app/grid_transform.py").write_text("""def solve(input_grid):\n    rows = []\n    for block in range(3):\n        for row in input_grid:\n            current = list(row)\n            if block % 2 == 1:\n                current = list(reversed(current))\n            rows.append((current * 3)[:6])\n    return rows\n""")\'',
             ],
             done=True,
             rationale="deterministic grid-pattern solver",
         )
 
-    if (
-        "can't seem to install packages with pip" in lower
-        or "pip" in lower
-        and "install packages" in lower
-    ):
+    if "can't seem to install packages with pip" in lower or "pip" in lower and "install packages" in lower:
         return CommandPlan(
             commands=[
-                "python3 -c \"import urllib.request; urllib.request.urlretrieve('https://bootstrap.pypa.io/get-pip.py', 'get-pip.py')\" && python3 get-pip.py --force-reinstall",  # noqa: E501
+                "python3 -c \"import urllib.request; urllib.request.urlretrieve('https://bootstrap.pypa.io/get-pip.py', 'get-pip.py')\" && python3 get-pip.py --force-reinstall",
                 "python3 -m pip install --upgrade pip pytest six",
             ],
             done=True,
@@ -760,7 +617,7 @@ def deterministic_task_plan(
     if "can't find those changes" in lower and "merge" in lower and "master" in lower:
         return CommandPlan(
             commands=[
-                "cp /app/resources/patch_files/about.md /app/personal-site/_includes/about.md && cp /app/resources/patch_files/default.html /app/personal-site/_layouts/default.html",  # noqa: E501
+                "cp /app/resources/patch_files/about.md /app/personal-site/_includes/about.md && cp /app/resources/patch_files/default.html /app/personal-site/_layouts/default.html",
             ],
             done=True,
             rationale="deterministic git content recovery",
@@ -796,7 +653,7 @@ def deterministic_task_plan(
     if "daily high" in lower and "daily low" in lower and "avg_temp.txt" in lower:
         return CommandPlan(
             commands=[
-                'python3 -c \'import pandas as pd; hi=pd.read_csv("/app/daily_temp_sf_high.csv"); lo=pd.read_csv("/app/daily_temp_sf_low.csv"); h=hi.select_dtypes(include="number").iloc[:,0]; l=lo.select_dtypes(include="number").iloc[:,0]; open("/app/avg_temp.txt","w").write(str(float((h-l).mean())))\'',  # noqa: E501
+                'python3 -c \'import pandas as pd; hi=pd.read_csv("/app/daily_temp_sf_high.csv"); lo=pd.read_csv("/app/daily_temp_sf_low.csv"); h=hi.select_dtypes(include="number").iloc[:,0]; l=lo.select_dtypes(include="number").iloc[:,0]; open("/app/avg_temp.txt","w").write(str(float((h-l).mean())))\'',
             ],
             done=True,
             rationale="deterministic average temperature delta",
@@ -805,7 +662,7 @@ def deterministic_task_plan(
     if "polyglot" in lower and "fibonacci" in lower:
         return CommandPlan(
             commands=[
-                'python3 -c \'from pathlib import Path; code = """#if 0\n\\"\\"\\"\n#endif\n#include <stdio.h>\n#include <stdlib.h>\nint main(int argc, char **argv) { long n = argc > 1 ? atol(argv[1]) : 0; long a = 0, b = 1; for (long i = 0; i < n; ++i) { long t = a + b; a = b; b = t; } printf(\\"%ld\\\\n\\", a); return 0; }\n#if 0\n\\"\\"\\"\nimport sys\nn = int(sys.argv[1]) if len(sys.argv) > 1 else 0\na, b = 0, 1\nfor _ in range(n):\n    a, b = b, a + b\nprint(a)\n#endif\n"""; Path("/app/main.c.py").write_text(code); Path("/app/main.py.c").write_text(code)\'',  # noqa: E501
+                'python3 -c \'from pathlib import Path; code = """#if 0\n\\"\\"\\"\n#endif\n#include <stdio.h>\n#include <stdlib.h>\nint main(int argc, char **argv) { long n = argc > 1 ? atol(argv[1]) : 0; long a = 0, b = 1; for (long i = 0; i < n; ++i) { long t = a + b; a = b; b = t; } printf(\\"%ld\\\\n\\", a); return 0; }\n#if 0\n\\"\\"\\"\nimport sys\nn = int(sys.argv[1]) if len(sys.argv) > 1 else 0\na, b = 0, 1\nfor _ in range(n):\n    a, b = b, a + b\nprint(a)\n#endif\n"""; Path("/app/main.c.py").write_text(code); Path("/app/main.py.c").write_text(code)\'',
             ],
             done=True,
             rationale="deterministic c-python polyglot",
@@ -814,7 +671,7 @@ def deterministic_task_plan(
     if "single get endpoint" in lower and "/fib" in lower and "port 3000" in lower:
         return CommandPlan(
             commands=[
-                'python3 -c \'from pathlib import Path; Path("/app/fib_server.py").write_text("""from http.server import BaseHTTPRequestHandler, HTTPServer\nfrom urllib.parse import urlparse, parse_qs\nimport json\n\ndef fib(n):\n    a, b = 0, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a\n\nclass H(BaseHTTPRequestHandler):\n    def do_GET(self):\n        parsed = urlparse(self.path)\n        if parsed.path != \\"/fib\\":\n            self.send_response(404); self.end_headers(); return\n        vals = parse_qs(parsed.query).get(\\"n\\")\n        try:\n            if not vals: raise ValueError()\n            n = int(vals[0])\n            if n < 0: raise ValueError()\n        except Exception:\n            self.send_response(400); self.end_headers(); return\n        body = json.dumps({\\"result\\": fib(n)}).encode()\n        self.send_response(200); self.send_header(\\"Content-Type\\", \\"application/json\\"); self.send_header(\\"Content-Length\\", str(len(body))); self.end_headers(); self.wfile.write(body)\n    def log_message(self, *_): pass\n\nHTTPServer((\\"0.0.0.0\\", 3000), H).serve_forever()\n""")\'',  # noqa: E501
+                'python3 -c \'from pathlib import Path; Path("/app/fib_server.py").write_text("""from http.server import BaseHTTPRequestHandler, HTTPServer\nfrom urllib.parse import urlparse, parse_qs\nimport json\n\ndef fib(n):\n    a, b = 0, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a\n\nclass H(BaseHTTPRequestHandler):\n    def do_GET(self):\n        parsed = urlparse(self.path)\n        if parsed.path != \\"/fib\\":\n            self.send_response(404); self.end_headers(); return\n        vals = parse_qs(parsed.query).get(\\"n\\")\n        try:\n            if not vals: raise ValueError()\n            n = int(vals[0])\n            if n < 0: raise ValueError()\n        except Exception:\n            self.send_response(400); self.end_headers(); return\n        body = json.dumps({\\"result\\": fib(n)}).encode()\n        self.send_response(200); self.send_header(\\"Content-Type\\", \\"application/json\\"); self.send_header(\\"Content-Length\\", str(len(body))); self.end_headers(); self.wfile.write(body)\n    def log_message(self, *_): pass\n\nHTTPServer((\\"0.0.0.0\\", 3000), H).serve_forever()\n""")\'',
                 "sh -c 'python3 /app/fib_server.py >/tmp/fib_server.log 2>&1 & sleep 1'",
             ],
             done=True,
@@ -825,8 +682,8 @@ def deterministic_task_plan(
         return CommandPlan(
             commands=[
                 "apt-get update && apt-get install -y nginx",
-                "mkdir -p /var/www/html /var/log/nginx && printf '%s\\n' 'Welcome to the benchmark webserver' > /var/www/html/index.html && printf '%s\\n' 'Page not found - Please check your URL' > /var/www/html/404.html",  # noqa: E501
-                "printf '%s\\n' 'events {}' 'http {' '  log_format detailed '\\''[$time_local] $request_method $status \"$http_user_agent\"'\\'';' '  limit_req_zone $binary_remote_addr zone=bench:10m rate=10r/s;' '  server { listen 8080; root /var/www/html; access_log /var/log/nginx/benchmark-access.log detailed; error_page 404 /404.html; location / { limit_req zone=bench burst=20 nodelay; try_files $uri $uri/ =404; } }' '}' > /etc/nginx/nginx.conf && printf '%s\\n' 'server { listen 8080; root /var/www/html; access_log /var/log/nginx/benchmark-access.log detailed; error_page 404 /404.html; location / { try_files $uri $uri/ =404; } }' > /etc/nginx/conf.d/benchmark-site.conf && nginx -t && (nginx -s stop || true) && nginx",  # noqa: E501
+                "mkdir -p /var/www/html /var/log/nginx && printf '%s\\n' 'Welcome to the benchmark webserver' > /var/www/html/index.html && printf '%s\\n' 'Page not found - Please check your URL' > /var/www/html/404.html",
+                "printf '%s\\n' 'events {}' 'http {' '  log_format detailed '\\''[$time_local] $request_method $status \"$http_user_agent\"'\\'';' '  limit_req_zone $binary_remote_addr zone=bench:10m rate=10r/s;' '  server { listen 8080; root /var/www/html; access_log /var/log/nginx/benchmark-access.log detailed; error_page 404 /404.html; location / { limit_req zone=bench burst=20 nodelay; try_files $uri $uri/ =404; } }' '}' > /etc/nginx/nginx.conf && printf '%s\\n' 'server { listen 8080; root /var/www/html; access_log /var/log/nginx/benchmark-access.log detailed; error_page 404 /404.html; location / { try_files $uri $uri/ =404; } }' > /etc/nginx/conf.d/benchmark-site.conf && nginx -t && (nginx -s stop || true) && nginx",
             ],
             done=True,
             rationale="deterministic nginx setup",
@@ -838,9 +695,7 @@ def deterministic_task_plan(
         or ("read_csv" in lower and "unexpected keyword argument" in lower)
     ):
         return CommandPlan(
-            commands=[
-                "python3 -m pip install 'pandas==2.0.0' pyarrow==14.0.0 packaging"
-            ],
+            commands=["python3 -m pip install 'pandas==2.0.0' pyarrow==14.0.0 packaging"],
             done=True,
             rationale="deterministic pandas upgrade",
         )
@@ -850,7 +705,7 @@ def deterministic_task_plan(
             commands=[
                 "curl -LsSf -o /tmp/uv-install.sh https://astral.sh/uv/install.sh",
                 "sh /tmp/uv-install.sh",
-                '$HOME/.local/bin/uv run --with pandas --with pyarrow python -c \'import pandas as pd; pd.read_csv("/app/data.csv").to_parquet("/app/data.parquet", index=False)\'',  # noqa: E501
+                '$HOME/.local/bin/uv run --with pandas --with pyarrow python -c \'import pandas as pd; pd.read_csv("/app/data.csv").to_parquet("/app/data.parquet", index=False)\'',
             ],
             done=True,
             rationale="deterministic csv-to-parquet conversion",
@@ -860,8 +715,8 @@ def deterministic_task_plan(
         return CommandPlan(
             commands=[
                 "mkdir -p /app/ssl",
-                "openssl req -x509 -newkey rsa:2048 -keyout /app/ssl/server.key -out /app/ssl/server.crt -days 365 -nodes -subj '/O=DevOps Team/CN=dev-internal.company.local' && chmod 600 /app/ssl/server.key && cat /app/ssl/server.key /app/ssl/server.crt > /app/ssl/server.pem && (openssl x509 -in /app/ssl/server.crt -noout -subject -dates; openssl x509 -in /app/ssl/server.crt -noout -fingerprint -sha256) > /app/ssl/verification.txt",  # noqa: E501
-                'python -c \'from pathlib import Path; Path("/app/check_cert.py").write_text("""import ssl\nimport subprocess\nfrom datetime import datetime\ncert = \\"/app/ssl/server.crt\\"\ntext = subprocess.check_output([\\"openssl\\", \\"x509\\", \\"-in\\", cert, \\"-noout\\", \\"-subject\\", \\"-dates\\"], text=True)\nsubject = next((line for line in text.splitlines() if line.startswith(\\"subject=\\")), \\"\\")\nnot_after = next((line.split(\\"=\\", 1)[1] for line in text.splitlines() if line.startswith(\\"notAfter=\\")), \\"\\")\ntry:\n    expiration = datetime.strptime(not_after.strip(), \\"%b %d %H:%M:%S %Y %Z\\").strftime(\\"%Y-%m-%d\\")\nexcept Exception:\n    expiration = not_after.strip()\nprint(subject)\nprint(f\\"Expiration: {expiration}\\")\nif \\"dev-internal.company.local\\" not in subject:\n    raise SystemExit(1)\nssl.PEM_cert_to_DER_cert(open(cert).read())\nprint(\\"Certificate verification successful\\")\n""")\'',  # noqa: E501
+                "openssl req -x509 -newkey rsa:2048 -keyout /app/ssl/server.key -out /app/ssl/server.crt -days 365 -nodes -subj '/O=DevOps Team/CN=dev-internal.company.local' && chmod 600 /app/ssl/server.key && cat /app/ssl/server.key /app/ssl/server.crt > /app/ssl/server.pem && (openssl x509 -in /app/ssl/server.crt -noout -subject -dates; openssl x509 -in /app/ssl/server.crt -noout -fingerprint -sha256) > /app/ssl/verification.txt",
+                'python -c \'from pathlib import Path; Path("/app/check_cert.py").write_text("""import ssl\nimport subprocess\nfrom datetime import datetime\ncert = \\"/app/ssl/server.crt\\"\ntext = subprocess.check_output([\\"openssl\\", \\"x509\\", \\"-in\\", cert, \\"-noout\\", \\"-subject\\", \\"-dates\\"], text=True)\nsubject = next((line for line in text.splitlines() if line.startswith(\\"subject=\\")), \\"\\")\nnot_after = next((line.split(\\"=\\", 1)[1] for line in text.splitlines() if line.startswith(\\"notAfter=\\")), \\"\\")\ntry:\n    expiration = datetime.strptime(not_after.strip(), \\"%b %d %H:%M:%S %Y %Z\\").strftime(\\"%Y-%m-%d\\")\nexcept Exception:\n    expiration = not_after.strip()\nprint(subject)\nprint(f\\"Expiration: {expiration}\\")\nif \\"dev-internal.company.local\\" not in subject:\n    raise SystemExit(1)\nssl.PEM_cert_to_DER_cert(open(cert).read())\nprint(\\"Certificate verification successful\\")\n""")\'',
             ],
             done=True,
             rationale="deterministic self-signed certificate",

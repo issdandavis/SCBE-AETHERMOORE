@@ -1,7 +1,7 @@
 """Tests for the BFCL tool-call adapter (offline / export-only lane).
 
 These tests run without Ollama or any API key. They verify:
-- All 57 tools are exported as OpenAI function-calling schemas (BFCL-adjacent format)
+- All 56 tools are exported as OpenAI function-calling schemas (BFCL-adjacent format)
 - AST validation passes 100%
 - Multi-param and no-param tools are exported correctly
 - Irrelevance test cases produce ground_truth_tool = None
@@ -37,7 +37,7 @@ TOOLS_JSON = ROOT / "packages" / "agent-bus" / "tools.json"
 
 def test_export_count():
     schemas = tools_to_bfcl_schemas(TOOLS_JSON)
-    assert len(schemas) == 57, f"expected 57 tools, got {len(schemas)}"
+    assert len(schemas) == 56, f"expected 56 tools, got {len(schemas)}"
 
 
 def test_ast_validation_all_pass():
@@ -78,9 +78,7 @@ def test_reporoot_excluded_from_required():
     """repoRoot is a bus-substituted variable, never caller-supplied."""
     schemas = tools_to_bfcl_schemas(TOOLS_JSON)
     for schema in schemas:
-        assert (
-            "repoRoot" not in schema["parameters"]["required"]
-        ), f"{schema['name']} has repoRoot in required"
+        assert "repoRoot" not in schema["parameters"]["required"], f"{schema['name']} has repoRoot in required"
 
 
 def test_all_schemas_have_description():
@@ -97,9 +95,7 @@ def test_extract_params_single():
 
 
 def test_extract_params_multi():
-    params = _extract_params(
-        ["--task", "{task}", "--type", "{taskType}", "--id", "{seriesId}"]
-    )
+    params = _extract_params(["--task", "{task}", "--type", "{taskType}", "--id", "{seriesId}"])
     assert params == ["task", "taskType", "seriesId"]
 
 
@@ -199,8 +195,7 @@ def test_question_does_not_restate_tool_name():
         if expected is None:
             continue
         assert expected not in case["question"], (
-            f"{case['id']} question contains the tool name '{expected}' verbatim — "
-            "this is a tautological test case"
+            f"{case['id']} question contains the tool name '{expected}' verbatim — " "this is a tautological test case"
         )
 
 
@@ -210,26 +205,8 @@ def test_question_does_not_restate_tool_name():
 def test_receipt_is_deterministic():
     ts = "2026-01-01T00:00:00Z"
     prev = "0" * 64
-    r1 = _make_receipt(
-        "tc_01",
-        "q",
-        "geoseal-compile",
-        "geoseal-compile",
-        {"task": "t"},
-        True,
-        prev,
-        ts,
-    )
-    r2 = _make_receipt(
-        "tc_01",
-        "q",
-        "geoseal-compile",
-        "geoseal-compile",
-        {"task": "t"},
-        True,
-        prev,
-        ts,
-    )
+    r1 = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-compile", {"task": "t"}, True, prev, ts)
+    r2 = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-compile", {"task": "t"}, True, prev, ts)
     assert r1["receipt_hash"] == r2["receipt_hash"]
 
 
@@ -258,25 +235,13 @@ def test_receipt_hash_is_sha256_length():
 
 def test_receipt_near_miss_field_present():
     ts = "2026-01-01T00:00:00Z"
-    r = _make_receipt(
-        "tc_01",
-        "q",
-        "geoseal-compile",
-        "geoseal-seal",
-        {},
-        False,
-        "0" * 64,
-        ts,
-        near_miss=True,
-    )
+    r = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-seal", {}, False, "0" * 64, ts, near_miss=True)
     assert r["near_miss"] is True
 
 
 def test_receipt_near_miss_default_false():
     ts = "2026-01-01T00:00:00Z"
-    r = _make_receipt(
-        "tc_01", "q", "geoseal-compile", "geoseal-compile", {}, True, "0" * 64, ts
-    )
+    r = _make_receipt("tc_01", "q", "geoseal-compile", "geoseal-compile", {}, True, "0" * 64, ts)
     assert r["near_miss"] is False
 
 

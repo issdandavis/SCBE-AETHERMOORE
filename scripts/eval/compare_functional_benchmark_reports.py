@@ -13,7 +13,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 DEFAULT_REPORT = Path("artifacts/coding_agent_benchmarks/latest/report.json")
 
 
@@ -80,7 +79,10 @@ def render_markdown(payload: dict[str, Any]) -> str:
     ]
     for row in payload["deltas"]:
         lines.append(
-            "| `{adapter}` | {candidate:.2%} | {baseline:.2%} | {delta:+.2%} | {candidate_passed} | {baseline_passed} |".format(
+            (
+                "| `{adapter}` | {candidate:.2%} | {baseline:.2%} "
+                "| {delta:+.2%} | {candidate_passed} | {baseline_passed} |"
+            ).format(
                 adapter=row["adapter"],
                 candidate=row["candidate_pass_rate"],
                 baseline=row["baseline_pass_rate"],

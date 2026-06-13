@@ -9,8 +9,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from src.governance.gate_witness import gate_witness
-
 
 @dataclass(frozen=True)
 class TurnstileOutcome:
@@ -60,10 +58,6 @@ def resolve_turnstile(
         # Downgrade ALLOW to HOLD when quorum is not satisfied.
         if not quorum_ok and action == "ALLOW":
             action = "HOLD"
-
-    if action != "ALLOW":
-        event = {"HONEYPOT": "honeypot", "HOLD": "quarantine"}.get(action, "block")
-        gate_witness("hydra_turnstile", event, subject=f"domain:{domain}", detail={"action": action})
 
     return TurnstileOutcome(
         action=action,

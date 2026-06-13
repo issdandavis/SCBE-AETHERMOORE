@@ -424,7 +424,8 @@ class GyroPatchedModel(nn.Module):
 
     def save_pretrained(self, path: str, **kwargs):
         """Save base model + gyro core separately."""
-        import os, json
+        import json
+        import os
 
         os.makedirs(path, exist_ok=True)
         self.base_model.save_pretrained(path, **kwargs)

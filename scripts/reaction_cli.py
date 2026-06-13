@@ -24,13 +24,17 @@ from python.scbe.audio_field_observables import (
     generate_decaying_sine,
     generate_sine,
 )
+from python.scbe.controlled_substances import ControlledSubstanceDenied, screen_input
 from python.scbe.geometry_view import GeometryEngineError, geometry_view_packet
 from python.scbe.reaction_balance import BalanceError, balance_reaction_packet
+from python.scbe.reaction_language import ReactionPlan, plan_from_text
 from python.scbe.reaction_state import (
     ReactionEndpoint,
+    ReactionLedger,
     ReactionRecalculation,
     build_reaction_state_packet,
     packet_from_dict,
+    rekor_hashedrekord_entry,
 )
 
 # Every packet this CLI emits is signed under one stable identity so receipts
@@ -39,8 +43,17 @@ from python.scbe.reaction_state import (
 SIGNER_AGENT_ID = "scbe-react-cli"
 
 
+class InputFileError(ValueError):
+    """A packet/report file is missing or not valid JSON."""
+
+
 def load_json(path: str) -> dict[str, Any]:
-    return json.loads(Path(path).read_text(encoding="utf-8"))
+    try:
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        raise InputFileError(f"file not found: {path}")
+    except json.JSONDecodeError as exc:
+        raise InputFileError(f"not valid JSON ({path}): {exc}")
 
 
 def find_packets(value: Any) -> list[dict[str, Any]]:
@@ -64,7 +77,10 @@ def find_packets(value: Any) -> list[dict[str, Any]]:
 
 
 def audit_packet(path: str) -> dict[str, Any]:
-    data = load_json(path)
+    try:
+        data = load_json(path)
+    except InputFileError as exc:
+        return {"schema_version": "scbe_reaction_audit_v1", "path": path, "ok": False, "error": str(exc)}
     packets = find_packets(data)
     rows = []
     for index, packet_data in enumerate(packets):
@@ -96,8 +112,17 @@ def audit_packet(path: str) -> dict[str, Any]:
 
 
 def compare_packets(left_path: str, right_path: str) -> dict[str, Any]:
-    left = find_packets(load_json(left_path))
-    right = find_packets(load_json(right_path))
+    try:
+        left = find_packets(load_json(left_path))
+        right = find_packets(load_json(right_path))
+    except InputFileError as exc:
+        return {
+            "schema_version": "scbe_reaction_compare_v1",
+            "left": left_path,
+            "right": right_path,
+            "ok": False,
+            "error": str(exc),
+        }
     left_hashes = {packet.get("packet_hash") for packet in left}
     right_hashes = {packet.get("packet_hash") for packet in right}
     left_classes = {packet.get("classification") for packet in left}
@@ -261,6 +286,9 @@ def build_audio_packet(
 
 
 def print_human_audit(payload: dict[str, Any]) -> None:
+    if payload.get("error"):
+        print(f"reaction audit: FAILED {payload['error']}")
+        return
     print(f"reaction audit: ok={payload['ok']} packets={payload['packet_count']}")
     for row in payload["packets"]:
         sig = f" sig={row['signature_alg']}/{row['signature_verified']}" if row.get("signature_alg") else ""
@@ -271,6 +299,9 @@ def print_human_audit(payload: dict[str, Any]) -> None:
 
 
 def print_human_compare(payload: dict[str, Any]) -> None:
+    if payload.get("error"):
+        print(f"reaction compare: FAILED {payload['error']}")
+        return
     print(
         "reaction compare: "
         f"left={payload['left_packet_count']} right={payload['right_packet_count']} "
@@ -339,6 +370,15 @@ def print_human_balance(payload: dict[str, Any]) -> None:
 def build_geometry(smiles: str) -> dict[str, Any]:
     try:
         packet = geometry_view_packet(smiles).sign(SIGNER_AGENT_ID)
+    except ControlledSubstanceDenied as exc:
+        return {
+            "schema_version": "scbe_react_geometry_v1",
+            "ok": False,
+            "denied": True,
+            "error": str(exc),
+            "screen": exc.report,
+            "smiles": smiles,
+        }
     except GeometryEngineError as exc:
         return {"schema_version": "scbe_react_geometry_v1", "ok": False, "error": str(exc), "smiles": smiles}
     meta = packet.target.metadata
@@ -353,6 +393,9 @@ def build_geometry(smiles: str) -> dict[str, Any]:
 
 
 def print_human_geometry(payload: dict[str, Any]) -> None:
+    if payload.get("denied"):
+        print(f"reaction geometry: DENIED {payload.get('error', '')}")
+        return
     if not payload.get("ok"):
         print(f"reaction geometry: FAILED {payload.get('error', '')}")
         return
@@ -360,6 +403,152 @@ def print_human_geometry(payload: dict[str, Any]) -> None:
         f"reaction geometry: {payload['formula']} "
         f"rotor={payload['rotor_type']} point_group={payload['point_group']}"
     )
+
+
+def build_screen(text: str) -> dict[str, Any]:
+    """Defensive controlled-substance screen over a SMILES string or CAS number.
+
+    Reports flagged/clear, the match kind, and the screen level that actually
+    ran (exact_string without RDKit, similarity with it) — never the matched
+    list entry.
+    """
+    report = screen_input(text)
+    return {"schema_version": "scbe_react_screen_v1", "ok": True, "input": text, **report}
+
+
+def print_human_screen(payload: dict[str, Any]) -> None:
+    verdict = "FLAGGED" if payload["flagged"] else "clear"
+    print(f"controlled-substance screen: {verdict}")
+    if payload["flagged"]:
+        print(f"match kind: {payload['match_kind']}")
+    if payload.get("max_similarity") is not None:
+        print(f"max similarity vs list: {payload['max_similarity']} (threshold 0.35)")
+    print(f"screen level: {payload['screen_level']} (list n={payload['list_size']})")
+
+
+def build_checkpoint(path: str, rekor_dry_run: bool = False) -> dict[str, Any]:
+    """Merkle-checkpoint every packet found in a packet/report file.
+
+    The checkpoint commits to the exact set, order, and count (the omission
+    attack a linear prev-hash chain cannot see) and is signed under the CLI
+    identity. chain_verified is True only when the packets form an unbroken
+    prev-hash chain in file order.
+    """
+    try:
+        data = load_json(path)
+    except InputFileError as exc:
+        return {"schema_version": "scbe_react_checkpoint_v1", "ok": False, "error": str(exc), "path": path}
+    found = find_packets(data)
+    if not found:
+        return {"schema_version": "scbe_react_checkpoint_v1", "ok": False, "error": "no packets found", "path": path}
+    ledger = ReactionLedger(agent_id=SIGNER_AGENT_ID)
+    ledger.packets = [packet_from_dict(p) for p in found]
+    ledger._last_hash = ledger.packets[-1].packet_hash
+    checkpoint = ledger.checkpoint()
+    payload: dict[str, Any] = {
+        "schema_version": "scbe_react_checkpoint_v1",
+        "ok": True,
+        "path": path,
+        "packets": len(found),
+        "checkpoint": checkpoint,
+        "inclusion_proofs": [ledger.inclusion_proof(i) for i in range(len(found))],
+    }
+    if rekor_dry_run:
+        # Anchor-READY only: no network I/O, and the public Rekor instance
+        # verifies PKIX keys (ECDSA/Ed25519ph), not ML-DSA - countersign the
+        # digest with a PKIX identity before actually submitting.
+        payload["rekor_dry_run"] = rekor_hashedrekord_entry(checkpoint)
+    return payload
+
+
+def print_human_checkpoint(payload: dict[str, Any]) -> None:
+    if not payload.get("ok"):
+        print(f"reaction checkpoint: FAILED {payload.get('error', '')}")
+        return
+    cp = payload["checkpoint"]
+    print(f"reaction checkpoint: {payload['packets']} packets")
+    print(f"merkle root: {cp['merkle_root']}")
+    print(f"chain verified: {cp['chain_verified']}")
+    print(f"signed: {cp['signature_alg'] or 'no'}")
+    if payload.get("rekor_dry_run"):
+        print(f"rekor digest (dry-run): {payload['rekor_dry_run']['spec']['data']['hash']['value']}")
+
+
+# Map a parsed plan's verb onto the existing builder. Execution reuses the same
+# governed/receipted paths as the explicit subcommands -- the NL layer only
+# chooses the verb and fills the args, it adds no new privilege.
+def _execute_plan(plan: "ReactionPlan") -> dict[str, Any]:
+    if plan.verb == "balance":
+        return build_balance(plan.args["reactants"], plan.args["products"])
+    if plan.verb == "screen":
+        return build_screen(plan.args["input"])
+    if plan.verb == "geometry":
+        return build_geometry(plan.args["smiles"])
+    if plan.verb == "checkpoint":
+        return build_checkpoint(plan.args["packets"], rekor_dry_run=plan.args.get("rekor_dry_run", False))
+    return {"ok": False, "error": f"no executor for verb {plan.verb!r}"}
+
+
+def build_ask(text: str, *, execute: bool = True) -> dict[str, Any]:
+    """Parse a natural-language request, map it to a react verb, and (optionally)
+    run it through the same governed builder the explicit subcommand uses.
+
+    Confident plans run; ambiguous ones return the clarification and the exact
+    command they *would* run, so the caller asks instead of guessing.
+    """
+    plan = plan_from_text(text)
+    payload: dict[str, Any] = {
+        "schema_version": "scbe_react_ask_v1",
+        "input": text,
+        "verb": plan.verb,
+        "confidence": round(plan.confidence, 3),
+        "canonical_command": plan.canonical_command,
+        "clarification": plan.clarification,
+        "notes": plan.notes,
+        "executed": False,
+    }
+    if plan.verb == "help" or plan.verb is None or not plan.confident:
+        payload["ok"] = plan.verb == "help"
+        return payload
+    if not execute:
+        payload["ok"] = True
+        return payload
+    # The NL layer must never crash: a builder raising (bad input, missing
+    # engine) becomes a clean error payload, not a traceback.
+    try:
+        result = _execute_plan(plan)
+    except Exception as exc:  # noqa: BLE001 - surface any builder failure as data
+        result = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+    payload["executed"] = True
+    payload["ok"] = bool(result.get("ok"))
+    payload["result"] = result
+    return payload
+
+
+def print_human_ask(payload: dict[str, Any]) -> None:
+    verb = payload.get("verb")
+    if verb == "help":
+        for note in payload.get("notes", []):
+            print(note)
+        return
+    if payload.get("clarification"):
+        print(f"reaction ask: not sure ({payload['confidence']:.2f} confidence)")
+        print(payload["clarification"])
+        if payload.get("canonical_command"):
+            print(f"closest command: scbe {payload['canonical_command']}")
+        return
+    print(f"-> scbe {payload['canonical_command']}  (confidence {payload['confidence']:.2f})")
+    for note in payload.get("notes", []):
+        print(f"   note: {note}")
+    if not payload.get("executed"):
+        return
+    result = payload.get("result", {})
+    {
+        "balance": print_human_balance,
+        "screen": print_human_screen,
+        "geometry": print_human_geometry,
+        "checkpoint": print_human_checkpoint,
+    }.get(verb, lambda _r: None)(result)
 
 
 def main() -> int:
@@ -383,6 +572,17 @@ def main() -> int:
     geometry_parser = sub.add_parser("geometry")
     geometry_parser.add_argument("--smiles", required=True, help="SMILES string, e.g. CCO")
     geometry_parser.add_argument("--json", action="store_true")
+    screen_parser = sub.add_parser("screen")
+    screen_parser.add_argument("--input", required=True, help="SMILES string or CAS number to screen")
+    screen_parser.add_argument("--json", action="store_true")
+    checkpoint_parser = sub.add_parser("checkpoint")
+    checkpoint_parser.add_argument("--packets", required=True, help="packet or report JSON file to checkpoint")
+    checkpoint_parser.add_argument("--rekor-dry-run", action="store_true")
+    checkpoint_parser.add_argument("--json", action="store_true")
+    ask_parser = sub.add_parser("ask", help="natural-language request, e.g. 'balance propane combustion'")
+    ask_parser.add_argument("text", nargs="+", help="what you want, in plain words")
+    ask_parser.add_argument("--explain", action="store_true", help="show the mapped command without running it")
+    ask_parser.add_argument("--json", action="store_true")
     audio = sub.add_parser("audio")
     audio.add_argument("--frequency", type=float, default=440.0)
     audio.add_argument("--sample-rate", type=float, default=4096.0)
@@ -412,7 +612,9 @@ def main() -> int:
             print(json.dumps(payload, indent=2))
         else:
             print_human_compare(payload)
-        return 0
+        # a missing/invalid file is a failure; a successful compare is always 0
+        # (it reports differences, it does not "fail" on them).
+        return 1 if payload.get("error") else 0
     if args.cmd == "code":
         payload = build_code_packet(args.source, args.target)
         if args.json:
@@ -434,6 +636,34 @@ def main() -> int:
         else:
             print_human_geometry(payload)
         return 0 if payload["ok"] else 1
+    if args.cmd == "screen":
+        payload = build_screen(args.input)
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_human_screen(payload)
+        return 1 if payload["flagged"] else 0
+    if args.cmd == "checkpoint":
+        payload = build_checkpoint(args.packets, rekor_dry_run=args.rekor_dry_run)
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_human_checkpoint(payload)
+        return 0 if payload["ok"] else 1
+    if args.cmd == "ask":
+        payload = build_ask(" ".join(args.text), execute=not args.explain)
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_human_ask(payload)
+        # exit 2 when we had to ask the user to clarify (no action taken).
+        if payload.get("clarification"):
+            return 2
+        # a flagged screen exits non-zero like the explicit `screen` verb, so a
+        # caller (human or AI) sees the hazard in the exit code, not just stdout.
+        if payload.get("result", {}).get("flagged"):
+            return 1
+        return 0 if payload.get("ok") else 1
     if args.cmd == "audio":
         payload = build_audio_packet(
             frequency_hz=args.frequency,

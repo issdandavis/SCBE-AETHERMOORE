@@ -102,8 +102,7 @@ except ImportError:
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='{"timestamp":"%(asctime)s","level":"%(levelname)s","message":"%(message)s"}'
+    level=logging.INFO, format='{"timestamp":"%(asctime)s","level":"%(levelname)s","message":"%(message)s"}'
 )
 logger = logging.getLogger("scbe-api")
 
@@ -147,6 +146,7 @@ if darpa_prep_router is not None:
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
 API_KEY_HEADER_LEGACY = APIKeyHeader(name="X-API-Key", auto_error=False)
 
+
 def _load_api_keys() -> dict:
     """
     Load API keys from environment. No hardcoded defaults.
@@ -166,6 +166,7 @@ def _load_api_keys() -> dict:
             keys[key] = f"tenant_{i}"
     return keys
 
+
 VALID_API_KEYS = _load_api_keys()
 
 # In-memory stores (replace with database in production)
@@ -180,6 +181,7 @@ SESSION_MANAGER: Optional[Any] = None
 # =============================================================================
 # Models
 # =============================================================================
+
 
 class Decision(str, Enum):
     ALLOW = "ALLOW"
@@ -199,7 +201,7 @@ class AuthorizeRequest(BaseModel):
                 "agent_id": "fraud-detector-001",
                 "action": "READ",
                 "target": "transaction_stream",
-                "context": {"sensitivity": 0.3}
+                "context": {"sensitivity": 0.3},
             }
         }
 
@@ -312,6 +314,7 @@ class SessionStartRequest(BaseModel):
 # Authentication
 # =============================================================================
 
+
 async def verify_api_key(
     api_key: str = Security(API_KEY_HEADER),
     api_key_legacy: str = Security(API_KEY_HEADER_LEGACY),
@@ -349,11 +352,12 @@ def _get_session_manager() -> Optional[Any]:
 # SCBE Core Logic (14-Layer Pipeline)
 # =============================================================================
 
+
 def hyperbolic_distance(p1: tuple, p2: tuple) -> float:
     """Poincaré ball distance calculation."""
     norm1_sq = sum(x**2 for x in p1)
     norm2_sq = sum(x**2 for x in p2)
-    diff_sq = sum((a - b)**2 for a, b in zip(p1, p2))
+    diff_sq = sum((a - b) ** 2 for a, b in zip(p1, p2))
 
     norm1_sq = min(norm1_sq, 0.9999)
     norm2_sq = min(norm2_sq, 0.9999)
@@ -362,7 +366,7 @@ def hyperbolic_distance(p1: tuple, p2: tuple) -> float:
     denominator = (1 - norm1_sq) * (1 - norm2_sq)
 
     if denominator <= 0:
-        return float('inf')
+        return float("inf")
 
     delta = numerator / denominator
     return math.acosh(1 + delta) if delta >= 0 else 0.0
@@ -375,16 +379,12 @@ def agent_to_6d_position(agent_id: str, action: str, target: str, trust: float) 
     for i in range(6):
         val = seed[i] / 255.0
         radius = (1 - trust) * 0.8 + 0.1
-        coords.append(val * radius - radius/2)
+        coords.append(val * radius - radius / 2)
     return tuple(coords)
 
 
 def scbe_14_layer_pipeline(
-    agent_id: str,
-    action: str,
-    target: str,
-    trust_score: float,
-    sensitivity: float = 0.5
+    agent_id: str, action: str, target: str, trust_score: float, sensitivity: float = 0.5
 ) -> tuple:
     """
     Full 14-layer SCBE governance pipeline.
@@ -416,7 +416,7 @@ def scbe_14_layer_pipeline(
     # Layer 12: Harmonic Scaling
     R = 2
     d = int(sensitivity * 3) + 1
-    H = R ** d
+    H = R**d
     risk_factor = (1 - realm_trust) * sensitivity * 0.5
     explanation["layers"]["L12"] = f"H(d={d},R={R})={H}, risk: {risk_factor:.2f}"
 
@@ -458,11 +458,9 @@ def generate_noise() -> str:
 # API Endpoints
 # =============================================================================
 
+
 @app.post("/v1/authorize", response_model=AuthorizeResponse, tags=["Governance"])
-async def authorize(
-    request: AuthorizeRequest,
-    tenant: str = Depends(verify_api_key)
-):
+async def authorize(request: AuthorizeRequest, tenant: str = Depends(verify_api_key)):
     """
     Main governance decision endpoint.
 
@@ -481,7 +479,7 @@ async def authorize(
             "trust_score": 0.5,
             "created_at": datetime.utcnow().isoformat(),
             "decision_count": 0,
-            "tenant": tenant
+            "tenant": tenant,
         }
 
     agent = AGENTS_STORE[store_key]
@@ -575,15 +573,19 @@ async def authorize(
     agent["last_activity"] = datetime.utcnow().isoformat()
 
     # Log decision
-    logger.info(json.dumps({
-        "event": "governance_decision",
-        "decision_id": decision_id,
-        "agent_id": request.agent_id,
-        "action": request.action,
-        "decision": decision.value,
-        "score": round(score, 3),
-        "latency_ms": DECISIONS_STORE[decision_id]["latency_ms"]
-    }))
+    logger.info(
+        json.dumps(
+            {
+                "event": "governance_decision",
+                "decision_id": decision_id,
+                "agent_id": request.agent_id,
+                "action": request.action,
+                "decision": decision.value,
+                "score": round(score, 3),
+                "latency_ms": DECISIONS_STORE[decision_id]["latency_ms"],
+            }
+        )
+    )
 
     metering_store.increment_metric(tenant_id=tenant, metric_name=GOVERNANCE_EVALUATIONS)
 
@@ -598,13 +600,13 @@ async def authorize(
             trust_score=trust_score,
             risk_level=risk_level,
             context=request.context or {},
-            consensus_result={"single_decision": True}
+            consensus_result={"single_decision": True},
         )
         persistence.record_trust(
             agent_id=request.agent_id,
             trust_score=trust_score,
             factors={"score": score, "sensitivity": sensitivity},
-            decision=decision.value
+            decision=decision.value,
         )
     except Exception as e:
         logger.warning(f"Persistence error (non-fatal): {e}")
@@ -615,7 +617,7 @@ async def authorize(
         score=round(score, 3),
         explanation=explanation,
         token=token,
-        expires_at=expires_at
+        expires_at=expires_at,
     )
 
 
@@ -638,10 +640,7 @@ async def governance_scan(
 
 
 @app.post("/v1/agents", response_model=AgentResponse, tags=["Agents"])
-async def register_agent(
-    request: AgentRegisterRequest,
-    tenant: str = Depends(verify_api_key)
-):
+async def register_agent(request: AgentRegisterRequest, tenant: str = Depends(verify_api_key)):
     """Register a new agent with initial trust score."""
     # Use composite key for tenant isolation
     store_key = f"{tenant}:{request.agent_id}"
@@ -657,26 +656,27 @@ async def register_agent(
         "last_activity": None,
         "decision_count": 0,
         "metadata": request.metadata,
-        "tenant": tenant  # Store tenant for ownership verification
+        "tenant": tenant,  # Store tenant for ownership verification
     }
     AGENTS_STORE[store_key] = agent
 
-    logger.info(json.dumps({
-        "event": "agent_registered",
-        "agent_id": request.agent_id,
-        "tenant": tenant,
-        "role": request.role,
-        "initial_trust": request.initial_trust
-    }))
+    logger.info(
+        json.dumps(
+            {
+                "event": "agent_registered",
+                "agent_id": request.agent_id,
+                "tenant": tenant,
+                "role": request.role,
+                "initial_trust": request.initial_trust,
+            }
+        )
+    )
 
     return AgentResponse(**agent)
 
 
 @app.get("/v1/agents/{agent_id}", response_model=AgentResponse, tags=["Agents"])
-async def get_agent(
-    agent_id: str,
-    tenant: str = Depends(verify_api_key)
-):
+async def get_agent(agent_id: str, tenant: str = Depends(verify_api_key)):
     """Get agent information and current trust score."""
     # Use composite key for tenant-scoped lookup
     store_key = f"{tenant}:{agent_id}"
@@ -687,10 +687,7 @@ async def get_agent(
 
 
 @app.post("/v1/consensus", response_model=ConsensusResponse, tags=["Governance"])
-async def request_consensus(
-    request: ConsensusRequest,
-    tenant: str = Depends(verify_api_key)
-):
+async def request_consensus(request: ConsensusRequest, tenant: str = Depends(verify_api_key)):
     """
     Request multi-signature consensus for sensitive operations.
 
@@ -713,11 +710,7 @@ async def request_consensus(
 
         # Run pipeline for each validator
         decision, score, _ = scbe_14_layer_pipeline(
-            agent_id=validator_id,
-            action=request.action,
-            target=request.target,
-            trust_score=trust,
-            sensitivity=0.5
+            agent_id=validator_id, action=request.action, target=request.target, trust_score=trust, sensitivity=0.5
         )
 
         # ALLOW and QUARANTINE count as approval
@@ -728,12 +721,9 @@ async def request_consensus(
         else:
             rejections += 1
 
-        votes.append({
-            "validator_id": validator_id,
-            "decision": decision.value,
-            "score": round(score, 3),
-            "approved": is_approve
-        })
+        votes.append(
+            {"validator_id": validator_id, "decision": decision.value, "score": round(score, 3), "approved": is_approve}
+        )
 
     # Determine consensus status
     if approvals >= request.required_approvals:
@@ -749,16 +739,20 @@ async def request_consensus(
         "rejections": rejections,
         "required": request.required_approvals,
         "votes": votes,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.utcnow().isoformat(),
     }
 
-    logger.info(json.dumps({
-        "event": "consensus_decision",
-        "consensus_id": consensus_id,
-        "status": status,
-        "approvals": approvals,
-        "required": request.required_approvals
-    }))
+    logger.info(
+        json.dumps(
+            {
+                "event": "consensus_decision",
+                "consensus_id": consensus_id,
+                "status": status,
+                "approvals": approvals,
+                "required": request.required_approvals,
+            }
+        )
+    )
 
     return ConsensusResponse(
         consensus_id=consensus_id,
@@ -766,15 +760,12 @@ async def request_consensus(
         approvals=approvals,
         rejections=rejections,
         required=request.required_approvals,
-        votes=votes
+        votes=votes,
     )
 
 
 @app.get("/v1/audit/{decision_id}", tags=["Audit"])
-async def get_audit(
-    decision_id: str,
-    tenant: str = Depends(verify_api_key)
-):
+async def get_audit(decision_id: str, tenant: str = Depends(verify_api_key)):
     """Retrieve full audit trail for a governance decision."""
     if decision_id not in DECISIONS_STORE:
         raise HTTPException(status_code=404, detail="Decision not found")
@@ -794,14 +785,15 @@ async def health_check():
             "api": "ok",
             "pipeline": "ok",
             "storage": "ok" if len(AGENTS_STORE) >= 0 else "degraded",
-            "firebase": "connected" if persistence.is_connected else "disconnected"
-        }
+            "firebase": "connected" if persistence.is_connected else "disconnected",
+        },
     )
 
 
 # =============================================================================
 # Mesh / Multi-Cloud Endpoints
 # =============================================================================
+
 
 @app.post("/v1/spiralverse/mesh", tags=["Spiralverse"])
 async def spiralverse_mesh(
@@ -950,6 +942,7 @@ async def end_cloud_session(
 # Metrics & Monitoring Endpoints
 # =============================================================================
 
+
 class MetricsResponse(BaseModel):
     total_decisions: int
     allow_count: int
@@ -975,6 +968,7 @@ async def get_metrics(tenant: str = Depends(verify_api_key)):
 # Webhook/Zapier Integration Endpoints
 # =============================================================================
 
+
 class WebhookConfig(BaseModel):
     webhook_url: str
     events: List[str] = ["decision_deny", "decision_quarantine", "trust_decline"]
@@ -997,10 +991,7 @@ WEBHOOK_STORE: Dict[str, dict] = {}
 
 
 @app.post("/v1/webhooks", tags=["Webhooks"])
-async def register_webhook(
-    config: WebhookConfig,
-    tenant: str = Depends(verify_api_key)
-):
+async def register_webhook(config: WebhookConfig, tenant: str = Depends(verify_api_key)):
     """
     Register a webhook URL for alert notifications.
 
@@ -1013,14 +1004,12 @@ async def register_webhook(
         "url": config.webhook_url,
         "events": config.events,
         "min_severity": config.min_severity,
-        "created_at": datetime.utcnow().isoformat()
+        "created_at": datetime.utcnow().isoformat(),
     }
 
-    logger.info(json.dumps({
-        "event": "webhook_registered",
-        "webhook_id": webhook_id,
-        "url": config.webhook_url[:50] + "..."
-    }))
+    logger.info(
+        json.dumps({"event": "webhook_registered", "webhook_id": webhook_id, "url": config.webhook_url[:50] + "..."})
+    )
 
     return {"webhook_id": webhook_id, "status": "registered"}
 
@@ -1032,10 +1021,7 @@ async def list_webhooks(tenant: str = Depends(verify_api_key)):
 
 
 @app.delete("/v1/webhooks/{webhook_id}", tags=["Webhooks"])
-async def delete_webhook(
-    webhook_id: str,
-    tenant: str = Depends(verify_api_key)
-):
+async def delete_webhook(webhook_id: str, tenant: str = Depends(verify_api_key)):
     """Remove a registered webhook."""
     if webhook_id not in WEBHOOK_STORE:
         raise HTTPException(status_code=404, detail="Webhook not found")
@@ -1047,11 +1033,7 @@ async def delete_webhook(
 
 
 @app.get("/v1/alerts", response_model=List[AlertResponse], tags=["Alerts"])
-async def get_alerts(
-    tenant: str = Depends(verify_api_key),
-    limit: int = 50,
-    pending_only: bool = True
-):
+async def get_alerts(tenant: str = Depends(verify_api_key), limit: int = 50, pending_only: bool = True):
     """
     Get alerts for webhook delivery.
 
@@ -1067,25 +1049,24 @@ async def get_alerts(
         logs = persistence.get_audit_logs(limit=limit)
         for log in logs:
             if log["decision"] in ["DENY", "QUARANTINE"]:
-                alerts.append({
-                    "alert_id": f"alert-{log['audit_id']}",
-                    "timestamp": log["timestamp"],
-                    "severity": "high" if log["decision"] == "DENY" else "medium",
-                    "alert_type": f"decision_{log['decision'].lower()}",
-                    "message": f"Agent {log['agent_id']} request was {log['decision']}",
-                    "agent_id": log["agent_id"],
-                    "audit_id": log["audit_id"],
-                    "data": {"trust_score": log["trust_score"]}
-                })
+                alerts.append(
+                    {
+                        "alert_id": f"alert-{log['audit_id']}",
+                        "timestamp": log["timestamp"],
+                        "severity": "high" if log["decision"] == "DENY" else "medium",
+                        "alert_type": f"decision_{log['decision'].lower()}",
+                        "message": f"Agent {log['agent_id']} request was {log['decision']}",
+                        "agent_id": log["agent_id"],
+                        "audit_id": log["audit_id"],
+                        "data": {"trust_score": log["trust_score"]},
+                    }
+                )
 
     return alerts
 
 
 @app.post("/v1/alerts/{alert_id}/ack", tags=["Alerts"])
-async def acknowledge_alert(
-    alert_id: str,
-    tenant: str = Depends(verify_api_key)
-):
+async def acknowledge_alert(alert_id: str, tenant: str = Depends(verify_api_key)):
     """
     Acknowledge an alert (mark as sent/processed).
 
@@ -1103,6 +1084,7 @@ async def acknowledge_alert(
 # =============================================================================
 # AetherNet Game Bridge (n8n <-> Aethermoor Game)
 # =============================================================================
+
 
 class GameActionRequest(BaseModel):
     action_type: str = Field(
@@ -1157,12 +1139,16 @@ async def push_game_action(
     if not queued:
         raise HTTPException(status_code=429, detail="Action queue full")
 
-    logger.info(json.dumps({
-        "event": "aethernet_action_queued",
-        "action_id": action_id,
-        "action_type": request.action_type,
-        "tenant": tenant,
-    }))
+    logger.info(
+        json.dumps(
+            {
+                "event": "aethernet_action_queued",
+                "action_id": action_id,
+                "action_type": request.action_type,
+                "tenant": tenant,
+            }
+        )
+    )
 
     return {"action_id": action_id, "status": "queued"}
 
@@ -1185,22 +1171,15 @@ async def game_bridge_status(tenant: str = Depends(verify_api_key)):
 # Trust History Endpoints
 # =============================================================================
 
+
 @app.get("/v1/agents/{agent_id}/trust-history", tags=["Agents"])
-async def get_trust_history(
-    agent_id: str,
-    tenant: str = Depends(verify_api_key),
-    limit: int = 30
-):
+async def get_trust_history(agent_id: str, tenant: str = Depends(verify_api_key), limit: int = 30):
     """Get trust score history for an agent."""
     persistence = get_persistence()
     history = persistence.get_trust_history(agent_id, limit=limit)
     trend = persistence.get_trust_trend(agent_id)
 
-    return {
-        "agent_id": agent_id,
-        "trend": trend,
-        "history": history
-    }
+    return {"agent_id": agent_id, "trend": trend, "history": history}
 
 
 @app.get("/v1/audit", tags=["Audit"])
@@ -1208,21 +1187,18 @@ async def list_audit_logs(
     tenant: str = Depends(verify_api_key),
     agent_id: Optional[str] = None,
     decision: Optional[str] = None,
-    limit: int = 100
+    limit: int = 100,
 ):
     """Query audit logs with optional filters."""
     persistence = get_persistence()
-    logs = persistence.get_audit_logs(
-        agent_id=agent_id,
-        decision=decision,
-        limit=limit
-    )
+    logs = persistence.get_audit_logs(agent_id=agent_id, decision=decision, limit=limit)
     return {"count": len(logs), "logs": logs}
 
 
 # =============================================================================
 # Fleet Scenario Endpoint (Pilot Demo)
 # =============================================================================
+
 
 class FleetAgent(BaseModel):
     agent_id: str
@@ -1250,15 +1226,25 @@ class FleetScenario(BaseModel):
             "example": {
                 "scenario_name": "fraud-detection-fleet",
                 "agents": [
-                    {"agent_id": "fraud-detector-001", "name": "Fraud Detector", "role": "analyzer", "initial_trust": 0.8},
+                    {
+                        "agent_id": "fraud-detector-001",
+                        "name": "Fraud Detector",
+                        "role": "analyzer",
+                        "initial_trust": 0.8,
+                    },
                     {"agent_id": "risk-scorer-002", "name": "Risk Scorer", "role": "scorer", "initial_trust": 0.7},
-                    {"agent_id": "alert-bot-003", "name": "Alert Bot", "role": "notifier", "initial_trust": 0.6}
+                    {"agent_id": "alert-bot-003", "name": "Alert Bot", "role": "notifier", "initial_trust": 0.6},
                 ],
                 "actions": [
-                    {"agent_id": "fraud-detector-001", "action": "READ", "target": "transaction_stream", "sensitivity": 0.3},
+                    {
+                        "agent_id": "fraud-detector-001",
+                        "action": "READ",
+                        "target": "transaction_stream",
+                        "sensitivity": 0.3,
+                    },
                     {"agent_id": "risk-scorer-002", "action": "WRITE", "target": "risk_scores_db", "sensitivity": 0.6},
-                    {"agent_id": "alert-bot-003", "action": "EXECUTE", "target": "send_alert", "sensitivity": 0.4}
-                ]
+                    {"agent_id": "alert-bot-003", "action": "EXECUTE", "target": "send_alert", "sensitivity": 0.4},
+                ],
             }
         }
 
@@ -1298,10 +1284,7 @@ class MonthlyUsageExportResponse(BaseModel):
 
 
 @app.post("/v1/fleet/run-scenario", response_model=FleetScenarioResponse, tags=["Fleet"])
-async def run_fleet_scenario(
-    scenario: FleetScenario,
-    tenant: str = Depends(verify_api_key)
-):
+async def run_fleet_scenario(scenario: FleetScenario, tenant: str = Depends(verify_api_key)):
     """
     Run a complete fleet scenario through SCBE.
 
@@ -1327,7 +1310,7 @@ async def run_fleet_scenario(
                 "created_at": datetime.utcnow().isoformat(),
                 "last_activity": None,
                 "decision_count": 0,
-                "tenant": tenant
+                "tenant": tenant,
             }
 
     # Process all actions
@@ -1351,7 +1334,7 @@ async def run_fleet_scenario(
             action=action.action,
             target=action.target,
             trust_score=trust_score,
-            sensitivity=action.sensitivity
+            sensitivity=action.sensitivity,
         )
 
         # Track metrics
@@ -1364,15 +1347,17 @@ async def run_fleet_scenario(
 
         total_score += score
 
-        decisions.append(FleetDecision(
-            agent_id=action.agent_id,
-            action=action.action,
-            target=action.target,
-            decision=decision.value,
-            score=round(score, 3),
-            trust_score=trust_score,
-            risk_factor=explanation.get("risk_factor", 0)
-        ))
+        decisions.append(
+            FleetDecision(
+                agent_id=action.agent_id,
+                action=action.action,
+                target=action.target,
+                decision=decision.value,
+                score=round(score, 3),
+                trust_score=trust_score,
+                risk_factor=explanation.get("risk_factor", 0),
+            )
+        )
 
         # Update agent stats
         agent["decision_count"] += 1
@@ -1380,17 +1365,21 @@ async def run_fleet_scenario(
 
     elapsed_ms = (time.time() - start_time) * 1000
 
-    logger.info(json.dumps({
-        "event": "fleet_scenario_completed",
-        "scenario_id": scenario_id,
-        "scenario_name": scenario.scenario_name,
-        "agents": len(scenario.agents),
-        "actions": len(scenario.actions),
-        "allow": allow_count,
-        "deny": deny_count,
-        "quarantine": quarantine_count,
-        "elapsed_ms": round(elapsed_ms, 2)
-    }))
+    logger.info(
+        json.dumps(
+            {
+                "event": "fleet_scenario_completed",
+                "scenario_id": scenario_id,
+                "scenario_name": scenario.scenario_name,
+                "agents": len(scenario.agents),
+                "actions": len(scenario.actions),
+                "allow": allow_count,
+                "deny": deny_count,
+                "quarantine": quarantine_count,
+                "elapsed_ms": round(elapsed_ms, 2),
+            }
+        )
+    )
 
     metering_store.increment_metric(tenant_id=tenant, metric_name=WORKFLOW_EXECUTIONS)
 
@@ -1402,20 +1391,21 @@ async def run_fleet_scenario(
             "total_actions": len(scenario.actions),
             "allowed": allow_count,
             "denied": deny_count,
-            "quarantined": quarantine_count
+            "quarantined": quarantine_count,
         },
         decisions=decisions,
         metrics={
             "avg_score": round(total_score / max(len(decisions), 1), 3),
             "allow_rate": round(allow_count / max(len(decisions), 1), 3),
-            "elapsed_ms": round(elapsed_ms, 2)
-        }
+            "elapsed_ms": round(elapsed_ms, 2),
+        },
     )
 
 
 # =============================================================================
 # Demo Endpoints (For Promotion & Sales)
 # =============================================================================
+
 
 class RogueDetectionResponse(BaseModel):
     simulation_id: str
@@ -1439,17 +1429,10 @@ class SwarmCoordinationResponse(BaseModel):
     coordination_score: float
 
 
-
-
 @app.get("/v1/audit/report", response_model=AuditReportResponse, tags=["Audit"])
-async def generate_audit_report(
-    tenant: str = Depends(verify_api_key)
-):
+async def generate_audit_report(tenant: str = Depends(verify_api_key)):
     """Generate an audit summary report for the current tenant."""
-    decisions = [
-        d for d in DECISIONS_STORE.values()
-        if d.get("tenant") == tenant
-    ]
+    decisions = [d for d in DECISIONS_STORE.values() if d.get("tenant") == tenant]
     by_outcome = {
         "ALLOW": sum(1 for d in decisions if d.get("decision") == "ALLOW"),
         "DENY": sum(1 for d in decisions if d.get("decision") == "DENY"),
@@ -1480,9 +1463,7 @@ async def export_audit_bundle(
             detail="SCBE_AUDIT_EXPORT_SIGNING_KEY is not configured",
         )
 
-    tenant_records = [
-        record for record in DECISIONS_STORE.values() if record.get("tenant") == tenant
-    ]
+    tenant_records = [record for record in DECISIONS_STORE.values() if record.get("tenant") == tenant]
     filtered_records = filter_records_by_range(tenant_records, from_ts=from_, to_ts=to)
 
     bundle, manifest = build_signed_bundle(
@@ -1506,6 +1487,7 @@ async def export_monthly_usage(
     target_tenant = None if include_all_tenants else tenant
     return MonthlyUsageExportResponse(**export_monthly_billable_usage(year=year, month=month, tenant_id=target_tenant))
 
+
 @app.get("/v1/demo/rogue-detection", response_model=RogueDetectionResponse, tags=["Demo"])
 async def demo_rogue_detection(steps: int = 25):
     """
@@ -1517,10 +1499,10 @@ async def demo_rogue_detection(steps: int = 25):
     The swarm "smells" the intruder through mathematical anomaly detection.
     """
     import numpy as np
+
     np.random.seed(int(time.time()) % 10000)
 
-    TONGUES = {'KO': 0, 'AV': np.pi/3, 'RU': 2*np.pi/3,
-               'CA': np.pi, 'UM': 4*np.pi/3, 'DR': 5*np.pi/3}
+    TONGUES = {"KO": 0, "AV": np.pi / 3, "RU": 2 * np.pi / 3, "CA": np.pi, "UM": 4 * np.pi / 3, "DR": 5 * np.pi / 3}
 
     class Agent:
         def __init__(self, id, tongue, pos, is_rogue=False):
@@ -1544,7 +1526,7 @@ async def demo_rogue_detection(steps: int = 25):
         diff_sq = np.linalg.norm(u - v) ** 2
         denom = (1 - nu**2) * (1 - nv**2)
         if denom <= 1e-10:
-            return float('inf')
+            return float("inf")
         return float(np.arccosh(max(1 + 2 * diff_sq / denom, 1.0)))
 
     def project(pos, max_n=0.95):
@@ -1553,8 +1535,8 @@ async def demo_rogue_detection(steps: int = 25):
 
     # Create agents
     agents = []
-    for i, t in enumerate(['KO', 'AV', 'RU', 'CA', 'UM', 'DR']):
-        pos = np.array([0.02 + i*0.01] * 3)
+    for i, t in enumerate(["KO", "AV", "RU", "CA", "UM", "DR"]):
+        pos = np.array([0.02 + i * 0.01] * 3)
         agents.append(Agent(i, t, pos))
 
     # Add rogue
@@ -1604,23 +1586,24 @@ async def demo_rogue_detection(steps: int = 25):
             agent.position = project(agent.position)
 
     # Calculate final metrics
-    rogue_distances = [hyperbolic_dist(a.position, rogue.position)
-                       for a in agents if not a.is_rogue]
+    rogue_distances = [hyperbolic_dist(a.position, rogue.position) for a in agents if not a.is_rogue]
     avg_rogue_dist = float(np.mean(rogue_distances))
 
     false_positives = sum(1 for a in agents if not a.is_rogue and len(a.flagged_by) > 0)
 
     final_positions = []
     for a in agents:
-        final_positions.append({
-            "id": a.id,
-            "tongue": a.tongue or "NULL",
-            "position": [round(float(x), 4) for x in a.position],
-            "norm": round(a.norm, 4),
-            "is_rogue": a.is_rogue,
-            "flagged_by": len(a.flagged_by),
-            "quarantined": a.is_quarantined
-        })
+        final_positions.append(
+            {
+                "id": a.id,
+                "tongue": a.tongue or "NULL",
+                "position": [round(float(x), 4) for x in a.position],
+                "norm": round(a.norm, 4),
+                "is_rogue": a.is_rogue,
+                "flagged_by": len(a.flagged_by),
+                "quarantined": a.is_quarantined,
+            }
+        )
 
     return RogueDetectionResponse(
         simulation_id=f"demo_{uuid.uuid4().hex[:8]}",
@@ -1634,8 +1617,8 @@ async def demo_rogue_detection(steps: int = 25):
         metrics={
             "avg_isolation_distance": round(avg_rogue_dist, 3),
             "rogue_final_norm": round(rogue.norm, 3),
-            "detection_rate": 1.0 if rogue.is_quarantined else len(rogue.flagged_by) / 6
-        }
+            "detection_rate": 1.0 if rogue.is_quarantined else len(rogue.flagged_by) / 6,
+        },
     )
 
 
@@ -1650,6 +1633,7 @@ async def demo_swarm_coordination(agents: int = 12, steps: int = 30):
     Demonstrates jam-resistant, decentralized coordination.
     """
     import numpy as np
+
     np.random.seed(int(time.time()) % 10000)
 
     # Initialize agents in tight cluster
@@ -1664,7 +1648,7 @@ async def demo_swarm_coordination(agents: int = 12, steps: int = 30):
         diff_sq = np.linalg.norm(u - v) ** 2
         denom = (1 - nu**2) * (1 - nv**2)
         if denom <= 1e-10:
-            return float('inf')
+            return float("inf")
         return float(np.arccosh(max(1 + 2 * diff_sq / denom, 1.0)))
 
     def project(pos, max_n=0.95):
@@ -1674,7 +1658,7 @@ async def demo_swarm_coordination(agents: int = 12, steps: int = 30):
     # Calculate initial distances
     initial_distances = []
     for i in range(agents):
-        for j in range(i+1, agents):
+        for j in range(i + 1, agents):
             initial_distances.append(hyperbolic_dist(positions[i], positions[j]))
     initial_avg = float(np.mean(initial_distances))
 
@@ -1686,7 +1670,7 @@ async def demo_swarm_coordination(agents: int = 12, steps: int = 30):
         forces = [np.zeros(3) for _ in range(agents)]
 
         for i in range(agents):
-            for j in range(i+1, agents):
+            for j in range(i + 1, agents):
                 d = hyperbolic_dist(positions[i], positions[j])
 
                 if d < 0.1:
@@ -1710,7 +1694,7 @@ async def demo_swarm_coordination(agents: int = 12, steps: int = 30):
     # Calculate final distances
     final_distances = []
     for i in range(agents):
-        for j in range(i+1, agents):
+        for j in range(i + 1, agents):
             final_distances.append(hyperbolic_dist(positions[i], positions[j]))
     final_avg = float(np.mean(final_distances))
 
@@ -1724,16 +1708,12 @@ async def demo_swarm_coordination(agents: int = 12, steps: int = 30):
         final_avg_distance=round(final_avg, 4),
         collisions=collisions,
         boundary_breaches=boundary_breaches,
-        coordination_score=round(max(0, coord_score), 3)
+        coordination_score=round(max(0, coord_score), 3),
     )
 
 
 @app.get("/v1/demo/pipeline-layers", tags=["Demo"])
-async def demo_pipeline_layers(
-    action: str = "READ",
-    trust: float = 0.7,
-    sensitivity: float = 0.5
-):
+async def demo_pipeline_layers(action: str = "READ", trust: float = 0.7, sensitivity: float = 0.5):
     """
     **LIVE DEMO: 14-Layer Pipeline Visualization**
 
@@ -1751,7 +1731,7 @@ async def demo_pipeline_layers(
     complex_coords = [(seed[i] - 128) / 128.0 for i in range(6)]
     layers["L1_complex_context"] = {
         "description": "Embed request as complex numbers",
-        "output": [round(c, 4) for c in complex_coords]
+        "output": [round(c, 4) for c in complex_coords],
     }
 
     # Layer 2-4: Realification & Weighting
@@ -1760,13 +1740,13 @@ async def demo_pipeline_layers(
     layers["L2-4_realification"] = {
         "description": "Map to real manifold with trust weighting",
         "trust_radius": round(radius, 4),
-        "position": [round(p, 4) for p in position]
+        "position": [round(p, 4) for p in position],
     }
 
     # Layer 5-7: Hyperbolic Geometry
     safe_center = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     norm1_sq = sum(x**2 for x in position)
-    diff_sq = sum((a - b)**2 for a, b in zip(position, safe_center))
+    diff_sq = sum((a - b) ** 2 for a, b in zip(position, safe_center))
     denom = (1 - min(norm1_sq, 0.9999)) * 1.0
     delta = 2 * diff_sq / denom if denom > 0 else 0
     distance = math.acosh(1 + delta) if delta >= 0 else 0.0
@@ -1775,7 +1755,7 @@ async def demo_pipeline_layers(
         "description": "Calculate Poincaré ball distance from safe center",
         "position_norm": round(math.sqrt(norm1_sq), 4),
         "hyperbolic_distance": round(distance, 4),
-        "interpretation": "closer to 0 = safer, higher = riskier"
+        "interpretation": "closer to 0 = safer, higher = riskier",
     }
 
     # Layer 8: Realm Trust
@@ -1784,7 +1764,7 @@ async def demo_pipeline_layers(
         "description": "Compute realm-adjusted trust",
         "base_trust": trust,
         "sensitivity_penalty": round(sensitivity * 0.5, 4),
-        "realm_trust": round(realm_trust, 4)
+        "realm_trust": round(realm_trust, 4),
     }
 
     # Layer 9-10: Spectral/Spin Coherence
@@ -1792,26 +1772,23 @@ async def demo_pipeline_layers(
     layers["L9-10_coherence"] = {
         "description": "Spectral and spin coherence analysis",
         "coherence_score": round(coherence, 4),
-        "interpretation": "measures stability of request pattern"
+        "interpretation": "measures stability of request pattern",
     }
 
     # Layer 11: Temporal Pattern
     temporal_score = trust * 0.9 + 0.1
-    layers["L11_temporal"] = {
-        "description": "Temporal pattern analysis",
-        "temporal_score": round(temporal_score, 4)
-    }
+    layers["L11_temporal"] = {"description": "Temporal pattern analysis", "temporal_score": round(temporal_score, 4)}
 
     # Layer 12: Harmonic Scaling
     R = 2
     d = int(sensitivity * 3) + 1
-    H = R ** d
+    H = R**d
     risk_factor = (1 - realm_trust) * sensitivity * 0.5
     layers["L12_harmonic"] = {
         "description": "Harmonic scaling and risk computation",
         "dimension": d,
         "harmonic_value": H,
-        "risk_factor": round(risk_factor, 4)
+        "risk_factor": round(risk_factor, 4),
     }
 
     # Layer 13: Final Score
@@ -1829,34 +1806,29 @@ async def demo_pipeline_layers(
         "risk_penalty": round(risk_factor, 4),
         "final_score": round(final_score, 4),
         "decision": decision,
-        "thresholds": {"ALLOW": "> 0.6", "QUARANTINE": "0.3 - 0.6", "DENY": "< 0.3"}
+        "thresholds": {"ALLOW": "> 0.6", "QUARANTINE": "0.3 - 0.6", "DENY": "< 0.3"},
     }
 
     # Layer 14: Telemetry
     layers["L14_telemetry"] = {
         "description": "Audit logging and telemetry",
         "timestamp": datetime.utcnow().isoformat() + "Z",
-        "logged": True
+        "logged": True,
     }
 
     return {
         "demo_id": f"pipeline_{uuid.uuid4().hex[:8]}",
-        "input": {
-            "agent_id": agent_id,
-            "action": action,
-            "target": target,
-            "trust": trust,
-            "sensitivity": sensitivity
-        },
+        "input": {"agent_id": agent_id, "action": action, "target": target, "trust": trust, "sensitivity": sensitivity},
         "layers": layers,
         "final_decision": decision,
-        "final_score": round(final_score, 4)
+        "final_score": round(final_score, 4),
     }
 
 
 # =============================================================================
 # Startup
 # =============================================================================
+
 
 @app.on_event("startup")
 async def startup():
@@ -1866,14 +1838,19 @@ async def startup():
         except Exception as exc:
             logger.warning(json.dumps({"event": "billing_db_init_failed", "error": str(exc)}))
     persistence = get_persistence()
-    logger.info(json.dumps({
-        "event": "api_startup",
-        "version": "1.0.0",
-        "endpoints": 14,
-        "firebase_connected": persistence.is_connected
-    }))
+    logger.info(
+        json.dumps(
+            {
+                "event": "api_startup",
+                "version": "1.0.0",
+                "endpoints": 14,
+                "firebase_connected": persistence.is_connected,
+            }
+        )
+    )
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8080)

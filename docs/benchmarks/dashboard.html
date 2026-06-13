@@ -1,190 +1,47 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SCBE Benchmark Evidence Dashboard</title>
-    <style>
-      body {
-        margin: 0;
-        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: #f7f8fa;
-        color: #15171a;
-        line-height: 1.55;
-      }
-      main {
-        width: min(1160px, calc(100% - 32px));
-        margin: 0 auto;
-        padding: 32px 0 48px;
-      }
-      nav {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-        margin-bottom: 26px;
-        color: #515861;
-      }
-      a { color: inherit; }
-      h1 {
-        margin: 0 0 8px;
-        font-size: clamp(32px, 6vw, 58px);
-        line-height: 1;
-      }
-      .meta { color: #59616b; max-width: 820px; }
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-        gap: 12px;
-        margin: 24px 0;
-      }
-      .card {
-        background: white;
-        border: 1px solid #dfe3e8;
-        border-radius: 8px;
-        padding: 16px;
-      }
-      .value {
-        display: block;
-        font-size: 30px;
-        font-weight: 800;
-        line-height: 1;
-        margin-bottom: 8px;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        border: 1px solid #dfe3e8;
-      }
-      th, td {
-        padding: 11px;
-        border-bottom: 1px solid #e7eaee;
-        text-align: left;
-        vertical-align: top;
-        font-size: 14px;
-      }
-      th { background: #eef2f6; }
-      code { font-size: 12px; }
-      .note { margin-top: 18px; color: #59616b; }
-      @media (max-width: 760px) {
-        main { width: min(100% - 24px, 1160px); padding-top: 20px; }
-        table { display: block; overflow-x: auto; }
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <nav aria-label="Benchmark navigation">
-        <a href="../index.html">Home</a>
-        <a href="../benchmarks.html">Benchmark overview</a>
-        <a href="../governance-sdk.html">Governance SDK</a>
-        <a href="PUBLIC_LEADERBOARD_RUNBOOK_2026-05-31.md">Public runbook</a>
-      </nav>
-
-      <h1>SCBE Benchmark Evidence Dashboard</h1>
-      <p class="meta">
-        Generated 2026-05-31T20:41:42Z from local artifacts. This dashboard separates local
-        evidence from public leaderboard work. Local fixture scores are not public leaderboard scores.
-      </p>
-
-      <section class="cards" aria-label="Current benchmark summary">
-        <div class="card">
-          <span class="value">13/13</span>
-          Terminal-Bench core neutral parity against oracle.
-        </div>
-        <div class="card">
-          <span class="value">2/2</span>
-          Hard security-terminal probe after weighted bridge fallback.
-        </div>
-        <div class="card">
-          <span class="value">105/105</span>
-          Longform chain-integrity tamper and resume checks.
-        </div>
-        <div class="card">
-          <span class="value">6/6</span>
-          Hydra jobsite conservation cases.
-        </div>
-        <div class="card">
-          <span class="value">2/173</span>
-          Conservative Petri v7-matched residual false-allows.
-        </div>
-      </section>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Lane</th>
-            <th>Status</th>
-            <th>Score</th>
-            <th>Evidence</th>
-            <th>Boundary</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Terminal-Bench core neutral parity</strong></td>
-            <td>PASS</td>
-            <td>SCBE 13/13; oracle 13/13</td>
-            <td><code>artifacts/benchmarks/tb-neutral-compare/tb_neutral_final_report.json</code></td>
-            <td>Official terminal-bench core task execution packet; deterministic SCBE task plans; not a Terminal-Bench 2.x leaderboard row.</td>
-          </tr>
-          <tr>
-            <td><strong>Terminal-Bench hard security-terminal probe</strong></td>
-            <td>PASS</td>
-            <td>SCBE 2/2</td>
-            <td><code>artifacts/benchmarks/tb-neutral-compare/20260531T202914Z/scbe/2026-05-31__13-33-00/results.json</code></td>
-            <td>Official terminal-bench task execution on two harder security-terminal tasks; shows current planner capability, not a public leaderboard row.</td>
-          </tr>
-          <tr>
-            <td><strong>Governance tier separation</strong></td>
-            <td>PASS</td>
-            <td>DENY on reverse shell, disk wipe, destructive bulk delete</td>
-            <td><code>packages/agent-bus/docs/benchmarks/scbe_governance_evidence_brief.md</code></td>
-            <td>Static and harness-backed governance evidence; not a universal safety guarantee.</td>
-          </tr>
-          <tr>
-            <td><strong>Petri adversarial gate</strong></td>
-            <td>PASS WITH RESIDUALS</td>
-            <td>2/173 false-allows (1.16%) in v7-matched run</td>
-            <td><code>docs/external/PETRI_FINDINGS_2026_05_08.md</code></td>
-            <td>Harness evidence on a fixed adversarial corpus; report the conservative v7-matched number publicly.</td>
-          </tr>
-          <tr>
-            <td><strong>Longform chain integrity</strong></td>
-            <td>PASS</td>
-            <td>105/105</td>
-            <td><code>artifacts/benchmarks/longform_chain_integrity_latest.json</code></td>
-            <td>Custom SCBE ledger-integrity benchmark covering tamper, semantic drift, truncation, and cold-start resume.</td>
-          </tr>
-          <tr>
-            <td><strong>Hydra jobsite conservation</strong></td>
-            <td>PASS</td>
-            <td>6/6; conservation 1.0</td>
-            <td><code>artifacts/benchmarks/hydra_jobsite_conservation/latest_report.json</code></td>
-            <td>Local deterministic project-conservation benchmark; not a public comparison with named company agents.</td>
-          </tr>
-          <tr>
-            <td><strong>Full-system matrix</strong></td>
-            <td>EVIDENCE_PACKET_READY</td>
-            <td>15 artifact-ready lanes; 11 pass; 2 partial</td>
-            <td><code>artifacts/benchmarks/scbe_full_system/latest_report.json</code></td>
-            <td>Routing map across local evidence lanes; not a single public leaderboard score.</td>
-          </tr>
-          <tr>
-            <td><strong>Public leaderboard next step</strong></td>
-            <td>READY TO START</td>
-            <td>Target: Terminal-Bench 2.x first</td>
-            <td><code>docs/benchmarks/PUBLIC_LEADERBOARD_RUNBOOK_2026-05-31.md</code></td>
-            <td>Requires unchanged upstream harness, raw artifacts, environment metadata, commit hash, and per-task logs.</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <p class="note">
-        Best public wording: SCBE has strong local and harness-backed evidence for governed agent
-        execution. It should not claim to beat frontier agents until an official public harness run
-        or leaderboard row exists.
-      </p>
-    </main>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SCBE Benchmark Evidence Dashboard</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 32px; color: #15171a; background: #f7f8fa; }
+    main { max-width: 1180px; margin: 0 auto; }
+    h1 { margin-bottom: 6px; }
+    .meta { color: #515861; margin-bottom: 24px; }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .card { background: white; border: 1px solid #dfe3e8; border-radius: 8px; padding: 14px; }
+    .value { font-size: 28px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #dfe3e8; }
+    th, td { padding: 10px; border-bottom: 1px solid #e7eaee; text-align: left; vertical-align: top; font-size: 14px; }
+    th { background: #eef2f6; }
+    code { font-size: 12px; }
+    small, span { color: #59616b; }
+    @media (max-width: 760px) { body { margin: 14px; } .cards { grid-template-columns: 1fr; } table { display: block; overflow-x: auto; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>SCBE Benchmark Evidence Dashboard</h1>
+    <div class="meta">Generated 2026-05-31T04:03:11.771Z from unknown @ e8fb9af2a</div>
+    <section class="cards">
+      <div class="card"><div>Evidence lanes</div><div class="value">6/10</div></div>
+      <div class="card"><div>Readiness</div><div class="value">60%</div></div>
+      <div class="card"><div>Proof rule</div><small>Every public claim must cite: command, artifact path, commit hash, and claim boundary.</small></div>
+    </section>
+    <table>
+      <thead><tr><th>Lane</th><th>Status</th><th>Command / Artifact</th><th>Hash</th><th>Summary / Boundary</th></tr></thead>
+      <tbody><tr><td><strong>hard-agentic</strong><br><span>hard agentic pretest matrix (12/14 readiness lanes)</span></td><td>evidence-ready</td><td><code>scbe bench hard-agentic --json</code><br><small>artifacts/benchmarks/hard_agentic_pretest/latest_report.json</small></td><td>7e0de2ea</td><td>{&quot;blocked_or_failed&quot;:5,&quot;executed&quot;:8,&quot;ready_or_pass&quot;:9,&quot;target_count&quot;:14}<br><small>local readiness/pretest matrix; not a public benchmark leaderboard score</small></td></tr>
+<tr><td><strong>research</strong><br><span>BrowseComp/GAIA-style local research fixtures</span></td><td>evidence-ready</td><td><code>scbe bench research --json</code><br><small>artifacts/benchmarks/research_agent_fixtures/latest_report.json</small></td><td>5564f227</td><td>{&quot;baseline_pass_rate&quot;:0,&quot;baseline_passes&quot;:0,&quot;decision&quot;:&quot;PASS&quot;,&quot;scbe_pass_rate&quot;:1,&quot;scbe_passes&quot;:2,&quot;task_count&quot;:2,&quot;unresolved_tasks&quot;:[]}<br><small>local BrowseComp/GAIA-style fixtures; not public BrowseComp or GAIA scores</small></td></tr>
+<tr><td><strong>rubix-browser</strong><br><span>permission-hypercube browser-control geometry fixture</span></td><td>evidence-ready</td><td><code>scbe bench rubix-browser --json</code><br><small>artifacts/benchmarks/rubix_browser_hypercube/latest_report.json</small></td><td>b2f4096e</td><td>{&quot;baseline_avg&quot;:0.4167,&quot;baseline_completed&quot;:0,&quot;baseline_illegal_moves&quot;:3,&quot;decision&quot;:&quot;PASS&quot;,&quot;hypercube_avg&quot;:1,&quot;hypercube_completed&quot;:3,&quot;hypercube_illegal_moves&quot;:0,&quot;task_count&quot;:3}<br><small>local browser-control geometry fixture; not WebArena, BrowserGym, OSWorld, or VisualWebArena score</small></td></tr>
+<tr><td><strong>arc-agi2</strong><br><span>ARC-AGI-2 local baseline (rule-free strategies, lower bound)</span></td><td>missing-artifact</td><td><code>scbe bench arc-agi2 --json</code><br><small>artifacts/benchmarks/arc_agi2_local/latest_report.json</small></td><td>missing</td><td>No latest artifact yet<br><small>rule-free lower-bound baselines on public ARC-AGI-2 data; not a competitive ARC-AGI-2 submission score</small></td></tr>
+<tr><td><strong>arc-style-grid</strong><br><span>ARC-style grid reasoning fixture (SCBE sensor outputs)</span></td><td>missing-artifact</td><td><code>scbe bench arc-style-grid --json</code><br><small>artifacts/benchmarks/arc_style_grid/latest_report.json</small></td><td>missing</td><td>No latest artifact yet<br><small>local ARC-style grid fixture using SCBE sensor outputs; not a public ARC score</small></td></tr>
+<tr><td><strong>swe-local</strong><br><span>SWE-style local real-patch repair fixtures</span></td><td>missing-artifact</td><td><code>scbe bench swe-local --json</code><br><small>artifacts/benchmarks/swe_local/latest_report.json</small></td><td>missing</td><td>No latest artifact yet<br><small>local real-patch fixtures; not SWE-bench Verified or SWEbench.com leaderboard score</small></td></tr>
+<tr><td><strong>cli-competitive</strong><br><span>CLI command accuracy vs Codex/Claude-Code-style baselines</span></td><td>evidence-ready</td><td><code>scbe bench cli-competitive --json</code><br><small>artifacts/benchmarks/cli_competitive/cli_competitive_benchmark_latest.json</small></td><td>8710eb77</td><td>{}<br><small>local CLI command accuracy fixture; not a published competitive benchmark score</small></td></tr>
+<tr><td><strong>compound-decompose</strong><br><span>RDKit compound decomposition/recomposition through atom mud</span></td><td>evidence-ready</td><td><code>scbe bench compound-decompose --json</code><br><small>artifacts/benchmarks/compound_decomposition_recomposition/latest_report.json</small></td><td>c1c9f514</td><td>{&quot;decision&quot;:&quot;PASS&quot;,&quot;rdkit_available&quot;:true,&quot;case_count&quot;:30,&quot;passed&quot;:30,&quot;pass_rate&quot;:1,&quot;mud_step&quot;:5,&quot;rdkit_error&quot;:null}<br><small>computational compound decomposition/recomposition benchmark; not wet-lab synthesis, biological efficacy proof, dosing guidance, or medical advice</small></td></tr>
+<tr><td><strong>providers</strong><br><span>AI provider health matrix (local &gt; free &gt; paid free-first policy)</span></td><td>missing-artifact</td><td><code>scbe bench providers --json</code><br><small>artifacts/benchmarks/provider_health/latest_report.json</small></td><td>missing</td><td>No latest artifact yet<br><small>local provider reachability check; not an API reliability guarantee</small></td></tr>
+<tr><td><strong>longform</strong><br><span>Longform Bridge durable CLI workflow with squad dispatch receipts</span></td><td>evidence-ready</td><td><code>scbe bench longform --json</code><br><small>artifacts/benchmarks/longform_cli_benchmark_latest.json</small></td><td>40eea47c</td><td>{}<br><small>local durable-workflow CLI fixture; not a guarantee of autonomous task completion</small></td></tr></tbody>
+    </table>
+  </main>
+</body>
 </html>

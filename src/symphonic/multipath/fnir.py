@@ -550,11 +550,11 @@ def render(node: "FnIR", tongue: str = "KO", indent: int = 0) -> str:
     if op in _BIN_OPS:
         sym = _BIN_SYM[op]
         if len(node.children) == 2:
-            l = render(node.children[0], tongue, 0)
-            r = render(node.children[1], tongue, 0)
+            lhs = render(node.children[0], tongue, 0)
+            rhs = render(node.children[1], tongue, 0)
             if tongue == "DR":
-                return f"({sym}) ({l}) ({r})"
-            return f"({l} {sym} {r})"
+                return f"({sym}) ({lhs}) ({rhs})"
+            return f"({lhs} {sym} {rhs})"
 
     if op == Op.NEG:
         inner = render(node.children[0], tongue, 0) if node.children else "_"

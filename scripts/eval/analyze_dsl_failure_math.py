@@ -8,6 +8,7 @@ This is a math-first diagnostic. It measures:
 - executable failure modes from scorer reports;
 - tokenizer selector audit status.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -18,7 +19,6 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-
 
 ROOT = Path(__file__).resolve().parents[2]
 SFT = ROOT / "training-data" / "sft"
@@ -186,13 +186,29 @@ def write_outputs(payload: dict[str, Any]) -> Path:
         "",
     ]
     lines.extend(f"- {item}" for item in payload["findings"])
-    lines.extend(["", "## Dataset Geometry", "", "| Dataset | N | Entropy Ratio | Dominant | Header Fraction |", "| --- | ---: | ---: | --- | ---: |"])
+    lines.extend(
+        [
+            "",
+            "## Dataset Geometry",
+            "",
+            "| Dataset | N | Entropy Ratio | Dominant | Header Fraction |",
+            "| --- | ---: | ---: | --- | ---: |",
+        ]
+    )
     for row in payload["datasets"]:
         lines.append(
             f"| `{row['path']}` | {row['n_records']} | {row['entropy_ratio']} | "
             f"{row['dominant_category']} ({row['dominant_fraction']:.1%}) | {row['header_fraction_total']} |"
         )
-    lines.extend(["", "## Executable Reports", "", "| Report | N | Pass | Accuracy | Failures |", "| --- | ---: | ---: | ---: | --- |"])
+    lines.extend(
+        [
+            "",
+            "## Executable Reports",
+            "",
+            "| Report | N | Pass | Accuracy | Failures |",
+            "| --- | ---: | ---: | ---: | --- |",
+        ]
+    )
     for row in payload["reports"]:
         lines.append(
             f"| `{row['path']}` | {row['n_total']} | {row['n_pass']} | "

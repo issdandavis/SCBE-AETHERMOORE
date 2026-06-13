@@ -658,14 +658,19 @@ def run_case(case: CompoundCase) -> dict[str, Any]:
         "ok": ok,
         "duration_ms": int((time.perf_counter() - t0) * 1000),
         "mud_step": 5,
-        "claim": "Long-form compound decomposition can recover a known solution after topology loss only by carrying multi-lattice evidence cards.",
+        "claim": (
+            "Long-form compound decomposition can recover a known solution after topology loss "
+            "only by carrying multi-lattice evidence cards."
+        ),
         "steps": steps,
         "receipt": {
             "input_sha256": sha256_text(json.dumps(asdict(case), sort_keys=True)),
             "selected_sha256": sha256_text(json.dumps(selected, sort_keys=True)),
             "engine": "rdkit",
             "safety_decision": "ALLOW_COMPUTATIONAL_ONLY",
-            "claim_boundary": "computational chemistry benchmark; not wet-lab synthesis, efficacy proof, or medical advice",
+            "claim_boundary": (
+                "computational chemistry benchmark; not wet-lab synthesis, efficacy proof, or medical advice"
+            ),
         },
         "reaction_state_packet": packet.to_dict(),
     }
@@ -708,7 +713,9 @@ def build_report(out_dir: Path) -> dict[str, Any]:
                 "fragment_cards",
                 "candidate_scores",
             ],
-            "lesson": "Atom counts alone do not preserve chemical topology; recomposition needs extra conserved fields.",
+            "lesson": (
+                "Atom counts alone do not preserve chemical topology; recomposition needs extra conserved fields."
+            ),
         },
         "cases": cases,
     }
@@ -748,7 +755,8 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
             "",
             "## Claim Boundary",
             "",
-            "This is a computational chemistry benchmark. It does not provide wet-lab synthesis steps, biological efficacy proof, dosing guidance, or medical advice.",
+            "This is a computational chemistry benchmark. It does not provide wet-lab synthesis "
+            "steps, biological efficacy proof, dosing guidance, or medical advice.",
             "",
         ]
     )

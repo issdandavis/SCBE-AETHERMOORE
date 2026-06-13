@@ -57,9 +57,7 @@ class CorrectionSignal:
             "severity": self.severity,
             "intent_violated": self.intent_violated,
             "intent_drift": round(self.intent_drift, 4),
-            **{
-                f"correction_{k}": round(v, 4) for k, v in self.axis_corrections.items()
-            },
+            **{f"correction_{k}": round(v, 4) for k, v in self.axis_corrections.items()},
         }
 
 
@@ -127,9 +125,7 @@ class FrameCorrector:
             proj /= np.linalg.norm(proj, axis=0, keepdims=True) + 1e-8
             latent_nudge = np.clip(correction_vec @ proj, -5.0, 5.0)
 
-        condition_signal = self._build_condition(
-            state, severity, axis_corrections, cost
-        )
+        condition_signal = self._build_condition(state, severity, axis_corrections, cost)
 
         sig = CorrectionSignal(
             frame_index=state.frame_index,
@@ -140,16 +136,8 @@ class FrameCorrector:
             condition_signal=condition_signal,
             severity=severity,
             intent_violated=state.intent_violated,
-            intent_drift=(
-                max(state.intent_drift_by_axis.values())
-                if state.intent_drift_by_axis
-                else 0.0
-            ),
-            intent_description=(
-                self.tracker.intent_anchor.description
-                if self.tracker.intent_anchor
-                else ""
-            ),
+            intent_drift=max(state.intent_drift_by_axis.values()) if state.intent_drift_by_axis else 0.0,
+            intent_description=self.tracker.intent_anchor.description if self.tracker.intent_anchor else "",
         )
         self._corrections.append(sig)
         return sig
@@ -207,34 +195,21 @@ class FrameCorrector:
             "severity": severity,
             "drift": state.aggregate_drift,
             "cost_multiplier": cost,
-            "top_drift_axes": [
-                {"axis": name, "drift": round(d, 4)} for name, d in top_drift_axes
-            ],
+            "top_drift_axes": [{"axis": name, "drift": round(d, 4)} for name, d in top_drift_axes],
             "axis_corrections": {k: round(v, 4) for k, v in axis_corrections.items()},
             # Trijective audit: human-intent vs machine-representation leg
             "intent": {
                 "violated": state.intent_violated,
-                "max_drift": (
-                    round(max(state.intent_drift_by_axis.values()), 4)
-                    if state.intent_drift_by_axis
-                    else 0.0
-                ),
-                "by_axis": {
-                    ax.value: round(d, 4)
-                    for ax, d in state.intent_drift_by_axis.items()
-                },
+                "max_drift": round(max(state.intent_drift_by_axis.values()), 4) if state.intent_drift_by_axis else 0.0,
+                "by_axis": {ax.value: round(d, 4) for ax, d in state.intent_drift_by_axis.items()},
                 "description": anchor.description if anchor else "",
             },
             # UE5-specific hints
             "ue5": {
                 "suggest_keyframe": severity in ("moderate", "severe"),
-                "apply_motion_blur_correction": "motion" in axis_corrections
-                and axis_corrections.get("motion", 0) != 0,
-                "apply_depth_correction": "depth" in axis_corrections
-                and axis_corrections.get("depth", 0) != 0,
-                "rerender_priority": {"none": 0, "mild": 1, "moderate": 2, "severe": 3}[
-                    severity
-                ],
+                "apply_motion_blur_correction": "motion" in axis_corrections and axis_corrections.get("motion", 0) != 0,
+                "apply_depth_correction": "depth" in axis_corrections and axis_corrections.get("depth", 0) != 0,
+                "rerender_priority": {"none": 0, "mild": 1, "moderate": 2, "severe": 3}[severity],
             },
             # Diffusion-model hints
             "diffusion": {
@@ -259,9 +234,7 @@ class FrameCorrector:
         intent_violations = sum(1 for c in self._corrections if c.intent_violated)
         return {
             "frame_count": len(self._corrections),
-            "severity_counts": {
-                s: severities.count(s) for s in ("none", "mild", "moderate", "severe")
-            },
+            "severity_counts": {s: severities.count(s) for s in ("none", "mild", "moderate", "severe")},
             "intent_violations": intent_violations,
             "tracker_summary": self.tracker.summary(),
         }

@@ -267,6 +267,12 @@ export {
   scbeCompassParityTargets,
   scbeCompassBoardRules,
   scbeCompassRollCards,
+  type HermesTaskMode,
+  type HermesModelLane,
+  type HermesRoutePlan,
+  classifyHermesTask,
+  hermesModelLanes,
+  planHermesRoute,
 } from './compass.js';
 
 export {

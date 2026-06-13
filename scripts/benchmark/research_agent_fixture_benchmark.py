@@ -19,7 +19,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = REPO_ROOT / "artifacts" / "benchmarks" / "research_agent_fixtures"
 
@@ -80,19 +79,22 @@ FIXTURES: tuple[ResearchFixture, ...] = (
                 "S1",
                 "Animated program index",
                 "web_snapshot",
-                "The Plastic Man Comedy/Adventure Show aired from 1979 to 1981 and followed the elastic crime-fighter Plastic Man.",
+                "The Plastic Man Comedy/Adventure Show aired from 1979 to 1981 and followed the "
+                "elastic crime-fighter Plastic Man.",
             ),
             SourceDoc(
                 "S2",
                 "Rubber-themed heroes note",
                 "web_snapshot",
-                "A different rubber-themed character appeared in unrelated comics and did not have the 1979-1981 animated program.",
+                "A different rubber-themed character appeared in unrelated comics and did not "
+                "have the 1979-1981 animated program.",
             ),
             SourceDoc(
                 "S3",
                 "Character helper dossier",
                 "archive_note",
-                "The same Plastic Man source pack mentions monastic helpers and elastic crime-fighting as recurring support clues.",
+                "The same Plastic Man source pack mentions monastic helpers and elastic "
+                "crime-fighting as recurring support clues.",
             ),
         ),
     ),
@@ -117,13 +119,15 @@ FIXTURES: tuple[ResearchFixture, ...] = (
                 "T1",
                 "artifact_table.csv",
                 "table",
-                "sector,color,checksum,artifact\norchard,blue,8f,orchard blue sample\nharbor,blue,8f,harbor blue sample\norchard,red,8f,orchard red sample",
+                "sector,color,checksum,artifact\norchard,blue,8f,orchard blue sample\n"
+                "harbor,blue,8f,harbor blue sample\norchard,red,8f,orchard red sample",
             ),
             SourceDoc(
                 "T2",
                 "submission_rules.md",
                 "markdown",
-                "Submission code format: uppercase sector, hyphen, uppercase color, hyphen, uppercase checksum fragment.",
+                "Submission code format: uppercase sector, hyphen, uppercase color, hyphen, "
+                "uppercase checksum fragment.",
             ),
         ),
     ),
@@ -148,7 +152,8 @@ FIXTURES: tuple[ResearchFixture, ...] = (
                 "I1",
                 "diagram_description.txt",
                 "image_description",
-                "Objects: triangle A touches circle and square; triangle B touches only circle; diamond C touches square.",
+                "Objects: triangle A touches circle and square; triangle B touches only circle; "
+                "diamond C touches square.",
             ),
             SourceDoc(
                 "I2",
@@ -214,7 +219,9 @@ def synthesize_answer(fixture: ResearchFixture, evidence: list[dict[str, Any]]) 
     raise ValueError(f"no synthesizer registered for {fixture.task_id}")
 
 
-def score_answer(fixture: ResearchFixture, answer: str, citations: list[str], evidence_trace: list[dict[str, Any]]) -> dict[str, bool]:
+def score_answer(
+    fixture: ResearchFixture, answer: str, citations: list[str], evidence_trace: list[dict[str, Any]]
+) -> dict[str, bool]:
     required = set(fixture.required_source_ids)
     observed = set(citations)
     return {
@@ -287,8 +294,10 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "| Lane | Passes | Pass rate |",
         "| --- | ---: | ---: |",
-        f"| Answer-only baseline | `{summary['baseline_passes']} / {summary['task_count']}` | `{summary['baseline_pass_rate']}` |",
-        f"| SCBE evidence lane | `{summary['scbe_passes']} / {summary['task_count']}` | `{summary['scbe_pass_rate']}` |",
+        f"| Answer-only baseline | `{summary['baseline_passes']} / {summary['task_count']}` "
+        f"| `{summary['baseline_pass_rate']}` |",
+        f"| SCBE evidence lane | `{summary['scbe_passes']} / {summary['task_count']}` "
+        f"| `{summary['scbe_pass_rate']}` |",
         "",
         "## Per-Task Defender Notes",
         "",
@@ -338,17 +347,23 @@ def build_report(out_dir: Path = DEFAULT_OUT, run_id: str | None = None, style: 
             "boundary": "local fixture proof does not imply public benchmark score",
         },
         "patent_provenance": {
-            "legal_boundary": "implementation evidence only; support found/missing still requires patent workbench review",
+            "legal_boundary": (
+                "implementation evidence only; support found/missing still requires patent workbench review"
+            ),
             "refs": [
                 {
                     "path": "docs/PATENT_DETAILED_DESCRIPTION.md",
                     "claim_family": "audit receipt and bounded decision gate",
-                    "tie": "The benchmark records evidence traces, citations, checks, and receipt hashes for each task.",
+                    "tie": (
+                        "The benchmark records evidence traces, citations, checks, and receipt hashes for each task."
+                    ),
                 },
                 {
                     "path": "docs/specs/EVALUATION_CONTRACT_v1.md",
                     "claim_family": "stable evaluation envelope",
-                    "tie": "The benchmark emits a stable JSON/Markdown report with lane summaries and per-task evidence.",
+                    "tie": (
+                        "The benchmark emits a stable JSON/Markdown report with lane summaries and per-task evidence."
+                    ),
                 },
                 {
                     "path": "docs/benchmarks/HARD_AGENTIC_BENCHMARK_PRETEST.md",

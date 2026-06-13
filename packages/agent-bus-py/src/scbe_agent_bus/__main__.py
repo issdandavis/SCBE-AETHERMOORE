@@ -62,15 +62,9 @@ def main(argv: list[str] | None = None) -> int:
             scan_agent_request(
                 action=str(event.get("action") or event.get("task_type") or "EXECUTE"),
                 target=str(event.get("target") or event.get("task") or ""),
-                command=str(
-                    event.get("command") or event.get("operation_command") or ""
-                ),
+                command=str(event.get("command") or event.get("operation_command") or ""),
                 observed=str(event.get("observed") or ""),
-                context=(
-                    event.get("context")
-                    if isinstance(event.get("context"), dict)
-                    else {}
-                ),
+                context=(event.get("context") if isinstance(event.get("context"), dict) else {}),
             )
             for event in events
         ]

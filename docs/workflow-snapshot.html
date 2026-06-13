@@ -125,6 +125,21 @@
         gap: 12px;
         margin-top: 28px;
       }
+      .trust-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 18px;
+      }
+      .trust-chip {
+        border: 1px solid rgba(45, 211, 166, 0.26);
+        border-radius: 7px;
+        background: rgba(45, 211, 166, 0.08);
+        padding: 12px 14px;
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 750;
+      }
       .price-box {
         border: 1px solid var(--line);
         background: rgba(21, 26, 35, 0.84);
@@ -202,6 +217,7 @@
       }
       @media (max-width: 780px) {
         .price-strip,
+        .trust-row,
         .grid,
         .steps,
         .pay-grid {
@@ -227,39 +243,52 @@
 
     <header id="offer" class="hero">
       <div class="wrap">
-        <div class="eyebrow">First paid step</div>
-        <h1>Find the weak points in one AI agent workflow.</h1>
+        <div class="eyebrow">First paid step · $99 one-time</div>
+        <h1>
+          Get a risk read before your AI workflow calls tools, writes files, or touches customers.
+        </h1>
         <p class="lead">
           Send one agent setup, prompt chain, repo link, MCP stack, automation flow, or workflow
-          diagram. AetherMoore returns a concise starter read: drift risks, unsafe tool paths,
-          missing recovery states, observability gaps, and three next fixes.
+          diagram. AetherMoore returns one written starter read: what can go wrong, what evidence is
+          missing, and the next three fixes.
         </p>
         <div class="actions">
-          <a class="btn secondary" href="ai-workflow-snapshot.html">Need the cheaper $39 starter?</a>
-          <a class="btn btn-primary" href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l" target="_blank" rel="noopener"
+          <a
+            class="btn btn-primary"
+            href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
+            target="_blank"
+            rel="noopener"
+            data-funnel-event="cta_click_buy"
+            data-funnel-label="workflow-snapshot-hero-stripe"
             >Start for $99 with Stripe</a
           >
-          <a class="btn secondary" href="#cash-app">Pay with Cash App</a>
-          <a class="btn secondary" href="#free-check">Run the free self-check</a>
-          <a class="btn secondary" href="governance-snapshot.html">Need the $500 review?</a>
+          <a class="btn secondary" href="ai-workflow-snapshot.html#receipt">See sample receipt</a>
+          <a class="btn secondary" href="ai-workflow-snapshot.html#intake"
+            >Build the intake packet first</a
+          >
+        </div>
+        <div class="trust-row" aria-label="Buyer trust signals">
+          <div class="trust-chip">No secrets required</div>
+          <div class="trust-chip">Manual delivery after intake</div>
+          <div class="trust-chip">Upgrade credit toward $500 review</div>
+          <div class="trust-chip">Live Stripe checkout</div>
         </div>
         <div class="price-strip" aria-label="Offer ladder">
           <div class="price-box"><strong>Free</strong><span>Self-check and public docs.</span></div>
           <div class="price-box">
-            <strong>$99 one-time</strong><span>Concise first-pass workflow read. No subscription.</span>
+            <strong>$99 one-time</strong
+            ><span>Concise first-pass workflow read. No subscription.</span>
           </div>
           <div class="price-box">
             <strong>$500 full</strong><span>Fixed-scope written Governance Snapshot.</span>
           </div>
         </div>
         <div class="note">
-          Stripe checkout is live for the exact $99 Workflow Snapshot SKU. Cash App <strong>$IzzyDDavis7</strong> remains available as a manual alternate payment path; include "Workflow Snapshot" in the note.
+          Stripe checkout is live for the exact $99 Workflow Snapshot SKU. Cash App
+          <strong>$IzzyDDavis7</strong> remains available as a manual alternate payment path;
+          include "Workflow Snapshot" in the note.
         </div>
-        <img
-          class="hero-image"
-          src="hero.svg"
-          alt="AetherMoore governed AI workflow visual"
-        />
+        <img class="hero-image" src="hero.svg" alt="AetherMoore governed AI workflow visual" />
       </div>
     </header>
 
@@ -306,19 +335,31 @@
             <article class="card good">
               <h3>Delivery package</h3>
               <ul>
-                <li>One short decision record describing the workflow, risk level, and next move.</li>
-                <li>Threshold notes for when the workflow should stop, retry, escalate, or ask for help.</li>
+                <li>
+                  One short decision record describing the workflow, risk level, and next move.
+                </li>
+                <li>
+                  Threshold notes for when the workflow should stop, retry, escalate, or ask for
+                  help.
+                </li>
                 <li>A pilot checklist for the next safe test run.</li>
-                <li>Review notes on tool boundaries, logs, recovery paths, and missing evidence.</li>
-                <li>A plain manual-style handoff so a technical or non-technical buyer can act on it.</li>
-                <li>Delivery through email or agreed handoff route after payment and intake are matched.</li>
+                <li>
+                  Review notes on tool boundaries, logs, recovery paths, and missing evidence.
+                </li>
+                <li>
+                  A plain manual-style handoff so a technical or non-technical buyer can act on it.
+                </li>
+                <li>
+                  Delivery through email or agreed handoff route after payment and intake are
+                  matched.
+                </li>
               </ul>
             </article>
             <article class="card">
               <h3>Good fit / not for</h3>
               <p>
-                Good fit: one agent workflow that already exists or is close enough to describe. Best
-                when you want a practical first read before buying a larger review.
+                Good fit: one agent workflow that already exists or is close enough to describe.
+                Best when you want a practical first read before buying a larger review.
               </p>
               <p>
                 Not for: legal certification, compliance attestation, emergency incident response,
@@ -336,7 +377,10 @@
           <div class="steps">
             <div class="step">
               <strong>1. Pay</strong>
-              <p>Use the Stripe checkout link for the $99 Workflow Snapshot. Cash App remains available as a manual alternate path.</p>
+              <p>
+                Use the Stripe checkout link for the $99 Workflow Snapshot. Cash App remains
+                available as a manual alternate path.
+              </p>
             </div>
             <div class="step">
               <strong>2. Send</strong>
@@ -411,7 +455,11 @@
                 video walkthrough.
               </p>
               <div class="actions">
-                <a class="btn" href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l" target="_blank" rel="noopener"
+                <a
+                  class="btn"
+                  href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
+                  target="_blank"
+                  rel="noopener"
                   >Start the $99 read</a
                 >
                 <a class="btn secondary" href="hire.html">Ask first</a>
@@ -429,22 +477,23 @@
             <article class="card">
               <h3>Do I need to send secrets?</h3>
               <p>
-                No. Start with a public repo, diagram, prompt chain, tool list, or redacted screenshots.
-                If deeper access is needed, handling rules are agreed first.
+                No. Start with a public repo, diagram, prompt chain, tool list, or redacted
+                screenshots. If deeper access is needed, handling rules are agreed first.
               </p>
             </article>
             <article class="card">
               <h3>What is the success check?</h3>
               <p>
-                The first win is a clear list of failure points plus three fixes you can run next. If
-                the workflow is too thin to review, the memo says that instead of padding the report.
+                The first win is a clear list of failure points plus three fixes you can run next.
+                If the workflow is too thin to review, the memo says that instead of padding the
+                report.
               </p>
             </article>
             <article class="card">
               <h3>Can I use Cash App or Ko-fi?</h3>
               <p>
-                Yes. Stripe is the structured checkout, Cash App is the direct manual path, and Ko-fi is
-                the low-pressure support path. The payment center lists all current routes.
+                Yes. Stripe is the structured checkout, Cash App is the direct manual path, and
+                Ko-fi is the low-pressure support path. The payment center lists all current routes.
               </p>
             </article>
             <article class="card">
@@ -466,11 +515,17 @@
           <div class="eyebrow">Final CTA</div>
           <h2>Start with one workflow and one written read.</h2>
           <p class="lead">
-            The starter Snapshot is the smallest paid step: one workflow, one memo, three fixes,
-            and an upgrade path only if a deeper review is actually useful.
+            The starter Snapshot is the smallest paid step: one workflow, one memo, three fixes, and
+            an upgrade path only if a deeper review is actually useful.
           </p>
           <div class="actions">
-            <a class="btn btn-primary" href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l" target="_blank" rel="noopener"
+            <a
+              class="btn btn-primary"
+              href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
+              target="_blank"
+              rel="noopener"
+              data-funnel-event="cta_click_buy"
+              data-funnel-label="workflow-snapshot-final-stripe"
               >Start the $99 read</a
             >
             <a class="btn secondary" href="payments.html">Open payment center</a>

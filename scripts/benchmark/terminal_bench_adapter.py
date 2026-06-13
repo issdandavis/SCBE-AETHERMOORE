@@ -21,7 +21,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = REPO_ROOT / "artifacts" / "benchmarks" / "terminal_bench_adapter"
 
@@ -73,7 +72,8 @@ TASKS: tuple[TerminalTask, ...] = (
         command=(
             sys.executable,
             "-c",
-            "from pathlib import Path; data=Path('data/input.txt').read_text(encoding='utf-8'); Path('answer.txt').write_text(str(data.split().count('alpha')), encoding='utf-8')",
+            "from pathlib import Path; data=Path('data/input.txt').read_text(encoding='utf-8'); "
+            "Path('answer.txt').write_text(str(data.split().count('alpha')), encoding='utf-8')",
         ),
         answer_path="answer.txt",
         expected_answer="3",
@@ -85,7 +85,9 @@ TASKS: tuple[TerminalTask, ...] = (
         command=(
             sys.executable,
             "-c",
-            "import subprocess, sys; from pathlib import Path; p=subprocess.run([sys.executable, 'tools/emit_value.py'], text=True, capture_output=True, check=True); Path('answer.txt').write_text(p.stdout.strip(), encoding='utf-8')",
+            "import subprocess, sys; from pathlib import Path; "
+            "p=subprocess.run([sys.executable, 'tools/emit_value.py'], text=True, capture_output=True, check=True); "
+            "Path('answer.txt').write_text(p.stdout.strip(), encoding='utf-8')",
         ),
         answer_path="answer.txt",
         expected_answer="terminal-contract-ok",
@@ -109,7 +111,6 @@ def write_task_files(workdir: Path, task: TerminalTask) -> None:
 
 
 def artifact_hash(workdir: Path, answer_rel: str) -> tuple[str, str | None]:
-    answer_path = workdir / answer_rel
     manifest: list[dict[str, str]] = []
     answer_hash = None
     for file in sorted(p for p in workdir.rglob("*") if p.is_file()):
@@ -235,7 +236,8 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
     ]
     for receipt in report["receipts"]:
         lines.append(
-            f"| {receipt['task_id']} | {receipt['ok']} | {receipt['duration_ms']} | {receipt['answer_sha256'] or 'missing'} | {receipt['artifact_sha256']} |"
+            f"| {receipt['task_id']} | {receipt['ok']} | {receipt['duration_ms']} "
+            f"| {receipt['answer_sha256'] or 'missing'} | {receipt['artifact_sha256']} |"
         )
     lines.extend(
         [
@@ -248,7 +250,8 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
             "",
             "## Claim Boundary",
             "",
-            "This is a local adapter contract. Do not call it an official Terminal-Bench score until the official runner executes tasks through this contract.",
+            "This is a local adapter contract. Do not call it an official Terminal-Bench score "
+            "until the official runner executes tasks through this contract.",
             "",
         ]
     )

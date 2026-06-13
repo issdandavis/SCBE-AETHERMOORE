@@ -10,6 +10,10 @@ on:
       - 'config/eval/common_agentic_benchmark_tasks.v1.json'
       - 'tests/benchmark/test_swe_local_benchmark.py'
       - 'package.json'
+      - '.github/workflows/swe-local-benchmark.yml'
+
+permissions:
+  contents: read
 
 jobs:
   swe-local:
@@ -30,8 +34,12 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pytest numpy
 
+      # The default candidate is the stub null-baseline control, which passes 0
+      # tasks by design. This lane gates HARNESS integrity (the benchmark runs
+      # end-to-end and emits a valid report), not stub performance — so the
+      # pass-rate floor is 0. A crash or missing report still fails the step.
       - name: Run local SWE-style benchmark
-        run: npm run benchmark:swe-local
+        run: npm run benchmark:swe-local -- --min-pass-rate 0
 
       - name: Check official SWE-bench readiness
         run: npm run benchmark:swe-verified:readiness

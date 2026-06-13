@@ -69,14 +69,7 @@ class MultiLatticeFrame:
 
     def drift_vector(self) -> np.ndarray:
         axes = list(LatticeAxis)
-        return np.array(
-            [
-                self.observations.get(
-                    ax, AxisObservation(ax, np.zeros(1), 0.0, None)
-                ).drift
-                for ax in axes
-            ]
-        )
+        return np.array([self.observations.get(ax, AxisObservation(ax, np.zeros(1), 0.0, None)).drift for ax in axes])
 
 
 class MultiLattice:
@@ -102,8 +95,7 @@ class MultiLattice:
 
         axis_dims = axis_dims or {}
         self._lattices: Dict[LatticeAxis, PoincareLattice] = {
-            ax: PoincareLattice(dim=axis_dims.get(ax, dim), name=ax.value)
-            for ax in LatticeAxis
+            ax: PoincareLattice(dim=axis_dims.get(ax, dim), name=ax.value) for ax in LatticeAxis
         }
 
     # ------------------------------------------------------------------

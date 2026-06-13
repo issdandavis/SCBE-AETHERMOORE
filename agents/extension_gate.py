@@ -19,7 +19,6 @@ from urllib.parse import urlparse
 
 from agents.antivirus_membrane import ThreatScan, scan_text_for_threats
 from hydra.turnstile import TurnstileOutcome, resolve_turnstile
-from src.governance.gate_witness import gate_witness
 
 SAFE_SOURCE_DOMAINS = {
     "github.com",
@@ -248,13 +247,6 @@ def evaluate_extension_install(
         manifest.requested_permissions,
         suspicion=suspicion,
     )
-    if decision == "DENY" or blocked_permissions:
-        gate_witness(
-            "extension_gate",
-            "deny" if decision == "DENY" else "block",
-            subject=manifest.name[:60],
-            detail={"blocked_count": len(blocked_permissions), "decision": decision},
-        )
     notes = list(scan.reasons)
     notes.extend(prov_notes)
     if unknown_perms:

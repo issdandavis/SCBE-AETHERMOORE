@@ -80,10 +80,7 @@ def depth2_rows(*, holdout: bool = False) -> list[dict[str, Any]]:
             "depth2_keys(obj: dict) -> list[str] that returns sorted keys found exactly "
             "at depth 2 in nested dictionaries. Top-level keys are depth 1."
         ),
-        (
-            "Write runnable Python for depth2_keys. For {'a': {'x': 1}, 'b': 2}, "
-            "the result should be ['x']."
-        ),
+        ("Write runnable Python for depth2_keys. For {'a': {'x': 1}, 'b': 2}, " "the result should be ['x']."),
         (
             "Implement depth2_keys(obj) without undefined helpers. Walk only one level "
             "below the top-level dict and return sorted keys."

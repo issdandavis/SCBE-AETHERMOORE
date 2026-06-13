@@ -61,6 +61,7 @@ random.seed(42)
 # Data loading: Kaggle download or synthetic fallback
 # ---------------------------------------------------------------------------
 
+
 def _try_download_kaggle() -> Optional[Any]:
     """Attempt to download the Kaggle microgrid dataset via kagglehub or kaggle API.
 
@@ -75,6 +76,7 @@ def _try_download_kaggle() -> Optional[Any]:
     # Strategy 1: kagglehub (newest recommended approach)
     try:
         import kagglehub
+
         path = kagglehub.dataset_download(f"{KAGGLE_OWNER}/{KAGGLE_DATASET}")
         csv_path = Path(path) / KAGGLE_FILE
         if csv_path.exists():
@@ -87,6 +89,7 @@ def _try_download_kaggle() -> Optional[Any]:
     # Strategy 2: kaggle CLI / API
     try:
         from kaggle.api.kaggle_api_extended import KaggleApi
+
         api = KaggleApi()
         api.authenticate()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -106,10 +109,8 @@ def _try_download_kaggle() -> Optional[Any]:
     # Strategy 3: direct URL (public datasets sometimes accessible)
     try:
         import urllib.request
-        url = (
-            f"https://www.kaggle.com/api/v1/datasets/download/"
-            f"{KAGGLE_OWNER}/{KAGGLE_DATASET}/{KAGGLE_FILE}"
-        )
+
+        url = "https://www.kaggle.com/api/v1/datasets/download/" f"{KAGGLE_OWNER}/{KAGGLE_DATASET}/{KAGGLE_FILE}"
         with tempfile.TemporaryDirectory() as tmpdir:
             zip_path = Path(tmpdir) / "dataset.zip"
             urllib.request.urlretrieve(url, zip_path)
@@ -199,14 +200,16 @@ def _extract_hourly_profiles_from_kaggle(df: Any) -> List[Dict[str, float]]:
         # solar_raw/100 * 5kW * envelope => realistic kW
         solar_kw = (solar_raw / 100.0) * 5.0 * solar_envelope
 
-        profiles.append({
-            "hour": hour,
-            "solar_kw": round(solar_kw, 3),
-            "battery_pct": round(battery_pct, 1),
-            "temperature_c": round(temp_c, 1),
-            "irradiance_wm2": round(irradiance, 1),
-            "load_demand": round(load_demand, 1),
-        })
+        profiles.append(
+            {
+                "hour": hour,
+                "solar_kw": round(solar_kw, 3),
+                "battery_pct": round(battery_pct, 1),
+                "temperature_c": round(temp_c, 1),
+                "irradiance_wm2": round(irradiance, 1),
+                "load_demand": round(load_demand, 1),
+            }
+        )
 
     return profiles
 
@@ -250,13 +253,15 @@ def _generate_synthetic_profiles() -> List[Dict[str, float]]:
         else:
             irradiance = 0.0
 
-        profiles.append({
-            "hour": hour,
-            "solar_kw": round(solar_kw, 2),
-            "battery_pct": round(battery_pct, 1),
-            "temperature_c": round(temperature_c, 1),
-            "irradiance_wm2": round(irradiance, 1),
-        })
+        profiles.append(
+            {
+                "hour": hour,
+                "solar_kw": round(solar_kw, 2),
+                "battery_pct": round(battery_pct, 1),
+                "temperature_c": round(temperature_c, 1),
+                "irradiance_wm2": round(irradiance, 1),
+            }
+        )
 
     return profiles
 
@@ -264,6 +269,7 @@ def _generate_synthetic_profiles() -> List[Dict[str, float]]:
 # ---------------------------------------------------------------------------
 # Grid price model
 # ---------------------------------------------------------------------------
+
 
 def _grid_price_for_hour(hour: int) -> float:
     """Simulate time-of-use grid pricing ($/kWh).
@@ -283,6 +289,7 @@ def _grid_price_for_hour(hour: int) -> float:
 # ---------------------------------------------------------------------------
 # Workload generator
 # ---------------------------------------------------------------------------
+
 
 def _generate_workloads(n: int) -> List[Dict[str, Any]]:
     """Generate n simulated workloads distributed across 24 hours.
@@ -321,15 +328,17 @@ def _generate_workloads(n: int) -> List[Dict[str, Any]]:
         # Cloud escalation: most allow it
         allow_cloud = random.random() < 0.85
 
-        workloads.append({
-            "id": f"wl-{i:04d}",
-            "hour": hour,
-            "model_size_b": round(model_size, 3),
-            "tokens": tokens,
-            "priority": priority,
-            "latency_req_ms": round(latency_req_ms, 1),
-            "allow_cloud": allow_cloud,
-        })
+        workloads.append(
+            {
+                "id": f"wl-{i:04d}",
+                "hour": hour,
+                "model_size_b": round(model_size, 3),
+                "tokens": tokens,
+                "priority": priority,
+                "latency_req_ms": round(latency_req_ms, 1),
+                "allow_cloud": allow_cloud,
+            }
+        )
 
     return workloads
 
@@ -337,6 +346,7 @@ def _generate_workloads(n: int) -> List[Dict[str, Any]]:
 # ---------------------------------------------------------------------------
 # Simulation engine
 # ---------------------------------------------------------------------------
+
 
 def run_simulation(profiles: List[Dict[str, float]], workloads: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Run the 24-hour simulation.
@@ -464,19 +474,21 @@ def run_simulation(profiles: List[Dict[str, float]], workloads: List[Dict[str, A
         peak_demand_w_actual = max(peak_demand_w_actual, hour_power_actual)
         peak_demand_w_baseline = max(peak_demand_w_baseline, hour_power_baseline)
 
-        hourly_results.append({
-            "hour": hour,
-            "workloads_processed": len(hour_workloads),
-            "tier_distribution": hour_tier_counts,
-            "energy_consumed_wh": round(hour_energy_consumed, 4),
-            "baseline_energy_wh": round(hour_baseline_consumed, 4),
-            "battery_pct_end": round(running_battery_pct, 1),
-            "solar_available_wh": round(solar_wh, 1),
-            "grid_price_per_kwh": grid_price,
-            "cooling_available": cooling_ok,
-            "source": source.value,
-            "peak_power_w": round(hour_power_actual, 1),
-        })
+        hourly_results.append(
+            {
+                "hour": hour,
+                "workloads_processed": len(hour_workloads),
+                "tier_distribution": hour_tier_counts,
+                "energy_consumed_wh": round(hour_energy_consumed, 4),
+                "baseline_energy_wh": round(hour_baseline_consumed, 4),
+                "battery_pct_end": round(running_battery_pct, 1),
+                "solar_available_wh": round(solar_wh, 1),
+                "grid_price_per_kwh": grid_price,
+                "cooling_available": cooling_ok,
+                "source": source.value,
+                "peak_power_w": round(hour_power_actual, 1),
+            }
+        )
 
     # Compute summary metrics
     total_kwh = total_energy_wh / 1000.0
@@ -484,18 +496,13 @@ def run_simulation(profiles: List[Dict[str, float]], workloads: List[Dict[str, A
     savings_pct = ((baseline_kwh - total_kwh) / baseline_kwh * 100.0) if baseline_kwh > 0 else 0.0
     peak_reduction_pct = (
         ((peak_demand_w_baseline - peak_demand_w_actual) / peak_demand_w_baseline * 100.0)
-        if peak_demand_w_baseline > 0 else 0.0
+        if peak_demand_w_baseline > 0
+        else 0.0
     )
 
     # Grid cost estimate
-    actual_grid_cost = sum(
-        (hr["energy_consumed_wh"] / 1000.0) * hr["grid_price_per_kwh"]
-        for hr in hourly_results
-    )
-    baseline_grid_cost = sum(
-        (hr["baseline_energy_wh"] / 1000.0) * hr["grid_price_per_kwh"]
-        for hr in hourly_results
-    )
+    actual_grid_cost = sum((hr["energy_consumed_wh"] / 1000.0) * hr["grid_price_per_kwh"] for hr in hourly_results)
+    baseline_grid_cost = sum((hr["baseline_energy_wh"] / 1000.0) * hr["grid_price_per_kwh"] for hr in hourly_results)
 
     summary = {
         "simulation_timestamp": datetime.now(timezone.utc).isoformat(),
@@ -528,8 +535,11 @@ def run_simulation(profiles: List[Dict[str, float]], workloads: List[Dict[str, A
             "baseline_grid_cost_usd": round(baseline_grid_cost, 4),
             "cost_savings_usd": round(baseline_grid_cost - actual_grid_cost, 4),
             "cost_savings_pct": round(
-                ((baseline_grid_cost - actual_grid_cost) / baseline_grid_cost * 100.0)
-                if baseline_grid_cost > 0 else 0.0,
+                (
+                    ((baseline_grid_cost - actual_grid_cost) / baseline_grid_cost * 100.0)
+                    if baseline_grid_cost > 0
+                    else 0.0
+                ),
                 2,
             ),
         },
@@ -547,6 +557,7 @@ def run_simulation(profiles: List[Dict[str, float]], workloads: List[Dict[str, A
 # Report output
 # ---------------------------------------------------------------------------
 
+
 def _print_report(summary: Dict[str, Any]) -> None:
     """Print a human-readable summary to stdout."""
     print("\n" + "=" * 70)
@@ -563,17 +574,17 @@ def _print_report(summary: Dict[str, Any]) -> None:
     print(f"  Workloads simulated: {summary['simulation_params']['total_workloads']}")
     print(f"  Simulation time: {summary['simulation_timestamp']}")
 
-    print(f"\n--- Energy ---")
+    print("\n--- Energy ---")
     print(f"  Total consumed:        {em['total_kwh_consumed']:.4f} kWh")
     print(f"  Baseline (all FULL):   {em['baseline_kwh_if_all_full']:.4f} kWh")
     print(f"  Energy saved:          {em['energy_savings_kwh']:.4f} kWh ({em['energy_savings_pct']:.1f}%)")
 
-    print(f"\n--- Peak Demand ---")
+    print("\n--- Peak Demand ---")
     print(f"  Actual peak:           {dm['peak_demand_w_actual']:.1f} W")
     print(f"  Baseline peak:         {dm['peak_demand_w_baseline']:.1f} W")
     print(f"  Peak reduction:        {dm['peak_demand_reduction_pct']:.1f}%")
 
-    print(f"\n--- Tier Distribution ---")
+    print("\n--- Tier Distribution ---")
     td = dec["tier_distribution"]
     total = sum(td.values())
     for tier_name in ["TINY", "MEDIUM", "FULL", "DENY"]:
@@ -582,19 +593,25 @@ def _print_report(summary: Dict[str, Any]) -> None:
         bar = "#" * int(pct / 2)
         print(f"  {tier_name:8s}: {count:5d} ({pct:5.1f}%)  {bar}")
 
-    print(f"\n--- Decisions ---")
+    print("\n--- Decisions ---")
     print(f"  Authorized:            {dec['authorized_count']}")
     print(f"  Denied:                {dec['deny_count']} ({dec['deny_rate_pct']:.1f}%)")
     print(f"  Cooling failures:      {infra['cooling_failure_hours']} hours")
 
-    print(f"\n--- Grid Cost ---")
+    print("\n--- Grid Cost ---")
     print(f"  Actual cost:           ${cm['actual_grid_cost_usd']:.4f}")
     print(f"  Baseline cost:         ${cm['baseline_grid_cost_usd']:.4f}")
     print(f"  Cost savings:          ${cm['cost_savings_usd']:.4f} ({cm['cost_savings_pct']:.1f}%)")
 
-    print(f"\n--- Hourly Snapshot (energy consumed Wh) ---")
-    print(f"  {'Hour':>4s}  {'Wklds':>5s}  {'ActualWh':>9s}  {'BaseWh':>9s}  {'Batt%':>5s}  {'Solar':>6s}  {'$/kWh':>6s}  {'Cool':>4s}")
-    print(f"  {'----':>4s}  {'-----':>5s}  {'---------':>9s}  {'------':>9s}  {'-----':>5s}  {'------':>6s}  {'------':>6s}  {'----':>4s}")
+    print("\n--- Hourly Snapshot (energy consumed Wh) ---")
+    print(
+        f"  {'Hour':>4s}  {'Wklds':>5s}  {'ActualWh':>9s}  {'BaseWh':>9s}  "
+        f"{'Batt%':>5s}  {'Solar':>6s}  {'$/kWh':>6s}  {'Cool':>4s}"
+    )
+    print(
+        f"  {'----':>4s}  {'-----':>5s}  {'---------':>9s}  {'------':>9s}  "
+        f"{'-----':>5s}  {'------':>6s}  {'------':>6s}  {'----':>4s}"
+    )
     for hr in summary["hourly_breakdown"]:
         cool_str = "OK" if hr["cooling_available"] else "FAIL"
         print(
@@ -612,6 +629,7 @@ def _print_report(summary: Dict[str, Any]) -> None:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main() -> None:
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -648,12 +666,12 @@ def main() -> None:
     print(f"  Priority range: {min(w['priority'] for w in workloads)}-{max(w['priority'] for w in workloads)}")
 
     # 3. Run simulation
-    print(f"\n[3/4] Running 24-hour simulation...")
+    print("\n[3/4] Running 24-hour simulation...")
     summary = run_simulation(profiles, workloads)
     summary["infrastructure_metrics"]["data_source"] = data_source
 
     # 4. Output
-    print(f"\n[4/4] Writing report...")
+    print("\n[4/4] Writing report...")
 
     # Save JSON
     with open(REPORT_PATH, "w", encoding="utf-8") as f:

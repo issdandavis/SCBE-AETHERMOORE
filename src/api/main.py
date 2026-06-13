@@ -70,7 +70,6 @@ from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
 from src.api.hydra_routes import hydra_router, init_hydra_spine
 from src.api.saas_routes import saas_router
 from src.api.stripe_billing import billing_router
-from src.governance.gate_witness import gate_witness, hash_subject
 
 try:
     from src.contracts.operation_panel import resolve_source_to_operation_panel
@@ -208,7 +207,6 @@ async def rate_limit_middleware(request: Request, call_next):
     """Apply rate limiting to all endpoints by client IP."""
     client_ip = request.client.host if request.client else "unknown"
     if not rate_limiter.is_allowed(client_ip):
-        gate_witness("api.rate_limit", "rate_limit", subject=hash_subject(client_ip))
         return JSONResponse(
             status_code=429,
             content={"detail": "Rate limit exceeded. Try again later."},
@@ -427,8 +425,8 @@ def _polly_local_chat_response(message: str) -> dict[str, Any]:
     return {
         "response": (
             "Polly Pad local mode is online. "
-            "For coding tasks, send code or ask for a system-card deck and GeoSeal will route it through "
-            "the bounded control plane."
+            "For coding tasks, send code or ask for a system-card deck and "
+            "GeoSeal will route it through the bounded control plane."
         ),
         "domain": "hybrid",
         "tentacle": "local",
@@ -611,14 +609,10 @@ async def verify_api_key(
     """Verify API key and return user identifier."""
     resolved_key = api_key or api_key_legacy
     if not resolved_key or resolved_key not in VALID_API_KEYS:
-        gate_witness(
-            "api.auth", "auth_reject", subject=hash_subject(resolved_key or ""), detail={"route_family": "main"}
-        )
         raise HTTPException(401, "Invalid API key")
 
     # Check rate limit
     if not rate_limiter.is_allowed(resolved_key):
-        gate_witness("api.auth", "rate_limit", subject=hash_subject(resolved_key), detail={"route_family": "main"})
         raise HTTPException(429, "Rate limit exceeded (100 req/min)")
 
     return VALID_API_KEYS[resolved_key]

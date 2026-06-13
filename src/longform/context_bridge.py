@@ -335,7 +335,7 @@ class JsonlWorkflowLedger:
                     landings.append(ContextLanding.from_dict(json.load(f)))
         if not landings:
             return None
-        return max(landings, key=lambda l: l.ts)
+        return max(landings, key=lambda landing: landing.ts)
 
     def list_landings(self) -> List[ContextLanding]:
         if not os.path.exists(self._landings_dir):

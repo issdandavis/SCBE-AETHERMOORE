@@ -44,12 +44,14 @@ PI = math.pi
 #  Color Triplet System
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ColorTriplet:
     """One tongue's full-spectrum color: IR + Visible + UV."""
-    ir: float       # Infrared band [0, 1] — slow state
+
+    ir: float  # Infrared band [0, 1] — slow state
     visible: float  # Visible band [0, 1] — active governance signal
-    uv: float       # Ultraviolet band [0, 1] — fast/emergent state
+    uv: float  # Ultraviolet band [0, 1] — fast/emergent state
 
     @property
     def triplet(self) -> Tuple[float, float, float]:
@@ -60,7 +62,7 @@ class ColorTriplet:
         """Total energy across all bands."""
         return self.ir + self.visible + self.uv
 
-    def matches(self, other: 'ColorTriplet', tolerance: float = 0.15) -> Tuple[bool, bool, bool]:
+    def matches(self, other: "ColorTriplet", tolerance: float = 0.15) -> Tuple[bool, bool, bool]:
         """Check which bands match between two triplets."""
         return (
             abs(self.ir - other.ir) < tolerance,
@@ -72,6 +74,7 @@ class ColorTriplet:
 @dataclass
 class TongueTriplet:
     """Full trichromatic state for one tongue."""
+
     tongue: str
     color: ColorTriplet
     phi_weight: float
@@ -80,6 +83,7 @@ class TongueTriplet:
 @dataclass
 class TrichromaticState:
     """Complete 6-tongue × 3-band state."""
+
     tongues: List[TongueTriplet]
     bridges: Dict[str, Tuple[float, float, float]]  # "KO-AV" → (ir_bridge, vis_bridge, uv_bridge)
     state_hash: str
@@ -112,10 +116,10 @@ def compute_ir_band(
     depth_signal = min(1.0, session_query_count / 50.0)
 
     # Tongue-specific IR modulation via phi weights
-    phi_mod = (PHI ** tongue_idx) / (PHI ** 5)  # Normalize to ~[0,1]
+    phi_mod = (PHI**tongue_idx) / (PHI**5)  # Normalize to ~[0,1]
 
     # Blend: IR is weighted toward slow signals
-    ir = (0.4 * trust_momentum + 0.3 * (1.0 - cost_pressure) + 0.2 * depth_signal + 0.1 * phi_mod)
+    ir = 0.4 * trust_momentum + 0.3 * (1.0 - cost_pressure) + 0.2 * depth_signal + 0.1 * phi_mod
     return max(0.0, min(1.0, ir))
 
 
@@ -150,7 +154,7 @@ def compute_uv_band(
     interference = visible_coord * coords_all[adjacent_idx]
 
     # Blend: UV is weighted toward fast/emergent signals
-    uv = (0.25 * spike + 0.2 * null_space + 0.2 * spin_energy + 0.2 * cost_harmonic + 0.15 * interference)
+    uv = 0.25 * spike + 0.2 * null_space + 0.2 * spin_energy + 0.2 * cost_harmonic + 0.15 * interference
     return max(0.0, min(1.0, uv))
 
 
@@ -170,11 +174,13 @@ def build_trichromatic_state(
         ir = compute_ir_band(i, visible, trust_history, cumulative_cost, session_query_count)
         uv = compute_uv_band(i, visible, coords, spin_magnitude, cost)
 
-        tongue_triplets.append(TongueTriplet(
-            tongue=tongue,
-            color=ColorTriplet(ir=round(ir, 4), visible=round(visible, 4), uv=round(uv, 4)),
-            phi_weight=TONGUE_WEIGHTS[i],
-        ))
+        tongue_triplets.append(
+            TongueTriplet(
+                tongue=tongue,
+                color=ColorTriplet(ir=round(ir, 4), visible=round(visible, 4), uv=round(uv, 4)),
+                phi_weight=TONGUE_WEIGHTS[i],
+            )
+        )
 
     # Cross-stitch bridges: 3-band color relationship between tongue pairs
     bridges = {}
@@ -190,7 +196,7 @@ def build_trichromatic_state(
             uv_bridge = abs(t_i.color.uv * t_j.color.ir + t_j.color.uv * t_i.color.ir) * phi_bridge
 
             # Normalize to [0, 1]
-            max_bridge = PHI ** 5  # Max possible bridge value
+            max_bridge = PHI**5  # Max possible bridge value
             bridges[f"{t_i.tongue}-{t_j.tongue}"] = (
                 round(min(1.0, ir_bridge / max_bridge), 4),
                 round(min(1.0, vis_bridge / max_bridge), 4),
@@ -198,10 +204,13 @@ def build_trichromatic_state(
             )
 
     # State hash: deterministic fingerprint of the full trichromatic state
-    state_str = json.dumps({
-        "triplets": [(t.tongue, t.color.triplet) for t in tongue_triplets],
-        "bridges": bridges,
-    }, sort_keys=True)
+    state_str = json.dumps(
+        {
+            "triplets": [(t.tongue, t.color.triplet) for t in tongue_triplets],
+            "bridges": bridges,
+        },
+        sort_keys=True,
+    )
     state_hash = hashlib.blake2s(state_str.encode(), digest_size=16).hexdigest()
 
     # Combinatorial bits: log2 of the state space size
@@ -222,6 +231,7 @@ def build_trichromatic_state(
 #  Forgery resistance test
 # ---------------------------------------------------------------------------
 
+
 def test_forgery_resistance(
     real_state: TrichromaticState,
     forged_visible: List[float],
@@ -235,24 +245,30 @@ def test_forgery_resistance(
     rng = np.random.RandomState(42)
     forged_triplets = []
     for i, tongue in enumerate(TONGUES):
-        forged_triplets.append(TongueTriplet(
-            tongue=tongue,
-            color=ColorTriplet(
-                ir=round(float(rng.uniform(0, 1)), 4),  # Random IR (can't see it)
-                visible=round(forged_visible[i], 4),      # Matched visible
-                uv=round(float(rng.uniform(0, 1)), 4),   # Random UV (can't see it)
-            ),
-            phi_weight=TONGUE_WEIGHTS[i],
-        ))
+        forged_triplets.append(
+            TongueTriplet(
+                tongue=tongue,
+                color=ColorTriplet(
+                    ir=round(float(rng.uniform(0, 1)), 4),  # Random IR (can't see it)
+                    visible=round(forged_visible[i], 4),  # Matched visible
+                    uv=round(float(rng.uniform(0, 1)), 4),  # Random UV (can't see it)
+                ),
+                phi_weight=TONGUE_WEIGHTS[i],
+            )
+        )
 
     # Check how many bands match
     matches = {"ir_match": 0, "visible_match": 0, "uv_match": 0, "full_match": 0}
     for real_t, forged_t in zip(real_state.tongues, forged_triplets):
         ir_ok, vis_ok, uv_ok = real_t.color.matches(forged_t.color)
-        if ir_ok: matches["ir_match"] += 1
-        if vis_ok: matches["visible_match"] += 1
-        if uv_ok: matches["uv_match"] += 1
-        if ir_ok and vis_ok and uv_ok: matches["full_match"] += 1
+        if ir_ok:
+            matches["ir_match"] += 1
+        if vis_ok:
+            matches["visible_match"] += 1
+        if uv_ok:
+            matches["uv_match"] += 1
+        if ir_ok and vis_ok and uv_ok:
+            matches["full_match"] += 1
 
     # Check bridge consistency
     bridge_matches = 0
@@ -273,6 +289,7 @@ def test_forgery_resistance(
 # ---------------------------------------------------------------------------
 #  Main test
 # ---------------------------------------------------------------------------
+
 
 def run_test():
     print("")
@@ -312,8 +329,12 @@ def run_test():
     for text in benign_texts:
         r = gate.evaluate(text)
         state = build_trichromatic_state(
-            r.tongue_coords, r.cost, r.spin_magnitude,
-            gate._trust_history, gate._cumulative_cost, gate._query_count,
+            r.tongue_coords,
+            r.cost,
+            r.spin_magnitude,
+            gate._trust_history,
+            gate._cumulative_cost,
+            gate._query_count,
         )
         benign_states.append(state)
 
@@ -323,7 +344,10 @@ def run_test():
         avg_uv = np.mean([t.color.uv for t in state.tongues])
         avg_energy = np.mean([t.color.energy for t in state.tongues])
 
-        print(f"  {text:<40} {avg_ir:>8.3f} {avg_vis:>8.3f} {avg_uv:>8.3f} {avg_energy:>8.3f} {state.state_hash[:10]:>12} {r.decision.value:>10}")
+        print(
+            f"  {text:<40} {avg_ir:>8.3f} {avg_vis:>8.3f} {avg_uv:>8.3f} "
+            f"{avg_energy:>8.3f} {state.state_hash[:10]:>12} {r.decision.value:>10}"
+        )
 
     # Fresh gate for attacks
     gate2 = RuntimeGate(coords_backend="semantic")
@@ -339,8 +363,12 @@ def run_test():
     for text in attack_texts:
         r = gate2.evaluate(text)
         state = build_trichromatic_state(
-            r.tongue_coords, r.cost, r.spin_magnitude,
-            gate2._trust_history, gate2._cumulative_cost, gate2._query_count,
+            r.tongue_coords,
+            r.cost,
+            r.spin_magnitude,
+            gate2._trust_history,
+            gate2._cumulative_cost,
+            gate2._query_count,
         )
         attack_states.append(state)
 
@@ -349,20 +377,28 @@ def run_test():
         avg_uv = np.mean([t.color.uv for t in state.tongues])
         avg_energy = np.mean([t.color.energy for t in state.tongues])
 
-        print(f"  {text[:40]:<40} {avg_ir:>8.3f} {avg_vis:>8.3f} {avg_uv:>8.3f} {avg_energy:>8.3f} {state.state_hash[:10]:>12} {r.decision.value:>10}")
+        print(
+            f"  {text[:40]:<40} {avg_ir:>8.3f} {avg_vis:>8.3f} {avg_uv:>8.3f} "
+            f"{avg_energy:>8.3f} {state.state_hash[:10]:>12} {r.decision.value:>10}"
+        )
 
     # --- PER-TONGUE DETAIL for first benign vs first attack ---
     print("")
     print("  PER-TONGUE DETAIL (benign[0] vs attack[0]):")
-    print(f"  {'Tongue':<6} {'B_IR':>6} {'B_Vis':>6} {'B_UV':>6} | {'A_IR':>6} {'A_Vis':>6} {'A_UV':>6} | {'IR_diff':>8} {'Vis_diff':>8} {'UV_diff':>8}")
+    print(
+        f"  {'Tongue':<6} {'B_IR':>6} {'B_Vis':>6} {'B_UV':>6} | {'A_IR':>6} {'A_Vis':>6} {'A_UV':>6} "
+        f"| {'IR_diff':>8} {'Vis_diff':>8} {'UV_diff':>8}"
+    )
     print("  " + "-" * 86)
     for bt, at in zip(benign_states[0].tongues, attack_states[0].tongues):
         ir_diff = abs(bt.color.ir - at.color.ir)
         vis_diff = abs(bt.color.visible - at.color.visible)
         uv_diff = abs(bt.color.uv - at.color.uv)
-        print(f"  {bt.tongue:<6} {bt.color.ir:>6.3f} {bt.color.visible:>6.3f} {bt.color.uv:>6.3f} | "
-              f"{at.color.ir:>6.3f} {at.color.visible:>6.3f} {at.color.uv:>6.3f} | "
-              f"{ir_diff:>8.3f} {vis_diff:>8.3f} {uv_diff:>8.3f}")
+        print(
+            f"  {bt.tongue:<6} {bt.color.ir:>6.3f} {bt.color.visible:>6.3f} {bt.color.uv:>6.3f} | "
+            f"{at.color.ir:>6.3f} {at.color.visible:>6.3f} {at.color.uv:>6.3f} | "
+            f"{ir_diff:>8.3f} {vis_diff:>8.3f} {uv_diff:>8.3f}"
+        )
 
     # --- CROSS-STITCH BRIDGE ANALYSIS ---
     print("")
@@ -381,7 +417,9 @@ def run_test():
     print(f"  {'Bridge':<8} {'B(IR,Vis,UV)':<24} {'A(IR,Vis,UV)':<24} {'Diff':>8}")
     print("  " + "-" * 66)
     for key, b, a, diff in bridge_diffs[:5]:
-        print(f"  {key:<8} ({b[0]:.3f},{b[1]:.3f},{b[2]:.3f})      ({a[0]:.3f},{a[1]:.3f},{a[2]:.3f})      {diff:>8.3f}")
+        print(
+            f"  {key:<8} ({b[0]:.3f},{b[1]:.3f},{b[2]:.3f})      ({a[0]:.3f},{a[1]:.3f},{a[2]:.3f})      {diff:>8.3f}"
+        )
 
     # --- FORGERY RESISTANCE ---
     print("")
@@ -393,19 +431,24 @@ def run_test():
     for i, state in enumerate(attack_states):
         forged_visible = [t.color.visible for t in state.tongues]
         result = test_forgery_resistance(state, forged_visible)
-        print(f"  Attack {i+1}: visible_matched={result['visible_match']}/6  "
-              f"ir_matched={result['ir_match']}/6  uv_matched={result['uv_match']}/6  "
-              f"full_matched={result['full_match']}/6  "
-              f"FORGERY_DETECTED={result['forgery_detected']}")
+        print(
+            f"  Attack {i+1}: visible_matched={result['visible_match']}/6  "
+            f"ir_matched={result['ir_match']}/6  uv_matched={result['uv_match']}/6  "
+            f"full_matched={result['full_match']}/6  "
+            f"FORGERY_DETECTED={result['forgery_detected']}"
+        )
 
     # --- STATE SPACE ---
     print("")
     print("  STATE SPACE:")
-    print(f"    Channels:     6 tongues × 3 bands + 15 bridges × 3 bands = 63")
-    print(f"    Bits/channel: 8 (256 levels)")
+    print("    Channels:     6 tongues × 3 bands + 15 bridges × 3 bands = 63")
+    print("    Bits/channel: 8 (256 levels)")
     print(f"    Total bits:   {benign_states[0].combinatorial_bits}")
-    print(f"    State space:  2^{benign_states[0].combinatorial_bits} = ~10^{int(benign_states[0].combinatorial_bits * 0.301)}")
-    print(f"    For reference: atoms in universe ~ 10^80")
+    print(
+        f"    State space:  2^{benign_states[0].combinatorial_bits} "
+        f"= ~10^{int(benign_states[0].combinatorial_bits * 0.301)}"
+    )
+    print("    For reference: atoms in universe ~ 10^80")
     print(f"    Your state space is 10^{int(benign_states[0].combinatorial_bits * 0.301) - 80} times LARGER")
 
     # --- SUMMARY ---

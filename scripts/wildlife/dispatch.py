@@ -45,7 +45,7 @@ DEFAULT_PLAN_OUT = ROOT / ".scbe" / "wildlife" / "dispatch_plan.json"
 
 def _load_board(path: Path) -> dict:
     if not path.exists():
-        raise SystemExit(f"[dispatch] no board at {path} - run " f"`python scripts/wildlife/harvest_packs.py` first.")
+        raise SystemExit(f"[dispatch] no board at {path} - run " "`python scripts/wildlife/harvest_packs.py` first.")
     return json.loads(path.read_text(encoding="utf-8"))
 
 

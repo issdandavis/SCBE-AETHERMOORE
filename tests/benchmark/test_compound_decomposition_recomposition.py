@@ -5,8 +5,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "scripts" / "benchmark" / "compound_decomposition_recomposition.py"
+RDKIT_SKIP_REASON = "RDKit is not installed; this chemistry benchmark needs the optional rdkit package"
 
 
 def _load_module():
@@ -19,6 +22,7 @@ def _load_module():
 
 
 def test_compound_recomposition_recovers_known_solutions(tmp_path: Path) -> None:
+    pytest.importorskip("rdkit", reason=RDKIT_SKIP_REASON)
     module = _load_module()
 
     report = module.build_report(tmp_path)
@@ -38,6 +42,7 @@ def test_compound_recomposition_recovers_known_solutions(tmp_path: Path) -> None
 
 
 def test_atom_only_mud_step_exposes_ambiguity() -> None:
+    pytest.importorskip("rdkit", reason=RDKIT_SKIP_REASON)
     module = _load_module()
 
     ethanol_case = next(case for case in module.CASES if case.name == "ethanol")
@@ -65,6 +70,8 @@ def test_expanded_corpus_covers_multiple_functional_families() -> None:
 
 
 def test_compound_recomposition_cli_smoke(tmp_path: Path) -> None:
+    # The CLI runs in the same interpreter; without RDKit it reports HOLD and exits non-zero.
+    pytest.importorskip("rdkit", reason=RDKIT_SKIP_REASON)
     proc = subprocess.run(
         [
             sys.executable,

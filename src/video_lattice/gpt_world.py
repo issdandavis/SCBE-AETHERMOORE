@@ -62,14 +62,7 @@ COMMAND_SCHEMA = {
                 "properties": {
                     "type": {
                         "type": "string",
-                        "enum": [
-                            "move",
-                            "set_tile",
-                            "add_entity",
-                            "remove_entity",
-                            "set_entity_state",
-                            "narrate",
-                        ],
+                        "enum": ["move", "set_tile", "add_entity", "remove_entity", "set_entity_state", "narrate"],
                     },
                     "entity_id": {"type": "string"},
                     "dx": {"type": "integer"},
@@ -143,10 +136,7 @@ class WorldDelta:
             "model": self.model,
             "narrative": self.narrative,
             "commands": [{"type": c.type, **c.data} for c in self.commands],
-            "tokens": {
-                "prompt": self.prompt_tokens,
-                "completion": self.completion_tokens,
-            },
+            "tokens": {"prompt": self.prompt_tokens, "completion": self.completion_tokens},
         }
 
 
@@ -199,9 +189,7 @@ class WorldDirector:
             try:
                 from openai import OpenAI
             except ImportError as exc:
-                raise ImportError(
-                    "openai package required: pip install openai"
-                ) from exc
+                raise ImportError("openai package required: pip install openai") from exc
             self._client = OpenAI(api_key=self._api_key)
         return self._client
 
@@ -317,14 +305,10 @@ Use single-character glyphs. Keep it small and symbolic. Respond ONLY with JSON.
             "width": world.width,
             "height": world.height,
             "frame": world.frame_index,
-            "tiles": {
-                k: {"glyph": t.glyph, "solid": t.solid, "tags": list(t.tags)}
-                for k, t in world.tiles.items()
-            },
+            "tiles": {k: {"glyph": t.glyph, "solid": t.solid, "tags": list(t.tags)} for k, t in world.tiles.items()},
             "sprites": {k: {"glyph": s.glyph} for k, s in world.sprites.items()},
             "entities": {
-                k: {"sprite": e.sprite_id, "x": e.x, "y": e.y, "state": e.state}
-                for k, e in world.entities.items()
+                k: {"sprite": e.sprite_id, "x": e.x, "y": e.y, "state": e.state} for k, e in world.entities.items()
             },
         }
         parts = [
@@ -339,9 +323,7 @@ Use single-character glyphs. Keep it small and symbolic. Respond ONLY with JSON.
         try:
             data = json.loads(raw)
         except json.JSONDecodeError:
-            return WorldDelta(
-                commands=[], narrative=raw[:120], model=self.model, raw_response=raw
-            )
+            return WorldDelta(commands=[], narrative=raw[:120], model=self.model, raw_response=raw)
         commands = []
         for item in data.get("commands", []):
             if not isinstance(item, dict) or "type" not in item:
@@ -359,9 +341,7 @@ Use single-character glyphs. Keep it small and symbolic. Respond ONLY with JSON.
     def _apply_command(world: TinyWorld, cmd: WorldCommand) -> None:
         d = cmd.data
         if cmd.type == "move":
-            world.move_entity(
-                d["entity_id"], dx=int(d.get("dx", 0)), dy=int(d.get("dy", 0))
-            )
+            world.move_entity(d["entity_id"], dx=int(d.get("dx", 0)), dy=int(d.get("dy", 0)))
         elif cmd.type == "set_tile":
             world.set_tile(int(d["x"]), int(d["y"]), d["tile_id"])
         elif cmd.type == "add_entity":
@@ -403,9 +383,7 @@ class RoundTableDirector:
             raise ValueError("need at least one director")
         self.directors = directors
 
-    def step(
-        self, world: TinyWorld, director_note: str = ""
-    ) -> Tuple[WorldDelta, RoundTableReport]:
+    def step(self, world: TinyWorld, director_note: str = "") -> Tuple[WorldDelta, RoundTableReport]:
         """Run all models, return (best_delta, report).
 
         Args:
@@ -455,29 +433,20 @@ def _world_feature_vector(world: TinyWorld) -> np.ndarray:
         for cell in row:
             tile_counts[cell] = tile_counts.get(cell, 0) + 1
     total_cells = world.width * world.height
-    tile_freq = np.array(
-        [tile_counts.get(t, 0) / total_cells for t in tile_ids], dtype=np.float64
-    )
+    tile_freq = np.array([tile_counts.get(t, 0) / total_cells for t in tile_ids], dtype=np.float64)
 
     # Entity centroid (normalized to [0,1])
     if world.entities:
         xs = [e.x / world.width for e in world.entities.values()]
         ys = [e.y / world.height for e in world.entities.values()]
         centroid = np.array([np.mean(xs), np.mean(ys)], dtype=np.float64)
-        spread = np.array(
-            [np.std(xs) if len(xs) > 1 else 0.0, np.std(ys) if len(ys) > 1 else 0.0],
-            dtype=np.float64,
-        )
+        spread = np.array([np.std(xs) if len(xs) > 1 else 0.0, np.std(ys) if len(ys) > 1 else 0.0], dtype=np.float64)
     else:
         centroid = np.zeros(2, dtype=np.float64)
         spread = np.zeros(2, dtype=np.float64)
 
-    entity_count = np.array(
-        [len(world.entities) / max(total_cells, 1)], dtype=np.float64
-    )
-    frame = np.array(
-        [world.frame_index / max(world.frame_index + 1, 1)], dtype=np.float64
-    )
+    entity_count = np.array([len(world.entities) / max(total_cells, 1)], dtype=np.float64)
+    frame = np.array([world.frame_index / max(world.frame_index + 1, 1)], dtype=np.float64)
 
     # Pad tile_freq to 8 bins (handles worlds with fewer tile types)
     if len(tile_freq) < 8:

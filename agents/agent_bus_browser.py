@@ -78,11 +78,18 @@ class HeadedBackend:
 
 
 class SwarmBackend:
-    """SwarmBrowser with six Sacred Tongue agents and Byzantine roundtable."""
+    """SwarmBrowser with six Sacred Tongue agents and Byzantine roundtable.
 
-    def __init__(self) -> None:
+    Pass ``unattended=True`` for governed headless use (batch/CI/AI-driven):
+    every action is still risk-gated and consensus-governed, but a decision
+    that asks for a human (ESCALATE/QUARANTINE) fails closed with an audit
+    reason instead of dangling, since no operator is present.
+    """
+
+    def __init__(self, unattended: bool = False) -> None:
         self.runtime: Any = None
         self.swarm: Any = None
+        self.unattended = unattended
 
     async def launch(self, *, headless: bool = True) -> None:
         from agents.playwright_runtime import PlaywrightRuntime
@@ -90,9 +97,9 @@ class SwarmBackend:
 
         self.runtime = PlaywrightRuntime()
         await self.runtime.launch(headless=headless)
-        self.swarm = SwarmBrowser(browser_backend=self.runtime)
+        self.swarm = SwarmBrowser(browser_backend=self.runtime, unattended=self.unattended)
         await self.swarm.initialize()
-        logger.info("swarm backend ready (6 Sacred Tongue agents)")
+        logger.info("swarm backend ready (6 Sacred Tongue agents, unattended=%s)", self.unattended)
 
     async def close(self) -> None:
         if self.runtime is not None:
@@ -106,12 +113,16 @@ class SwarmBackend:
         return await self.swarm.roundtable_consensus(action_id, action, context)
 
 
-def make_backend(mode: str) -> BrowserBackend:
-    """Factory: pick a backend by name. Raises ValueError on unknown modes."""
+def make_backend(mode: str, *, unattended: bool = False) -> BrowserBackend:
+    """Factory: pick a backend by name. Raises ValueError on unknown modes.
+
+    ``unattended`` only affects the governed ``swarm`` backend (governed
+    headless use); the raw ``headless`` and ``headed`` backends ignore it.
+    """
     if mode not in VALID_MODES:
         raise ValueError(f"browser_mode={mode!r} not in {VALID_MODES}")
     if mode == "headless":
         return HeadlessBackend()
     if mode == "headed":
         return HeadedBackend()
-    return SwarmBackend()
+    return SwarmBackend(unattended=unattended)

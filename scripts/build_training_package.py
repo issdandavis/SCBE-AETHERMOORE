@@ -15,7 +15,6 @@ from typing import Any, Sequence
 
 from jsonschema import Draft202012Validator
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "training-data" / "packages"
 PACKAGE_SCHEMA_PATH = REPO_ROOT / "schemas" / "training_package_manifest.schema.json"
@@ -166,6 +165,10 @@ def _merge_jsonl(staged_entries: Sequence[dict[str, Any]], output_path: Path) ->
 def _build_report(manifest: dict[str, Any]) -> str:
     counts = manifest["counts"]
     outputs = manifest["outputs"]
+
+    def _output_ref(key: str) -> str:
+        return _safe_relative(Path(outputs[key])) if outputs[key] else "(none)"
+
     lines = [
         "# SCBE Training Package",
         "",
@@ -179,10 +182,10 @@ def _build_report(manifest: dict[str, Any]) -> str:
         f"- rights_rows: `{counts['rights_rows']}`",
         "",
         "## Outputs",
-        f"- merged_sft: `{_safe_relative(Path(outputs['merged_sft'])) if outputs['merged_sft'] else '(none)'}`",
-        f"- merged_route_consistency: `{_safe_relative(Path(outputs['merged_route_consistency'])) if outputs['merged_route_consistency'] else '(none)'}`",
-        f"- merged_model_traces: `{_safe_relative(Path(outputs['merged_model_traces'])) if outputs['merged_model_traces'] else '(none)'}`",
-        f"- merged_rights: `{_safe_relative(Path(outputs['merged_rights'])) if outputs['merged_rights'] else '(none)'}`",
+        f"- merged_sft: `{_output_ref('merged_sft')}`",
+        f"- merged_route_consistency: `{_output_ref('merged_route_consistency')}`",
+        f"- merged_model_traces: `{_output_ref('merged_model_traces')}`",
+        f"- merged_rights: `{_output_ref('merged_rights')}`",
     ]
     if manifest.get("notes"):
         lines.extend(["", "## Notes", manifest["notes"]])

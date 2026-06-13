@@ -1208,16 +1208,38 @@ def build_correction_guide(results: list[dict[str, Any]]) -> list[dict[str, str]
     guide = []
     flag_counts = summarize_quality_flags(results)
     corrections = {
-        "path_not_found": "Pin focus paths to existing files and require agents to cite known file hints before patching.",
-        "probable_wrapper_symbol_hallucination": "Route wrapper files to guard lanes first; builders should patch the implementation module, not the thin wrapper.",
-        "graylisted_path_requires_approval": "Require human approval or a dedicated integration packet before touching package, deploy, or workflow files.",
-        "blacklisted_path": "Block immediately. Do not retry against secrets, local agent state, generated artifacts, or dependency folders.",
-        "external_resource_requires_review": "Move the source to the whitelist/greylist review sheet before letting a lane depend on it.",
+        "path_not_found": (
+            "Pin focus paths to existing files and require agents to cite known file hints before patching."
+        ),
+        "probable_wrapper_symbol_hallucination": (
+            "Route wrapper files to guard lanes first; "
+            "builders should patch the implementation module, not the thin wrapper."
+        ),
+        "graylisted_path_requires_approval": (
+            "Require human approval or a dedicated integration packet "
+            "before touching package, deploy, or workflow files."
+        ),
+        "blacklisted_path": (
+            "Block immediately. "
+            "Do not retry against secrets, local agent state, generated artifacts, or dependency folders."
+        ),
+        "external_resource_requires_review": (
+            "Move the source to the whitelist/greylist review sheet before letting a lane depend on it."
+        ),
         "decision_missing_or_ambiguous": "Re-run with strict output format and reject prose-only answers.",
-        "no_paths_mentioned": "Re-run as a helper lane to collect exact files first, then pass those files to a builder.",
-        "background_process_side_effect": "Replace background process commands with deterministic foreground smoke commands.",
-        "invented_test_runner_flag": "Ask a local helper lane to inspect package scripts and existing test commands before retry.",
-        "symbol_not_found": "Ask a helper lane to inspect real declarations in the target file before sending the patch to a builder.",
+        "no_paths_mentioned": (
+            "Re-run as a helper lane to collect exact files first, then pass those files to a builder."
+        ),
+        "background_process_side_effect": (
+            "Replace background process commands with deterministic foreground smoke commands."
+        ),
+        "invented_test_runner_flag": (
+            "Ask a local helper lane to inspect package scripts and existing test commands before retry."
+        ),
+        "symbol_not_found": (
+            "Ask a helper lane to inspect real declarations in the target file "
+            "before sending the patch to a builder."
+        ),
     }
     for flag, count in flag_counts.items():
         guide.append(
@@ -1234,10 +1256,18 @@ def build_correction_guide(results: list[dict[str, Any]]) -> list[dict[str, str]
 
 DARPA_ASSURANCE_REQUIREMENTS = {
     "continual_assurance": "design-time packet plus operation-time monitoring, correction guide, and rerun cycle",
-    "heterogeneous_evidence": "model response, path inventory, symbol applicability, command plan, quality flags, and benchmark artifact",
-    "robustness": "rejects fake files, fake symbols, unsafe commands, blacklisted paths, and unreviewed external resources",
-    "predictability": "every lane is constrained by allowed paths, tier contract, trust policy, and explicit promotion rule",
-    "patch_functionality": "patches are not promoted until they pass applicability gates and then safe_apply smoke testing",
+    "heterogeneous_evidence": (
+        "model response, path inventory, symbol applicability, command plan, quality flags, and benchmark artifact"
+    ),
+    "robustness": (
+        "rejects fake files, fake symbols, unsafe commands, blacklisted paths, and unreviewed external resources"
+    ),
+    "predictability": (
+        "every lane is constrained by allowed paths, tier contract, trust policy, and explicit promotion rule"
+    ),
+    "patch_functionality": (
+        "patches are not promoted until they pass applicability gates and then safe_apply smoke testing"
+    ),
 }
 
 
@@ -1532,7 +1562,8 @@ def build_integration_plan(task: str, results: list[dict[str, Any]], routing: di
             'python scripts/agents/safe_apply.py --patch-file path\\to\\proposal.diff --smoke "npm test"',
             "```",
             "",
-            "Promote patch lanes only when non-conflicting patches pass smoke checks. Answer and evidence lanes are delivered or handed off, not applied.",
+            "Promote patch lanes only when non-conflicting patches pass smoke checks. "
+            "Answer and evidence lanes are delivered or handed off, not applied.",
         ]
     )
     return "\n".join(lines) + "\n"

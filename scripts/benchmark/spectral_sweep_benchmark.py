@@ -19,7 +19,10 @@ Results cross-referenced as a spectral grid: (-1, 0, +1) per method.
 """
 
 from __future__ import annotations
-import json, math, time, sys
+import json
+import math
+import time
+import sys
 from pathlib import Path
 from typing import Tuple
 import numpy as np
@@ -284,7 +287,8 @@ def main():
             else ""
         )
         print(
-            f"{c['name']:<35} {c['detected']:>7}/91 {c['detection_rate']:>9.1%} {c['false_positives']:>5} {c['fp_rate']:>9.1%}{marker}"
+            f"{c['name']:<35} {c['detected']:>7}/91 {c['detection_rate']:>9.1%} "
+            f"{c['false_positives']:>5} {c['fp_rate']:>9.1%}{marker}"
         )
 
     # Per-class breakdown for top 3

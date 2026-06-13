@@ -25,15 +25,8 @@ DEFAULT_PURPOSES = (
     "governance_security",
     "research_bridge",
 )
-REGULARIZATION_CONFIG = (
-    REPO_ROOT / "config" / "model_training" / "scbe_dataset_regularization_v1.json"
-)
-MERGE_PROFILE = (
-    REPO_ROOT
-    / "config"
-    / "model_training"
-    / "coding-agent-qwen-merged-coding-model.json"
-)
+REGULARIZATION_CONFIG = REPO_ROOT / "config" / "model_training" / "scbe_dataset_regularization_v1.json"
+MERGE_PROFILE = REPO_ROOT / "config" / "model_training" / "coding-agent-qwen-merged-coding-model.json"
 
 
 SPECIALIST_DEFAULTS: dict[str, dict[str, Any]] = {
@@ -127,9 +120,7 @@ def _repo_rel(path: Path) -> str:
         return str(path).replace("\\", "/")
 
 
-def build_inventory(
-    output_dir: Path, *, include_kaggle: bool, include_hf: bool, include_cloud: bool
-) -> dict[str, Any]:
+def build_inventory(output_dir: Path, *, include_kaggle: bool, include_hf: bool, include_cloud: bool) -> dict[str, Any]:
     inventory_module = _load_module(
         REPO_ROOT / "scripts" / "training_dataset_inventory.py",
         "training_dataset_inventory",
@@ -144,18 +135,14 @@ def build_inventory(
     return inventory_module.build_inventory(options)
 
 
-def regularize_purposes(
-    inventory_path: Path, purposes: tuple[str, ...], output_dir: Path
-) -> dict[str, Any]:
+def regularize_purposes(inventory_path: Path, purposes: tuple[str, ...], output_dir: Path) -> dict[str, Any]:
     regularize_module = _load_module(
         REPO_ROOT / "scripts" / "regularize_training_bucket.py",
         "regularize_training_bucket",
     )
     manifests: dict[str, Any] = {}
     for purpose in purposes:
-        manifests[purpose] = regularize_module.build_bucket(
-            inventory_path, purpose, output_dir / "regularized"
-        )
+        manifests[purpose] = regularize_module.build_bucket(inventory_path, purpose, output_dir / "regularized")
     return manifests
 
 
@@ -188,11 +175,7 @@ def build_specialist_plan(
                 "merge_weight": defaults["merge_weight"],
                 "eval_gate": policy.get("eval_gate", defaults["promotion_gate"]),
                 "promotion_gate": defaults["promotion_gate"],
-                "status": (
-                    "ready_for_training"
-                    if bucket["train_records"] > 0
-                    else "blocked_no_train_records"
-                ),
+                "status": ("ready_for_training" if bucket["train_records"] > 0 else "blocked_no_train_records"),
             }
         )
 
@@ -200,19 +183,24 @@ def build_specialist_plan(
     if merge_weight_total <= 0:
         raise ValueError("Specialist merge weights must sum to a positive value")
     for item in specialists:
-        item["normalized_merge_weight"] = (
-            float(item["merge_weight"]) / merge_weight_total
-        )
+        item["normalized_merge_weight"] = float(item["merge_weight"]) / merge_weight_total
 
     return {
         "schema_version": "scbe_ai_training_consolidation_plan_v1",
         "generated_at_utc": _utc_now(),
-        "core_rule": "Train specialist adapters first, test each bucket independently, then merge only promoted adapters into a rounded model.",
+        "core_rule": (
+            "Train specialist adapters first, test each bucket independently, "
+            "then merge only promoted adapters into a rounded model."
+        ),
         "local_inventory_summary": summary,
         "open_weight_strategy": {
             "low_cost_coding": "Qwen/Qwen2.5-Coder-0.5B-Instruct for Kaggle/HF smoke and LoRA iteration",
-            "larger_foundation_lane": "Qwen/Qwen2.5-7B-Instruct for aligned-foundations transfer when GPU budget allows",
-            "deployment": "merge promoted LoRA adapters, then optionally convert to GGUF for local Ollama/llama.cpp testing",
+            "larger_foundation_lane": (
+                "Qwen/Qwen2.5-7B-Instruct for aligned-foundations transfer when GPU budget allows"
+            ),
+            "deployment": (
+                "merge promoted LoRA adapters, then optionally convert to GGUF " "for local Ollama/llama.cpp testing"
+            ),
         },
         "training_method_ladder": [
             "SFT for specialist behavior acquisition",
@@ -226,9 +214,7 @@ def build_specialist_plan(
         "final_merge": {
             "merge_profile": _repo_rel(MERGE_PROFILE),
             "merge_id": merge_profile.get("merge_id", "unconfigured"),
-            "base_model": merge_profile.get(
-                "base_model", "Qwen/Qwen2.5-Coder-0.5B-Instruct"
-            ),
+            "base_model": merge_profile.get("base_model", "Qwen/Qwen2.5-Coder-0.5B-Instruct"),
             "output_model_repo": merge_profile.get("output_model_repo", ""),
             "rule": "Do not merge a specialist adapter until its eval gate passes and its held-out set stays frozen.",
         },

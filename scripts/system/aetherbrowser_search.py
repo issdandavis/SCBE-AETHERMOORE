@@ -16,7 +16,6 @@ import sys
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS_DIR = REPO_ROOT / "scripts" / "system"
 DEFAULT_SURFACE_TO_DOMAIN = {

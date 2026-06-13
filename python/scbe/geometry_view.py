@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .controlled_substances import assert_not_controlled
 from .reaction_state import (
     ReactionEndpoint,
     ReactionRecalculation,
@@ -131,7 +132,22 @@ def geometry_descriptors(smiles: str, *, seed: int = 0xC0FFEE) -> dict[str, Any]
 
 
 def geometry_view_packet(smiles: str, *, seed: int = 0xC0FFEE) -> ReactionStatePacket:
-    """Wrap a molecule's 3D geometry as a hash-signed domain='geometry' packet."""
+    """Wrap a molecule's 3D geometry as a hash-signed domain='geometry' packet.
+
+    Raises ControlledSubstanceDenied before any descriptor is computed if the
+    input matches or closely resembles a listed chemical; the receipt of a
+    clear screen (and the level it ran at) is witnessed in the claim boundary.
+    """
+    screen = assert_not_controlled(smiles)
+    if screen["flagged"]:
+        screen_witness = (
+            f"controlled-substance screen: similarity flag {screen['max_similarity']} "
+            f"(witnessed, < refuse tier; list n={screen['list_size']})"
+        )
+    else:
+        screen_witness = (
+            f"controlled-substance screen: clear (level={screen['screen_level']}, list n={screen['list_size']})"
+        )
     desc = geometry_descriptors(smiles, seed=seed)
     pg_line = f"point_group={desc['point_group']} ({desc['point_group_engine']})"
     return build_reaction_state_packet(
@@ -164,5 +180,6 @@ def geometry_view_packet(smiles: str, *, seed: int = 0xC0FFEE) -> ReactionStateP
             "geometry from RDKit ETKDG + MMFF (one conformer)",
             "point group requires pymatgen; rotor type is an inertial proxy when absent",
             "shape/geometry descriptor lane, not a quantum-accurate structure",
+            screen_witness,
         ],
     )

@@ -9,19 +9,16 @@ Three cases:
 
 from __future__ import annotations
 
-import math
-import pytest
-
 from agents.kernel_antivirus_gate import (
     KernelEvent,
     evaluate_kernel_event_with_state,
     geometry_norm_from_state,
 )
 
-
 # ---------------------------------------------------------------------------
 # Shared fixtures
 # ---------------------------------------------------------------------------
+
 
 def _safe_event(**overrides) -> KernelEvent:
     """Minimally suspicious kernel event (signed, hashed, boring operation)."""
@@ -45,6 +42,7 @@ def _safe_event(**overrides) -> KernelEvent:
 # Case 1: benign state vector -> low geometry_norm -> decision stays ALLOW
 # ---------------------------------------------------------------------------
 
+
 def test_benign_handoff_keeps_allow():
     """
     A state vector near the Poincaré-ball origin yields a low geometry_norm.
@@ -56,20 +54,15 @@ def test_benign_handoff_keeps_allow():
 
     result = evaluate_kernel_event_with_state(_safe_event(), state_vector=benign_state)
 
-    assert result.decision == "ALLOW", (
-        f"Expected ALLOW for benign state, got {result.decision}"
-    )
-    assert result.cell_state in ("HEALTHY", "PRIMED"), (
-        f"Expected healthy/primed cell, got {result.cell_state}"
-    )
-    assert result.geometry_norm < 0.50, (
-        f"Expected low geometry_norm for benign state, got {result.geometry_norm}"
-    )
+    assert result.decision == "ALLOW", f"Expected ALLOW for benign state, got {result.decision}"
+    assert result.cell_state in ("HEALTHY", "PRIMED"), f"Expected healthy/primed cell, got {result.cell_state}"
+    assert result.geometry_norm < 0.50, f"Expected low geometry_norm for benign state, got {result.geometry_norm}"
 
 
 # ---------------------------------------------------------------------------
 # Case 2: adversarial payload -> elevated geometry_norm -> suspicion increases
 # ---------------------------------------------------------------------------
+
 
 def test_adversarial_payload_elevates_suspicion():
     """
@@ -88,31 +81,26 @@ def test_adversarial_payload_elevates_suspicion():
     computed_norm = geometry_norm_from_state(adversarial_state)
 
     # Scanner should have clipped this near the boundary
-    assert computed_norm >= 0.90, (
-        f"Expected high norm from near-boundary state, got {computed_norm}"
-    )
+    assert computed_norm >= 0.90, f"Expected high norm from near-boundary state, got {computed_norm}"
 
     result_high = evaluate_kernel_event_with_state(_safe_event(), state_vector=adversarial_state)
     result_zero = evaluate_kernel_event_with_state(_safe_event(geometry_norm=0.0), state_vector=None)
 
     # geometry_norm on result must reflect what the scanner computed
-    assert result_high.geometry_norm >= computed_norm * 0.90, (
-        f"Result geometry_norm {result_high.geometry_norm} should track scanner norm {computed_norm}"
-    )
+    assert (
+        result_high.geometry_norm >= computed_norm * 0.90
+    ), f"Result geometry_norm {result_high.geometry_norm} should track scanner norm {computed_norm}"
 
     # Suspicion must be higher with the elevated geometry_norm
     suspicion_lift = result_high.suspicion - result_zero.suspicion
-    assert suspicion_lift > 0.05, (
-        f"Expected >=0.05 suspicion lift from near-boundary norm, got {suspicion_lift:.4f}"
-    )
-    assert result_high.suspicion > 0.10, (
-        f"Expected elevated absolute suspicion, got {result_high.suspicion}"
-    )
+    assert suspicion_lift > 0.05, f"Expected >=0.05 suspicion lift from near-boundary norm, got {suspicion_lift:.4f}"
+    assert result_high.suspicion > 0.10, f"Expected elevated absolute suspicion, got {result_high.suspicion}"
 
 
 # ---------------------------------------------------------------------------
 # Case 3: explicit caller-supplied geometry_norm, no state_vector -> respected
 # ---------------------------------------------------------------------------
+
 
 def test_explicit_geometry_norm_respected_without_state_vector():
     """
@@ -131,14 +119,14 @@ def test_explicit_geometry_norm_respected_without_state_vector():
     # What we check: the reported geometry_norm is >= the manually set value
     # (the gate may raise it, but must never drop it below the caller's signal).
     assert result.geometry_norm >= manual_norm * 0.90, (
-        f"Caller-supplied norm {manual_norm} should be reflected in result, "
-        f"got {result.geometry_norm}"
+        f"Caller-supplied norm {manual_norm} should be reflected in result, " f"got {result.geometry_norm}"
     )
 
 
 # ---------------------------------------------------------------------------
 # Case 4: scanner overrides event norm when state_vector is provided
 # ---------------------------------------------------------------------------
+
 
 def test_scanner_overrides_event_norm_when_state_vector_provided():
     """
@@ -157,9 +145,7 @@ def test_scanner_overrides_event_norm_when_state_vector_provided():
 
     # The gate's reported geometry_norm must reflect the scanner result, not 0.85.
     # (Gate may raise it via internal blend but the starting observed_norm is scanner_norm.)
-    assert result.geometry_norm < 0.80, (
-        f"Scanner-computed low norm should replace the event's 0.85; got {result.geometry_norm}"
-    )
-    assert result.decision == "ALLOW", (
-        f"Benign state should yield ALLOW, got {result.decision}"
-    )
+    assert (
+        result.geometry_norm < 0.80
+    ), f"Scanner-computed low norm should replace the event's 0.85; got {result.geometry_norm}"
+    assert result.decision == "ALLOW", f"Benign state should yield ALLOW, got {result.decision}"

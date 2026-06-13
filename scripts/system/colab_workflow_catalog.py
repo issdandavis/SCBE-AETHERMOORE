@@ -29,7 +29,8 @@ NOTEBOOKS: list[dict[str, Any]] = [
         ],
         "path": "notebooks/brick1_0p5b_colab.ipynb",
         "category": "training",
-        "summary": "Zero-cost free-tier Colab notebook for the 0.5B Qwen2.5-Coder LoRA brick1 lane (recommended starting point).",
+        "summary": "Zero-cost free-tier Colab notebook for the 0.5B Qwen2.5-Coder LoRA brick1 lane "
+        "(recommended starting point).",
     },
     {
         "name": "scbe-pivot-v2",
@@ -62,7 +63,8 @@ NOTEBOOKS: list[dict[str, Any]] = [
         ],
         "path": "notebooks/coder_qwen_code_primaries_colab.ipynb",
         "category": "training",
-        "summary": "QLoRA notebook for the SCBE coding-primaries lane across Python, JavaScript, Rust, Mathematica, Haskell, and Markdown.",
+        "summary": "QLoRA notebook for the SCBE coding-primaries lane "
+        "across Python, JavaScript, Rust, Mathematica, Haskell, and Markdown.",
     },
     {
         "name": "aethermoor-finetune",

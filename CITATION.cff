@@ -1,18 +1,24 @@
 cff-version: 1.2.0
 title: "SCBE-AETHERMOORE"
 message: "If you use this project, please cite it using this metadata."
+version: "4.2.1"
 authors:
   - family-names: "Davis"
     given-names: "Issac"
-repository-code: "https://github.com/SCBE-AETHERMOORE/SCBE-AETHERMOORE"
+repository-code: "https://github.com/issdandavis/SCBE-AETHERMOORE"
 abstract: >-
-  SCBE-AETHERMOORE provides Spectral Context Bound Encryption (SCBE),
-  Entropic Defense Engine governance controls, and AI Governance policies
-  for model-assisted execution systems.
+  SCBE-AETHERMOORE is an AI safety and governance framework that applies
+  hyperbolic geometry to semantic embeddings so adversarial inputs cost
+  exponentially more the further they drift from safe operation. It implements
+  a 14-layer governed runtime with post-quantum cryptography (ML-KEM-768,
+  ML-DSA-65) and produces auditable ALLOW/QUARANTINE/ESCALATE/DENY decisions.
 keywords:
   - SCBE
-  - Spectral Context Bound Encryption
-  - Entropic Defense Engine
-  - AI Governance
+  - AI governance
+  - AI safety
+  - hyperbolic geometry
+  - post-quantum cryptography
   - security
-license: "MIT"
+license:
+  - "MIT"
+  - "Apache-2.0"

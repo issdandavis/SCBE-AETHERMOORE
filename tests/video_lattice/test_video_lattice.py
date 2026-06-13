@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from src.video_lattice import (
     BodyLandmark,
@@ -170,22 +171,9 @@ def test_single_view_perception_keeps_undefined_space_high() -> None:
 
 def test_local_vector_index_returns_best_cosine_match(tmp_path) -> None:
     index = LocalVectorIndex(dim=3)
-    index.add(
-        "frame_red_bag",
-        [1.0, 0.0, 0.0],
-        metadata={"timestamp": 12.0, "label": "red bag"},
-    )
-    index.add(
-        "frame_blue_car",
-        [0.0, 1.0, 0.0],
-        metadata={"timestamp": 24.0, "label": "blue car"},
-    )
-    index.add(
-        "transcript_bag",
-        [0.9, 0.1, 0.0],
-        modality="transcript",
-        metadata={"timestamp": 13.0},
-    )
+    index.add("frame_red_bag", [1.0, 0.0, 0.0], metadata={"timestamp": 12.0, "label": "red bag"})
+    index.add("frame_blue_car", [0.0, 1.0, 0.0], metadata={"timestamp": 24.0, "label": "blue car"})
+    index.add("transcript_bag", [0.9, 0.1, 0.0], modality="transcript", metadata={"timestamp": 13.0})
 
     results = index.search([0.95, 0.05, 0.0], top_k=2, modality="frame")
 
@@ -228,36 +216,11 @@ def synthetic_hand(curl: float = 0.0) -> list[Landmark]:
         HandLandmark.PINKY_MCP: (0.24, 0.24),
     }
     chains = [
-        (
-            HandLandmark.THUMB_CMC,
-            HandLandmark.THUMB_MCP,
-            HandLandmark.THUMB_IP,
-            HandLandmark.THUMB_TIP,
-        ),
-        (
-            HandLandmark.INDEX_MCP,
-            HandLandmark.INDEX_PIP,
-            HandLandmark.INDEX_DIP,
-            HandLandmark.INDEX_TIP,
-        ),
-        (
-            HandLandmark.MIDDLE_MCP,
-            HandLandmark.MIDDLE_PIP,
-            HandLandmark.MIDDLE_DIP,
-            HandLandmark.MIDDLE_TIP,
-        ),
-        (
-            HandLandmark.RING_MCP,
-            HandLandmark.RING_PIP,
-            HandLandmark.RING_DIP,
-            HandLandmark.RING_TIP,
-        ),
-        (
-            HandLandmark.PINKY_MCP,
-            HandLandmark.PINKY_PIP,
-            HandLandmark.PINKY_DIP,
-            HandLandmark.PINKY_TIP,
-        ),
+        (HandLandmark.THUMB_CMC, HandLandmark.THUMB_MCP, HandLandmark.THUMB_IP, HandLandmark.THUMB_TIP),
+        (HandLandmark.INDEX_MCP, HandLandmark.INDEX_PIP, HandLandmark.INDEX_DIP, HandLandmark.INDEX_TIP),
+        (HandLandmark.MIDDLE_MCP, HandLandmark.MIDDLE_PIP, HandLandmark.MIDDLE_DIP, HandLandmark.MIDDLE_TIP),
+        (HandLandmark.RING_MCP, HandLandmark.RING_PIP, HandLandmark.RING_DIP, HandLandmark.RING_TIP),
+        (HandLandmark.PINKY_MCP, HandLandmark.PINKY_PIP, HandLandmark.PINKY_DIP, HandLandmark.PINKY_TIP),
     ]
     for chain in chains:
         base = chain[0]
@@ -491,10 +454,7 @@ class _StubUE5Server:
                         continue
                     self.last_received = msg
                     seq = msg.get("seq", -1)
-                    resp = (
-                        json.dumps({"status": "ok", "seq": seq, "msg": "stub_ok"})
-                        + "\n"
-                    )
+                    resp = json.dumps({"status": "ok", "seq": seq, "msg": "stub_ok"}) + "\n"
                     conn.sendall(resp.encode())
         finally:
             conn.close()
@@ -532,9 +492,7 @@ def test_world_director_apply_delta_move() -> None:
     from src.video_lattice.gpt_world import WorldCommand, WorldDelta
 
     delta = WorldDelta(
-        commands=[
-            WorldCommand(type="move", data={"entity_id": "hero", "dx": 1, "dy": 0})
-        ],
+        commands=[WorldCommand(type="move", data={"entity_id": "hero", "dx": 1, "dy": 0})],
         narrative="The hero steps east.",
         model="stub",
         raw_response="{}",
@@ -553,17 +511,15 @@ def test_world_director_apply_delta_skips_solid_moves() -> None:
 
     # hero is at (2,2); wall is at (0,y) — move hero left until wall
     delta = WorldDelta(
-        commands=[
-            WorldCommand(type="move", data={"entity_id": "hero", "dx": -3, "dy": 0})
-        ],
+        commands=[WorldCommand(type="move", data={"entity_id": "hero", "dx": -3, "dy": 0})],
         narrative="Hero charges at the wall.",
         model="stub",
         raw_response="{}",
     )
-    skipped = director.apply_delta(world, delta)
-    # Either blocked by solid tile or out of bounds — either way skipped is populated
+    director.apply_delta(world, delta)
+    # Either blocked by solid tile or out of bounds — either way skipped commands are returned
     # or hero stays >= 1 (wall at x=0)
-    assert skipped or world.entities["hero"].x >= 1
+    assert world.entities["hero"].x >= 1
 
 
 def test_world_director_score_delta_no_op_is_zero() -> None:
@@ -573,9 +529,7 @@ def test_world_director_score_delta_no_op_is_zero() -> None:
 
     from src.video_lattice.gpt_world import WorldDelta
 
-    delta = WorldDelta(
-        commands=[], narrative="Nothing happens.", model="stub", raw_response="{}"
-    )
+    delta = WorldDelta(commands=[], narrative="Nothing happens.", model="stub", raw_response="{}")
     drift = director.score_delta(world, delta)
     assert drift == pytest_approx(0.0)
 
@@ -588,9 +542,7 @@ def test_world_director_score_delta_move_is_positive() -> None:
     from src.video_lattice.gpt_world import WorldCommand, WorldDelta
 
     delta = WorldDelta(
-        commands=[
-            WorldCommand(type="move", data={"entity_id": "hero", "dx": 1, "dy": 0})
-        ],
+        commands=[WorldCommand(type="move", data={"entity_id": "hero", "dx": 1, "dy": 0})],
         narrative="Hero moves.",
         model="stub",
         raw_response="{}",
@@ -613,9 +565,7 @@ def test_round_table_director_picks_most_coherent() -> None:
             self._client = None
 
         def step(self, world, note=""):
-            return WorldDelta(
-                commands=[], narrative="Nothing.", model=self.model, raw_response="{}"
-            )
+            return WorldDelta(commands=[], narrative="Nothing.", model=self.model, raw_response="{}")
 
     class _MoveDirector(WorldDirector):
         def __init__(self):
@@ -627,11 +577,7 @@ def test_round_table_director_picks_most_coherent() -> None:
 
         def step(self, world, note=""):
             return WorldDelta(
-                commands=[
-                    WorldCommand(
-                        type="move", data={"entity_id": "hero", "dx": 1, "dy": 0}
-                    )
-                ],
+                commands=[WorldCommand(type="move", data={"entity_id": "hero", "dx": 1, "dy": 0})],
                 narrative="Hero moves.",
                 model=self.model,
                 raw_response="{}",
@@ -646,7 +592,16 @@ def test_round_table_director_picks_most_coherent() -> None:
     assert len(report.all_results) == 2
 
 
+def _require_real_pillow() -> None:
+    pil = pytest.importorskip("PIL", reason="Pillow required for PNG/GIF export")
+    if not hasattr(pil, "__version__"):
+        # test_system_script_security.py stubs PIL into sys.modules at import
+        # time when Pillow is absent; the stub cannot render images.
+        pytest.skip("PIL in sys.modules is a test stub, not real Pillow")
+
+
 def test_pocket_drawing_tutor_writes_trace_artifacts(tmp_path) -> None:
+    _require_real_pillow()
     from scripts.video_lattice.pocket_drawing_tutor import run_lesson
 
     payload = run_lesson("hand", "open", Path(tmp_path))
@@ -657,22 +612,15 @@ def test_pocket_drawing_tutor_writes_trace_artifacts(tmp_path) -> None:
     assert Path(payload["target_png"]).exists()
     assert Path(payload["attempt_png"]).exists()
     assert payload["score"]["pose_type"] == "hand"
-    assert payload["score"]["worst_chain"] in {
-        "thumb",
-        "index",
-        "middle",
-        "ring",
-        "pinky",
-    }
+    assert payload["score"]["worst_chain"] in {"thumb", "index", "middle", "ring", "pinky"}
     assert "Repair one thing" in payload["repair"]
 
 
 def test_pocket_video_gen_writes_animation_and_reduces_drift(tmp_path) -> None:
+    _require_real_pillow()
     from scripts.video_lattice.pocket_video_gen import run_generation
 
-    manifest = run_generation(
-        "hand", "fist", frames=5, out_dir=Path(tmp_path), duration_ms=20
-    )
+    manifest = run_generation("hand", "fist", frames=5, out_dir=Path(tmp_path), duration_ms=20)
 
     gif_path = Path(manifest["animation_gif"])
     assert gif_path.exists()
@@ -689,26 +637,18 @@ def test_pocket_video_gen_writes_animation_and_reduces_drift(tmp_path) -> None:
 
 
 def test_intent_anchor_no_drift_when_aligned() -> None:
-    tracker = TemporalTracker(
-        MultiLattice(dim=4, correction_threshold=5.0), intent_threshold=0.5
-    )
+    tracker = TemporalTracker(MultiLattice(dim=4, correction_threshold=5.0), intent_threshold=0.5)
     anchor_vec = np.array([0.3, 0.1, -0.2, 0.4])
-    tracker.set_intent_anchor(
-        {LatticeAxis.IDENTITY: anchor_vec}, description="test pose"
-    )
+    tracker.set_intent_anchor({LatticeAxis.IDENTITY: anchor_vec}, description="test pose")
     # Observing the same vector as the anchor — intent drift must be zero
     state = tracker.observe({LatticeAxis.IDENTITY: anchor_vec})
     assert LatticeAxis.IDENTITY in state.intent_drift_by_axis
-    assert state.intent_drift_by_axis[LatticeAxis.IDENTITY] == pytest_approx(
-        0.0, abs=1e-9
-    )
+    assert state.intent_drift_by_axis[LatticeAxis.IDENTITY] == pytest_approx(0.0, abs=1e-9)
     assert state.intent_violated is False
 
 
 def test_intent_anchor_detects_violation_on_large_shift() -> None:
-    tracker = TemporalTracker(
-        MultiLattice(dim=4, correction_threshold=5.0), intent_threshold=0.1
-    )
+    tracker = TemporalTracker(MultiLattice(dim=4, correction_threshold=5.0), intent_threshold=0.1)
     anchor = np.array([0.1, 0.0, 0.0, 0.0])
     shifted = np.array([5.0, 5.0, 5.0, 5.0])
     tracker.set_intent_anchor({LatticeAxis.IDENTITY: anchor}, description="closed fist")
@@ -721,9 +661,7 @@ def test_intent_anchor_detects_violation_on_large_shift() -> None:
 
 
 def test_intent_anchor_cleared_stops_reporting() -> None:
-    tracker = TemporalTracker(
-        MultiLattice(dim=4, correction_threshold=5.0), intent_threshold=0.1
-    )
+    tracker = TemporalTracker(MultiLattice(dim=4, correction_threshold=5.0), intent_threshold=0.1)
     anchor = np.array([0.1, 0.0, 0.0, 0.0])
     tracker.set_intent_anchor({LatticeAxis.IDENTITY: anchor})
     # Observe a shifted frame while anchor is set — should report drift
@@ -733,9 +671,7 @@ def test_intent_anchor_cleared_stops_reporting() -> None:
     tracker.clear_intent_anchor()
     assert tracker.intent_anchor is None
     # Next observation must have no intent drift
-    state_without = tracker.observe(
-        {LatticeAxis.IDENTITY: np.array([5.0, 5.0, 5.0, 5.0])}
-    )
+    state_without = tracker.observe({LatticeAxis.IDENTITY: np.array([5.0, 5.0, 5.0, 5.0])})
     assert state_without.intent_drift_by_axis == {}
     assert state_without.intent_violated is False
 
@@ -743,9 +679,7 @@ def test_intent_anchor_cleared_stops_reporting() -> None:
 def test_intent_anchor_surfaced_in_correction_signal() -> None:
     from src.video_lattice.frame_corrector import FrameCorrector
 
-    tracker = TemporalTracker(
-        MultiLattice(dim=4, correction_threshold=5.0), intent_threshold=0.1
-    )
+    tracker = TemporalTracker(MultiLattice(dim=4, correction_threshold=5.0), intent_threshold=0.1)
     corrector = FrameCorrector(tracker)
     anchor = np.array([0.1, 0.0, 0.0, 0.0])
     tracker.set_intent_anchor({LatticeAxis.IDENTITY: anchor}, description="closed fist")

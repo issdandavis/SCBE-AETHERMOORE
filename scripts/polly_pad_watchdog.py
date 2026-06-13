@@ -40,7 +40,8 @@ def _read_failed_tasks(db_path: str, limit: int = 50) -> List[Dict[str, Any]]:
         conn.row_factory = sqlite3.Row
         rows = conn.execute(
             """
-            SELECT task_id, role, payload_json, status, priority, attempts, result_json, error_text, created_at, updated_at
+            SELECT task_id, role, payload_json, status, priority, attempts,
+                   result_json, error_text, created_at, updated_at
             FROM tasks
             WHERE status='failed'
             ORDER BY updated_at DESC

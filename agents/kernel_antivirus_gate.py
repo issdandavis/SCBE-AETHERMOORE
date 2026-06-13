@@ -26,11 +26,8 @@ import re
 from agents.antivirus_membrane import ThreatScan, scan_text_for_threats
 from agents.hyperbolic_scanner import scan_boundary_state
 from hydra.turnstile import TurnstileOutcome, resolve_turnstile
-from src.governance.gate_witness import gate_witness
 
 KernelAction = Literal["ALLOW", "THROTTLE", "QUARANTINE", "KILL", "HONEYPOT"]
-
-_WITNESS_EVENT = {"KILL": "deny", "HONEYPOT": "honeypot", "QUARANTINE": "quarantine", "THROTTLE": "block"}
 
 
 OPERATION_RISK = {
@@ -268,14 +265,6 @@ def evaluate_kernel_event(
         quarantine_target = True
     elif cell_state == "INFLAMED" and kernel_action == "ALLOW":
         kernel_action = "THROTTLE"
-
-    if block_execution or decision != "ALLOW":
-        gate_witness(
-            "kernel_antivirus",
-            _WITNESS_EVENT.get(kernel_action, "block"),
-            subject=event.process_name[:60],
-            detail={"decision": decision, "kernel_action": kernel_action, "suspicion": round(suspicion, 4)},
-        )
 
     notes = list(scan.reasons)
     notes.extend(integrity_notes)

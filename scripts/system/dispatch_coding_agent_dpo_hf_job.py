@@ -84,7 +84,9 @@ def render_uv_dpo_script(profile: dict[str, Any]) -> str:
     train_files = [str(name) for name in dataset.get("train_files", [])]
     contract_rel = str(eval_cfg.get("contract_path", "")).strip()
     contract_path = REPO_ROOT / contract_rel if contract_rel else None
-    contract_payload = json.loads(contract_path.read_text(encoding="utf-8")) if contract_path and contract_path.exists() else {}
+    contract_payload = (
+        json.loads(contract_path.read_text(encoding="utf-8")) if contract_path and contract_path.exists() else {}
+    )
     contract_json = json.dumps(contract_payload, indent=2, ensure_ascii=True)
     return f'''# /// script
 # dependencies = [
@@ -187,7 +189,12 @@ def _score(prompt, response):
     missing_required = [str(t) for t in (prompt.get("required") or []) if str(t).lower() not in body_lower]
     triggered_forbidden = [str(t) for t in (prompt.get("forbidden") or []) if str(t).lower() in body_lower]
     ok = (not missing_required) and (not triggered_forbidden)
-    return {{"id": prompt.get("id"), "ok": ok, "missing_required": missing_required, "triggered_forbidden": triggered_forbidden}}
+    return {{
+        "id": prompt.get("id"),
+        "ok": ok,
+        "missing_required": missing_required,
+        "triggered_forbidden": triggered_forbidden,
+    }}
 
 
 def main() -> None:
@@ -268,7 +275,12 @@ def main() -> None:
     model.save_pretrained(out_dir)
     tokenizer.save_pretrained(out_dir)
 
-    print(json.dumps({{"event": "gate_start", "contract_id": CONTRACT.get("contract_id"), "n_prompts": len(CONTRACT.get("prompts") or []), "constrained_gate_scaffold": constrained}}))
+    print(json.dumps({{
+        "event": "gate_start",
+        "contract_id": CONTRACT.get("contract_id"),
+        "n_prompts": len(CONTRACT.get("prompts") or []),
+        "constrained_gate_scaffold": constrained,
+    }}))
     del trainer
     del model
     gc.collect()
@@ -276,7 +288,9 @@ def main() -> None:
         torch.cuda.empty_cache()
 
     gate_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-    gate_base = AutoModelForCausalLM.from_pretrained(base_model, token=token, torch_dtype=gate_dtype, trust_remote_code=True)
+    gate_base = AutoModelForCausalLM.from_pretrained(
+        base_model, token=token, torch_dtype=gate_dtype, trust_remote_code=True
+    )
     gate_model = PeftModel.from_pretrained(gate_base, str(out_dir))
     gate_model.eval()
     gate_model.config.use_cache = True
@@ -292,7 +306,10 @@ def main() -> None:
                 "Scaffold: required-tokens: " + " | ".join(required) + " ::\\n\\n" + user_prompt
             )
         messages = [
-            {{"role": "system", "content": str(PROFILE.get("system_prompt") or "You are an SCBE-AETHERMOORE GeoSeal coding agent.")}},
+            {{
+                "role": "system",
+                "content": str(PROFILE.get("system_prompt") or "You are an SCBE-AETHERMOORE GeoSeal coding agent."),
+            }},
             {{"role": "user", "content": user_prompt}},
         ]
         text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
@@ -329,7 +346,13 @@ def main() -> None:
         results.append(diag)
         if diag["ok"]:
             n_pass += 1
-        print(json.dumps({{"event": "gate_prompt", "id": diag["id"], "ok": diag["ok"], "missing": diag["missing_required"], "elapsed_s": round(time.time() - t0, 1)}}))
+        print(json.dumps({{
+            "event": "gate_prompt",
+            "id": diag["id"],
+            "ok": diag["ok"],
+            "missing": diag["missing_required"],
+            "elapsed_s": round(time.time() - t0, 1),
+        }}))
 
     n_total = len(results)
     pass_rate = (n_pass / n_total) if n_total else 1.0
@@ -364,7 +387,12 @@ def main() -> None:
         pushed_adapter = True
     else:
         reason = "gate_failed" if (push_requested and not overall_pass) else "push_disabled"
-        print(json.dumps({{"event": "push_skipped", "reason": reason, "overall_pass": overall_pass, "push_requested": push_requested}}))
+        print(json.dumps({{
+            "event": "push_skipped",
+            "reason": reason,
+            "overall_pass": overall_pass,
+            "push_requested": push_requested,
+        }}))
 
     summary = {{
         "profile_id": PROFILE["profile_id"],

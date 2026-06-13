@@ -15,18 +15,10 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SFT_ROOT = REPO_ROOT / "training-data" / "sft"
 SEMANTIC_WORKFLOWS = (
-    REPO_ROOT
-    / "artifacts"
-    / "mathbac"
-    / "atomic_tokenizer_rename_benchmark"
-    / "semantic_chemistry_workflows.jsonl"
+    REPO_ROOT / "artifacts" / "mathbac" / "atomic_tokenizer_rename_benchmark" / "semantic_chemistry_workflows.jsonl"
 )
 RESOURCE_DECAY_DEMO = (
-    REPO_ROOT
-    / "artifacts"
-    / "mathbac"
-    / "atomic_workflow_composition"
-    / "mars_drone_resource_decay_demo.json"
+    REPO_ROOT / "artifacts" / "mathbac" / "atomic_workflow_composition" / "mars_drone_resource_decay_demo.json"
 )
 TRAIN_OUT = SFT_ROOT / "atomic_workflow_stage6_train.sft.jsonl"
 EVAL_OUT = SFT_ROOT / "atomic_workflow_stage6_holdout.sft.jsonl"
@@ -90,11 +82,7 @@ def _semantic_workflow_to_sft(row: dict[str, Any]) -> dict[str, Any]:
             "mapping": row["lanes"]["semantic_overlay"]["mapping"],
             "token_count": semantic.get("token_count"),
             "dominant_classes": _top_features(semantic, "class_"),
-            "tau": {
-                key.removeprefix("tau_"): value
-                for key, value in semantic.items()
-                if key.startswith("tau_")
-            },
+            "tau": {key.removeprefix("tau_"): value for key, value in semantic.items() if key.startswith("tau_")},
         },
         "flow_reinforcement_summary": {
             "mapping": row["lanes"]["flow_reinforcement"]["mapping"],
@@ -151,11 +139,7 @@ def _resource_decay_to_sft(report: dict[str, Any]) -> list[dict[str, Any]]:
         }
     )
     for event in report.get("degradation_events", []):
-        matching = [
-            item
-            for item in report.get("readvance_attempts", [])
-            if item.get("index") == event.get("index")
-        ]
+        matching = [item for item in report.get("readvance_attempts", []) if item.get("index") == event.get("index")]
         payload = {
             "token": event["token"],
             "index": event["index"],
@@ -192,9 +176,7 @@ def _resource_decay_to_sft(report: dict[str, Any]) -> list[dict[str, Any]]:
 def build() -> dict[str, Any]:
     semantic_rows = [_semantic_workflow_to_sft(row) for row in _read_jsonl(SEMANTIC_WORKFLOWS)]
     resource_report = (
-        json.loads(RESOURCE_DECAY_DEMO.read_text(encoding="utf-8"))
-        if RESOURCE_DECAY_DEMO.exists()
-        else {}
+        json.loads(RESOURCE_DECAY_DEMO.read_text(encoding="utf-8")) if RESOURCE_DECAY_DEMO.exists() else {}
     )
     resource_rows = _resource_decay_to_sft(resource_report) if resource_report else []
     all_rows = semantic_rows + resource_rows
@@ -225,4 +207,3 @@ def build() -> dict[str, Any]:
 
 if __name__ == "__main__":
     print(json.dumps(build(), indent=2, ensure_ascii=True))
-

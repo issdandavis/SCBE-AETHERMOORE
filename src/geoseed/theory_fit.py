@@ -40,9 +40,7 @@ PHI = (1.0 + math.sqrt(5.0)) / 2.0
 # This way the module works with stdlib only.
 
 
-def _nelder_mead(
-    f, x0: List[float], tol: float = 1e-9, max_iter: int = 5000
-) -> List[float]:
+def _nelder_mead(f, x0: List[float], tol: float = 1e-9, max_iter: int = 5000) -> List[float]:
     """Nelder-Mead simplex minimizer (stdlib only)."""
     n = len(x0)
     alpha, beta, gamma, delta = 1.0, 0.5, 2.0, 0.5
@@ -103,10 +101,7 @@ def _nelder_mead(
 
         # Shrink
         best = simplex[0]
-        simplex = [best] + [
-            [best[j] + delta * (simplex[i][j] - best[j]) for j in range(n)]
-            for i in range(1, n + 1)
-        ]
+        simplex = [best] + [[best[j] + delta * (simplex[i][j] - best[j]) for j in range(n)] for i in range(1, n + 1)]
         scores = [score(pt) for pt in simplex]
 
     return simplex[0]
@@ -130,9 +125,7 @@ def _exponential(n: int, A: float, lam: float) -> float:
     return A * (lam ** (-n))
 
 
-def fit_power_law(
-    energies: List[float], ns: Optional[List[int]] = None
-) -> Tuple[float, float, float, float]:
+def fit_power_law(energies: List[float], ns: Optional[List[int]] = None) -> Tuple[float, float, float, float]:
     """
     Fit E_n = A / (n + delta)^p to the given energy list.
     Returns (A, delta, p, residual_rms).
@@ -159,9 +152,7 @@ def fit_power_law(
     return A, delta, p, rms
 
 
-def fit_exponential(
-    energies: List[float], ns: Optional[List[int]] = None
-) -> Tuple[float, float, float]:
+def fit_exponential(energies: List[float], ns: Optional[List[int]] = None) -> Tuple[float, float, float]:
     """
     Fit E_n = A * lambda^{-n} to the given energy list.
     Returns (A, lambda, residual_rms).
@@ -271,15 +262,11 @@ def fit_all_theories() -> Dict[str, FitResult]:
 
         notes_parts = []
         if name == "compton_orbital":
-            notes_parts.append(
-                f"exp λ={exp_lam:.4f} vs φ={PHI:.4f}  (ratio {exp_lam/PHI:.4f})"
-            )
+            notes_parts.append(f"exp λ={exp_lam:.4f} vs φ={PHI:.4f}  (ratio {exp_lam/PHI:.4f})")
         if name == "bohr":
             notes_parts.append(f"power-law p={pl_p:.4f} (expected p≈2 for 1/n²)")
         if name == "geoseed_lb":
-            notes_parts.append(
-                f"power-law p={pl_p:.4f} — negative = grows outward = curvature cost"
-            )
+            notes_parts.append(f"power-law p={pl_p:.4f} — negative = grows outward = curvature cost")
 
         fit_results[name] = FitResult(
             theory_name=name,
@@ -346,9 +333,7 @@ def crossover_analysis() -> CrossoverAnalysis:
     ratios = [c / b for c, b in zip(c_evs, b_evs)]
     div_pct = [(r - 1.0) * 100 for r in ratios]
 
-    first_sig = next(
-        (i for i, r in enumerate(ratios) if abs(r - 1.0) > 0.5), len(ratios) - 1
-    )
+    first_sig = next((i for i, r in enumerate(ratios) if abs(r - 1.0) > 0.5), len(ratios) - 1)
     peak_shell = max(range(6), key=lambda i: ratios[i])
     peak_ratio = ratios[peak_shell]
 
@@ -425,11 +410,7 @@ def combined_energy_model(curv_scale: float = 0.1) -> CombinedEnergy:
     Default 0.1 makes the curvature term a 10% overhead at the ground shell —
     small enough to not dominate binding but measurable at outer shells.
     """
-    from src.geoseed.theory_comparison import (
-        theory_compton_orbital,
-        theory_geoseed_lb,
-        theory_bohr,
-    )
+    from src.geoseed.theory_comparison import theory_compton_orbital, theory_geoseed_lb, theory_bohr
 
     bind = theory_compton_orbital().energies_ev()
     lb = theory_geoseed_lb().energies_ev()
@@ -501,10 +482,7 @@ def fit_report() -> str:
     lines.append("  (Compton binding + 10%-scaled GeoSeed-LB curvature)")
     lines.append("=" * 72)
     lines.append("")
-    lines.append(
-        f"  {'Shell':<10}  {'E_bind':<12}  {'E_curv':<12}  "
-        f"{'E_total':<12}  {'E_Bohr':<12}  {'curv%':<8}"
-    )
+    lines.append(f"  {'Shell':<10}  {'E_bind':<12}  {'E_curv':<12}  " f"{'E_total':<12}  {'E_Bohr':<12}  {'curv%':<8}")
     lines.append("  " + "-" * 68)
     for i, t in enumerate(tongues):
         lines.append(
@@ -580,9 +558,7 @@ class DualFitResult:
         }
 
 
-def _fit_growth_law(
-    energies: List[float], ns: Optional[List[int]] = None
-) -> Tuple[float, float, float, float]:
+def _fit_growth_law(energies: List[float], ns: Optional[List[int]] = None) -> Tuple[float, float, float, float]:
     """
     Fit E_n = B * (n + delta)^q  (positive exponent, grows outward).
     Returns (B, delta, q, rms).
@@ -630,10 +606,7 @@ def independent_dual_fit() -> DualFitResult:
     c_B, c_delta, c_q, c_rms = _fit_growth_law(curv_evs)
 
     # Product invariant
-    product = [
-        _power_law(n, b_A, b_delta, b_p) * (c_B * max(n + c_delta, 1e-10) ** c_q)
-        for n in range(6)
-    ]
+    product = [_power_law(n, b_A, b_delta, b_p) * (c_B * max(n + c_delta, 1e-10) ** c_q) for n in range(6)]
     mean_p = sum(product) / len(product)
     var_p = sum((v - mean_p) ** 2 for v in product) / len(product)
     cv = math.sqrt(var_p) / mean_p if mean_p > 0 else float("inf")
@@ -685,9 +658,7 @@ class ProductInvariant:
                     "bind_ev": round(self.bohr_evs[i], 6),
                     "curv_ev": round(self.lb_evs[i], 6),
                     "product": round(self.shell_values[i], 6),
-                    "deviation_from_mean_pct": round(
-                        (self.shell_values[i] - self.mean) / self.mean * 100, 4
-                    ),
+                    "deviation_from_mean_pct": round((self.shell_values[i] - self.mean) / self.mean * 100, 4),
                 }
                 for i in range(6)
             ],
@@ -767,10 +738,7 @@ class WeightedSumFit:
                 "rms_ev": round(self.lin_rms, 6),
             },
             "log_additive": {
-                "formula": (
-                    f"log(E) = {self.alpha_log:.4f}*log(E_bind) + "
-                    f"{self.beta_log:.4f}*log(E_curv)"
-                ),
+                "formula": (f"log(E) = {self.alpha_log:.4f}*log(E_bind) + " f"{self.beta_log:.4f}*log(E_curv)"),
                 "alpha": round(self.alpha_log, 6),
                 "beta": round(self.beta_log, 6),
                 "rms_log": round(self.log_rms, 6),
@@ -797,11 +765,7 @@ def weighted_sum_fit(target: str = "measured_hydrogen") -> WeightedSumFit:
 
     This tests whether the decomposition is physically useful or just convenient.
     """
-    from src.geoseed.theory_comparison import (
-        theory_compton_orbital,
-        theory_geoseed_lb,
-        HYDROGEN_MEASURED_EV,
-    )
+    from src.geoseed.theory_comparison import theory_compton_orbital, theory_geoseed_lb, HYDROGEN_MEASURED_EV
 
     bind_evs = theory_compton_orbital().energies_ev()
     curv_evs = theory_geoseed_lb().energies_ev()
@@ -810,10 +774,7 @@ def weighted_sum_fit(target: str = "measured_hydrogen") -> WeightedSumFit:
     # ── Linear fit: E = α*bind + β*curv ──────────────────────────────
     def lin_residual(params):
         alpha, beta = params
-        total = sum(
-            (alpha * bind_evs[i] + beta * curv_evs[i] - target_evs[i]) ** 2
-            for i in range(6)
-        )
+        total = sum((alpha * bind_evs[i] + beta * curv_evs[i] - target_evs[i]) ** 2 for i in range(6))
         return total / 6
 
     lin_params = _nelder_mead(lin_residual, [1.0, 0.0])
@@ -828,19 +789,14 @@ def weighted_sum_fit(target: str = "measured_hydrogen") -> WeightedSumFit:
 
     def log_residual(params):
         alpha, beta = params
-        total = sum(
-            (alpha * log_bind[i] + beta * log_curv[i] - log_target[i]) ** 2
-            for i in range(6)
-        )
+        total = sum((alpha * log_bind[i] + beta * log_curv[i] - log_target[i]) ** 2 for i in range(6))
         return total / 6
 
     log_params = _nelder_mead(log_residual, [0.5, 0.5])
     alo, blo = log_params
     log_rms = math.sqrt(log_residual(log_params))
     logadd_preds = [math.exp(alo * log_bind[i] + blo * log_curv[i]) for i in range(6)]
-    log_rms_ev = math.sqrt(
-        sum((logadd_preds[i] - target_evs[i]) ** 2 for i in range(6)) / 6
-    )
+    log_rms_ev = math.sqrt(sum((logadd_preds[i] - target_evs[i]) ** 2 for i in range(6)) / 6)
 
     better = "linear" if lin_rms <= log_rms_ev else "log_additive"
 
@@ -873,9 +829,7 @@ def duality_report() -> str:
     lines = []
     lines.append("=" * 72)
     lines.append("  INDEPENDENT DUAL FIT (free prefactors + exponents)")
-    lines.append(
-        "  Binding fit against measured hydrogen; Curvature fit against GeoSeed-LB"
-    )
+    lines.append("  Binding fit against measured hydrogen; Curvature fit against GeoSeed-LB")
     lines.append("=" * 72)
     lines.append(
         f"  E_bind = {dual.bind_A:.4f} / (n + {dual.bind_delta:.4f})^{dual.bind_p:.4f}"
@@ -893,14 +847,10 @@ def duality_report() -> str:
     lines.append("  Using Bohr (measured hydrogen) × GeoSeed-LB (same anchor)")
     lines.append("=" * 72)
     lines.append(f"  Rydberg² = {inv.rydberg_sq:.6f} eV²")
-    lines.append(
-        f"  Product mean = {inv.mean:.6f} eV²   std = {inv.std:.6f}   CV = {inv.cv:.2e}"
-    )
+    lines.append(f"  Product mean = {inv.mean:.6f} eV²   std = {inv.std:.6f}   CV = {inv.cv:.2e}")
     lines.append(f"  Is flat (CV < 1e-6): {inv.is_flat}")
     lines.append("")
-    lines.append(
-        f"  {'Shell':<10}  {'E_bind':>12}  {'E_curv':>12}  {'I(l)':>14}  {'Δ from mean':>12}"
-    )
+    lines.append(f"  {'Shell':<10}  {'E_bind':>12}  {'E_curv':>12}  {'I(l)':>14}  {'Δ from mean':>12}")
     lines.append("  " + "-" * 64)
     for i, t in enumerate(tongues):
         delta = (inv.shell_values[i] - inv.mean) / inv.mean * 100
@@ -914,19 +864,11 @@ def duality_report() -> str:
     lines.append("  WEIGHTED-SUM FIT  E_total = α·E_bind + β·E_curv")
     lines.append("  (fitting against measured hydrogen; bind=Compton, curv=GeoSeed-LB)")
     lines.append("=" * 72)
-    lines.append(
-        f"  Linear:      α={ws.alpha_lin:.6f}  β={ws.beta_lin:.6f}  rms={ws.lin_rms:.6f} eV"
-    )
-    lines.append(
-        f"  Log-additive: α={ws.alpha_log:.6f}  β={ws.beta_log:.6f}  "
-        f"rms={ws.log_rms_ev:.6f} eV"
-    )
+    lines.append(f"  Linear:      α={ws.alpha_lin:.6f}  β={ws.beta_lin:.6f}  rms={ws.lin_rms:.6f} eV")
+    lines.append(f"  Log-additive: α={ws.alpha_log:.6f}  β={ws.beta_log:.6f}  " f"rms={ws.log_rms_ev:.6f} eV")
     lines.append(f"  Better form: {ws.better_form}")
     lines.append("")
-    lines.append(
-        f"  {'Shell':<10}  {'Target':>10}  {'Linear':>10}  {'LogAdd':>10}  "
-        f"{'LinErr':>10}  {'LogErr':>10}"
-    )
+    lines.append(f"  {'Shell':<10}  {'Target':>10}  {'Linear':>10}  {'LogAdd':>10}  " f"{'LinErr':>10}  {'LogErr':>10}")
     lines.append("  " + "-" * 64)
     for i, t in enumerate(tongues):
         lines.append(

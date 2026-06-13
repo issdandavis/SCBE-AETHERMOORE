@@ -47,10 +47,10 @@ def run_upload(epub_path, dry_run=False, headless=False):
     epub = Path(epub_path)
     if not epub.exists():
         print(f"ERROR: EPUB not found: {epub}")
-        print(f"Run: python scripts/publish/rebuild_and_stage_kdp.py")
+        print("Run: python scripts/publish/rebuild_and_stage_kdp.py")
         sys.exit(1)
 
-    print(f"[KDP Auto-Upload]")
+    print("[KDP Auto-Upload]")
     print(f"  EPUB: {epub}")
     print(f"  Size: {epub.stat().st_size / 1024:.0f} KB")
     print(f"  Mode: {'DRY RUN' if dry_run else 'LIVE'}")

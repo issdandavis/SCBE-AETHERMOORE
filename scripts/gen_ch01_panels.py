@@ -139,7 +139,7 @@ PANELS = [
 def main():
     from diffusers import AutoPipelineForText2Image
 
-    print(f"Loading SDXL Turbo...")
+    print("Loading SDXL Turbo...")
     pipe = AutoPipelineForText2Image.from_pretrained(
         "stabilityai/sdxl-turbo",
         torch_dtype=torch.float16,

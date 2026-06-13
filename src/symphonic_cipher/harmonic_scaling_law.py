@@ -130,21 +130,26 @@ def hyperbolic_distance_poincare(u: np.ndarray, v: np.ndarray, eps: float = 1e-1
     u = np.asarray(u, dtype=np.float64)
     v = np.asarray(v, dtype=np.float64)
 
-    norm_u_sq = np.sum(u**2)
-    norm_v_sq = np.sum(v**2)
-    diff_sq = np.sum((u - v) ** 2)
+    norm_u_sq = float(np.sum(u**2))
+    norm_v_sq = float(np.sum(v**2))
 
-    # Clamp norms to ensure points are inside the ball
-    norm_u_sq = min(norm_u_sq, 1.0 - eps)
-    norm_v_sq = min(norm_v_sq, 1.0 - eps)
+    # Domain: points must lie strictly inside the Poincaré ball. Reject
+    # out-of-ball input loudly rather than silently clamping it to a
+    # plausible-but-wrong finite distance. This matches the canonical
+    # contract in src/scbe_math_reference.py (the documented hyperbolic.ts
+    # mirror) and src/harmonic/state21_product_metric.py, asserted by
+    # tests/test_scbe_chain.py::test_rejects_outside_ball. For valid in-ball
+    # inputs the result is unchanged and matches the TypeScript implementation
+    # to full double precision.
+    if norm_u_sq >= 1.0 or norm_v_sq >= 1.0:
+        raise ValueError("Points must lie inside the Poincaré ball (norm < 1).")
 
-    denominator = (1 - norm_u_sq) * (1 - norm_v_sq)
-    denominator = max(denominator, eps)  # Avoid division by zero
+    diff_sq = float(np.sum((u - v) ** 2))
 
-    cosh_dist = 1 + 2 * diff_sq / denominator
-    cosh_dist = max(cosh_dist, 1.0)  # arcosh domain
+    denominator = max((1.0 - norm_u_sq) * (1.0 - norm_v_sq), eps)  # avoid /0
 
-    return float(np.arccosh(max(cosh_dist, 1.0)))
+    arg = 1.0 + 2.0 * diff_sq / denominator
+    return float(np.arccosh(max(arg, 1.0)))  # arcosh domain
 
 
 def find_nearest_trusted_realm(point: np.ndarray, trusted_realms: List[np.ndarray]) -> Tuple[float, int]:

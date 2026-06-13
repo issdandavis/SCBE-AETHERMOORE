@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import os
 import re
 import subprocess
@@ -26,7 +25,6 @@ import sys
 import time
 import urllib.request
 import urllib.error
-from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -142,7 +140,7 @@ def run_governance_benchmark() -> dict[str, Any]:
     results_dir = REPO_ROOT / "benchmarks" / "results"
 
     t0 = time.time()
-    proc = subprocess.run(
+    subprocess.run(
         [sys.executable, str(script)],
         cwd=REPO_ROOT,
         capture_output=True,
@@ -408,7 +406,10 @@ def run_knowledge_benchmark(skip_live: bool = False) -> dict[str, Any]:
         results = []
         for q in KNOWLEDGE_QUESTIONS:
             choices_str = " | ".join(f"({k}) {v}" for k, v in q["choices"].items())
-            prompt = f"Multiple choice. Reply with ONLY the letter of the correct answer (A, B, C, or D).\n\nQuestion: {q['q']}\n{choices_str}"
+            prompt = (
+                "Multiple choice. Reply with ONLY the letter of the correct answer (A, B, C, or D)."
+                f"\n\nQuestion: {q['q']}\n{choices_str}"
+            )
             resp, ms = _openai_chat_request(base_url, api_key, model, prompt, timeout=45, max_tokens=600)
             predicted = _extract_answer_letter(resp)
             hit = predicted == q["answer"] if predicted else False
@@ -454,7 +455,6 @@ def run_test_suite_benchmark() -> dict[str, Any]:
         text=True,
         timeout=180,
         env={**os.environ, "CI": "true", "FORCE_COLOR": "0"},
-        shell=True,
     )
     elapsed = time.time() - t0
     combined = proc.stdout + proc.stderr
@@ -569,17 +569,19 @@ def main() -> int:
     else:
         petri_str = "  |  Petri: corpus not present"
     print(
-        f"      synthetic: {gov.get('accuracy', 'N/A'):.1%}  |  blind-holdout: {gov.get('blind_detection_rate', 'N/A'):.1%}  |  hybrid: {gov.get('hybrid_detection_rate', 'N/A'):.1%}{petri_str}"
+        f"      synthetic: {gov.get('accuracy', 'N/A'):.1%}  "
+        f"|  blind-holdout: {gov.get('blind_detection_rate', 'N/A'):.1%}"
+        f"  |  hybrid: {gov.get('hybrid_detection_rate', 'N/A'):.1%}{petri_str}"
     )
 
     print("\n[2/5] CLI capability...", flush=True)
     cli = run_cli_benchmark()
     if cli.get("ok"):
-        top = cli["ranking"][0]
         scbe_row = next((r for r in cli["ranking"] if r["name"] == "scbe-geoseal"), None)
         scbe_pos = cli["ranking"].index(scbe_row) + 1 if scbe_row else "?"
         print(
-            f"      scbe: {scbe_row['score']:.1%} ({scbe_row['passed']}/{scbe_row['total']}) — rank {scbe_pos}/{len(cli['ranking'])}"
+            f"      scbe: {scbe_row['score']:.1%} ({scbe_row['passed']}/{scbe_row['total']}) "
+            f"— rank {scbe_pos}/{len(cli['ranking'])}"
         )
 
     print("\n[3/5] Squad latency probe...", flush=True)
@@ -608,7 +610,8 @@ def main() -> int:
     print("\n[5/5] TypeScript test suite...", flush=True)
     tests = run_test_suite_benchmark()
     print(
-        f"      {tests.get('passed', '?')}/{tests.get('total', '?')} passed  ({tests.get('pass_rate', 0):.1%})  [{tests.get('elapsed_s', '?')}s]"
+        f"      {tests.get('passed', '?')}/{tests.get('total', '?')} passed  "
+        f"({tests.get('pass_rate', 0):.1%})  [{tests.get('elapsed_s', '?')}s]"
     )
 
     score = compute_composite(gov, cli, latency, knowledge, tests)

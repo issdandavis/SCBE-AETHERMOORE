@@ -116,6 +116,7 @@ from src.agentic.meet_in_the_middle import (
 )
 from src.cli.param_binding import BoundCommand, bind_subparser
 from pydantic import ConfigDict, Field
+from typing import Literal
 
 PHI = (1 + 5**0.5) / 2
 
@@ -144,6 +145,7 @@ CONLANG_NAME_MAP: Dict[str, str] = {
 
 
 def _extract_command_key(source: str, fallback: str = "code") -> str:
+    """Extract the first function-like identifier from source code, else ``fallback``."""
     patterns = [
         r"\bdef\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(",
         r"\bfunction\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(",
@@ -158,6 +160,7 @@ def _extract_command_key(source: str, fallback: str = "code") -> str:
 
 
 def _language_to_tongue(language: str) -> str:
+    """Map a programming-language name to its Sacred Tongue code (default KO)."""
     lang = (language or "").strip().lower()
     return next((code for code, mapped in LANG_MAP.items() if mapped == lang), "KO")
 
@@ -169,6 +172,7 @@ def _build_portal_box_payload(
     source_name: str = "inline",
     include_extended: bool = False,
 ) -> dict[str, Any]:
+    """Build the portal-box payload describing a source snippet and its route contract."""
     source = content or ""
     command_key = _extract_command_key(source)
     source_hash = hashlib.sha256(source.encode("utf-8")).hexdigest()
@@ -198,6 +202,7 @@ def _build_stream_wheel_payload(
     source_name: str = "inline",
     include_extended: bool = False,
 ) -> dict[str, Any]:
+    """Wrap a portal-box payload in the stream-wheel envelope."""
     portal = _build_portal_box_payload(
         content=content,
         language=language,
@@ -238,6 +243,7 @@ def build_system_deck(
     source_name: str,
     max_cards: int = 10,
 ) -> dict[str, Any]:
+    """Build a card deck summarizing an operation-panel resolution for ``source_text``."""
     route_packet = (resolution.get("shell_contract") or {}).get("route_packet") or {}
     command_key = route_packet.get("command_key", _extract_command_key(source_text))
     cards = [
@@ -268,6 +274,7 @@ def build_system_deck(
 
 
 def inspect_runtime_packet(payload: dict[str, Any]) -> dict[str, Any]:
+    """Resolve a runtime payload into its portal-box route packet for inspection."""
     content = str(payload.get("content", ""))
     language = str(payload.get("language", "python"))
     source_name = str(payload.get("source_name", "inline"))
@@ -290,6 +297,7 @@ def _build_execution_shell_payload(
     deck_size: int = 10,
     branch_width: int = 1,
 ) -> dict[str, Any]:
+    """Resolve source into an execution-shell payload with deck and branch metadata."""
     resolution = resolve_source_to_operation_panel(
         content,
         language=language,
@@ -311,6 +319,7 @@ def _execute_execution_shell_payload(
     timeout: float = 10.0,
     tongue: Optional[str] = None,
 ) -> dict[str, Any]:
+    """Execute the routed tongue call described by an execution-shell payload."""
     route_packet = ((shell_payload.get("resolution") or {}).get("shell_contract") or {}).get("route_packet", {})
     exec_tongue = (tongue or route_packet.get("route_tongue") or "KO").upper()
     command_key = route_packet.get("command_key", "add")
@@ -331,6 +340,7 @@ def _build_route_ir_for_source(
     force_tongue: Optional[str] = None,
     selected_backend: Optional[str] = None,
 ) -> dict[str, Any]:
+    """Build routing IR for a source snippet using the coding-spine backend registry."""
     from src.coding_spine.polly_client import get_backend_registry
     from src.coding_spine.shared_ir import build_route_ir
 
@@ -405,6 +415,8 @@ TONGUE_CODE_MAP = {t.upper(): t.lower() for t in TONGUE_NAMES}
 
 @dataclass
 class SwarmCallResult:
+    """Result of one tongue-emitted call within a swarm run."""
+
     op: str
     tongue: str
     language: str
@@ -423,11 +435,14 @@ class SwarmCallResult:
     trust_score: float = 1.0
 
     def to_dict(self) -> Dict[str, Any]:
+        """Return this result as a plain dict."""
         return asdict(self)
 
 
 @dataclass
 class SwarmResult:
+    """Aggregated result of a swarm run across multiple tongues."""
+
     op: str
     args: Dict[str, str]
     calls: List[SwarmCallResult] = field(default_factory=list)
@@ -436,6 +451,7 @@ class SwarmResult:
     consensus_hash: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
+        """Return this result as a plain dict, expanding nested calls."""
         return {
             "op": self.op,
             "args": self.args,
@@ -487,6 +503,7 @@ def verify_seal(
     phi_cost: float = 0.0,
     tier: str = "ALLOW",
 ) -> bool:
+    """Return True if ``expected`` matches the recomputed seal for the given inputs."""
     return compute_seal(op, tongue, code, payload, phi_cost, tier) == expected
 
 
@@ -532,6 +549,7 @@ _RUNNER_TEMP_NAMES: Dict[str, Tuple[str, str]] = {
 
 
 def _runner_temp_name(tongue: str) -> Tuple[str, str]:
+    """Return the temp-file naming pair for a file-runner tongue."""
     try:
         return _RUNNER_TEMP_NAMES[tongue]
     except KeyError as exc:  # pragma: no cover - guarded by _runner_for mode
@@ -777,6 +795,7 @@ def swarm_dispatch(
 
 
 def list_ops(band: Optional[str] = None) -> List[Tuple[int, str, str, float]]:
+    """List (id, name, band, chi) for lexicon ops, optionally filtered by band."""
     out = []
     for eid, entry in sorted(LEXICON.items()):
         if band and entry.band != band.upper():
@@ -786,6 +805,7 @@ def list_ops(band: Optional[str] = None) -> List[Tuple[int, str, str, float]]:
 
 
 def _parse_kv_args(pairs: List[str]) -> Dict[str, str]:
+    """Parse ``key=value`` CLI arguments into a dict, exiting on malformed input."""
     args: Dict[str, str] = {}
     for p in pairs or []:
         if "=" not in p:
@@ -796,18 +816,21 @@ def _parse_kv_args(pairs: List[str]) -> Dict[str, str]:
 
 
 def cmd_ops(args: argparse.Namespace) -> int:
+    """CLI: print the tokenizer op table."""
     for eid, name, band, chi in list_ops(band=args.band):
         print(f"  0x{eid:02X}  {name:<14} band={band:<11} chi={chi:.2f}")
     return 0
 
 
 def _read_payload_arg_or_stdin(value: Optional[str]) -> str:
+    """Return the given value, or read the payload from stdin when omitted."""
     if value is not None:
         return value
     return sys.stdin.read()
 
 
 def _parse_token_text(text: str) -> List[str]:
+    """Split comma/whitespace-separated token text into a token list."""
     return [part.strip() for part in text.replace(",", " ").split() if part.strip()]
 
 
@@ -1075,6 +1098,7 @@ def _format_prime_atlas_lookup(payload: Dict[str, Any]) -> str:
 
 
 def _normalize_transport_tongue(tongue: str) -> str:
+    """Validate a tongue code and return its transport tongue name."""
     code = tongue.upper()
     if code not in TONGUE_CODE_MAP:
         raise KeyError(f"unknown tongue: {tongue}")
@@ -1130,6 +1154,7 @@ def tongue_token_digest(tongue: str, text: str) -> Dict[str, object]:
 
 
 def cmd_encode_cmd(args: argparse.Namespace) -> int:
+    """CLI: encode a payload into Sacred Tongue tokens."""
     payload = _read_payload_arg_or_stdin(args.payload)
     tongue = _normalize_transport_tongue(args.tongue)
     tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(tongue, payload.encode("utf-8"))
@@ -1138,6 +1163,7 @@ def cmd_encode_cmd(args: argparse.Namespace) -> int:
 
 
 def cmd_portal_box(args: argparse.Namespace) -> int:
+    """CLI: emit the portal-box payload for inline or file source."""
     content = args.content
     if args.source_file:
         content = Path(args.source_file).read_text(encoding="utf-8")
@@ -1152,6 +1178,7 @@ def cmd_portal_box(args: argparse.Namespace) -> int:
 
 
 def cmd_stream_wheel(args: argparse.Namespace) -> int:
+    """CLI: emit the stream-wheel payload for inline or file source."""
     content = args.content
     if args.source_file:
         content = Path(args.source_file).read_text(encoding="utf-8")
@@ -1166,6 +1193,7 @@ def cmd_stream_wheel(args: argparse.Namespace) -> int:
 
 
 def cmd_mars_mission(args: argparse.Namespace) -> int:
+    """CLI: build a Mars mission compass from a JSON payload."""
     from src.geoseal_mission_compass import build_mars_mission_compass
 
     if args.input:
@@ -1180,6 +1208,7 @@ def cmd_mars_mission(args: argparse.Namespace) -> int:
 
 
 def cmd_binary_to_tokenizer(args: argparse.Namespace) -> int:
+    """CLI: convert 8-bit binary chunks into tongue tokens."""
     tongue = (args.tongue or "KO").upper()
     transport = _normalize_transport_tongue(tongue)
     bits_text = getattr(args, "bits", None) or getattr(args, "bits_option", None) or ""
@@ -1330,6 +1359,7 @@ def cmd_browse_atlas(args: argparse.Namespace) -> int:
 
 
 def _compute_semantic_expression(source: str) -> dict[str, Any]:
+    """Classify source into a coarse semantic label with gloss and quark tags."""
     low = source.lower()
     if "hello, world" in low or "hello world" in low:
         return {
@@ -1373,6 +1403,7 @@ def _compute_semantic_expression(source: str) -> dict[str, Any]:
 
 
 def _build_braille_lane(tokens: list[str], source_bytes: bytes) -> dict[str, Any]:
+    """Pack source bytes into 6-bit braille cells mapped onto cube faces and blocks."""
     faces = ["north", "east", "south", "west", "zenith", "nadir"]
     blocks = ["alpha", "beta", "gamma", "delta"]
     bitstream = "".join(f"{b:08b}" for b in source_bytes)
@@ -1406,6 +1437,7 @@ def _build_braille_lane(tokens: list[str], source_bytes: bytes) -> dict[str, Any
 
 
 def _token_digest_for_tongue(tongue: str, payload: bytes) -> dict[str, Any]:
+    """Summarize how a payload tokenizes under one tongue."""
     transport = _normalize_transport_tongue(tongue)
     tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(transport, payload)
     return {
@@ -1418,6 +1450,7 @@ def _token_digest_for_tongue(tongue: str, payload: bytes) -> dict[str, Any]:
 
 
 def _build_native_tokenization_surface(*, input_bytes: bytes, language_views: list[dict[str, str]]) -> dict[str, Any]:
+    """Tokenize each language-view snippet and collect the per-tongue digests."""
     outputs: list[dict[str, Any]] = []
     for lane in language_views:
         tongue, lang = next(iter(lane.items()))
@@ -1432,12 +1465,14 @@ def _build_native_tokenization_surface(*, input_bytes: bytes, language_views: li
 
 
 def cmd_code_packet(args: argparse.Namespace) -> int:
+    """CLI: print the full code-packet payload as JSON."""
     packet = _build_code_packet_payload(args)
     print(json.dumps(packet))
     return 0
 
 
 def _read_tongue_program_source(args: argparse.Namespace) -> tuple[str, str]:
+    """Read tongue program source from args or file, returning (source, name)."""
     source = getattr(args, "content", None)
     source_name = getattr(args, "source_name", None) or "inline"
     source_file = getattr(args, "source_file", None)
@@ -1452,6 +1487,7 @@ def _read_tongue_program_source(args: argparse.Namespace) -> tuple[str, str]:
 
 
 def cmd_tongue_compile(args: argparse.Namespace) -> int:
+    """CLI: compile tongue program source into a packet."""
     from src.sacred_tongues_toolchain import SacredTonguesToolchainError, compile_packet
 
     try:
@@ -1474,12 +1510,8 @@ def cmd_tongue_compile(args: argparse.Namespace) -> int:
 
 
 def cmd_tongue_run(args: argparse.Namespace) -> int:
-    from src.sacred_tongues_toolchain import (
-        SacredTonguesToolchainError,
-        compile_packet,
-        load_program,
-        run_packet,
-    )
+    """CLI: compile (or load) and run a tongue program packet."""
+    from src.sacred_tongues_toolchain import SacredTonguesToolchainError, compile_packet, load_program, run_packet
 
     try:
         program_file = getattr(args, "program_file", None)
@@ -1510,6 +1542,7 @@ def cmd_tongue_run(args: argparse.Namespace) -> int:
 
 
 def _read_source_for_surface(args: argparse.Namespace) -> tuple[str, str, str]:
+    """Read surface source from args or file, returning (source, name, language)."""
     source = getattr(args, "content", "") or ""
     source_name = getattr(args, "source_name", None) or "inline"
     source_file = getattr(args, "source_file", None)
@@ -1521,6 +1554,7 @@ def _read_source_for_surface(args: argparse.Namespace) -> tuple[str, str, str]:
 
 
 def _packet_from_surface_args(args: argparse.Namespace) -> dict[str, Any]:
+    """Load a packet from --packet-file or build one from surface source args."""
     packet_file = getattr(args, "packet_file", None)
     if packet_file:
         return json.loads(Path(packet_file).read_text(encoding="utf-8"))
@@ -1536,6 +1570,7 @@ def _packet_from_surface_args(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
+    """Build the code-packet payload (route, semantics, lanes) for source args."""
     source = args.content or ""
     source_name = args.source_name or "inline"
     if args.source_file:
@@ -1699,6 +1734,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def _build_interaction_graph(packet: dict[str, Any], max_binary_nodes: int = 8) -> dict[str, Any]:
+    """Build the node/edge interaction graph for a code packet."""
     tongue = packet["route"]["tongue"]
     semantic = packet.get("semantic_expression", {})
     nodes: list[dict[str, Any]] = [
@@ -1802,6 +1838,7 @@ def _build_interaction_graph(packet: dict[str, Any], max_binary_nodes: int = 8) 
 
 
 def _graph_to_mermaid(graph: dict[str, Any], *, direction: str = "TD") -> str:
+    """Render an interaction graph as Mermaid flowchart text."""
     lines = [f"flowchart {direction}"]
     for node in graph["nodes"][:80]:
         nid = re.sub(r"[^A-Za-z0-9_]", "_", node["id"])
@@ -1814,6 +1851,7 @@ def _graph_to_mermaid(graph: dict[str, Any], *, direction: str = "TD") -> str:
 
 
 def _graph_to_dot(graph: dict[str, Any], *, name: str) -> str:
+    """Render an interaction graph as Graphviz DOT text."""
     lines = [f"digraph {name} {{"]
     for node in graph["nodes"][:80]:
         nid = re.sub(r"[^A-Za-z0-9_]", "_", node["id"])
@@ -1829,6 +1867,7 @@ def _graph_to_dot(graph: dict[str, Any], *, name: str) -> str:
 
 
 def _command_binding() -> dict[str, Any]:
+    """Return the static command-binding descriptor for the demo ``add`` key."""
     return {
         "command_key": "add",
         "key_slot": "A1",
@@ -1848,6 +1887,7 @@ def _command_binding() -> dict[str, Any]:
 
 
 def _build_topology_view(packet: dict[str, Any], max_binary_nodes: int = 8) -> dict[str, Any]:
+    """Extend the interaction graph with polygon rows into a topology view."""
     graph = _build_interaction_graph(packet, max_binary_nodes=max_binary_nodes)
     polygons = []
     for i, row in enumerate(packet.get("stisa", {}).get("token_rows", [])[:max_binary_nodes]):
@@ -1967,12 +2007,14 @@ def _build_topology_view(packet: dict[str, Any], max_binary_nodes: int = 8) -> d
 
 
 def cmd_braille_lane(args: argparse.Namespace) -> int:
+    """CLI: print the braille-lane section of a code packet."""
     packet = _packet_from_surface_args(args)
     print(json.dumps(packet["braille_lane"], indent=2 if args.json else None))
     return 0
 
 
 def cmd_interaction_graph(args: argparse.Namespace) -> int:
+    """CLI: print the interaction graph as JSON, Mermaid, or DOT."""
     graph = _build_interaction_graph(_packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes)
     if args.format == "mermaid":
         print(_graph_to_mermaid(graph, direction="TD"), end="")
@@ -1984,6 +2026,7 @@ def cmd_interaction_graph(args: argparse.Namespace) -> int:
 
 
 def cmd_topology_view(args: argparse.Namespace) -> int:
+    """CLI: print the topology view as JSON, Mermaid, or DOT."""
     topology = _build_topology_view(_packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes)
     if args.format == "mermaid":
         print(
@@ -2004,6 +2047,7 @@ def cmd_topology_view(args: argparse.Namespace) -> int:
 
 
 def _build_cross_domain_sequence(topology: dict[str, Any]) -> dict[str, Any]:
+    """Derive a cross-domain step sequence from a topology view."""
     route_packet = topology["route_packet"]
     return {
         "version": "geoseal-cross-domain-sequence-v1",
@@ -2033,6 +2077,7 @@ def _build_cross_domain_sequence(topology: dict[str, Any]) -> dict[str, Any]:
 
 
 def cmd_cross_domain_sequence(args: argparse.Namespace) -> int:
+    """CLI: print the cross-domain sequence for a topology."""
     if args.topology_file:
         topology = json.loads(Path(args.topology_file).read_text(encoding="utf-8"))
     else:
@@ -2047,6 +2092,7 @@ def cmd_cross_domain_sequence(args: argparse.Namespace) -> int:
 
 
 def cmd_honeycomb_analysis(args: argparse.Namespace) -> int:
+    """CLI: print the honeycomb cell analysis for a packet."""
     topology = _build_topology_view(_packet_from_surface_args(args), max_binary_nodes=8)
     analysis = {
         "version": "geoseal-honeycomb-analysis-v1",
@@ -2073,6 +2119,7 @@ def cmd_honeycomb_analysis(args: argparse.Namespace) -> int:
 
 
 def cmd_cognition_map(args: argparse.Namespace) -> int:
+    """CLI: print the cognition-map wells derived from packet semantics."""
     packet = _packet_from_surface_args(args)
     quarks = set(packet.get("semantic_expression", {}).get("quarks", []))
     payload = {
@@ -2098,6 +2145,7 @@ def cmd_cognition_map(args: argparse.Namespace) -> int:
 def _build_cluster_graph(
     packet: dict[str, Any], *, formation: bool = False, max_binary_nodes: int = 8
 ) -> dict[str, Any]:
+    """Build the cluster (or formation) graph layers for a packet."""
     kinds = ["source_field", "semantic_field", "atomic_mesh", "language_projection"]
     nodes = [
         {
@@ -2133,6 +2181,7 @@ def _build_cluster_graph(
 
 
 def cmd_cluster_graph(args: argparse.Namespace) -> int:
+    """CLI: print the cluster graph as JSON."""
     print(
         json.dumps(
             _build_cluster_graph(_packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes),
@@ -2143,6 +2192,7 @@ def cmd_cluster_graph(args: argparse.Namespace) -> int:
 
 
 def cmd_formation_graph(args: argparse.Namespace) -> int:
+    """CLI: print the formation variant of the cluster graph."""
     print(
         json.dumps(
             _build_cluster_graph(
@@ -2157,6 +2207,7 @@ def cmd_formation_graph(args: argparse.Namespace) -> int:
 
 
 def cmd_backend_registry(args: argparse.Namespace) -> int:
+    """CLI: print the coding-spine backend registry."""
     from src.coding_spine.polly_client import get_backend_registry
 
     payload = {
@@ -2173,6 +2224,7 @@ def cmd_backend_registry(args: argparse.Namespace) -> int:
 
 
 def cmd_agent_harness(args: argparse.Namespace) -> int:
+    """CLI: print an agent-harness manifest for a goal."""
     from src.coding_spine.agent_tool_bridge import build_agent_harness_manifest_v1
 
     payload = build_agent_harness_manifest_v1(
@@ -2191,11 +2243,13 @@ def cmd_agent_harness(args: argparse.Namespace) -> int:
 
 
 def _load_agent_endurance_example(name: str) -> dict[str, Any]:
+    """Load a bundled agent-endurance example JSON by file name."""
     path = Path("schemas") / "examples" / name
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _write_json_artifact(path: Path, payload: dict[str, Any]) -> None:
+    """Write a payload as pretty-printed JSON, creating parent dirs."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
@@ -2263,6 +2317,7 @@ def cmd_agent_endurance_pack(args: argparse.Namespace) -> int:
 
 
 def cmd_call_switchboard(args: argparse.Namespace) -> int:
+    """CLI: evaluate agent call requests through the switchboard policy."""
     from src.coding_spine.agent_call_switchboard import evaluate_call_request
 
     calls: list[dict[str, Any]] = []
@@ -2283,6 +2338,7 @@ def cmd_call_switchboard(args: argparse.Namespace) -> int:
 
 
 def cmd_lightning_indexer(args: argparse.Namespace) -> int:
+    """CLI: select sparse candidates via the lightning indexer."""
     from src.coding_spine.lightning_indexer import select_sparse_candidates
 
     candidates: list[dict[str, Any]] = []
@@ -2308,6 +2364,7 @@ def cmd_lightning_indexer(args: argparse.Namespace) -> int:
 
 
 def cmd_compile(args: argparse.Namespace) -> int:
+    """CLI: compile a natural-language intent into an execution plan."""
     from src.coding_spine.command_compiler import compile_intent_to_plan
 
     payload = compile_intent_to_plan(
@@ -2329,6 +2386,7 @@ def cmd_compile(args: argparse.Namespace) -> int:
 
 
 def cmd_domino(args: argparse.Namespace) -> int:
+    """CLI: build a domino workflow from tile specs."""
     from src.coding_spine.domino_workflow import build_domino_workflow_from_specs
 
     payload = build_domino_workflow_from_specs(
@@ -2340,8 +2398,10 @@ def cmd_domino(args: argparse.Namespace) -> int:
         print(json.dumps(payload, indent=2))
         return 0
     chain = payload.get("chain") or []
-    summary = payload["summary"]
-    print(f"{payload['schema']} complete={summary['complete']} " f"chain_length={summary['chain_length']}")
+    print(
+        f"{payload['schema']} complete={payload['summary']['complete']} "
+        f"chain_length={payload['summary']['chain_length']}"
+    )
     print("chain=" + " -> ".join(f"{tile['tile_id']}({tile['left']}|{tile['right']})" for tile in chain))
     if payload.get("blocked"):
         print("blocked=" + ",".join(tile["tile_id"] for tile in payload["blocked"]))
@@ -2351,6 +2411,7 @@ def cmd_domino(args: argparse.Namespace) -> int:
 
 
 def cmd_loop_dispatch(args: argparse.Namespace) -> int:
+    """CLI: evaluate harness tool policy for a loop-dispatch request."""
     from src.coding_spine.agent_tool_policy import (
         evaluate_harness_tool_policy,
         geoseal_command_to_tool_class,
@@ -2396,6 +2457,7 @@ def cmd_loop_dispatch(args: argparse.Namespace) -> int:
 
 
 def cmd_assist(args: argparse.Namespace) -> int:
+    """CLI: build and optionally post micro-agent advice packets."""
     from scripts.system.micro_agent_assist import (
         build_advice,
         post_packet,
@@ -2433,6 +2495,7 @@ def cmd_assist(args: argparse.Namespace) -> int:
 
 
 def cmd_explain_route(args: argparse.Namespace) -> int:
+    """CLI: explain the provider chain for a source snippet."""
     from src.coding_spine.polly_client import explain_provider_chain
 
     source = args.content or ""
@@ -2473,6 +2536,7 @@ def cmd_explain_route(args: argparse.Namespace) -> int:
 
 
 def _read_ledger_records(path: Path) -> list[dict[str, Any]]:
+    """Read JSONL ledger records, skipping blank or malformed lines."""
     if not path.exists():
         return []
     rows: list[dict[str, Any]] = []
@@ -2490,6 +2554,7 @@ def _read_ledger_records(path: Path) -> list[dict[str, Any]]:
 
 
 def cmd_history(args: argparse.Namespace) -> int:
+    """CLI: print filtered ledger history records."""
     ledger = Path(args.ledger)
     rows = _read_ledger_records(ledger)
     if args.type:
@@ -2517,6 +2582,7 @@ def cmd_history(args: argparse.Namespace) -> int:
 
 
 def cmd_replay(args: argparse.Namespace) -> int:
+    """CLI: replay a recorded swarm run from the ledger."""
     ledger = Path(args.ledger)
     rows = _read_ledger_records(ledger)
     if not rows:
@@ -2580,6 +2646,7 @@ def cmd_replay(args: argparse.Namespace) -> int:
 
 
 def _command_key_and_route_packet(source: str, language: str) -> dict[str, Any]:
+    """Derive the route packet (command key, operative) for a source snippet."""
     command_key = _extract_command_key(source, fallback="add")
     if command_key == "code":
         command_key = "add"
@@ -2596,6 +2663,7 @@ def _command_key_and_route_packet(source: str, language: str) -> dict[str, Any]:
 
 
 def _run_python_add(a: int = 7, b: int = 3) -> SwarmCallResult:
+    """Run a trivial Python add subprocess and capture it as a SwarmCallResult."""
     code = f"print({a} + {b})"
     t0 = time.time()
     proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=10.0)
@@ -2615,6 +2683,7 @@ def _run_python_add(a: int = 7, b: int = 3) -> SwarmCallResult:
 
 
 def cmd_testing_cli(args: argparse.Namespace) -> int:
+    """CLI: produce a testing-cli packet, optionally with playback execution."""
     source = args.content or ""
     if args.source_file:
         source = Path(args.source_file).read_text(encoding="utf-8")
@@ -2658,6 +2727,7 @@ def cmd_testing_cli(args: argparse.Namespace) -> int:
 
 
 def cmd_project_scaffold(args: argparse.Namespace) -> int:
+    """CLI: write a minimal game scaffold (HTML/CSS/JS) into the output dir."""
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     route_packet = _command_key_and_route_packet(args.content or "", (args.language or "python").lower())
@@ -2691,6 +2761,7 @@ def cmd_project_scaffold(args: argparse.Namespace) -> int:
 
 
 def _execute_rust_source(source_path: Path) -> tuple[bool, dict[str, Any]]:
+    """Compile and run a Rust source file if rustc is available."""
     rustc = shutil.which("rustc")
     if not rustc:
         return False, {
@@ -2731,6 +2802,7 @@ def _execute_rust_source(source_path: Path) -> tuple[bool, dict[str, Any]]:
 
 
 def cmd_code_roundtrip(args: argparse.Namespace) -> int:
+    """CLI: round-trip a source file through tongue tokens and optionally execute."""
     source_path = Path(args.source)
     src = source_path.read_bytes()
     tongue = (args.tongue or "RU").upper()
@@ -2776,6 +2848,7 @@ def cmd_code_roundtrip(args: argparse.Namespace) -> int:
 
 
 def cmd_shell(args: argparse.Namespace) -> int:
+    """CLI: gate a shell command through the security scanner and audit log."""
     gate = scan_command(args.command)
     append_sealed_exec_audit(
         {
@@ -2823,6 +2896,7 @@ def _strip_argv_separator(argv: Any) -> Any:
 
 
 def cmd_exec(args: argparse.Namespace) -> int:
+    """CLI: execute a command under governed-execution policy."""
     claimed_paths = args.claimed_path or []
     cleaned = _strip_argv_separator(args.command)
     command = subprocess.list2cmdline(cleaned) if isinstance(cleaned, list) else cleaned
@@ -2861,6 +2935,7 @@ def cmd_exec(args: argparse.Namespace) -> int:
 
 
 def cmd_legitimacy_trial(args: argparse.Namespace) -> int:
+    """CLI: run a geo-located legitimacy trial for a command."""
     location = CoarseLocation(
         source=args.location_source,
         label=args.location_label,
@@ -2900,6 +2975,7 @@ def cmd_legitimacy_trial(args: argparse.Namespace) -> int:
 
 
 def cmd_research_nav(args: argparse.Namespace) -> int:
+    """CLI: build a research evidence packet for a URL."""
     content = None
     if args.content_file:
         content = Path(args.content_file).read_text(encoding="utf-8")
@@ -2926,6 +3002,7 @@ def cmd_research_nav(args: argparse.Namespace) -> int:
 
 
 def cmd_youtube_nav(args: argparse.Namespace) -> int:
+    """CLI: build a YouTube navigation packet for a target."""
     packet = build_youtube_navigation_packet(
         target=args.target,
         fetch_metadata=args.fetch_metadata,
@@ -2951,6 +3028,7 @@ def cmd_youtube_nav(args: argparse.Namespace) -> int:
 
 
 def cmd_coding_trial(args: argparse.Namespace) -> int:
+    """CLI: run a geo-located coding trial for a command."""
     location = CoarseLocation(
         source=args.location_source,
         label=args.location_label,
@@ -3037,6 +3115,7 @@ class SealHereCommand(BoundCommand):
 
 
 def _handle_seal_here(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    """Handle seal-here: seal a payload bound to a geo fence."""
     from src.crypto.geo_fenced_seal import seal_with_geo_fence
 
     cmd = bound  # narrow type
@@ -3111,6 +3190,7 @@ class CrossBuildCommand(BoundCommand):
 
 
 def _handle_cross_build(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    """Handle cross-build: lift source to the lattice and emit per-language code."""
     from src.cli.cross_build_ir import (
         QuarantineError,
         TIER1_EXCLUDED_OPS,
@@ -3282,6 +3362,7 @@ def _parse_args_pairs(pairs: List[str]) -> Dict[str, str]:
 
 
 def _handle_route(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    """Handle route: classify a prompt onto the lattice via the SLM router."""
     from src.cli.slm_router import (
         LatticeRouter,
         Mode,
@@ -3316,7 +3397,10 @@ def _handle_route(bound: BoundCommand, ns: argparse.Namespace) -> int:
         # Use a no-op adapter that asserts if invoked — manual mode should
         # never hit it.
         class _ForbiddenAdapter:
+            """Adapter stub that fails loudly if MANUAL mode tries to call a model."""
+
             def classify(self, prompt: str, choices):  # noqa: ANN001
+                """Always raise: MANUAL mode must never invoke the adapter."""
                 raise RuntimeError("MANUAL mode adapter must not be called")
 
         adapter = _ForbiddenAdapter()
@@ -3528,6 +3612,7 @@ class UnpromoteCommand(BoundCommand):
 
 
 def _handle_promote(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    """Handle promote: register an alias once its trace count meets the threshold."""
     from src.cli.alias_registry import AliasError, AliasRegistry
     from src.cli.command_trace import PromotionLedger
 
@@ -3615,6 +3700,7 @@ def _handle_promote(bound: BoundCommand, ns: argparse.Namespace) -> int:
 
 
 def _handle_aliases(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    """Handle aliases: list the alias registry."""
     from src.cli.alias_registry import AliasRegistry
 
     cmd = bound
@@ -3633,6 +3719,7 @@ def _handle_aliases(bound: BoundCommand, ns: argparse.Namespace) -> int:
 
 
 def _handle_alias(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    """Handle alias invocation: resolve an alias and emit its cached IR."""
     from src.cli.alias_registry import AliasNotFoundError, AliasRegistry
     from src.cli.cross_build_ir import (
         QuarantineError as _IRQuarantine,
@@ -3734,6 +3821,7 @@ def _handle_alias(bound: BoundCommand, ns: argparse.Namespace) -> int:
 
 
 def _handle_unpromote(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    """Handle unpromote: remove an alias from the registry."""
     from src.cli.alias_registry import AliasNotFoundError, AliasRegistry
 
     cmd = bound
@@ -3817,6 +3905,7 @@ class PromotionsCommand(BoundCommand):
 
 
 def _handle_promotions(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    """Handle promotions: show promotion-ledger counts and thresholds."""
     from src.cli.command_trace import PromotionLedger
 
     cmd = bound
@@ -3984,6 +4073,7 @@ def cmd_swarm_exec(args: argparse.Namespace) -> int:
 
 
 def cmd_validate_line(args: argparse.Namespace) -> int:
+    """CLI: scan one command line and print its tier/permission pill."""
     cleaned = _strip_argv_separator(args.command)
     command = subprocess.list2cmdline(cleaned) if isinstance(cleaned, list) else cleaned
     decision = scan_command(command, claimed_paths=args.claimed_path or [])
@@ -4004,6 +4094,7 @@ def cmd_validate_line(args: argparse.Namespace) -> int:
 
 
 def cmd_decode_cmd(args: argparse.Namespace) -> int:
+    """CLI: decode tongue tokens back into bytes and print them."""
     token_text = _read_payload_arg_or_stdin(args.tokens)
     tongue = _normalize_transport_tongue(args.tongue)
     tokens = _parse_token_text(token_text)
@@ -4013,6 +4104,7 @@ def cmd_decode_cmd(args: argparse.Namespace) -> int:
 
 
 def cmd_xlate_cmd(args: argparse.Namespace) -> int:
+    """CLI: translate tokens from one tongue to another."""
     token_text = _read_payload_arg_or_stdin(args.tokens)
     src = _normalize_transport_tongue(args.src)
     dst = _normalize_transport_tongue(args.dst)
@@ -4024,6 +4116,7 @@ def cmd_xlate_cmd(args: argparse.Namespace) -> int:
 
 
 def cmd_atomic(args: argparse.Namespace) -> int:
+    """CLI: print trit/feature vectors for a lexicon op."""
     entry = lookup(args.op)
     trits = trit_vector(entry.name).tolist()
     features = feature_vector(entry.name).tolist()
@@ -4044,6 +4137,7 @@ def cmd_atomic(args: argparse.Namespace) -> int:
 
 
 def cmd_emit(args: argparse.Namespace) -> int:
+    """CLI: emit generated code for an op in one or all tongues."""
     kv = _parse_kv_args(args.args)
     if args.tongue:
         tongue = args.tongue.upper()
@@ -4110,6 +4204,7 @@ def cmd_emit(args: argparse.Namespace) -> int:
 
 
 def cmd_run(args: argparse.Namespace) -> int:
+    """CLI: emit and execute a tongue call for an op."""
     kv = _parse_kv_args(args.args)
     tongue = (args.tongue or "KO").upper()
     call = run_tongue_call(
@@ -4156,6 +4251,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 
 def cmd_swarm(args: argparse.Namespace) -> int:
+    """CLI: run an op across multiple tongues and report quorum."""
     kv = _parse_kv_args(args.args)
     tongues = [t.strip().upper() for t in args.tongues.split(",") if t.strip()] if args.tongues else list(TONGUE_NAMES)
     unknown = [t for t in tongues if t not in ALL_TONGUE_NAMES]
@@ -4215,6 +4311,7 @@ def cmd_swarm(args: argparse.Namespace) -> int:
 
 
 def cmd_seal(args: argparse.Namespace) -> int:
+    """CLI: compute and print a seal for a payload."""
     tongue = (args.tongue or "KO").upper()
     phi_cost = getattr(args, "phi_cost", 0.0)
     tier = getattr(args, "tier", "ALLOW")
@@ -4225,6 +4322,7 @@ def cmd_seal(args: argparse.Namespace) -> int:
 
 
 def cmd_verify(args: argparse.Namespace) -> int:
+    """CLI: verify a seal against its payload."""
     tongue = (args.tongue or "KO").upper()
     phi_cost = getattr(args, "phi_cost", 0.0)
     tier = getattr(args, "tier", "ALLOW")
@@ -4644,6 +4742,8 @@ _WORKFLOW_REF_PATTERN = re.compile(r"\$\{([a-zA-Z_][a-zA-Z0-9_.\-]*)\}")
 
 @dataclass
 class WorkflowStepResult:
+    """Sealed result of one workflow step."""
+
     step_id: str
     op: str
     tongue: str
@@ -4658,6 +4758,7 @@ class WorkflowStepResult:
     tongue_out: Optional[Dict[str, object]] = None
 
     def to_dict(self) -> Dict[str, Any]:
+        """Return this result as a plain dict."""
         return asdict(self)
 
 
@@ -4745,6 +4846,7 @@ def substitute_workflow_refs(
         return template
 
     def _resolve(match: "re.Match[str]") -> str:
+        """Resolve a ${...} template reference against step outputs."""
         ref = match.group(1)
         if ref == "input":
             return input_text or ""
@@ -4769,6 +4871,7 @@ def substitute_workflow_refs(
 
 
 def _resolve_step_setting(step: Dict[str, Any], spec: Dict[str, Any], key: str, default: Any = None) -> Any:
+    """Resolve a step setting, falling back to the spec's default_<key>."""
     if key in step and step[key] is not None:
         return step[key]
     default_key = f"default_{key}"
@@ -5013,6 +5116,7 @@ def run_workflow(
 
 
 def _workflow_list_dir(directory: Path) -> List[Path]:
+    """List *.geoseal.{yaml,yml,json} workflow files in a directory."""
     return sorted(
         list(directory.glob("*.geoseal.yaml"))
         + list(directory.glob("*.geoseal.yml"))
@@ -5021,6 +5125,7 @@ def _workflow_list_dir(directory: Path) -> List[Path]:
 
 
 def cmd_workflow(args: argparse.Namespace) -> int:
+    """CLI: list, validate, or run geoseal workflow files."""
     mode = args.workflow_cmd
     if mode == "list":
         directory = Path(args.dir).resolve()
@@ -5518,6 +5623,7 @@ def _build_api_skill_tree(
 ) -> Dict[str, Any]:
     # Build forward (cmd→what it unlocks) and reverse (cmd→what requires it) maps
     # over the full meta before filtering so depth and unlock counts are global.
+    """Build the API skill tree (tiers, deps, unlock counts) with optional filters."""
     fwd: Dict[str, List[str]] = {c: [] for c in _SKILL_TREE_META}
     for cmd_name, (_, _, _, deps, _) in _SKILL_TREE_META.items():
         for dep in deps:
@@ -5644,6 +5750,7 @@ def _build_api_skill_tree(
 
 
 def _skill_tree_to_mermaid(tree: Dict[str, Any], *, direction: str = "LR") -> str:
+    """Render the skill tree as Mermaid flowchart text."""
     lines = [
         f"flowchart {direction}",
         "  classDef L1 fill:#e0f2fe,stroke:#0ea5e9",
@@ -5671,6 +5778,7 @@ def _skill_tree_to_mermaid(tree: Dict[str, Any], *, direction: str = "LR") -> st
 
 
 def _skill_tree_to_dot(tree: Dict[str, Any]) -> str:
+    """Render the skill tree as Graphviz DOT text."""
     tier_colors = {
         "L1": "#e0f2fe",
         "L2": "#dbeafe",
@@ -5719,6 +5827,7 @@ def _skill_tree_to_dot(tree: Dict[str, Any]) -> str:
 
 
 def _skill_tree_to_ascii(tree: Dict[str, Any]) -> str:
+    """Render the skill tree as an ASCII tier chart."""
     _TIER_ORDER = ["L1", "L2", "L3", "L4", "L5", "L6"]
     W = 80
     lines: List[str] = [
@@ -5827,6 +5936,7 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
     formats = ["json", "mermaid", "dot", "tree"]
 
     def _time_n(fn, n: int) -> Dict[str, float]:
+        """Time ``fn`` over ``n`` runs and return timing stats in milliseconds."""
         times = []
         for _ in range(n):
             t0 = time.perf_counter()
@@ -5844,6 +5954,7 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
 
     # --- build phase ---
     def _build_full():
+        """Benchmark target: build the unfiltered skill tree."""
         _build_api_skill_tree()
 
     r = _time_n(_build_full, N)
@@ -5856,6 +5967,7 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
     for fmt in formats:
 
         def _render(f=fmt, t=tree_full):
+            """Benchmark target: render the tree in the selected format."""
             if f == "mermaid":
                 _skill_tree_to_mermaid(t)
             elif f == "dot":
@@ -5874,6 +5986,7 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
     for tf in ["L1", "L3", "L6"]:
 
         def _build_tier(t=tf):
+            """Benchmark target: build the tree filtered to one tier."""
             _build_api_skill_tree(tier_filter=t)
 
         r = _time_n(_build_tier, N)
@@ -5885,6 +5998,7 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
     for tng in ["KO", "DR"]:
 
         def _build_tongue(tn=tng):
+            """Benchmark target: build the tree filtered to one tongue."""
             _build_api_skill_tree(tongue_filter=tn)
 
         r = _time_n(_build_tongue, N)
@@ -5894,6 +6008,7 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
 
     # --- cmd focus ---
     def _build_focus():
+        """Benchmark target: build the tree focused on the seal command."""
         _build_api_skill_tree(cmd_filter="seal")
 
     r = _time_n(_build_focus, N)
@@ -5929,6 +6044,7 @@ def cmd_bench_api(args: argparse.Namespace) -> int:
 
 
 def cmd_api_graph(args: argparse.Namespace) -> int:
+    """CLI: print the API skill tree in tree/mermaid/dot/json form."""
     tier_filter = (getattr(args, "tier", None) or "").upper() or None
     tongue_filter = (getattr(args, "tongue", None) or "").upper() or None
     band_filter = (getattr(args, "band", None) or "").upper() or None
@@ -5959,6 +6075,7 @@ def cmd_api_graph(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the geoseal argparse parser with all subcommands."""
     p = argparse.ArgumentParser(prog="geoseal", description="GeoSeal swarm CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -6852,9 +6969,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_api_graph.add_argument("--tier", default=None, help="Filter by skill tier L1-L6")
     p_api_graph.add_argument("--tongue", default=None, help="Filter by tongue KO|AV|RU|CA|UM|DR")
     p_api_graph.add_argument(
-        "--band",
-        default=None,
-        help="Filter by band e.g. LEXICON|ANALYSIS|ROUTING|EXECUTION|GOVERNANCE|ORCHESTRATION",
+        "--band", default=None, help="Filter by band e.g. LEXICON|ANALYSIS|ROUTING|EXECUTION|GOVERNANCE|ORCHESTRATION"
     )
     p_api_graph.add_argument(
         "--show-params",
@@ -6962,8 +7077,20 @@ def cmd_pair_agent_training(args: argparse.Namespace) -> int:
 
 
 def main(argv: Optional[List[str]] = None) -> int:
+    """CLI entry point: parse args and dispatch to the selected subcommand."""
     parser = build_parser()
-    args = parser.parse_args(argv)
+    # On Python < 3.13 argparse cannot match trailing positionals once an
+    # optional flag interrupts the positional stream (e.g.
+    # `emit add --json a=2 b=3`); 3.13+ defers them correctly. Fold any
+    # leftover non-flag tokens into the subcommand's `args` list so kv-pair
+    # positionals work on every supported Python version.
+    args, extras = parser.parse_known_args(argv)
+    if extras:
+        rest = getattr(args, "args", None)
+        if isinstance(rest, list) and not any(tok.startswith("-") for tok in extras):
+            rest.extend(extras)
+        else:
+            parser.error("unrecognized arguments: %s" % " ".join(extras))
     return args.func(args)
 
 

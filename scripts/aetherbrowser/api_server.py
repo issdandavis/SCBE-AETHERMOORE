@@ -1463,17 +1463,18 @@ def _chat_sources(question: str, domain: str, max_sources: int = 5) -> list[dict
 def _chat_instruction_for_domain(domain: str) -> str:
     if domain == "lore":
         return (
-            "You are Polly, the archive keeper for AetherMoore lore. Answer with canon-aware worldbuilding language when it helps, "
-            "but do not invent events, character history, or rules that are not supported by the evidence packet."
+            "You are Polly, the archive keeper for AetherMoore lore. Answer with canon-aware worldbuilding "
+            "language when it helps, but do not invent events, character history, or rules that are not "
+            "supported by the evidence packet."
         )
     if domain == "hybrid":
         return (
-            "You are Polly for both AetherMoore lore and SCBE science. Separate fictional canon from technical claims explicitly. "
-            "Use short labeled sections when the answer spans both domains."
+            "You are Polly for both AetherMoore lore and SCBE science. Separate fictional canon from technical "
+            "claims explicitly. Use short labeled sections when the answer spans both domains."
         )
     return (
-        "You are Polly for SCBE-AETHERMOORE science and systems. Answer concretely, separate proven results from proposals, "
-        "and prefer implementation details, metrics, and source-backed explanations."
+        "You are Polly for SCBE-AETHERMOORE science and systems. Answer concretely, separate proven results "
+        "from proposals, and prefer implementation details, metrics, and source-backed explanations."
     )
 
 
@@ -1556,7 +1557,8 @@ def _chat_grounding_prompt(
         "- Never blur lore canon and SCBE science into one unsupported claim.",
         "- Stay concise, useful, and specific.",
         "- Operator UI mode: use at most 5 short bullets unless the user asks for depth.",
-        "- Do not write poems, roleplay, story packets, or decorative metaphors unless fiction is explicitly requested.",
+        "- Do not write poems, roleplay, story packets, or decorative metaphors unless fiction is explicitly "
+        "requested.",
         "- If the user input is only a number, say it needs an active menu context and do not riff on the number.",
     ]
     if coding_tutor:
@@ -1607,11 +1609,26 @@ def _arena_local_command_response(message: str) -> Optional[str]:
 def _mode_guidance(mode: str) -> str:
     mapping = {
         "fact-check": "Answer only from the evidence packet. Distinguish supported claims from gaps or uncertainty.",
-        "research": "Synthesize the evidence packet into a readable research answer, but do not invent support that is not present.",
-        "draft": "Use the evidence packet to draft a useful response. Label any sentence that extends beyond the evidence as a draft inference.",
-        "code": "Answer like an implementation assistant grounded in the repo notes and docs. Prefer concrete steps, file paths, and constraints.",
-        "math": "Answer like a math explainer grounded in the local SCBE corpus. Keep equations and assumptions explicit.",
-        "skills": "Answer using the local skill vault and docs as the operating reference. Point to skill paths and likely invocation patterns.",
+        "research": (
+            "Synthesize the evidence packet into a readable research answer, "
+            "but do not invent support that is not present."
+        ),
+        "draft": (
+            "Use the evidence packet to draft a useful response. "
+            "Label any sentence that extends beyond the evidence as a draft inference."
+        ),
+        "code": (
+            "Answer like an implementation assistant grounded in the repo notes and docs. "
+            "Prefer concrete steps, file paths, and constraints."
+        ),
+        "math": (
+            "Answer like a math explainer grounded in the local SCBE corpus. "
+            "Keep equations and assumptions explicit."
+        ),
+        "skills": (
+            "Answer using the local skill vault and docs as the operating reference. "
+            "Point to skill paths and likely invocation patterns."
+        ),
     }
     return mapping.get(mode, mapping["fact-check"])
 
@@ -1700,7 +1717,8 @@ def _call_huggingface_chat(prompt: str, model_id: Optional[str] = None) -> dict[
                 "role": "system",
                 "content": (
                     "You are AetherBot for SCBE-AETHERMOORE. "
-                    "Answer from the supplied evidence packet, cite it as [S1], [S2], etc, and say when support is missing."
+                    "Answer from the supplied evidence packet, cite it as [S1], [S2], etc, "
+                    "and say when support is missing."
                 ),
             },
             {"role": "user", "content": prompt},
@@ -2471,12 +2489,15 @@ async def chat(req: ChatRequest):
         else:
             response_text = f"[{req.model.capitalize()} unavailable: {model_result.get('error', 'unknown error')}]"
     elif decision == "DENY":
-        response_text = f"[DENIED by governance gate. Cost: {cost}. Signals: {gate_result.get('signals', []) if gate_result else []}]"
+        response_text = (
+            f"[DENIED by governance gate. Cost: {cost}. "
+            f"Signals: {gate_result.get('signals', []) if gate_result else []}]"
+        )
     else:
         response_text = (
             f"[{req.model.capitalize()} model not wired yet. "
             f"Governance: {decision}. Trust: {trust_level} (FIB {fib_value}). "
-            f"Select 'Local' to use AetherBot via Ollama.]"
+            "Select 'Local' to use AetherBot via Ollama.]"
         )
 
     _append_jsonl(
@@ -3118,12 +3139,12 @@ async def ops_git_status():
     )
 
     branch = branch_result.get("stdout", "").strip()
-    status_lines = [l for l in status_result.get("stdout", "").splitlines() if l.strip()]
-    log_lines = [l.strip() for l in log_result.get("stdout", "").splitlines() if l.strip()]
+    status_lines = [line for line in status_result.get("stdout", "").splitlines() if line.strip()]
+    log_lines = [line.strip() for line in log_result.get("stdout", "").splitlines() if line.strip()]
 
-    modified = sum(1 for l in status_lines if l.startswith(" M") or l.startswith("M "))
-    untracked = sum(1 for l in status_lines if l.startswith("??"))
-    staged = sum(1 for l in status_lines if l[0] in "MADR" and l[0] != "?")
+    modified = sum(1 for line in status_lines if line.startswith(" M") or line.startswith("M "))
+    untracked = sum(1 for line in status_lines if line.startswith("??"))
+    staged = sum(1 for line in status_lines if line[0] in "MADR" and line[0] != "?")
 
     return {
         "branch": branch,

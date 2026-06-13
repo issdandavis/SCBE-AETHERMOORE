@@ -1,5 +1,41 @@
 # SCBE Production Pack Changelog
 
+## [Unreleased]
+
+### Added
+
+- **AETHERMON creature-raising game** (`src/aethermon/`, exported as `scbe-aethermoore/aethermon`): a Digimon-style virtual-pet battler — hatch one of four starter eggs, manage hunger/energy/mood/bond/discipline, train stats, and climb the ten-rung Spiral Arena. 39-species evolution graph (EGG → MOTE → SPRITE → GUARDIAN → PARAGON → APEX) that branches on care mistakes, bond, discipline, and training focus, with a guaranteed fallback path. Battles use a golden-ratio alignment triangle (AEGIS > VENOM > FLUX, ×φ / ×1/φ) crossed with the six-Sacred-Tongue element wheel. Fully deterministic from the save file (seeded mulberry32 RNG). Play via `npm run game:aethermon` (interactive) or `npm run game:aethermon:demo` (scripted). 76 tests in `tests/aethermon/` (unit + integration + fast-check properties); guide in `docs/AETHERMON_GAME.md`.
+- **AETHERMON worldbuilding & V-Pet systems** (research-driven, see `docs/AETHERMON_DESIGN_NOTES.md`): six travelable canon regions with tongue-biased wild encounters (Ember Reach, Aerial Expanse, Null Vale, Glass Drift, Ward Sanctum, Bastion Fields); the canon Gale Egg → Galewing wind line up to the Storm Sovereign apex; the Hollow (commune in Null Vale) with scar-gated dark evolutions Fracture Shade and Paradox Wraith; battle scars as immune memory (+DEF, capped — "stronger from attacks"); Hodge dual resonance (×1.3 when a creature speaks its dual tongue, canon KO↔DR / AV↔UM / RU↔CA); per-stage lifespans with generational rebirth — creatures return to their line's egg and the heir inherits 40% of training (capped), with a lineage memorial (Digimon World's 1999 legacy loop); over-battling strain; care-mistake counters reset per evolution (every stage is a fresh test). Save format v2 with automatic v1 migration.
+
+### Changed
+
+- **Legal/patent documents moved to private storage**: `docs/legal/` (96 files — patent workbench, claims, prosecution material) plus the patent portfolio docs in `docs/` and `docs/business/` are no longer tracked in the public repo. The public site pages (`docs/legal/privacy.html`, `docs/legal/terms.html`) and the commercial license terms remain. `scbe-patent init` regenerates the workbench locally; its output is now gitignored. Note: prior revisions remain in git history until a history rewrite.
+- **scripts/ and agents/ brought under lint**: black-formatted (~250 files), flake8 violations fixed (3,574 → 0, including 8 F821 undefined-name bugs); SFT/corpus generator files carry documented per-file E501 ignores so training data stays byte-reproducible. CI lint gate extended to cover `scripts/` and `agents/`.
+- **Nightly full-suite workflow hardened**: on failure it now opens (or appends to) a `nightly-failure` issue automatically instead of relying on someone noticing a red scheduled run.
+
+### Fixed
+
+- **Repo hygiene**: untracked ~1,270 generated/junk files that violated `.gitignore` (docs-build-smoke/ build output, src/.hypothesis/ test caches, SQLite databases, Notion export dumps, the 17 MB generated `full_codebase_map.json`, personal `.home/` mirror, scratch files). `.gitignore` updated so they cannot return.
+- **package.json**: removed 22 dead npm scripts that referenced deleted files (training:*, repo:shape, patent:governance-benchmark, agent:coding-router:*, and others); normalized line endings to LF.
+- **CITATION.cff**: corrected repository URL (was pointing at a nonexistent org slug), declared dual MIT/Apache-2.0 license, added version field.
+- **NOTICE**: fixed broken reference to `CUSTOMER_LICENSE_AGREEMENT.md` (lives under `docs/`) and aligned the open-source license wording with the canonical `MIT OR Apache-2.0` dual license.
+- **geoseed transfer recorder**: implemented the audit API that `tests/test_geoseed_transfer_recorder.py` specified but was never wired (`normalize_tongue`, case/space-tolerant `record`, `record_batch` accepting mappings and returning events, `mean_hop_distance(include_self=)`, `TransferEvent.to_dict`, audit-shaped `to_dict` with `summary`/`events`). The full Python suite collects again.
+- **flake8**: repository is now flake8-clean (`--max-line-length 120`); fixed F821 undefined-name bugs and F541/F841/E401/E501 violations across `src/`, `tests/`, and `hydra/`.
+
+## [4.2.1] - 2026-06-02
+
+Versions 4.1.4 through 4.2.1 shipped as a consolidated bundle (PR #2069); this entry covers the delta since 4.1.3.
+
+### Added
+
+- **Polly offline mode (`POLLY_STATIC_ONLY`)**: fully-static deployments via `window.POLLY_STATIC_ONLY` / `data-polly-static="true"` — status chips render without polling, static command list, immediate backend notices, pre-AI reply paths intact.
+- **Proof workbench and product bundle site pages**: conversion-focused service ladder pages with live checkout.
+- **GeoSeed transfer recorder** (`src/geoseed/transfer_recorder.py`): isotope-tracing-style token transfer tracking between Sacred Tongue orbital shells with n·ln(φ) geodesic costs and 6×6 transfer matrices.
+
+### Changed
+
+- **Stripe checkout wired into all service ladder pages**: ai-workflow-snapshot ($99 SKU, direct CTA), governance-snapshot ($99/month subscription link), workflow-snapshot.
+
 ## [4.1.3] - 2026-05-14
 
 ### Added

@@ -99,8 +99,18 @@ def score_title(title: str) -> tuple[int, list, list]:
 
     # --- Searchable / curiosity / emotional words ---
     curiosity_words = [
-        "how", "why", "what", "secret", "hidden", "every", "never",
-        "broke", "hacked", "tutorial", "guide", "explained",
+        "how",
+        "why",
+        "what",
+        "secret",
+        "hidden",
+        "every",
+        "never",
+        "broke",
+        "hacked",
+        "tutorial",
+        "guide",
+        "explained",
     ]
     matched_curiosity = [w for w in curiosity_words if w in title.lower()]
     if matched_curiosity:
@@ -111,10 +121,14 @@ def score_title(title: str) -> tuple[int, list, list]:
     first_segment = title_stripped.split("|")[0].strip() if "|" in title_stripped else title_stripped
     hook_first = False
     # Question hook: opens with interrogative or ends segment with '?'
-    if first_segment.endswith("?") or re.match(r"(?i)^(how|why|what|who|when|where|can|is|are|do|does|will|did)\b", first_segment):
+    if first_segment.endswith("?") or re.match(
+        r"(?i)^(how|why|what|who|when|where|can|is|are|do|does|will|did)\b", first_segment
+    ):
         hook_first = True
     # Dramatic statement hook: starts with a strong verb phrase or personal pronoun
-    if re.match(r"(?i)^(he |she |they |i |we |it |the |this |every |no one |never |stop |watch |meet |inside )", first_segment):
+    if re.match(
+        r"(?i)^(he |she |they |i |we |it |the |this |every |no one |never |stop |watch |meet |inside )", first_segment
+    ):
         hook_first = True
     if hook_first:
         score += 1  # hook-first title
@@ -198,12 +212,33 @@ def score_transcript(transcript: str, duration_s: int) -> tuple[int, list, list]
         issues.append("Low vocabulary diversity — may be repetitive")
 
     # Technical depth
-    tech_terms = sum(1 for w in words if w.lower() in {
-        "algorithm", "protocol", "encryption", "authentication", "governance",
-        "topology", "manifold", "hyperbolic", "byzantine", "consensus",
-        "phi", "fibonacci", "ternary", "entropy", "harmonic",
-        "poincare", "tensor", "eigenvalue", "gradient", "vector",
-    })
+    tech_terms = sum(
+        1
+        for w in words
+        if w.lower()
+        in {
+            "algorithm",
+            "protocol",
+            "encryption",
+            "authentication",
+            "governance",
+            "topology",
+            "manifold",
+            "hyperbolic",
+            "byzantine",
+            "consensus",
+            "phi",
+            "fibonacci",
+            "ternary",
+            "entropy",
+            "harmonic",
+            "poincare",
+            "tensor",
+            "eigenvalue",
+            "gradient",
+            "vector",
+        }
+    )
     if tech_terms > 5:
         score += 2  # technically dense
 
@@ -250,16 +285,20 @@ def review_video(video_data: dict, transcript: Optional[str] = None) -> VideoSco
     all_issues, all_suggestions = [], []
 
     title_score, ti, ts = score_title(title)
-    all_issues.extend(ti); all_suggestions.extend(ts)
+    all_issues.extend(ti)
+    all_suggestions.extend(ts)
 
     desc_score, di, ds = score_description(desc)
-    all_issues.extend(di); all_suggestions.extend(ds)
+    all_issues.extend(di)
+    all_suggestions.extend(ds)
 
     trans_score, tri, trs = score_transcript(transcript or "", duration)
-    all_issues.extend(tri); all_suggestions.extend(trs)
+    all_issues.extend(tri)
+    all_suggestions.extend(trs)
 
     tag_score, tai, tas = score_tags(tags)
-    all_issues.extend(tai); all_suggestions.extend(tas)
+    all_issues.extend(tai)
+    all_suggestions.extend(tas)
 
     scores = {
         "title": title_score,
@@ -286,16 +325,19 @@ def print_review(vs: VideoScore):
     grade = "A" if vs.overall >= 8 else "B" if vs.overall >= 6 else "C" if vs.overall >= 4 else "D"
     print(f"\n  {vs.title} ({vs.video_id})")
     print(f"  Grade: {grade} ({vs.overall}/10)")
-    print(f"  Duration: {vs.duration_seconds // 60}m {vs.duration_seconds % 60}s | Transcript: {vs.transcript_length} chars")
+    print(
+        f"  Duration: {vs.duration_seconds // 60}m {vs.duration_seconds % 60}s "
+        f"| Transcript: {vs.transcript_length} chars"
+    )
     for dim, score in vs.scores.items():
         bar = "#" * score + "." * (10 - score)
         print(f"    {dim:12s} [{bar}] {score}/10")
     if vs.issues:
-        print(f"  Issues:")
+        print("  Issues:")
         for i in vs.issues:
             print(f"    ! {i}")
     if vs.suggestions:
-        print(f"  Suggestions:")
+        print("  Suggestions:")
         for s in vs.suggestions:
             print(f"    > {s}")
 
@@ -315,24 +357,75 @@ def main():
     if args.command == "review-all":
         # Use YouTube MCP data if available, otherwise hardcoded
         videos = [
-            {"id": "PTT5R9TEhds", "title": "The Six Tongues Protocol -- Ch.1: Protocol Handshake", "duration": "3m 46s", "tags": ["AI Safety", "SCBE", "Isekai", "Issac Daniel Davis"], "description": "Marcus Chen, a systems engineer, falls through reality into Aethermoor..."},
-            {"id": "JMDyvza6c4w", "title": "The Six Tongues Protocol -- Ch.2: The Language Barrier", "duration": "6m 5s", "tags": ["AI Safety", "SCBE", "Isekai", "Cryptography"], "description": "Marcus discovers the Six Sacred Tongues..."},
-            {"id": "M3-lY7-RdrI", "title": "The Six Tongues Protocol -- Ch.3: Hyperbolic Consequences", "duration": "7m 37s", "tags": ["AI Safety", "SCBE", "Isekai", "Hyperbolic Geometry"], "description": "Marcus learns that trust in Aethermoor isn't binary..."},
-            {"id": "Ry5yDARTUYc", "title": "The Six Tongues Protocol -- Ch.4: The Swarm Beneath", "duration": "8m 53s", "tags": ["AI Safety", "SCBE", "Isekai", "Distributed Systems"], "description": "Marcus discovers the Echoes..."},
-            {"id": "4SE-YZItxO8", "title": "The Six Tongues Protocol -- Ch.5: Intent and Integrity", "duration": "5m 36s", "tags": ["AI Safety", "SCBE", "Isekai", "Security Engineering"], "description": "Marcus has his breakthrough..."},
-            {"id": "tkUmJsk0fKM", "title": "The Six Tongues Protocol -- Ch.6: The Harmonic Wall", "duration": "8m 1s", "tags": ["AI Safety", "SCBE", "Isekai"], "description": "Marcus's training escalates into real protocol work..."},
-            {"id": "ROYbRIY90Pc", "title": "The Six Tongues Protocol -- Ch.7: Fleet Dynamics", "duration": "7m 10s", "tags": ["AI Safety", "SCBE", "Isekai", "Swarm Intelligence"], "description": "Marcus pilots his first drone swarm..."},
-            {"id": "Oo7sT_dJ7eQ", "title": "The Six Tongues Protocol -- Ch.8: Rogue Signatures", "duration": "7m 38s", "tags": ["AI Safety", "SCBE", "Isekai", "Security"], "description": "Polly introduces Marcus to rogue agents..."},
-            {"id": "HhGA0aXpTAg", "title": "The Everweave Protocol: How a DnD Campaign Became an AI Safety Framework", "duration": "4m 45s", "tags": ["AI Safety", "Aethermoore", "DnD", "Everweave"], "description": "X Thread: The Everweave Protocol..."},
+            {
+                "id": "PTT5R9TEhds",
+                "title": "The Six Tongues Protocol -- Ch.1: Protocol Handshake",
+                "duration": "3m 46s",
+                "tags": ["AI Safety", "SCBE", "Isekai", "Issac Daniel Davis"],
+                "description": "Marcus Chen, a systems engineer, falls through reality into Aethermoor...",
+            },
+            {
+                "id": "JMDyvza6c4w",
+                "title": "The Six Tongues Protocol -- Ch.2: The Language Barrier",
+                "duration": "6m 5s",
+                "tags": ["AI Safety", "SCBE", "Isekai", "Cryptography"],
+                "description": "Marcus discovers the Six Sacred Tongues...",
+            },
+            {
+                "id": "M3-lY7-RdrI",
+                "title": "The Six Tongues Protocol -- Ch.3: Hyperbolic Consequences",
+                "duration": "7m 37s",
+                "tags": ["AI Safety", "SCBE", "Isekai", "Hyperbolic Geometry"],
+                "description": "Marcus learns that trust in Aethermoor isn't binary...",
+            },
+            {
+                "id": "Ry5yDARTUYc",
+                "title": "The Six Tongues Protocol -- Ch.4: The Swarm Beneath",
+                "duration": "8m 53s",
+                "tags": ["AI Safety", "SCBE", "Isekai", "Distributed Systems"],
+                "description": "Marcus discovers the Echoes...",
+            },
+            {
+                "id": "4SE-YZItxO8",
+                "title": "The Six Tongues Protocol -- Ch.5: Intent and Integrity",
+                "duration": "5m 36s",
+                "tags": ["AI Safety", "SCBE", "Isekai", "Security Engineering"],
+                "description": "Marcus has his breakthrough...",
+            },
+            {
+                "id": "tkUmJsk0fKM",
+                "title": "The Six Tongues Protocol -- Ch.6: The Harmonic Wall",
+                "duration": "8m 1s",
+                "tags": ["AI Safety", "SCBE", "Isekai"],
+                "description": "Marcus's training escalates into real protocol work...",
+            },
+            {
+                "id": "ROYbRIY90Pc",
+                "title": "The Six Tongues Protocol -- Ch.7: Fleet Dynamics",
+                "duration": "7m 10s",
+                "tags": ["AI Safety", "SCBE", "Isekai", "Swarm Intelligence"],
+                "description": "Marcus pilots his first drone swarm...",
+            },
+            {
+                "id": "Oo7sT_dJ7eQ",
+                "title": "The Six Tongues Protocol -- Ch.8: Rogue Signatures",
+                "duration": "7m 38s",
+                "tags": ["AI Safety", "SCBE", "Isekai", "Security"],
+                "description": "Polly introduces Marcus to rogue agents...",
+            },
+            {
+                "id": "HhGA0aXpTAg",
+                "title": "The Everweave Protocol: How a DnD Campaign Became an AI Safety Framework",
+                "duration": "4m 45s",
+                "tags": ["AI Safety", "Aethermoore", "DnD", "Everweave"],
+                "description": "X Thread: The Everweave Protocol...",
+            },
         ]
 
         for plan_path in PLAN_FILES:
             if not plan_path.exists():
                 continue
-            planned = {
-                item["video_id"]: item
-                for item in json.loads(plan_path.read_text(encoding="utf-8"))
-            }
+            planned = {item["video_id"]: item for item in json.loads(plan_path.read_text(encoding="utf-8"))}
             for video in videos:
                 override = planned.get(video["id"])
                 if override:

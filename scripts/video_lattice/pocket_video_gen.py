@@ -28,12 +28,7 @@ from scripts.video_lattice.pocket_drawing_tutor import (  # noqa: E402
     synthetic_body,
     synthetic_hand,
 )
-from src.video_lattice import (
-    Landmark,
-    PoseChecker,
-    render_body_sketch,
-    render_hand_sketch,
-)  # noqa: E402
+from src.video_lattice import Landmark, PoseChecker, render_body_sketch, render_hand_sketch  # noqa: E402
 
 DEFAULT_OUT = REPO_ROOT / "artifacts" / "video_lattice" / "pocket_video_gen"
 
@@ -50,9 +45,7 @@ class AnimationFrame:
     png: str
 
 
-def interpolate_landmarks(
-    a: Sequence[Landmark], b: Sequence[Landmark], t: float
-) -> list[Landmark]:
+def interpolate_landmarks(a: Sequence[Landmark], b: Sequence[Landmark], t: float) -> list[Landmark]:
     return [
         Landmark(
             x=(1.0 - t) * pa.x + t * pb.x,
@@ -108,25 +101,11 @@ def _render_pose_png(
     draw.text((640, 110), title, fill=(232, 238, 248), font=title_font)
     draw.text((640, 168), subtitle, fill=(160, 176, 200), font=body_font)
     draw.text((640, 250), f"drift: {drift:.4f}", fill=(250, 204, 21), font=mono_font)
-    draw.text(
-        (640, 292), f"verdict: {verdict}", fill=_verdict_color(verdict), font=mono_font
-    )
-    draw.text(
-        (640, 334),
-        f"repair focus: {worst_chain or 'stable'}",
-        fill=(190, 210, 230),
-        font=mono_font,
-    )
+    draw.text((640, 292), f"verdict: {verdict}", fill=_verdict_color(verdict), font=mono_font)
+    draw.text((640, 334), f"repair focus: {worst_chain or 'stable'}", fill=(190, 210, 230), font=mono_font)
     draw.text((640, 430), "inside-out order:", fill=(117, 215, 255), font=body_font)
-    for i, line in enumerate(
-        ("skeleton", "polygon chains", "lattice score", "render frame")
-    ):
-        draw.text(
-            (676, 472 + i * 34),
-            f"{i + 1}. {line}",
-            fill=(205, 214, 229),
-            font=mono_font,
-        )
+    for i, line in enumerate(("skeleton", "polygon chains", "lattice score", "render frame")):
+        draw.text((676, 472 + i * 34), f"{i + 1}. {line}", fill=(205, 214, 229), font=mono_font)
     draw.rectangle((48, 88, 592, 648), outline=(117, 215, 255), width=2)
     path.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(path)
@@ -137,11 +116,7 @@ def _render_pose_png(
 
 
 def _font(size: int, *, bold: bool = False):
-    names = (
-        ["arialbd.ttf", "DejaVuSans-Bold.ttf"]
-        if bold
-        else ["arial.ttf", "DejaVuSans.ttf"]
-    )
+    names = ["arialbd.ttf", "DejaVuSans-Bold.ttf"] if bold else ["arial.ttf", "DejaVuSans.ttf"]
     for name in names:
         try:
             return ImageFont.truetype(name, size)
@@ -188,11 +163,7 @@ def run_generation(
         # Smoothstep makes the motion less robotic while staying deterministic.
         progress = t * t * (3.0 - 2.0 * t)
         pose = interpolate_landmarks(start_pose, target_pose, progress)
-        result = (
-            checker.check_hand(target_pose, pose)
-            if pose_type == "hand"
-            else checker.check_body(target_pose, pose)
-        )
+        result = checker.check_hand(target_pose, pose) if pose_type == "hand" else checker.check_body(target_pose, pose)
         png_path = frame_dir / f"frame_{index:03d}.png"
         _render_pose_png(
             pose_type,
@@ -245,16 +216,12 @@ def run_generation(
         ),
     }
     manifest_path = run_dir / "manifest.json"
-    manifest_path.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return manifest
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Generate a pocket-lattice animation GIF."
-    )
+    parser = argparse.ArgumentParser(description="Generate a pocket-lattice animation GIF.")
     parser.add_argument("pose_type", choices=("hand", "body"))
     parser.add_argument("target", help="hand: open/fist/point; body: stand/reach/lean")
     parser.add_argument("--frames", type=int, default=16)

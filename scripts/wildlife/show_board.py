@@ -124,7 +124,7 @@ def render(board: dict, only_pack: str | None, max_per_pack: int) -> str:
         # Show bus command for the most urgent
         if urgent:
             out_lines.append("")
-            out_lines.append(f"    next move (most urgent):")
+            out_lines.append("    next move (most urgent):")
             out_lines.append(f"      $ {urgent[0].get('tame_command','')}")
         out_lines.append("")
 
@@ -148,7 +148,7 @@ def main() -> int:
     board_path = Path(args.board)
     if not board_path.exists():
         print(
-            f"[wildlife] no board at {board_path} - run " f"`python scripts/wildlife/harvest_packs.py` first.",
+            f"[wildlife] no board at {board_path} - run " "`python scripts/wildlife/harvest_packs.py` first.",
             file=sys.stderr,
         )
         return 1

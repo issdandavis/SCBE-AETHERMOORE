@@ -72,7 +72,7 @@ External benchmark/product pressure points reviewed:
 
 10. Product-grade CLI experience
     - Target: Claude/Codex/Gemini-style usability without copying their product.
-    - SCBE angle: polished agent front end, agent helper, examples, role outputs,
+    - SCBE angle: Hermes-style front end, agent helper, examples, role outputs,
       and task ticker.
 
 ## 100 Improvement Lanes
@@ -261,7 +261,7 @@ External benchmark/product pressure points reviewed:
 
 91. `scbe bench` command family: keep adding local evidence lanes behind one
     stable CLI surface.
-92. Polished CLI front end: task menu, helper, examples, and active proof
+92. Hermes-style CLI front end: task menu, helper, examples, and active proof
     status.
 93. Website evidence cells: publish only reproducible local commands and public
     benchmark boundaries.

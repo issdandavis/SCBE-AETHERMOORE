@@ -116,41 +116,30 @@ DEFAULT_OFFERS = [
             "tests/api/test_free_llm_routes.py",
         ],
         call_to_action=(
-            "Reply with your OS and the AI coding tools you already use; "
-            "I will quote the CLI plus agent-bus setup."
+            "Reply with your OS and the AI coding tools you already use; " "I will quote the CLI plus agent-bus setup."
         ),
     ),
     Offer(
-        offer_id="workflow_snapshot_starter",
-        title="AI Agent Workflow Snapshot",
-        buyer=(
-            "solo builders and small teams with one AI workflow, prompt chain, MCP stack, "
-            "automation flow, or agent prototype"
-        ),
-        price_floor_usd=99,
-        price_anchor_usd=99,
+        offer_id="ai_workflow_audit_sprint",
+        title="AI Workflow Audit Sprint",
+        buyer="people paying for multiple AI tools but lacking a reliable daily workflow",
+        price_floor_usd=100,
+        price_anchor_usd=300,
         promise=(
-            "Review one AI workflow and deliver a concise findings memo covering drift risks, unsafe tool paths, "
-            "missing recovery states, observability gaps, and three prioritized fixes."
+            "Find waste, fragile steps, and missing handoffs in an AI tool stack, " "then produce a usable repair plan."
         ),
         deliverables=[
-            "Review one AI workflow, repo link, prompt chain, MCP stack, automation flow, or diagram.",
-            "Map drift risks, unsafe tool paths, missing recovery states, observability gaps, "
-            "and prompt-injection surfaces.",
-            "Deliver one concise findings memo with three prioritized fixes.",
-            "Credit the starter fee toward the $500 Governance Snapshot if deeper review is needed.",
+            "Inventory current tools, scripts, datasets, and failure points.",
+            "Flag what should be automated, deleted, preserved, or moved.",
+            "Deliver a prioritized 7-day repair checklist.",
         ],
         proof_paths=[
-            "docs/workflow-snapshot.html",
-            "docs/ai-workflow-snapshot.html",
-            "docs/offers.json",
-            "scripts/revenue/build_workflow_snapshot_autopromo.py",
+            "scripts/revenue/daily_autopilot.py",
+            "scripts/system/sell_from_terminal.py",
+            "scripts/system/monetization_swarm_status.py",
+            "docs/business/GTM_PLAYBOOK.md",
         ],
-        call_to_action=(
-            "Start with Stripe, then send the intake packet from "
-            "https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html#free-check. "
-            "Checkout link: https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
-        ),
+        call_to_action="Send me the tools you use and one repeated workflow that keeps breaking.",
     ),
     Offer(
         offer_id="research_packet_cleanup",
@@ -173,10 +162,6 @@ DEFAULT_OFFERS = [
     ),
 ]
 
-OFFER_ALIASES = {
-    "ai_workflow_audit_sprint": "workflow_snapshot_starter",
-}
-
 
 def _now_utc() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
@@ -197,9 +182,7 @@ def _path_status(paths: Iterable[str]) -> list[dict[str, object]]:
             {
                 "path": raw,
                 "exists": path.exists(),
-                "kind": (
-                    "dir" if path.is_dir() else "file" if path.is_file() else "missing"
-                ),
+                "kind": ("dir" if path.is_dir() else "file" if path.is_file() else "missing"),
             }
         )
     return rows
@@ -245,9 +228,7 @@ def _proof_snapshot() -> dict[str, object]:
     return {"checks": [_run_quick(cmd) for cmd in checks]}
 
 
-def _dispatch_bus_task(
-    prompt: str, *, task_id: str, dry_run: bool = False
-) -> dict[str, object]:
+def _dispatch_bus_task(prompt: str, *, task_id: str, dry_run: bool = False) -> dict[str, object]:
     """Route one real task through the local HYDRA free-LLM bus."""
 
     try:
@@ -290,7 +271,6 @@ def _select_offer(offer_id: str) -> Offer:
     if offer_id == "rotate":
         day_index = datetime.now().timetuple().tm_yday % len(DEFAULT_OFFERS)
         return DEFAULT_OFFERS[day_index]
-    offer_id = OFFER_ALIASES.get(offer_id, offer_id)
     for offer in DEFAULT_OFFERS:
         if offer.offer_id == offer_id:
             return offer
@@ -299,12 +279,8 @@ def _select_offer(offer_id: str) -> Offer:
 
 
 def _price_label(offer: Offer | dict[str, object]) -> str:
-    floor = int(
-        offer["price_floor_usd"] if isinstance(offer, dict) else offer.price_floor_usd
-    )
-    anchor = int(
-        offer["price_anchor_usd"] if isinstance(offer, dict) else offer.price_anchor_usd
-    )
+    floor = int(offer["price_floor_usd"] if isinstance(offer, dict) else offer.price_floor_usd)
+    anchor = int(offer["price_anchor_usd"] if isinstance(offer, dict) else offer.price_anchor_usd)
     return f"${floor}" if floor == anchor else f"${floor}-${anchor}"
 
 
@@ -340,10 +316,7 @@ def _build_outreach(offer: Offer) -> list[dict[str, str]]:
                 ),
             },
         ]
-    base = (
-        f"I am offering a small {offer.title} sprint ({price}). "
-        f"{offer.promise} {offer.call_to_action}"
-    )
+    base = f"I am offering a small {offer.title} sprint ({price}). " f"{offer.promise} {offer.call_to_action}"
     return [
         {
             "channel": "dm_short",
@@ -353,14 +326,12 @@ def _build_outreach(offer: Offer) -> list[dict[str, str]]:
             "channel": "email",
             "subject": f"{offer.title} - small fixed-scope setup",
             "text": (
-                f"Hi,\n\n"
+                "Hi,\n\n"
                 f"I am running a fixed-scope {offer.title} sprint for {offer.buyer}.\n\n"
                 f"Result: {offer.promise}\n\n"
-                f"Includes:\n"
-                + "\n".join(f"- {item}" for item in offer.deliverables)
-                + f"\n\nPrice: {price}.\n"
+                "Includes:\n" + "\n".join(f"- {item}" for item in offer.deliverables) + f"\n\nPrice: {price}.\n"
                 f"{offer.call_to_action}\n\n"
-                f"- Issac"
+                "- Issac"
             ),
         },
         {
@@ -411,14 +382,11 @@ def _markdown(report: dict[str, object]) -> str:
     assert isinstance(snapshot, dict)
     for check in snapshot["checks"]:
         assert isinstance(check, dict)
-        command_text = " ".join(check["command"])
-        lines.append(f"- `{command_text}` -> {check['returncode']}")
+        lines.append(f"- `{ ' '.join(check['command']) }` -> {check['returncode']}")
     return "\n".join(lines) + "\n"
 
 
-def generate_packet(
-    *, offer_id: str, minutes: int, out_root: Path = OUT_ROOT
-) -> dict[str, Path]:
+def generate_packet(*, offer_id: str, minutes: int, out_root: Path = OUT_ROOT) -> dict[str, Path]:
     offer = _select_offer(offer_id)
     date = datetime.now().strftime("%Y-%m-%d")
     out_dir = out_root / date
@@ -442,18 +410,13 @@ def generate_packet(
     json_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     md_path.write_text(_markdown(report), encoding="utf-8")
     queue_path.write_text(
-        "".join(
-            json.dumps(row, ensure_ascii=True) + "\n"
-            for row in report["outreach_drafts"]
-        ),
+        "".join(json.dumps(row, ensure_ascii=True) + "\n" for row in report["outreach_drafts"]),
         encoding="utf-8",
     )
     return {"json": json_path, "markdown": md_path, "queue": queue_path}
 
 
-def _task(
-    task_id: str, kind: str, label: str, payload: dict[str, object]
-) -> dict[str, object]:
+def _task(task_id: str, kind: str, label: str, payload: dict[str, object]) -> dict[str, object]:
     return {
         "task_id": task_id,
         "kind": kind,
@@ -547,9 +510,7 @@ def _write_state(state_path: Path, state: dict[str, object]) -> None:
     state_path.write_text(json.dumps(state, indent=2), encoding="utf-8")
 
 
-def _cycle_state(
-    state: dict[str, object], *, offer_id: str, minutes: int, out_root: Path
-) -> dict[str, object]:
+def _cycle_state(state: dict[str, object], *, offer_id: str, minutes: int, out_root: Path) -> dict[str, object]:
     tasks = state.get("tasks", [])
     assert isinstance(tasks, list)
     cycle_history = state.setdefault("cycle_history", [])
@@ -568,9 +529,7 @@ def _cycle_state(
     return next_state
 
 
-def _record(
-    task: dict[str, object], state: StateName, result: dict[str, object]
-) -> None:
+def _record(task: dict[str, object], state: StateName, result: dict[str, object]) -> None:
     task["state"] = state
     task["attempts"] = int(task.get("attempts", 0)) + 1
     history = task.setdefault("history", [])
@@ -610,14 +569,10 @@ def _run_task(
         paths = generate_packet(offer_id=offer_id, minutes=minutes, out_root=out_root)
         return "DONE", {name: _safe_rel(path) for name, path in paths.items()}
     if kind == "bus_dispatch":
-        result = _dispatch_bus_task(
-            str(payload["prompt"]), task_id=str(task["task_id"])
-        )
+        result = _dispatch_bus_task(str(payload["prompt"]), task_id=str(task["task_id"]))
         return ("DONE" if result.get("status") == "ok" else "BLOCKED"), result
     if kind == "command":
-        result = _run_quick(
-            list(payload["command"]), timeout=int(payload.get("timeout", 120))
-        )
+        result = _run_quick(list(payload["command"]), timeout=int(payload.get("timeout", 120)))
         if result.get("returncode") == 0:
             return "DONE", result
         if bool(payload.get("nonblocking")):
@@ -657,33 +612,21 @@ def run_continuous(
     assert isinstance(tasks, list)
     steps: list[dict[str, object]] = []
     for _ in range(max_steps):
-        next_task = next(
-            (task for task in tasks if task.get("state") == "PENDING"), None
-        )
+        next_task = next((task for task in tasks if task.get("state") == "PENDING"), None)
         if not next_task:
-            if cycle_when_complete and not any(
-                task.get("state") == "BLOCKED" for task in tasks
-            ):
-                state = _cycle_state(
-                    state, offer_id=offer_id, minutes=minutes, out_root=out_root
-                )
+            if cycle_when_complete and not any(task.get("state") == "BLOCKED" for task in tasks):
+                state = _cycle_state(state, offer_id=offer_id, minutes=minutes, out_root=out_root)
                 tasks = state["tasks"]
                 assert isinstance(tasks, list)
                 _write_state(state_path, state)
-                next_task = next(
-                    (task for task in tasks if task.get("state") == "PENDING"), None
-                )
+                next_task = next((task for task in tasks if task.get("state") == "PENDING"), None)
             if not next_task:
                 break
         next_task["state"] = "RUNNING"
         _write_state(state_path, state)
-        final_state, result = _run_task(
-            next_task, offer_id=offer_id, minutes=minutes, out_root=out_root
-        )
+        final_state, result = _run_task(next_task, offer_id=offer_id, minutes=minutes, out_root=out_root)
         _record(next_task, final_state, result)
-        steps.append(
-            {"task_id": next_task["task_id"], "state": final_state, "result": result}
-        )
+        steps.append({"task_id": next_task["task_id"], "state": final_state, "result": result})
         if final_state == "BLOCKED":
             break
         _write_state(state_path, state)
@@ -703,18 +646,10 @@ def run_continuous(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Generate the daily 20-minute SCBE cash sprint packet."
-    )
-    parser.add_argument(
-        "--offer", default="rotate", help="Offer ID to use, or 'rotate'."
-    )
-    parser.add_argument(
-        "--minutes", type=int, default=20, help="Execution budget in minutes."
-    )
-    parser.add_argument(
-        "--out-root", default=str(OUT_ROOT), help="Output directory root."
-    )
+    parser = argparse.ArgumentParser(description="Generate the daily 20-minute SCBE cash sprint packet.")
+    parser.add_argument("--offer", default="rotate", help="Offer ID to use, or 'rotate'.")
+    parser.add_argument("--minutes", type=int, default=20, help="Execution budget in minutes.")
+    parser.add_argument("--out-root", default=str(OUT_ROOT), help="Output directory root.")
     parser.add_argument(
         "--continuous",
         action="store_true",
@@ -755,9 +690,7 @@ def main() -> int:
         )
         print(json.dumps(result, indent=2))
         return 1 if int(result["blocked_count"]) else 0
-    paths = generate_packet(
-        offer_id=args.offer, minutes=args.minutes, out_root=out_root
-    )
+    paths = generate_packet(offer_id=args.offer, minutes=args.minutes, out_root=out_root)
     for name, path in paths.items():
         print(f"{name}={_safe_rel(path)}")
     return 0

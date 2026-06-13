@@ -1,513 +1,711 @@
-#!/usr/bin/env python3
 """
-Optical transistor — averaged map + synchronous-pump time-domain model.
+Optical Transistor - Synchronously-Pumped Nonlinear Microcavity (iterated-map model)
 
-Spec: docs/superpowers/specs/2026-06-09-synchronous-pump-optical-transistor-spec.md
+Models the cascadable optical transistor (Lagoudakis-style room-temperature
+polariton transistor architecture: mirrors + pulsed surface injection +
+multi-beam) as three coupled pieces of math:
 
-A cavity (two mirrors) with a SATURABLE GAIN medium and a SATURABLE ABSORBER is
-the minimal element that can both amplify and *restore* an optical signal -- the
-two ingredients a cascadable optical transistor needs. The signal power after one
-round trip is
+1. Round-trip power map with saturable gain x saturable absorber:
+       P_{n+1} = f(P_n) = R1*R2 * exp[(g(P) - a(P)) * L] * P_n
+   Bistable restoration requires an S-curve map with two stable fixed
+   points (clean "0", clean "1") separated by an unstable threshold.
 
-    P_{n+1} = M(P) * P_n,   M(P) = exp( g(P) - q(P) - l )
+2. Adler phase equation (injection locking, the active clock):
+       d(dphi)/dt = dw - K * sin(dphi)      locks iff |dw| < K
+   Only the phase-coherent (locked) drive transfers energy; a
+   phase-scrambled drive averages to nothing.
 
-with saturable gain  g(P) = g0 / (1 + P/Psat_g)  (depletes as power grows) and a
-saturable absorber   q(P) = q0 / (1 + P/Psat_a)  (bleaches as power grows). When
-the absorber bleaches at LOWER power than the gain depletes (Psat_a < Psat_g) the
-round-trip multiplier M(P) rises above 1 in a middle band, giving a BISTABLE map:
-a stable "0" at P=0, an unstable threshold P_t, and a stable "1" at P*. That
-bistability with a contraction |f'(P*)| < 1 is what restores logic levels through
-a long cascade.
+3. Multi-beam rate equations with one shared inversion N:
+       dN/dt   = pump - N/tau2 - N * sum_k sigma_k * n_k
+       dn_k/dt = (sigma_k * N - alpha_k) * n_k + sum_j kappa * n_j
+   Cross-saturation through N is the transistor coupling; kappa -> 0
+   gives independent WDM channels instead.
 
-The AVERAGED model treats the gain as instantaneously available. The TIME-DOMAIN
-model adds an explicit inversion u(t) that is re-pumped by a pulse train at the
-cavity round-trip period and relaxes on tau_2 between pulses. The ratio
-rho = tau_2 / tau_rt controls whether the gain survives between pulses. This file
-lets us ask whether the clean averaged result survives de-averaging plus the two
-effects the averaged model is blind to: finite gain recovery (rho) and a
-spontaneous-emission floor (beta).
+Cascadability figure of merit - all three at once:
+       gain G >= 1   *   fan-out F >= 2   *   restoration |f'(P*)| < 1
 
-Every routine returns a JSON-serializable dict and reports its own null/collapse
-next to the positive number -- never a bare metric.
-
-CLI (run the file directly, or `-m physics_sim.optical_transistor` with src on path):
-    python src/physics_sim/optical_transistor.py              # full report (~110s)
-    python src/physics_sim/optical_transistor.py --regimes    # just the §8 grounding (~9s)
-    python src/physics_sim/optical_transistor.py --regimes --json
-    python src/physics_sim/optical_transistor.py --json        # full report as JSON
+Null gates (falsification controls, must FAIL when the physics is removed):
+- constant absorber      -> bistability must collapse to a linear amp
+- phase-scrambled drive  -> locked energy transfer must collapse to ~0
+- severed shared gain    -> the gate beam must become decorative
 """
 
 from __future__ import annotations
 
-import json
 import math
-import sys
-from dataclasses import dataclass, asdict, replace
-
-import numpy as np
-
+import random
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Sequence, Tuple
 
 # =============================================================================
-# Parameters (non-dimensional). Defaults chosen for a clean bistable window:
-#   stable "0" requires net loss at low power:   q0 + l > g0
-#   a "1" can exist only if bleached gain beats loss:  g0 > l
-#   absorber must bleach before gain depletes:   Psat_a < Psat_g
+# 1. ROUND-TRIP MAP: saturable gain x saturable absorber
 # =============================================================================
-@dataclass(frozen=True)
-class Params:
-    # Material grounding for rho / beta / Psat is in the spec, §8 "Material regimes":
-    #   docs/superpowers/specs/2026-06-09-synchronous-pump-optical-transistor-spec.md
-    # Short version: beta is the MATERIAL edge (Probe 2). material_regimes() MEASURES
-    # survival across each cited band: organic planar microcavity (beta<=~0.1, the
-    # Nat. Photonics 13, 378 (2019) / Nat. Comms 15 (2024) device) CLEARS the edge;
-    # only photonic-wire organics (beta~0.3-0.5) flip bits. Inorganic GaAs (beta~1e-4)
-    # clears it with huge margin but needs cryo. rho is the ARCHITECTURE edge
-    # (Probe 1): l=0.10 => 10 round-trips of photon storage (finesse ~63), a
-    # long-cavity/fiber-loop element, NOT a lambda-microcavity -- so rho_crit~1.5
-    # binds fiber/ring logic, never a monolithic microcavity (which sits at rho>>1).
-    g0: float = 0.40  # small-signal gain (per round trip, in ln units)
-    q0: float = 0.50  # small-signal saturable-absorber loss
-    l: float = 0.10  # linear + mirror loss (combined, ln units); tau_c = tau_rt / l
-    Psat_g: float = 3.0  # gain saturation power
-    Psat_a: float = 0.30  # absorber saturation power (< Psat_g => bistable)
-    # time-domain only:
-    pump: float = 0.85  # per-pulse inversion refill fraction toward full
-    kappa_inj: float = 0.25  # injection coupling (sets Adler locking half-width K)
+
+
+@dataclass
+class CavityConfig:
+    """Parameters of the round-trip power map.
+
+    The absorber must saturate at lower power than the gain
+    (sat_power_absorber < sat_power_gain) for the map to be bistable:
+    low P -> loss wins (stable "0"); mid P -> absorber bleaches first
+    (unstable threshold); high P -> gain saturates (stable "1").
+    """
+
+    mirror_product: float = 0.81  # R1 * R2
+    cavity_length: float = 1.0  # L
+    gain_peak: float = 2.0  # g0
+    sat_power_gain: float = 2.0  # gain saturation power
+    absorber_peak: float = 1.5  # a0 (saturable part of the loss)
+    sat_power_absorber: float = 0.1  # absorber saturation power
+    linear_loss: float = 0.6  # unsaturable background loss
+
+    def gain(self, power: float) -> float:
+        """Saturable gain g(P) = g0 / (1 + P / P_sat_g)."""
+        return self.gain_peak / (1.0 + power / self.sat_power_gain)
+
+    def loss(self, power: float) -> float:
+        """Total loss a(P) = a_lin + a0 / (1 + P / P_sat_a)."""
+        if math.isinf(self.sat_power_absorber):
+            saturable = self.absorber_peak  # null gate: absorber never bleaches
+        else:
+            saturable = self.absorber_peak / (1.0 + power / self.sat_power_absorber)
+        return self.linear_loss + saturable
+
+    def round_trip_gain(self, power: float) -> float:
+        """Net single-pass multiplier G(P) = R1*R2 * exp[(g - a) * L]."""
+        return self.mirror_product * math.exp((self.gain(power) - self.loss(power)) * self.cavity_length)
+
+
+def round_trip_map(power: float, config: CavityConfig) -> float:
+    """One bounce: P_{n+1} = G(P_n) * P_n."""
+    return config.round_trip_gain(power) * power
+
+
+@dataclass
+class FixedPoint:
+    """A fixed point P* of the round-trip map with its local stability."""
+
+    power: float
+    derivative: float  # f'(P*)
 
     @property
-    def dep(self) -> float:
-        """Stimulated depletion rate. Fixed to pump/Psat_g so that the rho->inf
-        steady-state inversion u = pump/(pump+dep*P) = 1/(1+P/Psat_g) reproduces
-        the averaged saturable gain g0/(1+P/Psat_g) EXACTLY -- the anchor (the
-        time-domain model reducing to the averaged one) then holds by construction,
-        not by tuning."""
-        return self.pump / self.Psat_g
+    def stable(self) -> bool:
+        """Contraction criterion |f'(P*)| < 1: noise shrinks each pass."""
+        return abs(self.derivative) < 1.0
 
 
-DEFAULT = Params()
+def _map_derivative(power: float, config: CavityConfig, rel_step: float = 1e-6) -> float:
+    """Central-difference derivative f'(P) of the round-trip map."""
+    h = max(power, 1e-9) * rel_step
+    return (round_trip_map(power + h, config) - round_trip_map(power - h, config)) / (2.0 * h)
 
 
-# =============================================================================
-# Averaged model
-# =============================================================================
-def _g(P: float, p: Params) -> float:
-    return p.g0 / (1.0 + P / p.Psat_g)
+def find_fixed_points(
+    config: CavityConfig,
+    p_min: float = 1e-6,
+    p_max: float = 100.0,
+    n_grid: int = 4000,
+) -> List[FixedPoint]:
+    """Locate all fixed points of the map on [0, p_max].
 
-
-def _q(P: float, p: Params) -> float:
-    return p.q0 / (1.0 + P / p.Psat_a)
-
-
-def round_trip_log_gain(P: float, p: Params, u: float = 1.0) -> float:
-    """ln M(P): net round-trip log-gain. u in [0,1] scales available gain."""
-    return u * _g(P, p) - _q(P, p) - p.l
-
-
-def multiplier(P: float, p: Params, u: float = 1.0) -> float:
-    return math.exp(round_trip_log_gain(P, p, u))
-
-
-def find_fixed_points(p: Params, u: float = 1.0, pmax: float = 1.0e3) -> dict:
-    """Fixed points of P_{n+1}=M(P)P. P=0 is always one; positive ones are the
-    M(P)=1 crossings. Returns ordered points with stability (|f'|<1)."""
-    grid = np.concatenate([[0.0], np.logspace(-4, math.log10(pmax), 4000)])
-    h = np.array([round_trip_log_gain(P, p, u) for P in grid])  # ln M
-    crossings = []
-    for i in range(1, len(grid)):
-        if h[i - 1] == 0.0:
-            crossings.append(grid[i - 1])
-        elif h[i - 1] * h[i] < 0.0:  # sign change of ln M => M=1
-            # linear interpolation in log-gain
-            P0, P1, h0, h1 = grid[i - 1], grid[i], h[i - 1], h[i]
-            crossings.append(P0 + (P1 - P0) * (-h0) / (h1 - h0))
-
-    def fprime(P: float) -> float:
-        if P <= 0:
-            return multiplier(0.0, p, u)  # f'(0) = M(0)
-        dP = max(1e-6, P * 1e-4)
-        f1 = multiplier(P + dP, p, u) * (P + dP)
-        f0 = multiplier(P - dP, p, u) * (P - dP)
-        return (f1 - f0) / (2 * dP)
-
-    pts = []
-    # P = 0 fixed point
-    pts.append({"P": 0.0, "fprime": fprime(0.0), "stable": multiplier(0.0, p, u) < 1.0})
-    for P in crossings:
-        d = fprime(P)
-        pts.append({"P": float(P), "fprime": float(d), "stable": bool(abs(d) < 1.0)})
-    pts.sort(key=lambda r: r["P"])
-    stable_pos = [r for r in pts if r["P"] > 0 and r["stable"]]
-    unstable_pos = [r for r in pts if r["P"] > 0 and not r["stable"]]
-    bistable = (multiplier(0.0, p, u) < 1.0) and len(stable_pos) >= 1 and len(unstable_pos) >= 1
-    return {
-        "fixed_points": pts,
-        "bistable": bool(bistable),
-        "P_star": float(stable_pos[-1]["P"]) if stable_pos else None,
-        "P_threshold": float(unstable_pos[0]["P"]) if unstable_pos else None,
-        "contraction": float(stable_pos[-1]["fprime"]) if stable_pos else None,
-    }
-
-
-def stage_transfer(P_in: float, p: Params, u: float = 1.0, iters: int = 400) -> float:
-    """Run one cavity to steady state from input seed P_in -> output power."""
-    P = max(P_in, 0.0)
-    for _ in range(iters):
-        P = multiplier(P, p, u) * P
-        if P > 1e6 or not math.isfinite(P):
-            return 1e6
-    return P
-
-
-def cascade_survival(
-    p: Params,
-    n_stages: int = 300,
-    noise: float = 0.20,
-    n_traj: int = 200,
-    beta: float = 0.0,
-    seed: int = 0,
-) -> dict:
-    """Feed a clean '1' through n_stages restoring stages with multiplicative
-    noise (and optional spontaneous floor beta). Survival = fraction of runs that
-    still read '1' (within 25% of P*) at the end."""
-    fp = find_fixed_points(p)
-    if not fp["bistable"]:
-        return {"survival": 0.0, "P_star": fp["P_star"], "bistable": False}
-    pstar = fp["P_star"]
-    rng = np.random.default_rng(seed)
-    held = 0
-    for _ in range(n_traj):
-        P = pstar
-        ok = True
-        for _s in range(n_stages):
-            P = stage_transfer(P, p)
-            P *= 1.0 + noise * (2 * rng.random() - 1.0)  # +/- noise
-            if beta > 0.0:
-                P += beta * pstar * rng.standard_normal()  # spontaneous floor
-            P = max(P, 0.0)
-            if P < 0.25 * pstar:  # fell to '0' basin
-                ok = False
-                break
-        held += 1 if ok else 0
-    return {
-        "survival": held / n_traj,
-        "P_star": float(pstar),
-        "P_threshold": fp["P_threshold"],
-        "contraction": fp["contraction"],
-        "bistable": True,
-        "n_stages": n_stages,
-        "noise": noise,
-        "beta": beta,
-    }
-
-
-# =============================================================================
-# Time-domain synchronous-pump model
-# =============================================================================
-def recovery(rho: float) -> float:
-    """Time-averaged surviving fraction of an impulse-pumped inversion over one
-    round trip: an inversion pumped to full at the surface decays as exp(-t/tau_2)
-    while the signal traverses the cavity (0..tau_rt), so the signal sees the
-    average  (1/tau_rt) integral_0^tau_rt exp(-t/tau_2) dt = rho*(1-exp(-1/rho)).
-      rho -> inf : -> 1   (CW limit, recovers the averaged model exactly)
-      rho -> 0   : -> 0   (inversion dies between pulses; the '1' cannot survive)
+    P = 0 is always a fixed point of the multiplicative map; its stability is
+    G(0). Nonzero fixed points are roots of G(P) = 1, found by log-grid sign
+    scan plus bisection refinement.
     """
-    rho = max(rho, 1e-9)
-    return rho * (1.0 - math.exp(-1.0 / rho))
+    points = [FixedPoint(power=0.0, derivative=config.round_trip_gain(0.0))]
+
+    log_lo, log_hi = math.log(p_min), math.log(p_max)
+    grid = [math.exp(log_lo + (log_hi - log_lo) * i / (n_grid - 1)) for i in range(n_grid)]
+    residual = [config.round_trip_gain(p) - 1.0 for p in grid]
+
+    for i in range(n_grid - 1):
+        if residual[i] == 0.0 or residual[i] * residual[i + 1] >= 0.0:
+            continue
+        lo, hi = grid[i], grid[i + 1]
+        for _ in range(80):  # bisection
+            mid = 0.5 * (lo + hi)
+            if (config.round_trip_gain(lo) - 1.0) * (config.round_trip_gain(mid) - 1.0) <= 0.0:
+                hi = mid
+            else:
+                lo = mid
+        p_star = 0.5 * (lo + hi)
+        points.append(FixedPoint(power=p_star, derivative=_map_derivative(p_star, config)))
+
+    return points
 
 
-def _pump_gaps(n: int, T_over_tau_rt: float, spread: float, rng) -> np.ndarray:
-    """For each round trip, rounds elapsed since the last pump pulse. spread>0
-    jitters the pump period (the timing-null knob); larger gaps => more inversion
-    decay between pulses => weaker available gain."""
-    pumped = np.zeros(n, dtype=bool)
-    t = 0.0
-    while t < n:
-        idx = int(round(t))
-        if 0 <= idx < n:
-            pumped[idx] = True
-        period = T_over_tau_rt
-        if spread > 0:
-            period = max(0.2, T_over_tau_rt + spread * (2 * rng.random() - 1.0))
-        t += period
-    gaps = np.zeros(n)
-    since = 0.0
-    for i in range(n):
-        if pumped[i]:
-            since = 0.0
+def is_bistable(config: CavityConfig) -> bool:
+    """True if the map has two stable fixed points separated by an unstable one."""
+    pts = find_fixed_points(config)
+    stable = [p for p in pts if p.stable]
+    unstable = [p for p in pts if not p.stable]
+    if len(stable) < 2 or not unstable:
+        return False
+    lo, hi = min(s.power for s in stable), max(s.power for s in stable)
+    return any(lo < u.power < hi for u in unstable)
+
+
+def iterate_cascade(
+    power_in: float,
+    config: CavityConfig,
+    n_stages: int,
+    noise_amplitude: float = 0.0,
+    rng: Optional[random.Random] = None,
+) -> List[float]:
+    """Push a signal through n_stages identical cavities, optionally noisy.
+
+    With a bistable map the per-stage contraction |f'(P*)| < 1 regenerates the
+    logic level; with a linear amp the noise is carried (or grown) instead.
+    """
+    rng = rng or random.Random(0)
+    levels = [power_in]
+    p = power_in
+    for _ in range(n_stages):
+        p = round_trip_map(p, config)
+        if noise_amplitude:
+            p = max(0.0, p * (1.0 + rng.uniform(-noise_amplitude, noise_amplitude)))
+        levels.append(p)
+    return levels
+
+
+# =============================================================================
+# 2. ADLER EQUATION: injection-locking window
+# =============================================================================
+
+
+@dataclass
+class AdlerConfig:
+    """Parameters for the Adler phase equation d(dphi)/dt = dw - K sin(dphi)."""
+
+    locking_bandwidth: float = 1.0  # K
+    detuning: float = 0.0  # dw
+    dt: float = 1e-3
+    t_max: float = 200.0
+    scramble_phase: bool = False  # null gate: random phase kicks each step
+    scramble_strength: float = math.pi
+
+
+@dataclass
+class AdlerResult:
+    """Outcome of an Adler integration."""
+
+    locked: bool
+    mean_energy_transfer: float  # time-average of cos(dphi), late window
+    final_phase: float
+
+
+def integrate_adler(config: AdlerConfig, rng: Optional[random.Random] = None) -> AdlerResult:
+    """Integrate the Adler equation; report locking and mean energy transfer.
+
+    Energy flows from drive to cavity at a rate proportional to cos(dphi).
+    Locked: dphi settles to arcsin(dw/K), giving cos(dphi*) > 0.
+    Unlocked or scrambled: cos(dphi) averages toward zero.
+    """
+    rng = rng or random.Random(1)
+    phi = 0.0
+    n_steps = int(config.t_max / config.dt)
+    tail_start = int(0.5 * n_steps)
+    acc = 0.0
+    count = 0
+    for step in range(n_steps):
+        dphi_dt = config.detuning - config.locking_bandwidth * math.sin(phi)
+        phi += dphi_dt * config.dt
+        if config.scramble_phase:
+            phi += rng.uniform(-config.scramble_strength, config.scramble_strength)
+        if step >= tail_start:
+            acc += math.cos(phi)
+            count += 1
+    mean_transfer = acc / max(count, 1)
+    # Locked iff the phase velocity has died out (and we are not scrambling).
+    final_velocity = abs(config.detuning - config.locking_bandwidth * math.sin(phi))
+    locked = (not config.scramble_phase) and final_velocity < 1e-3 * max(config.locking_bandwidth, 1e-12)
+    return AdlerResult(locked=locked, mean_energy_transfer=mean_transfer, final_phase=phi)
+
+
+def locking_window(
+    locking_bandwidth: float,
+    detunings: Sequence[float],
+    dt: float = 1e-3,
+    t_max: float = 200.0,
+) -> Dict[float, bool]:
+    """Map detuning -> locked? The boundary sits at |dw| = K (Adler)."""
+    out: Dict[float, bool] = {}
+    for dw in detunings:
+        cfg = AdlerConfig(locking_bandwidth=locking_bandwidth, detuning=dw, dt=dt, t_max=t_max)
+        out[dw] = integrate_adler(cfg).locked
+    return out
+
+
+# =============================================================================
+# 3. MULTI-BEAM: shared inversion, gain competition, fan-out
+# =============================================================================
+
+
+@dataclass
+class MultiBeamConfig:
+    """Two-beam (signal + gate) rate model sharing one inversion reservoir.
+
+    For transistor action the gate must clamp the shared inversion BELOW the
+    signal's threshold: alpha_gate/sigma_gate < alpha_signal/sigma_signal.
+    The defaults give the gate twice the cross-section, so gate-on pins N at
+    1.0 while the signal needs N >= 2.0 — the signal sees net loss and dies.
+    """
+
+    pump: float = 6.0  # inversion replenishment rate
+    inversion_lifetime: float = 1.0  # tau2
+    cross_sections: Tuple[float, float] = (1.0, 2.0)  # sigma_k (signal, gate)
+    losses: Tuple[float, float] = (2.0, 2.0)  # alpha_k
+    coupling: float = 0.0  # kappa (direct linear cross-feed)
+    shared_reservoir: bool = True  # null gate: False = severed gain sharing
+    seed_photons: float = 1e-6  # spontaneous seed keeping n_k > 0
+    dt: float = 1e-3
+    t_max: float = 60.0
+
+
+@dataclass
+class MultiBeamResult:
+    """Steady-state photon numbers and the inversion(s) that produced them."""
+
+    photons: Tuple[float, float]
+    inversion: Tuple[float, float]  # equal entries when the reservoir is shared
+
+
+def integrate_multibeam(config: MultiBeamConfig, gate_on: bool) -> MultiBeamResult:
+    """Integrate the coupled rate equations to steady state.
+
+    With a shared reservoir, turning the gate beam on depletes N and pulls the
+    signal beam's gain down (cross-saturation = transistor action). With
+    severed reservoirs the gate cannot reach the signal except through kappa.
+    """
+    sig_sigma, gate_sigma = config.cross_sections
+    sig_alpha, gate_alpha = config.losses
+    n_sig, n_gate = config.seed_photons, config.seed_photons
+    inv_sig = inv_gate = config.pump * config.inversion_lifetime  # start pumped
+
+    steps = int(config.t_max / config.dt)
+    for _ in range(steps):
+        gate_drive = gate_sigma * n_gate if gate_on else 0.0
+        if config.shared_reservoir:
+            depletion = sig_sigma * n_sig + gate_drive
+            d_inv = config.pump - inv_sig / config.inversion_lifetime - inv_sig * depletion
+            inv_sig = max(0.0, inv_sig + d_inv * config.dt)
+            inv_gate = inv_sig
         else:
-            since += 1.0
-        gaps[i] = since
-    return gaps
+            d_sig = config.pump - inv_sig / config.inversion_lifetime - inv_sig * sig_sigma * n_sig
+            d_gate = config.pump - inv_gate / config.inversion_lifetime - inv_gate * gate_drive
+            inv_sig = max(0.0, inv_sig + d_sig * config.dt)
+            inv_gate = max(0.0, inv_gate + d_gate * config.dt)
+
+        dn_sig = (sig_sigma * inv_sig - sig_alpha) * n_sig + config.coupling * n_gate
+        dn_gate = ((gate_sigma * inv_gate - gate_alpha) * n_gate) if gate_on else -n_gate
+        n_sig = max(config.seed_photons, n_sig + dn_sig * config.dt)
+        n_gate = max(config.seed_photons if gate_on else 0.0, n_gate + dn_gate * config.dt)
+
+    return MultiBeamResult(photons=(n_sig, n_gate), inversion=(inv_sig, inv_gate))
 
 
-def run_cavity_td(
-    P0: float,
-    p: Params,
-    rho: float,
-    *,
-    n_rt: int = 1500,
-    T_over_tau_rt: float = 1.0,
-    pump_spread: float = 0.0,
-    beta: float = 0.0,
-    detuning: float = 0.0,
-    kappa_inj: float | None = None,
-    inj_amp: float = 0.0,
-    scramble_phase: bool = False,
-    seed: int = 0,
-) -> dict:
-    """Single cavity, explicit pulse-train pump with inversion recovery.
+def gate_extinction_ratio(config: MultiBeamConfig) -> float:
+    """Signal output with gate OFF divided by signal output with gate ON.
 
-    State: complex field A (P=|A|^2) and normalized inversion u in [0,1] that is
-    re-pumped at the schedule and relaxes by exp(-1/rho) each round trip. The gain
-    is g0*u (saturation comes from inversion depletion, NOT a separate 1/(1+P)
-    factor -- the averaged model is the rho->inf steady state of exactly this).
-    Returns the steady-state power, phase-lock flag, and final inversion.
+    >> 1 means the gate beam really switches the signal (transistor action);
+    ~ 1 means the coupling is decorative.
     """
-    rng = np.random.default_rng(seed)
-    kinj = p.kappa_inj if kappa_inj is None else kappa_inj
-    base_rec = recovery(rho)
-    gaps = _pump_gaps(n_rt, T_over_tau_rt, pump_spread, rng)
-    A = math.sqrt(max(P0, 0.0)) + 0j
-    phase_hist = []
-    P_hist = []
-    for nidx in range(n_rt):
-        # available inversion this round trip: base recovery times the extra decay
-        # accrued since the last pump pulse (=0 gap for synchronous pumping)
-        eta = base_rec * math.exp(-gaps[nidx] / max(rho, 1e-9))
-        P = abs(A) ** 2
-        lng = _g(P, p) * eta - _q(P, p) - p.l  # saturable gain * recovery
-        M = math.exp(lng)
-        A = math.sqrt(M) * A * np.exp(1j * detuning)
-        if inj_amp > 0.0:
-            phi = (2 * np.pi * rng.random()) if scramble_phase else 0.0
-            A = A + kinj * inj_amp * np.exp(1j * phi)
-        if beta > 0.0:
-            A = A + math.sqrt(beta * max(eta, 0.0)) * (rng.standard_normal() + 1j * rng.standard_normal())
-        P_hist.append(abs(A) ** 2)
-        if inj_amp > 0.0:
-            phase_hist.append(abs(np.angle(A)))
-    tail = P_hist[-200:]
-    locked = False
-    if inj_amp > 0.0 and len(phase_hist) > 200:
-        locked = float(np.std(phase_hist[-200:])) < 0.3
-    return {
-        "P_steady": float(np.mean(tail)),
-        "P_final": float(P_hist[-1]),
-        "eta_mean": float(base_rec),
-        "locked": bool(locked),
-    }
-
-
-def simulate_synchronous_pump(
-    *,
-    rho: float,
-    T_over_tau_rt: float = 1.0,
-    beta: float = 0.0,
-    detuning: float = 0.0,
-    n_rt: int = 1500,
-    seed: int = 0,
-    p: Params = DEFAULT,
-) -> dict:
-    """One stage, explicit pulse-train pump. Determines bistability by checking
-    whether low/high initial seeds converge to distinct attractors."""
-    lo = run_cavity_td(0.01, p, rho, n_rt=n_rt, T_over_tau_rt=T_over_tau_rt, beta=beta, detuning=detuning, seed=seed)
-    hi = run_cavity_td(5.0, p, rho, n_rt=n_rt, T_over_tau_rt=T_over_tau_rt, beta=beta, detuning=detuning, seed=seed)
-    pstar = hi["P_steady"]
-    bistable = (lo["P_steady"] < 0.1) and (pstar > 0.3)
-    # numerical contraction of the round-trip map at the high attractor (CW u)
-    fp = find_fixed_points(p)
-    return {
-        "rho": rho,
-        "bistable": bool(bistable),
-        "P_star": float(pstar),
-        "low_attractor": float(lo["P_steady"]),
-        "contraction": fp["contraction"],
-        "recovery": recovery(rho),
-    }
+    off = integrate_multibeam(config, gate_on=False).photons[0]
+    on = integrate_multibeam(config, gate_on=True).photons[0]
+    return off / max(on, 1e-300)
 
 
 # =============================================================================
-# Probe 1 — gain-recovery boundary rho = tau_2 / tau_rt
+# 4. FIGURE OF MERIT + NULL GATES
 # =============================================================================
-def probe_recovery_boundary(rho_grid=None, p: Params = DEFAULT) -> dict:
-    if rho_grid is None:
-        rho_grid = np.logspace(-2, 2, 25)
-    rows = []
-    rho_crit = None
-    for rho in rho_grid:
-        r = simulate_synchronous_pump(rho=float(rho), p=p)
-        rows.append({"rho": float(rho), "bistable": r["bistable"], "P_star": r["P_star"]})
-    # lower edge: smallest rho at which bistability holds and stays held above it
-    for i, row in enumerate(rows):
-        if row["bistable"] and all(rr["bistable"] for rr in rows[i:]):
-            rho_crit = row["rho"]
+
+
+@dataclass
+class TransistorVerdict:
+    """The triple inequality a cascadable element must satisfy at once."""
+
+    gain_above_unity: bool  # G >= 1 somewhere on the high branch
+    fan_out: int  # how many downstream stages one output can switch
+    contraction: float  # |f'(P*)| at the high stable point
+    bistable: bool
+
+    @property
+    def cascadable(self) -> bool:
+        """G >= 1 and F >= 2 and |f'(P*)| < 1, with real bistability."""
+        return self.gain_above_unity and self.fan_out >= 2 and self.contraction < 1.0 and self.bistable
+
+
+def evaluate_transistor(config: CavityConfig, max_fan_out: int = 64) -> TransistorVerdict:
+    """Score a cavity against the cascadability figure of merit.
+
+    Fan-out is measured operationally: split the high-state output P* into
+    F equal parts and ask whether P*/F still clears the unstable threshold
+    (so each downstream stage regenerates to "1").
+    """
+    pts = find_fixed_points(config)
+    stable_nonzero = [p for p in pts if p.stable and p.power > 0.0]
+    unstable_nonzero = [p for p in pts if not p.stable and p.power > 0.0]
+    bistable = is_bistable(config)
+
+    if not stable_nonzero or not unstable_nonzero:
+        return TransistorVerdict(
+            gain_above_unity=any(config.round_trip_gain(p.power) >= 1.0 for p in pts),
+            fan_out=0,
+            contraction=float("inf"),
+            bistable=bistable,
+        )
+
+    high = max(stable_nonzero, key=lambda p: p.power)
+    threshold = min(unstable_nonzero, key=lambda p: p.power)
+
+    fan_out = 0
+    for f in range(1, max_fan_out + 1):
+        if high.power / f > threshold.power:
+            fan_out = f
+        else:
             break
-    return {
-        "rho_crit": rho_crit,
-        "bistable_at_large_rho": rows[-1]["bistable"],
-        "bistable_at_small_rho": rows[0]["bistable"],
-        "curve": rows,
-    }
+
+    return TransistorVerdict(
+        gain_above_unity=True,  # an unstable threshold exists, so G crossed 1
+        fan_out=fan_out,
+        contraction=abs(high.derivative),
+        bistable=bistable,
+    )
+
+
+@dataclass
+class NullGateReport:
+    """One falsification control: the effect must DIE when physics is removed."""
+
+    name: str
+    effect_with_physics: float
+    effect_without: float
+    collapse_ratio: float
+    passed: bool
+
+
+def run_null_gates(
+    cavity: Optional[CavityConfig] = None,
+    adler_bandwidth: float = 1.0,
+    multibeam: Optional[MultiBeamConfig] = None,
+    collapse_factor: float = 10.0,
+) -> List[NullGateReport]:
+    """Run all three null gates and report whether each effect collapses.
+
+    1. Bistability needs the saturable absorber (else: linear amp).
+    2. Energy transfer needs phase coherence (else: scrambled ~ zero).
+    3. Transistor action needs the shared reservoir (else: decorative gate).
+    """
+    cavity = cavity or CavityConfig()
+    multibeam = multibeam or MultiBeamConfig()
+    reports: List[NullGateReport] = []
+
+    # Gate 1: remove absorber saturation -> bistability must vanish.
+    no_absorber = CavityConfig(**{**cavity.__dict__, "sat_power_absorber": float("inf")})
+    with_b = 1.0 if is_bistable(cavity) else 0.0
+    without_b = 1.0 if is_bistable(no_absorber) else 0.0
+    reports.append(
+        NullGateReport(
+            name="saturable_absorber",
+            effect_with_physics=with_b,
+            effect_without=without_b,
+            collapse_ratio=float("inf") if without_b == 0.0 and with_b > 0.0 else 1.0,
+            passed=with_b == 1.0 and without_b == 0.0,
+        )
+    )
+
+    # Gate 2: scramble the drive phase -> energy transfer must collapse.
+    coherent = integrate_adler(AdlerConfig(locking_bandwidth=adler_bandwidth, detuning=0.3 * adler_bandwidth))
+    scrambled = integrate_adler(
+        AdlerConfig(locking_bandwidth=adler_bandwidth, detuning=0.3 * adler_bandwidth, scramble_phase=True)
+    )
+    ratio = abs(coherent.mean_energy_transfer) / max(abs(scrambled.mean_energy_transfer), 1e-12)
+    reports.append(
+        NullGateReport(
+            name="phase_coherence",
+            effect_with_physics=coherent.mean_energy_transfer,
+            effect_without=scrambled.mean_energy_transfer,
+            collapse_ratio=ratio,
+            passed=coherent.locked and ratio > collapse_factor,
+        )
+    )
+
+    # Gate 3: sever the shared reservoir -> gate extinction must go to ~1.
+    shared = gate_extinction_ratio(multibeam)
+    severed_cfg = MultiBeamConfig(**{**multibeam.__dict__, "shared_reservoir": False})
+    severed = gate_extinction_ratio(severed_cfg)
+    reports.append(
+        NullGateReport(
+            name="shared_gain_reservoir",
+            effect_with_physics=shared,
+            effect_without=severed,
+            collapse_ratio=shared / max(severed, 1e-12),
+            passed=shared > collapse_factor * severed and abs(severed - 1.0) < 0.5,
+        )
+    )
+
+    return reports
 
 
 # =============================================================================
-# Probe 2 — spontaneous-emission floor
+# 5. SYNCHRONOUS PUMP: explicit time-domain model (one level deeper than the map)
 # =============================================================================
-def probe_spontaneous_floor(beta_grid=None, p: Params = DEFAULT, n_traj: int = 200, noise: float = 0.20) -> dict:
-    if beta_grid is None:
-        beta_grid = [0.0, 1e-3, 3e-3, 1e-2, 3e-2, 1e-1]
+
+
+@dataclass
+class SyncPumpConfig:
+    """Pulsed pump + gated signal + inversion in continuous time.
+
+    The averaged round-trip map collapses one cavity bounce into a single
+    multiplier G(P). Here we resolve time inside the bounce: the pump
+    arrives as a Gaussian pulse train at period T_pump; the inversion
+    N(t) integrates pump and decays with tau2; the signal is itself a
+    pulse train at period T_signal that amplifies by exp(sigma * N(t_k))
+    only at its arrival instants t_k = phase * T_pump + k * T_signal.
+
+    Synchronous (phase=0, no jitter) lands every signal pulse on the
+    pump-driven inversion peak. Pump jitter (or off-peak phase) makes
+    signal pulses sample average / trough inversion instead.
+    """
+
+    pump_pulse_amplitude: float = 8.0  # area of one pump pulse
+    pump_pulse_width: float = 0.02  # gaussian sigma of one pulse
+    pump_period: float = 1.0  # T_pump
+    signal_period: float = 1.0  # T_signal (synchronous when == pump_period)
+    signal_phase: float = 0.0  # phase offset (fraction of pump_period)
+    inversion_lifetime: float = 0.3  # tau2 (must be << T_pump for synchrony to matter)
+    cross_section: float = 0.5  # sigma
+    cavity_loss: float = 0.1  # per-pulse loss exponent on the signal
+    seed_photons: float = 1e-4
+    dt: float = 2e-3
+    n_pulses: int = 30
+    pump_jitter: float = 0.0  # null gate: jitter as fraction of pump_period
+
+
+@dataclass
+class SyncPumpResult:
+    """Output of one synchronous-pump integration."""
+
+    n_signal: float  # final signal photon number
+    n_inversion_peak: float  # max inversion ever reached
+    n_inversion_at_signal: float  # mean inversion seen by signal pulses
+
+
+def integrate_sync_pump(config: SyncPumpConfig, rng: Optional[random.Random] = None) -> SyncPumpResult:
+    """Integrate pump -> inversion, with signal gated to discrete arrival times.
+
+    The signal is gated: it amplifies only at its arrival instants, picking
+    up exp(sigma * N(t_k) - alpha) per pulse. This is what makes "synchronous"
+    vs "jittered" actually matter - a continuous signal would only see the
+    time-averaged inversion (which is unchanged by jitter), but a pulsed
+    signal samples N(t) at specific times and so cares about pulse alignment.
+    """
+    rng = rng or random.Random(2)
+    sigma_p = config.pump_pulse_width
+    norm_p = config.pump_pulse_amplitude / (sigma_p * math.sqrt(2.0 * math.pi))
+    jit_scale = config.pump_jitter * config.pump_period
+    pump_centers = [
+        k * config.pump_period + (rng.uniform(-jit_scale, jit_scale) if jit_scale else 0.0)
+        for k in range(config.n_pulses)
+    ]
+    signal_centers = [
+        config.signal_phase * config.pump_period + k * config.signal_period for k in range(config.n_pulses)
+    ]
+
+    t_max = max(max(pump_centers), max(signal_centers)) + 5.0 * config.pump_period
+    steps = int(t_max / config.dt)
+
+    N = 0.0
+    n_sig = config.seed_photons
+    inv_peak = 0.0
+    inv_at_signal_sum = 0.0
+    inv_at_signal_count = 0
+    next_signal_idx = 0
+
+    for step in range(steps):
+        t = step * config.dt
+        # Sum nearby pump pulses only (3-sigma window)
+        pump = 0.0
+        for tp in pump_centers:
+            dt_p = t - tp
+            if abs(dt_p) < 4.0 * sigma_p:
+                pump += norm_p * math.exp(-0.5 * (dt_p / sigma_p) ** 2)
+        # Inversion evolves between signal arrivals
+        N = max(0.0, N + (pump - N / config.inversion_lifetime) * config.dt)
+        inv_peak = max(inv_peak, N)
+        # Signal pulse arrival -> impulsive amplification reading current N
+        if next_signal_idx < len(signal_centers) and t >= signal_centers[next_signal_idx]:
+            n_sig = max(config.seed_photons, n_sig * math.exp(config.cross_section * N - config.cavity_loss))
+            # Depletion: this signal pulse takes some inversion with it
+            N = max(0.0, N - 0.05 * config.cross_section * N)
+            inv_at_signal_sum += N
+            inv_at_signal_count += 1
+            next_signal_idx += 1
+
+    return SyncPumpResult(
+        n_signal=n_sig,
+        n_inversion_peak=inv_peak,
+        n_inversion_at_signal=inv_at_signal_sum / max(inv_at_signal_count, 1),
+    )
+
+
+# =============================================================================
+# 6. BISTABILITY REGION: parameter-space scan (saddle-node boundaries)
+# =============================================================================
+
+
+@dataclass
+class BistabilityMap:
+    """Result of sweeping two cavity parameters and labeling each cell."""
+
+    x_name: str
+    x_values: List[float]
+    y_name: str
+    y_values: List[float]
+    bistable: List[List[bool]]  # bistable[j][i] aligned with y_values[j], x_values[i]
+
+    @property
+    def fraction_bistable(self) -> float:
+        """Share of grid cells that satisfy the bistability test."""
+        total = len(self.x_values) * len(self.y_values)
+        hits = sum(1 for row in self.bistable for cell in row if cell)
+        return hits / max(total, 1)
+
+
+def scan_bistability(
+    base: Optional[CavityConfig] = None,
+    x_field: str = "gain_peak",
+    x_values: Optional[Sequence[float]] = None,
+    y_field: str = "absorber_peak",
+    y_values: Optional[Sequence[float]] = None,
+) -> BistabilityMap:
+    """Sweep two CavityConfig fields and label each cell bistable or not.
+
+    Used to verify the saddle-node geometry: bistability lives inside a
+    wedge bounded by two folds (one where the upper stable point appears,
+    one where it merges with the threshold). Outside that wedge the cavity
+    is either a passive attenuator (low gain) or a free-running laser
+    (gain dominates with no absorber to clamp it).
+    """
+    base = base or CavityConfig()
+    x_values = list(x_values) if x_values is not None else [0.5 + 0.2 * i for i in range(15)]
+    y_values = list(y_values) if y_values is not None else [0.3 + 0.2 * i for i in range(12)]
+    rows: List[List[bool]] = []
+    for y in y_values:
+        row = []
+        for x in x_values:
+            kwargs = base.__dict__.copy()
+            kwargs[x_field] = x
+            kwargs[y_field] = y
+            row.append(is_bistable(CavityConfig(**kwargs)))
+        rows.append(row)
+    return BistabilityMap(
+        x_name=x_field,
+        x_values=x_values,
+        y_name=y_field,
+        y_values=y_values,
+        bistable=rows,
+    )
+
+
+# =============================================================================
+# 7. KAPPA-COUPLED AND GATE: held-just-below-threshold cavity with two inputs
+# =============================================================================
+
+
+@dataclass
+class AndGateConfig:
+    """Bistable cavity biased just below threshold, AND'd by two optical inputs.
+
+    Optical AND in a saturable-absorber cavity: a hold beam pins the cavity
+    just below the unstable threshold P_t. A single input pulse boosts the
+    instantaneous power but not enough to cross P_t -> the cavity relaxes
+    back to 0. Both inputs together push past P_t -> the cavity latches
+    onto the high stable branch. This works because the threshold is a
+    nonlinear all-or-nothing event, not a linear sum.
+    """
+
+    cavity: CavityConfig = field(default_factory=CavityConfig)
+    bias_fraction: float = 0.7  # hold beam = bias_fraction * threshold
+    input_kick: float = 0.5  # one input adds this * threshold
+    relax_stages: int = 80  # how many cavity bounces to let it settle
+
+
+@dataclass
+class AndGateRow:
+    """One row of the AND truth table."""
+
+    a: bool
+    b: bool
+    output: float
+    is_high: bool
+
+
+def evaluate_and_gate(config: AndGateConfig) -> List[AndGateRow]:
+    """Run all four (A, B) input combinations and report the cavity output.
+
+    Output is the cavity power after relax_stages bounces. The gate is real
+    iff only the (True, True) row latches high; the others must decay to 0.
+    """
+    pts = find_fixed_points(config.cavity)
+    threshold = min((p.power for p in pts if not p.stable and p.power > 0.0), default=None)
+    high = max((p.power for p in pts if p.stable), default=0.0)
+    if threshold is None or high == 0.0:
+        # Not bistable -> gate undefined; mark every row as low.
+        return [AndGateRow(a=bool(i & 2), b=bool(i & 1), output=0.0, is_high=False) for i in range(4)]
+    bias = config.bias_fraction * threshold
+    kick = config.input_kick * threshold
+    high_decision = 0.5 * high  # halfway between threshold and P*
     rows = []
-    beta_99 = None
-    for beta in beta_grid:
-        s = cascade_survival(p, beta=float(beta), n_traj=n_traj, noise=noise, seed=7)
-        rows.append({"beta": float(beta), "survival": s["survival"]})
-    for row in rows:
-        if row["survival"] >= 0.99:
-            beta_99 = row["beta"]  # largest beta (rows ascending) still >=99%
-    return {"beta_max_99pct_survival": beta_99, "curve": rows}
+    for a in (False, True):
+        for b in (False, True):
+            p = bias + (kick if a else 0.0) + (kick if b else 0.0)
+            trajectory = iterate_cascade(p, config.cavity, n_stages=config.relax_stages)
+            final = trajectory[-1]
+            rows.append(AndGateRow(a=a, b=b, output=final, is_high=final > high_decision))
+    return rows
+
+
+def and_gate_is_logical(config: AndGateConfig) -> bool:
+    """True iff the (A, B) truth table is exactly the AND function."""
+    table = {(r.a, r.b): r.is_high for r in evaluate_and_gate(config)}
+    expected = {(False, False): False, (False, True): False, (True, False): False, (True, True): True}
+    return table == expected
 
 
 # =============================================================================
-# Anchor — time-domain must reduce to the averaged model as rho -> inf, beta -> 0
+# 8. MATERIAL GROUNDING -- self-reports where real devices land vs this model
 # =============================================================================
-def reduces_to_averaged(tol: float = 0.10, p: Params = DEFAULT) -> dict:
-    avg = find_fixed_points(p)
-    td = simulate_synchronous_pump(rho=100.0, beta=0.0, p=p)
-    rel = abs(td["P_star"] - avg["P_star"]) / avg["P_star"] if avg["P_star"] else float("inf")
-    return {
-        "averaged_P_star": avg["P_star"],
-        "td_P_star_rho100": td["P_star"],
-        "rel_error": float(rel),
-        "passes": bool(rel <= tol and td["bistable"] and avg["bistable"]),
-        "tol": tol,
-    }
+# Ties the model's two falsification edges to cited materials. The edges live on
+# DIFFERENT axes:
+#   * beta -> MATERIAL axis: the spontaneous-emission coupling factor. Measured
+#     here as false-trigger survival of the "0" line (spontaneous photons seeding
+#     a clean "0" up over the threshold into a false "1").
+#   * rho  -> ARCHITECTURE axis: rho = tau2 / T_pump in the synchronous-pump model.
+#     Microcavities (round trip ~ fs) sit at rho >> 1 (gain effectively CW, the
+#     averaged limit); only long-cavity logic (fiber loops, rings) has rho ~ O(1)
+#     where the gain can sag between pulses and the sync-vs-jitter gate appears.
+# Cited, measured facts kept as data so the verdict is computed, not asserted.
 
+_BETA_LADDER = [1e-5, 1e-4, 1e-3, 1e-2, 3e-2, 1e-1, 2e-1, 3e-1, 5e-1]
 
-# =============================================================================
-# Adler locking + nulls
-# =============================================================================
-def locking_window(p: Params = DEFAULT, K_scan=None) -> dict:
-    """Sweep detuning; report transfer vs analytic sqrt(1-(dw/K)^2). K ~ kappa_inj."""
-    K = p.kappa_inj
-    if K_scan is None:
-        K_scan = np.linspace(0.0, 1.4 * K, 15)
-    rows = []
-    for dw in K_scan:
-        r = run_cavity_td(0.5, p, rho=50.0, n_rt=1200, detuning=float(dw), inj_amp=1.0, kappa_inj=K, seed=1)
-        analytic = math.sqrt(max(0.0, 1.0 - (dw / K) ** 2)) if dw <= K else 0.0
-        rows.append({"detuning": float(dw), "locked": r["locked"], "analytic": analytic})
-    edge = max((row["detuning"] for row in rows if row["locked"]), default=0.0)
-    return {"K": K, "locked_window_edge": edge, "curve": rows}
-
-
-def null_no_absorber(p: Params = DEFAULT) -> dict:
-    fp = find_fixed_points(replace(p, q0=0.0))
-    return {"bistable": fp["bistable"], "expect": False, "passes": not fp["bistable"]}
-
-
-def null_scrambled_phase(p: Params = DEFAULT) -> dict:
-    coherent = run_cavity_td(0.5, p, rho=50.0, n_rt=1200, inj_amp=1.0, seed=2)
-    scrambled = run_cavity_td(0.5, p, rho=50.0, n_rt=1200, inj_amp=1.0, scramble_phase=True, seed=2)
-    ratio = coherent["P_steady"] / max(scrambled["P_steady"], 1e-9)
-    return {
-        "coherent_P": coherent["P_steady"],
-        "scrambled_P": scrambled["P_steady"],
-        "collapse_ratio": float(ratio),
-        "passes": bool(ratio > 2.0),
-    }
-
-
-def simulate_two_beam(
-    gate_power: float,
-    p: Params = DEFAULT,
-    rho: float = 50.0,
-    n_rt: int = 800,
-    shared: bool = True,
-    seed: int = 0,
-) -> float:
-    """Co-evolve a signal beam and a gate beam. When `shared`, both draw on ONE
-    inversion u, so a powerful gate beam drains u and starves the signal. When
-    severed, the signal has its own reservoir the gate cannot touch. Returns the
-    signal's steady-state power."""
-    rec = recovery(rho)
-    A_sig = math.sqrt(0.5) + 0j
-    A_gate = math.sqrt(max(gate_power, 0.0)) + 0j
-    Ps = []
-    for _ in range(n_rt):
-        Psig = abs(A_sig) ** 2
-        Pgate = abs(A_gate) ** 2
-        # shared gain medium saturates with the TOTAL circulating power, so a
-        # strong gate beam inflates the signal's saturation denominator and starves
-        # it. Severed: each beam saturates only on its own power.
-        sat_sig = 1.0 + (Psig + (Pgate if shared else 0.0)) / p.Psat_g
-        sat_gate = 1.0 + (Pgate + (Psig if shared else 0.0)) / p.Psat_g
-        g_sig = p.g0 * rec / sat_sig
-        g_gate = p.g0 * rec / sat_gate
-        A_sig = math.sqrt(math.exp(g_sig - _q(Psig, p) - p.l)) * A_sig
-        A_gate = math.sqrt(math.exp(g_gate - _q(Pgate, p) - p.l)) * A_gate
-        Ps.append(abs(A_sig) ** 2)
-    return float(np.mean(Ps[-200:]))
-
-
-def null_severed_reservoir(p: Params = DEFAULT) -> dict:
-    """Extinction = signal(gate OFF)/signal(gate ON). With a SHARED reservoir the
-    gate starves the signal -> large extinction (the coupling is the transistor
-    action). SEVERED, the gate cannot touch the signal -> extinction ~1.000 (the
-    coupling was load-bearing, not the geometry)."""
-    sh_on = simulate_two_beam(3.0, p, shared=True)
-    sh_off = simulate_two_beam(0.0, p, shared=True)
-    sv_on = simulate_two_beam(3.0, p, shared=False)
-    sv_off = simulate_two_beam(0.0, p, shared=False)
-    ext_shared = sh_off / max(sh_on, 1e-12)
-    ext_severed = sv_off / max(sv_on, 1e-12)
-    return {
-        "extinction_shared": float(ext_shared),
-        "extinction_severed": float(ext_severed),
-        "passes": bool(ext_shared > 5.0 and abs(ext_severed - 1.0) < 0.1),
-    }
-
-
-def null_random_timing(p: Params = DEFAULT) -> dict:
-    """Synchronous vs jittered pump period at a rho where sync IS bistable
-    (above rho_crit ~ 1.5). Gating must collapse under jittered timing."""
-    sync = simulate_synchronous_pump(rho=3.0, T_over_tau_rt=1.0, p=p)
-    jit = run_cavity_td(5.0, p, rho=3.0, n_rt=1500, T_over_tau_rt=1.0, pump_spread=3.0, seed=5)
-    return {
-        "sync_bistable": sync["bistable"],
-        "sync_P_star": sync["P_star"],
-        "jittered_P_star": jit["P_steady"],
-        "passes": bool(sync["bistable"] and jit["P_steady"] < 0.3 * max(sync["P_star"], 1e-9)),
-    }
-
-
-# =============================================================================
-# Material grounding (spec §8) -- self-reports where real devices land
-# =============================================================================
-# Cited, measured facts. Kept as data so material_regimes() can overlay the
-# model's OWN edges on them rather than asserting a hand-written verdict.
-#   beta_range  : spontaneous-emission coupling factor into the lasing mode
-#   tau_c_ps    : cavity photon lifetime (ps)
-#   arch        : "microcavity" (tau_rt ~ fs -> rho >> 1) or "long_cavity"
-#   temp        : operating temperature regime
 _MATERIAL_REGIMES = [
     {
         "name": "inorganic_gaas_microcavity",
-        "beta_range": [1e-5, 1e-4],
+        "beta_range": [1e-5, 1e-4],  # large mode volume, small Rabi
         "tau_c_ps": [11.0, 135.0],
-        "polariton_ps": [10.0, 270.0],
         "arch": "microcavity",
         "temp": "cryogenic",
         "cite": "GaAs microcavity / polariton-LED, Q~3.2e5 (arXiv:0712.1565; arXiv:0709.4372)",
     },
     {
         "name": "organic_microcavity",
-        # Full cited geometry span: planar microcavity ~1e-2..1e-1 (the Lagoudakis
-        # transistor) up to photonic-wire ~3e-1..5e-1 (tiny mode volume + giant Rabi
-        # 100-225 meV). The verdict is a CURVE across this band, not a single call.
+        # planar microcavity ~1e-2..1e-1 (the Lagoudakis transistor) up to
+        # photonic-wire ~3e-1..5e-1 (tiny mode volume + giant Rabi 100-225 meV).
         "beta_range": [1e-2, 5e-1],
         "beta_geometry_note": "1e-2..1e-1 planar microcavity (device); 1e-1..5e-1 photonic-wire",
-        "tau_c_ps": [0.5, 20.0],  # organics on the short end (few ps)
-        "polariton_ps": [0.5, 20.0],
+        "tau_c_ps": [0.5, 20.0],
         "arch": "microcavity",
         "temp": "room",
         "cite": "Zasedatelev, Nat. Photonics 13, 378 (2019); cascadable gates, Nat. Comms 15 (2024)",
@@ -525,180 +723,166 @@ _MATERIAL_REGIMES = [
 ]
 
 
-# beta ladder for the per-regime sweep; clipped to each regime's cited band. Spans
-# the failure transition (the 0.2 -> 0.3 cliff Probe 2 found) so the curve resolves
-# WHERE in a band the cascade stops surviving.
-_BETA_LADDER = [1e-5, 1e-4, 1e-3, 1e-2, 3e-2, 1e-1, 2e-1, 3e-1, 5e-1]
+def spontaneous_floor_cascade(
+    cavity: CavityConfig,
+    beta: float,
+    n_stages: int = 100,
+    n_traj: int = 40,
+    seed: int = 7,
+) -> float:
+    """MEASURE how well a clean "0" survives a spontaneous-emission floor.
+
+    beta is the spontaneous-emission coupling factor: each stage adds up to
+    ``beta * P_threshold`` of incoherent seed power to the "0" line. If a stage's
+    accumulated power crosses the unstable threshold, the bistable map latches it
+    onto the high branch -- a false "1". Returns the fraction of trajectories that
+    stay low ("0") through ``n_stages``. 1.0 = the floor never false-triggers;
+    lower = spontaneous emission is flipping bits. Returns None if not bistable.
+    """
+    pts = find_fixed_points(cavity)
+    stable_hi = [p.power for p in pts if p.stable and p.power > 0.0]
+    threshold = [p.power for p in pts if not p.stable and p.power > 0.0]
+    if not stable_hi or not threshold:
+        return None
+    high = max(stable_hi)
+    p_t = min(threshold)
+    decision = 0.5 * high  # halfway between threshold and P*
+    survivors = 0
+    for k in range(n_traj):
+        rng = random.Random(seed + k)
+        p = 0.0
+        for _ in range(n_stages):
+            p = round_trip_map(p, cavity)
+            p += beta * p_t * rng.random()  # spontaneous photons (always additive)
+        if p < decision:
+            survivors += 1
+    return survivors / n_traj
 
 
-def regime_beta_sweep(beta_range, p: Params = DEFAULT, n_traj: int = 40) -> dict:
-    """MEASURE cascade survival across a regime's cited beta band, at the near-edge
-    (thin-margin, g0=0.30, 5% signal noise) stress config -- the regime where beta
-    actually bites. Returns the survival curve and the measured edge (largest beta
-    still holding >=99%), so the verdict is a curve, not a single threshold call."""
+def regime_beta_sweep(beta_range, cavity: Optional[CavityConfig] = None, n_traj: int = 40) -> Dict:
+    """MEASURE "0"-line survival across a regime's cited beta band (not a single
+    threshold call). Returns the survival curve and the measured edge (largest
+    beta still holding >=99%), so the verdict is a curve that resolves WHERE in a
+    band the cascade starts false-triggering."""
+    cavity = cavity or CavityConfig()
     lo, hi = beta_range
     betas = [b for b in _BETA_LADDER if lo <= b <= hi] or [lo, hi]
-    near = replace(p, g0=0.30)
     curve = []
-    edge = None  # largest beta with survival >= 0.99 (contiguous from the bottom)
+    edge = None
     contiguous = True
     for b in betas:
-        s = cascade_survival(near, beta=float(b), noise=0.05, n_traj=n_traj, n_stages=100, seed=7)
-        surv = s["survival"]
+        surv = spontaneous_floor_cascade(cavity, beta=float(b), n_traj=n_traj)
         curve.append({"beta": float(b), "survival": surv})
-        if contiguous and surv >= 0.99:
+        if contiguous and surv is not None and surv >= 0.99:
             edge = float(b)
-        elif surv < 0.99:
+        elif surv is None or surv < 0.99:
             contiguous = False
-    survs = [c["survival"] for c in curve]
+    survs = [c["survival"] for c in curve if c["survival"] is not None]
     return {
         "curve": curve,
-        "measured_edge": edge,  # survives up to here
-        "all_survive": min(survs) >= 0.99,
-        "none_survive": max(survs) < 0.99,
+        "measured_edge": edge,
+        "all_survive": bool(survs) and min(survs) >= 0.99,
+        "none_survive": bool(survs) and max(survs) < 0.99,
     }
 
 
+def measure_sync_rho_crit(
+    rho_grid: Optional[Sequence[float]] = None,
+    advantage: float = 10.0,
+) -> Optional[float]:
+    """MEASURE the rho = tau2/T_pump boundary from the synchronous-pump model:
+    the smallest rho at which the synchronous signal still beats a fully jittered
+    pump by ``advantage`` x. Below it the gain has recovered between pulses (CW-like,
+    no synchrony advantage); above it sync gating appears. Returns None if no
+    crossing in the grid."""
+    rho_grid = list(rho_grid) if rho_grid is not None else [0.05, 0.1, 0.3, 1.0, 3.0]
+    period = 1.0
+    rho_crit = None
+    for rho in sorted(rho_grid):
+        tau2 = rho * period
+        sync = integrate_sync_pump(SyncPumpConfig(inversion_lifetime=tau2, pump_jitter=0.0)).n_signal
+        jit = integrate_sync_pump(SyncPumpConfig(inversion_lifetime=tau2, pump_jitter=1.0)).n_signal
+        if sync > advantage * max(jit, 1e-300):
+            rho_crit = float(rho)
+            break
+    return rho_crit
+
+
 def material_regimes(
-    p: Params = DEFAULT,
-    rho_crit: float | None = None,
-    beta_ceiling: float | None = None,
-) -> dict:
+    cavity: Optional[CavityConfig] = None,
+    rho_crit: Optional[float] = None,
+) -> Dict:
     """Overlay the model's two falsification edges on cited material regimes.
 
-    Reads the model's OWN edges -- the Probe-1 recovery boundary ``rho_crit`` and
-    the Probe-2 near-edge bit-flip ceiling ``beta_ceiling`` -- and classifies each
-    cited regime against them, so a run self-reports its physical grounding next to
-    its numbers (instrument-family convention). Pass the edges in to avoid recompute
-    (``full_report`` does); omit them for lightweight standalone defaults.
-
-    The two edges live on different axes (spec §8):
-      * beta  -> MATERIAL axis (Probe 2): survival is MEASURED across each cited
-                 band (regime_beta_sweep). Organic straddles -- planar microcavity
-                 (beta<=~0.1) survives, photonic-wire (beta>=~0.3) flips; inorganic
-                 (beta~1e-4) survives with margin.
-      * rho   -> ARCHITECTURE axis (Probe 1): microcavities sit at rho >> 1
-                 (averaged limit); only long-cavity logic binds at rho_crit.
+    beta (MATERIAL axis) is MEASURED per regime via regime_beta_sweep (false-trigger
+    survival of the "0" line). rho (ARCHITECTURE axis) is the sync-pump boundary:
+    microcavities sit at rho >> 1 (averaged limit, not rho-limited), only long-cavity
+    logic binds at rho_crit. Every regime self-reports its classification next to the
+    cited numbers -- the verdict is computed, not asserted.
     """
-    # rho edge: when not supplied, compute it cheaply (the verdict only needs which
-    # SIDE of rho_crit a regime sits on). beta_ceiling is informational here -- the
-    # per-regime sweeps below MEASURE survival directly, so if it isn't passed we
-    # derive it after the loop from the organic sweep rather than recomputing.
+    cavity = cavity or CavityConfig()
     if rho_crit is None:
-        rho_grid = [0.3, 0.6, 1.0, 1.5, 2.5, 5.0, 20.0]
-        rho_crit = probe_recovery_boundary(rho_grid=rho_grid, p=p)["rho_crit"]
+        rho_crit = measure_sync_rho_crit()
 
     regimes = []
     for m in _MATERIAL_REGIMES:
         r = dict(m)
-        # --- beta (material) verdict: MEASURED across the cited band, not a single
-        # threshold call. Sweep survival across the regime's full geometry span and
-        # report where it crosses -- this replaces the old order-of-magnitude margin
-        # hack with the model's actual survival curve.
         br = m.get("beta_range")
         if br is None:
             r["beta_pass"] = None
             r["beta_sweep"] = None
             r["beta_verdict"] = "n/a -- beta is not the binding edge for this architecture"
         else:
-            sweep = regime_beta_sweep(br, p=p)
+            sweep = regime_beta_sweep(br, cavity=cavity)
             r["beta_sweep"] = sweep["curve"]
             r["beta_measured_edge"] = sweep["measured_edge"]
             if sweep["all_survive"]:
                 r["beta_pass"] = True
                 r["beta_verdict"] = (
-                    f"PASS -- measured survival >=99% across the full cited band beta={br[0]:g}..{br[1]:g}"
+                    f"PASS -- 0-line survives spontaneous floor across the full band beta={br[0]:g}..{br[1]:g}"
                 )
             elif sweep["none_survive"]:
                 r["beta_pass"] = False
                 r["beta_verdict"] = (
-                    f"FAIL -- measured survival <99% across the whole cited band beta={br[0]:g}..{br[1]:g}"
+                    f"FAIL -- spontaneous floor false-triggers across the whole band beta={br[0]:g}..{br[1]:g}"
                 )
             else:
-                r["beta_pass"] = False  # straddles -> geometry-dependent
+                r["beta_pass"] = False
                 edge = sweep["measured_edge"]
                 note = m.get("beta_geometry_note", "")
-                r["beta_verdict"] = f"STRADDLES -- measured: survives to beta~{edge:g}, fails above it" + (
+                r["beta_verdict"] = f"STRADDLES -- survives to beta~{edge}, false-triggers above it" + (
                     f" ({note})" if note else ""
                 )
-        # --- rho (architecture) verdict ---
         if m["arch"] == "microcavity":
-            r["rho_verdict"] = "rho >> 1 (tau_rt ~ fs) -> averaged limit, NOT rho-limited"
+            r["rho_verdict"] = "rho >> 1 (round trip ~ fs) -> averaged/CW limit, NOT rho-limited"
         else:
-            r["rho_verdict"] = f"rho ~ O(1) -> binds at rho_crit~{rho_crit:.2f}; the live design rule here"
-        # --- overall ---
+            rc = f"~{rho_crit:.2g}" if rho_crit is not None else "(no crossing in grid)"
+            r["rho_verdict"] = f"rho ~ O(1) -> binds at rho_crit {rc}; the live design rule here"
         if m["arch"] != "microcavity":
             r["overall"] = "rho is the live constraint; beta not binding"
         elif r["beta_pass"]:
             r["overall"] = f"clears BOTH edges (cost: {m['temp']} operation)"
-        elif r.get("beta_measured_edge"):  # straddles
+        elif r.get("beta_measured_edge"):
             r["overall"] = (
                 f"clears rho; beta survival is geometry-dependent -- holds up to "
-                f"beta~{r['beta_measured_edge']:g}, flips above it"
+                f"beta~{r['beta_measured_edge']}, false-triggers above it"
             )
-        else:  # whole band fails
-            r["overall"] = "clears rho but the beta floor flips bits across its whole cited band"
+        else:
+            r["overall"] = "clears rho but the spontaneous floor false-triggers across its whole band"
         regimes.append(r)
 
-    if beta_ceiling is None:
-        # representative ceiling = the measured edge of the widest straddling band
-        edges = [r["beta_measured_edge"] for r in regimes if r.get("beta_measured_edge")]
-        beta_ceiling = max(edges) if edges else None
-
     return {
-        "model_edges": {"rho_crit": rho_crit, "beta_ceiling": beta_ceiling},
-        "axes": {
-            "beta": "MATERIAL axis (Probe 2)",
-            "rho": "ARCHITECTURE axis (Probe 1)",
-            "note": "tau_c = tau_rt / l; l=%.3g => %.0f round-trips storage (finesse ~%.0f)"
-            % (p.l, 1.0 / p.l, 2.0 * math.pi / p.l),
-        },
+        "model_edges": {"rho_crit": rho_crit, "beta_axis": "measured per regime (0-line survival)"},
+        "axes": {"beta": "MATERIAL axis", "rho": "ARCHITECTURE axis"},
         "regimes": regimes,
-        "spec": "docs/superpowers/specs/2026-06-09-synchronous-pump-optical-transistor-spec.md (§8)",
     }
 
 
-# =============================================================================
-# Report
-# =============================================================================
-def full_report(p: Params = DEFAULT) -> dict:
-    probe1 = probe_recovery_boundary(p=p)
-    # near-edge regime: small gain margin (g0 closer to l) puts the "1" close to the
-    # threshold, where the spontaneous floor CAN flip bits. Signal noise is held low
-    # (5%) here so beta is the variable actually being isolated -- this is where
-    # Probe 2 exercises the failure it was designed to find.
-    probe2_near = probe_spontaneous_floor(
-        beta_grid=[0.0, 0.05, 0.1, 0.2, 0.3, 0.5],
-        p=replace(p, g0=0.30),
-        noise=0.05,
-    )
-    return {
-        "params": asdict(p),
-        "averaged_fixed_points": find_fixed_points(p),
-        "cascade_noiseless": cascade_survival(p, beta=0.0),
-        "anchor_reduces_to_averaged": reduces_to_averaged(p=p),
-        "probe1_recovery_boundary": probe1,
-        "probe2_spontaneous_floor": probe_spontaneous_floor(p=p),
-        "probe2_near_edge": probe2_near,
-        "locking_window": locking_window(p=p),
-        "null_no_absorber": null_no_absorber(p),
-        "null_scrambled_phase": null_scrambled_phase(p),
-        "null_severed_reservoir": null_severed_reservoir(p),
-        "null_random_timing": null_random_timing(p),
-        # self-reported physical grounding, using the edges THIS run just measured
-        "material_regimes": material_regimes(
-            p=p,
-            rho_crit=probe1["rho_crit"],
-            beta_ceiling=probe2_near["beta_max_99pct_survival"],
-        ),
-    }
-
-
-def _print_regimes(mr: dict) -> None:
+def _print_regimes(mr: Dict) -> None:
     e = mr["model_edges"]
-    print("material grounding (spec §8) — cited regimes vs THIS model's edges")
-    print(f"  edges measured: rho_crit={e['rho_crit']:.2f}  beta_ceiling={e['beta_ceiling']:g}")
-    print(f"  {mr['axes']['note']}")
+    rc = e["rho_crit"]
+    print("material grounding -- cited regimes vs THIS model's edges")
+    print(f"  rho_crit (sync-pump boundary) = {rc if rc is not None else '(none in grid)'}")
     for r in mr["regimes"]:
         print(f"\n  {r['name']}  [{r['temp']}, {r['arch']}]")
         print(f"    beta : {r['beta_verdict']}")
@@ -710,58 +894,43 @@ def _print_regimes(mr: dict) -> None:
         print(f"    cite : {r['cite']}")
 
 
-def main(argv: list[str] | None = None) -> int:
-    argv = sys.argv[1:] if argv is None else argv
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    """CLI. `--regimes` prints the material grounding; `--json` emits JSON."""
+    import json
+    import sys
+
+    argv = list(sys.argv[1:] if argv is None else argv)
     as_json = "--json" in argv
 
-    # --regimes: just the material grounding, no 110s full report. material_regimes()
-    # computes the two edges itself (Probe-1 boundary + Probe-2 near-edge ceiling),
-    # which is far cheaper than the full probe/null sweep.
     if "--regimes" in argv:
         mr = material_regimes()
-        if as_json:
-            print(json.dumps(mr, indent=2, default=str))
-        else:
+        print(json.dumps(mr, indent=2, default=str) if as_json else "", end="")
+        if not as_json:
             _print_regimes(mr)
         return 0
 
-    rep = full_report()
+    # default: the cascadability verdict + null gates on the default cavity
+    verdict = evaluate_transistor(CavityConfig())
+    gates = run_null_gates()
+    report = {
+        "cascadable": verdict.cascadable,
+        "gain_above_unity": verdict.gain_above_unity,
+        "fan_out": verdict.fan_out,
+        "contraction": verdict.contraction,
+        "bistable": verdict.bistable,
+        "null_gates": [{"name": g.name, "collapse_ratio": g.collapse_ratio, "passed": g.passed} for g in gates],
+    }
     if as_json:
-        print(json.dumps(rep, indent=2, default=str))
-        return 0
-    fp = rep["averaged_fixed_points"]
-    print("optical transistor — synchronous-pump time-domain model")
-    print(
-        f"  averaged: bistable={fp['bistable']} P*={fp['P_star']} "
-        f"P_t={fp['P_threshold']} contraction={fp['contraction']}"
-    )
-    c = rep["cascade_noiseless"]
-    print(f"  cascade noiseless: survival={c['survival']} over {c.get('n_stages')} stages")
-    a = rep["anchor_reduces_to_averaged"]
-    print(f"  ANCHOR rho->100 reduces to averaged: passes={a['passes']} " f"rel_err={a['rel_error']:.3f}")
-    p1 = rep["probe1_recovery_boundary"]
-    print(
-        f"  PROBE1 rho_crit={p1['rho_crit']} small_rho_bistable={p1['bistable_at_small_rho']} "
-        f"large_rho_bistable={p1['bistable_at_large_rho']}"
-    )
-    p2 = rep["probe2_spontaneous_floor"]
-    print(
-        f"  PROBE2 (default) beta(>=99% survive)={p2['beta_max_99pct_survival']}  "
-        f"curve={[(r['beta'], r['survival']) for r in p2['curve']]}"
-    )
-    p2e = rep["probe2_near_edge"]
-    print(
-        f"  PROBE2 (near-edge g0=0.30, margin~0.23) beta(>=99%)={p2e['beta_max_99pct_survival']}  "
-        f"curve={[(r['beta'], r['survival']) for r in p2e['curve']]}"
-    )
-    lw = rep["locking_window"]
-    print(f"  locking window edge={lw['locked_window_edge']:.3f} (K={lw['K']})")
-    for k in ("null_no_absorber", "null_scrambled_phase", "null_severed_reservoir", "null_random_timing"):
+        print(json.dumps(report, indent=2, default=str))
+    else:
         print(
-            f"  {k}: passes={rep[k]['passes']}  {json.dumps({kk: vv for kk, vv in rep[k].items() if kk != 'passes'})}"
+            f"cascadable={verdict.cascadable}  G>=1={verdict.gain_above_unity}  "
+            f"F={verdict.fan_out}  |f'(P*)|={verdict.contraction:.3f}  bistable={verdict.bistable}"
         )
-    print()
-    _print_regimes(rep["material_regimes"])
+        for g in gates:
+            print(f"  null[{g.name}]: collapse={g.collapse_ratio:.3g}  passed={g.passed}")
+        print()
+        _print_regimes(material_regimes())
     return 0
 
 

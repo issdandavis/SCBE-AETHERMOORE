@@ -165,7 +165,7 @@ def test_ledger_event_roundtrip():
 
 
 def test_new_ledger_creates_workspace(ws):
-    ledger = new_ledger(ws, "Mission A")
+    new_ledger(ws, "Mission A")
     lf = os.path.join(ws, ".scbe-longform")
     assert ledger is not None
     assert os.path.isdir(lf)

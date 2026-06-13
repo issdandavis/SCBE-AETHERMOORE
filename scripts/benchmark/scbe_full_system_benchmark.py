@@ -139,21 +139,6 @@ LANES: list[LaneSpec] = [
         run_in_quick=True,
     ),
     LaneSpec(
-        lane_id="hydra-jobsite-conservation",
-        domain="multi-agent project conservation",
-        command="python scripts/benchmark/hydra_jobsite_conservation_benchmark.py",
-        latest_json="artifacts/benchmarks/hydra_jobsite_conservation/latest_report.json",
-        claim_boundary=(
-            "local deterministic project-conservation benchmark; not a public leaderboard score "
-            "or live comparison with named company agents"
-        ),
-        target=(
-            "cross-platform multi-agent work preservation across code, finance, security, "
-            "inspection, docs, transport, and owner decisions"
-        ),
-        run_in_quick=True,
-    ),
-    LaneSpec(
         lane_id="hard-agentic-pretest",
         domain="external-suite readiness",
         command="python scripts/benchmark/hard_agentic_benchmark_pretest.py",
@@ -234,12 +219,7 @@ EXTERNAL_TARGETS: list[dict[str, Any]] = [
 
 
 def utc_now() -> str:
-    return (
-        datetime.now(timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def read_json(path: Path) -> dict[str, Any] | None:
@@ -301,10 +281,7 @@ def extract_score(report: dict[str, Any] | None) -> tuple[float | None, str]:
             and isinstance(score.get("max"), (int, float))
             and score["max"]
         ):
-            return (
-                float(score["earned"]) / float(score["max"]),
-                f"{score['earned']}/{score['max']}",
-            )
+            return float(score["earned"]) / float(score["max"]), f"{score['earned']}/{score['max']}"
 
     summary = report.get("summary")
     if isinstance(summary, dict):
@@ -326,10 +303,7 @@ def extract_score(report: dict[str, Any] | None) -> tuple[float | None, str]:
         ):
             total = float(summary["target_count"])
             if total:
-                return (
-                    float(summary["ready_or_pass"]) / total,
-                    f"{summary['ready_or_pass']}/{summary['target_count']}",
-                )
+                return float(summary["ready_or_pass"]) / total, f"{summary['ready_or_pass']}/{summary['target_count']}"
 
     if report.get("all_passed") is True:
         return 1.0, "all_passed"
@@ -337,38 +311,22 @@ def extract_score(report: dict[str, Any] | None) -> tuple[float | None, str]:
         return 1.0, "ok=true"
     if report.get("status") == "PASS":
         return 1.0, "status=PASS"
-    if isinstance(report.get("validation_ok"), (int, float)) and isinstance(
-        report.get("tasks_total"), (int, float)
-    ):
+    if isinstance(report.get("validation_ok"), (int, float)) and isinstance(report.get("tasks_total"), (int, float)):
         total = float(report["tasks_total"])
         if total:
-            return (
-                float(report["validation_ok"]) / total,
-                f"{report['validation_ok']}/{report['tasks_total']}",
-            )
+            return float(report["validation_ok"]) / total, f"{report['validation_ok']}/{report['tasks_total']}"
     if isinstance(report.get("results"), list) and report["results"]:
-        statuses = [
-            str(item.get("current_status", "")).upper()
-            for item in report["results"]
-            if isinstance(item, dict)
-        ]
+        statuses = [str(item.get("current_status", "")).upper() for item in report["results"] if isinstance(item, dict)]
         if statuses:
             pass_like = sum(1 for status in statuses if status in {"PASS", "PARTIAL"})
-            return (
-                pass_like / len(statuses),
-                f"{pass_like}/{len(statuses)} pass-or-partial",
-            )
+            return pass_like / len(statuses), f"{pass_like}/{len(statuses)} pass-or-partial"
     return None, "score not found"
 
 
 def classify_lane(spec: LaneSpec, report: dict[str, Any] | None) -> dict[str, Any]:
     path = REPO_ROOT / spec.latest_json
     score, score_label = extract_score(report)
-    status = (
-        "ARTIFACT_READY"
-        if report and not report.get("_parse_error")
-        else spec.status_if_missing
-    )
+    status = "ARTIFACT_READY" if report and not report.get("_parse_error") else spec.status_if_missing
     if score is not None:
         if score >= 0.999:
             status = "PASS"
@@ -408,9 +366,7 @@ def build_report(run_local: bool, quick_only: bool, timeout_s: int) -> dict[str,
     passed = sum(1 for lane in lanes if lane["status"] == "PASS")
     partial = sum(1 for lane in lanes if lane["status"] == "PARTIAL")
     missing = sum(1 for lane in lanes if not lane["artifact_exists"])
-    blocked = sum(
-        1 for target in EXTERNAL_TARGETS if str(target["status"]).startswith("BLOCKED")
-    )
+    blocked = sum(1 for target in EXTERNAL_TARGETS if str(target["status"]).startswith("BLOCKED"))
 
     return {
         "schema_version": "scbe_full_system_benchmark_matrix_v1",
@@ -422,9 +378,7 @@ def build_report(run_local: bool, quick_only: bool, timeout_s: int) -> dict[str,
             "Each lane carries its own claim boundary and latest artifact path.",
         ],
         "summary": {
-            "decision": (
-                "EVIDENCE_PACKET_READY" if artifact_ready >= 6 else "PARTIAL_EVIDENCE"
-            ),
+            "decision": "EVIDENCE_PACKET_READY" if artifact_ready >= 6 else "PARTIAL_EVIDENCE",
             "lanes_total": len(lanes),
             "artifact_ready": artifact_ready,
             "passed": passed,
@@ -490,11 +444,9 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
             "",
             "## Claim Boundary",
             "",
-            (
-                "Use this report as a routing and proof packet for what is already executable, "
-                "what has latest artifacts, and what needs official harness work. Do not describe "
-                "local fixture scores as public leaderboard results."
-            ),
+            "Use this report as a routing and proof packet for what is already executable, what "
+            "has latest artifacts, and what needs official harness work. Do not describe local "
+            "fixture scores as public leaderboard results.",
             "",
         ]
     )
@@ -504,25 +456,13 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", action="store_true", help="print full JSON report")
-    parser.add_argument(
-        "--run-local",
-        action="store_true",
-        help="run local benchmark lanes before aggregation",
-    )
-    parser.add_argument(
-        "--quick", action="store_true", help="with --run-local, run only quick lanes"
-    )
-    parser.add_argument(
-        "--timeout", type=int, default=120, help="per-lane timeout in seconds"
-    )
-    parser.add_argument(
-        "--out-dir", default=str(OUT_DIR), help="artifact output directory"
-    )
+    parser.add_argument("--run-local", action="store_true", help="run local benchmark lanes before aggregation")
+    parser.add_argument("--quick", action="store_true", help="with --run-local, run only quick lanes")
+    parser.add_argument("--timeout", type=int, default=120, help="per-lane timeout in seconds")
+    parser.add_argument("--out-dir", default=str(OUT_DIR), help="artifact output directory")
     args = parser.parse_args()
 
-    report = build_report(
-        run_local=args.run_local, quick_only=args.quick, timeout_s=args.timeout
-    )
+    report = build_report(run_local=args.run_local, quick_only=args.quick, timeout_s=args.timeout)
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")

@@ -457,7 +457,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         f"{report['totals']['n_redundant_files']} redundant files."
     )
     print(
-        f"Bytes recoverable if all redundant copies were collapsed: "
+        "Bytes recoverable if all redundant copies were collapsed: "
         f"{report['totals']['bytes_recoverable_total'] / 1024 / 1024:.1f} MB"
     )
     print()
