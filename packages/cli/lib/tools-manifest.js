@@ -114,6 +114,16 @@ const COMMAND_SPECS = [
     usage: 'scbe platform [--json]',
   },
   {
+    name: 'compare',
+    aliases: [],
+    category: 'core',
+    json: true,
+    stability: 'real',
+    summary: 'Compare SCBE governance to industry prompt-injection guardrails (ProtectAI, Meta Prompt Guard).',
+    usage: 'scbe compare [--json]',
+    examples: ['scbe compare --json'],
+  },
+  {
     name: 'tourney',
     aliases: [],
     category: 'core',

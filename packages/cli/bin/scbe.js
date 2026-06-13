@@ -2059,6 +2059,149 @@ function runDoctor(args) {
   process.exit(payload.ok ? 0 : 1);
 }
 
+// ─── compare: SCBE vs industry guardrails ────────────────────────────────────
+
+// Embedded so it ships with the bin (package.json `files` has no data/ dir).
+// Two axes: input prompt-injection DETECTION (where trained classifiers are the
+// incumbents) and runtime ACTION governance (SCBE's actual differentiator).
+// Caveats are first-class, not footnotes — the detection corpus is SCBE-authored
+// (home field), so SCBE's own score is not a neutral head-to-head. Numbers are
+// reproducible: see `provenance`.
+const COMPARE_DATA = {
+  schema_version: 'scbe_aethermoore_cli_compare_v1',
+  generated: '2026-06-12',
+  title: 'SCBE governance vs industry prompt-injection guardrails',
+  summary:
+    'Two different jobs. Trained classifiers (ProtectAI, Meta Prompt Guard) screen ' +
+    'INPUT text for prompt injection. The SCBE swarm governs ACTIONS ' +
+    '(navigate/click/type) at runtime. They are complementary, not interchangeable.',
+  detection: {
+    label: 'Input prompt-injection detection',
+    corpus: 'SCBE-authored adversarial corpus — 91 attacks, 15 clean prompts',
+    columns: ['System', 'Mechanism', 'Blocked', 'ASR', 'FP', 'Adoption (HF dl/mo)'],
+    rows: [
+      ['SCBE detection gate', 'regex + geometric heuristic', '91/91', '0.00', '0/15', 'internal (~0)'],
+      ['ProtectAI DeBERTa v2', 'trained DeBERTa classifier', '62/91', '0.319', '0/15', '277,547'],
+      ['Meta Prompt Guard 2 (86M)', 'trained mDeBERTa classifier', 'not run', '—', '—', '115,864'],
+      ['protectai/llm-guard', 'scanner toolkit (15 in / 20 out)', 'n/a (library)', '—', '—', 'widely used'],
+    ],
+  },
+  governance: {
+    label: 'Runtime action governance',
+    columns: ['Capability', 'SCBE swarm', 'Input classifiers'],
+    rows: [
+      ['Scope', 'governs actions (navigate/click/type)', 'screen input text only'],
+      ['Per-action risk score', 'yes (url / target / content)', 'no'],
+      ['Human-in-loop escalation', 'yes (ESCALATE held for operator)', 'no'],
+      ['Headless fail-closed', 'yes (unattended ESCALATE -> DENY)', 'n/a'],
+      ['Multi-agent consensus', '6 agents, 4/6 quorum + Judge veto', 'no'],
+      ['Tamper-evident receipts', 'yes (replicated JSONL ledger)', 'no'],
+      ['Test coverage', '19 swarm tests (this branch)', 'model card / library tests'],
+    ],
+  },
+  caveats: [
+    "Home-field corpus: the 91-attack / 15-clean set was authored by SCBE. SCBE's 91/91 is not a neutral head-to-head, and ProtectAI's 62/91 is on data out-of-distribution for it — so that number understates its real-world accuracy.",
+    "Mechanism, not geometry: SCBE's detection is carried by lexical regex + keyword heuristics. The hyperbolic geometry is not load-bearing for this result.",
+    'Adoption gap: ProtectAI (277,547) and Prompt Guard (115,864) have ~5-6 orders of magnitude more monthly downloads than SCBE. They are battle-tested and widely deployed.',
+    'Thin false-positive test: FP measured on only 15 clean prompts — too few to claim a low real-world false-positive rate.',
+    'Prompt Guard not run: the Meta model is stubbed in this harness; its row is "not run", not a measured score.',
+    "Consensus nuance: the Judge (DR), not the raw count, is the safety backstop. A 4/6 ALLOW majority can outvote 2 ordinary DENY votes, but the Judge's DENY/ESCALATE is binding and cannot be loosened.",
+  ],
+  provenance: {
+    detection_benchmark:
+      'scripts/benchmark/scbe_vs_industry.py — ProtectAI loaded live (deberta-v3-base-prompt-injection-v2); 62 blocked / 0.319 ASR reproduced with SCBE_BENCHMARK_USE_EXTERNAL_MODELS=1. Default mode stubs external models.',
+    action_governance:
+      'agents/swarm_browser.py — verified by tests/test_swarm_judge_veto.py, test_swarm_click_risk_headless.py, test_swarm_type_risk.py (19 passing).',
+    adoption: 'HuggingFace monthly download counts, as of 2026-03.',
+  },
+};
+
+function runCompare(args) {
+  if (args.includes('--json')) {
+    process.stdout.write(`${JSON.stringify(COMPARE_DATA, null, 2)}\n`);
+    process.exit(0);
+  }
+
+  // Self-contained colour gate: honour NO_COLOR and non-TTY pipes. No dependency
+  // on the ansi() helper (which keys on isTTY only).
+  const useColor = Boolean(process.stdout.isTTY) && !process.env.NO_COLOR;
+  const paint = (code, text) => (useColor ? `${code}${text}\x1b[0m` : text);
+  const bold = (t) => paint('\x1b[1m', t);
+  const dim = (t) => paint('\x1b[2m', t);
+  const cyan = (t) => paint('\x1b[36m', t);
+
+  const wrap = (text, width) => {
+    const words = String(text).split(/\s+/);
+    const lines = [];
+    let line = '';
+    for (const word of words) {
+      if (line && line.length + 1 + word.length > width) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = line ? `${line} ${word}` : word;
+      }
+    }
+    if (line) lines.push(line);
+    return lines.length ? lines : [''];
+  };
+
+  const out = [];
+  const table = (columns, rows) => {
+    const widths = columns.map((c, i) =>
+      Math.max(c.length, ...rows.map((r) => String(r[i]).length))
+    );
+    const fmt = (cells, decorate) =>
+      cells
+        .map((cell, i) => {
+          const padded = String(cell).padEnd(widths[i]);
+          return decorate ? decorate(padded) : padded;
+        })
+        .join('  ');
+    const rule = '─'.repeat(widths.reduce((a, b) => a + b + 2, -2));
+    out.push(`  ${fmt(columns, bold)}`);
+    out.push(`  ${dim(rule)}`);
+    for (const row of rows) out.push(`  ${fmt(row)}`);
+  };
+
+  out.push('');
+  out.push(`  ${bold(COMPARE_DATA.title)}`);
+  out.push(`  ${dim(COMPARE_DATA.generated)}`);
+  out.push('');
+  for (const l of wrap(COMPARE_DATA.summary, 78)) out.push(`  ${l}`);
+  out.push('');
+
+  out.push(`  ${cyan(COMPARE_DATA.detection.label)}`);
+  out.push(`  ${dim(COMPARE_DATA.detection.corpus)}`);
+  out.push('');
+  table(COMPARE_DATA.detection.columns, COMPARE_DATA.detection.rows);
+  out.push('');
+
+  out.push(`  ${cyan(COMPARE_DATA.governance.label)}`);
+  out.push('');
+  table(COMPARE_DATA.governance.columns, COMPARE_DATA.governance.rows);
+  out.push('');
+
+  out.push(`  ${cyan('Caveats')}`);
+  COMPARE_DATA.caveats.forEach((cav, i) => {
+    const lines = wrap(`${i + 1}. ${cav}`, 76);
+    out.push(`  ${lines[0]}`);
+    for (const l of lines.slice(1)) out.push(`     ${l}`);
+  });
+  out.push('');
+
+  out.push(`  ${cyan('Provenance')}`);
+  for (const [key, value] of Object.entries(COMPARE_DATA.provenance)) {
+    const lines = wrap(`${key}: ${value}`, 76);
+    out.push(`  ${dim(lines[0])}`);
+    for (const l of lines.slice(1)) out.push(`     ${dim(l)}`);
+  }
+  out.push('');
+
+  process.stdout.write(`${out.join('\n')}\n`);
+  process.exit(0);
+}
+
 // ─── ANSI colour helpers ─────────────────────────────────────────────────────
 
 const _ANSI = {
@@ -10704,6 +10847,10 @@ if (argv[0] === 'version') {
 
 if (argv[0] === 'doctor') {
   runDoctor(argv.slice(1));
+}
+
+if (argv[0] === 'compare') {
+  runCompare(argv.slice(1));
 }
 
 if (argv[0] === 'platform') {
