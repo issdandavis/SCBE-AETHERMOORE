@@ -42,6 +42,21 @@ function freePort() {
   });
 }
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Resolves true if the URL answers an HTTP response, false on connection
+// error/timeout. Used to confirm a bridge server is actually DOWN after teardown.
+function isReachable(url) {
+  return new Promise((resolve) => {
+    const req = http.get(url, (res) => {
+      res.resume();
+      resolve(true);
+    });
+    req.on('error', () => resolve(false));
+    req.setTimeout(1500, () => req.destroy(new Error('unreachable')));
+  });
+}
+
 function getJson(url) {
   return new Promise((resolve, reject) => {
     const req = http.get(url, (res) => {
@@ -175,7 +190,7 @@ test('action can run a governed receipt smoke', () => {
   assert.match(payload.stdout_preview, /node --version/);
 });
 
-test('action can run the integrated desktop bridge smoke', () => {
+test('action can run the integrated desktop bridge smoke', async () => {
   const result = runCli(['action', 'desktop.bridge-smoke', '--json'], { timeout: 90_000 });
 
   assert.equal(result.status, 0, result.stderr);
@@ -189,6 +204,23 @@ test('action can run the integrated desktop bridge smoke', () => {
   assert.equal(payload.stdout_json.terminal.success, true);
   assert.equal(payload.stdout_json.browser.success, true);
   assert.match(payload.stdout_json.browser.title, /Example Domain/i);
+
+  // Regression (leaked-bridge bug): the smoke must reap the bridge it spawned.
+  // On Windows the teardown previously killed the cmd.exe wrapper pid, orphaning
+  // the node bridge — it kept answering /health and held its log file open,
+  // accumulating zombie servers across runs. After the fix the server must be
+  // DOWN once the smoke returns.
+  const healthUrl = `${payload.stdout_json.bridge_url}/health`;
+  let stillUp = true;
+  for (let i = 0; i < 10 && stillUp; i += 1) {
+    stillUp = await isReachable(healthUrl);
+    if (stillUp) await delay(300);
+  }
+  assert.equal(
+    stillUp,
+    false,
+    `bridge at ${healthUrl} should be down after smoke (no orphaned process)`
+  );
 });
 
 test('desktop action bridge exposes actions and runs one action over HTTP', async () => {

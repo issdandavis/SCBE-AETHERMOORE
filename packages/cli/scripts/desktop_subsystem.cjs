@@ -376,7 +376,9 @@ async function launchBrowserRuntime(chromium) {
       );
     }
   }
-  throw new Error(attempts.join(' | ') || (lastError ? lastError.message : 'browser launch failed'));
+  throw new Error(
+    attempts.join(' | ') || (lastError ? lastError.message : 'browser launch failed')
+  );
 }
 
 function psSingle(value) {
@@ -475,6 +477,30 @@ function startActionBridgeProcess(port, logPath, desktopUrl = '') {
   });
   child.unref();
   return { pid: child.pid, err_path: logPath };
+}
+
+// Reap a spawned bridge AND its descendants. On Windows the bridge is launched
+// through a `Start-Process cmd.exe` wrapper (for output redirection), so the
+// recorded pid is the cmd.exe wrapper, not the node bridge grandchild — killing
+// just that pid orphans the node server (it keeps answering and holds its log
+// file open). `taskkill /T` kills the whole tree. On POSIX the bridge is a
+// detached process-group leader, so a negative-pid signal kills the group.
+function stopProcessTree(pid) {
+  if (!pid) return;
+  if (process.platform === 'win32') {
+    spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' });
+    return;
+  }
+  try {
+    process.kill(-pid, 'SIGTERM');
+  } catch {
+    /* group may already be gone */
+  }
+  try {
+    process.kill(pid, 'SIGTERM');
+  } catch {
+    /* process may already be gone */
+  }
 }
 
 function sendJson(res, status, payload) {
@@ -901,6 +927,18 @@ async function runBridge(args) {
   server.listen(port, '127.0.0.1', () => {
     process.stdout.write(`SCBE action bridge listening on http://127.0.0.1:${port}\n`);
   });
+  // Close the listener on a termination signal so the process exits promptly
+  // instead of lingering on an open socket (POSIX group-kill / Ctrl-C path).
+  const shutdown = () => {
+    try {
+      server.close();
+    } catch {
+      /* already closing */
+    }
+    process.exit(0);
+  };
+  process.once('SIGTERM', shutdown);
+  process.once('SIGINT', shutdown);
 }
 
 async function runOpen(args) {
@@ -1018,11 +1056,7 @@ async function runBridgeSmoke(args) {
   } catch (err) {
     payload.error = err && err.message ? err.message : String(err);
   } finally {
-    if (bridge.pid) {
-      try {
-        process.kill(bridge.pid, 'SIGTERM');
-      } catch {}
-    }
+    stopProcessTree(bridge.pid);
   }
   if (asJson) {
     process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
@@ -1039,7 +1073,9 @@ async function runBridgeSmoke(args) {
       ].join('\n')
     );
   } else {
-    process.stdout.write(`SCBE bridge smoke failed: ${payload.error || 'surface returned failure'}\n`);
+    process.stdout.write(
+      `SCBE bridge smoke failed: ${payload.error || 'surface returned failure'}\n`
+    );
   }
   process.exit(payload.success ? 0 : 1);
 }
@@ -1094,7 +1130,9 @@ async function runCapture(args) {
       ].join('\n')
     );
   } else {
-    process.stdout.write(`SCBE screen capture failed: ${result.payload?.error || 'unknown error'}\n`);
+    process.stdout.write(
+      `SCBE screen capture failed: ${result.payload?.error || 'unknown error'}\n`
+    );
   }
   process.exit(result.status === 200 && result.payload?.success ? 0 : 1);
 }
