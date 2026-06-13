@@ -1,6 +1,6 @@
 # M-TEF Cell — Magneto-Triboelectric Fluid Cell
 
-**Status:** concept research + prototype-planning scaffold.  
+**Status:** concept research + prototype-planning scaffold.
 **Maturity:** component-level literature support exists, but the integrated M-TEF Cell is still unbuilt / unvalidated hardware. Treat this folder as a technical research package and prototype roadmap, not as a flight-qualified design.
 
 ## Core idea
