@@ -27,6 +27,7 @@ from python.scbe.audio_field_observables import (
 from python.scbe.controlled_substances import ControlledSubstanceDenied, screen_input
 from python.scbe.geometry_view import GeometryEngineError, geometry_view_packet
 from python.scbe.reaction_balance import BalanceError, balance_reaction_packet
+from python.scbe.reaction_language import ReactionPlan, plan_from_text
 from python.scbe.reaction_state import (
     ReactionEndpoint,
     ReactionLedger,
@@ -443,6 +444,78 @@ def print_human_checkpoint(payload: dict[str, Any]) -> None:
         print(f"rekor digest (dry-run): {payload['rekor_dry_run']['spec']['data']['hash']['value']}")
 
 
+# Map a parsed plan's verb onto the existing builder. Execution reuses the same
+# governed/receipted paths as the explicit subcommands -- the NL layer only
+# chooses the verb and fills the args, it adds no new privilege.
+def _execute_plan(plan: "ReactionPlan") -> dict[str, Any]:
+    if plan.verb == "balance":
+        return build_balance(plan.args["reactants"], plan.args["products"])
+    if plan.verb == "screen":
+        return build_screen(plan.args["input"])
+    if plan.verb == "geometry":
+        return build_geometry(plan.args["smiles"])
+    if plan.verb == "checkpoint":
+        return build_checkpoint(plan.args["packets"], rekor_dry_run=plan.args.get("rekor_dry_run", False))
+    return {"ok": False, "error": f"no executor for verb {plan.verb!r}"}
+
+
+def build_ask(text: str, *, execute: bool = True) -> dict[str, Any]:
+    """Parse a natural-language request, map it to a react verb, and (optionally)
+    run it through the same governed builder the explicit subcommand uses.
+
+    Confident plans run; ambiguous ones return the clarification and the exact
+    command they *would* run, so the caller asks instead of guessing.
+    """
+    plan = plan_from_text(text)
+    payload: dict[str, Any] = {
+        "schema_version": "scbe_react_ask_v1",
+        "input": text,
+        "verb": plan.verb,
+        "confidence": round(plan.confidence, 3),
+        "canonical_command": plan.canonical_command,
+        "clarification": plan.clarification,
+        "notes": plan.notes,
+        "executed": False,
+    }
+    if plan.verb == "help" or plan.verb is None or not plan.confident:
+        payload["ok"] = plan.verb == "help"
+        return payload
+    if not execute:
+        payload["ok"] = True
+        return payload
+    result = _execute_plan(plan)
+    payload["executed"] = True
+    payload["ok"] = bool(result.get("ok"))
+    payload["result"] = result
+    return payload
+
+
+def print_human_ask(payload: dict[str, Any]) -> None:
+    verb = payload.get("verb")
+    if verb == "help":
+        for note in payload.get("notes", []):
+            print(note)
+        return
+    if payload.get("clarification"):
+        print(f"reaction ask: not sure ({payload['confidence']:.2f} confidence)")
+        print(payload["clarification"])
+        if payload.get("canonical_command"):
+            print(f"closest command: scbe {payload['canonical_command']}")
+        return
+    print(f"-> scbe {payload['canonical_command']}  (confidence {payload['confidence']:.2f})")
+    for note in payload.get("notes", []):
+        print(f"   note: {note}")
+    if not payload.get("executed"):
+        return
+    result = payload.get("result", {})
+    {
+        "balance": print_human_balance,
+        "screen": print_human_screen,
+        "geometry": print_human_geometry,
+        "checkpoint": print_human_checkpoint,
+    }.get(verb, lambda _r: None)(result)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog="scbe react")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -471,6 +544,10 @@ def main() -> int:
     checkpoint_parser.add_argument("--packets", required=True, help="packet or report JSON file to checkpoint")
     checkpoint_parser.add_argument("--rekor-dry-run", action="store_true")
     checkpoint_parser.add_argument("--json", action="store_true")
+    ask_parser = sub.add_parser("ask", help="natural-language request, e.g. 'balance propane combustion'")
+    ask_parser.add_argument("text", nargs="+", help="what you want, in plain words")
+    ask_parser.add_argument("--explain", action="store_true", help="show the mapped command without running it")
+    ask_parser.add_argument("--json", action="store_true")
     audio = sub.add_parser("audio")
     audio.add_argument("--frequency", type=float, default=440.0)
     audio.add_argument("--sample-rate", type=float, default=4096.0)
@@ -536,6 +613,20 @@ def main() -> int:
         else:
             print_human_checkpoint(payload)
         return 0 if payload["ok"] else 1
+    if args.cmd == "ask":
+        payload = build_ask(" ".join(args.text), execute=not args.explain)
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_human_ask(payload)
+        # exit 2 when we had to ask the user to clarify (no action taken).
+        if payload.get("clarification"):
+            return 2
+        # a flagged screen exits non-zero like the explicit `screen` verb, so a
+        # caller (human or AI) sees the hazard in the exit code, not just stdout.
+        if payload.get("result", {}).get("flagged"):
+            return 1
+        return 0 if payload.get("ok") else 1
     if args.cmd == "audio":
         payload = build_audio_packet(
             frequency_hz=args.frequency,

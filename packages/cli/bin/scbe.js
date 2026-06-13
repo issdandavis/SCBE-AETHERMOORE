@@ -5387,6 +5387,24 @@ const INTENT_TABLE = [
     tongue: 'RU',
     description: 'Compute a governance score via the abacus',
   },
+  // Chemistry, in plain words. These route to `react ask`, which re-parses
+  // the FULL utterance (see passRawInput in execute()) and maps it onto a
+  // react verb -- balance / screen / geometry / checkpoint. Patterns are
+  // chemistry-specific so they do not steal generic check/audit/chain routes.
+  {
+    patterns: ['balance', 'combustion', 'combust', 'stoichiometry', 'reactants', 'products'],
+    command: 'react ask',
+    tongue: 'CA',
+    description: 'Balance a chemical reaction from plain words',
+    passRawInput: true,
+  },
+  {
+    patterns: ['molecule', 'smiles', 'geometry', 'conformer', 'controlled', 'reaction'],
+    command: 'react ask',
+    tongue: 'CA',
+    description: 'Screen or inspect a molecule from plain words',
+    passRawInput: true,
+  },
 ];
 
 const NL_STOP_WORDS = new Set([
@@ -5495,7 +5513,13 @@ function resolveNaturalLanguage(rawInput) {
     // Specificity boost: if a token exactly matches the FIRST pattern entry, the intent
     // is domain-specific for that term and should win ties (e.g. "lineage" beats "report").
     if (tokens.includes(entry.patterns[0])) score += 0.15;
-    return { command: entry.command, score, tongue: entry.tongue, description: entry.description };
+    return {
+      command: entry.command,
+      score,
+      tongue: entry.tongue,
+      description: entry.description,
+      passRawInput: !!entry.passRawInput,
+    };
   });
   scored.sort((a, b) => b.score - a.score);
   const top = scored[0];
@@ -5503,6 +5527,7 @@ function resolveNaturalLanguage(rawInput) {
   const confidence = top ? top.score : 0;
   const tongue = top ? top.tongue : '';
   const description = top ? top.description : '';
+  const passRawInput = top ? top.passRawInput : false;
   const candidates = scored
     .slice(0, 3)
     .map((s) => ({ command: s.command, score: s.score, tongue: s.tongue }));
@@ -5514,6 +5539,7 @@ function resolveNaturalLanguage(rawInput) {
     corrections,
     corrected_input,
     candidates,
+    passRawInput,
   };
 }
 
@@ -5578,7 +5604,12 @@ function runNaturalLanguage(rawInput, flags) {
   process.stdout.write(`[route] ${result.tongue} — ${result.description}\n`);
 
   function execute() {
-    const cmdTokens = result.resolved_command.split(' ');
+    // A passRawInput route (e.g. `react ask`) re-parses the WHOLE utterance,
+    // so forward the user's original words as one argument rather than the
+    // fixed command's tokens.
+    const cmdTokens = result.passRawInput
+      ? [...result.resolved_command.split(' '), rawInput]
+      : result.resolved_command.split(' ');
     const child = spawnSync(process.execPath, [__filename, ...cmdTokens], { stdio: 'inherit' });
     const exitCode = typeof child.status === 'number' ? child.status : 1;
     writeLedger({ ...ledgerBase, executed: true, exit_code: exitCode });
