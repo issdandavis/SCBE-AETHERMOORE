@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from python.scbe.audio_field_observables import (
     AudioFieldModel,
+    AudioFieldObservables,
     analyze_audio_field,
     generate_decaying_sine,
     generate_sine,
@@ -28,6 +30,7 @@ from python.scbe.controlled_substances import ControlledSubstanceDenied, screen_
 from python.scbe.geometry_view import GeometryEngineError, geometry_view_packet
 from python.scbe.reaction_balance import BalanceError, balance_reaction_packet
 from python.scbe.reaction_language import ReactionPlan, plan_from_text
+from python.scbe import units as _U
 from python.scbe.reaction_state import (
     ReactionEndpoint,
     ReactionLedger,
@@ -35,6 +38,7 @@ from python.scbe.reaction_state import (
     build_reaction_state_packet,
     packet_from_dict,
     rekor_hashedrekord_entry,
+    unit_check,
 )
 
 # Every packet this CLI emits is signed under one stable identity so receipts
@@ -200,6 +204,63 @@ def build_code_packet(source_path: str, target_path: str) -> dict[str, Any]:
     }
 
 
+def _audio_unit_checks_ok(model: AudioFieldModel) -> bool | None:
+    """Honest source for ``unit_checks_ok`` on an audio-field packet.
+
+    Most acoustic observables are dimensionless ratios or read-off frequencies, so
+    there is no dimensional-arithmetic chain to verify and the honest value is
+    ``None`` ("no unit-bearing computation"). The one exception is the magnetosonic
+    coupling, which combines two velocities exactly as ``_compute_field_coupling``
+    does: ``magnetosonic_speed = sqrt(v_sound**2 + v_alfven**2)`` then
+    ``magnetic_share = v_alfven / magnetosonic_speed``. We re-express that in
+    ``Quantity`` arithmetic so the check can actually FAIL: ``add`` is the Mars
+    Climate Orbiter catch (it raises if the two speeds carry the same dimension but
+    a different unit), and the share must come out dimensionless. A ``True`` here
+    means a real dimensional relation held, not that a flag was set.
+    """
+    if model.kind != "magnetosonic" or model.sound_speed_mps is None or model.alfven_speed_mps is None:
+        return None
+
+    mps = _U.METER / _U.SECOND
+
+    def _consistent() -> object:
+        v_s = _U.q(abs(model.sound_speed_mps), mps)
+        v_a = _U.q(abs(model.alfven_speed_mps), mps)
+        # v_sound**2 + v_alfven**2 — add() raises on a same-dimension/different-unit mix.
+        v_sq_sum = _U.add(_U.mul(v_s, v_s), _U.mul(v_a, v_a))
+        _U.assert_dim(v_sq_sum, _U.dim(m=2, s=-2))  # velocity squared
+        # magnetic_share**2 = v_alfven**2 / (v_sound**2 + v_alfven**2) must be dimensionless.
+        return _U.assert_dim(_U.div(_U.mul(v_a, v_a), v_sq_sum), _U.DIMENSIONLESS)
+
+    return unit_check(_consistent)[0]
+
+
+def _audio_scientific_checks_ok(observables: AudioFieldObservables) -> bool:
+    """Honest source for ``scientific_checks_ok``: every emitted observable must be
+    finite and within its declared range. Replaces a hard-coded ``True`` so the flag
+    can fail on a degenerate spectrum (non-finite energy/centroid, an out-of-range
+    ratio, or a coupling proxy that escaped [0, 1])."""
+    finite_fields = (
+        observables.energy_log,
+        observables.spectral_centroid_hz,
+        observables.spectral_bandwidth_hz,
+        observables.high_frequency_ratio,
+        observables.stability,
+        observables.dispersion_proxy,
+    )
+    if not all(math.isfinite(value) for value in finite_fields):
+        return False
+    if observables.spectral_centroid_hz < 0.0 or observables.spectral_bandwidth_hz < 0.0:
+        return False
+    if not (0.0 <= observables.high_frequency_ratio <= 1.0):
+        return False
+    if not (0.0 <= observables.stability <= 1.0):
+        return False
+    if observables.field_coupling_proxy is not None and not (0.0 <= observables.field_coupling_proxy <= 1.0):
+        return False
+    return True
+
+
 def build_audio_packet(
     *,
     frequency_hz: float,
@@ -268,8 +329,8 @@ def build_audio_packet(
             [] if observables.field_coupling_proxy is not None else ["no declared field coupling proxy emitted"]
         ),
         recalculation=ReactionRecalculation(
-            scientific_checks_ok=True,
-            unit_checks_ok=True,
+            scientific_checks_ok=_audio_scientific_checks_ok(observables),
+            unit_checks_ok=_audio_unit_checks_ok(model),
             identity_ok=observables.modal_count_state.ok,
             extra={"observables": observables.to_dict()},
         ),
