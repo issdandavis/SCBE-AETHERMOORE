@@ -533,6 +533,35 @@ class TyperAgent(SwarmAgent):
             agent=self.tongue, action_id=action_id, decision="ALLOW", confidence=0.85, reasoning="Non-sensitive input"
         )
 
+    def _assess_input_risk(self, text: str, field_type: str = "text") -> float:
+        """Assess typed-input risk so the Judge can veto a dangerous type.
+
+        Two dimensions, take the max:
+          * WHERE it is typed -- a credential/financial field sits in the
+            ESCALATE band (0.8), matching this agent's own sensitive-field
+            vote (typing a password is approve-worthy, not forbidden).
+          * WHAT is typed -- the membrane scanner scores the content for
+            injection/exfil; a genuine threat reaches the veto band (>0.9).
+        The raw text never leaves this method (only the score is returned),
+        preserving the "never include actual text in context" rule.
+        """
+        field = (field_type or "text").lower()
+        if field in ("password", "ssn", "credit_card", "bank_account", "secret", "api_key"):
+            field_risk = 0.8
+        elif field in ("email", "phone", "address", "name"):
+            field_risk = 0.5
+        else:
+            field_risk = 0.3
+
+        content_risk = 0.0
+        try:
+            scan = scan_text_for_threats(text or "")
+            content_risk = float(getattr(scan, "risk_score", 0.0) or 0.0)
+        except Exception:  # noqa: BLE001 - a scanner failure must not crash a type
+            content_risk = 0.0
+
+        return min(1.0, max(field_risk, content_risk))
+
 
 class JudgeAgent(SwarmAgent):
     """DR - Final decision and safety approval specialist."""
@@ -872,8 +901,14 @@ class SwarmBrowser:
         self._hub_event("swarm_action", result)
         return result
 
-    async def type_text(self, selector: str, text: str) -> Dict[str, Any]:
-        """Type with swarm consensus."""
+    async def type_text(self, selector: str, text: str, field_type: str = "text") -> Dict[str, Any]:
+        """Type with swarm consensus.
+
+        Pass field_type (e.g. "password", "credit_card") so the swarm can treat
+        credential/financial fields as sensitive. Input is risk-scored by the
+        Typer (membrane scan of content + field sensitivity) so the Judge's
+        binding veto applies; the raw text never enters the context or receipt.
+        """
         action_id = f"type-{len(self.action_history)}"
 
         # Reader analyzes the form field
@@ -887,20 +922,33 @@ class SwarmBrowser:
 
         await self.agents[SacredTongue.RU].process(reader_msg)
 
+        # A type is only as safe as its content + target field. Score it so the
+        # Judge can veto, exactly like navigate/click. (Score only -- no text.)
+        risk_score = self.agents[SacredTongue.UM]._assess_input_risk(text, field_type)
+
         # Get consensus (never include actual text in context)
         consensus = await self.roundtable_consensus(
-            action_id, "type", {"selector": selector, "text_length": len(text), "field_type": "text"}
+            action_id,
+            "type",
+            {"selector": selector, "text_length": len(text), "field_type": field_type, "risk_score": risk_score},
         )
 
+        gate = self._resolve_execution(consensus["final_decision"])
         result = {
             "action": "type",
             "selector": selector,
             "text_length": len(text),
+            "field_type": field_type,
             "decision": consensus["final_decision"],
+            "effective_decision": gate["effective_decision"],
+            "unattended": self.unattended,
+            "risk_score": risk_score,
             "executed": False,
         }
+        if gate["auto_resolution"]:
+            result["auto_resolution"] = gate["auto_resolution"]
 
-        if consensus["final_decision"] == "ALLOW":
+        if gate["execute"]:
             # Execute typing via Typer agent
             type_msg = SwarmMessage(
                 id=action_id, from_agent=SacredTongue.UM, to_agent=None, action="type", payload={"text": text}
