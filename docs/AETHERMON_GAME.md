@@ -13,11 +13,23 @@ and the Aethermoore canon (world bible / novel / Spiral Forge) each system is dr
 ## Play
 
 ```bash
+npm run game:aethermon:web     # BROWSER game — pixel sprites, animated battles, sound
 npm run game:aethermon         # interactive terminal game (saves to .aethermon-save.json)
 npm run game:aethermon:demo    # scripted, deterministic playthrough — no input, no saves
 ```
 
-Flags (after `--`): `--seed <n>` fixed RNG seed, `--save <path>` custom save location.
+The web version (`demos/aethermon/index.html`) is a virtual-pet device shell driving the
+same tested game core: procedurally generated pixel sprites for all 39 species (seeded by
+species id — the sprites are math, like everything else in Aethermoore), region-tinted
+scenes, animated battles with HP bars and screen shake, evolution flashes, and canon
+synesthesia tones — every tongue sounds its note (KO=A 220Hz … DR=G 392Hz). Saves live in
+localStorage. Rebuild the bundle after code changes with `npm run game:aethermon:web:build`;
+regenerate preview PNGs (sprite sheet + battle mock, no browser needed) with
+`node scripts/aethermon_render_preview.cjs` — the preview script imports compiled output, so
+run `npm run build` (or any `game:aethermon*` CLI script, which runs `tsc`) first to
+populate `dist/`.
+
+CLI flags (after `--`): `--seed <n>` fixed RNG seed, `--save <path>` custom save location.
 
 ## Module
 
