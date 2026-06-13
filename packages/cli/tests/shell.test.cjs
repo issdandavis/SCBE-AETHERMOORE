@@ -537,35 +537,23 @@ test('infer command routes geoseal and termux worksheets with typo tolerance', (
   assert.match(result.stdout, /execute: no/);
 });
 
-// PENDING: this asserts a bare sentence beginning with the real `geoseal` verb
-// routes to the generic worksheet fallback. Today the `geoseal` command
-// dispatch intercepts the phrase first (emits a command plan -> geoseal_cli
-// explain-route), so the worksheet fallback never fires. Resolving it means
-// reordering dispatch so a multi-word prose tail outranks a leading known verb,
-// which would ripple into the geoseal command tests — deferred to its own fix.
-test(
-  'bare sentence routes to worksheet before weak natural-language guess',
-  {
-    skip: 'worksheet fallback is shadowed by the leading geoseal verb dispatch — pending routing-order fix',
-  },
-  () => {
-    const result = runCli([
-      'geoseal',
-      'compile',
-      'intent',
-      'summarize',
-      'README',
-      'with',
-      'termunx',
-      'fallback',
-    ]);
+// A bare sentence that does NOT begin with a known command verb falls through to
+// the worksheet/NL stage, and must route to the generic worksheet — which detects
+// the skill keywords (geoseal, termux, with "termunx" typo tolerance) — rather
+// than a weak natural-language guess or a workspace ingest.
+// (An input that DOES begin with a real verb such as `geoseal` is correctly
+// handled by that command's own dispatch and is not a worksheet case — the
+// earlier skip used such an input, which was the test's bug, not a routing gap.)
+test('bare sentence routes to worksheet before weak natural-language guess', () => {
+  const result = runCli(
+    'please summarize the README using geoseal governance with a termunx fallback'.split(' ')
+  );
 
-    assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /worksheet: worksheet\.generic/);
-    assert.match(result.stdout, /skills: geoseal, termux/);
-    assert.doesNotMatch(result.stderr, /workspace ingest/);
-  }
-);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /worksheet: worksheet\.generic/);
+  assert.match(result.stdout, /skills: geoseal, termux/);
+  assert.doesNotMatch(result.stderr, /workspace ingest/);
+});
 
 test('rich shell treats run plus prose as an assistant request, not executable a.exe', () => {
   const result = runCli(['shell'], {
