@@ -153,8 +153,22 @@ def scan_command(command: str, *, claimed_paths: Optional[Sequence[str]] = None)
         )
 
     deny_patterns: list[tuple[str, str, str]] = [
-        (r"\brm\s+-rf\b", "destructive-rm", "recursive force delete"),
-        (r"\bremove-item\b.*\b-recurse\b", "destructive-remove-item", "recursive PowerShell delete"),
+        # destructive-rm must catch recursive+force in ANY flag form/order, not just the
+        # literal "-rf". The old `\brm\s+-rf\b` ALLOWED `rm -fr`, `rm -r -f`, and
+        # `rm --recursive --force` (a real bypass — confirmed via scan_command). Require
+        # an `rm` token plus a recursive flag AND a force flag anywhere after it: bundled
+        # (-rf/-fr/-vrf), split (-r -f), or long (--recursive/--force). The `\s-` (not \b)
+        # before each flag avoids the same boundary trap that disabled -recurse below.
+        # Plain `rm`, `rm -f`, and `rm -r` stay ALLOWED (each lookahead needs the other).
+        (
+            r"\brm\b(?=.*(?:\s-[a-z]*r[a-z]*\b|\s--recursive\b))(?=.*(?:\s-[a-z]*f[a-z]*\b|\s--force\b))",
+            "destructive-rm",
+            "recursive force delete",
+        ),
+        # The leading boundary before "-recurse" must NOT be \b — \b never matches
+        # between a space and a hyphen, so `\b-recurse` silently disabled this rule and
+        # `Remove-Item -Recurse -Force` (and the `rm`/`ri` aliases) were ALLOWED.
+        (r"\b(?:remove-item|ri|rm)\b.*(?:\s|^)-recurse\b", "destructive-remove-item", "recursive PowerShell delete"),
         (r"\binvoke-expression\b|\biex\b", "powershell-iex", "dynamic PowerShell execution"),
         (r"\bcurl\b.*\|\s*(sh|bash|powershell|pwsh|iex)\b", "curl-pipe-exec", "download-to-exec chain"),
         (r"\bwget\b.*\|\s*(sh|bash|powershell|pwsh|iex)\b", "wget-pipe-exec", "download-to-exec chain"),
