@@ -449,6 +449,45 @@ class ClickerAgent(SwarmAgent):
 
         return None
 
+    def _assess_target_risk(self, target: str) -> float:
+        """Assess click-target risk so the Judge can veto a dangerous click.
+
+        Mirrors ScoutAgent._assess_url_risk: a click is only as safe as what it
+        commits. Destructive and authorizing actions score highest.
+        """
+        t = (target or "").lower()
+
+        # Destructive / irreversible
+        if any(x in t for x in ["delete", "remove", "destroy", "wipe", "erase", "drop", "format"]):
+            return 0.95
+        # Financial / authorization commits
+        if any(
+            x in t
+            for x in [
+                "transfer",
+                "withdraw",
+                "send money",
+                "pay",
+                "purchase",
+                "buy",
+                "checkout",
+                "authorize",
+                "approve",
+                "grant",
+            ]
+        ):
+            return 0.9
+        # Credential / submission surfaces
+        if any(x in t for x in ["password", "login", "sign in", "signin", "submit", "confirm", "2fa", "otp"]):
+            return 0.7
+        # Account / admin surfaces
+        if any(x in t for x in ["account", "settings", "admin", "billing", "permission"]):
+            return 0.5
+        # Benign navigation-ish clicks
+        if any(x in t for x in ["search", "next", "back", "home", "menu", "close", "cancel"]):
+            return 0.2
+        return 0.4  # Default
+
 
 class TyperAgent(SwarmAgent):
     """UM - Text input and form filling specialist."""
@@ -626,9 +665,14 @@ class SwarmBrowser:
         scbe_url: str = "http://127.0.0.1:8080",
         hub_primary_path: str = "artifacts/swarm_hub/primary.jsonl",
         hub_replica_paths: Optional[List[str]] = None,
+        unattended: bool = False,
     ):
         self.browser = browser_backend
         self.scbe_url = scbe_url
+        # Headless / unattended use: no human operator is present, so a decision
+        # that asks for one (ESCALATE/QUARANTINE) cannot be satisfied and must
+        # fail closed with an explicit reason rather than dangling as "pending".
+        self.unattended = unattended
         self.hub = DecentralizedHub(
             primary_path=hub_primary_path,
             replica_paths=hub_replica_paths,
@@ -655,6 +699,26 @@ class SwarmBrowser:
             "payload": payload,
         }
         return self.hub.write(record)
+
+    def _resolve_execution(self, decision: str) -> Dict[str, Any]:
+        """Decide whether a consensus decision may execute, and record why.
+
+        Only ALLOW ever executes. In unattended (headless) mode there is no
+        operator to approve an ESCALATE/QUARANTINE, so those fail closed --
+        the effective decision becomes DENY with an explicit audit reason --
+        instead of silently not executing or waiting on a prompt that will
+        never come. Attended mode keeps the literal decision (a human can act
+        on an ESCALATE later).
+        """
+        if decision == "ALLOW":
+            return {"execute": True, "effective_decision": "ALLOW", "auto_resolution": None}
+        if self.unattended and decision in ("ESCALATE", "QUARANTINE"):
+            return {
+                "execute": False,
+                "effective_decision": "DENY",
+                "auto_resolution": (f"headless: {decision} needs an operator; none present -> withheld (fail-closed)"),
+            }
+        return {"execute": False, "effective_decision": decision, "auto_resolution": None}
 
     async def initialize(self) -> bool:
         """Activate all agents (Megazord assembly)."""
@@ -734,15 +798,20 @@ class SwarmBrowser:
         # Get consensus
         consensus = await self.roundtable_consensus(action_id, "navigate", {"url": url, "risk_score": risk_score})
 
+        gate = self._resolve_execution(consensus["final_decision"])
         result = {
             "action": "navigate",
             "url": url,
             "decision": consensus["final_decision"],
+            "effective_decision": gate["effective_decision"],
+            "unattended": self.unattended,
             "risk_score": risk_score,
             "executed": False,
         }
+        if gate["auto_resolution"]:
+            result["auto_resolution"] = gate["auto_resolution"]
 
-        if consensus["final_decision"] == "ALLOW":
+        if gate["execute"]:
             # Execute navigation via browser backend
             if self.browser:
                 await self.browser.navigate(url)
@@ -764,18 +833,30 @@ class SwarmBrowser:
         vision_result = await self.agents[SacredTongue.AV].process(vision_msg)
         coordinates = vision_result.payload.get("coordinates", [0, 0])
 
-        # Get consensus
-        consensus = await self.roundtable_consensus(action_id, "click", {"target": target, "coordinates": coordinates})
+        # A click is only as safe as what it commits -- risk-score the target so
+        # the Judge can veto a destructive/authorizing click, just like navigate.
+        risk_score = self.agents[SacredTongue.CA]._assess_target_risk(target)
 
+        # Get consensus
+        consensus = await self.roundtable_consensus(
+            action_id, "click", {"target": target, "coordinates": coordinates, "risk_score": risk_score}
+        )
+
+        gate = self._resolve_execution(consensus["final_decision"])
         result = {
             "action": "click",
             "target": target,
             "coordinates": coordinates,
             "decision": consensus["final_decision"],
+            "effective_decision": gate["effective_decision"],
+            "unattended": self.unattended,
+            "risk_score": risk_score,
             "executed": False,
         }
+        if gate["auto_resolution"]:
+            result["auto_resolution"] = gate["auto_resolution"]
 
-        if consensus["final_decision"] == "ALLOW":
+        if gate["execute"]:
             # Execute click via Clicker agent
             click_msg = SwarmMessage(
                 id=action_id,
