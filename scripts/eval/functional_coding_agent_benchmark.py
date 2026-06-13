@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import json
 import os
+import random
 import re
 import subprocess
 import sys
@@ -22,7 +23,7 @@ import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, Optional
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_BASE_MODEL = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
@@ -44,11 +45,131 @@ class FunctionalTask:
     task_id: str
     prompt: str
     checks: list[dict[str, Any]]
+    # Optional reference oracle: given an RNG, returns ONE fresh check dict
+    # (input/initialState/expectedResult/expectedState) computed from the task's
+    # true semantics. Used to score the candidate on inputs it never saw, so an
+    # input-keyed lookup stub that only echoes the fixed `checks` cannot pass.
+    # File-loaded tasks have no oracle (None) and are scored on `checks` alone.
+    probe: Optional[Callable[[random.Random], dict[str, Any]]] = None
+
+
+# --- reference oracles: compute the true (result, final state) for a random input --- #
+# Each mirrors its task's semantics exactly, so a candidate that only memorised the
+# fixed `checks` (an input-keyed lookup with no real logic) fails on these unseen inputs.
+
+
+def _probe_score_add(rng: random.Random) -> dict[str, Any]:
+    points = rng.randint(-50, 50)
+    score = rng.randint(-100, 100)
+    total = score + points
+    return {
+        "input": {"points": points},
+        "initialState": {"score": score},
+        "expectedResult": total,
+        "expectedState": {"score": total},
+    }
+
+
+def _probe_heal_clamp(rng: random.Random) -> dict[str, Any]:
+    max_hp = rng.randint(5, 50)
+    hp = rng.randint(0, max_hp)
+    heal = rng.randint(0, 40)
+    events = ["start"] if rng.random() < 0.5 else []
+    new_hp = min(hp + heal, max_hp)
+    return {
+        "input": {"heal": heal},
+        "initialState": {"hp": hp, "maxHp": max_hp, "events": list(events)},
+        "expectedResult": new_hp,
+        "expectedState": {"hp": new_hp, "maxHp": max_hp, "events": events + ["healed"]},
+    }
+
+
+def _probe_inventory_unique(rng: random.Random) -> dict[str, Any]:
+    pool = ["coin", "key", "gem", "map", "rope", "torch"]
+    inventory = rng.sample(pool, rng.randint(0, 4))
+    item = rng.choice(pool)
+    new_inventory = list(inventory) if item in inventory else inventory + [item]
+    return {
+        "input": {"item": item},
+        "initialState": {"inventory": list(inventory)},
+        "expectedResult": len(new_inventory),
+        "expectedState": {"inventory": new_inventory},
+    }
+
+
+def _probe_cooldown_gate(rng: random.Random) -> dict[str, Any]:
+    cooldown = rng.randint(0, 5)
+    actions = rng.randint(0, 10)
+    input_cooldown = rng.randint(1, 8)
+    if cooldown > 0:
+        result: Any = False
+        final = {"cooldown": cooldown - 1, "actions": actions}
+    else:
+        result = True
+        final = {"cooldown": input_cooldown, "actions": actions + 1}
+    return {
+        "input": {"cooldown": input_cooldown},
+        "initialState": {"cooldown": cooldown, "actions": actions},
+        "expectedResult": result,
+        "expectedState": final,
+    }
+
+
+def _probe_quest_flags(rng: random.Random) -> dict[str, Any]:
+    universe = ["gate", "key", "seal", "rune", "torch"]
+    flags = rng.sample(universe, rng.randint(0, 4))
+    required = rng.sample(universe, rng.randint(1, 3))
+    reward = rng.choice(["amulet", "coin", "gem"])
+    rewards = rng.sample(["coin", "gem", "amulet"], rng.randint(0, 2))
+    if all(flag in flags for flag in required):
+        result: Any = True
+        new_rewards = list(rewards) if reward in rewards else rewards + [reward]
+    else:
+        result = False
+        new_rewards = list(rewards)
+    return {
+        "input": {"required": required, "reward": reward},
+        "initialState": {"flags": list(flags), "rewards": list(rewards)},
+        "expectedResult": result,
+        "expectedState": {"flags": list(flags), "rewards": new_rewards},
+    }
+
+
+def _probe_weighted_choice(rng: random.Random) -> dict[str, Any]:
+    # Integer weights keep the cumulative comparison exact across Python and the JS
+    # harness (no float-equality flakiness). Pick a target option, then choose a roll
+    # strictly inside its cumulative band so exactly that option is the first over roll.
+    count = rng.randint(2, 4)
+    options = [{"id": chr(ord("a") + i), "weight": rng.randint(1, 5)} for i in range(count)]
+    cumulative: list[int] = []
+    running = 0
+    for option in options:
+        running += option["weight"]
+        cumulative.append(running)
+    total = cumulative[-1]
+    if rng.random() < 0.25:
+        # No option's cumulative weight crosses the roll -> contract returns final id.
+        roll: int = total + rng.randint(0, 3)
+        expected = options[-1]["id"]
+    else:
+        target = rng.randint(0, count - 1)
+        low = cumulative[target - 1] if target > 0 else 0
+        high = cumulative[target]  # cumulative[target] must be strictly > roll
+        roll = rng.randint(low, high - 1)
+        expected = options[target]["id"]
+    seen = rng.randint(0, 5)
+    return {
+        "input": {"roll": roll, "options": options},
+        "initialState": {"seen": seen},
+        "expectedResult": expected,
+        "expectedState": {"seen": seen},
+    }
 
 
 TASKS = [
     FunctionalTask(
         task_id="score_add",
+        probe=_probe_score_add,
         prompt=(
             "Write TypeScript only. Define function evaluate(input, state). "
             "It must add input.points to state.score, mutate state.score, and return the new score."
@@ -70,6 +191,7 @@ TASKS = [
     ),
     FunctionalTask(
         task_id="heal_clamp",
+        probe=_probe_heal_clamp,
         prompt=(
             "Write TypeScript only. Define function evaluate(input, state). "
             "It must increase state.hp by input.heal, cap hp at state.maxHp, "
@@ -92,6 +214,7 @@ TASKS = [
     ),
     FunctionalTask(
         task_id="inventory_unique",
+        probe=_probe_inventory_unique,
         prompt=(
             "Write TypeScript only. Define function evaluate(input, state). "
             "If input.item is not already in state.inventory, append it. "
@@ -114,6 +237,7 @@ TASKS = [
     ),
     FunctionalTask(
         task_id="cooldown_gate",
+        probe=_probe_cooldown_gate,
         prompt=(
             "Write TypeScript only. Define function evaluate(input, state). "
             "If state.cooldown is greater than 0, decrement state.cooldown by 1 and return false. "
@@ -136,6 +260,7 @@ TASKS = [
     ),
     FunctionalTask(
         task_id="quest_flags",
+        probe=_probe_quest_flags,
         prompt=(
             "Write TypeScript only. Define function evaluate(input, state). "
             "If every string in input.required is present in state.flags, "
@@ -165,6 +290,7 @@ TASKS = [
     ),
     FunctionalTask(
         task_id="weighted_choice",
+        probe=_probe_weighted_choice,
         prompt=(
             "Write TypeScript only. Define function evaluate(input, state). "
             "input.options is an array of objects with id and weight. "
@@ -630,10 +756,39 @@ def deep_equal(a: Any, b: Any) -> bool:
     return a == b
 
 
-def score_candidate(source: str, task: FunctionalTask) -> dict[str, Any]:
+def generate_probe_checks(task: FunctionalTask, count: int, rng: random.Random) -> list[dict[str, Any]]:
+    """Fresh, never-shown checks drawn from the task's reference oracle.
+
+    Empty when the task has no oracle (file-loaded tasks) or count <= 0, so those
+    are scored on their fixed checks exactly as before.
+    """
+    if task.probe is None or count <= 0:
+        return []
+    return [task.probe(rng) for _ in range(count)]
+
+
+def score_candidate(
+    source: str,
+    task: FunctionalTask,
+    *,
+    probe_count: int = 0,
+    probe_seed: Optional[int] = None,
+) -> dict[str, Any]:
+    """Score a candidate against the task's fixed checks plus, when the task carries
+    a reference oracle, `probe_count` fresh random checks the candidate never saw.
+
+    The probes are what make this verifier sound: an input-keyed lookup stub that
+    only echoes the fixed `checks` (no real logic) passes the contract checks but
+    fails on unseen inputs. `probe_seed=None` draws fresh (unseeded) randomness each
+    run so a stub cannot be tuned to a fixed probe set; tests pass a seed to pin it.
+    """
+    rng = random.Random(probe_seed)
+    scored: list[tuple[str, dict[str, Any]]] = [("contract", check) for check in task.checks]
+    scored += [("probe", check) for check in generate_probe_checks(task, probe_count, rng)]
+
     check_results = []
-    for index, check in enumerate(task.checks):
-        receipt = run_harness(source, check, f"{task.task_id}-{index}")
+    for index, (kind, check) in enumerate(scored):
+        receipt = run_harness(source, check, f"{task.task_id}-{kind}-{index}")
         passed = (
             receipt.get("status") == "passed"
             and deep_equal(receipt.get("result"), check["expectedResult"])
@@ -642,6 +797,7 @@ def score_candidate(source: str, task: FunctionalTask) -> dict[str, Any]:
         check_results.append(
             {
                 "index": index,
+                "kind": kind,
                 "passed": passed,
                 "expected_result": check["expectedResult"],
                 "actual_result": receipt.get("result"),
@@ -651,11 +807,20 @@ def score_candidate(source: str, task: FunctionalTask) -> dict[str, Any]:
                 "error": receipt.get("error"),
             }
         )
+    probe_rows = [row for row in check_results if row["kind"] == "probe"]
     return {
         "task_id": task.task_id,
         "passed": all(row["passed"] for row in check_results),
         "checks": check_results,
+        "probe_checks_total": len(probe_rows),
+        "probe_checks_passed": sum(1 for row in probe_rows if row["passed"]),
     }
+
+
+def _args_probe_count(args: argparse.Namespace) -> int:
+    """Property-probe count for model/candidate-generated code, from --property-probes.
+    Absent on programmatically-built Namespaces (tests) -> 0, preserving old behavior."""
+    return int(getattr(args, "property_probes", 0) or 0)
 
 
 def _sha256_text(value: str) -> str:
@@ -786,7 +951,7 @@ def maybe_repair_ollama_candidate(
             )
             generation_error = ""
             code = extract_typescript(raw)
-            score = score_candidate(code, task)
+            score = score_candidate(code, task, probe_count=_args_probe_count(args))
         except Exception as exc:
             raw = ""
             code = ""
@@ -1425,7 +1590,7 @@ def run_model_benchmark(args: argparse.Namespace, adapter: str) -> dict[str, Any
             args.max_new_tokens,
         )
         code = extract_typescript(raw)
-        score = score_candidate(code, task)
+        score = score_candidate(code, task, probe_count=_args_probe_count(args))
         final_score, final_code, semantic_bridge_repair = maybe_apply_semantic_bridge_repair(code, task, score)
         final_score, final_code, contract_synthesis_joint = maybe_apply_contract_synthesis_joint(
             final_code,
@@ -1510,7 +1675,7 @@ def run_ollama_benchmark(args: argparse.Namespace, model_name: str) -> dict[str,
                 "error": generation_error,
             }
         else:
-            score = score_candidate(code, task)
+            score = score_candidate(code, task, probe_count=_args_probe_count(args))
         initial_score = dict(score)
         final_score = score
         final_code = code
@@ -1633,7 +1798,7 @@ def run_candidate_benchmark(args: argparse.Namespace, candidate: dict[str, Any])
             print(f"  {name} {task.task_id}: MISSING")
             continue
         code = extract_typescript(raw)
-        score = score_candidate(code, task)
+        score = score_candidate(code, task, probe_count=_args_probe_count(args))
         final_score, final_code, semantic_bridge_repair = maybe_apply_semantic_bridge_repair(code, task, score)
         final_score, final_code, contract_synthesis_joint = maybe_apply_contract_synthesis_joint(
             final_code,
@@ -2020,6 +2185,16 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=1.0,
         help="Minimum required pass rate in [0,1] for process success (default: 1.0).",
+    )
+    p.add_argument(
+        "--property-probes",
+        type=int,
+        default=8,
+        help=(
+            "Random reference-oracle checks per built-in task, drawn from inputs the "
+            "candidate never saw, so an input-keyed lookup stub that only echoes the "
+            "fixed checks cannot pass. 0 disables (fixed checks only)."
+        ),
     )
     return p.parse_args()
 
