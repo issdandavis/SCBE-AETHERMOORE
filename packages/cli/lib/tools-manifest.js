@@ -29,6 +29,7 @@
 
 const path = require('path');
 const { errorContract } = require('./errors');
+const COMMAND_PARAMS = require('./command-params');
 
 function readCliVersion() {
   try {
@@ -902,6 +903,12 @@ const COMMAND_SPECS = [
     ],
   },
 ];
+
+// Merge the extracted typed-param contracts (command-params.js) into specs that
+// do not declare `params` inline. Inline params (the proof commands) win.
+for (const spec of COMMAND_SPECS) {
+  if (!spec.params && COMMAND_PARAMS[spec.name]) spec.params = COMMAND_PARAMS[spec.name];
+}
 
 const CATEGORY_ORDER = [
   'core',
