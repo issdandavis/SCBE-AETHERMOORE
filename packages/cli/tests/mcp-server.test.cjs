@@ -19,7 +19,7 @@ const path = require('node:path');
 const { Client } = require('@modelcontextprotocol/sdk/client/index.js');
 const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio.js');
 
-const { buildToolDefinitions, toolName } = require('../mcp/scbe-mcp-server.cjs');
+const { buildToolDefinitions, toolName, resolveArgs } = require('../mcp/scbe-mcp-server.cjs');
 const { buildToolsManifest } = require('../lib/tools-manifest');
 
 const SERVER = path.join(__dirname, '..', 'mcp', 'scbe-mcp-server.cjs');
@@ -40,6 +40,47 @@ test('tool definitions are generated 1:1 from the manifest', () => {
     assert.ok(t.inputSchema.properties.args);
     assert.ok(t.inputSchema.properties.json);
   }
+});
+
+test('commands with params expose a TYPED input schema (alongside args/json)', () => {
+  const { tools } = buildToolDefinitions();
+  const abacus = tools.find((t) => t.name === 'scbe_abacus');
+  const props = abacus.inputSchema.properties;
+  // typed params present with correct JSON types + enum
+  assert.equal(props.subcommand.type, 'string');
+  assert.deepEqual(props.subcommand.enum, ['run']);
+  assert.equal(props.d_h.type, 'number');
+  assert.equal(props.pd.type, 'number');
+  // escape hatch + json still present (back-compat the bridge relies on)
+  assert.ok(props.args);
+  assert.ok(props.json);
+  // repeated integer param renders as an array of integers
+  const rns = tools.find((t) => t.name === 'scbe_rns');
+  assert.equal(rns.inputSchema.properties.operands.type, 'array');
+  assert.equal(rns.inputSchema.properties.operands.items.type, 'integer');
+});
+
+test('resolveArgs serializes typed params and honors the raw-args escape hatch', () => {
+  const { specByTool } = buildToolDefinitions();
+  const abacusSpec = specByTool.get('scbe_abacus');
+  // structured params -> argv
+  assert.deepEqual(resolveArgs(abacusSpec, { subcommand: 'run', d_h: 0.4, pd: 0.1 }), [
+    'run',
+    '--d-h',
+    '0.4',
+    '--pd',
+    '0.1',
+  ]);
+  // raw args win when provided (explicit escape hatch)
+  assert.deepEqual(resolveArgs(abacusSpec, { args: ['run', '--d-h', '0.9', '--pd', '0.0'] }), [
+    'run',
+    '--d-h',
+    '0.9',
+    '--pd',
+    '0.0',
+  ]);
+  // bad structured call surfaces a clear error (not a malformed command)
+  assert.throws(() => resolveArgs(abacusSpec, { subcommand: 'run', d_h: 0.4 }), /missing required param "pd"/);
 });
 
 test('server lists and runs tools over real MCP stdio', { timeout: 60000 }, async () => {
@@ -70,6 +111,25 @@ test('server lists and runs tools over real MCP stdio', { timeout: 60000 }, asyn
     assert.equal(rnsObj.decoded, 60000);
     assert.equal(rnsObj.overflow, true);
     assert.equal(rnsObj.exact, true);
+
+    // Call scbe_rns with STRUCTURED params (no raw args) — proves the bridge
+    // serializes the typed param contract into a real, runnable invocation.
+    const rnsTyped = await client.callTool({
+      name: 'scbe_rns',
+      arguments: { subcommand: 'add', operands: [30000, 30000], json: true },
+    });
+    assert.equal(rnsTyped.isError || false, false);
+    const rnsTypedObj = JSON.parse(rnsTyped.content.map((c) => c.text).join(''));
+    assert.equal(rnsTypedObj.decoded, 60000);
+    assert.equal(rnsTypedObj.exact, true);
+
+    // A bad structured call is rejected cleanly (clear error, no malformed run).
+    const bad = await client.callTool({
+      name: 'scbe_rns',
+      arguments: { subcommand: 'divide', operands: [1, 2] },
+    });
+    assert.equal(bad.isError, true);
+    assert.match(bad.content.map((c) => c.text).join(''), /must be one of/);
   } finally {
     await client.close();
   }

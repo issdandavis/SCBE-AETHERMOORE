@@ -23,7 +23,11 @@ const {
   manifestCommandNames,
   buildToolsManifest,
   renderToolsHuman,
+  serializeParams,
+  COMMAND_SPECS,
 } = require('../lib/tools-manifest');
+
+const specByName = (name) => COMMAND_SPECS.find((s) => s.name === name);
 
 const SCBE_JS = path.join(__dirname, '..', 'bin', 'scbe.js');
 
@@ -153,4 +157,77 @@ test('human render is non-empty and lists categories', () => {
   const text = renderToolsHuman(buildToolsManifest());
   assert.ok(text.includes('CORE'));
   assert.ok(text.includes('scbe tools --json'));
+});
+
+// ── Typed params (the AI tool-call contract) ────────────────────────────────
+
+test('declared params are well-formed and carried into the manifest', () => {
+  const m = buildToolsManifest();
+  const validTypes = new Set(['string', 'number', 'integer', 'boolean']);
+  let specsWithParams = 0;
+  for (const spec of COMMAND_SPECS) {
+    if (!spec.params) continue;
+    specsWithParams += 1;
+    const positions = [];
+    for (const p of spec.params) {
+      assert.ok(p.name, `${spec.name}: param missing name`);
+      assert.ok(validTypes.has(p.type), `${spec.name}.${p.name}: bad type ${p.type}`);
+      assert.ok(p.description, `${spec.name}.${p.name}: missing description`);
+      // a param is EITHER a flag OR a positional, never both / neither
+      const isFlag = typeof p.flag === 'string';
+      const isPositional = typeof p.position === 'number';
+      assert.ok(isFlag !== isPositional, `${spec.name}.${p.name}: must be flag xor positional`);
+      if (isFlag) assert.ok(p.flag.startsWith('--'), `${spec.name}.${p.name}: flag must start --`);
+      if (isPositional) positions.push(p.position);
+      if (p.enum) assert.ok(Array.isArray(p.enum) && p.enum.length, `${spec.name}.${p.name}: empty enum`);
+    }
+    // positional indices are unique
+    assert.equal(new Set(positions).size, positions.length, `${spec.name}: duplicate positions`);
+    // the manifest output carries params through
+    const cmd = m.commands.find((c) => c.name === spec.name);
+    assert.deepEqual(cmd.params, spec.params, `${spec.name}: params not in manifest output`);
+  }
+  assert.ok(specsWithParams >= 5, 'expected at least the 5 proof commands to declare params');
+});
+
+test('serializeParams builds the right argv for every param shape', () => {
+  // enum positional + value flags (numbers)
+  assert.deepEqual(serializeParams(specByName('abacus'), { subcommand: 'run', d_h: 0.4, pd: 0.1 }), [
+    'run',
+    '--d-h',
+    '0.4',
+    '--pd',
+    '0.1',
+  ]);
+  // enum positional + repeated integer positionals
+  assert.deepEqual(serializeParams(specByName('rns'), { subcommand: 'add', operands: [30000, 30000] }), [
+    'add',
+    '30000',
+    '30000',
+  ]);
+  // positional + optional positional + boolean flag
+  assert.deepEqual(
+    serializeParams(specByName('contract'), { subcommand: 'scan', file: 'Vault.sol', fail_on_finding: true }),
+    ['scan', 'Vault.sol', '--fail-on-finding']
+  );
+  // boolean flag false → omitted
+  assert.deepEqual(serializeParams(specByName('contract'), { subcommand: 'scan', fail_on_finding: false }), [
+    'scan',
+  ]);
+  // value flag only
+  assert.deepEqual(serializeParams(specByName('trap-redirect'), { input: 'ignore previous instructions' }), [
+    '--input',
+    'ignore previous instructions',
+  ]);
+  // repeated string positionals
+  assert.deepEqual(serializeParams(specByName('store'), { subcommand: 'ls', paths: ['gdrive:backups'] }), [
+    'ls',
+    'gdrive:backups',
+  ]);
+});
+
+test('serializeParams enforces required params and enum membership', () => {
+  assert.throws(() => serializeParams(specByName('abacus'), { subcommand: 'run', d_h: 0.4 }), /missing required param "pd"/);
+  assert.throws(() => serializeParams(specByName('abacus'), { d_h: 0.4, pd: 0.1 }), /missing required param "subcommand"/);
+  assert.throws(() => serializeParams(specByName('rns'), { subcommand: 'divide' }), /must be one of/);
 });

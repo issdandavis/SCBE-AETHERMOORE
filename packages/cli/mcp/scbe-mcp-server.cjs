@@ -34,7 +34,7 @@ const {
   CallToolRequestSchema,
 } = require('@modelcontextprotocol/sdk/types.js');
 
-const { buildToolsManifest } = require('../lib/tools-manifest');
+const { buildToolsManifest, serializeParams, paramToJsonSchema } = require('../lib/tools-manifest');
 
 const SCBE_BIN = path.join(__dirname, '..', 'bin', 'scbe.js');
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
@@ -55,10 +55,14 @@ function buildToolDefinitions() {
   const manifest = buildToolsManifest();
   const tools = [];
   const commandFor = new Map();
+  const specByTool = new Map();
 
   for (const c of manifest.commands) {
     const name = toolName(c.name);
     commandFor.set(name, c.name);
+    specByTool.set(name, c);
+
+    const hasParams = Array.isArray(c.params) && c.params.length > 0;
 
     const descLines = [`[${c.stability}] ${c.summary}`, `Usage: ${c.usage}`];
     if (c.subcommands && c.subcommands.length) {
@@ -67,39 +71,72 @@ function buildToolDefinitions() {
     if (c.examples && c.examples.length) {
       descLines.push(`Examples: ${c.examples.join(' | ')}`);
     }
+    if (hasParams) {
+      descLines.push('Pass the typed params below; "args" is a raw escape hatch.');
+    }
     if (INTERACTIVE.has(c.name)) {
       descLines.push(
         'Note: interactive — pass non-interactive flags (e.g. --json/--minimal) or it may time out.'
       );
     }
 
+    // Typed params (when declared) come first; args + json are always present so
+    // the raw escape hatch and the --json toggle work for every command.
+    const properties = {};
+    const required = [];
+    if (hasParams) {
+      for (const p of c.params) {
+        properties[p.name] = paramToJsonSchema(p);
+        if (p.required) required.push(p.name);
+      }
+    }
+    properties.args = {
+      type: 'array',
+      items: { type: 'string' },
+      description: hasParams
+        ? `Raw positional args/flags for "scbe ${c.name}" — overrides the typed params above when set.`
+        : `Positional args and flags passed to "scbe ${c.name}", e.g. ${JSON.stringify(
+            (c.usage.match(/<[^>]+>|\b(run-next|add|encode|scan|list)\b/) || ['...']).slice(0, 1)
+          )}.`,
+    };
+    properties.json = {
+      type: 'boolean',
+      description: c.json
+        ? 'Append --json for machine-readable output (recommended).'
+        : 'This command does not support --json; leave false.',
+    };
+
     tools.push({
       name,
       description: descLines.join('\n'),
       inputSchema: {
         type: 'object',
-        properties: {
-          args: {
-            type: 'array',
-            items: { type: 'string' },
-            description: `Positional args and flags passed to "scbe ${c.name}", e.g. ${JSON.stringify(
-              (c.usage.match(/<[^>]+>|\b(run-next|add|encode|scan|list)\b/) || ['...']).slice(0, 1)
-            )}.`,
-          },
-          json: {
-            type: 'boolean',
-            description: c.json
-              ? 'Append --json for machine-readable output (recommended).'
-              : 'This command does not support --json; leave false.',
-          },
-        },
+        properties,
+        // Required typed params are only enforced when the caller is NOT using
+        // the raw `args` escape hatch; the server resolves that at call time, so
+        // we keep the schema-level required list empty to avoid blocking args[].
         required: [],
         additionalProperties: false,
       },
     });
   }
 
-  return { manifest, tools, commandFor };
+  return { manifest, tools, commandFor, specByTool };
+}
+
+/**
+ * Resolve a tool call's structured arguments into the argv array for `scbe`.
+ * Raw `args` (when non-empty) wins as an explicit escape hatch; otherwise the
+ * declared params are serialized. Throws on missing-required / bad-enum so the
+ * caller gets a clear error instead of a malformed command.
+ */
+function resolveArgs(spec, callArgs) {
+  const raw = callArgs && callArgs.args;
+  if (Array.isArray(raw) && raw.length > 0) return raw.map(String);
+  if (spec && Array.isArray(spec.params) && spec.params.length) {
+    return serializeParams(spec, callArgs || {});
+  }
+  return [];
 }
 
 // Async on purpose: spawnSync blocked the server's event loop, so concurrent
@@ -136,7 +173,7 @@ function runScbe(commandName, args, wantJson, timeoutMs) {
 }
 
 async function main() {
-  const { tools, commandFor } = buildToolDefinitions();
+  const { tools, commandFor, specByTool } = buildToolDefinitions();
 
   const server = new Server({ name: 'scbe', version: '1.0.0' }, { capabilities: { tools: {} } });
 
@@ -151,7 +188,15 @@ async function main() {
         content: [{ type: 'text', text: `Unknown tool: ${name}` }],
       };
     }
-    const args = Array.isArray(callArgs && callArgs.args) ? callArgs.args.map(String) : [];
+    let args;
+    try {
+      args = resolveArgs(specByTool.get(name), callArgs);
+    } catch (err) {
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `scbe ${commandName}: ${err.message}` }],
+      };
+    }
     const wantJson = Boolean(callArgs && callArgs.json);
 
     const res = await runScbe(commandName, args, wantJson);
@@ -182,7 +227,7 @@ async function main() {
   // Stay alive on stdio; the transport handles the lifecycle.
 }
 
-module.exports = { buildToolDefinitions, toolName, runScbe };
+module.exports = { buildToolDefinitions, toolName, runScbe, resolveArgs };
 
 if (require.main === module) {
   main().catch((err) => {

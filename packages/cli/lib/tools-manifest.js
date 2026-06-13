@@ -385,6 +385,30 @@ const COMMAND_SPECS = [
     summary: 'Compute the harmonic-wall score and L13 risk tier (deterministic governance abacus).',
     usage: 'scbe abacus run --d-h <float> --pd <float> [--json]',
     examples: ['scbe abacus run --d-h 0.4 --pd 0.1 --json'],
+    params: [
+      {
+        name: 'subcommand',
+        type: 'string',
+        position: 0,
+        required: true,
+        enum: ['run'],
+        description: 'Only "run" is supported.',
+      },
+      {
+        name: 'd_h',
+        type: 'number',
+        flag: '--d-h',
+        required: true,
+        description: 'Hyperbolic distance d_H in [0,1).',
+      },
+      {
+        name: 'pd',
+        type: 'number',
+        flag: '--pd',
+        required: true,
+        description: 'Poincaré drift pd in [0,1).',
+      },
+    ],
   },
   {
     name: 'contract',
@@ -395,6 +419,30 @@ const COMMAND_SPECS = [
     summary: 'Scan Solidity for governance red-flags (SCONE-class static filter).',
     usage: 'scbe contract scan <file|stdin> [--json] [--fail-on-finding]',
     examples: ['cat Vault.sol | scbe contract scan --json'],
+    params: [
+      {
+        name: 'subcommand',
+        type: 'string',
+        position: 0,
+        required: true,
+        enum: ['scan'],
+        description: 'Only "scan" is supported.',
+      },
+      {
+        name: 'file',
+        type: 'string',
+        position: 1,
+        required: false,
+        description: 'Path to a .sol file; omit to read Solidity from stdin.',
+      },
+      {
+        name: 'fail_on_finding',
+        type: 'boolean',
+        flag: '--fail-on-finding',
+        required: false,
+        description: 'Exit non-zero when any red-flag is found (for CI gating).',
+      },
+    ],
   },
   {
     name: 'trap-redirect',
@@ -404,6 +452,22 @@ const COMMAND_SPECS = [
     stability: 'real',
     summary: 'Inspect a prompt for adversarial redirect/jailbreak; emit an audit packet.',
     usage: 'scbe trap-redirect --input "<text>" | --file <path> [--json]',
+    params: [
+      {
+        name: 'input',
+        type: 'string',
+        flag: '--input',
+        required: false,
+        description: 'Inline prompt text to inspect (provide this OR --file).',
+      },
+      {
+        name: 'file',
+        type: 'string',
+        flag: '--file',
+        required: false,
+        description: 'Path to a file whose contents are inspected (provide this OR --input).',
+      },
+    ],
   },
   {
     name: 'trap-dispatch',
@@ -433,6 +497,24 @@ const COMMAND_SPECS = [
       { name: 'mul', summary: 'Exact multiply of two integers (overflow-detected).' },
     ],
     examples: ['scbe rns add 30000 30000 --json', 'scbe rns encode 12345 --json'],
+    params: [
+      {
+        name: 'subcommand',
+        type: 'string',
+        position: 0,
+        required: true,
+        enum: ['report', 'encode', 'add', 'sub', 'mul'],
+        description: 'RNS operation: report (self-check), encode (1 int), add/sub/mul (2 ints).',
+      },
+      {
+        name: 'operands',
+        type: 'integer',
+        position: 1,
+        repeated: true,
+        required: false,
+        description: 'Integer operands — none for report, one for encode, two for add/sub/mul.',
+      },
+    ],
   },
   {
     name: 'calc',
@@ -533,6 +615,24 @@ const COMMAND_SPECS = [
       { name: 'check', summary: 'Verify local vs remote match (read-only).' },
     ],
     examples: ['scbe store remotes --json', 'scbe store ls gdrive: --json'],
+    params: [
+      {
+        name: 'subcommand',
+        type: 'string',
+        position: 0,
+        required: true,
+        enum: ['remotes', 'ls', 'pull', 'push', 'check'],
+        description: 'Storage operation. remotes/ls/check are read-only; pull/push are additive.',
+      },
+      {
+        name: 'paths',
+        type: 'string',
+        position: 1,
+        repeated: true,
+        required: false,
+        description: 'Remote/local path(s), e.g. "gdrive:backups" for ls, or src + dest for pull/push.',
+      },
+    ],
   },
   {
     name: 'mason',
@@ -830,6 +930,91 @@ function manifestCommandNames() {
   return Array.from(names);
 }
 
+/**
+ * Map a param's declared type to a JSON Schema type. integer stays integer so
+ * MCP clients pass whole numbers; everything non-numeric/boolean is a string.
+ */
+function paramJsonType(p) {
+  if (p.type === 'integer') return 'integer';
+  if (p.type === 'number') return 'number';
+  if (p.type === 'boolean') return 'boolean';
+  return 'string';
+}
+
+/** JSON Schema property for one param (array-wrapped when repeated). */
+function paramToJsonSchema(p) {
+  const jsonType = paramJsonType(p);
+  let prop;
+  if (p.repeated) {
+    const items = { type: jsonType };
+    if (p.enum) items.enum = p.enum;
+    prop = { type: 'array', items };
+  } else {
+    prop = { type: jsonType };
+    if (p.enum) prop.enum = p.enum;
+  }
+  if (p.description) prop.description = p.description;
+  return prop;
+}
+
+/**
+ * Serialize a structured params object into the positional+flag argv array the
+ * CLI expects, in a stable order: positionals first (by `position`), then flags.
+ * Validates required params and enum membership so a bad tool call fails here
+ * with a clear message instead of producing a malformed `scbe` invocation.
+ * `--json` is NOT handled here — callers append it via the separate json flag.
+ */
+function serializeParams(spec, values) {
+  const params = (spec && spec.params) || [];
+  const vals = values || {};
+
+  const isProvided = (v) =>
+    v !== undefined && v !== null && !(Array.isArray(v) && v.length === 0) && v !== '';
+
+  for (const p of params) {
+    const v = vals[p.name];
+    if (p.required && !isProvided(v)) {
+      throw new Error(`scbe ${spec.name}: missing required param "${p.name}"`);
+    }
+    if (isProvided(v) && p.enum) {
+      for (const item of Array.isArray(v) ? v : [v]) {
+        if (!p.enum.includes(item)) {
+          throw new Error(
+            `scbe ${spec.name}: param "${p.name}" must be one of ${p.enum.join('|')} (got "${item}")`
+          );
+        }
+      }
+    }
+  }
+
+  const positionals = [];
+  for (const p of params
+    .filter((p) => p.flag == null && typeof p.position === 'number')
+    .sort((a, b) => a.position - b.position)) {
+    const v = vals[p.name];
+    if (!isProvided(v)) continue;
+    if (p.repeated && Array.isArray(v)) positionals.push(...v.map(String));
+    else positionals.push(String(v));
+  }
+
+  const flags = [];
+  for (const p of params.filter((p) => p.flag != null)) {
+    const v = vals[p.name];
+    if (!isProvided(v)) continue;
+    if (p.type === 'boolean') {
+      if (v === true) flags.push(p.flag);
+      continue;
+    }
+    if (p.repeated && Array.isArray(v)) {
+      for (const item of v) flags.push(p.flag, String(item));
+    } else {
+      flags.push(p.flag, String(v));
+    }
+  }
+
+  return [...positionals, ...flags];
+}
+
 /** Build the manifest object emitted by `scbe tools --json`. Deterministic. */
 function buildToolsManifest() {
   const categories = Array.from(new Set(COMMAND_SPECS.map((s) => s.category)));
@@ -850,6 +1035,7 @@ function buildToolsManifest() {
     };
     if (s.subcommands && s.subcommands.length) out.subcommands = s.subcommands;
     if (s.examples && s.examples.length) out.examples = s.examples;
+    if (s.params && s.params.length) out.params = s.params;
     return out;
   });
   const stabilityCounts = commands.reduce((acc, c) => {
@@ -865,6 +1051,10 @@ function buildToolsManifest() {
       'commands with "json": true accept --json for machine-readable output.',
     invocation: 'scbe <command> [subcommand] [options]',
     discovery: 'scbe tools --json',
+    calling:
+      'Commands that list "params" expose a typed input contract: pass those named, ' +
+      'typed fields and the MCP bridge builds the argv for you. Commands without ' +
+      '"params" (or any command) still accept a raw positional "args" array.',
     stability_legend: {
       real: 'handler executes genuine logic (or delegates to a present script)',
       partial: 'works but has a known limitation or requires a source checkout',
@@ -906,4 +1096,6 @@ module.exports = {
   manifestCommandNames,
   buildToolsManifest,
   renderToolsHuman,
+  serializeParams,
+  paramToJsonSchema,
 };
