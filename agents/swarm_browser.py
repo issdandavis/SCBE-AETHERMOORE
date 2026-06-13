@@ -511,34 +511,70 @@ class JudgeAgent(SwarmAgent):
             votes = payload.get("votes", [])
             decision = self._aggregate_votes(votes)
 
+            # judge_override is True exactly when the Judge's binding vote
+            # tightened the outcome away from the count-only Byzantine tally.
+            counts = self._count_decisions(votes)
+            judge_override = decision != self._tally_consensus(counts)
+
             return self.create_message(
-                "final_decision", {"decision": decision, "votes": votes, "judge_override": False}
+                "final_decision",
+                {"decision": decision, "votes": votes, "judge_override": judge_override},
             )
 
         return None
 
-    def _aggregate_votes(self, votes: List[Dict]) -> str:
-        """Aggregate votes using Byzantine-safe consensus."""
-        decision_counts = {"ALLOW": 0, "QUARANTINE": 0, "ESCALATE": 0, "DENY": 0}
-
+    @staticmethod
+    def _count_decisions(votes: List[Dict]) -> Dict[str, int]:
+        counts = {"ALLOW": 0, "QUARANTINE": 0, "ESCALATE": 0, "DENY": 0}
         for vote in votes:
             decision = vote.get("decision", "DENY")
-            decision_counts[decision] = decision_counts.get(decision, 0) + 1
+            counts[decision] = counts.get(decision, 0) + 1
+        return counts
 
+    @staticmethod
+    def _tally_consensus(decision_counts: Dict[str, int]) -> str:
+        """Count-only Byzantine rule (no Judge override) -- f=2 safe."""
         # Need 4/6 for ALLOW (Byzantine safe with f=2)
         if decision_counts["ALLOW"] >= 4:
             return "ALLOW"
-
-        # Any DENY is concerning
+        # Any two DENY votes are concerning
         if decision_counts["DENY"] >= 2:
             return "DENY"
-
         # Escalate if uncertain
         if decision_counts["ESCALATE"] >= 2:
             return "ESCALATE"
-
         # Default to quarantine
         return "QUARANTINE"
+
+    def _aggregate_votes(self, votes: List[Dict]) -> str:
+        """Aggregate votes using Byzantine-safe consensus with a BINDING Judge veto.
+
+        The Judge (DR) only ever *tightens* the count-only tally, as its
+        ``vote()`` docstring promises ("veto power for high-risk actions"):
+          * a Judge DENY (its risk>0.9 veto path) denies the action outright,
+            even if every other agent voted ALLOW;
+          * a Judge ESCALATE (risk>0.7) cannot be overridden into a plain
+            ALLOW by a 4/6 majority -- the action escalates for review.
+        The Judge can never *loosen* a denial reached on the tally.
+        """
+        decision_counts = self._count_decisions(votes)
+
+        judge_decision = None
+        for vote in votes:
+            if vote.get("agent") == SacredTongue.DR.value:
+                judge_decision = vote.get("decision", "DENY")
+
+        # Binding veto: a Judge DENY overrides the tally entirely.
+        if judge_decision == "DENY":
+            return "DENY"
+
+        tally = self._tally_consensus(decision_counts)
+
+        # A Judge escalation cannot be voted down into an ALLOW.
+        if judge_decision == "ESCALATE" and tally == "ALLOW":
+            return "ESCALATE"
+
+        return tally
 
     async def vote(self, action_id: str, action: str, context: Dict[str, Any]) -> SwarmVote:
         """Judge has veto power for high-risk actions."""
