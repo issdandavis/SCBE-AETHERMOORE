@@ -38,7 +38,7 @@ pyasn1>=0.6.0
 protobuf>=5.28.0
 Werkzeug>=3.1.8
 certifi>=2026.5.20
-idna>=3.16
+idna>=3.18
 
 # Browser Automation & Content Extraction
 playwright>=1.59.0
