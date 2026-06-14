@@ -152,7 +152,7 @@ opentelemetry-sdk-extension-aws==2.1.0
 opentelemetry-semantic-conventions==0.63b1
 opentelemetry-util-http==0.63b1
 packaging==26.2
-pandas==3.0.1
+pandas==3.0.3
 pathable==0.6.0
 pathspec==1.1.1
 pillow==12.2.0
