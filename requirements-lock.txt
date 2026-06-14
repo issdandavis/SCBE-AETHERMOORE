@@ -78,7 +78,7 @@ markdownify==1.2.2
 MarkupSafe==3.0.3
 matplotlib==3.10.9
 mccabe==0.7.0
-mcp==1.27.0
+mcp==1.27.2
 mdurl==0.1.2
 moto==5.2.0
 mpmath==1.4.1
