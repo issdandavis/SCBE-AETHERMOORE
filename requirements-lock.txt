@@ -191,7 +191,7 @@ python-dotenv==1.2.2
 python-multipart==0.0.32
 pytokens==0.4.1
 pytz==2026.2
-pywin32==311
+pywin32==312
 PyYAML==6.0.3
 questionary==2.1.1
 referencing==0.37.0
