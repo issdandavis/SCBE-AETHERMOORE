@@ -173,7 +173,7 @@ pyasn1_modules==0.4.2
 pycodestyle==2.14.0
 pycparser==2.23
 pycryptodome==3.23.0
-pydantic==2.13.2
+pydantic==2.13.4
 pydantic-settings==2.14.1
 pydantic_core==2.46.4
 pyee==13.0.1
