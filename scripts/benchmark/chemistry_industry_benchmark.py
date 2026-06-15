@@ -172,6 +172,22 @@ def command_available(candidates: list[str]) -> str | None:
     return None
 
 
+def _engine_convert_probe(engine: str, module_name: str, timeout_s: int) -> dict[str, Any]:
+    """Run the SCBE convert probe for a delegated engine, or skip it.
+
+    ``rdkit`` / ``openbabel`` are optional molecule-native adapters that are not
+    in requirements.txt. When the engine module is unavailable the probe is
+    marked ``skipped`` (the symbolic lane does not own that capability), so a
+    missing optional dependency never drags SCBE's overall status to ``fail``.
+    """
+    if not python_module_available(module_name):
+        return {"status": "skipped", "reason": f"{module_name} not installed"}
+    return run_command(
+        [sys.executable, "scbe.py", "chem", "convert", "--smiles", "CCO", "--to", "can", "--engine", engine, "--json"],
+        timeout_s=timeout_s,
+    )
+
+
 def probe_scbe(timeout_s: int) -> dict[str, Any]:
     probes = {
         "atomize": run_command(
@@ -198,44 +214,16 @@ def probe_scbe(timeout_s: int) -> dict[str, Any]:
             [sys.executable, "scbe.py", "chem", "orbitals", "--json"],
             timeout_s=timeout_s,
         ),
-        "convert_rdkit": run_command(
-            [
-                sys.executable,
-                "scbe.py",
-                "chem",
-                "convert",
-                "--smiles",
-                "CCO",
-                "--to",
-                "can",
-                "--engine",
-                "rdkit",
-                "--json",
-            ],
-            timeout_s=timeout_s,
-        ),
-        "convert_openbabel": run_command(
-            [
-                sys.executable,
-                "scbe.py",
-                "chem",
-                "convert",
-                "--smiles",
-                "CCO",
-                "--to",
-                "can",
-                "--engine",
-                "openbabel",
-                "--json",
-            ],
-            timeout_s=timeout_s,
-        ),
+        "convert_rdkit": _engine_convert_probe("rdkit", "rdkit", timeout_s),
+        "convert_openbabel": _engine_convert_probe("openbabel", "openbabel", timeout_s),
     }
     return {
         "name": "SCBE chem",
         "kind": "symbolic_governance_chemistry_cli",
         "installed": True,
-        "status": "pass" if all(row["status"] == "pass" for row in probes.values()) else "fail",
+        # A skipped engine probe (optional dep absent) is not a failure of the
+        # symbolic lane — only a real "fail" status pulls the tool to "fail".
+        "status": "pass" if all(row["status"] in ("pass", "skipped") for row in probes.values()) else "fail",
         "probes": probes,
     }
 

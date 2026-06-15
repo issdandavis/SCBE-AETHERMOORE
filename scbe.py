@@ -1222,6 +1222,23 @@ def cmd_chem_bonds(args: argparse.Namespace) -> int:
     return 0
 
 
+def _chem_convert_engine_unavailable(payload: Dict[str, Any], engine: str, args: argparse.Namespace) -> int:
+    """Report a missing optional conversion engine cleanly instead of crashing.
+
+    ``rdkit`` / ``openbabel`` are optional, molecule-native adapters and are not
+    in requirements.txt. When the engine module is absent we emit a structured
+    JSON receipt (``--json``) or a one-line stderr message and exit non-zero,
+    rather than letting the ``ImportError`` escape as a stack trace.
+    """
+    message = f"chem convert engine '{engine}' is not installed; install it to use this adapter (pip install {engine})"
+    if getattr(args, "json_output", False):
+        payload.update({"available": False, "error": message})
+        print(json.dumps(payload))
+    else:
+        print(f"error: {message}", file=sys.stderr)
+    return 3
+
+
 def cmd_chem_convert(args: argparse.Namespace) -> int:
     smiles = _arg_or_stdin(getattr(args, "smiles", None))
     if not smiles:
@@ -1240,8 +1257,11 @@ def cmd_chem_convert(args: argparse.Namespace) -> int:
     }
 
     if engine == "rdkit":
-        from rdkit import Chem
-        from rdkit.Chem import Descriptors
+        try:
+            from rdkit import Chem
+            from rdkit.Chem import Descriptors
+        except ImportError:
+            return _chem_convert_engine_unavailable(payload, engine, args)
 
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
@@ -1264,7 +1284,10 @@ def cmd_chem_convert(args: argparse.Namespace) -> int:
             }
         )
     elif engine == "openbabel":
-        from openbabel import pybel
+        try:
+            from openbabel import pybel
+        except ImportError:
+            return _chem_convert_engine_unavailable(payload, engine, args)
 
         try:
             mol = pybel.readstring("smi", smiles)
