@@ -152,6 +152,12 @@ class ElasticBijectiveHash:
         return self.total_probes / max(1, self.count)
 
 
+# Honest name (per research brief docs/research/elastic_hashing_*): this class
+# is a reversible splitmix64 DOUBLE-HASH map, not the paper's Elastic Hashing.
+# `ElasticBijectiveHash` is kept as a back-compat alias.
+BijectiveDoubleHashMap = ElasticBijectiveHash
+
+
 def encode_key_with_tongue(key: bytes, tongue: str = "KO") -> str:
     try:
         from scbe import encode_bytes  # type: ignore
