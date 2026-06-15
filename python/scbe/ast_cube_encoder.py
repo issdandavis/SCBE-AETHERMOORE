@@ -241,14 +241,28 @@ def _face_trits(node: ast.AST, token: str) -> Dict[str, int]:
     return out
 
 
+def _active_faces(node: ast.AST, ntype: str) -> List[str]:
+    """Faces a node lights purely by its AST role — the clean semantic signal
+    used for human-readable roles, kept separate from the numeric trit vector
+    (which also folds in the atomic/chemistry base and is intentionally noisier).
+    """
+    if isinstance(node, ast.Constant):
+        if isinstance(node.value, str):
+            return ["DR"]            # string literal -> data / Transforms
+        return ["CA"]                # number / bool / None -> Math/Logic
+    if isinstance(node, ast.Name):
+        if isinstance(node.ctx, ast.Store):
+            return ["UM", "DR"]      # binding -> Security boundary + Transform target
+        return ["AV"]                # load -> I/O surface
+    return [t for t in TONGUES if ntype in FACE_RULES[t]]
+
+
 def encode(src: str) -> Dict[str, Any]:
     """Compile source to an AST graph of cube-token vectors."""
     tree = ast.parse(src)
     nodes: List[Dict[str, Any]] = []
 
     _GOLDEN = 0x9E3779B1
-    _ROLES = [TONGUE_ROLE[t]["role"] for t in TONGUES]   # precomputed role names
-    _ntongues = len(TONGUES)
 
     def walk(node: ast.AST, depth: int, path: List[int], parent_loc: List[int]) -> None:
         ntype = type(node).__name__
@@ -270,7 +284,7 @@ def encode(src: str) -> Dict[str, Any]:
         vec += loc
         nodes.append({"type": ntype, "token": token, "depth": depth,
                       "face_trits": dict(zip(TONGUES, tr)),
-                      "roles": [_ROLES[i] for i in range(_ntongues) if tr[i] > 0],
+                      "roles": [TONGUE_ROLE[t]["role"] for t in _active_faces(node, ntype)],
                       "path": path, "location": loc, "vector": vec})
         for ci, child in enumerate(ast.iter_child_nodes(node)):
             walk(child, depth + 1, path + [ci], loc)

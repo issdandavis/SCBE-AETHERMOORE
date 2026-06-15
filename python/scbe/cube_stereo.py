@@ -86,6 +86,7 @@ def stereo_encode(source: str) -> Dict[str, Any]:
             "locked": ok,                       # do both lenses see the same node?
             "lens_a_relation": {k: a[k] for k in ("parent", "field", "child_index", "depth")},
             "lens_b_faces": b["face_trits"],
+            "roles": b.get("roles", []),        # Sacred-Tongue roles this node plays
             "lens_b_location": b["location"],
             "stereo_vector": a["relation_vec"] + b["vector"],
         })
@@ -99,6 +100,7 @@ def stereo_encode(source: str) -> Dict[str, Any]:
         "lock_ratio": locked / n if n else 0.0,  # 1.0 = lenses fully registered
         "lens_a_count": len(lens_a),
         "lens_b_count": len(nodes_b),
+        "face_legend": enc_b.get("face_legend", {}),  # face axis -> Sacred-Tongue role
     }
 
 
@@ -116,12 +118,13 @@ def _demo() -> None:
           f"  (lensA relation + lensB vector)")
     print(f"  lens LOCK (same node in both): {s['lock_ratio']*100:.0f}%"
           f"   [A={s['lens_a_count']} B={s['lens_b_count']}]")
+    print("  faces carry Sacred-Tongue roles: "
+          + ", ".join(f"{t}={r}" for t, r in s["face_legend"].items()))
     print("\n  first 6 tokens through both lenses:")
-    print("   role           tok        | lensA relation                 | lensB location")
+    print("   node           tok        | active roles                   | lensB location")
     for t in s["tokens"][:6]:
-        r = t["lens_a_relation"]
-        rs = f"parent={r['parent']} field={r['field']} ci={r['child_index']} d={r['depth']}"
-        print(f"   {t['node_type']:<14} {t['token']:<10} | {rs:<30} | {t['lens_b_location']}")
+        roles = ", ".join(t["roles"]) or "-"
+        print(f"   {t['node_type']:<14} {t['token']:<10} | {roles:<30} | {t['lens_b_location']}")
     print(f"\n  one stereoscopic vector (node 1): {s['tokens'][1]['stereo_vector']}")
 
 

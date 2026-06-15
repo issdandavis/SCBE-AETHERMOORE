@@ -10,6 +10,13 @@ export const TONGUE_ROLE = {
   DR: { name: "Draumric",     role: "Transforms",    keyword: "morph", glyph: "ᛞ", color: "#f472b6" },
 };
 
+// Ordered UI list (KO, AV, RU, CA, UM, DR) derived from the one schema — so the
+// game's six cube faces and the Python encoder's six faces stay identical.
+export const TONGUES = Object.entries(TONGUE_ROLE).map(([id, t]) => ({
+  id, name: t.name, glyph: t.glyph, color: t.color,
+  role: t.role, keyword: t.keyword, desc: t.role,
+}));
+
 // outer(inner()) — same as tongue_roles.compile_pair() in Python.
 export function compilePair(outer, inner) {
   const o = TONGUE_ROLE[outer], i = TONGUE_ROLE[inner];

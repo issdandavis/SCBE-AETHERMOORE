@@ -1012,9 +1012,13 @@ def cmd_encode_code(args: argparse.Namespace) -> int:
     if getattr(args, "json_output", False):
         print(json.dumps(encoded))
     else:
+        legend = encoded.get("face_legend", {})
         print(f"AST cube matrix: {encoded['shape'][0]} nodes x {encoded['shape'][1]} dims")
+        if legend:
+            print("  faces: " + " · ".join(f"{t}={r}" for t, r in legend.items()))
         for node in encoded["nodes"][: getattr(args, "limit", 8)]:
-            print(f"  {node['type']:<15} {node['token']:<16} {node['vector']}")
+            roles = ", ".join(node.get("roles", [])) or "-"
+            print(f"  {node['type']:<15} {node['token']:<16} {roles}")
     return 0
 
 
@@ -1034,12 +1038,16 @@ def cmd_stereo_code(args: argparse.Namespace) -> int:
     if getattr(args, "json_output", False):
         print(json.dumps(stereo))
     else:
+        legend = stereo.get("face_legend", {})
         print(
             f"Cube stereo: {stereo['node_count']} nodes x {stereo['stereo_width']} dims "
             f"(lock={stereo['lock_ratio']:.3f})"
         )
+        if legend:
+            print("  faces: " + " · ".join(f"{t}={r}" for t, r in legend.items()))
         for token in stereo["tokens"][: getattr(args, "limit", 8)]:
-            print(f"  {token['node_type']:<15} {token['token']:<16} {token['stereo_vector']}")
+            roles = ", ".join(token.get("roles", [])) or "-"
+            print(f"  {token['node_type']:<15} {token['token']:<16} {roles}")
     return 0
 
 
