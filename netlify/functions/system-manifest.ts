@@ -8,6 +8,8 @@ const capabilities = [
   'agentic-memory-health',
   'skill-recovery',
   'governance-submit',
+  'governance-receipts',
+  'governance-rollups',
 ];
 
 export default async (req: Request, context: Context) => {
@@ -24,6 +26,7 @@ export default async (req: Request, context: Context) => {
       health: '/api/health',
       manifest: '/api/system/manifest',
       governanceSubmit: '/api/governance/submit',
+      governanceReceipt: '/api/governance/receipts/:receipt',
       governanceSelftest: '/api/governance/selftest',
       governanceWorker: '/api/governance/process',
     },

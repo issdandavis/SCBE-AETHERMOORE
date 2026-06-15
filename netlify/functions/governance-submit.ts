@@ -4,6 +4,7 @@ import {
   governanceReceipt,
   normalizeGovernancePayload,
 } from './_shared/governance';
+import { saveGovernanceReceipt } from './_shared/receipt-store';
 import { corsPreflight, json, methodNotAllowed, withCors } from './_shared/response';
 
 export default async (req: Request, context: Context) => {
@@ -37,6 +38,11 @@ export default async (req: Request, context: Context) => {
   }
 
   const receipt = await governanceReceipt(normalized);
+  const record = await saveGovernanceReceipt({
+    receipt,
+    payload: normalized,
+    context,
+  });
 
   context.waitUntil(
     Promise.resolve().then(() => {
@@ -44,6 +50,7 @@ export default async (req: Request, context: Context) => {
         receipt,
         requestId: context.requestId,
         source: normalized.source,
+        storageKey: record.storageKey,
       });
     })
   );
@@ -55,6 +62,7 @@ export default async (req: Request, context: Context) => {
         decision: 'queued',
         receipt,
         requestId: context.requestId,
+        storageKey: record.storageKey,
       },
       { status: 202 }
     )
