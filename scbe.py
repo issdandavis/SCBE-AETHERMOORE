@@ -1756,8 +1756,9 @@ def cmd_undo(_args: argparse.Namespace) -> int:
 # filenames. Read-only: it never modifies or deletes anything.
 # ═══════════════════════════════════════════════════════════════
 
-_FIND_PRUNE = {".git", ".obsidian", "node_modules", "external", "dist", "__pycache__"}
-_FIND_JUNK_SUB = ("repository mirror", "plugin-backups")
+_FIND_PRUNE = {".git", ".obsidian", "node_modules", "external", "dist", "__pycache__", "cache~1"}
+_FIND_JUNK_SUB = ("repository mirror", "plugin-backups", "codex-runtimes",
+                  "\\cache\\", "\\appdata\\", "site-packages")
 _FIND_EXTS = {".md", ".docx", ".pdf", ".txt", ".doc", ".epub"}
 
 
@@ -1790,7 +1791,9 @@ def cmd_find(args: argparse.Namespace) -> int:
         print('usage: scbe find <text>   (matches your note/doc filenames)', file=sys.stderr)
         return 2
     exts = {"." + args.ext.lstrip(".").lower()} if getattr(args, "ext", None) else _FIND_EXTS
-    matches: List[Tuple[float, str, str]] = []
+    content = getattr(args, "content", False)
+    text_exts = {".md", ".txt"}
+    matches: List[Tuple[float, str, str, Optional[str]]] = []
     seen: set = set()
     for root in _find_roots():
         for dirpath, dirnames, filenames in os.walk(root):
@@ -1800,29 +1803,53 @@ def cmd_find(args: argparse.Namespace) -> int:
                 continue
             dirnames[:] = [d for d in dirnames if d.lower() not in _FIND_PRUNE]
             for fn in filenames:
-                if os.path.splitext(fn)[1].lower() in exts and query in fn.lower():
-                    full = os.path.join(dirpath, fn)
-                    nc = os.path.normcase(full)
-                    if nc in seen:
-                        continue
-                    seen.add(nc)
+                ext = os.path.splitext(fn)[1].lower()
+                if ext not in exts:
+                    continue
+                full = os.path.join(dirpath, fn)
+                nc = os.path.normcase(full)
+                if nc in seen:
+                    continue
+                name_hit = query in fn.lower()
+                snippet = None
+                if content and not name_hit and ext in text_exts:
                     try:
-                        mt = os.path.getmtime(full)
+                        st = os.stat(full)
+                        # Skip OneDrive cloud-only placeholders — reading them
+                        # forces a download (slow). They stay name-searchable.
+                        attrs = getattr(st, "st_file_attributes", 0)
+                        if attrs & 0x401000:  # OFFLINE | RECALL_ON_DATA_ACCESS
+                            raise OSError("cloud-only")
+                        if st.st_size <= 1_000_000:  # skip huge files
+                            with open(full, encoding="utf-8", errors="ignore") as fh:
+                                txt = fh.read()
+                            idx = txt.lower().find(query)
+                            if idx >= 0:
+                                snippet = "..." + txt[max(0, idx - 30): idx + 60].replace("\n", " ").strip() + "..."
                     except OSError:
-                        mt = 0.0
-                    matches.append((mt, full, fn))
+                        pass
+                if not (name_hit or snippet):
+                    continue
+                seen.add(nc)
+                try:
+                    mt = os.path.getmtime(full)
+                except OSError:
+                    mt = 0.0
+                matches.append((mt, full, fn, snippet))
     matches.sort(reverse=True)
     matches = matches[: getattr(args, "limit", 25)]
     if getattr(args, "json_output", False):
-        print(json.dumps([{"name": n, "path": p} for _, p, n in matches]))
+        print(json.dumps([{"name": n, "path": p, "snippet": s} for _, p, n, s in matches]))
         return 0
     if not matches:
         print(f"no files matching '{args.query}' in your notes/docs")
         return 0
-    print(f"{len(matches)} match(es) for '{args.query}':")
-    for mt, p, n in matches:
+    print(f"{len(matches)} match(es) for '{args.query}' (by {'name+content' if content else 'name'}):")
+    for mt, p, n, s in matches:
         d = time.strftime("%Y-%m-%d", time.localtime(mt)) if mt else "-"
         print(f"  {d}  {n}")
+        if s:
+            print(f"             > {s}")
         print(f"             {p}")
     return 0
 
@@ -2263,6 +2290,7 @@ Legacy (backward compat):
 
     fd = sub.add_parser("find", aliases=["f"], help='Find your notes/docs by name ("scbe find <text>")')
     fd.add_argument("query", nargs="?", help="text to match in note/doc filenames")
+    fd.add_argument("-c", "--content", action="store_true", help="also search inside note text")
     fd.add_argument("--ext", help="restrict to one extension (md, docx, pdf)")
     fd.add_argument("--limit", type=int, default=25, help="max results (default 25)")
     fd.add_argument("--json", dest="json_output", action="store_true")
