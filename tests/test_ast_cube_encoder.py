@@ -110,9 +110,26 @@ class TestFaceSignal:
         enc = encode("if x > 0:\n    y = x + 1\n")
         by_type = {n["type"]: n for n in enc["nodes"]}
 
-        assert by_type["If"]["face_trits"]["RU"] == 1
+        # canonical tongue roles: control flow -> KO, math/logic -> CA, transform -> DR
+        assert by_type["If"]["face_trits"]["KO"] == 1
         assert by_type["BinOp"]["face_trits"]["CA"] == 1
-        assert by_type["Assign"]["face_trits"]["KO"] == 1
+        assert by_type["Assign"]["face_trits"]["DR"] == 1
+
+    def test_faces_carry_canonical_tongue_roles(self):
+        from python.scbe.ast_cube_encoder import FACE_LEGEND
+
+        assert FACE_LEGEND["KO"] == "Control Flow"
+        assert FACE_LEGEND["UM"] == "Security"
+        assert FACE_LEGEND["CA"] == "Math/Logic"
+
+        enc = encode("import os\ntry:\n    raise ValueError()\nexcept Exception:\n    pass\n")
+        by_type = {n["type"]: n for n in enc["nodes"]}
+        # security-relevant nodes light the Security (UM) face
+        assert by_type["Raise"]["face_trits"]["UM"] == 1
+        assert by_type["Import"]["face_trits"]["UM"] == 1
+        # the payload self-documents its face axes, and nodes expose readable roles
+        assert enc["face_legend"]["DR"] == "Transforms"
+        assert "Security" in by_type["Raise"]["roles"]
 
     def test_name_context_changes_face_signal(self):
         enc = encode("x = x + 1\n")
@@ -120,3 +137,23 @@ class TestFaceSignal:
 
         assert len(names) == 2
         assert names[0]["face_trits"] != names[1]["face_trits"]
+
+
+class TestFastPath:
+    def test_encode_matrix_matches_encode(self):
+        from python.scbe.ast_cube_encoder import encode, encode_matrix
+        for src in ["x = 1\n",
+                    "def f(a, b):\n    return a + b * 2\n",
+                    "class A:\n    def m(self, n):\n        return [i for i in range(n)]\n"]:
+            assert encode_matrix(src)["matrix"] == encode(src)["matrix"]
+
+    def test_encode_matrix_bijective(self):
+        from python.scbe.ast_cube_encoder import encode_matrix, decode
+        src = "# c\r\ndef f():\treturn '🧪'\n"
+        assert decode(encode_matrix(src)) == src
+
+    def test_face_memoization_used(self):
+        from python.scbe.ast_cube_encoder import encode, _FACE_CACHE
+        _FACE_CACHE.clear()
+        encode("a = b + c\nd = a + b\n")
+        assert len(_FACE_CACHE) > 0  # repeated tokens cached
