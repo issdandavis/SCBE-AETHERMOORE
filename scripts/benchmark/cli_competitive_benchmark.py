@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 from dataclasses import dataclass
@@ -132,6 +133,11 @@ def _utc_now() -> str:
 
 
 def _run(command: list[str], timeout: int = 30) -> CommandResult:
+    # Capability probes only inspect CLI help/JSON surfaces. Skip the optional
+    # liboqs PQC bootstrap (which can git-clone + cmake-build the C library on
+    # first import) so probes stay fast and deterministic on machines without
+    # native liboqs bindings. See CLAUDE.md "CI Gotchas".
+    env = {**os.environ, "SCBE_FORCE_SKIP_LIBOQS": "1"}
     try:
         proc = subprocess.run(
             command,
@@ -143,6 +149,7 @@ def _run(command: list[str], timeout: int = 30) -> CommandResult:
             errors="replace",
             timeout=timeout,
             check=False,
+            env=env,
         )
         return CommandResult(command, proc.returncode, proc.stdout, proc.stderr)
     except Exception as exc:  # pragma: no cover - defensive artifact capture

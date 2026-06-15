@@ -36,6 +36,7 @@ import json
 import math
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -246,50 +247,93 @@ def _char_class_profile(raw: bytes) -> Dict[str, float]:
     }
 
 
-def _distribution_distance(profile: Dict[str, float], freq: List[int],
-                            total: int, bigram_h: float) -> float:
-    """L4-L5 proxy: distance from reference distribution.
+# ── Word recognition ──────────────────────────────────────────
+# A small lexicon of common words. Recognized natural language earns
+# a "naturalness" discount so real sentences read as ALLOW, while
+# encoded blobs, code, and injections (few real words, many symbols)
+# do not. str.isalpha() is Unicode-aware, so accented words in French,
+# German, Spanish, etc. still count as wordlike and stay fair.
 
-    Returns d* in [0, ~5] — higher means further from normal text.
+COMMON_WORDS = frozenset("""
+a an the and or but of to in on at by for with from as is are was were be been
+being it its this that these those he she they we you i his her their our your my
+me him them us who what which when where why how not no if then else over under
+about into through after before between out up down off again once here there all
+any both each few more most other some such only own same so than too very can will
+just upon time lived brave knight quick brown fox jumps jumped lazy dog normal safe
+sentence cooking dinner weather nice today garden walked quietly hello world story
+while birds sang overhead text have has had do does did make made see saw go went
+come came know knew think good day way man woman life people work water food house
+""".split())
+
+_PUNCT_STRIP = ".,!?;:'\"()[]{}<>-_/\\|`~@#$%^&*+=…“”‘’"
+
+
+def _naturalness(text: str) -> Tuple[float, float]:
+    """Return (wordlike_fraction, common_word_fraction) for the input.
+
+    wordlike: token is all letters once edge punctuation is stripped
+              (Unicode-aware, so non-English language counts too).
+    common:   token is in the recognized lexicon of everyday words.
     """
-    # Treat alpha + highbyte together as "text characters" so that
-    # non-Latin scripts (Japanese, Arabic, Cyrillic, etc.) aren't
-    # penalized for having high bytes — they're still natural language.
-    text_ratio = profile.get("alpha_ratio", 0.0) + profile.get("highbyte_ratio", 0.0)
-    ref_text_ratio = _REF_PROFILE["alpha_ratio"] + _REF_PROFILE["highbyte_ratio"]
+    tokens = text.split()
+    if not tokens:
+        return 0.0, 0.0
+    wordlike = common = 0
+    for tok in tokens:
+        core = tok.strip(_PUNCT_STRIP)
+        if core and core.isalpha():
+            wordlike += 1
+            if core.lower() in COMMON_WORDS:
+                common += 1
+    n = len(tokens)
+    return wordlike / n, common / n
 
-    # Ratio divergence on structural axes (text vs digits vs control)
-    ratio_div = (
-        (text_ratio - ref_text_ratio) ** 2
-        + (profile.get("digit_ratio", 0.0) - _REF_PROFILE["digit_ratio"]) ** 2
-        + (profile.get("space_ratio", 0.0) - _REF_PROFILE["space_ratio"]) ** 2
-        + (profile.get("punct_ratio", 0.0) - _REF_PROFILE["punct_ratio"]) ** 2
-        + (profile.get("control_ratio", 0.0) - _REF_PROFILE["control_ratio"]) ** 2 * 4.0
+
+def _distribution_distance(profile: Dict[str, float], freq: List[int],
+                           total: int, bigram_h: float,
+                           wordlike: float, common: float) -> float:
+    """Distance from "normal language" — higher means more suspicious.
+
+    Keyed on *what kind of bytes* are present (meaningful at any length),
+    not on hitting large-corpus entropy targets that short benign text can
+    never reach. Recognized words discount the score; digits, symbols, and
+    control bytes raise it.
+    """
+    if total == 0:
+        return 8.0  # empty input is anomalous → DENY
+
+    # ── Structural anomaly (length-independent) ──
+    digit_excess = max(0.0, profile["digit_ratio"] - 0.05)
+    punct_excess = max(0.0, profile["punct_ratio"] - 0.05)
+    control = profile["control_ratio"]
+    # Letters (any script) + spaces are the body of natural language.
+    text_ratio = profile["alpha_ratio"] + profile["highbyte_ratio"] + profile["space_ratio"]
+    text_deficit = max(0.0, 0.50 - text_ratio)
+
+    struct = (
+        4.0 * digit_excess        # digit-heavy → encoded / payload
+        + 8.0 * punct_excess      # symbol-heavy → code / injection
+        + 10.0 * control          # control bytes → binary / adversarial
+        + 5.0 * text_deficit      # little actual text → non-language
     )
+    # Recognized words mean any symbols are likely incidental, not hostile.
+    struct *= (1.0 - 0.5 * wordlike)
 
-    # Shannon divergence from reference
+    # ── Statistical anomaly (only meaningful with enough bytes) ──
+    stat_conf = min(1.0, total / 200.0)
     shannon = _shannon_entropy(freq, total)
-    shannon_div = abs(shannon - _REF_PROFILE["shannon"]) / 8.0
+    shannon_excess = max(0.0, shannon - 6.0)              # ~random / encrypted
+    unique = sum(1 for f in freq if f > 0)
+    rep = unique / 256.0
+    rep_deficit = max(0.0, 0.03 - rep) if total > 50 else 0.0  # degenerate repeat
+    stat = stat_conf * 1.5 * shannon_excess + 40.0 * rep_deficit
 
-    # Bigram divergence
-    bigram_div = abs(bigram_h - _REF_PROFILE["bigram_shannon"]) / 16.0
-
-    # Repetition divergence: unique bytes / total
-    unique_bytes = sum(1 for f in freq if f > 0)
-    rep = unique_bytes / 256.0 if total > 0 else 0.0
-    rep_div = abs(rep - _REF_PROFILE["repetition"])
-
-    # Weighted combination — ratio divergence dominates because it captures
-    # the coarsest structural signal (what KIND of bytes are present).
-    # The sqrt on ratio_div keeps the scale human-readable.
-    d_star = (
-        5.0 * math.sqrt(ratio_div)    # character class mismatch
-        + 1.5 * shannon_div            # information density mismatch
-        + 1.0 * bigram_div             # sequential pattern mismatch
-        + 0.8 * rep_div                # byte diversity mismatch
-    )
-
-    return d_star
+    # A real density of everyday words earns a confidence discount toward
+    # ALLOW (gated so a lone keyword like SQL's "FROM" can't rescue an attack).
+    lang_conf = max(0.0, common - 0.25)
+    d_star = struct + stat - 1.5 * lang_conf
+    return max(0.0, d_star)
 
 
 def _phase_deviation(profile: Dict[str, float], d_star: float,
@@ -301,20 +345,14 @@ def _phase_deviation(profile: Dict[str, float], d_star: float,
     extreme length anomalies.
     """
     # Control chars are phase red flags; high bytes alone are not
-    # (they could be UTF-8 natural language)
+    # (they could be UTF-8 natural language). Short inputs are NOT
+    # penalized — a brief real sentence is still normal language.
     phase = profile["control_ratio"] * 4.0
 
-    # Extreme length: very short or very long inputs get a small bump
     if total == 0:
         phase += 0.3
-    elif total < 5:
-        phase += 0.15
     elif total > 500_000:
         phase += 0.1
-
-    # Near-zero d* but high digit ratio = possible encoded payload
-    if d_star < 0.3 and profile["digit_ratio"] > 0.3:
-        phase += 0.2
 
     return min(phase, 2.0)
 
@@ -335,8 +373,11 @@ def pipeline_quick_score(text: str) -> Dict[str, Any]:
     profile = _char_class_profile(raw)
     bigram_h = _bigram_entropy(raw)
 
-    # L4-L5: geometry sieve — how far from normal text?
-    d_star = _distribution_distance(profile, freq, n, bigram_h)
+    # Word recognition — recognized language reads as benign.
+    wordlike, common = _naturalness(text)
+
+    # L4-L5: geometry sieve — how far from normal language?
+    d_star = _distribution_distance(profile, freq, n, bigram_h, wordlike, common)
 
     # L6-L11: dynamics sieve — coherence and phase checks
     pd = _phase_deviation(profile, d_star, n)
@@ -492,11 +533,25 @@ def ai_review(filepath: str) -> Dict[str, Any]:
 # Commands
 # ═══════════════════════════════════════════════════════════════
 
-def cmd_status(_args: argparse.Namespace) -> int:
+def cmd_status(args: argparse.Namespace) -> int:
     ts_files = list(REPO_ROOT.glob("src/**/*.ts"))
     py_files = list(REPO_ROOT.glob("src/**/*.py"))
     test_ts = list(REPO_ROOT.glob("tests/**/*.test.ts"))
     test_py = list(REPO_ROOT.glob("tests/**/test_*.py"))
+
+    if getattr(args, "json_output", False):
+        data = {
+            "version": VERSION,
+            "typescript": {"sources": len(ts_files), "tests": len(test_ts)},
+            "python": {"sources": len(py_files), "tests": len(test_py)},
+            "tongues": {
+                code: {"name": TONGUE_NAMES[code], "tokens": 256, "domain": TONGUE_DOMAINS[code]}
+                for code in ["KO", "AV", "RU", "CA", "UM", "DR"]
+            },
+            "layers": {layer: name for layer, (name, _) in LAYER_GUIDE.items()},
+        }
+        print(json.dumps(data))
+        return 0
 
     print(f"SCBE-AETHERMOORE v{VERSION}")
     print(f"  TypeScript: {len(ts_files)} sources, {len(test_ts)} tests")
@@ -627,6 +682,293 @@ def cmd_ai_check(args: argparse.Namespace) -> int:
     if all_ok and lint_result["issue_count"] == 0:
         print("  All checks passed")
     return 0
+
+
+# ═══════════════════════════════════════════════════════════════
+# Compact verbs — the human+AI command surface
+#
+# Short, positional, stdin-aware, and --json on every one. The same
+# command a person types is the one an agent scripts; --json flips
+# the output from friendly to machine-parseable. Exit codes are
+# stable: 0 ok, 1 runtime error, 2 usage error.
+# ═══════════════════════════════════════════════════════════════
+
+DECISION_GLYPH = {"ALLOW": "✓", "QUARANTINE": "~", "ESCALATE": "!", "DENY": "✗"}
+
+
+def _arg_or_stdin(value: Optional[str]) -> Optional[str]:
+    """Return the positional value, or read piped stdin, or None."""
+    if value:
+        return value
+    if not sys.stdin.isatty():
+        piped = sys.stdin.read()
+        return piped if piped.strip() else None
+    return None
+
+
+def cmd_score(args: argparse.Namespace) -> int:
+    text = _arg_or_stdin(getattr(args, "text", None))
+    if text is None:
+        print('usage: scbe score "<text>"   (or pipe text via stdin)', file=sys.stderr)
+        return 2
+    r = pipeline_quick_score(text.strip())
+    if getattr(args, "json_output", False):
+        print(json.dumps(r))
+    else:
+        glyph = DECISION_GLYPH.get(r["decision"], "?")
+        print(f"{glyph} {r['decision']}  (H_eff={r['H_eff']}, d*={r['d_star']})")
+    if getattr(args, "gate", False) and r["decision"] in ("DENY", "ESCALATE"):
+        return 1
+    return 0
+
+
+def _resolve_tongue(raw: str) -> Optional[str]:
+    code = raw.upper()
+    return code if code in _CANONICAL_TONGUES else None
+
+
+def cmd_enc(args: argparse.Namespace) -> int:
+    tongue = _resolve_tongue(args.tongue)
+    if tongue is None:
+        print(f"unknown tongue '{args.tongue}' — choose: {', '.join(_CANONICAL_TONGUES)}", file=sys.stderr)
+        return 2
+    text = _arg_or_stdin(getattr(args, "text", None))
+    if text is None:
+        print('usage: scbe enc <tongue> "<text>"', file=sys.stderr)
+        return 2
+    tokens = encode_bytes(tongue, text.encode("utf-8"))
+    if getattr(args, "json_output", False):
+        print(json.dumps({"tongue": tongue, "text": text, "tokens": tokens}))
+    else:
+        print(tokens)
+    return 0
+
+
+def cmd_dec(args: argparse.Namespace) -> int:
+    tongue = _resolve_tongue(args.tongue)
+    if tongue is None:
+        print(f"unknown tongue '{args.tongue}' — choose: {', '.join(_CANONICAL_TONGUES)}", file=sys.stderr)
+        return 2
+    tokens = _arg_or_stdin(getattr(args, "text", None))
+    if tokens is None:
+        print('usage: scbe dec <tongue> "<tokens>"', file=sys.stderr)
+        return 2
+    try:
+        data = decode_tokens(tongue, tokens)
+    except ValueError as e:
+        print(f"decode error: {e}", file=sys.stderr)
+        return 1
+    if getattr(args, "json_output", False):
+        print(json.dumps({"tongue": tongue, "text": data.decode("utf-8", errors="replace")}))
+    elif getattr(args, "raw", False):
+        sys.stdout.buffer.write(data)
+    else:
+        print(data.decode("utf-8", errors="replace"))
+    return 0
+
+
+def cmd_explain(args: argparse.Namespace) -> int:
+    text = ai_explain(args.target)
+    if getattr(args, "json_output", False):
+        t = args.target.upper().replace("LAYER", "L").replace(" ", "")
+        info = LAYER_GUIDE.get(t)
+        print(json.dumps({
+            "target": args.target,
+            "name": info[0] if info else None,
+            "description": info[1] if info else None,
+            "text": text,
+        }))
+    else:
+        print(text)
+    return 0
+
+
+def cmd_check(args: argparse.Namespace) -> int:
+    lint = ai_lint(args.file)
+    if "error" in lint:
+        if getattr(args, "json_output", False):
+            print(json.dumps({"error": lint["error"]}))
+        else:
+            print(f"error: {lint['error']}", file=sys.stderr)
+        return 1
+    review = ai_review(args.file)
+    clean = lint.get("compiles") is not False and not review.get("warnings") and lint["issue_count"] == 0
+    if getattr(args, "json_output", False):
+        print(json.dumps({"file": args.file, "clean": clean, "lint": lint, "review": review}))
+    else:
+        print(f"{args.file}: {review['code_lines']} code, "
+              f"{review['functions']} funcs, {review['classes']} classes")
+        if lint.get("compiles") is False:
+            print(f"  ✗ {lint['syntax_error']}")
+        if lint["issue_count"]:
+            print(f"  {lint['issue_count']} lint issue(s)")
+        for w in review.get("warnings", []):
+            print(f"  warn: {w}")
+        if clean:
+            print("  ✓ clean")
+    return 0
+
+
+# ═══════════════════════════════════════════════════════════════
+# Ask the AI — chat with any available model
+#
+# Routes to whatever backend is on the machine: the `claude` CLI
+# (Claude Max, no key needed), `codex`, `ollama`, or a raw API key.
+# Same surface for humans (scbe chat) and agents (scbe ask --json).
+# ═══════════════════════════════════════════════════════════════
+
+AI_BACKENDS = ("claude", "codex", "ollama", "anthropic", "openai")
+
+
+def _detect_backends() -> List[str]:
+    found: List[str] = []
+    if shutil.which("claude"):
+        found.append("claude")
+    if shutil.which("codex"):
+        found.append("codex")
+    if shutil.which("ollama"):
+        found.append("ollama")
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        found.append("anthropic")
+    if os.environ.get("OPENAI_API_KEY"):
+        found.append("openai")
+    return found
+
+
+def _run_backend_cli(cmd: List[str]) -> str:
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=180)
+    except FileNotFoundError:
+        return f"(backend not found: {cmd[0]})"
+    except subprocess.TimeoutExpired:
+        return "(the model took too long to respond)"
+    out = (r.stdout or "").strip()
+    return out or (r.stderr or "").strip() or "(no response)"
+
+
+def _ask_claude(prompt: str, model: Optional[str]) -> str:
+    cmd = ["claude", "-p", prompt]
+    if model:
+        cmd += ["--model", model]
+    return _run_backend_cli(cmd)
+
+
+def _ask_codex(prompt: str, model: Optional[str]) -> str:
+    cmd = ["codex", "exec"]
+    if model:
+        cmd += ["-m", model]
+    cmd.append(prompt)
+    return _run_backend_cli(cmd)
+
+
+def _ask_ollama(prompt: str, model: Optional[str]) -> str:
+    return _run_backend_cli(["ollama", "run", model or "llama3.2", prompt])
+
+
+def _ask_api(prompt: str, model: Optional[str], provider: str) -> str:
+    import urllib.request
+    if provider == "anthropic":
+        body = {"model": model or "claude-sonnet-4-6", "max_tokens": 1024,
+                "messages": [{"role": "user", "content": prompt}]}
+        req = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=json.dumps(body).encode(),
+            headers={"x-api-key": os.environ["ANTHROPIC_API_KEY"],
+                     "anthropic-version": "2023-06-01", "content-type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                data = json.loads(resp.read())
+            return "".join(b.get("text", "") for b in data.get("content", [])).strip()
+        except Exception as e:  # network/auth errors shouldn't crash the CLI
+            return f"(anthropic API error: {e})"
+    if provider == "openai":
+        body = {"model": model or "gpt-4o-mini",
+                "messages": [{"role": "user", "content": prompt}]}
+        req = urllib.request.Request(
+            "https://api.openai.com/v1/chat/completions",
+            data=json.dumps(body).encode(),
+            headers={"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}",
+                     "content-type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                data = json.loads(resp.read())
+            return data["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            return f"(openai API error: {e})"
+    return f"(unknown provider: {provider})"
+
+
+def ai_ask(prompt: str, backend: Optional[str] = None,
+           model: Optional[str] = None) -> Tuple[str, str]:
+    """Return (answer, backend_used). Picks the first available backend."""
+    available = _detect_backends()
+    if not available:
+        return (
+            "No AI backend found. Install/enable one:\n"
+            "  • Claude Code  — you have it; make sure `claude` is on PATH\n"
+            "  • codex or ollama, or set ANTHROPIC_API_KEY / OPENAI_API_KEY",
+            "none",
+        )
+    chosen = backend or available[0]
+    if chosen not in available:
+        return (f"backend '{chosen}' not available — found: {', '.join(available)}", chosen)
+    if chosen == "claude":
+        return _ask_claude(prompt, model), chosen
+    if chosen == "codex":
+        return _ask_codex(prompt, model), chosen
+    if chosen == "ollama":
+        return _ask_ollama(prompt, model), chosen
+    return _ask_api(prompt, model, chosen), chosen
+
+
+def _render_history(history: List[Tuple[str, str]], new_q: str) -> str:
+    """Fold prior turns into one prompt so any backend gets multi-turn memory."""
+    if not history:
+        return new_q
+    lines = []
+    for role, text in history[-10:]:
+        lines.append(f"{'User' if role == 'you' else 'Assistant'}: {text}")
+    lines.append(f"User: {new_q}")
+    lines.append("Assistant:")
+    return "\n".join(lines)
+
+
+def cmd_ask(args: argparse.Namespace) -> int:
+    prompt = _arg_or_stdin(getattr(args, "prompt", None))
+    if not prompt:
+        print('usage: scbe ask "<question>"   (or pipe text via stdin)', file=sys.stderr)
+        return 2
+    answer, backend = ai_ask(prompt, getattr(args, "backend", None), getattr(args, "model", None))
+    if getattr(args, "json_output", False):
+        print(json.dumps({"prompt": prompt, "backend": backend, "answer": answer}))
+    else:
+        print(answer)
+    return 0
+
+
+def cmd_chat(args: argparse.Namespace) -> int:
+    available = _detect_backends()
+    if not available:
+        print("No AI backend found. You have Claude Code — make sure `claude` is on PATH,")
+        print("or set ANTHROPIC_API_KEY / OPENAI_API_KEY, or install ollama.")
+        return 1
+    backend = getattr(args, "backend", None) or available[0]
+    model = getattr(args, "model", None)
+    tag = f"{backend}{' · ' + model if model else ''}"
+    print(f"scbe chat · {tag}   (backends: {', '.join(available)})   type 'exit' to quit\n")
+    history: List[Tuple[str, str]] = []
+    while True:
+        q = _menu_prompt("you ▸ ")
+        if q is None or q.lower() in {"exit", "quit", "/q", "bye"}:
+            print("bye —")
+            return 0
+        if not q:
+            continue
+        answer, _ = ai_ask(_render_history(history, q), backend, model)
+        print(f"ai  ▸ {answer}\n")
+        history.append(("you", q))
+        history.append(("ai", answer))
 
 
 def cmd_docs_scan(_args: argparse.Namespace) -> int:
@@ -958,9 +1300,54 @@ Legacy (backward compat):
     da.add_argument("--out", default="training/doc_manifest.json")
     da.set_defaults(func=cmd_docs_attest)
 
+    # ─── compact verbs (human + AI surface) ───
+    ak = sub.add_parser("ask", aliases=["a"], help='Ask the AI a question ("scbe ask \"...\"")')
+    ak.add_argument("prompt", nargs="?", help="question (or pipe via stdin)")
+    ak.add_argument("--backend", choices=list(AI_BACKENDS), help="force a backend (default: auto)")
+    ak.add_argument("--model", help="model name for the chosen backend")
+    ak.add_argument("--json", dest="json_output", action="store_true")
+    ak.set_defaults(func=cmd_ask)
+
+    ch = sub.add_parser("chat", help="Interactive AI chat with memory (any available model)")
+    ch.add_argument("--backend", choices=list(AI_BACKENDS))
+    ch.add_argument("--model")
+    ch.set_defaults(func=cmd_chat)
+
+    sc = sub.add_parser("score", aliases=["s"], help='Score text through the pipeline ("scbe s <text>")')
+    sc.add_argument("text", nargs="?", help="text to score (or pipe via stdin)")
+    sc.add_argument("--json", dest="json_output", action="store_true", help="machine-readable output")
+    sc.add_argument("--gate", action="store_true", help="exit nonzero on DENY/ESCALATE (for agents)")
+    sc.set_defaults(func=cmd_score)
+
+    en = sub.add_parser("enc", help='Encode text to a Sacred Tongue ("scbe enc ko hello")')
+    en.add_argument("tongue", choices=ALL_TONGUES, metavar="tongue")
+    en.add_argument("text", nargs="?", help="text to encode (or pipe via stdin)")
+    en.add_argument("--json", dest="json_output", action="store_true")
+    en.set_defaults(func=cmd_enc)
+
+    de = sub.add_parser("dec", help='Decode Sacred Tongue tokens to text ("scbe dec ko \"...\"")')
+    de.add_argument("tongue", choices=ALL_TONGUES, metavar="tongue")
+    de.add_argument("text", nargs="?", help="tokens to decode (or pipe via stdin)")
+    de.add_argument("--json", dest="json_output", action="store_true")
+    de.add_argument("--raw", action="store_true", help="write raw bytes to stdout")
+    de.set_defaults(func=cmd_dec)
+
+    xp = sub.add_parser("explain", aliases=["x"], help='Explain a pipeline layer ("scbe x L12")')
+    xp.add_argument("target", help="layer (L12) or concept (harmonic, breathing)")
+    xp.add_argument("--json", dest="json_output", action="store_true")
+    xp.set_defaults(func=cmd_explain)
+
+    ck = sub.add_parser("check", aliases=["c"], help='Lint + review a source file ("scbe c file.py")')
+    ck.add_argument("file", help="file path")
+    ck.add_argument("--json", dest="json_output", action="store_true")
+    ck.set_defaults(func=cmd_check)
+
     # ─── top-level ───
-    sub.add_parser("status", help="Project status").set_defaults(func=cmd_status)
-    sub.add_parser("selftest", help="Self-test suite").set_defaults(func=cmd_selftest)
+    sub.add_parser("menu", help="Interactive home screen (default when run with no args)")
+    st = sub.add_parser("status", aliases=["st"], help="Project status")
+    st.add_argument("--json", dest="json_output", action="store_true")
+    st.set_defaults(func=cmd_status)
+    sub.add_parser("selftest", aliases=["test"], help="Self-test suite").set_defaults(func=cmd_selftest)
     sub.add_parser("doctor", help="Local operator environment checks (forwarded to system CLI)")
     sub.add_parser("use", help="Set active SCBE operator context (forwarded to system CLI)")
     sub.add_parser("config", help="Inspect/update CLI context (forwarded to system CLI)")
@@ -983,11 +1370,174 @@ Legacy (backward compat):
     return p
 
 
+# ═══════════════════════════════════════════════════════════════
+# Interactive home screen — the "one app" front door
+#
+# Running `scbe` with no arguments drops the user into a numbered
+# menu instead of an argparse help wall. Every option maps to an
+# existing command, so the menu stays a thin, friendly veneer over
+# the same code paths the flags use.
+# ═══════════════════════════════════════════════════════════════
+
+def _banner() -> str:
+    """Self-aligning title box — stays square for any version string."""
+    w = 60
+    lines = [
+        "   SCBE-AETHERMOORE",
+        f"   Unified AI-Safety & Governance Console   v{VERSION}",
+    ]
+    out = ["╔" + "═" * w + "╗"]
+    out += ["║" + ln.ljust(w) + "║" for ln in lines]
+    out.append("╚" + "═" * w + "╝")
+    return "\n".join(out)
+
+MENU = """\
+  1) System status            — sources, tongues, pipeline
+  2) Score text (pipeline)    — run the 14-layer safety check
+  3) Encode → Sacred Tongue   — turn text into tokens
+  4) Decode ← Sacred Tongue   — turn tokens back into text
+  5) List Sacred Tongues      — all 6 languages
+  6) Explain a layer (L1–L14) — architecture guide
+  7) Inspect a source file    — lint + review
+  8) Self-test                — verify the install is healthy
+  9) Doctor                   — operator environment checks
+  a) Ask the AI               — chat with any model (Claude, etc.)
+  0) Quit
+
+  tip ▸ skip the menu — type commands directly:
+        scbe ask "question"   scbe score "text"   scbe enc ko hi   scbe x L12
+        add --json to any command for machine-readable output
+"""
+
+
+def _menu_prompt(label: str) -> Optional[str]:
+    """Read a line; return None on Ctrl+C / EOF so the menu can exit cleanly."""
+    try:
+        # Strip a leading UTF-8 BOM that Windows pipes prepend to stdin.
+        return input(label).lstrip("﻿").strip()
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return None
+
+
+def _pause() -> None:
+    try:
+        input("\n  ↵ press enter to return to the menu ")
+    except (EOFError, KeyboardInterrupt):
+        print()
+
+
+def _menu_score() -> None:
+    text = _menu_prompt("  text to score: ")
+    if not text:
+        return
+    r = pipeline_quick_score(text)
+    print(f"\n  d*:       {r['d_star']}")
+    print(f"  H_eff:    {r['H_eff']}")
+    print(f"  decision: {r['decision']}")
+
+
+def _menu_encode() -> None:
+    print("  Tongues: " + ", ".join(_CANONICAL_TONGUES))
+    code = _menu_prompt("  tongue: ")
+    if not code or code.upper() not in _CANONICAL_TONGUES:
+        print("  unknown tongue")
+        return
+    text = _menu_prompt("  text to encode: ")
+    if text is None:
+        return
+    print("\n  " + encode_bytes(code, text.encode("utf-8")))
+
+
+def _menu_decode() -> None:
+    print("  Tongues: " + ", ".join(_CANONICAL_TONGUES))
+    code = _menu_prompt("  tongue: ")
+    if not code or code.upper() not in _CANONICAL_TONGUES:
+        print("  unknown tongue")
+        return
+    tokens = _menu_prompt("  tokens to decode: ")
+    if not tokens:
+        return
+    try:
+        print("\n  " + decode_tokens(code, tokens).decode("utf-8", errors="replace"))
+    except ValueError as e:
+        print(f"  {e}")
+
+
+def _menu_explain() -> None:
+    target = _menu_prompt("  layer or concept (e.g. L12, harmonic): ")
+    if not target:
+        return
+    print("\n  " + ai_explain(target).replace("\n", "\n  "))
+
+
+def _menu_inspect() -> None:
+    path = _menu_prompt("  file path: ")
+    if not path:
+        return
+    ns = argparse.Namespace(file=path)
+    cmd_ai_check(ns)
+
+
+def interactive_menu() -> int:
+    """Numbered home screen — the single-app daily-driver entrypoint."""
+    # Make box-drawing + arrows render on a fresh Windows console.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
+        except (AttributeError, ValueError):
+            pass
+
+    actions = {
+        "1": lambda: cmd_status(argparse.Namespace()),
+        "2": _menu_score,
+        "3": _menu_encode,
+        "4": _menu_decode,
+        "5": lambda: cmd_tongue_list(argparse.Namespace()),
+        "6": _menu_explain,
+        "7": _menu_inspect,
+        "8": lambda: cmd_selftest(argparse.Namespace()),
+        "9": lambda: _run_system_cli(["doctor"]),
+        "a": lambda: cmd_chat(argparse.Namespace(backend=None, model=None)),
+    }
+    quit_words = {"0", "q", "quit", "exit"}
+
+    while True:
+        print("\n" + _banner())
+        print(MENU)
+        choice = _menu_prompt("  scbe ▸ select: ")
+        if choice is None or choice.lower() in quit_words:
+            print("  bye —\n")
+            return 0
+        action = actions.get(choice) or actions.get(choice.lower())
+        if action is None:
+            print(f"  '{choice}' isn't on the menu — pick 0-9.")
+            continue
+        print()
+        try:
+            action()
+        except Exception as e:  # keep the menu alive on any single-command failure
+            print(f"  error: {e}")
+        _pause()
+
+
+def _enable_utf8_console() -> None:
+    """Render box-drawing, arrows, and em-dashes on a fresh Windows console."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
+        except (AttributeError, ValueError):
+            pass
+
+
 def main() -> int:
+    _enable_utf8_console()
+
     if len(sys.argv) == 1:
-        cli = build_cli()
-        cli.print_help()
-        return 0
+        return interactive_menu()
+
+    if sys.argv[1] in ("menu", "app", "home"):
+        return interactive_menu()
 
     if sys.argv[1] == "cli":
         return _handle_cli_command(sys.argv)
