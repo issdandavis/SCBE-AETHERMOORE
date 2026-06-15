@@ -68,6 +68,27 @@ ROSETTA: Dict[str, Dict[str, str]] = {
         "python": "None", "javascript": "null", "rust": "None",
         "go": "nil", "ruby": "nil", "c": "NULL",
     },
+    "return": {
+        "python": "return x", "javascript": "return x;", "rust": "return x;",
+        "go": "return x", "ruby": "return x", "c": "return x;",
+    },
+    "while": {
+        "python": "while x:", "javascript": "while (x) {}", "rust": "while x {}",
+        "go": "for x {}", "ruby": "while x", "c": "while (x) {}",
+    },
+    "class": {
+        "python": "class A:", "javascript": "class A {}", "rust": "struct A {}",
+        "go": "type A struct {}", "ruby": "class A", "c": "struct A {};",
+    },
+    "import": {
+        "python": "import os", "javascript": 'import os from "os"',
+        "rust": "use std::io;", "go": 'import "fmt"',
+        "ruby": 'require "set"', "c": "#include <stdio.h>",
+    },
+    "string": {
+        "python": '"hi"', "javascript": '"hi"', "rust": '"hi"',
+        "go": '"hi"', "ruby": '"hi"', "c": '"hi"',
+    },
 }
 
 
