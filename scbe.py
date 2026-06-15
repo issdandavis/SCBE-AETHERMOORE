@@ -1932,6 +1932,62 @@ def cmd_vault(args: argparse.Namespace) -> int:
     return 0
 
 
+_NOTE_DATE_RE = re.compile(r"(20\d{2})[-_]?(0[1-9]|1[0-2])[-_]?(0[1-9]|[12]\d|3[01])")
+
+
+def _note_date(fn: str, mtime: float) -> float:
+    """Effective date: prefer a YYYYMMDD / YYYY-MM-DD in the filename (the note's
+    real date), else the file mtime (which recovery may have reset to today)."""
+    m = _NOTE_DATE_RE.search(fn)
+    if m:
+        try:
+            return time.mktime(time.strptime(f"{m.group(1)}-{m.group(2)}-{m.group(3)}", "%Y-%m-%d"))
+        except (ValueError, OverflowError):
+            pass
+    return mtime
+
+
+def cmd_recent(args: argparse.Namespace) -> int:
+    """Your most recently-dated notes — what you were working on lately."""
+    limit = getattr(args, "limit", 20)
+    items: List[Tuple[float, str, str]] = []
+    seen: set = set()
+    for root in _find_roots():
+        for dirpath, dirnames, filenames in os.walk(root):
+            dl = dirpath.lower()
+            if any(j in dl for j in _FIND_JUNK_SUB):
+                dirnames[:] = []
+                continue
+            dirnames[:] = [d for d in dirnames if d.lower() not in _FIND_PRUNE]
+            for fn in filenames:
+                if os.path.splitext(fn)[1].lower() != ".md":
+                    continue
+                m = _NOTE_DATE_RE.search(fn)
+                if not m:
+                    continue  # recent = only date-stamped notes (real dated work)
+                try:
+                    d = time.mktime(time.strptime(
+                        f"{m.group(1)}-{m.group(2)}-{m.group(3)}", "%Y-%m-%d"))
+                except (ValueError, OverflowError):
+                    continue
+                full = os.path.join(dirpath, fn)
+                nc = os.path.normcase(full)
+                if nc in seen:
+                    continue
+                seen.add(nc)
+                items.append((d, full, fn))
+    items.sort(reverse=True)
+    items = items[:limit]
+    if getattr(args, "json_output", False):
+        print(json.dumps([{"date": time.strftime("%Y-%m-%d", time.localtime(d)), "name": n, "path": p}
+                          for d, p, n in items]))
+        return 0
+    print(f"Your {len(items)} most recent notes:")
+    for d, p, n in items:
+        print(f"  {time.strftime('%Y-%m-%d', time.localtime(d))}  {n}")
+    return 0
+
+
 def cmd_docs_scan(_args: argparse.Namespace) -> int:
     """Delegate to doc_verifier.py for doc scanning."""
     return subprocess.run(
@@ -2382,6 +2438,11 @@ Legacy (backward compat):
     vl.add_argument("name", nargs="?", help="open the vault whose path matches this")
     vl.add_argument("--json", dest="json_output", action="store_true")
     vl.set_defaults(func=cmd_vault)
+
+    rc = sub.add_parser("recent", help="Your most recently-dated notes (what you worked on lately)")
+    rc.add_argument("--limit", type=int, default=20, help="how many to show (default 20)")
+    rc.add_argument("--json", dest="json_output", action="store_true")
+    rc.set_defaults(func=cmd_recent)
 
     # ─── top-level ───
     chem = sub.add_parser("chem", help="Symbolic chemistry and STISTA proof lane")
