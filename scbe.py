@@ -1767,7 +1767,7 @@ def _find_roots() -> List[Path]:
     catalog = Path.home() / "AETHER-CATALOG.json"
     if catalog.exists():
         try:
-            data = json.loads(catalog.read_text(encoding="utf-8"))
+            data = json.loads(catalog.read_text(encoding="utf-8-sig"))
             for v in data.get("vaults", []):
                 p = str(v.get("path", ""))
                 if p and "Backups" not in p:  # skip our own backup snapshots
@@ -1889,6 +1889,46 @@ def cmd_open(args: argparse.Namespace) -> int:
     except OSError as e:
         print(f"could not open: {e}", file=sys.stderr)
         return 1
+    return 0
+
+
+def cmd_vault(args: argparse.Namespace) -> int:
+    """List your real Obsidian vaults (mirror junk excluded), or open one by name."""
+    catalog = Path.home() / "AETHER-CATALOG.json"
+    if not catalog.exists():
+        print("no catalog yet — run `aether-catalog` first to inventory your vaults", file=sys.stderr)
+        return 1
+    try:
+        vaults = json.loads(catalog.read_text(encoding="utf-8-sig")).get("vaults", [])
+    except Exception as e:
+        print(f"could not read catalog: {e}", file=sys.stderr)
+        return 1
+    vaults = sorted(vaults, key=lambda v: v.get("notes", 0), reverse=True)
+    name = getattr(args, "name", None)
+    if name:
+        ql = name.lower()
+        match = next((v for v in vaults if ql in str(v.get("path", "")).lower()), None)
+        if not match:
+            print(f"no vault matching '{name}'")
+            return 0
+        print(f"opening {match['path']}")
+        try:
+            os.startfile(match["path"])  # type: ignore[attr-defined]
+        except AttributeError:
+            subprocess.run(["xdg-open", match["path"]], check=False)
+        except OSError as e:
+            print(f"could not open: {e}", file=sys.stderr)
+            return 1
+        return 0
+    if getattr(args, "json_output", False):
+        print(json.dumps(vaults))
+        return 0
+    real = [v for v in vaults if v.get("notes", 0) > 0]
+    print(f"Your Obsidian vaults ({len(real)} with real notes):")
+    for v in real:
+        mirror = f"  (+{v['mirror_files']} mirror)" if v.get("mirror_files") else ""
+        print(f"  {v.get('notes', 0):>5} notes  [{v.get('tier', '?')}]  {v.get('path')}{mirror}")
+    print("\ntip: `scbe vault <name>` opens that vault folder")
     return 0
 
 
@@ -2337,6 +2377,11 @@ Legacy (backward compat):
     op = sub.add_parser("open", help='Open the newest matching note/doc ("scbe open <text>")')
     op.add_argument("query", nargs="?", help="text to match in note/doc filenames")
     op.set_defaults(func=cmd_open)
+
+    vl = sub.add_parser("vault", help="List your Obsidian vaults, or open one by name")
+    vl.add_argument("name", nargs="?", help="open the vault whose path matches this")
+    vl.add_argument("--json", dest="json_output", action="store_true")
+    vl.set_defaults(func=cmd_vault)
 
     # ─── top-level ───
     chem = sub.add_parser("chem", help="Symbolic chemistry and STISTA proof lane")
