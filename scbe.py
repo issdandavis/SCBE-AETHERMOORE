@@ -1748,6 +1748,85 @@ def cmd_undo(_args: argparse.Namespace) -> int:
     return 0
 
 
+# ═══════════════════════════════════════════════════════════════
+# find — locate your notes/docs by name across cataloged vaults
+#
+# Reads AETHER-CATALOG.json for vault locations (falls back to sane
+# defaults), walks them while PRUNING mirror/plugin junk, and matches
+# filenames. Read-only: it never modifies or deletes anything.
+# ═══════════════════════════════════════════════════════════════
+
+_FIND_PRUNE = {".git", ".obsidian", "node_modules", "external", "dist", "__pycache__"}
+_FIND_JUNK_SUB = ("repository mirror", "plugin-backups")
+_FIND_EXTS = {".md", ".docx", ".pdf", ".txt", ".doc", ".epub"}
+
+
+def _find_roots() -> List[Path]:
+    roots: List[Path] = []
+    catalog = Path.home() / "AETHER-CATALOG.json"
+    if catalog.exists():
+        try:
+            data = json.loads(catalog.read_text(encoding="utf-8"))
+            for v in data.get("vaults", []):
+                p = str(v.get("path", ""))
+                if p and "Backups" not in p:  # skip our own backup snapshots
+                    roots.append(Path(p))
+        except Exception:
+            pass
+    for extra in ["Avalon Files (consolidated)", "OneDrive/Books", "OneDrive/Documents", "Documents"]:
+        roots.append(Path.home() / extra)
+    if Path("D:/Recovery").exists():
+        roots.append(Path("D:/Recovery"))
+    uniq: Dict[str, Path] = {}
+    for r in roots:
+        if r.exists():
+            uniq.setdefault(os.path.normcase(str(r)), r)
+    return list(uniq.values())
+
+
+def cmd_find(args: argparse.Namespace) -> int:
+    query = (getattr(args, "query", None) or "").lower()
+    if not query:
+        print('usage: scbe find <text>   (matches your note/doc filenames)', file=sys.stderr)
+        return 2
+    exts = {"." + args.ext.lstrip(".").lower()} if getattr(args, "ext", None) else _FIND_EXTS
+    matches: List[Tuple[float, str, str]] = []
+    seen: set = set()
+    for root in _find_roots():
+        for dirpath, dirnames, filenames in os.walk(root):
+            dl = dirpath.lower()
+            if any(j in dl for j in _FIND_JUNK_SUB):
+                dirnames[:] = []
+                continue
+            dirnames[:] = [d for d in dirnames if d.lower() not in _FIND_PRUNE]
+            for fn in filenames:
+                if os.path.splitext(fn)[1].lower() in exts and query in fn.lower():
+                    full = os.path.join(dirpath, fn)
+                    nc = os.path.normcase(full)
+                    if nc in seen:
+                        continue
+                    seen.add(nc)
+                    try:
+                        mt = os.path.getmtime(full)
+                    except OSError:
+                        mt = 0.0
+                    matches.append((mt, full, fn))
+    matches.sort(reverse=True)
+    matches = matches[: getattr(args, "limit", 25)]
+    if getattr(args, "json_output", False):
+        print(json.dumps([{"name": n, "path": p} for _, p, n in matches]))
+        return 0
+    if not matches:
+        print(f"no files matching '{args.query}' in your notes/docs")
+        return 0
+    print(f"{len(matches)} match(es) for '{args.query}':")
+    for mt, p, n in matches:
+        d = time.strftime("%Y-%m-%d", time.localtime(mt)) if mt else "-"
+        print(f"  {d}  {n}")
+        print(f"             {p}")
+    return 0
+
+
 def cmd_docs_scan(_args: argparse.Namespace) -> int:
     """Delegate to doc_verifier.py for doc scanning."""
     return subprocess.run(
@@ -2181,6 +2260,13 @@ Legacy (backward compat):
     ds.add_argument("text", nargs="?", help="text to describe (or pipe via stdin)")
     ds.add_argument("--json", dest="json_output", action="store_true")
     ds.set_defaults(func=cmd_describe)
+
+    fd = sub.add_parser("find", aliases=["f"], help='Find your notes/docs by name ("scbe find <text>")')
+    fd.add_argument("query", nargs="?", help="text to match in note/doc filenames")
+    fd.add_argument("--ext", help="restrict to one extension (md, docx, pdf)")
+    fd.add_argument("--limit", type=int, default=25, help="max results (default 25)")
+    fd.add_argument("--json", dest="json_output", action="store_true")
+    fd.set_defaults(func=cmd_find)
 
     # ─── top-level ───
     chem = sub.add_parser("chem", help="Symbolic chemistry and STISTA proof lane")
