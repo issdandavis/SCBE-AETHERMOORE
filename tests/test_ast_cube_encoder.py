@@ -1,6 +1,14 @@
 """Tests for the AST cube encoder (code -> matrix of cube-token vectors)."""
 import ast
-from python.scbe.ast_cube_encoder import encode, decode, VECTOR_DIM
+import pytest
+
+from python.scbe.ast_cube_encoder import (
+    VECTOR_DIM,
+    decode,
+    decode_ast_normalized,
+    encode,
+    verify_bijective_layer,
+)
 
 
 SRC = "def f(x):\n    y = x + 1\n    return y\n"
@@ -24,15 +32,40 @@ class TestEncode:
 
 
 class TestBijective:
-    def test_ast_round_trips_to_source(self):
+    def test_exact_source_round_trips(self):
         enc = encode(SRC)
-        assert decode(enc) == ast.unparse(ast.parse(SRC))
+        assert decode(enc) == SRC
+        assert verify_bijective_layer(enc)
 
     def test_nontrivial_code(self):
         src = "class A:\n    def m(self, n):\n        return [i*i for i in range(n)]\n"
         enc = encode(src)
         assert enc["shape"][0] > 5
-        assert decode(enc) == ast.unparse(ast.parse(src))
+        assert decode(enc) == src
+        assert decode_ast_normalized(enc) == ast.unparse(ast.parse(src))
+
+    @pytest.mark.parametrize(
+        "src",
+        [
+            "def f( x ):\n    # keep comment\n    return  x+1\n",
+            "def f(x):\r\n\treturn x + 1\r\n",
+            "name = 'Δ-token-🧪'\n",
+            "x = 1",
+        ],
+    )
+    def test_bijective_layer_handles_source_edge_cases(self, src):
+        enc = encode(src)
+        assert decode(enc) == src
+        assert verify_bijective_layer(enc)
+        assert enc["bijective"]["byte_count"] == len(src.encode("utf-8"))
+
+    def test_tampered_source_lane_fails_verification(self):
+        enc = encode("x = 1\n")
+        enc["bijective"] = dict(enc["bijective"])
+        enc["bijective"]["source_utf8_b64"] = encode("x = 2\n")["bijective"]["source_utf8_b64"]
+        assert not verify_bijective_layer(enc)
+        with pytest.raises(ValueError, match="hash mismatch"):
+            decode(enc)
 
 
 class TestHyperStructureLocation:
@@ -57,4 +90,33 @@ class TestHyperStructureLocation:
     def test_still_bijective(self):
         src = "def f(x):\n    return (x + (x * x))\n"
         enc = encode(src)
-        assert decode(enc) == ast.unparse(ast.parse(src))
+        assert decode(enc) == src
+        assert decode_ast_normalized(enc) == ast.unparse(ast.parse(src))
+
+
+class TestFaceSignal:
+    def test_face_trits_are_ast_semantic_not_collapsed(self):
+        src = (
+            "def f(x):\n"
+            "    if x > 0:\n"
+            "        return x + 1\n"
+            "    return {'x': x}\n"
+        )
+        enc = encode(src)
+        faces = {tuple(n["vector"][2:8]) for n in enc["nodes"]}
+        assert len(faces) >= 6
+
+    def test_computation_and_control_activate_different_faces(self):
+        enc = encode("if x > 0:\n    y = x + 1\n")
+        by_type = {n["type"]: n for n in enc["nodes"]}
+
+        assert by_type["If"]["face_trits"]["RU"] == 1
+        assert by_type["BinOp"]["face_trits"]["CA"] == 1
+        assert by_type["Assign"]["face_trits"]["KO"] == 1
+
+    def test_name_context_changes_face_signal(self):
+        enc = encode("x = x + 1\n")
+        names = [n for n in enc["nodes"] if n["type"] == "Name" and n["token"] == "x"]
+
+        assert len(names) == 2
+        assert names[0]["face_trits"] != names[1]["face_trits"]
