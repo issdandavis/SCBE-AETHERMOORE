@@ -294,6 +294,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "@netlify/blobs": "^10.7.9",
     "@noble/hashes": "^2.0.1",
     "@noble/post-quantum": "^0.6.0",
     "@notionhq/client": "^5.9.0",
