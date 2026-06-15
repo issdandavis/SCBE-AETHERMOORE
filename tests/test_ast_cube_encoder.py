@@ -33,3 +33,28 @@ class TestBijective:
         enc = encode(src)
         assert enc["shape"][0] > 5
         assert decode(enc) == ast.unparse(ast.parse(src))
+
+
+class TestHyperStructureLocation:
+    def test_location_dims_in_vector(self):
+        from python.scbe.ast_cube_encoder import LOCATION_DIMS, location_vector
+        assert len(location_vector([0, 1, 2])) == LOCATION_DIMS
+        assert location_vector([]) == [0] * LOCATION_DIMS  # root has no path
+
+    def test_distinct_paths_distinct_locations(self):
+        from python.scbe.ast_cube_encoder import location_vector
+        assert location_vector([0, 1]) != location_vector([1, 0])
+        assert location_vector([0]) != location_vector([0, 0])
+
+    def test_same_token_different_location_different_vector(self):
+        # 'x' appears as a param and nested in the expression
+        src = "def f(x):\n    return (x + (x * x))\n"
+        nodes = [n for n in encode(src)["nodes"] if n["token"] == "x"]
+        assert len(nodes) >= 2
+        vecs = {tuple(n["vector"]) for n in nodes}
+        assert len(vecs) == len(nodes)  # all distinct via location
+
+    def test_still_bijective(self):
+        src = "def f(x):\n    return (x + (x * x))\n"
+        enc = encode(src)
+        assert decode(enc) == ast.unparse(ast.parse(src))
