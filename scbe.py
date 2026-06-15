@@ -767,6 +767,14 @@ def cmd_dec(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_tongue_verb(args: argparse.Namespace) -> int:
+    """A Sacred Tongue used directly as a verb: `scbe ko "hi"` encodes in KO,
+    `scbe ko -d "<tokens>"` decodes. The tongue is bound via set_defaults."""
+    if getattr(args, "decode", False):
+        return cmd_dec(args)
+    return cmd_enc(args)
+
+
 def cmd_explain(args: argparse.Namespace) -> int:
     text = ai_explain(args.target)
     if getattr(args, "json_output", False):
@@ -969,6 +977,97 @@ def cmd_chat(args: argparse.Namespace) -> int:
         print(f"ai  ▸ {answer}\n")
         history.append(("you", q))
         history.append(("ai", answer))
+
+
+# ═══════════════════════════════════════════════════════════════
+# File management — move / push / guided delete
+#
+# Deletion is "guided": it shows exactly what will go, asks to confirm,
+# and moves to a recoverable trash instead of hard-deleting. Nothing is
+# ever destroyed outright.
+# ═══════════════════════════════════════════════════════════════
+
+TRASH_DIR = Path.home() / ".scbe-trash"
+
+
+def _human(n: float) -> str:
+    for unit in ("B", "KB", "MB", "GB"):
+        if n < 1024:
+            return f"{n:.0f}{unit}" if unit == "B" else f"{n:.1f}{unit}"
+        n /= 1024
+    return f"{n:.1f}TB"
+
+
+def _dir_size(p: Path) -> int:
+    return sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
+
+
+def _confirm(prompt: str) -> bool:
+    try:
+        return input(prompt).strip().lower() in {"y", "yes"}
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return False
+
+
+def cmd_move(args: argparse.Namespace) -> int:
+    src, dst = Path(args.src), Path(args.dst)
+    if not src.exists():
+        print(f"not found: {src}", file=sys.stderr)
+        return 1
+    target = dst / src.name if dst.is_dir() else dst
+    if target.exists() and not getattr(args, "force", False):
+        if not _confirm(f"overwrite {target}? [y/N] "):
+            print("cancelled")
+            return 0
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(src), str(target))
+    print(f"moved {src} -> {target}")
+    return 0
+
+
+def cmd_del(args: argparse.Namespace) -> int:
+    paths = [Path(p) for p in args.paths]
+    existing = [p for p in paths if p.exists()]
+    for missing in (p for p in paths if not p.exists()):
+        print(f"not found: {missing}", file=sys.stderr)
+    if not existing:
+        return 1
+    # The "guide": show exactly what will be removed and how big.
+    print("about to remove (→ recoverable trash):")
+    total = 0
+    for p in existing:
+        size = p.stat().st_size if p.is_file() else _dir_size(p)
+        total += size
+        print(f"  {p}  ({_human(size)}{', dir' if p.is_dir() else ''})")
+    print(f"  total: {_human(total)}   trash: {TRASH_DIR}")
+    if not getattr(args, "yes", False) and not _confirm("proceed? [y/N] "):
+        print("cancelled")
+        return 0
+    TRASH_DIR.mkdir(exist_ok=True)
+    for p in existing:
+        dest = TRASH_DIR / p.name
+        n = 1
+        while dest.exists():  # never clobber an existing trashed item
+            dest = TRASH_DIR / f"{p.stem}_{n}{p.suffix}"
+            n += 1
+        shutil.move(str(p), str(dest))
+        print(f"trashed {p.name} -> {dest}")
+    print(f"recover anything from {TRASH_DIR}")
+    return 0
+
+
+def cmd_push(args: argparse.Namespace) -> int:
+    repo = str(REPO_ROOT)
+    print("git status:")
+    subprocess.run(["git", "-C", repo, "status", "--short"], check=False)
+    if not getattr(args, "yes", False) and not _confirm("stage all + commit + push? [y/N] "):
+        print("cancelled")
+        return 0
+    msg = getattr(args, "message", None) or "update"
+    subprocess.run(["git", "-C", repo, "add", "-A"], check=False)
+    subprocess.run(["git", "-C", repo, "commit", "-m", msg], check=False)
+    return subprocess.run(["git", "-C", repo, "push"], check=False).returncode
 
 
 def cmd_docs_scan(_args: argparse.Namespace) -> int:
@@ -1331,6 +1430,36 @@ Legacy (backward compat):
     de.add_argument("--json", dest="json_output", action="store_true")
     de.add_argument("--raw", action="store_true", help="write raw bytes to stdout")
     de.set_defaults(func=cmd_dec)
+
+    # ─── Sacred Tongues as verbs — full names, no abbreviation ───
+    tongue_verbs = {
+        "koraelin": "ko", "avali": "av", "runethic": "ru",
+        "cassisivadan": "ca", "umbroth": "um", "draumric": "dr",
+    }
+    for fullname, code in tongue_verbs.items():
+        name = TONGUE_NAMES[code.upper()]
+        tv = sub.add_parser(fullname, help=f'Speak {name}: encode text ("scbe {fullname} hello")')
+        tv.add_argument("text", nargs="?", help="text to encode (or pipe via stdin)")
+        tv.add_argument("-d", "--decode", action="store_true", help="decode tokens back to text")
+        tv.add_argument("--json", dest="json_output", action="store_true")
+        tv.set_defaults(func=cmd_tongue_verb, tongue=code)
+
+    # ─── file management (guided + safe) ───
+    mv = sub.add_parser("move", help='Move/rename a file ("scbe move a.txt dir/")')
+    mv.add_argument("src")
+    mv.add_argument("dst")
+    mv.add_argument("-f", "--force", action="store_true", help="overwrite without asking")
+    mv.set_defaults(func=cmd_move)
+
+    rm = sub.add_parser("del", aliases=["trash"], help="Guided delete → recoverable trash")
+    rm.add_argument("paths", nargs="+", help="files/dirs to remove")
+    rm.add_argument("-y", "--yes", action="store_true", help="skip the confirm prompt")
+    rm.set_defaults(func=cmd_del)
+
+    pu = sub.add_parser("push", help="Stage + commit + push the repo (with confirm)")
+    pu.add_argument("message", nargs="?", help="commit message")
+    pu.add_argument("-y", "--yes", action="store_true", help="skip the confirm prompt")
+    pu.set_defaults(func=cmd_push)
 
     xp = sub.add_parser("explain", aliases=["x"], help='Explain a pipeline layer ("scbe x L12")')
     xp.add_argument("target", help="layer (L12) or concept (harmonic, breathing)")
