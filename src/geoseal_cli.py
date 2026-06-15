@@ -90,6 +90,7 @@ from src.crypto.geoseal_execution_gate import (
     append_sealed_exec_audit,
     execute_governed_command,
     scan_command,
+    simulate_command,
 )
 from src.crypto.geoseal_legitimacy import CoarseLocation, run_legitimacy_trial
 from src.research_navigation import (
@@ -2560,6 +2561,37 @@ def cmd_exec(args: argparse.Namespace) -> int:
     if not result.ran:
         return 2
     return result.returncode or 0
+
+
+def cmd_simulate(args: argparse.Namespace) -> int:
+    """CLI: dry-run a command through the GeoSeal gate WITHOUT executing it.
+
+    Pre-flight check — prints the verdict (WOULD RUN / BLOCKED) and findings,
+    never launches a subprocess. Exit 0 = would run, 2 = would be blocked, so it
+    drops into scripts as a guard before the real run.
+    """
+    cleaned = _strip_argv_separator(args.command)
+    command = subprocess.list2cmdline(cleaned) if isinstance(cleaned, list) else cleaned
+    if not command:
+        print("simulate command is empty", file=sys.stderr)
+        return 2
+    sim = simulate_command(
+        command,
+        max_tier=args.max_tier,
+        claimed_paths=args.claimed_path or [],
+    )
+    payload = {"version": "geoseal-simulate-v1", **sim.to_dict()}
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(sim.summary)
+        for finding in sim.decision.findings:
+            print(f"  - {finding.rule}: {finding.message}")
+        if sim.blocked_reason:
+            print(f"[blocked] {sim.blocked_reason} — nothing was executed")
+        else:
+            print(f"[ok] would run at max-tier={args.max_tier} — nothing was executed")
+    return 0 if sim.would_run else 2
 
 
 def cmd_legitimacy_trial(args: argparse.Namespace) -> int:
@@ -5743,6 +5775,28 @@ def build_parser() -> argparse.ArgumentParser:
     p_exec.add_argument("--no-audit", action="store_true")
     p_exec.add_argument("--json", action="store_true")
     p_exec.set_defaults(func=cmd_exec)
+
+    p_simulate = sub.add_parser(
+        "simulate",
+        help="Dry-run a command through the GeoSeal gate — check the verdict; never executes",
+    )
+    p_simulate.add_argument("command", nargs=argparse.REMAINDER, help="Command to parse, scan, and preview")
+    p_simulate.add_argument(
+        "--max-tier",
+        default="ALLOW",
+        choices=["ALLOW", "QUARANTINE", "ESCALATE"],
+        dest="max_tier",
+        help="Highest execution-gate tier that would be allowed to run",
+    )
+    p_simulate.add_argument(
+        "--claimed-path",
+        action="append",
+        default=[],
+        dest="claimed_path",
+        help="Path prefix the command is allowed to touch; repeatable",
+    )
+    p_simulate.add_argument("--json", action="store_true")
+    p_simulate.set_defaults(func=cmd_simulate)
 
     p_legitimacy = sub.add_parser(
         "legitimacy-trial",
