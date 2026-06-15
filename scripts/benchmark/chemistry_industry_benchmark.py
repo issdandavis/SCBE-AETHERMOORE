@@ -330,9 +330,11 @@ def summarize(report: dict[str, Any]) -> dict[str, Any]:
     installed_scientific = [key for key in scientific if tools[key]["installed"]]
     passing_scientific = [key for key in installed_scientific if tools[key]["status"] == "pass"]
     return {
-        "decision": "SCBE_SYMBOLIC_PASS__SCIENTIFIC_BASELINES_MISSING"
-        if tools["scbe"]["status"] == "pass" and not passing_scientific
-        else "COMPARISON_AVAILABLE",
+        "decision": (
+            "SCBE_SYMBOLIC_PASS__SCIENTIFIC_BASELINES_MISSING"
+            if tools["scbe"]["status"] == "pass" and not passing_scientific
+            else "COMPARISON_AVAILABLE"
+        ),
         "scbe_probe_status": tools["scbe"]["status"],
         "scientific_baselines_installed": installed_scientific,
         "scientific_baselines_passing": passing_scientific,
@@ -372,12 +374,18 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
             f"| {row['name']} | {row['installed']} | {row['status']} | {row.get('primary_claim', row['kind'])} |"
         )
 
-    lines.extend(["", "## Feature Matrix", "", "| Feature | SCBE | Open Babel | RDKit | PubChem |", "| --- | --- | --- | --- | --- |"])
+    lines.extend(
+        [
+            "",
+            "## Feature Matrix",
+            "",
+            "| Feature | SCBE | Open Babel | RDKit | PubChem |",
+            "| --- | --- | --- | --- | --- |",
+        ]
+    )
     for feature in report["feature_matrix"]:
         lines.append(
-            "| {label} | {scbe} | {openbabel_obabel} | {rdkit_python} | {pubchem_pug_rest} |".format(
-                **feature
-            )
+            "| {label} | {scbe} | {openbabel_obabel} | {rdkit_python} | {pubchem_pug_rest} |".format(**feature)
         )
 
     lines.extend(["", "## Next Step", "", summary["next_step"], ""])
