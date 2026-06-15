@@ -30,11 +30,13 @@ Legacy commands (backward compat):
 from __future__ import annotations
 
 import argparse
+import ctypes
 import difflib
 import hashlib
 import json
 import math
 import os
+import platform
 import re
 import shutil
 import signal
@@ -581,6 +583,203 @@ def cmd_status(args: argparse.Namespace) -> int:
     print("14-Layer Pipeline:")
     for layer, (name, _) in LAYER_GUIDE.items():
         print(f"  {layer}: {name}")
+    return 0
+
+
+def _windows_memory_status() -> Dict[str, float]:
+    class MEMORYSTATUSEX(ctypes.Structure):
+        _fields_ = [
+            ("dwLength", ctypes.c_ulong),
+            ("dwMemoryLoad", ctypes.c_ulong),
+            ("ullTotalPhys", ctypes.c_ulonglong),
+            ("ullAvailPhys", ctypes.c_ulonglong),
+            ("ullTotalPageFile", ctypes.c_ulonglong),
+            ("ullAvailPageFile", ctypes.c_ulonglong),
+            ("ullTotalVirtual", ctypes.c_ulonglong),
+            ("ullAvailVirtual", ctypes.c_ulonglong),
+            ("sullAvailExtendedVirtual", ctypes.c_ulonglong),
+        ]
+
+    stat = MEMORYSTATUSEX()
+    stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+    if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):  # type: ignore[attr-defined]
+        raise OSError("GlobalMemoryStatusEx failed")
+    total = stat.ullTotalPhys
+    free = stat.ullAvailPhys
+    used = max(0, total - free)
+    return {
+        "total_gb": round(total / 1_073_741_824, 2),
+        "used_gb": round(used / 1_073_741_824, 2),
+        "free_gb": round(free / 1_073_741_824, 2),
+        "used_percent": round((used / total) * 100, 1) if total else 0.0,
+    }
+
+
+def _portable_memory_status() -> Dict[str, float]:
+    if sys.platform == "win32":
+        return _windows_memory_status()
+    if hasattr(os, "sysconf"):
+        page_size = os.sysconf("SC_PAGE_SIZE")
+        total_pages = os.sysconf("SC_PHYS_PAGES")
+        avail_pages = os.sysconf("SC_AVPHYS_PAGES")
+        total = int(page_size * total_pages)
+        free = int(page_size * avail_pages)
+        used = max(0, total - free)
+        return {
+            "total_gb": round(total / 1_073_741_824, 2),
+            "used_gb": round(used / 1_073_741_824, 2),
+            "free_gb": round(free / 1_073_741_824, 2),
+            "used_percent": round((used / total) * 100, 1) if total else 0.0,
+        }
+    return {"total_gb": 0.0, "used_gb": 0.0, "free_gb": 0.0, "used_percent": 0.0}
+
+
+def _filesystem_drives(warn_disk_free_gb: int) -> List[Dict[str, Any]]:
+    roots: List[str] = []
+    if sys.platform == "win32":
+        bitmask = ctypes.windll.kernel32.GetLogicalDrives()  # type: ignore[attr-defined]
+        for i in range(26):
+            if bitmask & (1 << i):
+                roots.append(f"{chr(65 + i)}:\\")
+    else:
+        roots.append("/")
+
+    drives: List[Dict[str, Any]] = []
+    seen: set[str] = set()
+    for root in roots:
+        if root in seen or not Path(root).exists():
+            continue
+        seen.add(root)
+        try:
+            usage = shutil.disk_usage(root)
+        except OSError:
+            continue
+        free_gb = round(usage.free / 1_073_741_824, 2)
+        drives.append(
+            {
+                "root": root,
+                "free_gb": free_gb,
+                "used_gb": round(usage.used / 1_073_741_824, 2),
+                "total_gb": round(usage.total / 1_073_741_824, 2),
+                "low_free_space": free_gb < warn_disk_free_gb,
+            }
+        )
+    return drives
+
+
+def _top_processes(limit: int) -> List[Dict[str, Any]]:
+    if sys.platform != "win32":
+        return []
+    ps = (
+        "Get-Process | Sort-Object WorkingSet64 -Descending | "
+        f"Select-Object -First {max(1, limit)} ProcessName,Id,"
+        "@{Name='ram_mb';Expression={[math]::Round($_.WorkingSet64/1MB,1)}},"
+        "@{Name='private_mb';Expression={[math]::Round($_.PrivateMemorySize64/1MB,1)}} | "
+        "ConvertTo-Json -Depth 3"
+    )
+    try:
+        proc = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", ps],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            timeout=8,
+            check=False,
+        )
+        if proc.returncode != 0 or not proc.stdout.strip():
+            return []
+        data = json.loads(proc.stdout)
+        rows = data if isinstance(data, list) else [data]
+        return [
+            {
+                "name": str(row.get("ProcessName", "")),
+                "id": row.get("Id"),
+                "ram_mb": row.get("ram_mb"),
+                "private_mb": row.get("private_mb"),
+            }
+            for row in rows
+            if isinstance(row, dict)
+        ]
+    except Exception:
+        return []
+
+
+def collect_pc_health(
+    *,
+    warn_ram_percent: int = 85,
+    warn_disk_free_gb: int = 25,
+    top_processes: int = 15,
+) -> Dict[str, Any]:
+    ram = _portable_memory_status()
+    drives = _filesystem_drives(warn_disk_free_gb)
+    processes = _top_processes(top_processes)
+    warnings: List[str] = []
+
+    if ram["used_percent"] >= warn_ram_percent:
+        warnings.append(f"High RAM pressure: {ram['used_percent']}% used.")
+    for drive in drives:
+        if drive["low_free_space"]:
+            warnings.append(f"Low disk headroom on {drive['root']}: {drive['free_gb']} GB free.")
+
+    for proc in processes:
+        name = str(proc.get("name", ""))
+        ram_mb = float(proc.get("ram_mb") or 0)
+        if name.lower().startswith(("onedrive", "dropbox", "googledrive")) and ram_mb > 1000:
+            warnings.append(f"{name} is using {ram_mb:g} MB RAM; pause sync during heavy work.")
+            break
+
+    return {
+        "schema_version": "scbe_pc_health_v1",
+        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "machine": platform.node(),
+        "platform": platform.platform(),
+        "ram": ram,
+        "drives": drives,
+        "top_processes": processes,
+        "warnings": warnings,
+        "recommendations": [
+            "Keep at least 20-25 GB free before builds, RAG indexing, browser swarms, or backups.",
+            "Pause cloud sync during recovery scans and long compiles when it is using high RAM.",
+            "Use shallow health checks before recursive storage scans.",
+            "Do not kill processes, delete caches, or move user files without explicit confirmation.",
+        ],
+    }
+
+
+def cmd_system_health(args: argparse.Namespace) -> int:
+    report = collect_pc_health(
+        warn_ram_percent=args.warn_ram_percent,
+        warn_disk_free_gb=args.warn_disk_free_gb,
+        top_processes=args.top_processes,
+    )
+
+    out_dir = REPO_ROOT / "artifacts" / "pc-memory"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    json_path = out_dir / f"pc-health-{stamp}.json"
+    if not getattr(args, "no_write", False):
+        json_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+        report["artifact"] = str(json_path)
+
+    if getattr(args, "json_output", False):
+        print(json.dumps(report))
+        return 0
+
+    ram = report["ram"]
+    print("SCBE PC health")
+    print(f"  RAM: {ram['used_gb']} GB used / {ram['total_gb']} GB ({ram['used_percent']}%)")
+    print("  Drives:")
+    for drive in report["drives"]:
+        flag = " LOW" if drive["low_free_space"] else ""
+        print(f"    {drive['root']} free {drive['free_gb']} GB / {drive['total_gb']} GB{flag}")
+    if report["warnings"]:
+        print("  Warnings:")
+        for warning in report["warnings"]:
+            print(f"    - {warning}")
+    else:
+        print("  Warnings: none")
+    if not getattr(args, "no_write", False):
+        print(f"  Artifact: {json_path}")
     return 0
 
 
@@ -1811,6 +2010,7 @@ Legacy (backward compat):
   scbe pollypad init --agent-id rex --name "Rex"
   scbe run --language python --code "print('SCBE')"
   scbe flow plan --task "improve CLI swarm"
+  scbe system health --json
   scbe how do I encode fox in draumric?
   scbe what is L12?
         """,
@@ -1879,6 +2079,17 @@ Legacy (backward compat):
     da.add_argument("members", help="Comma-separated: claude,gpt,sonar,grok,gemini")
     da.add_argument("--out", default="training/doc_manifest.json")
     da.set_defaults(func=cmd_docs_attest)
+
+    system = sub.add_parser("system", help="PC health, memory, and maintenance preflights")
+    system_sub = system.add_subparsers(dest="system_cmd")
+
+    sh = system_sub.add_parser("health", help="Check RAM, disk headroom, and cloud-sync pressure")
+    sh.add_argument("--json", dest="json_output", action="store_true")
+    sh.add_argument("--no-write", action="store_true", help="do not write artifacts/pc-memory report")
+    sh.add_argument("--warn-ram-percent", type=int, default=85)
+    sh.add_argument("--warn-disk-free-gb", type=int, default=25)
+    sh.add_argument("--top-processes", type=int, default=15)
+    sh.set_defaults(func=cmd_system_health)
 
     # ─── compact verbs (human + AI surface) ───
     ak = sub.add_parser("ask", aliases=["a"], help='Ask the AI a question ("scbe ask \"...\"")')
@@ -2026,6 +2237,13 @@ Legacy (backward compat):
     st = sub.add_parser("status", aliases=["st"], help="Project status")
     st.add_argument("--json", dest="json_output", action="store_true")
     st.set_defaults(func=cmd_status)
+    ht = sub.add_parser("health", help='Shortcut for "scbe system health"')
+    ht.add_argument("--json", dest="json_output", action="store_true")
+    ht.add_argument("--no-write", action="store_true", help="do not write artifacts/pc-memory report")
+    ht.add_argument("--warn-ram-percent", type=int, default=85)
+    ht.add_argument("--warn-disk-free-gb", type=int, default=25)
+    ht.add_argument("--top-processes", type=int, default=15)
+    ht.set_defaults(func=cmd_system_health)
     sub.add_parser("selftest", aliases=["test"], help="Self-test suite").set_defaults(func=cmd_selftest)
     sub.add_parser("doctor", help="Local operator environment checks (forwarded to system CLI)")
     sub.add_parser("use", help="Set active SCBE operator context (forwarded to system CLI)")
@@ -2279,6 +2497,12 @@ def _natural_command_args(prompt: str) -> Optional[List[str]]:
         if text:
             return with_json(["describe", text])
 
+    if re.search(r"\b(pc|computer|machine|ram|memory|disk|drive)\b.*\b(health|status|check)\b", lowered):
+        return with_json(["health"])
+
+    if re.search(r"\bhealth\b", lowered):
+        return with_json(["health"])
+
     score_match = re.search(r"\b(?:score|check|gate|scan)\s+(?P<text>.+)$", lowered)
     if score_match and not re.search(r"\b(file|repo|status|doctor)\b", lowered):
         text = clean_text(score_match.group("text"))
@@ -2294,7 +2518,7 @@ def _natural_command_args(prompt: str) -> Optional[List[str]]:
         target = explain_match.group("target").replace(" ", "")
         return with_json(["explain", target])
 
-    if re.search(r"\b(status|health)\b", lowered):
+    if re.search(r"\bstatus\b", lowered):
         return with_json(["status"])
 
     if re.search(r"\b(self\s*test|selftest|test install|verify install)\b", lowered):
