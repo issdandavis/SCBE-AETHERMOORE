@@ -122,6 +122,22 @@ TONGUE_DOMAINS = {
     "KO": "nonce/flow/intent", "AV": "aad/header/metadata", "RU": "salt/binding",
     "CA": "ciphertext/bitcraft", "UM": "redaction/veil", "DR": "tag/structure",
 }
+TONGUE_ALIASES = {
+    "ko": "KO",
+    "koraelin": "KO",
+    "kor'aelin": "KO",
+    "kor-aelin": "KO",
+    "av": "AV",
+    "avali": "AV",
+    "ru": "RU",
+    "runethic": "RU",
+    "ca": "CA",
+    "cassisivadan": "CA",
+    "um": "UM",
+    "umbroth": "UM",
+    "dr": "DR",
+    "draumric": "DR",
+}
 
 
 def _encode_byte(tongue: str, b: int) -> str:
@@ -723,7 +739,8 @@ def cmd_score(args: argparse.Namespace) -> int:
 
 
 def _resolve_tongue(raw: str) -> Optional[str]:
-    code = raw.upper()
+    key = raw.strip().lower()
+    code = TONGUE_ALIASES.get(key, raw.upper())
     return code if code in _CANONICAL_TONGUES else None
 
 
@@ -846,6 +863,323 @@ def cmd_describe(args: argparse.Namespace) -> int:
     print(f"  🤚 feel  ▸ {sig['feel']}")
     print(f"  🎯 taste ▸ {sig['taste']}")
     print(f"  🌊 flow  ▸ {sig['flow']}")
+    return 0
+
+
+CHEM_CLAIM_BOUNDARY = (
+    "Computational chemistry and semantic-structure modeling only; not wet-lab "
+    "synthesis, biological efficacy, dosing, or physical-world chemical advice."
+)
+
+CHEM_SEMANTIC_MAP = {
+    "parse": "molecular decomposition / structure perception",
+    "decompose": "molecular decomposition / structure perception",
+    "atomize": "molecular decomposition / structure perception",
+    "compare": "similarity / fingerprint / spectral matching",
+    "release": "dissociation / emission / product release",
+    "bind": "bond formation / complex formation",
+    "merge": "bond formation / complex formation",
+    "authorize": "ionization / activation threshold",
+    "deny": "inhibitor / containment",
+    "quarantine": "inhibitor / containment",
+    "compile": "reaction pathway realization",
+    "rollback": "reverse reaction / repair pathway",
+    "route": "reaction network / transport path",
+    "hash": "spectroscopy / fingerprint",
+    "seal": "spectroscopy / fingerprint",
+}
+
+
+def _chem_tokens(text: str) -> List[str]:
+    return re.findall(r"[A-Za-z0-9_']+|[^\s]", text)
+
+
+def _chem_round(value: Any, digits: int = 6) -> float:
+    return round(float(value), digits)
+
+
+def _element_payload(element: Any) -> Dict[str, Any]:
+    return {
+        "symbol": element.symbol,
+        "Z": element.Z,
+        "group": element.group,
+        "period": element.period,
+        "valence": element.valence,
+        "electronegativity": _chem_round(element.electronegativity),
+        "witness_stable": element.witness_stable,
+    }
+
+
+def _atomic_state_payload(state: Any) -> Dict[str, Any]:
+    return {
+        "token": state.token,
+        "semantic_class": state.semantic_class,
+        "element": _element_payload(state.element),
+        "tau": state.tau.as_dict(),
+        "negative_state": state.negative_state,
+        "dual_state": state.dual_state,
+        "band_flag": state.band_flag,
+        "resilience": _chem_round(state.resilience),
+        "adaptivity": _chem_round(state.adaptivity),
+        "trust_baseline": _chem_round(state.trust_baseline),
+    }
+
+
+def _fusion_payload(result: Any) -> Dict[str, Any]:
+    return {
+        "tau_hat": result.tau_hat,
+        "reconstruction_votes": {
+            tongue: _chem_round(vote) for tongue, vote in result.reconstruction_votes.items()
+        },
+        "signed_edge_tension": _chem_round(result.signed_edge_tension),
+        "coherence_penalty": _chem_round(result.coherence_penalty),
+        "valence_pressure": _chem_round(result.valence_pressure),
+    }
+
+
+def cmd_chem_atomize(args: argparse.Namespace) -> int:
+    from python.scbe.atomic_tokenization import map_token_to_atomic_state
+    from python.scbe.chemical_fusion import fuse_atomic_states
+
+    text = _arg_or_stdin(getattr(args, "text", None))
+    if not text:
+        print('usage: scbe chem atomize "<text>"   (or pipe via stdin)', file=sys.stderr)
+        return 2
+    tokens = _chem_tokens(text)
+    if not tokens:
+        print("error: no tokens found", file=sys.stderr)
+        return 2
+
+    states = [
+        map_token_to_atomic_state(
+            token,
+            language=getattr(args, "language", None),
+            context_class=getattr(args, "context", None),
+        )
+        for token in tokens
+    ]
+    fusion = fuse_atomic_states(states)
+    payload = {
+        "schema_version": "scbe_chem_atomize_v1",
+        "text": text,
+        "tokens": tokens,
+        "token_count": len(tokens),
+        "states": [_atomic_state_payload(state) for state in states],
+        "fusion": _fusion_payload(fusion),
+        "claim_boundary": CHEM_CLAIM_BOUNDARY,
+    }
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+        return 0
+
+    print(f"chem atomize: {len(tokens)} token(s)")
+    print("  tokens:", ", ".join(tokens))
+    print("  tau_hat:", payload["fusion"]["tau_hat"])
+    print("  elements:", " ".join(state["element"]["symbol"] for state in payload["states"]))
+    print(f"  boundary: {CHEM_CLAIM_BOUNDARY}")
+    return 0
+
+
+def cmd_chem_bonds(args: argparse.Namespace) -> int:
+    from src.governance.chemical_bonds import TONGUES, TongueMolecule
+
+    report = TongueMolecule(list(args.coords)).report()
+    payload = {
+        "schema_version": "scbe_chem_bonds_v1",
+        "tongues": list(TONGUES),
+        "coords": [_chem_round(value) for value in args.coords],
+        "bonds": [
+            {
+                "name": bond.name,
+                "z": {"real": _chem_round(bond.z.real), "imag": _chem_round(bond.z.imag)},
+                "energy": _chem_round(bond.energy),
+                "angle_deg": _chem_round(bond.angle_deg),
+                "dissociation": _chem_round(bond.dissociation),
+                "broken": bond.broken,
+            }
+            for bond in report.bonds
+        ],
+        "total_energy": _chem_round(report.total_energy),
+        "stability": _chem_round(report.stability),
+        "fuzzy": {
+            "safe": _chem_round(report.fuzzy_safe),
+            "cautious": _chem_round(report.fuzzy_cautious),
+            "suspicious": _chem_round(report.fuzzy_suspicious),
+            "hostile": _chem_round(report.fuzzy_hostile),
+        },
+        "broken_count": report.broken_count,
+        "dominant_class": report.dominant_class,
+        "claim_boundary": CHEM_CLAIM_BOUNDARY,
+    }
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+        return 0
+
+    print(f"chem bonds: {payload['dominant_class']} stability={payload['stability']}")
+    for bond in payload["bonds"]:
+        status = "broken" if bond["broken"] else "bound"
+        print(f"  {bond['name']}: energy={bond['energy']} angle={bond['angle_deg']} {status}")
+    print(f"  boundary: {CHEM_CLAIM_BOUNDARY}")
+    return 0
+
+
+def cmd_chem_convert(args: argparse.Namespace) -> int:
+    smiles = _arg_or_stdin(getattr(args, "smiles", None))
+    if not smiles:
+        print('usage: scbe chem convert --smiles "CCO" --to can', file=sys.stderr)
+        return 2
+
+    out_format = args.to.lower()
+    engine = args.engine.lower()
+    payload: Dict[str, Any] = {
+        "schema_version": "scbe_chem_convert_v1",
+        "input_format": "smiles",
+        "input": smiles,
+        "output_format": out_format,
+        "engine": engine,
+        "claim_boundary": CHEM_CLAIM_BOUNDARY,
+    }
+
+    if engine == "rdkit":
+        from rdkit import Chem
+        from rdkit.Chem import Descriptors
+
+        mol = Chem.MolFromSmiles(smiles)
+        if mol is None:
+            print(f"error: RDKit could not parse SMILES: {smiles}", file=sys.stderr)
+            return 2
+        if out_format in {"can", "canonical", "smi", "smiles"}:
+            output = Chem.MolToSmiles(mol, canonical=True)
+            normalized_format = "canonical_smiles"
+        elif out_format == "mol":
+            output = Chem.MolToMolBlock(mol)
+            normalized_format = "mol"
+        else:
+            print(f"error: RDKit output format not supported here: {out_format}", file=sys.stderr)
+            return 2
+        payload.update(
+            {
+                "output": output,
+                "normalized_output_format": normalized_format,
+                "descriptors": {"mol_wt": _chem_round(Descriptors.MolWt(mol), 6)},
+            }
+        )
+    elif engine == "openbabel":
+        from openbabel import pybel
+
+        try:
+            mol = pybel.readstring("smi", smiles)
+            output = mol.write(out_format).strip()
+        except Exception as exc:
+            print(f"error: Open Babel conversion failed: {exc}", file=sys.stderr)
+            return 2
+        payload.update({"output": output, "normalized_output_format": out_format})
+    else:
+        print(f"error: unsupported engine: {engine}", file=sys.stderr)
+        return 2
+
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+        return 0
+    print(payload["output"])
+    return 0
+
+
+def cmd_chem_orbitals(args: argparse.Namespace) -> int:
+    from src.geoseed.orbital_model import orbital_summary
+
+    payload = orbital_summary(include_profiles=getattr(args, "profiles", False))
+    payload["claim_boundary"] = CHEM_CLAIM_BOUNDARY
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+        return 0
+
+    print(f"chem orbitals: {payload['manifold']} total_m_states={payload['total_m_states']}")
+    for orbital in payload["orbitals"]:
+        print(
+            f"  {orbital['abbr']} {orbital['orbital_name']}: "
+            f"l={orbital['l']} r={orbital['poincare_r']}"
+        )
+    print(f"  boundary: {CHEM_CLAIM_BOUNDARY}")
+    return 0
+
+
+def cmd_chem_benchmark(args: argparse.Namespace) -> int:
+    from scripts.benchmark.chemistry_cli_capability import OUT_DIR, build_report
+
+    out_dir = Path(getattr(args, "out_dir", None) or OUT_DIR)
+    report = build_report(
+        out_dir=out_dir,
+        run_tests=not getattr(args, "inventory_only", False),
+        timeout_s=getattr(args, "timeout", 180),
+    )
+    report["claim_boundary"] = CHEM_CLAIM_BOUNDARY
+    if getattr(args, "json_output", False):
+        print(json.dumps(report))
+        return 0
+
+    print(f"chem benchmark: {report['decision']}")
+    print(
+        f"  probes={report['runtime_probes']['passed']}/{report['runtime_probes']['total']} "
+        f"capability_files={report['capability_files']['present']}/{report['capability_files']['total']}"
+    )
+    print(f"  proof: {report['private_proof']['present']}/{report['private_proof']['total']} private files")
+    print(f"  artifact: {report['artifact']}")
+    print(f"  boundary: {CHEM_CLAIM_BOUNDARY}")
+    return 0
+
+
+def cmd_chem_industry_benchmark(args: argparse.Namespace) -> int:
+    from scripts.benchmark.chemistry_industry_benchmark import OUT_DIR, build_report
+
+    out_dir = Path(getattr(args, "out_dir", None) or OUT_DIR)
+    report = build_report(
+        out_dir=out_dir,
+        timeout_s=getattr(args, "timeout", 30),
+        live_pubchem=getattr(args, "live_pubchem", False),
+    )
+    if getattr(args, "json_output", False):
+        print(json.dumps(report))
+        return 0
+
+    summary = report["summary"]
+    print(f"chem industry-benchmark: {summary['decision']}")
+    print(f"  scbe={summary['scbe_probe_status']}")
+    installed = summary["scientific_baselines_installed"] or ["none"]
+    passing = summary["scientific_baselines_passing"] or ["none"]
+    print(f"  scientific_installed={','.join(installed)}")
+    print(f"  scientific_passing={','.join(passing)}")
+    print(f"  artifact: {out_dir / 'LATEST.md'}")
+    print(f"  boundary: {CHEM_CLAIM_BOUNDARY}")
+    return 0
+
+
+def cmd_chem_map_semantics(args: argparse.Namespace) -> int:
+    operation = args.operation.lower().strip()
+    analogue = args.chemical_analogue.strip()
+    expected = CHEM_SEMANTIC_MAP.get(operation)
+    analogue_norm = analogue.lower()
+    accepted = expected is not None
+    shared = accepted and any(part.strip() in analogue_norm for part in expected.split("/"))
+    payload = {
+        "schema_version": "scbe_chem_semantic_map_v1",
+        "operation": operation,
+        "chemical_analogue": analogue,
+        "expected_analogue": expected,
+        "accepted": accepted,
+        "line_type": "shared_operation" if shared else "declared_analogy",
+        "claim_boundary": CHEM_CLAIM_BOUNDARY,
+    }
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+        return 0
+
+    status = "accepted" if accepted else "unmapped"
+    print(f"chem map-semantics: {operation} -> {analogue} ({status})")
+    if expected:
+        print(f"  expected lane: {expected}")
+    print(f"  line_type: {payload['line_type']}")
+    print(f"  boundary: {CHEM_CLAIM_BOUNDARY}")
     return 0
 
 
@@ -1373,7 +1707,7 @@ def _handle_agent_command(argv: List[str]) -> int:
 # CLI builder
 # ═══════════════════════════════════════════════════════════════
 
-ALL_TONGUES = list(_CANONICAL_TONGUES.keys()) + [t.lower() for t in _CANONICAL_TONGUES]
+ALL_TONGUES = list(_CANONICAL_TONGUES.keys()) + [t.lower() for t in _CANONICAL_TONGUES] + sorted(TONGUE_ALIASES)
 
 
 def build_cli() -> argparse.ArgumentParser:
@@ -1414,6 +1748,8 @@ Legacy (backward compat):
   scbe pollypad init --agent-id rex --name "Rex"
   scbe run --language python --code "print('SCBE')"
   scbe flow plan --task "improve CLI swarm"
+  scbe how do I encode fox in draumric?
+  scbe what is L12?
         """,
     )
     sub = p.add_subparsers(dest="command")
@@ -1553,12 +1889,66 @@ Legacy (backward compat):
     ck.add_argument("--json", dest="json_output", action="store_true")
     ck.set_defaults(func=cmd_check)
 
-    ds = sub.add_parser("describe", aliases=["desc"], help='5-senses signature: see/hear/feel ("scbe describe \"...\"")')
+    ds = sub.add_parser(
+        "describe",
+        aliases=["desc"],
+        help='5-senses signature: see/hear/feel ("scbe describe \"...\"")',
+    )
     ds.add_argument("text", nargs="?", help="text to describe (or pipe via stdin)")
     ds.add_argument("--json", dest="json_output", action="store_true")
     ds.set_defaults(func=cmd_describe)
 
     # ─── top-level ───
+    chem = sub.add_parser("chem", help="Symbolic chemistry and STISTA proof lane")
+    chem_sub = chem.add_subparsers(dest="chem_cmd")
+
+    ca = chem_sub.add_parser("atomize", help='Map text to atomic token states ("scbe chem atomize ...")')
+    ca.add_argument("text", nargs="?", help="text to atomize (or pipe via stdin)")
+    ca.add_argument("--language", help="optional language code for token-class overrides")
+    ca.add_argument("--context", help="optional context class, e.g. operator, timeline, safety")
+    ca.add_argument("--json", dest="json_output", action="store_true")
+    ca.set_defaults(func=cmd_chem_atomize)
+
+    cb = chem_sub.add_parser("bonds", help="Analyze the 6 Sacred Tongue coordinate bonds")
+    cb.add_argument("coords", nargs=6, type=float, metavar="coord")
+    cb.add_argument("--json", dest="json_output", action="store_true")
+    cb.set_defaults(func=cmd_chem_bonds)
+
+    cc = chem_sub.add_parser("convert", help="Convert SMILES with RDKit or Open Babel bindings")
+    cc.add_argument("--smiles", help="SMILES input (or pipe via stdin)")
+    cc.add_argument("--to", default="can", help="output format: can, smi, mol, sdf")
+    cc.add_argument("--engine", choices=["rdkit", "openbabel"], default="rdkit")
+    cc.add_argument("--json", dest="json_output", action="store_true")
+    cc.set_defaults(func=cmd_chem_convert)
+
+    co = chem_sub.add_parser("orbitals", help="Summarize GeoSeed phi-shell orbitals")
+    co.add_argument("--profiles", action="store_true", help="include sampled radial density profiles")
+    co.add_argument("--json", dest="json_output", action="store_true")
+    co.set_defaults(func=cmd_chem_orbitals)
+
+    cm = chem_sub.add_parser("map-semantics", help="Map SCBE operations to chemistry analogues")
+    cm.add_argument("--operation", required=True, help="SCBE operation, e.g. release, bind, compare")
+    cm.add_argument("--chemical-analogue", required=True, help="chemistry analogue to classify")
+    cm.add_argument("--json", dest="json_output", action="store_true")
+    cm.set_defaults(func=cmd_chem_map_semantics)
+
+    cbench = chem_sub.add_parser("benchmark", help="Run or inventory the chemistry capability benchmark")
+    cbench.add_argument("--inventory-only", action="store_true", help="skip pytest and report inventory/probes")
+    cbench.add_argument("--timeout", type=int, default=180)
+    cbench.add_argument("--out-dir", help="artifact output directory")
+    cbench.add_argument("--json", dest="json_output", action="store_true")
+    cbench.set_defaults(func=cmd_chem_benchmark)
+
+    cib = chem_sub.add_parser(
+        "industry-benchmark",
+        help="Compare SCBE chem against RDKit, Open Babel, and PubChem baselines",
+    )
+    cib.add_argument("--timeout", type=int, default=30)
+    cib.add_argument("--out-dir", help="artifact output directory")
+    cib.add_argument("--live-pubchem", action="store_true", help="run a live PubChem PUG-REST probe")
+    cib.add_argument("--json", dest="json_output", action="store_true")
+    cib.set_defaults(func=cmd_chem_industry_benchmark)
+
     sub.add_parser("menu", help="Interactive home screen (default when run with no args)")
     st = sub.add_parser("status", aliases=["st"], help="Project status")
     st.add_argument("--json", dest="json_output", action="store_true")
@@ -1765,6 +2155,81 @@ def _known_commands(cli: argparse.ArgumentParser) -> set:
     return cmds
 
 
+def _natural_command_args(prompt: str) -> Optional[List[str]]:
+    """Compile high-confidence natural-language requests to local CLI args.
+
+    This keeps the "commands or plain English" surface fast and reliable for
+    things SCBE can already do locally. Low-confidence prompts still go to the
+    selected AI backend.
+    """
+    raw = prompt.strip()
+    lowered = raw.lower().strip()
+    lowered = re.sub(r"\s+", " ", lowered)
+    wants_json = bool(re.search(r"\b(json|machine readable|machine-readable)\b|--json", lowered))
+    lowered = lowered.replace("--json", "").strip()
+
+    tongue_names = "|".join(sorted((re.escape(k) for k in TONGUE_ALIASES), key=len, reverse=True))
+
+    def clean_text(text: str) -> str:
+        text = text.strip(" \t\r\n'\"?.!,;:")
+        text = re.sub(r"^(?:the\s+)?(?:word|text|string|phrase)\s+", "", text, flags=re.I)
+        return text.strip(" \t\r\n'\"?.!,;:")
+
+    def with_json(args: List[str]) -> List[str]:
+        return [*args, "--json"] if wants_json else args
+
+    encode_match = re.search(
+        rf"\b(?:encode|translate|convert|speak|say)\s+(?P<text>.+?)\s+"
+        rf"(?:in|into|to|as)\s+(?P<tongue>{tongue_names})\b",
+        lowered,
+    )
+    if encode_match:
+        tongue = _resolve_tongue(encode_match.group("tongue"))
+        text = clean_text(encode_match.group("text"))
+        if tongue and text:
+            return with_json(["enc", tongue.lower(), text])
+
+    decode_match = re.search(
+        rf"\b(?:decode|read)\s+(?P<text>.+?)\s+"
+        rf"(?:from|in|as)\s+(?P<tongue>{tongue_names})\b",
+        lowered,
+    )
+    if decode_match:
+        tongue = _resolve_tongue(decode_match.group("tongue"))
+        text = clean_text(decode_match.group("text"))
+        if tongue and text:
+            return with_json(["dec", tongue.lower(), text])
+
+    describe_match = re.search(r"\b(?:describe|signature|sense|senses)\s+(?P<text>.+)$", lowered)
+    if describe_match:
+        text = clean_text(describe_match.group("text"))
+        if text:
+            return with_json(["describe", text])
+
+    score_match = re.search(r"\b(?:score|check|gate|scan)\s+(?P<text>.+)$", lowered)
+    if score_match and not re.search(r"\b(file|repo|status|doctor)\b", lowered):
+        text = clean_text(score_match.group("text"))
+        if text:
+            return with_json(["score", text])
+
+    explain_match = re.search(
+        r"\b(?:explain|what is|what's|tell me about)\s+"
+        r"(?P<target>l(?:ayer)?\s*\d{1,2}|harmonic|poincare|breathing)\b",
+        lowered,
+    )
+    if explain_match:
+        target = explain_match.group("target").replace(" ", "")
+        return with_json(["explain", target])
+
+    if re.search(r"\b(status|health)\b", lowered):
+        return with_json(["status"])
+
+    if re.search(r"\b(self\s*test|selftest|test install|verify install)\b", lowered):
+        return ["selftest"]
+
+    return None
+
+
 def main() -> int:
     _enable_utf8_console()
 
@@ -1780,6 +2245,9 @@ def main() -> int:
     first = sys.argv[1]
     if not first.startswith("-") and first not in _known_commands(build_cli()):
         prompt = " ".join(sys.argv[1:])
+        compiled = _natural_command_args(prompt)
+        if compiled:
+            return _dispatch_scbe_args(compiled)
         return cmd_ask(argparse.Namespace(prompt=prompt, backend=None, model=None, json_output=False))
 
     if sys.argv[1] == "cli":
