@@ -512,16 +512,16 @@ def ai_review(filepath: str) -> Dict[str, Any]:
     content = p.read_text(encoding="utf-8", errors="replace")
     lines = content.split("\n")
 
-    blank = sum(1 for l in lines if not l.strip())
-    comments = sum(1 for l in lines if l.strip().startswith(("#", "//", "*", "/*")))
+    blank = sum(1 for ln in lines if not ln.strip())
+    comments = sum(1 for ln in lines if ln.strip().startswith(("#", "//", "*", "/*")))
     code_lines = len(lines) - blank - comments
 
     if p.suffix in (".ts", ".js"):
-        funcs = sum(1 for l in lines if "function " in l or "=> {" in l)
-        classes = sum(1 for l in lines if l.strip().startswith(("class ", "export class")))
+        funcs = sum(1 for ln in lines if "function " in ln or "=> {" in ln)
+        classes = sum(1 for ln in lines if ln.strip().startswith(("class ", "export class")))
     else:
-        funcs = sum(1 for l in lines if l.strip().startswith("def "))
-        classes = sum(1 for l in lines if l.strip().startswith("class "))
+        funcs = sum(1 for ln in lines if ln.strip().startswith("def "))
+        classes = sum(1 for ln in lines if ln.strip().startswith("class "))
 
     max_indent = max((len(line) - len(line.lstrip()) for line in lines if line.strip()), default=0)
 
@@ -984,6 +984,65 @@ def cmd_dec(args: argparse.Namespace) -> int:
 
 
 # ── describe: the 5-senses signature of any input ──
+def _read_text_file(path: str) -> Tuple[Optional[str], Optional[str]]:
+    p = Path(path)
+    if not p.exists():
+        return None, f"file not found: {path}"
+    if not p.is_file():
+        return None, f"not a file: {path}"
+    try:
+        return p.read_text(encoding="utf-8"), None
+    except UnicodeDecodeError:
+        return p.read_text(encoding="utf-8", errors="replace"), None
+
+
+def cmd_encode_code(args: argparse.Namespace) -> int:
+    source, error = _read_text_file(args.file)
+    if error:
+        print(error, file=sys.stderr)
+        return 2
+    try:
+        from python.scbe.ast_cube_encoder import encode
+
+        encoded = encode(source or "")
+    except SyntaxError as e:
+        print(f"python syntax error: {e}", file=sys.stderr)
+        return 1
+
+    if getattr(args, "json_output", False):
+        print(json.dumps(encoded))
+    else:
+        print(f"AST cube matrix: {encoded['shape'][0]} nodes x {encoded['shape'][1]} dims")
+        for node in encoded["nodes"][: getattr(args, "limit", 8)]:
+            print(f"  {node['type']:<15} {node['token']:<16} {node['vector']}")
+    return 0
+
+
+def cmd_stereo_code(args: argparse.Namespace) -> int:
+    source, error = _read_text_file(args.file)
+    if error:
+        print(error, file=sys.stderr)
+        return 2
+    try:
+        from python.scbe.cube_stereo import stereo_encode
+
+        stereo = stereo_encode(source or "")
+    except SyntaxError as e:
+        print(f"python syntax error: {e}", file=sys.stderr)
+        return 1
+
+    if getattr(args, "json_output", False):
+        print(json.dumps(stereo))
+    else:
+        print(
+            f"Cube stereo: {stereo['node_count']} nodes x {stereo['stereo_width']} dims "
+            f"(lock={stereo['lock_ratio']:.3f})"
+        )
+        for token in stereo["tokens"][: getattr(args, "limit", 8)]:
+            print(f"  {token['node_type']:<15} {token['token']:<16} {token['stereo_vector']}")
+    return 0
+
+
 _PHI = (1 + 5 ** 0.5) / 2
 _TONGUE_HZ = {code: 440.0 * _PHI ** i for i, code in enumerate(["KO", "AV", "RU", "CA", "UM", "DR"])}
 _NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
@@ -2212,12 +2271,28 @@ def _handle_agent_command(argv: List[str]) -> int:
 ALL_TONGUES = list(_CANONICAL_TONGUES.keys()) + [t.lower() for t in _CANONICAL_TONGUES] + sorted(TONGUE_ALIASES)
 
 
+_CLI_PARSER: Optional[argparse.ArgumentParser] = None
+
+
 def build_cli() -> argparse.ArgumentParser:
+    global _CLI_PARSER
+    if _CLI_PARSER is not None:
+        return _CLI_PARSER
     p = argparse.ArgumentParser(
         prog="scbe",
         description="SCBE-AETHERMOORE — Unified CLI for crypto, governance, and AI safety",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
+Commands by category:
+  Crypto/Tongues  enc · dec · koraelin/avali/runethic/cassisivadan/umbroth/draumric · tongues
+  Governance      score (s) · explain (x) · check (c) · describe · pipeline
+  AI              ask (a) · do · chat · ai · self-improve
+  Notes/Vault     find (f) · open · vault · recent · docs
+  Files           move · del · push · undo
+  Chemistry       chem (atomize/bonds/convert/orbitals)
+  System          status (st) · health · doctor · selftest · memory
+  (tip: run `scbe <command> -h` for details, or just type plain English)
+
 Examples:
   scbe tongues encode --tongue ko --text "hello"
   scbe tongues decode --tongue ko --as-text --text "nav'or nav'uu"
@@ -2255,7 +2330,8 @@ Legacy (backward compat):
   scbe what is L12?
         """,
     )
-    sub = p.add_subparsers(dest="command")
+    p.add_argument("-V", "--version", action="version", version=f"scbe {VERSION}")
+    sub = p.add_subparsers(dest="command", metavar="<command>")
 
     # ─── tongues ───
     tongues = sub.add_parser("tongues", help="Sacred Tongue tokenization")
@@ -2371,6 +2447,25 @@ Legacy (backward compat):
     de.set_defaults(func=cmd_dec)
 
     # ─── Sacred Tongues as verbs — full names, no abbreviation ───
+    ec = sub.add_parser(
+        "encode-code",
+        aliases=["code-matrix"],
+        help='Encode a Python file as AST cube vectors ("scbe encode-code file.py")',
+    )
+    ec.add_argument("file", help="Python source file")
+    ec.add_argument("--json", dest="json_output", action="store_true")
+    ec.add_argument("--limit", type=int, default=8, help="rows to show in text mode")
+    ec.set_defaults(func=cmd_encode_code)
+
+    stc = sub.add_parser(
+        "stereo",
+        help='Encode a Python file as cube-stereo vectors ("scbe stereo file.py")',
+    )
+    stc.add_argument("file", help="Python source file")
+    stc.add_argument("--json", dest="json_output", action="store_true")
+    stc.add_argument("--limit", type=int, default=8, help="rows to show in text mode")
+    stc.set_defaults(func=cmd_stereo_code)
+
     tongue_verbs = {
         "koraelin": "ko", "avali": "av", "runethic": "ru",
         "cassisivadan": "ca", "umbroth": "um", "draumric": "dr",
@@ -2526,6 +2621,7 @@ Legacy (backward compat):
     for cmd in LEGACY_SCRIPTS:
         sub.add_parser(cmd, help=f"(legacy) Launch {cmd}")
 
+    _CLI_PARSER = p
     return p
 
 
@@ -2549,6 +2645,7 @@ def _banner() -> str:
     out += ["║" + ln.ljust(w) + "║" for ln in lines]
     out.append("╚" + "═" * w + "╝")
     return "\n".join(out)
+
 
 MENU = """\
   1) System status            — sources, tongues, pipeline
