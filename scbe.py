@@ -1621,8 +1621,9 @@ MENU = """\
   d) Describe                  — see / hear / feel any input
   0) Quit
 
-  tip ▸ skip the menu — type commands directly:
-        scbe ask "question"   scbe score "text"   scbe enc ko hi   scbe x L12
+  tip ▸ skip the menu — type a command OR just plain English:
+        scbe describe "text"   scbe draumric hello   scbe ask "question"
+        scbe how do I encode a word?     ← unknown input goes to the AI
         add --json to any command for machine-readable output
 """
 
@@ -1755,6 +1756,15 @@ def _enable_utf8_console() -> None:
             pass
 
 
+def _known_commands(cli: argparse.ArgumentParser) -> set:
+    """All registered subcommand names + aliases."""
+    cmds: set = set()
+    for action in cli._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            cmds.update(action.choices.keys())
+    return cmds
+
+
 def main() -> int:
     _enable_utf8_console()
 
@@ -1763,6 +1773,14 @@ def main() -> int:
 
     if sys.argv[1] in ("menu", "app", "home"):
         return interactive_menu()
+
+    # Natural-language fallback: if the first word isn't a known command (and
+    # isn't a flag), treat the whole line as a question to the AI. Type
+    # commands OR plain English — same prompt serves humans and agents.
+    first = sys.argv[1]
+    if not first.startswith("-") and first not in _known_commands(build_cli()):
+        prompt = " ".join(sys.argv[1:])
+        return cmd_ask(argparse.Namespace(prompt=prompt, backend=None, model=None, json_output=False))
 
     if sys.argv[1] == "cli":
         return _handle_cli_command(sys.argv)
