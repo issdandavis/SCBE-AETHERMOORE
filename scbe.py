@@ -1358,14 +1358,36 @@ def _render_history(history: List[Tuple[str, str]], new_q: str) -> str:
     return "\n".join(lines)
 
 
+_ANSWER_ONLY = (
+    "Answer in plain text only. Do not run commands, edit files, or use tools — "
+    "just respond directly and concisely.\n\n"
+)
+
+
 def cmd_ask(args: argparse.Namespace) -> int:
     prompt = _arg_or_stdin(getattr(args, "prompt", None))
     if not prompt:
         print('usage: scbe ask "<question>"   (or pipe text via stdin)', file=sys.stderr)
         return 2
-    answer, backend = ai_ask(prompt, getattr(args, "backend", None), getattr(args, "model", None))
+    # ask = explain, never act — wrap so agentic backends just answer.
+    answer, backend = ai_ask(_ANSWER_ONLY + prompt, getattr(args, "backend", None),
+                             getattr(args, "model", None))
     if getattr(args, "json_output", False):
         print(json.dumps({"prompt": prompt, "backend": backend, "answer": answer}))
+    else:
+        print(answer)
+    return 0
+
+
+def cmd_do(args: argparse.Namespace) -> int:
+    """do = act. Hands the task straight to an agentic backend (claude/codex)."""
+    task = _arg_or_stdin(getattr(args, "task", None))
+    if not task:
+        print('usage: scbe do "<task>"   (or pipe via stdin)', file=sys.stderr)
+        return 2
+    answer, backend = ai_ask(task, getattr(args, "backend", None), getattr(args, "model", None))
+    if getattr(args, "json_output", False):
+        print(json.dumps({"task": task, "backend": backend, "result": answer}))
     else:
         print(answer)
     return 0
@@ -1389,7 +1411,7 @@ def cmd_chat(args: argparse.Namespace) -> int:
             return 0
         if not q:
             continue
-        answer, _ = ai_ask(_render_history(history, q), backend, model)
+        answer, _ = ai_ask(_ANSWER_ONLY + _render_history(history, q), backend, model)
         print(f"ai  ▸ {answer}\n")
         history.append(("you", q))
         history.append(("ai", answer))
@@ -1404,6 +1426,14 @@ def cmd_chat(args: argparse.Namespace) -> int:
 # ═══════════════════════════════════════════════════════════════
 
 TRASH_DIR = Path.home() / ".scbe-trash"
+JOURNAL = TRASH_DIR / ".journal.jsonl"
+
+
+def _journal_append(entry: Dict[str, str]) -> None:
+    """Record a reversible action so `scbe undo` can replay it backwards."""
+    TRASH_DIR.mkdir(exist_ok=True)
+    with open(JOURNAL, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry) + "\n")
 
 
 def _human(n: float) -> str:
@@ -1437,7 +1467,9 @@ def cmd_move(args: argparse.Namespace) -> int:
             print("cancelled")
             return 0
     target.parent.mkdir(parents=True, exist_ok=True)
+    origin = str(src.resolve())
     shutil.move(str(src), str(target))
+    _journal_append({"action": "move", "from": origin, "to": str(target.resolve())})
     print(f"moved {src} -> {target}")
     return 0
 
@@ -1462,14 +1494,16 @@ def cmd_del(args: argparse.Namespace) -> int:
         return 0
     TRASH_DIR.mkdir(exist_ok=True)
     for p in existing:
+        origin = str(p.resolve())
         dest = TRASH_DIR / p.name
         n = 1
         while dest.exists():  # never clobber an existing trashed item
             dest = TRASH_DIR / f"{p.stem}_{n}{p.suffix}"
             n += 1
         shutil.move(str(p), str(dest))
+        _journal_append({"action": "trash", "from": str(dest), "to": origin})
         print(f"trashed {p.name} -> {dest}")
-    print(f"recover anything from {TRASH_DIR}")
+    print(f"recover anything from {TRASH_DIR}   (scbe undo restores the last)")
     return 0
 
 
@@ -1484,6 +1518,35 @@ def cmd_push(args: argparse.Namespace) -> int:
     subprocess.run(["git", "-C", repo, "add", "-A"], check=False)
     subprocess.run(["git", "-C", repo, "commit", "-m", msg], check=False)
     return subprocess.run(["git", "-C", repo, "push"], check=False).returncode
+
+
+def cmd_undo(_args: argparse.Namespace) -> int:
+    """Past tense: reverse the most recent move or guided delete."""
+    if not JOURNAL.exists():
+        print("nothing to undo")
+        return 0
+    lines = [ln for ln in JOURNAL.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    if not lines:
+        print("nothing to undo")
+        return 0
+    entry = json.loads(lines[-1])
+    action = entry.get("action")
+    if action == "move":
+        now, back = entry["to"], entry["from"]
+    elif action == "trash":
+        now, back = entry["from"], entry["to"]
+    else:
+        print(f"don't know how to undo '{action}'", file=sys.stderr)
+        return 1
+    try:
+        Path(back).parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(now, back)
+    except Exception as e:  # restore can fail if the file moved/changed
+        print(f"undo failed: {e}", file=sys.stderr)
+        return 1
+    print(f"undone: restored {back}")
+    JOURNAL.write_text("".join(ln + "\n" for ln in lines[:-1]), encoding="utf-8")
+    return 0
 
 
 def cmd_docs_scan(_args: argparse.Namespace) -> int:
@@ -1830,6 +1893,13 @@ Legacy (backward compat):
     ch.add_argument("--model")
     ch.set_defaults(func=cmd_chat)
 
+    do = sub.add_parser("do", help='Tell the AI to DO a task — agentic ("scbe do \"...\"")')
+    do.add_argument("task", nargs="?", help="task (or pipe via stdin)")
+    do.add_argument("--backend", choices=list(AI_BACKENDS))
+    do.add_argument("--model")
+    do.add_argument("--json", dest="json_output", action="store_true")
+    do.set_defaults(func=cmd_do)
+
     sc = sub.add_parser("score", aliases=["s"], help='Score text through the pipeline ("scbe s <text>")')
     sc.add_argument("text", nargs="?", help="text to score (or pipe via stdin)")
     sc.add_argument("--json", dest="json_output", action="store_true", help="machine-readable output")
@@ -1878,6 +1948,9 @@ Legacy (backward compat):
     pu.add_argument("message", nargs="?", help="commit message")
     pu.add_argument("-y", "--yes", action="store_true", help="skip the confirm prompt")
     pu.set_defaults(func=cmd_push)
+
+    un = sub.add_parser("undo", help="Reverse the last move/delete (past tense)")
+    un.set_defaults(func=cmd_undo)
 
     xp = sub.add_parser("explain", aliases=["x"], help='Explain a pipeline layer ("scbe x L12")')
     xp.add_argument("target", help="layer (L12) or concept (harmonic, breathing)")
