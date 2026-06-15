@@ -1043,6 +1043,74 @@ def cmd_stereo_code(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_lookup(args: argparse.Namespace) -> int:
+    """Cross-language Rosetta lookup for a coding concept."""
+    from python.scbe.cross_lang import lookup, concepts, grade, LANGUAGES
+    concept = getattr(args, "concept", None)
+    if not concept:
+        print("concepts:  " + ", ".join(concepts()))
+        print("languages: " + ", ".join(LANGUAGES))
+        return 0
+    check = getattr(args, "check", None)
+    if check:
+        r = grade(concept, check[0], check[1])
+        if getattr(args, "json_output", False):
+            print(json.dumps(r))
+        elif not r.get("ok"):
+            print(r["error"], file=sys.stderr)
+            return 1
+        else:
+            print(f"{'CORRECT' if r['correct'] else 'wrong'}  (expected: {r['expected']})")
+        return 0
+    row = lookup(concept)
+    if row is None:
+        print(f"unknown concept '{concept}' — try: {', '.join(concepts())}", file=sys.stderr)
+        return 1
+    lang = getattr(args, "lang", None)
+    if lang:
+        print(row.get(lang.strip().lower(), f"(no {lang} for {concept})"))
+        return 0
+    if getattr(args, "json_output", False):
+        print(json.dumps({"concept": concept, "row": row}))
+        return 0
+    print(f"{concept}:")
+    for lng, code in row.items():
+        print(f"  {lng:<11} {code}")
+    return 0
+
+
+def cmd_game(args: argparse.Namespace) -> int:
+    """Cross-compile mini-game: translate a concept from one language to another."""
+    from python.scbe.cross_lang import challenges, grade, ROSETTA
+    g = getattr(args, "grade", None)
+    if g:
+        r = grade(g[0], g[1], g[2])
+        if getattr(args, "json_output", False):
+            print(json.dumps(r))
+        elif not r.get("ok"):
+            print(r["error"], file=sys.stderr)
+            return 1
+        else:
+            print(f"{'CORRECT' if r['correct'] else 'WRONG'}  (expected: {r['expected']})")
+        return 0
+    chs = challenges(rounds=getattr(args, "rounds", 5), seed=getattr(args, "seed", 0))
+    reveal = getattr(args, "reveal", False)
+    if getattr(args, "json_output", False):
+        if reveal:
+            for c in chs:
+                c["answer"] = ROSETTA[c["concept"]][c["to_lang"]]
+        print(json.dumps(chs))
+        return 0
+    print(f"cross-compile game — {len(chs)} rounds:")
+    for c in chs:
+        print(f"  [{c['round']}] {c['from_lang']}: {c['from_code']}   ->  write '{c['concept']}' in {c['to_lang']}")
+        if reveal:
+            print(f"        answer: {ROSETTA[c['concept']][c['to_lang']]}")
+    if not reveal:
+        print('\n  grade with:  scbe game --grade <concept> <lang> "<answer>"')
+    return 0
+
+
 _PHI = (1 + 5 ** 0.5) / 2
 _TONGUE_HZ = {code: 440.0 * _PHI ** i for i, code in enumerate(["KO", "AV", "RU", "CA", "UM", "DR"])}
 _NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
@@ -2466,6 +2534,21 @@ Legacy (backward compat):
     stc.add_argument("--limit", type=int, default=8, help="rows to show in text mode")
     stc.set_defaults(func=cmd_stereo_code)
 
+    lk = sub.add_parser("lookup", help='Cross-language Rosetta for a concept ("scbe lookup print")')
+    lk.add_argument("concept", nargs="?", help="coding concept (omit to list all)")
+    lk.add_argument("--lang", help="show only this language")
+    lk.add_argument("--check", nargs=2, metavar=("LANG", "ANSWER"), help="grade an answer")
+    lk.add_argument("--json", dest="json_output", action="store_true")
+    lk.set_defaults(func=cmd_lookup)
+
+    gm = sub.add_parser("game", help="Cross-compile mini-game for AI to test across languages")
+    gm.add_argument("--rounds", type=int, default=5)
+    gm.add_argument("--seed", type=int, default=0)
+    gm.add_argument("--reveal", action="store_true", help="include the answer key")
+    gm.add_argument("--grade", nargs=3, metavar=("CONCEPT", "LANG", "ANSWER"), help="grade an answer")
+    gm.add_argument("--json", dest="json_output", action="store_true")
+    gm.set_defaults(func=cmd_game)
+
     tongue_verbs = {
         "koraelin": "ko", "avali": "av", "runethic": "ru",
         "cassisivadan": "ca", "umbroth": "um", "draumric": "dr",
@@ -2904,6 +2987,16 @@ def main() -> int:
         compiled = _natural_command_args(prompt)
         if compiled:
             return _dispatch_scbe_args(compiled)
+        # Typo guard: a single bare token that closely matches a real command is
+        # almost certainly a mistype, not natural language — suggest it (exit 2)
+        # instead of burning an AI call. Multi-word input stays natural language.
+        if len(sys.argv) == 2:
+            matches = difflib.get_close_matches(first, sorted(_known_commands(build_cli())), n=3, cutoff=0.72)
+            if matches:
+                hint = matches[0] if len(matches) == 1 else ", ".join(matches)
+                print(f"scbe: unknown command '{first}'. Did you mean: {hint}?", file=sys.stderr)
+                print("Run 'scbe --help' for all commands, or 'scbe ask \"...\"' to ask the AI.", file=sys.stderr)
+                return 2
         return cmd_ask(argparse.Namespace(prompt=prompt, backend=None, model=None, json_output=False))
 
     if sys.argv[1] == "cli":
