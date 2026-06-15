@@ -14,23 +14,33 @@ This hits the four design principles at once:
   * tensor-native  — output is an (N x D) matrix, exactly what a matrix-field
                      / state-space (Mamba) model consumes with no embedding
                      lookup
-  * bijective      — the AST round-trips back to exact source (ast.unparse),
-                     and each node's token round-trips via its cube faces
+  * bijective      — a lossless source lane recovers exact text, while the
+                     AST lane recovers normalized code semantics
 
-Per-node vector D = [node_type_id, depth, KO, AV, RU, CA, UM, DR]
+Per-node vector D = [node_type_id, depth, KO, AV, RU, CA, UM, DR, loc_KO..loc_DR]
   - node_type_id : the structural role (FunctionDef, Call, Name, ...)
   - depth        : nesting depth in the tree
-  - KO..DR       : the 6 Sacred-Tongue trit values of the node's token
-                   (the matrix-native projection from atomic_tokenization)
+  - KO..DR       : AST-aware 6-face trits. These blend atomic_tokenization with
+                   code semantics so each face carries distinct signal.
+  - loc_KO..DR   : nested hyper-structure address
 """
 
 from __future__ import annotations
 
 import ast
+import base64
+import hashlib
+import sys
+from pathlib import Path
 from typing import Any, Dict, List
 
-from python.scbe.cube_token import CubeToken, TONGUES
-from python.scbe.elastic_bijective_hash import splitmix64
+try:
+    from python.scbe.cube_token import CubeToken, TONGUES
+    from python.scbe.elastic_bijective_hash import splitmix64
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    sys.path.append(str(Path(__file__).resolve().parents[2]))
+    from python.scbe.cube_token import CubeToken, TONGUES
+    from python.scbe.elastic_bijective_hash import splitmix64
 
 # fixed structural vocabulary -> stable ids (extend freely; 0 = unknown)
 _NODE_TYPES = [
@@ -50,6 +60,86 @@ _TYPE_ID = {t: i + 1 for i, t in enumerate(_NODE_TYPES)}
 # identical tokens at different locations get different vectors.
 LOCATION_DIMS = len(TONGUES)  # 6-D location, one axis per cube face
 VECTOR_DIM = 2 + len(TONGUES) + LOCATION_DIMS  # type_id, depth, 6 trits, 6 location
+
+FACE_RULES = {
+    # Kor'aelin: intent / executable flow.
+    "KO": {
+        "FunctionDef",
+        "AsyncFunctionDef",
+        "Return",
+        "Assign",
+        "AugAssign",
+        "AnnAssign",
+        "Call",
+    },
+    # Avali: interface / metadata / access surface.
+    "AV": {"arguments", "arg", "keyword", "Attribute", "Import", "ImportFrom", "Call"},
+    # Runethic: control / branch / governance.
+    "RU": {"If", "For", "While", "With", "Try", "Raise", "Compare", "BoolOp"},
+    # Cassisivadan: computation / indexing / numeric structure.
+    "CA": {
+        "BinOp",
+        "UnaryOp",
+        "Constant",
+        "Subscript",
+        "Slice",
+        "ListComp",
+        "DictComp",
+        "GeneratorExp",
+        "comprehension",
+    },
+    # Umbroth: scope / abstraction / binding boundary.
+    "UM": {"ClassDef", "Lambda", "FunctionDef", "AsyncFunctionDef", "Name", "Starred"},
+    # Draumric: declarative structure / data shape.
+    "DR": {"Module", "Expr", "List", "Tuple", "Dict", "Set", "JoinedStr", "Constant"},
+}
+
+NEGATIVE_FACE_RULES = {
+    "KO": {"Pass"},
+    "AV": {"Delete"},
+    "RU": {"Raise"},
+    "CA": set(),
+    "UM": {"Global", "Nonlocal"},
+    "DR": set(),
+}
+
+
+def _source_bijective_layer(src: str) -> Dict[str, Any]:
+    """Lossless side lane for edge cases ASTs cannot carry.
+
+    ASTs discard comments, exact whitespace, newline style, and formatting. The
+    matrix lane is for model-readable semantics; this lane is for exact source
+    reconstruction and tamper checks.
+    """
+
+    raw = src.encode("utf-8", errors="surrogatepass")
+    if "\r\n" in src:
+        newline_style = "crlf"
+    elif "\r" in src:
+        newline_style = "cr"
+    elif "\n" in src:
+        newline_style = "lf"
+    else:
+        newline_style = "none"
+    return {
+        "schema": "scbe_ast_source_bijection_v1",
+        "encoding": "utf-8-surrogatepass",
+        "source_utf8_b64": base64.b64encode(raw).decode("ascii"),
+        "source_sha256": hashlib.sha256(raw).hexdigest(),
+        "char_count": len(src),
+        "byte_count": len(raw),
+        "newline_style": newline_style,
+        "has_trailing_newline": src.endswith(("\n", "\r")),
+    }
+
+
+def _source_from_bijective_layer(layer: Dict[str, Any]) -> str:
+    raw = base64.b64decode(layer["source_utf8_b64"].encode("ascii"), validate=True)
+    expected = layer.get("source_sha256")
+    actual = hashlib.sha256(raw).hexdigest()
+    if expected and actual != expected:
+        raise ValueError("bijective source lane hash mismatch")
+    return raw.decode("utf-8", errors="surrogatepass")
 
 
 def location_vector(path: List[int]) -> List[int]:
@@ -74,6 +164,45 @@ def _node_token(node: ast.AST) -> str:
     return type(node).__name__
 
 
+def _face_trits(node: ast.AST, token: str) -> Dict[str, int]:
+    """Return discriminative 6-face trits for an AST node.
+
+    Atomic tokenization supplies the chemistry/governance base. The AST rules
+    add code semantics so FunctionDef, Call, If, BinOp, Name, etc. no longer
+    collapse to the same coarse face vector.
+    """
+
+    ntype = type(node).__name__
+    base = CubeToken(token).chem_face().get("trit_vector", {})
+    out: Dict[str, int] = {}
+    for tongue in TONGUES:
+        score = int(base.get(tongue, 0))
+        if ntype in FACE_RULES[tongue]:
+            score += 2
+        if ntype in NEGATIVE_FACE_RULES[tongue]:
+            score -= 2
+        out[tongue] = 1 if score > 0 else (-1 if score < 0 else 0)
+
+    if isinstance(node, ast.Constant):
+        if isinstance(node.value, (int, float, complex)):
+            out["CA"] = 1
+        elif isinstance(node.value, str):
+            out["DR"] = 1
+        elif node.value is None or isinstance(node.value, bool):
+            out["RU"] = 1
+
+    if isinstance(node, ast.Name):
+        if isinstance(node.ctx, ast.Store):
+            out["UM"] = 1
+            out["KO"] = 1
+            out["AV"] = -1
+        elif isinstance(node.ctx, ast.Load):
+            out["AV"] = 1
+            out["UM"] = -1
+
+    return out
+
+
 def encode(src: str) -> Dict[str, Any]:
     """Compile source to an AST graph of cube-token vectors."""
     tree = ast.parse(src)
@@ -82,12 +211,13 @@ def encode(src: str) -> Dict[str, Any]:
     def walk(node: ast.AST, depth: int, path: List[int]) -> None:
         ntype = type(node).__name__
         token = _node_token(node)
-        trit = CubeToken(token).chem_face().get("trit_vector", {})
+        trit = _face_trits(node, token)
         loc = location_vector(path)  # the cube's address in the nested hyper-structure
         vec = ([_TYPE_ID.get(ntype, 0), depth]
                + [int(trit.get(t, 0)) for t in TONGUES]
                + loc)
         nodes.append({"type": ntype, "token": token, "depth": depth,
+                      "face_trits": {t: int(trit.get(t, 0)) for t in TONGUES},
                       "path": list(path), "location": loc, "vector": vec})
         for ci, child in enumerate(ast.iter_child_nodes(node)):
             walk(child, depth + 1, path + [ci])
@@ -95,6 +225,7 @@ def encode(src: str) -> Dict[str, Any]:
     walk(tree, 0, [])
     return {
         "source": src,
+        "bijective": _source_bijective_layer(src),
         "nodes": nodes,
         "matrix": [n["vector"] for n in nodes],  # (N x D) tensor for SSM/matrix models
         "shape": (len(nodes), VECTOR_DIM),
@@ -102,8 +233,33 @@ def encode(src: str) -> Dict[str, Any]:
 
 
 def decode(encoded: Dict[str, Any]) -> str:
-    """Bijective recovery: the AST round-trips back to exact source."""
-    return ast.unparse(ast.parse(encoded["source"]))
+    """Exact recovery from the bijective source lane."""
+    if "bijective" in encoded:
+        return _source_from_bijective_layer(encoded["bijective"])
+    # Backward compatibility for older payloads that only carried source text.
+    return encoded["source"]
+
+
+def decode_ast_normalized(encoded: Dict[str, Any]) -> str:
+    """Semantic recovery through Python's AST normalizer.
+
+    This is useful for comparing behavior-level code structure, but it is not
+    exact: comments and formatting are intentionally absent from Python ASTs.
+    """
+    return ast.unparse(ast.parse(decode(encoded)))
+
+
+def verify_bijective_layer(encoded: Dict[str, Any]) -> bool:
+    """Return True when the exact source lane reconstructs and hashes cleanly."""
+    try:
+        recovered = decode(encoded)
+    except Exception:
+        return False
+    layer = encoded.get("bijective")
+    if not layer:
+        return recovered == encoded.get("source")
+    raw = recovered.encode("utf-8", errors="surrogatepass")
+    return hashlib.sha256(raw).hexdigest() == layer.get("source_sha256")
 
 
 def _demo() -> None:
@@ -141,9 +297,10 @@ def _demo() -> None:
         print(f"   path {b['path']}  loc {b['location']}")
         print(f"   distinct vectors despite identical token: {a['vector'] != b['vector']}")
 
-    recovered = decode(enc)
+    recovered = decode_ast_normalized(enc)
     norm = ast.unparse(ast.parse(src))
-    print(f"\nbijective (AST round-trips to source): {recovered == norm}")
+    print(f"\nsemantic AST round-trip: {recovered == norm}")
+    print(f"exact source lane: {verify_bijective_layer(enc)}")
     print(f"each token bijective across faces: "
           f"{all(CubeToken(n['token']).is_bijective() for n in enc['nodes'])}")
     print("\n-> (N x D) integer matrix for a matrix-field/Mamba model; the location")
