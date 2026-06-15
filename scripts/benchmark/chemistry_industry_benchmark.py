@@ -369,7 +369,7 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
         "| Tool | Installed | Status | Purpose |",
         "| --- | --- | --- | --- |",
     ]
-    for key, row in report["tools"].items():
+    for _key, row in report["tools"].items():
         lines.append(
             f"| {row['name']} | {row['installed']} | {row['status']} | {row.get('primary_claim', row['kind'])} |"
         )
