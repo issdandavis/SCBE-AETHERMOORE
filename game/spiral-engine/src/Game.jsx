@@ -1,18 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { compilePair } from "./tongueRoles.js";
+import { compilePair, TONGUES, TONGUE_ROLE } from "./tongueRoles.js";
 
 const PI=Math.PI,{sin,cos,sqrt,min,max,abs,floor,pow,random,round,ceil,atan2}=Math;
 const W=620,H=620,CX=W/2,CY=H/2,RAD=260;
 
-// ─── SIX SACRED TONGUES (the programming language) ───
-const TONGUES=[
-  {id:"KO",name:"Kor'aelin",glyph:"ᚲ",color:"#ef4444",desc:"Control Flow",keyword:"loop"},
-  {id:"AV",name:"Avali",glyph:"ᚨ",color:"#22d3ee",desc:"Input/Output",keyword:"sense"},
-  {id:"RU",name:"Runethic",glyph:"ᚱ",color:"#34d399",desc:"Scope/Context",keyword:"area"},
-  {id:"CA",name:"Cassisivadan",glyph:"ᚳ",color:"#fbbf24",desc:"Math/Logic",keyword:"calc"},
-  {id:"UM",name:"Umbroth",glyph:"ᚢ",color:"#a78bfa",desc:"Security",keyword:"ward"},
-  {id:"DR",name:"Draumric",glyph:"ᛞ",color:"#f472b6",desc:"Transforms",keyword:"morph"},
-];
+// ─── SIX SACRED TONGUES — imported from the one schema (tongueRoles.js),
+//     the same source of truth as python/scbe/tongue_roles.py ───
 
 // ─── SPELLS = 2-TONGUE PROGRAMS ───
 function getSpell(t1,t2){
@@ -331,13 +324,15 @@ export default function Game(){
             {TONGUES.map(t=>{
               const sel=ui.pick.includes(t.id);
               return(
-                <button key={t.id} onClick={()=>pickTongue(t.id)} style={{
+                <button key={t.id} onClick={()=>pickTongue(t.id)}
+                  title={`${t.name} — ${t.role} · ${t.keyword}()`} style={{
                   padding:"6px 2px",borderRadius:8,cursor:"pointer",textAlign:"center",
                   background:sel?`${t.color}22`:"#111827",border:`2px solid ${sel?t.color:"#1e293b"}`,
                   boxShadow:sel?`0 0 8px ${t.color}44`:"none",transition:"all .15s",
                 }}>
                   <div style={{fontSize:20,color:t.color}}>{t.glyph}</div>
                   <div style={{fontSize:7,color:sel?t.color:"#64748b",fontFamily:"monospace"}}>{t.keyword}</div>
+                  <div style={{fontSize:6,lineHeight:1.2,color:sel?t.color:"#475569"}}>{t.role}</div>
                 </button>
               );
             })}
@@ -351,7 +346,12 @@ export default function Game(){
               {ui.pick[1]?<span style={{color:TONGUES.find(t=>t.id===ui.pick[1])?.color}}>{TONGUES.find(t=>t.id===ui.pick[1])?.keyword}</span>:<span style={{color:"#334155"}}>___</span>}
               <span style={{color:"#64748b"}}>)</span>
             </div>
-            {prog&&<div style={{fontSize:9,color:"#64748b",marginBottom:6,fontFamily:"monospace"}}>SCBE: {prog.semantics}</div>}
+            {prog&&<div style={{fontSize:9,marginBottom:6,fontFamily:"monospace"}}>
+              <span style={{color:"#64748b"}}>SCBE: </span>
+              <span style={{color:TONGUE_ROLE[prog.outer].color}}>{TONGUE_ROLE[prog.outer].role}</span>
+              <span style={{color:"#64748b"}}> of </span>
+              <span style={{color:TONGUE_ROLE[prog.inner].color}}>{TONGUE_ROLE[prog.inner].role}</span>
+            </div>}
 
             {ui.compiled?(
               <>
