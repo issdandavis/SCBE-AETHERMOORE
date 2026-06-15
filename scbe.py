@@ -1854,6 +1854,44 @@ def cmd_find(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_open(args: argparse.Namespace) -> int:
+    """Find the best-matching note/doc by name and open it in the default app."""
+    query = (getattr(args, "query", None) or "").lower()
+    if not query:
+        print('usage: scbe open <text>   (opens the newest matching note/doc)', file=sys.stderr)
+        return 2
+    best: Optional[Tuple[float, str, str]] = None
+    for root in _find_roots():
+        for dirpath, dirnames, filenames in os.walk(root):
+            dl = dirpath.lower()
+            if any(j in dl for j in _FIND_JUNK_SUB):
+                dirnames[:] = []
+                continue
+            dirnames[:] = [d for d in dirnames if d.lower() not in _FIND_PRUNE]
+            for fn in filenames:
+                if os.path.splitext(fn)[1].lower() in _FIND_EXTS and query in fn.lower():
+                    full = os.path.join(dirpath, fn)
+                    try:
+                        mt = os.path.getmtime(full)
+                    except OSError:
+                        mt = 0.0
+                    if best is None or mt > best[0]:
+                        best = (mt, full, fn)
+    if best is None:
+        print(f"no file matching '{args.query}' to open")
+        return 0
+    print(f"opening {best[2]}")
+    print(f"  {best[1]}")
+    try:
+        os.startfile(best[1])  # type: ignore[attr-defined]  # Windows
+    except AttributeError:
+        subprocess.run(["xdg-open", best[1]], check=False)
+    except OSError as e:
+        print(f"could not open: {e}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def cmd_docs_scan(_args: argparse.Namespace) -> int:
     """Delegate to doc_verifier.py for doc scanning."""
     return subprocess.run(
@@ -2295,6 +2333,10 @@ Legacy (backward compat):
     fd.add_argument("--limit", type=int, default=25, help="max results (default 25)")
     fd.add_argument("--json", dest="json_output", action="store_true")
     fd.set_defaults(func=cmd_find)
+
+    op = sub.add_parser("open", help='Open the newest matching note/doc ("scbe open <text>")')
+    op.add_argument("query", nargs="?", help="text to match in note/doc filenames")
+    op.set_defaults(func=cmd_open)
 
     # ─── top-level ───
     chem = sub.add_parser("chem", help="Symbolic chemistry and STISTA proof lane")
