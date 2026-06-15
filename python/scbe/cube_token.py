@@ -38,6 +38,56 @@ TONGUE_LANGUAGE: Dict[str, str] = {
 }
 TONGUES = list(TONGUE_LANGUAGE.keys())
 
+# Each of the 6 cube faces is a FORMATION: a paradigm family of code
+# languages. A token's encoding on a face stands for every language in
+# that formation (one bijective encoding, many languages it speaks for).
+LANGUAGE_FORMATIONS: Dict[str, Dict[str, Any]] = {
+    "KO": {  # Kor'aelin — intent/flow
+        "paradigm": "dynamic / scripting",
+        "languages": ["python", "ruby", "perl", "lua", "php", "tcl",
+                      "groovy", "bash", "powershell", "r-script", "raku"],
+    },
+    "AV": {  # Avali — metadata/header/async
+        "paradigm": "web / async / interface",
+        "languages": ["javascript", "typescript", "dart", "coffeescript",
+                      "wasm", "vue", "svelte", "actionscript"],
+    },
+    "RU": {  # Runethic — salt/binding
+        "paradigm": "systems / memory-safe",
+        "languages": ["rust", "c", "cpp", "zig", "go", "nim", "d", "ada",
+                      "carbon", "v", "odin", "assembly"],
+    },
+    "CA": {  # Cassisivadan — ciphertext/bitcraft
+        "paradigm": "scientific / symbolic / array",
+        "languages": ["mathematica", "julia", "matlab", "r", "fortran",
+                      "octave", "apl", "sage", "maxima", "j", "k"],
+    },
+    "UM": {  # Umbroth — redaction/veil
+        "paradigm": "functional / pure",
+        "languages": ["haskell", "ocaml", "fsharp", "scala", "clojure",
+                      "elm", "erlang", "elixir", "lisp", "scheme", "racket",
+                      "purescript", "agda", "idris"],
+    },
+    "DR": {  # Draumric — tag/structure
+        "paradigm": "markup / declarative / data / query",
+        "languages": ["markdown", "html", "xml", "yaml", "json", "toml",
+                      "sql", "css", "latex", "graphql", "prolog", "datalog",
+                      "make", "dockerfile"],
+    },
+}
+
+# reverse index: language -> the cube face (tongue) it belongs to
+LANGUAGE_TO_TONGUE: Dict[str, str] = {
+    lang: tongue
+    for tongue, spec in LANGUAGE_FORMATIONS.items()
+    for lang in spec["languages"]
+}
+
+
+def tongue_for_language(language: str) -> Optional[str]:
+    """Which cube face (tongue) speaks this language's formation."""
+    return LANGUAGE_TO_TONGUE.get(language.strip().lower())
+
 
 def _tongue_encode(tongue: str, raw: bytes) -> str:
     from scbe import encode_bytes  # root unified CLI module
@@ -69,6 +119,34 @@ class CubeToken:
             t: {"language": TONGUE_LANGUAGE[t], "tokens": self.face(t)}
             for t in TONGUES
         }
+
+    # ---- face formations: each face speaks a whole family of languages ----
+    def face_formation(self, tongue: str) -> Dict[str, Any]:
+        t = tongue.upper()
+        spec = LANGUAGE_FORMATIONS[t]
+        return {
+            "tongue": t,
+            "paradigm": spec["paradigm"],
+            "languages": spec["languages"],
+            "encoding": self.face(t),
+        }
+
+    def all_formations(self) -> Dict[str, Dict[str, Any]]:
+        return {t: self.face_formation(t) for t in TONGUES}
+
+    def as_language(self, language: str) -> Dict[str, Any]:
+        """Speak this token in a specific language by rotating to its face."""
+        t = tongue_for_language(language)
+        if t is None:
+            return {"error": f"unknown language '{language}'"}
+        return {"language": language.lower(), "tongue": t,
+                "paradigm": LANGUAGE_FORMATIONS[t]["paradigm"],
+                "encoding": self.face(t)}
+
+    @staticmethod
+    def languages() -> Dict[str, str]:
+        """Every supported language -> its cube face."""
+        return dict(LANGUAGE_TO_TONGUE)
 
     # ---- chemistry face ----
     def chem_face(self, language: Optional[str] = None) -> Dict[str, Any]:

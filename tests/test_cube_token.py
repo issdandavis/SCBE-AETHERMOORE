@@ -43,3 +43,31 @@ class TestRegistry:
         got = reg.get("release")
         assert got is not None and got.token == "release"
         assert reg.get("missing") is None
+
+
+class TestFaceFormations:
+    def test_six_formations_cover_many_languages(self):
+        from python.scbe.cube_token import LANGUAGE_FORMATIONS, LANGUAGE_TO_TONGUE
+        assert set(LANGUAGE_FORMATIONS) == set(TONGUES)
+        assert len(LANGUAGE_TO_TONGUE) >= 60  # all code languages as faces
+        for spec in LANGUAGE_FORMATIONS.values():
+            assert spec["paradigm"] and spec["languages"]
+
+    def test_speak_token_as_specific_language(self):
+        c = CubeToken("bind")
+        # a language routes to its formation's tongue and encodes there
+        assert c.as_language("rust")["tongue"] == "RU"
+        assert c.as_language("julia")["tongue"] == "CA"
+        assert c.as_language("rust")["encoding"] == c.face("RU")
+        assert "error" in c.as_language("not-a-language")
+
+    def test_language_reverse_lookup(self):
+        from python.scbe.cube_token import tongue_for_language
+        assert tongue_for_language("elixir") == "UM"
+        assert tongue_for_language("SQL") == "DR"
+        assert tongue_for_language("nonsense") is None
+
+    def test_formations_preserve_bijection(self):
+        c = CubeToken("compile")
+        for tongue, spec in CubeToken("compile").all_formations().items():
+            assert CubeToken.from_face(tongue, spec["encoding"]).token == "compile"
