@@ -24,6 +24,8 @@ export default async (req: Request, context: Context) => {
       health: '/api/health',
       manifest: '/api/system/manifest',
       governanceSubmit: '/api/governance/submit',
+      governanceSelftest: '/api/governance/selftest',
+      governanceWorker: '/api/governance/process',
     },
   });
 };

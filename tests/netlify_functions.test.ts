@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import governanceSubmit from '../netlify/functions/governance-submit';
+import governanceSelftest from '../netlify/functions/governance-selftest';
+import governanceWorker from '../netlify/functions/governance-worker-background';
 import health from '../netlify/functions/health';
 import systemManifest from '../netlify/functions/system-manifest';
 
@@ -35,6 +37,8 @@ describe('Netlify functions', () => {
     expect(res.status).toBe(200);
     expect(body.capabilities).toContain('governance-submit');
     expect(body.endpoints.governanceSubmit).toBe('/api/governance/submit');
+    expect(body.endpoints.governanceSelftest).toBe('/api/governance/selftest');
+    expect(body.endpoints.governanceWorker).toBe('/api/governance/process');
   });
 
   it('accepts governance submissions with deterministic receipts', async () => {
@@ -80,5 +84,39 @@ describe('Netlify functions', () => {
 
     expect(res.status).toBe(422);
     expect(body.error).toBe('invalid_payload');
+  });
+
+  it('runs a governance selftest', async () => {
+    const res = await governanceSelftest(
+      new Request('https://example.com/api/governance/selftest'),
+      context
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(body.checks.receiptHex64).toBe(true);
+    expect(body.receipt).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('processes background governance payloads without returning a body', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const res = await governanceWorker(
+      new Request('https://example.com/api/governance/process', {
+        method: 'POST',
+        body: JSON.stringify({ intent: 'background receipt test', source: 'test' }),
+      }),
+      context
+    );
+
+    expect(res).toBeUndefined();
+    expect(log).toHaveBeenCalledWith(
+      'governance_worker_processed',
+      expect.objectContaining({
+        requestId: 'req_test',
+        source: 'test',
+      })
+    );
+    log.mockRestore();
   });
 });
