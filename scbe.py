@@ -767,6 +767,88 @@ def cmd_dec(args: argparse.Namespace) -> int:
     return 0
 
 
+# ── describe: the 5-senses signature of any input ──
+_PHI = (1 + 5 ** 0.5) / 2
+_TONGUE_HZ = {code: 440.0 * _PHI ** i for i, code in enumerate(["KO", "AV", "RU", "CA", "UM", "DR"])}
+_NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+
+
+def _freq_to_note(f: float) -> str:
+    midi = round(69 + 12 * math.log2(f / 440.0))
+    return f"{_NOTE_NAMES[midi % 12]}{midi // 12 - 1}"
+
+
+def _sparkline(raw: bytes) -> str:
+    bars = "▁▂▃▄▅▆▇█"
+    if not raw:
+        return "·"
+    bins = [0] * 24
+    for b in raw:
+        bins[b * 24 // 256] += 1
+    mx = max(bins) or 1
+    return "".join(bars[min(7, v * 8 // mx)] for v in bins)
+
+
+def _describe_signature(text: str) -> Dict[str, Any]:
+    raw = text.encode("utf-8")
+    n = len(raw)
+    score = pipeline_quick_score(text)
+    profile = _char_class_profile(raw)
+    wordlike, _ = _naturalness(text)
+    decision = score["decision"]
+
+    if decision == "DENY" and profile["control_ratio"] > 0.2:
+        what = "binary / non-language"
+    elif wordlike >= 0.6:
+        what = "natural language"
+    elif profile["punct_ratio"] > 0.12:
+        what = "code / markup"
+    elif profile["digit_ratio"] > 0.3:
+        what = "numeric / encoded"
+    else:
+        what = "mixed text"
+
+    codes = ["KO", "AV", "RU", "CA", "UM", "DR"]
+    code = codes[sum(raw) % 6] if raw else "KO"
+    hz = _TONGUE_HZ[code]
+
+    texture = {"ALLOW": "smooth, calm", "QUARANTINE": "grainy, tense",
+               "ESCALATE": "sharp, jagged", "DENY": "hot, violent"}[decision]
+    taste = {"ALLOW": "clean — tastes right", "QUARANTINE": "off — needs a look",
+             "ESCALATE": "bitter — handle with care", "DENY": "spoiled — reject"}[decision]
+
+    return {
+        "what": what,
+        "see": _sparkline(raw),
+        "see_tongue": encode_bytes(code, raw[:6]),
+        "hear": f"{hz:.0f} Hz ~ {_freq_to_note(hz)} ({TONGUE_NAMES[code]})",
+        "feel": texture,
+        "taste": taste,
+        "flow": f"{n} bytes -> 14 layers -> H_eff {score['H_eff']} -> {decision}",
+        "decision": decision,
+        "tongue": code,
+    }
+
+
+def cmd_describe(args: argparse.Namespace) -> int:
+    text = _arg_or_stdin(getattr(args, "text", None))
+    if not text:
+        print('usage: scbe describe "<text>"   (or pipe via stdin)', file=sys.stderr)
+        return 2
+    sig = _describe_signature(text)
+    if getattr(args, "json_output", False):
+        print(json.dumps(sig))
+        return 0
+    print(f"  what  ▸ {sig['what']}")
+    print(f"  👁 see   ▸ {sig['see']}")
+    print(f"            {sig['see_tongue']}")
+    print(f"  👂 hear  ▸ {sig['hear']}")
+    print(f"  🤚 feel  ▸ {sig['feel']}")
+    print(f"  🎯 taste ▸ {sig['taste']}")
+    print(f"  🌊 flow  ▸ {sig['flow']}")
+    return 0
+
+
 def cmd_tongue_verb(args: argparse.Namespace) -> int:
     """A Sacred Tongue used directly as a verb: `scbe ko "hi"` encodes in KO,
     `scbe ko -d "<tokens>"` decodes. The tongue is bound via set_defaults."""
@@ -1471,6 +1553,11 @@ Legacy (backward compat):
     ck.add_argument("--json", dest="json_output", action="store_true")
     ck.set_defaults(func=cmd_check)
 
+    ds = sub.add_parser("describe", aliases=["desc"], help='5-senses signature: see/hear/feel ("scbe describe \"...\"")')
+    ds.add_argument("text", nargs="?", help="text to describe (or pipe via stdin)")
+    ds.add_argument("--json", dest="json_output", action="store_true")
+    ds.set_defaults(func=cmd_describe)
+
     # ─── top-level ───
     sub.add_parser("menu", help="Interactive home screen (default when run with no args)")
     st = sub.add_parser("status", aliases=["st"], help="Project status")
@@ -1531,6 +1618,7 @@ MENU = """\
   8) Self-test                — verify the install is healthy
   9) Doctor                   — operator environment checks
   a) Ask the AI               — chat with any model (Claude, etc.)
+  d) Describe                  — see / hear / feel any input
   0) Quit
 
   tip ▸ skip the menu — type commands directly:
@@ -1608,6 +1696,13 @@ def _menu_inspect() -> None:
     cmd_ai_check(ns)
 
 
+def _menu_describe() -> None:
+    text = _menu_prompt("  text to describe: ")
+    if not text:
+        return
+    cmd_describe(argparse.Namespace(text=text, json_output=False))
+
+
 def interactive_menu() -> int:
     """Numbered home screen — the single-app daily-driver entrypoint."""
     # Make box-drawing + arrows render on a fresh Windows console.
@@ -1628,6 +1723,7 @@ def interactive_menu() -> int:
         "8": lambda: cmd_selftest(argparse.Namespace()),
         "9": lambda: _run_system_cli(["doctor"]),
         "a": lambda: cmd_chat(argparse.Namespace(backend=None, model=None)),
+        "d": _menu_describe,
     }
     quit_words = {"0", "q", "quit", "exit"}
 
