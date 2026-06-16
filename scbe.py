@@ -983,7 +983,416 @@ def cmd_dec(args: argparse.Namespace) -> int:
     return 0
 
 
-# ── describe: the 5-senses signature of any input ──
+# Bit spine: byte-exact binary/hex/trit and tiny-machine command surface.
+SPINE_TEMPLATE_COMMANDS = {
+    "users": [
+        "scbe systems",
+        'scbe bits "hello"',
+        'scbe map "release payload after compare"',
+        'scbe hex "hello"',
+        'scbe trits "hello"',
+        "scbe inc 1111",
+        'geoseal bits "hello"',
+    ],
+    "small_llms": [
+        "scbe systems --json",
+        'scbe spine encode "hello" --json',
+        'scbe spine map "release payload after compare" --json',
+        "scbe spine decode --from hex 68656c6c6f --json",
+        "scbe spine inc 1111 --json",
+        'scbe spine run ",." --input A --json',
+    ],
+    "sub_agents": [
+        "geoseal systems --json",
+        'geoseal spine encode "task payload" --json',
+        'geoseal map "release payload after compare" --json',
+        "geoseal spine templates --json",
+        "geoseal inc 1111 --json",
+        'geoseal spine run ",." --input A --json',
+    ],
+}
+
+
+LOCAL_CODE_SYSTEMS = [
+    {
+        "id": "bit_spine",
+        "path": "python/scbe/bit_spine.py",
+        "role": "byte-exact binary, hex, trit, and binary Turing machine substrate",
+        "incorporated_in": ["scbe bits", "scbe hex", "scbe trits", "scbe inc", "scbe map"],
+    },
+    {
+        "id": "sacred_tongues",
+        "path": "scbe.py",
+        "role": "bijective six-tongue byte tokenization",
+        "incorporated_in": ["scbe enc", "scbe dec", "scbe map"],
+    },
+    {
+        "id": "atomic_tokenization",
+        "path": "python/scbe/atomic_tokenization.py",
+        "role": "semantic element mapping and six-channel tongue trit state",
+        "incorporated_in": ["scbe chem atomize", "scbe map"],
+    },
+    {
+        "id": "chemical_fusion",
+        "path": "python/scbe/chemical_fusion.py",
+        "role": "atomic-state fusion, tau_hat reconstruction, edge tension, valence pressure",
+        "incorporated_in": ["scbe chem atomize", "scbe map"],
+    },
+    {
+        "id": "chemistry_command_stack",
+        "path": "src/tokenizer/chemistry_command_stack.py",
+        "role": "reversible semantic chemistry command primitives",
+        "incorporated_in": ["scbe map"],
+    },
+    {
+        "id": "atomic_workflow_units",
+        "path": "src/tokenizer/atomic_workflow_units.py",
+        "role": "role, resource, valence, and structural chemistry workflow units",
+        "incorporated_in": ["scbe map"],
+    },
+    {
+        "id": "tongue_code_lanes",
+        "path": "python/scbe/tongue_code_lanes.py",
+        "role": "tongue-to-code-lane contract and mismatch classification",
+        "incorporated_in": ["scbe map"],
+    },
+    {
+        "id": "ast_cube",
+        "path": "python/scbe/ast_cube_encoder.py",
+        "role": "Python AST to cube-token vector matrix",
+        "incorporated_in": ["scbe encode-code", "scbe stereo"],
+    },
+    {
+        "id": "rust_ast_cube_hot_loop",
+        "path": "rust/ast_cube",
+        "role": "Rust AST cube encoder hot loop and binary transport",
+        "incorporated_in": ["python/scbe/ast_cube_rust.py"],
+    },
+]
+
+
+def _parse_trit_text(text: str) -> List[int]:
+    parts = [part for part in re.split(r"[\s,]+", text.strip()) if part]
+    trits: List[int] = []
+    for part in parts:
+        if part in {"+", "+1"}:
+            trits.append(1)
+        elif part in {"-", "-1"}:
+            trits.append(-1)
+        elif part in {"0", "1"}:
+            trits.append(int(part))
+        else:
+            raise ValueError(f"invalid trit: {part!r}")
+    return trits
+
+
+def _spine_packet(text: str) -> Dict[str, Any]:
+    from python.scbe.bit_spine import BitSpine
+
+    spine = BitSpine(text.encode("utf-8"))
+    packet = spine.packet()
+    packet.update(
+        {
+            "schema": "scbe_bit_spine_packet_v1",
+            "text": text,
+            "views": {
+                "binary": packet["binary"],
+                "hex": packet["hex"],
+                "trits": packet["trits"],
+            },
+            "templates": SPINE_TEMPLATE_COMMANDS,
+        }
+    )
+    return packet
+
+
+def cmd_spine_view(args: argparse.Namespace) -> int:
+    text = _arg_or_stdin(getattr(args, "text", None))
+    if text is None:
+        print(f'usage: scbe {args.view} "<text>"', file=sys.stderr)
+        return 2
+    packet = _spine_packet(text)
+    if getattr(args, "json_output", False):
+        packet["action"] = args.view
+        print(json.dumps(packet))
+        return 0
+    value = packet["views"][args.view]
+    if args.view == "trits":
+        print(" ".join(str(v) for v in value))
+    else:
+        print(value)
+    return 0
+
+
+def cmd_spine_inc(args: argparse.Namespace) -> int:
+    from python.scbe.bit_spine import BitSpineError, binary_increment_machine
+
+    bits = _arg_or_stdin(getattr(args, "bits", None))
+    if bits is None:
+        print("usage: scbe inc <binary-bits>", file=sys.stderr)
+        return 2
+    try:
+        result = binary_increment_machine().run(bits)
+    except BitSpineError as e:
+        print(f"spine error: {e}", file=sys.stderr)
+        return 1
+    payload = {
+        "schema": "scbe_binary_turing_increment_v1",
+        "input": "".join(bits.split()),
+        "output": result["bits"],
+        "steps": result["steps"],
+        "machine": "binary_increment",
+        "alphabet": ["0", "1", "B"],
+    }
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+    else:
+        print(payload["output"])
+    return 0
+
+
+def cmd_spine_templates(args: argparse.Namespace) -> int:
+    payload = {
+        "schema": "scbe_spine_templates_v1",
+        "purpose": "simple commands for byte-exact binary, hex, trit, and tiny-machine actions",
+        "commands": SPINE_TEMPLATE_COMMANDS,
+    }
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+    else:
+        for group, commands in SPINE_TEMPLATE_COMMANDS.items():
+            print(f"{group}:")
+            for command in commands:
+                print(f"  {command}")
+    return 0
+
+
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, float):
+        if math.isinf(value):
+            return "Infinity" if value > 0 else "-Infinity"
+        if math.isnan(value):
+            return "NaN"
+        return value
+    if isinstance(value, dict):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, tuple):
+        return [_json_safe(item) for item in value]
+    return value
+
+
+def _local_code_systems_payload() -> Dict[str, Any]:
+    return {
+        "schema": "scbe_local_code_systems_v1",
+        "systems": LOCAL_CODE_SYSTEMS,
+        "active_unified_command": 'scbe map "<text>" --json',
+        "geoseal_unified_command": 'geoseal map "<text>" --json',
+    }
+
+
+def cmd_code_systems(args: argparse.Namespace) -> int:
+    payload = _local_code_systems_payload()
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+    else:
+        for system in payload["systems"]:
+            commands = ", ".join(system["incorporated_in"])
+            print(f"{system['id']}: {system['role']}")
+            print(f"  path: {system['path']}")
+            print(f"  commands: {commands}")
+    return 0
+
+
+def _substrate_packet(
+    text: str,
+    *,
+    language: Optional[str] = None,
+    context_class: Optional[str] = None,
+) -> Dict[str, Any]:
+    from python.scbe.atomic_tokenization import map_token_to_atomic_state
+    from python.scbe.bit_spine import BitSpine
+    from python.scbe.chemical_fusion import fuse_atomic_states
+    from python.scbe.tongue_code_lanes import classify_code_lane_alignment
+    from src.tokenizer.atomic_workflow_units import build_atomic_workflow_unit, compose_workflow
+    from src.tokenizer.chemistry_command_stack import build_chemistry_command_stack
+
+    tokens = _chem_tokens(text)
+    states = [
+        map_token_to_atomic_state(token, language=language, context_class=context_class)
+        for token in tokens
+    ]
+    fusion = fuse_atomic_states(states) if states else None
+    spine = BitSpine(text.encode("utf-8"))
+    tongue_projection = {
+        tongue: encode_bytes(tongue, text.encode("utf-8"))
+        for tongue in _CANONICAL_TONGUES
+    }
+    workflow_units = [build_atomic_workflow_unit(token) for token in tokens]
+    workflow = compose_workflow(tokens) if tokens else None
+    atomic_states = [_atomic_state_payload(state) for state in states]
+    topology = {
+        "operative_command": {
+            "command_key": tokens[0] if tokens else "operation",
+            "phase_operation": "compose",
+            "binary_input": spine.bits(),
+            "key_slot": (fusion.tau_hat if fusion else {}).get("KO", 0),
+        }
+    }
+    command_stack = build_chemistry_command_stack({"atomic_states": atomic_states}, topology) if tokens else None
+    payload: Dict[str, Any] = {
+        "schema": "scbe_unified_substrate_packet_v1",
+        "text": text,
+        "tokens": tokens,
+        "local_code_systems": _local_code_systems_payload(),
+        "language": language,
+        "context_class": context_class,
+        "bit_spine": spine.packet(),
+        "sacred_tongues": {
+            "canonical_order": list(_CANONICAL_TONGUES),
+            "projection": tongue_projection,
+        },
+        "atomic_tokenization": {
+            "states": atomic_states,
+            "fusion": _fusion_payload(fusion) if fusion else None,
+            "code_lane_alignment": classify_code_lane_alignment(
+                states,
+                context_class=context_class,
+            ),
+        },
+        "chemistry_tokenization": {
+            "claim_boundary": CHEM_CLAIM_BOUNDARY,
+            "command_stack": command_stack,
+        },
+        "workflow_units": {
+            "units": workflow_units,
+            "composition": workflow,
+        },
+        "templates": SPINE_TEMPLATE_COMMANDS,
+    }
+    return _json_safe(payload)
+
+
+def cmd_substrate_map(args: argparse.Namespace) -> int:
+    text = _arg_or_stdin(getattr(args, "text", None))
+    if text is None:
+        print('usage: scbe map "<text>"   (or scbe spine map "<text>")', file=sys.stderr)
+        return 2
+    try:
+        payload = _substrate_packet(
+            text,
+            language=getattr(args, "language", None),
+            context_class=getattr(args, "context_class", None),
+        )
+    except Exception as e:
+        print(f"substrate map error: {e}", file=sys.stderr)
+        return 1
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+        return 0
+
+    fusion = payload["atomic_tokenization"]["fusion"] or {}
+    tau_hat = fusion.get("tau_hat", {})
+    print(f"substrate map: {len(payload['tokens'])} token(s)")
+    print(f"  hex: {payload['bit_spine']['hex']}")
+    print(f"  tau_hat: {tau_hat}")
+    for state in payload["atomic_tokenization"]["states"][: getattr(args, "limit", 8)]:
+        element = state["element"]
+        print(f"  {state['token']:<16} {state['semantic_class']:<14} {element['symbol']} tau={state['tau']}")
+    return 0
+
+
+def cmd_spine(args: argparse.Namespace) -> int:
+    from python.scbe.bit_spine import BitSpine, BitSpineError, run_bf
+
+    action = getattr(args, "spine_cmd", None) or "encode"
+    try:
+        if action == "encode":
+            text = _arg_or_stdin(getattr(args, "text", None))
+            if text is None:
+                print('usage: scbe spine encode "<text>"', file=sys.stderr)
+                return 2
+            packet = _spine_packet(text)
+            packet["action"] = "encode"
+            if getattr(args, "json_output", False):
+                print(json.dumps(packet))
+            else:
+                print(f"bits  {packet['binary']}")
+                print(f"hex   {packet['hex']}")
+                print("trits " + " ".join(str(v) for v in packet["trits"]))
+            return 0
+
+        if action == "decode":
+            data_text = _arg_or_stdin(getattr(args, "data", None))
+            if data_text is None:
+                print("usage: scbe spine decode --from bits|hex|trits <data>", file=sys.stderr)
+                return 2
+            source = getattr(args, "source", "hex")
+            if source == "bits":
+                spine = BitSpine.from_bits(data_text)
+            elif source == "hex":
+                spine = BitSpine.from_hex(data_text)
+            elif source == "trits":
+                spine = BitSpine.from_trits(_parse_trit_text(data_text))
+            else:
+                print("--from must be bits, hex, or trits", file=sys.stderr)
+                return 2
+            text = spine.data.decode("utf-8", errors="replace")
+            payload = {
+                "schema": "scbe_bit_spine_decode_v1",
+                "from": source,
+                "byte_len": len(spine.data),
+                "sha256": spine.digest(),
+                "text": text,
+                "hex": spine.hex(),
+            }
+            if getattr(args, "json_output", False):
+                print(json.dumps(payload))
+            elif getattr(args, "raw", False):
+                sys.stdout.buffer.write(spine.data)
+            else:
+                print(text)
+            return 0
+
+        if action == "inc":
+            return cmd_spine_inc(args)
+
+        if action == "run":
+            source = _arg_or_stdin(getattr(args, "program", None))
+            if source is None:
+                print('usage: scbe spine run "<3-bit-op/brainfuck program>"', file=sys.stderr)
+                return 2
+            input_bytes = (getattr(args, "input", "") or "").encode("utf-8")
+            out = run_bf(source, input_bytes=input_bytes, max_steps=getattr(args, "max_steps", 1_000_000))
+            payload = {
+                "schema": "scbe_spine_program_run_v1",
+                "output_text": out.decode("utf-8", errors="replace"),
+                "output_hex": out.hex(),
+                "byte_len": len(out),
+            }
+            if getattr(args, "json_output", False):
+                print(json.dumps(payload))
+            elif getattr(args, "raw", False):
+                sys.stdout.buffer.write(out)
+            else:
+                print(payload["output_text"])
+            return 0
+
+        if action == "templates":
+            return cmd_spine_templates(args)
+
+        if action == "map":
+            return cmd_substrate_map(args)
+    except (BitSpineError, ValueError) as e:
+        print(f"spine error: {e}", file=sys.stderr)
+        return 1
+
+    print(f"unknown spine action: {action}", file=sys.stderr)
+    return 2
+
+
+# describe: the 5-senses signature of any input
 def _read_text_file(path: str) -> Tuple[Optional[str], Optional[str]]:
     p = Path(path)
     if not p.exists():
@@ -1019,6 +1428,91 @@ def cmd_encode_code(args: argparse.Namespace) -> int:
         for node in encoded["nodes"][: getattr(args, "limit", 8)]:
             roles = ", ".join(node.get("roles", [])) or "-"
             print(f"  {node['type']:<15} {node['token']:<16} {roles}")
+    return 0
+
+
+def cmd_encode(args: argparse.Namespace) -> int:
+    """Fast AST->cube-matrix encode via the Rust hot loop (Python fallback).
+
+    Per-file uses rust/ast_cube (atomic-chem faces verified == Python, ~49x).
+    --corpus uses rust/ast_cube_ruff (109x) for whole-tree throughput / binary.
+    """
+    from python.scbe import ast_cube_rust as rcr
+
+    # --- corpus throughput mode (ruff 109x) ---
+    corpus = getattr(args, "corpus", None)
+    if corpus:
+        ruff = REPO_ROOT / "rust" / "ast_cube_ruff" / "target" / "release" / "ast_cube_ruff.exe"
+        if not ruff.exists():
+            print(
+                "ruff encoder not built; run:\n"
+                "  cargo build --release --manifest-path rust/ast_cube_ruff/Cargo.toml",
+                file=sys.stderr,
+            )
+            return 2
+        cmd = [str(ruff), "--corpus", corpus]
+        if getattr(args, "limit_files", None):
+            cmd += ["--limit", str(args.limit_files)]
+        if getattr(args, "out", None):
+            cmd += ["--out", args.out]
+        return subprocess.run(cmd).returncode
+
+    paths = getattr(args, "files", []) or []
+    if not paths:
+        print("usage: scbe encode FILE [FILE...]  |  scbe encode --corpus DIR [--out f.bin]",
+              file=sys.stderr)
+        return 2
+
+    use_python = getattr(args, "python", False) or not rcr.rust_encoder_available()
+    backend = "python(ast_cube_encoder)" if use_python else "rust(ast_cube, atomic-faces)"
+
+    # full JSON of the first file
+    if getattr(args, "json_output", False):
+        f = paths[0]
+        if use_python:
+            src, err = _read_text_file(f)
+            if err:
+                print(err, file=sys.stderr)
+                return 2
+            from python.scbe.ast_cube_encoder import encode_matrix
+
+            print(json.dumps(encode_matrix(src or "")))
+        else:
+            print(json.dumps(rcr.encode_files([f], summary=False)))
+        return 0
+
+    # summary table
+    t0 = time.time()
+    total = 0
+    print(f"backend: {backend}")
+    print(f"  {'file':<44} {'nodes':>7}  sha256")
+    if use_python:
+        from python.scbe.ast_cube_encoder import encode_matrix
+
+        for f in paths:
+            src, err = _read_text_file(f)
+            if err:
+                print(f"  {os.path.basename(f):<44} {'read-error':>7}")
+                continue
+            try:
+                enc = encode_matrix(src or "")
+            except SyntaxError:
+                print(f"  {os.path.basename(f):<44} {'parse-err':>7}")
+                continue
+            n = enc["shape"][0]
+            total += n
+            print(f"  {os.path.basename(f):<44} {n:>7}  {enc['bijective']['source_sha256'][:16]}")
+    else:
+        res = rcr.encode_files(paths, summary=True)
+        files = res["files"] if "files" in res else [res]
+        for one in files:
+            n = one["shape"][0]
+            total += n
+            name = os.path.basename(one.get("source_path", "?"))
+            print(f"  {name:<44} {n:>7}  {one['bijective']['source_sha256'][:16]}")
+    el = time.time() - t0
+    rate = total / el if el > 0 else 0.0
+    print(f"  total: {total:,} nodes in {el * 1000:.0f} ms  ({rate:,.0f} nodes/s)")
     return 0
 
 
@@ -2523,6 +3017,81 @@ Legacy (backward compat):
     de.set_defaults(func=cmd_dec)
 
     # ─── Sacred Tongues as verbs — full names, no abbreviation ───
+    spine = sub.add_parser("spine", help="Bit spine: binary, hex, trit, and tiny-machine actions")
+    spine_sub = spine.add_subparsers(dest="spine_cmd")
+
+    sp_enc = spine_sub.add_parser("encode", help="Encode text to byte-exact binary/hex/trit views")
+    sp_enc.add_argument("text", nargs="?", help="text to encode (or pipe via stdin)")
+    sp_enc.add_argument("--json", dest="json_output", action="store_true")
+    sp_enc.set_defaults(func=cmd_spine)
+
+    sp_dec = spine_sub.add_parser("decode", help="Decode one spine view back to bytes/text")
+    sp_dec.add_argument("data", nargs="?", help="bits, hex, or trits (or pipe via stdin)")
+    sp_dec.add_argument("--from", dest="source", choices=["bits", "hex", "trits"], default="hex")
+    sp_dec.add_argument("--json", dest="json_output", action="store_true")
+    sp_dec.add_argument("--raw", action="store_true", help="write raw bytes to stdout")
+    sp_dec.set_defaults(func=cmd_spine)
+
+    sp_inc = spine_sub.add_parser("inc", help="Increment binary bits with a binary Turing machine")
+    sp_inc.add_argument("bits", nargs="?", help="binary bits, e.g. 1111")
+    sp_inc.add_argument("--json", dest="json_output", action="store_true")
+    sp_inc.set_defaults(func=cmd_spine)
+
+    sp_run = spine_sub.add_parser("run", help="Run the 3-bit Brainfuck-class opcode spine")
+    sp_run.add_argument("program", nargs="?", help="program text (or pipe via stdin)")
+    sp_run.add_argument("--input", default="", help="stdin bytes for comma/input op")
+    sp_run.add_argument("--max-steps", type=int, default=1_000_000)
+    sp_run.add_argument("--json", dest="json_output", action="store_true")
+    sp_run.add_argument("--raw", action="store_true", help="write raw output bytes to stdout")
+    sp_run.set_defaults(func=cmd_spine)
+
+    sp_tpl = spine_sub.add_parser("templates", help="Show simple commands for users, agents, and small LLMs")
+    sp_tpl.add_argument("--json", dest="json_output", action="store_true")
+    sp_tpl.set_defaults(func=cmd_spine)
+
+    sp_map = spine_sub.add_parser("map", help="Map text through bit, tongue, atomic, chemistry, and workflow lanes")
+    sp_map.add_argument("text", nargs="?", help="text to map (or pipe via stdin)")
+    sp_map.add_argument("--language", help="optional natural/code language hint")
+    sp_map.add_argument("--context-class", help="optional context hint, e.g. operator, safety, timeline")
+    sp_map.add_argument("--limit", type=int, default=8, help="rows to show in text mode")
+    sp_map.add_argument("--json", dest="json_output", action="store_true")
+    sp_map.set_defaults(func=cmd_spine)
+
+    for view in ("bits", "hex", "trits"):
+        sv = sub.add_parser(view, help=f'Show the {view} spine view for text ("scbe {view} hello")')
+        sv.add_argument("text", nargs="?", help="text to encode (or pipe via stdin)")
+        sv.add_argument("--json", dest="json_output", action="store_true")
+        sv.set_defaults(func=cmd_spine_view, view=view)
+
+    inc = sub.add_parser("inc", help='Increment binary bits ("scbe inc 1111")')
+    inc.add_argument("bits", nargs="?", help="binary bits (or pipe via stdin)")
+    inc.add_argument("--json", dest="json_output", action="store_true")
+    inc.set_defaults(func=cmd_spine_inc)
+
+    tpl = sub.add_parser("templates", help="Show simple command templates for SCBE/GeoSeal")
+    tpl.add_argument("--json", dest="json_output", action="store_true")
+    tpl.set_defaults(func=cmd_spine_templates)
+
+    systems = sub.add_parser(
+        "systems",
+        aliases=["code-systems"],
+        help="Inventory local SCBE code/token/chemistry systems and their commands",
+    )
+    systems.add_argument("--json", dest="json_output", action="store_true")
+    systems.set_defaults(func=cmd_code_systems)
+
+    mp = sub.add_parser(
+        "map",
+        aliases=["substrate"],
+        help='Map text through bit, tongue, atomic, chemistry, and workflow lanes ("scbe map hello")',
+    )
+    mp.add_argument("text", nargs="?", help="text to map (or pipe via stdin)")
+    mp.add_argument("--language", help="optional natural/code language hint")
+    mp.add_argument("--context-class", help="optional context hint, e.g. operator, safety, timeline")
+    mp.add_argument("--limit", type=int, default=8, help="rows to show in text mode")
+    mp.add_argument("--json", dest="json_output", action="store_true")
+    mp.set_defaults(func=cmd_substrate_map)
+
     ec = sub.add_parser(
         "encode-code",
         aliases=["code-matrix"],
@@ -2532,6 +3101,20 @@ Legacy (backward compat):
     ec.add_argument("--json", dest="json_output", action="store_true")
     ec.add_argument("--limit", type=int, default=8, help="rows to show in text mode")
     ec.set_defaults(func=cmd_encode_code)
+
+    en = sub.add_parser(
+        "encode",
+        help='Fast AST->cube-matrix via the Rust hot loop ("scbe encode file.py")',
+    )
+    en.add_argument("files", nargs="*", help="Python source file(s)")
+    en.add_argument("--json", dest="json_output", action="store_true",
+                    help="emit full matrix JSON for the first file")
+    en.add_argument("--python", action="store_true", help="force the Python encoder")
+    en.add_argument("--corpus", help="encode a whole directory tree (ruff 109x throughput)")
+    en.add_argument("--out", help="with --corpus: write SCBEAST2 binary matrices")
+    en.add_argument("--limit-files", dest="limit_files", type=int,
+                    help="with --corpus: cap number of files")
+    en.set_defaults(func=cmd_encode)
 
     stc = sub.add_parser(
         "stereo",
