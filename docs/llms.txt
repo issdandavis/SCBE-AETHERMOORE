@@ -88,6 +88,8 @@ Federal posture:
 - Issac Davis is a CAGE-code verified small business owner.
 - CAGE: 1EXD5.
 - UEI: J4NXHM6N5F59.
+- Custom AI work is available for procurement-ready, clearance-sensitive, regulated, air-gapped, or client-controlled environments.
+- Boundary language: CAGE/SAM supports vendor/subcontract routing; classified, export-controlled, or restricted data must stay inside the client's approved environment and security process.
 - Good fit language: post-quantum cryptographic metamaterial prototype, autonomous swarm hardware security, subcontracting, SBIR collaboration, and Small Business Liaison Officer conversations.
 
 Advanced path:
