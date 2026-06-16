@@ -166,27 +166,6 @@ def _windows_command_line_to_argv(command: str) -> list[str]:
         kernel32.LocalFree(argv_ptr)
 
 
-def scan_command(
-    command: str,
-    *,
-    claimed_paths: Optional[Sequence[str]] = None,
-    shell_context: bool = False,
-) -> ExecGateDecision:
-    """Parse and scan a command without executing it.
-
-    Args:
-        command: The raw command string to inspect (never executed).
-        claimed_paths: Optional declared path scope; touching paths outside it
-            is flagged as ``unclaimed-path``.
-        shell_context: When True, the command is expected to run *through* a
-            shell (e.g. ``scbe run`` -> PowerShell), so the blanket pipe/chain
-            metacharacter DENY is relaxed. The dangerous-pattern denies
-            (recursive delete, curl|sh, encoded PowerShell, secret paths) and
-            the ``curl|sh`` download-to-exec rule still apply regardless.
-
-    Returns:
-        An ``ExecGateDecision`` with the resolved tier and findings.
-    """
 # ── inline-payload inspection ────────────────────────────────────────────────
 # scan_command catches dangerous command SHAPES. For `python -c "<code>"` and
 # `node -c "<code>"` the dangerous logic lives INSIDE the payload string, which
@@ -300,9 +279,27 @@ def _scan_node_payload(code: str) -> list[GateFinding]:
     return findings
 
 
-def scan_command(command: str, *, claimed_paths: Optional[Sequence[str]] = None) -> ExecGateDecision:
-    """Parse and scan a command without executing it."""
+def scan_command(
+    command: str,
+    *,
+    claimed_paths: Optional[Sequence[str]] = None,
+    shell_context: bool = False,
+) -> ExecGateDecision:
+    """Parse and scan a command without executing it.
 
+    Args:
+        command: The raw command string to inspect (never executed).
+        claimed_paths: Optional declared path scope; touching paths outside it
+            is flagged as ``unclaimed-path``.
+        shell_context: When True, the command is expected to run *through* a
+            shell (e.g. ``scbe run`` -> PowerShell), so the blanket pipe/chain
+            metacharacter DENY is relaxed. The dangerous-pattern denies
+            (recursive delete, curl|sh, encoded PowerShell, secret paths) and
+            the ``curl|sh`` download-to-exec rule still apply regardless.
+
+    Returns:
+        An ``ExecGateDecision`` with the resolved tier and findings.
+    """
     findings: list[GateFinding] = []
     argv, parse_findings = _parse_command(command)
     findings.extend(parse_findings)
