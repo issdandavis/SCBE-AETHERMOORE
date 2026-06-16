@@ -129,6 +129,17 @@ if symphonic_cipher._VARIANT == "root": # "root" or "src"
 
 When writing new tests, be explicit about which module you need. The `tests/conftest.py` adds the project root to `sys.path` and patches `ai_brain` submodule aliases for legacy import paths.
 
+## Critical Gotcha: Canonical Money Path (two billing stacks)
+
+There are **two** billing stacks behind **two** FastAPI apps. Only one takes real money.
+
+| Stack | App | State |
+|-------|-----|-------|
+| `src/api/stripe_billing.py` + `docs/offers.json` | `src/api/main.py` (canonical) | **LIVE** — real Stripe price/product IDs + Payment Links (`plink_*`), raw urllib, no SDK |
+| `api/billing/` (SDK + SQLAlchemy) | `api/main.py` (separate) | **Not live** — placeholder price IDs, `import stripe` not in `requirements.txt`; retained only because `api/auth.py` + `api/keys/` import its DB models + rate-limit tiers |
+
+The live Vercel webhook is `api/billing/stripe_webhook.js` (independent JS, pinned `plink_` IDs). **Add new checkout/subscription money logic to `src/api/stripe_billing.py` or as a Payment Link in `docs/offers.json` — never to `api/billing/routes.py`.** Keep `api/billing/tiers.py` prices from drifting against `docs/offers.json`.
+
 ## liboqs PQC Migration
 
 Newer versions of liboqs renamed algorithms:

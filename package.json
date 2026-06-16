@@ -131,6 +131,8 @@
     "cash:launch-readiness:gate": "python scripts/system/product_launch_readiness.py --fail-on-not-ready",
     "writing:package": "python scripts/package_products.py --product writing",
     "writing:package:all": "python scripts/package_products.py --product all",
+    "release:workcell": "python scripts/system/build_workcell_download.py",
+    "blackbox:report": "python scripts/system/scbe_black_box.py --no-fail-on-high",
     "video:verify": "node scripts/video/verify.js",
     "video:quality-gate": "node scripts/video/quality_gate.js",
     "video:manifest": "node scripts/video/package_manifest.js",

@@ -45,6 +45,18 @@ class TongueSpec:
 
 
 # The Six Sacred Tongues
+#
+# harmonic_frequency note: this SS1 tokenizer uses its OWN tongue→note mapping,
+# which intentionally differs from src/crypto/sacred_tongues.py (the RWP-v3 spectral
+# table) on two tongues:
+#   here:          ru = 293.66 (D4),  um = 196.0 (G3)
+#   src/crypto:    ru = 329.63 (E4),  um = 293.66 (D4)
+# This is by design, not drift — Umbroth (the veil/redaction tongue) is pinned to
+# 196.0 Hz = G3 = STELLAR_OCTAVE_TARGET (the "transposed solar frequency" defined in
+# src/training/symphonic_governor.py). The two tables feed different subsystems and
+# are each covered by their own tests; do NOT blindly unify them. The byte↔token
+# codec itself is identical across both modules — only this decorative audio metadata
+# differs.
 KOR_AELIN = TongueSpec(
     code="ko",
     name="Kor'aelin",
