@@ -3,7 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
-const { spawnSync } = require("child_process");
+const { spawn, spawnSync } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..");
 const PACKAGE_JSON_PATH = path.join(ROOT, "package.json");
@@ -20,7 +20,7 @@ Modes:
 
   2. Python passthrough
      Without --api-base, geoseal falls through to:
-       python -m geoseal_cli
+       python -m src.geoseal_cli
      Use SCBE_GEOSEAL_PYTHON to pin the Python executable.
 
 Hosted run path:
@@ -33,6 +33,17 @@ Hosted run path:
 
 Useful commands:
   geoseal doctor --json
+  geoseal providers --json
+  geoseal lanes --json
+  geoseal rooms
+  geoseal rooms --room frontend --json
+  geoseal stage "route task through atomize verify export"
+  geoseal stage --room frontend --mode learn --diagram flow --content "component -> style -> test"
+  geoseal stage --room frontend --example slideshow
+  geoseal stage-frame --room github --example pr-flow
+  geoseal command-check "Remove-Item -Recurse C:\\Users\\issda"
+  geoseal ask "explain this repo"
+  geoseal do "add tests for the tokenizer"
   geoseal permissions --json
   geoseal custom-commands --json
   geoseal run-command harness-benchmark --json
@@ -55,6 +66,16 @@ Useful commands:
   geoseal tokenizer-code-lanes --command shl --tongues all --output artifacts/tokenizer_code_lanes/shl_lanes.json
   geoseal verify-code-lanes "$(cat artifacts/tokenizer_code_lanes/shl_lanes.json)" --json
   geoseal decode-code-lanes "$(cat artifacts/tokenizer_code_lanes/shl_lanes.json)" --output-dir artifacts/tokenizer_code_lanes/decoded --from-binary --write-binary --json
+  geoseal bits "hello"
+  geoseal hex "hello"
+  geoseal trits "hello"
+  geoseal systems --json
+  geoseal inc 1111
+  geoseal map "release payload after compare" --json
+  geoseal spine encode "hello" --json
+  geoseal spine map "release payload after compare" --json
+  geoseal spine decode --from hex 68656c6c6f --json
+  geoseal spine templates --json
   geoseal ai2ai-bridge --content "def add(a, b): return a + b" --language python --json
   geoseal code-packet --content "def add(a, b): return a + b" --language python
   geoseal tongue-compile --content "ko:set r0, 2" --json
@@ -109,7 +130,180 @@ const COMMAND_MAP = {
 };
 
 const LOCAL_PASSTHROUGH_COMMANDS = new Set(["portal-box", "stream-wheel", "shell"]);
+const SCBE_SPINE_COMMANDS = new Set([
+  "spine",
+  "bits",
+  "hex",
+  "trits",
+  "inc",
+  "templates",
+  "map",
+  "substrate",
+  "systems",
+  "code-systems",
+]);
 const CUSTOM_COMMANDS_DIR = path.join(ROOT, ".geoseal", "commands");
+
+const STAGE_ROOMS = {
+  frontend: {
+    title: "Frontend Room",
+    purpose: "Build UI, components, layouts, route pages, forms, slideshows, and media embeds.",
+    examples: [
+      "component -> state -> style -> responsive check",
+      "landing page -> payment CTA -> proof section -> deploy route",
+      "slideshow -> images -> captions -> keyboard controls",
+    ],
+    safeCommands: ["read_file", "write_file", "append_file", "make_dir", "copy"],
+  },
+  backend: {
+    title: "Backend Room",
+    purpose: "Build APIs, validation, storage, auth checks, receipts, and integration routes.",
+    examples: [
+      "request -> validate -> process -> receipt",
+      "webhook -> verify signature -> store event -> report",
+      "input schema -> handler -> tests -> deployment check",
+    ],
+    safeCommands: ["read_file", "write_file", "append_file", "run_shell"],
+  },
+  payments: {
+    title: "Payments Room",
+    purpose: "Add checkout links, pricing tables, webhooks, receipt pages, and delivery flows.",
+    examples: [
+      "offer -> checkout -> webhook -> delivery receipt",
+      "pricing table -> payment link -> success page",
+      "invoice request -> customer details -> manual follow-up",
+    ],
+    safeCommands: ["read_file", "write_file", "network_send"],
+  },
+  media: {
+    title: "Media Room",
+    purpose: "Add videos, image galleries, old-school projector slides, demos, and embeds.",
+    examples: [
+      "video embed -> transcript -> CTA",
+      "slides -> scene notes -> export",
+      "image set -> captions -> carousel controls",
+    ],
+    safeCommands: ["read_file", "write_file", "copy"],
+  },
+  cube: {
+    title: "Cube Room",
+    purpose: "Parse code in, hold binary/trit center, emit language faces, and show safety blocks.",
+    examples: [
+      "source -> parse cube -> bit spine -> emit rust",
+      "workflow -> blocks -> safety verdict -> receipt",
+      "opcode program -> language faces -> run output compare",
+    ],
+    safeCommands: ["read_file", "run_shell", "write_file"],
+  },
+  termux: {
+    title: "Termux Room",
+    purpose: "Build phone-friendly CLI flows, mobile scripts, local services, and sync handoffs.",
+    examples: [
+      "pkg check -> repo clone -> npm smoke -> stage output",
+      "phone note -> command-check -> local script -> receipt",
+      "termux api -> file output -> sync back to github",
+    ],
+    safeCommands: ["read_file", "run_shell", "write_file", "network_send"],
+  },
+  github: {
+    title: "GitHub Room",
+    purpose: "Plan branches, PRs, reviews, CI checks, release notes, and deploy handoffs.",
+    examples: [
+      "branch -> commit -> push -> pull request",
+      "ci failure -> log read -> patch -> rerun",
+      "product page -> preview deploy -> merge",
+    ],
+    safeCommands: ["read_file", "run_shell", "network_send"],
+  },
+};
+
+const STAGE_EXAMPLES = {
+  frontend: {
+    slideshow: {
+      mode: "build",
+      diagram: "flow",
+      content: "slides data -> image panel -> captions -> keyboard controls -> publish",
+      frames: [
+        "Create a slides data structure with title, image, caption, and CTA.",
+        "Render one slide at a time inside a fixed stage box.",
+        "Add previous, next, and keyboard controls.",
+        "Run command-check before writing files or deploying.",
+      ],
+    },
+    payment: {
+      mode: "build",
+      diagram: "flow",
+      content: "offer -> checkout link -> success page -> delivery receipt",
+      frames: [
+        "Define the product offer and price.",
+        "Add a visible checkout link or payment button.",
+        "Create a success/delivery page.",
+        "Record the receipt path for support.",
+      ],
+    },
+  },
+  media: {
+    video: {
+      mode: "demo",
+      diagram: "projector",
+      content: "video embed -> transcript -> captions -> call to action",
+      frames: [
+        "Place the video embed in a stable aspect-ratio frame.",
+        "Add transcript and captions for users and search.",
+        "Add one CTA below the video.",
+      ],
+    },
+  },
+  github: {
+    "pr-flow": {
+      mode: "ship",
+      diagram: "flow",
+      content: "branch -> commit -> push -> pull request -> checks -> merge",
+      frames: [
+        "Check status and isolate only the intended files.",
+        "Commit one coherent change.",
+        "Push the branch and open a PR with validation notes.",
+        "Wait for checks before merge/deploy.",
+      ],
+    },
+  },
+  termux: {
+    "mobile-smoke": {
+      mode: "mobile",
+      diagram: "flow",
+      content: "pkg update -> clone repo -> install deps -> run smoke -> sync receipt",
+      frames: [
+        "Use Termux for lightweight smoke checks and command review.",
+        "Run read-only checks before any write operation.",
+        "Save receipts that can sync back to the repo.",
+      ],
+    },
+  },
+  cube: {
+    polyglot: {
+      mode: "build",
+      diagram: "flow",
+      content: "source -> parse cube -> bit spine -> language faces -> safety verdict",
+      frames: [
+        "Parse source into the cube input face.",
+        "Hold the invariant in the bit/trit spine.",
+        "Emit target language faces.",
+        "Run blocks safety before any file mutation.",
+      ],
+    },
+  },
+};
+
+function stageExample(roomId, exampleId) {
+  const roomExamples = STAGE_EXAMPLES[roomId] || {};
+  const selectedId = exampleId ? String(exampleId).toLowerCase() : "";
+  if (!selectedId) return { id: "", example: null };
+  return { id: selectedId, example: roomExamples[selectedId] || null };
+}
+
+function availableStageExamples(roomId) {
+  return Object.keys(STAGE_EXAMPLES[roomId] || {});
+}
 
 function parseArgs(argv) {
   const positionals = [];
@@ -146,6 +340,329 @@ function writeJsonOrText(flags, payload, text) {
   } else {
     process.stdout.write(text.endsWith("\n") ? text : `${text}\n`);
   }
+}
+
+function terminalWidth(flags) {
+  const raw = Number(flags.width || process.env.COLUMNS || process.stdout.columns || 88);
+  return Math.max(48, Math.min(140, Number.isFinite(raw) ? raw : 88));
+}
+
+function stripAnsi(text) {
+  return String(text).replace(/\x1b\[[0-9;]*m/g, "");
+}
+
+function visibleLength(text) {
+  return stripAnsi(text).length;
+}
+
+function truncateVisible(text, width) {
+  const clean = stripAnsi(text);
+  if (clean.length <= width) return text;
+  if (width <= 1) return "…";
+  return `${clean.slice(0, width - 1)}…`;
+}
+
+function wrapText(text, width) {
+  const words = String(text || "").replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
+  if (!words.length) return [""];
+  const lines = [];
+  let line = "";
+  for (const word of words) {
+    if (!line) {
+      line = word;
+      continue;
+    }
+    if (visibleLength(`${line} ${word}`) <= width) {
+      line = `${line} ${word}`;
+    } else {
+      lines.push(line);
+      line = word;
+    }
+  }
+  if (line) lines.push(line);
+  return lines.flatMap((item) => {
+    const clean = stripAnsi(item);
+    if (clean.length <= width) return [item];
+    const chunks = [];
+    for (let i = 0; i < clean.length; i += width) chunks.push(clean.slice(i, i + width));
+    return chunks;
+  });
+}
+
+function boxLine(left, fill, right, width) {
+  return `${left}${fill.repeat(Math.max(0, width - 2))}${right}`;
+}
+
+function boxed(title, lines, width) {
+  const inner = width - 4;
+  const safeTitle = title ? ` ${truncateVisible(title, Math.max(0, inner - 2))} ` : "";
+  const topFill = Math.max(0, width - 2 - visibleLength(safeTitle));
+  const top = `┌${safeTitle}${"─".repeat(topFill)}┐`;
+  const body = lines.flatMap((line) => wrapText(line, inner)).map((line) => {
+    const clipped = truncateVisible(line, inner);
+    return `│ ${clipped}${" ".repeat(Math.max(0, inner - visibleLength(clipped)))} │`;
+  });
+  return [top, ...body, boxLine("└", "─", "┘", width)];
+}
+
+function stageDiagram(kind, content, innerWidth) {
+  const clean = String(content || "").trim();
+  if (kind === "projector") {
+    const beam = Math.max(8, Math.floor(innerWidth / 3));
+    return [
+      "   _______",
+      "  / _____ \\",
+      " | |     | |" + " ".repeat(Math.max(1, beam - 10)) + "╲",
+      " | |_____| |" + " ".repeat(Math.max(1, beam - 12)) + " ╲  " + truncateVisible(clean || "projected state", Math.max(12, innerWidth - beam - 8)),
+      "  \\_______/" + " ".repeat(Math.max(1, beam - 10)) + "╱",
+    ];
+  }
+  if (kind === "flow" || clean.includes("->")) {
+    const parts = clean
+      .split(/->|=>|→/)
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .slice(0, 6);
+    if (parts.length >= 2) {
+      const nodeWidth = Math.max(8, Math.min(18, Math.floor((innerWidth - (parts.length - 1) * 4) / parts.length)));
+      const nodes = parts.map((part) => `[${truncateVisible(part, nodeWidth - 2).padEnd(nodeWidth - 2, " ")}]`);
+      return [nodes.join(" -> ")];
+    }
+  }
+  return wrapText(clean || "No stage content supplied.", innerWidth);
+}
+
+function runStage(positionals, flags) {
+  const roomId = String(flags.room || "stage").toLowerCase();
+  const { id: exampleId, example } = stageExample(roomId, flags.example);
+  const jsonCarriedContent = typeof flags.json === "string" ? flags.json : "";
+  const content = String(flags.content || flags.message || jsonCarriedContent || positionals.slice(1).join(" ") || (example ? example.content : "")).trim();
+  const room = STAGE_ROOMS[roomId];
+  const mode = String(flags.mode || (example ? example.mode : "") || "conversation").toLowerCase();
+  const title = String(flags.title || (room ? room.title : "GeoSeal Terminal Stage"));
+  const diagram = String(flags.diagram || (example ? example.diagram : "") || (content.includes("->") ? "flow" : "projector"));
+  const width = terminalWidth(flags);
+  const innerWidth = width - 4;
+  const hasRouteSeparators = /->|=>|→/.test(content);
+  const routeTokens = content
+    ? content
+        .toLowerCase()
+        .split(hasRouteSeparators ? /->|=>|→/ : /\s+/)
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .slice(0, 5)
+    : [];
+  const route = routeTokens.length ? routeTokens.join(" → ") : "input → route → receipt";
+  const payload = {
+    schema_version: "geoseal_terminal_stage_v1",
+    ok: true,
+    title,
+    room: roomId,
+    example: exampleId || null,
+    mode,
+    diagram,
+    width,
+    content,
+    route_hint: route,
+    panels: ["signal", "stage", "receipt"],
+    room_context: room || null,
+    available_examples: availableStageExamples(roomId),
+    frames: example ? example.frames : [],
+  };
+  const lines = [
+    ...boxed(title, [
+      `mode: ${mode}`,
+      room ? room.purpose : "AI terminal projector: signal, stage, receipt.",
+    ], width),
+    "",
+    ...boxed("signal", [content || "Pass text with: geoseal stage \"input -> route -> receipt\""], width),
+    "",
+    ...boxed("stage", stageDiagram(diagram, content || "input -> route -> receipt", innerWidth), width),
+    "",
+    ...boxed("receipt", [
+      `route: ${route}`,
+      example ? `example: ${exampleId} (${example.frames.length} frames)` : `examples: ${availableStageExamples(roomId).join(", ") || "none"}`,
+      room ? `room examples: ${room.examples.slice(0, 2).join(" | ")}` : "next: use --json for machine output or --diagram flow/projector",
+      `safety: run geoseal command-check before shell execution`,
+    ], width),
+  ];
+  writeJsonOrText(flags, payload, lines.join("\n"));
+}
+
+function runStageFrame(positionals, flags) {
+  const roomId = String(flags.room || "frontend").toLowerCase();
+  const room = STAGE_ROOMS[roomId];
+  const { id: exampleId, example } = stageExample(roomId, flags.example);
+  const jsonCarriedContent = typeof flags.json === "string" ? flags.json : "";
+  const customContent = String(flags.content || flags.message || jsonCarriedContent || positionals.slice(1).join(" ")).trim();
+  const content = customContent || (example ? example.content : "");
+  const frames = example
+    ? example.frames
+    : wrapText(content || "Start with a goal, produce one visible step, run command-check, then record a receipt.", 62);
+  const width = terminalWidth(flags);
+  const hasRouteSeparators = /->|=>/.test(content);
+  const routeTokens = content
+    ? content
+        .toLowerCase()
+        .split(hasRouteSeparators ? /->|=>/ : /\s+/)
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .slice(0, 6)
+    : [];
+  const route = routeTokens.length ? routeTokens.join(" -> ") : "frame 1 -> command-check -> receipt";
+  const payload = {
+    schema_version: "geoseal_stage_frame_v1",
+    ok: Boolean(room && (!exampleId || example)),
+    room: roomId,
+    room_context: room || null,
+    example: exampleId || null,
+    available_examples: availableStageExamples(roomId),
+    content,
+    route_hint: route,
+    frames: frames.map((text, index) => ({
+      index: index + 1,
+      title: `frame ${String(index + 1).padStart(2, "0")}`,
+      text,
+    })),
+    safety: {
+      preflight: "Run geoseal command-check before shell execution.",
+      destructive_scope: "home, drive root, system, and cloud-sync destructive commands are refused.",
+    },
+  };
+  if (!room) {
+    payload.error = "unknown_room";
+    payload.available = Object.keys(STAGE_ROOMS);
+  } else if (exampleId && !example) {
+    payload.error = "unknown_example";
+  }
+  const frameLines = [
+    ...boxed(room ? `${room.title} Stage Frames` : "Unknown Stage Room", [
+      room ? room.purpose : `available rooms: ${Object.keys(STAGE_ROOMS).join(", ")}`,
+      example ? `example: ${exampleId}` : `available examples: ${availableStageExamples(roomId).join(", ") || "none"}`,
+      `route: ${route}`,
+    ], width),
+    "",
+    ...frames.flatMap((frame, index) => boxed(`frame ${String(index + 1).padStart(2, "0")}`, [
+      frame,
+      index === frames.length - 1 ? "receipt: save output, tests, and next command-check." : "next: continue inside this room.",
+    ], width).concat("")),
+    ...boxed("safety", [
+      "Preflight shell commands with: geoseal command-check \"...\"",
+      "Blocked: destructive commands against home, root, system, or cloud-sync scopes.",
+    ], width),
+  ];
+  writeJsonOrText(flags, payload, frameLines.join("\n"));
+  if (!payload.ok) process.exitCode = 2;
+}
+
+function runRooms(flags) {
+  const roomId = flags.room ? String(flags.room).toLowerCase() : "";
+  const rooms = Object.entries(STAGE_ROOMS).map(([id, room]) => ({ id, ...room }));
+  const selected = roomId ? rooms.find((room) => room.id === roomId) : null;
+  const payload = {
+    schema_version: "geoseal_stage_rooms_v1",
+    ok: Boolean(!roomId || selected),
+    selected: selected || null,
+    rooms,
+  };
+  if (roomId && !selected) {
+    payload.error = "unknown_room";
+    payload.available = rooms.map((room) => room.id);
+  }
+  const lines = selected
+    ? boxed(selected.title, [
+        selected.purpose,
+        `examples: ${selected.examples.join(" | ")}`,
+        `safe blocks: ${selected.safeCommands.join(", ")}`,
+      ], terminalWidth(flags))
+    : rooms.flatMap((room) => boxed(`${room.id}: ${room.title}`, [room.purpose, `try: geoseal stage --room ${room.id} --mode learn "..."`], terminalWidth(flags)).concat(""));
+  writeJsonOrText(flags, payload, lines.join("\n"));
+  if (roomId && !selected) process.exitCode = 2;
+}
+
+function commandRisk(commandText) {
+  const text = String(commandText || "").trim();
+  const lower = text.toLowerCase();
+  const reasons = [];
+  let decision = "allow";
+  let safety = "safe";
+
+  const destructivePatterns = [
+    /\brm\s+(-[a-z]*r[a-z]*f|-rf|-fr)\b/i,
+    /\bremove-item\b.*\b-recurse\b/i,
+    /\bdel(?:ete)?\b.*\b\/s\b/i,
+    /\bformat\b/i,
+    /\bdrop\s+table\b/i,
+    /\bwipe\b/i,
+    /\btruncate\b/i,
+    /\bgit\s+reset\s+--hard\b/i,
+    /\bgit\s+clean\b.*\b-[a-z]*f/i,
+  ];
+  const protectedScopes = [
+    /(^|\s|["'])\/($|\s|["'])/,
+    /c:\\($|\s|["'])/i,
+    /c:\\windows/i,
+    /c:\\users\\issda($|\\|\s|["'])/i,
+    /system32/i,
+    /program files/i,
+    /\bonedrive\b/i,
+  ];
+  const networkPatterns = [/\bcurl\b/i, /\binvoke-webrequest\b/i, /\bwget\b/i, /\bssh\b/i, /\bscp\b/i, /\bgh\s+pr\s+merge\b/i, /\bgh\s+release\b/i];
+  const writePatterns = [/\bset-content\b/i, /\badd-content\b/i, />\s*[^&]/, /\bmove-item\b/i, /\bcopy-item\b/i, /\bgit\s+push\b/i, /\bnpm\s+publish\b/i];
+
+  if (!text) {
+    return { decision: "block", safety: "missing", reasons: ["No command supplied."] };
+  }
+  if (destructivePatterns.some((pattern) => pattern.test(text))) {
+    decision = "confirm";
+    safety = "destructive";
+    reasons.push("Command matches a destructive operation pattern.");
+  }
+  if (protectedScopes.some((pattern) => pattern.test(text))) {
+    decision = "block";
+    safety = "refused";
+    reasons.push("Command targets a protected drive, home, cloud-sync, or system scope.");
+  }
+  if (decision === "allow" && networkPatterns.some((pattern) => pattern.test(text))) {
+    decision = "confirm";
+    safety = "network";
+    reasons.push("Command can transmit data or change remote state.");
+  }
+  if (decision === "allow" && writePatterns.some((pattern) => pattern.test(text))) {
+    decision = "confirm";
+    safety = "write";
+    reasons.push("Command writes, moves, publishes, or mutates files/state.");
+  }
+  if (!reasons.length) reasons.push("No destructive, protected-scope, write, or network pattern detected.");
+  return { decision, safety, reasons };
+}
+
+function runCommandCheck(positionals, flags) {
+  const jsonCarriedCommand = typeof flags.json === "string" ? flags.json : "";
+  const commandText = String(flags.command || flags.content || jsonCarriedCommand || positionals.slice(1).join(" ")).trim();
+  const risk = commandRisk(commandText);
+  const payload = {
+    schema_version: "geoseal_command_preflight_v1",
+    ok: risk.decision === "allow",
+    command: commandText,
+    ...risk,
+    guidance:
+      risk.decision === "allow"
+        ? "Allowed for low-risk execution."
+        : risk.decision === "confirm"
+          ? "Require explicit human confirmation and a reason before execution."
+          : "Refuse execution. Change the target or use a non-destructive plan.",
+  };
+  const icon = risk.decision === "allow" ? "ALLOW" : risk.decision === "confirm" ? "CONFIRM" : "BLOCK";
+  const lines = boxed("command preflight", [
+    `${icon}: ${risk.safety}`,
+    `command: ${commandText || "<none>"}`,
+    ...risk.reasons.map((reason) => `reason: ${reason}`),
+    payload.guidance,
+  ], terminalWidth(flags));
+  writeJsonOrText(flags, payload, lines.join("\n"));
+  if (risk.decision === "block") process.exitCode = 2;
+  if (risk.decision === "confirm") process.exitCode = 3;
 }
 
 function parseFrontmatter(text) {
@@ -391,6 +908,18 @@ function runDecodeCodeLanes(flags, positionals) {
 }
 
 const DEFAULT_SERVICE_DIR = path.join(ROOT, "artifacts", "geoseal_service");
+const DEFAULT_SERVICE_HOST = "127.0.0.1";
+const DEFAULT_SERVICE_PORT = 8002;
+const GEOSEAL_SERVICE_MODULE = "src.api.geoseal_service:app";
+const GEOSEAL_DEMO_API_KEY = "demo_key_12345";
+
+function pythonExecutables() {
+  const executables = [];
+  if (process.env.SCBE_GEOSEAL_PYTHON) executables.push(process.env.SCBE_GEOSEAL_PYTHON);
+  if (process.platform === "win32") executables.push("py");
+  executables.push("python", "python3");
+  return [...new Set(executables.filter(Boolean))];
+}
 
 function serviceOutputDir(flags) {
   const explicit = flags["service-output-dir"] || flags["state-dir"] || process.env.SCBE_GEOSEAL_SERVICE_DIR;
@@ -455,30 +984,232 @@ function resolveActiveServiceBase(flags) {
 }
 
 function probePythonModule(moduleName) {
-  const executables = [];
-  if (process.env.SCBE_GEOSEAL_PYTHON) executables.push(process.env.SCBE_GEOSEAL_PYTHON);
-  if (process.platform === "win32") executables.push("py");
-  executables.push("python", "python3");
-
-  for (const executable of executables) {
-    const result = spawnSync(executable, ["-m", moduleName, "--help"], {
+  for (const executable of pythonExecutables()) {
+    const script = [
+      "import importlib.util, json",
+      `name=${JSON.stringify(moduleName)}`,
+      "spec=importlib.util.find_spec(name)",
+      "print(json.dumps({'module': name, 'found': spec is not None, 'origin': getattr(spec, 'origin', None)}))",
+    ].join("; ");
+    const result = spawnSync(executable, ["-c", script], {
       encoding: "utf8",
       shell: false,
       cwd: ROOT,
       timeout: 8000,
     });
     if (!result.error) {
+      let detail = {};
+      try {
+        detail = JSON.parse(String(result.stdout || "{}"));
+      } catch (_err) {
+        detail = {};
+      }
       return {
         executable,
         module: moduleName,
-        ok: result.status === 0,
+        ok: result.status === 0 && detail.found === true,
         status: result.status,
+        origin: detail.origin || null,
         stdout_preview: String(result.stdout || "").slice(0, 600),
         stderr_preview: String(result.stderr || "").slice(0, 600),
       };
     }
   }
   return { module: moduleName, ok: false, error: "no usable Python executable found" };
+}
+
+async function probeServiceHealth(apiBase, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`${apiBase.replace(/\/+$/, "")}/v1/spaceport/status`, {
+      method: "GET",
+      signal: controller.signal,
+    });
+    const text = await response.text();
+    let body = null;
+    try {
+      body = JSON.parse(text);
+    } catch (_err) {
+      body = text.slice(0, 1000);
+    }
+    return { ok: response.ok, status: response.status, body };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err && err.name === "AbortError" ? "health_probe_timeout" : "health_probe_failed",
+      message: err && err.message ? err.message : String(err),
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function serviceApiBase(flags) {
+  const host = String(flags.host || DEFAULT_SERVICE_HOST);
+  const port = Number(flags.port || DEFAULT_SERVICE_PORT);
+  return `http://${host}:${port}`;
+}
+
+function serviceRuntimeHeaders(flags) {
+  if (flags["allow-demo-keys"]) return { "x-api-key": GEOSEAL_DEMO_API_KEY };
+  if (apiKey(flags)) return { "x-api-key": apiKey(flags) };
+  return {};
+}
+
+async function waitForService(apiBase, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  let lastProbe = null;
+  while (Date.now() < deadline) {
+    lastProbe = await probeServiceHealth(apiBase, Math.min(1500, Math.max(500, timeoutMs)));
+    if (lastProbe.ok) return lastProbe;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  return lastProbe || { ok: false, error: "health_probe_timeout" };
+}
+
+async function runService(flags) {
+  const stateDir = serviceOutputDir(flags);
+  fs.mkdirSync(stateDir, { recursive: true });
+  const statePath = path.join(stateDir, "service.json");
+  const apiBaseUrl = serviceApiBase(flags);
+  const existing = resolveActiveServiceBase(flags);
+  if (existing) {
+    const probe = flags["probe-health"] ? await probeServiceHealth(existing.apiBase, Number(flags["probe-timeout"] || 3000)) : null;
+    const payload = {
+      schema_version: "geoseal_service_v1",
+      ok: true,
+      status: "already_running",
+      api_base: existing.apiBase,
+      pid: existing.pid,
+      state_path: existing.statePath,
+      health: probe,
+    };
+    writeJsonOrText(flags, payload, `GeoSeal service already running at ${existing.apiBase} (pid ${existing.pid})`);
+    return;
+  }
+
+  const env = { ...process.env };
+  if (flags["allow-demo-keys"]) env.SCBE_ALLOW_DEMO_KEYS = "1";
+  if (apiKey(flags)) env.SCBE_API_KEY = apiKey(flags);
+
+  const args = ["-m", "uvicorn", GEOSEAL_SERVICE_MODULE, "--host", String(flags.host || DEFAULT_SERVICE_HOST), "--port", String(flags.port || DEFAULT_SERVICE_PORT)];
+  const executable = pythonExecutables()[0];
+  const child = spawn(executable, args, {
+    cwd: ROOT,
+    env,
+    detached: Boolean(flags.detach),
+    stdio: flags.detach ? "ignore" : "inherit",
+    shell: false,
+    windowsHide: true,
+  });
+
+  if (flags.detach) child.unref();
+
+  const state = {
+    schema_version: "geoseal_service_state_v1",
+    api_base: apiBaseUrl,
+    pid: child.pid,
+    started_at: new Date().toISOString(),
+    command: [executable, ...args],
+    runtime_headers: serviceRuntimeHeaders(flags),
+  };
+  fs.writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+
+  if (!flags.detach) return;
+
+  const health = flags["probe-health"] ? await waitForService(apiBaseUrl, Number(flags["probe-timeout"] || 10000)) : null;
+  const ok = !health || health.ok;
+  const payload = {
+    schema_version: "geoseal_service_v1",
+    ok,
+    status: ok ? "started" : "started_health_unconfirmed",
+    api_base: apiBaseUrl,
+    pid: child.pid,
+    state_path: statePath,
+    health,
+  };
+  writeJsonOrText(flags, payload, `GeoSeal service ${payload.status} at ${apiBaseUrl} (pid ${child.pid})`);
+  if (!ok) process.exitCode = 1;
+}
+
+async function runServiceStatus(flags) {
+  const stateDir = serviceOutputDir(flags);
+  const statePath = path.join(stateDir, "service.json");
+  let state = null;
+  try {
+    state = JSON.parse(fs.readFileSync(statePath, "utf8"));
+  } catch (_err) {
+    const payload = {
+      schema_version: "geoseal_service_status_v1",
+      ok: false,
+      status: "not_started",
+      state_path: statePath,
+      fixes: ["geoseal service --detach --allow-demo-keys --probe-health --json"],
+    };
+    writeJsonOrText(flags, payload, "GeoSeal service is not started.");
+    process.exitCode = 2;
+    return;
+  }
+
+  const pid = Number(state.pid);
+  const alive = isPidAlive(pid);
+  const probe = flags["probe-health"] && state.api_base ? await probeServiceHealth(String(state.api_base), Number(flags["probe-timeout"] || 3000)) : null;
+  const ok = alive && (!probe || probe.ok);
+  const payload = {
+    schema_version: "geoseal_service_status_v1",
+    ok,
+    status: ok ? "running" : alive ? "running_health_failed" : "stale",
+    api_base: state.api_base || null,
+    pid: Number.isFinite(pid) ? pid : null,
+    state_path: statePath,
+    health: probe,
+  };
+  writeJsonOrText(flags, payload, ok ? `GeoSeal service running at ${state.api_base}` : `GeoSeal service state is ${payload.status}.`);
+  if (!ok) process.exitCode = alive ? 1 : 2;
+}
+
+function runServiceStop(flags) {
+  const stateDir = serviceOutputDir(flags);
+  const statePath = path.join(stateDir, "service.json");
+  let state = null;
+  try {
+    state = JSON.parse(fs.readFileSync(statePath, "utf8"));
+  } catch (_err) {
+    const payload = {
+      schema_version: "geoseal_service_stop_v1",
+      ok: true,
+      status: "not_started",
+      state_path: statePath,
+    };
+    writeJsonOrText(flags, payload, "GeoSeal service is not started.");
+    return;
+  }
+
+  const pid = Number(state.pid);
+  let stopped = false;
+  if (Number.isFinite(pid) && pid > 0 && isPidAlive(pid)) {
+    try {
+      process.kill(pid);
+      stopped = true;
+    } catch (_err) {
+      stopped = false;
+    }
+  }
+  try {
+    fs.rmSync(statePath, { force: true });
+  } catch (_err) {
+    // Best-effort cleanup only.
+  }
+  const payload = {
+    schema_version: "geoseal_service_stop_v1",
+    ok: stopped || !isPidAlive(pid),
+    status: stopped ? "stopped" : "state_cleared",
+    pid: Number.isFinite(pid) ? pid : null,
+    state_path: statePath,
+  };
+  writeJsonOrText(flags, payload, `GeoSeal service ${payload.status}.`);
+  if (!payload.ok) process.exitCode = 1;
 }
 
 function runDoctor(flags) {
@@ -488,6 +1219,12 @@ function runDoctor(flags) {
     "permissions",
     "custom-commands",
     "run-command",
+    "providers",
+    "provider-registry",
+    "lanes",
+    "product-lanes",
+    "ask",
+    "do",
     "status",
     "chat",
     ...Object.keys(COMMAND_MAP).filter((name) => name !== "status" && name !== "chat"),
@@ -533,6 +1270,192 @@ function runDoctor(flags) {
     `Python module src.geoseal_cli: ${payload.python_modules[0].ok ? "ok" : "fail"}`,
   ].join("\n");
   writeJsonOrText(flags, payload, text);
+}
+
+function commandExists(command, args = ["--version"]) {
+  const result = spawnSync(command, args, {
+    encoding: "utf8",
+    shell: false,
+    timeout: 3000,
+  });
+  return !result.error && result.status === 0;
+}
+
+function runProviderRegistry(flags) {
+  const payload = {
+    schema_version: "geoseal_provider_registry_v1",
+    ok: true,
+    policy: {
+      default_route: "free_local_first",
+      remote_requires_configuration: true,
+      paid_providers_are_optional: true,
+      secrets_to_remote_models: "forbid_without_explicit_provider_config",
+    },
+    providers: [
+      {
+        id: "local-service",
+        tier: "free",
+        kind: "geoseal",
+        installed: true,
+        command: "geoseal service --detach --allow-demo-keys --probe-health --json",
+        role: "Local GeoSeal API bridge, route inspection, agent harness, code packets.",
+      },
+      {
+        id: "ollama",
+        tier: "free",
+        kind: "local_llm",
+        installed: commandExists("ollama", ["--version"]),
+        command: "ollama serve",
+        role: "Local/offline coding and reasoning model host.",
+      },
+      {
+        id: "llama.cpp",
+        tier: "free",
+        kind: "local_llm",
+        installed: commandExists("llama-cli", ["--help"]) || commandExists("llama-server", ["--help"]),
+        command: "llama-server",
+        role: "Local GGUF model runner.",
+      },
+      {
+        id: "lmstudio",
+        tier: "free",
+        kind: "local_llm",
+        installed: commandExists("lms", ["--version"]),
+        command: "lms server start",
+        role: "Local OpenAI-compatible model server.",
+      },
+      {
+        id: "huggingface",
+        tier: "free_or_paid",
+        kind: "remote_provider",
+        configured: Boolean(process.env.HF_TOKEN || process.env.HUGGINGFACE_API_TOKEN),
+        env: ["HF_TOKEN", "HUGGINGFACE_API_TOKEN"],
+        role: "Hosted inference, datasets, model jobs.",
+      },
+      {
+        id: "openai",
+        tier: "paid",
+        kind: "remote_provider",
+        configured: Boolean(process.env.OPENAI_API_KEY),
+        env: ["OPENAI_API_KEY"],
+        role: "Paid model fallback for coding and analysis.",
+      },
+      {
+        id: "anthropic",
+        tier: "paid",
+        kind: "remote_provider",
+        configured: Boolean(process.env.ANTHROPIC_API_KEY),
+        env: ["ANTHROPIC_API_KEY"],
+        role: "Paid Claude fallback when explicitly configured.",
+      },
+      {
+        id: "openrouter",
+        tier: "paid",
+        kind: "remote_provider",
+        configured: Boolean(process.env.OPENROUTER_API_KEY),
+        env: ["OPENROUTER_API_KEY"],
+        role: "Paid multi-model router fallback.",
+      },
+    ],
+  };
+  const text = payload.providers
+    .map((provider) => `${provider.id} [${provider.tier}] ${provider.installed || provider.configured ? "ready" : "not configured"}`)
+    .join("\n");
+  writeJsonOrText(flags, payload, text);
+}
+
+function runProductLanes(flags) {
+  const payload = {
+    schema_version: "geoseal_product_lanes_v1",
+    ok: true,
+    product: "multi-agent free/local-first coding shell with optional paid AI",
+    lanes: [
+      {
+        id: "agents",
+        commands: ["geoseal ask", "geoseal do", "geoseal agent-harness", "geoseal compile", "geoseal orchestrator-dispatch"],
+        purpose: "Claude Code / Clawbot-style task routing, plans, manifests, and execution receipts.",
+      },
+      {
+        id: "providers",
+        commands: ["geoseal providers", "geoseal backend-registry", "geoseal explain-route"],
+        purpose: "Free/local-first provider chain with paid AI as explicit fallback.",
+      },
+      {
+        id: "chemistry",
+        commands: ["scbe chem atomize", "scbe chem bonds", "scbe chem convert", "scbe chem orbitals", "scbe chem benchmark"],
+        purpose: "Chemistry adapter, molecular conversion, orbital semantics, and industry benchmarks.",
+      },
+      {
+        id: "tokenizer",
+        commands: ["geoseal tokenizer-code-lanes", "geoseal verify-code-lanes", "geoseal decode-code-lanes", "geoseal tongue-compile", "geoseal tongue-run"],
+        purpose: "Bijective command tokenization, binary/hex lanes, six-tongue code families, and VM execution.",
+      },
+      {
+        id: "arrays-spreadsheets",
+        commands: ["scbe describe --json", "scbe chem benchmark --json", "geoseal code-packet --json"],
+        purpose: "Machine-readable arrays and spreadsheet-ready evidence packets.",
+      },
+      {
+        id: "receipts",
+        commands: ["geoseal history", "geoseal replay", "geoseal testing-cli", "geoseal permissions"],
+        purpose: "Audit trail, replayable runs, test playback, and permission model.",
+      },
+    ],
+  };
+  const text = payload.lanes.map((lane) => `${lane.id}: ${lane.purpose}`).join("\n");
+  writeJsonOrText(flags, payload, text);
+}
+
+async function runAliasApi(alias, apiCommand, positionals, flags) {
+  const prompt = String(flags.message || flags.goal || flags.content || positionals.slice(1).join(" ")).trim();
+  if (!prompt) {
+    const payload = {
+      schema_version: "geoseal_alias_v1",
+      ok: false,
+      error: "missing_prompt",
+      message: `Pass text, for example: geoseal ${alias} "add tests for tokenizer lanes"`,
+    };
+    writeJsonOrText(flags, payload, payload.message);
+    process.exitCode = 2;
+    return;
+  }
+  const routedFlags = { ...flags };
+  if (apiCommand === "chat") {
+    routedFlags.message = prompt;
+    routedFlags.content = prompt;
+  } else {
+    routedFlags.goal = prompt;
+    routedFlags.language = routedFlags.language || "python";
+    routedFlags["permission-mode"] = routedFlags["permission-mode"] || "observe";
+  }
+  const explicitBase = apiBase(routedFlags);
+  if (explicitBase) {
+    await runApi(apiCommand, routedFlags, { resolvedBase: explicitBase, autoContext: null });
+    return;
+  }
+  const active = resolveActiveServiceBase(routedFlags);
+  if (active) {
+    process.stderr.write(
+      `[geoseal] using detected service at ${active.apiBase} (pid ${active.pid}) - set SCBE_GEOSEAL_AUTODETECT=0 to disable\n`
+    );
+    await runApi(apiCommand, routedFlags, { resolvedBase: active.apiBase, autoContext: active });
+    return;
+  }
+  const payload = {
+    schema_version: "geoseal_alias_v1",
+    ok: false,
+    error: "local_service_required",
+    alias,
+    routes_to: apiCommand,
+    prompt,
+    fixes: [
+      "geoseal service --detach --allow-demo-keys --probe-health --json",
+      `geoseal ${alias} "${prompt.replace(/"/g, '\\"')}" --json`,
+      "geoseal providers --json",
+    ],
+  };
+  writeJsonOrText(routedFlags, payload, `${alias} needs a local GeoSeal service. Try: ${payload.fixes[0]}`);
+  process.exitCode = 2;
 }
 
 function buildBody(command, flags) {
@@ -670,9 +1593,12 @@ function ensureBody(command, body) {
     }
     return;
   }
+  if (command === "chat") {
+    if (!body.message) throw new Error("--message or --content is required");
+    return;
+  }
   if (!body.language) throw new Error("--language is required");
   if (!body.content && command !== "chat") throw new Error("--content is required");
-  if (command === "chat" && !body.message) throw new Error("--message or --content is required");
   if (command === "play-card" && !body.card) throw new Error("--card is required for play-card");
   if (command === "orchestrator-init" && !body.output_dir) throw new Error("--output-dir is required for orchestrator-init");
 }
@@ -716,14 +1642,9 @@ async function runApi(command, flags, ctx = {}) {
 }
 
 function runPythonPassthrough(args) {
-  const executables = [];
-  if (process.env.SCBE_GEOSEAL_PYTHON) executables.push(process.env.SCBE_GEOSEAL_PYTHON);
-  if (process.platform === "win32") executables.push("py");
-  executables.push("python", "python3");
-
   const moduleCandidates = ["src.geoseal_cli", "geoseal_cli"];
 
-  for (const executable of executables) {
+  for (const executable of pythonExecutables()) {
     for (const moduleName of moduleCandidates) {
       const result = spawnSync(executable, ["-m", moduleName, ...args], {
         stdio: "inherit",
@@ -740,8 +1661,16 @@ function runPythonPassthrough(args) {
     }
   }
 
-  for (const executable of executables) {
-    const result = spawnSync(executable, ["-m", "geoseal_cli", ...args], {
+  process.stderr.write(
+    "GeoSeal npm shell could not find a usable Python runtime. Install the PyPI package and set SCBE_GEOSEAL_PYTHON if needed.\n"
+  );
+  process.exit(1);
+}
+
+function runScbePassthrough(args) {
+  const script = path.join(ROOT, "scbe.py");
+  for (const executable of pythonExecutables()) {
+    const result = spawnSync(executable, [script, ...args], {
       stdio: "inherit",
       shell: false,
       cwd: ROOT,
@@ -751,7 +1680,7 @@ function runPythonPassthrough(args) {
   }
 
   process.stderr.write(
-    "GeoSeal npm shell could not find a usable Python runtime. Install the PyPI package and set SCBE_GEOSEAL_PYTHON if needed.\n"
+    "GeoSeal npm shell could not find a usable Python runtime for scbe.py. Set SCBE_GEOSEAL_PYTHON if needed.\n"
   );
   process.exit(1);
 }
@@ -769,6 +1698,10 @@ async function main() {
     process.stdout.write(`${PACKAGE_JSON.version}\n`);
     return;
   }
+  if (SCBE_SPINE_COMMANDS.has(command)) {
+    runScbePassthrough(argv);
+    return;
+  }
   if (command === "doctor") {
     runDoctor(flags);
     return;
@@ -779,6 +1712,38 @@ async function main() {
   }
   if (command === "custom-commands") {
     runCustomCommands(flags);
+    return;
+  }
+  if (command === "providers" || command === "provider-registry") {
+    runProviderRegistry(flags);
+    return;
+  }
+  if (command === "lanes" || command === "product-lanes") {
+    runProductLanes(flags);
+    return;
+  }
+  if (command === "rooms") {
+    runRooms(flags);
+    return;
+  }
+  if (command === "stage") {
+    runStage(positionals, flags);
+    return;
+  }
+  if (command === "stage-frame" || command === "frames") {
+    runStageFrame(positionals, flags);
+    return;
+  }
+  if (command === "command-check" || command === "preflight") {
+    runCommandCheck(positionals, flags);
+    return;
+  }
+  if (command === "ask") {
+    await runAliasApi("ask", "chat", positionals, flags);
+    return;
+  }
+  if (command === "do") {
+    await runAliasApi("do", "agent-harness", positionals, flags);
     return;
   }
   if (command === "run-command") {
@@ -795,6 +1760,18 @@ async function main() {
   }
   if (command === "decode-code-lanes") {
     runDecodeCodeLanes(flags, positionals.slice(1));
+    return;
+  }
+  if (command === "service") {
+    await runService(flags);
+    return;
+  }
+  if (command === "service-status") {
+    await runServiceStatus(flags);
+    return;
+  }
+  if (command === "service-stop") {
+    runServiceStop(flags);
     return;
   }
 

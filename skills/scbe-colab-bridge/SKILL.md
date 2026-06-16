@@ -1,7 +1,6 @@
 ---
 name: scbe-colab-bridge
 description: Control Google Colab notebooks from Claude Code via Chrome extension. Execute cells, run terminal commands, read outputs, and manage GPU compute remotely.
-user_invocable: true
 ---
 
 # SCBE Colab Bridge

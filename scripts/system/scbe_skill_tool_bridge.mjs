@@ -6,8 +6,8 @@
  *              definitions to MCP tool schemas. Supports --action quick | full.
  */
 
-import { readdirSync, readFileSync, existsSync } from 'fs';
-import { resolve, join } from 'path';
+import { readdirSync, readFileSync, existsSync, statSync } from 'fs';
+import { basename, dirname, resolve, join, relative } from 'path';
 
 const ROOT = resolve(import.meta.dirname, '..', '..');
 const SKILLS_DIR = resolve(ROOT, 'skills');
@@ -19,28 +19,71 @@ const action = actionIdx !== -1 ? args[actionIdx + 1] : 'quick';
 console.log(`[skill-bridge] action=${action}`);
 
 if (!existsSync(SKILLS_DIR)) {
-  console.log('[skill-bridge] No skills/ directory found — nothing to bridge');
+  console.log('[skill-bridge] No skills/ directory found - nothing to bridge');
   process.exit(0);
 }
 
-const dirs = readdirSync(SKILLS_DIR, { withFileTypes: true })
-  .filter((d) => d.isDirectory())
-  .map((d) => d.name);
+function findSkillFiles(root) {
+  const found = [];
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    const path = join(root, entry.name);
+    if (entry.isDirectory()) {
+      found.push(...findSkillFiles(path));
+    } else if (entry.isFile() && entry.name === 'SKILL.md') {
+      found.push(path);
+    }
+  }
+  return found;
+}
 
-console.log(`[skill-bridge] Found ${dirs.length} skill(s): ${dirs.join(', ')}`);
+function parseSkillMarkdown(path) {
+  const text = readFileSync(path, 'utf8');
+  const frontmatter = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  const data = {};
 
-for (const dir of dirs) {
-  const manifest = join(SKILLS_DIR, dir, 'manifest.json');
-  if (existsSync(manifest)) {
-    const data = JSON.parse(readFileSync(manifest, 'utf8'));
-    console.log(`  [${dir}] ${data.name || dir} — ${data.description || 'no description'}`);
-    if (action === 'full' && data.tools) {
-      for (const tool of data.tools) {
+  if (frontmatter) {
+    for (const line of frontmatter[1].split(/\r?\n/)) {
+      const match = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+      if (match) {
+        data[match[1]] = match[2].trim().replace(/^['"]|['"]$/g, '');
+      }
+    }
+  }
+
+  return {
+    name: data.name || basename(dirname(path)),
+    description: data.description || 'no description',
+    path,
+  };
+}
+
+function readSkill(path) {
+  const manifest = join(dirname(path), 'manifest.json');
+  const skill = parseSkillMarkdown(path);
+
+  if (!existsSync(manifest) || !statSync(manifest).isFile()) {
+    return skill;
+  }
+
+  return { ...skill, ...JSON.parse(readFileSync(manifest, 'utf8')), path };
+}
+
+const skills = findSkillFiles(SKILLS_DIR).map(readSkill);
+
+console.log(`[skill-bridge] Found ${skills.length} skill(s): ${skills.map((skill) => skill.name).join(', ')}`);
+
+for (const skill of skills) {
+  const id = relative(SKILLS_DIR, dirname(skill.path));
+  console.log(`  [${id}] ${skill.name} - ${skill.description || 'no description'}`);
+
+  if (action === 'full') {
+    console.log(`    skill: ${relative(ROOT, skill.path)}`);
+
+    if (skill.tools) {
+      for (const tool of skill.tools) {
         console.log(`    tool: ${tool.name || tool}`);
       }
     }
-  } else {
-    console.log(`  [${dir}] (no manifest.json)`);
   }
 }
 

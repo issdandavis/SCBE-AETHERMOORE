@@ -31,6 +31,12 @@ from __future__ import annotations
 
 from typing import Any, Iterator, List, Optional, Tuple
 
+MODULE_SCOPE_NOTE = (
+    "Historical module name retained for compatibility. The canonical class is "
+    "BijectiveDoubleHashMap; this is not the Elastic Hashing construction from "
+    "arXiv:2501.02305."
+)
+
 _M64 = (1 << 64) - 1
 _C1 = 0xBF58476D1CE4E5B9
 _C2 = 0x94D049BB133111EB
@@ -68,8 +74,13 @@ def splitmix64_inverse(y: int) -> int:
     return y
 
 
-class ElasticBijectiveHash:
-    """Open-addressing map: non-greedy double-hash probing + reversible mix."""
+class BijectiveDoubleHashMap:
+    """Open-addressing map: double-hash probing plus reversible splitmix64.
+
+    This is a practical reversible map, not the Elastic Hashing construction
+    from arXiv:2501.02305. The legacy ElasticBijectiveHash alias remains for
+    compatibility with existing SCBE callers.
+    """
 
     def __init__(self, bits: int = 16, seed: int = 0) -> None:
         if bits < 1:
@@ -154,8 +165,7 @@ class ElasticBijectiveHash:
 
 # Honest name (per research brief docs/research/elastic_hashing_*): this class
 # is a reversible splitmix64 DOUBLE-HASH map, not the paper's Elastic Hashing.
-# `ElasticBijectiveHash` is kept as a back-compat alias.
-BijectiveDoubleHashMap = ElasticBijectiveHash
+# `ElasticBijectiveHash` is kept as a back-compat alias below.
 
 
 def encode_key_with_tongue(key: bytes, tongue: str = "KO") -> str:
@@ -168,7 +178,7 @@ def encode_key_with_tongue(key: bytes, tongue: str = "KO") -> str:
 
 def _bench_at(bits: int, load: float) -> Tuple[float, float, bool]:
     import random
-    h = ElasticBijectiveHash(bits=bits, seed=42)
+    h = BijectiveDoubleHashMap(bits=bits, seed=42)
     n = int(h.size * load)
     keys = [f"k-{i}-{random.getrandbits(48)}" for i in range(n)]
     for i, k in enumerate(keys):
@@ -183,16 +193,19 @@ def _bench_at(bits: int, load: float) -> Tuple[float, float, bool]:
 
 def _demo() -> None:
     bits = 16
-    print(f"Elastic Bijective Hash  (non-greedy double-hash, 2^{bits} = {1<<bits} slots)\n")
+    print(f"Bijective Double Hash Map  (2^{bits} = {1<<bits} slots)\n")
     print(f"  {'load':>6} | {'probes/insert':>13} | {'probes/lookup':>13} | bijective")
     print(f"  {'-'*6}-+-{'-'*13}-+-{'-'*13}-+-----------")
     for load in (0.50, 0.90, 0.99, 0.999):
         ins, look, ok = _bench_at(bits, load)
         print(f"  {load*100:5.1f}% | {ins:13.2f} | {look:13.2f} | {'YES' if ok else 'FAIL'}")
     # reversible-mix witness
-    x = ElasticBijectiveHash.key_int("hello") & _M64
+    x = BijectiveDoubleHashMap.key_int("hello") & _M64
     print(f"\n  splitmix64 reversible: x={x} -> mix -> inverse == x : "
           f"{splitmix64_inverse(splitmix64(x)) == x}")
+
+
+ElasticBijectiveHash = BijectiveDoubleHashMap
 
 
 if __name__ == "__main__":
