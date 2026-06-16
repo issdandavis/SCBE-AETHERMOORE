@@ -2408,20 +2408,53 @@ def _ask_ollama(prompt: str, model: Optional[str]) -> str:
     return _run_backend_cli(["ollama", "run", model or "llama3.2", prompt])
 
 
-def _ask_api(prompt: str, model: Optional[str], provider: str) -> str:
+# Forced "show thinking" mode (2026 API). Adaptive thinking is the supported
+# mechanism (budget_tokens is rejected on Opus 4.7/4.8). display:"summarized" is
+# REQUIRED to actually surface reasoning on the latest models, where thinking.display
+# defaults to "omitted" (the thinking field comes back empty). See:
+# https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking
+THINK_EFFORT = "high"
+
+
+def _anthropic_body(prompt: str, model: Optional[str], think: bool) -> Dict[str, Any]:
+    body: Dict[str, Any] = {
+        "model": model or "claude-sonnet-4-6",
+        "max_tokens": 8000 if think else 1024,  # thinking shares the max_tokens budget
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    if think:
+        body["thinking"] = {"type": "adaptive", "display": "summarized"}
+        body["output_config"] = {"effort": THINK_EFFORT}
+    return body
+
+
+def _anthropic_extract(data: Dict[str, Any], think: bool) -> str:
+    content = data.get("content", [])
+    answer = "".join(b.get("text", "") for b in content if b.get("type") == "text").strip()
+    if not think:
+        return answer
+    thinking = "\n".join(
+        b.get("thinking", "") for b in content
+        if b.get("type") == "thinking" and b.get("thinking")
+    ).strip()
+    if thinking:
+        return f"[thinking]\n{thinking}\n\n[answer]\n{answer}"
+    return f"[thinking: none surfaced - model answered directly]\n\n{answer}"
+
+
+def _ask_api(prompt: str, model: Optional[str], provider: str, think: bool = False) -> str:
     import urllib.request
     if provider == "anthropic":
-        body = {"model": model or "claude-sonnet-4-6", "max_tokens": 1024,
-                "messages": [{"role": "user", "content": prompt}]}
+        body = _anthropic_body(prompt, model, think)
         req = urllib.request.Request(
             "https://api.anthropic.com/v1/messages",
             data=json.dumps(body).encode(),
             headers={"x-api-key": os.environ["ANTHROPIC_API_KEY"],
                      "anthropic-version": "2023-06-01", "content-type": "application/json"})
         try:
-            with urllib.request.urlopen(req, timeout=120) as resp:
+            with urllib.request.urlopen(req, timeout=180) as resp:
                 data = json.loads(resp.read())
-            return "".join(b.get("text", "") for b in data.get("content", [])).strip()
+            return _anthropic_extract(data, think)
         except Exception as e:  # network/auth errors shouldn't crash the CLI
             return f"(anthropic API error: {e})"
     if provider == "openai":
@@ -2442,7 +2475,7 @@ def _ask_api(prompt: str, model: Optional[str], provider: str) -> str:
 
 
 def ai_ask(prompt: str, backend: Optional[str] = None,
-           model: Optional[str] = None) -> Tuple[str, str]:
+           model: Optional[str] = None, think: bool = False) -> Tuple[str, str]:
     """Return (answer, backend_used). Picks the first available backend."""
     available = _detect_backends()
     if not available:
@@ -2461,7 +2494,7 @@ def ai_ask(prompt: str, backend: Optional[str] = None,
         return _ask_codex(prompt, model), chosen
     if chosen == "ollama":
         return _ask_ollama(prompt, model), chosen
-    return _ask_api(prompt, model, chosen), chosen
+    return _ask_api(prompt, model, chosen, think=think), chosen
 
 
 def _render_history(history: List[Tuple[str, str]], new_q: str) -> str:
@@ -2489,7 +2522,7 @@ def cmd_ask(args: argparse.Namespace) -> int:
         return 2
     # ask = explain, never act — wrap so agentic backends just answer.
     answer, backend = ai_ask(_ANSWER_ONLY + prompt, getattr(args, "backend", None),
-                             getattr(args, "model", None))
+                             getattr(args, "model", None), think=getattr(args, "think", False))
     if getattr(args, "json_output", False):
         print(json.dumps({"prompt": prompt, "backend": backend, "answer": answer}))
     else:
@@ -3273,6 +3306,8 @@ Legacy (backward compat):
     ak.add_argument("--backend", choices=list(AI_BACKENDS), help="force a backend (default: auto)")
     ak.add_argument("--model", help="model name for the chosen backend")
     ak.add_argument("--json", dest="json_output", action="store_true")
+    ak.add_argument("--think", action="store_true",
+                    help="force adaptive thinking and SHOW the reasoning (anthropic backend)")
     ak.set_defaults(func=cmd_ask)
 
     ch = sub.add_parser("chat", help="Interactive AI chat with memory (any available model)")
