@@ -1579,6 +1579,25 @@ def cmd_code(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_think(args: argparse.Namespace) -> int:
+    """Bicameral cognition: logic vs intuition hemispheres, reconciled + interpreted."""
+    from python.scbe import bicameral as TH
+    from python.scbe import frontdoor as F
+
+    toks = getattr(args, "tokens", []) or []
+    if not toks:
+        print("usage: scbe think + sqrt *", file=sys.stderr)
+        return 2
+    try:
+        names, prog = F.tokens_to_program(" ".join(toks))
+    except ValueError as e:
+        print(str(e), file=sys.stderr)
+        return 1
+    print("THINKING about: " + " ".join(names))
+    print(TH.render(prog))
+    return 0
+
+
 def cmd_fold(args: argparse.Namespace) -> int:
     """Origami: unfold the cube to paper, fold a fan/crane, or play the number game."""
     from python.scbe import origami as O
@@ -3343,6 +3362,13 @@ Legacy (backward compat):
     fl.add_argument("--fortune", metavar="PROGRAM", help="build a fortune teller from a token program")
     fl.add_argument("--pick", type=int, nargs="+", help="fortune-teller picks, e.g. --pick 4 3 2")
     fl.set_defaults(func=cmd_fold)
+
+    tk = sub.add_parser(
+        "think",
+        help='Bicameral cognition: logic vs intuition, reconciled ("scbe think + sqrt *")',
+    )
+    tk.add_argument("tokens", nargs="*", help="token program, e.g. + sqrt *")
+    tk.set_defaults(func=cmd_think)
 
     rt = sub.add_parser(
         "route",
