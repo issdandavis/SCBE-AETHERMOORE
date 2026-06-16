@@ -594,7 +594,9 @@ def main() -> int:
             if p.get("ok"):
                 print(f"      {p['provider']:12s}  p50={p['p50_ms']:.0f}ms  ({p['latencies_ms']})")
             else:
-                print(f"      {p['provider']:12s}  {p.get('error', 'failed')}")
+                # Do NOT echo the raw provider error — it can contain the API key
+                # (e.g. "Incorrect API key sk-..."), which would leak into CI logs.
+                print(f"      {p['provider']:12s}  failed")
 
     print("\n[4/5] Knowledge accuracy (10 MMLU-style Q)...", flush=True)
     knowledge = run_knowledge_benchmark(skip_live=args.skip_live)
@@ -605,7 +607,9 @@ def main() -> int:
             if p.get("ok"):
                 print(f"      {p['provider']:12s}  {p['correct']}/{p['total']}  ({p['accuracy']:.0%})")
             else:
-                print(f"      {p['provider']:12s}  {p.get('error', 'failed')}")
+                # Do NOT echo the raw provider error — it can contain the API key
+                # (e.g. "Incorrect API key sk-..."), which would leak into CI logs.
+                print(f"      {p['provider']:12s}  failed")
 
     print("\n[5/5] TypeScript test suite...", flush=True)
     tests = run_test_suite_benchmark()
