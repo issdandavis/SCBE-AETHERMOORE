@@ -4171,7 +4171,7 @@ Legacy (backward compat):
     rt = sub.add_parser(
         "route",
         aliases=["fleet"],
-        help='Geometric fleet routing — assign tasks to agents by tongue affinity ("scbe route --fleet f.json --tasks t.json")',
+        help="Geometric fleet routing — assign tasks to agents by tongue affinity (--fleet f.json --tasks t.json)",
     )
     rt.add_argument("--fleet", help="JSON file: [{name, tongue|weights}] agents")
     rt.add_argument("--tasks", help="JSON file: [{name, profile|weights}] tasks")
@@ -4181,7 +4181,7 @@ Legacy (backward compat):
 
     sc = sub.add_parser(
         "schedule",
-        help='Geometric scheduler — concurrent dispatch on a real thread pool ("scbe schedule --fleet f.json --jobs j.json")',
+        help="Geometric scheduler — concurrent dispatch on a real thread pool (--fleet f.json --jobs j.json)",
     )
     sc.add_argument("--fleet", help="JSON file: [{name, tongue|weights}] workers")
     sc.add_argument("--jobs", help="JSON file: [{name, profile|weights, base}] jobs")
