@@ -38,7 +38,12 @@ class TongueSpec:
     prefixes: Tuple[str, ...]  # 16 prefixes (4-bit hi nibble)
     suffixes: Tuple[str, ...]  # 16 suffixes (4-bit lo nibble)
     domain: str  # What this tongue is used for
-    harmonic_frequency: float  # For spectral validation (Layer 9)
+    # For spectral validation (Layer 9). NOTE: this RWP-v3 table uses ru=329.63 (E4)
+    # and um=293.66 (D4). The SS1 tokenizer in packages/sixtongues/sixtongues.py
+    # intentionally uses ru=293.66 (D4) / um=196.0 (G3=STELLAR_OCTAVE_TARGET) for a
+    # different subsystem. Both are tested; do not blindly unify. The byte↔token codec
+    # is identical across both — only this audio metadata differs.
+    harmonic_frequency: float
 
     def __post_init__(self):
         if len(self.prefixes) != 16 or len(self.suffixes) != 16:
