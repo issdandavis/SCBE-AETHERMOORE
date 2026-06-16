@@ -34,17 +34,26 @@ from typing import Dict, List, Sequence, Tuple
 
 from . import polyglot as P
 
-try:                                              # bijective seal (proven invertible)
+try:  # bijective seal (proven invertible)
     from .elastic_bijective_hash import splitmix64, splitmix64_inverse
+
     _HAVE_SEAL = True
-except Exception:                                 # pragma: no cover - optional
+except Exception:  # pragma: no cover - optional
     _HAVE_SEAL = False
 
 # --- base pairing: an involution over the v1 scalar core (11 pairs, 22 ops) -----
 _PAIRS = [
-    ("add", "sub"), ("mul", "div"), ("inc", "dec"), ("floor", "ceil"),
-    ("lt", "gt"), ("lte", "gte"), ("eq", "neq"), ("min", "max"),
-    ("neg", "abs"), ("sqrt", "pow"), ("round", "mod"),
+    ("add", "sub"),
+    ("mul", "div"),
+    ("inc", "dec"),
+    ("floor", "ceil"),
+    ("lt", "gt"),
+    ("lte", "gte"),
+    ("eq", "neq"),
+    ("min", "max"),
+    ("neg", "abs"),
+    ("sqrt", "pow"),
+    ("round", "mod"),
 ]
 COMPLEMENT: Dict[str, str] = {}
 for _a, _b in _PAIRS:
@@ -101,8 +110,9 @@ def base_pairs_ok(prog: Sequence[int]) -> bool:
     """Antiparallel check: position i on the strand base-pairs with n-1-i on rc."""
     rc = reverse_complement(prog)
     n = len(prog)
-    return all(rc[n - 1 - i] == P.NAME_TO_BYTE[COMPLEMENT[P.BYTE_TO_NAME[prog[i]]]]
-               for i in range(n)) and reverse_complement(rc) == list(prog)
+    return all(
+        rc[n - 1 - i] == P.NAME_TO_BYTE[COMPLEMENT[P.BYTE_TO_NAME[prog[i]]]] for i in range(n)
+    ) and reverse_complement(rc) == list(prog)
 
 
 # --- midpoint assembly: a replication fork that grows both ways ------------------
@@ -112,16 +122,16 @@ def midpoint_assemble(prog: Sequence[int], m: int) -> Tuple[List[int], List[int]
     n = len(prog)
     if not 0 <= m <= n:
         raise ValueError("midpoint out of range")
-    left: List[int] = []                          # grown leftward: positions m-1..0
+    left: List[int] = []  # grown leftward: positions m-1..0
     for i in range(m - 1, -1, -1):
         left.append(prog[i])
         # proof-read: the leftward strand so far must match the original run [i, m)
         if list(reversed(left)) != list(prog[i:m]):
             raise AssertionError("leftward strand diverged at %d" % i)
-    right: List[int] = []                         # grown rightward: positions m..n-1
+    right: List[int] = []  # grown rightward: positions m..n-1
     for j in range(m, n):
         right.append(prog[j])
-        if right != list(prog[m:j + 1]):
+        if right != list(prog[m : j + 1]):
             raise AssertionError("rightward strand diverged at %d" % j)
     reconstructed = list(reversed(left)) + right  # join the fork
     return list(reversed(left)), right, reconstructed
@@ -163,9 +173,13 @@ def verify(op_names: Sequence[str]) -> Dict[str, object]:
     if _HAVE_SEAL:
         report["seal_roundtrip"] = unseal(seal(prog)) == prog
     report["all_ok"] = bool(
-        report["all_faces_agree"] and report["seekable"] and report["rc_involution"]
-        and report["base_pairs_ok"] and report["rc_decodes"]
-        and report.get("seal_roundtrip", True))
+        report["all_faces_agree"]
+        and report["seekable"]
+        and report["rc_involution"]
+        and report["base_pairs_ok"]
+        and report["rc_decodes"]
+        and report.get("seal_roundtrip", True)
+    )
     return report
 
 

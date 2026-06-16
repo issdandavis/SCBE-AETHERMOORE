@@ -171,6 +171,7 @@ class BijectiveDoubleHashMap:
 def encode_key_with_tongue(key: bytes, tongue: str = "KO") -> str:
     try:
         from scbe import encode_bytes  # type: ignore
+
         return encode_bytes(tongue, key)
     except Exception:
         return key.hex()
@@ -178,6 +179,7 @@ def encode_key_with_tongue(key: bytes, tongue: str = "KO") -> str:
 
 def _bench_at(bits: int, load: float) -> Tuple[float, float, bool]:
     import random
+
     h = BijectiveDoubleHashMap(bits=bits, seed=42)
     n = int(h.size * load)
     keys = [f"k-{i}-{random.getrandbits(48)}" for i in range(n)]
@@ -201,8 +203,7 @@ def _demo() -> None:
         print(f"  {load*100:5.1f}% | {ins:13.2f} | {look:13.2f} | {'YES' if ok else 'FAIL'}")
     # reversible-mix witness
     x = BijectiveDoubleHashMap.key_int("hello") & _M64
-    print(f"\n  splitmix64 reversible: x={x} -> mix -> inverse == x : "
-          f"{splitmix64_inverse(splitmix64(x)) == x}")
+    print(f"\n  splitmix64 reversible: x={x} -> mix -> inverse == x : " f"{splitmix64_inverse(splitmix64(x)) == x}")
 
 
 ElasticBijectiveHash = BijectiveDoubleHashMap

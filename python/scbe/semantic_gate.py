@@ -84,9 +84,7 @@ class SemanticGateRecord:
         }
 
 
-def evaluate_semantic_gate(
-    signals: Sequence[SemanticSignal], policy: SemanticBlendPolicy
-) -> SemanticGateRecord:
+def evaluate_semantic_gate(signals: Sequence[SemanticSignal], policy: SemanticBlendPolicy) -> SemanticGateRecord:
     """Evaluate provenance separation and return a deterministic decision record."""
 
     _validate_policy(policy)
@@ -176,11 +174,7 @@ def _signal_allowed(signal: SemanticSignal, policy: SemanticBlendPolicy) -> bool
         return False
     if signal.source == "inference" and not policy.allow_inference:
         return False
-    if (
-        policy.context == "action"
-        and policy.risk in {"high", "critical"}
-        and signal.source != "fact"
-    ):
+    if policy.context == "action" and policy.risk in {"high", "critical"} and signal.source != "fact":
         return False
     return True
 
@@ -188,29 +182,20 @@ def _signal_allowed(signal: SemanticSignal, policy: SemanticBlendPolicy) -> bool
 def _confidence_weighted_numeric_blend(
     signals: Sequence[SemanticSignal],
 ) -> float | None:
-    numeric = [
-        signal
-        for signal in signals
-        if isinstance(signal.value, Real) and not isinstance(signal.value, bool)
-    ]
+    numeric = [signal for signal in signals if isinstance(signal.value, Real) and not isinstance(signal.value, bool)]
     if not numeric:
         return None
     total_weight = sum(signal.confidence for signal in numeric)
     if total_weight == 0:
         return None
-    return (
-        sum(float(signal.value) * signal.confidence for signal in numeric)
-        / total_weight
-    )
+    return sum(float(signal.value) * signal.confidence for signal in numeric) / total_weight
 
 
 def _validate_signal(signal: SemanticSignal) -> None:
     if not signal.label:
         raise ValueError("signal label is required")
     if not 0.0 <= signal.confidence <= 1.0:
-        raise ValueError(
-            f"signal confidence out of range for {signal.label}: {signal.confidence}"
-        )
+        raise ValueError(f"signal confidence out of range for {signal.label}: {signal.confidence}")
 
 
 def _validate_policy(policy: SemanticBlendPolicy) -> None:

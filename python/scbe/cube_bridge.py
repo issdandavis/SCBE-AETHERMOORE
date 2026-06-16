@@ -25,8 +25,8 @@ from typing import Callable, Iterable, Iterator, List, Optional
 
 from . import cube_controller as C
 
-WIRE_FACES = "URFDLB"           # canonical face order; index 0..5
-COMMIT = "GO"                   # the wire token that runs the accumulated program
+WIRE_FACES = "URFDLB"  # canonical face order; index 0..5
+COMMIT = "GO"  # the wire token that runs the accumulated program
 
 
 def parse_wire(line: str) -> List[str]:
@@ -62,6 +62,7 @@ def parse_wire_byte(b: int) -> str:
 # --- transports -----------------------------------------------------------------
 class MoveSource:
     """A stream of move tokens. Subclasses implement moves()."""
+
     def moves(self) -> Iterator[str]:
         raise NotImplementedError
 
@@ -71,6 +72,7 @@ class MoveSource:
 
 class SimSource(MoveSource):
     """Synthetic twists from a list or a wire string — no hardware."""
+
     def __init__(self, seq: Iterable[str] | str):
         if isinstance(seq, str):
             seq = parse_wire(seq)
@@ -82,10 +84,11 @@ class SimSource(MoveSource):
 
 class SerialSource(MoveSource):
     """A cube on a serial/USB port (Arduino/ESP32 printing wire lines). Needs pyserial."""
+
     def __init__(self, port: str, baud: int = 115200, timeout: float = 1.0):
         try:
-            import serial                          # pyserial
-        except Exception as e:                     # pragma: no cover - optional dep
+            import serial  # pyserial
+        except Exception as e:  # pragma: no cover - optional dep
             raise RuntimeError("SerialSource needs pyserial: pip install pyserial") from e
         self._ser = serial.Serial(port, baud, timeout=timeout)
 
@@ -101,7 +104,7 @@ class SerialSource(MoveSource):
     def close(self) -> None:
         try:
             self._ser.close()
-        except Exception:                          # pragma: no cover
+        except Exception:  # pragma: no cover
             pass
 
 
@@ -120,18 +123,19 @@ def gocube_decode(data: bytes) -> List[str]:
 class BleSource(MoveSource):
     """A Bluetooth smart cube. Subscribes to a notify characteristic and runs `decoder`
     on each packet. Needs bleak. decoder defaults to gocube_decode (verify per brand)."""
-    def __init__(self, address_or_name: str, char_uuid: str,
-                 decoder: Callable[[bytes], List[str]] = gocube_decode):
+
+    def __init__(self, address_or_name: str, char_uuid: str, decoder: Callable[[bytes], List[str]] = gocube_decode):
         try:
-            import bleak                           # noqa: F401  (cross-platform BLE)
-        except Exception as e:                     # pragma: no cover - optional dep
+            import bleak  # noqa: F401  (cross-platform BLE)
+        except Exception as e:  # pragma: no cover - optional dep
             raise RuntimeError("BleSource needs bleak: pip install bleak") from e
         self.target, self.char_uuid, self.decoder = address_or_name, char_uuid, decoder
 
-    def moves(self) -> Iterator[str]:              # pragma: no cover - needs a device
+    def moves(self) -> Iterator[str]:  # pragma: no cover - needs a device
         import asyncio
         import queue
         from bleak import BleakClient, BleakScanner
+
         q: "queue.Queue[str]" = queue.Queue()
 
         async def run():
@@ -140,22 +144,24 @@ class BleSource(MoveSource):
                 found = await BleakScanner.find_device_by_name(self.target)
                 dev = found.address if found else self.target
             async with BleakClient(dev) as client:
+
                 def cb(_h, data):
                     for mv in self.decoder(bytes(data)):
                         q.put(mv)
+
                 await client.start_notify(self.char_uuid, cb)
                 while True:
                     await asyncio.sleep(3600)
 
         import threading
+
         threading.Thread(target=lambda: asyncio.run(run()), daemon=True).start()
         while True:
             yield q.get()
 
 
 # --- the bridge loop ------------------------------------------------------------
-def bridge(source: MoveSource, voice: bool = False,
-           on_command: Optional[Callable[[List[int]], None]] = None) -> int:
+def bridge(source: MoveSource, voice: bool = False, on_command: Optional[Callable[[List[int]], None]] = None) -> int:
     """Read twists from `source`, announce each live, and on a GO token (or end of
     stream) run+speak the accumulated program. A physical turn -> a spoken command."""
     pending: List[str] = []

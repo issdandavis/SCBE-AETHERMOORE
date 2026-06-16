@@ -31,7 +31,7 @@ from typing import List, Sequence, Tuple
 
 TWO_PI = 2.0 * math.pi
 EDGE = 16
-AXES = ("hi", "mid", "lo")                      # the three nibble axes (the cube)
+AXES = ("hi", "mid", "lo")  # the three nibble axes (the cube)
 
 
 def _nibbles(b: int) -> dict:
@@ -58,13 +58,13 @@ def torus_distance(a: int, b: int, axes: Sequence[str] = AXES) -> float:
     s = 0.0
     for x, y in zip(angles(a, axes), angles(b, axes)):
         d = abs(x - y) % TWO_PI
-        d = min(d, TWO_PI - d)                   # the seam: wrap is the short side
+        d = min(d, TWO_PI - d)  # the seam: wrap is the short side
         s += d * d
     return math.sqrt(s)
 
 
 def hamming(a: int, b: int) -> int:
-    return bin((a ^ b) & 0x3F).count("1")        # within the 6-bit opcode space
+    return bin((a ^ b) & 0x3F).count("1")  # within the 6-bit opcode space
 
 
 def hypercube_neighbors(b: int, bits: int = 6) -> List[int]:
@@ -75,8 +75,7 @@ def hypercube_neighbors(b: int, bits: int = 6) -> List[int]:
 def is_wormhole(a: int, b: int) -> bool:
     """True when the torus (wrap) distance is strictly shorter than the flat board
     distance — i.e. these two reach each other across a seam, not the long way."""
-    flat = math.hypot(*(abs(x - y) for x, y in
-                        zip((( a >> 4) & 0xF, a & 0xF), ((b >> 4) & 0xF, b & 0xF))))
+    flat = math.hypot(*(abs(x - y) for x, y in zip(((a >> 4) & 0xF, a & 0xF), ((b >> 4) & 0xF, b & 0xF))))
     wrap = 0.0
     for x, y in (((a >> 4) & 0xF, (b >> 4) & 0xF), (a & 0xF, b & 0xF)):
         d = abs(x - y)
@@ -86,12 +85,12 @@ def is_wormhole(a: int, b: int) -> bool:
 
 def _demo() -> None:
     print("Torus / hypercube embedding\n")
-    a, b = 0x0F, 0x00                            # col 15 vs col 0
+    a, b = 0x0F, 0x00  # col 15 vs col 0
     print("  flat board: 0x0f col=15, 0x00 col=0  -> 15 apart")
-    print("  on the torus they wrap:", "%.3f" % torus_distance(a, b, ("lo",)),
-          "rad  (wormhole:", is_wormhole(a, b), ")")
-    print("\n  hypercube Q6 neighbours of add(0x00):",
-          [("0x%02x" % n) for n in hypercube_neighbors(0x00)])
+    print(
+        "  on the torus they wrap:", "%.3f" % torus_distance(a, b, ("lo",)), "rad  (wormhole:", is_wormhole(a, b), ")"
+    )
+    print("\n  hypercube Q6 neighbours of add(0x00):", [("0x%02x" % n) for n in hypercube_neighbors(0x00)])
     print("  flipping the high band bit (0x00 -> 0x20) is 1 hop in the cube,")
     print("  but jumps from the arithmetic plane to the comparison plane.")
 

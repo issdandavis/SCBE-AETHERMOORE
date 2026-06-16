@@ -32,21 +32,44 @@ from . import torus as _TOR
 
 # --- the friendly keyboard: any of these -> a core opcode name ------------------
 _SYMBOLS = {
-    "+": "add", "-": "sub", "*": "mul", "/": "div", "%": "mod",
-    "^": "pow", "**": "pow", "√": "sqrt", "<": "lt", ">": "gt",
-    "<=": "lte", ">=": "gte", "==": "eq", "!=": "neq", "++": "inc", "--": "dec",
-    "|": "abs", "~": "neg",
+    "+": "add",
+    "-": "sub",
+    "*": "mul",
+    "/": "div",
+    "%": "mod",
+    "^": "pow",
+    "**": "pow",
+    "√": "sqrt",
+    "<": "lt",
+    ">": "gt",
+    "<=": "lte",
+    ">=": "gte",
+    "==": "eq",
+    "!=": "neq",
+    "++": "inc",
+    "--": "dec",
+    "|": "abs",
+    "~": "neg",
 }
-_ALIASES = {"power": "pow", "modulo": "mod", "minimum": "min", "maximum": "max",
-            "negate": "neg", "absolute": "abs", "increment": "inc", "decrement": "dec",
-            "root": "sqrt"}
+_ALIASES = {
+    "power": "pow",
+    "modulo": "mod",
+    "minimum": "min",
+    "maximum": "max",
+    "negate": "neg",
+    "absolute": "abs",
+    "increment": "inc",
+    "decrement": "dec",
+    "root": "sqrt",
+}
 
 # --- the Sacred Tongue keyboard: type prefix'suffix tokens straight in ----------
-try:                                              # canonical 6-tongue byte<->token table
+try:  # canonical 6-tongue byte<->token table
     from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER as _STT
+
     _TONGUE_ORDER = ("ko", "av", "ru", "ca", "um", "dr")
     _HAVE_TONGUES = True
-except Exception:                                 # pragma: no cover - optional dependency
+except Exception:  # pragma: no cover - optional dependency
     _HAVE_TONGUES = False
     _TONGUE_ORDER = ()
 
@@ -92,15 +115,13 @@ def tokens_to_program(text: str, tongue: str | None = None) -> Tuple[List[str], 
             name = P.BYTE_TO_NAME[b]
         elif tok.lower() in P.SCALAR_OPS:
             name = tok.lower()
-        elif "'" in tok and _HAVE_TONGUES:           # a Sacred Tongue keystroke
+        elif "'" in tok and _HAVE_TONGUES:  # a Sacred Tongue keystroke
             b, _c = _decode_tongue_token(tok, tongue)
             if b is None:
-                raise ValueError("%r is not a Sacred Tongue token%s" % (
-                    tok, (" in %s" % tongue) if tongue else ""))
+                raise ValueError("%r is not a Sacred Tongue token%s" % (tok, (" in %s" % tongue) if tongue else ""))
             nm = P.BYTE_TO_NAME.get(b)
             if nm not in P.SCALAR_OPS:
-                raise ValueError("%s = byte 0x%02x%s, not a core opcode" % (
-                    tok, b, " (%s)" % nm if nm else ""))
+                raise ValueError("%s = byte 0x%02x%s, not a core opcode" % (tok, b, " (%s)" % nm if nm else ""))
             name = nm
         else:
             hint = difflib.get_close_matches(tok.lower(), sorted(P.SCALAR_OPS), n=3)
@@ -131,13 +152,26 @@ class _S:
     def _w(self, s, code):
         return ("\x1b[%sm%s\x1b[0m" % (code, s)) if self.on else s
 
-    def bold(self, s):  return self._w(s, "1")
-    def dim(self, s):   return self._w(s, "2")
-    def cyan(self, s):  return self._w(s, "36")
-    def green(self, s): return self._w(s, "32")
-    def red(self, s):   return self._w(s, "31")
-    def yellow(self, s): return self._w(s, "33")
-    def mag(self, s):   return self._w(s, "35")
+    def bold(self, s):
+        return self._w(s, "1")
+
+    def dim(self, s):
+        return self._w(s, "2")
+
+    def cyan(self, s):
+        return self._w(s, "36")
+
+    def green(self, s):
+        return self._w(s, "32")
+
+    def red(self, s):
+        return self._w(s, "31")
+
+    def yellow(self, s):
+        return self._w(s, "33")
+
+    def mag(self, s):
+        return self._w(s, "35")
 
     def rgb(self, s, r, g, b):
         """24-bit truecolor (trichromatic stones/notes); plain when styling is off."""
@@ -147,7 +181,7 @@ class _S:
 def _tongue_freq(tongue: str) -> float:
     if _HAVE_TONGUES and tongue in _STT.tongues:
         return float(_STT.tongues[tongue].harmonic_frequency)
-    return 440.0                                  # A4 default
+    return 440.0  # A4 default
 
 
 def _vis(s: str) -> int:
@@ -158,7 +192,7 @@ def _clip(s: str, w: int, st: _S) -> str:
     if _vis(s) <= w:
         return s
     ellipsis = "…" if st.uni else "..."
-    return st.dim(_ANSI.sub("", s)[:max(0, w - len(ellipsis))] + ellipsis)
+    return st.dim(_ANSI.sub("", s)[: max(0, w - len(ellipsis))] + ellipsis)
 
 
 def _panel(title: str, lines: Sequence[str], st: _S, inner: int, accent=None) -> str:
@@ -166,7 +200,7 @@ def _panel(title: str, lines: Sequence[str], st: _S, inner: int, accent=None) ->
     accent = accent or st.cyan
     if _vis(title) > inner - 4:
         ellipsis = "…" if st.uni else "..."
-        title = _ANSI.sub("", title)[:inner - 4 - len(ellipsis)] + ellipsis
+        title = _ANSI.sub("", title)[: inner - 4 - len(ellipsis)] + ellipsis
     if st.uni:
         tl, tr, bl, br, h, v = "╭", "╮", "╰", "╯", "─", "│"
     else:
@@ -197,27 +231,28 @@ def _fmt(v) -> str:
 def _run(prog: Sequence[int], st: _S) -> str:
     """Run the Python face on the default args and show the result. If the raw run
     hits an undefined zone (÷0, √-), fall back to the roundabout and say so."""
+
     def call(safe):
         ns: dict = {}
         exec(compile(P.emit(prog, "python", safe=safe), "<face>", "exec"), ns)  # noqa: S102
         return ns["tongue_fn"](2.0, 3.0, 4.0)
+
     try:
         ok = st.green("✓ ") if st.uni else st.green("OK ")
         arrow = "→" if st.uni else "->"
         return ok + "tongue_fn(2,3,4) " + arrow + " " + st.bold(_fmt(call(False)))
     except (ZeroDivisionError, ValueError, OverflowError) as e:
-        try:                                                 # undefined zone -> roundabout
+        try:  # undefined zone -> roundabout
             warn = st.yellow("⚠ ") if st.uni else st.yellow("WARN ")
             arrow = "→" if st.uni else "->"
-            return warn + "undefined (%s) %s roundabout %s" % (
-                type(e).__name__, arrow, st.bold(_fmt(call(True))))
-        except Exception as e2:                              # pragma: no cover - defensive
+            return warn + "undefined (%s) %s roundabout %s" % (type(e).__name__, arrow, st.bold(_fmt(call(True))))
+        except Exception as e2:  # pragma: no cover - defensive
             err = st.red("✗ ") if st.uni else st.red("ERR ")
             return err + "error: %s" % type(e2).__name__
-    except IndexError:                                       # not enough values on the stack
+    except IndexError:  # not enough values on the stack
         dot = "·" if st.uni else "*"
         return st.dim(dot + " incomplete strand (needs more operands)")
-    except Exception as e:                                   # pragma: no cover - defensive
+    except Exception as e:  # pragma: no cover - defensive
         dot = "·" if st.uni else "*"
         return st.dim(dot + " did not run (%s)" % type(e).__name__)
 
@@ -230,7 +265,7 @@ def board_lines(prog: Sequence[int], tongue: str, st: _S) -> List[str]:
     pts: dict = {}
     seam: dict = {}
     for i, b in enumerate(prog, 1):
-        pts[_BOARD.to_point(b)] = (i, b)             # last move wins on a replayed point
+        pts[_BOARD.to_point(b)] = (i, b)  # last move wins on a replayed point
         seam[_BOARD.mid_nibble(b)] = (i, b)
     dot = "·" if st.uni else "."
 
@@ -241,7 +276,7 @@ def board_lines(prog: Sequence[int], tongue: str, st: _S) -> List[str]:
         return "  " + st.dim(dot)
 
     lines = [st.dim("    " + "".join("%3s" % ("%x" % c) for c in range(_BOARD.EDGE)))]
-    for r in range(len(_BOARD.BANDS)):                # rows 0-3: the four opcode bands
+    for r in range(len(_BOARD.BANDS)):  # rows 0-3: the four opcode bands
         row = "".join(stone((r, c), pts) for c in range(_BOARD.EDGE))
         lines.append(st.dim(" %x  " % r) + row + st.dim("  " + _BOARD.BANDS[r]))
     seam_row = "".join(stone(c, seam) for c in range(_BOARD.EDGE))
@@ -249,43 +284,54 @@ def board_lines(prog: Sequence[int], tongue: str, st: _S) -> List[str]:
 
     notes = [st.rgb(_BOARD.opcode_note(b, root)[1], *_BOARD.rgb(b)) for b in prog]
     melody = " ".join(notes) if notes else st.dim("(silent)")
-    lines += ["", st.dim(" notes ") + melody +
-              st.dim("   key %s @ %gHz (%s)" % (_BOARD.note_name(root), root, tongue))]
+    lines += ["", st.dim(" notes ") + melody + st.dim("   key %s @ %gHz (%s)" % (_BOARD.note_name(root), root, tongue))]
     ok = _BOARD.is_reversible(prog)
     mark = (st.green("✓ ") if st.uni else st.green("OK ")) if ok else (st.red("✗ ") if st.uni else st.red("ERR "))
     lines.append(st.dim(" addr  ") + mark + st.dim("board ⇄ program reversible · stone hue = rgb(band,mid,col)"))
     hops = sum(1 for x, y in zip(prog, prog[1:]) if _TOR.hamming(x, y) == 1)
     arrow = "↻" if st.uni else "(wrap)"
-    lines.append(st.dim(" torus ") + st.cyan("16-periodic %s" % arrow) +
-                 st.dim(" edges wrap = wormholes · Q6 cube: %d/%d moves are 1-bit hops" % (
-                     hops, max(len(prog) - 1, 0))))
+    lines.append(
+        st.dim(" torus ")
+        + st.cyan("16-periodic %s" % arrow)
+        + st.dim(" edges wrap = wormholes · Q6 cube: %d/%d moves are 1-bit hops" % (hops, max(len(prog) - 1, 0)))
+    )
     return lines
 
 
-def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
-           width: int = 58, tongue: str = "ko", board: bool = False) -> str:
+def render(
+    text: str,
+    langs: Sequence[str] = ("python",),
+    color: bool = True,
+    width: int = 58,
+    tongue: str = "ko",
+    board: bool = False,
+) -> str:
     st = _S(_style_enabled(color))
     names, prog = tokens_to_program(text, tongue)
     rep = DNA.verify(names)
     seal = DNA.seal(prog) if DNA._HAVE_SEAL else []
     acc = 0
     for w in seal:
-        acc ^= w                                  # XOR-fold the sealed strand into one fingerprint
+        acc ^= w  # XOR-fold the sealed strand into one fingerprint
     sig = "%016x" % acc if seal else "-"
     dot = "·" if st.uni else "*"
 
     head = [st.dim("tokens  ") + (" ".join(names) if names else st.dim("(empty)"))]
     spell = tongue_spell(prog, tongue)
-    if spell:                                      # the same program on the Sacred Tongue keyboard
+    if spell:  # the same program on the Sacred Tongue keyboard
         head.append(st.dim("tongue  ") + st.cyan(spell) + st.dim("  (%s)" % tongue))
     head += [
-        st.dim("strand  ") + (" ".join("%02x" % b for b in prog) or st.dim(dot)) +
-        st.dim("   (%d op%s %s 1 object)" % (len(prog), "" if len(prog) == 1 else "s", dot)),
-        st.dim("verify  ") + "  ".join([
-            _badge(rep["all_faces_agree"], "%d/%d faces" % (rep["faces_agree"], rep["faces_total"]), st),
-            _badge(rep["seekable"], "seekable", st),
-            _badge(bool(rep.get("seal_roundtrip", True)), "sealed", st),
-        ]),
+        st.dim("strand  ")
+        + (" ".join("%02x" % b for b in prog) or st.dim(dot))
+        + st.dim("   (%d op%s %s 1 object)" % (len(prog), "" if len(prog) == 1 else "s", dot)),
+        st.dim("verify  ")
+        + "  ".join(
+            [
+                _badge(rep["all_faces_agree"], "%d/%d faces" % (rep["faces_agree"], rep["faces_total"]), st),
+                _badge(rep["seekable"], "seekable", st),
+                _badge(bool(rep.get("seal_roundtrip", True)), "sealed", st),
+            ]
+        ),
         st.dim("runs    ") + _run(prog, st),
         st.dim("geoseal ") + st.mag(sig),
     ]
@@ -298,7 +344,7 @@ def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
         for line in src.rstrip("\n").split("\n"):
             m = re.search(r"(" + re.escape(P.REGISTRY[lang].comment) + r".*)$", line)
             if m and m.group(1):
-                code.append(line[:m.start(1)] + st.dim(m.group(1)))
+                code.append(line[: m.start(1)] + st.dim(m.group(1)))
             else:
                 code.append(line)
         blocks.append((lang, code, st.yellow))
@@ -314,9 +360,13 @@ def _repl(langs, color, tongue="ko", board=False):
     st = _S(_style_enabled(color))
     dash = "—" if st.uni else "-"
     prompt = "› " if st.uni else "> "
-    print(st.bold(st.cyan("SCBE cube code")) + st.dim(
-        "  %s  type tokens (ops, symbols, or %s tongue), Enter to compile."
-        "  ':q' quits, ':lang rust', ':tongue av', ':board'." % (dash, tongue)))
+    print(
+        st.bold(st.cyan("SCBE cube code"))
+        + st.dim(
+            "  %s  type tokens (ops, symbols, or %s tongue), Enter to compile."
+            "  ':q' quits, ':lang rust', ':tongue av', ':board'." % (dash, tongue)
+        )
+    )
     cur, tng, brd = list(langs), tongue, board
     while True:
         try:
@@ -349,6 +399,7 @@ def _repl(langs, color, tongue="ko", board=False):
 
 def main(argv: Sequence[str] | None = None) -> int:
     import argparse
+
     ap = argparse.ArgumentParser(prog="scbe-code", description="type tokens, see the perfect code")
     ap.add_argument("tokens", nargs="*", help="token stream, e.g. + sqrt * inc /  or  sil'a sil'ei")
     ap.add_argument("--lang", action="append", help="language face (repeatable); default python")

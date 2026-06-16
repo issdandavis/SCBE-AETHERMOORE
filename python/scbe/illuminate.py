@@ -37,7 +37,8 @@ def random_program(length: int, rng: random.Random) -> List[str]:
     depth, ops = 3, []
     for _ in range(length):
         if depth >= 2 and rng.random() < 0.6:
-            ops.append(rng.choice(_BIN)); depth -= 1
+            ops.append(rng.choice(_BIN))
+            depth -= 1
         else:
             ops.append(rng.choice(_UN))
         depth = max(depth, 1)
@@ -70,20 +71,19 @@ def illuminate(generations: int = 4, batch: int = 250, seed: int = 7) -> Dict[Ni
 
     def consider(ops: List[str]) -> None:
         t = B.think(P.program_bytes(*ops))
-        if t["relation"] == "incomplete":         # the safety gate
+        if t["relation"] == "incomplete":  # the safety gate
             return
         key: Niche = (tuple(t["nonlinear_ops"]), str(t["relation"]))
         conf = float(t.get("confidence", 0.0))
         cur = archive.get(key)
-        if cur is None or conf > cur["confidence"]:    # keep the best elite per niche
-            archive[key] = {"ops": ops, "confidence": conf,
-                            "logic": t["logic"], "intuition": t["intuition"]}
+        if cur is None or conf > cur["confidence"]:  # keep the best elite per niche
+            archive[key] = {"ops": ops, "confidence": conf, "logic": t["logic"], "intuition": t["intuition"]}
 
     for g in range(generations):
         for _ in range(batch):
             if g == 0 or not archive:
                 ops = random_program(rng.randint(2, 8), rng)
-            else:                                 # evolve: mutate a surviving elite
+            else:  # evolve: mutate a surviving elite
                 ops = mutate(rng.choice(list(archive.values()))["ops"], rng)
             consider(ops)
     return archive
@@ -95,11 +95,15 @@ def render_archive(archive: Dict[Niche, dict]) -> str:
         label = "+".join(sig) if sig else "(linear)"
         rows.append((label, rel, e))
     rows.sort(key=lambda r: (_RELATIONS.index(r[1]) if r[1] in _RELATIONS else 9, r[0]))
-    out = ["MAP-Elites archive — %d niches (logic vs intuition = fitness)" % len(archive),
-           "  %-16s %-12s %-26s %8s %5s" % ("nonlinear", "relation", "elite program", "logic", "conf")]
+    out = [
+        "MAP-Elites archive — %d niches (logic vs intuition = fitness)" % len(archive),
+        "  %-16s %-12s %-26s %8s %5s" % ("nonlinear", "relation", "elite program", "logic", "conf"),
+    ]
     for label, rel, e in rows:
-        out.append("  %-16s %-12s %-26s %8s %4.0f%%" % (
-            label, rel, " ".join(e["ops"])[:26], B._fmt(e["logic"]), 100 * e["confidence"]))
+        out.append(
+            "  %-16s %-12s %-26s %8s %4.0f%%"
+            % (label, rel, " ".join(e["ops"])[:26], B._fmt(e["logic"]), 100 * e["confidence"])
+        )
     n_exact = sum(1 for (_s, r) in archive if r == "exact match")
     n_div = sum(1 for (_s, r) in archive if r in ("diverged", "sign flip"))
     out.append("  -> %d intuitive (ship-ready) · %d divergent (novelty to mine)" % (n_exact, n_div))

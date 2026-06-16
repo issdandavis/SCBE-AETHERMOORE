@@ -23,10 +23,10 @@ import math
 from typing import List, Sequence, Tuple
 
 EDGE = 16
-BANDS = ("arithmetic", "logic", "comparison", "aggregation")   # rows 0..3 of the board
+BANDS = ("arithmetic", "logic", "comparison", "aggregation")  # rows 0..3 of the board
 
 NOTE_NAMES = ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
-MAJOR = (0, 2, 4, 5, 7, 9, 11, 12)                             # major-scale semitones
+MAJOR = (0, 2, 4, 5, 7, 9, 11, 12)  # major-scale semitones
 
 
 def to_point(b: int) -> Tuple[int, int]:

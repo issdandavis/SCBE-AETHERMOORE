@@ -386,7 +386,7 @@ def runtime_prelude(target: str) -> str:
     """Return target-language helper runtime for emitted CA programs."""
 
     if target == "python":
-        return '''import math
+        return """import math
 
 def _ca_bool(x):
     return 1.0 if x else 0.0
@@ -523,7 +523,7 @@ def ca_apply3(op, a, b, c):
     if op in {0x35, 0x36, 0x37, 0x3A, 0x3B, 0x3F}:
         return a + b + c
     return ca_apply2(op, ca_apply2(op, a, b), c)
-'''
+"""
     if target == "typescript":
         return """function caBool(x: unknown): number { return x ? 1 : 0; }
 function caApply1(op: number, a: number): number { return op === 0x12 ? caBool(!a) : a; }

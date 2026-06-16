@@ -59,7 +59,8 @@ def crease_pattern(folds: Sequence[str], height: int = 3) -> str:
 # the crane, as its real fold sequence (bird base -> neck/tail/head/wings)
 CRANE_STEPS = (
     "square base (fold both diagonals + both midlines, collapse)",
-    "petal fold front flap up", "petal fold back flap up",
+    "petal fold front flap up",
+    "petal fold back flap up",
     "valley-fold lower edges to centre (both sides)",
     "inside-reverse-fold the two points up (neck + tail)",
     "inside-reverse-fold the neck tip down (head)",
@@ -87,9 +88,9 @@ class FortuneTeller:
         if not picks:
             raise ValueError("need at least one pick (the final flap)")
         orient = 0
-        for n in picks[:-1]:                 # each open/close flips orientation by parity
-            orient ^= (int(n) & 1)
-        visible = [orient + 2 * k for k in range(4)]   # the 4 flaps showing in this orientation
+        for n in picks[:-1]:  # each open/close flips orientation by parity
+            orient ^= int(n) & 1
+        visible = [orient + 2 * k for k in range(4)]  # the 4 flaps showing in this orientation
         cell = visible[(int(picks[-1]) - 1) % 4]
         return self.values[cell]
 
@@ -111,7 +112,7 @@ def _run_op(op_name: str) -> object:
     try:
         exec(compile(P.emit(prog, "python", safe=True), "<fortune>", "exec"), ns)  # noqa: S102
         return ns["tongue_fn"](2.0, 3.0, 4.0)
-    except Exception:                        # pragma: no cover - defensive
+    except Exception:  # pragma: no cover - defensive
         return None
 
 
