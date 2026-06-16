@@ -3404,6 +3404,25 @@ Legacy (backward compat):
     tk.add_argument("tokens", nargs="*", help="token program, e.g. + sqrt *")
     tk.set_defaults(func=cmd_think)
 
+    oc = sub.add_parser(
+        "overcreate",
+        aliases=["generate-cube"],
+        help='Generate cube programs and rank bicameral surprise ("scbe overcreate --count 256")',
+    )
+    oc.add_argument("--count", type=int, default=256, help="programs to generate before filtering")
+    oc.add_argument("--seed", type=int, default=0, help="deterministic random seed")
+    oc.add_argument("--top", type=int, default=8, help="ranked candidates to show")
+    oc.add_argument("--min-len", type=int, default=1, help="minimum program length")
+    oc.add_argument("--max-len", type=int, default=10, help="maximum program length")
+    oc.add_argument(
+        "--max-abs-result",
+        type=float,
+        default=1_000_000.0,
+        help="reject candidates whose logic or intuition exceeds this bound",
+    )
+    oc.add_argument("--json", dest="json_output", action="store_true", help="emit JSON payload")
+    oc.set_defaults(func=cmd_overcreate)
+
     il = sub.add_parser(
         "illuminate",
         help="Mass-generate cube programs, curate by the bicameral gap (MAP-Elites over-creation)",
