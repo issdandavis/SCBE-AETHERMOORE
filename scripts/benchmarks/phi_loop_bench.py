@@ -27,7 +27,7 @@ def phi_state(speedup: float) -> dict[str, float | int]:
     if speedup <= 0:
         raise ValueError("speedup must be positive")
     layer = math.floor(math.log(speedup, PHI))
-    lower = PHI ** layer
+    lower = PHI**layer
     upper = PHI ** (layer + 1)
     progress = (speedup - lower) / (upper - lower) if upper != lower else 1.0
     moving_target = speedup + (upper - speedup) / PHI

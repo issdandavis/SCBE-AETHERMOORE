@@ -66,8 +66,21 @@ def test_ai_waves_lab_routes_photonic_and_flags_simulated_claim() -> None:
           handler({ method: 'POST', body }, res);
         });
         Promise.all([
-          run({ room: 'photonic-route-room', matmul_fraction: 0.9, nonlinear_op_fraction: 0.2, precision_required_bits: 16, branching_density: 0.05, memory_access_density: 0.1 }),
-          run({ room: 'interference-room', wavelength_nm: 500, path_difference_um: 0.25, amplitude_1: 1, amplitude_2: 1 }),
+          run({
+            room: 'photonic-route-room',
+            matmul_fraction: 0.9,
+            nonlinear_op_fraction: 0.2,
+            precision_required_bits: 16,
+            branching_density: 0.05,
+            memory_access_density: 0.1
+          }),
+          run({
+            room: 'interference-room',
+            wavelength_nm: 500,
+            path_difference_um: 0.25,
+            amplitude_1: 1,
+            amplitude_2: 1
+          }),
           run({ room: 'refraction-room', n1: 1, n2: 1.5, incident_angle_deg: 30 })
         ]).then(([route, fringe, refract]) => {
           console.log(JSON.stringify({

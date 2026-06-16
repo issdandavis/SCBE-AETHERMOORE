@@ -1,4 +1,5 @@
 """Bijective DNA coding - midpoint builds + bidirectional / multi-strand verification."""
+
 import random
 
 import pytest
@@ -17,15 +18,15 @@ def _rand_ops(n, seed):
 def test_complement_is_total_involution():
     assert set(D.COMPLEMENT) == P.SCALAR_OPS
     assert all(D.COMPLEMENT[D.COMPLEMENT[x]] == x for x in D.COMPLEMENT)
-    assert all(D.COMPLEMENT[x] != x for x in D.COMPLEMENT)   # no base pairs with itself
+    assert all(D.COMPLEMENT[x] != x for x in D.COMPLEMENT)  # no base pairs with itself
 
 
 @pytest.mark.parametrize("seed", range(25))
 def test_all_strands_agree_random(seed):
-    ops = _rand_ops(seed % 17 + 1, seed)        # lengths 1..17
+    ops = _rand_ops(seed % 17 + 1, seed)  # lengths 1..17
     rep = D.verify(ops)
     assert rep["all_faces_agree"] and rep["faces_agree"] == 18
-    assert rep["seekable"]                       # every midpoint reconstructs
+    assert rep["seekable"]  # every midpoint reconstructs
     assert rep["rc_involution"] and rep["base_pairs_ok"]
     assert rep["seal_roundtrip"]
     assert rep["all_ok"]
@@ -35,8 +36,8 @@ def test_all_strands_agree_random(seed):
 def test_every_midpoint_reconstructs(seed):
     prog = D.program(*_rand_ops(12, seed + 100))
     for m in range(len(prog) + 1):
-        left, right, recon = D.midpoint_assemble(prog, m)   # left is forward (prog[:m])
-        assert recon == list(prog)               # forward+backward join == original
+        left, right, recon = D.midpoint_assemble(prog, m)  # left is forward (prog[:m])
+        assert recon == list(prog)  # forward+backward join == original
         assert left + right == recon
         assert left == list(prog[:m]) and right == list(prog[m:])
         assert len(left) == m and len(right) == len(prog) - m
@@ -45,8 +46,8 @@ def test_every_midpoint_reconstructs(seed):
 def test_reverse_complement_is_bijective():
     prog = D.program(*_rand_ops(20, 7))
     rc = D.reverse_complement(prog)
-    assert rc != prog                            # genuinely different strand
-    assert D.reverse_complement(rc) == prog      # rc(rc(P)) == P
+    assert rc != prog  # genuinely different strand
+    assert D.reverse_complement(rc) == prog  # rc(rc(P)) == P
     # antiparallel base pairing at every position
     n = len(prog)
     for i in range(n):
@@ -95,11 +96,11 @@ def test_fn_name_injection_is_closed():
 def test_decode_accepts_only_core_ops():
     """A hand-forged tag for a non-core byte (0x07=log) must not decode as an opcode."""
     src = P.emit(D.program("add"), "python") + "x  # forged (0x07)\n"
-    assert D.decode_from_source(src) == D.program("add")     # 0x07 filtered out
+    assert D.decode_from_source(src) == D.program("add")  # 0x07 filtered out
     src2 = P.emit(D.program("add"), "python") + "y  # forged (0xff)\n"
-    assert D.decode_from_source(src2) == D.program("add")     # out-of-table filtered
+    assert D.decode_from_source(src2) == D.program("add")  # out-of-table filtered
 
 
 def test_empty_and_singleton():
-    assert D.verify([])["all_ok"]                 # empty strand is trivially consistent
-    assert D.verify(["sqrt"])["all_ok"]           # single base
+    assert D.verify([])["all_ok"]  # empty strand is trivially consistent
+    assert D.verify(["sqrt"])["all_ok"]  # single base

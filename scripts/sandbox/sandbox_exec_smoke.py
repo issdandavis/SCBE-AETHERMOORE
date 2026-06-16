@@ -10,6 +10,7 @@ DOUBLE-GUARD: refuses to run unless SCBE_SANDBOX=1, which only the sandbox
 Docker image and the CI runner set. So this can never execute on a dev host —
 run it through scripts/sandbox/run-geoseal-gate-sandbox.sh or in CI.
 """
+
 from __future__ import annotations
 
 import os
@@ -35,7 +36,7 @@ from src.crypto.geoseal_execution_gate import (  # noqa: E402  (after the host g
 # literal strings never appear in a shell/agent command line that runs this file.
 _DANGER = [
     " ".join(["rm", "-rf", "/tmp/scbe-sandbox-target"]),
-    f'{sys.executable} -c "import shutil; shutil.rmtree(\'/tmp/scbe-x\')"',
+    f"{sys.executable} -c \"import shutil; shutil.rmtree('/tmp/scbe-x')\"",
     "node -c \"require('child_process').execSync('id')\"",
 ]
 
