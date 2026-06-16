@@ -516,6 +516,7 @@ async def _guard_operator_endpoints(request: Request, call_next):
             return JSONResponse({"detail": "invalid or missing X-Admin-Token"}, status_code=401)
     return await call_next(request)
 
+
 if PUBLIC_DIR.exists():
     static_dir = PUBLIC_DIR / "static"
     if static_dir.exists():
