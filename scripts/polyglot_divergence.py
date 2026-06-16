@@ -94,7 +94,9 @@ def main() -> int:
                 else:
                     cells[lang] = {"status": "DIVERGE", "value": v}
                     n_div += 1
-                    divergences.append({"program": name, "lang": lang, "value": v, "ref": ref, "reason": reason_for(prog)})
+                    divergences.append(
+                        {"program": name, "lang": lang, "value": v, "ref": ref, "reason": reason_for(prog)}
+                    )
             except Exception as exc:  # build/run failure = a real ship problem
                 cells[lang] = {"status": "BUILDFAIL", "detail": str(exc).splitlines()[0][:70]}
                 n_fail += 1
@@ -127,8 +129,10 @@ def main() -> int:
             marks.append(f"{lang}:{tag}")
         print(f"{r['program']:<20} {r['ref']:>12.6g}  {'  '.join(marks)}")
     print()
-    print(f"SUMMARY  programs={summary['programs']}  faces={len(langs)}  "
-          f"agree={n_agree}  diverge={n_div}  build-fail={n_fail}")
+    print(
+        f"SUMMARY  programs={summary['programs']}  faces={len(langs)}  "
+        f"agree={n_agree}  diverge={n_div}  build-fail={n_fail}"
+    )
     if divergences:
         print("\nDIVERGENCES (language-intrinsic, intent held constant):")
         for d in divergences:
