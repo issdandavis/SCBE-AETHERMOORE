@@ -1579,6 +1579,26 @@ def cmd_code(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_canvas(args: argparse.Namespace) -> int:
+    """Render a program as a zoomable, self-contained HTML cube canvas."""
+    from python.scbe import canvas as CV
+
+    toks = getattr(args, "tokens", []) or []
+    if not toks:
+        print("usage: scbe canvas + sqrt * --out cube.html", file=sys.stderr)
+        return 2
+    try:
+        html = CV.build_html(" ".join(toks), getattr(args, "tongue", None) or "ko")
+    except ValueError as e:
+        print(str(e), file=sys.stderr)
+        return 1
+    out = getattr(args, "out", None) or "cube_canvas.html"
+    with open(out, "w", encoding="utf-8") as fh:
+        fh.write(html)
+    print("wrote %s (%d bytes) — open it in a browser" % (out, len(html)))
+    return 0
+
+
 def cmd_illuminate(args: argparse.Namespace) -> int:
     """Mass-generate cube programs and curate them by the bicameral gap (MAP-Elites)."""
     from python.scbe import illuminate as IL
@@ -3472,6 +3492,15 @@ Legacy (backward compat):
     il.add_argument("--governance", action="store_true", help="append cognition syscall decision counts")
     il.add_argument("--json", dest="json_output", action="store_true", help="with --governance, emit JSON receipts")
     il.set_defaults(func=cmd_illuminate)
+
+    cv = sub.add_parser(
+        "canvas",
+        help='Render a program as a zoomable HTML cube canvas ("scbe canvas + sqrt * --out cube.html")',
+    )
+    cv.add_argument("tokens", nargs="*", help="token program, e.g. + sqrt *")
+    cv.add_argument("--out", default="cube_canvas.html", help="output HTML file")
+    cv.add_argument("--tongue", default="ko", help="Sacred Tongue for spelling")
+    cv.set_defaults(func=cmd_canvas)
 
     rt = sub.add_parser(
         "route",
