@@ -1533,6 +1533,159 @@ def cmd_octree(args: argparse.Namespace) -> int:
     return 0
 
 
+# ── tool manifest (self-description for AI services) ──────────────────────────
+# Emit the entire CLI as machine-readable tool definitions so ANY AI service can
+# discover and register scbe's commands: native, MCP, OpenAI, or Anthropic shapes.
+def _param_type(action: argparse.Action) -> str:
+    if isinstance(action, (argparse._StoreTrueAction, argparse._StoreFalseAction, argparse._StoreConstAction)):
+        return "boolean"
+    if action.type is int:
+        return "integer"
+    if action.type is float:
+        return "number"
+    return "string"
+
+
+def _params_for(parser: argparse.ArgumentParser) -> List[Dict[str, Any]]:
+    params: List[Dict[str, Any]] = []
+    for a in parser._actions:
+        if isinstance(a, (argparse._HelpAction, argparse._SubParsersAction)):
+            continue
+        if a.dest in ("help", "==SUPPRESS=="):
+            continue
+        positional = not a.option_strings
+        required = bool(a.required) if not positional else (a.nargs not in ("?", "*"))
+        param: Dict[str, Any] = {
+            "name": a.dest,
+            "kind": "positional" if positional else "flag",
+            "type": _param_type(a),
+            "required": required,
+        }
+        if a.option_strings:
+            param["flags"] = list(a.option_strings)
+        if a.choices:
+            seen_c: set = set()
+            param["choices"] = [c for c in a.choices if not (c in seen_c or seen_c.add(c))]
+        if a.help and a.help != argparse.SUPPRESS:
+            param["description"] = a.help
+        if a.default not in (None, argparse.SUPPRESS, False):
+            param["default"] = a.default
+        if a.nargs not in (None, 0):
+            param["nargs"] = a.nargs
+        params.append(param)
+    return params
+
+
+def _walk_commands(parser: argparse.ArgumentParser, prefix: str = "") -> List[Dict[str, Any]]:
+    """Flatten the argparse tree into a list of callable leaf tools (groups become path prefixes)."""
+    out: List[Dict[str, Any]] = []
+    spa = next((a for a in parser._actions if isinstance(a, argparse._SubParsersAction)), None)
+    if spa is None:
+        return out
+    alias_map: Dict[int, List[str]] = {}
+    for nm, sub in spa.choices.items():
+        alias_map.setdefault(id(sub), []).append(nm)
+    for choice in spa._choices_actions:
+        name = choice.dest
+        sub = spa.choices.get(name)
+        if sub is None:
+            continue
+        path = f"{prefix} {name}".strip()
+        nested = next((a for a in sub._actions if isinstance(a, argparse._SubParsersAction)), None)
+        if nested is not None:
+            out.extend(_walk_commands(sub, path))
+            continue
+        if sub.get_default("func") is None:
+            continue
+        aliases = [a for a in alias_map.get(id(sub), []) if a != name]
+        params = _params_for(sub)
+        out.append({
+            "name": path.replace(" ", "."),
+            "path": path,
+            "invoke": f"scbe {path}",
+            "aliases": aliases,
+            "summary": choice.help or "",
+            "supports_json": any(getattr(a, "dest", None) == "json_output" for a in sub._actions),
+            "args": params,
+        })
+    return out
+
+
+def _tool_json_schema(tool: Dict[str, Any]) -> Dict[str, Any]:
+    props: Dict[str, Any] = {}
+    required: List[str] = []
+    for p in tool["args"]:
+        is_list = p.get("nargs") in ("*", "+")
+        node: Dict[str, Any] = {"type": "array", "items": {"type": p["type"]}} if is_list else {"type": p["type"]}
+        target = node["items"] if is_list else node
+        if p.get("choices"):
+            target["enum"] = p["choices"]
+        if p.get("description"):
+            node["description"] = p["description"]
+        if "default" in p:
+            node["default"] = p["default"]
+        props[p["name"]] = node
+        if p.get("required"):
+            required.append(p["name"])
+    schema: Dict[str, Any] = {"type": "object", "properties": props}
+    if required:
+        schema["required"] = required
+    schema["additionalProperties"] = False
+    return schema
+
+
+def _tool_id(tool: Dict[str, Any]) -> str:
+    return "scbe_" + tool["name"].replace(".", "_").replace("-", "_")
+
+
+def cmd_manifest(args: argparse.Namespace) -> int:
+    tools = _walk_commands(build_cli())
+    fmt = (getattr(args, "format", None) or "native").lower()
+    if fmt == "mcp":
+        payload: Any = {
+            "tools": [
+                {"name": _tool_id(t), "description": t["summary"] or t["path"], "inputSchema": _tool_json_schema(t)}
+                for t in tools
+            ]
+        }
+    elif fmt == "openai":
+        payload = [
+            {
+                "type": "function",
+                "function": {
+                    "name": _tool_id(t),
+                    "description": t["summary"] or t["path"],
+                    "parameters": _tool_json_schema(t),
+                },
+            }
+            for t in tools
+        ]
+    elif fmt == "anthropic":
+        payload = [
+            {"name": _tool_id(t), "description": t["summary"] or t["path"], "input_schema": _tool_json_schema(t)}
+            for t in tools
+        ]
+    elif fmt == "native":
+        payload = {
+            "schema": "scbe_tools_manifest_v1",
+            "version": VERSION,
+            "invoke_note": (
+                "Call as: scbe <path> [args]. Append --json on commands where "
+                "supports_json is true for machine-readable output."
+            ),
+            "tool_count": len(tools),
+            "tools": tools,
+        }
+    else:
+        print(f"unknown format '{fmt}'; choose from: native, mcp, openai, anthropic", file=sys.stderr)
+        return 2
+    if getattr(args, "pretty", False):
+        print(json.dumps(payload, indent=2))
+    else:
+        print(json.dumps(payload, separators=(",", ":")))
+    return 0
+
+
 def cmd_substrate_map(args: argparse.Namespace) -> int:
     text = _arg_or_stdin(getattr(args, "text", None))
     if text is None:
@@ -3714,6 +3867,18 @@ Legacy (backward compat):
     octree_p.add_argument("--limit", type=int, default=8, help="how many neighbors to show")
     octree_p.add_argument("--json", dest="json_output", action="store_true")
     octree_p.set_defaults(func=cmd_octree)
+
+    manifest_p = sub.add_parser(
+        "manifest",
+        aliases=["tools", "capabilities"],
+        help='Emit all commands as machine-readable tool defs for any AI service ("scbe manifest --format mcp")',
+    )
+    manifest_p.add_argument(
+        "--format", choices=["native", "mcp", "openai", "anthropic"], default="native",
+        help="output shape: native | mcp | openai | anthropic",
+    )
+    manifest_p.add_argument("--pretty", action="store_true", help="pretty-print JSON")
+    manifest_p.set_defaults(func=cmd_manifest)
 
     ec = sub.add_parser(
         "encode-code",
