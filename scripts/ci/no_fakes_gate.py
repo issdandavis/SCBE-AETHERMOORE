@@ -24,6 +24,7 @@ It is deliberately comment/marker oriented: the cheapest, highest-signal tell of
 a fake is the apologetic comment the author left next to it. Genuine cases can be
 allow-listed by adding their key to the baseline with a justification.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -38,9 +39,23 @@ REPO = Path(__file__).resolve().parents[2]
 # fixture, not a shipped lie.
 SCAN_DIRS = ["src", "python", "agents", "hydra", "packages", "scbe.py"]
 EXCLUDE_PARTS = {
-    "node_modules", "dist", "build", "__pycache__", ".git", ".venv", "venv",
-    "tests", "test", "__tests__", "demos", "examples", "scbe-aethermoore",
-    "fixtures", "mocks", "__mocks__", "vendor",
+    "node_modules",
+    "dist",
+    "build",
+    "__pycache__",
+    ".git",
+    ".venv",
+    "venv",
+    "tests",
+    "test",
+    "__tests__",
+    "demos",
+    "examples",
+    "scbe-aethermoore",
+    "fixtures",
+    "mocks",
+    "__mocks__",
+    "vendor",
 }
 EXTS = {".py", ".ts", ".tsx", ".js", ".mjs", ".cjs"}
 
@@ -50,12 +65,23 @@ PATTERNS = [
     ("in_prod_use", re.compile(r"in\s+production[,:\s].{0,40}\b(use|replace|swap|switch)\b", re.I)),
     ("simplified_demo", re.compile(r"simplified\s+(for\s+demo|encryption|version|implementation)", re.I)),
     ("for_demo", re.compile(r"\bfor\s+demo\b|\bdemo[,:]\s*(create|use|return|only)", re.I)),
-    ("dev_stub", re.compile(r"development\s+stub|dev\s+placeholder|placeholder\s+for\s+(ml-dsa|ml-kem|kyber|dilithium)", re.I)),
+    (
+        "dev_stub",
+        re.compile(r"development\s+stub|dev\s+placeholder|placeholder\s+for\s+(ml-dsa|ml-kem|kyber|dilithium)", re.I),
+    ),
     ("pseudo", re.compile(r"pseudo-?code", re.I)),
     ("always_true", re.compile(r"always\s+(returns?\s+)?true", re.I)),
     ("not_implemented", re.compile(r"\braise\s+NotImplementedError\b")),
-    ("todo_impl", re.compile(r"#.{0,4}(TODO|FIXME).{0,50}\b(implement|real|crypto|sign|encrypt|verify|liboqs|kyber|dilithium)\b", re.I)),
-    ("fake_marker", re.compile(r"\b(fake|stub|mock|dummy)\b.{0,30}\b(crypto|sign|encrypt|verif|key|impl|aead|kem|dsa)", re.I)),
+    (
+        "todo_impl",
+        re.compile(
+            r"#.{0,4}(TODO|FIXME).{0,50}\b(implement|real|crypto|sign|encrypt|verify|liboqs|kyber|dilithium)\b", re.I
+        ),
+    ),
+    (
+        "fake_marker",
+        re.compile(r"\b(fake|stub|mock|dummy)\b.{0,30}\b(crypto|sign|encrypt|verif|key|impl|aead|kem|dsa)", re.I),
+    ),
 ]
 
 
@@ -148,7 +174,9 @@ def main() -> int:
         )
         return 1
 
-    print(f"no-fakes gate: OK — {len(hits)} known tells, all baselined; {len(cleared)} previously-baselined now removed.")
+    print(
+        f"no-fakes gate: OK — {len(hits)} known tells, all baselined; {len(cleared)} previously-baselined now removed."
+    )
     return 0
 
 

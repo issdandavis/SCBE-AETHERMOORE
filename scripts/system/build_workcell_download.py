@@ -12,13 +12,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CLI_DIR = REPO_ROOT / "packages" / "cli"
 QUICKSTART = REPO_ROOT / "docs" / "downloads" / "scbe-workcell-quickstart.md"
-PACKAGING_RESEARCH = (
-    REPO_ROOT / "docs" / "downloads" / "downloadable-app-packaging-research-2026-06-16.md"
-)
+PACKAGING_RESEARCH = REPO_ROOT / "docs" / "downloads" / "downloadable-app-packaging-research-2026-06-16.md"
 DEFAULT_OUT = REPO_ROOT / "artifacts" / "workcell_download"
 
 

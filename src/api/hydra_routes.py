@@ -101,8 +101,7 @@ def get_spine() -> Any:
     if _spine is None:
         raise HTTPException(
             503,
-            "HYDRA orchestrator is not available in this build "
-            "(hydra.spine/head modules are not present).",
+            "HYDRA orchestrator is not available in this build " "(hydra.spine/head modules are not present).",
         )
     return _spine
 
