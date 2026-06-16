@@ -564,7 +564,7 @@ def main() -> int:
         tongue_tag = f" +{tongue_only}✦KO" if tongue_only > 0 else ""
         petri_str = (
             f"  |  Petri(regex+KO): {petri_r:.1%} "
-            f"({gov.get('petri_seeds_caught',0)}/{gov.get('petri_seeds_total',0)}{tongue_tag})"
+            f"({gov.get('petri_seeds_caught', 0)}/{gov.get('petri_seeds_total', 0)}{tongue_tag})"
         )
     else:
         petri_str = "  |  Petri: corpus not present"
