@@ -1579,6 +1579,23 @@ def cmd_code(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_bopit(args: argparse.Namespace) -> int:
+    """Bop-It cube controller: twist a face, hear the command, run it."""
+    from python.scbe import cube_controller as C
+
+    moves = getattr(args, "moves", []) or []
+    voice = getattr(args, "voice", False)
+    if getattr(args, "repl", False) or not moves:
+        return C.bop_it(voice)
+    try:
+        print("CUBE CONTROLLER")
+        C.narrate(C.parse_moves(" ".join(moves)), voice)
+        return 0
+    except ValueError as e:
+        print(str(e), file=sys.stderr)
+        return 1
+
+
 def cmd_blocks(args: argparse.Namespace) -> int:
     """Scratch-style command blocks with a built-in destructive double-check."""
     from python.scbe.blocks import BlockProgram, BlockError, catalog_summary
@@ -3263,6 +3280,15 @@ Legacy (backward compat):
     cd.add_argument("--repl", action="store_true", help="interactive hit-Enter loop")
     cd.add_argument("--no-color", action="store_true", help="disable ANSI styling")
     cd.set_defaults(func=cmd_code)
+
+    bp = sub.add_parser(
+        "bopit",
+        help="Bop-It cube controller: twist a face, hear the command (\"scbe bopit R U F'\")",
+    )
+    bp.add_argument("moves", nargs="*", help="twist sequence in cube notation: R U F' L' ...")
+    bp.add_argument("--voice", action="store_true", help="say the commands aloud (Windows SAPI)")
+    bp.add_argument("--repl", action="store_true", help="interactive twist loop")
+    bp.set_defaults(func=cmd_bopit)
 
     rt = sub.add_parser(
         "route",
