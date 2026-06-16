@@ -1579,6 +1579,36 @@ def cmd_code(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_fold(args: argparse.Namespace) -> int:
+    """Origami: unfold the cube to paper, fold a fan/crane, or play the number game."""
+    from python.scbe import origami as O
+
+    prog = getattr(args, "fortune", None)
+    if prog is not None:
+        from python.scbe import frontdoor as F
+        names, _ = F.tokens_to_program(prog)
+        ft = O.FortuneTeller.from_program(names)
+        picks = getattr(args, "pick", None) or [1]
+        landed = ft.play(picks)
+        print("fortune teller (from %s)" % (names or ["add"]))
+        print("  cells:", ft.flaps())
+        print("  pick %s -> flap '%s' -> runs to %s" % (picks, landed, O._run_op(landed)))
+        return 0
+    shape = getattr(args, "shape", None) or "net"
+    if shape == "net":
+        print("the cube unfolds to a sheet (its net):")
+        print(O.render_net())
+    elif shape == "fan":
+        n = getattr(args, "n", 6) or 6
+        print("fold it into a fan (%d creases):" % n)
+        print(O.crease_pattern(O.accordion(n)))
+    elif shape == "crane":
+        print("crane fold sequence:")
+        for i, step in enumerate(O.crane(), 1):
+            print("  %d. %s" % (i, step))
+    return 0
+
+
 def cmd_bopit(args: argparse.Namespace) -> int:
     """Bop-It cube controller: twist a face, hear the command, run it."""
     from python.scbe import cube_controller as C
@@ -3303,6 +3333,16 @@ Legacy (backward compat):
     bp.add_argument("--baud", type=int, default=115200, help="serial baud rate (default 115200)")
     bp.add_argument("--sim", metavar="WIRE", help="simulate a cube from a wire string, e.g. \"R U F' GO\"")
     bp.set_defaults(func=cmd_bopit)
+
+    fl = sub.add_parser(
+        "fold",
+        help='Origami: unfold the cube to paper, fold a fan/crane, or the number game ("scbe fold --fortune \"+ * sqrt inc\" --pick 4 3 2")',
+    )
+    fl.add_argument("--shape", choices=["net", "fan", "crane"], help="what to fold (default net)")
+    fl.add_argument("--n", type=int, default=6, help="number of creases for a fan")
+    fl.add_argument("--fortune", metavar="PROGRAM", help="build a fortune teller from a token program")
+    fl.add_argument("--pick", type=int, nargs="+", help="fortune-teller picks, e.g. --pick 4 3 2")
+    fl.set_defaults(func=cmd_fold)
 
     rt = sub.add_parser(
         "route",
