@@ -64,7 +64,6 @@ src/gacha_isekai/training.py::for_demo::5510e9ca814b  # src/gacha_isekai/trainin
 src/gacha_isekai/training.py::in_prod_use::67600cf176b8  # src/gacha_isekai/training.py:101 [in_prod_use] In production, use actual ML-DSA-65 from liboqs.
 src/game/microLedger.ts::in_prod_use::38618399dcea  # src/game/microLedger.ts:609 [in_prod_use] * In production, this would use BitLocker escrow.
 src/gateway/DNA_MULTI_LAYER_ENCODING_TEST.py::for_demo::60499d067d16  # src/gateway/DNA_MULTI_LAYER_ENCODING_TEST.py:40 [for_demo] """Simple text to Morse (A-Z only for demo)"""
-src/gateway/unified-api.ts::in_prod_use::b89158515165  # src/gateway/unified-api.ts:474 [in_prod_use] // Simple rotation (in production, would use epoch-based Q matrix)
 src/governance/decision_envelope_v1.py::dev_stub::2dbc753aed0e  # src/governance/decision_envelope_v1.py:670 [dev_stub] Dev placeholder signature:
 src/governance/decision_envelope_v1.py::dev_stub::311d45c704fa  # src/governance/decision_envelope_v1.py:7 [dev_stub] 3) HMAC-SHA256 signing/verification (dev placeholder for ML-DSA).
 src/governance/tree_of_escalation.py::fake_marker::5cb84a24d666  # src/governance/tree_of_escalation.py:709 [fake_marker] """Stub domain classifier. v0.3 uses keyword matching.
