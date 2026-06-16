@@ -55,8 +55,8 @@ def test_model_lifts_recall_over_pattern_only() -> None:
     pos, neg = len(CORPUS["positives"]), len(CORPUS["hard_negatives"])
     print(f"\nMODEL-AUGMENTED held-out: recall={recall:.1%} ({pos} paraphrased attacks), "
           f"benign FP={fp:.1%} ({neg} hard negatives)")
-    # The classifier must clearly beat the pattern-only ceiling (~25% recall).
-    assert recall >= 0.50, f"model recall {recall:.0%} is not clearly above the pattern-only 25%"
-    # Sanity ceiling — a gate that blocks most benign security talk is unusable.
-    # (Real number is reported above; tightened from the measured CI value.)
-    assert fp <= 0.50, f"model false-positive rate {fp:.0%} too high to be usable"
+    # CI measured: recall 78.6%, benign FP 9.4% (protectai/deberta-v3-base-v2).
+    # Floor/ceiling have margin around those so a model or wiring regression trips
+    # (pattern-only is ~25% recall / ~3% FP — this must clearly beat it).
+    assert recall >= 0.65, f"model recall {recall:.0%} regressed (CI measured ~79%)"
+    assert fp <= 0.20, f"model false-positive rate {fp:.0%} too high (CI measured ~9%)"
