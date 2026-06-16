@@ -27,6 +27,9 @@ This is not a Cursor clone. Cursor helps a developer type code interactively. SC
 
 ## Offer ladder
 
+Self-serve: **$1 SCBE Workcell CLI lifetime**
+https://buy.stripe.com/fZu4gA5Ca1PFct211Ydby0o
+
 Starter: **$99 AI Workflow Snapshot**  
 https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l
 
@@ -35,6 +38,8 @@ https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j
 
 Custom / regulated work:  
 https://aethermoore.com/SCBE-AETHERMOORE/hire.html
+
+The $1 CLI offer is self-serve access to the public command-line workcell tooling and docs. It is not unlimited support, managed runs, private repo work, or custom engineering.
 
 No secrets are required for the starter review. Redacted examples are preferred.
 

@@ -135,6 +135,7 @@ Tell users:
 Use the live offers from `offers.json` as the source of truth. As of this map:
 
 - $5+ SCBE Service Credits: pay-as-you-go support for hosted routing, reports, delivery, storage, and provider/model usage where billable.
+- $1 lifetime SCBE Workcell CLI: self-serve command-line workcell tooling/docs. Stripe checkout is live: https://buy.stripe.com/fZu4gA5Ca1PFct211Ydby0o
 - Ko-fi support: https://ko-fi.com/izdandavis. Use this as the primary low-pressure payment/support path.
 - Cash App manual payment: $IzzyDDavis7. For service purchases, include the offer name in the note.
 - Payment center: https://aethermoore.com/SCBE-AETHERMOORE/payments.html. Use this when the user wants every live payment path in one place.
