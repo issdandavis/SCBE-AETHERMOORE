@@ -1585,6 +1585,17 @@ def cmd_bopit(args: argparse.Namespace) -> int:
 
     moves = getattr(args, "moves", []) or []
     voice = getattr(args, "voice", False)
+    port = getattr(args, "serial", None)
+    if port:                                      # a real cube on a serial/USB port
+        from python.scbe import cube_bridge as BR
+        try:
+            return BR.bridge(BR.SerialSource(port, getattr(args, "baud", 115200)), voice)
+        except RuntimeError as e:                 # pyserial missing
+            print(str(e), file=sys.stderr)
+            return 1
+    if getattr(args, "sim", None):                # a simulated cube (wire string)
+        from python.scbe import cube_bridge as BR
+        return BR.bridge(BR.SimSource(args.sim), voice)
     if getattr(args, "repl", False) or not moves:
         return C.bop_it(voice)
     try:
@@ -3288,6 +3299,9 @@ Legacy (backward compat):
     bp.add_argument("moves", nargs="*", help="twist sequence in cube notation: R U F' L' ...")
     bp.add_argument("--voice", action="store_true", help="say the commands aloud (Windows SAPI)")
     bp.add_argument("--repl", action="store_true", help="interactive twist loop")
+    bp.add_argument("--serial", metavar="PORT", help="read a real cube from a serial port (e.g. COM3); needs pyserial")
+    bp.add_argument("--baud", type=int, default=115200, help="serial baud rate (default 115200)")
+    bp.add_argument("--sim", metavar="WIRE", help="simulate a cube from a wire string, e.g. \"R U F' GO\"")
     bp.set_defaults(func=cmd_bopit)
 
     rt = sub.add_parser(
