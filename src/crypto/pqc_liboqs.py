@@ -233,6 +233,24 @@ class MLDSAKeyPair:
 # =============================================================================
 
 
+def _require_real_pqc_or_optin(primitive: str) -> None:
+    """Fail closed: refuse the insecure SHA-256/HMAC simulation unless explicitly opted in.
+
+    The Tier-3 simulation is NOT quantum-resistant (it is SHA-256/HMAC, not ML-KEM/ML-DSA).
+    Returning it silently would let a deployment believe it has PQC when it does not.
+    Production always has liboqs (Tier 1), so this only triggers when every real backend
+    is missing. Set SCBE_ALLOW_INSECURE_PQC=1 to permit it for local testing ONLY.
+    """
+    if os.environ.get("SCBE_ALLOW_INSECURE_PQC"):
+        return
+    raise RuntimeError(
+        f"{primitive}: no real post-quantum backend available (liboqs and pure-PQC both "
+        "missing). Refusing the SHA-256/HMAC simulation, which is NOT quantum-resistant. "
+        "Install liboqs-python, or set SCBE_ALLOW_INSECURE_PQC=1 to allow the insecure "
+        "simulation for local testing ONLY (never in production)."
+    )
+
+
 class MLKEM768:
     """
     ML-KEM-768 Key Encapsulation Mechanism (NIST FIPS 203).
@@ -265,6 +283,7 @@ class MLKEM768:
             self._public_key, self._secret_key = _KyberPure.keygen()
         else:
             # Tier 3: Simulation fallback (NOT quantum-resistant, testing only)
+            _require_real_pqc_or_optin("ML-KEM-768")
             self._public_key = hashlib.sha256(self._seed + b"mlkem768_pk").digest()
             self._public_key = self._public_key + os.urandom(MLKEM768_PK_LEN - 32)
             self._secret_key = hashlib.sha256(self._seed + b"mlkem768_sk").digest()
@@ -387,6 +406,7 @@ class MLDSA65:
             self._public_key, self._secret_key = _DilithiumPure.keygen()
         elif not self._using_real:
             # Tier 3: Simulation (NOT quantum-resistant)
+            _require_real_pqc_or_optin("ML-DSA-65")
             self._public_key = hashlib.sha256(self._seed + b"mldsa65_pk").digest()
             self._public_key = self._public_key + os.urandom(MLDSA65_PK_LEN - 32)
             self._secret_key = hashlib.sha256(self._seed + b"mldsa65_sk").digest()
