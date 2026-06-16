@@ -63,11 +63,16 @@ for name, content in FILES["corpus"].items():
 corpus.sort()
 loc = sum(len(p.read_text(encoding="utf-8", errors="surrogatepass").splitlines()) for p in corpus)
 
-enc_path = ROOT / "ast_cube_encoder.py"
-enc_path.write_text(FILES["encoder_py"], encoding="utf-8")
-spec = importlib.util.spec_from_file_location("ast_cube_encoder", enc_path)
-encoder = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(encoder)
+# Reconstruct a MINIMAL python.scbe package (empty __init__ so the heavy real one
+# does not run) and import the reference encoder via its real absolute import path.
+pkg = ROOT / "python" / "scbe"
+pkg.mkdir(parents=True, exist_ok=True)
+(ROOT / "python" / "__init__.py").write_text("", encoding="utf-8")
+(pkg / "__init__.py").write_text("", encoding="utf-8")
+for _name, _content in FILES["package"].items():
+    (pkg / _name).write_text(_content, encoding="utf-8")
+sys.path.insert(0, str(ROOT))
+encoder = importlib.import_module("python.scbe.ast_cube_encoder")
 
 # --- build Rust on Kaggle (install toolchain if absent) ---
 cargo = shutil.which("cargo")
@@ -175,15 +180,18 @@ print(f"\\nSUMMARY corpus {len(corpus)}f/{loc}LOC | py {py['median']*1000:.1f}ms
 
 def main() -> int:
     crate = ROOT / "rust" / "ast_cube"
-    encoder_py = ROOT / "python" / "scbe" / "ast_cube_encoder.py"
-    corpus_files = sorted((ROOT / "python" / "scbe").glob("*.py"))
+    scbe_dir = ROOT / "python" / "scbe"
+    # Minimal import closure of the reference encoder (verified: stdlib + each other only).
+    package_modules = ["ast_cube_encoder", "cube_token", "elastic_bijective_hash",
+                       "tongue_roles", "atomic_tokenization"]
+    corpus_files = sorted(scbe_dir.glob("*.py"))
     corpus_files = [f for f in corpus_files if f.name != "__init__.py"][:CORPUS_LIMIT]
 
     emb = {
         "cargo_toml": (crate / "Cargo.toml").read_text(encoding="utf-8"),
         "cargo_lock": (crate / "Cargo.lock").read_text(encoding="utf-8"),
         "main_rs": (crate / "src" / "main.rs").read_text(encoding="utf-8"),
-        "encoder_py": encoder_py.read_text(encoding="utf-8"),
+        "package": {f"{m}.py": (scbe_dir / f"{m}.py").read_text(encoding="utf-8") for m in package_modules},
         "corpus": {f.name: f.read_text(encoding="utf-8", errors="surrogatepass") for f in corpus_files},
     }
     blob = base64.b64encode(json.dumps(emb).encode("utf-8")).decode("ascii")
