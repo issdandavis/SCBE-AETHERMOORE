@@ -123,6 +123,12 @@ def emit(tokens: Sequence[int], lang: str, *, fn_name: str = "tongue_fn",
         if n not in SCALAR_OPS:
             raise ValueError(f"op {n!r} (0x{NAME_TO_BYTE[n]:02x}) not in v1 scalar core for {lang}")
     args = list(arg_names or ["a", "b", "c"])
+    # identifiers only — a fn_name/arg like "f(0x05)" would inject a phantom (0xNN)
+    # opcode tag into the source and break the face-decode bijection.
+    if not (isinstance(fn_name, str) and fn_name.isidentifier()):
+        raise ValueError(f"fn_name must be a valid identifier, got {fn_name!r}")
+    if not all(isinstance(a, str) and a.isidentifier() for a in args):
+        raise ValueError(f"arg_names must all be valid identifiers, got {args!r}")
 
     lines: List[str] = list(d.prelude)
     lines.append(_sub(d.fn_open, fn=fn_name, params=", ".join(args)))

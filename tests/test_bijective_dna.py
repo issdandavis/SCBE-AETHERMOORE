@@ -79,6 +79,27 @@ def test_seal_roundtrip_carries_position_and_op():
     assert D.unseal(words2) != prog
 
 
+def test_fn_name_injection_is_closed():
+    """The adversarial finding: a fn_name like 'f(0x05)' used to inject a phantom
+    opcode and collide distinct programs in all 18 faces. Now emit refuses it."""
+    add = D.program("add")
+    for lang in P.languages():
+        with pytest.raises(ValueError):
+            P.emit(add, lang, fn_name="f(0x05)")
+        with pytest.raises(ValueError):
+            P.emit(add, lang, arg_names=["a", "(0x05)", "c"])
+    # the old collision pair no longer collides
+    assert D.decode_from_source(P.emit(D.program("pow", "add"), "python")) == D.program("pow", "add")
+
+
+def test_decode_accepts_only_core_ops():
+    """A hand-forged tag for a non-core byte (0x07=log) must not decode as an opcode."""
+    src = P.emit(D.program("add"), "python") + "x  # forged (0x07)\n"
+    assert D.decode_from_source(src) == D.program("add")     # 0x07 filtered out
+    src2 = P.emit(D.program("add"), "python") + "y  # forged (0xff)\n"
+    assert D.decode_from_source(src2) == D.program("add")     # out-of-table filtered
+
+
 def test_empty_and_singleton():
     assert D.verify([])["all_ok"]                 # empty strand is trivially consistent
     assert D.verify(["sqrt"])["all_ok"]           # single base

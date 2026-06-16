@@ -53,7 +53,10 @@ for _a, _b in _PAIRS:
 assert set(COMPLEMENT) == P.SCALAR_OPS, "complement must cover the whole scalar core"
 assert all(COMPLEMENT[COMPLEMENT[x]] == x for x in COMPLEMENT), "C must be an involution"
 
-_HEX = re.compile(r"\(0x([0-9a-fA-F]{2})\)")      # the opcode tag every face embeds
+# the opcode tag every face embeds — ANCHORED to end of line (emit always appends it
+# as the last thing on an op line), so an identifier like `f(0x05)` mid-line can't
+# inject a phantom opcode.
+_HEX = re.compile(r"\(0x([0-9a-fA-F]{2})\)\s*$", re.M)
 
 
 def program(*op_names: str) -> List[int]:
@@ -67,9 +70,16 @@ def names(prog: Sequence[int]) -> List[str]:
 
 # --- many faces, one object: decode the strand back out of ANY language ---------
 def decode_from_source(src: str) -> List[int]:
-    """Recover the opcode strand from emitted source, via its `(0xNN)` tags.
-    This is the bijection that makes a language face a *decoder*, not just output."""
-    return [int(h, 16) for h in _HEX.findall(src)]
+    """Recover the opcode strand from emitted source, via its end-of-line `(0xNN)`
+    tags. Only the 22 defined CORE ops decode — anything else (a hand-forged tag for
+    a non-core or out-of-table byte) is ignored, so the decode surface equals the emit
+    image. This is the bijection that makes a language face a *decoder*, not just output."""
+    out = []
+    for h in _HEX.findall(src):
+        b = int(h, 16)
+        if P.BYTE_TO_NAME.get(b) in P.SCALAR_OPS:
+            out.append(b)
+    return out
 
 
 def faces_agree(prog: Sequence[int]) -> Dict[str, bool]:
