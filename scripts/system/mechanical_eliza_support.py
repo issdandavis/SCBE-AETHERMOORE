@@ -40,19 +40,16 @@ def _read_text(args: argparse.Namespace) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("text", nargs="*", help="Support request text.")
-    parser.add_argument(
-        "--text-file", help="Read support request text from a UTF-8 file."
-    )
+    parser.add_argument("--text-file", help="Read support request text from a UTF-8 file.")
     parser.add_argument(
         "--history-file",
-        help="Read prior dialogue turns from a UTF-8 file, one turn per line. The request text is appended as the latest turn.",
+        help=(
+            "Read prior dialogue turns from a UTF-8 file, one turn per line. "
+            "The request text is appended as the latest turn."
+        ),
     )
-    parser.add_argument(
-        "--stdin", action="store_true", help="Read support request text from stdin."
-    )
-    parser.add_argument(
-        "--pretty", action="store_true", help="Pretty-print JSON output."
-    )
+    parser.add_argument("--stdin", action="store_true", help="Read support request text from stdin.")
+    parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON output.")
     parser.add_argument(
         "--response-only",
         action="store_true",
@@ -83,9 +80,7 @@ def main(argv: list[str] | None = None) -> int:
         default="offline",
         help="Free LLM provider id for request/dispatch.",
     )
-    parser.add_argument(
-        "--model", default=None, help="Optional model override for Free LLM routing."
-    )
+    parser.add_argument("--model", default=None, help="Optional model override for Free LLM routing.")
     parser.add_argument(
         "--live-model",
         action="store_true",
@@ -96,9 +91,7 @@ def main(argv: list[str] | None = None) -> int:
     text = _read_text(args)
     if args.history_file:
         history = [
-            line.strip()
-            for line in Path(args.history_file).read_text(encoding="utf-8").splitlines()
-            if line.strip()
+            line.strip() for line in Path(args.history_file).read_text(encoding="utf-8").splitlines() if line.strip()
         ]
         packet = route_dialogue(history + ([text] if text else []))
     else:

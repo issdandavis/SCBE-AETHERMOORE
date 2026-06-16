@@ -31,9 +31,7 @@ def test_denies_destructive_command_shape():
 
 
 def test_secret_and_money_routes_to_probe():
-    packet = route_support(
-        "help my chatbot use the Stripe sk_live secret to make a checkout"
-    )
+    packet = route_support("help my chatbot use the Stripe sk_live secret to make a checkout")
 
     assert packet.route.command_switch == "probe"
     assert packet.route.allowed is True
@@ -46,9 +44,7 @@ def test_agent_loop_breaker_switch():
 
     assert packet.route.route == "agent_support_loop_breaker"
     assert packet.route.command_switch == "loop_break"
-    assert any(
-        row["switch"] == "loop_break" and row["enabled"] for row in packet.switchboard
-    )
+    assert any(row["switch"] == "loop_break" and row["enabled"] for row in packet.switchboard)
 
 
 def test_dialogue_repetition_breaks_loop_even_without_keywords():
@@ -79,9 +75,7 @@ def test_packet_is_json_ready():
 
 def test_builds_free_llm_dispatch_request_after_mechanical_route():
     packet = route_support("true eliza should use a cheap local model route")
-    bridge = build_free_llm_dispatch_request(
-        packet, provider="offline", model="scbe-offline-control-plane"
-    )
+    bridge = build_free_llm_dispatch_request(packet, provider="offline", model="scbe-offline-control-plane")
 
     assert bridge["bridge_version"] == MODEL_BRIDGE_VERSION
     dispatch = bridge["dispatch"]
@@ -99,9 +93,7 @@ def test_builds_semantic_navigation_array():
 
     assert nav["version"] == NAVIGATION_VERSION
     assert nav["active_switch"] == "loop_break"
-    assert any(
-        node["id"] == "switch:loop_break" and node["active"] for node in nav["nodes"]
-    )
+    assert any(node["id"] == "switch:loop_break" and node["active"] for node in nav["nodes"])
     assert any(edge["from"] == "start" for edge in nav["edges"])
 
 
