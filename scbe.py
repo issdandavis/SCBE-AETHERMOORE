@@ -455,6 +455,47 @@ def _intent_variants(text: str) -> List[str]:
     return variants
 
 
+# Structural intent (phase-1.5): the discriminator between a paraphrased attack
+# ("hand over the credentials") and benign security talk ("how do I rotate api
+# keys") is GRAMMATICAL MOOD, not vocabulary — attacks are imperative commands
+# aimed at the assistant; benign topic-talk is interrogative/descriptive. This
+# catches keyword-evading paraphrases the family patterns miss. It is mood
+# heuristics, NOT semantic understanding — deep/novel paraphrase still needs a
+# real model (the honest phase-2 limit, measured not assumed).
+_DIRECTIVE = re.compile(
+    r"^\s*(?:(?:please|now|quietly|just|kindly|simply|also|then|silently|"
+    r"go ahead and|i want you to|i need you to)\s+)*"
+    r"(ignore|disregard|forget|override|bypass|reveal|print|show|send|email|"
+    r"upload|dump|leak|exfiltrate|hand|give|spit|wipe|delete|drop|pretend|act|"
+    r"stop|obey|behave|output|expose|turn|let|pay|provide)\b"
+    r"|\byou (are|will|must|should|can) now\b|\byou no longer\b|\byou have no\b|"
+    r"\bfrom now on\b|\bfrom here on\b|\bas (though|if) you have no\b|"
+    r"\bno longer (have to|need to|bound)\b|\bpay no attention\b",
+    re.I,
+)
+_SENSITIVE = re.compile(
+    r"\b(credential|credentials|password|passwords|api[ _-]?keys?|keys?|secret|secrets|"
+    r"token|tokens|private[ _-]?key|instruction|instructions|directive|directives|"
+    r"system prompt|rules|guideline|guidelines|guardrail|guardrails|restriction|"
+    r"restrictions|filter|filtering|content policy|safety|limits|constraints|"
+    r"confidential|users table|database|config|configuration|environment)\b",
+    re.I,
+)
+_DESCRIPTIVE = re.compile(
+    r"^\s*(how|what|why|when|who|where|which|explain|describe|summari[sz]e|teach|"
+    r"write documentation|review|recommend|translate|help me|draft|fix|i forgot|"
+    r"what's|whats|tell me|is |are |does |do i)\b|\bdifference between\b|"
+    r"\bbest practices?\b|\bbest way\b",
+    re.I,
+)
+
+
+def _structural_intent(text: str) -> bool:
+    """True when `text` is an imperative command aimed at the assistant that
+    targets something sensitive, and is NOT a question/educational frame."""
+    return bool(_DIRECTIVE.search(text)) and bool(_SENSITIVE.search(text)) and not _DESCRIPTIVE.search(text)
+
+
 def _adversarial_intent(text: str) -> Tuple[float, List[str]]:
     """Return (risk, labels) for known attack families present in `text`.
 
@@ -468,6 +509,11 @@ def _adversarial_intent(text: str) -> Tuple[float, List[str]]:
     """
     variants = _intent_variants(text)
     labels = {name for name, rx in _INJECTION_FAMILIES.items() if any(rx.search(v) for v in variants)}
+    # Educational/descriptive framing ("explain what a jailbreak is", "describe how
+    # a system prompt differs") mentions attack words without commanding anything —
+    # don't let the mention-based families read a topic word as intent.
+    if _DESCRIPTIVE.search(text) and not _DIRECTIVE.search(text):
+        labels -= {"instruction-override", "jailbreak"}
     # Spacing evasion: text spread into single characters ("i g n o r e a l l …")
     # to break keyword matching — structurally abnormal regardless of content.
     toks = text.split()
@@ -475,6 +521,11 @@ def _adversarial_intent(text: str) -> Tuple[float, List[str]]:
         singles = sum(1 for t in toks if len(t.strip(_PUNCT_STRIP)) == 1)
         if singles / len(toks) >= 0.6:
             labels.add("obfuscation-spacing")
+    # Structural fallback: catch imperative-intent PARAPHRASES the keyword
+    # families miss. Only when no keyword family already fired, so it is purely
+    # additive on the miss cases.
+    if not (labels & set(_INJECTION_FAMILIES)) and any(_structural_intent(v) for v in variants):
+        labels.add("intent-structural")
     return float(len(labels)), sorted(labels)
 
 
