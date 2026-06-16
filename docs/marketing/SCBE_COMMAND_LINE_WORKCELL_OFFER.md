@@ -29,7 +29,24 @@ People can generate a repo quickly now. They still need someone to answer:
 
 ## Offer Ladder
 
-### 1. AI Workflow Snapshot - $99
+### 1. SCBE Workcell CLI - $1 lifetime
+
+Use this when the buyer wants the self-serve command-line tool and docs so they can run it themselves.
+
+Buyer gets:
+
+- lifetime self-serve access path for the public SCBE command-line workcell tooling and docs
+- the right to use the public CLI/workcell materials themselves
+- future public updates through the repo/site
+- no subscription
+
+Boundary: this is not unlimited support, private repo work, managed runs, regulated deployment, or custom engineering.
+
+Checkout: https://buy.stripe.com/fZu4gA5Ca1PFct211Ydby0o
+
+CLI page: https://aethermoore.com/SCBE-AETHERMOORE/cli.html
+
+### 2. AI Workflow Snapshot - $99
 
 Use this when the buyer only needs a first-pass read.
 
@@ -43,7 +60,7 @@ Checkout: https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l
 
 Scope: https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html
 
-### 2. Command-Line Workcell Pilot - $500 fixed scope
+### 3. Command-Line Workcell Pilot - $500 fixed scope
 
 Use this when the buyer wants the repo/workflow inspected by the CLI system, not just read.
 
@@ -62,7 +79,7 @@ Checkout: https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j
 
 Hire page: https://aethermoore.com/SCBE-AETHERMOORE/hire.html
 
-### 3. Managed Workcell - custom
+### 4. Managed Workcell - custom
 
 Use this for recurring CLI operations, regulated/offline work, private repos, client-controlled systems, or federal/subcontract contexts.
 
@@ -99,6 +116,7 @@ Send a repo, AI workflow, prompt chain, MCP stack, or automation script. I run a
 
 This is for teams that built fast with AI and now need to know what breaks, what is unsafe, and what to fix first.
 
+Self-serve: $1 Workcell CLI
 Starter: $99 Workflow Snapshot  
 Pilot: $500 Command-Line Workcell  
 Custom: regulated/offline/federal-ready AI work
@@ -108,6 +126,8 @@ Custom: regulated/offline/federal-ready AI work
 I am testing a service called SCBE Command-Line Workcell.
 
 If you have an AI-built repo, agent workflow, MCP stack, or automation script that you do not fully trust yet, I can run a governed CLI review and send back a concise memo: what breaks first, what is risky, what tests/commands prove it, and the next fixes.
+
+Self-serve Workcell CLI is $1 lifetime: https://buy.stripe.com/fZu4gA5Ca1PFct211Ydby0o
 
 Starter read is $99: https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l
 
@@ -131,8 +151,9 @@ If you have a repo, workflow, MCP stack, n8n automation, prompt chain, or agent 
 - next three fixes
 - command evidence where feasible
 
-The starter read is $99. The deeper Command-Line Workcell pilot is $500 fixed scope.
+The self-serve CLI is $1 lifetime. The starter read is $99. The deeper Command-Line Workcell pilot is $500 fixed scope.
 
+Self-serve: https://buy.stripe.com/fZu4gA5Ca1PFct211Ydby0o
 Starter: https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html
 Custom/pilot: https://aethermoore.com/SCBE-AETHERMOORE/hire.html
 
