@@ -1,0 +1,17 @@
+[package]
+name = "ast_cube_poly"
+version = "0.1.0"
+edition = "2021"
+description = "Polyglot tree-sitter AST cube encoder for SCBE-AETHERMOORE"
+
+[[bin]]
+name = "ast_cube_poly"
+path = "src/main.rs"
+
+[dependencies]
+tree-sitter = "0.24"
+tree-sitter-javascript = "0.23"
+sha2 = "0.10"
+
+[profile.release]
+opt-level = 3
