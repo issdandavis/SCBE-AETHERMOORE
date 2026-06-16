@@ -1554,7 +1554,7 @@ def cmd_polyglot(args: argparse.Namespace) -> int:
             continue
         try:
             print(f"=== {lang} ===")
-            print(P.emit(prog, lang, runnable=True))
+            print(P.emit(prog, lang, runnable=True, safe=getattr(args, "safe", False)))
         except ValueError as e:
             print(f"  (skipped: {e})")
     return 0
@@ -3228,6 +3228,8 @@ Legacy (backward compat):
     pg.add_argument("--lang", help="target language (default python)")
     pg.add_argument("--all", action="store_true", help="emit to every registered language")
     pg.add_argument("--list", dest="list_langs", action="store_true", help="list languages + ops")
+    pg.add_argument("--safe", action="store_true",
+                    help="roundabout mode: define undefined zones (div0, sqrt-neg -> 0) so every language agrees")
     pg.set_defaults(func=cmd_polyglot)
 
     rt = sub.add_parser(

@@ -74,23 +74,46 @@ class Dialect:
     main_tmpl: Tuple[str, ...] = ()    # optional runnable main(); {fn} placeholder
 
 
-def _render(name: str, d: Dialect) -> Tuple[str, bool]:
+def _ternary(d: Dialect) -> str:
+    """A general select(cond,t,f) derived from the dialect's own comparison template
+    (its cmp_tmpl already encodes the language's ternary, mapping a bool to 1.0/0.0)."""
+    t = d.cmp_tmpl.replace("1.0", "{t}").replace("0.0", "{f}")
+    if "{t}" not in t or "{f}" not in t:
+        t = "({cond} ? {t} : {f})"   # fallback for an unusual dialect
+    return t
+
+
+# ROUNDABOUTS: the undefined intersections (div 0, sqrt of a negative) defined as
+# CODE NODES -- a chosen, consistent handler emitted identically into every
+# language so traffic routes around instead of crashing (py raises / js NaN).
+#   div/mod by zero -> 0.0 ;  sqrt of negative -> 0.0
+def _render(name: str, d: Dialect, safe: bool = False) -> Tuple[str, bool]:
     """Return (push-expression using temp vars a/b, is_binary)."""
     if name in BINOPS:
         op = d.binop_over.get(name, BINOPS[name])
-        return f"a {op} b", True
+        expr = f"a {op} b"
+        if safe and name == "div":
+            expr = _sub(_ternary(d), cond="b == 0.0", t="0.0", f="a / b")
+        return expr, True
     if name in CMPS:
         op = CMPS[name]
         return _sub(d.cmp_tmpl, cond=f"a {op} b"), True
     if name in FUNC2:
-        return _sub(d.func2[name], a="a", b="b"), True
+        expr = _sub(d.func2[name], a="a", b="b")
+        if safe and name == "mod":
+            expr = _sub(_ternary(d), cond="b == 0.0", t="0.0", f=expr)
+        return expr, True
     if name in FUNC1:
-        return _sub(d.func1[name], a="a"), False
+        expr = _sub(d.func1[name], a="a")
+        if safe and name == "sqrt":
+            expr = _sub(_ternary(d), cond="a < 0.0", t="0.0", f=expr)
+        return expr, False
     raise KeyError(f"op {name!r} not in v1 scalar core")
 
 
 def emit(tokens: Sequence[int], lang: str, *, fn_name: str = "tongue_fn",
-         arg_names: Sequence[str] | None = None, runnable: bool = False) -> str:
+         arg_names: Sequence[str] | None = None, runnable: bool = False,
+         safe: bool = False) -> str:
     """Emit a CA opcode program to a complete source string in `lang`."""
     if lang not in REGISTRY:
         raise ValueError(f"unknown language {lang!r}; have {sorted(REGISTRY)}")
@@ -106,7 +129,7 @@ def emit(tokens: Sequence[int], lang: str, *, fn_name: str = "tongue_fn",
     ind = d.indent
     lines.append(ind + _sub(d.stack_init, init=", ".join(args)))
     for n, tok in zip(names, tokens):
-        expr, is_bin = _render(n, d)
+        expr, is_bin = _render(n, d, safe=safe)
         pop = d.pop2 if is_bin else d.pop1
         line = pop + _sub(d.push, expr=expr)
         lines.append(f"{ind}{line}  {d.comment} {n} (0x{tok:02x})")
