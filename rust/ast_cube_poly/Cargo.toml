@@ -9,8 +9,22 @@ name = "ast_cube_poly"
 path = "src/main.rs"
 
 [dependencies]
-tree-sitter = "0.24"
+tree-sitter = "=0.24.7"
 tree-sitter-javascript = "0.23"
+tree-sitter-typescript = "0.23"
+tree-sitter-python = "0.23"
+tree-sitter-c = "0.23"
+tree-sitter-cpp = "0.23"
+tree-sitter-c-sharp = "0.23"
+tree-sitter-go = "0.23"
+tree-sitter-rust = "0.23"
+tree-sitter-java = "0.23"
+tree-sitter-ruby = "0.23"
+tree-sitter-php = "0.23"
+tree-sitter-julia = "0.23"
+tree-sitter-haskell = "0.23"
+tree-sitter-scala = "0.23"
+tree-sitter-lua = "0.5"
 sha2 = "0.10"
 
 [profile.release]
