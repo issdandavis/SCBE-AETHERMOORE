@@ -121,6 +121,33 @@ def _badge(ok: bool, label: str, st: _S) -> str:
     return (st.green("✓ ") if ok else st.red("✗ ")) + (label if ok else st.red(label))
 
 
+def _fmt(v) -> str:
+    if isinstance(v, float):
+        return "%.1f" % v if v == int(v) else "%.6g" % v
+    return str(v)
+
+
+def _run(prog: Sequence[int], st: _S) -> str:
+    """Run the Python face on the default args and show the result. If the raw run
+    hits an undefined zone (÷0, √-), fall back to the roundabout and say so."""
+    def call(safe):
+        ns: dict = {}
+        exec(compile(P.emit(prog, "python", safe=safe), "<face>", "exec"), ns)  # noqa: S102
+        return ns["tongue_fn"](2.0, 3.0, 4.0)
+    try:
+        return st.green("✓ ") + "tongue_fn(2,3,4) → " + st.bold(_fmt(call(False)))
+    except (ZeroDivisionError, ValueError, OverflowError) as e:
+        try:                                                 # undefined zone -> roundabout
+            return st.yellow("⚠ ") + "undefined (%s) → roundabout %s" % (
+                type(e).__name__, st.bold(_fmt(call(True))))
+        except Exception as e2:                              # pragma: no cover - defensive
+            return st.red("✗ ") + "error: %s" % type(e2).__name__
+    except IndexError:                                       # not enough values on the stack
+        return st.dim("· incomplete strand (needs more operands)")
+    except Exception as e:                                   # pragma: no cover - defensive
+        return st.dim("· did not run (%s)" % type(e).__name__)
+
+
 def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
            width: int = 58) -> str:
     st = _S(_style_enabled(color))
@@ -141,6 +168,7 @@ def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
             _badge(rep["seekable"], "seekable", st),
             _badge(bool(rep.get("seal_roundtrip", True)), "sealed", st),
         ]),
+        st.dim("runs    ") + _run(prog, st),
         st.dim("geoseal ") + st.mag(sig),
     ]
     blocks = [("SCBE · cube code", head, st.cyan)]

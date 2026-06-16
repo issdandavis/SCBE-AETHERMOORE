@@ -43,6 +43,23 @@ def test_empty_program_renders():
     assert "0 op" in out or "(empty)" in out
 
 
+def test_run_on_enter_shows_result():
+    out = F.render("+ * inc", ("python",), color=False)        # add,mul,inc -> 15.0
+    assert "runs" in out and "tongue_fn(2,3,4) → 15.0" in out
+
+
+def test_run_on_enter_undefined_zone_uses_roundabout():
+    div0 = F.render("== /", ("python",), color=False)          # eq->0.0 then /0
+    assert "roundabout 0.0" in div0 and "ZeroDivisionError" in div0
+    sqrtneg = F.render("- sqrt", ("python",), color=False)     # 3-4=-1 then sqrt
+    assert "roundabout 0.0" in sqrtneg and "ValueError" in sqrtneg
+
+
+def test_run_on_enter_incomplete_strand_is_graceful():
+    out = F.render("+ sqrt * inc /", ("python",), color=False)  # underflows the stack
+    assert "incomplete strand" in out                          # no crash, clear note
+
+
 def test_geoseal_signature_is_nonzero_and_stable():
     a = F.render("+ * sqrt", ("python",), color=False)
     b = F.render("+ * sqrt", ("python",), color=False)
