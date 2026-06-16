@@ -1,6 +1,6 @@
 {
   "schema_version": "scbe-cube-faces-v1",
-  "generated_by": "scripts/build/export_cube.py",
+  "generated_by": "scripts/system/export_cube.py",
   "note": "Real cube faces from python/scbe/cube_faces.all_faces \u2014 not a mock.",
   "tokens": {
     "loop": {
