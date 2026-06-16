@@ -38,3 +38,29 @@ def test_roles_come_from_chemistry_trit():
     active = [t for t in ("KO", "AV", "RU", "CA", "UM", "DR") if trit.get(t, 0) > 0]
     # one role label per positively-lit tongue channel
     assert len(f["faces"]["roles"]) == len(active)
+
+
+def test_real_chemistry_recognized():
+    from python.scbe.atomic_tokenization import chemical_element, parse_formula
+    assert chemical_element("H").symbol == "H"
+    assert chemical_element("O").Z == 8
+    assert chemical_element("loop") is None          # plain word -> not an element
+    assert parse_formula("H2O") == {"H": 2, "O": 1}
+    assert parse_formula("C3H8") == {"C": 3, "H": 8}
+    assert parse_formula("loop") is None             # not a false compound
+
+
+def test_chem_face_differentiates_chemistry():
+    assert all_faces("H")["faces"]["chemistry"]["real_element"]["symbol"] == "H"
+    assert all_faces("Na")["faces"]["chemistry"]["real_element"]["Z"] == 11
+    assert all_faces("H2O")["faces"]["chemistry"]["composition"] == {"H": 2, "O": 1}
+    # a non-chemical word gets neither enrichment (back-compatible)
+    chem = all_faces("loop")["faces"]["chemistry"]
+    assert "real_element" not in chem and "composition" not in chem
+
+
+def test_linguistic_classifier_untouched():
+    # the chemistry layer is additive — the encoder/parity path is unchanged
+    from python.scbe.atomic_tokenization import classify_token_semantic
+    assert classify_token_semantic("loop") == "ENTITY"
+    assert classify_token_semantic("the") == "INERT_WITNESS"

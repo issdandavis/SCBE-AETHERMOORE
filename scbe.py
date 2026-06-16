@@ -1749,7 +1749,15 @@ def cmd_cube(args: argparse.Namespace) -> int:
     gov = f["faces"]["governance"]
     wbytes = " ".join(f"{r['byte']}={r['class']}" for r in wf["per_byte_rules"])
     print(f"cube '{token}'  core={f['core']['hex']}  bijective={f['bijective']}")
-    print(f"  chemistry : {ch['semantic_class']} -> {ch['element']} (Z={ch['Z']}, val={ch['valence']})")
+    if ch.get("real_element"):
+        e = ch["real_element"]
+        print(f"  chemistry : {e['symbol']} (Z={e['Z']}, group {e['group']}, period {e['period']}, "
+              f"valence {e['valence']}, EN {e['electronegativity']})")
+    elif ch.get("composition"):
+        comp = " + ".join(f"{n}x{s}" for s, n in ch["composition"].items())
+        print(f"  chemistry : compound {comp}")
+    else:
+        print(f"  chemistry : {ch['semantic_class']} -> {ch['element']} (Z={ch['Z']}, val={ch['valence']})")
     print(f"  roles     : {', '.join(f['faces']['roles']) or '-'}")
     print(f"  governance: {gov.get('semantic_class')} / {gov.get('tier')}")
     print(f"  wolfram   : {wbytes}  (universal={wf['any_universal']})")
