@@ -67,7 +67,11 @@ class EphemeralNudge:
 
     @property
     def is_expired(self) -> bool:
-        return time.time() > self.created_at + self.ttl_seconds
+        # >= so a ttl of 0 means "expired now", and so the boundary is
+        # deterministic on coarse clocks (Windows time.time() ~15ms resolution
+        # can return the same value at creation and check, making a strict >
+        # spuriously report a ttl=0 nudge as still active).
+        return time.time() >= self.created_at + self.ttl_seconds
 
     @property
     def is_active(self) -> bool:
