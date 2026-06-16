@@ -641,7 +641,7 @@ def self_test() -> Dict[str, Any]:
         "passed": passed,
         "total": total,
         "results": results,
-        "success_rate": f"{passed}/{total} ({100*passed/total:.1f}%)",
+        "success_rate": f"{passed}/{total} ({100 * passed / total:.1f}%)",
     }
 
 

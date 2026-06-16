@@ -82,7 +82,7 @@ def test_ca_tongue_at_one_over_phi(orbitals):
     ca = orbitals[3]
     assert ca.abbr == "CA", f"Expected CA at index 3, got {ca.abbr}"
     assert ca.l == 3
-    assert abs(ca.poincare_r - 1.0 / PHI) < 1e-9, f"CA poincare_r={ca.poincare_r} ≠ 1/φ={1/PHI}"
+    assert abs(ca.poincare_r - 1.0 / PHI) < 1e-9, f"CA poincare_r={ca.poincare_r} ≠ 1/φ={1 / PHI}"
 
 
 def test_summary_golden_checkpoint(summary):
@@ -184,7 +184,7 @@ def test_poincare_r_strictly_increasing(orbitals):
     """Shell radii must increase strictly outward."""
     rs = [o.poincare_r for o in orbitals]
     for i in range(1, len(rs)):
-        assert rs[i] > rs[i - 1], f"Shell {i} r={rs[i]} not > shell {i-1} r={rs[i-1]}"
+        assert rs[i] > rs[i - 1], f"Shell {i} r={rs[i]} not > shell {i - 1} r={rs[i - 1]}"
 
 
 def test_all_shells_inside_poincare_ball(orbitals):

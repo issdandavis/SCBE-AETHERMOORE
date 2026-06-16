@@ -609,7 +609,7 @@ def main():
     print(f"Wrote {len(output)} records to {OUTPUT}")
 
     wcs = [len(r["response"].split()) for r in output]
-    print(f"Word counts: min={min(wcs)}, max={max(wcs)}, mean={sum(wcs)//len(wcs)}")
+    print(f"Word counts: min={min(wcs)}, max={max(wcs)}, mean={sum(wcs) // len(wcs)}")
 
     # Check uniqueness
     unique_responses = len(set(r["response"] for r in output))

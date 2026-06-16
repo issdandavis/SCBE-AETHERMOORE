@@ -55,7 +55,7 @@ def test_chaos_sensitivity():
     print("=" * 60)
     print(f"Starting point: x₀ = {x0}")
     print(f"r₁ = {r1}")
-    print(f"r₂ = {r2} (difference: {r2-r1})")
+    print(f"r₂ = {r2} (difference: {r2 - r1})")
     print(f"\nAfter {n_iter} iterations:")
     print(f"  r₁ → x = {final1:.10f}")
     print(f"  r₂ → x = {final2:.10f}")

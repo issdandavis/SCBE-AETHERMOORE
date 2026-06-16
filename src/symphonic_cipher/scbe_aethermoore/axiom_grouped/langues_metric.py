@@ -645,7 +645,7 @@ if __name__ == "__main__":
     print("  (Deviation in intent dimension, all else at ideal)")
     print()
     print(f"  {'Deviation':<12} {'L Value':<15} {'Risk':<10} {'Decision':<12}")
-    print(f"  {'-'*12} {'-'*15} {'-'*10} {'-'*12}")
+    print(f"  {'-' * 12} {'-' * 15} {'-' * 10} {'-' * 12}")
 
     for d in [0.0, 0.2, 0.5, 0.8, 1.0, 1.5, 2.0]:
         test = HyperspacePoint(time=0, intent=d, policy=0.5, trust=0.9, risk=0.1, entropy=0.2)
@@ -681,7 +681,7 @@ if __name__ == "__main__":
 
     print(f"  Initial D_f:     {D_f_vals[0]:.2f} (effective dimensions)")
     print(f"  Final D_f:       {D_f_vals[-1]:.2f}")
-    print(f"  Mean D_f:        {sum(D_f_vals)/len(D_f_vals):.2f}")
+    print(f"  Mean D_f:        {sum(D_f_vals) / len(D_f_vals):.2f}")
     print(f"  L range:         [{min(L_vals):.2f}, {max(L_vals):.2f}]")
     print()
 

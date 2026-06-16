@@ -625,7 +625,7 @@ def run_stress_tests() -> List[TestResult]:
     passed = sum(1 for r in results if r.passed)
     total = len(results)
 
-    print(f"\nResults: {passed}/{total} tests passed ({100*passed/total:.1f}%)\n")
+    print(f"\nResults: {passed}/{total} tests passed ({100 * passed / total:.1f}%)\n")
 
     for r in results:
         status = "PASS" if r.passed else "FAIL"

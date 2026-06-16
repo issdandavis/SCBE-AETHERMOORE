@@ -139,7 +139,7 @@ def main() -> int:
 
     print(f"[brick1_boost] emitted {total} rows -> {OUT}")
     for tag, count in tag_counts.most_common():
-        print(f"  {tag:20s} {count:5d}  ({shares[tag]*100:5.2f}%)")
+        print(f"  {tag:20s} {count:5d}  ({shares[tag] * 100:5.2f}%)")
     print(f"manifest: {MANIFEST}")
     return 0
 

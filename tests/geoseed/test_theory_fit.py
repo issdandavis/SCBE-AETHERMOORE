@@ -227,7 +227,9 @@ def test_combined_curv_fraction_increasing(comb):
     """LB grows faster than Compton-bind → curvature fraction must grow outward."""
     fracs = comb.curv_fraction
     for i in range(1, 6):
-        assert fracs[i] > fracs[i - 1], f"curv_fraction not increasing at shell {i}: {fracs[i]:.4f} <= {fracs[i-1]:.4f}"
+        assert (
+            fracs[i] > fracs[i - 1]
+        ), f"curv_fraction not increasing at shell {i}: {fracs[i]:.4f} <= {fracs[i - 1]:.4f}"
 
 
 def test_combined_all_totals_positive(comb):

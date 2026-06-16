@@ -392,7 +392,7 @@ class TestEndToEnd:
         for i in range(1, len(weights)):
             ratio = weights[i] / weights[i - 1]
             # Should be approximately φ ≈ 1.618
-            assert 1.5 < ratio < 1.7, f"Weight ratio {weights[i]}/{weights[i-1]}={ratio:.3f}, expected ≈φ"
+            assert 1.5 < ratio < 1.7, f"Weight ratio {weights[i]}/{weights[i - 1]}={ratio:.3f}, expected ≈φ"
 
     def test_tongue_phases_pi_over_3_spacing(self):
         """Verify tongue phases are spaced at π/3."""

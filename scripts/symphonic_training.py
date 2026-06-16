@@ -93,9 +93,9 @@ def print_report(report, index=None):
 
 def print_batch_summary(result):
     """Print aggregate batch summary."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  BATCH: {result.batch_name} (mode={result.mode})")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"  Mean L:         {result.mean_L:.2f}")
     print(f"  Mean Consonance: {result.mean_consonance:.3f}")
     print(
@@ -108,9 +108,9 @@ def print_batch_summary(result):
 
 def run_stress_test(turns=20):
     """Run a 20-turn stress test with trajectory analysis."""
-    print(f"\n{'#'*60}")
+    print(f"\n{'#' * 60}")
     print(f"  SCBE SYMPHONIC GOVERNOR — Stress Test ({turns} turns)")
-    print(f"{'#'*60}")
+    print(f"{'#' * 60}")
 
     gov = SymphonicGovernor()
 
@@ -134,14 +134,14 @@ def run_stress_test(turns=20):
         report = gov.review(text, sim_time=float(i) * 0.5)
         grade_sym = {1: "+1", 0: " 0", -1: "-1"}[report.grade]
         print(
-            f"{i+1:<6} {report.total_L:<10.2f} {grade_sym:<10} "
+            f"{i + 1:<6} {report.total_L:<10.2f} {grade_sym:<10} "
             f"{report.decision:<12} {report.chord.chord_name:<12} {report.flux_state}"
         )
 
     summary = gov.trajectory_summary()
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("  TRAJECTORY ANALYSIS")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     for key, val in summary.items():
         print(f"  {key}: {val}")
 
@@ -162,9 +162,9 @@ def main():
 
     if not args.stress_only:
         # Run Control + Test Batches
-        print(f"\n{'#'*60}")
+        print(f"\n{'#' * 60}")
         print("  SCBE SYMPHONIC GOVERNOR — Control + Test Batches")
-        print(f"{'#'*60}")
+        print(f"{'#' * 60}")
 
         results = run_control_and_test_batches(SAFE_INTERACTIONS, ADVERSARIAL_INTERACTIONS, RECOVERY_INTERACTIONS)
 

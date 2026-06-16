@@ -335,9 +335,9 @@ def main():
         }
         print(json.dumps(out, indent=2))
     else:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"  CI FAILURE REPORT — Run {report.run_id}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"  Workflow: {report.workflow_name}")
         print(f"  Branch:   {report.branch}")
         print(f"  Failed jobs: {', '.join(report.failing_jobs)}")

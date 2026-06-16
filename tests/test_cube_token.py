@@ -1,6 +1,6 @@
 """Tests for the Rubik's-cube token (python/scbe/cube_token.py)."""
 
-from python.scbe.cube_token import CubeToken, CubeRegistry, TONGUES, TONGUE_LANGUAGE
+from python.scbe.cube_token import CubeToken, CubeRegistry, TONGUES
 
 
 class TestCubeFaces:

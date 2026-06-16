@@ -3,7 +3,6 @@
 import pytest
 
 from python.scbe import origami as O
-from python.scbe import polyglot as P
 
 
 def test_unfold_has_six_faces():

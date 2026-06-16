@@ -179,7 +179,7 @@ class TestScatterColorQuad:
             # Normalize to [-pi, pi] to handle wrap-around
             diff = (diff + math.pi) % TAU - math.pi
             # Allow for material hue shift to perturb slightly (metallic=0.08 stacks)
-            assert abs(abs(diff) - math.pi / 2) < 0.3, f"Hue gap {i}→{i+1} not ~90°: {math.degrees(diff):.1f}°"
+            assert abs(abs(diff) - math.pi / 2) < 0.3, f"Hue gap {i}→{i + 1} not ~90°: {math.degrees(diff):.1f}°"
 
     def test_tongue_phase_rotates_all(self):
         """Different tongue phases produce different color sets."""

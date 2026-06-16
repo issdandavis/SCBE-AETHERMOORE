@@ -546,7 +546,7 @@ class FederatedContextGrid:
         context_parts = []
         for i, r in enumerate(context_docs[:5]):
             context_parts.append(
-                f"[{i+1}] {r.title} ({r.tongue} domain, trust={r.trust_score:.3f}):\n" f"{r.content[:400]}"
+                f"[{i + 1}] {r.title} ({r.tongue} domain, trust={r.trust_score:.3f}):\n" f"{r.content[:400]}"
             )
         context_str = "\n\n".join(context_parts)
 

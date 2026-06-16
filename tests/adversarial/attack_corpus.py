@@ -467,7 +467,7 @@ def generate_spin_drift_sequence(steps: int = 10) -> List[Dict[str, str]]:
     for i in range(min(steps, len(escalations))):
         prompts.append(
             {
-                "id": f"H{i+1:02d}",
+                "id": f"H{i + 1:02d}",
                 "class": "spin_drift",
                 "prompt": base + escalations[i],
             }

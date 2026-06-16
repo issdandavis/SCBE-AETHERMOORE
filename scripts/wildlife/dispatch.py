@@ -340,7 +340,7 @@ def main() -> int:
     ok = sum(1 for r in results if r.get("ok"))
     skipped = sum(1 for r in results if r.get("skip_reason"))
     print(f"[dispatch] executed {len(results)} call(s) -> {out_path}")
-    print(f"  ok={ok} skipped={skipped} failed={len(results)-ok-skipped}")
+    print(f"  ok={ok} skipped={skipped} failed={len(results) - ok - skipped}")
     return 0
 
 

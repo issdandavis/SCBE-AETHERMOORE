@@ -241,13 +241,13 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
                 "gen": gen,
                 "best_fitness": round(best_fitness, 2),
                 "gen_fitness": round(gen_fitness, 2),
-                "improvement": f"{improvement*100:.1f}%",
+                "improvement": f"{improvement * 100:.1f}%",
                 "params": best.get_params(),
                 "elapsed_s": round(elapsed, 1),
             }
             checkpoints.append(checkpoint)
             print(
-                f"  Gen {gen:4d}: fitness={best_fitness:.2f} (+{improvement*100:.1f}%), "
+                f"  Gen {gen:4d}: fitness={best_fitness:.2f} (+{improvement * 100:.1f}%), "
                 f"decay={best.geometry_decay:.3f}, wave_pow={best.wave_power:.3f}, "
                 f"floor={best.geometry_floor:.3f}"
             )
@@ -257,7 +257,7 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
     print("  EVOLUTION COMPLETE")
     print(f"  Initial fitness: {initial_fitness:.2f}")
     print(f"  Final fitness:   {best_fitness:.2f}")
-    print(f"  Improvement:     {((best_fitness/max(initial_fitness,1))-1)*100:.1f}%")
+    print(f"  Improvement:     {((best_fitness / max(initial_fitness, 1)) - 1) * 100:.1f}%")
     print(f"  Best params:     {best.get_params()}")
     print(f"{'=' * 60}")
 
@@ -266,23 +266,23 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
 
     # Test 1: Safe origin
     origin_passes = sum(1 for i in range(1000) if best.gate(0.0, t=i * 0.0003)["decision"] == "PASS")
-    print(f"  Safe origin pass rate: {origin_passes/1000:.1%}")
+    print(f"  Safe origin pass rate: {origin_passes / 1000:.1%}")
 
     # Test 2: High distance rejection
     far_rejects = sum(1 for i in range(1000) if best.gate(2.0, t=i * 0.0003)["decision"] == "REJECT")
-    print(f"  Adversarial reject rate: {far_rejects/1000:.1%}")
+    print(f"  Adversarial reject rate: {far_rejects / 1000:.1%}")
 
     # Test 3: Phase discrimination
     base_avg = sum(best.gate(0.3, t=i * 0.0003, phase_offset=0)["rho"] for i in range(1000)) / 1000
     shift_avg = sum(best.gate(0.3, t=i * 0.0003, phase_offset=math.pi)["rho"] for i in range(1000)) / 1000
     print(
-        f"  Phase discrimination: base={base_avg:.4f} vs shifted={shift_avg:.4f} (delta={abs(base_avg-shift_avg):.4f})"
+        f"  Phase discrimination: base={base_avg:.4f} vs shifted={shift_avg:.4f} (delta={abs(base_avg - shift_avg):.4f})"
     )
 
     # Test 4: Barrier cost ratio
     cost_0 = best.gate(0.0, t=0)["barrier_cost"]
     cost_3 = best.gate(3.0, t=0)["barrier_cost"]
-    print(f"  Barrier cost ratio (d*=3/d*=0): {cost_3/max(cost_0,1e-10):.0f}x")
+    print(f"  Barrier cost ratio (d*=3/d*=0): {cost_3 / max(cost_0, 1e-10):.0f}x")
 
     # Save report
     report = {

@@ -785,7 +785,7 @@ def push_to_kaggle(report: Dict[str, Any], push: bool = False) -> None:
                 w = csv.writer(f)
                 w.writerow(["Category", "Total", "Detected", "Rate"])
                 for cat, d in sorted(per_cat.items(), key=lambda x: -x[1].get("rate", 0)):
-                    w.writerow([cat, d["total"], d["detected"], f"{d['rate']*100:.0f}%"])
+                    w.writerow([cat, d["total"], d["detected"], f"{d['rate'] * 100:.0f}%"])
 
         # Copy training report JSON
         report_path = ARTIFACTS_DIR / "training_report.json"

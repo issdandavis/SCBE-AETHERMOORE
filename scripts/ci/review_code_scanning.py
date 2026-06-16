@@ -208,9 +208,9 @@ def print_summary(report: ReviewReport):
 
 
 def print_full_report(report: ReviewReport):
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print(f"  CODE SCANNING REVIEW — {report.total_open} Open Alerts")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
 
     print("\n  Severity breakdown:")
     for sev in ["critical", "high", "medium", "low", "none"]:
@@ -244,9 +244,9 @@ def print_full_report(report: ReviewReport):
             print(f"    #{a.number} {a.rule_id} {a.file_path}:{a.line}")
 
     # Actionable summary
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("  ACTION ITEMS")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     print(f"  Auto-fixable:  {len(report.auto_fixable):>3} (can be fixed by scripts/CI)")
     print(f"  Needs review:  {len(report.needs_review):>3} (human judgment needed)")
     print(f"  Stale:         {len(report.stale):>3} (dismiss — file deleted)")

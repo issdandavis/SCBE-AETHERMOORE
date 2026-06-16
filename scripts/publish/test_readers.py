@@ -263,7 +263,7 @@ def save_report(scene_name, prompt_type, results):
 
 def print_summary(results):
     """Print a quick summary table."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("PANEL SUMMARY")
     print("=" * 60)
     for r in results:
@@ -319,7 +319,7 @@ def main():
     scenes_to_test = list(SCENES.keys()) if args.scene == "all" else [args.scene]
 
     for scene in scenes_to_test:
-        print(f"\n{'#'*60}")
+        print(f"\n{'#' * 60}")
         print(f"SCENE: {scene} ({SCENES[scene]['desc']})")
         print(f"PROMPT: {args.prompt} | READERS: {args.readers}")
         print("#" * 60)

@@ -192,7 +192,7 @@ def train(dry_run: bool = False, max_records: int = 0):
 
     model = get_peft_model(model, lora_config)
     trainable, total = model.get_nb_trainable_parameters()
-    log.info(f"Trainable: {trainable:,} / {total:,} ({100*trainable/total:.2f}%)")
+    log.info(f"Trainable: {trainable:,} / {total:,} ({100 * trainable / total:.2f}%)")
 
     # Format data
     from datasets import Dataset
@@ -244,7 +244,7 @@ def train(dry_run: bool = False, max_records: int = 0):
     t0 = time.time()
     trainer.train()
     elapsed = time.time() - t0
-    log.info(f"Training complete in {elapsed/60:.1f} minutes")
+    log.info(f"Training complete in {elapsed / 60:.1f} minutes")
 
     # Save
     final_dir = OUTPUT_DIR / "final_adapter"

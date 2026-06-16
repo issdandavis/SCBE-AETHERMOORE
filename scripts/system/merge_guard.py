@@ -45,7 +45,6 @@ def main() -> int:
     print(f"branch: {branch}   ahead of {args.base}: {ahead}   behind: {behind}")
 
     # 1) merge conflict preview (no working-tree change)
-    base = _git("merge-base", "HEAD", args.base)
     preview = subprocess.run(["git", "merge-tree", "--write-tree", "HEAD", args.base], capture_output=True, text=True)
     conflicts = [ln for ln in preview.stdout.splitlines() if "CONFLICT" in ln]
     if conflicts:

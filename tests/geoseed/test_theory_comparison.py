@@ -152,7 +152,7 @@ def test_compton_orbital_phi_scaling(mod):
     evs = [s.energy_ev for s in result.shells]
     for i in range(1, 6):
         ratio = evs[i - 1] / evs[i]
-        assert abs(ratio - PHI) < 1e-6, f"Shell {i-1}→{i} energy ratio {ratio} ≠ φ={PHI}"
+        assert abs(ratio - PHI) < 1e-6, f"Shell {i - 1}→{i} energy ratio {ratio} ≠ φ={PHI}"
 
 
 def test_compton_frequency_phi_scaling(mod):
@@ -161,7 +161,7 @@ def test_compton_frequency_phi_scaling(mod):
     freqs = result.frequencies_hz()
     for i in range(1, 6):
         ratio = freqs[i - 1] / freqs[i]
-        assert abs(ratio - PHI) < 1e-6, f"Shell {i-1}→{i} frequency ratio {ratio} ≠ φ={PHI}"
+        assert abs(ratio - PHI) < 1e-6, f"Shell {i - 1}→{i} frequency ratio {ratio} ≠ φ={PHI}"
 
 
 def test_compton_frequencies_monotone_decreasing(mod):
@@ -244,7 +244,7 @@ def test_pilot_wave_energies_decrease_outward(mod):
     """Quantum potential E ∝ 1/r² — outer shells have lower energy."""
     evs = mod["pilot_wave"]().energies_ev()
     for i in range(1, 6):
-        assert evs[i] < evs[i - 1], f"Pilot wave energy not decreasing at shell {i}: {evs[i]} >= {evs[i-1]}"
+        assert evs[i] < evs[i - 1], f"Pilot wave energy not decreasing at shell {i}: {evs[i]} >= {evs[i - 1]}"
 
 
 # ── Cross-theory invariants ───────────────────────────────────────────────────

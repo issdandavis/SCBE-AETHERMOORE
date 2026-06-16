@@ -1224,7 +1224,7 @@ def _adapt_register(text: str, tone: str) -> str:
         parts = sents[:6]
         numbered = []
         for i, s in enumerate(parts):
-            numbered.append(f"{i+1}. {s.strip()}")
+            numbered.append(f"{i + 1}. {s.strip()}")
         return "\n".join(numbered)
 
     elif tone == "overly_formal":

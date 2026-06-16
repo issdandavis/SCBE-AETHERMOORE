@@ -593,7 +593,7 @@ def search_family(family: str, trials: int = 240) -> EvalResult:
     best: EvalResult | None = None
     for i in range(trials):
         params = sample_params()
-        result = evaluate(TRAIN_CORPUS, tuned_coords, params, family, f"{family}-trial-{i+1}")
+        result = evaluate(TRAIN_CORPUS, tuned_coords, params, family, f"{family}-trial-{i + 1}")
         if best is None or result.triangulated_score > best.triangulated_score:
             best = result
     assert best is not None

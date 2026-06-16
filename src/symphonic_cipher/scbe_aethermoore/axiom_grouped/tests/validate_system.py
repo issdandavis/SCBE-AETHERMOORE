@@ -78,7 +78,7 @@ class SCBEValidator:
         passed = abs(norm_z - norm_x) < EPS
         return (
             passed,
-            f"|c|={norm_z:.4f}, |x|={norm_x:.4f}, diff={abs(norm_z-norm_x):.2e}",
+            f"|c|={norm_z:.4f}, |x|={norm_x:.4f}, diff={abs(norm_z - norm_x):.2e}",
         )
 
     def _check_l3_positive(self) -> Tuple[bool, str]:

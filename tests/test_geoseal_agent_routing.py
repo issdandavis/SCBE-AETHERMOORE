@@ -231,7 +231,8 @@ class TestGovernance:
         weights = [TONGUE_PHI_WEIGHTS[t] for t in self.TONGUES]
         for i in range(len(weights) - 1):
             assert weights[i] < weights[i + 1], (
-                f"Weight ordering violated: {self.TONGUES[i]}={weights[i]} " f">= {self.TONGUES[i+1]}={weights[i+1]}"
+                f"Weight ordering violated: {self.TONGUES[i]}={weights[i]} "
+                f">= {self.TONGUES[i + 1]}={weights[i + 1]}"
             )
 
     @pytest.mark.parametrize("tongue", ["KO", "AV", "RU", "CA", "UM", "DR"])

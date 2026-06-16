@@ -611,7 +611,7 @@ def main():
         output_records.append(out)
 
         if (i + 1) % 50 == 0:
-            print(f"  Generated {i+1}/{len(records)}")
+            print(f"  Generated {i + 1}/{len(records)}")
 
     with open(OUTPUT, "w", encoding="utf-8") as f:
         for rec in output_records:
@@ -626,7 +626,7 @@ def main():
         word_counts.append(wc)
 
     print(
-        f"Response word counts: min={min(word_counts)}, max={max(word_counts)}, avg={sum(word_counts)/len(word_counts):.0f}"
+        f"Response word counts: min={min(word_counts)}, max={max(word_counts)}, avg={sum(word_counts) / len(word_counts):.0f}"
     )
     short = sum(1 for w in word_counts if w < 300)
     long_ = sum(1 for w in word_counts if w > 800)
@@ -646,7 +646,7 @@ def main():
         for j in range(i + 1, min(20, len(formal))):
             sims.append(jaccard(formal[i]["response"], formal[j]["response"]))
     if sims:
-        print(f"Avg Jaccard similarity (formal, first 20): {sum(sims)/len(sims):.3f}")
+        print(f"Avg Jaccard similarity (formal, first 20): {sum(sims) / len(sims):.3f}")
         print(f"Min: {min(sims):.3f}, Max: {max(sims):.3f}")
 
 

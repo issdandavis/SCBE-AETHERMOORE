@@ -534,7 +534,7 @@ class TestExpandedIntervals:
         for i in range(1, len(values)):
             assert values[i] > values[i - 1], (
                 f"Interval {list(INTERVALS.keys())[i]} ({values[i]}) "
-                f"not > {list(INTERVALS.keys())[i-1]} ({values[i-1]})"
+                f"not > {list(INTERVALS.keys())[i - 1]} ({values[i - 1]})"
             )
 
     def test_interval_bounds(self):

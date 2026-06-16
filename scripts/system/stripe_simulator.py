@@ -93,31 +93,31 @@ def _seller_reply(offer_cents: int, floor_cents: int, list_cents: int, charge_re
     if offer_cents < floor_cents:
         if offer_cents >= floor_cents - 100:  # within $1 of floor
             return (
-                f"I appreciate the offer! Closest I can do is ${floor_cents/100:.2f} — "
+                f"I appreciate the offer! Closest I can do is ${floor_cents / 100:.2f} — "
                 "that's my floor with costs factored in. Deal at that?"
             )
         return (
-            f"I can't go below ${floor_cents/100:.2f} on this one — that's our hard floor. "
+            f"I can't go below ${floor_cents / 100:.2f} on this one — that's our hard floor. "
             "I'd actually lose money otherwise. Let me know if that works."
         )
 
     # Offer accepted — attempt charge
     if charge_result and charge_result["ok"]:
         return (
-            f"${offer_cents/100:.2f} works! Payment went through — "
+            f"${offer_cents / 100:.2f} works! Payment went through — "
             f"confirmation {charge_result['id'][:16]}. I'll get your order ready."
         )
     elif charge_result and not charge_result["ok"]:
         if charge_result["code"] in ("card_declined", "insufficient_funds"):
             return (
-                f"The deal is on at ${offer_cents/100:.2f}, but your card was declined "
+                f"The deal is on at ${offer_cents / 100:.2f}, but your card was declined "
                 f"({charge_result['message']}). Try another card?"
             )
         return (
-            f"Deal at ${offer_cents/100:.2f}! Had a payment issue though — "
+            f"Deal at ${offer_cents / 100:.2f}! Had a payment issue though — "
             f"{charge_result['message']}. Can you retry with a different method?"
         )
-    return f"${offer_cents/100:.2f} works for me — deal!"
+    return f"${offer_cents / 100:.2f} works for me — deal!"
 
 
 def simulate_transaction(dry_run: bool = False) -> dict:
@@ -129,7 +129,7 @@ def simulate_transaction(dry_run: bool = False) -> dict:
     offer_fraction = random.uniform(0.50, 1.10)
     offer_cents = int(list_cents * offer_fraction)
 
-    prompt = f"I want to buy the {name} (listed at ${list_cents/100:.2f}). Can you do ${offer_cents/100:.2f}?"
+    prompt = f"I want to buy the {name} (listed at ${list_cents / 100:.2f}). Can you do ${offer_cents / 100:.2f}?"
 
     charge_result = None
     if offer_cents >= floor_cents and not dry_run:
@@ -185,8 +185,8 @@ def run(count: int, output: str, dry_run: bool, verbose: bool) -> None:
         if verbose:
             status = "ACCEPT" if m["accepted"] else "FLOOR"
             print(
-                f"  [{i+1:3d}] {status:6s}  offer=${m['offer_cents']/100:.2f}  "
-                f"floor=${m['floor_cents']/100:.2f}  {m['product']}"
+                f"  [{i + 1:3d}] {status:6s}  offer=${m['offer_cents'] / 100:.2f}  "
+                f"floor=${m['floor_cents'] / 100:.2f}  {m['product']}"
             )
 
     Path(output).parent.mkdir(parents=True, exist_ok=True)

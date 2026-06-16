@@ -490,13 +490,13 @@ class GovernedBrowser:
     def print_summary(self):
         """Print session summary."""
         s = self.get_summary()
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("SESSION SUMMARY")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"Agent: {s['agent_id']}")
         print(f"Backend: {s['backend']}")
         print(f"Total actions: {s['total_actions']}")
         for decision, count in s["decisions"].items():
             print(f"  {decision}: {count}")
         print(f"Quarantined: {s['quarantined']}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")

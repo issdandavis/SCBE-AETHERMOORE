@@ -342,9 +342,9 @@ def main():
         print(f"  Safe avg: {r['avg_safe_score']}  Adversarial avg: {r['avg_adv_score']}  Gap: {r['separation']}")
 
     # ── LEADERBOARD ──
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("LEADERBOARD")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     print(f"{'Batch':<40} {'F1':>6} {'Recall':>8} {'Prec':>6} {'Gap':>6}")
     print("-" * 70)
     for r in sorted(results, key=lambda x: -x["f1"]):
@@ -361,7 +361,7 @@ def main():
     improvement = combined["f1"] - keyword_only["f1"]
     print(f"\n  Keyword alone: F1={keyword_only['f1']}")
     print(f"  Full stack:    F1={combined['f1']}")
-    print(f"  Improvement:   +{improvement:.3f} F1 ({improvement/max(keyword_only['f1'],0.001)*100:.0f}%)")
+    print(f"  Improvement:   +{improvement:.3f} F1 ({improvement / max(keyword_only['f1'], 0.001) * 100:.0f}%)")
 
     # Save report
     report = {

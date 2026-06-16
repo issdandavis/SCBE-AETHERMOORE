@@ -468,7 +468,7 @@ def generate_full_board_records() -> list[dict]:
             "Black's only path to victory: sacrifice territory on the lighter boards to shore up "
             "Draumric. Trade intent (KO) and transport (AV) territory for structural control (DR). "
             "This is the fundamental lesson of the Sacred Tongues: structure is supreme. "
-            f"phi^5 ({PHI**5:.2f}) > phi^0 + phi^1 + phi^2 + phi^3 + phi^4 ({1+PHI+PHI**2+PHI**3+PHI**4:.2f})",
+            f"phi^5 ({PHI**5:.2f}) > phi^0 + phi^1 + phi^2 + phi^3 + phi^4 ({1 + PHI + PHI**2 + PHI**3 + PHI**4:.2f})",
             all_codes,
             PHASES[4]["difficulty"] + 0.1,
             "go-full-board",
@@ -541,7 +541,7 @@ def generate_progression_records() -> list[dict]:
             "**Phase 4: Full Six-Board** (difficulty: 0.8)\n"
             "The master game. Every stone placement is simultaneously evaluated in all 6 tongues. "
             "The combined score is phi-weighted across all boards. "
-            f"Draumric ({PHI**5:.2f}) outweighs all others ({1+PHI+PHI**2+PHI**3+PHI**4:.2f}) "
+            f"Draumric ({PHI**5:.2f}) outweighs all others ({1 + PHI + PHI**2 + PHI**3 + PHI**4:.2f}) "
             "but ignoring any board is fatal.\n\n"
             "**Like Hunter x Hunter:** Komugi didn't become the world champion at Gungi by studying "
             "rules -- she became champion by playing thousands of games until the rules became instinct. "

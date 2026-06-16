@@ -1120,7 +1120,7 @@ def main():
         print(f"\n[{idx}/{total_loaders}] Loading {desc}...")
         t0 = time.time()
         sources[name] = loader()
-        print(f"  {len(sources[name])} records ({time.time()-t0:.1f}s)")
+        print(f"  {len(sources[name])} records ({time.time() - t0:.1f}s)")
 
     # Notion (special — conditionally unzips)
     idx = len(loaders) + 1
@@ -1129,7 +1129,7 @@ def main():
     notion_k = load_notion_knowledge()
     notion_z = load_notion_zip() if args.ingest else []
     sources["notion"] = notion_k + notion_z
-    print(f"  {len(sources['notion'])} records ({time.time()-t0:.1f}s)")
+    print(f"  {len(sources['notion'])} records ({time.time() - t0:.1f}s)")
 
     # External AI exports (special — has skip flags)
     idx = total_loaders
@@ -1142,7 +1142,7 @@ def main():
         ext.extend(load_gemini_export())
     ext.extend(load_grok_drop())
     sources["ai_exports"] = ext
-    print(f"  {len(sources['ai_exports'])} records ({time.time()-t0:.1f}s)")
+    print(f"  {len(sources['ai_exports'])} records ({time.time() - t0:.1f}s)")
 
     # ================================================================
     # COMBINE + DEDUP
@@ -1231,7 +1231,7 @@ def main():
 
             t0 = time.time()
             written = export_tetris_sft(all_records, tetris, tetris_out)
-            print(f"  Wrote {written} Tetris-enriched records in {time.time()-t0:.1f}s")
+            print(f"  Wrote {written} Tetris-enriched records in {time.time() - t0:.1f}s")
             tetris_mb = tetris_out.stat().st_size / (1024 * 1024)
             print(f"  Output: {tetris_out.name} ({tetris_mb:.1f}MB)")
 
@@ -1253,9 +1253,9 @@ def main():
         print("  Grok drop zone: training/intake/grok/ (place export there)")
 
     elapsed = time.time() - t_total
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print(f"MEGA INGEST COMPLETE — {len(all_records)} records in {elapsed:.1f}s")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
 
 
 if __name__ == "__main__":

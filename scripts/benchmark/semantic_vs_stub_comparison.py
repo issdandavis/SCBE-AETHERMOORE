@@ -189,7 +189,7 @@ def main():
     )
     print(
         f"{'Detection rate':.<35} {stub['detection_rate']:>14.1%} {semantic['detection_rate']:>14.1%} "
-        f"{(semantic['detection_rate']-stub['detection_rate']):>+11.1%}"
+        f"{(semantic['detection_rate'] - stub['detection_rate']):>+11.1%}"
     )
     print(
         f"{'False positives':.<35} {stub['clean_false_positives']:>12}/{stub['clean_total']} "
@@ -197,15 +197,15 @@ def main():
     )
     print(
         f"{'FP rate':.<35} {stub['false_positive_rate']:>14.1%} {semantic['false_positive_rate']:>14.1%} "
-        f"{(semantic['false_positive_rate']-stub['false_positive_rate']):>+11.1%}"
+        f"{(semantic['false_positive_rate'] - stub['false_positive_rate']):>+11.1%}"
     )
     print(
         f"{'RU mean':.<35} {stub['ru_mean']:>15.4f} {semantic['ru_mean']:>15.4f} "
-        f"{(semantic['ru_mean']-stub['ru_mean']):>+12.4f}"
+        f"{(semantic['ru_mean'] - stub['ru_mean']):>+12.4f}"
     )
     print(
         f"{'RU std':.<35} {stub['ru_std']:>15.4f} {semantic['ru_std']:>15.4f} "
-        f"{(semantic['ru_std']-stub['ru_std']):>+12.4f}"
+        f"{(semantic['ru_std'] - stub['ru_std']):>+12.4f}"
     )
     print(
         f"{'RU range':.<35} {stub['ru_min']:.2f}-{stub['ru_max']:.2f}{'':>8} "

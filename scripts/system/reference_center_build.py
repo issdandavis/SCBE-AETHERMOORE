@@ -83,7 +83,7 @@ def build_agent_card(
     else:
         for row in packets[:8]:
             lines.append(
-                f"- `{row.get('mtime','')}` | `{row.get('status','')}` | {row.get('task_id','')} | {row.get('path','')}"
+                f"- `{row.get('mtime', '')}` | `{row.get('status', '')}` | {row.get('task_id', '')} | {row.get('path', '')}"
             )
     lines.extend(
         [

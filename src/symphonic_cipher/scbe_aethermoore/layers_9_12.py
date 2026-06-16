@@ -929,7 +929,7 @@ def self_test() -> Dict[str, Any]:
     return {
         "passed": passed,
         "total": total,
-        "success_rate": f"{passed}/{total} ({100*passed/total:.1f}%)",
+        "success_rate": f"{passed}/{total} ({100 * passed / total:.1f}%)",
         "results": results,
     }
 

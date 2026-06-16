@@ -205,7 +205,7 @@ def train_vocab_replacement(texts: list[str]) -> None:
 
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
     total = sum(p.numel() for p in model.parameters())
-    print(f"Trainable: {trainable:,} / {total:,} ({100*trainable/total:.2f}%)")
+    print(f"Trainable: {trainable:,} / {total:,} ({100 * trainable / total:.2f}%)")
 
     # Dataset
     dataset = SacredTongueDataset(texts, st_tokenizer, max_length=256)
@@ -249,10 +249,10 @@ def train_vocab_replacement(texts: list[str]) -> None:
 
             if steps % 50 == 0:
                 avg = total_loss / steps
-                print(f"  Epoch {epoch+1}/{num_epochs} | Step {steps} | Loss {avg:.4f}")
+                print(f"  Epoch {epoch + 1}/{num_epochs} | Step {steps} | Loss {avg:.4f}")
 
         avg_loss = total_loss / max(steps, 1)
-        print(f"Epoch {epoch+1} complete — Avg Loss: {avg_loss:.4f}")
+        print(f"Epoch {epoch + 1} complete — Avg Loss: {avg_loss:.4f}")
 
     # Save
     st_tokenizer.save_pretrained(output_dir)
@@ -337,7 +337,7 @@ def train_bridge(texts: list[str]) -> None:
     print(f"Bridge params: {bridge_params:,}")
     print(f"LoRA params:   {lora_params:,}")
     print(f"Total params:  {total_params:,}")
-    print(f"Trainable:     {bridge_params + lora_params:,} ({100*(bridge_params+lora_params)/total_params:.2f}%)")
+    print(f"Trainable:     {bridge_params + lora_params:,} ({100 * (bridge_params + lora_params) / total_params:.2f}%)")
 
     # Dataset
     dataset = SacredTongueDataset(texts, st_tokenizer, max_length=256)
@@ -382,10 +382,10 @@ def train_bridge(texts: list[str]) -> None:
 
             if steps % 50 == 0:
                 avg = total_loss / steps
-                print(f"  Epoch {epoch+1}/{num_epochs} | Step {steps} | Loss {avg:.4f}")
+                print(f"  Epoch {epoch + 1}/{num_epochs} | Step {steps} | Loss {avg:.4f}")
 
         avg_loss = total_loss / max(steps, 1)
-        print(f"Epoch {epoch+1} complete — Avg Loss: {avg_loss:.4f}")
+        print(f"Epoch {epoch + 1} complete — Avg Loss: {avg_loss:.4f}")
 
     # Save bridge weights + tokenizer
     st_tokenizer.save_pretrained(output_dir)

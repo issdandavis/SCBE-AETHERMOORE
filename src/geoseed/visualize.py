@@ -44,7 +44,7 @@ def ascii_shell_map(orbitals) -> str:
 
     lines.append("")
     lines.append(f"  Uniform gap between shells: Δρ = ln(φ) = {math.log(PHI):.6f}")
-    lines.append(f"  CA (f-orbital) anchors at r = 1/φ = {1/PHI:.9f}")
+    lines.append(f"  CA (f-orbital) anchors at r = 1/φ = {1 / PHI:.9f}")
     lines.append(f"  Total m-states: {sum(o.m_states for o in orbitals)}  (= 1+3+5+7+9+11)")
     lines.append("")
     lines.append("Eigenvalue ladder  ─────────────────────────────────────────")
@@ -95,7 +95,7 @@ def ascii_radial_profile(orbital, width: int = 60, height: int = 12) -> str:
             line += "█" if v >= threshold else " "
         rows.append(f"  |{line}|")
 
-    rows.append(f"  0{'─'*width}{rho_max:.1f} ρ")
+    rows.append(f"  0{'─' * width}{rho_max:.1f} ρ")
     header = f"  R²(ρ)  {orbital.abbr} ({_ORBITAL_NAMES[orbital.l]}-orbital, l={orbital.l})  max={max_val:.2e}"
     return header + "\n" + "\n".join(rows)
 
@@ -164,7 +164,7 @@ def plot_shell_positions(orbitals, out_dir: str = ".") -> str:
     rs = [o.poincare_r for o in orbitals]
 
     ax.barh(labels, rs, color=colors, edgecolor="white", height=0.6)
-    ax.axvline(1.0 / PHI, color="gold", linestyle="--", linewidth=1.5, label=f"1/φ = {1/PHI:.3f} (CA anchor)")
+    ax.axvline(1.0 / PHI, color="gold", linestyle="--", linewidth=1.5, label=f"1/φ = {1 / PHI:.3f} (CA anchor)")
     ax.axvline(1.0, color="grey", linestyle=":", linewidth=1, label="Ball boundary")
     ax.set_xlim(0, 1.05)
     ax.set_xlabel("Poincaré ball radius r")

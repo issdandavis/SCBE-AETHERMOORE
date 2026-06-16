@@ -135,7 +135,7 @@ class TwitterPublisher(PlatformPublisher):
                         return PublishResult(
                             platform=self.platform,
                             success=False,
-                            error=f"Thread failed at part {len(tweet_ids)+1}: {data}",
+                            error=f"Thread failed at part {len(tweet_ids) + 1}: {data}",
                             response_data={"tweet_ids": tweet_ids},
                         )
                 except httpx.HTTPError as e:

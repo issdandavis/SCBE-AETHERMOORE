@@ -387,7 +387,7 @@ def test_s_cc_decreases_with_distance():
     for i in range(len(vals) - 1):
         assert (
             vals[i] > vals[i + 1]
-        ), f"S_cc not monotone decreasing above d_eq: s({i})={vals[i]:.6f} vs s({i+1})={vals[i+1]:.6f}"
+        ), f"S_cc not monotone decreasing above d_eq: s({i})={vals[i]:.6f} vs s({i + 1})={vals[i + 1]:.6f}"
 
 
 # ---------------------------------------------------------------------------

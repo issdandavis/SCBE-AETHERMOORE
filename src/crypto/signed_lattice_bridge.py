@@ -322,7 +322,7 @@ def demo():
     ]
 
     for tokens, action, target, sensitivity in test_cases:
-        print(f"\n{'='*70}")
+        print(f"\n{'=' * 70}")
         print(f"  Tokens: {tokens}")
         print(f"  Action: {action} -> {target[:30]}")
         print(f"  Base Sensitivity: {sensitivity}")
@@ -342,7 +342,7 @@ def demo():
         print(f"    Active Tongues: {', '.join(result.tongues_active)}")
         print(f"    DECISION: {result.decision}")
 
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("  Key Insights - Moving Past Binary:")
     print("  - Negative token IDs create shadow frequencies below 440 Hz")
     print("  - Context vectors support negative components (-inf to +inf)")

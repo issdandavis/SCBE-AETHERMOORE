@@ -147,7 +147,7 @@ class TestPhiCorrectionMath:
         for n in range(1, 6):
             # Consecutive ratio = phi
             ratio = PHI**n / PHI ** (n - 1)
-            assert math.isclose(ratio, PHI, rel_tol=1e-12), f"phi^{n}/phi^{n-1} = {ratio}, expected phi"
+            assert math.isclose(ratio, PHI, rel_tol=1e-12), f"phi^{n}/phi^{n - 1} = {ratio}, expected phi"
             # Strict hierarchy
             assert PHI**n > PHI ** (n - 1)
 
@@ -155,7 +155,9 @@ class TestPhiCorrectionMath:
         for n in range(0, 4):
             lhs = PHI ** (n + 2)
             rhs = PHI ** (n + 1) + PHI**n
-            assert math.isclose(lhs, rhs, rel_tol=1e-12), f"phi^{n+2} ({lhs}) should equal phi^{n+1} + phi^{n} ({rhs})"
+            assert math.isclose(
+                lhs, rhs, rel_tol=1e-12
+            ), f"phi^{n + 2} ({lhs}) should equal phi^{n + 1} + phi^{n} ({rhs})"
 
     def test_snapping_to_grid(self):
         """Phi-corrected value should round to 4 decimal places for stable grid."""

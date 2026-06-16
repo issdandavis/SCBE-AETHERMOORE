@@ -555,7 +555,7 @@ def gen_runic_alphabet_pairs() -> List[tuple]:
     pairs = []
 
     # Full alphabet listing
-    letter_lines = "\n".join(f"{i+1}. {name} -- {meaning}" for i, (name, meaning) in enumerate(RUNIC_LETTERS))
+    letter_lines = "\n".join(f"{i + 1}. {name} -- {meaning}" for i, (name, meaning) in enumerate(RUNIC_LETTERS))
     pairs.append(
         (
             "runic-alphabet",

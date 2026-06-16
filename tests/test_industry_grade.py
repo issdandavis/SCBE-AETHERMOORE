@@ -1720,7 +1720,7 @@ class TestPerformanceScalability:
             times.append(time.perf_counter() - start)
 
         avg_time = sum(times) / len(times)
-        assert avg_time < 0.01, f"Average seal time {avg_time*1000:.2f}ms exceeds 10ms"
+        assert avg_time < 0.01, f"Average seal time {avg_time * 1000:.2f}ms exceeds 10ms"
 
     def test_182_unseal_latency_small(self):
         """Small message unseal latency should be < 10ms."""
@@ -1734,7 +1734,7 @@ class TestPerformanceScalability:
             times.append(time.perf_counter() - start)
 
         avg_time = sum(times) / len(times)
-        assert avg_time < 0.01, f"Average unseal time {avg_time*1000:.2f}ms exceeds 10ms"
+        assert avg_time < 0.01, f"Average unseal time {avg_time * 1000:.2f}ms exceeds 10ms"
 
     def test_183_throughput_small_messages(self):
         """Should handle > 1000 small messages/second."""
@@ -1762,8 +1762,8 @@ class TestPerformanceScalability:
         ss.unseal(sealed, aad="test")
         unseal_time = time.perf_counter() - start
 
-        assert seal_time < 2.0, f"1MB seal took {seal_time*1000:.0f}ms"
-        assert unseal_time < 2.0, f"1MB unseal took {unseal_time*1000:.0f}ms"
+        assert seal_time < 2.0, f"1MB seal took {seal_time * 1000:.0f}ms"
+        assert unseal_time < 2.0, f"1MB unseal took {unseal_time * 1000:.0f}ms"
 
     def test_185_key_derivation_performance(self):
         """Key derivation should be < 1ms."""
@@ -1778,7 +1778,7 @@ class TestPerformanceScalability:
             times.append(time.perf_counter() - start)
 
         avg_time = sum(times) / len(times)
-        assert avg_time < 0.001, f"Key derivation {avg_time*1000:.3f}ms exceeds 1ms"
+        assert avg_time < 0.001, f"Key derivation {avg_time * 1000:.3f}ms exceeds 1ms"
 
     def test_186_concurrent_throughput(self):
         """Concurrent operations should maintain integrity."""
@@ -1842,7 +1842,7 @@ class TestPerformanceScalability:
             times.append(time.perf_counter() - start)
 
         avg_time = sum(times) / len(times)
-        assert avg_time < 0.1, f"Kyber keygen {avg_time*1000:.0f}ms exceeds 100ms"
+        assert avg_time < 0.1, f"Kyber keygen {avg_time * 1000:.0f}ms exceeds 100ms"
 
     def test_189_pqc_encaps_performance(self):
         """PQC encapsulation should be < 10ms."""
@@ -1855,7 +1855,7 @@ class TestPerformanceScalability:
             times.append(time.perf_counter() - start)
 
         avg_time = sum(times) / len(times)
-        assert avg_time < 0.01, f"Kyber encaps {avg_time*1000:.2f}ms exceeds 10ms"
+        assert avg_time < 0.01, f"Kyber encaps {avg_time * 1000:.2f}ms exceeds 10ms"
 
     def test_190_dilithium_sign_performance(self):
         """Dilithium signing should be < 10ms."""
@@ -1869,7 +1869,7 @@ class TestPerformanceScalability:
             times.append(time.perf_counter() - start)
 
         avg_time = sum(times) / len(times)
-        assert avg_time < 0.01, f"Dilithium sign {avg_time*1000:.2f}ms exceeds 10ms"
+        assert avg_time < 0.01, f"Dilithium sign {avg_time * 1000:.2f}ms exceeds 10ms"
 
 
 # =============================================================================
@@ -2708,7 +2708,7 @@ class TestZeroTrustDefenseInDepth:
 
         # Different timestamp fails
         with pytest.raises(ValueError):
-            ss.unseal(sealed, aad=f"access;timestamp={timestamp+1};ttl=3600")
+            ss.unseal(sealed, aad=f"access;timestamp={timestamp + 1};ttl=3600")
 
     def test_245_multi_factor_context(self):
         """Multiple context factors should be required."""

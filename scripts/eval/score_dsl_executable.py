@@ -271,7 +271,7 @@ def main() -> int:
         if (idx + 1) % 10 == 0:
             elapsed = time.time() - t0
             print(
-                f"[dsl-eval] {idx + 1}/{len(records)} pass={n_pass} acc={n_pass/n_total:.3f} "
+                f"[dsl-eval] {idx + 1}/{len(records)} pass={n_pass} acc={n_pass / n_total:.3f} "
                 f"elapsed={elapsed:.1f}s",
                 flush=True,
             )

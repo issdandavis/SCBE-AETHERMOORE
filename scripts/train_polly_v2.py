@@ -31,7 +31,7 @@ def main():
 
     props = torch.cuda.get_device_properties(0)
     free, total = torch.cuda.mem_get_info()
-    print(f"GPU: {props.name}, VRAM: {total/1e9:.1f}GB, Free: {free/1e9:.1f}GB")
+    print(f"GPU: {props.name}, VRAM: {total / 1e9:.1f}GB, Free: {free / 1e9:.1f}GB")
 
     # Load data
     dataset = load_dataset("json", data_files=LOCAL_DATASET, split="train")
@@ -72,7 +72,7 @@ def main():
     model.print_trainable_parameters()
 
     free2, _ = torch.cuda.mem_get_info()
-    print(f"After model load — Free VRAM: {free2/1e9:.1f}GB (model uses {(free-free2)/1e9:.1f}GB)")
+    print(f"After model load — Free VRAM: {free2 / 1e9:.1f}GB (model uses {(free - free2) / 1e9:.1f}GB)")
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -129,15 +129,15 @@ def main():
     logs = trainer.state.log_history
     train_logs = [entry for entry in logs if "loss" in entry and "eval_loss" not in entry]
     eval_logs = [entry for entry in logs if "eval_loss" in entry]
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"TRAINING COMPLETE — {RUN_NAME}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Steps: {trainer.state.global_step}")
     print(f"Final train loss: {train_logs[-1]['loss']:.4f}" if train_logs else "No train logs")
     print(f"Final eval loss: {eval_logs[-1]['eval_loss']:.4f}" if eval_logs else "No eval logs")
     if train_logs and "mean_token_accuracy" in train_logs[-1]:
         print(f"Final token accuracy: {train_logs[-1]['mean_token_accuracy']:.4f}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     # Save metrics to JSON
     with open(os.path.join(OUTPUT_DIR, "metrics.json"), "w") as f:

@@ -292,9 +292,9 @@ for prompt in test_prompts:
     )
 
     response = tokenizer.decode(outputs[0][inputs.shape[-1] :], skip_special_tokens=True)
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"PROMPT: {prompt[:80]}...")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(response[:500])
     print()
 

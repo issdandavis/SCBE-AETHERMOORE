@@ -394,7 +394,7 @@ def post_thread(filepath, dry_run=False):
     reply_to = None
     success = True
     for i, tweet in enumerate(tweets):
-        print(f"\n--- Tweet {i+1}/{len(tweets)} ({len(tweet)} chars) ---")
+        print(f"\n--- Tweet {i + 1}/{len(tweets)} ({len(tweet)} chars) ---")
         print(tweet)
 
         if dry_run:

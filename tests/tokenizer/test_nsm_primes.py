@@ -227,7 +227,7 @@ def test_phi_extrapolate_tongue_cycles():
     # Should cycle KO→AV→RU→CA→UM→DR
     expected = ["AV", "RU", "CA", "UM", "DR", "KO"]
     for i, ex in enumerate(results):
-        assert ex.derived_tongue == expected[i], f"step {i+1}: expected {expected[i]}, got {ex.derived_tongue}"
+        assert ex.derived_tongue == expected[i], f"step {i + 1}: expected {expected[i]}, got {ex.derived_tongue}"
 
 
 def test_phi_extrapolate_radii_stay_in_ball():
@@ -245,7 +245,7 @@ def test_phi_extrapolate_radii_increase_monotonically():
         # Radius should generally increase but tanh compression may slow it
         assert (
             results[i].derived_r >= results[0].derived_r * 0.9
-        ), f"step {i+1} radius {results[i].derived_r} unexpectedly dropped from step 1 {results[0].derived_r}"
+        ), f"step {i + 1} radius {results[i].derived_r} unexpectedly dropped from step 1 {results[0].derived_r}"
 
 
 def test_phi_extrapolation_result_types():
@@ -389,7 +389,7 @@ def test_subprime_radii_strictly_increasing():
     for i in range(1, len(anchors)):
         assert (
             anchors[i].r > anchors[i - 1].r
-        ), f"Sub-prime radii should increase: step {i} r={anchors[i-1].r} >= step {i+1} r={anchors[i].r}"
+        ), f"Sub-prime radii should increase: step {i} r={anchors[i - 1].r} >= step {i + 1} r={anchors[i].r}"
 
 
 def test_subprime_radii_in_open_ball():

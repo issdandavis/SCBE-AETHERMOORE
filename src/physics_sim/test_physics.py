@@ -21,7 +21,7 @@ from .core import (
 
 def print_results(title: str, results: dict):
     """Pretty print results."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f" {title}")
     print("=" * 60)
     for key, value in results.items():

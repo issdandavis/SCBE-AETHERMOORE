@@ -227,10 +227,10 @@ def main():
     parser.add_argument("--no-pr", action="store_true", help="Don't create a PR")
     args = parser.parse_args()
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("  SCBE CI AUTO-FIXER")
     print(f"  {datetime.now().isoformat()}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     if args.detect:
         # Import detect_failures and run detection

@@ -285,14 +285,14 @@ def main():
             print(f"\n  SKIP: {name} not found")
             continue
 
-        print(f"\n{'='*70}")
+        print(f"\n{'=' * 70}")
         print(f"FILE: {name}")
-        print(f"  Size: {path.stat().st_size / (1024*1024):.1f}MB")
-        print(f"{'='*70}")
+        print(f"  Size: {path.stat().st_size / (1024 * 1024):.1f}MB")
+        print(f"{'=' * 70}")
 
         t0 = time.time()
         records = load_jsonl(path)
-        print(f"  Loaded {len(records)} records in {time.time()-t0:.1f}s")
+        print(f"  Loaded {len(records)} records in {time.time() - t0:.1f}s")
 
         # 1. Schema
         print("\n--- SCHEMA VALIDATION ---")
@@ -373,10 +373,10 @@ def main():
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2, default=str))
 
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("VALIDATION COMPLETE")
     print(f"  Report: {report_path}")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
 
 
 if __name__ == "__main__":

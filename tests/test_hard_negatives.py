@@ -300,9 +300,9 @@ class TestHardNegativeCorpusSummary:
         fp_rate = denied_count / total
 
         # Print summary report
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("  HARD-NEGATIVE BENIGN CORPUS RESULTS")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"  Total prompts:     {total}")
         print(f"  Denied (FP):       {denied_count}")
         print(f"  FP rate:           {fp_rate:.1%}")

@@ -307,7 +307,7 @@ def main():
             ungov_executes += 1
 
     print(f"\n  Ungoverned: {ungov_executes}/{len(ADVERSARIAL_COMMANDS)} adversarial commands WOULD EXECUTE")
-    print(f"  Detection rate: {(1 - ungov_executes/len(ADVERSARIAL_COMMANDS))*100:.0f}%")
+    print(f"  Detection rate: {(1 - ungov_executes / len(ADVERSARIAL_COMMANDS)) * 100:.0f}%")
 
     # ── PHASE 3: Adversarial — SCBE governed ──
     print("\n" + "─" * 70)
@@ -331,11 +331,11 @@ def main():
     blocked = decisions["DENY"] + decisions["ESCALATE"] + decisions["QUARANTINE"]
 
     print("\n  SCBE Governed:")
-    print(f"    DENY:       {decisions['DENY']:>3} ({decisions['DENY']/total*100:.0f}%)")
-    print(f"    ESCALATE:   {decisions['ESCALATE']:>3} ({decisions['ESCALATE']/total*100:.0f}%)")
-    print(f"    QUARANTINE: {decisions['QUARANTINE']:>3} ({decisions['QUARANTINE']/total*100:.0f}%)")
-    print(f"    ALLOW:      {decisions['ALLOW']:>3} ({decisions['ALLOW']/total*100:.0f}%)")
-    print(f"    BLOCKED:    {blocked}/{total} ({blocked/total*100:.0f}%)")
+    print(f"    DENY:       {decisions['DENY']:>3} ({decisions['DENY'] / total * 100:.0f}%)")
+    print(f"    ESCALATE:   {decisions['ESCALATE']:>3} ({decisions['ESCALATE'] / total * 100:.0f}%)")
+    print(f"    QUARANTINE: {decisions['QUARANTINE']:>3} ({decisions['QUARANTINE'] / total * 100:.0f}%)")
+    print(f"    ALLOW:      {decisions['ALLOW']:>3} ({decisions['ALLOW'] / total * 100:.0f}%)")
+    print(f"    BLOCKED:    {blocked}/{total} ({blocked / total * 100:.0f}%)")
 
     # ── PHASE 4: Cost comparison ──
     print("\n" + "─" * 70)
@@ -352,7 +352,7 @@ def main():
 
     print(f"  Safe commands:        avg cost = {avg_safe:>10.2f}  max = {max_safe:>10.2f}")
     print(f"  Adversarial commands: avg cost = {avg_adv:>10.2f}  min = {min_adv:>10.2f}")
-    print(f"  Cost ratio (adv/safe):          {avg_adv/max(avg_safe, 0.01):>10.1f}x")
+    print(f"  Cost ratio (adv/safe):          {avg_adv / max(avg_safe, 0.01):>10.1f}x")
     print(f"  Separation gap:                 {min_adv - max_safe:>10.2f}")
     print(f"  Geometry working:               {'YES' if min_adv > max_safe else 'OVERLAP (needs tuning)'}")
 
@@ -377,22 +377,22 @@ def main():
         print(f"  {cat:<25} {stats['blocked']}/{stats['total']} ({rate:>5.0f}%) {bar}")
 
     # ── SUMMARY ──
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("FINAL COMPARISON")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     print(
         f"  Ungoverned agent: {ungov_executes}/{total} adversarial commands executed "
-        f"({ungov_executes/total*100:.0f}% vulnerable)"
+        f"({ungov_executes / total * 100:.0f}% vulnerable)"
     )
     print(
         f"  SCBE governed:    {decisions['ALLOW']}/{total} adversarial commands allowed  "
-        f"({decisions['ALLOW']/total*100:.0f}% vulnerable)"
+        f"({decisions['ALLOW'] / total * 100:.0f}% vulnerable)"
     )
     print(
-        f"  Improvement:      {((ungov_executes - decisions['ALLOW'])/max(ungov_executes,1))*100:.0f}% "
+        f"  Improvement:      {((ungov_executes - decisions['ALLOW']) / max(ungov_executes, 1)) * 100:.0f}% "
         "fewer successful attacks"
     )
-    print(f"  Harmonic wall:    {avg_adv/max(avg_safe,0.01):.0f}x cost multiplier for adversarial intent")
+    print(f"  Harmonic wall:    {avg_adv / max(avg_safe, 0.01):.0f}x cost multiplier for adversarial intent")
 
     # Save report
     report = {

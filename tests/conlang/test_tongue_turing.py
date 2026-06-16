@@ -514,9 +514,9 @@ def test_kor_aelin_lisp():
     obj_byte = 0x58  # high=5(literal), low=8(value 8)
 
     tokens = make_instruction("ko", verb_byte, subj_byte, obj_byte)
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"KOR'AELIN (VSO/Lisp): {' '.join(tokens)}")
-    print(f"  Decoded: ({VERB_OPS[(8,0)][0]} 5 8)")
+    print(f"  Decoded: ({VERB_OPS[(8, 0)][0]} 5 8)")
 
     result = eval_ko_vso(vm, tokens)
     print(f"  Result: {result}")
@@ -543,14 +543,14 @@ def test_avali_python():
     obj_byte = 0x53  # high=5(literal), low=3 → value 3
 
     tokens = make_instruction("av", verb_byte, subj_byte, obj_byte)
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"AVALI (SVO/Python): {' '.join(tokens)}")
 
     # Decode actual tokens
     s_tok = byte_to_token("av", subj_byte)
     byte_to_token("av", verb_byte)
     o_tok = byte_to_token("av", obj_byte)
-    print(f"  Decoded: {s_tok}.{VERB_OPS[(8,2)][0]}({o_tok}) = 7 * 3")
+    print(f"  Decoded: {s_tok}.{VERB_OPS[(8, 2)][0]}({o_tok}) = 7 * 3")
 
     result = eval_av_svo(vm, tokens)
     print(f"  Result: {result}")
@@ -572,9 +572,9 @@ def test_runethic_forth():
     verb_byte = 0x81  # high=8(arithmetic), low=1(SUB)
 
     tokens = make_instruction("ru", verb_byte, subj_byte, obj_byte)
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"RUNETHIC (SOV/Forth): {' '.join(tokens)}")
-    print(f"  Decoded: 10 4 {VERB_OPS[(8,1)][0]}")
+    print(f"  Decoded: 10 4 {VERB_OPS[(8, 1)][0]}")
 
     result = eval_ru_sov(vm, tokens)
     print(f"  Result: {result}")
@@ -596,9 +596,9 @@ def test_cassisivadan_sql():
     arg_byte = 0x55  # high=5(literal), low=5 → value 5
 
     tokens = make_instruction("ca", verb_byte, ctx_byte, arg_byte)
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"CASSISIVADAN (V2/SQL): {' '.join(tokens)}")
-    print(f"  Decoded: WHERE 9 {VERB_OPS[(9,3)][0]} 5")
+    print(f"  Decoded: WHERE 9 {VERB_OPS[(9, 3)][0]} 5")
 
     result = eval_ca_v2(vm, tokens)
     print(f"  Result: {result} ({'TRUE' if result else 'FALSE'})")
@@ -620,7 +620,7 @@ def test_umbroth_asm():
     verb_byte = 0xA0  # high=10(assignment), low=0(SET)
 
     tokens = make_instruction("um", verb_byte, src_byte, dest_byte)
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"UMBROTH (OSV/ASM): {' '.join(tokens)}")
     print("  Decoded: MOV R0, 13  (SET R0 = 13)")
 
@@ -646,7 +646,7 @@ def test_draumric_make():
     verb_byte = 0x80  # high=8(arithmetic), low=0(ADD)
 
     tokens = make_instruction("dr", verb_byte, target_byte, material_byte)
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"DRAUMRIC (SOV/Make): {' '.join(tokens)}")
     print("  Decoded: R2(=3) 7 FORGE_ADD → R2 = 3 + 7")
 
@@ -669,9 +669,9 @@ def test_cross_tongue_pipeline():
     Task: Compute (5 + 8) = 13 in ALL six tongues.
     Same bytes, different token sequences, same result.
     """
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("CROSS-TONGUE PIPELINE: Compute 5 + 8 = 13 in all 6 tongues")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     results = {}
     for tc in ["ko", "av", "ru", "ca", "um", "dr"]:
@@ -705,9 +705,9 @@ def test_cross_tongue_pipeline():
 
 def display_token_anatomy():
     """Show the full computational anatomy of a single byte across all tongues."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("TOKEN ANATOMY: Byte 0x80 (ADD operation) across 6 tongues")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print("  Byte: 0x80 = 1000_0000")
     print("  High nibble: 8 → Verb/Operation (Arithmetic)")
     print("  Low nibble:  0 → Variant 0 (ADD)")
@@ -727,14 +727,14 @@ def display_token_anatomy():
 
 def display_instruction_set_summary():
     """Print the full instruction set carved from the nibble space."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("SACRED TONGUE INSTRUCTION SET ARCHITECTURE (STISA)")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print("\n  256 bytes = 256 tokens per tongue")
     print("  4 categories × 4 subcategories × 16 variants = 256 opcodes")
     print()
     print(f"  {'Nibble':>8s}  {'Category':12s}  {'Role':20s}  {'Count'}")
-    print(f"  {'─'*8}  {'─'*12}  {'─'*20}  {'─'*5}")
+    print(f"  {'─' * 8}  {'─' * 12}  {'─' * 20}  {'─' * 5}")
     print(f"  {'0x0_':>8s}  {'Functional':12s}  {'Control flow':20s}  16")
     print(f"  {'0x1_':>8s}  {'Functional':12s}  {'Branching':20s}  16")
     print(f"  {'0x2_':>8s}  {'Functional':12s}  {'Subroutines':20s}  16")
@@ -769,9 +769,9 @@ def test_fibonacci_draumric():
       R1 = 1 (fib_curr)
       Loop 5 times: R2 = R0 + R1, R0 = R1, R1 = R2
     """
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("DRAUMRIC MULTI-STEP: Fibonacci(6) via forge operations")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     vm = TongueVM(name="Draumric", tongue_code="dr")
     vm.registers[0] = 0  # fib_prev
@@ -794,7 +794,7 @@ def test_fibonacci_draumric():
         r1_token = byte_to_token("dr", 0x41)  # R1
         add_token = byte_to_token("dr", 0x80)  # ADD
 
-        print(f"  Step {i+1}: {r0_token} {r1_token} {add_token}  " f"→ R0({a}) + R1({b}) = {new_val}")
+        print(f"  Step {i + 1}: {r0_token} {r1_token} {add_token}  " f"→ R0({a}) + R1({b}) = {new_val}")
 
         vm.registers[0] = vm.registers[1]
         vm.registers[1] = new_val
@@ -816,9 +816,9 @@ def test_conditional_cassisivadan():
 
     Shows conditional evaluation using the evidential marker system.
     """
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("CASSISIVADAN CONDITIONAL: IF R0 > 5 THEN R1 = R0*2 ELSE R1 = 0")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     for test_val in [3, 7, 5]:
         vm = TongueVM(name="Cassisivadan", tongue_code="ca")
@@ -888,9 +888,9 @@ def run_turing_test():
             print(f"\n  FAIL: {name} — {e}")
             failed += 1
 
-    print(f"\n{'='*60}")
-    print(f"RESULTS: {passed}/{passed+failed} tests passed")
-    print(f"{'='*60}")
+    print(f"\n{'=' * 60}")
+    print(f"RESULTS: {passed}/{passed + failed} tests passed")
+    print(f"{'=' * 60}")
 
     if failed == 0:
         print("""

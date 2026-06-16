@@ -226,7 +226,7 @@ def verify_cox_constant():
 
     print(f"\n  Converged Cox Constant: c = {c:.15f}")
     print(f"  Expected value:         c ≈ {COX_CONSTANT_EXPECTED}")
-    print(f"  Verification: e^(π/c) = {np.exp(np.pi/c):.15f}")
+    print(f"  Verification: e^(π/c) = {np.exp(np.pi / c):.15f}")
 
     # Verify
     residual = abs(c - np.exp(np.pi / c))
@@ -589,7 +589,7 @@ def test_soliton_propagation():
 
     print(f"    Energy before: {total_energy_before:.4f}")
     print(f"    Energy combined: {total_energy_combined:.4f}")
-    print(f"    Ratio: {total_energy_combined/total_energy_before:.4f}")
+    print(f"    Ratio: {total_energy_combined / total_energy_before:.4f}")
 
     print("\n  ✓ VALIDATED: Solitons preserve shape (self-healing data streams)")
     return True

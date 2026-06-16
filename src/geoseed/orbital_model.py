@@ -372,7 +372,7 @@ def main():
         )
     print("-" * 75)
     print(f"  CA (l=3) sits at r = {build_geoseed_orbitals()[3].poincare_r:.9f}")
-    print(f"  1/φ          =    {1/PHI:.9f}  ← exact match")
+    print(f"  1/φ          =    {1 / PHI:.9f}  ← exact match")
 
 
 if __name__ == "__main__":

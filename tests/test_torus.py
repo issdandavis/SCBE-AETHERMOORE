@@ -1,7 +1,5 @@
 """Torus / hypercube embedding — periodic floating-point space + wormhole seams."""
 
-import math
-
 from python.scbe import torus as T
 
 

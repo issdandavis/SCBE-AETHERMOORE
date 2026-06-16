@@ -79,14 +79,14 @@ def check_disk_space(model_key: str) -> None:
     f_need = SPACE_NEEDED_F[model_key]
 
     print("=== Disk space check ===")
-    print(f"  C: free {c_free/1e9:.1f} GB  (need ~{c_need/1e9:.0f} GB for merged model)")
-    print(f"  F: free {f_free/1e9:.1f} GB  (need ~{f_need/1e9:.1f} GB for GGUF)")
+    print(f"  C: free {c_free / 1e9:.1f} GB  (need ~{c_need / 1e9:.0f} GB for merged model)")
+    print(f"  F: free {f_free / 1e9:.1f} GB  (need ~{f_need / 1e9:.1f} GB for GGUF)")
 
     problems = []
     if c_free < c_need:
-        problems.append(f"C: only has {c_free/1e9:.1f} GB free — need ~{c_need/1e9:.0f} GB for merged weights.")
+        problems.append(f"C: only has {c_free / 1e9:.1f} GB free — need ~{c_need / 1e9:.0f} GB for merged weights.")
     if f_free < f_need:
-        problems.append(f"F: only has {f_free/1e9:.1f} GB free — need ~{f_need/1e9:.1f} GB for GGUF.")
+        problems.append(f"F: only has {f_free / 1e9:.1f} GB free — need ~{f_need / 1e9:.1f} GB for GGUF.")
 
     if problems:
         print("\nERROR — not enough disk space:")
@@ -276,13 +276,13 @@ def main() -> None:
     # Step 4: Clean up temp merged model (C: space reclaimed)
     if not args.skip_merge and merged_path.exists():
         merged_size = sum(f.stat().st_size for f in merged_path.rglob("*") if f.is_file())
-        print(f"\nCleaning up temp merged model ({merged_size/1e9:.1f} GB) from C: ...")
+        print(f"\nCleaning up temp merged model ({merged_size / 1e9:.1f} GB) from C: ...")
         shutil.rmtree(merged_path)
         print(f"Deleted: {merged_path}")
         import psutil
 
         drive = "C:\\"
-        print(f"C: free after cleanup: {psutil.disk_usage(drive).free/1e9:.1f} GB")
+        print(f"C: free after cleanup: {psutil.disk_usage(drive).free / 1e9:.1f} GB")
 
 
 if __name__ == "__main__":

@@ -131,7 +131,7 @@ class TestPoincareMetricProperties:
             for f in failures[:5]:  # Show first 5 failures
                 msg += (  # noqa: E501
                     f"  Trial {f['trial']}: d(u,w)={f['d_uw']:.6f} > "
-                    f"d(u,v)+d(v,w)={f['d_uv']+f['d_vw']:.6f} "
+                    f"d(u,v)+d(v,w)={f['d_uv'] + f['d_vw']:.6f} "
                     f"(violation: {f['violation']:.6e})\n"
                 )
             pytest.fail(msg)

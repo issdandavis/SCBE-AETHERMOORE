@@ -263,7 +263,7 @@ def generate_semantic_math() -> int:
             f"This input is primarily about '{t_dom['essence']}' ({t_dom['domain']}).\n\n"
             "Note: raw activation order may differ from weighted order. "
             f"Draumric (phi^5={TONGUE_WEIGHTS['DR']:.4f}) can dominate even with moderate raw activation "
-            f"because its phi weight is {TONGUE_WEIGHTS['DR']/TONGUE_WEIGHTS['KO']:.1f}x Kor'aelin's.",
+            f"because its phi weight is {TONGUE_WEIGHTS['DR'] / TONGUE_WEIGHTS['KO']:.1f}x Kor'aelin's.",
             activations,
             0.65,
             "master-semantic-math",
@@ -735,14 +735,14 @@ def generate_drift_corrections() -> int:
             + ". Tolerance epsilon=0.001. Check all consecutive phi ratios.",
             "**Ratio validation (epsilon=0.001):**\n\n"
             + "\n".join(
-                f"  {TONGUES[TONGUE_CODES[i]]['full']}/{TONGUES[TONGUE_CODES[i-1]]['full']}: "
-                f"{drifted_weights[TONGUE_CODES[i]] / drifted_weights[TONGUE_CODES[i-1]]:.6f} "
-                f"(expected {PHI:.6f}, error {abs(drifted_weights[TONGUE_CODES[i]] / drifted_weights[TONGUE_CODES[i-1]] - PHI):.6f})"
+                f"  {TONGUES[TONGUE_CODES[i]]['full']}/{TONGUES[TONGUE_CODES[i - 1]]['full']}: "
+                f"{drifted_weights[TONGUE_CODES[i]] / drifted_weights[TONGUE_CODES[i - 1]]:.6f} "
+                f"(expected {PHI:.6f}, error {abs(drifted_weights[TONGUE_CODES[i]] / drifted_weights[TONGUE_CODES[i - 1]] - PHI):.6f})"
                 for i in range(1, 6)
             )
             + "\n\n"
             f"**Violations:**\n{violation_text}\n"
-            f"**Action:** {'RECOMPUTE -- one or more ratios exceed tolerance. '  if violations else 'PASS -- all ratios within tolerance. '}"
+            f"**Action:** {'RECOMPUTE -- one or more ratios exceed tolerance. ' if violations else 'PASS -- all ratios within tolerance. '}"
             f"{'Snap all weights to exact phi^n values.' if violations else 'No correction needed this epoch.'}",
             balanced_scores("CA", "DR"),
             0.8,
@@ -925,7 +925,7 @@ def generate_null_space() -> int:
 
         transition_lines = "\n".join(
             f"  t={i}: state={states[i]}, value={values[i]}"
-            + (f" -> {states[i+1]}" if i < len(states) - 1 else " (current)")
+            + (f" -> {states[i + 1]}" if i < len(states) - 1 else " (current)")
             for i in range(len(states))
         )
 
@@ -1026,7 +1026,7 @@ def generate_null_space() -> int:
             )
             + "\n\n"
             f"Logit: {w_a}*{a} + {w_r}*{r} + {w_b}*{b} + {w_f}*{f_val} - {theta}\n"
-            f"     = {w_a*a:.3f} + {w_r*r:.3f} + {w_b*b:.3f} + {w_f*f_val:.3f} - {theta}\n"
+            f"     = {w_a * a:.3f} + {w_r * r:.3f} + {w_b * b:.3f} + {w_f * f_val:.3f} - {theta}\n"
             f"     = {logit:.4f}\n\n"
             f"g_t(p) = sigma({logit:.4f}) = {g}\n\n"
             f"**Interpretation:** Gate admission = {g:.1%}. "

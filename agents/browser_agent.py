@@ -284,16 +284,16 @@ class EscalationHandler:
         Ask human for approval via console input.
         In production, this would integrate with a UI or notification system.
         """
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("[HUMAN APPROVAL REQUIRED]")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"Action:      {action.action_type}")
         print(f"Target:      {action.target}")
         print(f"Sensitivity: {action.sensitivity}")
         print(f"SCBE Score:  {original_result.score:.3f}")
         if ai_result:
             print(f"Higher AI:   {ai_result.decision.value} - {ai_result.reason}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         while True:
             response = input("Approve? [y/n/q(quarantine)]: ").strip().lower()
@@ -670,9 +670,9 @@ class SCBEBrowserAgent:
 
     def print_summary(self):
         """Print session summary."""
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("SESSION SUMMARY")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"Agent: {self.agent_name} ({self.agent_id})")
         print(f"Total actions: {len(self.action_log)}")
 
@@ -688,7 +688,7 @@ class SCBEBrowserAgent:
         print(f"Quarantined: {len(self.quarantine_queue)}")
         print(f"Escalations (AI): {len(self.escalation.higher_ai_decisions)}")
         print(f"Escalations (Human): {len(self.escalation.human_decisions)}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
 
 # =============================================================================

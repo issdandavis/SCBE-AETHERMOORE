@@ -218,7 +218,7 @@ def _push_to_airtable(rows: list[dict]):
             with urlopen(req, timeout=30) as resp:
                 result = json.loads(resp.read())
                 created = len(result.get("records", []))
-                print(f"  Airtable: pushed {created} records (batch {i//10 + 1})")
+                print(f"  Airtable: pushed {created} records (batch {i // 10 + 1})")
         except Exception as e:
             print(f"  Airtable push error: {e}")
 

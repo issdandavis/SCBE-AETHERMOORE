@@ -122,11 +122,11 @@ def narrate_chapter(label: str, md_path: Path, voice: str = VOICE, speed: float 
                 pause = np.zeros(int(sr * 0.3), dtype=samples.dtype)
                 all_audio.append(pause)
             except Exception as e:
-                print(f"  [{label}] Chunk {i+1}/{len(chunks)} failed: {e}")
+                print(f"  [{label}] Chunk {i + 1}/{len(chunks)} failed: {e}")
                 continue
 
             if (i + 1) % 20 == 0:
-                print(f"  [{label}] {i+1}/{len(chunks)} chunks done...")
+                print(f"  [{label}] {i + 1}/{len(chunks)} chunks done...")
 
         if not all_audio:
             print(f"  [{label}] No audio generated")
@@ -139,7 +139,7 @@ def narrate_chapter(label: str, md_path: Path, voice: str = VOICE, speed: float 
 
         duration = len(full_audio) / sr
         size_mb = output_path.stat().st_size / (1024 * 1024)
-        print(f"  [{label}] Done: {duration/60:.1f} min, {size_mb:.1f} MB")
+        print(f"  [{label}] Done: {duration / 60:.1f} min, {size_mb:.1f} MB")
         return output_path
 
     except Exception as e:
@@ -218,7 +218,7 @@ def main():
             success += 1
 
     elapsed = time.monotonic() - start_time
-    print(f"\nDone: {success}/{len(chapters)} chapters narrated in {elapsed/60:.1f} minutes")
+    print(f"\nDone: {success}/{len(chapters)} chapters narrated in {elapsed / 60:.1f} minutes")
 
 
 if __name__ == "__main__":

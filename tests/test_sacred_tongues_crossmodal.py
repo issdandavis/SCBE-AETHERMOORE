@@ -953,7 +953,7 @@ class TestPerformance:
             tokenizer.encode_bytes("ko", data)
         elapsed = time.perf_counter() - start
         throughput = (len(data) * 10) / elapsed
-        assert throughput > 100_000, f"Encoding too slow: {throughput/1000:.1f} KB/s"
+        assert throughput > 100_000, f"Encoding too slow: {throughput / 1000:.1f} KB/s"
 
     @pytest.mark.perf
     def test_hf_encoding_throughput(self, hf_tokenizer):
@@ -964,7 +964,7 @@ class TestPerformance:
             hf_tokenizer.encode(text, tongue="ko")
         elapsed = time.perf_counter() - start
         throughput = (len(text) * 10) / elapsed
-        assert throughput > 50_000, f"HF encoding too slow: {throughput/1000:.1f} KB/s"
+        assert throughput > 50_000, f"HF encoding too slow: {throughput / 1000:.1f} KB/s"
 
     @pytest.mark.perf
     def test_bridge_inference_speed(self, bridge):

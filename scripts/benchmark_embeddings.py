@@ -338,7 +338,7 @@ def main():
     print(f"\nLoading {enriched_path.name}...")
     t0 = time.time()
     records = load_enriched(enriched_path)
-    print(f"  Loaded {len(records)} enriched records in {time.time()-t0:.1f}s")
+    print(f"  Loaded {len(records)} enriched records in {time.time() - t0:.1f}s")
 
     results = {}
 
@@ -430,9 +430,9 @@ def main():
     print(f"  Status:         [{t7['status']}]")
 
     # Summary
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("BENCHMARK SUMMARY")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     statuses = []
     for name, r in results.items():
         s = r.get("status", "?")

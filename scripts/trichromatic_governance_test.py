@@ -432,7 +432,7 @@ def run_test():
         forged_visible = [t.color.visible for t in state.tongues]
         result = test_forgery_resistance(state, forged_visible)
         print(
-            f"  Attack {i+1}: visible_matched={result['visible_match']}/6  "
+            f"  Attack {i + 1}: visible_matched={result['visible_match']}/6  "
             f"ir_matched={result['ir_match']}/6  uv_matched={result['uv_match']}/6  "
             f"full_matched={result['full_match']}/6  "
             f"FORGERY_DETECTED={result['forgery_detected']}"

@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 def print_test_header(name: str):
     """Print test section header."""
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print(f" {name}")
     print("=" * 70)
 
@@ -163,19 +163,19 @@ def test_orbital():
     T_iss = orbital_period(r_iss, MU_EARTH)
     # ISS period ~ 92.68 minutes
     assert_close(T_iss / 60, 92.4, 0.02, "ISS orbital period")
-    print(f"  [OK] ISS orbital period: {T_iss/60:.2f} minutes")
+    print(f"  [OK] ISS orbital period: {T_iss / 60:.2f} minutes")
 
     # Test 2: Circular velocity
     V_circular = circular_velocity(r_iss, MU_EARTH)
     # Expected ~ 7.67 km/s
     assert_close(V_circular / 1000, 7.67, 0.02, "LEO circular velocity")
-    print(f"  [OK] LEO circular velocity: {V_circular/1000:.2f} km/s")
+    print(f"  [OK] LEO circular velocity: {V_circular / 1000:.2f} km/s")
 
     # Test 3: Escape velocity at Earth's surface
     V_escape = escape_velocity(RADIUS_EARTH, MU_EARTH)
     # Expected ~ 11.19 km/s
     assert_close(V_escape / 1000, 11.19, 0.02, "Earth escape velocity")
-    print(f"  [OK] Earth escape velocity: {V_escape/1000:.2f} km/s")
+    print(f"  [OK] Earth escape velocity: {V_escape / 1000:.2f} km/s")
 
     # Test 4: Hohmann transfer (LEO to GEO)
     r1 = RADIUS_EARTH + 400000  # LEO
@@ -183,7 +183,7 @@ def test_orbital():
     transfer = hohmann_transfer(r1, r2, MU_EARTH)
     # Total Delta_V for LEO->GEO ~ 3.9 km/s
     assert_close(transfer["delta_v_total_m_s"] / 1000, 3.9, 0.1, "Hohmann Delta_V")
-    print(f"  [OK] Hohmann LEO->GEO: Delta_V={transfer['delta_v_total_m_s']/1000:.2f} km/s")
+    print(f"  [OK] Hohmann LEO->GEO: Delta_V={transfer['delta_v_total_m_s'] / 1000:.2f} km/s")
 
     # Test 5: Comprehensive orbital mechanics
     orbit = orbital_mechanics(
@@ -337,13 +337,13 @@ def test_waves_optics():
     lens = thin_lens_equation(f=0.1, d_o=0.3)  # f=10cm, object at 30cm
     # 1/di = 1/0.1 - 1/0.3 = 10 - 3.33 = 6.67, di = 0.15m
     assert_close(lens["image_distance_m"], 0.15, 0.01, "Thin lens image distance")
-    print(f"  [OK] Thin lens: d_o=30cm, f=10cm -> d_i={lens['image_distance_m']*100:.0f}cm")
+    print(f"  [OK] Thin lens: d_o=30cm, f=10cm -> d_i={lens['image_distance_m'] * 100:.0f}cm")
 
     # Test 4: Young's double slit fringe spacing
     # lambda=500nm, d=0.1mm, L=1m -> Delta_y=5mm
     dy = young_fringe_spacing(500e-9, 0.1e-3, 1.0)
     assert_close(dy * 1000, 5.0, 0.01, "Young's fringe spacing")
-    print(f"  [OK] Young's double slit: Delta_y={dy*1000:.1f}mm")
+    print(f"  [OK] Young's double slit: Delta_y={dy * 1000:.1f}mm")
 
     # Test 5: Sound speed in air
     v_sound = sound_speed_air(20)  # 20degC
@@ -514,7 +514,7 @@ def test_core_physics():
     # Test 4: Thermodynamics - Carnot efficiency
     result = thermodynamics({"hot_temperature": 500, "cold_temperature": 300})
     assert_close(result["carnot_efficiency"], 0.4, 0.01, "Carnot efficiency")
-    print(f"  [OK] Carnot efficiency (500K->300K): {result['carnot_efficiency']*100:.0f}%")
+    print(f"  [OK] Carnot efficiency (500K->300K): {result['carnot_efficiency'] * 100:.0f}%")
 
     # Test 5: Relativity - electron rest mass energy
     result = relativity({"mass": ELECTRON_MASS})

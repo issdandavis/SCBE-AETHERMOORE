@@ -672,7 +672,7 @@ class TestConstants:
         for i in range(len(sorted_bands) - 1):
             assert (
                 sorted_bands[i][1] == sorted_bands[i + 1][0]
-            ), f"Gap between {sorted_bands[i]} and {sorted_bands[i+1]}"
+            ), f"Gap between {sorted_bands[i]} and {sorted_bands[i + 1]}"
 
     def test_bands_cover_audible_range(self):
         sorted_bands = sorted(TONGUE_FREQ_BANDS.values(), key=lambda x: x[0])

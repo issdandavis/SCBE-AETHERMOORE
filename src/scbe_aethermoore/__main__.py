@@ -114,7 +114,7 @@ Examples:
             prefix = line[:60] + ("..." if len(line) > 60 else "")
             print(f"{_fmt_result(r, args.json)}  <- {prefix!r}")
         allow = sum(1 for r in results if r["decision"] == "ALLOW")
-        print(f"\n{allow}/{len(results)} ALLOW  ({len(results)-allow} flagged)")
+        print(f"\n{allow}/{len(results)} ALLOW  ({len(results) - allow} flagged)")
         return 0
 
     # Single text from argument or stdin

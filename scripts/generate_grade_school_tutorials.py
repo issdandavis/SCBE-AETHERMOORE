@@ -685,7 +685,9 @@ def main():
         assistant_msg = r["messages"][-1]["content"]
         word_counts.append(len(assistant_msg.split()))
 
-    print(f"\nWord counts: min={min(word_counts)}, avg={sum(word_counts)/len(word_counts):.0f}, max={max(word_counts)}")
+    print(
+        f"\nWord counts: min={min(word_counts)}, avg={sum(word_counts) / len(word_counts):.0f}, max={max(word_counts)}"
+    )
 
     # Write
     with open(OUTPUT, "w", encoding="utf-8") as f:

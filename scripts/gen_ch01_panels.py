@@ -153,7 +153,7 @@ def main():
     for i, p in enumerate(PANELS):
         t0 = time.time()
         out_path = OUT / f"{p['id']}.png"
-        print(f"  [{i+1}/{len(PANELS)}] {p['id']} ({p['w']}x{p['h']})...", end=" ", flush=True)
+        print(f"  [{i + 1}/{len(PANELS)}] {p['id']} ({p['w']}x{p['h']})...", end=" ", flush=True)
 
         image = pipe(
             prompt=p["prompt"],

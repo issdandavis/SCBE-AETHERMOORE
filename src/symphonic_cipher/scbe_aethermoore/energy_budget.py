@@ -528,7 +528,7 @@ class FleetEnergyManager:
                 bar = "#" * filled + "-" * (bar_len - filled)
                 lines.append(
                     f"  {s['agent_id']:<20s} [{bar}] "
-                    f"{s['fraction']*100:5.1f}% | "
+                    f"{s['fraction'] * 100:5.1f}% | "
                     f"phase={s['phase']:<12s} | "
                     f"eff={s['foraging_efficiency']:.3f}"
                 )

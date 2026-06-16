@@ -237,7 +237,7 @@ def build_system_deck(
     command_key = route_packet.get("command_key", _extract_command_key(source_text))
     cards = [
         {
-            "card_id": f"card-{idx+1}",
+            "card_id": f"card-{idx + 1}",
             "kind": kind,
             "command_key": command_key,
             "source_name": source_name,
@@ -5248,7 +5248,7 @@ def _skill_tree_to_ascii(tree: Dict[str, Any]) -> str:
                     reqs = ", ".join(n["requires"][:3])
                     req_s = f"  ← {reqs}"
                     if len(n["requires"]) > 3:
-                        req_s += f" +{len(n['requires'])-3}"
+                        req_s += f" +{len(n['requires']) - 3}"
                 # description: wrap at terminal width
                 desc = n["description"]
                 lines.append(

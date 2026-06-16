@@ -325,7 +325,7 @@ class SelfHealingOrchestrator:
                 # Wait before retry
                 delay = self._calculate_delay(attempt)
                 time.sleep(delay)
-                healing_actions.append(f"backoff_{int(delay*1000)}ms")
+                healing_actions.append(f"backoff_{int(delay * 1000)}ms")
 
         return False, None, healing_actions
 

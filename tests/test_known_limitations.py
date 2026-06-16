@@ -406,18 +406,18 @@ class TestLimitationsSummary:
         }
 
         total = sum(len(v) for v in limitations.values())
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"SCBE-AETHERMOORE KNOWN LIMITATIONS: {total} documented")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         for category, items in limitations.items():
             print(f"\n{category}:")
             for item in items:
                 print(f"  ⚠️  {item}")
 
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("These are EXPECTED limitations, not bugs.")
         print("Future versions may address some of these.")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
         assert total == 24, f"Expected 24 limitations, found {total}"

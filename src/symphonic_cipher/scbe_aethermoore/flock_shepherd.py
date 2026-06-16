@@ -629,7 +629,7 @@ class Flock:
                 energy_info = ""
                 if s.energy_agent is not None:
                     ef = s.energy_agent.energy_fraction
-                    energy_info = f" | E={ef*100:.0f}%({s.energy_agent.phase.value})"
+                    energy_info = f" | E={ef * 100:.0f}%({s.energy_agent.phase.value})"
                 lines.append(
                     f"  {s.sheep_id} | {s.name:<20s} | {s.role.value:<10s} | "
                     f"{s.state.value:<10s} | coh={s.coherence:.2f} | "

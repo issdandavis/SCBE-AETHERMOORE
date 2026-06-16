@@ -144,7 +144,7 @@ def main():
     if args.dry_run:
         for f in files:
             title, content = prep_chapter(f, args.title if len(files) == 1 else "")
-            print(f"\n{'='*60}")
+            print(f"\n{'=' * 60}")
             print(f"Title: {title}")
             print(f"Tags: {tags}")
             print(f"Length: {len(content)} chars / ~{len(content.split())} words")

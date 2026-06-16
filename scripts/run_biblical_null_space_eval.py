@@ -147,7 +147,7 @@ def main():
     call_fn = PROVIDERS[args.provider]
 
     print(f"Running 20 Biblical Null-Space probes against {args.provider}/{model}...")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
 
     scores = []
     for _i, probe in enumerate(PROBES):
@@ -180,7 +180,7 @@ def main():
                 }
             )
 
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     analysis = run_null_space_analysis(scores)
 
     print(f"\nTotal: {analysis['total_score']}/{analysis['max_score']} ({analysis['percentage']}%)")

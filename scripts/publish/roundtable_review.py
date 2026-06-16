@@ -128,7 +128,7 @@ def load_ledger():
 
 def phase_deposit(batch_num, token):
     """Phase 1: Models read a batch and deposit notes."""
-    print(f"\n{'#'*60}")
+    print(f"\n{'#' * 60}")
     print(f"DEPOSIT PHASE — Batch {batch_num}")
     print(f"Chapters: {', '.join(BATCHES[batch_num])}")
     print("#" * 60)
@@ -176,7 +176,7 @@ CHAPTERS:
 
 def phase_roundtable(token):
     """Phase 2: Models read each other's notes and discuss."""
-    print(f"\n{'#'*60}")
+    print(f"\n{'#' * 60}")
     print("ROUND TABLE PHASE — Cross-Talk Discussion")
     print("#" * 60)
 
@@ -233,7 +233,7 @@ YOUR TASK:
 
 def phase_synthesize(token):
     """Phase 3: Final synthesis from all round table discussion."""
-    print(f"\n{'#'*60}")
+    print(f"\n{'#' * 60}")
     print("SYNTHESIS PHASE — Final Verdict")
     print("#" * 60)
 

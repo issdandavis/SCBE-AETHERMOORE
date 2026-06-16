@@ -36,11 +36,11 @@ def build_section(report: dict) -> str:
     by_tongue = report["by_tongue"]
     by_case = report["by_case"]
     tongue_lines = "\n".join(
-        f"| {t} | {by_tongue[t]['pass']}/{by_tongue[t]['n']} | {by_tongue[t]['pass_rate']*100:.0f}% |"
+        f"| {t} | {by_tongue[t]['pass']}/{by_tongue[t]['n']} | {by_tongue[t]['pass_rate'] * 100:.0f}% |"
         for t in ("AV", "RU", "CA", "UM", "DR")
     )
     case_lines = "\n".join(
-        f"| {c} | {by_case[c]['pass']}/{by_case[c]['n']} | {by_case[c]['pass_rate']*100:.0f}% |"
+        f"| {c} | {by_case[c]['pass']}/{by_case[c]['n']} | {by_case[c]['pass_rate'] * 100:.0f}% |"
         for c in ("reverse_string", "safe_divide", "bounded_factorial", "parse_json_name", "eval_runner")
     )
     return f"""

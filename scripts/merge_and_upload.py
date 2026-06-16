@@ -177,7 +177,7 @@ def load_jsonl(path: Path) -> list[dict]:
             try:
                 records.append(json.loads(line))
             except json.JSONDecodeError:
-                print(f"  WARN: Bad JSON at {path.name}:{i+1}", file=sys.stderr)
+                print(f"  WARN: Bad JSON at {path.name}:{i + 1}", file=sys.stderr)
     print(f"  Loaded {len(records):>5} from {path.name}", file=sys.stderr)
     return records
 
@@ -197,7 +197,7 @@ def dedup_by_instruction(records: list[dict]) -> list[dict]:
 def reassign_ids(records: list[dict]) -> list[dict]:
     """Reassign sequential IDs to all records."""
     for i, r in enumerate(records):
-        r["id"] = f"sft-{i+1:05d}"
+        r["id"] = f"sft-{i + 1:05d}"
     return records
 
 

@@ -54,9 +54,9 @@ def check(name: str, condition: bool, detail: str = ""):
 
 
 def section(title: str):
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print(f"  {title}")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
 
 
 # =====================================================================
@@ -126,7 +126,7 @@ u = 0.5
 check(
     "L6: Breathing changes distances",
     breathe(u, 1.5) > u and breathe(u, 0.7) < u,
-    f"expand={breathe(u,1.5):.4f}, contract={breathe(u,0.7):.4f}",
+    f"expand={breathe(u, 1.5):.4f}, contract={breathe(u, 0.7):.4f}",
 )
 
 
@@ -200,7 +200,7 @@ check(
 
 # L14: Audio Parseval
 r_HF = 0.3
-check("L14: Audio energy conserved", 0 <= (1 - r_HF) <= 1, f"S_audio={1-r_HF:.4f}")
+check("L14: Audio energy conserved", 0 <= (1 - r_HF) <= 1, f"S_audio={1 - r_HF:.4f}")
 
 
 # =====================================================================
@@ -658,7 +658,7 @@ check("H(d,R) > 1 for d > 0", H_wall(0.1, PHI) > 1.0)
 check(
     "H(d,R) super-exponential growth",
     H_wall(3, PHI) > 50,
-    f"H(3,phi)={H_wall(3,PHI):.2f}, phi^9≈76",
+    f"H(3,phi)={H_wall(3, PHI):.2f}, phi^9≈76",
 )
 
 # Convexity: d^2 H / d(d)^2 > 0
@@ -711,26 +711,26 @@ check(
 # =====================================================================
 # SUMMARY
 # =====================================================================
-print(f"\n{'='*70}")
+print(f"\n{'=' * 70}")
 print("  SCBE-AETHERMOORE FULL SYSTEM VERIFICATION")
-print(f"{'='*70}")
+print(f"{'=' * 70}")
 print(f"  Total checks: {total}")
 print(f"  Passed:       {passed}")
 print(f"  Failed:       {failed}")
-print(f"  Pass rate:    {passed/total*100:.1f}%")
-print(f"{'='*70}")
+print(f"  Pass rate:    {passed / total * 100:.1f}%")
+print(f"{'=' * 70}")
 
 if failed == 0:
     print("  VERDICT: ALL SYSTEMS OPERATIONAL")
 else:
     print(f"  VERDICT: {failed} ISSUE(S) FOUND")
 
-print(f"{'='*70}")
+print(f"{'=' * 70}")
 print("  Patent:     USPTO 63/961,403 (Filed 01/15/2026)")
 print("  Filing:     Hyperbolic Geometry-Based Authorization")
 print("  Inventor:   Isaac Daniel Davis")
 print("  Coverage:   14-layer pipeline, PHDM, unified kernel")
-print(f"{'='*70}\n")
+print(f"{'=' * 70}\n")
 
 
 def test_full_system_verification_report():

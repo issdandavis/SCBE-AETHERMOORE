@@ -547,13 +547,13 @@ def run_full_report():
     print("\n  ADVERSARIAL vs BENIGN SEPARATION")
     benign_costs = [r["cost"] for r in results if r["label"] == "benign"]
     attack_costs = [r["cost"] for r in results if "adversarial" in r["label"]]
-    print(f"  Benign avg cost:  {sum(benign_costs)/len(benign_costs):>8.2f}")
-    print(f"  Attack avg cost:  {sum(attack_costs)/len(attack_costs):>8.2f}")
+    print(f"  Benign avg cost:  {sum(benign_costs) / len(benign_costs):>8.2f}")
+    print(f"  Attack avg cost:  {sum(attack_costs) / len(attack_costs):>8.2f}")
 
     # Dominant tongue accuracy
     expected = [(r["dominant"], r["expected"]) for r in results if r["expected"]]
     correct = sum(1 for d, e in expected if d == e)
-    print(f"\n  DOMINANT TONGUE ACCURACY: {correct}/{len(expected)} ({100*correct/max(len(expected),1):.0f}%)")
+    print(f"\n  DOMINANT TONGUE ACCURACY: {correct}/{len(expected)} ({100 * correct / max(len(expected), 1):.0f}%)")
 
     # Coordinate spread comparison
     print("\n  BACKEND COMPARISON (STATS vs SEMANTIC)")

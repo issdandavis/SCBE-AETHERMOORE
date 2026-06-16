@@ -154,11 +154,11 @@ def run_phase(phase_name, dry_run=False):
     sft_path = Path(f"training/sft_records/nightly_{date_str}.jsonl")
     sft_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  NIGHTLY RESEARCH PIPELINE — Phase: {phase_name.upper()}")
     print(f"  Time: {now.strftime('%Y-%m-%d %H:%M:%S')} Local")
     print(f"  Output: {output_dir}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     if phase_name in ("foreign", "american"):
         config = NEWS_SOURCES.get(phase_name, NEWS_SOURCES.get("night_darker"))
@@ -265,9 +265,9 @@ def main():
     for phase in phases:
         run_phase(phase, dry_run=args.dry_run)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  PIPELINE COMPLETE — {len(phases)} phases")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
 
 if __name__ == "__main__":

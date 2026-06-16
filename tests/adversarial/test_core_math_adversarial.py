@@ -379,7 +379,7 @@ def ds_attenuate_width():
     width = R_collapse - R_allow
     detail = (
         f"ALLOW zone: R < {R_allow:.6f}, COLLAPSE zone: R > {R_collapse:.6f}, "
-        f"ATTENUATE width: {width:.6f} in R-space ({width*100:.2f}% of radius)"
+        f"ATTENUATE width: {width:.6f} in R-space ({width * 100:.2f}% of radius)"
     )
     # If the zone is too narrow, it's effectively binary (ALLOW or COLLAPSE)
     if width < 0.001:
@@ -414,7 +414,7 @@ def ds_cliff_location():
     cliff_width = R_danger - R_safe
     detail = (
         f"DS=0.99 at R={R_safe:.6f}, DS=0.01 at R={R_danger:.6f}. "
-        f"Cliff width: {cliff_width:.6f} ({cliff_width*100:.2f}% of radius). "
+        f"Cliff width: {cliff_width:.6f} ({cliff_width * 100:.2f}% of radius). "
         f"The entire ALLOW->COLLAPSE transition happens in {cliff_width:.4f} of R-space"
     )
     if cliff_width < 0.01:

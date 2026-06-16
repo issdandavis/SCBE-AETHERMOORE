@@ -200,10 +200,10 @@ def cmd_start(api_only: bool = False) -> None:
     """Start all services."""
     PID_DIR.mkdir(parents=True, exist_ok=True)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  SCBE SERVER NODE — {NODE_NAME}")
     print(f"  Host: {HOST}")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     for name, cfg in SERVICES.items():
         if api_only and name == "aetherbrowser":
@@ -221,14 +221,14 @@ def cmd_start(api_only: bool = False) -> None:
     statuses = _get_status()
     _write_status(statuses)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     running = [s for s in statuses.values() if s.running]
     print(f"  {len(running)}/{len(SERVICES)} services running")
     for s in running:
         print(f"    {s.name}: http://localhost:{s.port}")
     print(f"\n  Status: {STATUS_FILE}")
     print(f"  Logs:   {PID_DIR}/*.log")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     # Print quick-start commands
     print("  Quick access:")
@@ -250,7 +250,7 @@ def cmd_status() -> None:
     _write_status(statuses)
 
     print(f"\nSCBE Server Node: {NODE_NAME}")
-    print(f"{'─'*50}")
+    print(f"{'─' * 50}")
     for s in statuses.values():
         icon = "●" if s.running else "○"
         pid_str = f" (pid {s.pid})" if s.pid else ""
