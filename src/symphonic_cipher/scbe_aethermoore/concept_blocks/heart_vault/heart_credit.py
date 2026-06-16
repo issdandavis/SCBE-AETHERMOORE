@@ -228,7 +228,7 @@ class HeartCreditLedger:
             """SELECT id, agent_id, action, node_id, amount, denomination, timestamp
                FROM hv_heart_credits
                WHERE agent_id=?
-               ORDER BY timestamp DESC
+               ORDER BY timestamp DESC, rowid DESC
                LIMIT ?""",
             (agent_id, limit),
         ).fetchall()
