@@ -75,6 +75,35 @@ def test_recursive_powershell_delete_is_denied() -> None:
         assert any(f.rule == "destructive-remove-item" for f in decision.findings), cmd
 
 
+def test_host_power_and_system_control_commands_are_denied() -> None:
+    # These do not necessarily delete files, but they can crash, sleep, reboot,
+    # disconnect, or destabilize the host. They must never pass through a test
+    # harness as ordinary benchmark/setup commands.
+    cases = {
+        "shutdown /s /t 0": "system-power-state",
+        "Restart-Computer -Force": "system-power-state",
+        "powercfg /hibernate off": "powercfg-state-change",
+        "powercfg -h off": "powercfg-state-change",
+        "bcdedit /set hypervisorlaunchtype off": "system-disk-boot-tool",
+        "diskpart /s script.txt": "system-disk-boot-tool",
+        "format C: /q": "system-disk-boot-tool",
+        "Disable-NetAdapter -Name Wi-Fi -Confirm:$false": "network-adapter-control",
+        "netsh winsock reset": "network-adapter-control",
+        "wsl --shutdown": "wsl-shutdown",
+        "docker system prune -a -f": "docker-system-prune-all",
+        "taskkill /F /T /IM python.exe": "broad-taskkill",
+        "Stop-Process -Name node -Force": "broad-stop-process",
+        "stress-ng --cpu 8 --timeout 60s": "host-stress-loop",
+        "while ($true) { python bench.py }": "host-stress-loop",
+        "while true; do python bench.py; done": "host-stress-loop",
+    }
+    for cmd, rule in cases.items():
+        decision = scan_command(cmd)
+        assert decision.tier == "DENY", cmd
+        assert not decision.allowed, cmd
+        assert any(f.rule == rule for f in decision.findings), cmd
+
+
 def test_inline_interpreter_is_quarantine_not_deny() -> None:
     decision = scan_command(f"{sys.executable} -c \"print('ok')\"")
 

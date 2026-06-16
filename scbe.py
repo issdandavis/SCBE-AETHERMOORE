@@ -1163,6 +1163,7 @@ def _spine_packet(text: str) -> Dict[str, Any]:
             "schema": "scbe_bit_spine_packet_v1",
             "text": text,
             "views": {
+                "bits": packet["binary"],
                 "binary": packet["binary"],
                 "hex": packet["hex"],
                 "trits": packet["trits"],

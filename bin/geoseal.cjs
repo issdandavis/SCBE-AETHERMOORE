@@ -591,9 +591,20 @@ function commandRisk(commandText) {
   let decision = "allow";
   let safety = "safe";
 
+  const hostControlPatterns = [
+    /\bwsl(?:\.exe)?\b.*(?:\s|^)--shutdown\b/i,
+    /\b(?:shutdown|restart-computer|stop-computer|poweroff|reboot)\b/i,
+    /\bpowercfg\b.*\b(?:hibernate|standby|sleep|h(?:ibernate)?\s+(?:on|off)|-h\s+(?:on|off))\b/i,
+    /\b(?:bcdedit|diskpart|format|manage-bde|reagentc)\b/i,
+    /\b(?:disable-netadapter|restart-netadapter|enable-netadapter|netsh)\b/i,
+    /\bdocker\b\s+system\s+prune\b.*(?:\s-a\b|\s--all\b)/i,
+    /\btaskkill\b.*(?:\s\/f\b|\s\/t\b).*(?:\s\/im\s+\*|\s\/pid\s+0\b|python\.exe|node\.exe|code\.exe)/i,
+    /\bstop-process\b.*(?:-force|\s-id\s+0\b|-name\s+\*|python|node|code)/i,
+    /\b(?:stress|stress-ng|sysbench)\b|\bwhile\s+(?:true\b|\(\s*\$true\s*\))/i,
+  ];
   const destructivePatterns = [
     /\brm\s+(-[a-z]*r[a-z]*f|-rf|-fr)\b/i,
-    /\bremove-item\b.*\b-recurse\b/i,
+    /\bremove-item\b.*(?:\s|^)-recurse\b/i,
     /\bdel(?:ete)?\b.*\b\/s\b/i,
     /\bformat\b/i,
     /\bdrop\s+table\b/i,
@@ -617,9 +628,16 @@ function commandRisk(commandText) {
   if (!text) {
     return { decision: "block", safety: "missing", reasons: ["No command supplied."] };
   }
+  if (hostControlPatterns.some((pattern) => pattern.test(text))) {
+    decision = "block";
+    safety = "refused";
+    reasons.push("Command controls host power, boot, disk, network, VM, process, or stress state.");
+  }
   if (destructivePatterns.some((pattern) => pattern.test(text))) {
-    decision = "confirm";
-    safety = "destructive";
+    if (decision !== "block") {
+      decision = "confirm";
+      safety = "destructive";
+    }
     reasons.push("Command matches a destructive operation pattern.");
   }
   if (protectedScopes.some((pattern) => pattern.test(text))) {
