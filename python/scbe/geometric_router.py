@@ -73,15 +73,24 @@ def tongue_weights(agent) -> np.ndarray:
     return w / s if s > _EPS else np.full(6, 1.0 / 6.0)
 
 
+def agent_scale(agent) -> np.ndarray:
+    """The per-axis Finsler scaling sqrt(phi^k * w_k) for an agent identity.
+    Constant for a given agent — cache it and reuse via finsler_scaled()."""
+    return np.sqrt(PHI_W * tongue_weights(agent) + _EPS)
+
+
+def finsler_scaled(scale: np.ndarray, p, q) -> float:
+    """Finsler distance with a precomputed agent scale (hot path — no re-weighting)."""
+    return poincare_distance(to_ball(scale * to_vec(p)), to_ball(scale * to_vec(q)))
+
+
 def finsler_distance(p, q, agent) -> float:
     """Tongue-weighted (Finsler) hyperbolic distance: WHERE x WHO.
 
     Each axis k is scaled by sqrt(phi^k * w_k) before embedding, so the agent's
     identity bends the metric — its strong tongues shrink distance along their axes.
     """
-    w = tongue_weights(agent)
-    scale = np.sqrt(PHI_W * w + _EPS)
-    return poincare_distance(to_ball(scale * to_vec(p)), to_ball(scale * to_vec(q)))
+    return finsler_scaled(agent_scale(agent), p, q)
 
 
 # --- geodesics: ray-trace the actual path through the lattice ----------------

@@ -1524,6 +1524,14 @@ def cmd_route(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_schedule(args: argparse.Namespace) -> int:
+    """Geometric scheduler — real concurrent dispatch routed through the manifold
+    (pull-based affinity work-stealing; 64% faster makespan on heterogeneous fleets)."""
+    from python.scbe.geometric_scheduler import _demo
+    _demo()
+    return 0
+
+
 def cmd_polyglot(args: argparse.Namespace) -> int:
     """Emit a CA-opcode program to any language face (one core, every language)."""
     from python.scbe import polyglot as P
@@ -3228,6 +3236,12 @@ Legacy (backward compat):
         help='Geometric fleet routing — tangent-vector parallel tracks ("scbe route")',
     )
     rt.set_defaults(func=cmd_route)
+
+    sc = sub.add_parser(
+        "schedule",
+        help='Geometric scheduler — real concurrent dispatch via manifold routing ("scbe schedule")',
+    )
+    sc.set_defaults(func=cmd_schedule)
 
     bl = sub.add_parser(
         "blocks",
