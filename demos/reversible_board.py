@@ -104,27 +104,36 @@ def main():
         ok += int(g == g0)
     print(f"1. BIJECTIVE: {ok}/2000 random programs ran forward+backward to the EXACT input")
 
-    g = rand_grid(); g0 = dict(g)
+    g = rand_grid()
+    g0 = dict(g)
     apply_op(g, ("cswap", (0, 0), (1, 1), (2, 2)))
     apply_op(g, ("cswap", (0, 0), (1, 1), (2, 2)))
     print(f"2. FREDKIN (cswap) self-inverse: {g == g0}  (universal reversible logic)")
 
-    g = rand_grid(); g0 = dict(g)
-    run(g, mirror_row(2)); run(g, mirror_row(2))
+    g = rand_grid()
+    g0 = dict(g)
+    run(g, mirror_row(2))
+    run(g, mirror_row(2))
     print(f"3. MIRROR row reflect self-inverse: {g == g0}")
 
     left = [(r, c) for r in range(N) for c in range(0, N // 2)]
     right = [(r, c) for r in range(N) for c in range(N // 2, N)]
     a, b = rand_prog(left, 30), rand_prog(right, 30)
-    gAB = rand_grid(); gBA = dict(gAB)
-    run(gAB, a); run(gAB, b)
-    run(gBA, b); run(gBA, a)
+    gAB = rand_grid()
+    gBA = dict(gAB)
+    run(gAB, a)
+    run(gAB, b)
+    run(gBA, b)
+    run(gBA, a)
     print(f"4. PARALLEL: orthogonal squads commute (A;B == B;A): {gAB == gBA}")
 
     pA, pB = rand_prog(cells, 20), rand_prog(cells, 20)
-    g1 = rand_grid(); g2 = dict(g1)
-    run(g1, pA); run(g1, pB)
-    run(g2, pB); run(g2, pA)
+    g1 = rand_grid()
+    g2 = dict(g1)
+    run(g1, pA)
+    run(g1, pB)
+    run(g2, pB)
+    run(g2, pA)
     print(f"5. HONEST: overlapping squads do NOT commute: {g1 != g2}  (only disjoint lanes parallelize)")
 
 
