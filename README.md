@@ -255,6 +255,8 @@ SCBE-AETHERMOORE has a government contracting surface.
 - **Relevant federal opportunity**: DARPA MATHBAC — active opportunity DARPA-PA-26-05 (published 2026-04-07, proposal deadline 2026-06-16); Proposers Day reference DARPA-SN-26-59
 - **Capability docs**: [M5 Mesh Product & Service Blueprint](docs/M5_MESH_PRODUCT_SERVICE_BLUEPRINT.md)
 
+Custom AI work is available for clients that need procurement-ready, clearance-sensitive, or regulated workflow support: private AI governance overlays, air-gapped/offline deployments, redacted-data evaluation harnesses, audit receipts, and client-specific agent controls. CAGE/SAM registration supports vendor and subcontract routing; any classified, export-controlled, or otherwise restricted data must stay inside the client's approved environment under the client's security process.
+
 For government contracting inquiries: issdandavis7795@gmail.com
 
 ---
