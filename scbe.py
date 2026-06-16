@@ -1944,20 +1944,141 @@ def cmd_encode(args: argparse.Namespace) -> int:
     return 0
 
 
+def _load_json_spec(path: Optional[str]) -> Optional[Any]:
+    """Load a JSON spec file for the route/schedule commands, or None if no path."""
+    if not path:
+        return None
+    with open(path, "r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
 def cmd_route(args: argparse.Namespace) -> int:
-    """Geometric fleet router — parallelism as tangent-vector tracks through the
-    tongue-weighted hyperbolic manifold (fluid-balanced geodesic routing)."""
-    from python.scbe.geometric_router import _demo
-    _demo()
+    """Geometric fleet router — assigns tasks to agents by tongue-weighted Finsler
+    distance with fluid back-pressure, then compares cost to a round-robin baseline.
+    Pass --fleet and --tasks JSON files to route a real workload."""
+    from python.scbe.geometric_router import Agent, Task, _demo, round_robin, route_fleet
+
+    as_json = getattr(args, "json_output", False)
+    try:
+        fleet_spec = _load_json_spec(getattr(args, "fleet", None))
+        tasks_spec = _load_json_spec(getattr(args, "tasks", None))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"route: {exc}", file=sys.stderr)
+        return 2
+
+    if not fleet_spec or not tasks_spec:
+        if as_json:
+            print(json.dumps({"ok": False, "command": "route", "error": {
+                "code": "no_input",
+                "message": "provide --fleet and --tasks JSON files to route a real workload",
+            }}, separators=(",", ":")))
+            return 2
+        print("(demo workload — pass --fleet and --tasks JSON files to route real work)\n")
+        _demo()
+        return 0
+
+    try:
+        fleet = [Agent(a["name"], a.get("tongue") or a.get("weights")) for a in fleet_spec]
+        tasks = [Task(t["name"], t.get("profile") or t.get("weights")) for t in tasks_spec]
+    except (KeyError, TypeError) as exc:
+        print(
+            f"route: bad fleet/tasks spec ({exc}); "
+            "need [{name, tongue|weights}] and [{name, profile|weights}]",
+            file=sys.stderr,
+        )
+        return 2
+
+    pressure = getattr(args, "pressure", 0.6)
+    routes = route_fleet(fleet, tasks, pressure=pressure)
+    geo_cost = sum(r.total_cost for r in routes)
+    rr_cost = round_robin(fleet, tasks)
+    savings = (1 - geo_cost / rr_cost) if rr_cost else 0.0
+
+    if as_json:
+        print(json.dumps({
+            "ok": True, "command": "route", "schema": "scbe_route_v1",
+            "data": {
+                "agents": len(fleet), "tasks": len(tasks), "pressure": pressure,
+                "geometric_cost": round(geo_cost, 4),
+                "round_robin_cost": round(rr_cost, 4),
+                "savings_fraction": round(savings, 4),
+                "routes": [
+                    {"agent": r.agent, "tasks": r.tasks, "total_cost": round(r.total_cost, 4)}
+                    for r in routes
+                ],
+            },
+        }, separators=(",", ":")))
+        return 0
+
+    print(f"Geometric fleet router — {len(fleet)} agents, {len(tasks)} tasks (pressure {pressure})\n")
+    for r in routes:
+        head = ", ".join(r.tasks[:5]) + (" …" if len(r.tasks) > 5 else "")
+        print(f"  {r.agent:<14} {len(r.tasks):>3} tasks  cost {r.total_cost:7.2f}   {head}")
+    print(f"\n  geometric: {geo_cost:7.2f}   round-robin: {rr_cost:7.2f}   -> {100 * savings:.0f}% cheaper")
     return 0
 
 
 def cmd_schedule(args: argparse.Namespace) -> int:
-    """Geometric scheduler — real concurrent dispatch routed through the manifold
-    (pull-based affinity work-stealing; 64% faster makespan on heterogeneous fleets)."""
-    from python.scbe.geometric_scheduler import _demo
-    _demo()
-    return 0
+    """Geometric scheduler — concurrent dispatch on a real thread pool, routing jobs
+    to workers by tongue-weighted affinity (geometric) or flat (round_robin).
+    Pass --fleet and --jobs JSON files to schedule a real workload."""
+    from python.scbe.geometric_scheduler import GeometricScheduler, Job, Worker, _demo
+
+    as_json = getattr(args, "json_output", False)
+    try:
+        fleet_spec = _load_json_spec(getattr(args, "fleet", None))
+        jobs_spec = _load_json_spec(getattr(args, "jobs", None))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"schedule: {exc}", file=sys.stderr)
+        return 2
+
+    if not fleet_spec or not jobs_spec:
+        if as_json:
+            print(json.dumps({"ok": False, "command": "schedule", "error": {
+                "code": "no_input",
+                "message": "provide --fleet and --jobs JSON files to schedule a real workload",
+            }}, separators=(",", ":")))
+            return 2
+        print("(demo workload — pass --fleet and --jobs JSON files to schedule real work)\n")
+        _demo()
+        return 0
+
+    try:
+        fleet = [Worker(name=w["name"], tongue=w.get("tongue") or w.get("weights")) for w in fleet_spec]
+        jobs = [
+            Job(name=j["name"], profile=j.get("profile") or j.get("weights"), base=float(j.get("base", 0.01)))
+            for j in jobs_spec
+        ]
+    except (KeyError, TypeError, ValueError) as exc:
+        print(
+            f"schedule: bad fleet/jobs spec ({exc}); "
+            "need [{name, tongue|weights}] and [{name, profile|weights, base}]",
+            file=sys.stderr,
+        )
+        return 2
+
+    mode = getattr(args, "mode", "geometric")
+    sched = GeometricScheduler(fleet, max_retries=getattr(args, "max_retries", 2))
+    report = sched.run(jobs, mode=mode)
+
+    if as_json:
+        print(json.dumps({
+            "ok": report.failed == 0, "command": "schedule", "schema": "scbe_schedule_v1",
+            "data": {
+                "mode": report.mode, "wall": round(report.wall, 4), "makespan": round(report.makespan, 4),
+                "done": report.done, "failed": report.failed,
+                "assignments": report.assignments,
+                "busy": {k: round(v, 4) for k, v in report.busy.items()},
+                "errors": report.errors,
+            },
+        }, separators=(",", ":")))
+        return 0 if report.failed == 0 else 1
+
+    print(f"Geometric scheduler — mode {report.mode}, {len(fleet)} workers, {len(jobs)} jobs\n")
+    for worker_name, names in report.assignments.items():
+        print(f"  {worker_name:<14} {len(names):>3} jobs  busy {report.busy.get(worker_name, 0.0):6.3f}s")
+    print(f"\n  wall {report.wall:.3f}s  makespan {report.makespan:.3f}s  done {report.done}  failed {report.failed}")
+    return 0 if report.failed == 0 else 1
 
 
 def cmd_polyglot(args: argparse.Namespace) -> int:
@@ -4050,14 +4171,23 @@ Legacy (backward compat):
     rt = sub.add_parser(
         "route",
         aliases=["fleet"],
-        help='Geometric fleet routing — tangent-vector parallel tracks ("scbe route")',
+        help='Geometric fleet routing — assign tasks to agents by tongue affinity ("scbe route --fleet f.json --tasks t.json")',
     )
+    rt.add_argument("--fleet", help="JSON file: [{name, tongue|weights}] agents")
+    rt.add_argument("--tasks", help="JSON file: [{name, profile|weights}] tasks")
+    rt.add_argument("--pressure", type=float, default=0.6, help="fluid back-pressure (default 0.6)")
+    rt.add_argument("--json", dest="json_output", action="store_true", help="machine-readable output")
     rt.set_defaults(func=cmd_route)
 
     sc = sub.add_parser(
         "schedule",
-        help='Geometric scheduler — real concurrent dispatch via manifold routing ("scbe schedule")',
+        help='Geometric scheduler — concurrent dispatch on a real thread pool ("scbe schedule --fleet f.json --jobs j.json")',
     )
+    sc.add_argument("--fleet", help="JSON file: [{name, tongue|weights}] workers")
+    sc.add_argument("--jobs", help="JSON file: [{name, profile|weights, base}] jobs")
+    sc.add_argument("--mode", choices=["geometric", "round_robin"], default="geometric", help="routing mode")
+    sc.add_argument("--max-retries", dest="max_retries", type=int, default=2, help="per-job retries (default 2)")
+    sc.add_argument("--json", dest="json_output", action="store_true", help="machine-readable output")
     sc.set_defaults(func=cmd_schedule)
 
     bl = sub.add_parser(
