@@ -30,6 +30,7 @@ Legacy commands (backward compat):
 from __future__ import annotations
 
 import argparse
+import base64
 import ctypes
 import difflib
 import hashlib
@@ -43,6 +44,7 @@ import signal
 import subprocess
 import sys
 import time
+import unicodedata
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -421,16 +423,59 @@ _INJECTION_FAMILIES: Dict[str, "re.Pattern[str]"] = {
 _INTENT_PENALTY = 2.5
 
 
+# Common look-alike characters attackers use to dodge keyword filters
+# (Cyrillic / Greek confusables -> ASCII). Digits/leetspeak are deliberately NOT
+# folded here — that would false-positive on ordinary numbers.
+_HOMOGLYPHS = str.maketrans({
+    "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "у": "y", "х": "x",
+    "і": "i", "ј": "j", "ѕ": "s", "ԁ": "d", "ո": "n", "ⅼ": "l", "ν": "v",
+    "α": "a", "ο": "o", "ρ": "p", "ѵ": "v", "ԛ": "q", "г": "r", "к": "k",
+})
+
+
+def _normalize_for_intent(s: str) -> str:
+    """NFKC-fold, map confusable homoglyphs to ASCII, and drop zero-width /
+    formatting chars — so "іgnore" (Cyrillic) and zero-width-split text match."""
+    s = unicodedata.normalize("NFKC", s).translate(_HOMOGLYPHS)
+    return "".join(ch for ch in s if unicodedata.category(ch) != "Cf")
+
+
+def _intent_variants(text: str) -> List[str]:
+    """The text plus de-obfuscated views of it to scan: a homoglyph/zero-width
+    normalized copy, and any base64 blob decoded back to text (a common wrapper
+    for an injection payload)."""
+    variants = [text, _normalize_for_intent(text)]
+    for blob in re.findall(r"[A-Za-z0-9+/]{16,}={0,2}", text)[:5]:
+        try:
+            decoded = base64.b64decode(blob, validate=True).decode("utf-8", "ignore")
+        except Exception:
+            continue
+        if decoded.strip():
+            variants.append(decoded)
+    return variants
+
+
 def _adversarial_intent(text: str) -> Tuple[float, List[str]]:
     """Return (risk, labels) for known attack families present in `text`.
 
     risk is the count of distinct families matched; each adds `_INTENT_PENALTY`
     to d* without the natural-language discount, so a fluent injection cannot be
     rescued by reading as ordinary prose. Pattern-based and intentionally
-    transparent — the labels are surfaced in the score for auditability.
+    transparent — the labels are surfaced in the score for auditability. Cheap
+    obfuscations (homoglyphs, zero-width chars, base64 wrapping, letter-spacing)
+    are de-obfuscated first; semantic PARAPHRASE still evades — that needs the
+    unproven phase-2 geometry, not a bigger pattern list.
     """
-    labels = [name for name, rx in _INJECTION_FAMILIES.items() if rx.search(text)]
-    return float(len(labels)), labels
+    variants = _intent_variants(text)
+    labels = {name for name, rx in _INJECTION_FAMILIES.items() if any(rx.search(v) for v in variants)}
+    # Spacing evasion: text spread into single characters ("i g n o r e a l l …")
+    # to break keyword matching — structurally abnormal regardless of content.
+    toks = text.split()
+    if len(toks) >= 10:
+        singles = sum(1 for t in toks if len(t.strip(_PUNCT_STRIP)) == 1)
+        if singles / len(toks) >= 0.6:
+            labels.add("obfuscation-spacing")
+    return float(len(labels)), sorted(labels)
 
 
 def pipeline_quick_score(text: str) -> Dict[str, Any]:
