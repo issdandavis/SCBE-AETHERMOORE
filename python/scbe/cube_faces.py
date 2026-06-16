@@ -23,6 +23,7 @@ try:
     from python.scbe.cube_token import CubeToken
     from python.scbe.wolfram_face import token_rule as _wolfram_rule
     from python.scbe.tongue_roles import TONGUE_ROLE
+    from python.scbe.atomic_tokenization import chemical_element, parse_formula
 except ModuleNotFoundError:  # pragma: no cover - direct execution
     import sys
     from pathlib import Path
@@ -30,6 +31,7 @@ except ModuleNotFoundError:  # pragma: no cover - direct execution
     from python.scbe.cube_token import CubeToken
     from python.scbe.wolfram_face import token_rule as _wolfram_rule
     from python.scbe.tongue_roles import TONGUE_ROLE
+    from python.scbe.atomic_tokenization import chemical_element, parse_formula
 
 
 def _raw_bytes(cube: CubeToken) -> bytes:
@@ -59,7 +61,17 @@ def all_faces(token: str) -> Dict[str, Any]:
     """One core token, decoded through every face of the cube (bijective)."""
     cube = CubeToken(token)
     raw = _raw_bytes(cube)
-    chem = cube.chem_face()
+    chem = dict(cube.chem_face())
+    real = chemical_element(token)
+    if real is not None:
+        chem["real_element"] = {
+            "symbol": real.symbol, "Z": real.Z, "group": real.group,
+            "period": real.period, "valence": real.valence,
+            "electronegativity": real.electronegativity,
+        }
+    composition = parse_formula(token)
+    if composition and len(composition) > 1:
+        chem["composition"] = composition
     return {
         "token": token,
         "core": {"hex": raw.hex(), "bytes": list(raw), "byte_count": len(raw)},

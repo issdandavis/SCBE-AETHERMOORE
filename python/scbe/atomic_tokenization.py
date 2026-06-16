@@ -19,6 +19,7 @@ trit vector aligned to KO, AV, RU, CA, UM, and DR.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from hashlib import sha256
 from typing import Dict, Literal, Optional, Sequence, Tuple
@@ -133,7 +134,6 @@ TOKEN_CLASS_OVERRIDES: Dict[str, SemanticClass] = {
     "because": "RELATION",
     "therefore": "RELATION",
     "if": "RELATION",
-    "then": "RELATION",
     "else": "RELATION",
     "but": "RELATION",
     "while": "RELATION",
@@ -280,6 +280,83 @@ def map_token_to_element(
     element_table = element_table or DEFAULT_ELEMENTS
     semantic_class = classify_token_semantic(token, language=language, context_class=context_class)
     return element_table[semantic_class]
+
+
+# ── real chemistry recognition ────────────────────────────────────────────────
+# Additive: this gives the chemistry SURFACES (AI Chemistry Set, the cube's
+# chemistry face) real periodic-table awareness. It does NOT touch the linguistic
+# classifier or map_token_to_element, so the AST-encoder trit face — and its
+# Rust/Python parity — are unchanged.
+PERIODIC_TABLE: Dict[str, Element] = {
+    "H": Element("H", 1, 1, 1, 1, 2.20),
+    "He": Element("He", 2, 18, 1, 0, 0.0, witness_stable=True),
+    "Li": Element("Li", 3, 1, 2, 1, 0.98),
+    "Be": Element("Be", 4, 2, 2, 2, 1.57),
+    "B": Element("B", 5, 13, 2, 3, 2.04),
+    "C": Element("C", 6, 14, 2, 4, 2.55),
+    "N": Element("N", 7, 15, 2, 3, 3.04),
+    "O": Element("O", 8, 16, 2, 2, 3.44),
+    "F": Element("F", 9, 17, 2, 1, 3.98),
+    "Ne": Element("Ne", 10, 18, 2, 0, 0.0, witness_stable=True),
+    "Na": Element("Na", 11, 1, 3, 1, 0.93),
+    "Mg": Element("Mg", 12, 2, 3, 2, 1.31),
+    "Al": Element("Al", 13, 13, 3, 3, 1.61),
+    "Si": Element("Si", 14, 14, 3, 4, 1.90),
+    "P": Element("P", 15, 15, 3, 3, 2.19),
+    "S": Element("S", 16, 16, 3, 2, 2.58),
+    "Cl": Element("Cl", 17, 17, 3, 1, 3.16),
+    "Ar": Element("Ar", 18, 18, 3, 0, 0.0, witness_stable=True),
+    "K": Element("K", 19, 1, 4, 1, 0.82),
+    "Ca": Element("Ca", 20, 2, 4, 2, 1.00),
+    "Fe": Element("Fe", 26, 8, 4, 2, 1.83),
+    "Cu": Element("Cu", 29, 11, 4, 2, 1.90),
+    "Zn": Element("Zn", 30, 12, 4, 2, 1.65),
+    "Br": Element("Br", 35, 17, 4, 1, 2.96),
+    "Ag": Element("Ag", 47, 11, 5, 1, 1.93),
+    "I": Element("I", 53, 17, 5, 1, 2.66),
+    "Au": Element("Au", 79, 11, 6, 3, 2.54),
+    "Pb": Element("Pb", 82, 14, 6, 2, 2.33),
+}
+
+_SYMBOL_BY_LOWER: Dict[str, str] = {s.lower(): s for s in PERIODIC_TABLE}
+_FORMULA_TOKEN = re.compile(r"^([A-Z][a-z]?\d*)+$")
+_FORMULA_PART = re.compile(r"([A-Z][a-z]?)(\d*)")
+
+
+def chemical_element(token: str) -> Optional[Element]:
+    """The real periodic-table Element if the token is an element symbol, else None.
+
+    Case-insensitive (h/H -> Hydrogen). Opt-in for chemistry surfaces; does not
+    change classify_token_semantic or the encoder trit face.
+    """
+    if not token:
+        return None
+    canon = _SYMBOL_BY_LOWER.get(token.strip().lower())
+    return PERIODIC_TABLE[canon] if canon else None
+
+
+def parse_formula(token: str) -> Optional[Dict[str, int]]:
+    """Parse a chemical formula (H2O, CO2, C3H8, NaCl) into {symbol: count}.
+
+    Returns None unless the token is a well-formed formula over KNOWN elements,
+    so plain words ('loop') and unknown symbols return None rather than a false
+    compound. Requires canonical capitalization (H2O, not h2o).
+    """
+    if not token:
+        return None
+    raw = token.strip()
+    if not _FORMULA_TOKEN.match(raw):
+        return None
+    composition: Dict[str, int] = {}
+    consumed = 0
+    for sym, count in _FORMULA_PART.findall(raw):
+        if sym not in PERIODIC_TABLE:
+            return None
+        composition[sym] = composition.get(sym, 0) + (int(count) if count else 1)
+        consumed += len(sym) + len(count)
+    if consumed != len(raw) or not composition:
+        return None
+    return composition
 
 
 def _project_element_to_channels(element: Element) -> Tuple[float, float, float, float, float, float]:
