@@ -1001,6 +1001,22 @@ def cmd_ai_check(args: argparse.Namespace) -> int:
 DECISION_GLYPH = {"ALLOW": "✓", "QUARANTINE": "~", "ESCALATE": "!", "DENY": "✗"}
 
 
+def _interactive() -> bool:
+    """True only when a human is plausibly driving the CLI.
+
+    Requires BOTH stdin and stdout to be real TTYs, and honors explicit overrides.
+    A single-stream isatty() check is unreliable: on Windows, redirecting from NUL /
+    `/dev/null` makes stdin.isatty() falsely report True. Requiring both streams (plus
+    SCBE_NONINTERACTIVE / CI opt-outs) keeps agents, pipes, and CI on the safe path.
+    """
+    if os.environ.get("SCBE_NONINTERACTIVE") or os.environ.get("CI"):
+        return False
+    try:
+        return sys.stdin.isatty() and sys.stdout.isatty()
+    except Exception:
+        return False
+
+
 def _arg_or_stdin(value: Optional[str]) -> Optional[str]:
     """Return the positional value, or read piped stdin, or None."""
     if value:
@@ -2980,7 +2996,7 @@ def cmd_do(args: argparse.Namespace) -> int:
 
 
 def cmd_chat(args: argparse.Namespace) -> int:
-    if not sys.stdin.isatty():
+    if not _interactive():
         print('scbe chat is interactive-only; use `scbe ask "..."` for one-shot Q&A.', file=sys.stderr)
         return 2
     available = _detect_backends()
@@ -3038,7 +3054,7 @@ def _dir_size(p: Path) -> int:
 
 
 def _confirm(prompt: str) -> bool:
-    if not sys.stdin.isatty():
+    if not _interactive():
         return False  # non-interactive: refuse the mutation unless --yes/--force was passed
     try:
         return input(prompt).strip().lower() in {"y", "yes"}
@@ -3539,11 +3555,32 @@ def _dispatch_scbe_args(args: List[str]) -> int:
         return _run_system_cli([*forwarded, *args[1:]])
 
     cli = build_cli()
-    parsed = cli.parse_args(args)
+    wants_json = "--json" in args
+    try:
+        parsed = cli.parse_args(args)
+    except SystemExit as exc:
+        # argparse already printed usage / -h; propagate its code (2 = usage error, 0 = help).
+        return exc.code if isinstance(exc.code, int) else 2
     if not hasattr(parsed, "func"):
-        cli.print_help()
-        return 0
-    return parsed.func(parsed)
+        # Group command with no subcommand (e.g. `scbe pipeline`): a usage error, not silent success.
+        print(f"scbe: '{args[0]}' needs a subcommand — run 'scbe {args[0]} -h' to see them.", file=sys.stderr)
+        return 2
+    try:
+        return parsed.func(parsed)
+    except KeyboardInterrupt:
+        return 130
+    except Exception as exc:  # top-level safety net: agents get a clean signal, never a raw traceback
+        if os.environ.get("SCBE_DEBUG"):
+            raise
+        if wants_json or getattr(parsed, "json_output", False):
+            print(json.dumps(
+                {"ok": False, "command": getattr(parsed, "command", args[0]),
+                 "error": {"code": "internal", "message": str(exc)}},
+                separators=(",", ":"),
+            ))
+        else:
+            print(f"scbe: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return 1
 
 
 def _handle_cli_command(argv: List[str]) -> int:
@@ -4265,7 +4302,7 @@ MENU = """\
 
 def _menu_prompt(label: str) -> Optional[str]:
     """Read a line; return None on Ctrl+C / EOF so the menu can exit cleanly."""
-    if not sys.stdin.isatty():
+    if not _interactive():
         return None  # non-interactive (agent / pipe / CI): never block on input()
     try:
         # Strip a leading UTF-8 BOM that Windows pipes prepend to stdin.
@@ -4487,14 +4524,14 @@ def main() -> int:
     _enable_utf8_console()
 
     if len(sys.argv) == 1:
-        if sys.stdin.isatty() and sys.stdout.isatty():
+        if _interactive():
             return interactive_menu()
         # Non-interactive (agent / pipe / CI): never launch the blocking TUI — show help.
         build_cli().print_help()
         return 0
 
     if sys.argv[1] in ("menu", "app", "home"):
-        if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        if not _interactive():
             print("scbe: the interactive menu needs a terminal; run a subcommand (see 'scbe --help').", file=sys.stderr)
             return 2
         return interactive_menu()
@@ -4508,16 +4545,27 @@ def main() -> int:
         compiled = _natural_command_args(prompt)
         if compiled:
             return _dispatch_scbe_args(compiled)
-        # Typo guard: a single bare token that closely matches a real command is
-        # almost certainly a mistype, not natural language — suggest it (exit 2)
-        # instead of burning an AI call. Multi-word input stays natural language.
-        if len(sys.argv) == 2:
-            matches = difflib.get_close_matches(first, sorted(_known_commands(build_cli())), n=3, cutoff=0.72)
-            if matches:
-                hint = matches[0] if len(matches) == 1 else ", ".join(matches)
-                print(f"scbe: unknown command '{first}'. Did you mean: {hint}?", file=sys.stderr)
-                print("Run 'scbe --help' for all commands, or 'scbe ask \"...\"' to ask the AI.", file=sys.stderr)
-                return 2
+        matches = difflib.get_close_matches(first, sorted(_known_commands(build_cli())), n=3, cutoff=0.6)
+        # Route unknown input to the AI ONLY when a human is driving (a real TTY) or
+        # the caller explicitly opted in. An agent / pipe / CI run gets a deterministic
+        # unknown-command error (exit 2) and NEVER a surprise billable model call.
+        ai_fallback_ok = _interactive() or os.environ.get("SCBE_AI_FALLBACK") == "1"
+        if not ai_fallback_ok:
+            hint = (" Did you mean: " + ", ".join(matches) + "?") if matches else ""
+            print(f"scbe: unknown command '{first}'.{hint}", file=sys.stderr)
+            print(
+                "Run 'scbe --help' or 'scbe manifest' for commands; "
+                "set SCBE_AI_FALLBACK=1 to send unknown input to the AI.",
+                file=sys.stderr,
+            )
+            return 2
+        # Typo guard: a single bare token that closely matches a real command is almost
+        # certainly a mistype, not natural language — suggest it instead of an AI call.
+        if len(sys.argv) == 2 and matches:
+            hint = matches[0] if len(matches) == 1 else ", ".join(matches)
+            print(f"scbe: unknown command '{first}'. Did you mean: {hint}?", file=sys.stderr)
+            print("Run 'scbe --help' for all commands, or 'scbe ask \"...\"' to ask the AI.", file=sys.stderr)
+            return 2
         return cmd_ask(argparse.Namespace(prompt=prompt, backend=None, model=None, json_output=False))
 
     if sys.argv[1] == "cli":
