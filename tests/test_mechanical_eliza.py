@@ -1,4 +1,13 @@
-from python.scbe.mechanical_eliza import SCHEMA_VERSION, route_dialogue, route_support
+from python.scbe.mechanical_eliza import (
+    MODEL_BRIDGE_VERSION,
+    NAVIGATION_VERSION,
+    SCHEMA_VERSION,
+    build_choicescript_navigation,
+    build_free_llm_dispatch_request,
+    build_semantic_navigation,
+    route_dialogue,
+    route_support,
+)
 
 
 def test_routes_cli_request_to_command_switch():
@@ -66,3 +75,40 @@ def test_packet_is_json_ready():
     assert data["schema_version"] == SCHEMA_VERSION
     assert isinstance(data["layers"], list)
     assert data["route"]["command_switch"] == "offer"
+
+
+def test_builds_free_llm_dispatch_request_after_mechanical_route():
+    packet = route_support("true eliza should use a cheap local model route")
+    bridge = build_free_llm_dispatch_request(
+        packet, provider="offline", model="scbe-offline-control-plane"
+    )
+
+    assert bridge["bridge_version"] == MODEL_BRIDGE_VERSION
+    dispatch = bridge["dispatch"]
+    assert dispatch["provider"] == "offline"
+    assert dispatch["dry_run"] is True
+    assert dispatch["require_free"] is True
+    assert dispatch["metadata"]["source"] == "mechanical_eliza"
+    assert dispatch["metadata"]["command_switch"] == packet.route.command_switch
+    assert "Mechanical route:" in dispatch["prompt"]
+
+
+def test_builds_semantic_navigation_array():
+    packet = route_support("chatbot is looping and confused")
+    nav = build_semantic_navigation(packet)
+
+    assert nav["version"] == NAVIGATION_VERSION
+    assert nav["active_switch"] == "loop_break"
+    assert any(
+        node["id"] == "switch:loop_break" and node["active"] for node in nav["nodes"]
+    )
+    assert any(edge["from"] == "start" for edge in nav["edges"])
+
+
+def test_builds_choicescript_navigation_scene():
+    packet = route_support("customer asks what to buy")
+    scene = build_choicescript_navigation(packet)
+
+    assert "*title Mechanical ELIZA Support Switchboard" in scene
+    assert "#[ACTIVE] offer" in scene
+    assert "*comment route: commerce_support" in scene

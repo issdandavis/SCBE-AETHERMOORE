@@ -14,6 +14,8 @@ import re
 from typing import Iterable, Mapping, Sequence
 
 SCHEMA_VERSION = "scbe.mechanical_eliza.v1"
+MODEL_BRIDGE_VERSION = "scbe.mechanical_eliza.free_llm_bridge.v1"
+NAVIGATION_VERSION = "scbe.mechanical_eliza.semantic_navigation.v1"
 
 
 @dataclass(frozen=True)
@@ -563,3 +565,209 @@ def route_dialogue(turns: Sequence[str]) -> ElizaSupportPacket:
     if not turns:
         return route_support("")
     return route_support(turns[-1], history=turns[:-1])
+
+
+def build_free_llm_dispatch_request(
+    packet: ElizaSupportPacket,
+    *,
+    provider: str | None = "offline",
+    model: str | None = None,
+    dry_run: bool = True,
+    require_free: bool = True,
+) -> dict:
+    """Build a Free LLM router request after Mechanical ELIZA has chosen a route.
+
+    This keeps ELIZA as the first switch. The model is asked to support the
+    chosen route, not to decide the route from scratch.
+    """
+
+    system = (
+        "You are SCBE Mechanical ELIZA, a secondary support layer for chatbots. "
+        "Follow the route packet. Do not execute commands, request secrets, or "
+        "invent capabilities. Return one concise next action."
+    )
+    prompt = "\n".join(
+        [
+            f"User text: {packet.user_text}",
+            f"Mechanical route: {packet.route.route}",
+            f"Command switch: {packet.route.command_switch}",
+            f"Allowed: {packet.route.allowed}",
+            f"Requires human: {packet.route.needs_human}",
+            f"Reason: {packet.route.reason}",
+            f"Mechanical response: {packet.response}",
+            "Next questions:",
+            *[f"- {question}" for question in packet.next_questions],
+            "Command hints:",
+            *[f"- {hint}" for hint in packet.command_hints],
+        ]
+    )
+    return {
+        "bridge_version": MODEL_BRIDGE_VERSION,
+        "dispatch": {
+            "prompt": prompt,
+            "provider": provider,
+            "model": model,
+            "system": system,
+            "temperature": 0.2,
+            "max_tokens": 512,
+            "require_free": require_free,
+            "dry_run": dry_run,
+            "metadata": {
+                "source": "mechanical_eliza",
+                "request_id": packet.request_id,
+                "route": packet.route.route,
+                "command_switch": packet.route.command_switch,
+                "allowed": packet.route.allowed,
+                "needs_human": packet.route.needs_human,
+            },
+        },
+    }
+
+
+def build_semantic_navigation(packet: ElizaSupportPacket) -> dict:
+    """Render the ELIZA switchboard as a semantic navigation array."""
+
+    nodes = [
+        {
+            "id": "start",
+            "kind": "scene",
+            "label": "ELIZA intake",
+            "text": packet.response,
+            "active": True,
+        }
+    ]
+    edges = []
+    for switch in packet.switchboard:
+        switch_id = f"switch:{switch['switch']}"
+        nodes.append(
+            {
+                "id": switch_id,
+                "kind": "switch",
+                "label": switch["switch"],
+                "text": switch["use_when"],
+                "output": switch["output"],
+                "active": bool(switch["enabled"]),
+            }
+        )
+        edges.append(
+            {
+                "from": "start",
+                "to": switch_id,
+                "condition": "enabled" if switch["enabled"] else "available",
+                "weight": 1.0 if switch["enabled"] else 0.25,
+            }
+        )
+
+    for idx, question in enumerate(packet.next_questions, start=1):
+        node_id = f"question:{idx}"
+        nodes.append(
+            {
+                "id": node_id,
+                "kind": "question",
+                "label": f"Question {idx}",
+                "text": question,
+                "active": True,
+            }
+        )
+        edges.append(
+            {
+                "from": f"switch:{packet.route.command_switch}",
+                "to": node_id,
+                "condition": "ask_next",
+                "weight": 0.8,
+            }
+        )
+
+    for idx, hint in enumerate(packet.command_hints, start=1):
+        node_id = f"hint:{idx}"
+        nodes.append(
+            {
+                "id": node_id,
+                "kind": "command_hint",
+                "label": f"Hint {idx}",
+                "text": hint,
+                "active": packet.route.allowed,
+            }
+        )
+        edges.append(
+            {
+                "from": f"switch:{packet.route.command_switch}",
+                "to": node_id,
+                "condition": "allowed_hint" if packet.route.allowed else "blocked_hint",
+                "weight": 0.7,
+            }
+        )
+
+    return {
+        "version": NAVIGATION_VERSION,
+        "request_id": packet.request_id,
+        "route": packet.route.route,
+        "active_switch": packet.route.command_switch,
+        "nodes": nodes,
+        "edges": edges,
+    }
+
+
+def build_choicescript_navigation(packet: ElizaSupportPacket) -> str:
+    """Export a ChoiceScript-flavored support map for RPG-style navigation."""
+
+    lines = [
+        "*title Mechanical ELIZA Support Switchboard",
+        "*scene_list",
+        "  start",
+        "  route",
+        "  questions",
+        "  hints",
+        "  finish",
+        "",
+        "*label start",
+        packet.response,
+        "",
+        "*choice",
+    ]
+    for switch in packet.switchboard:
+        prefix = "[ACTIVE] " if switch["enabled"] else ""
+        lines.extend(
+            [
+                f"  #{prefix}{switch['switch']} - {switch['output']}",
+                "    *goto route",
+            ]
+        )
+
+    lines.extend(
+        [
+            "",
+            "*label route",
+            f"*comment route: {packet.route.route}",
+            f"*comment action: {packet.route.action}",
+            f"*comment allowed: {str(packet.route.allowed).lower()}",
+            f"*comment reason: {packet.route.reason}",
+            "",
+            "*choice",
+            "  #Ask the next support question",
+            "    *goto questions",
+            "  #Inspect command hints",
+            "    *goto hints",
+            "  #End with the mechanical route receipt",
+            "    *goto finish",
+            "",
+            "*label questions",
+        ]
+    )
+    for question in packet.next_questions:
+        lines.append(f"- {question}")
+    lines.extend(["", "*goto finish", "", "*label hints"])
+    for hint in packet.command_hints:
+        lines.append(f"- {hint}")
+    lines.extend(
+        [
+            "",
+            "*goto finish",
+            "",
+            "*label finish",
+            f"Mechanical ELIZA selected `${packet.route.command_switch}`.",
+            "*finish",
+            "",
+        ]
+    )
+    return "\n".join(lines)

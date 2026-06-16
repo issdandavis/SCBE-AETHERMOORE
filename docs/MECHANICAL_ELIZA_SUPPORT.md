@@ -29,6 +29,9 @@ The output is a `scbe.mechanical_eliza.v1` JSON packet with:
 - command hints;
 - a support contract;
 - the full switchboard state.
+- an optional Free LLM bridge request.
+- an optional semantic navigation array.
+- an optional ChoiceScript-style scene.
 
 ## Switches
 
@@ -57,6 +60,31 @@ Response-only mode:
 python scripts/system/mechanical_eliza_support.py --response-only "the assistant is confused and looping"
 ```
 
+Free LLM routing request without calling a model:
+
+```powershell
+python scripts/system/mechanical_eliza_support.py --pretty --free-llm-request "true eliza should use the free llm route"
+```
+
+Call the repo's Free LLM dispatcher through ELIZA. This defaults to dry-run unless
+`--live-model` is set:
+
+```powershell
+python scripts/system/mechanical_eliza_support.py --pretty --dispatch-free-llm --provider offline "true eliza should call the free llm route"
+```
+
+ChoiceScript-style navigation:
+
+```powershell
+python scripts/system/mechanical_eliza_support.py --choicescript "customer asks what to buy"
+```
+
+Semantic navigation array:
+
+```powershell
+python scripts/system/mechanical_eliza_support.py --semantic-map --pretty "chatbot is looping and confused"
+```
+
 Multi-turn loop detection:
 
 ```powershell
@@ -71,8 +99,9 @@ python scripts/system/mechanical_eliza_support.py --history-file .\history.txt -
 ## Product Boundary
 
 This is a deterministic support switchboard. It does not execute commands, call
-Stripe, read secrets, or browse the web. It is meant to sit in front of those
-systems and tell the calling AI which route is allowed next.
+Stripe, read secrets, or browse the web. When `--dispatch-free-llm` is used, it
+calls the existing free/open LLM router only after the mechanical route is
+chosen. Without `--live-model`, that dispatch is a dry-run route receipt.
 
 That makes it suitable for the $1 self-serve Workcell CLI path: buyers can use
 it as a simple mechanical support layer for their own chatbots before they need
