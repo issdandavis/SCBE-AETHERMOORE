@@ -15,7 +15,6 @@ import subprocess
 from pathlib import Path
 from typing import Any, Sequence
 
-
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_EXE = ROOT / "rust" / "ast_cube" / "target" / "release" / "ast_cube.exe"
 

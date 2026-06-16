@@ -13,7 +13,6 @@ from . import bicameral as B
 from . import frontdoor as F
 from . import polyglot as P
 
-
 SCHEMA = "scbe_cognition_syscall_v1"
 RELATION_TO_DECISION = {
     "exact match": "ALLOW",
@@ -124,4 +123,3 @@ def render_archive_governance(payload: Dict[str, object]) -> str:
         "  ALLOW %(ALLOW)s | QUARANTINE %(QUARANTINE)s | ESCALATE %(ESCALATE)s | DENY %(DENY)s"
         % {"niches": payload["niches"], **counts}
     )
-

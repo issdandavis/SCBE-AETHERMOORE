@@ -28,6 +28,7 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - direct execution
     import sys
     from pathlib import Path
+
     sys.path.append(str(Path(__file__).resolve().parents[2]))
     from python.scbe.cube_token import CubeToken
     from python.scbe.wolfram_face import token_rule as _wolfram_rule
@@ -36,7 +37,7 @@ except ModuleNotFoundError:  # pragma: no cover - direct execution
     from python.scbe.bit_spine import BitSpine
 
 
-_PHI = (1 + 5 ** 0.5) / 2
+_PHI = (1 + 5**0.5) / 2
 _NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 
@@ -49,18 +50,20 @@ def _bits_face(raw: bytes) -> Dict[str, Any]:
     """The center ball: byte-exact binary / hex / trit projections (bit_spine)."""
     spine = BitSpine(raw)
     trits = spine.trits()
-    return {"binary": spine.bits(), "hex": spine.hex(),
-            "trit_count": len(trits), "trits": trits[:24]}
+    return {"binary": spine.bits(), "hex": spine.hex(), "trit_count": len(trits), "trits": trits[:24]}
 
 
 def _audio_face(raw: bytes, trit: Dict[str, int]) -> Dict[str, Any]:
     """The hear sense: a phi-stepped frequency + musical note for the token."""
     bsum = sum(raw)
     freq = round(440.0 * (_PHI ** ((bsum % 12) / 12.0)), 2)
-    overtones = {t: round(440.0 * (_PHI ** (i / 6.0)), 1)
-                 for i, t in enumerate(TONGUE_ROLE) if trit.get(t, 0) > 0}
-    return {"phi_base_hz": 440.0, "phi_frequency_hz": freq,
-            "note": _NOTES[bsum % 12], "active_tongue_overtones": overtones}
+    overtones = {t: round(440.0 * (_PHI ** (i / 6.0)), 1) for i, t in enumerate(TONGUE_ROLE) if trit.get(t, 0) > 0}
+    return {
+        "phi_base_hz": 440.0,
+        "phi_frequency_hz": freq,
+        "note": _NOTES[bsum % 12],
+        "active_tongue_overtones": overtones,
+    }
 
 
 def _wolfram_face(raw: bytes) -> Dict[str, Any]:
@@ -68,10 +71,15 @@ def _wolfram_face(raw: bytes) -> Dict[str, Any]:
     rules = []
     for b in list(raw)[:8]:
         info = _wolfram_rule(b)
-        rules.append({
-            "byte": b, "rule": info["rule"], "class": info["class"],
-            "class_name": info["class_name"], "universal": info["universal"],
-        })
+        rules.append(
+            {
+                "byte": b,
+                "rule": info["rule"],
+                "class": info["class"],
+                "class_name": info["class_name"],
+                "universal": info["universal"],
+            }
+        )
     return {"per_byte_rules": rules, "any_universal": any(r["universal"] for r in rules)}
 
 
@@ -89,8 +97,11 @@ def all_faces(token: str) -> Dict[str, Any]:
     real = chemical_element(token)
     if real is not None:
         chem["real_element"] = {
-            "symbol": real.symbol, "Z": real.Z, "group": real.group,
-            "period": real.period, "valence": real.valence,
+            "symbol": real.symbol,
+            "Z": real.Z,
+            "group": real.group,
+            "period": real.period,
+            "valence": real.valence,
             "electronegativity": real.electronegativity,
         }
     composition = parse_formula(token)
@@ -114,6 +125,7 @@ def all_faces(token: str) -> Dict[str, Any]:
 
 def _demo() -> None:
     import sys
+
     try:
         sys.stdout.reconfigure(encoding="utf-8")
     except (AttributeError, ValueError):
@@ -122,13 +134,18 @@ def _demo() -> None:
         f = all_faces(tok)
         print(f"\n=== cube: '{tok}'  (core {f['core']['hex']}, bijective={f['bijective']}) ===")
         ch = f["faces"]["chemistry"]
-        print(f"  chemistry : {ch['semantic_class']} -> {ch['element']} "
-              f"(Z={ch['Z']}, val={ch['valence']})  trit={ch['trit_vector']}")
+        print(
+            f"  chemistry : {ch['semantic_class']} -> {ch['element']} "
+            f"(Z={ch['Z']}, val={ch['valence']})  trit={ch['trit_vector']}"
+        )
         print(f"  roles     : {', '.join(f['faces']['roles']) or '-'}")
         print(f"  governance: {f['faces']['governance']}")
         wf = f["faces"]["wolfram"]
-        print("  wolfram   : " + " ".join(f"{r['byte']}={r['class']}" for r in wf["per_byte_rules"])
-              + f"  (universal={wf['any_universal']})")
+        print(
+            "  wolfram   : "
+            + " ".join(f"{r['byte']}={r['class']}" for r in wf["per_byte_rules"])
+            + f"  (universal={wf['any_universal']})"
+        )
         print(f"  code (KO) : python -> {f['faces']['code']['KO']['tokens']}")
 
 

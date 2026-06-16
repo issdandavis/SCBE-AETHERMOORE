@@ -16,7 +16,6 @@ from typing import Dict, List, Sequence
 from . import bicameral as B
 from . import polyglot as P
 
-
 UNARY_OPS = tuple(sorted(n for n in P.SCALAR_OPS if B.EXACT[n][0] == 1))
 BINARY_OPS = tuple(sorted(n for n in P.SCALAR_OPS if B.EXACT[n][0] == 2))
 
@@ -74,11 +73,7 @@ def generate_program(rng: random.Random, *, min_len: int = 1, max_len: int = 10)
 
 
 def _finite_number(value: object, *, max_abs_result: float) -> bool:
-    return (
-        isinstance(value, (int, float))
-        and math.isfinite(float(value))
-        and abs(float(value)) <= max_abs_result
-    )
+    return isinstance(value, (int, float)) and math.isfinite(float(value)) and abs(float(value)) <= max_abs_result
 
 
 def score_program(names: Sequence[str], *, max_abs_result: float = 1_000_000.0) -> Dict[str, object] | None:
@@ -155,10 +150,7 @@ def run_loop(
         ),
         reverse=True,
     )
-    ranked = [
-        Candidate(rank=i + 1, **candidate).as_dict()
-        for i, candidate in enumerate(scored[:top])
-    ]
+    ranked = [Candidate(rank=i + 1, **candidate).as_dict() for i, candidate in enumerate(scored[:top])]
     return {
         "schema": "scbe_overcreation_v1",
         "seed": seed,
@@ -175,10 +167,7 @@ def run_loop(
 
 
 def render(payload: Dict[str, object]) -> str:
-    lines = [
-        "over-created %(generated)s programs; %(kept)s survived (%(unique_programs)s unique)"
-        % payload
-    ]
+    lines = ["over-created %(generated)s programs; %(kept)s survived (%(unique_programs)s unique)" % payload]
     top = payload.get("top", [])
     if not top:
         lines.append("  no bounded surprising candidates survived; raise --count or --max-abs-result")

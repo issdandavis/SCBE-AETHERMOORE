@@ -69,12 +69,7 @@ def rhombic_fusion(
     e12 = float(np.linalg.norm(uA - uV) ** 2)
 
     phase = float((-1.0 / params.phi) ** (k % 3))
-    R = (
-        params.alpha * (e01 + e02)
-        + params.beta * (e13 + e23)
-        + params.gamma * e12
-        + params.eta * phase * e12
-    )
+    R = params.alpha * (e01 + e02) + params.beta * (e13 + e23) + params.gamma * e12 + params.eta * phase * e12
 
     if params.clip_energy is not None:
         R = float(min(R, params.clip_energy))
@@ -85,4 +80,3 @@ def rhombic_fusion(
 def rhombic_score(R: float) -> float:
     """Convert scalar energy to [0,1]-like score."""
     return float(np.exp(-float(R)))
-

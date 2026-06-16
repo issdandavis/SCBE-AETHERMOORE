@@ -38,7 +38,7 @@ BYTE_TO_NAME: Dict[int, str] = {b: e.name for b, e in OP_TABLE.items()}
 # --- op categories (language-agnostic) -----------------------------------
 BINOPS = {"add": "+", "sub": "-", "mul": "*", "div": "/"}
 CMPS = {"eq": "==", "neq": "!=", "lt": "<", "lte": "<=", "gt": ">", "gte": ">="}
-FUNC2 = {"pow", "min", "max", "mod"}          # pop a,b -> dialect.func2[name]
+FUNC2 = {"pow", "min", "max", "mod"}  # pop a,b -> dialect.func2[name]
 FUNC1 = {"neg", "abs", "sqrt", "floor", "ceil", "round", "inc", "dec"}  # pop a
 
 SCALAR_OPS = set(BINOPS) | set(CMPS) | FUNC2 | FUNC1
@@ -55,23 +55,24 @@ def _sub(tmpl: str, **kw: object) -> str:
 @dataclass(frozen=True)
 class Dialect:
     """One language face — pure data, no per-opcode code."""
+
     name: str
     ext: str
-    comment: str                       # "#" | "//" | "--"
+    comment: str  # "#" | "//" | "--"
     indent: str
-    prelude: Tuple[str, ...]           # module-level imports / helpers
-    fn_open: str                       # "{fn}({params})" frame, e.g. "def {fn}({params}):"
-    stack_init: str                    # "{init}" -> declare stack seeded with args
-    pop2: str                          # statement binding a, b off the stack
-    pop1: str                          # statement binding a off the stack
-    push: str                          # "{expr}" -> push expr onto the stack
-    ret: str                           # return top of stack
-    fn_close: Tuple[str, ...]          # closing lines (braces etc.)
-    func1: Dict[str, str]              # unary: "{a}" -> expr
-    func2: Dict[str, str]              # binary: "{a}","{b}" -> expr
+    prelude: Tuple[str, ...]  # module-level imports / helpers
+    fn_open: str  # "{fn}({params})" frame, e.g. "def {fn}({params}):"
+    stack_init: str  # "{init}" -> declare stack seeded with args
+    pop2: str  # statement binding a, b off the stack
+    pop1: str  # statement binding a off the stack
+    push: str  # "{expr}" -> push expr onto the stack
+    ret: str  # return top of stack
+    fn_close: Tuple[str, ...]  # closing lines (braces etc.)
+    func1: Dict[str, str]  # unary: "{a}" -> expr
+    func2: Dict[str, str]  # binary: "{a}","{b}" -> expr
     binop_over: Dict[str, str] = field(default_factory=dict)  # op_name -> override operator
-    cmp_tmpl: str = "(1.0 if {cond} else 0.0)"                # ternary keeping number stack
-    main_tmpl: Tuple[str, ...] = ()    # optional runnable main(); {fn} placeholder
+    cmp_tmpl: str = "(1.0 if {cond} else 0.0)"  # ternary keeping number stack
+    main_tmpl: Tuple[str, ...] = ()  # optional runnable main(); {fn} placeholder
 
 
 def _ternary(d: Dialect) -> str:
@@ -79,7 +80,7 @@ def _ternary(d: Dialect) -> str:
     (its cmp_tmpl already encodes the language's ternary, mapping a bool to 1.0/0.0)."""
     t = d.cmp_tmpl.replace("1.0", "{t}").replace("0.0", "{f}")
     if "{t}" not in t or "{f}" not in t:
-        t = "({cond} ? {t} : {f})"   # fallback for an unusual dialect
+        t = "({cond} ? {t} : {f})"  # fallback for an unusual dialect
     return t
 
 
@@ -111,9 +112,15 @@ def _render(name: str, d: Dialect, safe: bool = False) -> Tuple[str, bool]:
     raise KeyError(f"op {name!r} not in v1 scalar core")
 
 
-def emit(tokens: Sequence[int], lang: str, *, fn_name: str = "tongue_fn",
-         arg_names: Sequence[str] | None = None, runnable: bool = False,
-         safe: bool = False) -> str:
+def emit(
+    tokens: Sequence[int],
+    lang: str,
+    *,
+    fn_name: str = "tongue_fn",
+    arg_names: Sequence[str] | None = None,
+    runnable: bool = False,
+    safe: bool = False,
+) -> str:
     """Emit a CA opcode program to a complete source string in `lang`."""
     if lang not in REGISTRY:
         raise ValueError(f"unknown language {lang!r}; have {sorted(REGISTRY)}")
@@ -162,83 +169,135 @@ def register(d: Dialect) -> None:
     REGISTRY[d.name] = d
 
 
-register(Dialect(
-    name="python", ext="py", comment="#", indent="    ",
-    prelude=("import math",),
-    fn_open="def {fn}({params}):",
-    stack_init="s = [{init}]",
-    pop2="b = s.pop(); a = s.pop(); ",
-    pop1="a = s.pop(); ",
-    push="s.append({expr})",
-    ret="return s[-1] if s else None",
-    fn_close=(),
-    func1={"neg": "-({a})", "abs": "abs({a})", "sqrt": "math.sqrt({a})",
-           "floor": "math.floor({a})", "ceil": "math.ceil({a})", "round": "round({a})",
-           "inc": "({a} + 1)", "dec": "({a} - 1)"},
-    func2={"pow": "({a} ** {b})", "min": "min({a}, {b})", "max": "max({a}, {b})",
-           "mod": "({a} % {b})"},
-    cmp_tmpl="(1.0 if {cond} else 0.0)",
-    main_tmpl=("if __name__ == '__main__':", "    print({fn}(2.0, 3.0, 4.0))"),
-))
+register(
+    Dialect(
+        name="python",
+        ext="py",
+        comment="#",
+        indent="    ",
+        prelude=("import math",),
+        fn_open="def {fn}({params}):",
+        stack_init="s = [{init}]",
+        pop2="b = s.pop(); a = s.pop(); ",
+        pop1="a = s.pop(); ",
+        push="s.append({expr})",
+        ret="return s[-1] if s else None",
+        fn_close=(),
+        func1={
+            "neg": "-({a})",
+            "abs": "abs({a})",
+            "sqrt": "math.sqrt({a})",
+            "floor": "math.floor({a})",
+            "ceil": "math.ceil({a})",
+            "round": "round({a})",
+            "inc": "({a} + 1)",
+            "dec": "({a} - 1)",
+        },
+        func2={"pow": "({a} ** {b})", "min": "min({a}, {b})", "max": "max({a}, {b})", "mod": "({a} % {b})"},
+        cmp_tmpl="(1.0 if {cond} else 0.0)",
+        main_tmpl=("if __name__ == '__main__':", "    print({fn}(2.0, 3.0, 4.0))"),
+    )
+)
 
-register(Dialect(
-    name="javascript", ext="js", comment="//", indent="  ",
-    prelude=(),
-    fn_open="function {fn}({params}) {",
-    stack_init="const s = [{init}];",
-    pop2="{ const b = s.pop(); const a = s.pop(); ",
-    pop1="{ const a = s.pop(); ",
-    push="s.push({expr}); }",
-    ret="return s.length ? s[s.length - 1] : null;",
-    fn_close=("}",),
-    func1={"neg": "-({a})", "abs": "Math.abs({a})", "sqrt": "Math.sqrt({a})",
-           "floor": "Math.floor({a})", "ceil": "Math.ceil({a})", "round": "Math.round({a})",
-           "inc": "({a} + 1)", "dec": "({a} - 1)"},
-    func2={"pow": "Math.pow({a}, {b})", "min": "Math.min({a}, {b})", "max": "Math.max({a}, {b})",
-           "mod": "({a} % {b})"},
-    cmp_tmpl="({cond} ? 1.0 : 0.0)",
-    main_tmpl=("console.log({fn}(2.0, 3.0, 4.0));",),
-))
+register(
+    Dialect(
+        name="javascript",
+        ext="js",
+        comment="//",
+        indent="  ",
+        prelude=(),
+        fn_open="function {fn}({params}) {",
+        stack_init="const s = [{init}];",
+        pop2="{ const b = s.pop(); const a = s.pop(); ",
+        pop1="{ const a = s.pop(); ",
+        push="s.push({expr}); }",
+        ret="return s.length ? s[s.length - 1] : null;",
+        fn_close=("}",),
+        func1={
+            "neg": "-({a})",
+            "abs": "Math.abs({a})",
+            "sqrt": "Math.sqrt({a})",
+            "floor": "Math.floor({a})",
+            "ceil": "Math.ceil({a})",
+            "round": "Math.round({a})",
+            "inc": "({a} + 1)",
+            "dec": "({a} - 1)",
+        },
+        func2={
+            "pow": "Math.pow({a}, {b})",
+            "min": "Math.min({a}, {b})",
+            "max": "Math.max({a}, {b})",
+            "mod": "({a} % {b})",
+        },
+        cmp_tmpl="({cond} ? 1.0 : 0.0)",
+        main_tmpl=("console.log({fn}(2.0, 3.0, 4.0));",),
+    )
+)
 
-register(Dialect(
-    name="c", ext="c", comment="//", indent="    ",
-    prelude=("#include <stdio.h>", "#include <math.h>",
-             "static double cmin(double a, double b){return a<b?a:b;}",
-             "static double cmax(double a, double b){return a>b?a:b;}"),
-    fn_open="double {fn}(double a0, double b0, double c0) {",
-    stack_init="double s[1024]; int sp = 0; s[sp++]=a0; s[sp++]=b0; s[sp++]=c0;",
-    pop2="{ double b = s[--sp]; double a = s[--sp]; ",
-    pop1="{ double a = s[--sp]; ",
-    push="s[sp++] = {expr}; }",
-    ret="return sp > 0 ? s[sp-1] : 0.0;",
-    fn_close=("}",),
-    func1={"neg": "-({a})", "abs": "fabs({a})", "sqrt": "sqrt({a})",
-           "floor": "floor({a})", "ceil": "ceil({a})", "round": "round({a})",
-           "inc": "({a} + 1)", "dec": "({a} - 1)"},
-    func2={"pow": "pow({a}, {b})", "min": "cmin({a}, {b})", "max": "cmax({a}, {b})",
-           "mod": "fmod({a}, {b})"},
-    cmp_tmpl="(({cond}) ? 1.0 : 0.0)",
-    main_tmpl=("int main(void) {", "    printf(\"%g\\n\", {fn}(2.0, 3.0, 4.0));", "    return 0;", "}"),
-))
+register(
+    Dialect(
+        name="c",
+        ext="c",
+        comment="//",
+        indent="    ",
+        prelude=(
+            "#include <stdio.h>",
+            "#include <math.h>",
+            "static double cmin(double a, double b){return a<b?a:b;}",
+            "static double cmax(double a, double b){return a>b?a:b;}",
+        ),
+        fn_open="double {fn}(double a0, double b0, double c0) {",
+        stack_init="double s[1024]; int sp = 0; s[sp++]=a0; s[sp++]=b0; s[sp++]=c0;",
+        pop2="{ double b = s[--sp]; double a = s[--sp]; ",
+        pop1="{ double a = s[--sp]; ",
+        push="s[sp++] = {expr}; }",
+        ret="return sp > 0 ? s[sp-1] : 0.0;",
+        fn_close=("}",),
+        func1={
+            "neg": "-({a})",
+            "abs": "fabs({a})",
+            "sqrt": "sqrt({a})",
+            "floor": "floor({a})",
+            "ceil": "ceil({a})",
+            "round": "round({a})",
+            "inc": "({a} + 1)",
+            "dec": "({a} - 1)",
+        },
+        func2={"pow": "pow({a}, {b})", "min": "cmin({a}, {b})", "max": "cmax({a}, {b})", "mod": "fmod({a}, {b})"},
+        cmp_tmpl="(({cond}) ? 1.0 : 0.0)",
+        main_tmpl=("int main(void) {", '    printf("%g\\n", {fn}(2.0, 3.0, 4.0));', "    return 0;", "}"),
+    )
+)
 
-register(Dialect(
-    name="rust", ext="rs", comment="//", indent="    ",
-    prelude=(),
-    fn_open="fn {fn}(a0: f64, b0: f64, c0: f64) -> f64 {",
-    stack_init="let mut s: Vec<f64> = vec![a0, b0, c0];",
-    pop2="{ let b = s.pop().unwrap(); let a = s.pop().unwrap(); ",
-    pop1="{ let a = s.pop().unwrap(); ",
-    push="s.push({expr}); }",
-    ret="*s.last().unwrap_or(&0.0)",
-    fn_close=("}",),
-    func1={"neg": "-({a})", "abs": "({a}).abs()", "sqrt": "({a}).sqrt()",
-           "floor": "({a}).floor()", "ceil": "({a}).ceil()", "round": "({a}).round()",
-           "inc": "({a} + 1.0)", "dec": "({a} - 1.0)"},
-    func2={"pow": "({a}).powf({b})", "min": "({a}).min({b})", "max": "({a}).max({b})",
-           "mod": "({a} % {b})"},
-    cmp_tmpl="(if {cond} { 1.0 } else { 0.0 })",
-    main_tmpl=("fn main() {", "    println!(\"{}\", {fn}(2.0, 3.0, 4.0));", "}"),
-))
+register(
+    Dialect(
+        name="rust",
+        ext="rs",
+        comment="//",
+        indent="    ",
+        prelude=(),
+        fn_open="fn {fn}(a0: f64, b0: f64, c0: f64) -> f64 {",
+        stack_init="let mut s: Vec<f64> = vec![a0, b0, c0];",
+        pop2="{ let b = s.pop().unwrap(); let a = s.pop().unwrap(); ",
+        pop1="{ let a = s.pop().unwrap(); ",
+        push="s.push({expr}); }",
+        ret="*s.last().unwrap_or(&0.0)",
+        fn_close=("}",),
+        func1={
+            "neg": "-({a})",
+            "abs": "({a}).abs()",
+            "sqrt": "({a}).sqrt()",
+            "floor": "({a}).floor()",
+            "ceil": "({a}).ceil()",
+            "round": "({a}).round()",
+            "inc": "({a} + 1.0)",
+            "dec": "({a} - 1.0)",
+        },
+        func2={"pow": "({a}).powf({b})", "min": "({a}).min({b})", "max": "({a}).max({b})", "mod": "({a} % {b})"},
+        cmp_tmpl="(if {cond} { 1.0 } else { 0.0 })",
+        main_tmpl=("fn main() {", '    println!("{}", {fn}(2.0, 3.0, 4.0));', "}"),
+    )
+)
 
 
 def _load_bundled_dialects() -> None:

@@ -25,8 +25,7 @@ from . import cognition_syscall as CS
 from . import frontdoor as F
 from . import polyglot as P
 
-_DECISION_COLOR = {"ALLOW": "#2e7d32", "QUARANTINE": "#f9a825",
-                   "ESCALATE": "#ef6c00", "DENY": "#c62828"}
+_DECISION_COLOR = {"ALLOW": "#2e7d32", "QUARANTINE": "#f9a825", "ESCALATE": "#ef6c00", "DENY": "#c62828"}
 _BANDS = ("arithmetic", "logic", "comparison", "aggregation")
 
 
@@ -37,9 +36,18 @@ def _stones(prog: Sequence[int], tongue: str):
         row, col = BOARD.to_point(b)
         r, g, bl = BOARD.rgb(b)
         tok = F.tongue_spell([b], tongue) if F._HAVE_TONGUES else ""
-        out.append(dict(move=i, byte=b, row=row, col=col, name=P.BYTE_TO_NAME[b],
-                        color="#%02x%02x%02x" % (r, g, bl),
-                        note=BOARD.opcode_note(b, root)[1], token=tok))
+        out.append(
+            dict(
+                move=i,
+                byte=b,
+                row=row,
+                col=col,
+                name=P.BYTE_TO_NAME[b],
+                color="#%02x%02x%02x" % (r, g, bl),
+                note=BOARD.opcode_note(b, root)[1],
+                token=tok,
+            )
+        )
     return out
 
 
@@ -59,12 +67,10 @@ def build_html(text: str, tongue: str = "ko") -> str:
         svg.append('<line x1="%d" y1="%d" x2="%d" y2="%d" class="grid"/>' % (p, pad, p, h - pad))
     # band labels (rows 0-3)
     for r, label in enumerate(_BANDS):
-        svg.append('<text x="%d" y="%d" class="band">%s</text>' % (
-            pad - 8, pad + r * cell + cell // 2 + 4, label))
+        svg.append('<text x="%d" y="%d" class="band">%s</text>' % (pad - 8, pad + r * cell + cell // 2 + 4, label))
     # the trajectory path through the stones (the program as a walk)
     if len(stones) > 1:
-        pts = " ".join("%d,%d" % (pad + s["col"] * cell + cell // 2,
-                                  pad + s["row"] * cell + cell // 2) for s in stones)
+        pts = " ".join("%d,%d" % (pad + s["col"] * cell + cell // 2, pad + s["row"] * cell + cell // 2) for s in stones)
         svg.append('<polyline points="%s" class="path"/>' % pts)
     # stones
     for s in stones:
@@ -73,10 +79,23 @@ def build_html(text: str, tongue: str = "ko") -> str:
         svg.append(
             '<g class="stone" data-info="#%d %s  byte 0x%02x  %s  note %s%s">'
             '<circle cx="%d" cy="%d" r="%d" fill="%s"/>'
-            '<text x="%d" y="%d" class="num">%d</text></g>' % (
-                s["move"], s["name"], s["byte"], s["color"], s["note"],
+            '<text x="%d" y="%d" class="num">%d</text></g>'
+            % (
+                s["move"],
+                s["name"],
+                s["byte"],
+                s["color"],
+                s["note"],
                 ("  " + s["token"]) if s["token"] else "",
-                cx, cy, cell // 2 - 4, s["color"], cx, cy + 5, s["move"]))
+                cx,
+                cy,
+                cell // 2 - 4,
+                s["color"],
+                cx,
+                cy + 5,
+                s["move"],
+            )
+        )
 
     decision = str(receipt["decision"])
     dcolor = _DECISION_COLOR.get(decision, "#555")
@@ -90,10 +109,17 @@ def build_html(text: str, tongue: str = "ko") -> str:
     <span class="rel">logic <b>%(logic)s</b> &nbsp; intuition <b>%(intu)s</b> &nbsp; relation <b>%(rel)s</b></span>
   </div>
   <div class="why">%(why)s</div>
-</div>""" % dict(prog=" ".join(names) or "(empty)", dcolor=dcolor, decision=decision,
-                action=receipt["action"], conf=100 * conf,
-                logic=B._fmt(thought["logic"]), intu=B._fmt(thought["intuition"]),
-                rel=thought["relation"], why=thought["interpretation"])
+</div>""" % dict(
+        prog=" ".join(names) or "(empty)",
+        dcolor=dcolor,
+        decision=decision,
+        action=receipt["action"],
+        conf=100 * conf,
+        logic=B._fmt(thought["logic"]),
+        intu=B._fmt(thought["intuition"]),
+        rel=thought["relation"],
+        why=thought["interpretation"],
+    )
 
     return _PAGE % dict(head=head, w=w, h=h, svg="\n".join(svg))
 
@@ -174,10 +200,12 @@ def _mini_svg(prog: Sequence[int], tongue: str) -> str:
     stones = _stones(prog, tongue)
     parts: List[str] = []
     if len(stones) > 1:
-        pts = " ".join("%d,%d" % (pad + s["col"] * cell + cell // 2,
-                                  pad + min(s["row"], 3) * cell + cell // 2) for s in stones)
-        parts.append('<polyline points="%s" fill="none" stroke="#30363d" '
-                     'stroke-width="1.5" stroke-dasharray="2 2"/>' % pts)
+        pts = " ".join(
+            "%d,%d" % (pad + s["col"] * cell + cell // 2, pad + min(s["row"], 3) * cell + cell // 2) for s in stones
+        )
+        parts.append(
+            '<polyline points="%s" fill="none" stroke="#30363d" ' 'stroke-width="1.5" stroke-dasharray="2 2"/>' % pts
+        )
     for s in stones:
         cx = pad + s["col"] * cell + cell // 2
         cy = pad + min(s["row"], 3) * cell + cell // 2
@@ -209,18 +237,30 @@ def build_gallery(archive, tongue: str = "ko") -> str:
             '<div class="prog">%s</div>'
             '<div class="meta"><span class="badge" style="background:%s">%s</span>'
             '<span class="conf">%.0f%%</span></div>'
-            '<div class="niche">%s &middot; %s &middot; logic %s</div></div>' % (
-                dcolor, _mini_svg(prog, tongue), " ".join(e["ops"]) or "(empty)",
-                dcolor, decision, 100 * float(e["confidence"]), label, rel,
-                B._fmt(e["logic"])))
+            '<div class="niche">%s &middot; %s &middot; logic %s</div></div>'
+            % (
+                dcolor,
+                _mini_svg(prog, tongue),
+                " ".join(e["ops"]) or "(empty)",
+                dcolor,
+                decision,
+                100 * float(e["confidence"]),
+                label,
+                rel,
+                B._fmt(e["logic"]),
+            )
+        )
 
     legend = " &nbsp; ".join(
         '<span class="badge" style="background:%s">%s %d</span>' % (_DECISION_COLOR[d], d, counts[d])
-        for d in ("ALLOW", "QUARANTINE", "ESCALATE", "DENY"))
-    head = ('<div id="head"><div class="title">SCBE illuminated archive '
-            '&middot; %d niches</div><div class="row">%s</div>'
-            '<div class="why">mass-generated cube programs, curated by the bicameral gap '
-            '(logic vs intuition), sorted by L13 governance</div></div>' % (len(archive), legend))
+        for d in ("ALLOW", "QUARANTINE", "ESCALATE", "DENY")
+    )
+    head = (
+        '<div id="head"><div class="title">SCBE illuminated archive '
+        '&middot; %d niches</div><div class="row">%s</div>'
+        '<div class="why">mass-generated cube programs, curated by the bicameral gap '
+        "(logic vs intuition), sorted by L13 governance</div></div>" % (len(archive), legend)
+    )
     return _GALLERY_PAGE.replace("<!--HEAD-->", head).replace("<!--CARDS-->", "\n".join(cards))
 
 

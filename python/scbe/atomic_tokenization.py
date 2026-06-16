@@ -24,7 +24,6 @@ from dataclasses import dataclass
 from hashlib import sha256
 from typing import Dict, Literal, Optional, Sequence, Tuple
 
-
 Tongue = Literal["KO", "AV", "RU", "CA", "UM", "DR"]
 TONGUES: Tuple[Tongue, ...] = ("KO", "AV", "RU", "CA", "UM", "DR")
 
@@ -433,7 +432,7 @@ def compute_adaptivity(
 ) -> float:
     base = 0.18
     base += min(float(element.valence), 4.0) * 0.10
-    base += (float(element.group % 6) / 10.0)
+    base += float(element.group % 6) / 10.0
     if semantic_class in {"RELATION", "MODIFIER", "TEMPORAL"}:
         base += 0.16
     if semantic_class == "INERT_WITNESS":
@@ -500,10 +499,7 @@ def element_to_trit_vector(
         "DR": dr,
     }
     return TritVector(
-        **{
-            tongue: trit(values[tongue], pos=thresholds[tongue][0], neg=thresholds[tongue][1])
-            for tongue in TONGUES
-        }
+        **{tongue: trit(values[tongue], pos=thresholds[tongue][0], neg=thresholds[tongue][1]) for tongue in TONGUES}
     )
 
 
