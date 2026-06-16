@@ -144,8 +144,8 @@
         <aside class="panel">
           <div class="head"><h2 class="title">AI Materials Bench</h2></div>
           <div class="body">
-            <h1>Fiber/tube stack visualizer with real math.</h1>
-            <p>Model the glass tube, carbon skin, copper winding, magnetic guide, optical lane, heat, and receipt as one buildable concept.</p>
+            <h1>Describe a build. Get an engineer's concept report.</h1>
+            <p>Type a fiber / coil / tube concept and get real physics (field, resistance, heat, optics), a costed bill of materials, a measurement test plan, and a downloadable report — computed live in your browser. <strong>No signup, no server.</strong></p>
             <form id="benchForm" style="margin-top: 14px">
               <label>
                 Concept
@@ -320,33 +320,175 @@
         draw(data);
       }
 
-      document.getElementById("benchForm").addEventListener("submit", async function (event) {
+      // ---- self-contained in-browser engine (same physics as the materials-bench API) ----
+      // Runs with zero backend so the demo works on any static host, offline, no signup, can't 404.
+      var MU0 = 4 * Math.PI * 1e-7;
+      var CONDUCTORS = {
+        copper: { name: "copper", rho: 1.724e-8 }, silver: { name: "silver", rho: 1.59e-8 },
+        gold: { name: "gold", rho: 2.44e-8 }, aluminum: { name: "aluminum", rho: 2.82e-8 },
+        aluminium: { name: "aluminum", rho: 2.82e-8 }, tungsten: { name: "tungsten", rho: 5.6e-8 },
+        nichrome: { name: "nichrome", rho: 1.1e-6 }, iron: { name: "iron", rho: 9.71e-8 }
+      };
+      var WIRE_COST_PER_M = { copper: 0.12, silver: 1.1, gold: 9, aluminum: 0.09, tungsten: 0.45, nichrome: 0.3, iron: 0.1 };
+      var PART_COSTS = {
+        tube: { label: "Borosilicate or quartz tube", low: 8, high: 26 },
+        carbon: { label: "Graphene / CNT / pyrolytic-graphite film", low: 11, high: 32 },
+        ferrite: { label: "Split ferrite sleeve or soft-magnetic segments", low: 5, high: 18 },
+        insulation: { label: "Polyimide (Kapton) tape", low: 6, high: 12 },
+        hookup: { label: "Leads, lugs, current-limited supply hookup", low: 7, high: 20 }
+      };
+      function r2(n) { return Math.round(n * 100) / 100; }
+      function r3(n) { return Math.round(n * 1000) / 1000; }
+      function p5(n) { return Number(n.toPrecision(5)); }
+      function hashId(s) { var h = 2166136261 >>> 0; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return ("0000000" + (h >>> 0).toString(16)).slice(-8); }
+      function detectConductor(c) { var l = String(c || "").toLowerCase(); for (var k in CONDUCTORS) { if (l.indexOf(k) >= 0) return CONDUCTORS[k]; } return CONDUCTORS.copper; }
+      function numA(b, key, fb, mn, mx, a) {
+        var raw = b[key], p = Number(raw);
+        if (raw === undefined || raw === null || raw === "" || !isFinite(p)) { a.push(key + " = " + fb + " (assumed default)"); return fb; }
+        var c = Math.max(mn, Math.min(mx, p)); if (c !== p) a.push(key + " = " + c + " (clamped from " + p + ")"); return c;
+      }
+      function materialsFor(text, cond) {
+        var l = String(text || "").toLowerCase();
+        return [
+          { layer: "core", material: l.indexOf("quartz") >= 0 ? "quartz tube" : "borosilicate or quartz glass tube", role: "optical/mechanical path" },
+          { layer: "carbon skin", material: "commercial graphene film, CNT film, carbon veil, or pyrolytic graphite sheet", role: "conductive coupling layer" },
+          { layer: "coil", material: "enameled " + cond.name + " magnet wire", role: "field generation and signal winding" },
+          { layer: "flux guide", material: "split ferrite sleeve or soft magnetic segments", role: "shape magnetic flux around the tube" },
+          { layer: "insulation", material: "polyimide tape or low-outgassing dielectric wrap", role: "separate conductive layers" }
+        ];
+      }
+      function computeCalc(body, cond) {
+        var a = [];
+        var lengthMm = numA(body, "length_mm", 120, 10, 2000, a);
+        var radiusMm = numA(body, "radius_mm", 5, 0.5, 100, a);
+        var turns = Math.round(numA(body, "turns", 180, 1, 5000, a));
+        var currentA = numA(body, "current_a", 0.35, 0.001, 20, a);
+        var wireD = numA(body, "wire_diameter_mm", 0.2, 0.03, 5, a);
+        var freq = numA(body, "frequency_hz", 1000, 0, 5e6, a);
+        var mu = numA(body, "mu_relative", 1, 1, 5000, a);
+        var nCore = numA(body, "n_core", 1.46, 1, 4, a);
+        var nClad = numA(body, "n_clad", 1.44, 1, 4, a);
+        var rho = cond.rho, lengthM = lengthMm / 1000, radiusM = radiusMm / 1000, wireDM = wireD / 1000;
+        var wireLen = Math.max(2 * Math.PI * radiusM * turns, lengthM);
+        var R = rho * wireLen / (Math.PI * Math.pow(wireDM / 2, 2));
+        var P = currentA * currentA * R;
+        var B = MU0 * mu * turns * currentA / lengthM;
+        var skin = freq > 0 ? Math.sqrt((2 * rho) / (2 * Math.PI * freq * MU0)) : null;
+        var na = Math.sqrt(Math.max(0, nCore * nCore - nClad * nClad));
+        return {
+          conductor: cond.name, conductor_resistivity_ohm_m: rho,
+          inputs: { length_mm: lengthMm, radius_mm: radiusMm, turns: turns, current_a: currentA, wire_diameter_mm: wireD, frequency_hz: freq, mu_relative: mu, n_core: nCore, n_clad: nClad, conductor: cond.name },
+          assumed: a,
+          estimates: { solenoid_field_t: p5(B), solenoid_field_mt: p5(B * 1000), wire_length_m: p5(wireLen), coil_resistance_ohm: p5(R), coil_power_w: p5(P), skin_depth_mm: skin === null ? null : p5(skin * 1000), optical_na_estimate: p5(na) }
+        };
+      }
+      function billOfMaterials(calc, cond) {
+        var wl = calc.estimates.wire_length_m, perM = WIRE_COST_PER_M[cond.name] || 0.12;
+        var items = [
+          { part: cond.name + " enameled magnet wire (~" + wl + " m + winding margin)", qty: "1 spool", est_usd_low: r2(Math.max(9, wl * perM)), est_usd_high: r2(Math.max(15, wl * perM * 1.9)) },
+          { part: PART_COSTS.tube.label + " (~" + calc.inputs.length_mm + " mm)", qty: "1", est_usd_low: PART_COSTS.tube.low, est_usd_high: PART_COSTS.tube.high },
+          { part: PART_COSTS.carbon.label, qty: "1 sheet/wrap", est_usd_low: PART_COSTS.carbon.low, est_usd_high: PART_COSTS.carbon.high },
+          { part: PART_COSTS.ferrite.label, qty: "1 set", est_usd_low: PART_COSTS.ferrite.low, est_usd_high: PART_COSTS.ferrite.high },
+          { part: PART_COSTS.insulation.label, qty: "1 roll", est_usd_low: PART_COSTS.insulation.low, est_usd_high: PART_COSTS.insulation.high },
+          { part: PART_COSTS.hookup.label, qty: "1 set", est_usd_low: PART_COSTS.hookup.low, est_usd_high: PART_COSTS.hookup.high }
+        ];
+        var low = 0, high = 0; items.forEach(function (i) { low += i.est_usd_low; high += i.est_usd_high; });
+        return { currency: "USD", items: items, estimated_total_low: r2(low), estimated_total_high: r2(high), note: "Rough hobbyist-scale estimates, not supplier quotes." };
+      }
+      function safetyEnvelope(calc) {
+        var R = calc.estimates.coil_resistance_ohm, I = calc.inputs.current_a, budget = 5;
+        var iMax = R > 0 ? r3(Math.sqrt(budget / R)) : null, V = r3(I * R);
+        var g = ["Always drive from a current-limited bench supply; set the limit before connecting the coil.",
+          "At " + I + " A the coil dissipates ~" + calc.estimates.coil_power_w + " W and needs ~" + V + " V across it."];
+        if (iMax !== null) g.push("Keep continuous current at or below ~" + iMax + " A to stay within a " + budget + " W bench-thermal budget; pulse above that.");
+        return { coil_voltage_v: V, coil_power_w: calc.estimates.coil_power_w, power_budget_w: budget, within_power_budget: calc.estimates.coil_power_w <= budget, max_continuous_current_a: iMax, guidance: g };
+      }
+      function testPlan(calc) {
+        var e = calc.estimates;
+        var s = [
+          { step: "Measure coil DC resistance with a multimeter before applying power.", target: "~" + e.coil_resistance_ohm + " ohm (+/-15%)" },
+          { step: "Connect a current-limited supply and ramp current slowly from zero.", target: "Hold the limit at or below " + calc.inputs.current_a + " A" },
+          { step: "Measure axial field at the coil center with a Hall/gauss probe.", target: "~" + e.solenoid_field_mt + " mT at " + calc.inputs.current_a + " A" },
+          { step: "Run energized for a timed interval and log coil temperature.", target: "~" + e.coil_power_w + " W; stop if rise exceeds ~40 C" }
+        ];
+        if (e.optical_na_estimate > 0) s.push({ step: "Couple light through the core and check guiding/leakage.", target: "NA ~" + e.optical_na_estimate });
+        return s;
+      }
+      function flags(calc) {
+        var o = [];
+        if (calc.estimates.coil_power_w > 200) o.push("Non-physical for a bench tube: coil power exceeds ~200 W. Treat these inputs as out of range.");
+        else if (calc.estimates.coil_power_w > 5) o.push("Thermal risk: coil power is high for a small tube. Reduce current, turns, or duty cycle.");
+        if (calc.estimates.solenoid_field_mt > 100) o.push("Magnetic field is high enough to require fixture, sensor, and heating review.");
+        if (calc.inputs.frequency_hz > 100000) o.push("High-frequency drive: check skin depth, parasitics, and shielding.");
+        if (calc.assumed.length) o.push("Assumed/clamped " + calc.assumed.length + " input(s) - see math.assumed (e.g. " + calc.assumed[0] + ").");
+        if (!o.length) o.push("First-pass estimates are within a bench-testable range; validate with low-voltage current limiting.");
+        return o;
+      }
+      function buildReport(x) {
+        var c = x.calc, e = c.estimates, L = [];
+        L.push("# AI Materials Bench - Concept Report", "");
+        L.push("**Receipt:** `" + x.receiptId + "`  ");
+        L.push("**Conductor:** " + c.conductor + " (rho = " + c.conductor_resistivity_ohm_m + " ohm-m)", "");
+        L.push("## Concept", x.concept, "");
+        L.push("## Inputs"); for (var k in c.inputs) L.push("- " + k + ": " + c.inputs[k]);
+        if (c.assumed.length) { L.push("", "### Assumed / clamped"); c.assumed.forEach(function (v) { L.push("- " + v); }); }
+        L.push("", "## Material stack"); x.stack.forEach(function (l) { L.push("- **" + l.layer + "** - " + l.material + " (" + l.role + ")"); });
+        L.push("", "## Estimated physics");
+        L.push("- Solenoid field: " + e.solenoid_field_mt + " mT", "- Coil resistance: " + e.coil_resistance_ohm + " ohm", "- Coil power: " + e.coil_power_w + " W", "- Wire length: " + e.wire_length_m + " m", "- Skin depth: " + (e.skin_depth_mm === null ? "n/a (DC)" : e.skin_depth_mm + " mm"), "- Optical NA: " + e.optical_na_estimate);
+        L.push("", "## Bill of materials (rough estimate)", "| Part | Qty | Est. USD |", "| --- | --- | --- |");
+        x.bom.items.forEach(function (i) { L.push("| " + i.part + " | " + i.qty + " | $" + i.est_usd_low + " - $" + i.est_usd_high + " |"); });
+        L.push("| **Total** |  | **$" + x.bom.estimated_total_low + " - $" + x.bom.estimated_total_high + "** |", "", "_" + x.bom.note + "_", "");
+        L.push("## Safety envelope", "- Coil voltage at set current: ~" + x.safety.coil_voltage_v + " V", "- Power budget: " + x.safety.power_budget_w + " W (" + (x.safety.within_power_budget ? "within budget" : "OVER budget") + ")");
+        if (x.safety.max_continuous_current_a !== null) L.push("- Max continuous current: ~" + x.safety.max_continuous_current_a + " A");
+        x.safety.guidance.forEach(function (g) { L.push("- " + g); });
+        L.push("", "## Test plan"); x.plan.forEach(function (p, i) { L.push((i + 1) + ". " + p.step + "\n   _Target:_ " + p.target); });
+        L.push("", "## Risk flags"); x.riskFlags.forEach(function (f) { L.push("- " + f); });
+        L.push("", "---", "_Generated by AetherMoore AI Materials Bench. First-pass estimates - validate with current-limited low-voltage tests._");
+        return L.join("\n");
+      }
+      function computeLocal(body) {
+        var concept = String(body.concept || "glass tube with carbon layer, copper coil, and ferrite flux guide").trim();
+        var cond = detectConductor(concept);
+        var calc = computeCalc(body, cond);
+        var receiptId = "matbench_" + hashId(concept + JSON.stringify(calc.inputs));
+        var stack = materialsFor(concept, cond);
+        var bom = billOfMaterials(calc, cond);
+        var safety = safetyEnvelope(calc);
+        var plan = testPlan(calc);
+        var riskFlags = flags(calc);
+        return {
+          ok: true, schema_version: "aethermoore_ai_materials_bench_v1", product: "AI Materials Bench",
+          receipt_id: receiptId, concept: concept,
+          architecture: { name: "magneto-optic composite tube sleeve", stack: stack, purpose: "model a glass/fiber tube with conductive carbon skin, coil winding, magnetic flux shaping, and optical lane." },
+          math: calc, bill_of_materials: bom, safety: safety, test_plan: plan, risk_flags: riskFlags,
+          report_markdown: buildReport({ concept: concept, receiptId: receiptId, stack: stack, calc: calc, bom: bom, safety: safety, plan: plan, riskFlags: riskFlags }),
+          sellable_output: { offer: "Downloadable concept report: material stack, costed bill of materials, field/heat/optical estimates, a measurement test plan, a safety envelope, and a signed receipt." }
+        };
+      }
+
+      function gatherBody() {
+        return {
+          concept: document.getElementById("concept").value,
+          length_mm: readNumber("length_mm"),
+          radius_mm: readNumber("radius_mm"),
+          turns: readNumber("turns"),
+          current_a: readNumber("current_a"),
+          wire_diameter_mm: readNumber("wire_diameter_mm"),
+          frequency_hz: readNumber("frequency_hz"),
+          mu_relative: readNumber("mu_relative"),
+          n_core: readNumber("n_core"),
+          n_clad: 1.44
+        };
+      }
+
+      document.getElementById("benchForm").addEventListener("submit", function (event) {
         event.preventDefault();
         var status = document.getElementById("status");
-        status.textContent = "Modeling...";
         try {
-          var response = await fetch("/api/agent/ai-materials-bench", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              concept: document.getElementById("concept").value,
-              length_mm: readNumber("length_mm"),
-              radius_mm: readNumber("radius_mm"),
-              turns: readNumber("turns"),
-              current_a: readNumber("current_a"),
-              wire_diameter_mm: readNumber("wire_diameter_mm"),
-              frequency_hz: readNumber("frequency_hz"),
-              mu_relative: readNumber("mu_relative"),
-              n_core: readNumber("n_core"),
-              n_clad: 1.44
-            })
-          });
-          var data = await response.json();
-          if (!response.ok) throw new Error(data.error || "Request failed");
-          render(data);
-          status.textContent = "Model ready.";
+          render(computeLocal(gatherBody()));
+          status.textContent = "Modeled in-browser — no signup, no server. Download the report below.";
         } catch (error) {
-          status.textContent = error.message || String(error);
+          status.textContent = "Error: " + (error.message || String(error));
         }
       });
 
