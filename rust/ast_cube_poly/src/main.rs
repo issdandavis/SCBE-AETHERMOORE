@@ -27,13 +27,16 @@ fn language_for(name: &str) -> Option<Language> {
         "haskell" | "hs" => tree_sitter_haskell::LANGUAGE.into(),
         "scala" => tree_sitter_scala::LANGUAGE.into(),
         "lua" => tree_sitter_lua::LANGUAGE.into(),
+        "swift" => tree_sitter_swift::LANGUAGE.into(),
+        "zig" => tree_sitter_zig::LANGUAGE.into(),
+        "kotlin" | "kt" => tree_sitter_kotlin_ng::LANGUAGE.into(),
         _ => return None,
     })
 }
 
 const GRAMMARS: &[&str] = &[
-    "javascript", "typescript", "tsx", "python", "c", "cpp", "csharp", "go",
-    "rust", "java", "ruby", "php", "julia", "haskell", "scala", "lua",
+    "javascript", "typescript", "tsx", "python", "c", "cpp", "csharp", "go", "rust",
+    "java", "ruby", "php", "julia", "haskell", "scala", "lua", "swift", "zig", "kotlin",
 ];
 
 fn lang_for_ext(ext: &str) -> Option<&'static str> {
@@ -54,6 +57,9 @@ fn lang_for_ext(ext: &str) -> Option<&'static str> {
         "hs" => "haskell",
         "scala" | "sc" => "scala",
         "lua" => "lua",
+        "swift" => "swift",
+        "zig" => "zig",
+        "kt" | "kts" => "kotlin",
         _ => return None,
     })
 }
