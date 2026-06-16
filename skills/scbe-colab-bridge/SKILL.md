@@ -15,7 +15,7 @@ Execute code on Google Colab from the Claude Code terminal via the Chrome extens
 
 ## Capabilities
 
-### Terminal Commands (PREFERRED — handles multi-line code)
+### Terminal Commands (PREFERRED â€” handles multi-line code)
 1. Click into the Colab terminal panel (right sidebar)
 2. Type any bash/python command
 3. Press Enter

@@ -294,6 +294,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "@netlify/blobs": "^10.7.9",
     "@noble/hashes": "^2.0.1",
     "@noble/post-quantum": "^0.6.0",
     "@notionhq/client": "^5.9.0",
@@ -301,6 +302,7 @@
     "express-rate-limit": "^8.3.1"
   },
   "devDependencies": {
+    "@netlify/functions": "^5.3.0",
     "@playwright/test": "^1.58.2",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
