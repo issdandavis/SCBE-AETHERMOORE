@@ -1,0 +1,75 @@
+name: build-binaries
+
+# Build the standalone `scbe` CLI as a single self-contained executable for
+# Windows / Linux / macOS (no Python install needed) and attach them to the
+# GitHub Release on a version tag. Also runnable on demand via workflow_dispatch,
+# which uploads the binaries as build artifacts.
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build ${{ matrix.asset }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset: scbe-linux-x64
+          - os: windows-latest
+            asset: scbe-windows-x64.exe
+          - os: macos-latest
+            asset: scbe-macos-arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install build deps
+        run: |
+          python -m pip install --upgrade pip
+          # Minimal runtime deps the cube CLI needs (numpy for the geometric router,
+          # jsonschema for ingestion_rights validators), plus the bundler.
+          python -m pip install pyinstaller numpy jsonschema
+
+      - name: Build binary
+        run: pyinstaller scbe.spec
+
+      - name: Smoke test (the cube system must actually run)
+        shell: bash
+        run: |
+          BIN=dist/scbe
+          [ -f dist/scbe.exe ] && BIN=dist/scbe.exe
+          "$BIN" code "+ sqrt * inc"
+          "$BIN" think "+ sqrt *"
+          "$BIN" illuminate --gens 2 --batch 40
+          "$BIN" fold --fortune "+ * sqrt inc" --pick 4 3 2
+
+      - name: Stage asset
+        shell: bash
+        run: |
+          mkdir -p out
+          if [ -f dist/scbe.exe ]; then cp dist/scbe.exe "out/${{ matrix.asset }}"; else cp dist/scbe "out/${{ matrix.asset }}"; fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: out/${{ matrix.asset }}
+          if-no-files-found: error
+
+      - name: Attach to Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: out/${{ matrix.asset }}
