@@ -73,6 +73,71 @@ def run(n_programs: int, prog_len: int, seed: int = 7) -> dict:
     }
 
 
+# --- parallelism + tangentialism (geometric routing of work to workers) -----
+
+def _emit_chunk(packed):
+    """Worker: emit a chunk of programs to all languages (top-level = picklable)."""
+    progs, langs = packed
+    f = li = c = 0
+    for p in progs:
+        for lang in langs:
+            s = P.emit(p, lang, runnable=True)
+            f += 1
+            li += s.count("\n") + 1
+            c += len(s)
+    return f, li, c
+
+
+# scalar ops carry a tongue flavor: comparisons -> KO (control), math -> CA.
+_OP_TONGUE = {}
+for _o in P.CMPS:
+    _OP_TONGUE[_o] = "KO"
+for _o in set(P.BINOPS) | P.FUNC2 | P.FUNC1:
+    _OP_TONGUE.setdefault(_o, "CA")
+
+
+def _prog_profile(ops):
+    prof = {"KO": 0.0, "AV": 0.0, "RU": 0.0, "CA": 0.0, "UM": 0.0, "DR": 0.0}
+    for o in ops:
+        prof[_OP_TONGUE.get(o, "CA")] += 1.0
+    s = sum(prof.values()) or 1.0
+    return {k: v / s for k, v in prof.items()}
+
+
+def _geometric_split(programs, workers):
+    """Route programs to worker-agents through the tongue manifold (tangent tracks)."""
+    from python.scbe.geometric_router import Agent, Task, route_fleet, TONGUES
+    agents = [Agent(f"w{i}", {TONGUES[i % 6]: 1.0}) for i in range(workers)]
+    tasks = [Task(str(i), _prog_profile(programs[i])) for i in range(len(programs))]
+    routes = route_fleet(agents, tasks, pressure=0.5, tour=False)
+    chunks = [[programs[int(name)] for name in r.tasks] for r in routes]
+    return [c for c in chunks if c]
+
+
+def run_parallel(n_programs, prog_len, workers, geometric=False, seed=7):
+    import multiprocessing as mp
+    rng = random.Random(seed)
+    langs = P.languages()
+    programs = [random_program(prog_len, rng) for _ in range(n_programs)]
+    if geometric:
+        chunks = _geometric_split(programs, workers)
+    else:
+        chunks = [programs[i::workers] for i in range(workers)]
+    t0 = time.perf_counter()
+    with mp.Pool(workers) as pool:
+        results = pool.map(_emit_chunk, [(c, langs) for c in chunks])
+    dt = time.perf_counter() - t0
+    files = sum(r[0] for r in results)
+    lines = sum(r[1] for r in results)
+    return {
+        "workers": workers, "geometric": geometric, "languages": len(langs),
+        "programs": n_programs, "files_emitted": files, "seconds": dt,
+        "programs_per_s": n_programs / dt, "files_per_s": files / dt,
+        "kloc_per_s": lines / 1000 / dt,
+        "chunk_sizes": [len(c) for c in chunks],
+    }
+
+
 def spot_check(seed: int = 7) -> dict:
     """Confirm correctness isn't sacrificed for speed: python emit runs correctly."""
     rng = random.Random(seed)
@@ -88,8 +153,31 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--programs", type=int, default=5000)
     ap.add_argument("--len", dest="prog_len", type=int, default=12)
+    ap.add_argument("--workers", type=int, default=0, help="parallel workers (0 = serial)")
+    ap.add_argument("--geometric", action="store_true",
+                    help="route work to workers through the tongue manifold (tangent tracks)")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
+
+    if args.workers and args.workers > 1:
+        import multiprocessing
+        cores = multiprocessing.cpu_count()
+        ser = run(args.programs, args.prog_len)
+        par = run_parallel(args.programs, args.prog_len, args.workers, geometric=args.geometric)
+        speedup = ser["seconds"] / par["seconds"]
+        if args.json:
+            import json
+            print(json.dumps({"serial": ser, "parallel": par, "speedup": speedup}, indent=2))
+            return 0
+        mode = "geometric (tangent tracks)" if args.geometric else "round-robin chunks"
+        print("Rubik's-Cube Coding System — PARALLEL speed benchmark")
+        print(f"  faces: {ser['languages']}   programs: {args.programs:,} x {args.prog_len} ops   "
+              f"cores: {cores}   workers: {args.workers}   routing: {mode}")
+        print(f"  serial   : {ser['programs_per_s']:>9,.0f} programs/s   {ser['files_per_s']:>10,.0f} files/s")
+        print(f"  parallel : {par['programs_per_s']:>9,.0f} programs/s   {par['files_per_s']:>10,.0f} files/s "
+              f"  ({speedup:.1f}x over serial)")
+        print(f"  worker track sizes: {par['chunk_sizes']}")
+        return 0
 
     r = run(args.programs, args.prog_len)
     chk = spot_check()
