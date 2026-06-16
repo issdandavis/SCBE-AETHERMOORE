@@ -1,5 +1,7 @@
 """Tests for the Python port of HyperLane governance."""
 
+import pytest
+
 from src.aetherbrowser.hyperlane_py import HyperLanePy, Zone, Decision
 
 
@@ -63,9 +65,10 @@ class TestDecisionMaking:
 
 
 class TestRateLimiting:
-    def test_rate_limit_after_burst(self):
-        hl = HyperLanePy(rate_limit_per_min=3)
-        for _ in range(3):
+    @pytest.mark.parametrize("burst", [1, 3, 5])
+    def test_rate_limit_after_burst(self, burst):
+        hl = HyperLanePy(rate_limit_per_min=burst)
+        for _ in range(burst):
             hl.evaluate("https://github.com/test", action="read", agent_id="AV")
         d = hl.evaluate("https://github.com/test", action="read", agent_id="AV")
         assert d.decision == Decision.DENY
@@ -73,12 +76,14 @@ class TestRateLimiting:
 
 
 class TestCustomZones:
-    def test_add_domain_to_green(self):
+    @pytest.mark.parametrize(
+        "domain, url, zone",
+        [
+            ("safe.example.com", "https://safe.example.com/api", Zone.GREEN),
+            ("semi-trusted.com", "https://semi-trusted.com/write", Zone.YELLOW),
+        ],
+    )
+    def test_add_domain_to_zone(self, domain, url, zone):
         hl = HyperLanePy()
-        hl.add_domain("safe.example.com", Zone.GREEN)
-        assert hl.classify_zone("https://safe.example.com/api") == Zone.GREEN
-
-    def test_add_domain_to_yellow(self):
-        hl = HyperLanePy()
-        hl.add_domain("semi-trusted.com", Zone.YELLOW)
-        assert hl.classify_zone("https://semi-trusted.com/write") == Zone.YELLOW
+        hl.add_domain(domain, zone)
+        assert hl.classify_zone(url) == zone
