@@ -34,14 +34,24 @@ def _read_text(args: argparse.Namespace) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("text", nargs="*", help="Support request text.")
-    parser.add_argument("--text-file", help="Read support request text from a UTF-8 file.")
+    parser.add_argument(
+        "--text-file", help="Read support request text from a UTF-8 file."
+    )
     parser.add_argument(
         "--history-file",
         help="Read prior dialogue turns from a UTF-8 file, one turn per line. The request text is appended as the latest turn.",
     )
-    parser.add_argument("--stdin", action="store_true", help="Read support request text from stdin.")
-    parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON output.")
-    parser.add_argument("--response-only", action="store_true", help="Print only the ELIZA-style support response.")
+    parser.add_argument(
+        "--stdin", action="store_true", help="Read support request text from stdin."
+    )
+    parser.add_argument(
+        "--pretty", action="store_true", help="Pretty-print JSON output."
+    )
+    parser.add_argument(
+        "--response-only",
+        action="store_true",
+        help="Print only the ELIZA-style support response.",
+    )
     args = parser.parse_args(argv)
 
     text = _read_text(args)

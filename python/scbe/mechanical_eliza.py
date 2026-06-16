@@ -13,7 +13,6 @@ import hashlib
 import re
 from typing import Iterable, Mapping, Sequence
 
-
 SCHEMA_VERSION = "scbe.mechanical_eliza.v1"
 
 
@@ -71,32 +70,95 @@ class PatternRule:
 
 
 INTENT_RULES: tuple[PatternRule, ...] = (
-    PatternRule("command_route", (r"\b(run|execute|shell|terminal|command|cli)\b", r"\b(scbe|pytest|npm|cargo|git)\b"), 0.82),
-    PatternRule("debug_support", (r"\b(error|failed|traceback|broken|bug|crash|does not work|stuck)\b",), 0.78),
-    PatternRule("sales_support", (r"\b(price|pay|checkout|stripe|buy|sell|customer|offer|supporter)\b",), 0.76),
-    PatternRule("research_support", (r"\b(research|look up|source|paper|notes|docs|vault)\b",), 0.72),
-    PatternRule("design_support", (r"\b(design|architecture|plan|route|system|workflow|swarm|fleet)\b",), 0.7),
-    PatternRule("agent_distress", (r"\b(confused|looping|uncertain|contradiction|conflict|can't decide|cannot decide)\b",), 0.74),
-    PatternRule("memory_support", (r"\b(memory|context|forgot|recap|summary|state|checkpoint)\b",), 0.73),
-    PatternRule("model_route", (r"\b(model|llm|fallback|cheap|local|cloud|escalate)\b",), 0.73),
-    PatternRule("handoff_support", (r"\b(handoff|handover|delegate|subagent|squad|swarm)\b",), 0.72),
+    PatternRule(
+        "command_route",
+        (
+            r"\b(run|execute|shell|terminal|command|cli)\b",
+            r"\b(scbe|pytest|npm|cargo|git)\b",
+        ),
+        0.82,
+    ),
+    PatternRule(
+        "debug_support",
+        (r"\b(error|failed|traceback|broken|bug|crash|does not work|stuck)\b",),
+        0.78,
+    ),
+    PatternRule(
+        "sales_support",
+        (r"\b(price|pay|checkout|stripe|buy|sell|customer|offer|supporter)\b",),
+        0.76,
+    ),
+    PatternRule(
+        "research_support",
+        (r"\b(research|look up|source|paper|notes|docs|vault)\b",),
+        0.72,
+    ),
+    PatternRule(
+        "design_support",
+        (r"\b(design|architecture|plan|route|system|workflow|swarm|fleet)\b",),
+        0.7,
+    ),
+    PatternRule(
+        "agent_distress",
+        (
+            r"\b(confused|looping|uncertain|contradiction|conflict|can't decide|cannot decide)\b",
+        ),
+        0.74,
+    ),
+    PatternRule(
+        "memory_support",
+        (r"\b(memory|context|forgot|recap|summary|state|checkpoint)\b",),
+        0.73,
+    ),
+    PatternRule(
+        "model_route", (r"\b(model|llm|fallback|cheap|local|cloud|escalate)\b",), 0.73
+    ),
+    PatternRule(
+        "handoff_support",
+        (r"\b(handoff|handover|delegate|subagent|squad|swarm)\b",),
+        0.72,
+    ),
 )
 
 RISK_RULES: tuple[PatternRule, ...] = (
-    PatternRule("destructive", (r"\b(rm\s+-rf|remove-item|format|delete|wipe|reset\s+--hard|drop\s+table)\b",), 0.97),
-    PatternRule("secret_handling", (r"\b(api[_ -]?key|secret|token|password|sk_live|private key)\b",), 0.91),
-    PatternRule("money_movement", (r"\b(stripe|checkout|refund|charge|payment|invoice|bank)\b",), 0.84),
-    PatternRule("external_publish", (r"\b(push|deploy|publish|post|tweet|bluesky|email)\b",), 0.8),
+    PatternRule(
+        "destructive",
+        (r"\b(rm\s+-rf|remove-item|format|delete|wipe|reset\s+--hard|drop\s+table)\b",),
+        0.97,
+    ),
+    PatternRule(
+        "secret_handling",
+        (r"\b(api[_ -]?key|secret|token|password|sk_live|private key)\b",),
+        0.91,
+    ),
+    PatternRule(
+        "money_movement",
+        (r"\b(stripe|checkout|refund|charge|payment|invoice|bank)\b",),
+        0.84,
+    ),
+    PatternRule(
+        "external_publish",
+        (r"\b(push|deploy|publish|post|tweet|bluesky|email)\b",),
+        0.8,
+    ),
 )
 
 CONTEXT_RULES: tuple[PatternRule, ...] = (
     PatternRule("ai_caller", (r"\b(chatbot|agent|model|assistant|ai)\b",), 0.82),
     PatternRule("human_caller", (r"\b(i|me|my|we|our)\b",), 0.62),
-    PatternRule("support_need", (r"\b(help|support|triage|decide|route|switch|fallback)\b",), 0.8),
+    PatternRule(
+        "support_need",
+        (r"\b(help|support|triage|decide|route|switch|fallback)\b",),
+        0.8,
+    ),
 )
 
 SUPPORT_MODE_RULES: tuple[PatternRule, ...] = (
-    PatternRule("mechanical_only", (r"\b(deterministic|mechanical|rules?|no model|no llm)\b",), 0.86),
+    PatternRule(
+        "mechanical_only",
+        (r"\b(deterministic|mechanical|rules?|no model|no llm)\b",),
+        0.86,
+    ),
     PatternRule("agent_to_agent", (r"\b(chatbot|agent|assistant|model|ai)\b",), 0.82),
     PatternRule("human_visible", (r"\b(user|customer|client|buyer|human)\b",), 0.72),
 )
@@ -115,7 +177,12 @@ def _best_signal(rules: Sequence[PatternRule], text: str, fallback: str) -> Eliz
     for rule in rules:
         hits = rule.match(text)
         if hits and rule.confidence > best.confidence:
-            best = ElizaLayer(name="rule", signal=rule.signal, confidence=rule.confidence, evidence=hits)
+            best = ElizaLayer(
+                name="rule",
+                signal=rule.signal,
+                confidence=rule.confidence,
+                evidence=hits,
+            )
     return best
 
 
@@ -128,7 +195,9 @@ def _collect_layers(text: str) -> tuple[ElizaLayer, ...]:
         ElizaLayer("intake", "normalized", 1.0, (text[:120],) if text else ()),
         ElizaLayer("intent", intent.signal, intent.confidence or 0.5, intent.evidence),
         ElizaLayer("risk", risk.signal, risk.confidence or 0.4, risk.evidence),
-        ElizaLayer("context", context.signal, context.confidence or 0.4, context.evidence),
+        ElizaLayer(
+            "context", context.signal, context.confidence or 0.4, context.evidence
+        ),
         ElizaLayer("support_mode", mode.signal, mode.confidence or 0.4, mode.evidence),
     )
 
@@ -296,25 +365,52 @@ def _response_for(text: str, route: ElizaRoute) -> str:
 
 def _questions_for(route: ElizaRoute) -> tuple[str, ...]:
     if route.command_switch == "deny":
-        return ("What must not be deleted or overwritten?", "Can this be converted to a read-only inspection first?")
+        return (
+            "What must not be deleted or overwritten?",
+            "Can this be converted to a read-only inspection first?",
+        )
     if route.command_switch == "probe":
-        return ("Can the input be redacted?", "Who must approve before this touches live state?")
+        return (
+            "Can the input be redacted?",
+            "Who must approve before this touches live state?",
+        )
     if route.command_switch == "route":
-        return ("Should this be dry-run, receipt-only, or executed?", "What workspace boundary applies?")
+        return (
+            "Should this be dry-run, receipt-only, or executed?",
+            "What workspace boundary applies?",
+        )
     if route.command_switch == "diagnose":
         return ("What command failed?", "What exact error text should be preserved?")
     if route.command_switch == "offer":
-        return ("Is this self-serve, snapshot, or custom service?", "Should the checkout route be shown?")
+        return (
+            "Is this self-serve, snapshot, or custom service?",
+            "Should the checkout route be shown?",
+        )
     if route.command_switch == "search":
-        return ("Which source root should be searched?", "Do you need citations or only routing?")
+        return (
+            "Which source root should be searched?",
+            "Do you need citations or only routing?",
+        )
     if route.command_switch == "loop_break":
-        return ("What is the smallest reversible next action?", "What check proves the loop is broken?")
+        return (
+            "What is the smallest reversible next action?",
+            "What check proves the loop is broken?",
+        )
     if route.command_switch == "memory":
-        return ("Which state should be restored?", "What is the last trusted checkpoint?")
+        return (
+            "Which state should be restored?",
+            "What is the last trusted checkpoint?",
+        )
     if route.command_switch == "model":
-        return ("Is this classification, coding, research, or execution?", "What budget or privacy boundary applies?")
+        return (
+            "Is this classification, coding, research, or execution?",
+            "What budget or privacy boundary applies?",
+        )
     if route.command_switch == "handoff":
-        return ("Who is the receiving agent?", "What evidence must be included in the handoff?")
+        return (
+            "Who is the receiving agent?",
+            "What evidence must be included in the handoff?",
+        )
     return ("What outcome should be routed?",)
 
 
@@ -322,14 +418,42 @@ def _command_hints_for(route: ElizaRoute) -> tuple[str, ...]:
     hints: Mapping[str, tuple[str, ...]] = {
         "deny": ("do not execute", "open human review", "rewrite as read-only probe"),
         "probe": ("redact secrets", "request confirmation", "emit audit receipt"),
-        "route": ('scbe run "<command>" --json', "scbe terminal", "scbe shell --agent-json"),
-        "diagnose": ("capture failing command", "collect traceback", "run targeted smoke test"),
-        "offer": ("open docs/payments.html", "show docs/offers.json", "route buyer to checkout"),
+        "route": (
+            'scbe run "<command>" --json',
+            "scbe terminal",
+            "scbe shell --agent-json",
+        ),
+        "diagnose": (
+            "capture failing command",
+            "collect traceback",
+            "run targeted smoke test",
+        ),
+        "offer": (
+            "open docs/payments.html",
+            "show docs/offers.json",
+            "route buyer to checkout",
+        ),
         "search": ("rg <term> <path>", "open source packet", "record citation"),
-        "loop_break": ("stop broad generation", "choose one next action", "emit receipt before continuing"),
-        "memory": ("load compact state", "cite last receipt", "ask for missing checkpoint"),
-        "model": ("try local/cheap lane first", "escalate only with reason", "record model choice"),
-        "handoff": ("build handoff packet", "include goal/constraints/evidence", "name receiving lane"),
+        "loop_break": (
+            "stop broad generation",
+            "choose one next action",
+            "emit receipt before continuing",
+        ),
+        "memory": (
+            "load compact state",
+            "cite last receipt",
+            "ask for missing checkpoint",
+        ),
+        "model": (
+            "try local/cheap lane first",
+            "escalate only with reason",
+            "record model choice",
+        ),
+        "handoff": (
+            "build handoff packet",
+            "include goal/constraints/evidence",
+            "name receiving lane",
+        ),
         "ask": ("ask one clarifying question", "choose a route after reply"),
     }
     return hints.get(route.command_switch, hints["ask"])
