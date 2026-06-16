@@ -116,6 +116,8 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--runs", type=int, default=20)
     parser.add_argument("--warmup", type=int, default=5)
+    parser.add_argument("--pure-runs", type=int, default=10, help="runs for the startup-excluded engine measurement")
+    parser.add_argument("--big-target", type=int, default=200, help="batch size that amortizes subprocess startup")
     parser.add_argument("--out", type=str, default=None)
     args = parser.parse_args()
 
@@ -135,6 +137,33 @@ def main() -> int:
     if rust and rust["median"] > 0:
         speedup = round(py["median"] / rust["median"], 2)
 
+    # --- pure-encode (engine) ratio: strip Rust subprocess startup ---
+    # Two-point linear model t(k) = startup + k * per_file, solved at k=1 and k=big.
+    # Python is in-process (no startup) so its per-file rate is the batch median / k.
+    pure = None
+    if rust_built and len(files) >= 1:
+        big_mult = max(1, math.ceil(args.big_target / len(files)))
+        big = (files * big_mult)[:args.big_target]
+        one = files[:1]
+        rust_one = statistics.median(measure(run_rust, one, args.pure_runs, args.warmup))
+        rust_big = statistics.median(measure(run_rust, big, args.pure_runs, args.warmup))
+        rust_per_file = (rust_big - rust_one) / (len(big) - 1) if len(big) > 1 else rust_big
+        rust_startup = rust_one - rust_per_file
+        py_big = summarize(measure(run_python, big, args.pure_runs, args.warmup))
+        py_per_file = py_big["median"] / len(big)
+        reliable = rust_per_file > 0 and py_big["cv_pct"] < CV_WARN
+        engine_speedup = round(py_per_file / rust_per_file, 2) if rust_per_file > 0 else None
+        pure = {
+            "method": "two-point linear model t(k)=startup+k*per_file; subprocess startup excluded",
+            "batch_files": len(big),
+            "rust_startup_ms": round(rust_startup * 1000, 3),
+            "rust_per_file_ms": round(rust_per_file * 1000, 4),
+            "python_per_file_ms": round(py_per_file * 1000, 4),
+            "engine_speedup_x": engine_speedup,
+            "python_batch_cv_pct": py_big["cv_pct"],
+            "reliable": reliable,
+        }
+
     card = {
         "schema_version": "scbe_benchmark_score_v1",
         "benchmark": "ast-cube-encoder",
@@ -149,6 +178,7 @@ def main() -> int:
         },
         "result": rust if rust else py,
         "variants": {"python_reference": py, "rust": rust},
+        "pure_encode": pure,
         "baseline": {
             "name": "python-reference (encode_matrix)",
             "median": py["median"],
@@ -181,7 +211,12 @@ def main() -> int:
     if rust:
         print(f"rust   : median {rust['median']*1000:.2f} ms  CV {rust['cv_pct']}%  (n={rust['runs']})")
         verdict = f"{speedup}x faster" if stable else f"{speedup}x (UNSTABLE - re-run)"
-        print(f"speedup: {verdict}")
+        print(f"e2e    : {verdict}  (small corpus, incl. subprocess startup)")
+        if pure:
+            tag = "" if pure["reliable"] else "  (UNRELIABLE - py CV %.1f%%)" % pure["python_batch_cv_pct"]
+            rates = f"py {pure['python_per_file_ms']:.3f} vs rust {pure['rust_per_file_ms']:.4f} ms/file"
+            print(f"engine : {pure['engine_speedup_x']}x startup-excluded ({rates}; "
+                  f"startup ~{pure['rust_startup_ms']:.1f} ms){tag}")
     else:
         print("rust   : NOT BUILT (cargo build --release --manifest-path rust/ast_cube/Cargo.toml)")
     print(f"card   : {out_path.relative_to(ROOT)}")

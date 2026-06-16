@@ -15,54 +15,64 @@
     "definition": "end-to-end encode of the corpus; Python in-process (no interpreter startup), Rust one subprocess incl. process startup + binary transport"
   },
   "result": {
-    "runs": 20,
-    "mean": 0.072659,
-    "median": 0.072047,
-    "stddev": 0.003326,
-    "min": 0.06868,
-    "max": 0.081462,
-    "cv_pct": 4.577,
+    "runs": 15,
+    "mean": 0.064626,
+    "median": 0.063744,
+    "stddev": 0.003331,
+    "min": 0.061049,
+    "max": 0.071724,
+    "cv_pct": 5.154,
     "ci95": [
-      0.071201,
-      0.074116
+      0.06294,
+      0.066311
     ],
     "unit": "s"
   },
   "variants": {
     "python_reference": {
-      "runs": 20,
-      "mean": 0.234413,
-      "median": 0.223162,
-      "stddev": 0.033046,
-      "min": 0.202419,
-      "max": 0.335557,
-      "cv_pct": 14.097,
+      "runs": 15,
+      "mean": 0.20791,
+      "median": 0.206739,
+      "stddev": 0.010539,
+      "min": 0.190296,
+      "max": 0.229064,
+      "cv_pct": 5.069,
       "ci95": [
-        0.21993,
-        0.248897
+        0.202576,
+        0.213243
       ],
       "unit": "s"
     },
     "rust": {
-      "runs": 20,
-      "mean": 0.072659,
-      "median": 0.072047,
-      "stddev": 0.003326,
-      "min": 0.06868,
-      "max": 0.081462,
-      "cv_pct": 4.577,
+      "runs": 15,
+      "mean": 0.064626,
+      "median": 0.063744,
+      "stddev": 0.003331,
+      "min": 0.061049,
+      "max": 0.071724,
+      "cv_pct": 5.154,
       "ci95": [
-        0.071201,
-        0.074116
+        0.06294,
+        0.066311
       ],
       "unit": "s"
     }
   },
+  "pure_encode": {
+    "method": "two-point linear model t(k)=startup+k*per_file; subprocess startup excluded",
+    "batch_files": 200,
+    "rust_startup_ms": 13.593,
+    "rust_per_file_ms": 2.4749,
+    "python_per_file_ms": 11.1047,
+    "engine_speedup_x": 4.49,
+    "python_batch_cv_pct": 4.11,
+    "reliable": true
+  },
   "baseline": {
     "name": "python-reference (encode_matrix)",
-    "median": 0.223162,
-    "speedup_x": 3.1,
-    "speedup_note": "speedup = python.median / rust.median; quoted as evidence only when both cv_pct < 5.0"
+    "median": 0.206739,
+    "speedup_x": 3.24,
+    "speedup_note": "speedup = python.median / rust.median; quote only when both cv_pct < 5.0"
   },
   "input": {
     "description": "python/scbe/*.py (excl __init__)",
@@ -77,12 +87,12 @@
     "toolchain_versions": {
       "rust_exe": "ast_cube.exe"
     },
-    "commit": "1d49ed6dd",
+    "commit": "92489a15c",
     "date": "2026-06-15",
     "machine_class": "laptop",
     "cpu_governor": "unknown"
   },
-  "command": "python scripts/benchmarks/encoder_bench.py --runs 20 --warmup 5",
+  "command": "python scripts/benchmarks/encoder_bench.py --runs 15 --warmup 4",
   "tool": "custom (perf_counter, stdlib statistics)",
   "reproducible": true,
   "modeled_not_measured": false,
