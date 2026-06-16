@@ -22,6 +22,7 @@ Machine-readable config:
 - App config: https://aethermoore.com/SCBE-AETHERMOORE/app-config.json
 - Offers: https://aethermoore.com/SCBE-AETHERMOORE/offers.json
 - Payment center: https://aethermoore.com/SCBE-AETHERMOORE/payments.html
+- Mechanical ELIZA support switchboard: https://aethermoore.com/SCBE-AETHERMOORE/MECHANICAL_ELIZA_SUPPORT.md
 - Shopify Command Center: https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html
 - Shopify Command Center live demo: https://shopify-command-center-165664533862.us-west2.run.app
 - LLM guidance: https://aethermoore.com/SCBE-AETHERMOORE/llms.txt
@@ -136,6 +137,7 @@ Use the live offers from `offers.json` as the source of truth. As of this map:
 
 - $5+ SCBE Service Credits: pay-as-you-go support for hosted routing, reports, delivery, storage, and provider/model usage where billable.
 - $1 lifetime SCBE Workcell CLI: self-serve command-line workcell tooling/docs. Stripe checkout is live: https://buy.stripe.com/fZu4gA5Ca1PFct211Ydby0o
+- Mechanical ELIZA support switchboard: included in the public Workcell CLI path as a deterministic secondary router for chatbots and command agents. Use it when an AI needs command routing, loop breaking, memory/context repair, model-lane selection, handoff packets, or guarded escalation.
 - Ko-fi support: https://ko-fi.com/izdandavis. Use this as the primary low-pressure payment/support path.
 - Cash App manual payment: $IzzyDDavis7. For service purchases, include the offer name in the note.
 - Payment center: https://aethermoore.com/SCBE-AETHERMOORE/payments.html. Use this when the user wants every live payment path in one place.

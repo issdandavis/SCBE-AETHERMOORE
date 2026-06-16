@@ -12,6 +12,7 @@ Canonical repository: https://github.com/issdandavis/SCBE-AETHERMOORE
 - Buyer solutions page: https://aethermoore.com/SCBE-AETHERMOORE/solutions.html
 - Live offers JSON: https://aethermoore.com/SCBE-AETHERMOORE/offers.json
 - App config JSON: https://aethermoore.com/SCBE-AETHERMOORE/app-config.json
+- Mechanical ELIZA support switchboard: https://aethermoore.com/SCBE-AETHERMOORE/MECHANICAL_ELIZA_SUPPORT.md
 - Agent demos: https://aethermoore.com/SCBE-AETHERMOORE/agents.html
 - Chat: https://aethermoore.com/SCBE-AETHERMOORE/chat.html
 - Products: https://aethermoore.com/SCBE-AETHERMOORE/products.html
@@ -65,6 +66,7 @@ Low-cost path:
 - $5+ service credits.
 - $1 lifetime SCBE Workcell CLI self-serve checkout: https://buy.stripe.com/fZu4gA5Ca1PFct211Ydby0o.
 - Workcell CLI boundary: lifetime self-serve access to the public command-line workcell tooling/docs; support, managed runs, private repo work, and regulated deployments are separate.
+- Workcell CLI includes the Mechanical ELIZA support switchboard pattern: a deterministic secondary support router for chatbots that need command routing, loop breaking, memory/context repair, model-lane selection, handoff packets, or guarded escalation.
 - Ko-fi support and service-credit path: https://ko-fi.com/izdandavis.
 - Cash App manual payment: $IzzyDDavis7.
 - $20/month AetherMoore Supporter checkout: https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i.

@@ -150,6 +150,13 @@ from .audio_field_observables import (
     generate_decaying_sine,
     generate_sine,
 )
+from .mechanical_eliza import (
+    ElizaLayer,
+    ElizaRoute,
+    ElizaSupportPacket,
+    route_dialogue,
+    route_support,
+)
 
 __all__ += [
     "AtomicElement",
@@ -213,4 +220,9 @@ __all__ += [
     "analyze_audio_field",
     "generate_sine",
     "generate_decaying_sine",
+    "ElizaLayer",
+    "ElizaRoute",
+    "ElizaSupportPacket",
+    "route_dialogue",
+    "route_support",
 ]
