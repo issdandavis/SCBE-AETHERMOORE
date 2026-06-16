@@ -16,7 +16,7 @@ Version: 3.0.0
 
 import numpy as np
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any, Tuple
+from typing import List, Dict, Optional, Any, Tuple, Sequence
 from enum import Enum
 import hashlib
 import json
@@ -56,6 +56,21 @@ class PHDM21DConfig:
     def __post_init__(self):
         assert self.total_dim == (self.hyperbolic_dim + self.phase_dim + 
                                   self.flux_dim + self.audit_dim)
+
+
+@dataclass(frozen=True)
+class InverseEmbeddingMatch:
+    """Nearest-token witness for a geometric address.
+
+    A continuous embedding is not globally invertible by itself. This records
+    the bounded inverse that is actually useful for GeoSeal: resolve a point
+    against a known token vocabulary and return the closest token plus the
+    distance proof.
+    """
+    token: str
+    distance: float
+    rank: int
+    exact: bool
 
 class PoincareBall:
     """Poincare Ball manifold for hyperbolic geometry"""
@@ -127,6 +142,92 @@ class PHDMEmbedder:
         
         assert len(embedding) == self.config.total_dim
         return embedding
+
+    def geometric_address(self, token: str, context: Optional[Dict] = None) -> Dict[str, Any]:
+        """Encode one token as a portable Poincare address packet."""
+        embedding = self.encode(token, context=context)
+        hyperbolic = embedding[:self.config.hyperbolic_dim]
+        return {
+            "schema_version": "scbe_poincare_token_address_v1",
+            "token": token,
+            "hyperbolic_dim": self.config.hyperbolic_dim,
+            "position": hyperbolic.tolist(),
+            "radial_norm": float(np.linalg.norm(hyperbolic)),
+            "trust_ring": self.get_trust_ring(embedding),
+        }
+
+    def inverse_embedding(
+        self,
+        embedding_or_position: np.ndarray | Sequence[float],
+        candidates: Sequence[str],
+        *,
+        context: Optional[Dict] = None,
+        top_k: int = 1,
+        exact_tolerance: float = 1e-12,
+    ) -> List[InverseEmbeddingMatch]:
+        """Resolve a Poincare position back to the nearest token candidates.
+
+        This is a bounded inverse: it is exact when the point came from one of
+        the supplied candidates under this embedder, and honest otherwise by
+        returning ranked distances instead of pretending the full hash is
+        reversible from geometry alone.
+        """
+        if top_k < 1:
+            raise ValueError("top_k must be >= 1")
+        if not candidates:
+            raise ValueError("candidates must not be empty")
+
+        point = np.asarray(embedding_or_position, dtype=float)
+        if point.ndim != 1:
+            raise ValueError("embedding_or_position must be a 1D vector")
+        if len(point) == self.config.total_dim:
+            point = point[:self.config.hyperbolic_dim]
+        if len(point) != self.config.hyperbolic_dim:
+            raise ValueError("position must have %d or %d dimensions" % (
+                self.config.hyperbolic_dim, self.config.total_dim))
+        if np.linalg.norm(point) >= self.config.poincare_radius:
+            raise ValueError("position is outside the open Poincare ball")
+
+        ranked: List[Tuple[float, str]] = []
+        for token in candidates:
+            candidate = self.encode(token, context=context)[:self.config.hyperbolic_dim]
+            dist = float(self.skull.hyperbolic_distance(point, candidate))
+            ranked.append((dist, token))
+        ranked.sort(key=lambda item: (item[0], item[1]))
+
+        return [
+            InverseEmbeddingMatch(
+                token=token,
+                distance=dist,
+                rank=i + 1,
+                exact=dist <= exact_tolerance,
+            )
+            for i, (dist, token) in enumerate(ranked[:top_k])
+        ]
+
+    def inverse_geometric_address(
+        self,
+        address: Dict[str, Any],
+        candidates: Sequence[str],
+        *,
+        context: Optional[Dict] = None,
+        top_k: int = 1,
+    ) -> Dict[str, Any]:
+        """Resolve a ``geometric_address`` packet back through a candidate table."""
+        if address.get("schema_version") != "scbe_poincare_token_address_v1":
+            raise ValueError("unknown geometric address schema")
+        matches = self.inverse_embedding(
+            address["position"],
+            candidates,
+            context=context,
+            top_k=top_k,
+        )
+        return {
+            "schema_version": "scbe_poincare_token_inverse_v1",
+            "source_schema_version": address["schema_version"],
+            "match": matches[0].__dict__,
+            "matches": [m.__dict__ for m in matches],
+        }
     
     def _hash_to_vector(self, text: str, dim: int) -> np.ndarray:
         """Convert text to vector using cryptographic hash"""

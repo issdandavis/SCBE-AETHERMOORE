@@ -7,6 +7,7 @@ from pathlib import Path
 from src.crypto.geoseal_execution_gate import (
     execute_governed_command,
     scan_command,
+    simulate_command,
 )
 from src.crypto.sealed_memory_packets import unseal_memory_packet
 
@@ -173,3 +174,67 @@ def test_exec_runs_bare_python_alias_after_resolution() -> None:
 
     assert result.ran, f"expected ran=True, got error={result.error!r}"
     assert "resolved-ok" in result.stdout
+
+
+# ── inline-payload logic detection (catches dangerous CODE inside `-c`) ──
+# These are scan-only: the dangerous payload is analysed, never executed.
+
+def test_inline_python_destructive_payload_is_denied() -> None:
+    # The dangerous logic lives inside the -c string; no rm/Remove-Item command
+    # SHAPE matches. The gate must look inside the payload and DENY it.
+    for code in (
+        "shutil.rmtree('build')",
+        "os.system('whatever')",
+        "os.remove('x')",
+        "__import__('os').system('y')",
+        "eval('1+1')",
+        "import socket",
+    ):
+        decision = scan_command(f'{sys.executable} -c "{code}"')
+        assert decision.tier == "DENY", code
+        assert not decision.allowed, code
+        assert any(f.rule.startswith("inline-danger") for f in decision.findings), code
+
+
+def test_benign_inline_python_payload_stays_quarantine() -> None:
+    decision = scan_command(f'{sys.executable} -c "print(2 + 2)"')
+    assert decision.tier == "QUARANTINE"
+    assert decision.allowed
+    assert not any(f.rule.startswith("inline-danger") for f in decision.findings)
+
+
+def test_inline_node_child_process_is_denied() -> None:
+    decision = scan_command("node -c \"require('child_process').execSync('id')\"")
+    assert decision.tier == "DENY"
+    assert any(f.rule == "inline-danger-node" for f in decision.findings)
+
+
+# ── simulate_command: pre-flight dry-run that NEVER executes ──
+
+def test_simulate_allows_a_good_command() -> None:
+    sim = simulate_command(f"{sys.executable} --version", max_tier="ALLOW")
+    assert sim.would_run
+    assert sim.decision.tier == "ALLOW"
+    assert sim.blocked_reason is None
+    assert sim.summary.startswith("WOULD RUN")
+
+
+def test_simulate_blocks_a_destructive_command() -> None:
+    sim = simulate_command("rm -rf /tmp/x", max_tier="QUARANTINE")
+    assert not sim.would_run
+    assert sim.decision.tier == "DENY"
+    assert sim.blocked_reason == "gate denied"
+    assert sim.summary.startswith("BLOCKED")
+
+
+def test_simulate_never_invokes_subprocess(monkeypatch) -> None:
+    # Hard proof of the safety contract: even for a command that WOULD run,
+    # simulate_command must not launch a subprocess.
+    import src.crypto.geoseal_execution_gate as gate
+
+    def _boom(*args, **kwargs):  # pragma: no cover - must never be called
+        raise AssertionError("simulate_command must not execute a subprocess")
+
+    monkeypatch.setattr(gate.subprocess, "run", _boom)
+    sim = gate.simulate_command(f'{sys.executable} -c "print(1)"', max_tier="QUARANTINE")
+    assert sim.would_run  # would run at QUARANTINE — but subprocess.run was never called
