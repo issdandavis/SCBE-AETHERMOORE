@@ -78,7 +78,10 @@ def _execute(worker: Worker, job: Job) -> Any:
     pen = 1.0 + finsler_scaled(worker.scale, worker.pos, job.profile)
     if job.work is not None:
         return job.work(pen)
-    time.sleep(job.base * pen)         # model agent latency (I/O-bound)
+    serve = getattr(worker, "serve", None)   # a model/agent worker serves the job itself
+    if serve is not None:
+        return serve(job, pen)
+    time.sleep(job.base * pen)               # else model generic agent latency (I/O-bound)
     return f"{job.name}@{worker.name}"
 
 
@@ -192,6 +195,127 @@ class GeometricScheduler:
             assignments=assigned, busy=busy,
             done=sum(len(v) for v in assigned.values()), failed=len(errors),
             results=results, errors=errors,
+        )
+
+
+class StreamScheduler:
+    """Online geometric scheduler — jobs arrive over time, workers run continuously.
+
+    Two routing policies, the user's dual-topology:
+      * phi   — smooth contraction: each free worker pulls the job it is cheapest at
+                (affinity routing) — efficient steady-state flow.
+      * purge — periodic Collatz-style shedding: every `purge_every` claims, a worker
+                instead grabs the OLDEST waiting job regardless of affinity, clearing
+                backlog/clog so no job ages out (snake-skin shedding of the queue).
+
+    submit() can be called from any thread while running; close() stops intake and
+    lets workers drain; join() returns the SchedReport.
+    """
+
+    def __init__(self, workers: Sequence[Worker], max_retries: int = 2,
+                 purge_every: int = 0):
+        if not workers:
+            raise ValueError("need at least one worker")
+        self.workers = list(workers)
+        self.max_retries = max_retries
+        self.purge_every = purge_every          # 0 = pure phi, no purge passes
+        self._cv = threading.Condition()
+        self._jobs: Dict[int, Job] = {}         # jid -> job (waiting)
+        self._cost: Dict[int, np.ndarray] = {}  # jid -> per-worker cost row
+        self._order = 0                          # submit sequence (age)
+        self._jid = 0
+        self._retries: Dict[int, int] = {}
+        self._closed = False
+        self._threads: List[threading.Thread] = []
+        self.busy = {w.name: 0.0 for w in self.workers}
+        self.assigned = {w.name: [] for w in self.workers}
+        self.results: Dict[str, Any] = {}
+        self.errors: List[Tuple[str, str]] = []
+        self._purged = 0
+        self._names: set = set()
+
+    def submit(self, job: Job) -> None:
+        with self._cv:
+            if self._closed:
+                raise RuntimeError("scheduler is closed")
+            if job.name in self._names:
+                raise ValueError(f"duplicate job name {job.name!r}")
+            self._names.add(job.name)
+            jid = self._jid
+            self._jid += 1
+            self._jobs[jid] = job
+            self._cost[jid] = np.array(
+                [finsler_scaled(w.scale, w.pos, job.profile) for w in self.workers])
+            self._jobs[jid]._order = self._order  # type: ignore[attr-defined]
+            self._order += 1
+            self._retries[jid] = 0
+            self._cv.notify()
+
+    def _claim(self, wi: int) -> Optional[int]:
+        """Pick a waiting job for worker wi (caller holds the lock). None if none."""
+        if not self._jobs:
+            return None
+        purge = self.purge_every and (self._purged % self.purge_every == self.purge_every - 1)
+        if purge:
+            jid = min(self._jobs, key=lambda j: getattr(self._jobs[j], "_order", j))
+        else:
+            jid = min(self._jobs, key=lambda j: self._cost[j][wi])
+        self._purged += 1
+        return jid
+
+    def _loop(self, wi: int) -> None:
+        w = self.workers[wi]
+        while True:
+            with self._cv:
+                while not self._jobs and not self._closed:
+                    self._cv.wait()
+                if not self._jobs and self._closed:
+                    return
+                jid = self._claim(wi)
+                if jid is None:
+                    continue
+                job = self._jobs.pop(jid)
+                cost_row = self._cost.pop(jid)
+            t0 = time.perf_counter()
+            try:
+                res = _execute(w, job)
+            except Exception as exc:  # noqa: BLE001
+                with self._cv:
+                    self._retries[jid] += 1
+                    if self._retries[jid] <= self.max_retries:
+                        self._jobs[jid] = job          # re-queue live
+                        self._cost[jid] = cost_row
+                        self._cv.notify()
+                    else:
+                        self.errors.append((job.name, str(exc)))
+                continue
+            dt = time.perf_counter() - t0
+            with self._cv:
+                self.busy[w.name] += dt
+                self.assigned[w.name].append(job.name)
+                self.results[job.name] = res
+
+    def start(self) -> "StreamScheduler":
+        self._threads = [threading.Thread(target=self._loop, args=(wi,), name=w.name)
+                         for wi, w in enumerate(self.workers)]
+        for t in self._threads:
+            t.start()
+        return self
+
+    def close(self) -> None:
+        with self._cv:
+            self._closed = True
+            self._cv.notify_all()
+
+    def join(self) -> SchedReport:
+        for t in self._threads:
+            t.join()
+        return SchedReport(
+            mode=f"stream/{'purge' if self.purge_every else 'phi'}",
+            wall=0.0, makespan=max(self.busy.values()) if self.busy else 0.0,
+            assignments=self.assigned, busy=self.busy,
+            done=sum(len(v) for v in self.assigned.values()), failed=len(self.errors),
+            results=self.results, errors=self.errors,
         )
 
 
