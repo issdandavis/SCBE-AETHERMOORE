@@ -1,0 +1,578 @@
+[
+ {
+  "name": "typescript",
+  "ext": "ts",
+  "comment": "//",
+  "indent": "  ",
+  "prelude": [],
+  "fn_open": "function {fn}(a0: number, b0: number, c0: number): number {",
+  "stack_init": "const s: number[] = [a0, b0, c0];",
+  "pop2": "{ const b = s.pop()!; const a = s.pop()!; ",
+  "pop1": "{ const a = s.pop()!; ",
+  "push": "s.push({expr}); }",
+  "ret": "return s.length ? s[s.length - 1] : 0;",
+  "fn_close": [
+   "}"
+  ],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "Math.abs({a})",
+   "sqrt": "Math.sqrt({a})",
+   "floor": "Math.floor({a})",
+   "ceil": "Math.ceil({a})",
+   "round": "Math.round({a})",
+   "inc": "({a} + 1)",
+   "dec": "({a} - 1)"
+  },
+  "func2": {
+   "pow": "Math.pow({a}, {b})",
+   "min": "Math.min({a}, {b})",
+   "max": "Math.max({a}, {b})",
+   "mod": "({a} % {b})"
+  },
+  "cmp_tmpl": "({cond} ? 1.0 : 0.0)",
+  "main_tmpl": [
+   "console.log({fn}(2.0, 3.0, 4.0));"
+  ],
+  "binop_over": {}
+ },
+ {
+  "name": "java",
+  "ext": "java",
+  "comment": "//",
+  "indent": "    ",
+  "prelude": [
+   "public class Main {"
+  ],
+  "fn_open": "static double {fn}(double a0, double b0, double c0) {",
+  "stack_init": "double[] s = new double[1024]; int sp = 0; s[sp++] = a0; s[sp++] = b0; s[sp++] = c0;",
+  "pop2": "{ double b = s[--sp]; double a = s[--sp]; ",
+  "pop1": "{ double a = s[--sp]; ",
+  "push": "s[sp++] = {expr}; }",
+  "ret": "return sp > 0 ? s[sp - 1] : 0.0;",
+  "fn_close": [
+   "}"
+  ],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "Math.abs({a})",
+   "sqrt": "Math.sqrt({a})",
+   "floor": "Math.floor({a})",
+   "ceil": "Math.ceil({a})",
+   "round": "(double) Math.round({a})",
+   "inc": "({a} + 1)",
+   "dec": "({a} - 1)"
+  },
+  "func2": {
+   "pow": "Math.pow({a}, {b})",
+   "min": "Math.min({a}, {b})",
+   "max": "Math.max({a}, {b})",
+   "mod": "({a} % {b})"
+  },
+  "cmp_tmpl": "(({cond}) ? 1.0 : 0.0)",
+  "main_tmpl": [
+   "    public static void main(String[] args) {",
+   "        System.out.println({fn}(2.0, 3.0, 4.0));",
+   "    }",
+   "}"
+  ],
+  "binop_over": {}
+ },
+ {
+  "name": "cpp",
+  "ext": "cpp",
+  "comment": "//",
+  "indent": "    ",
+  "prelude": [
+   "#include <iostream>",
+   "#include <cmath>",
+   "#include <vector>",
+   "#include <algorithm>"
+  ],
+  "fn_open": "double {fn}(double a0, double b0, double c0) {",
+  "stack_init": "std::vector<double> s; s.push_back(a0); s.push_back(b0); s.push_back(c0);",
+  "pop2": "{ double b = s.back(); s.pop_back(); double a = s.back(); s.pop_back(); ",
+  "pop1": "{ double a = s.back(); s.pop_back(); ",
+  "push": "s.push_back({expr}); }",
+  "ret": "return s.empty() ? 0.0 : s.back();",
+  "fn_close": [
+   "}"
+  ],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "std::fabs({a})",
+   "sqrt": "std::sqrt({a})",
+   "floor": "std::floor({a})",
+   "ceil": "std::ceil({a})",
+   "round": "std::round({a})",
+   "inc": "({a} + 1.0)",
+   "dec": "({a} - 1.0)"
+  },
+  "func2": {
+   "pow": "std::pow({a}, {b})",
+   "min": "std::min({a}, {b})",
+   "max": "std::max({a}, {b})",
+   "mod": "std::fmod({a}, {b})"
+  },
+  "cmp_tmpl": "(({cond}) ? 1.0 : 0.0)",
+  "main_tmpl": [
+   "int main() {",
+   "    std::cout << {fn}(2.0, 3.0, 4.0) << std::endl;",
+   "    return 0;",
+   "}"
+  ],
+  "binop_over": {}
+ },
+ {
+  "name": "csharp",
+  "ext": "cs",
+  "comment": "//",
+  "indent": "    ",
+  "prelude": [
+   "using System;",
+   "class Program {"
+  ],
+  "fn_open": "static double {fn}(double a0, double b0, double c0) {",
+  "stack_init": "double[] s = new double[1024]; int sp = 0; s[sp++] = a0; s[sp++] = b0; s[sp++] = c0;",
+  "pop2": "{ double b = s[--sp]; double a = s[--sp]; ",
+  "pop1": "{ double a = s[--sp]; ",
+  "push": "s[sp++] = {expr}; }",
+  "ret": "return sp > 0 ? s[sp-1] : 0.0;",
+  "fn_close": [
+   "}"
+  ],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "Math.Abs({a})",
+   "sqrt": "Math.Sqrt({a})",
+   "floor": "Math.Floor({a})",
+   "ceil": "Math.Ceiling({a})",
+   "round": "Math.Round({a})",
+   "inc": "({a} + 1)",
+   "dec": "({a} - 1)"
+  },
+  "func2": {
+   "pow": "Math.Pow({a}, {b})",
+   "min": "Math.Min({a}, {b})",
+   "max": "Math.Max({a}, {b})",
+   "mod": "({a} % {b})"
+  },
+  "cmp_tmpl": "({cond} ? 1.0 : 0.0)",
+  "main_tmpl": [
+   "    static void Main() {",
+   "        Console.WriteLine({fn}(2.0, 3.0, 4.0));",
+   "    }",
+   "}"
+  ]
+ },
+ {
+  "name": "go",
+  "ext": "go",
+  "comment": "//",
+  "indent": "\t",
+  "prelude": [
+   "package main",
+   "",
+   "import (",
+   "\t\"fmt\"",
+   "\t\"math\"",
+   ")",
+   "",
+   "var _ = math.Pi",
+   "var _ = fmt.Sprint",
+   "",
+   "func gtop(s []float64) float64 {",
+   "\tif len(s) > 0 {",
+   "\t\treturn s[len(s)-1]",
+   "\t}",
+   "\treturn 0.0",
+   "}"
+  ],
+  "fn_open": "func {fn}(a0 float64, b0 float64, c0 float64) float64 {",
+  "stack_init": "s := []float64{a0, b0, c0}",
+  "pop2": "{ b := s[len(s)-1]; s = s[:len(s)-1]; a := s[len(s)-1]; s = s[:len(s)-1]; ",
+  "pop1": "{ a := s[len(s)-1]; s = s[:len(s)-1]; ",
+  "push": "s = append(s, {expr}); }",
+  "ret": "return gtop(s)",
+  "fn_close": [
+   "}"
+  ],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "math.Abs({a})",
+   "sqrt": "math.Sqrt({a})",
+   "floor": "math.Floor({a})",
+   "ceil": "math.Ceil({a})",
+   "round": "math.Round({a})",
+   "inc": "({a} + 1)",
+   "dec": "({a} - 1)"
+  },
+  "func2": {
+   "pow": "math.Pow({a}, {b})",
+   "min": "math.Min({a}, {b})",
+   "max": "math.Max({a}, {b})",
+   "mod": "math.Mod({a}, {b})"
+  },
+  "cmp_tmpl": "(func() float64 { if {cond} { return 1.0 }; return 0.0 }())",
+  "binop_over": {},
+  "main_tmpl": [
+   "func main() {",
+   "\tfmt.Println({fn}(2.0, 3.0, 4.0))",
+   "}"
+  ]
+ },
+ {
+  "name": "ruby",
+  "ext": "rb",
+  "comment": "#",
+  "indent": "  ",
+  "prelude": [],
+  "fn_open": "def {fn}({params})",
+  "stack_init": "s = [{init}]",
+  "pop2": "b = s.pop; a = s.pop; ",
+  "pop1": "a = s.pop; ",
+  "push": "s.push({expr})",
+  "ret": "return s.empty? ? 0.0 : s.last",
+  "fn_close": [
+   "end"
+  ],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "({a}).abs",
+   "sqrt": "Math.sqrt({a})",
+   "floor": "({a}).floor.to_f",
+   "ceil": "({a}).ceil.to_f",
+   "round": "({a}).round.to_f",
+   "inc": "({a} + 1.0)",
+   "dec": "({a} - 1.0)"
+  },
+  "func2": {
+   "pow": "({a} ** {b})",
+   "min": "[{a}, {b}].min",
+   "max": "[{a}, {b}].max",
+   "mod": "({a} % {b})"
+  },
+  "cmp_tmpl": "({cond} ? 1.0 : 0.0)",
+  "main_tmpl": [
+   "puts {fn}(2.0, 3.0, 4.0)"
+  ],
+  "binop_over": {}
+ },
+ {
+  "name": "kotlin",
+  "ext": "kt",
+  "comment": "//",
+  "indent": "    ",
+  "prelude": [
+   "import kotlin.math.*"
+  ],
+  "fn_open": "fun {fn}(a0: Double, b0: Double, c0: Double): Double {",
+  "stack_init": "val s: MutableList<Double> = mutableListOf(a0, b0, c0)",
+  "pop2": "run { val b = s.removeAt(s.size - 1); val a = s.removeAt(s.size - 1); ",
+  "pop1": "run { val a = s.removeAt(s.size - 1); ",
+  "push": "s.add({expr}) }",
+  "ret": "return if (s.isNotEmpty()) s[s.size - 1] else 0.0",
+  "fn_close": [
+   "}"
+  ],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "abs({a})",
+   "sqrt": "sqrt({a})",
+   "floor": "floor({a})",
+   "ceil": "ceil({a})",
+   "round": "round({a})",
+   "inc": "({a} + 1.0)",
+   "dec": "({a} - 1.0)"
+  },
+  "func2": {
+   "pow": "({a}).pow({b})",
+   "min": "min({a}, {b})",
+   "max": "max({a}, {b})",
+   "mod": "({a} % {b})"
+  },
+  "cmp_tmpl": "(if ({cond}) 1.0 else 0.0)",
+  "binop_over": {},
+  "main_tmpl": [
+   "fun main() {",
+   "    println({fn}(2.0, 3.0, 4.0))",
+   "}"
+  ]
+ },
+ {
+  "name": "swift",
+  "ext": "swift",
+  "comment": "//",
+  "indent": "    ",
+  "prelude": [
+   "import Foundation"
+  ],
+  "fn_open": "func {fn}(_ a0: Double, _ b0: Double, _ c0: Double) -> Double {",
+  "stack_init": "var s: [Double] = [a0, b0, c0]",
+  "pop2": "do { let b = s.removeLast(); let a = s.removeLast(); ",
+  "pop1": "do { let a = s.removeLast(); ",
+  "push": "s.append({expr}) }",
+  "ret": "return s.last ?? 0.0",
+  "fn_close": [
+   "}"
+  ],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "abs({a})",
+   "sqrt": "sqrt({a})",
+   "floor": "floor({a})",
+   "ceil": "ceil({a})",
+   "round": "({a}).rounded()",
+   "inc": "({a} + 1.0)",
+   "dec": "({a} - 1.0)"
+  },
+  "func2": {
+   "pow": "pow({a}, {b})",
+   "min": "min({a}, {b})",
+   "max": "max({a}, {b})",
+   "mod": "({a}).truncatingRemainder(dividingBy: {b})"
+  },
+  "cmp_tmpl": "({cond} ? 1.0 : 0.0)",
+  "main_tmpl": [
+   "print({fn}(2.0, 3.0, 4.0))"
+  ],
+  "binop_over": {}
+ },
+ {
+  "name": "php",
+  "ext": "php",
+  "comment": "//",
+  "indent": "    ",
+  "prelude": [
+   "<?php"
+  ],
+  "fn_open": "function {fn}($a0, $b0, $c0) {",
+  "stack_init": "$s = array($a0, $b0, $c0);",
+  "pop2": "{ $b = array_pop($s); $a = array_pop($s); ",
+  "pop1": "{ $a = array_pop($s); ",
+  "push": "$s[] = {expr}; }",
+  "ret": "return count($s) ? end($s) : null;",
+  "fn_close": [
+   "}"
+  ],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "abs({a})",
+   "sqrt": "sqrt({a})",
+   "floor": "floor({a})",
+   "ceil": "ceil({a})",
+   "round": "round({a})",
+   "inc": "({a} + 1)",
+   "dec": "({a} - 1)"
+  },
+  "func2": {
+   "pow": "pow({a}, {b})",
+   "min": "min({a}, {b})",
+   "max": "max({a}, {b})",
+   "mod": "fmod({a}, {b})"
+  },
+  "cmp_tmpl": "({cond} ? 1.0 : 0.0)",
+  "main_tmpl": [
+   "echo {fn}(2.0, 3.0, 4.0), \"\\n\";"
+  ],
+  "binop_over": {}
+ },
+ {
+  "name": "lua",
+  "ext": "lua",
+  "comment": "--",
+  "indent": "  ",
+  "prelude": [],
+  "fn_open": "function {fn}({params})",
+  "stack_init": "local s = {{init}}",
+  "pop2": "do local b = s[#s]; s[#s] = nil; local a = s[#s]; s[#s] = nil; ",
+  "pop1": "do local a = s[#s]; s[#s] = nil; ",
+  "push": "s[#s+1] = {expr} end",
+  "ret": "return #s > 0 and s[#s] or 0.0",
+  "fn_close": [
+   "end"
+  ],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "math.abs({a})",
+   "sqrt": "math.sqrt({a})",
+   "floor": "math.floor({a})",
+   "ceil": "math.ceil({a})",
+   "round": "math.floor(({a}) + 0.5)",
+   "inc": "({a} + 1)",
+   "dec": "({a} - 1)"
+  },
+  "func2": {
+   "pow": "(({a}) ^ ({b}))",
+   "min": "math.min({a}, {b})",
+   "max": "math.max({a}, {b})",
+   "mod": "({a} % {b})"
+  },
+  "cmp_tmpl": "(({cond}) and 1.0 or 0.0)",
+  "main_tmpl": [
+   "print({fn}(2.0, 3.0, 4.0))"
+  ],
+  "binop_over": {}
+ },
+ {
+  "name": "scala",
+  "ext": "scala",
+  "comment": "//",
+  "indent": "  ",
+  "prelude": [
+   "import scala.math._",
+   "import scala.collection.mutable.ArrayBuffer"
+  ],
+  "fn_open": "def {fn}(a0: Double, b0: Double, c0: Double): Double = {",
+  "stack_init": "val s = ArrayBuffer[Double](a0, b0, c0)",
+  "pop2": "{ val b = s.remove(s.length - 1); val a = s.remove(s.length - 1); ",
+  "pop1": "{ val a = s.remove(s.length - 1); ",
+  "push": "s += ({expr}); }",
+  "ret": "s.lastOption.getOrElse(0.0)",
+  "fn_close": [
+   "}"
+  ],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "abs({a})",
+   "sqrt": "sqrt({a})",
+   "floor": "floor({a})",
+   "ceil": "ceil({a})",
+   "round": "round({a}).toDouble",
+   "inc": "({a} + 1.0)",
+   "dec": "({a} - 1.0)"
+  },
+  "func2": {
+   "pow": "pow({a}, {b})",
+   "min": "min({a}, {b})",
+   "max": "max({a}, {b})",
+   "mod": "({a} % {b})"
+  },
+  "cmp_tmpl": "(if ({cond}) 1.0 else 0.0)",
+  "main_tmpl": [
+   "object Main {",
+   "  def main(args: Array[String]): Unit = {",
+   "    println({fn}(2.0, 3.0, 4.0))",
+   "  }",
+   "}"
+  ],
+  "binop_over": {}
+ },
+ {
+  "name": "julia",
+  "ext": "jl",
+  "comment": "#",
+  "indent": "    ",
+  "prelude": [],
+  "fn_open": "function {fn}({params})",
+  "stack_init": "s = Float64[{init}]",
+  "pop2": "b = pop!(s); a = pop!(s); ",
+  "pop1": "a = pop!(s); ",
+  "push": "push!(s, {expr})",
+  "ret": "return isempty(s) ? 0.0 : s[end]",
+  "fn_close": [
+   "end"
+  ],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "abs({a})",
+   "sqrt": "sqrt({a})",
+   "floor": "floor({a})",
+   "ceil": "ceil({a})",
+   "round": "round({a})",
+   "inc": "({a} + 1.0)",
+   "dec": "({a} - 1.0)"
+  },
+  "func2": {
+   "pow": "({a} ^ {b})",
+   "min": "min({a}, {b})",
+   "max": "max({a}, {b})",
+   "mod": "mod({a}, {b})"
+  },
+  "cmp_tmpl": "({cond} ? 1.0 : 0.0)",
+  "main_tmpl": [
+   "println({fn}(2.0, 3.0, 4.0))"
+  ]
+ },
+ {
+  "name": "haskell",
+  "ext": "hs",
+  "comment": "--",
+  "indent": "    ",
+  "prelude": [
+   "import Data.Fixed (mod')",
+   "",
+   "fmod :: Double -> Double -> Double",
+   "fmod a b = mod' a b"
+  ],
+  "fn_open": "{fn} a0 b0 c0 =",
+  "stack_init": "let s = [c0, b0, a0] in",
+  "pop2": "let (b:a:t) = s in let s = ",
+  "pop1": "let (a:t) = s in let s = ",
+  "push": "({expr}) : t in",
+  "ret": "case s of { (x:_) -> x; [] -> 0.0 }",
+  "fn_close": [],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "abs ({a})",
+   "sqrt": "sqrt ({a})",
+   "floor": "fromIntegral (floor ({a}) :: Integer)",
+   "ceil": "fromIntegral (ceiling ({a}) :: Integer)",
+   "round": "fromIntegral (round ({a}) :: Integer)",
+   "inc": "(({a}) + 1.0)",
+   "dec": "(({a}) - 1.0)"
+  },
+  "func2": {
+   "pow": "(({a}) ** ({b}))",
+   "min": "min ({a}) ({b})",
+   "max": "max ({a}) ({b})",
+   "mod": "fmod ({a}) ({b})"
+  },
+  "cmp_tmpl": "(if {cond} then 1.0 else 0.0)",
+  "main_tmpl": [
+   "main :: IO ()",
+   "main = print ({fn} 2.0 3.0 4.0)"
+  ]
+ },
+ {
+  "name": "zig",
+  "ext": "zig",
+  "comment": "//",
+  "indent": "    ",
+  "prelude": [
+   "const std = @import(\"std\");"
+  ],
+  "fn_open": "fn {fn}(a0: f64, b0: f64, c0: f64) f64 {",
+  "stack_init": "var s: [1024]f64 = undefined; var sp: usize = 0; s[sp] = a0; sp += 1; s[sp] = b0; sp += 1; s[sp] = c0; sp += 1;",
+  "pop2": "{ sp -= 1; const b = s[sp]; sp -= 1; const a = s[sp]; ",
+  "pop1": "{ sp -= 1; const a = s[sp]; ",
+  "push": "s[sp] = {expr}; sp += 1; }",
+  "ret": "return if (sp > 0) s[sp - 1] else 0.0;",
+  "fn_close": [
+   "}"
+  ],
+  "func1": {
+   "neg": "-({a})",
+   "abs": "@abs({a})",
+   "sqrt": "std.math.sqrt({a})",
+   "floor": "std.math.floor({a})",
+   "ceil": "std.math.ceil({a})",
+   "round": "std.math.round({a})",
+   "inc": "({a} + 1.0)",
+   "dec": "({a} - 1.0)"
+  },
+  "func2": {
+   "pow": "std.math.pow(f64, {a}, {b})",
+   "min": "@min({a}, {b})",
+   "max": "@max({a}, {b})",
+   "mod": "@rem({a}, {b})"
+  },
+  "cmp_tmpl": "(if ({cond}) @as(f64, 1.0) else @as(f64, 0.0))",
+  "binop_over": {},
+  "main_tmpl": [
+   "pub fn main() void {",
+   "    std.debug.print(\"{d}\\n\", .{{fn}(2.0, 3.0, 4.0)});",
+   "}"
+  ]
+ }
+]
