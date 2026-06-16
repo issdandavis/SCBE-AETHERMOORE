@@ -66,3 +66,11 @@ def test_geoseal_signature_is_nonzero_and_stable():
     assert a == b                            # deterministic
     sig = [ln for ln in a.splitlines() if "geoseal" in ln][0]
     assert "0000000000000000" not in sig     # XOR-fold fixed the splitmix64(0) artifact
+
+
+def test_plain_output_is_ascii_safe_when_stdout_is_not_utf8(monkeypatch):
+    monkeypatch.setattr(F, "_unicode_enabled", lambda: False)
+    out = F.render("+ sqrt", ("python",), color=False)
+    out.encode("ascii")
+    assert "+- SCBE * cube code" in out
+    assert "OK tongue_fn(2,3,4) -> 2.64575" in out

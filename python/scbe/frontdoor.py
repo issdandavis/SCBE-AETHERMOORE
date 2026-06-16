@@ -77,9 +77,15 @@ def _style_enabled(flag: bool) -> bool:
     return flag and sys.stdout.isatty() and os.environ.get("NO_COLOR") is None
 
 
+def _unicode_enabled() -> bool:
+    enc = (getattr(sys.stdout, "encoding", None) or "").lower()
+    return "utf" in enc
+
+
 class _S:
     def __init__(self, on: bool):
         self.on = on
+        self.uni = _unicode_enabled()
 
     def _w(self, s, code):
         return ("\x1b[%sm%s\x1b[0m" % (code, s)) if self.on else s
@@ -100,25 +106,35 @@ def _vis(s: str) -> int:
 def _clip(s: str, w: int, st: _S) -> str:
     if _vis(s) <= w:
         return s
-    return st.dim(_ANSI.sub("", s)[:max(0, w - 1)] + "…")
+    ellipsis = "…" if st.uni else "..."
+    return st.dim(_ANSI.sub("", s)[:max(0, w - len(ellipsis))] + ellipsis)
 
 
 def _panel(title: str, lines: Sequence[str], st: _S, inner: int, accent=None) -> str:
     """Render a titled box at a FIXED inner width so stacked panels line up."""
     accent = accent or st.cyan
     if _vis(title) > inner - 4:
-        title = _ANSI.sub("", title)[:inner - 5] + "…"
-    top = accent("╭─ ") + st.bold(title) + " " + accent("─" * (inner - _vis(title) - 3) + "╮")
+        ellipsis = "…" if st.uni else "..."
+        title = _ANSI.sub("", title)[:inner - 4 - len(ellipsis)] + ellipsis
+    if st.uni:
+        tl, tr, bl, br, h, v = "╭", "╮", "╰", "╯", "─", "│"
+    else:
+        tl, tr, bl, br, h, v = "+", "+", "+", "+", "-", "|"
+    top = accent(tl + h + " ") + st.bold(title) + " " + accent(h * (inner - _vis(title) - 3) + tr)
     out = [top]
     for ln in lines:
         ln = _clip(ln, inner - 2, st)
-        out.append(accent("│ ") + ln + " " * (inner - _vis(ln) - 2) + accent(" │"))
-    out.append(accent("╰" + "─" * inner + "╯"))
+        out.append(accent(v + " ") + ln + " " * (inner - _vis(ln) - 2) + accent(" " + v))
+    out.append(accent(bl + h * inner + br))
     return "\n".join(out)
 
 
 def _badge(ok: bool, label: str, st: _S) -> str:
-    return (st.green("✓ ") if ok else st.red("✗ ")) + (label if ok else st.red(label))
+    if st.uni:
+        mark = st.green("✓ ") if ok else st.red("✗ ")
+    else:
+        mark = st.green("OK ") if ok else st.red("ERR ")
+    return mark + (label if ok else st.red(label))
 
 
 def _fmt(v) -> str:
@@ -135,17 +151,24 @@ def _run(prog: Sequence[int], st: _S) -> str:
         exec(compile(P.emit(prog, "python", safe=safe), "<face>", "exec"), ns)  # noqa: S102
         return ns["tongue_fn"](2.0, 3.0, 4.0)
     try:
-        return st.green("✓ ") + "tongue_fn(2,3,4) → " + st.bold(_fmt(call(False)))
+        ok = st.green("✓ ") if st.uni else st.green("OK ")
+        arrow = "→" if st.uni else "->"
+        return ok + "tongue_fn(2,3,4) " + arrow + " " + st.bold(_fmt(call(False)))
     except (ZeroDivisionError, ValueError, OverflowError) as e:
         try:                                                 # undefined zone -> roundabout
-            return st.yellow("⚠ ") + "undefined (%s) → roundabout %s" % (
-                type(e).__name__, st.bold(_fmt(call(True))))
+            warn = st.yellow("⚠ ") if st.uni else st.yellow("WARN ")
+            arrow = "→" if st.uni else "->"
+            return warn + "undefined (%s) %s roundabout %s" % (
+                type(e).__name__, arrow, st.bold(_fmt(call(True))))
         except Exception as e2:                              # pragma: no cover - defensive
-            return st.red("✗ ") + "error: %s" % type(e2).__name__
+            err = st.red("✗ ") if st.uni else st.red("ERR ")
+            return err + "error: %s" % type(e2).__name__
     except IndexError:                                       # not enough values on the stack
-        return st.dim("· incomplete strand (needs more operands)")
+        dot = "·" if st.uni else "*"
+        return st.dim(dot + " incomplete strand (needs more operands)")
     except Exception as e:                                   # pragma: no cover - defensive
-        return st.dim("· did not run (%s)" % type(e).__name__)
+        dot = "·" if st.uni else "*"
+        return st.dim(dot + " did not run (%s)" % type(e).__name__)
 
 
 def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
@@ -158,11 +181,12 @@ def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
     for w in seal:
         acc ^= w                                  # XOR-fold the sealed strand into one fingerprint
     sig = "%016x" % acc if seal else "-"
+    dot = "·" if st.uni else "*"
 
     head = [
         st.dim("tokens  ") + (" ".join(names) if names else st.dim("(empty)")),
-        st.dim("strand  ") + (" ".join("%02x" % b for b in prog) or st.dim("·")) +
-        st.dim("   (%d op%s · 1 object)" % (len(prog), "" if len(prog) == 1 else "s")),
+        st.dim("strand  ") + (" ".join("%02x" % b for b in prog) or st.dim(dot)) +
+        st.dim("   (%d op%s %s 1 object)" % (len(prog), "" if len(prog) == 1 else "s", dot)),
         st.dim("verify  ") + "  ".join([
             _badge(rep["all_faces_agree"], "%d/%d faces" % (rep["faces_agree"], rep["faces_total"]), st),
             _badge(rep["seekable"], "seekable", st),
@@ -171,7 +195,7 @@ def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
         st.dim("runs    ") + _run(prog, st),
         st.dim("geoseal ") + st.mag(sig),
     ]
-    blocks = [("SCBE · cube code", head, st.cyan)]
+    blocks = [("SCBE %s cube code" % dot, head, st.cyan)]
     for lang in langs:
         src = P.emit(prog, lang, runnable=True)
         code = []
@@ -192,11 +216,13 @@ def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
 
 def _repl(langs, color):
     st = _S(_style_enabled(color))
-    print(st.bold(st.cyan("SCBE cube code")) + st.dim("  —  type tokens, Enter to compile.  ':q' quits, ':lang rust' switches."))
+    dash = "—" if st.uni else "-"
+    prompt = "› " if st.uni else "> "
+    print(st.bold(st.cyan("SCBE cube code")) + st.dim("  %s  type tokens, Enter to compile.  ':q' quits, ':lang rust' switches." % dash))
     cur = list(langs)
     while True:
         try:
-            line = input(st.cyan("› "))
+            line = input(st.cyan(prompt))
         except (EOFError, KeyboardInterrupt):
             print()
             return 0
