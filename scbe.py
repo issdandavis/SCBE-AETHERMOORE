@@ -421,6 +421,39 @@ _INJECTION_FAMILIES: Dict[str, "re.Pattern[str]"] = {
 # Tuned to the L13 thresholds: 1 family -> H_eff ~0.29 (ESCALATE, blocked in
 # gate mode); 2+ families -> H_eff <0.2 (DENY).
 _INTENT_PENALTY = 2.5
+# Second-tier classifier probability at/above which an "intent-model" signal is
+# added. The classifier over-triggers (~10% FP out-of-distribution), so a
+# model-ONLY hit is ESCALATE (review), not a silent DENY — it must combine with a
+# pattern family to reach DENY. Opt-in via SCBE_INJECTION_MODEL (see intent_model).
+_MODEL_THRESHOLD = 0.5
+
+
+_INTENT_MODEL_MOD = None
+
+
+def _model_prob(text: str) -> Optional[float]:
+    """Optional second-tier classifier probability, or None if no model is
+    configured / its deps are absent (keeps the default gate pure-python).
+
+    Fast-path: if SCBE_INJECTION_MODEL is unset, return immediately without
+    importing anything. Otherwise load python/scbe/intent_model.py BY PATH — not
+    ``import python.scbe``, whose package __init__ eagerly pulls numpy/brain.
+    """
+    if not os.environ.get("SCBE_INJECTION_MODEL", "").strip():
+        return None
+    global _INTENT_MODEL_MOD
+    try:
+        if _INTENT_MODEL_MOD is None:
+            import importlib.util
+
+            path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "python", "scbe", "intent_model.py")
+            spec = importlib.util.spec_from_file_location("scbe_intent_model", path)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            _INTENT_MODEL_MOD = mod
+        return _INTENT_MODEL_MOD.injection_prob(text)
+    except Exception:
+        return None
 
 
 # Common look-alike characters attackers use to dodge keyword filters
@@ -496,7 +529,7 @@ def _structural_intent(text: str) -> bool:
     return bool(_DIRECTIVE.search(text)) and bool(_SENSITIVE.search(text)) and not _DESCRIPTIVE.search(text)
 
 
-def _adversarial_intent(text: str) -> Tuple[float, List[str]]:
+def _adversarial_intent(text: str, model_prob: Optional[float] = None) -> Tuple[float, List[str]]:
     """Return (risk, labels) for known attack families present in `text`.
 
     risk is the count of distinct families matched; each adds `_INTENT_PENALTY`
@@ -526,6 +559,10 @@ def _adversarial_intent(text: str) -> Tuple[float, List[str]]:
     # additive on the miss cases.
     if not (labels & set(_INJECTION_FAMILIES)) and any(_structural_intent(v) for v in variants):
         labels.add("intent-structural")
+    # Second tier: a fine-tuned classifier catches paraphrases the patterns miss
+    # (only fires when a model is configured; model_prob is None otherwise).
+    if model_prob is not None and model_prob >= _MODEL_THRESHOLD:
+        labels.add("intent-model")
     return float(len(labels)), sorted(labels)
 
 
@@ -554,7 +591,8 @@ def pipeline_quick_score(text: str) -> Dict[str, Any]:
     # L13 intent screen — known adversarial patterns add a penalty that BYPASSES
     # the benign-language discount, so a fluent prompt injection can't be rescued
     # by reading as natural language (the exact gap the byte-sieve alone misses).
-    intent_risk, intent_flags = _adversarial_intent(text)
+    model_prob = _model_prob(text)
+    intent_risk, intent_flags = _adversarial_intent(text, model_prob)
     d_star = d_star + _INTENT_PENALTY * intent_risk
 
     # L6-L11: dynamics sieve — coherence and phase checks
@@ -587,6 +625,7 @@ def pipeline_quick_score(text: str) -> Dict[str, Any]:
         "phase_deviation": round(pd, 6),
         "decision": decision,
         "intent_flags": intent_flags,
+        "intent_model_prob": round(model_prob, 4) if model_prob is not None else None,
         "digest_hex": digest[:16].hex(),
     }
 

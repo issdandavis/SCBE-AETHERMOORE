@@ -41,6 +41,21 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Mathematics",
 ]
 
+[project.optional-dependencies]
+# Model-grade second-tier injection detector (python/scbe/intent_model.py).
+# Opt-in — the default gate stays pure-python; enable with SCBE_INJECTION_MODEL=1
+# after installing this extra.
+ml = [
+    "transformers>=4.40",
+    "torch>=2.2",
+    "sentencepiece>=0.2",
+]
+# No-torch CPU path via a pre-exported ONNX model:
+ml-onnx = [
+    "optimum[onnxruntime]>=1.20",
+    "transformers>=4.40",
+]
+
 [project.urls]
 Homepage = "https://github.com/issdandavis/SCBE-AETHERMOORE"
 Repository = "https://github.com/issdandavis/SCBE-AETHERMOORE"
