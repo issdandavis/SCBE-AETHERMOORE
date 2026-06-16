@@ -1,0 +1,91 @@
+{
+  "schema_version": "scbe_benchmark_score_v1",
+  "benchmark": "ast-cube-encoder",
+  "goal": "comparison",
+  "type": {
+    "scope": "macro",
+    "axis": "latency",
+    "state": "warm",
+    "clock": "wall"
+  },
+  "metric": {
+    "name": "wall_time",
+    "unit": "s",
+    "lower_is_better": true,
+    "definition": "end-to-end encode of the corpus; Python in-process (no interpreter startup), Rust one subprocess incl. process startup + binary transport"
+  },
+  "result": {
+    "runs": 20,
+    "mean": 0.072659,
+    "median": 0.072047,
+    "stddev": 0.003326,
+    "min": 0.06868,
+    "max": 0.081462,
+    "cv_pct": 4.577,
+    "ci95": [
+      0.071201,
+      0.074116
+    ],
+    "unit": "s"
+  },
+  "variants": {
+    "python_reference": {
+      "runs": 20,
+      "mean": 0.234413,
+      "median": 0.223162,
+      "stddev": 0.033046,
+      "min": 0.202419,
+      "max": 0.335557,
+      "cv_pct": 14.097,
+      "ci95": [
+        0.21993,
+        0.248897
+      ],
+      "unit": "s"
+    },
+    "rust": {
+      "runs": 20,
+      "mean": 0.072659,
+      "median": 0.072047,
+      "stddev": 0.003326,
+      "min": 0.06868,
+      "max": 0.081462,
+      "cv_pct": 4.577,
+      "ci95": [
+        0.071201,
+        0.074116
+      ],
+      "unit": "s"
+    }
+  },
+  "baseline": {
+    "name": "python-reference (encode_matrix)",
+    "median": 0.223162,
+    "speedup_x": 3.1,
+    "speedup_note": "speedup = python.median / rust.median; quoted as evidence only when both cv_pct < 5.0"
+  },
+  "input": {
+    "description": "python/scbe/*.py (excl __init__)",
+    "size": "20 files / 6286 LOC",
+    "seed": 0
+  },
+  "environment": {
+    "cpu": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+    "cores": 12,
+    "os": "Windows 11",
+    "runtime": "python 3.12.10",
+    "toolchain_versions": {
+      "rust_exe": "ast_cube.exe"
+    },
+    "commit": "1d49ed6dd",
+    "date": "2026-06-15",
+    "machine_class": "laptop",
+    "cpu_governor": "unknown"
+  },
+  "command": "python scripts/benchmarks/encoder_bench.py --runs 20 --warmup 5",
+  "tool": "custom (perf_counter, stdlib statistics)",
+  "reproducible": true,
+  "modeled_not_measured": false,
+  "stable": false,
+  "notes": "Rust path includes subprocess startup; on a small corpus that startup caps the observed speedup vs the pure-encode ratio. Not stable => re-run on a quiet machine with CPU governor pinned before publishing."
+}
