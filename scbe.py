@@ -1579,6 +1579,17 @@ def cmd_code(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_illuminate(args: argparse.Namespace) -> int:
+    """Mass-generate cube programs and curate them by the bicameral gap (MAP-Elites)."""
+    from python.scbe import illuminate as IL
+
+    arch = IL.illuminate(generations=getattr(args, "gens", 4) or 4,
+                         batch=getattr(args, "batch", 250) or 250,
+                         seed=getattr(args, "seed", 7) or 7)
+    print(IL.render_archive(arch))
+    return 0
+
+
 def cmd_think(args: argparse.Namespace) -> int:
     """Bicameral cognition: logic vs intuition hemispheres, reconciled + interpreted."""
     from python.scbe import bicameral as TH
@@ -1595,6 +1606,29 @@ def cmd_think(args: argparse.Namespace) -> int:
         return 1
     print("THINKING about: " + " ".join(names))
     print(TH.render(prog))
+    return 0
+
+
+def cmd_overcreate(args: argparse.Namespace) -> int:
+    """Over-create cube programs, then rank by bicameral surprise."""
+    from python.scbe import overcreation as OC
+
+    try:
+        payload = OC.run_loop(
+            count=getattr(args, "count", 256),
+            seed=getattr(args, "seed", 0),
+            top=getattr(args, "top", 8),
+            min_len=getattr(args, "min_len", 1),
+            max_len=getattr(args, "max_len", 10),
+            max_abs_result=getattr(args, "max_abs_result", 1_000_000.0),
+        )
+    except ValueError as e:
+        print(str(e), file=sys.stderr)
+        return 2
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        print(OC.render(payload))
     return 0
 
 
@@ -3369,6 +3403,15 @@ Legacy (backward compat):
     )
     tk.add_argument("tokens", nargs="*", help="token program, e.g. + sqrt *")
     tk.set_defaults(func=cmd_think)
+
+    il = sub.add_parser(
+        "illuminate",
+        help="Mass-generate cube programs, curate by the bicameral gap (MAP-Elites over-creation)",
+    )
+    il.add_argument("--gens", type=int, default=4, help="generations of generate+curate")
+    il.add_argument("--batch", type=int, default=250, help="programs per generation")
+    il.add_argument("--seed", type=int, default=7)
+    il.set_defaults(func=cmd_illuminate)
 
     rt = sub.add_parser(
         "route",
