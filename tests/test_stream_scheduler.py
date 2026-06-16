@@ -1,4 +1,5 @@
 """Streaming geometric scheduler + M4 multi-model fleet routing."""
+
 import random
 import threading
 
@@ -66,6 +67,7 @@ def test_stream_empty_closes_clean():
 
 
 # ---- M4 multi-model fleet ----
+
 
 def test_m4_fleet_routes_by_tongue():
     pytest.importorskip("numpy")

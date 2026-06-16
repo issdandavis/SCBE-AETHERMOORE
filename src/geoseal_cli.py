@@ -2616,8 +2616,10 @@ def cmd_poly_mountain(args: argparse.Namespace) -> int:
         print(f"poly-mountain: {goal}")
         print(f"  sectors : {', '.join(pkt['dh_sector_labels'])}")
         print(f"  lanes   : {lanes}")
-        print(f"  route   : satisfiable={rs.get('satisfiable')} (z3; "
-              f"{rs.get('total_token_budget')} tok / {rs.get('total_tool_budget')} tools)")
+        print(
+            f"  route   : satisfiable={rs.get('satisfiable')} (z3; "
+            f"{rs.get('total_token_budget')} tok / {rs.get('total_tool_budget')} tools)"
+        )
         if rs.get("violations"):
             print(f"  violations: {rs['violations']}")
         print(f"  gate    : {pkt['apply_gate']['engine']} verified={pkt['apply_gate']['verified']}")
@@ -5834,10 +5836,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Assemble the polylinear-recursive-mountain route packet for a goal (Z3-gated)",
     )
     p_poly.add_argument("--goal", nargs="+", required=True, help="The goal to route")
-    p_poly.add_argument("--token-cap", type=int, default=100000, dest="token_cap",
-                        help="Max total token budget across lanes (Z3 bound)")
-    p_poly.add_argument("--tool-cap", type=int, default=20, dest="tool_cap",
-                        help="Max total tool-call budget across lanes (Z3 bound)")
+    p_poly.add_argument(
+        "--token-cap", type=int, default=100000, dest="token_cap", help="Max total token budget across lanes (Z3 bound)"
+    )
+    p_poly.add_argument(
+        "--tool-cap", type=int, default=20, dest="tool_cap", help="Max total tool-call budget across lanes (Z3 bound)"
+    )
     p_poly.add_argument("--json", action="store_true")
     p_poly.set_defaults(func=cmd_poly_mountain)
 

@@ -40,23 +40,36 @@ def _safe_sqrt(a):
 
 # exact op table — matches polyglot's safe-mode semantics (roundabouts on ÷0/√-)
 EXACT: Dict[str, Tuple[int, object]] = {
-    "add": (2, lambda a, b: a + b), "sub": (2, lambda a, b: a - b),
-    "mul": (2, lambda a, b: a * b), "div": (2, _safe_div),
-    "eq": (2, lambda a, b: 1.0 if a == b else 0.0), "neq": (2, lambda a, b: 1.0 if a != b else 0.0),
-    "lt": (2, lambda a, b: 1.0 if a < b else 0.0), "lte": (2, lambda a, b: 1.0 if a <= b else 0.0),
-    "gt": (2, lambda a, b: 1.0 if a > b else 0.0), "gte": (2, lambda a, b: 1.0 if a >= b else 0.0),
-    "pow": (2, lambda a, b: a ** b), "min": (2, min), "max": (2, max), "mod": (2, _safe_mod),
-    "neg": (1, lambda a: -a), "abs": (1, abs), "sqrt": (1, _safe_sqrt),
-    "floor": (1, lambda a: float(math.floor(a))), "ceil": (1, lambda a: float(math.ceil(a))),
-    "round": (1, lambda a: float(round(a))), "inc": (1, lambda a: a + 1), "dec": (1, lambda a: a - 1),
+    "add": (2, lambda a, b: a + b),
+    "sub": (2, lambda a, b: a - b),
+    "mul": (2, lambda a, b: a * b),
+    "div": (2, _safe_div),
+    "eq": (2, lambda a, b: 1.0 if a == b else 0.0),
+    "neq": (2, lambda a, b: 1.0 if a != b else 0.0),
+    "lt": (2, lambda a, b: 1.0 if a < b else 0.0),
+    "lte": (2, lambda a, b: 1.0 if a <= b else 0.0),
+    "gt": (2, lambda a, b: 1.0 if a > b else 0.0),
+    "gte": (2, lambda a, b: 1.0 if a >= b else 0.0),
+    "pow": (2, lambda a, b: a**b),
+    "min": (2, min),
+    "max": (2, max),
+    "mod": (2, _safe_mod),
+    "neg": (1, lambda a: -a),
+    "abs": (1, abs),
+    "sqrt": (1, _safe_sqrt),
+    "floor": (1, lambda a: float(math.floor(a))),
+    "ceil": (1, lambda a: float(math.ceil(a))),
+    "round": (1, lambda a: float(round(a))),
+    "inc": (1, lambda a: a + 1),
+    "dec": (1, lambda a: a - 1),
 }
 
 # the ops intuition can't do in its head — it fudges these
 NONLINEAR = {"sqrt", "pow", "floor", "ceil", "round"}
 INTUIT: Dict[str, Tuple[int, object]] = dict(EXACT)
-INTUIT["sqrt"] = (1, lambda a: a * 0.5 + 1.0)     # "about half"
-INTUIT["pow"] = (2, lambda a, b: a * b)           # "multiply, close enough"
-INTUIT["floor"] = (1, lambda a: a)                # ignore the rounding
+INTUIT["sqrt"] = (1, lambda a: a * 0.5 + 1.0)  # "about half"
+INTUIT["pow"] = (2, lambda a, b: a * b)  # "multiply, close enough"
+INTUIT["floor"] = (1, lambda a: a)  # ignore the rounding
 INTUIT["ceil"] = (1, lambda a: a)
 INTUIT["round"] = (1, lambda a: a)
 
@@ -72,11 +85,14 @@ def _run(prog: Sequence[int], table) -> Tuple[object, List[str]]:
             used_nonlinear.append(name)
         try:
             if arity == 2:
-                y = s.pop(); x = s.pop(); s.append(fn(x, y))
+                y = s.pop()
+                x = s.pop()
+                s.append(fn(x, y))
             else:
-                x = s.pop(); s.append(fn(x))
+                x = s.pop()
+                s.append(fn(x))
         except (IndexError, OverflowError, ValueError, ZeroDivisionError):
-            return None, used_nonlinear           # underflow / blew up -> incomplete
+            return None, used_nonlinear  # underflow / blew up -> incomplete
     return (s[-1] if s else None), used_nonlinear
 
 
@@ -92,11 +108,13 @@ def intuition(prog: Sequence[int]) -> Tuple[object, List[str]]:
 
 def reconcile(truth: object, guess: object, nonlinear: Sequence[str]) -> Dict[str, object]:
     """See the relation between the two hemispheres and interpret it."""
-    out: Dict[str, object] = {"logic": truth, "intuition": guess,
-                              "nonlinear_ops": sorted(set(nonlinear))}
+    out: Dict[str, object] = {"logic": truth, "intuition": guess, "nonlinear_ops": sorted(set(nonlinear))}
     if truth is None or guess is None:
-        out.update(relation="incomplete", confidence=0.0,
-                   interpretation="a hemisphere couldn't finish (underflow/overflow) — no reconciliation")
+        out.update(
+            relation="incomplete",
+            confidence=0.0,
+            interpretation="a hemisphere couldn't finish (underflow/overflow) — no reconciliation",
+        )
         return out
     err = abs(truth - guess)
     rel = err / max(abs(truth), 1e-9)
@@ -117,7 +135,9 @@ def reconcile(truth: object, guess: object, nonlinear: Sequence[str]) -> Dict[st
         out["interpretation"] = "diverged with NO nonlinear ops — anomaly, both should agree (investigate)"
     else:
         out["interpretation"] = "intuition %s; the gap localizes to the nonlinear op(s): %s" % (
-            rel_class, ", ".join(out["nonlinear_ops"]))
+            rel_class,
+            ", ".join(out["nonlinear_ops"]),
+        )
     return out
 
 
@@ -145,6 +165,7 @@ def render(prog: Sequence[int]) -> str:
 
 def _demo() -> None:
     from . import polyglot as PG
+
     print("Bicameral cognition — logic vs intuition, reconciled\n")
     for ops in (["add", "mul", "inc"], ["add", "sqrt", "mul"], ["mul", "pow"], ["add", "div"]):
         print(" ".join(ops) + ":")

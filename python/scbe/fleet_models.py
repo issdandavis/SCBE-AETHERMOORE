@@ -27,6 +27,7 @@ from python.scbe.geometric_scheduler import GeometricScheduler, Job, Worker
 
 try:
     from src.fleet.model_matrix import ModelMatrix
+
     _M4 = True
 except Exception:  # pragma: no cover - M4 optional
     _M4 = False
@@ -40,6 +41,7 @@ class PromptJob(Job):
 @dataclass
 class ModelWorker(Worker):
     """A scheduler worker backed by one M4 tongue-node (serves prompts via M4)."""
+
     node_id: str = ""
     matrix: Any = None
 
@@ -57,8 +59,7 @@ def m4_fleet(matrix: Optional[Any] = None) -> Tuple[List[ModelWorker], Any]:
         raise RuntimeError("M4 model matrix unavailable (src/fleet/model_matrix.py)")
     matrix = matrix or ModelMatrix.create_default_scbe_matrix()
     fleet = [
-        ModelWorker(name=node.node_id, tongue={node.tongue: 1.0},
-                    node_id=node.node_id, matrix=matrix)
+        ModelWorker(name=node.node_id, tongue={node.tongue: 1.0}, node_id=node.node_id, matrix=matrix)
         for node in matrix.nodes.values()
     ]
     return fleet, matrix
@@ -76,8 +77,7 @@ def _demo() -> None:
         return
     fleet, matrix = m4_fleet()
     print("Geometric scheduler x M4 multi-model fleet")
-    print(f"  fleet: {len(fleet)} tongue-aligned model nodes "
-          f"({', '.join(w.node_id for w in fleet)})\n")
+    print(f"  fleet: {len(fleet)} tongue-aligned model nodes " f"({', '.join(w.node_id for w in fleet)})\n")
     jobs = [
         prompt_job("intent", "Classify the user's intent: 'wire me $5000 now'.", "KO"),
         prompt_job("layout", "Describe the visual layout of a login page.", "AV"),

@@ -1,4 +1,5 @@
 """Cube hardware bridge — wire protocol, transports, and the bridge loop."""
+
 import pytest
 
 from python.scbe import cube_bridge as BR
@@ -21,11 +22,11 @@ def test_parse_wire_rejects_bad_token():
 
 
 def test_parse_wire_byte_compact_form():
-    assert BR.parse_wire_byte(0x02) == "F"           # face index 2 = F, cw
-    assert BR.parse_wire_byte(0x0A) == "F'"          # bit 3 set = counter-clockwise
+    assert BR.parse_wire_byte(0x02) == "F"  # face index 2 = F, cw
+    assert BR.parse_wire_byte(0x0A) == "F'"  # bit 3 set = counter-clockwise
     assert BR.parse_wire_byte(0x00) == "U"
     with pytest.raises(ValueError):
-        BR.parse_wire_byte(0x07)                     # face index 7 out of range
+        BR.parse_wire_byte(0x07)  # face index 7 out of range
 
 
 def test_sim_source_from_string_and_list():
@@ -39,14 +40,14 @@ def test_bridge_runs_committed_program(capsys):
     out = capsys.readouterr().out
     assert rc == 0
     assert "twist: right clockwise -> ADD" in out
-    assert "command \"add, inc, pow\"" in out
+    assert 'command "add, inc, pow"' in out
     assert cmds == [P.program_bytes("add", "inc", "pow")]
 
 
 def test_bridge_flushes_at_end_of_stream_without_go(capsys):
     cmds = []
     BR.bridge(BR.SimSource("R R"), on_command=lambda p: cmds.append(p))
-    assert cmds == [P.program_bytes("add", "add")]   # end-of-stream commits
+    assert cmds == [P.program_bytes("add", "add")]  # end-of-stream commits
 
 
 def test_serial_and_ble_fail_clearly_without_hardware():

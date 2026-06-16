@@ -46,9 +46,7 @@ def main() -> int:
 
     # 1) merge conflict preview (no working-tree change)
     base = _git("merge-base", "HEAD", args.base)
-    preview = subprocess.run(
-        ["git", "merge-tree", "--write-tree", "HEAD", args.base],
-        capture_output=True, text=True)
+    preview = subprocess.run(["git", "merge-tree", "--write-tree", "HEAD", args.base], capture_output=True, text=True)
     conflicts = [ln for ln in preview.stdout.splitlines() if "CONFLICT" in ln]
     if conflicts:
         problems.append(f"{len(conflicts)} merge conflict(s) vs {args.base}:")
@@ -78,13 +76,14 @@ def main() -> int:
     # 3) distinguish benign submodule 'deletions' from real ones
     status = _git("status", "--porcelain")
     del_paths = [ln[3:] for ln in status.splitlines() if ln.startswith(" D")]
-    submods = set(_git("config", "--file", ".gitmodules", "--get-regexp", "path").split()[1::2]) \
-        if del_paths else set()
+    submods = set(_git("config", "--file", ".gitmodules", "--get-regexp", "path").split()[1::2]) if del_paths else set()
     real_dels = [p for p in del_paths if p not in submods]
     benign = [p for p in del_paths if p in submods]
     if benign:
-        notes.append(f"{len(benign)} deleted path(s) are uninitialized submodules (benign — "
-                     f"run `git submodule update --init` to populate)")
+        notes.append(
+            f"{len(benign)} deleted path(s) are uninitialized submodules (benign — "
+            f"run `git submodule update --init` to populate)"
+        )
     if real_dels:
         problems.append(f"{len(real_dels)} REAL file deletion(s) staged/working: {real_dels[:8]}")
 

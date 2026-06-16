@@ -56,4 +56,3 @@ def test_cli_json_smoke():
     payload = json.loads(proc.stdout)
     assert payload["schema"] == "scbe_overcreation_v1"
     assert len(payload["top"]) <= 3
-

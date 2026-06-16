@@ -17,7 +17,6 @@ from dataclasses import dataclass
 from enum import IntEnum
 from typing import Literal, Sequence
 
-
 TRITS_PER_BYTE = 6  # 3^6 = 729, enough for every byte with invalid states left unused.
 SPINE_MAGIC = b"BSPN"
 SPINE_VERSION = 1
@@ -30,13 +29,13 @@ class BitSpineError(ValueError):
 
 class SpineOp(IntEnum):
     MOVE_RIGHT = 0  # >
-    MOVE_LEFT = 1   # <
-    INC = 2         # +
-    DEC = 3         # -
-    OUT = 4         # .
-    IN = 5          # ,
+    MOVE_LEFT = 1  # <
+    INC = 2  # +
+    DEC = 3  # -
+    OUT = 4  # .
+    IN = 5  # ,
     LOOP_START = 6  # [
-    LOOP_END = 7    # ]
+    LOOP_END = 7  # ]
 
 
 BF_TO_OP = {
@@ -277,12 +276,7 @@ def pack_ops(opcodes: Sequence[int]) -> bytes:
     pad = (-len(bit_text)) % 8
     bit_text += "0" * pad
     packed = bits_to_bytes(bit_text) if bit_text else b""
-    body = (
-        SPINE_MAGIC
-        + bytes([SPINE_VERSION, pad])
-        + struct.pack(">I", len(ops))
-        + packed
-    )
+    body = SPINE_MAGIC + bytes([SPINE_VERSION, pad]) + struct.pack(">I", len(ops)) + packed
     return body + hashlib.sha256(body).digest()
 
 

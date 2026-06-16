@@ -1,4 +1,5 @@
 """Origami — flat cube -> paper -> fan/crane and the number-folding game."""
+
 import pytest
 
 from python.scbe import origami as O
@@ -8,13 +9,13 @@ from python.scbe import polyglot as P
 def test_unfold_has_six_faces():
     net = O.unfold()
     faces = [c for row in net for c in row if c.strip()]
-    assert sorted(faces) == ["B", "D", "F", "L", "R", "U"]      # the six cube faces
+    assert sorted(faces) == ["B", "D", "F", "L", "R", "U"]  # the six cube faces
 
 
 def test_accordion_alternates_and_renders():
     assert O.accordion(5) == ["M", "V", "M", "V", "M"]
     pat = O.crease_pattern(O.accordion(4))
-    assert "│" in pat and "┊" in pat                            # mountain + valley glyphs
+    assert "│" in pat and "┊" in pat  # mountain + valley glyphs
 
 
 def test_crane_has_steps():
@@ -25,21 +26,21 @@ def test_crane_has_steps():
 def test_fortune_teller_requires_eight_cells():
     with pytest.raises(ValueError):
         O.FortuneTeller(list("ABC"))
-    O.FortuneTeller(list("ABCDEFGH"))                            # ok
+    O.FortuneTeller(list("ABCDEFGH"))  # ok
 
 
 def test_fortune_teller_is_deterministic_and_parity_sensitive():
     ft = O.FortuneTeller(list("ABCDEFGH"))
-    assert ft.play([4, 3, 2]) == "D"                            # orient=1, visible[1]=cell3
-    assert ft.play([4, 3, 2]) == "D"                            # deterministic
-    assert ft.play([2, 1]) == "A"                               # even opens -> orientation 0
-    assert ft.play([1, 1]) == "B"                               # odd opens -> orientation 1
+    assert ft.play([4, 3, 2]) == "D"  # orient=1, visible[1]=cell3
+    assert ft.play([4, 3, 2]) == "D"  # deterministic
+    assert ft.play([2, 1]) == "A"  # even opens -> orientation 0
+    assert ft.play([1, 1]) == "B"  # odd opens -> orientation 1
 
 
 def test_fortune_teller_from_program_cycles_to_eight():
     ft = O.FortuneTeller.from_program(["add", "mul", "sqrt", "inc"])
     assert ft.flaps() == ["add", "mul", "sqrt", "inc", "add", "mul", "sqrt", "inc"]
-    landed = ft.play([4, 3, 2])                                  # -> cell 3 -> inc
+    landed = ft.play([4, 3, 2])  # -> cell 3 -> inc
     assert landed == "inc" and O._run_op("inc") == 5.0
 
 

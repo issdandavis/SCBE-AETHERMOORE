@@ -1,4 +1,5 @@
 """Bop-It cube controller — twists -> opcodes -> spoken command -> run."""
+
 import pytest
 
 from python.scbe import cube_controller as C
@@ -20,11 +21,11 @@ def test_parse_and_program():
 
 def test_parse_rejects_unknown_twist():
     with pytest.raises(ValueError):
-        C.parse_moves("R X")                      # X is not a face
+        C.parse_moves("R X")  # X is not a face
 
 
 def test_narrate_speaks_moves_and_result(capsys):
-    prog, lines = C.narrate(["R", "U", "F"])      # add, inc, sqrt  (well-defined)
+    prog, lines = C.narrate(["R", "U", "F"])  # add, inc, sqrt  (well-defined)
     assert prog == P.program_bytes("add", "inc", "sqrt")
     joined = " ".join(lines)
     assert "right clockwise -> ADD" in joined
@@ -35,7 +36,7 @@ def test_narrate_speaks_moves_and_result(capsys):
 def test_narrate_handles_undefined_zone():
     # F' is pow; a sequence that divides by a zero falls back to the roundabout, never crashes
     _, lines = C.narrate(["U'", "U'", "U'", "L'"])  # dec dec dec div -> may underflow/roundabout
-    assert any("command" in ln for ln in lines)    # always announces, never raises
+    assert any("command" in ln for ln in lines)  # always announces, never raises
 
 
 def test_repl_quits_clean(monkeypatch):

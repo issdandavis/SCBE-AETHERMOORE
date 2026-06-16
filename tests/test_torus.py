@@ -1,4 +1,5 @@
 """Torus / hypercube embedding — periodic floating-point space + wormhole seams."""
+
 import math
 
 from python.scbe import torus as T
@@ -8,7 +9,7 @@ def test_torus_points_lie_on_unit_circles():
     for b in range(0, 64, 7):
         pt = T.to_torus(b)
         assert len(pt) == 2 * len(T.AXES)
-        for i in range(0, len(pt), 2):           # each (cos, sin) pair is unit length
+        for i in range(0, len(pt), 2):  # each (cos, sin) pair is unit length
             assert abs(pt[i] ** 2 + pt[i + 1] ** 2 - 1.0) < 1e-9
 
 
@@ -23,8 +24,8 @@ def test_wrap_is_the_short_way_round():
     # col 15 and col 0 are adjacent across the seam, not 15 apart
     d_wrap = T.torus_distance(0x0F, 0x00, ("lo",))
     d_step = T.torus_distance(0x00, 0x01, ("lo",))
-    assert abs(d_wrap - d_step) < 1e-9           # 15->0 is one step, like 0->1
-    assert T.is_wormhole(0x0F, 0x00)             # genuinely closer than the flat way
+    assert abs(d_wrap - d_step) < 1e-9  # 15->0 is one step, like 0->1
+    assert T.is_wormhole(0x0F, 0x00)  # genuinely closer than the flat way
 
 
 def test_hypercube_neighbors_are_one_bit_flips():
@@ -36,4 +37,4 @@ def test_hypercube_neighbors_are_one_bit_flips():
 
 
 def test_no_false_wormhole_for_adjacent_cells():
-    assert not T.is_wormhole(0x00, 0x01)         # neighbours already; wrap gains nothing
+    assert not T.is_wormhole(0x00, 0x01)  # neighbours already; wrap gains nothing

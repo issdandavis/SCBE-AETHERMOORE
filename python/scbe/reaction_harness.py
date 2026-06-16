@@ -175,9 +175,7 @@ def evaluate_bijective_reaction(
             )
 
     for field_name in allowed_loss_fields:
-        if _field_present(source_fields, field_name) and not _field_present(
-            target_fields, field_name
-        ):
+        if _field_present(source_fields, field_name) and not _field_present(target_fields, field_name):
             ignored_loss.append(field_name)
             checks.append(
                 ReactionFieldCheck(
@@ -203,13 +201,11 @@ def evaluate_bijective_reaction(
             extra=dict(recalculation.extra),
         )
 
-    loss_notes = [
-        f"required identity field changed: {field_name}" for field_name in changed
-    ] + [
-        f"required identity field lost: {field_name}" for field_name in lost
-    ] + [
-        f"allowed field lost: {field_name}" for field_name in ignored_loss
-    ]
+    loss_notes = (
+        [f"required identity field changed: {field_name}" for field_name in changed]
+        + [f"required identity field lost: {field_name}" for field_name in lost]
+        + [f"allowed field lost: {field_name}" for field_name in ignored_loss]
+    )
     recovery_evidence = [f"recovered field: {field_name}" for field_name in recovered]
 
     packet = build_reaction_state_packet(

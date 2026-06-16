@@ -18,12 +18,12 @@ from typing import Dict, List
 
 # canonical tongue -> {name, role, keyword, glyph}
 TONGUE_ROLE: Dict[str, Dict[str, str]] = {
-    "KO": {"name": "Kor'aelin",    "role": "Control Flow",  "keyword": "loop",  "glyph": "ᚲ"},
-    "AV": {"name": "Avali",        "role": "Input/Output",  "keyword": "sense", "glyph": "ᚨ"},
-    "RU": {"name": "Runethic",     "role": "Scope/Context", "keyword": "area",  "glyph": "ᚱ"},
-    "CA": {"name": "Cassisivadan", "role": "Math/Logic",    "keyword": "calc",  "glyph": "ᚳ"},
-    "UM": {"name": "Umbroth",      "role": "Security",      "keyword": "ward",  "glyph": "ᚢ"},
-    "DR": {"name": "Draumric",     "role": "Transforms",    "keyword": "morph", "glyph": "ᛞ"},
+    "KO": {"name": "Kor'aelin", "role": "Control Flow", "keyword": "loop", "glyph": "ᚲ"},
+    "AV": {"name": "Avali", "role": "Input/Output", "keyword": "sense", "glyph": "ᚨ"},
+    "RU": {"name": "Runethic", "role": "Scope/Context", "keyword": "area", "glyph": "ᚱ"},
+    "CA": {"name": "Cassisivadan", "role": "Math/Logic", "keyword": "calc", "glyph": "ᚳ"},
+    "UM": {"name": "Umbroth", "role": "Security", "keyword": "ward", "glyph": "ᚢ"},
+    "DR": {"name": "Draumric", "role": "Transforms", "keyword": "morph", "glyph": "ᛞ"},
 }
 TONGUES: List[str] = list(TONGUE_ROLE)
 
@@ -41,7 +41,8 @@ def compile_pair(outer: str, inner: str) -> Dict[str, str]:
     o, i = outer.upper(), inner.upper()
     ro, ri = TONGUE_ROLE[o], TONGUE_ROLE[i]
     return {
-        "outer": o, "inner": i,
+        "outer": o,
+        "inner": i,
         "program": f"{ro['keyword']}({ri['keyword']}())",
         "semantics": f"{ro['role']} of {ri['role']}",
         "glyphs": ro["glyph"] + ri["glyph"],
@@ -58,8 +59,12 @@ def _demo() -> None:
     for t, spec in TONGUE_ROLE.items():
         print(f"  {spec['glyph']} {t}  {spec['name']:<13} {spec['role']:<14} keyword: {spec['keyword']}")
     print(f"\n  36 two-tongue programs (e.g.):")
-    for pair in (compile_pair("CA", "CA"), compile_pair("RU", "CA"),
-                 compile_pair("UM", "KO"), compile_pair("AV", "DR")):
+    for pair in (
+        compile_pair("CA", "CA"),
+        compile_pair("RU", "CA"),
+        compile_pair("UM", "KO"),
+        compile_pair("AV", "DR"),
+    ):
         print(f"    {pair['glyphs']}  {pair['program']:<16} = {pair['semantics']}")
 
 

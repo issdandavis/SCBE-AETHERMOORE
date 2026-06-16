@@ -1,4 +1,5 @@
 """Tests for the AST cube encoder (code -> matrix of cube-token vectors)."""
+
 import ast
 import pytest
 
@@ -9,7 +10,6 @@ from python.scbe.ast_cube_encoder import (
     encode,
     verify_bijective_layer,
 )
-
 
 SRC = "def f(x):\n    y = x + 1\n    return y\n"
 
@@ -71,11 +71,13 @@ class TestBijective:
 class TestHyperStructureLocation:
     def test_location_dims_in_vector(self):
         from python.scbe.ast_cube_encoder import LOCATION_DIMS, location_vector
+
         assert len(location_vector([0, 1, 2])) == LOCATION_DIMS
         assert location_vector([]) == [0] * LOCATION_DIMS  # root has no path
 
     def test_distinct_paths_distinct_locations(self):
         from python.scbe.ast_cube_encoder import location_vector
+
         assert location_vector([0, 1]) != location_vector([1, 0])
         assert location_vector([0]) != location_vector([0, 0])
 
@@ -96,12 +98,7 @@ class TestHyperStructureLocation:
 
 class TestFaceSignal:
     def test_face_trits_are_ast_semantic_not_collapsed(self):
-        src = (
-            "def f(x):\n"
-            "    if x > 0:\n"
-            "        return x + 1\n"
-            "    return {'x': x}\n"
-        )
+        src = "def f(x):\n" "    if x > 0:\n" "        return x + 1\n" "    return {'x': x}\n"
         enc = encode(src)
         faces = {tuple(n["vector"][2:8]) for n in enc["nodes"]}
         assert len(faces) >= 6
@@ -142,18 +139,23 @@ class TestFaceSignal:
 class TestFastPath:
     def test_encode_matrix_matches_encode(self):
         from python.scbe.ast_cube_encoder import encode, encode_matrix
-        for src in ["x = 1\n",
-                    "def f(a, b):\n    return a + b * 2\n",
-                    "class A:\n    def m(self, n):\n        return [i for i in range(n)]\n"]:
+
+        for src in [
+            "x = 1\n",
+            "def f(a, b):\n    return a + b * 2\n",
+            "class A:\n    def m(self, n):\n        return [i for i in range(n)]\n",
+        ]:
             assert encode_matrix(src)["matrix"] == encode(src)["matrix"]
 
     def test_encode_matrix_bijective(self):
         from python.scbe.ast_cube_encoder import encode_matrix, decode
+
         src = "# c\r\ndef f():\treturn '🧪'\n"
         assert decode(encode_matrix(src)) == src
 
     def test_face_memoization_used(self):
         from python.scbe.ast_cube_encoder import encode, _FACE_CACHE
+
         _FACE_CACHE.clear()
         encode("a = b + c\nd = a + b\n")
         assert len(_FACE_CACHE) > 0  # repeated tokens cached

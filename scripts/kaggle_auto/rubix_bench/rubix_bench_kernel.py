@@ -4,6 +4,7 @@
 Clones the public SCBE-AETHERMOORE repo and runs the polyglot emit-throughput
 benchmark: one CA-opcode core -> all 18 language faces. No GPU needed.
 """
+
 import os, subprocess, sys
 
 os.environ.setdefault("PYTHONUTF8", "1")
@@ -21,10 +22,12 @@ print("=" * 56)
 for n, L in [(5000, 12), (20000, 16)]:
     print(f"\n--- {n} programs x {L} ops ---", flush=True)
     subprocess.run(
-        [sys.executable, "scripts/benchmark/rubix_cube_speed_benchmark.py",
-         "--programs", str(n), "--len", str(L)],
-        cwd=WORK, env=env, check=True,
+        [sys.executable, "scripts/benchmark/rubix_cube_speed_benchmark.py", "--programs", str(n), "--len", str(L)],
+        cwd=WORK,
+        env=env,
+        check=True,
     )
 # machine + scale context
 import multiprocessing, platform
+
 print(f"\nkaggle node: {platform.platform()}  cores={multiprocessing.cpu_count()}")

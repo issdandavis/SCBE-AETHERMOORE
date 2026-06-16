@@ -32,15 +32,25 @@ FACE_NAME = {"U": "up", "D": "down", "L": "left", "R": "right", "F": "front", "B
 
 # a quarter-turn -> a core opcode. clockwise / counter-clockwise = an op and its partner.
 MOVE_OP: Dict[str, str] = {
-    "R": "add", "R'": "sub", "L": "mul", "L'": "div",
-    "U": "inc", "U'": "dec", "D": "max", "D'": "min",
-    "F": "sqrt", "F'": "pow", "B": "mod", "B'": "neg",
+    "R": "add",
+    "R'": "sub",
+    "L": "mul",
+    "L'": "div",
+    "U": "inc",
+    "U'": "dec",
+    "D": "max",
+    "D'": "min",
+    "F": "sqrt",
+    "F'": "pow",
+    "B": "mod",
+    "B'": "neg",
 }
 
-try:                                              # tongue token for each twist (optional)
+try:  # tongue token for each twist (optional)
     from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER as _STT
+
     _HAVE_TONGUES = True
-except Exception:                                 # pragma: no cover - optional
+except Exception:  # pragma: no cover - optional
     _HAVE_TONGUES = False
 
 
@@ -77,16 +87,18 @@ def say_move(m: str) -> str:
 
 def run_program(prog: Sequence[int]) -> Tuple[object, str | None]:
     """Run the Python face on the default args; roundabout on undefined zones."""
+
     def call(safe):
         ns: dict = {}
         exec(compile(P.emit(prog, "python", safe=safe), "<cube>", "exec"), ns)  # noqa: S102
         return ns["tongue_fn"](2.0, 3.0, 4.0)
+
     try:
         return call(False), None
     except (ZeroDivisionError, ValueError, OverflowError) as e:
         try:
             return call(True), type(e).__name__
-        except Exception as e2:                   # pragma: no cover - defensive
+        except Exception as e2:  # pragma: no cover - defensive
             return None, type(e2).__name__
     except Exception as e:
         return None, type(e).__name__
@@ -97,12 +109,18 @@ def speak(text: str, voice: bool = False) -> None:
     print("  " + text)
     if voice and sys.platform == "win32":
         safe = text.replace("'", " ").replace('"', " ")
-        try:                                      # non-destructive; opt-in only
+        try:  # non-destructive; opt-in only
             subprocess.run(
-                ["powershell", "-NoProfile", "-Command",
-                 "Add-Type -AssemblyName System.Speech; "
-                 "(New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak('%s')" % safe],
-                timeout=15, capture_output=True)
+                [
+                    "powershell",
+                    "-NoProfile",
+                    "-Command",
+                    "Add-Type -AssemblyName System.Speech; "
+                    "(New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak('%s')" % safe,
+                ],
+                timeout=15,
+                capture_output=True,
+            )
         except Exception:
             pass
 
@@ -129,8 +147,7 @@ def narrate(moves: Sequence[str], voice: bool = False) -> Tuple[List[int], List[
 
 
 def bop_it(voice: bool = False) -> int:
-    print("CUBE CONTROLLER — twist a face, hear the command.  moves: "
-          + " ".join(sorted(MOVE_OP)) + "   (':q' quits)")
+    print("CUBE CONTROLLER — twist a face, hear the command.  moves: " + " ".join(sorted(MOVE_OP)) + "   (':q' quits)")
     while True:
         try:
             line = input("  twist › ").strip()
@@ -149,6 +166,7 @@ def bop_it(voice: bool = False) -> int:
 
 def main(argv: Sequence[str] | None = None) -> int:
     import argparse
+
     ap = argparse.ArgumentParser(prog="scbe-bopit", description="twist the cube, hear the command")
     ap.add_argument("moves", nargs="*", help="twist sequence, e.g. R U F'")
     ap.add_argument("--voice", action="store_true", help="say it aloud (Windows SAPI)")
