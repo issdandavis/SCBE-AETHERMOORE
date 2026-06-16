@@ -38,17 +38,9 @@ src/crypto/dual_lattice.py::in_prod_use::e9f1a384e283  # src/crypto/dual_lattice
 src/crypto/dual_lattice.py::simplified_demo::2d0b5f462422  # src/crypto/dual_lattice.py:340 [simplified_demo] """Generate Kyber keypair (simplified for demo)."""
 src/crypto/dual_lattice.py::simplified_demo::e9f1a384e283  # src/crypto/dual_lattice.py:403 [simplified_demo] # Simplified encryption (in production, use NTT)
 src/crypto/dual_lattice.py::use_liboqs::9739a414211b  # src/crypto/dual_lattice.py:341 [use_liboqs] # In production, use liboqs or pqcrypto
-src/crypto/pqc.ts::dev_stub::2db7e5f50e1b  # src/crypto/pqc.ts:597 [dev_stub] // Development stub: Deterministic decapsulation
-src/crypto/pqc.ts::dev_stub::43530a8e43c6  # src/crypto/pqc.ts:713 [dev_stub] // Development stub
-src/crypto/pqc.ts::dev_stub::8646c92c8dc4  # src/crypto/pqc.ts:526 [dev_stub] // Development stub: Generate deterministic test keys
-src/crypto/pqc.ts::dev_stub::8cf83e6bc2fb  # src/crypto/pqc.ts:745 [dev_stub] // Development stub: Deterministic signature
-src/crypto/pqc.ts::fake_marker::8646c92c8dc4  # src/crypto/pqc.ts:526 [fake_marker] // Development stub: Generate deterministic test keys
-src/crypto/pqc.ts::fake_marker::8cf83e6bc2fb  # src/crypto/pqc.ts:745 [fake_marker] // Development stub: Deterministic signature
-src/crypto/pqc.ts::fake_marker::9f12a3bd63ae  # src/crypto/pqc.ts:787 [fake_marker] 'ML-DSA-65 verify() requires native liboqs. Stub verification is disabled for safety. ' +
-src/crypto/pqc.ts::in_prod_use::0679f7d2ea8a  # src/crypto/pqc.ts:881 [in_prod_use] // Generate classical key pair (placeholder - in production use ECDH)
-src/crypto/pqc.ts::in_prod_use::e8a66135f718  # src/crypto/pqc.ts:661 [in_prod_use] * In production, this would use liboqs or @noble/post-quantum.
-src/crypto/pqc.ts::not_for_production::1ed1b72a145a  # src/crypto/pqc.ts:527 [not_for_production] // WARNING: NOT FOR PRODUCTION USE
-src/crypto/pqc.ts::use_liboqs::e8a66135f718  # src/crypto/pqc.ts:661 [use_liboqs] * In production, this would use liboqs or @noble/post-quantum.
+src/crypto/pqc.ts::in_prod_use::0679f7d2ea8a  # src/crypto/pqc.ts:861 [in_prod_use] // Generate classical key pair (placeholder - in production use ECDH)
+src/crypto/pqc.ts::in_prod_use::e8a66135f718  # src/crypto/pqc.ts:652 [in_prod_use] * In production, this would use liboqs or @noble/post-quantum.
+src/crypto/pqc.ts::use_liboqs::e8a66135f718  # src/crypto/pqc.ts:652 [use_liboqs] * In production, this would use liboqs or @noble/post-quantum.
 src/crypto/pqc_liboqs.py::fake_marker::39e57232ec34  # src/crypto/pqc_liboqs.py:589 [fake_marker] print("DEVELOPMENT MODE: Using stub implementation")
 src/crypto/quantum-safe.ts::fake_marker::3c7925d51d9c  # src/crypto/quantum-safe.ts:273 [fake_marker] * Generic stub KEM — generates deterministic test keys/ciphertext.
 src/crypto/quantum-safe.ts::fake_marker::6cc48bd1424e  # src/crypto/quantum-safe.ts:376 [fake_marker] `${this.descriptor.name}: stub verify() is disabled for safety. ` +
