@@ -1761,6 +1761,10 @@ def cmd_cube(args: argparse.Namespace) -> int:
     print(f"  roles     : {', '.join(f['faces']['roles']) or '-'}")
     print(f"  governance: {gov.get('semantic_class')} / {gov.get('tier')}")
     print(f"  wolfram   : {wbytes}  (universal={wf['any_universal']})")
+    bits = f["faces"]["bits"]
+    aud = f["faces"]["audio"]
+    print(f"  bits      : {bits['hex']}  trits={bits['trit_count']}")
+    print(f"  audio     : {aud['note']} ~ {aud['phi_frequency_hz']} Hz (phi-stepped)")
     for tongue, face in f["faces"]["code"].items():
         print(f"  {tongue} ({face['language']:<10}): {face['tokens']}")
     return 0

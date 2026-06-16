@@ -6,7 +6,17 @@ from python.scbe.cube_faces import all_faces
 
 def test_all_faces_present():
     f = all_faces("loop")
-    assert set(f["faces"]) == {"chemistry", "roles", "code", "governance", "wolfram"}
+    assert set(f["faces"]) == {"bits", "chemistry", "roles", "audio", "code", "governance", "wolfram"}
+
+
+def test_bits_and_audio_faces():
+    f = all_faces("loop")
+    bits = f["faces"]["bits"]
+    assert bits["hex"] == b"loop".hex()
+    assert set(bits["binary"]) <= {"0", "1"} and len(bits["binary"]) == len(b"loop") * 8
+    audio = f["faces"]["audio"]
+    assert audio["note"] in {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}
+    assert audio["phi_frequency_hz"] >= 440.0
 
 
 def test_core_is_the_token_bytes():

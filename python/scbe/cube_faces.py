@@ -24,6 +24,7 @@ try:
     from python.scbe.wolfram_face import token_rule as _wolfram_rule
     from python.scbe.tongue_roles import TONGUE_ROLE
     from python.scbe.atomic_tokenization import chemical_element, parse_formula
+    from python.scbe.bit_spine import BitSpine
 except ModuleNotFoundError:  # pragma: no cover - direct execution
     import sys
     from pathlib import Path
@@ -32,11 +33,34 @@ except ModuleNotFoundError:  # pragma: no cover - direct execution
     from python.scbe.wolfram_face import token_rule as _wolfram_rule
     from python.scbe.tongue_roles import TONGUE_ROLE
     from python.scbe.atomic_tokenization import chemical_element, parse_formula
+    from python.scbe.bit_spine import BitSpine
+
+
+_PHI = (1 + 5 ** 0.5) / 2
+_NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 
 def _raw_bytes(cube: CubeToken) -> bytes:
     r = cube.raw
     return r if isinstance(r, (bytes, bytearray)) else r()
+
+
+def _bits_face(raw: bytes) -> Dict[str, Any]:
+    """The center ball: byte-exact binary / hex / trit projections (bit_spine)."""
+    spine = BitSpine(raw)
+    trits = spine.trits()
+    return {"binary": spine.bits(), "hex": spine.hex(),
+            "trit_count": len(trits), "trits": trits[:24]}
+
+
+def _audio_face(raw: bytes, trit: Dict[str, int]) -> Dict[str, Any]:
+    """The hear sense: a phi-stepped frequency + musical note for the token."""
+    bsum = sum(raw)
+    freq = round(440.0 * (_PHI ** ((bsum % 12) / 12.0)), 2)
+    overtones = {t: round(440.0 * (_PHI ** (i / 6.0)), 1)
+                 for i, t in enumerate(TONGUE_ROLE) if trit.get(t, 0) > 0}
+    return {"phi_base_hz": 440.0, "phi_frequency_hz": freq,
+            "note": _NOTES[bsum % 12], "active_tongue_overtones": overtones}
 
 
 def _wolfram_face(raw: bytes) -> Dict[str, Any]:
@@ -76,8 +100,10 @@ def all_faces(token: str) -> Dict[str, Any]:
         "token": token,
         "core": {"hex": raw.hex(), "bytes": list(raw), "byte_count": len(raw)},
         "faces": {
+            "bits": _bits_face(raw),
             "chemistry": chem,
             "roles": _role_face(chem),
+            "audio": _audio_face(raw, chem.get("trit_vector", {})),
             "code": cube.code_faces(),
             "governance": cube.gov_face(),
             "wolfram": _wolfram_face(raw),
