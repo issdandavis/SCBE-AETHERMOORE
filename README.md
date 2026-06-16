@@ -79,6 +79,8 @@ Neither Python nor npm package requires a server, API key, or external network c
 - Hosted run intake: [aethermoore.com/SCBE-AETHERMOORE/hosted-run.html](https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html)
 - Service credits: [aethermoore.com/SCBE-AETHERMOORE/service-credits.html](https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html)
 - Credit top-up: [Ko-fi / izdandavis](https://ko-fi.com/izdandavis)
+- Monthly support: [Stripe $20/month](https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i) or [support page](https://aethermoore.com/SCBE-AETHERMOORE/supporter.html)
+- Direct manual support: Cash App `$IzzyDDavis7`
 
 Service credits are pay-as-you-go: billable provider/model usage is passed through with a 2–5% SCBE coordination fee. No subscription required to use the open-source packages.
 
