@@ -1724,6 +1724,32 @@ def _describe_signature(text: str) -> Dict[str, Any]:
     }
 
 
+def cmd_cube(args: argparse.Namespace) -> int:
+    """Show one token core through every face of the cube (chem/roles/code/gov/wolfram)."""
+    token = _arg_or_stdin(getattr(args, "token", None))
+    if not token:
+        print('usage: scbe cube "<token>"   (or pipe via stdin)', file=sys.stderr)
+        return 2
+    from python.scbe.cube_faces import all_faces
+
+    f = all_faces(token)
+    if getattr(args, "json_output", False):
+        print(json.dumps(f, default=str))
+        return 0
+    ch = f["faces"]["chemistry"]
+    wf = f["faces"]["wolfram"]
+    gov = f["faces"]["governance"]
+    wbytes = " ".join(f"{r['byte']}={r['class']}" for r in wf["per_byte_rules"])
+    print(f"cube '{token}'  core={f['core']['hex']}  bijective={f['bijective']}")
+    print(f"  chemistry : {ch['semantic_class']} -> {ch['element']} (Z={ch['Z']}, val={ch['valence']})")
+    print(f"  roles     : {', '.join(f['faces']['roles']) or '-'}")
+    print(f"  governance: {gov.get('semantic_class')} / {gov.get('tier')}")
+    print(f"  wolfram   : {wbytes}  (universal={wf['any_universal']})")
+    for tongue, face in f["faces"]["code"].items():
+        print(f"  {tongue} ({face['language']:<10}): {face['tokens']}")
+    return 0
+
+
 def cmd_describe(args: argparse.Namespace) -> int:
     text = _arg_or_stdin(getattr(args, "text", None))
     if not text:
@@ -3259,6 +3285,11 @@ Legacy (backward compat):
     ds.add_argument("text", nargs="?", help="text to describe (or pipe via stdin)")
     ds.add_argument("--json", dest="json_output", action="store_true")
     ds.set_defaults(func=cmd_describe)
+
+    cube = sub.add_parser("cube", help='One token through every cube face ("scbe cube loop")')
+    cube.add_argument("token", nargs="?", help="token to decode through all faces (or pipe via stdin)")
+    cube.add_argument("--json", dest="json_output", action="store_true")
+    cube.set_defaults(func=cmd_cube)
 
     fd = sub.add_parser("find", aliases=["f"], help='Find your notes/docs by name ("scbe find <text>")')
     fd.add_argument("query", nargs="?", help="text to match in note/doc filenames")
