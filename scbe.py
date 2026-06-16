@@ -862,14 +862,23 @@ def cmd_system_health(args: argparse.Namespace) -> int:
 
 def cmd_tongue_encode(args: argparse.Namespace) -> int:
     tongue = args.tongue.upper()
-    data = args.text.encode("utf-8") if getattr(args, "text", None) else sys.stdin.buffer.read()
+    if getattr(args, "text", None):
+        data = args.text.encode("utf-8")
+    elif not sys.stdin.isatty():
+        data = sys.stdin.buffer.read()
+    else:
+        print('usage: scbe tongues encode --tongue <t> --text "<text>"  (or pipe text via stdin)', file=sys.stderr)
+        return 2
     print(encode_bytes(tongue, data))
     return 0
 
 
 def cmd_tongue_decode(args: argparse.Namespace) -> int:
     tongue = args.tongue.upper()
-    text = args.text if getattr(args, "text", None) else sys.stdin.read()
+    text = _arg_or_stdin(getattr(args, "text", None))
+    if text is None:
+        print('usage: scbe tongues decode --tongue <t> --text "<tokens>"  (or pipe via stdin)', file=sys.stderr)
+        return 2
     data = decode_tokens(tongue, text)
     if getattr(args, "as_text", False):
         print(data.decode("utf-8", errors="replace"))
@@ -890,7 +899,11 @@ def cmd_tongue_list(_args: argparse.Namespace) -> int:
 
 
 def cmd_pipeline_run(args: argparse.Namespace) -> int:
-    text = args.text if getattr(args, "text", None) else sys.stdin.read().strip()
+    text = _arg_or_stdin(getattr(args, "text", None))
+    if text is None:
+        print('usage: scbe pipeline run --text "<text>"  (or pipe via stdin)', file=sys.stderr)
+        return 2
+    text = text.strip()
     result = pipeline_quick_score(text)
     if getattr(args, "json_output", False):
         print(json.dumps(result, indent=2))
@@ -2814,6 +2827,9 @@ def cmd_do(args: argparse.Namespace) -> int:
 
 
 def cmd_chat(args: argparse.Namespace) -> int:
+    if not sys.stdin.isatty():
+        print('scbe chat is interactive-only; use `scbe ask "..."` for one-shot Q&A.', file=sys.stderr)
+        return 2
     available = _detect_backends()
     if not available:
         print("No AI backend found. You have Claude Code — make sure `claude` is on PATH,")
@@ -2869,6 +2885,8 @@ def _dir_size(p: Path) -> int:
 
 
 def _confirm(prompt: str) -> bool:
+    if not sys.stdin.isatty():
+        return False  # non-interactive: refuse the mutation unless --yes/--force was passed
     try:
         return input(prompt).strip().lower() in {"y", "yes"}
     except (EOFError, KeyboardInterrupt):
@@ -4082,6 +4100,8 @@ MENU = """\
 
 def _menu_prompt(label: str) -> Optional[str]:
     """Read a line; return None on Ctrl+C / EOF so the menu can exit cleanly."""
+    if not sys.stdin.isatty():
+        return None  # non-interactive (agent / pipe / CI): never block on input()
     try:
         # Strip a leading UTF-8 BOM that Windows pipes prepend to stdin.
         return input(label).lstrip("﻿").strip()
@@ -4302,9 +4322,16 @@ def main() -> int:
     _enable_utf8_console()
 
     if len(sys.argv) == 1:
-        return interactive_menu()
+        if sys.stdin.isatty() and sys.stdout.isatty():
+            return interactive_menu()
+        # Non-interactive (agent / pipe / CI): never launch the blocking TUI — show help.
+        build_cli().print_help()
+        return 0
 
     if sys.argv[1] in ("menu", "app", "home"):
+        if not (sys.stdin.isatty() and sys.stdout.isatty()):
+            print("scbe: the interactive menu needs a terminal; run a subcommand (see 'scbe --help').", file=sys.stderr)
+            return 2
         return interactive_menu()
 
     # Natural-language fallback: if the first word isn't a known command (and
