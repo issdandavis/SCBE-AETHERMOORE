@@ -46,7 +46,18 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-VERSION = "2.0.0"
+def _resolve_version() -> str:
+    # Single source of truth: the installed package metadata (pyproject = 4.2.1).
+    # Falls back to the literal when running from a source tree that isn't installed.
+    try:
+        from importlib.metadata import version as _pkg_version
+
+        return _pkg_version("scbe-aethermoore")
+    except Exception:
+        return "4.2.1"
+
+
+VERSION = _resolve_version()
 REPO_ROOT = Path(__file__).resolve().parent
 FORWARDED_SYSTEM_COMMANDS = {
     "pollypad": ["pollypad"],
