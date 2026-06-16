@@ -1,0 +1,40 @@
+name: injection-model-benchmark
+
+# Measures the OPTIONAL second-tier classifier (python/scbe/intent_model.py) on
+# the independent held-out corpus — the honest "does the model beat the 25%
+# pattern ceiling, and at what false-positive cost" number. The local dev box has
+# no ML libs, so this is where that measurement actually happens.
+
+on:
+  push:
+    paths:
+      - "python/scbe/intent_model.py"
+      - "scbe.py"
+      - "tests/test_intent_model_benchmark.py"
+      - "tests/data/injection_eval_corpus.json"
+      - ".github/workflows/injection-model-benchmark.yml"
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install CPU torch + transformers
+        run: |
+          python -m pip install --quiet --upgrade pip
+          pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu
+          pip install --quiet "transformers>=4.40" sentencepiece pytest
+
+      - name: Run model-augmented injection benchmark (held-out corpus)
+        env:
+          SCBE_INJECTION_MODEL: "1"  # -> protectai/deberta-v3-base-prompt-injection-v2
+          HF_HUB_DISABLE_TELEMETRY: "1"
+          TOKENIZERS_PARALLELISM: "false"
+        run: python -m pytest tests/test_intent_model_benchmark.py -v -s
