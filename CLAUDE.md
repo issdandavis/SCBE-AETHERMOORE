@@ -181,9 +181,9 @@ Three coordination systems operate across the fleet:
 
 | System | Location | Purpose |
 |--------|----------|---------|
-| **HYDRA** | `hydra/` (Python, 40+ files) | Central orchestrator: Spine, Heads, Limbs, Ledger, BFT consensus |
+| **HYDRA** | `hydra/` here = storage-geometry subset only; full runtime in the **`scbe-agents`** repo | Concept/design lives in **Notion**. The orchestrator (Spine, Heads, Limbs, BFT consensus) **moved to `scbe-agents`**; this repo retains the storage-geometry subset: octree_sphere_grid, quadtree25d, voxel_storage, color_dimension, lattice25d_ops + ledger/turnstile. So `from hydra.spine/head/switchboard/limbs/research import …` resolve only in `scbe-agents` — in this repo those endpoints return 503. |
 | **Fleet** | `src/fleet/` (TypeScript, 50+ files) | Agent registry, task dispatch, governance, Polly Pads, swarm coordination |
-| **Juggling Scheduler** | `src/fleet/juggling-scheduler.ts` + `hydra/juggling_scheduler.py` | Physics-based task-flight coordination |
+| **Juggling Scheduler** | `src/fleet/juggling-scheduler.ts` (the Python `hydra/juggling_scheduler.py` moved to `scbe-agents`) | Physics-based task-flight coordination |
 | **Red/Blue Arena** | `src/security-engine/redblue-arena.ts` | Adversarial model-vs-model security simulation |
 
 **Juggling Scheduler** models task coordination as a physics juggling system: balls=TaskCapsules, hands=AgentSlots, throws=handoffs, arcs=deadline windows, drops=failures. Seven rules: (1) never throw to unready hand, (2) predicted catch windows, (3) fewer handoffs for high-inertia tasks, (4) higher arcs for risky tasks, (5) detect phase drift, (6) interception paths, (7) ledger catches not throws.
@@ -475,7 +475,7 @@ Docker Compose files: `docker-compose.yml`, `docker-compose.api.yml`, `docker-co
 | `docs/SYSTEM_ARCHITECTURE.md` | Detailed architecture |
 | `ARCHITECTURE.md` | High-level architecture overview |
 | `docs/LANGUES_WEIGHTING_SYSTEM.md` | Langues metric deep dive |
-| `docs/hydra/ARCHITECTURE.md` | HYDRA orchestration |
+| HYDRA orchestration | Concept/design in **Notion**; full runtime in the **`scbe-agents`** repo (the old `docs/hydra/ARCHITECTURE.md` is not present in this repo) |
 | `docs/PUBLISHING.md` | Safe release flow |
 | `docs/AETHERBROWSE_BLUEPRINT.md` | AetherBrowse browser agent design |
 | `docs/API.md` | API reference |
