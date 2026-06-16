@@ -1516,6 +1516,14 @@ def cmd_encode(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_route(args: argparse.Namespace) -> int:
+    """Geometric fleet router — parallelism as tangent-vector tracks through the
+    tongue-weighted hyperbolic manifold (fluid-balanced geodesic routing)."""
+    from python.scbe.geometric_router import _demo
+    _demo()
+    return 0
+
+
 def cmd_polyglot(args: argparse.Namespace) -> int:
     """Emit a CA-opcode program to any language face (one core, every language)."""
     from python.scbe import polyglot as P
@@ -3201,6 +3209,13 @@ Legacy (backward compat):
     pg.add_argument("--all", action="store_true", help="emit to every registered language")
     pg.add_argument("--list", dest="list_langs", action="store_true", help="list languages + ops")
     pg.set_defaults(func=cmd_polyglot)
+
+    rt = sub.add_parser(
+        "route",
+        aliases=["fleet"],
+        help='Geometric fleet routing — tangent-vector parallel tracks ("scbe route")',
+    )
+    rt.set_defaults(func=cmd_route)
 
     bl = sub.add_parser(
         "blocks",
