@@ -1516,6 +1516,55 @@ def cmd_encode(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_polyglot(args: argparse.Namespace) -> int:
+    """Emit a CA-opcode program to any language face (one core, every language)."""
+    from python.scbe import polyglot as P
+
+    if getattr(args, "list_langs", False):
+        langs = P.languages()
+        print(f"{len(langs)} language faces: " + ", ".join(langs))
+        print("ops: " + ", ".join(sorted(P.SCALAR_OPS)))
+        return 0
+    ops = getattr(args, "ops", []) or ["add", "mul", "sqrt", "inc"]
+    try:
+        prog = P.program_bytes(*ops)
+    except KeyError as e:
+        print(f"unknown op {e}; try: scbe polyglot --list", file=sys.stderr)
+        return 2
+    targets = P.languages() if getattr(args, "all", False) else [getattr(args, "lang", None) or "python"]
+    for lang in targets:
+        if lang not in P.REGISTRY:
+            print(f"unknown language {lang!r}; have {P.languages()}", file=sys.stderr)
+            continue
+        try:
+            print(f"=== {lang} ===")
+            print(P.emit(prog, lang, runnable=True))
+        except ValueError as e:
+            print(f"  (skipped: {e})")
+    return 0
+
+
+def cmd_blocks(args: argparse.Namespace) -> int:
+    """Scratch-style command blocks with a built-in destructive double-check."""
+    from python.scbe.blocks import BlockProgram, BlockError, catalog_summary
+
+    op = getattr(args, "op", None)
+    if op:
+        prog = BlockProgram().add(op, getattr(args, "target", None) or "",
+                                  confirm=getattr(args, "confirm", None))
+        print(prog.render())
+        try:
+            result = prog.run_plan()
+            print(f"  ✓ CLEARED to run: {result}")
+            return 0
+        except BlockError as e:
+            print(f"  ✋ {e}")
+            return 1
+    print(catalog_summary())
+    print("\naudit an operation:  scbe blocks delete_file path/to.log [--confirm 'why']")
+    return 0
+
+
 def cmd_stereo_code(args: argparse.Namespace) -> int:
     source, error = _read_text_file(args.file)
     if error:
@@ -3115,6 +3164,26 @@ Legacy (backward compat):
     en.add_argument("--limit-files", dest="limit_files", type=int,
                     help="with --corpus: cap number of files")
     en.set_defaults(func=cmd_encode)
+
+    pg = sub.add_parser(
+        "polyglot",
+        aliases=["emit"],
+        help='Emit a CA-opcode program to any language face ("scbe polyglot add mul --lang rust")',
+    )
+    pg.add_argument("ops", nargs="*", help="CA op names (add mul sqrt ...)")
+    pg.add_argument("--lang", help="target language (default python)")
+    pg.add_argument("--all", action="store_true", help="emit to every registered language")
+    pg.add_argument("--list", dest="list_langs", action="store_true", help="list languages + ops")
+    pg.set_defaults(func=cmd_polyglot)
+
+    bl = sub.add_parser(
+        "blocks",
+        help='Scratch-style command blocks with destructive double-check ("scbe blocks")',
+    )
+    bl.add_argument("op", nargs="?", help="block name to audit (e.g. delete_file)")
+    bl.add_argument("target", nargs="?", help="the operation's target path/arg")
+    bl.add_argument("--confirm", help="explicit reason that passes the double-check")
+    bl.set_defaults(func=cmd_blocks)
 
     stc = sub.add_parser(
         "stereo",
