@@ -42,6 +42,10 @@ Useful commands:
   geoseal stage --room frontend --example slideshow
   geoseal stage-frame --room github --example pr-flow
   geoseal command-check "Remove-Item -Recurse C:\\Users\\issda"
+  geoseal code-cube "build a todo app with auth and tests" --json
+  geoseal code-cube --twist tests.backend --language rust "todo api" --json
+  geoseal code-cube --target manifold --dimensions 6 --twist security.deploy "station safe-mode controller" --json
+  geoseal code-cube --target manifold --pitch 15 --yaw -20 --roll 5 --speed 0.7 "safe-mode controller" --json
   geoseal ask "explain this repo"
   geoseal do "add tests for the tokenizer"
   geoseal permissions --json
@@ -663,6 +667,471 @@ function runCommandCheck(positionals, flags) {
   writeJsonOrText(flags, payload, lines.join("\n"));
   if (risk.decision === "block") process.exitCode = 2;
   if (risk.decision === "confirm") process.exitCode = 3;
+}
+
+const CODE_CUBE_FACES = {
+  frontend: {
+    color: "blue",
+    role: "user interface",
+    outputs: ["routes", "components", "state", "responsive checks"],
+  },
+  backend: {
+    color: "green",
+    role: "api and domain logic",
+    outputs: ["handlers", "validation", "service functions", "receipts"],
+  },
+  data: {
+    color: "violet",
+    role: "schema and persistence",
+    outputs: ["entities", "relations", "indexes", "seed records"],
+  },
+  tests: {
+    color: "yellow",
+    role: "verification",
+    outputs: ["unit tests", "route tests", "safety tests", "smoke tests"],
+  },
+  security: {
+    color: "red",
+    role: "permission and command gates",
+    outputs: ["risk flags", "preflight checks", "secret boundaries", "deny rules"],
+  },
+  deploy: {
+    color: "orange",
+    role: "ship path",
+    outputs: ["env vars", "build command", "healthcheck", "rollback note"],
+  },
+};
+
+const CODE_CUBE_LANGUAGE_FACE = {
+  python: { tongue: "KO", stack: "FastAPI or CLI", extension: "py" },
+  javascript: { tongue: "AV", stack: "Node/Express or browser JS", extension: "js" },
+  typescript: { tongue: "AV", stack: "Next.js/Node typed app", extension: "ts" },
+  rust: { tongue: "RU", stack: "Axum/service binary", extension: "rs" },
+  go: { tongue: "RU", stack: "net/http service", extension: "go" },
+  sql: { tongue: "DR", stack: "schema and migrations", extension: "sql" },
+  markdown: { tongue: "DR", stack: "docs and build worksheet", extension: "md" },
+};
+
+const MANIFOLD_TONGUES = ["KO", "AV", "RU", "CA", "UM", "DR"];
+const MANIFOLD_FACE_MAP = {
+  frontend: "AV",
+  backend: "KO",
+  data: "RU",
+  tests: "CA",
+  security: "UM",
+  deploy: "DR",
+};
+const MANIFOLD_PRESSURE_TIERS = {
+  read_only: { tier: 0, max_pressure_kpa: 25, interlock: "allow-read" },
+  repo_write: { tier: 1, max_pressure_kpa: 60, interlock: "confirm-write" },
+  network: { tier: 2, max_pressure_kpa: 90, interlock: "confirm-network" },
+  destructive: { tier: 3, max_pressure_kpa: 0, interlock: "fail-closed-vent" },
+};
+
+function wordsFromIntent(intent) {
+  return String(intent || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9_\s-]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+function classifyIntent(intent) {
+  const words = new Set(wordsFromIntent(intent));
+  const domain = [];
+  if (["todo", "task", "tasks", "kanban"].some((w) => words.has(w))) domain.push("task_management");
+  if (["payment", "checkout", "stripe", "invoice"].some((w) => words.has(w))) domain.push("payments");
+  if (["repo", "code", "github", "pull", "pr"].some((w) => words.has(w))) domain.push("repo_tooling");
+  if (["chemistry", "materials", "waves", "fiber"].some((w) => words.has(w))) domain.push("science_workbench");
+  if (!domain.length) domain.push("general_app");
+  return domain;
+}
+
+function buildCodeCubeCenter(intent, flags) {
+  const words = wordsFromIntent(intent);
+  const domains = classifyIntent(intent);
+  const wantsAuth = words.some((w) => ["auth", "login", "user", "users", "account"].includes(w));
+  const wantsPayments = words.some((w) => ["payment", "checkout", "stripe", "invoice"].includes(w));
+  const wantsTests = words.some((w) => ["test", "tests", "verify", "safe"].includes(w)) || true;
+  const entities = [];
+  if (domains.includes("task_management")) entities.push("User", "Task");
+  else if (domains.includes("payments")) entities.push("Customer", "Offer", "Order", "Receipt");
+  else if (domains.includes("repo_tooling")) entities.push("Repository", "Change", "Check", "Receipt");
+  else if (domains.includes("science_workbench")) entities.push("Scenario", "Calculation", "Assumption", "Receipt");
+  else entities.push("User", "Project", "Item", "Receipt");
+  const actions = ["create", "list", "update", "export_receipt"];
+  if (wantsAuth) actions.unshift("authenticate");
+  if (wantsPayments) actions.push("checkout", "deliver_purchase");
+  if (wantsTests) actions.push("run_tests");
+  return {
+    id: `codecube_${sha256Hex(`${intent}:${JSON.stringify(flags)}`).slice(0, 12)}`,
+    intent,
+    domains,
+    canonical_ir: {
+      kind: "app_blueprint",
+      entities: Array.from(new Set(entities)),
+      actions: Array.from(new Set(actions)),
+      constraints: [
+        wantsAuth ? "auth_required_for_mutation" : "public_read_private_write",
+        "all_mutations_emit_receipts",
+        "destructive_commands_require_preflight",
+      ],
+      invariants: [
+        "center_ir_is_source_of_truth",
+        "faces_are_projections_not_separate_apps",
+        "twists_mutate_center_then_regenerate_faces",
+      ],
+    },
+  };
+}
+
+function buildCodeCubeFaces(center, language) {
+  const faceEntries = Object.entries(CODE_CUBE_FACES).map(([id, spec]) => ({
+    id,
+    color: spec.color,
+    role: spec.role,
+    outputs: spec.outputs,
+    projection: {
+      reads: id === "frontend" ? ["entities", "actions"] : ["canonical_ir"],
+      emits: spec.outputs,
+    },
+  }));
+  const lang = String(language || "typescript").toLowerCase();
+  const languageSpec = CODE_CUBE_LANGUAGE_FACE[lang] || CODE_CUBE_LANGUAGE_FACE.typescript;
+  return {
+    structural_faces: faceEntries,
+    language_face: {
+      language: CODE_CUBE_LANGUAGE_FACE[lang] ? lang : "typescript",
+      ...languageSpec,
+      promise: "emit target code from the center IR; do not hand-edit a face as the source of truth",
+    },
+    center_preview: center.canonical_ir,
+  };
+}
+
+function buildTwists(center, flags) {
+  const requested = String(flags.twist || "backend.tests").toLowerCase();
+  const base = [
+    {
+      id: "frontend.backend",
+      operation: "bind UI actions to API routes",
+      mutates: ["actions", "routes"],
+      emits: ["route contract", "component API map"],
+    },
+    {
+      id: "backend.data",
+      operation: "bind handlers to schema",
+      mutates: ["entities", "relations"],
+      emits: ["schema contract", "validation rules"],
+    },
+    {
+      id: "tests.backend",
+      operation: "generate tests from backend actions",
+      mutates: ["verification_plan"],
+      emits: ["unit tests", "route smoke tests"],
+    },
+    {
+      id: "security.deploy",
+      operation: "run command preflight and deploy gate",
+      mutates: ["ship_plan"],
+      emits: ["command-check packet", "deploy receipt"],
+    },
+    {
+      id: "language.rotate",
+      operation: "emit the selected language face from the center IR",
+      mutates: [],
+      emits: ["target source files", "language caveats"],
+    },
+  ];
+  return base.map((twist) => ({
+    ...twist,
+    selected: twist.id === requested || requested.split(",").includes(twist.id),
+  }));
+}
+
+function parseIntegerList(value, fallback) {
+  const raw = String(value || "").trim();
+  if (!raw) return fallback;
+  const parsed = raw
+    .split(/[,:\s]+/)
+    .map((item) => Number.parseInt(item, 10))
+    .filter((item) => Number.isFinite(item) && item > 1);
+  return parsed.length ? parsed : fallback;
+}
+
+function gcd(a, b) {
+  let x = Math.abs(a);
+  let y = Math.abs(b);
+  while (y) {
+    const t = y;
+    y = x % y;
+    x = t;
+  }
+  return x;
+}
+
+function pairwiseCoprime(values) {
+  for (let i = 0; i < values.length; i += 1) {
+    for (let j = i + 1; j < values.length; j += 1) {
+      if (gcd(values[i], values[j]) !== 1) return false;
+    }
+  }
+  return true;
+}
+
+function tritFor(seed, index) {
+  const byte = crypto.createHash("sha256").update(`${seed}:${index}`).digest()[0];
+  return (byte % 3) - 1;
+}
+
+function planeForTwist(twistId, dimensions) {
+  const names = Object.keys(CODE_CUBE_FACES);
+  const parts = String(twistId || "").split(".");
+  const leftIndex = Math.max(0, names.indexOf(parts[0]));
+  const rightIndex = Math.max(0, names.indexOf(parts[1]));
+  const i = leftIndex % dimensions;
+  const j = rightIndex % dimensions;
+  return i === j ? [i, (j + 1) % dimensions] : [i, j];
+}
+
+function degreesToRadians(value) {
+  return (value * Math.PI) / 180;
+}
+
+function clampNumber(value, fallback, min, max) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
+function buildCenterAttitude(flags, dimensions) {
+  const pitchDeg = clampNumber(flags.pitch, 0, -180, 180);
+  const yawDeg = clampNumber(flags.yaw, 0, -180, 180);
+  const rollDeg = clampNumber(flags.roll, 0, -180, 180);
+  const speed = clampNumber(flags.speed || flags.throttle, 0.5, 0, 1);
+  const pitch = degreesToRadians(pitchDeg);
+  const yaw = degreesToRadians(yawDeg);
+  const roll = degreesToRadians(rollDeg);
+
+  // Start with a simple forward vector, then let attitude controls distribute
+  // it across additional axes. This is a navigation packet, not flight dynamics.
+  const vector = Array.from({ length: dimensions }, () => 0);
+  vector[0] = Math.cos(yaw) * Math.cos(pitch) * speed;
+  if (dimensions > 1) vector[1] = Math.sin(yaw) * Math.cos(pitch) * speed;
+  if (dimensions > 2) vector[2] = Math.sin(pitch) * speed;
+  if (dimensions > 3) vector[3] = Math.sin(roll) * speed;
+  for (let i = 4; i < dimensions; i += 1) {
+    vector[i] = Math.sin((pitch + yaw + roll) / (i + 1)) * speed;
+  }
+  const norm = Math.sqrt(vector.reduce((acc, item) => acc + item * item, 0));
+  return {
+    schema_version: "geoseal_center_attitude_v1",
+    model: "center_jet_attitude_control",
+    purpose: "turn a simple forward instruction into multi-axis face traversal",
+    controls: {
+      pitch_deg: pitchDeg,
+      yaw_deg: yawDeg,
+      roll_deg: rollDeg,
+      speed,
+    },
+    axes: {
+      forward: 0,
+      yaw_lateral: dimensions > 1 ? 1 : null,
+      pitch_vertical: dimensions > 2 ? 2 : null,
+      roll_spin: dimensions > 3 ? 3 : null,
+      higher_order_faces: dimensions > 4 ? Array.from({ length: dimensions - 4 }, (_, i) => i + 4) : [],
+    },
+    vector: vector.map((item) => Number(item.toPrecision(6))),
+    norm: Number(norm.toPrecision(6)),
+    interpretation: "pitch/yaw/roll/speed bias which face-pair rotations fire first; center remains the source of truth",
+  };
+}
+
+function buildManifoldTarget(center, faces, twists, flags) {
+  const dimensions = Math.max(3, Math.min(18, Number.parseInt(flags.dimensions || flags.dimension || "6", 10) || 6));
+  const moduli = parseIntegerList(flags.moduli || flags["crt-moduli"], [7, 11, 13]);
+  const tierName = String(flags.tier || flags["pressure-tier"] || "repo_write").toLowerCase();
+  const tier = MANIFOLD_PRESSURE_TIERS[tierName] || MANIFOLD_PRESSURE_TIERS.repo_write;
+  const selectedTwists = twists.filter((twist) => twist.selected);
+  const activeTwists = selectedTwists.length ? selectedTwists : twists.filter((twist) => ["frontend.backend", "tests.backend", "security.deploy"].includes(twist.id));
+  const attitude = buildCenterAttitude(flags, dimensions);
+  const faceStates = faces.structural_faces.map((face, index) => {
+    const tongue = MANIFOLD_FACE_MAP[face.id] || MANIFOLD_TONGUES[index % MANIFOLD_TONGUES.length];
+    const trit = tritFor(`${center.id}:${face.id}`, index);
+    return {
+      face: face.id,
+      tongue,
+      color: face.color,
+      trit,
+      shuttle_state: trit < 0 ? "left" : trit > 0 ? "right" : "center",
+      valve_class: tongue === "UM" ? "fail_closed_pressure_interlock" : tongue === "CA" ? "bistable_nor_logic" : tongue === "RU" ? "coprime_address_bank" : tongue === "DR" ? "purge_transform_router" : tongue === "AV" ? "gtm_coil_io_bridge" : "clock_sequencer_bistable",
+    };
+  });
+  const addressSpace = moduli.reduce((acc, item) => acc * item, 1);
+  const residueBanks = faceStates.map((face, index) => {
+    const hash = crypto.createHash("sha256").update(`${center.id}:${face.face}:${face.trit}`).digest();
+    const address = hash.readUInt32BE(0) % addressSpace;
+    return {
+      face: face.face,
+      tongue: face.tongue,
+      address,
+      residues: moduli.map((modulus) => address % modulus),
+    };
+  });
+  // Tongue weights price the hyperbolic boost: base rapidity = ln(w_a) + ln(w_b),
+  // additive under composition (a real boost-composition property). Tier/attitude still
+  // modulate it. See research/aether-manifold/rotations.md.
+  const TONGUE_WEIGHT = { frontend: 1.62, backend: 4.24, data: 2.62, tests: 1.0, security: 6.85, deploy: 11.09 };
+  const rotations = activeTwists.map((twist, index) => {
+    const planeFaces = String(twist.id).split(".");
+    const [i, j] = planeForTwist(twist.id, dimensions);
+    const attitudeBias = Math.abs(attitude.vector[i] || 0) + Math.abs(attitude.vector[j] || 0);
+    const quarterTurns = (index % 3) + 1;
+    const angle = Number((((Math.PI / 2) * quarterTurns) + attitudeBias * 0.1).toPrecision(8));
+    const baseRapidity = Math.log(TONGUE_WEIGHT[planeFaces[0]] || 1) + Math.log(TONGUE_WEIGHT[planeFaces[1]] || 1);
+    const rapidity = Number((baseRapidity * Math.max(1, tier.tier) * (1 + attitude.controls.speed)).toPrecision(6));
+    return {
+      step: index + 1,
+      twist: twist.id,
+      generator: `R_${i}_${j}`,
+      manifold: `SO(${dimensions}) plane rotation`,
+      plane: [i, j],
+      angle_rad: angle,
+      attitude_bias: Number(attitudeBias.toPrecision(6)),
+      hyperbolic_gate: {
+        generator: `B_${i}_${j}`,
+        group_note: `SO(${Math.max(1, dimensions - 1)},1) boost-like pressure/privilege gate`,
+        rapidity,
+        preserved_quantity: "signed pressure/state norm in the manifold packet, not a measured hardware claim",
+      },
+      operation: twist.operation,
+      valve_action: twist.id === "security.deploy" ? "route through UM pressure interlock before deploy" : twist.id === "tests.backend" ? "feed CA verification pulses into backend lane" : twist.id === "frontend.backend" ? "bind AV interface lane to KO sequencer" : "rotate projection face over center IR",
+    };
+  });
+  return {
+    schema_version: "geoseal_code_cube_manifold_target_v1",
+    target: "manifold",
+    status: "software_schedule_only",
+    dimensions,
+    cube_order_note: `${dimensions}D state; physical tile count is not asserted. n-cube has 2^n vertices, while this packet uses ${faceStates.length} named working faces.`,
+    rotation_basis: {
+      euclidean: "plane/Givens rotations mutate pairs of center-state axes",
+      hyperbolic: "boost-like rapidity gates model pressure/privilege transitions",
+      rubix: "named twist generators form a discrete Cayley-walk over allowed face operations",
+    },
+    center_attitude: attitude,
+    trit_states: faceStates,
+    coprime_residue_routing: {
+      moduli,
+      pairwise_coprime: pairwiseCoprime(moduli),
+      address_space: addressSpace,
+      banks: residueBanks,
+      fault_tolerance_note: "add one redundant coprime modulus for RRNS lane-loss recovery before any hardware claim",
+    },
+    geoseal_pressure_tier: {
+      name: MANIFOLD_PRESSURE_TIERS[tierName] ? tierName : "repo_write",
+      ...tier,
+    },
+    twist_schedule: rotations,
+    hardware_boundary: "B2Gate/GTM/fluidic schedule only; no fabrication dimensions or measured performance are claimed",
+  };
+}
+
+function buildCodeCubeFiles(center, language) {
+  const lang = String(language || "typescript").toLowerCase();
+  const entities = center.canonical_ir.entities;
+  const actions = center.canonical_ir.actions;
+  const name = center.id.replace(/^codecube_/, "app_");
+  if (lang === "python") {
+    return [
+      { path: "app/main.py", purpose: "FastAPI-style handler skeleton", language: "python" },
+      { path: "tests/test_app.py", purpose: "route and invariant tests", language: "python" },
+      { path: "README.md", purpose: "receipt and run notes", language: "markdown" },
+    ];
+  }
+  if (lang === "rust") {
+    return [
+      { path: "src/main.rs", purpose: "Axum/service skeleton", language: "rust" },
+      { path: "tests/receipt.rs", purpose: "receipt invariant tests", language: "rust" },
+      { path: "README.md", purpose: "receipt and run notes", language: "markdown" },
+    ];
+  }
+  if (lang === "go") {
+    return [
+      { path: "cmd/server/main.go", purpose: "net/http service skeleton", language: "go" },
+      { path: "internal/app/receipt.go", purpose: "receipt model", language: "go" },
+      { path: "README.md", purpose: "receipt and run notes", language: "markdown" },
+    ];
+  }
+  return [
+    { path: "src/app.js", purpose: `${name} app shell for ${entities.join(", ")}`, language: "javascript" },
+    { path: "src/routes.js", purpose: `routes for ${actions.join(", ")}`, language: "javascript" },
+    { path: "tests/app.test.js", purpose: "route and command-preflight tests", language: "javascript" },
+    { path: "README.md", purpose: "receipt and run notes", language: "markdown" },
+  ];
+}
+
+function runCodeCube(positionals, flags) {
+  const carried = typeof flags.json === "string" ? flags.json : "";
+  const intent = String(flags.content || flags.intent || carried || positionals.slice(1).join(" ") || "build a small app with tests and receipts").trim();
+  const language = String(flags.language || flags.lang || "typescript").toLowerCase();
+  const center = buildCodeCubeCenter(intent, flags);
+  const faces = buildCodeCubeFaces(center, language);
+  const twists = buildTwists(center, flags);
+  const files = buildCodeCubeFiles(center, faces.language_face.language);
+  const suggestedCommands = [
+    "npm test",
+    "python -m pytest tests/api/test_ai_waves_lab.py -q",
+    "git status --short",
+  ];
+  const preflight = suggestedCommands.map((commandText) => ({
+    command: commandText,
+    ...commandRisk(commandText),
+  }));
+  const packetCore = { center, faces, twists, files, preflight };
+  const targets = String(flags.target || "software")
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+  const includeManifold = targets.includes("manifold") || targets.includes("physical") || targets.includes("all");
+  const manifold = includeManifold ? buildManifoldTarget(center, faces, twists, flags) : null;
+  const payload = {
+    schema_version: "geoseal_code_cube_v1",
+    ok: true,
+    product_component: "CodeCube for GeoSeal CLI",
+    mode: "software_semantics_first_physical_cube_later",
+    receipt_id: `codecube_${sha256Hex(JSON.stringify(packetCore)).slice(0, 16)}`,
+    center,
+    faces,
+    twists,
+    output_packet: {
+      files,
+      language: faces.language_face,
+      next_safe_commands: preflight,
+      export_contract: "center IR -> face projections -> twist receipts -> generated project packet",
+    },
+    targets: {
+      software: true,
+      manifold: Boolean(manifold),
+      manifold_schedule: manifold,
+    },
+    safety: {
+      executes_shell: false,
+      destructive_gate: "commands are described and preflighted; this component does not execute them",
+      physical_hardware_claim: "not included; this is the functional software cube core",
+    },
+  };
+  const text = [
+    `CodeCube: ${center.id}`,
+    `Intent: ${intent}`,
+    `Center: ${center.canonical_ir.entities.join(", ")} / ${center.canonical_ir.actions.join(", ")}`,
+    `Faces: ${Object.keys(CODE_CUBE_FACES).join(", ")} + ${faces.language_face.language}`,
+    `Selected twists: ${twists.filter((t) => t.selected).map((t) => t.id).join(", ") || "none"}`,
+    `Output files: ${files.map((file) => file.path).join(", ")}`,
+    manifold ? `Manifold: ${manifold.dimensions}D, moduli ${manifold.coprime_residue_routing.moduli.join(",")}, pressure ${manifold.geoseal_pressure_tier.name}` : "Manifold: not requested",
+    `Receipt: ${payload.receipt_id}`,
+  ].join("\n");
+  writeJsonOrText(flags, payload, text);
 }
 
 function parseFrontmatter(text) {
@@ -1736,6 +2205,10 @@ async function main() {
   }
   if (command === "command-check" || command === "preflight") {
     runCommandCheck(positionals, flags);
+    return;
+  }
+  if (command === "code-cube" || command === "codecube") {
+    runCodeCube(positionals, flags);
     return;
   }
   if (command === "ask") {
