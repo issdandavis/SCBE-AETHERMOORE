@@ -44,12 +44,11 @@ class ModelWorker(Worker):
     matrix: Any = None
 
     def serve(self, job: Job, penalty: float) -> str:
+        # Let genuine failures (unknown node, transport) PROPAGATE so the scheduler's
+        # retry/error path handles them — don't hide them as a "success" string.
         prompt = getattr(job, "prompt", None) or job.name
-        try:
-            res = asyncio.run(self.matrix.query_node(self.node_id, prompt))
-            return res.get("consensus", "")
-        except Exception as exc:  # pragma: no cover - surfaces as a scheduler error
-            return f"[{self.node_id} error: {exc}]"
+        res = asyncio.run(self.matrix.query_node(self.node_id, prompt))
+        return res.get("consensus", "")
 
 
 def m4_fleet(matrix: Optional[Any] = None) -> Tuple[List[ModelWorker], Any]:
