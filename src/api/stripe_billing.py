@@ -1,5 +1,17 @@
 """Stripe billing integration for SCBE SaaS API.
 
+============================================================================
+CANONICAL LIVE MONEY PATH. This module (mounted in the canonical app
+src/api/main.py) plus the Stripe Payment Links registered in docs/offers.json
+is the ONE path that takes real money. It uses real Stripe price/product IDs
+(price_1TBnUm.../prod_UA7k...) and needs no Stripe SDK (raw urllib).
+
+There is a SECOND, parallel billing stack under api/billing/ (Stripe SDK +
+SQLAlchemy) behind the separate api/main.py app. That one uses PLACEHOLDER
+price IDs and is NOT the live revenue path — see api/billing/routes.py. Do not
+add new money logic there; add it here (or as a Payment Link in offers.json).
+============================================================================
+
 Provides:
 - Checkout session creation for 3 plan tiers
 - Webhook handler for subscription lifecycle events
