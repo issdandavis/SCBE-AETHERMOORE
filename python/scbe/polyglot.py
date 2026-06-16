@@ -71,8 +71,11 @@ class Dialect:
     func1: Dict[str, str]  # unary: "{a}" -> expr
     func2: Dict[str, str]  # binary: "{a}","{b}" -> expr
     binop_over: Dict[str, str] = field(default_factory=dict)  # op_name -> override operator
+    cmp_over: Dict[str, str] = field(default_factory=dict)  # cmp_name -> override (Lua "~=", Haskell "/=")
     cmp_tmpl: str = "(1.0 if {cond} else 0.0)"  # ternary keeping number stack
     main_tmpl: Tuple[str, ...] = ()  # optional runnable main(); {fn} placeholder
+    var_a: str = "a"  # temp-var name the push expr uses; sigil langs override (PHP: "$a")
+    var_b: str = "b"  # second-operand temp-var name; must match what pop2 binds
 
 
 def _ternary(d: Dialect) -> str:
@@ -89,25 +92,29 @@ def _ternary(d: Dialect) -> str:
 # language so traffic routes around instead of crashing (py raises / js NaN).
 #   div/mod by zero -> 0.0 ;  sqrt of negative -> 0.0
 def _render(name: str, d: Dialect, safe: bool = False) -> Tuple[str, bool]:
-    """Return (push-expression using temp vars a/b, is_binary)."""
+    """Return (push-expression using the dialect's temp var names, is_binary)."""
+    va, vb = d.var_a, d.var_b  # "a"/"b" everywhere except sigil langs (PHP: "$a"/"$b")
     if name in BINOPS:
         op = d.binop_over.get(name, BINOPS[name])
-        expr = f"a {op} b"
+        expr = f"{va} {op} {vb}"
         if safe and name == "div":
-            expr = _sub(_ternary(d), cond="b == 0.0", t="0.0", f="a / b")
+            expr = _sub(_ternary(d), cond=f"{vb} == 0.0", t="0.0", f=f"{va} / {vb}")
         return expr, True
     if name in CMPS:
-        op = CMPS[name]
-        return _sub(d.cmp_tmpl, cond=f"a {op} b"), True
+        # NOTE: `round` (FUNC1) intentionally uses each language's native rounding —
+        # Python is round-half-to-even, JS round-half-up, Rust round-half-away — so faces
+        # can diverge on exact .5 values. Tracked as a known divergence, not yet unified.
+        op = d.cmp_over.get(name, CMPS[name])
+        return _sub(d.cmp_tmpl, cond=f"{va} {op} {vb}"), True
     if name in FUNC2:
-        expr = _sub(d.func2[name], a="a", b="b")
+        expr = _sub(d.func2[name], a=va, b=vb)
         if safe and name == "mod":
-            expr = _sub(_ternary(d), cond="b == 0.0", t="0.0", f=expr)
+            expr = _sub(_ternary(d), cond=f"{vb} == 0.0", t="0.0", f=expr)
         return expr, True
     if name in FUNC1:
-        expr = _sub(d.func1[name], a="a")
+        expr = _sub(d.func1[name], a=va)
         if safe and name == "sqrt":
-            expr = _sub(_ternary(d), cond="a < 0.0", t="0.0", f=expr)
+            expr = _sub(_ternary(d), cond=f"{va} < 0.0", t="0.0", f=expr)
         return expr, False
     raise KeyError(f"op {name!r} not in v1 scalar core")
 
@@ -265,7 +272,7 @@ register(
         },
         func2={"pow": "pow({a}, {b})", "min": "cmin({a}, {b})", "max": "cmax({a}, {b})", "mod": "fmod({a}, {b})"},
         cmp_tmpl="(({cond}) ? 1.0 : 0.0)",
-        main_tmpl=("int main(void) {", '    printf("%g\\n", {fn}(2.0, 3.0, 4.0));', "    return 0;", "}"),
+        main_tmpl=("int main(void) {", '    printf("%.17g\\n", {fn}(2.0, 3.0, 4.0));', "    return 0;", "}"),
     )
 )
 
