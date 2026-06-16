@@ -1560,6 +1560,23 @@ def cmd_polyglot(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_code(args: argparse.Namespace) -> int:
+    """Front door: type tokens, see the perfect code. The keyboard layer over the cube."""
+    from python.scbe import frontdoor as F
+
+    toks = getattr(args, "tokens", []) or []
+    langs = F.P.languages() if getattr(args, "all", False) else (getattr(args, "lang", None) or ["python"])
+    color = not getattr(args, "no_color", False)
+    if getattr(args, "repl", False) or not toks:
+        return F._repl(langs, color)
+    try:
+        print(F.render(" ".join(toks), langs, color))
+        return 0
+    except ValueError as e:
+        print(str(e), file=sys.stderr)
+        return 1
+
+
 def cmd_blocks(args: argparse.Namespace) -> int:
     """Scratch-style command blocks with a built-in destructive double-check."""
     from python.scbe.blocks import BlockProgram, BlockError, catalog_summary
@@ -3231,6 +3248,17 @@ Legacy (backward compat):
     pg.add_argument("--safe", action="store_true",
                     help="roundabout mode: define undefined zones (div0, sqrt-neg -> 0) so every language agrees")
     pg.set_defaults(func=cmd_polyglot)
+
+    cd = sub.add_parser(
+        "code",
+        help='Type tokens, see the perfect code ("scbe code + sqrt mul inc" or "scbe code --repl")',
+    )
+    cd.add_argument("tokens", nargs="*", help="token stream: symbols (+ - * / sqrt) names or 0xNN hex")
+    cd.add_argument("--lang", action="append", help="language face (repeatable); default python")
+    cd.add_argument("--all", action="store_true", help="show every language face")
+    cd.add_argument("--repl", action="store_true", help="interactive hit-Enter loop")
+    cd.add_argument("--no-color", action="store_true", help="disable ANSI styling")
+    cd.set_defaults(func=cmd_code)
 
     rt = sub.add_parser(
         "route",
