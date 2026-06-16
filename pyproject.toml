@@ -11,11 +11,11 @@ license = "MIT OR Apache-2.0"
 license-files = ["LICENSE", "LICENSE-APACHE"]
 requires-python = ">=3.11"
 dependencies = [
-    # Keep Dependabot's Python dependency graph on a patched uv release.
-    "uv>=0.11.17",
+    "numpy>=1.24",
+    "jsonschema>=4.0",
 ]
 authors = [
-    {name = "Issac Daniel Davis", email = "issdandavis@gmail.com"},
+    {name = "Issac Daniel Davis", email = "issdandavis@users.noreply.github.com"},
 ]
 keywords = [
     "cryptography",
@@ -56,39 +56,7 @@ scbe-system = "scripts.scbe_system_cli:main"
 scbe-convert-to-sft = "symphonic_cipher.scbe_aethermoore.convert_to_sft:main"
 scbe-code-prism = "code_prism.cli:main"
 
-[tool.setuptools]
-py-modules = ["scbe"]
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = [
-    "neurogolf*",
-    "scbe_aethermoore*",
-    "code_prism*",
-    "flow_router*",
-    "symphonic_cipher*",
-    "api*",
-    "crypto*",
-    "harmonic*",
-    "spiralverse*",
-    "minimal*",
-    "storage*",
-]
-exclude = [
-    "tests*",
-    "agents*",
-    "training*",
-    "scripts*",
-    # Test subpackages
-    "*.tests",
-    "*.tests.*",
-    # Excluded submodules
-    "api.github_app*",
-    "api.billing*",
-    "api.keys*",
-    "symphonic_cipher.geoseal*",
-]
-
-[tool.setuptools.package-dir]
-# Root-level package not under src/
-api = "api"
+# Package discovery is in setup.py — the mixed layout (src/ packages PLUS the
+# python/scbe engine imported as python.scbe) needs two find_packages calls, which a
+# single static packages.find can't express without name-colliding on the duplicate
+# root packages (symphonic_cipher/, api/).

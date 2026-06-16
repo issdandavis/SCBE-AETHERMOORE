@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Waves Lab | AetherMoore</title>
+    <meta name="description" content="Visual wave, fiber, optics, and photonic routing lab with calculations and receipts." />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #060708;
+        --panel: #111619;
+        --panel2: #182024;
+        --line: rgba(232, 238, 230, .15);
+        --text: #eef3ee;
+        --muted: #aab7b2;
+        --green: #8ee2a6;
+        --cyan: #66d6e6;
+        --amber: #dfb765;
+        --violet: #b9a4ff;
+        --red: #ee786d;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      a { color: inherit; text-decoration: none; }
+      .shell { width: min(1460px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 34px; }
+      .topbar { display: flex; justify-content: space-between; gap: 14px; align-items: center; min-height: 44px; border-bottom: 1px solid var(--line); }
+      .brand { color: var(--green); font-weight: 900; letter-spacing: .1em; text-transform: uppercase; font-size: 13px; }
+      .nav { display: flex; gap: 14px; flex-wrap: wrap; color: var(--muted); font-size: 14px; }
+      .grid { display: grid; grid-template-columns: minmax(320px, .78fr) minmax(440px, 1.35fr) minmax(300px, .86fr); gap: 14px; padding-top: 14px; }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; min-width: 0; overflow: hidden; }
+      .head { min-height: 44px; padding: 11px 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+      .title { margin: 0; color: var(--green); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+      .body { padding: 12px; }
+      h1 { margin: 0; font-size: 30px; line-height: 1.05; letter-spacing: 0; }
+      p { margin: 8px 0 0; color: var(--muted); line-height: 1.45; }
+      label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; font-weight: 800; }
+      textarea, input, select {
+        width: 100%;
+        border: 1px solid rgba(255,255,255,.14);
+        border-radius: 8px;
+        background: #080b0d;
+        color: var(--text);
+        padding: 10px;
+        font: inherit;
+      }
+      textarea { min-height: 104px; resize: vertical; line-height: 1.42; }
+      .nums { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 10px; }
+      .actions { display: grid; grid-template-columns: 1fr 44px; gap: 10px; margin-top: 10px; }
+      .buy-panel { margin-top: 12px; display: grid; gap: 9px; }
+      .buy-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+      .buy-link {
+        display: grid;
+        align-content: center;
+        min-height: 44px;
+        border: 1px solid rgba(255,255,255,.16);
+        border-radius: 8px;
+        padding: 9px 10px;
+        font-weight: 900;
+        text-align: center;
+        background: #080b0d;
+      }
+      .buy-link.primary { background: var(--green); border-color: var(--green); color: #071009; }
+      .deliverables { display: grid; gap: 7px; color: var(--muted); font-size: 13px; line-height: 1.35; }
+      .deliverables b { color: var(--text); }
+      button {
+        min-height: 44px;
+        border: 1px solid rgba(255,255,255,.16);
+        border-radius: 8px;
+        background: var(--panel2);
+        color: var(--text);
+        font: inherit;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      button.primary { background: var(--green); border-color: var(--green); color: #071009; }
+      .status { min-height: 18px; color: var(--muted); font-size: 13px; }
+      canvas { display: block; width: 100%; height: 610px; background: #06090b; }
+      .stage { position: relative; min-height: 610px; }
+      .hud { position: absolute; left: 12px; right: 12px; bottom: 12px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+      .metric, .card { border: 1px solid rgba(255,255,255,.12); border-radius: 8px; background: rgba(6, 9, 11, .84); padding: 10px; }
+      .metric strong, .card strong { display: block; margin-bottom: 4px; color: var(--green); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+      .metric span, .card span { color: var(--text); overflow-wrap: anywhere; }
+      .cards { display: grid; gap: 10px; }
+      pre { max-height: 300px; overflow: auto; margin: 10px 0 0; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; background: #050708; color: #d8f7e9; padding: 10px; font-size: 12px; }
+      @media (max-width: 1180px) { .grid { grid-template-columns: 1fr 1.35fr; } .right { grid-column: 1 / -1; } }
+      @media (max-width: 820px) {
+        .grid, .nums, .hud { grid-template-columns: 1fr; }
+        canvas, .stage { height: 540px; min-height: 540px; }
+        .topbar { align-items: flex-start; flex-direction: column; padding-bottom: 10px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/">AetherMoore</a>
+        <nav class="nav" aria-label="Product navigation">
+          <a href="/ai-materials-bench">Materials Bench</a>
+          <a href="/ai-chemistry-set">Chemistry Set</a>
+          <a href="/atomic-lab">Atomic Lab</a>
+        </nav>
+      </header>
+
+      <section class="grid">
+        <aside class="panel">
+          <div class="head"><h2 class="title">AI Waves Lab</h2></div>
+          <div class="body">
+            <h1>Wave, fiber, and photonic receipts with visuals.</h1>
+            <p>Turn a wave concept into calculations, a stage diagram, assumptions, failure modes, and a receipt.</p>
+            <form id="wavesForm" style="margin-top: 14px">
+              <label>
+                Room
+                <select id="room">
+                  <option value="fiber-room">Fiber / waveguide</option>
+                  <option value="interference-room">Interference</option>
+                  <option value="refraction-room">Refraction</option>
+                  <option value="optical-switch-room">Optical switch</option>
+                  <option value="photonic-route-room">Photonic route</option>
+                </select>
+              </label>
+              <label style="margin-top: 10px">
+                Concept
+                <textarea id="concept">Single-mode fiber waveguide at 1550 nm with attenuation, dispersion, and receipt output.</textarea>
+              </label>
+              <div class="nums">
+                <label>Wavelength nm<input id="wavelength_nm" type="number" value="1550" min="380" max="2500" step="1" /></label>
+                <label>Fiber km<input id="fiber_length_km" type="number" value="10" min="0.001" max="500" step="0.1" /></label>
+                <label>n core<input id="n_core" type="number" value="1.46" min="1" max="4" step="0.01" /></label>
+                <label>n clad<input id="n_clad" type="number" value="1.44" min="1" max="4" step="0.01" /></label>
+                <label>Loss dB/km<input id="attenuation_db_km" type="number" value="0.2" min="0" max="20" step="0.01" /></label>
+                <label>Disp ps/nm/km<input id="dispersion_ps_nm_km" type="number" value="17" min="-200" max="200" step="0.1" /></label>
+                <label>Path diff um<input id="path_difference_um" type="number" value="0.25" min="-10000" max="10000" step="0.01" /></label>
+                <label>Incident deg<input id="incident_angle_deg" type="number" value="35" min="0" max="89.9" step="0.1" /></label>
+                <label>Precision bits<input id="precision_required_bits" type="number" value="16" min="1" max="128" /></label>
+                <label>Branching<input id="branching_density" type="number" value="0.08" min="0" max="1" step="0.01" /></label>
+              </div>
+              <div class="actions">
+                <button class="primary" type="submit">Run waves lab</button>
+                <button type="button" id="copyJson" title="Copy JSON receipt">[]</button>
+              </div>
+              <p class="status" id="status">Ready.</p>
+            </form>
+            <div class="buy-panel" aria-label="Purchase options">
+              <div class="buy-row">
+                <a class="buy-link primary" href="payments.html?product=ai-waves-lab-report">Buy $49 report</a>
+                <a class="buy-link" href="mailto:ai@aethermoore.com?subject=AI%20Waves%20Lab%20worksheet">Request $199 worksheet</a>
+              </div>
+              <div class="deliverables">
+                <div><b>$49 report:</b> one concept, wave diagram, formulas, assumptions, failure flags, and JSON receipt.</div>
+                <div><b>$199 worksheet:</b> three scenarios, cleaned inputs, validation notes, and build/research next steps.</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <section class="panel stage">
+          <canvas id="viz" width="900" height="620"></canvas>
+          <div class="hud">
+            <div class="metric"><strong>Room</strong><span id="roomMetric">-</span></div>
+            <div class="metric"><strong>Primary</strong><span id="primaryMetric">-</span></div>
+            <div class="metric"><strong>Signal</strong><span id="signalMetric">-</span></div>
+            <div class="metric"><strong>Validity</strong><span id="validMetric">-</span></div>
+          </div>
+        </section>
+
+        <aside class="panel right">
+          <div class="head"><h2 class="title">Receipt</h2></div>
+          <div class="body">
+            <div class="cards" id="cards"></div>
+            <pre id="jsonOut">{}</pre>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      var lastResult = {};
+      var canvas = document.getElementById("viz");
+      var ctx = canvas.getContext("2d");
+
+      function esc(value) {
+        return String(value).replace(/[&<>"']/g, function (char) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+        });
+      }
+      function readNumber(id) { return Number(document.getElementById(id).value); }
+      function metric(id, value) { document.getElementById(id).textContent = value; }
+
+      function fitCanvas() {
+        var rect = canvas.getBoundingClientRect();
+        var ratio = window.devicePixelRatio || 1;
+        canvas.width = Math.max(360, Math.floor(rect.width * ratio));
+        canvas.height = Math.max(420, Math.floor(rect.height * ratio));
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        draw(lastResult);
+      }
+
+      function draw(result) {
+        var rect = canvas.getBoundingClientRect();
+        var w = rect.width || 900;
+        var h = rect.height || 620;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "#06090b";
+        ctx.fillRect(0, 0, w, h);
+        ctx.strokeStyle = "rgba(255,255,255,.08)";
+        ctx.lineWidth = 1;
+        for (var x = 36; x < w; x += 36) {
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+        }
+        for (var y = 36; y < h; y += 36) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+        }
+        var room = result.room || document.getElementById("room").value;
+        var t = Date.now() / 650;
+        if (room === "fiber-room") drawFiber(w, h, t, result);
+        else if (room === "refraction-room") drawRefraction(w, h, result);
+        else if (room === "photonic-route-room") drawPhotonic(w, h, result);
+        else if (room === "optical-switch-room") drawSwitch(w, h, result);
+        else drawInterference(w, h, t, result);
+      }
+
+      function drawFiber(w, h, t, result) {
+        var y = h * .45;
+        ctx.strokeStyle = "rgba(102,214,230,.35)";
+        ctx.lineWidth = 26;
+        ctx.beginPath(); ctx.moveTo(70, y); ctx.lineTo(w - 70, y); ctx.stroke();
+        ctx.strokeStyle = "rgba(142,226,166,.95)";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        for (var x = 70; x < w - 70; x += 3) {
+          var amp = 34 * (1 - (x - 70) / Math.max(1, w - 140) * .38);
+          var yy = y + Math.sin(x / 24 - t) * amp;
+          if (x === 70) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
+        }
+        ctx.stroke();
+        ctx.fillStyle = "#8ee2a6";
+        ctx.fillText("fiber core / waveguide mode", 76, y - 62);
+      }
+
+      function drawInterference(w, h, t) {
+        var sx1 = w * .34, sx2 = w * .34, y1 = h * .38, y2 = h * .58;
+        ctx.strokeStyle = "rgba(185,164,255,.38)";
+        ctx.lineWidth = 2;
+        for (var r = 22; r < w; r += 36) {
+          ctx.beginPath(); ctx.arc(sx1, y1, r + Math.sin(t) * 3, -1.1, 1.1); ctx.stroke();
+          ctx.beginPath(); ctx.arc(sx2, y2, r + Math.cos(t) * 3, -1.1, 1.1); ctx.stroke();
+        }
+        ctx.fillStyle = "#b9a4ff";
+        ctx.fillText("interference field", w * .55, h * .5);
+      }
+
+      function drawRefraction(w, h, result) {
+        var split = h * .52;
+        ctx.fillStyle = "rgba(102,214,230,.08)";
+        ctx.fillRect(0, split, w, h - split);
+        ctx.strokeStyle = "rgba(255,255,255,.2)";
+        ctx.beginPath(); ctx.moveTo(0, split); ctx.lineTo(w, split); ctx.stroke();
+        var cx = w * .5;
+        ctx.strokeStyle = "#dfb765"; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(cx - 220, split - 180); ctx.lineTo(cx, split); ctx.stroke();
+        ctx.strokeStyle = "#8ee2a6";
+        ctx.beginPath(); ctx.moveTo(cx, split); ctx.lineTo(cx + 170, split + 150); ctx.stroke();
+        ctx.setLineDash([8, 8]); ctx.strokeStyle = "rgba(255,255,255,.35)";
+        ctx.beginPath(); ctx.moveTo(cx, split - 210); ctx.lineTo(cx, split + 210); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = "#eef3ee";
+        ctx.fillText(result.math && result.math.outputs.total_internal_reflection ? "total internal reflection" : "Snell ray path", cx + 24, split - 18);
+      }
+
+      function drawPhotonic(w, h, result) {
+        var lanes = 6;
+        for (var i = 0; i < lanes; i++) {
+          var y = h * .22 + i * 52;
+          ctx.strokeStyle = ["#8ee2a6", "#66d6e6", "#b9a4ff", "#dfb765", "#ee786d", "#eef3ee"][i];
+          ctx.lineWidth = 5;
+          ctx.beginPath(); ctx.moveTo(90, y); ctx.bezierCurveTo(w * .35, y - 35, w * .58, y + 35, w - 90, y); ctx.stroke();
+        }
+        ctx.fillStyle = "#8ee2a6";
+        var score = result.math && result.math.outputs.fit_score ? result.math.outputs.fit_score : 0.72;
+        ctx.fillRect(w * .36, h * .73, Math.max(12, score * w * .34), 24);
+        ctx.strokeStyle = "rgba(255,255,255,.2)";
+        ctx.strokeRect(w * .36, h * .73, w * .34, 24);
+        ctx.fillStyle = "#eef3ee";
+        ctx.fillText("photonic route fit", w * .36, h * .71);
+      }
+
+      function drawSwitch(w, h, result) {
+        var cx = w * .5, cy = h * .45;
+        ctx.strokeStyle = "rgba(102,214,230,.45)";
+        ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.ellipse(cx, cy, 160, 72, 0, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeStyle = "#8ee2a6";
+        ctx.beginPath(); ctx.moveTo(cx - 270, cy); ctx.lineTo(cx - 160, cy); ctx.stroke();
+        ctx.strokeStyle = "#dfb765";
+        ctx.beginPath(); ctx.moveTo(cx + 160, cy); ctx.lineTo(cx + 270, cy); ctx.stroke();
+        ctx.fillStyle = "#eef3ee";
+        ctx.fillText("nonlinear cavity screen", cx - 74, cy - 96);
+        ctx.fillStyle = result.math && result.math.outputs.injection_locked ? "#8ee2a6" : "#ee786d";
+        ctx.fillText(result.math && result.math.outputs.injection_locked ? "locked" : "unlocked", cx - 22, cy + 5);
+      }
+
+      async function run(event) {
+        if (event) event.preventDefault();
+        document.getElementById("status").textContent = "Running...";
+        var body = {
+          room: document.getElementById("room").value,
+          concept: document.getElementById("concept").value,
+          wavelength_nm: readNumber("wavelength_nm"),
+          fiber_length_km: readNumber("fiber_length_km"),
+          n_core: readNumber("n_core"),
+          n_clad: readNumber("n_clad"),
+          attenuation_db_km: readNumber("attenuation_db_km"),
+          dispersion_ps_nm_km: readNumber("dispersion_ps_nm_km"),
+          path_difference_um: readNumber("path_difference_um"),
+          incident_angle_deg: readNumber("incident_angle_deg"),
+          precision_required_bits: readNumber("precision_required_bits"),
+          branching_density: readNumber("branching_density")
+        };
+        var response = await fetch("/api/agent/ai-waves-lab", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        lastResult = await response.json();
+        document.getElementById("status").textContent = lastResult.ok ? "Receipt ready." : "Run failed.";
+        render(lastResult);
+      }
+
+      function render(result) {
+        var out = result.math && result.math.outputs ? result.math.outputs : {};
+        metric("roomMetric", result.room || "-");
+        metric("primaryMetric", out.group_delay_ns ? out.group_delay_ns + " ns" : out.normalized_intensity ? out.normalized_intensity : out.fit_score ? out.fit_score : out.small_signal_round_trip_gain || "-");
+        metric("signalMetric", out.total_loss_db !== undefined ? out.total_loss_db + " dB" : out.fringe || out.decision || out.injection_locked || "-");
+        metric("validMetric", result.risk_flags && result.risk_flags.length ? result.risk_flags[0] : "-");
+        var cards = [
+          ["Receipt", result.receipt_id || "-"],
+          ["Product", result.product || "-"],
+          ["Offer", result.sellable_output ? result.sellable_output.offer : "-"],
+          ["Flags", result.risk_flags ? result.risk_flags.join(" | ") : "-"]
+        ];
+        document.getElementById("cards").innerHTML = cards.map(function (card) {
+          return '<div class="card"><strong>' + esc(card[0]) + '</strong><span>' + esc(card[1]) + '</span></div>';
+        }).join("");
+        document.getElementById("jsonOut").textContent = JSON.stringify(result, null, 2);
+        draw(result);
+      }
+
+      document.getElementById("wavesForm").addEventListener("submit", run);
+      document.getElementById("copyJson").addEventListener("click", function () {
+        navigator.clipboard.writeText(JSON.stringify(lastResult, null, 2));
+      });
+      document.getElementById("room").addEventListener("change", function () {
+        var room = this.value;
+        var text = {
+          "fiber-room": "Single-mode fiber waveguide at 1550 nm with attenuation, dispersion, and receipt output.",
+          "interference-room": "Two coherent sources with path difference and visible interference fringes.",
+          "refraction-room": "Ray crossing from air into glass with Snell angle and Brewster angle.",
+          "optical-switch-room": "Nonlinear optical cavity screen with injection locking and bistability notes.",
+          "photonic-route-room": "Photonic accelerator route check for matrix-heavy low-branching workload."
+        }[room];
+        document.getElementById("concept").value = text;
+        draw({ room: room });
+      });
+      window.addEventListener("resize", fitCanvas);
+      fitCanvas();
+      run();
+    </script>
+  </body>
+</html>

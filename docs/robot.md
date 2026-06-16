@@ -140,7 +140,7 @@ Use the live offers from `offers.json` as the source of truth. As of this map:
 - Payment center: https://aethermoore.com/SCBE-AETHERMOORE/payments.html. Use this when the user wants every live payment path in one place.
 - Manual invoice / Square-style request: email aethermoregames@pm.me with offer name, buyer email, and preferred payment route.
 - $5 Tip Jar: one-time support.
-- $20/month AetherMoore Supporter: low-cost monthly support path.
+- $20/month AetherMoore Supporter: low-cost monthly support path. Stripe checkout is live: https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i
 - $29 SCBE AI Governance Toolkit: templates and governance starter materials.
 - $29 SCBE AI Security Training Vault: training and benchmark starter materials.
 - $99 AI Agent Workflow Snapshot: starter written read for one agent workflow. Stripe checkout is live: https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l

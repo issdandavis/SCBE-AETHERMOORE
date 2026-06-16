@@ -190,6 +190,11 @@ coherence-report.json
 Microsoft/
 .codex_tmp/
 .codex-plan-check/
+.codex/
+_quarantine/
+rust/**/target/
+artifacts_rust_*.txt
+artifacts_rust_*.json
 .tmp_hypothesis_paths.txt
 .pytest_tmp_hallpass_review/
 

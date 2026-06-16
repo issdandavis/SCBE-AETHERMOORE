@@ -205,7 +205,7 @@ def _npc_card_rows(npc: NPCRecord, owner_brand: str) -> list[dict[str, Any]]:
                 f"Canon: {npc.canon_status}\n"
                 "Voice Rules: Speak consistently with known lore, avoid out-of-world references, "
                 "and keep motivations aligned to the established arc.\n"
-                f"Memory Anchor: { _first_sentence(npc.summary, max_len=260) }"
+                f"Memory Anchor: {_first_sentence(npc.summary, max_len=260)}"
             ),
             "source": "npc_roundtable_sessions",
             "tongue": "UM",
@@ -239,7 +239,7 @@ def _roundtable_rows(npc: NPCRecord, owner_brand: str) -> list[dict[str, Any]]:
                     f"- Core role behavior: {npc.role}\n"
                     f"- Canon lock: {npc.canon_status}\n"
                     "- Scene policy: stay in-world, remain character-consistent, and avoid contradicting prior lore.\n"
-                    f"- Memory anchor: { _first_sentence(npc.summary, max_len=220) }"
+                    f"- Memory anchor: {_first_sentence(npc.summary, max_len=220)}"
                 ),
                 "source": "npc_roundtable_sessions",
                 "tongue": tongue,

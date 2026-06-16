@@ -65,7 +65,8 @@ Low-cost path:
 - $5+ service credits.
 - Ko-fi support and service-credit path: https://ko-fi.com/izdandavis.
 - Cash App manual payment: $IzzyDDavis7.
-- $20/month supporter path.
+- $20/month AetherMoore Supporter checkout: https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i.
+- AetherMoore support page with all payment paths: https://aethermoore.com/SCBE-AETHERMOORE/supporter.html.
 - $29 Toolkit.
 - $29 Training Vault.
 - Bookshelf with current Amazon/KDP status: https://aethermoore.com/SCBE-AETHERMOORE/books.html
@@ -87,6 +88,8 @@ Federal posture:
 - Issac Davis is a CAGE-code verified small business owner.
 - CAGE: 1EXD5.
 - UEI: J4NXHM6N5F59.
+- Custom AI work is available for procurement-ready, clearance-sensitive, regulated, air-gapped, or client-controlled environments.
+- Boundary language: CAGE/SAM supports vendor/subcontract routing; classified, export-controlled, or restricted data must stay inside the client's approved environment and security process.
 - Good fit language: post-quantum cryptographic metamaterial prototype, autonomous swarm hardware security, subcontracting, SBIR collaboration, and Small Business Liaison Officer conversations.
 
 Advanced path:

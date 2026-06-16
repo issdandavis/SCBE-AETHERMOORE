@@ -1,0 +1,94 @@
+{
+  "schema_version": "scbe_benchmark_score_v1",
+  "benchmark": "python-parser-parse-only",
+  "goal": "comparison",
+  "type": {
+    "scope": "macro",
+    "axis": "latency",
+    "state": "warm",
+    "clock": "wall"
+  },
+  "metric": {
+    "name": "wall_time",
+    "unit": "s",
+    "lower_is_better": true,
+    "definition": "parse-only pass over the same 2000-file Python corpus; Rust parse_bench compares rustpython-parser and ruff parser, Python lane uses ast.parse on the matching filtered corpus"
+  },
+  "result": {
+    "name": "ruff-python-parser",
+    "runs": 5,
+    "mean": 0.686,
+    "median": 0.676,
+    "stddev": 0.023991,
+    "min": 0.66,
+    "max": 0.715,
+    "cv_pct": 3.497,
+    "unit": "s"
+  },
+  "variants": {
+    "python_ast_parse": {
+      "runs": 5,
+      "mean": 4.600906,
+      "median": 4.525522,
+      "min": 4.414437,
+      "max": 4.982429,
+      "unit": "s",
+      "ok_files": 2000
+    },
+    "rustpython_parser": {
+      "runs": 5,
+      "mean": 2.2792,
+      "median": 2.284,
+      "min": 2.203,
+      "max": 2.38,
+      "unit": "s",
+      "ok_files": 2000
+    },
+    "ruff_python_parser": {
+      "runs": 5,
+      "mean": 0.686,
+      "median": 0.676,
+      "min": 0.66,
+      "max": 0.715,
+      "unit": "s",
+      "ok_files": 2000
+    }
+  },
+  "baseline": {
+    "name": "python ast.parse",
+    "median": 4.525522,
+    "speedup_x": 6.7,
+    "speedup_note": "speedup = python_ast_parse.median / ruff_python_parser.median"
+  },
+  "secondary_baseline": {
+    "name": "rustpython-parser",
+    "median": 2.284,
+    "speedup_x": 3.38,
+    "speedup_note": "speedup = rustpython_parser.median / ruff_python_parser.median"
+  },
+  "input": {
+    "description": "repo Python files filtered by parse_bench junk rules",
+    "size": "2000 files / ~23.9 MB Python source",
+    "seed": 0
+  },
+  "environment": {
+    "cpu": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+    "cores": 12,
+    "os": "Windows 11",
+    "runtime": "python 3.12.10",
+    "toolchain_versions": {
+      "rust": "cargo release build; dependencies cached",
+      "parse_bench": "rust/parse_bench/target/release/parse_bench.exe"
+    },
+    "commit": "0834b7e94",
+    "date": "2026-06-15",
+    "machine_class": "laptop",
+    "cpu_governor": "unknown"
+  },
+  "command": "cargo build --release --manifest-path rust/parse_bench/Cargo.toml; rust/parse_bench/target/release/parse_bench.exe .; matching Python ast.parse script over same filter",
+  "tool": "custom (perf_counter + Rust Instant)",
+  "reproducible": true,
+  "modeled_not_measured": false,
+  "stable": true,
+  "notes": "This is the exact parse-only comparison. Locally, ruff parser is 6.70x faster than Python ast.parse and 3.38x faster than rustpython-parser on this corpus. It does not support a 100x parse-only claim; larger 100x-class claims must come from a different end-to-end encoder/corpus path and need their own card."
+}
