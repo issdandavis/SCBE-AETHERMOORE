@@ -137,13 +137,15 @@ class Route:
 
 
 def route_fleet(agents: Sequence[Agent], tasks: Sequence[Task],
-                pressure: float = 0.6) -> List[Route]:
+                pressure: float = 0.6, tour: bool = True) -> List[Route]:
     """Assign every task to the agent whose Finsler metric makes it closest,
     with a FLUID PRESSURE term that penalizes piling onto a loaded agent — so the
     fleet spreads like an incompressible flow instead of all rushing one node.
 
     Returns one Route (parallel track) per agent, each a geodesic ray through its
-    assigned tasks (a tangent-vector lane through the lattice)."""
+    assigned tasks (a tangent-vector lane through the lattice). Set tour=False to
+    skip the per-agent geodesic ordering (O(k^2)) when only the assignment is
+    needed — e.g. routing work to parallel workers at scale."""
     loads = {a.name: 0 for a in agents}
     by_agent: Dict[str, List[Task]] = {a.name: [] for a in agents}
     # order tasks by how "decisive" they are (high norm = strongly-flavored) first
@@ -163,6 +165,11 @@ def route_fleet(agents: Sequence[Agent], tasks: Sequence[Task],
     routes: List[Route] = []
     for a in agents:
         owned = by_agent[a.name]
+        if not tour:
+            # assignment only — skip the O(k^2) geodesic ordering
+            routes.append(Route(a.name, [t.name for t in owned], [],
+                                sum(t.cost for t in owned)))
+            continue
         # order each agent's tasks along its geodesic (nearest-first greedy tour)
         seq, cur, tot = [], a.pos, 0.0
         pool = list(owned)
