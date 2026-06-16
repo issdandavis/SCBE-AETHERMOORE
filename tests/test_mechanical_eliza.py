@@ -22,7 +22,9 @@ def test_denies_destructive_command_shape():
 
 
 def test_secret_and_money_routes_to_probe():
-    packet = route_support("help my chatbot use the Stripe sk_live secret to make a checkout")
+    packet = route_support(
+        "help my chatbot use the Stripe sk_live secret to make a checkout"
+    )
 
     assert packet.route.command_switch == "probe"
     assert packet.route.allowed is True
@@ -35,7 +37,9 @@ def test_agent_loop_breaker_switch():
 
     assert packet.route.route == "agent_support_loop_breaker"
     assert packet.route.command_switch == "loop_break"
-    assert any(row["switch"] == "loop_break" and row["enabled"] for row in packet.switchboard)
+    assert any(
+        row["switch"] == "loop_break" and row["enabled"] for row in packet.switchboard
+    )
 
 
 def test_dialogue_repetition_breaks_loop_even_without_keywords():
