@@ -60,6 +60,43 @@ def test_run_on_enter_incomplete_strand_is_graceful():
     assert "incomplete strand" in out                          # no crash, clear note
 
 
+_tongues = pytest.mark.skipif(not F._HAVE_TONGUES, reason="sacred_tongues not importable")
+
+
+@_tongues
+def test_sacred_tongue_input_round_trips():
+    # opcodes -> their KO tongue spelling -> decode that spelling back to the SAME program
+    names, prog = F.tokens_to_program("add mul sqrt inc")
+    spell = F.tongue_spell(prog, "ko")
+    assert spell == "sil'a sil'ei sil'eth sil'en"
+    names2, prog2 = F.tokens_to_program(spell, tongue="ko")
+    assert names2 == names and prog2 == prog
+
+
+@_tongues
+def test_tongue_spelling_differs_per_tongue():
+    _, prog = F.tokens_to_program("add mul sqrt")
+    assert F.tongue_spell(prog, "ko") != F.tongue_spell(prog, "ca")
+    # every tongue spelling decodes back to the same opcodes
+    for t in F._TONGUE_ORDER:
+        _, back = F.tokens_to_program(F.tongue_spell(prog, t), tongue=t)
+        assert back == prog
+
+
+@_tongues
+def test_tongue_token_that_is_not_a_core_op_is_rejected():
+    # KO byte 0x10 = kor'a -> a non-core opcode; must error helpfully, not emit garbage
+    with pytest.raises(ValueError) as e:
+        F.tokens_to_program("kor'a")
+    assert "not a core opcode" in str(e.value)
+
+
+@_tongues
+def test_render_shows_tongue_line():
+    out = F.render("add mul sqrt", ("python",), color=False, tongue="ko")
+    assert "tongue" in out and "sil'a sil'ei sil'eth" in out
+
+
 def test_geoseal_signature_is_nonzero_and_stable():
     a = F.render("+ * sqrt", ("python",), color=False)
     b = F.render("+ * sqrt", ("python",), color=False)

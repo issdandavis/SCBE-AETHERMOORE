@@ -1567,10 +1567,11 @@ def cmd_code(args: argparse.Namespace) -> int:
     toks = getattr(args, "tokens", []) or []
     langs = F.P.languages() if getattr(args, "all", False) else (getattr(args, "lang", None) or ["python"])
     color = not getattr(args, "no_color", False)
+    tongue = getattr(args, "tongue", None) or "ko"
     if getattr(args, "repl", False) or not toks:
-        return F._repl(langs, color)
+        return F._repl(langs, color, tongue)
     try:
-        print(F.render(" ".join(toks), langs, color))
+        print(F.render(" ".join(toks), langs, color, tongue=tongue))
         return 0
     except ValueError as e:
         print(str(e), file=sys.stderr)
@@ -3253,9 +3254,10 @@ Legacy (backward compat):
         "code",
         help='Type tokens, see the perfect code ("scbe code + sqrt mul inc" or "scbe code --repl")',
     )
-    cd.add_argument("tokens", nargs="*", help="token stream: symbols (+ - * / sqrt) names or 0xNN hex")
+    cd.add_argument("tokens", nargs="*", help="token stream: symbols (+ - * / sqrt), names, 0xNN hex, or tongue tokens")
     cd.add_argument("--lang", action="append", help="language face (repeatable); default python")
     cd.add_argument("--all", action="store_true", help="show every language face")
+    cd.add_argument("--tongue", default="ko", help="Sacred Tongue keyboard (ko av ru ca um dr)")
     cd.add_argument("--repl", action="store_true", help="interactive hit-Enter loop")
     cd.add_argument("--no-color", action="store_true", help="disable ANSI styling")
     cd.set_defaults(func=cmd_code)

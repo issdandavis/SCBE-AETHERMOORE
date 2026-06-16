@@ -39,12 +39,41 @@ _ALIASES = {"power": "pow", "modulo": "mod", "minimum": "min", "maximum": "max",
             "negate": "neg", "absolute": "abs", "increment": "inc", "decrement": "dec",
             "root": "sqrt"}
 
+# --- the Sacred Tongue keyboard: type prefix'suffix tokens straight in ----------
+try:                                              # canonical 6-tongue byte<->token table
+    from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER as _STT
+    _TONGUE_ORDER = ("ko", "av", "ru", "ca", "um", "dr")
+    _HAVE_TONGUES = True
+except Exception:                                 # pragma: no cover - optional dependency
+    _HAVE_TONGUES = False
+    _TONGUE_ORDER = ()
 
-def tokens_to_program(text: str) -> Tuple[List[str], List[int]]:
+
+def _decode_tongue_token(tok: str, tongue: str | None = None):
+    """A Sacred Tongue token (prefix'suffix) -> (opcode byte, tongue code), or (None, None)."""
+    if not _HAVE_TONGUES:
+        return None, None
+    for c in ((tongue,) if tongue else _TONGUE_ORDER):
+        b = _STT.token_to_byte.get(c, {}).get(tok)
+        if b is not None:
+            return b, c
+    return None, None
+
+
+def tongue_spell(prog: Sequence[int], tongue: str = "ko") -> str:
+    """The opcode strand spelled in Sacred Tongue tokens — the keyboard made visible."""
+    if not _HAVE_TONGUES or tongue not in _TONGUE_ORDER:
+        return ""
+    table = _STT.byte_to_token[tongue]
+    return " ".join(table[b] for b in prog)
+
+
+def tokens_to_program(text: str, tongue: str | None = None) -> Tuple[List[str], List[int]]:
     """THE FRONT DOOR: a typed token stream -> (op names, opcode bytes).
 
-    Accepts core op names, friendly symbols/aliases, and 0xNN hex bytes. Raises a
-    ValueError with a 'did you mean' hint on anything it can't place."""
+    Accepts core op names, friendly symbols/aliases, 0xNN hex bytes, and Sacred
+    Tongue tokens (prefix'suffix). With `tongue`, tongue tokens are read in that
+    tongue; otherwise all six are searched. Raises ValueError with a hint on misses."""
     names: List[str] = []
     for raw in text.replace(",", " ").split():
         tok = raw.strip()
@@ -61,6 +90,16 @@ def tokens_to_program(text: str) -> Tuple[List[str], List[int]]:
             name = P.BYTE_TO_NAME[b]
         elif tok.lower() in P.SCALAR_OPS:
             name = tok.lower()
+        elif "'" in tok and _HAVE_TONGUES:           # a Sacred Tongue keystroke
+            b, _c = _decode_tongue_token(tok, tongue)
+            if b is None:
+                raise ValueError("%r is not a Sacred Tongue token%s" % (
+                    tok, (" in %s" % tongue) if tongue else ""))
+            nm = P.BYTE_TO_NAME.get(b)
+            if nm not in P.SCALAR_OPS:
+                raise ValueError("%s = byte 0x%02x%s, not a core opcode" % (
+                    tok, b, " (%s)" % nm if nm else ""))
+            name = nm
         else:
             hint = difflib.get_close_matches(tok.lower(), sorted(P.SCALAR_OPS), n=3)
             tip = ("  did you mean: %s ?" % ", ".join(hint)) if hint else ""
@@ -172,9 +211,9 @@ def _run(prog: Sequence[int], st: _S) -> str:
 
 
 def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
-           width: int = 58) -> str:
+           width: int = 58, tongue: str = "ko") -> str:
     st = _S(_style_enabled(color))
-    names, prog = tokens_to_program(text)
+    names, prog = tokens_to_program(text, tongue)
     rep = DNA.verify(names)
     seal = DNA.seal(prog) if DNA._HAVE_SEAL else []
     acc = 0
@@ -183,8 +222,11 @@ def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
     sig = "%016x" % acc if seal else "-"
     dot = "·" if st.uni else "*"
 
-    head = [
-        st.dim("tokens  ") + (" ".join(names) if names else st.dim("(empty)")),
+    head = [st.dim("tokens  ") + (" ".join(names) if names else st.dim("(empty)"))]
+    spell = tongue_spell(prog, tongue)
+    if spell:                                      # the same program on the Sacred Tongue keyboard
+        head.append(st.dim("tongue  ") + st.cyan(spell) + st.dim("  (%s)" % tongue))
+    head += [
         st.dim("strand  ") + (" ".join("%02x" % b for b in prog) or st.dim(dot)) +
         st.dim("   (%d op%s %s 1 object)" % (len(prog), "" if len(prog) == 1 else "s", dot)),
         st.dim("verify  ") + "  ".join([
@@ -214,12 +256,14 @@ def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
     return "\n".join(_panel(title, lines, st, inner, accent) for title, lines, accent in blocks)
 
 
-def _repl(langs, color):
+def _repl(langs, color, tongue="ko"):
     st = _S(_style_enabled(color))
     dash = "—" if st.uni else "-"
     prompt = "› " if st.uni else "> "
-    print(st.bold(st.cyan("SCBE cube code")) + st.dim("  %s  type tokens, Enter to compile.  ':q' quits, ':lang rust' switches." % dash))
-    cur = list(langs)
+    print(st.bold(st.cyan("SCBE cube code")) + st.dim(
+        "  %s  type tokens (ops, symbols, or %s tongue), Enter to compile."
+        "  ':q' quits, ':lang rust', ':tongue av'." % (dash, tongue)))
+    cur, tng = list(langs), tongue
     while True:
         try:
             line = input(st.cyan(prompt))
@@ -232,13 +276,16 @@ def _repl(langs, color):
         if line.startswith(":lang"):
             cur = line.split()[1:] or ["python"]
             continue
+        if line.startswith(":tongue"):
+            tng = (line.split()[1:] or ["ko"])[0]
+            continue
         if line == ":all":
             cur = P.languages()
             continue
         if not line:
             continue
         try:
-            print(render(line, cur, color))
+            print(render(line, cur, color, tongue=tng))
         except ValueError as e:
             print(st.red("  " + str(e)))
 
@@ -246,18 +293,19 @@ def _repl(langs, color):
 def main(argv: Sequence[str] | None = None) -> int:
     import argparse
     ap = argparse.ArgumentParser(prog="scbe-code", description="type tokens, see the perfect code")
-    ap.add_argument("tokens", nargs="*", help="token stream, e.g. + sqrt * inc /")
+    ap.add_argument("tokens", nargs="*", help="token stream, e.g. + sqrt * inc /  or  sil'a sil'ei")
     ap.add_argument("--lang", action="append", help="language face (repeatable); default python")
     ap.add_argument("--all", action="store_true", help="every language face")
+    ap.add_argument("--tongue", default="ko", help="Sacred Tongue for input/spelling (ko av ru ca um dr)")
     ap.add_argument("--repl", action="store_true", help="interactive hit-Enter loop")
     ap.add_argument("--no-color", action="store_true")
     a = ap.parse_args(argv)
     color = not a.no_color
     langs = P.languages() if a.all else (a.lang or ["python"])
     if a.repl or not a.tokens:
-        return _repl(langs, color)
+        return _repl(langs, color, a.tongue)
     try:
-        print(render(" ".join(a.tokens), langs, color))
+        print(render(" ".join(a.tokens), langs, color, tongue=a.tongue))
         return 0
     except ValueError as e:
         print(_S(_style_enabled(color)).red(str(e)))
