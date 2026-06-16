@@ -26,6 +26,7 @@ import sys
 from typing import List, Sequence, Tuple
 
 from . import bijective_dna as DNA
+from . import board as _BOARD
 from . import polyglot as P
 
 # --- the friendly keyboard: any of these -> a core opcode name ------------------
@@ -137,6 +138,16 @@ class _S:
     def yellow(self, s): return self._w(s, "33")
     def mag(self, s):   return self._w(s, "35")
 
+    def rgb(self, s, r, g, b):
+        """24-bit truecolor (trichromatic stones/notes); plain when styling is off."""
+        return ("\x1b[38;2;%d;%d;%dm%s\x1b[0m" % (r, g, b, s)) if self.on else s
+
+
+def _tongue_freq(tongue: str) -> float:
+    if _HAVE_TONGUES and tongue in _STT.tongues:
+        return float(_STT.tongues[tongue].harmonic_frequency)
+    return 440.0                                  # A4 default
+
 
 def _vis(s: str) -> int:
     return len(_ANSI.sub("", s))
@@ -210,8 +221,43 @@ def _run(prog: Sequence[int], st: _S) -> str:
         return st.dim(dot + " did not run (%s)" % type(e).__name__)
 
 
+def board_lines(prog: Sequence[int], tongue: str, st: _S) -> List[str]:
+    """The strand as trichromatic stones on the token board: hi nibble = row, lo
+    nibble = col, MID nibble = the seam/depth strip, RGB = the cube axes, and a
+    musical melody rooted at the tongue's note."""
+    root = _tongue_freq(tongue)
+    pts: dict = {}
+    seam: dict = {}
+    for i, b in enumerate(prog, 1):
+        pts[_BOARD.to_point(b)] = (i, b)             # last move wins on a replayed point
+        seam[_BOARD.mid_nibble(b)] = (i, b)
+    dot = "·" if st.uni else "."
+
+    def stone(key, tbl):
+        if key in tbl:
+            i, b = tbl[key]
+            return st.rgb("%3d" % i, *_BOARD.rgb(b))
+        return "  " + st.dim(dot)
+
+    lines = [st.dim("    " + "".join("%3s" % ("%x" % c) for c in range(_BOARD.EDGE)))]
+    for r in range(len(_BOARD.BANDS)):                # rows 0-3: the four opcode bands
+        row = "".join(stone((r, c), pts) for c in range(_BOARD.EDGE))
+        lines.append(st.dim(" %x  " % r) + row + st.dim("  " + _BOARD.BANDS[r]))
+    seam_row = "".join(stone(c, seam) for c in range(_BOARD.EDGE))
+    lines += ["", st.dim(" mid") + " " + seam_row + st.dim("  seam nibble (depth axis)")]
+
+    notes = [st.rgb(_BOARD.opcode_note(b, root)[1], *_BOARD.rgb(b)) for b in prog]
+    melody = " ".join(notes) if notes else st.dim("(silent)")
+    lines += ["", st.dim(" notes ") + melody +
+              st.dim("   key %s @ %gHz (%s)" % (_BOARD.note_name(root), root, tongue))]
+    ok = _BOARD.is_reversible(prog)
+    mark = (st.green("✓ ") if st.uni else st.green("OK ")) if ok else (st.red("✗ ") if st.uni else st.red("ERR "))
+    lines.append(st.dim(" addr  ") + mark + st.dim("board ⇄ program reversible · stone hue = rgb(band,mid,col)"))
+    return lines
+
+
 def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
-           width: int = 58, tongue: str = "ko") -> str:
+           width: int = 58, tongue: str = "ko", board: bool = False) -> str:
     st = _S(_style_enabled(color))
     names, prog = tokens_to_program(text, tongue)
     rep = DNA.verify(names)
@@ -238,6 +284,8 @@ def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
         st.dim("geoseal ") + st.mag(sig),
     ]
     blocks = [("SCBE %s cube code" % dot, head, st.cyan)]
+    if board:
+        blocks.append(("go-board %s cube (%s)" % (dot, tongue), board_lines(prog, tongue, st), st.mag))
     for lang in langs:
         src = P.emit(prog, lang, runnable=True)
         code = []
@@ -256,14 +304,14 @@ def render(text: str, langs: Sequence[str] = ("python",), color: bool = True,
     return "\n".join(_panel(title, lines, st, inner, accent) for title, lines, accent in blocks)
 
 
-def _repl(langs, color, tongue="ko"):
+def _repl(langs, color, tongue="ko", board=False):
     st = _S(_style_enabled(color))
     dash = "—" if st.uni else "-"
     prompt = "› " if st.uni else "> "
     print(st.bold(st.cyan("SCBE cube code")) + st.dim(
         "  %s  type tokens (ops, symbols, or %s tongue), Enter to compile."
-        "  ':q' quits, ':lang rust', ':tongue av'." % (dash, tongue)))
-    cur, tng = list(langs), tongue
+        "  ':q' quits, ':lang rust', ':tongue av', ':board'." % (dash, tongue)))
+    cur, tng, brd = list(langs), tongue, board
     while True:
         try:
             line = input(st.cyan(prompt))
@@ -279,13 +327,16 @@ def _repl(langs, color, tongue="ko"):
         if line.startswith(":tongue"):
             tng = (line.split()[1:] or ["ko"])[0]
             continue
+        if line == ":board":
+            brd = not brd
+            continue
         if line == ":all":
             cur = P.languages()
             continue
         if not line:
             continue
         try:
-            print(render(line, cur, color, tongue=tng))
+            print(render(line, cur, color, tongue=tng, board=brd))
         except ValueError as e:
             print(st.red("  " + str(e)))
 
@@ -297,15 +348,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     ap.add_argument("--lang", action="append", help="language face (repeatable); default python")
     ap.add_argument("--all", action="store_true", help="every language face")
     ap.add_argument("--tongue", default="ko", help="Sacred Tongue for input/spelling (ko av ru ca um dr)")
+    ap.add_argument("--board", action="store_true", help="show the go-board / cube embedding")
     ap.add_argument("--repl", action="store_true", help="interactive hit-Enter loop")
     ap.add_argument("--no-color", action="store_true")
     a = ap.parse_args(argv)
     color = not a.no_color
     langs = P.languages() if a.all else (a.lang or ["python"])
     if a.repl or not a.tokens:
-        return _repl(langs, color, a.tongue)
+        return _repl(langs, color, a.tongue, a.board)
     try:
-        print(render(" ".join(a.tokens), langs, color, tongue=a.tongue))
+        print(render(" ".join(a.tokens), langs, color, tongue=a.tongue, board=a.board))
         return 0
     except ValueError as e:
         print(_S(_style_enabled(color)).red(str(e)))

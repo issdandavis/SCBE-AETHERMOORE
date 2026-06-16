@@ -1568,10 +1568,11 @@ def cmd_code(args: argparse.Namespace) -> int:
     langs = F.P.languages() if getattr(args, "all", False) else (getattr(args, "lang", None) or ["python"])
     color = not getattr(args, "no_color", False)
     tongue = getattr(args, "tongue", None) or "ko"
+    board = getattr(args, "board", False)
     if getattr(args, "repl", False) or not toks:
-        return F._repl(langs, color, tongue)
+        return F._repl(langs, color, tongue, board)
     try:
-        print(F.render(" ".join(toks), langs, color, tongue=tongue))
+        print(F.render(" ".join(toks), langs, color, tongue=tongue, board=board))
         return 0
     except ValueError as e:
         print(str(e), file=sys.stderr)
@@ -3258,6 +3259,7 @@ Legacy (backward compat):
     cd.add_argument("--lang", action="append", help="language face (repeatable); default python")
     cd.add_argument("--all", action="store_true", help="show every language face")
     cd.add_argument("--tongue", default="ko", help="Sacred Tongue keyboard (ko av ru ca um dr)")
+    cd.add_argument("--board", action="store_true", help="show the go-board / cube embedding (mid-nibble, notes, RGB)")
     cd.add_argument("--repl", action="store_true", help="interactive hit-Enter loop")
     cd.add_argument("--no-color", action="store_true", help="disable ANSI styling")
     cd.set_defaults(func=cmd_code)

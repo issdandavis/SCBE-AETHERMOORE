@@ -97,6 +97,14 @@ def test_render_shows_tongue_line():
     assert "tongue" in out and "sil'a sil'ei sil'eth" in out
 
 
+def test_board_panel_renders_with_notes_and_reversible():
+    out = F.render("add sub mul sqrt", ("python",), color=False, board=True)
+    assert "go-board" in out and "arithmetic" in out
+    assert "mid" in out and "seam nibble" in out          # the mid-nibble axis
+    assert "notes" in out and "key A4 @ 440Hz" in out      # musical melody, KO root
+    assert "reversible" in out                             # discrete embedding holds
+
+
 def test_geoseal_signature_is_nonzero_and_stable():
     a = F.render("+ * sqrt", ("python",), color=False)
     b = F.render("+ * sqrt", ("python",), color=False)
