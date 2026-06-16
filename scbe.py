@@ -1586,6 +1586,15 @@ def cmd_illuminate(args: argparse.Namespace) -> int:
     arch = IL.illuminate(generations=getattr(args, "gens", 4) or 4,
                          batch=getattr(args, "batch", 250) or 250,
                          seed=getattr(args, "seed", 7) or 7)
+    if getattr(args, "governance", False):
+        from python.scbe import cognition_syscall as CS
+        payload = CS.govern_archive(arch)
+        if getattr(args, "json_output", False):
+            print(json.dumps(payload, indent=2, sort_keys=True))
+        else:
+            print(IL.render_archive(arch))
+            print(CS.render_archive_governance(payload))
+        return 0
     print(IL.render_archive(arch))
     return 0
 
@@ -1606,6 +1615,26 @@ def cmd_think(args: argparse.Namespace) -> int:
         return 1
     print("THINKING about: " + " ".join(names))
     print(TH.render(prog))
+    return 0
+
+
+def cmd_think_syscall(args: argparse.Namespace) -> int:
+    """Cognition syscall: bicameral thought -> L13 governance receipt."""
+    from python.scbe import cognition_syscall as CS
+
+    toks = getattr(args, "tokens", []) or []
+    if not toks:
+        print("usage: scbe think-syscall + sqrt *", file=sys.stderr)
+        return 2
+    try:
+        receipt = CS.receipt_from_text(" ".join(toks), tongue=getattr(args, "tongue", None))
+    except ValueError as e:
+        print(str(e), file=sys.stderr)
+        return 1
+    if getattr(args, "json_output", False):
+        print(json.dumps(receipt, indent=2, sort_keys=True))
+    else:
+        print(CS.render_receipt(receipt))
     return 0
 
 
@@ -3404,6 +3433,16 @@ Legacy (backward compat):
     tk.add_argument("tokens", nargs="*", help="token program, e.g. + sqrt *")
     tk.set_defaults(func=cmd_think)
 
+    ts = sub.add_parser(
+        "think-syscall",
+        aliases=["cognition", "cog"],
+        help='Cognition syscall: bicameral thought -> L13 decision ("scbe cog + sqrt *")',
+    )
+    ts.add_argument("tokens", nargs="*", help="token program, e.g. + sqrt *")
+    ts.add_argument("--tongue", default=None, help="Sacred Tongue keyboard for token input")
+    ts.add_argument("--json", dest="json_output", action="store_true", help="emit JSON receipt")
+    ts.set_defaults(func=cmd_think_syscall)
+
     oc = sub.add_parser(
         "overcreate",
         aliases=["generate-cube"],
@@ -3430,6 +3469,8 @@ Legacy (backward compat):
     il.add_argument("--gens", type=int, default=4, help="generations of generate+curate")
     il.add_argument("--batch", type=int, default=250, help="programs per generation")
     il.add_argument("--seed", type=int, default=7)
+    il.add_argument("--governance", action="store_true", help="append cognition syscall decision counts")
+    il.add_argument("--json", dest="json_output", action="store_true", help="with --governance, emit JSON receipts")
     il.set_defaults(func=cmd_illuminate)
 
     rt = sub.add_parser(
