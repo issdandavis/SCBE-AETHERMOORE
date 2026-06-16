@@ -33,6 +33,28 @@ def test_empty_program_renders():
     assert "<!doctype html>" in html and "(empty)" in html
 
 
+def test_gallery_renders_archive_as_cards():
+    from python.scbe import illuminate as IL
+    arch = IL.illuminate(generations=2, batch=120, seed=4)
+    html = CV.build_gallery(arch)
+    assert html.startswith("<!doctype html>") and "illuminated archive" in html
+    assert "http://" not in html and "https://" not in html      # self-contained
+    assert html.count('class="card"') == len(arch)               # one tile per niche
+    assert "<svg" in html                                        # mini board thumbnails
+    # at least one governance decision badge present
+    assert any(d in html for d in ("ALLOW", "QUARANTINE", "ESCALATE", "DENY"))
+
+
+def test_illuminate_gallery_cli_writes_file(tmp_path):
+    import subprocess
+    import sys
+    out = tmp_path / "gallery.html"
+    rc = subprocess.run([sys.executable, "scbe.py", "illuminate", "--gens", "2",
+                         "--batch", "80", "--gallery", str(out)], capture_output=True, text=True)
+    assert rc.returncode == 0 and out.exists()
+    assert "card" in out.read_text(encoding="utf-8")
+
+
 def test_cli_writes_file(tmp_path):
     import subprocess
     import sys

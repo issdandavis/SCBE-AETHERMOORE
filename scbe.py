@@ -1606,6 +1606,14 @@ def cmd_illuminate(args: argparse.Namespace) -> int:
     arch = IL.illuminate(generations=getattr(args, "gens", 4) or 4,
                          batch=getattr(args, "batch", 250) or 250,
                          seed=getattr(args, "seed", 7) or 7)
+    gallery = getattr(args, "gallery", None)
+    if gallery:
+        from python.scbe import canvas as CV
+        html = CV.build_gallery(arch, getattr(args, "tongue", None) or "ko")
+        with open(gallery, "w", encoding="utf-8") as fh:
+            fh.write(html)
+        print("wrote %s (%d niches, %d bytes) — open it in a browser" % (gallery, len(arch), len(html)))
+        return 0
     if getattr(args, "governance", False):
         from python.scbe import cognition_syscall as CS
         payload = CS.govern_archive(arch)
@@ -3491,6 +3499,8 @@ Legacy (backward compat):
     il.add_argument("--seed", type=int, default=7)
     il.add_argument("--governance", action="store_true", help="append cognition syscall decision counts")
     il.add_argument("--json", dest="json_output", action="store_true", help="with --governance, emit JSON receipts")
+    il.add_argument("--gallery", metavar="PATH", help="render the archive as a navigable HTML gallery")
+    il.add_argument("--tongue", default="ko", help="Sacred Tongue for gallery thumbnails")
     il.set_defaults(func=cmd_illuminate)
 
     cv = sub.add_parser(
