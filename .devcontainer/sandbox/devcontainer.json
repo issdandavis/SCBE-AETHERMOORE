@@ -3,7 +3,7 @@
   "//": "A throwaway Linux box with every toolchain the 18-language polyglot engine needs. Isolated from your real machine. Pick THIS config (not the Kubernetes one) when creating a Codespace.",
   "image": "mcr.microsoft.com/devcontainers/python:3.12-bookworm",
   "features": {
-    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers/features/node:2": {},
     "ghcr.io/devcontainers/features/rust:1": {},
     "ghcr.io/devcontainers/features/go:1": {},
     "ghcr.io/devcontainers/features/ruby:1": {},
