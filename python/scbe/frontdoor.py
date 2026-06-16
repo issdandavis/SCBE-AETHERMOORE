@@ -28,6 +28,7 @@ from typing import List, Sequence, Tuple
 from . import bijective_dna as DNA
 from . import board as _BOARD
 from . import polyglot as P
+from . import torus as _TOR
 
 # --- the friendly keyboard: any of these -> a core opcode name ------------------
 _SYMBOLS = {
@@ -253,6 +254,11 @@ def board_lines(prog: Sequence[int], tongue: str, st: _S) -> List[str]:
     ok = _BOARD.is_reversible(prog)
     mark = (st.green("✓ ") if st.uni else st.green("OK ")) if ok else (st.red("✗ ") if st.uni else st.red("ERR "))
     lines.append(st.dim(" addr  ") + mark + st.dim("board ⇄ program reversible · stone hue = rgb(band,mid,col)"))
+    hops = sum(1 for x, y in zip(prog, prog[1:]) if _TOR.hamming(x, y) == 1)
+    arrow = "↻" if st.uni else "(wrap)"
+    lines.append(st.dim(" torus ") + st.cyan("16-periodic %s" % arrow) +
+                 st.dim(" edges wrap = wormholes · Q6 cube: %d/%d moves are 1-bit hops" % (
+                     hops, max(len(prog) - 1, 0))))
     return lines
 
 
