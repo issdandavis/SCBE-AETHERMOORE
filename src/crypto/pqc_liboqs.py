@@ -471,6 +471,25 @@ class MLDSA65:
 
         return instance
 
+    @staticmethod
+    def verify_with_public_key(public_key: bytes, message: bytes, signature: bytes) -> bool:
+        """Verify an ML-DSA-65 signature against a public key only (no secret key).
+
+        For verifiers that hold the signer's public key but not its secret — e.g.
+        governance-authority verification, where the secret never leaves the signer.
+        Fail-closed: refuses (raises) rather than fake a result if no real backend.
+        """
+        if LIBOQS_AVAILABLE:
+            alg = _select_mldsa_algorithm() or "ML-DSA-65"
+            with oqs.Signature(alg) as verifier:
+                return bool(verifier.verify(message, signature, public_key))
+        if PURE_PQC_AVAILABLE:
+            return bool(_DilithiumPure.verify(public_key, message, signature))
+        raise RuntimeError(
+            "ML-DSA-65 verify_with_public_key requires a real PQC backend (liboqs or "
+            "pure-PQC); refusing to fake a verification result."
+        )
+
 
 # =============================================================================
 # DUAL LATTICE CONSENSUS HELPERS
