@@ -73,7 +73,7 @@ def render(results: dict, board: dict) -> str:
     lines: list[str] = []
     lines.append("# Wildlife Triage Review")
     lines.append("")
-    lines.append(f"**Run:** `{results.get('ran_at','?')}`  |  ")
+    lines.append(f"**Run:** `{results.get('ran_at', '?')}`  |  ")
     lines.append(f"**Total tamed:** {sum(sum(c.values()) for c in counts.values())}  |  ")
     lines.append(f"**Failures:** {len(failures)}  |  ")
     lines.append(f"**Skipped:** {len(skipped)}")
@@ -87,7 +87,7 @@ def render(results: dict, board: dict) -> str:
         for pack in sorted(counts):
             c = counts[pack]
             lines.append(
-                f"| {pack} | {c.get('DELETE',0)} | {c.get('DOCUMENT',0)} | {c.get('FIX',0)} | {c.get('OTHER',0)} |"
+                f"| {pack} | {c.get('DELETE', 0)} | {c.get('DOCUMENT', 0)} | {c.get('FIX', 0)} | {c.get('OTHER', 0)} |"
             )
         lines.append("")
 
@@ -110,7 +110,7 @@ def render(results: dict, board: dict) -> str:
                 if path:
                     lines.append(f"- **`{path}`** — {title[:120]}")
                 else:
-                    lines.append(f"- **{e.get('animal_id','?')}** — {title[:120]}")
+                    lines.append(f"- **{e.get('animal_id', '?')}** — {title[:120]}")
                 lines.append(f"  > {reply[:300]}")
             lines.append("")
 

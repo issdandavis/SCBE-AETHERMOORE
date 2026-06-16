@@ -6,6 +6,7 @@ Rust crate on Kaggle, then times it against the embedded Python reference encode
 over an embedded corpus with warmup + repeated runs, and writes a score card
 (research/benchmarks/score-template.json shape) to /kaggle/working/.
 """
+
 import base64
 import importlib.util
 import json
@@ -55,7 +56,8 @@ if not cargo:
     print("installing rust toolchain ...", flush=True)
     subprocess.run(
         "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal",
-        shell=True, check=True,
+        shell=True,
+        check=True,
     )
     os.environ["PATH"] = os.path.expanduser("~/.cargo/bin") + os.pathsep + os.environ["PATH"]
     cargo = shutil.which("cargo") or os.path.expanduser("~/.cargo/bin/cargo")
@@ -94,10 +96,15 @@ def summarize(times):
     n = len(times)
     half = 1.96 * stdev / math.sqrt(n) if n > 1 else 0.0
     return {
-        "runs": n, "mean": round(mean, 6), "median": round(statistics.median(times), 6),
-        "stddev": round(stdev, 6), "min": round(min(times), 6), "max": round(max(times), 6),
+        "runs": n,
+        "mean": round(mean, 6),
+        "median": round(statistics.median(times), 6),
+        "stddev": round(stdev, 6),
+        "min": round(min(times), 6),
+        "max": round(max(times), 6),
         "cv_pct": round((stdev / mean) * 100, 3) if mean else 0.0,
-        "ci95": [round(mean - half, 6), round(mean + half, 6)], "unit": "s",
+        "ci95": [round(mean - half, 6), round(mean + half, 6)],
+        "unit": "s",
     }
 
 
@@ -118,8 +125,12 @@ card = {
     "schema_version": "scbe_benchmark_score_v1",
     "benchmark": "ast-cube-encoder",
     "goal": "comparison",
-    "metric": {"name": "wall_time", "unit": "s", "lower_is_better": True,
-               "definition": "end-to-end encode of corpus; Python in-process, Rust one subprocess incl startup"},
+    "metric": {
+        "name": "wall_time",
+        "unit": "s",
+        "lower_is_better": True,
+        "definition": "end-to-end encode of corpus; Python in-process, Rust one subprocess incl startup",
+    },
     "variants": {"python_reference": py, "rust": rust},
     "end_to_end_speedup_x": e2e_speedup,
     "pure_encode": {
@@ -148,5 +159,7 @@ card = {
 }
 (WORK / "encoder-card.json").write_text(json.dumps(card, indent=2), encoding="utf-8")
 print(json.dumps(card, indent=2))
-print(f"\nSUMMARY corpus {len(corpus)}f/{loc}LOC | py {py['median']*1000:.1f}ms CV{py['cv_pct']}% | "
-      f"rust {rust['median']*1000:.1f}ms CV{rust['cv_pct']}% | e2e {e2e_speedup}x | engine {engine_speedup}x")
+print(
+    f"\nSUMMARY corpus {len(corpus)}f/{loc}LOC | py {py['median']*1000:.1f}ms CV{py['cv_pct']}% | "
+    f"rust {rust['median']*1000:.1f}ms CV{rust['cv_pct']}% | e2e {e2e_speedup}x | engine {engine_speedup}x"
+)

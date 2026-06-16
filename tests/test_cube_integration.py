@@ -2,6 +2,7 @@
 
 tokens -> opcode object -> {board, torus, DNA, 18 faces, tongue, run} must all stay
 mutually consistent on random programs. This is the "does the thesis hold" test."""
+
 import random
 
 import pytest
@@ -22,7 +23,7 @@ def _rand(n, seed):
 
 @pytest.mark.parametrize("seed", range(80))
 def test_whole_stack_consistent(seed):
-    names = _rand(seed % 18, seed)               # programs of length 0..17
+    names = _rand(seed % 18, seed)  # programs of length 0..17
     text = " ".join(names)
 
     nm, prog = F.tokens_to_program(text)
@@ -66,18 +67,18 @@ def test_all_64_opcodes_have_distinct_coordinates():
     pts = {B.to_point(b) for b in range(64)}
     cubes = {B.to_cube(b) for b in range(64)}
     colors = {B.rgb(b) for b in range(64)}
-    assert len(pts) == len(cubes) == len(colors) == 64   # no embedding collides
+    assert len(pts) == len(cubes) == len(colors) == 64  # no embedding collides
 
 
 def test_band_axis_agrees_across_board_and_cube():
     for b in range(64):
         row, _col = B.to_point(b)
         band, _mid, _c = B.to_cube(b)
-        assert row == band                       # the band is the same axis both ways
+        assert row == band  # the band is the same axis both ways
 
 
 @pytest.mark.parametrize("seed", range(40))
 def test_run_on_enter_never_raises(seed):
     names = _rand(seed % 10 + 1, seed + 999)
     out = F.render(" ".join(names), ("python",), color=False)
-    assert "runs" in out                         # always produces a runs line, never throws
+    assert "runs" in out  # always produces a runs line, never throws

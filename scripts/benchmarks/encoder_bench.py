@@ -91,8 +91,9 @@ def summarize(times: list[float]) -> dict:
 
 def git_commit() -> str:
     try:
-        out = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
-                             check=True, capture_output=True, text=True)
+        out = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, check=True, capture_output=True, text=True
+        )
         return out.stdout.strip()
     except Exception:
         return ""
@@ -143,7 +144,7 @@ def main() -> int:
     pure = None
     if rust_built and len(files) >= 1:
         big_mult = max(1, math.ceil(args.big_target / len(files)))
-        big = (files * big_mult)[:args.big_target]
+        big = (files * big_mult)[: args.big_target]
         one = files[:1]
         rust_one = statistics.median(measure(run_rust, one, args.pure_runs, args.warmup))
         rust_big = statistics.median(measure(run_rust, big, args.pure_runs, args.warmup))
@@ -174,7 +175,7 @@ def main() -> int:
             "unit": "s",
             "lower_is_better": True,
             "definition": "end-to-end encode of the corpus; Python in-process (no interpreter "
-                          "startup), Rust one subprocess incl. process startup + binary transport",
+            "startup), Rust one subprocess incl. process startup + binary transport",
         },
         "result": rust if rust else py,
         "variants": {"python_reference": py, "rust": rust},
@@ -197,8 +198,8 @@ def main() -> int:
         "modeled_not_measured": False,
         "stable": stable,
         "notes": "Rust path includes subprocess startup; on a small corpus that startup caps the "
-                 "observed speedup vs the pure-encode ratio. Not stable => re-run on a quiet machine "
-                 "with CPU governor pinned before publishing.",
+        "observed speedup vs the pure-encode ratio. Not stable => re-run on a quiet machine "
+        "with CPU governor pinned before publishing.",
     }
 
     default_out = ROOT / "research" / "benchmarks" / "results" / f"encoder-{card['environment']['date']}.json"
@@ -215,8 +216,10 @@ def main() -> int:
         if pure:
             tag = "" if pure["reliable"] else "  (UNRELIABLE - py CV %.1f%%)" % pure["python_batch_cv_pct"]
             rates = f"py {pure['python_per_file_ms']:.3f} vs rust {pure['rust_per_file_ms']:.4f} ms/file"
-            print(f"engine : {pure['engine_speedup_x']}x startup-excluded ({rates}; "
-                  f"startup ~{pure['rust_startup_ms']:.1f} ms){tag}")
+            print(
+                f"engine : {pure['engine_speedup_x']}x startup-excluded ({rates}; "
+                f"startup ~{pure['rust_startup_ms']:.1f} ms){tag}"
+            )
     else:
         print("rust   : NOT BUILT (cargo build --release --manifest-path rust/ast_cube/Cargo.toml)")
     print(f"card   : {out_path.relative_to(ROOT)}")

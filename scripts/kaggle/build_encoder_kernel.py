@@ -182,8 +182,13 @@ def main() -> int:
     crate = ROOT / "rust" / "ast_cube"
     scbe_dir = ROOT / "python" / "scbe"
     # Minimal import closure of the reference encoder (verified: stdlib + each other only).
-    package_modules = ["ast_cube_encoder", "cube_token", "elastic_bijective_hash",
-                       "tongue_roles", "atomic_tokenization"]
+    package_modules = [
+        "ast_cube_encoder",
+        "cube_token",
+        "elastic_bijective_hash",
+        "tongue_roles",
+        "atomic_tokenization",
+    ]
     corpus_files = sorted(scbe_dir.glob("*.py"))
     corpus_files = [f for f in corpus_files if f.name != "__init__.py"][:CORPUS_LIMIT]
 

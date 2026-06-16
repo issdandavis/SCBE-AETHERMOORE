@@ -179,6 +179,7 @@ def test_exec_runs_bare_python_alias_after_resolution() -> None:
 # ── inline-payload logic detection (catches dangerous CODE inside `-c`) ──
 # These are scan-only: the dangerous payload is analysed, never executed.
 
+
 def test_inline_python_destructive_payload_is_denied() -> None:
     # The dangerous logic lives inside the -c string; no rm/Remove-Item command
     # SHAPE matches. The gate must look inside the payload and DENY it.
@@ -210,6 +211,7 @@ def test_inline_node_child_process_is_denied() -> None:
 
 
 # ── simulate_command: pre-flight dry-run that NEVER executes ──
+
 
 def test_simulate_allows_a_good_command() -> None:
     sim = simulate_command(f"{sys.executable} --version", max_tier="ALLOW")

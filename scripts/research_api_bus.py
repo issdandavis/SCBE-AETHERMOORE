@@ -183,7 +183,7 @@ def _search_crossref(query: str, limit: int) -> dict:
     results = []
     for item in data.get("message", {}).get("items", []):
         title = " ".join(item.get("title", []))
-        authors = [f"{a.get('given','')} {a.get('family','')}".strip() for a in item.get("author", [])[:3]]
+        authors = [f"{a.get('given', '')} {a.get('family', '')}".strip() for a in item.get("author", [])[:3]]
         pub_date = item.get("published", {}).get("date-parts", [[None]])[0]
         results.append(
             {

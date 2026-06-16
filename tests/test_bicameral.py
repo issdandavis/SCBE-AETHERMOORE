@@ -1,4 +1,5 @@
 """Bicameral cognition — logic vs intuition hemispheres, reconciled."""
+
 import random
 
 import pytest
@@ -21,7 +22,8 @@ def test_logic_hemisphere_matches_the_real_python_face(seed):
     prog, depth = [], 3
     for _ in range(rng.randint(1, 10)):
         if depth >= 2 and rng.random() < 0.6:
-            prog.append(rng.choice([o for o in ops if o in B.EXACT and B.EXACT[o][0] == 2])); depth -= 1
+            prog.append(rng.choice([o for o in ops if o in B.EXACT and B.EXACT[o][0] == 2]))
+            depth -= 1
         else:
             prog.append(rng.choice([o for o in ops if B.EXACT[o][0] == 1]))
         depth = max(depth, 1)
@@ -30,7 +32,7 @@ def test_logic_hemisphere_matches_the_real_python_face(seed):
         expected = _exec(bytes_)
     except Exception:
         pytest.skip("python face raised on this program")
-    assert abs(B.logic(bytes_) - expected) < 1e-9          # exact hemisphere == real face
+    assert abs(B.logic(bytes_) - expected) < 1e-9  # exact hemisphere == real face
 
 
 def test_linear_program_is_intuitive():
@@ -55,7 +57,7 @@ def test_pow_is_fudged_to_multiply():
 
 
 def test_incomplete_program_reconciles_to_incomplete():
-    t = B.think(P.program_bytes("add", "add", "add"))   # underflows the 3-deep stack
+    t = B.think(P.program_bytes("add", "add", "add"))  # underflows the 3-deep stack
     assert t["relation"] == "incomplete" and t["confidence"] == 0.0
 
 

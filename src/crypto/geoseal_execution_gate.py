@@ -172,10 +172,19 @@ def _windows_command_line_to_argv(command: str) -> list[str]:
 # raw OS/socket/registry access — closing the inline-interpreter smuggling gap.
 _PY_DANGER_DOTTED = {
     ("shutil", "rmtree"),
-    ("os", "system"), ("os", "remove"), ("os", "unlink"), ("os", "rmdir"),
-    ("os", "removedirs"), ("os", "popen"), ("os", "kill"), ("os", "execv"),
-    ("subprocess", "run"), ("subprocess", "call"), ("subprocess", "Popen"),
-    ("subprocess", "check_call"), ("subprocess", "check_output"),
+    ("os", "system"),
+    ("os", "remove"),
+    ("os", "unlink"),
+    ("os", "rmdir"),
+    ("os", "removedirs"),
+    ("os", "popen"),
+    ("os", "kill"),
+    ("os", "execv"),
+    ("subprocess", "run"),
+    ("subprocess", "call"),
+    ("subprocess", "Popen"),
+    ("subprocess", "check_call"),
+    ("subprocess", "check_output"),
 }
 _PY_DANGER_NAMES = {"eval", "exec", "compile", "__import__"}
 _PY_DANGER_MODULES = {"ctypes", "socket", "winreg", "pty"}
@@ -208,26 +217,31 @@ def _scan_python_payload(code: str) -> list[GateFinding]:
             if isinstance(fn, ast.Attribute) and isinstance(fn.value, ast.Name):
                 pair = (fn.value.id, fn.attr)
                 if pair in _PY_DANGER_DOTTED:
-                    findings.append(GateFinding(
-                        "inline-danger-call", "DENY",
-                        f"inline python calls {pair[0]}.{pair[1]}()", evidence=f"{pair[0]}.{pair[1]}"))
+                    findings.append(
+                        GateFinding(
+                            "inline-danger-call",
+                            "DENY",
+                            f"inline python calls {pair[0]}.{pair[1]}()",
+                            evidence=f"{pair[0]}.{pair[1]}",
+                        )
+                    )
             elif isinstance(fn, ast.Name) and fn.id in _PY_DANGER_NAMES:
-                findings.append(GateFinding(
-                    "inline-danger-call", "DENY",
-                    f"inline python calls {fn.id}()", evidence=fn.id))
+                findings.append(
+                    GateFinding("inline-danger-call", "DENY", f"inline python calls {fn.id}()", evidence=fn.id)
+                )
         elif isinstance(node, ast.Import):
             for alias in node.names:
                 root = alias.name.split(".")[0]
                 if root in _PY_DANGER_MODULES:
-                    findings.append(GateFinding(
-                        "inline-danger-import", "DENY",
-                        f"inline python imports {root}", evidence=root))
+                    findings.append(
+                        GateFinding("inline-danger-import", "DENY", f"inline python imports {root}", evidence=root)
+                    )
         elif isinstance(node, ast.ImportFrom):
             root = (node.module or "").split(".")[0]
             if root in _PY_DANGER_MODULES:
-                findings.append(GateFinding(
-                    "inline-danger-import", "DENY",
-                    f"inline python imports {root}", evidence=root))
+                findings.append(
+                    GateFinding("inline-danger-import", "DENY", f"inline python imports {root}", evidence=root)
+                )
     return findings
 
 
@@ -236,8 +250,7 @@ def _scan_node_payload(code: str) -> list[GateFinding]:
     findings: list[GateFinding] = []
     for pattern, message in _NODE_DANGER:
         if re.search(pattern, code):
-            findings.append(GateFinding(
-                "inline-danger-node", "DENY", f"inline node {message}", evidence=pattern))
+            findings.append(GateFinding("inline-danger-node", "DENY", f"inline node {message}", evidence=pattern))
     return findings
 
 
@@ -519,9 +532,7 @@ def simulate_command(
     resolved_argv, runtime_note = _resolve_runtime(decision.argv)
     blocked_reason: Optional[str] = None
     if not would_run:
-        blocked_reason = (
-            "gate denied" if decision.tier == "DENY" else f"tier {decision.tier} exceeds max {max_tier}"
-        )
+        blocked_reason = "gate denied" if decision.tier == "DENY" else f"tier {decision.tier} exceeds max {max_tier}"
     rules = ", ".join(sorted({f.rule for f in decision.findings})) or "none"
     verb = "WOULD RUN" if would_run else "BLOCKED"
     shown = " ".join(resolved_argv) if resolved_argv else command

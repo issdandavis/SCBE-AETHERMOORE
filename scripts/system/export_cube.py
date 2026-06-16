@@ -23,9 +23,29 @@ from python.scbe.cube_faces import all_faces  # noqa: E402  (after sys.path setu
 
 # Curated showcase: control/flow keywords, real chemistry, and plain words.
 TOKENS = [
-    "loop", "gate", "calc", "ward", "move", "sense", "morph", "area",
-    "H", "O", "C", "N", "Na", "Cl", "Fe", "H2O", "CO2", "NaCl", "C3H8",
-    "fox", "build", "verify", "secret",
+    "loop",
+    "gate",
+    "calc",
+    "ward",
+    "move",
+    "sense",
+    "morph",
+    "area",
+    "H",
+    "O",
+    "C",
+    "N",
+    "Na",
+    "Cl",
+    "Fe",
+    "H2O",
+    "CO2",
+    "NaCl",
+    "C3H8",
+    "fox",
+    "build",
+    "verify",
+    "secret",
 ]
 
 

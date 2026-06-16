@@ -389,10 +389,10 @@ def main():
         f"({decisions['ALLOW']/total*100:.0f}% vulnerable)"
     )
     print(
-        f"  Improvement:      {((ungov_executes - decisions['ALLOW'])/max(ungov_executes,1))*100:.0f}% "
+        f"  Improvement:      {((ungov_executes - decisions['ALLOW'])/max(ungov_executes, 1))*100:.0f}% "
         "fewer successful attacks"
     )
-    print(f"  Harmonic wall:    {avg_adv/max(avg_safe,0.01):.0f}x cost multiplier for adversarial intent")
+    print(f"  Harmonic wall:    {avg_adv/max(avg_safe, 0.01):.0f}x cost multiplier for adversarial intent")
 
     # Save report
     report = {

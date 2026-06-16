@@ -405,11 +405,11 @@ def print_summary(
     W = 62
     print(f"\n{'='*W}")
     print(f"Application : {wrapper.get('applicationNumberText')}")
-    print(f"Title       : {meta.get('inventionTitle','—')[:W-14]}")
+    print(f"Title       : {meta.get('inventionTitle', '—')[:W-14]}")
     print(f"Status      : [{meta.get('applicationStatusCode')}] {meta.get('applicationStatusDescriptionText')}")
     print(f"Status date : {meta.get('applicationStatusDate')}")
-    print(f"Examiner    : {meta.get('examinerNameText','—')}  (AU {meta.get('groupArtUnitNumber','—')})")
-    print(f"Entity      : {meta.get('entityStatusData',{}).get('businessEntityStatusCategory','—')}")
+    print(f"Examiner    : {meta.get('examinerNameText', '—')}  (AU {meta.get('groupArtUnitNumber', '—')})")
+    print(f"Entity      : {meta.get('entityStatusData', {}).get('businessEntityStatusCategory', '—')}")
     if meta.get("patentNumber"):
         print(f"Patent No.  : {meta['patentNumber']}  (granted {meta.get('grantDate')})")
 
@@ -418,8 +418,8 @@ def print_summary(
         print(f"\nEvents ({len(events)} total, 8 shown):")
         for ev in sorted(events, key=lambda e: e.get("eventDate", ""), reverse=True)[:8]:
             print(
-                f"  {ev.get('eventDate','?'):12s}  [{ev.get('eventCode','?'):6s}]  "
-                f"{ev.get('eventDescriptionText','')}"
+                f"  {ev.get('eventDate', '?'):12s}  [{ev.get('eventCode', '?'):6s}]  "
+                f"{ev.get('eventDescriptionText', '')}"
             )
 
     # OA rejection breakdown

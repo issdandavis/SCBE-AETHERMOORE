@@ -43,4 +43,3 @@ def test_cli_json_receipt_smoke():
     receipt = json.loads(proc.stdout)
     assert receipt["schema"] == CS.SCHEMA
     assert receipt["decision"] in {"ALLOW", "QUARANTINE", "ESCALATE", "DENY"}
-

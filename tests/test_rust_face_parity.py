@@ -27,12 +27,10 @@ from python.scbe.ast_cube_encoder import encode, _TYPE_ID
 EXE = os.path.join("rust", "ast_cube", "target", "release", "ast_cube.exe")
 
 # Node types the Rust walk does not emit (operators/contexts/alias/withitem/match).
-_EXCLUDE = set(
-    """Add Sub Mult MatMult Div Mod Pow LShift RShift BitOr BitXor BitAnd FloorDiv
+_EXCLUDE = set("""Add Sub Mult MatMult Div Mod Pow LShift RShift BitOr BitXor BitAnd FloorDiv
     Invert Not UAdd USub And Or Eq NotEq Lt LtE Gt GtE Is IsNot In NotIn
     Load Store Del alias withitem match_case MatchValue MatchSingleton MatchSequence
-    MatchMapping MatchClass MatchStar MatchAs MatchOr TypeVar ParamSpec TypeVarTuple""".split()
-)
+    MatchMapping MatchClass MatchStar MatchAs MatchOr TypeVar ParamSpec TypeVarTuple""".split())
 
 _SAMPLE = [
     "python/scbe/ast_cube_encoder.py",

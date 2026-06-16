@@ -1,4 +1,5 @@
 """Block safety system — destructive double-check + shape interlock."""
+
 import pytest
 
 from python.scbe.blocks import BlockProgram, BlockError, CATALOG, Safety
@@ -34,13 +35,16 @@ def test_destructive_clears_with_confirm():
     assert p.run_plan()["cleared"] is True
 
 
-@pytest.mark.parametrize("block,target", [
-    ("delete_dir", "C:\\Users\\issda"),
-    ("delete_dir", "/"),
-    ("format_disk", "C:"),
-    ("wipe", "C:\\"),
-    ("delete_file", "C:\\Windows\\System32\\kernel32.dll"),
-])
+@pytest.mark.parametrize(
+    "block,target",
+    [
+        ("delete_dir", "C:\\Users\\issda"),
+        ("delete_dir", "/"),
+        ("format_disk", "C:"),
+        ("wipe", "C:\\"),
+        ("delete_file", "C:\\Windows\\System32\\kernel32.dll"),
+    ],
+)
 def test_drive_and_system_scope_refused_even_with_confirm(block, target):
     p = BlockProgram().add(block, target, confirm="cleanup")
     with pytest.raises(BlockError) as e:

@@ -1,8 +1,15 @@
 """Geometric fleet router — tangent-vector routing through the tongue manifold."""
+
 import numpy as np
 
 from python.scbe.geometric_router import (
-    Agent, Task, TONGUES, finsler_distance, geodesic, route_fleet, round_robin,
+    Agent,
+    Task,
+    TONGUES,
+    finsler_distance,
+    geodesic,
+    route_fleet,
+    round_robin,
 )
 
 

@@ -1,4 +1,5 @@
 """Illuminate — agentic mass-generation curated by the bicameral gap (MAP-Elites)."""
+
 import random
 
 from python.scbe import bicameral as B
@@ -13,7 +14,7 @@ def test_random_program_is_mostly_stack_valid():
         ops = IL.random_program(rng.randint(2, 8), rng)
         if B.think(P.program_bytes(*ops))["relation"] == "incomplete":
             incomplete += 1
-    assert incomplete < 60                       # the shape-aware generator rarely underflows
+    assert incomplete < 60  # the shape-aware generator rarely underflows
 
 
 def test_archive_is_nonempty_and_curated():
@@ -35,7 +36,7 @@ def test_illuminate_is_deterministic():
 def test_archive_has_intuitive_and_usually_divergent_niches():
     arch = IL.illuminate(generations=4, batch=200, seed=5)
     relations = {rel for (_sig, rel) in arch}
-    assert "exact match" in relations            # linear programs are intuitive
+    assert "exact match" in relations  # linear programs are intuitive
     # nonlinear ops should produce at least one divergent niche
     assert any(rel in ("close", "diverged", "sign flip") for (_sig, rel) in arch)
 

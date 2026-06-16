@@ -136,7 +136,7 @@ PACKS: dict[str, Pack] = {
 
 
 def _is_security(s: dict) -> bool:
-    text = f"{s.get('title','')} {s.get('body','')}".lower()
+    text = f"{s.get('title', '')} {s.get('body', '')}".lower()
     keywords = ("security", "vulnerab", "cve-", "exploit", "rce ", "xss", "leak", "credential")
     return any(k in text for k in keywords)
 
@@ -167,17 +167,17 @@ def _is_todo_comment(s: dict) -> bool:
 
 
 def _is_research(s: dict) -> bool:
-    text = f"{s.get('title','')} {' '.join(s.get('labels',[]))}".lower()
+    text = f"{s.get('title', '')} {' '.join(s.get('labels', []))}".lower()
     return any(k in text for k in ("research", "spike", "explore", "investigate", "benchmark"))
 
 
 def _is_training(s: dict) -> bool:
-    text = f"{s.get('title','')} {s.get('body','')}".lower()
+    text = f"{s.get('title', '')} {s.get('body', '')}".lower()
     return any(k in text for k in ("training run", "lora", "qlora", "sft ", "dpo ", "fine-tune"))
 
 
 def _is_proposal(s: dict) -> bool:
-    text = f"{s.get('title','')} {s.get('body','')}".lower()
+    text = f"{s.get('title', '')} {s.get('body', '')}".lower()
     return any(k in text for k in ("darpa", "mathbac", "clara", "proposal", "federal", "sam.gov", "subcontract"))
 
 
@@ -193,7 +193,7 @@ def _is_ci_infra(s: dict) -> bool:
 
 
 def _is_demo_or_polish(s: dict) -> bool:
-    text = f"{s.get('title','')} {s.get('path','')}".lower()
+    text = f"{s.get('title', '')} {s.get('path', '')}".lower()
     return any(k in text for k in ("polish", "ux", "ui", "design", "demo", "showcase", "audio", "visual"))
 
 

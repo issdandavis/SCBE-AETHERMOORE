@@ -1,4 +1,5 @@
 """Tests for the Wolfram face — 256 tokens mapped to the 256 ECA rules."""
+
 from __future__ import annotations
 
 import pytest
@@ -49,10 +50,10 @@ class TestClasses:
             assert t["universal"] is True, r
 
     def test_iconic_rule_anchors(self):
-        assert token_rule(0)["class"] == "I"      # blank -> homogeneous
-        assert token_rule(255)["class"] == "I"    # fill -> homogeneous
-        assert token_rule(30)["class"] == "III"   # Rule 30 -> chaotic
-        assert token_rule(110)["class"] == "IV"   # Rule 110 -> complex/universal
+        assert token_rule(0)["class"] == "I"  # blank -> homogeneous
+        assert token_rule(255)["class"] == "I"  # fill -> homogeneous
+        assert token_rule(30)["class"] == "III"  # Rule 30 -> chaotic
+        assert token_rule(110)["class"] == "IV"  # Rule 110 -> complex/universal
 
     def test_classify_is_deterministic(self):
         # No RNG anywhere — same rule must classify identically every call.

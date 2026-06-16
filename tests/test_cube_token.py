@@ -1,5 +1,6 @@
 """Tests for the Rubik's-cube token (python/scbe/cube_token.py)."""
-from python.scbe.cube_token import CubeToken, CubeRegistry, TONGUES, TONGUE_LANGUAGE
+
+from python.scbe.cube_token import CubeToken, CubeRegistry, TONGUES
 
 
 class TestCubeFaces:
@@ -48,6 +49,7 @@ class TestRegistry:
 class TestFaceFormations:
     def test_six_formations_cover_many_languages(self):
         from python.scbe.cube_token import LANGUAGE_FORMATIONS, LANGUAGE_TO_TONGUE
+
         assert set(LANGUAGE_FORMATIONS) == set(TONGUES)
         assert len(LANGUAGE_TO_TONGUE) >= 60  # all code languages as faces
         for spec in LANGUAGE_FORMATIONS.values():
@@ -63,11 +65,12 @@ class TestFaceFormations:
 
     def test_language_reverse_lookup(self):
         from python.scbe.cube_token import tongue_for_language
+
         assert tongue_for_language("elixir") == "UM"
         assert tongue_for_language("SQL") == "DR"
         assert tongue_for_language("nonsense") is None
 
     def test_formations_preserve_bijection(self):
-        c = CubeToken("compile")
-        for tongue, spec in CubeToken("compile").all_formations().items():
+        cube = CubeToken("compile")
+        for tongue, spec in cube.all_formations().items():
             assert CubeToken.from_face(tongue, spec["encoding"]).token == "compile"
