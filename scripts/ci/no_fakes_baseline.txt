@@ -1,0 +1,121 @@
+# no-fakes baseline — known existing fakes/stubs in the real product path.
+# The gate fails on any tell NOT listed here, so new fakes cannot land.
+# RATCHET: when you make one of these real (or fail-closed), DELETE its line.
+# Regenerate with: python scripts/ci/no_fakes_gate.py --update-baseline
+
+agents/agent_bus_signing.py::not_implemented::beac35afe198  # agents/agent_bus_signing.py:61 [not_implemented] raise NotImplementedError
+agents/browsers/base.py::for_demo::81cedc9cd371  # agents/browsers/base.py:358 [for_demo] print(" [ESCALATE] Auto-approving for demo (would ask higher AI)")
+agents/browsers/chrome_mcp.py::fake_marker::472881e94c43  # agents/browsers/chrome_mcp.py:23 [fake_marker] When used standalone, it provides a mock implementation for testing.
+agents/swarm_browser.py::for_demo::6a9573aa985c  # agents/swarm_browser.py:1109 [for_demo] # Create swarm (no real browser backend for demo)
+agents/swarm_browser.py::not_implemented::b258ec0babd0  # agents/swarm_browser.py:208 [not_implemented] raise NotImplementedError(f"{self.role.value} must implement process()")
+hydra/voxel_storage.py::dev_stub::6d4d4a857b15  # hydra/voxel_storage.py:102 [dev_stub] """Compute authority hash for a voxel (placeholder for ML-DSA-65).
+hydra/voxel_storage.py::in_prod_use::f061ee199087  # hydra/voxel_storage.py:104 [in_prod_use] In production, this would use post-quantum Dilithium signatures.
+packages/cli/bin/scbe.js::for_demo::b2c5df6944e9  # packages/cli/bin/scbe.js:76 [for_demo] magic [--json] Alias for demo
+packages/kernel/src/hamiltonianCFI.d.ts::in_prod_use::12e2ca755baa  # packages/kernel/src/hamiltonianCFI.d.ts:135 [in_prod_use] * In production, use proper Laplacian eigenvectors
+packages/kernel/src/hamiltonianCFI.ts::in_prod_use::12e2ca755baa  # packages/kernel/src/hamiltonianCFI.ts:287 [in_prod_use] * In production, use proper Laplacian eigenvectors
+packages/kernel/src/pqc.ts::simplified_demo::35d8e5122d6d  # packages/kernel/src/pqc.ts:271 [simplified_demo] * Keccak-f[1600] permutation (simplified for demonstration)
+packages/kernel/src/sacredEggs.ts::in_prod_use::f73b6efac7c8  # packages/kernel/src/sacredEggs.ts:424 [in_prod_use] // HKDF (simplified - in production use proper HKDF)
+packages/kernel/src/spectral-identity.ts::in_prod_use::23d6b56f7c74  # packages/kernel/src/spectral-identity.ts:355 [in_prod_use] // Simple hash function (in production, use crypto)
+packages/kernel/src/tBraid.ts::always_true::d85e7a0e3929  # packages/kernel/src/tBraid.ts:178 [always_true] * Not computed in production — always true when skipYangBaxter is set.
+packages/kernel/src/tBraid.ts::not_for_production::a83bc10b065a  # packages/kernel/src/tBraid.ts:30 [not_for_production] * Yang-Baxter invariant (TEST/DEBUG ONLY — not for production hot paths):
+packages/sixtongues/sixtongues.py::not_for_production::0615d55d5167  # packages/sixtongues/sixtongues.py:189 [not_for_production] # SIMPLE ENCRYPTION (XOR-based demo, NOT for production)
+python/scbe/cube_bridge.py::not_implemented::beac35afe198  # python/scbe/cube_bridge.py:67 [not_implemented] raise NotImplementedError
+python/scbe/fleet_models.py::fake_marker::bcdbfe638e70  # python/scbe/fleet_models.py:96 [fake_marker] print("\n sample responses (mock without API keys; real models with keys):")
+src/agent/kafka.ts::fake_marker::88764e3b8828  # src/agent/kafka.ts:439 [fake_marker] * Create a Kafka client (mock for now, replace with real implementation)
+src/ai_orchestration/hallucination_guard.py::always_true::35c3bdcc0ebb  # src/ai_orchestration/hallucination_guard.py:82 [always_true] # Core facts that are always true
+src/ai_orchestration/logging.py::for_demo::5be0ed278e35  # src/ai_orchestration/logging.py:693 [for_demo] """Encrypt data (simplified XOR for demo; use AES-256-GCM in production)."""
+src/api/routes.ts::in_prod_use::331ebb69f69a  # src/api/routes.ts:292 [in_prod_use] // Encrypt (simplified - in production use XChaCha20-Poly1305)
+src/api/routes.ts::in_prod_use::9447399685de  # src/api/routes.ts:507 [in_prod_use] // Simplified encoding - in production use full Sacred Tongue tokenizer
+src/api/routes.ts::in_prod_use::f942b0ab4440  # src/api/routes.ts:289 [in_prod_use] // Derive key (simplified - in production use Argon2id)
+src/api/stripe_billing.py::in_prod_use::0e28cdaf3af5  # src/api/stripe_billing.py:518 [in_prod_use] # Purchase log for tracking (in production, use a database)
+src/browser/fleetSwarmBrowser.ts::in_prod_use::c3e89342e109  # src/browser/fleetSwarmBrowser.ts:354 [in_prod_use] // Simulate execution (in production, this would use the actual browser backend)
+src/cli/slm_router.py::not_implemented::beac35afe198  # src/cli/slm_router.py:87 [not_implemented] raise NotImplementedError
+src/cloud/cross_cloud_comms.py::for_demo::60ea64179e04  # src/cloud/cross_cloud_comms.py:352 [for_demo] # Fallback: Base64 encode (not secure, just for demo)
+src/crypto/dual_lattice.py::for_demo::2d0b5f462422  # src/crypto/dual_lattice.py:325 [for_demo] """Generate Kyber keypair (simplified for demo)."""
+src/crypto/dual_lattice.py::for_demo::67d848ffc57c  # src/crypto/dual_lattice.py:695 [for_demo] # For demo, require the processed bundle to carry the expected sections.
+src/crypto/dual_lattice.py::for_demo::cc6db9874020  # src/crypto/dual_lattice.py:499 [for_demo] # For demo, create deterministic signature
+src/crypto/dual_lattice.py::in_prod_use::9739a414211b  # src/crypto/dual_lattice.py:326 [in_prod_use] # In production, use liboqs or pqcrypto
+src/crypto/dual_lattice.py::in_prod_use::984ecf5f5ec6  # src/crypto/dual_lattice.py:495 [in_prod_use] # Simplified signing (in production, use rejection sampling)
+src/crypto/dual_lattice.py::in_prod_use::e9f1a384e283  # src/crypto/dual_lattice.py:388 [in_prod_use] # Simplified encryption (in production, use NTT)
+src/crypto/dual_lattice.py::simplified_demo::2d0b5f462422  # src/crypto/dual_lattice.py:325 [simplified_demo] """Generate Kyber keypair (simplified for demo)."""
+src/crypto/dual_lattice.py::simplified_demo::e9f1a384e283  # src/crypto/dual_lattice.py:388 [simplified_demo] # Simplified encryption (in production, use NTT)
+src/crypto/dual_lattice.py::use_liboqs::9739a414211b  # src/crypto/dual_lattice.py:326 [use_liboqs] # In production, use liboqs or pqcrypto
+src/crypto/pqc.ts::dev_stub::2db7e5f50e1b  # src/crypto/pqc.ts:597 [dev_stub] // Development stub: Deterministic decapsulation
+src/crypto/pqc.ts::dev_stub::43530a8e43c6  # src/crypto/pqc.ts:713 [dev_stub] // Development stub
+src/crypto/pqc.ts::dev_stub::8646c92c8dc4  # src/crypto/pqc.ts:526 [dev_stub] // Development stub: Generate deterministic test keys
+src/crypto/pqc.ts::dev_stub::8cf83e6bc2fb  # src/crypto/pqc.ts:745 [dev_stub] // Development stub: Deterministic signature
+src/crypto/pqc.ts::fake_marker::8646c92c8dc4  # src/crypto/pqc.ts:526 [fake_marker] // Development stub: Generate deterministic test keys
+src/crypto/pqc.ts::fake_marker::8cf83e6bc2fb  # src/crypto/pqc.ts:745 [fake_marker] // Development stub: Deterministic signature
+src/crypto/pqc.ts::fake_marker::9f12a3bd63ae  # src/crypto/pqc.ts:787 [fake_marker] 'ML-DSA-65 verify() requires native liboqs. Stub verification is disabled for safety. ' +
+src/crypto/pqc.ts::in_prod_use::0679f7d2ea8a  # src/crypto/pqc.ts:881 [in_prod_use] // Generate classical key pair (placeholder - in production use ECDH)
+src/crypto/pqc.ts::in_prod_use::e8a66135f718  # src/crypto/pqc.ts:661 [in_prod_use] * In production, this would use liboqs or @noble/post-quantum.
+src/crypto/pqc.ts::not_for_production::1ed1b72a145a  # src/crypto/pqc.ts:527 [not_for_production] // WARNING: NOT FOR PRODUCTION USE
+src/crypto/pqc.ts::use_liboqs::e8a66135f718  # src/crypto/pqc.ts:661 [use_liboqs] * In production, this would use liboqs or @noble/post-quantum.
+src/crypto/pqc_liboqs.py::fake_marker::39e57232ec34  # src/crypto/pqc_liboqs.py:569 [fake_marker] print("DEVELOPMENT MODE: Using stub implementation")
+src/crypto/quantum-safe.ts::fake_marker::3c7925d51d9c  # src/crypto/quantum-safe.ts:273 [fake_marker] * Generic stub KEM — generates deterministic test keys/ciphertext.
+src/crypto/quantum-safe.ts::fake_marker::6cc48bd1424e  # src/crypto/quantum-safe.ts:376 [fake_marker] `${this.descriptor.name}: stub verify() is disabled for safety. ` +
+src/crypto/quantum-safe.ts::fake_marker::9ff3b7b92653  # src/crypto/quantum-safe.ts:243 [fake_marker] // STUB KEM IMPLEMENTATION (dev/test, expandable)
+src/crypto/quantum-safe.ts::fake_marker::d7783cfadacb  # src/crypto/quantum-safe.ts:326 [fake_marker] * Generic stub Signature — deterministic test signatures.
+src/fleet/crawl-runner.ts::in_prod_use::873967ef5211  # src/fleet/crawl-runner.ts:887 [in_prod_use] * In production, this would use BrowserActionEvaluator.evaluate().
+src/fleet/crawl-runner.ts::in_prod_use::f7664695933c  # src/fleet/crawl-runner.ts:551 [in_prod_use] // In production this would use BrowserActionEvaluator; here we derive
+src/fleet/polly-pads/decision-envelope.ts::in_prod_use::9aef322ec06f  # src/fleet/polly-pads/decision-envelope.ts:533 [in_prod_use] * placeholder signature. In production, this would use ML-DSA-65.
+src/fleet/polly-pads/decision-envelope.ts::in_prod_use::b5bd4d7fe4c5  # src/fleet/polly-pads/decision-envelope.ts:246 [in_prod_use] * In production, this would use ML-DSA-65 (NIST FIPS 204) with the
+src/fleet/redis-orchestrator.ts::in_prod_use::636b6662c323  # src/fleet/redis-orchestrator.ts:232 [in_prod_use] * In production, this would use BullMQ with Redis.
+src/fleet/redis-orchestrator.ts::in_prod_use::9d6483153797  # src/fleet/redis-orchestrator.ts:594 [in_prod_use] // In production, this would use:
+src/gacha_isekai/training.py::for_demo::5510e9ca814b  # src/gacha_isekai/training.py:99 [for_demo] """ML-DSA-65 compatible hash (SHA-256 stand-in for demo).
+src/gacha_isekai/training.py::in_prod_use::67600cf176b8  # src/gacha_isekai/training.py:101 [in_prod_use] In production, use actual ML-DSA-65 from liboqs.
+src/game/microLedger.ts::in_prod_use::38618399dcea  # src/game/microLedger.ts:609 [in_prod_use] * In production, this would use BitLocker escrow.
+src/gateway/DNA_MULTI_LAYER_ENCODING_TEST.py::for_demo::60499d067d16  # src/gateway/DNA_MULTI_LAYER_ENCODING_TEST.py:40 [for_demo] """Simple text to Morse (A-Z only for demo)"""
+src/gateway/unified-api.ts::in_prod_use::b89158515165  # src/gateway/unified-api.ts:474 [in_prod_use] // Simple rotation (in production, would use epoch-based Q matrix)
+src/governance/decision_envelope_v1.py::dev_stub::2dbc753aed0e  # src/governance/decision_envelope_v1.py:670 [dev_stub] Dev placeholder signature:
+src/governance/decision_envelope_v1.py::dev_stub::311d45c704fa  # src/governance/decision_envelope_v1.py:7 [dev_stub] 3) HMAC-SHA256 signing/verification (dev placeholder for ML-DSA).
+src/governance/tree_of_escalation.py::fake_marker::5cb84a24d666  # src/governance/tree_of_escalation.py:709 [fake_marker] """Stub domain classifier. v0.3 uses keyword matching.
+src/governance/tree_of_escalation.py::fake_marker::5e8b0341d777  # src/governance/tree_of_escalation.py:679 [fake_marker] """Stub keyword table for v0.3 domain classification. Replace with a
+src/governance/tree_of_escalation.py::not_implemented::beac35afe198  # src/governance/tree_of_escalation.py:548 [not_implemented] raise NotImplementedError
+src/harmonic/sacredEggsGenesis.ts::in_prod_use::d617e25e2aa6  # src/harmonic/sacredEggsGenesis.ts:288 [in_prod_use] // In production this would use SHA-256 via SubtleCrypto
+src/harmonic/voxelRecord.ts::in_prod_use::b7173df44fd5  # src/harmonic/voxelRecord.ts:442 [in_prod_use] // Placeholder encryption — in production, use AEAD with egg key
+src/kernel/agentic_sphere_grid.py::for_demo::2b795b1df99c  # src/kernel/agentic_sphere_grid.py:988 [for_demo] # (In production this would be hours/days, but for demo: seconds)
+src/lambda_tests/test_pqc.py::fake_marker::b7a8a9043986  # src/lambda_tests/test_pqc.py:237 [fake_marker] # Mock implementation is also deterministic
+src/minimal/scbe_core.py::for_demo::be233789f0a4  # src/minimal/scbe_core.py:238 [for_demo] # Syllable sets for each tongue (simplified for demo)
+src/minimal/scbe_core.py::simplified_demo::be233789f0a4  # src/minimal/scbe_core.py:238 [simplified_demo] # Syllable sets for each tongue (simplified for demo)
+src/network/hybrid-crypto.ts::in_prod_use::50a188c0ea6c  # src/network/hybrid-crypto.ts:106 [in_prod_use] // In production, this would use ML-KEM key exchange
+src/neurogolf/solver.py::not_implemented::65dcfb31cb0d  # src/neurogolf/solver.py:1818 [not_implemented] raise NotImplementedError(f"Execution for primitive '{step.op}' is not implemented")
+src/physics_sim/nuclear.py::simplified_demo::fd1c4738e8d4  # src/physics_sim/nuclear.py:548 [simplified_demo] # This is a simplified version
+src/physics_sim/orbital.py::not_implemented::14814d3d2a32  # src/physics_sim/orbital.py:67 [not_implemented] raise NotImplementedError("Use orbital_period() function")
+src/physics_sim/simulator.py::not_implemented::beac35afe198  # src/physics_sim/simulator.py:130 [not_implemented] raise NotImplementedError
+src/spiralverse/aethercode.py::always_true::af783410ccfb  # src/spiralverse/aethercode.py:625 [always_true] # Simplified verification (always true for demo)
+src/spiralverse/aethercode.py::for_demo::af783410ccfb  # src/spiralverse/aethercode.py:625 [for_demo] # Simplified verification (always true for demo)
+src/spiralverse/aethercode.py::not_implemented::beac35afe198  # src/spiralverse/aethercode.py:256 [not_implemented] raise NotImplementedError
+src/spiralverse/hive_memory.py::in_prod_use::ba6b64e7f202  # src/spiralverse/hive_memory.py:346 [in_prod_use] # Simulated connection - in production, use actual network
+src/symphonic_cipher/harmonic_scaling_law.py::dev_stub::473d97938298  # src/symphonic_cipher/harmonic_scaling_law.py:238 [dev_stub] # Placeholder for Dilithium signature
+src/symphonic_cipher/harmonic_scaling_law.py::dev_stub::7e72a6b553fe  # src/symphonic_cipher/harmonic_scaling_law.py:234 [dev_stub] # Placeholder for Kyber encapsulation
+src/symphonic_cipher/scbe_aethermoore/axiom_grouped/benchmark_comparison.py::fake_marker::b67a26c43c2c  # src/symphonic_cipher/scbe_aethermoore/axiom_grouped/benchmark_comparison.py:277 [fake_marker] description="Adversary maintains fake coherence signals while deviating (like adversarial examples)",
+src/symphonic_cipher/scbe_aethermoore/cli_toolkit.py::fake_marker::69d001691659  # src/symphonic_cipher/scbe_aethermoore/cli_toolkit.py:688 [fake_marker] "mock crypto."
+src/symphonic_cipher/scbe_aethermoore/cli_toolkit.py::fake_marker::fd80809a56f7  # src/symphonic_cipher/scbe_aethermoore/cli_toolkit.py:647 [fake_marker] # than falling back to mock crypto -- an egg is either sealed with real PQC or
+src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_credit_ledger/bitlocker.py::in_prod_use::75dcacbf2347  # src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_credit_ledger/bitlocker.py:59 [in_prod_use] Returns (ciphertext, nonce). In production, use `cryptography` or PQC.
+src/symphonic_cipher/scbe_aethermoore/concept_blocks/earn_engine/shopify_bridge.py::fake_marker::96f29762b473  # src/symphonic_cipher/scbe_aethermoore/concept_blocks/earn_engine/shopify_bridge.py:273 [fake_marker] NOTE: This is a stub — full implementation requires httpx/aiohttp
+src/symphonic_cipher/scbe_aethermoore/dual_lattice.py::in_prod_use::6ef97cae9c03  # src/symphonic_cipher/scbe_aethermoore/dual_lattice.py:119 [in_prod_use] In production, use liboqs or pqcrypto.
+src/symphonic_cipher/scbe_aethermoore/dual_lattice.py::use_liboqs::6ef97cae9c03  # src/symphonic_cipher/scbe_aethermoore/dual_lattice.py:119 [use_liboqs] In production, use liboqs or pqcrypto.
+src/symphonic_cipher/scbe_aethermoore/governance/grand_unified.py::for_demo::4f6fd44f9977  # src/symphonic_cipher/scbe_aethermoore/governance/grand_unified.py:251 [for_demo] # --- Derived Metrics (Simulated for Demo) ---
+src/symphonic_cipher/scbe_aethermoore/pqc/__init__.py::fake_marker::3553bf793fb4  # src/symphonic_cipher/scbe_aethermoore/pqc/__init__.py:26 [fake_marker] print("Using mock implementation (development mode)")
+src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py::fake_marker::49ebee6626eb  # src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py:240 [fake_marker] """Generate a mock Dilithium3 keypair."""
+src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py::fake_marker::680405fda5cb  # src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py:161 [fake_marker] # Mock Implementation (Fallback when liboqs not available)
+src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py::fake_marker::6e7cb2d8e99d  # src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py:228 [fake_marker] """Mock Dilithium3 implementation using hashlib for testing/fallback.
+src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py::fake_marker::9c032bbe9847  # src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py:177 [fake_marker] """Generate a mock Kyber768 keypair."""
+src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py::fake_marker::d8257c321212  # src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py:267 [fake_marker] """Mock verification - check signature validity."""
+src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py::fake_marker::fe9084765f3a  # src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py:253 [fake_marker] """Mock signing - create deterministic signature."""
+src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py::fake_marker::feb4c878cb31  # src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py:166 [fake_marker] """Mock Kyber768 implementation using hashlib for testing/fallback.
+src/symphonic_cipher/scbe_aethermoore/pqc_module.py::use_liboqs::034eeb08f950  # src/symphonic_cipher/scbe_aethermoore/pqc_module.py:12 [use_liboqs] - Attempts to use liboqs Python bindings if available
+src/symphonic_cipher/scbe_aethermoore/pqc_module.py::use_liboqs::7d5663ec70c2  # src/symphonic_cipher/scbe_aethermoore/pqc_module.py:415 [use_liboqs] prefer_real: If True, use liboqs if available
+src/symphonic_cipher/scbe_aethermoore/spiral_seal/seal.py::not_for_production::8a835e38d2cc  # src/symphonic_cipher/scbe_aethermoore/spiral_seal/seal.py:102 [not_for_production] If None, generates a random one (NOT for production!)
+src/symphonic_cipher/scbe_aethermoore/unified.py::for_demo::a2bdc478acdb  # src/symphonic_cipher/scbe_aethermoore/unified.py:516 [for_demo] 0: Identity (sin wave for demo)
+src/symphonic_cipher/scbe_aethermoore_kyber_v2.1.py::in_prod_use::da7143dae7ce  # src/symphonic_cipher/scbe_aethermoore_kyber_v2.1.py:75 [in_prod_use] In production: use liboqs-python or NIST FIPS 203 implementation.
+src/symphonic_cipher/scbe_aethermoore_kyber_v2.1.py::use_liboqs::da7143dae7ce  # src/symphonic_cipher/scbe_aethermoore_kyber_v2.1.py:75 [use_liboqs] In production: use liboqs-python or NIST FIPS 203 implementation.
+src/tokenizer/quantum-lattice.ts::in_prod_use::754c9ccbfcfe  # src/tokenizer/quantum-lattice.ts:165 [in_prod_use] // Simulate decapsulation (in production, use liboqs)
+src/tokenizer/quantum-lattice.ts::in_prod_use::7788f6acf92f  # src/tokenizer/quantum-lattice.ts:414 [in_prod_use] // In production, use ML-DSA signature verification
+src/tokenizer/quantum-lattice.ts::in_prod_use::ad8373b60126  # src/tokenizer/quantum-lattice.ts:150 [in_prod_use] // Simulate encapsulation (in production, use liboqs)
+src/tokenizer/quantum-lattice.ts::in_prod_use::ce9651a110b3  # src/tokenizer/quantum-lattice.ts:121 [in_prod_use] * In production, use liboqs ML-KEM implementation
+src/tokenizer/quantum-lattice.ts::use_liboqs::754c9ccbfcfe  # src/tokenizer/quantum-lattice.ts:165 [use_liboqs] // Simulate decapsulation (in production, use liboqs)
+src/tokenizer/quantum-lattice.ts::use_liboqs::ad8373b60126  # src/tokenizer/quantum-lattice.ts:150 [use_liboqs] // Simulate encapsulation (in production, use liboqs)
+src/tokenizer/quantum-lattice.ts::use_liboqs::ce9651a110b3  # src/tokenizer/quantum-lattice.ts:121 [use_liboqs] * In production, use liboqs ML-KEM implementation
+src/training/fun_energy.py::for_demo::494c272bcb92  # src/training/fun_energy.py:907 [for_demo] # PULSE VISUALIZER — for demo / diagnostics
