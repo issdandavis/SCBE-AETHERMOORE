@@ -71,12 +71,32 @@ LOGGER = logging.getLogger("scbe.billing")
 _KEYS_FILE = Path(__file__).resolve().parents[2] / "artifacts" / "revenue" / "api_keys.jsonl"
 
 
+def _billing_cipher():
+    """Fernet cipher for encrypting API keys at rest, or None if unconfigured.
+
+    Without SCBE_BILLING_ENC_KEY the store runs IN-MEMORY ONLY and never writes a
+    secret to disk in clear text. Generate a key with:
+      python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    """
+    raw = os.getenv("SCBE_BILLING_ENC_KEY", "").strip()
+    if not raw:
+        return None
+    try:
+        from cryptography.fernet import Fernet
+
+        return Fernet(raw.encode("utf-8"))
+    except Exception as exc:
+        LOGGER.warning("SCBE_BILLING_ENC_KEY invalid; billing keys will not persist: %s", exc)
+        return None
+
+
 def _load_keys() -> tuple[Dict[str, Any], Dict[str, Any]]:
     """Load persisted billing records from disk on startup."""
     customers: Dict[str, Any] = {}
     keys: Dict[str, Any] = {}
     if not _KEYS_FILE.exists():
         return customers, keys
+    cipher = _billing_cipher()
     try:
         with open(_KEYS_FILE, encoding="utf-8") as f:
             for line in f:
@@ -84,6 +104,12 @@ def _load_keys() -> tuple[Dict[str, Any], Dict[str, Any]]:
                 if not line:
                     continue
                 record = json.loads(line)
+                enc = record.pop("api_key_enc", None)
+                if enc and cipher is not None:
+                    try:
+                        record["api_key"] = cipher.decrypt(enc.encode("ascii")).decode("utf-8")
+                    except Exception:
+                        continue  # cannot decrypt (wrong/rotated key) — skip record
                 cid = record.get("customer_id", "")
                 key = record.get("api_key", "")
                 if cid:
@@ -96,11 +122,22 @@ def _load_keys() -> tuple[Dict[str, Any], Dict[str, Any]]:
 
 
 def _persist_key(record: Dict[str, Any]) -> None:
-    """Append an API key record to disk."""
+    """Append an API key record to disk with the API key ENCRYPTED at rest.
+
+    If no encryption key is configured the record is NOT written (in-memory only),
+    so a raw key is never stored in clear text.
+    """
+    cipher = _billing_cipher()
+    if cipher is None:
+        return
     _KEYS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    safe = dict(record)
+    api_key = safe.pop("api_key", "")
+    if api_key:
+        safe["api_key_enc"] = cipher.encrypt(api_key.encode("utf-8")).decode("ascii")
     try:
         with open(_KEYS_FILE, "a", encoding="utf-8") as f:
-            f.write(json.dumps(record) + "\n")
+            f.write(json.dumps(safe) + "\n")
     except Exception as exc:
         LOGGER.warning("Failed to persist API key record: %s", exc)
 

@@ -102,8 +102,9 @@ if __name__ == "__main__":
         print(f"\n{'='*60}")
         print(f"BLOCKED: {len(secrets)} SECRET(S) DETECTED")
         print(f"{'='*60}")
-        for path, name, preview in secrets:
-            print(f"  [{name}] {path}: {preview}")
+        for path, name, _preview in secrets:
+            # Do NOT echo the matched secret value — report only where + what type.
+            print(f"  [{name}] {path}")
         print("\nReplace secrets with [SCRUBBED:type] before committing.")
         print(f"{'='*60}")
         sys.exit(1)
