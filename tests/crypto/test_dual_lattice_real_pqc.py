@@ -16,9 +16,14 @@ import os
 
 import pytest
 
-pytest.importorskip("oqs", reason="real ML-DSA-65 requires liboqs (oqs)")
-
 from src.crypto.dual_lattice import DilithiumTongueSigner, KyberTongueEncryptor, LatticeVector
+from src.crypto.pqc_liboqs import get_pqc_governance_status
+
+_PQC_STATUS = get_pqc_governance_status()
+requires_real_pqc = pytest.mark.skipif(
+    not _PQC_STATUS["quantum_resistant"],
+    reason=f"real ML-DSA-65 backend unavailable: {_PQC_STATUS['backend']}",
+)
 
 
 def _make_vector(tongues):
@@ -38,6 +43,7 @@ def _make_vector(tongues):
     return LatticeVector(**kwargs)
 
 
+@requires_real_pqc
 def test_dilithium_real_sign_verify_roundtrip():
     signer = DilithiumTongueSigner()
     vector = _make_vector([0.9, 0.1, 0.0, 0.0, 0.0, 0.0])
@@ -47,6 +53,7 @@ def test_dilithium_real_sign_verify_roundtrip():
     assert signer.verify(vector, sig) is True
 
 
+@requires_real_pqc
 def test_dilithium_tamper_is_rejected():
     signer = DilithiumTongueSigner()
     original = _make_vector([0.9, 0.1, 0.0, 0.0, 0.0, 0.0])
@@ -55,6 +62,7 @@ def test_dilithium_tamper_is_rejected():
     assert signer.verify(tampered, sig) is False
 
 
+@requires_real_pqc
 def test_dilithium_forged_signature_is_rejected():
     signer = DilithiumTongueSigner()
     vector = _make_vector([0.9, 0.1, 0.0, 0.0, 0.0, 0.0])
@@ -64,6 +72,7 @@ def test_dilithium_forged_signature_is_rejected():
     assert signer.verify(vector, forged) is False
 
 
+@requires_real_pqc
 def test_dilithium_does_not_expose_secret_key():
     # the old placeholder verified against self.secret_key; the real signer must not expose one
     signer = DilithiumTongueSigner()
