@@ -165,6 +165,7 @@
                 <button class="primary" type="submit">Model stack</button>
                 <button type="button" id="copyJson" title="Copy JSON receipt">▣</button>
               </div>
+              <button type="button" id="downloadReport" style="margin-top:10px;width:100%">Download concept report (.md)</button>
               <p class="status" id="status">Ready.</p>
             </form>
           </div>
@@ -304,8 +305,12 @@
         document.getElementById("powerMetric").textContent = data.math.estimates.coil_power_w + " W";
         document.getElementById("skinMetric").textContent = data.math.estimates.skin_depth_mm + " mm";
         document.getElementById("opticMetric").textContent = "NA " + data.math.estimates.optical_na_estimate;
+        var bom = data.bill_of_materials || { estimated_total_low: "-", estimated_total_high: "-", items: [] };
+        var safety = data.safety || {};
         document.getElementById("cards").innerHTML = [
           '<div class="card"><strong>Receipt</strong><span>' + esc(data.receipt_id) + '</span></div>',
+          '<div class="card"><strong>Est. build cost</strong><span>$' + esc(bom.estimated_total_low) + ' – $' + esc(bom.estimated_total_high) + ' (' + bom.items.length + ' parts)</span></div>',
+          '<div class="card"><strong>Safety</strong><span>~' + esc(safety.coil_voltage_v) + ' V · max ~' + esc(safety.max_continuous_current_a) + ' A continuous</span></div>',
           '<div class="card"><strong>Risk flag</strong><span>' + esc(data.risk_flags.join(" ")) + '</span></div>',
           '<div class="card"><strong>Offer</strong><span>' + esc(data.sellable_output.offer) + '</span></div>'
         ].join("");
@@ -348,6 +353,23 @@
       document.getElementById("copyJson").addEventListener("click", async function () {
         await navigator.clipboard.writeText(JSON.stringify(lastResult, null, 2));
         document.getElementById("status").textContent = "Receipt copied.";
+      });
+
+      document.getElementById("downloadReport").addEventListener("click", function () {
+        if (!lastResult.report_markdown) {
+          document.getElementById("status").textContent = "Model the stack first, then download.";
+          return;
+        }
+        var blob = new Blob([lastResult.report_markdown], { type: "text/markdown;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement("a");
+        link.href = url;
+        link.download = (lastResult.receipt_id || "matbench") + ".md";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        document.getElementById("status").textContent = "Concept report downloaded.";
       });
 
       window.addEventListener("resize", fitCanvas);

@@ -101,6 +101,41 @@ def test_named_material_drives_physics_and_flags_assumptions() -> None:
     assert result["unphysical"] is True          # extreme inputs flagged non-physical
 
 
+def test_concept_report_is_a_sellable_deliverable() -> None:
+    result = run_node_json("""
+        const handler = require('./api/agent/ai-materials-bench');
+        const run = (body) => new Promise((resolve) => {
+          const res = { setHeader(){}, status(){return this;},
+            json(p){ resolve(p); return this; }, end(){return this;} };
+          handler({ method: 'POST', body }, res);
+        });
+        run({ concept: 'silver coil over quartz tube', turns: 200, current_a: 1 }).then((p) => {
+          console.log(JSON.stringify({
+            bom_items: p.bill_of_materials.items.length,
+            total_low: p.bill_of_materials.estimated_total_low,
+            total_high: p.bill_of_materials.estimated_total_high,
+            voltage: p.safety.coil_voltage_v,
+            max_current: p.safety.max_continuous_current_a,
+            plan_steps: p.test_plan.length,
+            report_has_bom: p.report_markdown.includes('Bill of materials'),
+            report_has_plan: p.report_markdown.includes('Test plan'),
+            report_has_receipt: p.report_markdown.includes(p.receipt_id),
+            report_len: p.report_markdown.length,
+          }));
+        }).catch((e) => { console.error(e); process.exit(1); });
+        """)
+
+    assert result["bom_items"] >= 5                      # a real parts list
+    assert result["total_high"] > result["total_low"] > 0  # costed, with a range
+    assert result["voltage"] > 0                         # derived operating voltage
+    assert result["max_current"] > 0                     # derived safe-current limit
+    assert result["plan_steps"] >= 4                     # a measurement protocol
+    assert result["report_has_bom"] is True              # the deliverable has the BOM
+    assert result["report_has_plan"] is True             # ...and the test plan
+    assert result["report_has_receipt"] is True          # ...and is provenance-stamped
+    assert result["report_len"] > 600                    # a substantive document
+
+
 def test_ai_materials_bench_page_contains_visualizer() -> None:
     page = (REPO_ROOT / "docs" / "ai-materials-bench.html").read_text(encoding="utf-8")
 
@@ -108,3 +143,4 @@ def test_ai_materials_bench_page_contains_visualizer() -> None:
     assert "<canvas" in page
     assert "magneto-optic composite tube sleeve" in page
     assert "/api/agent/ai-materials-bench" in page
+    assert "Download concept report" in page
