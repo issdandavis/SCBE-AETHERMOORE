@@ -46,6 +46,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+
 def _resolve_version() -> str:
     # Single source of truth: the installed package metadata (pyproject = 4.2.1).
     # Falls back to the literal when running from a source tree that isn't installed.
@@ -1351,6 +1352,172 @@ def _substrate_packet(
         "templates": SPINE_TEMPLATE_COMMANDS,
     }
     return _json_safe(payload)
+
+
+# ── command octree ───────────────────────────────────────────────────────────
+# Place every top-level CLI command in a 3-axis cube and store it in the real
+# hyperbolic octree (src/crypto/octree.py). The three binary axes are semantic,
+# so the eight top-level octants are meaningful command families:
+#     x = act(1) / inspect(0)
+#     y = orchestration(1) / substrate(0)
+#     z = code(1) / text(0)
+# Inside an octant each command gets a deterministic name-hash offset, so the
+# octree subdivides further and "nearest" is well defined. The placement is an
+# honest taxonomy + hash spread — not a claim about tongue geometry (short
+# command tokens collapse to the same tau, so that would not discriminate them).
+_OCTREE_ACT = {
+    "enc", "dec", "do", "ask", "a", "chat", "code", "polyglot", "emit", "encode",
+    "encode-code", "code-matrix", "canvas", "fold", "bopit", "think", "think-syscall",
+    "cognition", "cog", "overcreate", "generate-cube", "illuminate", "route", "fleet",
+    "schedule", "inc", "spine", "chem", "move", "del", "push", "blocks", "stereo-code",
+}
+_OCTREE_ORCH = {
+    "ai", "ask", "a", "do", "chat", "route", "fleet", "schedule", "system", "status",
+    "st", "health", "doctor", "selftest", "move", "del", "push", "undo", "find", "f",
+    "open", "vault", "recent", "docs", "model", "colab", "workflow", "use", "flow",
+    "pollypad",
+}
+_OCTREE_CODE = {
+    "code", "polyglot", "emit", "encode", "encode-code", "code-matrix", "canvas",
+    "think", "think-syscall", "cognition", "cog", "bopit", "fold", "overcreate",
+    "generate-cube", "illuminate", "route", "fleet", "schedule", "spine", "cube",
+    "blocks", "stereo-code", "ai",
+}
+_OCTANT_LABELS = {
+    0b000: "read · substrate · text",
+    0b001: "act · substrate · text",
+    0b010: "read · orchestration · text",
+    0b011: "act · orchestration · text",
+    0b100: "read · substrate · code",
+    0b101: "act · substrate · code",
+    0b110: "read · orchestration · code",
+    0b111: "act · orchestration · code",
+}
+_OCTANT_COLOR = {
+    0b000: "cyan", 0b001: "gold", 0b010: "cyan", 0b011: "gold",
+    0b100: "magenta", 0b101: "red", 0b110: "magenta", 0b111: "red",
+}
+
+
+def _octant_bits(name: str) -> int:
+    key = name.lower()
+    x = 1 if key in _OCTREE_ACT else 0
+    y = 1 if key in _OCTREE_ORCH else 0
+    z = 1 if key in _OCTREE_CODE else 0
+    return (z << 2) | (y << 1) | x
+
+
+def _octree_coord(name: str):
+    """Deterministic point in the Poincare ball: octant corner + name-hash jitter."""
+    import hashlib
+
+    import numpy as np
+
+    bits = _octant_bits(name)
+    base = [0.45 if (bits >> axis) & 1 else -0.45 for axis in range(3)]
+    h = hashlib.sha256(name.encode("utf-8")).digest()
+    jitter = [(h[i] / 255.0 - 0.5) * 0.16 for i in range(3)]
+    v = np.array([base[i] + jitter[i] for i in range(3)])
+    norm = float(np.linalg.norm(v))
+    if norm >= 0.9:
+        v = v / norm * 0.9
+    return v, bits
+
+
+def _octree_commands():
+    """(name, help, octant_bits, coord) for every top-level CLI command."""
+    cli = build_cli()
+    out = []
+    for action in cli._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            for choice in action._choices_actions:
+                name = choice.dest
+                coord, bits = _octree_coord(name)
+                out.append((name, choice.help or "", bits, coord))
+            break
+    return out
+
+
+def cmd_octree(args: argparse.Namespace) -> int:
+    import textwrap
+
+    import numpy as np
+
+    try:
+        from src.crypto.octree import HyperbolicOctree
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"octree unavailable: {exc}", file=sys.stderr)
+        return 1
+
+    cmds = _octree_commands()
+    tree = HyperbolicOctree(grid_size=64, max_depth=6)
+    for _name, _help, bits, coord in cmds:
+        tree.insert(coord, _OCTANT_COLOR.get(bits, "cyan"))
+
+    as_json = getattr(args, "json_output", False)
+    near = getattr(args, "near", None) or getattr(args, "find", None)
+
+    if near:
+        qcoord, qbits = _octree_coord(near)
+        ranked = sorted(cmds, key=lambda c: float(np.linalg.norm(c[3] - qcoord)))
+        limit = getattr(args, "limit", 8) or 8
+        results = [c for c in ranked if c[0] != near][:limit]
+        if as_json:
+            print(json.dumps({
+                "query": near,
+                "query_octant": format(qbits, "03b"),
+                "neighbors": [
+                    {
+                        "command": c[0],
+                        "octant": format(c[2], "03b"),
+                        "distance": round(float(np.linalg.norm(c[3] - qcoord)), 4),
+                        "help": c[1],
+                    }
+                    for c in results
+                ],
+            }))
+            return 0
+        print(f"commands nearest to '{near}'  (octant {format(qbits, '03b')} · {_OCTANT_LABELS.get(qbits, '')})")
+        for c in results:
+            dist = float(np.linalg.norm(c[3] - qcoord))
+            print(f"  {dist:5.3f}  {c[0]:<16} {_OCTANT_LABELS.get(c[2], ''):<26} {c[1][:38]}")
+        return 0
+
+    by_octant: Dict[int, List[str]] = {}
+    for c in cmds:
+        by_octant.setdefault(c[2], []).append(c[0])
+
+    if as_json:
+        print(json.dumps({
+            "schema": "scbe_command_octree_v1",
+            "axes": {"x": "act/inspect", "y": "orchestration/substrate", "z": "code/text"},
+            "octants": {
+                format(b, "03b"): {
+                    "label": _OCTANT_LABELS[b],
+                    "commands": sorted(by_octant.get(b, [])),
+                }
+                for b in range(8)
+            },
+            "stats": tree.stats(),
+        }, indent=2))
+        return 0
+
+    print("SCBE command octree  —  axes: x=act/inspect · y=orchestration/substrate · z=code/text")
+    print("=" * 76)
+    for b in range(8):
+        members = sorted(by_octant.get(b, []))
+        if not members:
+            continue
+        print(f"[{format(b, '03b')}] {_OCTANT_LABELS[b]}  ({len(members)})")
+        print(textwrap.fill(" ".join(members), width=76, initial_indent="     ", subsequent_indent="     "))
+    stats = tree.stats()
+    print("-" * 76)
+    print(
+        f"octree: {stats['point_count']} commands · {stats['node_count']} nodes · "
+        f"{stats['leaf_count']} leaves · depth {stats['max_depth_used']}/{stats['max_depth']}"
+    )
+    print("tip: 'scbe octree --near polyglot' finds spatially nearby commands")
+    return 0
 
 
 def cmd_substrate_map(args: argparse.Namespace) -> int:
@@ -3518,6 +3685,17 @@ Legacy (backward compat):
     mp.add_argument("--limit", type=int, default=8, help="rows to show in text mode")
     mp.add_argument("--json", dest="json_output", action="store_true")
     mp.set_defaults(func=cmd_substrate_map)
+
+    octree_p = sub.add_parser(
+        "octree",
+        aliases=["cmd-tree"],
+        help='Spatial map of every command in the hyperbolic octree ("scbe octree --near polyglot")',
+    )
+    octree_p.add_argument("--near", help="show commands spatially nearest to this command")
+    octree_p.add_argument("--find", help="alias for --near: nearest commands to a name")
+    octree_p.add_argument("--limit", type=int, default=8, help="how many neighbors to show")
+    octree_p.add_argument("--json", dest="json_output", action="store_true")
+    octree_p.set_defaults(func=cmd_octree)
 
     ec = sub.add_parser(
         "encode-code",
