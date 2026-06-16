@@ -151,7 +151,16 @@ class GeometricScheduler:
                             c, ji = heapq.heappop(heap)
                             if ji not in available:
                                 continue
-                            if best[ji] == wi or defers[ji] >= defer_cap:
+                            if best[ji] == wi:
+                                available.discard(ji); idx = ji
+                                break
+                            # a non-specialist takes a deferred job only if it isn't
+                            # drastically worse at it (ratio guard) — protects semantic
+                            # routing (a strongly-KO job won't land on a DR model) —
+                            # unless the job is badly starved (hard cap forces progress).
+                            ratio = cost[wi, ji] / max(cost[best[ji], ji], 1e-9)
+                            if (defers[ji] >= defer_cap and ratio <= 4.0) \
+                                    or defers[ji] >= defer_cap * 4:
                                 available.discard(ji); idx = ji
                                 break
                             defers[ji] += 1               # let the specialist take it first
@@ -231,7 +240,9 @@ class StreamScheduler:
         self.assigned = {w.name: [] for w in self.workers}
         self.results: Dict[str, Any] = {}
         self.errors: List[Tuple[str, str]] = []
-        self._purged = 0
+        self._completed = 0
+        self._wall_start = None
+        self._started = False
         self._names: set = set()
 
     def submit(self, job: Job) -> None:
@@ -249,18 +260,18 @@ class StreamScheduler:
             self._jobs[jid]._order = self._order  # type: ignore[attr-defined]
             self._order += 1
             self._retries[jid] = 0
-            self._cv.notify()
+            self._cv.notify_all()
 
     def _claim(self, wi: int) -> Optional[int]:
         """Pick a waiting job for worker wi (caller holds the lock). None if none."""
         if not self._jobs:
             return None
-        purge = self.purge_every and (self._purged % self.purge_every == self.purge_every - 1)
+        # purge fires off COMPLETED jobs, not claim attempts (which include empties)
+        purge = self.purge_every and (self._completed % self.purge_every == self.purge_every - 1)
         if purge:
             jid = min(self._jobs, key=lambda j: getattr(self._jobs[j], "_order", j))
         else:
             jid = min(self._jobs, key=lambda j: self._cost[j][wi])
-        self._purged += 1
         return jid
 
     def _loop(self, wi: int) -> None:
@@ -285,7 +296,7 @@ class StreamScheduler:
                     if self._retries[jid] <= self.max_retries:
                         self._jobs[jid] = job          # re-queue live
                         self._cost[jid] = cost_row
-                        self._cv.notify()
+                        self._cv.notify_all()
                     else:
                         self.errors.append((job.name, str(exc)))
                 continue
@@ -294,8 +305,11 @@ class StreamScheduler:
                 self.busy[w.name] += dt
                 self.assigned[w.name].append(job.name)
                 self.results[job.name] = res
+                self._completed += 1
 
     def start(self) -> "StreamScheduler":
+        self._started = True
+        self._wall_start = time.perf_counter()
         self._threads = [threading.Thread(target=self._loop, args=(wi,), name=w.name)
                          for wi, w in enumerate(self.workers)]
         for t in self._threads:
@@ -308,11 +322,14 @@ class StreamScheduler:
             self._cv.notify_all()
 
     def join(self) -> SchedReport:
+        if not self._started:
+            raise RuntimeError("start() must be called before join()")
         for t in self._threads:
             t.join()
+        wall = time.perf_counter() - self._wall_start if self._wall_start else 0.0
         return SchedReport(
             mode=f"stream/{'purge' if self.purge_every else 'phi'}",
-            wall=0.0, makespan=max(self.busy.values()) if self.busy else 0.0,
+            wall=wall, makespan=max(self.busy.values()) if self.busy else 0.0,
             assignments=self.assigned, busy=self.busy,
             done=sum(len(v) for v in self.assigned.values()), failed=len(self.errors),
             results=self.results, errors=self.errors,
