@@ -1,0 +1,3013 @@
+{
+  "schema_version": "scbe-cube-faces-v1",
+  "generated_by": "scripts/build/export_cube.py",
+  "note": "Real cube faces from python/scbe/cube_faces.all_faces \u2014 not a mock.",
+  "tokens": {
+    "loop": {
+      "token": "loop",
+      "core": {
+        "hex": "6c6f6f70",
+        "bytes": [
+          108,
+          111,
+          111,
+          112
+        ],
+        "byte_count": 4
+      },
+      "faces": {
+        "bits": {
+          "binary": "01101100011011110110111101110000",
+          "hex": "6c6f6f70",
+          "trit_count": 24,
+          "trits": [
+            -1,
+            0,
+            0,
+            -1,
+            -1,
+            -1,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            -1,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            -1,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 657.07,
+          "note": "A#",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "nav'un nav'esh nav'esh ael'a"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "nurel've nurel'ul nurel'ul lirea'a"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "krak'dra krak'th krak'th tharn'ak"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "elsa'ki elsa'sh elsa'sh spira'a"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "hush'en hush'nul hush'nul thorn'a"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "temper'or temper'on temper'on forge'a"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 108,
+              "rule": 108,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 111,
+              "rule": 111,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 111,
+              "rule": 111,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 112,
+              "rule": 112,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "gate": {
+      "token": "gate",
+      "core": {
+        "hex": "67617465",
+        "bytes": [
+          103,
+          97,
+          116,
+          101
+        ],
+        "byte_count": 4
+      },
+      "faces": {
+        "bits": {
+          "binary": "01100111011000010111010001100101",
+          "hex": "67617465",
+          "trit_count": 24,
+          "trits": [
+            -1,
+            0,
+            -1,
+            1,
+            0,
+            0,
+            -1,
+            0,
+            -1,
+            0,
+            1,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            1,
+            1,
+            -1,
+            0,
+            -1,
+            1,
+            -1,
+            1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 631.24,
+          "note": "A",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "nav'ar nav'ae ael'oa nav'uu"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "nurel're nurel'e lirea'u nurel'y"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "krak'on krak'eth tharn'or krak'ar"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "elsa'na elsa'e spira'u elsa'y"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "hush'th hush'e thorn'u hush'ae"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "temper'mek temper'e forge'u temper'ae"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 103,
+              "rule": 103,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 97,
+              "rule": 97,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 116,
+              "rule": 116,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 101,
+              "rule": 101,
+              "class": "III",
+              "class_name": "chaotic (pseudo-random)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "calc": {
+      "token": "calc",
+      "core": {
+        "hex": "63616c63",
+        "bytes": [
+          99,
+          97,
+          108,
+          99
+        ],
+        "byte_count": 4
+      },
+      "faces": {
+        "bits": {
+          "binary": "01100011011000010110110001100011",
+          "hex": "63616c63",
+          "trit_count": 24,
+          "trits": [
+            -1,
+            0,
+            -1,
+            1,
+            -1,
+            -1,
+            -1,
+            0,
+            -1,
+            0,
+            1,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            -1,
+            -1,
+            -1,
+            0,
+            -1,
+            1,
+            -1,
+            -1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 582.59,
+          "note": "G",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "nav'ia nav'ae nav'un nav'ia"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "nurel'o nurel'e nurel've nurel'o"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "krak'ul krak'eth krak'dra krak'ul"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "elsa'o elsa'e elsa'ki elsa'o"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "hush'o hush'e hush'en hush'o"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "temper'o temper'e temper'or temper'o"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 99,
+              "rule": 99,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 97,
+              "rule": 97,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 108,
+              "rule": 108,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 99,
+              "rule": 99,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "ward": {
+      "token": "ward",
+      "core": {
+        "hex": "77617264",
+        "bytes": [
+          119,
+          97,
+          114,
+          100
+        ],
+        "byte_count": 4
+      },
+      "faces": {
+        "bits": {
+          "binary": "01110111011000010111001001100100",
+          "hex": "77617264",
+          "trit_count": 24,
+          "trits": [
+            -1,
+            0,
+            0,
+            0,
+            -1,
+            1,
+            -1,
+            0,
+            -1,
+            0,
+            1,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            1,
+            -1,
+            -1,
+            0,
+            -1,
+            1,
+            -1,
+            0
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 657.07,
+          "note": "A#",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "ael'ar nav'ae ael'ei nav'oa"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "lirea're nurel'e lirea'i nurel'u"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "tharn'on krak'eth tharn'ik krak'or"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "spira'na elsa'e spira'i elsa'u"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "thorn'th hush'e thorn'i hush'u"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "forge'mek temper'e forge'i temper'u"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 119,
+              "rule": 119,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 97,
+              "rule": 97,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 114,
+              "rule": 114,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 100,
+              "rule": 100,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "move": {
+      "token": "move",
+      "core": {
+        "hex": "6d6f7665",
+        "bytes": [
+          109,
+          111,
+          118,
+          101
+        ],
+        "byte_count": 4
+      },
+      "faces": {
+        "bits": {
+          "binary": "01101101011011110111011001100101",
+          "hex": "6d6f7665",
+          "trit_count": 24,
+          "trits": [
+            -1,
+            0,
+            0,
+            -1,
+            -1,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            -1,
+            -1,
+            0,
+            0,
+            0,
+            -1,
+            0,
+            -1,
+            0,
+            -1,
+            1,
+            -1,
+            1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 582.59,
+          "note": "G",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "nav'ir nav'esh ael'eth nav'uu"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "nurel'ri nurel'ul lirea'la nurel'y"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "krak'kh krak'th tharn'um krak'ar"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "elsa'zi elsa'sh spira'ta elsa'y"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "hush'on hush'nul thorn'sh hush'ae"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "temper'ar temper'on forge'rak temper'ae"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 109,
+              "rule": 109,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 111,
+              "rule": 111,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 118,
+              "rule": 118,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 101,
+              "rule": 101,
+              "class": "III",
+              "class_name": "chaotic (pseudo-random)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "sense": {
+      "token": "sense",
+      "core": {
+        "hex": "73656e7365",
+        "bytes": [
+          115,
+          101,
+          110,
+          115,
+          101
+        ],
+        "byte_count": 5
+      },
+      "faces": {
+        "bits": {
+          "binary": "0111001101100101011011100111001101100101",
+          "hex": "73656e7365",
+          "trit_count": 30,
+          "trits": [
+            -1,
+            0,
+            0,
+            -1,
+            1,
+            0,
+            -1,
+            0,
+            -1,
+            1,
+            -1,
+            1,
+            -1,
+            0,
+            0,
+            -1,
+            -1,
+            1,
+            -1,
+            0,
+            0,
+            -1,
+            1,
+            0
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 476.74,
+          "note": "D",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "ael'ia nav'uu nav'oth ael'ia nav'uu"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "lirea'o nurel'y nurel'en lirea'o nurel'y"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "tharn'ul krak'ar krak'va tharn'ul krak'ar"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "spira'o elsa'y elsa'qwa spira'o elsa'y"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "thorn'o hush'ae hush'vek thorn'o hush'ae"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "forge'o temper'ae temper'en forge'o temper'ae"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 115,
+              "rule": 115,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 101,
+              "rule": 101,
+              "class": "III",
+              "class_name": "chaotic (pseudo-random)",
+              "universal": false
+            },
+            {
+              "byte": 110,
+              "rule": 110,
+              "class": "IV",
+              "class_name": "complex (edge of chaos)",
+              "universal": true
+            },
+            {
+              "byte": 115,
+              "rule": 115,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 101,
+              "rule": 101,
+              "class": "III",
+              "class_name": "chaotic (pseudo-random)",
+              "universal": false
+            }
+          ],
+          "any_universal": true
+        }
+      },
+      "bijective": true
+    },
+    "morph": {
+      "token": "morph",
+      "core": {
+        "hex": "6d6f727068",
+        "bytes": [
+          109,
+          111,
+          114,
+          112,
+          104
+        ],
+        "byte_count": 5
+      },
+      "faces": {
+        "bits": {
+          "binary": "0110110101101111011100100111000001101000",
+          "hex": "6d6f727068",
+          "trit_count": 30,
+          "trits": [
+            -1,
+            0,
+            0,
+            -1,
+            -1,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            -1,
+            -1,
+            0,
+            0,
+            -1,
+            1,
+            -1,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 657.07,
+          "note": "A#",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "nav'ir nav'esh ael'ei ael'a nav'or"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "nurel'ri nurel'ul lirea'i lirea'a nurel'na"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "krak'kh krak'th tharn'ik tharn'ak krak'ir"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "elsa'zi elsa'sh spira'i spira'a elsa'sa"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "hush'on hush'nul thorn'i thorn'a hush'ak"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "temper'ar temper'on forge'i forge'a temper'tharn"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 109,
+              "rule": 109,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 111,
+              "rule": 111,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 114,
+              "rule": 114,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 112,
+              "rule": 112,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 104,
+              "rule": 104,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "area": {
+      "token": "area",
+      "core": {
+        "hex": "61726561",
+        "bytes": [
+          97,
+          114,
+          101,
+          97
+        ],
+        "byte_count": 4
+      },
+      "faces": {
+        "bits": {
+          "binary": "01100001011100100110010101100001",
+          "hex": "61726561",
+          "trit_count": 24,
+          "trits": [
+            -1,
+            0,
+            -1,
+            0,
+            1,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            1,
+            -1,
+            -1,
+            0,
+            -1,
+            1,
+            -1,
+            1,
+            -1,
+            0,
+            -1,
+            0,
+            1,
+            0
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 458.0,
+          "note": "C#",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "nav'ae ael'ei nav'uu nav'ae"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "nurel'e lirea'i nurel'y nurel'e"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "krak'eth tharn'ik krak'ar krak'eth"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "elsa'e spira'i elsa'y elsa'e"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "hush'e thorn'i hush'ae hush'e"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "temper'e forge'i temper'ae temper'e"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 97,
+              "rule": 97,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 114,
+              "rule": 114,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 101,
+              "rule": 101,
+              "class": "III",
+              "class_name": "chaotic (pseudo-random)",
+              "universal": false
+            },
+            {
+              "byte": 97,
+              "rule": 97,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "H": {
+      "token": "H",
+      "core": {
+        "hex": "48",
+        "bytes": [
+          72
+        ],
+        "byte_count": 1
+      },
+      "faces": {
+        "bits": {
+          "binary": "01001000",
+          "hex": "48",
+          "trit_count": 6,
+          "trits": [
+            -1,
+            -1,
+            1,
+            1,
+            -1,
+            -1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false,
+          "real_element": {
+            "symbol": "H",
+            "Z": 1,
+            "group": 1,
+            "period": 1,
+            "valence": 1,
+            "electronegativity": 2.2
+          }
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 440.0,
+          "note": "C",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "keth'or"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "oriel'na"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "ur'ir"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "ifta'sa"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "math'ak"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "draum'tharn"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 72,
+              "rule": 72,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "O": {
+      "token": "O",
+      "core": {
+        "hex": "4f",
+        "bytes": [
+          79
+        ],
+        "byte_count": 1
+      },
+      "faces": {
+        "bits": {
+          "binary": "01001111",
+          "hex": "4f",
+          "trit_count": 6,
+          "trits": [
+            -1,
+            -1,
+            1,
+            1,
+            1,
+            0
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false,
+          "real_element": {
+            "symbol": "O",
+            "Z": 8,
+            "group": 16,
+            "period": 2,
+            "valence": 2,
+            "electronegativity": 3.44
+          }
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 582.59,
+          "note": "G",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "keth'esh"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "oriel'ul"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "ur'th"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "ifta'sh"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "math'nul"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "draum'on"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 79,
+              "rule": 79,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "C": {
+      "token": "C",
+      "core": {
+        "hex": "43",
+        "bytes": [
+          67
+        ],
+        "byte_count": 1
+      },
+      "faces": {
+        "bits": {
+          "binary": "01000011",
+          "hex": "43",
+          "trit_count": 6,
+          "trits": [
+            -1,
+            -1,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false,
+          "real_element": {
+            "symbol": "C",
+            "Z": 6,
+            "group": 14,
+            "period": 2,
+            "valence": 4,
+            "electronegativity": 2.55
+          }
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 582.59,
+          "note": "G",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "keth'ia"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "oriel'o"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "ur'ul"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "ifta'o"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "math'o"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "draum'o"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 67,
+              "rule": 67,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "N": {
+      "token": "N",
+      "core": {
+        "hex": "4e",
+        "bytes": [
+          78
+        ],
+        "byte_count": 1
+      },
+      "faces": {
+        "bits": {
+          "binary": "01001110",
+          "hex": "4e",
+          "trit_count": 6,
+          "trits": [
+            -1,
+            -1,
+            1,
+            1,
+            1,
+            -1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false,
+          "real_element": {
+            "symbol": "N",
+            "Z": 7,
+            "group": 15,
+            "period": 2,
+            "valence": 3,
+            "electronegativity": 3.04
+          }
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 559.69,
+          "note": "F#",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "keth'oth"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "oriel'en"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "ur'va"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "ifta'qwa"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "math'vek"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "draum'en"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 78,
+              "rule": 78,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "Na": {
+      "token": "Na",
+      "core": {
+        "hex": "4e61",
+        "bytes": [
+          78,
+          97
+        ],
+        "byte_count": 2
+      },
+      "faces": {
+        "bits": {
+          "binary": "0100111001100001",
+          "hex": "4e61",
+          "trit_count": 12,
+          "trits": [
+            -1,
+            -1,
+            1,
+            1,
+            1,
+            -1,
+            -1,
+            0,
+            -1,
+            0,
+            1,
+            0
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false,
+          "real_element": {
+            "symbol": "Na",
+            "Z": 11,
+            "group": 1,
+            "period": 3,
+            "valence": 1,
+            "electronegativity": 0.93
+          }
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 582.59,
+          "note": "G",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "keth'oth nav'ae"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "oriel'en nurel'e"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "ur'va krak'eth"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "ifta'qwa elsa'e"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "math'vek hush'e"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "draum'en temper'e"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 78,
+              "rule": 78,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 97,
+              "rule": 97,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "Cl": {
+      "token": "Cl",
+      "core": {
+        "hex": "436c",
+        "bytes": [
+          67,
+          108
+        ],
+        "byte_count": 2
+      },
+      "faces": {
+        "bits": {
+          "binary": "0100001101101100",
+          "hex": "436c",
+          "trit_count": 12,
+          "trits": [
+            -1,
+            -1,
+            1,
+            0,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            -1,
+            -1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false,
+          "real_element": {
+            "symbol": "Cl",
+            "Z": 17,
+            "group": 17,
+            "period": 3,
+            "valence": 1,
+            "electronegativity": 3.16
+          }
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 582.59,
+          "note": "G",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "keth'ia nav'un"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "oriel'o nurel've"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "ur'ul krak'dra"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "ifta'o elsa'ki"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "math'o hush'en"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "draum'o temper'or"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 67,
+              "rule": 67,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 108,
+              "rule": 108,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "Fe": {
+      "token": "Fe",
+      "core": {
+        "hex": "4665",
+        "bytes": [
+          70,
+          101
+        ],
+        "byte_count": 2
+      },
+      "faces": {
+        "bits": {
+          "binary": "0100011001100101",
+          "hex": "4665",
+          "trit_count": 12,
+          "trits": [
+            -1,
+            -1,
+            1,
+            0,
+            1,
+            0,
+            -1,
+            0,
+            -1,
+            1,
+            -1,
+            1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false,
+          "real_element": {
+            "symbol": "Fe",
+            "Z": 26,
+            "group": 8,
+            "period": 4,
+            "valence": 2,
+            "electronegativity": 1.83
+          }
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 496.25,
+          "note": "D#",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "keth'eth nav'uu"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "oriel'la nurel'y"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "ur'um krak'ar"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "ifta'ta elsa'y"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "math'sh hush'ae"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "draum'rak temper'ae"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 70,
+              "rule": 70,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 101,
+              "rule": 101,
+              "class": "III",
+              "class_name": "chaotic (pseudo-random)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "H2O": {
+      "token": "H2O",
+      "core": {
+        "hex": "48324f",
+        "bytes": [
+          72,
+          50,
+          79
+        ],
+        "byte_count": 3
+      },
+      "faces": {
+        "bits": {
+          "binary": "010010000011001001001111",
+          "hex": "48324f",
+          "trit_count": 18,
+          "trits": [
+            -1,
+            -1,
+            1,
+            1,
+            -1,
+            -1,
+            -1,
+            -1,
+            0,
+            1,
+            0,
+            1,
+            -1,
+            -1,
+            1,
+            1,
+            1,
+            0
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false,
+          "composition": {
+            "H": 2,
+            "O": 1
+          }
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 631.24,
+          "note": "A",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "keth'or zar'ei keth'esh"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "oriel'na maren'i oriel'ul"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "ur'ir vael'ik ur'th"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "ifta'sa loopa'i ifta'sh"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "math'ak shul'i math'nul"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "draum'tharn grond'i draum'on"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 72,
+              "rule": 72,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 50,
+              "rule": 50,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 79,
+              "rule": 79,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "CO2": {
+      "token": "CO2",
+      "core": {
+        "hex": "434f32",
+        "bytes": [
+          67,
+          79,
+          50
+        ],
+        "byte_count": 3
+      },
+      "faces": {
+        "bits": {
+          "binary": "010000110100111100110010",
+          "hex": "434f32",
+          "trit_count": 18,
+          "trits": [
+            -1,
+            -1,
+            1,
+            0,
+            0,
+            0,
+            -1,
+            -1,
+            1,
+            1,
+            1,
+            0,
+            -1,
+            -1,
+            0,
+            1,
+            0,
+            1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false,
+          "composition": {
+            "C": 1,
+            "O": 2
+          }
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 516.55,
+          "note": "E",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "keth'ia keth'esh zar'ei"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "oriel'o oriel'ul maren'i"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "ur'ul ur'th vael'ik"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "ifta'o ifta'sh loopa'i"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "math'o math'nul shul'i"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "draum'o draum'on grond'i"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 67,
+              "rule": 67,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 79,
+              "rule": 79,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 50,
+              "rule": 50,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "NaCl": {
+      "token": "NaCl",
+      "core": {
+        "hex": "4e61436c",
+        "bytes": [
+          78,
+          97,
+          67,
+          108
+        ],
+        "byte_count": 4
+      },
+      "faces": {
+        "bits": {
+          "binary": "01001110011000010100001101101100",
+          "hex": "4e61436c",
+          "trit_count": 24,
+          "trits": [
+            -1,
+            -1,
+            1,
+            1,
+            1,
+            -1,
+            -1,
+            0,
+            -1,
+            0,
+            1,
+            0,
+            -1,
+            -1,
+            1,
+            0,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            -1,
+            -1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false,
+          "composition": {
+            "Na": 1,
+            "Cl": 1
+          }
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 476.74,
+          "note": "D",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "keth'oth nav'ae keth'ia nav'un"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "oriel'en nurel'e oriel'o nurel've"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "ur'va krak'eth ur'ul krak'dra"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "ifta'qwa elsa'e ifta'o elsa'ki"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "math'vek hush'e math'o hush'en"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "draum'en temper'e draum'o temper'or"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 78,
+              "rule": 78,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 97,
+              "rule": 97,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 67,
+              "rule": 67,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 108,
+              "rule": 108,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "C3H8": {
+      "token": "C3H8",
+      "core": {
+        "hex": "43334838",
+        "bytes": [
+          67,
+          51,
+          72,
+          56
+        ],
+        "byte_count": 4
+      },
+      "faces": {
+        "bits": {
+          "binary": "01000011001100110100100000111000",
+          "hex": "43334838",
+          "trit_count": 24,
+          "trits": [
+            -1,
+            -1,
+            1,
+            0,
+            0,
+            0,
+            -1,
+            -1,
+            0,
+            1,
+            1,
+            -1,
+            -1,
+            -1,
+            1,
+            1,
+            -1,
+            -1,
+            -1,
+            -1,
+            1,
+            -1,
+            -1,
+            1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false,
+          "composition": {
+            "C": 3,
+            "H": 8
+          }
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 559.69,
+          "note": "F#",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "keth'ia zar'ia keth'or zar'or"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "oriel'o maren'o oriel'na maren'na"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "ur'ul vael'ul ur'ir vael'ir"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "ifta'o loopa'o ifta'sa loopa'sa"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "math'o shul'o math'ak shul'ak"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "draum'o grond'o draum'tharn grond'tharn"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 67,
+              "rule": 67,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 51,
+              "rule": 51,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 72,
+              "rule": 72,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 56,
+              "rule": 56,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "fox": {
+      "token": "fox",
+      "core": {
+        "hex": "666f78",
+        "bytes": [
+          102,
+          111,
+          120
+        ],
+        "byte_count": 3
+      },
+      "faces": {
+        "bits": {
+          "binary": "011001100110111101111000",
+          "hex": "666f78",
+          "trit_count": 18,
+          "trits": [
+            -1,
+            0,
+            -1,
+            1,
+            0,
+            -1,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            -1,
+            -1,
+            0,
+            0,
+            0,
+            0,
+            -1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 631.24,
+          "note": "A",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "nav'eth nav'esh ael'or"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "nurel'la nurel'ul lirea'na"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "krak'um krak'th tharn'ir"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "elsa'ta elsa'sh spira'sa"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "hush'sh hush'nul thorn'ak"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "temper'rak temper'on forge'tharn"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 102,
+              "rule": 102,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 111,
+              "rule": 111,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 120,
+              "rule": 120,
+              "class": "III",
+              "class_name": "chaotic (pseudo-random)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "build": {
+      "token": "build",
+      "core": {
+        "hex": "6275696c64",
+        "bytes": [
+          98,
+          117,
+          105,
+          108,
+          100
+        ],
+        "byte_count": 5
+      },
+      "faces": {
+        "bits": {
+          "binary": "0110001001110101011010010110110001100100",
+          "hex": "6275696c64",
+          "trit_count": 30,
+          "trits": [
+            -1,
+            0,
+            -1,
+            0,
+            1,
+            1,
+            -1,
+            0,
+            0,
+            0,
+            -1,
+            -1,
+            -1,
+            0,
+            -1,
+            1,
+            1,
+            -1,
+            -1,
+            0,
+            0,
+            -1,
+            -1,
+            -1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ACTION",
+          "element": "Na",
+          "Z": 11,
+          "valence": 1,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 0,
+            "RU": 0,
+            "CA": 0,
+            "UM": -1,
+            "DR": -1
+          },
+          "negative_state": false
+        },
+        "roles": [
+          "Control Flow"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 440.0,
+          "note": "C",
+          "active_tongue_overtones": {
+            "KO": 440.0
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "nav'ei ael'uu nav'il nav'un nav'oa"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "nurel'i lirea'y nurel'sa nurel've nurel'u"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "krak'ik tharn'ar krak'esh krak'dra krak'or"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "elsa'i spira'y elsa'ra elsa'ki elsa'u"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "hush'i thorn'ae hush'ul hush'en hush'u"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "temper'i forge'ae temper'grond temper'or temper'u"
+          }
+        },
+        "governance": {
+          "semantic_class": "ACTION",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 98,
+              "rule": 98,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 117,
+              "rule": 117,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 105,
+              "rule": 105,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 108,
+              "rule": 108,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 100,
+              "rule": 100,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "verify": {
+      "token": "verify",
+      "core": {
+        "hex": "766572696679",
+        "bytes": [
+          118,
+          101,
+          114,
+          105,
+          102,
+          121
+        ],
+        "byte_count": 6
+      },
+      "faces": {
+        "bits": {
+          "binary": "011101100110010101110010011010010110011001111001",
+          "hex": "766572696679",
+          "trit_count": 36,
+          "trits": [
+            -1,
+            0,
+            0,
+            0,
+            -1,
+            0,
+            -1,
+            0,
+            -1,
+            1,
+            -1,
+            1,
+            -1,
+            0,
+            0,
+            -1,
+            1,
+            -1,
+            -1,
+            0,
+            -1,
+            1,
+            1,
+            -1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 458.0,
+          "note": "C#",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "ael'eth nav'uu ael'ei nav'il nav'eth ael'il"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "lirea'la nurel'y lirea'i nurel'sa nurel'la lirea'sa"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "tharn'um krak'ar tharn'ik krak'esh krak'um tharn'esh"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "spira'ta elsa'y spira'i elsa'ra elsa'ta spira'ra"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "thorn'sh hush'ae thorn'i hush'ul hush'sh thorn'ul"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "forge'rak temper'ae forge'i temper'grond temper'rak forge'grond"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 118,
+              "rule": 118,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 101,
+              "rule": 101,
+              "class": "III",
+              "class_name": "chaotic (pseudo-random)",
+              "universal": false
+            },
+            {
+              "byte": 114,
+              "rule": 114,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 105,
+              "rule": 105,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 102,
+              "rule": 102,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 121,
+              "rule": 121,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    },
+    "secret": {
+      "token": "secret",
+      "core": {
+        "hex": "736563726574",
+        "bytes": [
+          115,
+          101,
+          99,
+          114,
+          101,
+          116
+        ],
+        "byte_count": 6
+      },
+      "faces": {
+        "bits": {
+          "binary": "011100110110010101100011011100100110010101110100",
+          "hex": "736563726574",
+          "trit_count": 36,
+          "trits": [
+            -1,
+            0,
+            0,
+            -1,
+            1,
+            0,
+            -1,
+            0,
+            -1,
+            1,
+            -1,
+            1,
+            -1,
+            0,
+            -1,
+            1,
+            -1,
+            -1,
+            -1,
+            0,
+            0,
+            -1,
+            1,
+            -1
+          ]
+        },
+        "chemistry": {
+          "semantic_class": "ENTITY",
+          "element": "Fe",
+          "Z": 26,
+          "valence": 2,
+          "trit_vector": {
+            "KO": 1,
+            "AV": 1,
+            "RU": 0,
+            "CA": 0,
+            "UM": 0,
+            "DR": 0
+          },
+          "negative_state": false
+        },
+        "roles": [
+          "Control Flow",
+          "Input/Output"
+        ],
+        "audio": {
+          "phi_base_hz": 440.0,
+          "phi_frequency_hz": 657.07,
+          "note": "A#",
+          "active_tongue_overtones": {
+            "KO": 440.0,
+            "AV": 476.7
+          }
+        },
+        "code": {
+          "KO": {
+            "language": "python",
+            "tokens": "ael'ia nav'uu nav'ia ael'ei nav'uu ael'oa"
+          },
+          "AV": {
+            "language": "javascript",
+            "tokens": "lirea'o nurel'y nurel'o lirea'i nurel'y lirea'u"
+          },
+          "RU": {
+            "language": "rust",
+            "tokens": "tharn'ul krak'ar krak'ul tharn'ik krak'ar tharn'or"
+          },
+          "CA": {
+            "language": "mathematica",
+            "tokens": "spira'o elsa'y elsa'o spira'i elsa'y spira'u"
+          },
+          "UM": {
+            "language": "haskell",
+            "tokens": "thorn'o hush'ae hush'o thorn'i hush'ae thorn'u"
+          },
+          "DR": {
+            "language": "markdown",
+            "tokens": "forge'o temper'ae temper'o forge'i temper'ae forge'u"
+          }
+        },
+        "governance": {
+          "semantic_class": "ENTITY",
+          "tier": "ALLOW"
+        },
+        "wolfram": {
+          "per_byte_rules": [
+            {
+              "byte": 115,
+              "rule": 115,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 101,
+              "rule": 101,
+              "class": "III",
+              "class_name": "chaotic (pseudo-random)",
+              "universal": false
+            },
+            {
+              "byte": 99,
+              "rule": 99,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 114,
+              "rule": 114,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            },
+            {
+              "byte": 101,
+              "rule": 101,
+              "class": "III",
+              "class_name": "chaotic (pseudo-random)",
+              "universal": false
+            },
+            {
+              "byte": 116,
+              "rule": 116,
+              "class": "II",
+              "class_name": "periodic (repetition)",
+              "universal": false
+            }
+          ],
+          "any_universal": false
+        }
+      },
+      "bijective": true
+    }
+  }
+}
