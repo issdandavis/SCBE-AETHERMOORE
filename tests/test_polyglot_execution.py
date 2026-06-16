@@ -119,22 +119,26 @@ RUNNERS = {
     "haskell": _interp(["runghc", "runhaskell"], "face.hs"),
     "swift": _interp(["swift"], "face.swift"),
     "rust": _compiled(
-        ["rustc"], "face.rs",
+        ["rustc"],
+        "face.rs",
         lambda s, e, td: ["-O", "-o", e, s],
         lambda e, td: [e],
     ),
     "c": _compiled(
-        ["gcc", "clang", "cc"], "face.c",
+        ["gcc", "clang", "cc"],
+        "face.c",
         lambda s, e, td: [s, "-O2", "-lm", "-o", e],
         lambda e, td: [e],
     ),
     "cpp": _compiled(
-        ["g++", "clang++"], "face.cpp",
+        ["g++", "clang++"],
+        "face.cpp",
         lambda s, e, td: [s, "-O2", "-o", e],
         lambda e, td: [e],
     ),
     "go": _compiled(
-        ["go"], "face.go",
+        ["go"],
+        "face.go",
         lambda s, e, td: ["build", "-o", e, s],
         lambda e, td: [e],
     ),
@@ -152,22 +156,35 @@ def _zig(src, td):
     r = _run([exe, "run", path])
     if r.returncode:
         raise RuntimeError(f"zig failed:\n{r.stderr or r.stdout}")
-    return _last_number(r.stdout)
+    # The Zig face uses std.debug.print, which writes to stderr.
+    return _last_number(r.stdout or r.stderr)
 
 
 RUNNERS["zig"] = _zig
 
 # Languages we can actually execute on THIS machine (others -> not collected).
 _AVAILABLE = sorted(
-    lang for lang in RUNNERS
-    if _which(*{
-        "javascript": ("node",), "typescript": ("deno",), "ruby": ("ruby",),
-        "php": ("php",), "lua": ("lua", "lua5.4", "lua5.3", "luajit"),
-        "julia": ("julia",), "haskell": ("runghc", "runhaskell"),
-        "swift": ("swift",), "rust": ("rustc",), "c": ("gcc", "clang", "cc"),
-        "cpp": ("g++", "clang++"), "go": ("go",), "zig": ("zig",),
-        "java": ("javac",), "kotlin": ("kotlinc",),
-    }[lang])
+    lang
+    for lang in RUNNERS
+    if _which(
+        *{
+            "javascript": ("node",),
+            "typescript": ("deno",),
+            "ruby": ("ruby",),
+            "php": ("php",),
+            "lua": ("lua", "lua5.4", "lua5.3", "luajit"),
+            "julia": ("julia",),
+            "haskell": ("runghc", "runhaskell"),
+            "swift": ("swift",),
+            "rust": ("rustc",),
+            "c": ("gcc", "clang", "cc"),
+            "cpp": ("g++", "clang++"),
+            "go": ("go",),
+            "zig": ("zig",),
+            "java": ("javac",),
+            "kotlin": ("kotlinc",),
+        }[lang]
+    )
 )
 
 
@@ -214,9 +231,9 @@ def test_face_executes_identically(lang, prog_id, prog):
             pytest.skip(f"{lang}: toolchain {exc} not installed")
         # Faces now print full round-trip precision, so require near-exact agreement
         # (1e-9), not a loose display tolerance — this is the real identity proof.
-        assert math.isclose(val, ref, rel_tol=1e-9, abs_tol=1e-12), (
-            f"{lang} face of {prog} produced {val}, reference is {ref}\n--- emitted ---\n{src}"
-        )
+        assert math.isclose(
+            val, ref, rel_tol=1e-9, abs_tol=1e-12
+        ), f"{lang} face of {prog} produced {val}, reference is {ref}\n--- emitted ---\n{src}"
     finally:
         shutil.rmtree(td, ignore_errors=True)
 
