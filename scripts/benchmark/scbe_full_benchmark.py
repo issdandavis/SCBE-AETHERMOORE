@@ -455,9 +455,7 @@ def run_squad_latency_benchmark() -> dict[str, Any]:
         latencies = []
         errors = []
         for _ in range(3):
-            resp, ms = _openai_chat_request(
-                base_url, api_key, model, ping_prompt, timeout=30, max_tokens=200
-            )
+            resp, ms = _openai_chat_request(base_url, api_key, model, ping_prompt, timeout=30, max_tokens=200)
             if resp.startswith("ERROR:"):
                 errors.append(resp)
             else:
@@ -535,9 +533,7 @@ def run_knowledge_benchmark(skip_live: bool = False) -> dict[str, Any]:
         ),
     ]:
         if not api_key:
-            providers_tested.append(
-                {"provider": name, "ok": False, "error": "no api key"}
-            )
+            providers_tested.append({"provider": name, "ok": False, "error": "no api key"})
             continue
 
         correct = 0
@@ -548,9 +544,7 @@ def run_knowledge_benchmark(skip_live: bool = False) -> dict[str, Any]:
                 "Multiple choice. Reply with ONLY the letter of the correct answer (A, B, C, or D)."
                 f"\n\nQuestion: {q['q']}\n{choices_str}"
             )
-            resp, ms = _openai_chat_request(
-                base_url, api_key, model, prompt, timeout=45, max_tokens=600
-            )
+            resp, ms = _openai_chat_request(base_url, api_key, model, prompt, timeout=45, max_tokens=600)
             predicted = _extract_answer_letter(resp)
             hit = predicted == q["answer"] if predicted else False
             if hit:
@@ -640,15 +634,9 @@ def compute_composite(gov, cli, latency, knowledge, tests) -> dict[str, Any]:
     # Use live Petri recall if available; fall back to published blind-holdout.
     petri_recall = gov.get("petri_pattern_filter_recall")
     if petri_recall is not None:
-        gov_score = (
-            petri_recall * 0.5 + gov.get("accuracy", 0) * 0.5 if gov.get("ok") else 0
-        )
+        gov_score = petri_recall * 0.5 + gov.get("accuracy", 0) * 0.5 if gov.get("ok") else 0
     else:
-        gov_score = (
-            gov.get("blind_detection_rate", 0) * 0.4 + gov.get("accuracy", 0) * 0.6
-            if gov.get("ok")
-            else 0
-        )
+        gov_score = gov.get("blind_detection_rate", 0) * 0.4 + gov.get("accuracy", 0) * 0.6 if gov.get("ok") else 0
     cli_score = cli["scbe_score"]["score"] if cli.get("ok") else 0
     lat_score = _latency_score(latency.get("providers", []))
     know_score = 0.0
@@ -673,10 +661,7 @@ def compute_composite(gov, cli, latency, knowledge, tests) -> dict[str, Any]:
     return {
         "composite": composite,
         "grade": _grade(composite),
-        "parts": {
-            k: {"score": round(s, 3) if s is not None else None, "weight": w}
-            for k, (s, w) in parts.items()
-        },
+        "parts": {k: {"score": round(s, 3) if s is not None else None, "weight": w} for k, (s, w) in parts.items()},
         "effective_weight": round(effective_weight, 3),
     }
 
@@ -699,9 +684,7 @@ def _grade(score: float) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", action="store_true")
-    parser.add_argument(
-        "--skip-live", action="store_true", help="Skip live provider calls"
-    )
+    parser.add_argument("--skip-live", action="store_true", help="Skip live provider calls")
     args = parser.parse_args()
 
     print("SCBE-AETHERMOORE Full System Benchmark", flush=True)
@@ -728,9 +711,7 @@ def main() -> int:
     print("\n[2/5] CLI capability...", flush=True)
     cli = run_cli_benchmark()
     if cli.get("ok"):
-        scbe_row = next(
-            (r for r in cli["ranking"] if r["name"] == "scbe-geoseal"), None
-        )
+        scbe_row = next((r for r in cli["ranking"] if r["name"] == "scbe-geoseal"), None)
         scbe_pos = cli["ranking"].index(scbe_row) + 1 if scbe_row else "?"
         print(
             f"      scbe: {scbe_row['score']:.1%} ({scbe_row['passed']}/{scbe_row['total']}) "
@@ -745,13 +726,9 @@ def main() -> int:
         latency = run_squad_latency_benchmark()
         for p in latency["providers"]:
             if p.get("ok"):
-                print(
-                    f"      {p['provider']:12s}  p50={p['p50_ms']:.0f}ms  ({p['latencies_ms']})"
-                )
+                print(f"      {p['provider']:12s}  p50={p['p50_ms']:.0f}ms  ({p['latencies_ms']})")
             else:
-                print(
-                    f"      {p['provider']:12s}  {_safe_log_text(p.get('error', 'failed'))}"
-                )
+                print(f"      {p['provider']:12s}  {_safe_log_text(p.get('error', 'failed'))}")
 
     print("\n[4/5] Knowledge accuracy (10 MMLU-style Q)...", flush=True)
     knowledge = run_knowledge_benchmark(skip_live=args.skip_live)
@@ -760,13 +737,9 @@ def main() -> int:
     elif knowledge.get("ok"):
         for p in knowledge.get("providers", []):
             if p.get("ok"):
-                print(
-                    f"      {p['provider']:12s}  {p['correct']}/{p['total']}  ({p['accuracy']:.0%})"
-                )
+                print(f"      {p['provider']:12s}  {p['correct']}/{p['total']}  ({p['accuracy']:.0%})")
             else:
-                print(
-                    f"      {p['provider']:12s}  {_safe_log_text(p.get('error', 'failed'))}"
-                )
+                print(f"      {p['provider']:12s}  {_safe_log_text(p.get('error', 'failed'))}")
 
     print("\n[5/5] TypeScript test suite...", flush=True)
     tests = run_test_suite_benchmark()
@@ -810,23 +783,15 @@ def main() -> int:
         bar = ("█" * int((s or 0) * 20)).ljust(20) if s is not None else "─" * 20
         label = f"{s:.1%}" if s is not None else "skipped"
         print(f"  {layer:<12s} {bar}  {label}  (w={w:.0%})")
-    print(
-        f"\n  COMPOSITE     {'█' * int(score['composite'] * 20)}  {score['composite']:.1%}  grade={score['grade']}"
-    )
+    print(f"\n  COMPOSITE     {'█' * int(score['composite'] * 20)}  {score['composite']:.1%}  grade={score['grade']}")
 
     print("\nExternal comparisons:")
     if gov.get("blind_detection_rate"):
         print("  Safety classifiers (balanced accuracy on blind holdout):")
         for b in EXTERNAL_BASELINES["safety_classifiers"]:
-            marker = (
-                "← SCBE hybrid"
-                if abs(b["score"] - gov.get("hybrid_detection_rate", 0)) < 0.02
-                else ""
-            )
+            marker = "← SCBE hybrid" if abs(b["score"] - gov.get("hybrid_detection_rate", 0)) < 0.02 else ""
             print(f"    {b['name']:20s}  {b['score']:.1%}  {marker}")
-        print(
-            f"    {'SCBE hybrid':20s}  {gov.get('hybrid_detection_rate', 0):.1%}  ← SCBE"
-        )
+        print(f"    {'SCBE hybrid':20s}  {gov.get('hybrid_detection_rate', 0):.1%}  ← SCBE")
         print(f"    {'SCBE blind-only':20s}  {gov.get('blind_detection_rate', 0):.1%}")
     if knowledge.get("ok"):
         best_know = max(

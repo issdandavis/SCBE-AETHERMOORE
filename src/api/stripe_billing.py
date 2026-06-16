@@ -68,9 +68,7 @@ PLANS: Dict[str, Dict[str, Any]] = {
 
 LOGGER = logging.getLogger("scbe.billing")
 
-_KEYS_FILE = (
-    Path(__file__).resolve().parents[2] / "artifacts" / "revenue" / "api_keys.jsonl"
-)
+_KEYS_FILE = Path(__file__).resolve().parents[2] / "artifacts" / "revenue" / "api_keys.jsonl"
 
 
 def _billing_cipher():
@@ -88,9 +86,7 @@ def _billing_cipher():
 
         return Fernet(raw.encode("utf-8"))
     except Exception as exc:
-        LOGGER.warning(
-            "SCBE_BILLING_ENC_KEY invalid; billing keys will not persist: %s", exc
-        )
+        LOGGER.warning("SCBE_BILLING_ENC_KEY invalid; billing keys will not persist: %s", exc)
         return None
 
 
@@ -111,9 +107,7 @@ def _load_keys() -> tuple[Dict[str, Any], Dict[str, Any]]:
                 enc = record.pop("api_key_enc", None)
                 if enc and cipher is not None:
                     try:
-                        record["api_key"] = cipher.decrypt(enc.encode("ascii")).decode(
-                            "utf-8"
-                        )
+                        record["api_key"] = cipher.decrypt(enc.encode("ascii")).decode("utf-8")
                     except Exception:
                         continue  # cannot decrypt (wrong/rotated key) — skip record
                 cid = record.get("customer_id", "")
@@ -202,9 +196,9 @@ def _stripe_request(
 
     encoded_data = None
     if form_data:
-        encoded_data = urllib.parse.urlencode(
-            {k: str(v) for k, v in form_data.items() if v is not None}
-        ).encode("utf-8")
+        encoded_data = urllib.parse.urlencode({k: str(v) for k, v in form_data.items() if v is not None}).encode(
+            "utf-8"
+        )
 
     req = urllib.request.Request(
         url,
@@ -255,9 +249,7 @@ def _verify_stripe_signature(payload: bytes, sig_header: str) -> bool:
 
     # Compute expected signature
     signed_payload = f"{timestamp}.".encode("utf-8") + payload
-    expected = hmac.new(
-        secret.encode("utf-8"), signed_payload, hashlib.sha256
-    ).hexdigest()
+    expected = hmac.new(secret.encode("utf-8"), signed_payload, hashlib.sha256).hexdigest()
 
     return hmac.compare_digest(expected, v1_sig)
 
@@ -309,10 +301,7 @@ async def create_checkout(request: CheckoutRequest):
         raise HTTPException(400, f"Unknown plan: {request.plan}")
 
     base_url = os.getenv("SCBE_BILLING_BASE_URL", "http://localhost:8000").rstrip("/")
-    success_url = (
-        request.success_url
-        or f"{base_url}/billing/success?session_id={{CHECKOUT_SESSION_ID}}"
-    )
+    success_url = request.success_url or f"{base_url}/billing/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = request.cancel_url or f"{base_url}/billing/cancel"
 
     form_data: Dict[str, str] = {
@@ -383,9 +372,7 @@ async def stripe_webhook(request: Request):
 
     # Verify signature. Unsigned webhooks are only allowed when explicitly enabled.
     webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "").strip()
-    allow_unsigned = os.getenv(
-        "SCBE_ALLOW_UNSIGNED_STRIPE_WEBHOOK", ""
-    ).strip().lower() in {
+    allow_unsigned = os.getenv("SCBE_ALLOW_UNSIGNED_STRIPE_WEBHOOK", "").strip().lower() in {
         "1",
         "true",
         "yes",
@@ -422,9 +409,7 @@ def _handle_checkout_completed(session: Dict[str, Any]) -> None:
     customer_id = session.get("customer", "")
     plan_id = session.get("metadata", {}).get("scbe_plan", "starter")
     subscription_id = session.get("subscription", "")
-    email = session.get("customer_email") or session.get("customer_details", {}).get(
-        "email", ""
-    )
+    email = session.get("customer_email") or session.get("customer_details", {}).get("email", "")
 
     api_key = _generate_api_key()
     now = int(time.time())
@@ -488,9 +473,7 @@ def _handle_subscription_deleted(subscription: Dict[str, Any]) -> None:
 # One-time product purchases (Payment Links)
 # ---------------------------------------------------------------------------
 
-DEFAULT_PRODUCT_RELEASE_URL = (
-    "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest"
-)
+DEFAULT_PRODUCT_RELEASE_URL = "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest"
 
 
 def _delivery_url(*env_names: str) -> str:
@@ -521,9 +504,7 @@ def get_onetime_products() -> Dict[str, Dict[str, str]]:
         # AI Security Training Vault - $29
         "vault": {
             "name": "SCBE AI Security Training Vault",
-            "download_url": _delivery_url(
-                "SCBE_TRAINING_VAULT_DOWNLOAD_URL", "SCBE_VAULT_DOWNLOAD_URL"
-            ),
+            "download_url": _delivery_url("SCBE_TRAINING_VAULT_DOWNLOAD_URL", "SCBE_VAULT_DOWNLOAD_URL"),
             "manual_url": "https://aethermoore.com/product-manual/training-vault.html",
             "package_filename": "SCBE_AI_Security_Training_Vault_v1.zip",
             "support_url": "https://aethermoore.com/support.html",
@@ -589,9 +570,7 @@ def _resolve_onetime_product_key(session: Dict[str, Any]) -> str:
     return ""
 
 
-def _delivery_plaintext(
-    product_name: str, download_url: str, manual_url: str, package_filename: str
-) -> str:
+def _delivery_plaintext(product_name: str, download_url: str, manual_url: str, package_filename: str) -> str:
     return "\n".join(
         [
             f"Thank you for your purchase. Your {product_name} is ready.",
@@ -656,9 +635,7 @@ If you have any questions, reply to this email or reach us at ai@aethermoore.com
     msg["Reply-To"] = "ai@aethermoore.com"
     msg.attach(
         MIMEText(
-            _delivery_plaintext(
-                product_name, download_url, manual_url, package_filename
-            ),
+            _delivery_plaintext(product_name, download_url, manual_url, package_filename),
             "plain",
         )
     )
@@ -702,9 +679,7 @@ def _notify_owner(product_name: str, buyer_email: str, amount_cents: int) -> Non
 
 def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
     """Handle a one-time product purchase from Payment Links."""
-    email = session.get("customer_email") or session.get("customer_details", {}).get(
-        "email", ""
-    )
+    email = session.get("customer_email") or session.get("customer_details", {}).get("email", "")
     amount = session.get("amount_total", 0)
     payment_status = session.get("payment_status", "")
 
