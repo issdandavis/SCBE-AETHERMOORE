@@ -166,6 +166,27 @@ def _windows_command_line_to_argv(command: str) -> list[str]:
         kernel32.LocalFree(argv_ptr)
 
 
+def scan_command(
+    command: str,
+    *,
+    claimed_paths: Optional[Sequence[str]] = None,
+    shell_context: bool = False,
+) -> ExecGateDecision:
+    """Parse and scan a command without executing it.
+
+    Args:
+        command: The raw command string to inspect (never executed).
+        claimed_paths: Optional declared path scope; touching paths outside it
+            is flagged as ``unclaimed-path``.
+        shell_context: When True, the command is expected to run *through* a
+            shell (e.g. ``scbe run`` -> PowerShell), so the blanket pipe/chain
+            metacharacter DENY is relaxed. The dangerous-pattern denies
+            (recursive delete, curl|sh, encoded PowerShell, secret paths) and
+            the ``curl|sh`` download-to-exec rule still apply regardless.
+
+    Returns:
+        An ``ExecGateDecision`` with the resolved tier and findings.
+    """
 # ── inline-payload inspection ────────────────────────────────────────────────
 # scan_command catches dangerous command SHAPES. For `python -c "<code>"` and
 # `node -c "<code>"` the dangerous logic lives INSIDE the payload string, which
@@ -287,7 +308,10 @@ def scan_command(command: str, *, claimed_paths: Optional[Sequence[str]] = None)
     findings.extend(parse_findings)
     command_l = command.lower()
 
-    if any(marker in command for marker in ("|", "&&", "||", ";")):
+    # A2: the structural shell-metachar block is relaxed in shell_context (the
+    # caller intentionally routes through a shell); dangerous-pattern denies
+    # below are unconditional.
+    if not shell_context and any(marker in command for marker in ("|", "&&", "||", ";")):
         findings.append(
             GateFinding(
                 "shell-metachar",
