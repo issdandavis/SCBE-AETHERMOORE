@@ -351,3 +351,15 @@ docs/proposals/*.zip
 # Stray root-level images (analysis screenshots, scratch PNGs). Intentional
 # repo images live under a named dir (kindle-app/, ui/, docs/...), never at root.
 /*.png
+
+# Throwaway probe/scratch scripts from adversarial testing (session cruft)
+_probe_*.py
+/_probe_dna*.py
+*.scratch.py
+
+# Generated TS declaration artifacts (build emits these into dist/, not source)
+packages/kernel/src/*.d.ts
+**/*.d.ts.map
+# Regenerable caches / scratch at root
+/__pycache__/
+/artifacts/pytest_temp_root/
