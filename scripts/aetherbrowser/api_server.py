@@ -38,7 +38,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -490,6 +490,31 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Operator endpoints (/api/ops/*, /api/cli/*) run local subprocesses (email
+# reader, pytest, git, tor sweep, CLI) and return their output, behind wide-open
+# CORS. Without a guard they were unauthenticated remote-exec / data-leak
+# surfaces (GHSA-q986-4x7x-gx39: the /api/ops/check-email digest leak). They are
+# DISABLED unless an admin token is configured, and then require a matching
+# X-Admin-Token header — fail closed, same pattern as /runtime-gate/checkpoint.
+_OPERATOR_PREFIXES = ("/api/ops/", "/api/cli/")
+
+
+@app.middleware("http")
+async def _guard_operator_endpoints(request: Request, call_next):
+    if request.method != "OPTIONS" and any(request.url.path.startswith(p) for p in _OPERATOR_PREFIXES):
+        token = (
+            os.environ.get("SCBE_OPS_ADMIN_TOKEN", "").strip()
+            or os.environ.get("SCBE_RUNTIME_GATE_ADMIN_TOKEN", "").strip()
+        )
+        if not token:
+            return JSONResponse(
+                {"detail": "operator endpoints disabled (set SCBE_OPS_ADMIN_TOKEN to enable)"},
+                status_code=403,
+            )
+        if not hmac.compare_digest(request.headers.get("x-admin-token", ""), token):
+            return JSONResponse({"detail": "invalid or missing X-Admin-Token"}, status_code=401)
+    return await call_next(request)
 
 if PUBLIC_DIR.exists():
     static_dir = PUBLIC_DIR / "static"
