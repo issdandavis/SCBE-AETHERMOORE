@@ -77,6 +77,59 @@ def test_npm_geoseal_bin_permissions_json() -> None:
     assert payload["max_tier"]
 
 
+def test_npm_geoseal_command_check_blocks_host_control_commands() -> None:
+    cases = [
+        "shutdown /s /t 0",
+        "wsl --shutdown",
+        "powercfg /hibernate off",
+        "Disable-NetAdapter -Name Wi-Fi -Confirm:$false",
+        "docker system prune -a -f",
+        "taskkill /F /T /IM python.exe",
+        "while ($true) { python bench.py }",
+    ]
+    for command in cases:
+        proc = subprocess.run(
+            [
+                "node",
+                str(ROOT / "bin" / "geoseal.cjs"),
+                "command-check",
+                command,
+                "--json",
+            ],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+            timeout=30,
+        )
+        assert proc.returncode == 2, command
+        payload = json.loads(proc.stdout)
+        assert payload["decision"] == "block", command
+        assert payload["safety"] == "refused", command
+        assert any("host" in reason.lower() for reason in payload["reasons"])
+
+
+def test_npm_geoseal_command_check_allows_normal_pytest() -> None:
+    proc = subprocess.run(
+        [
+            "node",
+            str(ROOT / "bin" / "geoseal.cjs"),
+            "command-check",
+            "python -m pytest tests\\crypto\\test_geoseal_execution_gate.py -q",
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+        timeout=30,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["decision"] == "allow"
+    assert payload["safety"] == "safe"
+
+
 def test_npm_geoseal_bin_doctor_uses_lightweight_python_module_probe() -> None:
     proc = subprocess.run(
         ["node", str(ROOT / "bin" / "geoseal.cjs"), "doctor", "--json"],
@@ -93,7 +146,9 @@ def test_npm_geoseal_bin_doctor_uses_lightweight_python_module_probe() -> None:
     assert str(ROOT / "src" / "geoseal_cli.py") in src_probe["origin"]
 
 
-def test_npm_geoseal_bin_service_status_is_not_python_passthrough(tmp_path: Path) -> None:
+def test_npm_geoseal_bin_service_status_is_not_python_passthrough(
+    tmp_path: Path,
+) -> None:
     env = dict(os.environ)
     env["SCBE_GEOSEAL_PYTHON"] = str(tmp_path / "missing-python.exe")
     proc = subprocess.run(
@@ -132,7 +187,13 @@ def test_npm_geoseal_bin_product_lanes_json() -> None:
     payload = json.loads(proc.stdout)
     assert payload["schema_version"] == "geoseal_product_lanes_v1"
     lane_ids = {lane["id"] for lane in payload["lanes"]}
-    assert {"agents", "providers", "chemistry", "tokenizer", "arrays-spreadsheets"} <= lane_ids
+    assert {
+        "agents",
+        "providers",
+        "chemistry",
+        "tokenizer",
+        "arrays-spreadsheets",
+    } <= lane_ids
 
 
 def test_npm_geoseal_bin_stage_renders_terminal_box() -> None:
@@ -389,11 +450,20 @@ def test_npm_geoseal_bin_provider_registry_json() -> None:
     assert payload["policy"]["default_route"] == "free_local_first"
 
 
-def test_npm_geoseal_bin_ask_alias_requires_local_service_when_not_running(tmp_path: Path) -> None:
+def test_npm_geoseal_bin_ask_alias_requires_local_service_when_not_running(
+    tmp_path: Path,
+) -> None:
     env = dict(os.environ)
     env["SCBE_GEOSEAL_SERVICE_DIR"] = str(tmp_path / "state")
     proc = subprocess.run(
-        ["node", str(ROOT / "bin" / "geoseal.cjs"), "ask", "explain", "tokenizer", "--json"],
+        [
+            "node",
+            str(ROOT / "bin" / "geoseal.cjs"),
+            "ask",
+            "explain",
+            "tokenizer",
+            "--json",
+        ],
         capture_output=True,
         text=True,
         encoding="utf-8",
