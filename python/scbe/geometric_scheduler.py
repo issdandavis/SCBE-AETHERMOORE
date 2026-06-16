@@ -1,22 +1,22 @@
 """
-Geometric scheduler — a real dispatcher built on the tangentialism router.
+Geometric scheduler - a real dispatcher built on the tangentialism router.
 ===========================================================================
 
 The successor to the juggling scheduler: instead of physics-of-throws, it routes
 live work to a fleet through the tongue-weighted hyperbolic manifold
-([[geometric_router]]). It actually DISPATCHES — spawns worker threads, executes
+([[geometric_router]]). It actually DISPATCHES - spawns worker threads, executes
 job callables concurrently, handles failures, and reports real wall-clock makespan.
 
 Design = pull-based affinity work-stealing, hardened after an adversarial review:
   * (perf) all (worker, job) Finsler costs are precomputed ONCE outside the lock,
-    and each worker drains its own min-heap — the lock only does O(1) claim/recheck,
+    and each worker drains its own min-heap - the lock only does O(1) claim/recheck,
     never an O(jobs) metric scan. Each worker's tongue scale is cached (immutable).
   * (affinity) a worker prefers the job it is cheapest at;
   * (anti-over-steal) a worker only TAKES a job it isn't the global-cheapest for
-    after that job has been deferred DEFER_CAP times — giving the right specialist
+    after that job has been deferred DEFER_CAP times - giving the right specialist
     first refusal, so an idle generalist doesn't grab a specialist's cheap work;
   * (anti-starvation) the defer cap guarantees every job is eventually claimed;
-  * (back-pressure) a busy worker simply isn't pulling — the fluid term, for free;
+  * (back-pressure) a busy worker simply isn't pulling - the fluid term, for free;
   * (failure) a job that raises is re-queued up to max_retries, then recorded in
     SchedReport.errors. Job names must be unique (validated) so results never collide.
 
@@ -37,7 +37,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 import numpy as np
 
 from python.scbe.geometric_router import (
-    Agent, PHI_W, TONGUES, agent_scale, finsler_scaled, tongue_weights,
+    Agent, TONGUES, agent_scale, finsler_scaled,
 )
 
 
@@ -140,9 +140,12 @@ class GeometricScheduler:
                         return
                     if mode == "round_robin":
                         while rr_i < len(rr):
-                            ji = rr[rr_i]; rr_i += 1
+                            ji = rr[rr_i]
+                            rr_i += 1
                             if ji in available:
-                                available.discard(ji); idx = ji; break
+                                available.discard(ji)
+                                idx = ji
+                                break
                         if idx is None:
                             return
                     else:
@@ -152,23 +155,25 @@ class GeometricScheduler:
                             if ji not in available:
                                 continue
                             if best[ji] == wi:
-                                available.discard(ji); idx = ji
+                                available.discard(ji)
+                                idx = ji
                                 break
                             # a non-specialist takes a deferred job only if it isn't
-                            # drastically worse at it (ratio guard) — protects semantic
-                            # routing (a strongly-KO job won't land on a DR model) —
+                            # drastically worse at it (ratio guard) - protects semantic
+                            # routing (a strongly-KO job won't land on a DR model) -
                             # unless the job is badly starved (hard cap forces progress).
                             ratio = cost[wi, ji] / max(cost[best[ji], ji], 1e-9)
                             if (defers[ji] >= defer_cap and ratio <= 4.0) \
                                     or defers[ji] >= defer_cap * 4:
-                                available.discard(ji); idx = ji
+                                available.discard(ji)
+                                idx = ji
                                 break
                             defers[ji] += 1               # let the specialist take it first
                             deferred.append((c, ji))
                         for item in deferred:
                             heapq.heappush(heap, item)
                 if idx is None:
-                    # nothing claimable yet (all deferred to specialists) — yield, retry
+                    # nothing claimable yet (all deferred to specialists) - yield, retry
                     time.sleep(0.0005)
                     continue
                 job = jobs[idx]
@@ -208,12 +213,12 @@ class GeometricScheduler:
 
 
 class StreamScheduler:
-    """Online geometric scheduler — jobs arrive over time, workers run continuously.
+    """Online geometric scheduler - jobs arrive over time, workers run continuously.
 
     Two routing policies, the user's dual-topology:
-      * phi   — smooth contraction: each free worker pulls the job it is cheapest at
-                (affinity routing) — efficient steady-state flow.
-      * purge — periodic Collatz-style shedding: every `purge_every` claims, a worker
+      * phi   - smooth contraction: each free worker pulls the job it is cheapest at
+                (affinity routing) - efficient steady-state flow.
+      * purge - periodic Collatz-style shedding: every `purge_every` claims, a worker
                 instead grabs the OLDEST waiting job regardless of affinity, clearing
                 backlog/clog so no job ages out (snake-skin shedding of the queue).
 
@@ -347,7 +352,7 @@ def _demo() -> None:
         jobs.append(Job(f"job{i:03d}", prof, base=0.006))
 
     sched = GeometricScheduler(fleet)
-    print("Geometric scheduler — real concurrent dispatch (I/O-bound fleet, hardened)\n")
+    print("Geometric scheduler - real concurrent dispatch (I/O-bound fleet, hardened)\n")
     print(f"  fleet: {len(fleet)} agents   jobs: {len(jobs)} (heterogeneous, one-tongue-flavored)\n")
     rr = sched.run(jobs, mode="round_robin")
     ge = sched.run(jobs, mode="geometric")

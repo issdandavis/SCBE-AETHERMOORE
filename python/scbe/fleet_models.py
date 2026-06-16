@@ -1,5 +1,5 @@
 """
-Geometric scheduler x M4 — route prompts across a real multi-model fleet.
+Geometric scheduler x M4 - route prompts across a real multi-model fleet.
 ==========================================================================
 
 Step (b): plug the user's M4 Multimodel Multinode Model Matrix (src/fleet/
@@ -19,7 +19,7 @@ when no API keys are present, so this runs offline). Real keys -> real models.
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, List, Optional, Tuple
 
 from python.scbe.geometric_router import TONGUES
@@ -45,7 +45,7 @@ class ModelWorker(Worker):
 
     def serve(self, job: Job, penalty: float) -> str:
         # Let genuine failures (unknown node, transport) PROPAGATE so the scheduler's
-        # retry/error path handles them — don't hide them as a "success" string.
+        # retry/error path handles them - don't hide them as a "success" string.
         prompt = getattr(job, "prompt", None) or job.name
         res = asyncio.run(self.matrix.query_node(self.node_id, prompt))
         return res.get("consensus", "")
