@@ -154,6 +154,9 @@ from .mechanical_eliza import (
     ElizaLayer,
     ElizaRoute,
     ElizaSupportPacket,
+    build_choicescript_navigation,
+    build_free_llm_dispatch_request,
+    build_semantic_navigation,
     route_dialogue,
     route_support,
 )
@@ -223,6 +226,9 @@ __all__ += [
     "ElizaLayer",
     "ElizaRoute",
     "ElizaSupportPacket",
+    "build_choicescript_navigation",
+    "build_free_llm_dispatch_request",
+    "build_semantic_navigation",
     "route_dialogue",
     "route_support",
 ]
