@@ -82,7 +82,53 @@ fn child_loc(depth: usize, child_index: usize, parent: &[i64; 6]) -> [i64; 6] {
 /// Base 6-face trits [KO, AV, RU, CA, UM, DR] from the node's structural role.
 /// One match replaces six per-tongue string scans — same output as FACE_RULES
 /// membership (a node in N tongue-sets lights all N axes).
+// --- atomic-chem face base (parity with python/scbe/atomic_tokenization.py) ---
+// tau factors through SemanticClass: classify_token_semantic(token) -> class -> tau.
+// (language=None, context=None in the encoder path, so only TOKEN_CLASS_OVERRIDES
+// + the ing/ed/ly suffix rules apply.)
+const SEMANTIC_TAU: [[i64; 6]; 7] = [
+    [0, 0, 1, -1, -1, 1], // 0 INERT_WITNESS
+    [1, 0, 0, 0, -1, -1], // 1 ACTION
+    [1, 1, 0, 0, 0, 0],   // 2 ENTITY
+    [0, 0, 0, 0, 1, 1],   // 3 NEGATION
+    [0, 0, 0, 1, 0, 1],   // 4 MODIFIER
+    [0, 0, 0, 0, 1, 1],   // 5 RELATION
+    [0, 0, 0, 1, 0, 1],   // 6 TEMPORAL
+];
+
 #[inline]
+fn token_override(t: &str) -> Option<usize> {
+    Some(match t {
+        "the" | "a" | "an" | "of" | "to" | "in" | "on" | "at" | "and" | "or" => 0,
+        "not" | "no" | "never" | "none" | "without" | "can't" | "cannot" | "don't" | "won't" => 3,
+        "because" | "therefore" | "if" | "else" | "but" | "while" => 5,
+        "very" | "extremely" | "highly" | "slightly" | "barely" | "almost" => 4,
+        "then" | "now" | "today" | "tomorrow" | "yesterday" | "soon" | "later" | "before"
+        | "after" => 6,
+        "run" | "go" | "eat" | "build" | "make" | "write" | "think" | "test" => 1,
+        _ => return None,
+    })
+}
+
+/// classify_token_semantic(token) -> SemanticClass index (encoder path).
+#[inline]
+fn classify(token: &str) -> usize {
+    let t = token.trim().to_lowercase();
+    if t.is_empty() {
+        return 0; // INERT_WITNESS
+    }
+    if let Some(c) = token_override(&t) {
+        return c;
+    }
+    if t.ends_with("ing") || t.ends_with("ed") {
+        return 1; // ACTION
+    }
+    if t.ends_with("ly") {
+        return 4; // MODIFIER
+    }
+    2 // ENTITY
+}
+
 fn base_faces(ntype: &str) -> [i64; 6] {
     match ntype {
         "If" | "IfExp" | "For" | "AsyncFor" | "While" | "Return" | "Break"
@@ -107,10 +153,24 @@ fn base_faces(ntype: &str) -> [i64; 6] {
 
 fn face_trits(
     ntype: &str,
+    token: &str,
     name_ctx: Option<ast::ExprContext>,
     constant: Option<&ast::Constant>,
 ) -> [i64; 6] {
-    let mut tr = base_faces(ntype);
+    // out = sign(atomic_tau + 2*rule): rule wins where set, else atomic tau shows.
+    let rule = base_faces(ntype);
+    let cls = match constant {
+        Some(ast::Constant::None) => 3,             // str(None)="None" -> "none" -> NEGATION
+        Some(ast::Constant::Str(s)) => classify(s), // string literal: content classifies
+        Some(_) => 2,                               // numbers/bool/bytes/... -> ENTITY
+        None => classify(token),
+    };
+    let tau = SEMANTIC_TAU[cls];
+    let mut tr = [0_i64; 6];
+    for k in 0..6 {
+        tr[k] = if rule[k] != 0 { rule[k] } else { tau[k] };
+    }
+    // ctx override (python applies this to ast.Name only; caller passes Some only for Name)
     if let Some(ctx) = name_ctx {
         match ctx {
             ast::ExprContext::Store => {
@@ -122,14 +182,13 @@ fn face_trits(
                 tr[1] = 1;
                 tr[4] = -1;
             }
-            ast::ExprContext::Del => {
-                tr[4] = 1;
-            }
+            ast::ExprContext::Del => {} // python has no Del branch for Name
         }
     }
+    // constant override (python: str->DR; bool/None/int/float/complex->CA; bytes->none)
     if let Some(value) = constant {
         match value {
-            ast::Constant::Str(_) | ast::Constant::Bytes(_) => tr[5] = 1,
+            ast::Constant::Str(_) => tr[5] = 1,
             ast::Constant::None
             | ast::Constant::Bool(_)
             | ast::Constant::Int(_)
@@ -169,7 +228,7 @@ fn walk_args(
         "arguments",
         depth,
         &loc,
-        face_trits("arguments", None, None),
+        face_trits("arguments", "arguments", None, None),
     );
     let mut ci = 0;
     for a in args
@@ -202,7 +261,7 @@ fn walk_arg(
     matrix: &mut Vec<[i64; VECTOR_DIM]>,
 ) {
     let loc = child_loc(depth, child_index, parent);
-    push_row(matrix, "arg", depth, &loc, face_trits("arg", None, None));
+    push_row(matrix, "arg", depth, &loc, face_trits("arg", arg.arg.as_str(), None, None));
     if let Some(annotation) = &arg.annotation {
         walk_expr(annotation, depth + 1, 0, &loc, matrix);
     }
@@ -247,7 +306,13 @@ fn walk_stmt(
         Break(_) => "Break",
         Continue(_) => "Continue",
     };
-    push_row(matrix, ntype, depth, &loc, face_trits(ntype, None, None));
+    let token: &str = match stmt {
+        FunctionDef(s) => s.name.as_str(),
+        AsyncFunctionDef(s) => s.name.as_str(),
+        ClassDef(s) => s.name.as_str(),
+        _ => ntype,
+    };
+    push_row(matrix, ntype, depth, &loc, face_trits(ntype, token, None, None));
     let mut ci = 0;
     match stmt {
         FunctionDef(s) => {
@@ -474,14 +539,15 @@ fn walk_handler(
     matrix: &mut Vec<[i64; VECTOR_DIM]>,
 ) {
     let loc = child_loc(depth, child_index, parent);
+    let ast::ExceptHandler::ExceptHandler(h) = handler;
+    let htok = h.name.as_ref().map(|i| i.as_str()).unwrap_or("ExceptHandler");
     push_row(
         matrix,
         "ExceptHandler",
         depth,
         &loc,
-        face_trits("Try", None, None),
+        face_trits("ExceptHandler", htok, None, None),
     );
-    let ast::ExceptHandler::ExceptHandler(h) = handler;
     let mut ci = 0;
     if let Some(e) = &h.type_ {
         walk_expr(e, depth + 1, ci, &loc, matrix);
@@ -501,12 +567,13 @@ fn walk_keyword(
     matrix: &mut Vec<[i64; VECTOR_DIM]>,
 ) {
     let loc = child_loc(depth, child_index, parent);
+    let ktok = keyword.arg.as_ref().map(|i| i.as_str()).unwrap_or("keyword");
     push_row(
         matrix,
         "keyword",
         depth,
         &loc,
-        face_trits("keyword", None, None),
+        face_trits("keyword", ktok, None, None),
     );
     walk_expr(&keyword.value, depth + 1, 0, &loc, matrix);
 }
@@ -524,7 +591,7 @@ fn walk_comprehension(
         "comprehension",
         depth,
         &loc,
-        face_trits("comprehension", None, None),
+        face_trits("comprehension", "comprehension", None, None),
     );
     let mut ci = 0;
     walk_expr(&comp.target, depth + 1, ci, &loc, matrix);
@@ -546,36 +613,37 @@ fn walk_expr(
 ) {
     use ast::Expr::*;
     let loc = child_loc(depth, child_index, parent);
-    let (ntype, ctx, constant) = match expr {
-        BoolOp(_) => ("BoolOp", None, None),
-        NamedExpr(_) => ("NamedExpr", None, None),
-        BinOp(_) => ("BinOp", None, None),
-        UnaryOp(_) => ("UnaryOp", None, None),
-        Lambda(_) => ("Lambda", None, None),
-        IfExp(_) => ("IfExp", None, None),
-        Dict(_) => ("Dict", None, None),
-        Set(_) => ("Set", None, None),
-        ListComp(_) => ("ListComp", None, None),
-        SetComp(_) => ("SetComp", None, None),
-        DictComp(_) => ("DictComp", None, None),
-        GeneratorExp(_) => ("GeneratorExp", None, None),
-        Await(_) => ("Await", None, None),
-        Yield(_) => ("Yield", None, None),
-        YieldFrom(_) => ("YieldFrom", None, None),
-        Compare(_) => ("Compare", None, None),
-        Call(_) => ("Call", None, None),
-        FormattedValue(_) => ("FormattedValue", None, None),
-        JoinedStr(_) => ("JoinedStr", None, None),
-        Constant(e) => ("Constant", None, Some(&e.value)),
-        Attribute(e) => ("Attribute", Some(e.ctx), None),
-        Subscript(e) => ("Subscript", Some(e.ctx), None),
-        Starred(e) => ("Starred", Some(e.ctx), None),
-        Name(e) => ("Name", Some(e.ctx), None),
-        List(e) => ("List", Some(e.ctx), None),
-        Tuple(e) => ("Tuple", Some(e.ctx), None),
-        Slice(_) => ("Slice", None, None),
+    let (ntype, token, ctx, constant) = match expr {
+        BoolOp(_) => ("BoolOp", "BoolOp", None, None),
+        NamedExpr(_) => ("NamedExpr", "NamedExpr", None, None),
+        BinOp(_) => ("BinOp", "BinOp", None, None),
+        UnaryOp(_) => ("UnaryOp", "UnaryOp", None, None),
+        Lambda(_) => ("Lambda", "Lambda", None, None),
+        IfExp(_) => ("IfExp", "IfExp", None, None),
+        Dict(_) => ("Dict", "Dict", None, None),
+        Set(_) => ("Set", "Set", None, None),
+        ListComp(_) => ("ListComp", "ListComp", None, None),
+        SetComp(_) => ("SetComp", "SetComp", None, None),
+        DictComp(_) => ("DictComp", "DictComp", None, None),
+        GeneratorExp(_) => ("GeneratorExp", "GeneratorExp", None, None),
+        Await(_) => ("Await", "Await", None, None),
+        Yield(_) => ("Yield", "Yield", None, None),
+        YieldFrom(_) => ("YieldFrom", "YieldFrom", None, None),
+        Compare(_) => ("Compare", "Compare", None, None),
+        Call(_) => ("Call", "Call", None, None),
+        FormattedValue(_) => ("FormattedValue", "FormattedValue", None, None),
+        JoinedStr(_) => ("JoinedStr", "JoinedStr", None, None),
+        Constant(e) => ("Constant", "Constant", None, Some(&e.value)),
+        // python applies ctx-faces to ast.Name only; attr token = the attribute name
+        Attribute(e) => ("Attribute", e.attr.as_str(), None, None),
+        Subscript(_) => ("Subscript", "Subscript", None, None),
+        Starred(_) => ("Starred", "Starred", None, None),
+        Name(e) => ("Name", e.id.as_str(), Some(e.ctx), None),
+        List(_) => ("List", "List", None, None),
+        Tuple(_) => ("Tuple", "Tuple", None, None),
+        Slice(_) => ("Slice", "Slice", None, None),
     };
-    push_row(matrix, ntype, depth, &loc, face_trits(ntype, ctx, constant));
+    push_row(matrix, ntype, depth, &loc, face_trits(ntype, token, ctx, constant));
     let mut ci = 0;
     match expr {
         BoolOp(e) => {
@@ -766,7 +834,7 @@ fn matrix_for_source(path: &str, src: &str) -> (Vec<[i64; VECTOR_DIM]>, f64, f64
         "Module",
         0,
         &root,
-        face_trits("Module", None, None),
+        face_trits("Module", "Module", None, None),
     );
     for (i, stmt) in suite.iter().enumerate() {
         walk_stmt(stmt, 1, i, &root, &mut matrix);
@@ -890,7 +958,7 @@ fn try_matrix(path: &str, src: &str) -> Option<Vec<[i64; VECTOR_DIM]>> {
     let suite = ast::Suite::parse(src, path).ok()?;
     let mut matrix: Vec<[i64; VECTOR_DIM]> = Vec::with_capacity(src.len() / 8);
     let root = [0_i64; 6];
-    push_row(&mut matrix, "Module", 0, &root, face_trits("Module", None, None));
+    push_row(&mut matrix, "Module", 0, &root, face_trits("Module", "Module", None, None));
     for (i, stmt) in suite.iter().enumerate() {
         walk_stmt(stmt, 1, i, &root, &mut matrix);
     }
