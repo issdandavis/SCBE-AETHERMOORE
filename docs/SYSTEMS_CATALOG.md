@@ -55,6 +55,9 @@ _Verified 2026-06-16: `scbe -V` → `scbe 4.2.1`; CLI smoke green; wheel install
   kernel builder (`scripts/kaggle/build_encoder_kernel.py`).
 - **Research docs** — `research/aether-manifold/` (fluidic-computer design + rotation
   algebra), `research/marketing/playbook.md`, `articles/` (build-in-public posts).
+- **M-TEF research packet** — `docs/research/mtef_research_compendium_2026-06-17.md`
+  and the linked PDF preserve the Magneto-Triboelectric Fluid Cell literature synthesis.
+  Treat it as concept/prototype evidence, not proof of a working device.
 
 ---
 _Regenerate the canonical list anytime with `scbe systems` (or `scbe systems --json`)._

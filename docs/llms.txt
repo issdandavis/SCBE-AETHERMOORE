@@ -22,6 +22,8 @@ Canonical repository: https://github.com/issdandavis/SCBE-AETHERMOORE
 - AI Writing System download: https://aethermoore.com/SCBE-AETHERMOORE/downloads/ai-writing-system-guide.md
 - Humanization Pass download: https://aethermoore.com/SCBE-AETHERMOORE/downloads/humanization-pass-checklist.md
 - AI Security Governance download: https://aethermoore.com/SCBE-AETHERMOORE/downloads/security-governance-checklist.md
+- M-TEF research compendium: https://aethermoore.com/SCBE-AETHERMOORE/research/mtef_research_compendium_2026-06-17.md
+- M-TEF PDF packet: https://aethermoore.com/SCBE-AETHERMOORE/research/mtef_research_compendium_2026-06-17.pdf
 - Payment center: https://aethermoore.com/SCBE-AETHERMOORE/payments.html
 - Governance Snapshot: https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html
 - Shopify Command Center: https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html
