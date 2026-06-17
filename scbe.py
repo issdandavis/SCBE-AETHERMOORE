@@ -757,7 +757,9 @@ _SEM_FAMILIES: Dict[str, Dict[str, Tuple[str, ...]]] = {
     },
 }
 
-_ZERO_WIDTH_OR_CONTROL = re.compile(r"[\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]")
+_ZERO_WIDTH_OR_CONTROL = re.compile(
+    r"[\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff\ufe00-\ufe0f\U000e0100-\U000e01ef]"
+)
 _B64_TOKEN = re.compile(r"\b[A-Za-z0-9+/_-]{16,}={0,2}\b")
 _LEET_TABLE = str.maketrans(
     {
@@ -837,6 +839,16 @@ def _despace_runs(text: str) -> str:
     return re.sub(r"(?:\b\w\b ){2,}\b\w\b", lambda m: m.group(0).replace(" ", ""), text)
 
 
+def _decode_tag_chars(text: str) -> str:
+    """Recover a Unicode TAG-block 'ASCII smuggling' payload (U+E0000-E007F -> ASCII).
+
+    The whole instruction can be hidden in invisible tag characters that humans and
+    the byte sieve never see but the model reads; stripping them would just delete the
+    payload, so we decode and scan it instead (verified ~100% bypass vector otherwise).
+    """
+    return "".join(chr(cp - 0xE0000) for cp in map(ord, text) if 0xE0000 <= cp <= 0xE007F)
+
+
 def _intent_scan_candidates(text: str) -> List[str]:
     base = _normalize_for_intent(text)
     candidates = [base]
@@ -844,6 +856,9 @@ def _intent_scan_candidates(text: str) -> List[str]:
     despaced = _despace_runs(base)
     if despaced != base:
         candidates.append(despaced)
+    tag_payload = _decode_tag_chars(text)
+    if tag_payload.strip():
+        candidates.append(_normalize_for_intent(tag_payload))
     try:
         candidates.append(codecs.decode(base, "rot_13"))
     except Exception:
