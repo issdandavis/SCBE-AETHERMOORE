@@ -15,9 +15,9 @@ the solve like a cube solve: moves used, lines emitted, leverage, solved y/n.
     python scripts/forge.py moves                                  # list the moves
     python scripts/forge.py puzzles                                # list the puzzles
 """
+
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 import tempfile
@@ -32,7 +32,7 @@ _MOVES: dict[str, dict] = {
     "add": {
         "desc": "append an item",
         "handler": (
-            'def _cmd_add(args, items):\n'
+            "def _cmd_add(args, items):\n"
             '    items.append({"text": args.text, "done": False})\n'
             '    print(f"added: {args.text}")'
         ),
@@ -41,37 +41,35 @@ _MOVES: dict[str, dict] = {
     "list": {
         "desc": "print all items",
         "handler": (
-            'def _cmd_list(args, items):\n'
-            '    if not items:\n'
+            "def _cmd_list(args, items):\n"
+            "    if not items:\n"
             '        print("(empty)")\n'
-            '    for i, x in enumerate(items):\n'
+            "    for i, x in enumerate(items):\n"
             '        mark = "x" if x["done"] else " "\n'
-            '        print(f"{i}. [{mark}] {x[\'text\']}")'
+            "        print(f\"{i}. [{mark}] {x['text']}\")"
         ),
         "register": '    "list": {"fn": _cmd_list, "help": "list items", "args": []},',
     },
     "done": {
         "desc": "mark an item done by index",
         "handler": (
-            'def _cmd_done(args, items):\n'
+            "def _cmd_done(args, items):\n"
             '    items[args.index]["done"] = True\n'
-            '    print(f"done: {items[args.index][\'text\']}")'
+            "    print(f\"done: {items[args.index]['text']}\")"
         ),
         "register": '    "done": {"fn": _cmd_done, "help": "mark done", "args": [("index", {"type": int})]},',
     },
     "remove": {
         "desc": "delete an item by index",
         "handler": (
-            'def _cmd_remove(args, items):\n'
-            '    x = items.pop(args.index)\n'
-            '    print(f"removed: {x[\'text\']}")'
+            "def _cmd_remove(args, items):\n" "    x = items.pop(args.index)\n" "    print(f\"removed: {x['text']}\")"
         ),
         "register": '    "remove": {"fn": _cmd_remove, "help": "remove an item", "args": [("index", {"type": int})]},',
     },
     "count": {
         "desc": "report totals",
         "handler": (
-            'def _cmd_count(args, items):\n'
+            "def _cmd_count(args, items):\n"
             '    done = sum(1 for x in items if x["done"])\n'
             '    print(f"{len(items)} items, {done} done")'
         ),
@@ -80,51 +78,51 @@ _MOVES: dict[str, dict] = {
     "clear": {
         "desc": "empty the list",
         "handler": (
-            'def _cmd_clear(args, items):\n'
-            '    n = len(items)\n'
-            '    items.clear()\n'
+            "def _cmd_clear(args, items):\n"
+            "    n = len(items)\n"
+            "    items.clear()\n"
             '    print(f"cleared {n} items")'
         ),
         "register": '    "clear": {"fn": _cmd_clear, "help": "remove everything", "args": []},',
     },
     "due": {
-        "desc": 'set a due date on an item by index',
-        "handler": 'def _cmd_due(args, items):\n    items[args.index]["due"] = args.date\n    print(f"due {args.date}: {items[args.index][\'text\']}")',
-        "register": '    "due": {"fn": _cmd_due, "help": "set a due date by index", "args": [("index", {"type": int}), ("date", {})]},',
+        "desc": "set a due date on an item by index",
+        "handler": 'def _cmd_due(args, items):\n    items[args.index]["due"] = args.date\n    print(f"due {args.date}: {items[args.index][\'text\']}")',  # noqa: E501
+        "register": '    "due": {"fn": _cmd_due, "help": "set a due date by index", "args": [("index", {"type": int}), ("date", {})]},',  # noqa: E501
     },
     "agenda": {
-        "desc": 'list items showing due dates',
-        "handler": 'def _cmd_agenda(args, items):\n    if not items:\n        print("(empty)")\n    for i, x in enumerate(items):\n        mark = "x" if x["done"] else " "\n        due = x.get("due")\n        suffix = f" (due: {due})" if due else ""\n        print(f"{i}. [{mark}] {x[\'text\']}{suffix}")',
+        "desc": "list items showing due dates",
+        "handler": 'def _cmd_agenda(args, items):\n    if not items:\n        print("(empty)")\n    for i, x in enumerate(items):\n        mark = "x" if x["done"] else " "\n        due = x.get("due")\n        suffix = f" (due: {due})" if due else ""\n        print(f"{i}. [{mark}] {x[\'text\']}{suffix}")',  # noqa: E501
         "register": '    "agenda": {"fn": _cmd_agenda, "help": "list items with due dates", "args": []},',
     },
     "find": {
-        "desc": 'search items by a word and print the matching ones with their index',
-        "handler": 'def _cmd_find(args, items):\n    needle = args.word.lower()\n    hits = [(i, x) for i, x in enumerate(items) if needle in x["text"].lower()]\n    if not hits:\n        print(f"no matches for: {args.word}")\n        return\n    for i, x in hits:\n        mark = "x" if x["done"] else " "\n        print(f"{i}. [{mark}] {x[\'text\']}")',
+        "desc": "search items by a word and print the matching ones with their index",
+        "handler": 'def _cmd_find(args, items):\n    needle = args.word.lower()\n    hits = [(i, x) for i, x in enumerate(items) if needle in x["text"].lower()]\n    if not hits:\n        print(f"no matches for: {args.word}")\n        return\n    for i, x in hits:\n        mark = "x" if x["done"] else " "\n        print(f"{i}. [{mark}] {x[\'text\']}")',  # noqa: E501
         "register": '    "find": {"fn": _cmd_find, "help": "find items by word", "args": [("word", {})]},',
     },
     "edit": {
         "desc": "change an item's text by index",
-        "handler": 'def _cmd_edit(args, items):\n    old = items[args.index]["text"]\n    items[args.index]["text"] = args.text\n    print(f"edited {args.index}: {old!r} -> {args.text!r}")',
-        "register": '    "edit": {"fn": _cmd_edit, "help": "edit item text by index", "args": [("index", {"type": int}), ("text", {})]},',
+        "handler": 'def _cmd_edit(args, items):\n    old = items[args.index]["text"]\n    items[args.index]["text"] = args.text\n    print(f"edited {args.index}: {old!r} -> {args.text!r}")',  # noqa: E501
+        "register": '    "edit": {"fn": _cmd_edit, "help": "edit item text by index", "args": [("index", {"type": int}), ("text", {})]},',  # noqa: E501
     },
     "priority": {
-        "desc": 'set priority (high/medium/low) on an item by index',
-        "handler": 'def _cmd_priority(args, items):\n    level = args.level.lower()\n    valid = ("high", "medium", "low")\n    if level not in valid:\n        print(f"invalid priority: {args.level} (use high/medium/low)")\n        return\n    items[args.index]["priority"] = level\n    print(f"priority: {items[args.index][\'text\']} -> {level}")',
-        "register": '    "priority": {"fn": _cmd_priority, "help": "set priority high/medium/low on an item", "args": [("index", {"type": int}), ("level", {})]},',
+        "desc": "set priority (high/medium/low) on an item by index",
+        "handler": 'def _cmd_priority(args, items):\n    level = args.level.lower()\n    valid = ("high", "medium", "low")\n    if level not in valid:\n        print(f"invalid priority: {args.level} (use high/medium/low)")\n        return\n    items[args.index]["priority"] = level\n    print(f"priority: {items[args.index][\'text\']} -> {level}")',  # noqa: E501
+        "register": '    "priority": {"fn": _cmd_priority, "help": "set priority high/medium/low on an item", "args": [("index", {"type": int}), ("level", {})]},',  # noqa: E501
     },
     "sort": {
-        "desc": 'reorder items by priority (high first)',
-        "handler": 'def _cmd_sort(args, items):\n    rank = {"high": 0, "medium": 1, "low": 2, "none": 3}\n    items.sort(key=lambda x: rank.get(x.get("priority", "none"), 3))\n    print(f"sorted {len(items)} items by priority")',
+        "desc": "reorder items by priority (high first)",
+        "handler": 'def _cmd_sort(args, items):\n    rank = {"high": 0, "medium": 1, "low": 2, "none": 3}\n    items.sort(key=lambda x: rank.get(x.get("priority", "none"), 3))\n    print(f"sorted {len(items)} items by priority")',  # noqa: E501
         "register": '    "sort": {"fn": _cmd_sort, "help": "sort items by priority", "args": []},',
     },
     "tag": {
-        "desc": 'tag an item by index',
-        "handler": 'def _cmd_tag(args, items):\n    item = items[args.index]\n    item.setdefault("tags", []).append(args.label)\n    print(f"tagged {args.index} with {args.label}: {item[\'tags\']}")',
-        "register": '    "tag": {"fn": _cmd_tag, "help": "tag an item", "args": [("index", {"type": int}), ("label", {})]},',
+        "desc": "tag an item by index",
+        "handler": 'def _cmd_tag(args, items):\n    item = items[args.index]\n    item.setdefault("tags", []).append(args.label)\n    print(f"tagged {args.index} with {args.label}: {item[\'tags\']}")',  # noqa: E501
+        "register": '    "tag": {"fn": _cmd_tag, "help": "tag an item", "args": [("index", {"type": int}), ("label", {})]},',  # noqa: E501
     },
     "export": {
-        "desc": 'write items to items.md as a checklist',
-        "handler": 'def _cmd_export(args, items):\n    from pathlib import Path\n    out = Path("items.md")\n    lines = ["# Items", ""]\n    for x in items:\n        mark = "x" if x["done"] else " "\n        lines.append(f"- [{mark}] {x[\'text\']}")\n    if not items:\n        lines.append("_(no items)_")\n    out.write_text("\\n".join(lines) + "\\n", encoding="utf-8")\n    print(f"exported {len(items)} items -> {out}")',
+        "desc": "write items to items.md as a checklist",
+        "handler": 'def _cmd_export(args, items):\n    from pathlib import Path\n    out = Path("items.md")\n    lines = ["# Items", ""]\n    for x in items:\n        mark = "x" if x["done"] else " "\n        lines.append(f"- [{mark}] {x[\'text\']}")\n    if not items:\n        lines.append("_(no items)_")\n    out.write_text("\\n".join(lines) + "\\n", encoding="utf-8")\n    print(f"exported {len(items)} items -> {out}")',  # noqa: E501
         "register": '    "export": {"fn": _cmd_export, "help": "write items to items.md checklist", "args": []},',
     },
 }
@@ -239,7 +237,7 @@ def render_glyph(sig: int, width: int = 16) -> list[str]:
     """Fold the (possibly huge) number into a 2D shape: its bits on a grid -- a glyph."""
     nbytes = max(1, (sig.bit_length() + 7) // 8)
     bits = bin(int.from_bytes(sig.to_bytes(nbytes, "big"), "big"))[2:].zfill(nbytes * 8)
-    rows = [bits[i:i + width] for i in range(0, len(bits), width)]
+    rows = [bits[i : i + width] for i in range(0, len(bits), width)]
     return ["".join("#" if b == "1" else "." for b in r) for r in rows]
 
 
@@ -299,7 +297,11 @@ def run_app(src: str, argv: list[str]):
 def _exec(app: Path, argv: list[str]):
     r = subprocess.run(
         [sys.executable, str(app), *argv],
-        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=20,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=20,
     )
     return r.returncode, (r.stdout or "") + (r.stderr or "")
 
@@ -372,7 +374,7 @@ def main():
         return
     if cmd == "puzzle":
         if len(args) < 3:
-            print("usage: forge.py puzzle <puzzle-name> \"<moves>\"")
+            print('usage: forge.py puzzle <puzzle-name> "<moves>"')
             return
         solve(args[2], puzzle=args[1])
         return

@@ -11,6 +11,7 @@ fiction over the real SCBE tools.
 
 Falls back to scripts/aether_console.py if Textual isn't installed.
 """
+
 from __future__ import annotations
 
 import json
@@ -69,10 +70,10 @@ class AetherApp(App):
     def __init__(self):
         super().__init__()
         self.cats = load_catalog()
-        self.mode = "hub"          # hub | scene | await_input | await_confirm
+        self.mode = "hub"  # hub | scene | await_input | await_confirm
         self.scene = None
-        self.pending = None        # action awaiting an input value
-        self.pending_cmd = None    # command awaiting y/n confirm
+        self.pending = None  # action awaiting an input value
+        self.pending_cmd = None  # command awaiting y/n confirm
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
@@ -104,7 +105,7 @@ class AetherApp(App):
 
     def show_scene(self, cat):
         self.w("")
-        self.w(f"[bold cyan]== {cat.get('icon','')} {cat['category']} ==[/]")
+        self.w(f"[bold cyan]== {cat.get('icon', '')} {cat['category']} ==[/]")
         self.w(f"[magenta]{NARRATION.get(cat['category'], '')}[/]")
         self.w("")
         for i, a in enumerate(cat["actions"], 1):
@@ -122,9 +123,16 @@ class AetherApp(App):
         env = dict(os.environ, PYTHONPATH=".")
         try:
             proc = subprocess.Popen(
-                cmd, shell=True, cwd=str(REPO), env=env,
-                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                text=True, encoding="utf-8", errors="replace", bufsize=1,
+                cmd,
+                shell=True,
+                cwd=str(REPO),
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                bufsize=1,
             )
             for line in proc.stdout:
                 self.call_from_thread(self.w, line.rstrip("\n"))
@@ -234,6 +242,7 @@ async def _selftest():
 def main():
     if "--selftest" in sys.argv:
         import asyncio
+
         asyncio.run(_selftest())
         return
     AetherApp().run()

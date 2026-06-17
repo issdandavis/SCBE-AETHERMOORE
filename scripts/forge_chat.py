@@ -10,6 +10,7 @@ assembles a real project and VERIFIES it by running. Honest about gaps.
     python scripts/forge_chat.py --say "i wanna keep track of shit i gotta do" \
                                  --say "yeah lemme cross em off" --say "thats it build it"
 """
+
 from __future__ import annotations
 
 import re
@@ -22,20 +23,82 @@ from forge_speak import _GAPS, solve, synth_spec  # noqa: E402
 
 # slang / kid / drunk-tolerant: many ways to say each capability
 _SLANG = {
-    "add": ["add", "new", "put", "keep", "track", "jot", "write", "note", "log", "record",
-            "stuff", "thing", "things", "shit", "gotta", "need to", "wanna", "todo", "to do",
-            "to-do", "list of", "gimme", "remember"],
-    "list": ["list", "show", "see", "view", "look", "read", "display", "what", "whats",
-             "check", "pull up", "my list", "everything"],
-    "done": ["done", "finish", "complete", "mark", "check off", "cross off", "cross em",
-             "tick", "did it", "handled", "crossed", "knock out"],
+    "add": [
+        "add",
+        "new",
+        "put",
+        "keep",
+        "track",
+        "jot",
+        "write",
+        "note",
+        "log",
+        "record",
+        "stuff",
+        "thing",
+        "things",
+        "shit",
+        "gotta",
+        "need to",
+        "wanna",
+        "todo",
+        "to do",
+        "to-do",
+        "list of",
+        "gimme",
+        "remember",
+    ],
+    "list": [
+        "list",
+        "show",
+        "see",
+        "view",
+        "look",
+        "read",
+        "display",
+        "what",
+        "whats",
+        "check",
+        "pull up",
+        "my list",
+        "everything",
+    ],
+    "done": [
+        "done",
+        "finish",
+        "complete",
+        "mark",
+        "check off",
+        "cross off",
+        "cross em",
+        "tick",
+        "did it",
+        "handled",
+        "crossed",
+        "knock out",
+    ],
     "count": ["count", "how many", "total", "number", "tally", "amount"],
     "remove": ["remove", "delete", "drop", "get rid", "trash", "yeet", "toss", "take off", "kill"],
     "clear": ["clear", "wipe", "reset", "empty", "start over", "fresh", "nuke", "scrap", "blow"],
 }
-_BUILD = ["build", "build it", "make it", "do it", "go ahead", "thats it", "that's it",
-          "send it", "yes do it", "yeah do it", "just build", "ship it", "make the thing",
-          "that works", "sounds good", "go for it"]
+_BUILD = [
+    "build",
+    "build it",
+    "make it",
+    "do it",
+    "go ahead",
+    "thats it",
+    "that's it",
+    "send it",
+    "yes do it",
+    "yeah do it",
+    "just build",
+    "ship it",
+    "make the thing",
+    "that works",
+    "sounds good",
+    "go for it",
+]
 _LISTY = ["track", "keep", "list of", "todo", "to do", "to-do", "checklist", "keep a", "remember"]
 
 
@@ -65,8 +128,10 @@ def next_question(ops: set[str]) -> str:
 
 def reply(ops: set[str]) -> str:
     if not ops:
-        return ("ok, simplest words: what do you want it to let you DO?\n"
-                "  (like 'add stuff and see it', or 'keep a list and check things off')")
+        return (
+            "ok, simplest words: what do you want it to let you DO?\n"
+            "  (like 'add stuff and see it', or 'keep a list and check things off')"
+        )
     nice = ", ".join(ops)
     return f"got it -- so far: {nice}.\n  {next_question(ops)}"
 

@@ -12,6 +12,7 @@ research/benchmarks/results/aether-console-<stamp>.json  (stamp via --stamp).
     python scripts/benchmark/aether_console_benchmark.py
     python scripts/benchmark/aether_console_benchmark.py --json
 """
+
 from __future__ import annotations
 
 import json
@@ -56,7 +57,11 @@ def classify(action: dict) -> str:
     if cmd.strip().startswith("gh ") or cmd.strip().startswith("git "):
         return "skip:network"
     # AI verbs need a model backend, not an engine capability
-    if cmd.startswith("python scbe.py ask") or cmd.startswith("python scbe.py do") or cmd.startswith("python scbe.py chat"):
+    if (
+        cmd.startswith("python scbe.py ask")
+        or cmd.startswith("python scbe.py do")
+        or cmd.startswith("python scbe.py chat")
+    ):
         return "skip:ai-backend"
     return "run"
 
@@ -72,8 +77,15 @@ def run_one(action: dict):
     t0 = time.perf_counter()
     try:
         proc = subprocess.run(
-            cmd, shell=True, cwd=str(REPO), env=env,
-            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=TIMEOUT,
+            cmd,
+            shell=True,
+            cwd=str(REPO),
+            env=env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=TIMEOUT,
         )
         ms = (time.perf_counter() - t0) * 1000.0
         # exit 0 = pass; exit 3 = graceful "optional dependency missing" (still a real capability boundary)
@@ -81,8 +93,7 @@ def run_one(action: dict):
             return {"status": "pass", "ms": ms}
         if proc.returncode == 3:
             return {"status": "skip:optional-dep", "ms": ms}
-        return {"status": "fail", "ms": ms, "code": proc.returncode,
-                "err": (proc.stderr or proc.stdout or "")[-200:]}
+        return {"status": "fail", "ms": ms, "code": proc.returncode, "err": (proc.stderr or proc.stdout or "")[-200:]}
     except subprocess.TimeoutExpired:
         return {"status": "fail", "ms": TIMEOUT * 1000.0, "err": "timeout"}
     except Exception as e:  # pragma: no cover
@@ -101,7 +112,10 @@ def main():
             res = run_one(a)
             rows.append({"category": cat["category"], "label": a["label"], **res})
             mark = {"pass": "OK", "fail": "XX"}.get(res["status"], "--")
-            print(f"  [{mark}] {cat['category']:<24} {a['label'][:40]:<40} {res['status']:<18} {res.get('ms',0):6.0f} ms")
+            print(
+                f"  [{mark}] {cat['category']:<24} {a['label'][:40]:<40} "
+                f"{res['status']:<18} {res.get('ms', 0):6.0f} ms"
+            )
 
     run_rows = [r for r in rows if r["status"] in ("pass", "fail")]
     passed = [r for r in run_rows if r["status"] == "pass"]
@@ -118,8 +132,10 @@ def main():
         "latency_ms_max": round(max(lat) if lat else 0, 1),
     }
     print("\n" + "=" * 64)
-    print(f"  Engine capabilities: {summary['passed']}/{summary['engine_capabilities_tested']} pass "
-          f"({summary['pass_rate_pct']}%)   mean {summary['latency_ms_mean']}ms")
+    print(
+        f"  Engine capabilities: {summary['passed']}/{summary['engine_capabilities_tested']} pass "
+        f"({summary['pass_rate_pct']}%)   mean {summary['latency_ms_mean']}ms"
+    )
     print(f"  Skipped (network/AI/destructive, not engine): {summary['skipped_integration_or_destructive']}")
     print("=" * 64)
 

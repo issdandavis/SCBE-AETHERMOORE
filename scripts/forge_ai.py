@@ -16,6 +16,7 @@ the target needs, cover it with the fewest/biggest building blocks, build, verif
     python scripts/forge_ai.py auto inventory
     python scripts/forge_ai.py blocks
 """
+
 from __future__ import annotations
 
 import sys
@@ -28,11 +29,11 @@ from forge import _MOVES, _PUZZLES, _exec, assemble, show_signature  # noqa: E40
 
 # Layer 2+: blocks are compositions of moves; blocks may contain BLOCKS (hierarchy).
 _BLOCKS: dict[str, list[str]] = {
-    "tracker": ["add", "list", "done"],     # a thing you add to, see, and complete
-    "counter": ["count", "clear"],           # totals + reset
+    "tracker": ["add", "list", "done"],  # a thing you add to, see, and complete
+    "counter": ["count", "clear"],  # totals + reset
     "manager": ["tracker", "counter", "remove"],  # a BLOCK OF BLOCKS
     "planner": ["tracker", "due", "agenda", "priority", "sort"],  # a day-planner
-    "organizer": ["tracker", "tag", "find", "export"],           # tag/search/export
+    "organizer": ["tracker", "tag", "find", "export"],  # tag/search/export
 }
 
 
@@ -94,15 +95,17 @@ def auto_solve(puzzle: str):
 
     print(f"  -> chose {len(plan)} building block(s): {', '.join(plan)}")
     print(f"  -> expands to {len(used)} primitive moves: {', '.join(used)}")
-    print(f"  -> grounds on Layer 0 (binary Turing spine): each move is a computation the bit-spine can run")
+    print("  -> grounds on Layer 0 (binary Turing spine): each move is a computation the bit-spine can run")
     print()
     for argv, good, out in results:
         print(f"   [{'OK' if good else 'XX'}] {name} {' '.join(argv):<18} -> {out}")
     lev = round(lines / max(1, len(plan)), 1)
     show_signature(used)
     print("\n  " + "=" * 58)
-    print(f"  blocks: {len(plan)}   primitive moves: {len(used)}   lines: {lines}   "
-          f"leverage: {lev} lines/block   {dt:.0f}ms")
+    print(
+        f"  blocks: {len(plan)}   primitive moves: {len(used)}   lines: {lines}   "
+        f"leverage: {lev} lines/block   {dt:.0f}ms"
+    )
     print(f"  SOLVED: {'YES -- controller reached the target, verified by running' if ok else 'NO'}")
     print("  " + "=" * 58)
     return ok
