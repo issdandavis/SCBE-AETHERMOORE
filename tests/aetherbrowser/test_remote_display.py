@@ -68,46 +68,30 @@ def test_canvas_coords_no_bounds():
     assert cy == 300.0
 
 
-def _err_get_display_not_found():
+def test_get_display_not_found():
     """Accessing a nonexistent display raises ValueError."""
     from agents.remote_display import RemoteDisplayManager
 
     mgr = RemoteDisplayManager()
-    mgr._get_display("nonexistent")
+    with pytest.raises(ValueError, match="not found"):
+        mgr._get_display("nonexistent")
 
 
-def _err_require_browser_not_launched():
+def test_require_browser_not_launched():
     """Operations before launch() raise RuntimeError."""
     from agents.remote_display import RemoteDisplayManager
 
     mgr = RemoteDisplayManager()
-    mgr._require_browser()
+    with pytest.raises(RuntimeError, match="not launched"):
+        mgr._require_browser()
 
 
-def _err_playwright_runtime_remote_not_open():
+def test_playwright_runtime_remote_not_open():
     """remote_screenshot before open_remote_display raises RuntimeError."""
-    import asyncio
-
     from agents.playwright_runtime import PlaywrightRuntime
 
     rt = PlaywrightRuntime()
-    asyncio.run(rt.remote_screenshot("test"))
+    with pytest.raises(RuntimeError, match="No remote displays"):
+        import asyncio
 
-
-@pytest.mark.parametrize(
-    "invoke, exc_type, match",
-    [
-        (_err_get_display_not_found, ValueError, "not found"),
-        (_err_require_browser_not_launched, RuntimeError, "not launched"),
-        (_err_playwright_runtime_remote_not_open, RuntimeError, "No remote displays"),
-    ],
-    ids=[
-        "get_display_not_found",
-        "require_browser_not_launched",
-        "playwright_runtime_remote_not_open",
-    ],
-)
-def test_error_paths(invoke, exc_type, match):
-    """Error-path operations raise the expected exception with the expected message."""
-    with pytest.raises(exc_type, match=match):
-        invoke()
+        asyncio.run(rt.remote_screenshot("test"))

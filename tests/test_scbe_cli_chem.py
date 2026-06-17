@@ -1,17 +1,10 @@
-import importlib.util
 import json
 import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCBE = REPO_ROOT / "scbe.py"
-
-
-def _engine_available(module_name: str) -> bool:
-    return importlib.util.find_spec(module_name) is not None
 
 
 def run_scbe(*args: str) -> subprocess.CompletedProcess[str]:
@@ -63,8 +56,6 @@ def test_chem_bonds_exposes_sacred_tongue_molecule_report() -> None:
 
 
 def test_chem_convert_uses_rdkit_adapter() -> None:
-    if not _engine_available("rdkit"):
-        pytest.skip("rdkit is an optional molecule-native adapter; not installed")
     result = run_scbe(
         "chem",
         "convert",
@@ -86,8 +77,6 @@ def test_chem_convert_uses_rdkit_adapter() -> None:
 
 
 def test_chem_convert_uses_openbabel_adapter() -> None:
-    if not _engine_available("openbabel"):
-        pytest.skip("openbabel is an optional molecule-native adapter; not installed")
     result = run_scbe(
         "chem",
         "convert",

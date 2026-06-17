@@ -156,36 +156,3 @@ Origami is not a flourish here — it is the same math:
 So "coding becomes shapes, you're folding paper cranes" is exact: the center IR is the
 sheet, `twists` are the creases, and the emitted artifact — software files or valve schedule
 — is the crane. The `manifold_plan` is the crease pattern written down.
-
----
-
-## 7. Three coordinates of one position (now shipped)
-
-The geometry above is no longer just theory — it landed as code (`python/scbe/board.py`,
-`torus.py`, and the Poincaré router). A token now carries **three coordinates of the same
-position**, each a different face of the cube idea applied to *where a token lives*:
-
-| Coordinate | Module | Job | Algebra (this file) |
-|---|---|---|---|
-| discrete **board** | `board.py` | reversible **address** (position ⇄ token, exact) | the lattice / signed-perm layer of `Bₙ` (§2) |
-| flat **torus** | `torus.py` | periodic **locality** (neighbors + wormhole seams) | edge-wrap = the 90° Givens that closes the cycle (§1); seam = identifying θ and θ+2π |
-| **Poincaré** ball | router | governance **cost** (drift is exponentially dear) | the hyperbolic **boost** layer `SO⁺(n,1)` (§3) |
-
-Two facts from the shipped `torus.py` that match the algebra exactly:
-
-- **Wormhole seam.** Column `0xf` and `0x0` are 15 apart on the flat board but **one step**
-  across the wrap (`is_wormhole → True`). That is the torus identification of `θ` with
-  `θ + 2π` — the periodic boundary, not a special case.
-- **`Q₆` skeleton.** Flip one bit → move one node (`hamming == 1`, a `hypercube_neighbors`
-  edge). Flip a *high* bit (`0x00 → 0x20`) → hop from the arithmetic plane to the comparison
-  plane in a single move. That single-bit hop **is** a transposition/sign-flip generator of
-  `Bₙ` (§2): "another plane" is just another vertex of the `n`-cube, reached by one generator.
-
-So the `code-cube --target manifold` twist schedule and these three coordinates are the same
-object seen twice: a **twist** is a generator that moves the token's `Bₙ`/board address,
-re-wraps its torus neighborhood, and (for governance twists) costs Poincaré rapidity. One
-position, three readouts — the cube thesis, at the level of token *location*.
-
-**Honest status:** every coordinate round-trips and has a passing test; whether this legible
-structure becomes a measurable *edge* is the open experiment, not a settled result. The
-coordinate system holds; the thesis is still being run.

@@ -93,7 +93,7 @@ if "aa300dc3" in tasks:
                 nr, nc = r + dr, c + dc
                 if 0 <= nr < h and 0 <= nc < w:
                     neigh.append(int(ex.input[nr, nc]))
-            print(f"    ({r},{c}): inp={ex.input[r, c]} -> out={ex.output[r, c]}, neighbors={neigh}")
+            print(f"    ({r},{c}): inp={ex.input[r,c]} -> out={ex.output[r,c]}, neighbors={neigh}")
         print()
 
 print("\n=== Visualize d37a1ef5 ===")

@@ -177,7 +177,7 @@ def harvest_failing_workflows(limit: int) -> list[dict]:
             {
                 "id": f"run-{r.get('databaseId')}",
                 "title": f"workflow failed: {name}",
-                "body": f"event={r.get('event', '')}",
+                "body": f"event={r.get('event','')}",
                 "labels": [],
                 "source": "workflow-failure",
                 "url": r.get("url", ""),

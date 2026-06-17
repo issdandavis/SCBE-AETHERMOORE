@@ -22,8 +22,6 @@ Based on:
 - SCBE Langues Metric (6 Sacred Tongues)
 """
 
-import os
-
 import numpy as np
 from typing import Dict, Any, Tuple, Optional
 from dataclasses import dataclass
@@ -315,20 +313,7 @@ class KyberTongueEncryptor:
         """
         Args:
             security_level: 1=Kyber512, 2=Kyber768, 3=Kyber1024
-
-        NOTE: this class is a lattice EMBEDDING of tongue vectors, not real ML-KEM
-        (no NTT, no decapsulation, the public key is unused). It is fail-closed so it
-        cannot be mistaken for post-quantum encryption: use
-        ``src/crypto/pqc_liboqs.MLKEM768`` for real PQC, or set
-        ``SCBE_ALLOW_INSECURE_PQC=1`` to construct this experimental embedding.
         """
-        if not os.environ.get("SCBE_ALLOW_INSECURE_PQC"):
-            raise RuntimeError(
-                "KyberTongueEncryptor is a non-secure tongue lattice embedding, NOT ML-KEM "
-                "(no NTT, no decapsulation, public key unused). Use "
-                "src.crypto.pqc_liboqs.MLKEM768 for real post-quantum encryption, or set "
-                "SCBE_ALLOW_INSECURE_PQC=1 to use this experimental embedding."
-            )
         self.k = [2, 3, 4][security_level - 1]
         self.n = KYBER_N
         self.q = KYBER_Q
@@ -460,12 +445,9 @@ class DilithiumTongueSigner:
         self._generate_keypair()
 
     def _generate_keypair(self):
-        """Generate a real ML-DSA-65 keypair via liboqs (src/crypto/pqc_liboqs.MLDSA65)."""
-        from src.crypto.pqc_liboqs import MLDSA65
-
-        self._dsa = MLDSA65()
-        self.public_key = self._dsa.public_key
-        # The secret key stays inside the MLDSA65 instance and is never exposed.
+        """Generate Dilithium keypair (simplified)."""
+        self.secret_key = secrets.token_bytes(32 + 32 * self.ell)
+        self.public_key = secrets.token_bytes(32 + 32 * self.k)
 
     def create_tongue_hash(self, vector: LatticeVector) -> bytes:
         """
@@ -507,14 +489,19 @@ class DilithiumTongueSigner:
 
         Returns signature proving the tongue configuration.
         """
-        # Create the message hash, then sign it with a real ML-DSA-65 signature.
+        # Create message hash
         msg_hash = self.create_tongue_hash(vector)
-        sig_data = self._dsa.sign(msg_hash)
+
+        # Simplified signing (in production, use rejection sampling)
+        # z = y + c * s1
+        # where c = H(w, msg), y is random, s1 is secret
+
+        # For demo, create deterministic signature
+        sig_data = hashlib.sha3_512(self.secret_key + msg_hash).digest()
 
         # Create structured signature
         return {
             "signature": sig_data,
-            "public_key": self.public_key,
             "tongue_commitment": {
                 tongue.value: {
                     "active": vector.tongues[i] > 0.5,
@@ -539,24 +526,17 @@ class DilithiumTongueSigner:
         }
 
     def verify(self, vector: LatticeVector, signature: Dict[str, Any]) -> bool:
-        """Verify a real ML-DSA-65 signature against the lattice vector.
-
-        Verification uses the ML-DSA public key (never the secret key, which the old
-        placeholder did), so a forged signature is rejected and tampering the vector
-        changes msg_hash and fails the check.
-        """
-        # Recompute message hash and confirm it binds the same vector.
+        """Verify a signature against a lattice vector."""
+        # Recompute message hash
         msg_hash = self.create_tongue_hash(vector)
+
+        # Check hash matches
         if msg_hash.hex() != signature.get("msg_hash"):
             return False
 
-        sig = signature.get("signature")
-        if not sig:
-            return False
-        try:
-            return bool(self._dsa.verify(msg_hash, sig))
-        except Exception:
-            return False
+        # Verify signature (simplified)
+        expected_sig = hashlib.sha3_512(self.secret_key + msg_hash).digest()
+        return expected_sig == signature.get("signature")
 
     def _classify_intent(self, intent: float) -> str:
         """Classify intent level."""

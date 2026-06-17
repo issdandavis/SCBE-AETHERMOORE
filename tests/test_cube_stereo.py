@@ -1,5 +1,4 @@
 """Tests for the 3D-glasses stereo combiner (two AST lenses -> one view)."""
-
 from python.scbe.cube_stereo import stereo_encode
 from python.scbe.ast_cube_encoder import VECTOR_DIM
 
@@ -8,7 +7,7 @@ SRC = "def f(x):\n    y = x + 1\n    return y\n"
 
 def test_lenses_fully_lock():
     s = stereo_encode(SRC)
-    assert s["lock_ratio"] == 1.0  # both lenses see the same node everywhere
+    assert s["lock_ratio"] == 1.0           # both lenses see the same node everywhere
     assert s["lens_a_count"] == s["lens_b_count"] == s["node_count"]
 
 

@@ -331,26 +331,33 @@ class TestQuantumSecurityLevel:
 
     @pytest.mark.xfail(reason="Requires liboqs for full NIST compliance - using fallback implementation")
     @pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC module not available")
-    @pytest.mark.parametrize(
-        ("algorithm", "accessor"),
-        [
-            ("ML-KEM-768", "get_mlkem768_security_level"),
-            ("ML-DSA-65", "get_mldsa65_security_level"),
-        ],
-    )
-    def test_nist_level_3(self, algorithm, accessor):
+    def test_mlkem768_nist_level_3(self):
         """
-        ML-KEM-768 and ML-DSA-65 MUST each provide NIST Security Level 3.
+        ML-KEM-768 MUST provide NIST Security Level 3.
 
-        For ML-KEM-768 this means:
+        This means:
         - Quantum security ≥ 128 bits
         - Equivalent to breaking AES-192
 
-        This test WILL FAIL if the security level is not documented or incorrect.
+        This test WILL FAIL if security level is not documented or incorrect.
         """
-        if hasattr(pqc_core, accessor):
-            level = getattr(pqc_core, accessor)()
-            assert level >= 3, f"{algorithm} must provide NIST Level 3, got Level {level}"
+        if hasattr(pqc_core, "get_mlkem768_security_level"):
+            level = pqc_core.get_mlkem768_security_level()
+            assert level >= 3, f"ML-KEM-768 must provide NIST Level 3, got Level {level}"
+        else:
+            pytest.fail("Security level not documented - cannot verify compliance")
+
+    @pytest.mark.xfail(reason="Requires liboqs for full NIST compliance - using fallback implementation")
+    @pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC module not available")
+    def test_mldsa65_nist_level_3(self):
+        """
+        ML-DSA-65 MUST provide NIST Security Level 3.
+
+        This test WILL FAIL if security level is not documented or incorrect.
+        """
+        if hasattr(pqc_core, "get_mldsa65_security_level"):
+            level = pqc_core.get_mldsa65_security_level()
+            assert level >= 3, f"ML-DSA-65 must provide NIST Level 3, got Level {level}"
         else:
             pytest.fail("Security level not documented - cannot verify compliance")
 

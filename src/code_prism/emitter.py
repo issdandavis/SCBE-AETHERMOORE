@@ -25,35 +25,8 @@ def emit_python(module: PrismModule) -> str:
 
 def _ts_signature(fn: PrismFunction) -> str:
     args = ", ".join(f"{arg}: any" for arg in fn.args)
-    ret = _ts_type(fn.returns)
+    ret = fn.returns or "any"
     return f"export function {fn.name}({args}): {ret} {{"
-
-
-def _ts_type(type_name: str | None) -> str:
-    if not type_name:
-        return "any"
-    normalised = type_name.strip().lower()
-    if normalised in {"int", "float", "number"}:
-        return "number"
-    if normalised in {"str", "string"}:
-        return "string"
-    if normalised in {"bool", "boolean"}:
-        return "boolean"
-    if normalised in {"none", "void"}:
-        return "void"
-    return type_name
-
-
-def _ts_body_line(line: str) -> str:
-    stripped = line.strip()
-    if not stripped or stripped == "pass":
-        return "// no-op"
-    if stripped.startswith("return "):
-        return f"{stripped};"
-    if "=" in stripped and "==" not in stripped and not stripped.startswith(("const ", "let ", "var ")):
-        name, value = stripped.split("=", 1)
-        return f"const {name.strip()} = {value.strip()};"
-    return stripped if stripped.endswith(";") else f"{stripped};"
 
 
 def emit_typescript(module: PrismModule) -> str:
@@ -63,66 +36,20 @@ def emit_typescript(module: PrismModule) -> str:
         if fn.docstring:
             out.append(f"  // {fn.docstring}")
         if fn.body:
+            out.append("  // Translated body:")
             for line in fn.body:
-                out.append(f"  {_ts_body_line(line)}")
+                ts_line = line if line.endswith(";") else f"{line};"
+                out.append(f"  {ts_line}")
         else:
-            out.append("  // no-op")
+            out.append("  // TODO: implement")
         out.append("}")
         out.append("")
     return "\n".join(out).rstrip() + "\n"
 
 
-def _go_type(fn: PrismFunction) -> str:
-    if fn.returns:
-        normalised = fn.returns.strip().lower()
-        if normalised in {"int", "float", "number"}:
-            return "float64"
-        if normalised in {"str", "string"}:
-            return "string"
-        if normalised in {"bool", "boolean"}:
-            return "bool"
-        if normalised in {"none", "void"}:
-            return ""
-    arithmetic_markers = (" + ", " - ", " * ", " / ")
-    if any(line.strip().startswith("return ") and any(op in line for op in arithmetic_markers) for line in fn.body):
-        return "float64"
-    return "interface{}"
-
-
 def _go_signature(fn: PrismFunction) -> str:
-    ret = _go_type(fn)
-    arg_type = ret or "interface{}"
-    args = ", ".join(f"{arg} {arg_type}" for arg in fn.args)
-    suffix = f" {ret}" if ret else ""
-    return f"func {fn.name.title()}({args}){suffix} {{"
-
-
-def _go_zero_value(type_name: str) -> str:
-    if type_name == "float64":
-        return "0"
-    if type_name == "string":
-        return '""'
-    if type_name == "bool":
-        return "false"
-    return "nil"
-
-
-def _go_body_line(line: str) -> str:
-    stripped = line.strip()
-    if not stripped or stripped == "pass":
-        return "// no-op"
-    if stripped.startswith("return "):
-        return stripped
-    for keyword in ("const ", "let ", "var "):
-        if stripped.startswith(keyword):
-            stripped = stripped[len(keyword) :].strip()
-            break
-    if "=" in stripped and "==" not in stripped and ":=" not in stripped:
-        name, value = stripped.split("=", 1)
-        return f"{name.strip()} := {value.strip()}"
-    if stripped.startswith("//"):
-        return stripped
-    return f"// unsupported safe-subset statement: {stripped}"
+    args = ", ".join(f"{arg} interface{{}}" for arg in fn.args)
+    return f"func {fn.name.title()}({args}) interface{{}} {{"
 
 
 def emit_go(module: PrismModule) -> str:
@@ -132,18 +59,11 @@ def emit_go(module: PrismModule) -> str:
         "",
     ]
     for fn in module.functions:
-        ret_type = _go_type(fn)
         out.append(_go_signature(fn))
         if fn.docstring:
             out.append(f"    // {fn.docstring}")
-        emitted_return = False
-        for line in fn.body:
-            go_line = _go_body_line(line)
-            if go_line.startswith("return "):
-                emitted_return = True
-            out.append(f"    {go_line}")
-        if not emitted_return and ret_type:
-            out.append(f"    return {_go_zero_value(ret_type)}")
+        out.append("    // TODO: translate implementation")
+        out.append("    return nil")
         out.append("}")
         out.append("")
     return "\n".join(out).rstrip() + "\n"

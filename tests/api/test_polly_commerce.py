@@ -57,7 +57,6 @@ def test_catalog_is_nonempty_and_has_real_stripe_links() -> None:
         ("Add to cart please", "buy"),
         ("Sign me up for the toolkit", "buy"),
         ("I want to buy service credits", "buy"),
-        ("I want to buy the black box for my crashed PC", "buy"),
         ("hosted routing credits", "buy"),
         ("toolkit", "buy"),
         ("training vault", "buy"),
@@ -98,13 +97,6 @@ def test_classify_intent_buy_resolves_service_credits() -> None:
     assert intent.name == "buy"
     assert intent.product is not None
     assert intent.product.sku == "scbe-service-credits"
-
-
-def test_classify_intent_buy_resolves_black_box() -> None:
-    intent = classify_intent("My Windows PC shut down during an AI job. Buy the black box.")
-    assert intent.name == "buy"
-    assert intent.product is not None
-    assert intent.product.sku == "scbe-black-box"
 
 
 def test_classify_intent_buy_without_product_keyword() -> None:

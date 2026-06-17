@@ -54,7 +54,10 @@ PYTHAGOREAN_COMMA = 531441 / 524288
 # =============================================================================
 
 try:
-    from .phdm_polyhedra import get_registry, get_polyhedron, CrystalPolyhedron, CognitiveZone, ZONE_SPECS, PHI as _PHI
+    from .phdm_polyhedra import (
+        get_registry, get_polyhedron, CrystalPolyhedron,
+        CognitiveZone, ZONE_SPECS, PHI as _PHI
+    )
 except ImportError:
     # Standalone mode — define minimal stubs
     get_registry = None
@@ -65,7 +68,6 @@ except ImportError:
 # Data Classes
 # =============================================================================
 
-
 @dataclass
 class ThoughtPath:
     """
@@ -74,18 +76,21 @@ class ThoughtPath:
     Represents a single "thought" — the trajectory an intent takes
     through the 16 cognitive polyhedra.
     """
-
-    nodes: List[int]  # Ordered list of polyhedron indices
-    tongue: str = "KO"  # Active Sacred Tongue
-    energy_cost: float = 0.0  # Total φ-weighted energy
+    nodes: List[int]                    # Ordered list of polyhedron indices
+    tongue: str = "KO"                  # Active Sacred Tongue
+    energy_cost: float = 0.0            # Total φ-weighted energy
     segment_energies: List[float] = field(default_factory=list)
-    is_valid: bool = True  # Passes Hamiltonian check
+    is_valid: bool = True               # Passes Hamiltonian check
     violations: List[str] = field(default_factory=list)
-    symplectic_momentum: float = 0.0  # Σ p·dq
+    symplectic_momentum: float = 0.0    # Σ p·dq
 
     def is_hamiltonian(self) -> bool:
         """Check if path visits each node exactly once."""
-        return self.is_valid and len(self.nodes) == len(set(self.nodes)) and len(self.violations) == 0
+        return (
+            self.is_valid and
+            len(self.nodes) == len(set(self.nodes)) and
+            len(self.violations) == 0
+        )
 
     @property
     def length(self) -> int:
@@ -95,14 +100,13 @@ class ThoughtPath:
 @dataclass
 class GeodesicSegment:
     """A segment of the geodesic curve γ(t) between two polyhedra."""
-
     from_idx: int
     to_idx: int
     from_centroid: np.ndarray
     to_centroid: np.ndarray
-    energy: float  # φ-weighted segment energy
+    energy: float               # φ-weighted segment energy
     hyperbolic_distance: float  # d_H between centroids
-    curvature: float = 0.0  # Local curvature κ at midpoint
+    curvature: float = 0.0     # Local curvature κ at midpoint
 
 
 # =============================================================================
@@ -112,22 +116,22 @@ class GeodesicSegment:
 # Default adjacency graph for the 16 polyhedra
 # Each node connects to 3-5 neighbors based on geometric/topological affinity
 DEFAULT_ADJACENCY: Dict[int, List[int]] = {
-    0: [1, 2, 5, 10],  # Tetrahedron → Cube, Octahedron, TruncTet, Szilassi
-    1: [0, 2, 6, 14],  # Cube → Tet, Oct, Cuboctahedron, RhombDodec
-    2: [0, 1, 3, 6],  # Octahedron → Tet, Cube, Dodec, Cuboctahedron
-    3: [2, 4, 7, 8],  # Dodecahedron → Oct, Ico, Icosidodec, SmallStell
-    4: [3, 5, 7, 9],  # Icosahedron → Dodec, TruncTet, Icosidodec, GreatDodec
-    5: [0, 4, 6, 10],  # TruncTet → Tet, Ico, Cuboctahedron, Szilassi
-    6: [1, 2, 5, 7, 14],  # Cuboctahedron → Cube, Oct, TruncTet, Icosidodec, RhombDodec
-    7: [3, 4, 6, 8, 15],  # Icosidodecahedron → Dodec, Ico, Cuboctahedron, SmallStell, Bilinski
-    8: [3, 7, 9, 15],  # SmallStellDodec → Dodec, Icosidodec, GreatDodec, Bilinski
-    9: [4, 8, 10, 11],  # GreatDodec → Ico, SmallStell, Szilassi, Csaszar
-    10: [0, 5, 9, 11],  # Szilassi → Tet, TruncTet, GreatDodec, Csaszar
-    11: [9, 10, 12, 13],  # Csaszar → GreatDodec, Szilassi, PentBipyr, TriCup
-    12: [11, 13, 14],  # PentBipyramid → Csaszar, TriCup, RhombDodec
-    13: [11, 12, 15],  # TriCupola → Csaszar, PentBipyr, Bilinski
-    14: [1, 6, 12, 15],  # RhombDodec → Cube, Cuboctahedron, PentBipyr, Bilinski
-    15: [7, 8, 13, 14],  # Bilinski → Icosidodec, SmallStell, TriCup, RhombDodec
+    0:  [1, 2, 5, 10],       # Tetrahedron → Cube, Octahedron, TruncTet, Szilassi
+    1:  [0, 2, 6, 14],       # Cube → Tet, Oct, Cuboctahedron, RhombDodec
+    2:  [0, 1, 3, 6],        # Octahedron → Tet, Cube, Dodec, Cuboctahedron
+    3:  [2, 4, 7, 8],        # Dodecahedron → Oct, Ico, Icosidodec, SmallStell
+    4:  [3, 5, 7, 9],        # Icosahedron → Dodec, TruncTet, Icosidodec, GreatDodec
+    5:  [0, 4, 6, 10],       # TruncTet → Tet, Ico, Cuboctahedron, Szilassi
+    6:  [1, 2, 5, 7, 14],    # Cuboctahedron → Cube, Oct, TruncTet, Icosidodec, RhombDodec
+    7:  [3, 4, 6, 8, 15],    # Icosidodecahedron → Dodec, Ico, Cuboctahedron, SmallStell, Bilinski
+    8:  [3, 7, 9, 15],       # SmallStellDodec → Dodec, Icosidodec, GreatDodec, Bilinski
+    9:  [4, 8, 10, 11],      # GreatDodec → Ico, SmallStell, Szilassi, Csaszar
+    10: [0, 5, 9, 11],       # Szilassi → Tet, TruncTet, GreatDodec, Csaszar
+    11: [9, 10, 12, 13],     # Csaszar → GreatDodec, Szilassi, PentBipyr, TriCup
+    12: [11, 13, 14],        # PentBipyramid → Csaszar, TriCup, RhombDodec
+    13: [11, 12, 15],        # TriCupola → Csaszar, PentBipyr, Bilinski
+    14: [1, 6, 12, 15],      # RhombDodec → Cube, Cuboctahedron, PentBipyr, Bilinski
+    15: [7, 8, 13, 14],      # Bilinski → Icosidodec, SmallStell, TriCup, RhombDodec
 }
 
 
@@ -150,7 +154,6 @@ def get_adjacency() -> Dict[int, List[int]]:
 # =============================================================================
 # Hamiltonian Path Router
 # =============================================================================
-
 
 class HamiltonianRouter:
     """
@@ -184,7 +187,8 @@ class HamiltonianRouter:
 
         # Generate default centroids using φ-spacing
         for i in range(16):
-            angles = np.array([(i * PHI * k) % (2 * np.pi) for k in range(1, 7)])
+            angles = np.array([(i * PHI * k) % (2 * np.pi)
+                               for k in range(1, 7)])
             r = 0.1 + 0.05 * i  # Spread across radial distance
             centroids[i] = np.cos(angles) * r
         return centroids
@@ -211,8 +215,8 @@ class HamiltonianRouter:
     def _hyperbolic_distance(self, u: np.ndarray, v: np.ndarray) -> float:
         """Poincaré ball hyperbolic distance."""
         u, v = np.asarray(u), np.asarray(v)
-        norm_u_sq = min(np.sum(u**2), 0.9999)
-        norm_v_sq = min(np.sum(v**2), 0.9999)
+        norm_u_sq = min(np.sum(u ** 2), 0.9999)
+        norm_v_sq = min(np.sum(v ** 2), 0.9999)
         diff_sq = np.sum((u - v) ** 2)
         delta = 2 * diff_sq / ((1 - norm_u_sq) * (1 - norm_v_sq))
         return float(np.arccosh(1 + delta))
@@ -243,7 +247,9 @@ class HamiltonianRouter:
             required_nodes = set(range(16))
 
         # Hash intent to determine starting node
-        intent_hash = hashlib.sha256(intent_vector.tobytes() + tongue.encode()).digest()
+        intent_hash = hashlib.sha256(
+            intent_vector.tobytes() + tongue.encode()
+        ).digest()
         start_idx = intent_hash[0] % 16
         while start_idx not in required_nodes:
             start_idx = (start_idx + 1) % 16
@@ -296,7 +302,9 @@ class HamiltonianRouter:
         for i in range(len(path) - 1):
             neighbors = self.adjacency.get(path[i], [])
             if path[i + 1] not in neighbors:
-                thought.violations.append(f"P{path[i]}→P{path[i+1]}: no edge in adjacency graph")
+                thought.violations.append(
+                    f"P{path[i]}→P{path[i+1]}: no edge in adjacency graph"
+                )
 
         return thought
 
@@ -321,7 +329,8 @@ class HamiltonianRouter:
             neighbors = self.adjacency.get(current, [])
 
             # Filter to unvisited neighbors in required set
-            candidates = [n for n in neighbors if n not in visited and n in required]
+            candidates = [n for n in neighbors
+                          if n not in visited and n in required]
 
             if not candidates:
                 # Backtrack if stuck
@@ -403,7 +412,6 @@ class HamiltonianRouter:
 # Golden Path (HMAC-chained geodesic)
 # =============================================================================
 
-
 def create_golden_path(
     shared_secret: bytes,
     total_duration: float = 60.0,
@@ -453,7 +461,9 @@ def create_golden_path(
         keys.append(K_next)
 
         # Perturb centroid by key
-        perturbation = np.array([(b % 100) / 10000.0 - 0.005 for b in K_next[:6]])
+        perturbation = np.array([
+            (b % 100) / 10000.0 - 0.005 for b in K_next[:6]
+        ])
         centroid += perturbation
 
         waypoints.append(centroid)
@@ -465,7 +475,6 @@ def create_golden_path(
 # =============================================================================
 # Self-Test
 # =============================================================================
-
 
 def self_test() -> Dict[str, Any]:
     """Run self-tests on the Hamiltonian router."""
@@ -505,7 +514,9 @@ def self_test() -> Dict[str, Any]:
     if path.length > 0 and path.energy_cost > 0:
         passed += 1
         results["trace_path"] = (
-            f"PASS ({path.length} nodes, " f"energy={path.energy_cost:.2f}, " f"violations={len(path.violations)})"
+            f"PASS ({path.length} nodes, "
+            f"energy={path.energy_cost:.2f}, "
+            f"violations={len(path.violations)})"
         )
     else:
         results["trace_path"] = "FAIL"

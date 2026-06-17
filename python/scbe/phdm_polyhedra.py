@@ -33,30 +33,27 @@ from enum import Enum
 # Constants
 # =============================================================================
 
-PHI = (1 + np.sqrt(5)) / 2  # Golden ratio φ ≈ 1.618033988749895
-PHI_INV = 2 / (1 + np.sqrt(5))  # 1/φ ≈ 0.618033988749895
+PHI = (1 + np.sqrt(5)) / 2          # Golden ratio φ ≈ 1.618033988749895
+PHI_INV = 2 / (1 + np.sqrt(5))      # 1/φ ≈ 0.618033988749895
 PYTHAGOREAN_COMMA = 531441 / 524288  # 3^12 / 2^19 ≈ 1.0136432648
-R_FIFTH = 3 / 2  # Perfect fifth harmonic ratio
+R_FIFTH = 3 / 2                      # Perfect fifth harmonic ratio
 
 
 # =============================================================================
 # Enums
 # =============================================================================
 
-
 class CognitiveZone(Enum):
     """Cognitive zones in the Crystal Cranium."""
-
-    CORE = "core"  # Platonic solids — limbic system
-    CORTEX = "cortex"  # Archimedean solids — processing layer
-    RISK = "risk"  # Kepler-Poinsot — subconscious / danger
-    RECURSIVE = "recursive"  # Toroidal — self-diagnostic loops
-    BRIDGE = "bridge"  # Johnson + Rhombic — connectome
+    CORE = "core"           # Platonic solids — limbic system
+    CORTEX = "cortex"       # Archimedean solids — processing layer
+    RISK = "risk"           # Kepler-Poinsot — subconscious / danger
+    RECURSIVE = "recursive" # Toroidal — self-diagnostic loops
+    BRIDGE = "bridge"       # Johnson + Rhombic — connectome
 
 
 class PolyhedronFamily(Enum):
     """Mathematical family of each polyhedron."""
-
     PLATONIC = "platonic"
     ARCHIMEDEAN = "archimedean"
     KEPLER_POINSOT = "kepler_poinsot"
@@ -117,7 +114,6 @@ ZONE_SPECS: Dict[CognitiveZone, Dict[str, Any]] = {
 # Polyhedron Data Class
 # =============================================================================
 
-
 @dataclass
 class CrystalPolyhedron:
     """
@@ -127,24 +123,23 @@ class CrystalPolyhedron:
     assignment, a position in 6D Langues space, and adjacency data for
     Hamiltonian path routing.
     """
-
-    index: int  # P0–P15 registry index
-    name: str  # Human-readable name
-    family: PolyhedronFamily  # Mathematical classification
-    zone: CognitiveZone  # Cognitive zone assignment
-    vertices: int  # V
-    edges: int  # E
-    faces: int  # F
-    genus: int  # Topological genus
-    face_types: str  # Description of face geometry
-    symmetry_group: str  # Point group
-    centroid_6d: np.ndarray  # Position in 6D Langues space
-    radial_position: float  # r in Poincaré ball
-    cognitive_function: str  # Brain analog
-    security_role: str  # Safety function
-    dual: Optional[str] = None  # Dual polyhedron name
+    index: int                          # P0–P15 registry index
+    name: str                           # Human-readable name
+    family: PolyhedronFamily            # Mathematical classification
+    zone: CognitiveZone                 # Cognitive zone assignment
+    vertices: int                       # V
+    edges: int                          # E
+    faces: int                          # F
+    genus: int                          # Topological genus
+    face_types: str                     # Description of face geometry
+    symmetry_group: str                 # Point group
+    centroid_6d: np.ndarray             # Position in 6D Langues space
+    radial_position: float              # r in Poincaré ball
+    cognitive_function: str             # Brain analog
+    security_role: str                  # Safety function
+    dual: Optional[str] = None          # Dual polyhedron name
     adjacency: List[int] = field(default_factory=list)  # Connected node indices
-    phi_weight: float = 1.0  # φ-scaled energy weight
+    phi_weight: float = 1.0             # φ-scaled energy weight
 
     # ---- Topology ----
 
@@ -206,18 +201,17 @@ class CrystalPolyhedron:
 # 3D Vertex Coordinate Generators
 # =============================================================================
 
-
 def _tetrahedron_coords() -> np.ndarray:
-    return np.array([[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]], dtype=float) / np.sqrt(3)
-
+    return np.array([[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]],
+                    dtype=float) / np.sqrt(3)
 
 def _cube_coords() -> np.ndarray:
-    return np.array([[x, y, z] for x in [-1, 1] for y in [-1, 1] for z in [-1, 1]], dtype=float)
-
+    return np.array([[x, y, z] for x in [-1, 1] for y in [-1, 1] for z in [-1, 1]],
+                    dtype=float)
 
 def _octahedron_coords() -> np.ndarray:
-    return np.array([[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]], dtype=float)
-
+    return np.array([[1, 0, 0], [-1, 0, 0], [0, 1, 0],
+                     [0, -1, 0], [0, 0, 1], [0, 0, -1]], dtype=float)
 
 def _dodecahedron_coords() -> np.ndarray:
     coords = []
@@ -235,7 +229,6 @@ def _dodecahedron_coords() -> np.ndarray:
         coords.append([s * PHI, 0, -s * PHI_INV])
     return np.array(coords[:20], dtype=float)
 
-
 def _icosahedron_coords() -> np.ndarray:
     coords = []
     for s1 in [-1, 1]:
@@ -243,13 +236,12 @@ def _icosahedron_coords() -> np.ndarray:
             coords.append([0, s1, s2 * PHI])
             coords.append([s1, s2 * PHI, 0])
             coords.append([s2 * PHI, 0, s1])
-    return np.array(coords, dtype=float) / np.sqrt(1 + PHI**2)
+    return np.array(coords, dtype=float) / np.sqrt(1 + PHI ** 2)
 
 
 # =============================================================================
 # 6D Centroid Generation (φ-scaled Langues Space)
 # =============================================================================
-
 
 def _make_centroid_6d(index: int, zone: CognitiveZone) -> np.ndarray:
     """
@@ -264,7 +256,8 @@ def _make_centroid_6d(index: int, zone: CognitiveZone) -> np.ndarray:
     r_target = (band[0] + band[1]) / 2  # Center of radial band
 
     # φ-based angular distribution in 6D
-    angles = np.array([(index * PHI * k + k * np.pi / 6) % (2 * np.pi) for k in range(1, 7)])
+    angles = np.array([(index * PHI * k + k * np.pi / 6) % (2 * np.pi)
+                       for k in range(1, 7)])
     raw = np.cos(angles)
     norm = np.linalg.norm(raw)
     if norm < 1e-10:
@@ -278,7 +271,6 @@ def _make_centroid_6d(index: int, zone: CognitiveZone) -> np.ndarray:
 # =============================================================================
 # The 16 Canonical Polyhedra
 # =============================================================================
-
 
 def build_registry() -> List[CrystalPolyhedron]:
     """
@@ -294,14 +286,9 @@ def build_registry() -> List[CrystalPolyhedron]:
         # χ = 2, maximum stability, thoughts stay here
         # =================================================================
         CrystalPolyhedron(
-            index=0,
-            name="Tetrahedron",
-            family=PolyhedronFamily.PLATONIC,
-            zone=CognitiveZone.CORE,
-            vertices=4,
-            edges=6,
-            faces=4,
-            genus=0,
+            index=0, name="Tetrahedron",
+            family=PolyhedronFamily.PLATONIC, zone=CognitiveZone.CORE,
+            vertices=4, edges=6, faces=4, genus=0,
             face_types="4 equilateral triangles",
             symmetry_group="Td",
             centroid_6d=_make_centroid_6d(0, CognitiveZone.CORE),
@@ -310,17 +297,12 @@ def build_registry() -> List[CrystalPolyhedron]:
             security_role="Do-no-harm axiom anchor",
             dual="Tetrahedron",
             adjacency=[1, 2, 5, 10],
-            phi_weight=PHI**0,  # 1.0
+            phi_weight=PHI ** 0,  # 1.0
         ),
         CrystalPolyhedron(
-            index=1,
-            name="Cube",
-            family=PolyhedronFamily.PLATONIC,
-            zone=CognitiveZone.CORE,
-            vertices=8,
-            edges=12,
-            faces=6,
-            genus=0,
+            index=1, name="Cube",
+            family=PolyhedronFamily.PLATONIC, zone=CognitiveZone.CORE,
+            vertices=8, edges=12, faces=6, genus=0,
             face_types="6 squares",
             symmetry_group="Oh",
             centroid_6d=_make_centroid_6d(1, CognitiveZone.CORE),
@@ -329,17 +311,12 @@ def build_registry() -> List[CrystalPolyhedron]:
             security_role="Data integrity enforcement",
             dual="Octahedron",
             adjacency=[0, 2, 6, 14],
-            phi_weight=PHI**1,  # φ
+            phi_weight=PHI ** 1,  # φ
         ),
         CrystalPolyhedron(
-            index=2,
-            name="Octahedron",
-            family=PolyhedronFamily.PLATONIC,
-            zone=CognitiveZone.CORE,
-            vertices=6,
-            edges=12,
-            faces=8,
-            genus=0,
+            index=2, name="Octahedron",
+            family=PolyhedronFamily.PLATONIC, zone=CognitiveZone.CORE,
+            vertices=6, edges=12, faces=8, genus=0,
             face_types="8 equilateral triangles",
             symmetry_group="Oh",
             centroid_6d=_make_centroid_6d(2, CognitiveZone.CORE),
@@ -348,17 +325,12 @@ def build_registry() -> List[CrystalPolyhedron]:
             security_role="Access control gate",
             dual="Cube",
             adjacency=[0, 1, 3, 6],
-            phi_weight=PHI**2,  # φ²
+            phi_weight=PHI ** 2,  # φ²
         ),
         CrystalPolyhedron(
-            index=3,
-            name="Dodecahedron",
-            family=PolyhedronFamily.PLATONIC,
-            zone=CognitiveZone.CORE,
-            vertices=20,
-            edges=30,
-            faces=12,
-            genus=0,
+            index=3, name="Dodecahedron",
+            family=PolyhedronFamily.PLATONIC, zone=CognitiveZone.CORE,
+            vertices=20, edges=30, faces=12, genus=0,
             face_types="12 regular pentagons",
             symmetry_group="Ih",
             centroid_6d=_make_centroid_6d(3, CognitiveZone.CORE),
@@ -367,17 +339,12 @@ def build_registry() -> List[CrystalPolyhedron]:
             security_role="Policy enforcement manifold",
             dual="Icosahedron",
             adjacency=[2, 4, 7, 8],
-            phi_weight=PHI**3,  # φ³
+            phi_weight=PHI ** 3,  # φ³
         ),
         CrystalPolyhedron(
-            index=4,
-            name="Icosahedron",
-            family=PolyhedronFamily.PLATONIC,
-            zone=CognitiveZone.CORE,
-            vertices=12,
-            edges=30,
-            faces=20,
-            genus=0,
+            index=4, name="Icosahedron",
+            family=PolyhedronFamily.PLATONIC, zone=CognitiveZone.CORE,
+            vertices=12, edges=30, faces=20, genus=0,
             face_types="20 equilateral triangles",
             symmetry_group="Ih",
             centroid_6d=_make_centroid_6d(4, CognitiveZone.CORE),
@@ -386,21 +353,17 @@ def build_registry() -> List[CrystalPolyhedron]:
             security_role="Cross-domain fusion gate",
             dual="Dodecahedron",
             adjacency=[3, 5, 7, 9],
-            phi_weight=PHI**4,  # φ⁴
+            phi_weight=PHI ** 4,  # φ⁴
         ),
+
         # =================================================================
         # CORTEX ZONE: Archimedean Solids (P5–P7) — Processing Layer
         # χ = 2, moderate stability, monitored reasoning
         # =================================================================
         CrystalPolyhedron(
-            index=5,
-            name="Truncated Tetrahedron",
-            family=PolyhedronFamily.ARCHIMEDEAN,
-            zone=CognitiveZone.CORTEX,
-            vertices=12,
-            edges=18,
-            faces=8,
-            genus=0,
+            index=5, name="Truncated Tetrahedron",
+            family=PolyhedronFamily.ARCHIMEDEAN, zone=CognitiveZone.CORTEX,
+            vertices=12, edges=18, faces=8, genus=0,
             face_types="4 triangles + 4 hexagons",
             symmetry_group="Td",
             centroid_6d=_make_centroid_6d(5, CognitiveZone.CORTEX),
@@ -409,17 +372,12 @@ def build_registry() -> List[CrystalPolyhedron]:
             security_role="Deviation trap — truncation catches shortcuts",
             dual="Triakis Tetrahedron",
             adjacency=[0, 4, 6, 10],
-            phi_weight=PHI**5,
+            phi_weight=PHI ** 5,
         ),
         CrystalPolyhedron(
-            index=6,
-            name="Cuboctahedron",
-            family=PolyhedronFamily.ARCHIMEDEAN,
-            zone=CognitiveZone.CORTEX,
-            vertices=12,
-            edges=24,
-            faces=14,
-            genus=0,
+            index=6, name="Cuboctahedron",
+            family=PolyhedronFamily.ARCHIMEDEAN, zone=CognitiveZone.CORTEX,
+            vertices=12, edges=24, faces=14, genus=0,
             face_types="8 triangles + 6 squares",
             symmetry_group="Oh",
             centroid_6d=_make_centroid_6d(6, CognitiveZone.CORTEX),
@@ -428,17 +386,12 @@ def build_registry() -> List[CrystalPolyhedron]:
             security_role="Dual-validation via Archimedean symmetry",
             dual="Rhombic Dodecahedron",
             adjacency=[1, 2, 5, 7, 14],
-            phi_weight=PHI**6,
+            phi_weight=PHI ** 6,
         ),
         CrystalPolyhedron(
-            index=7,
-            name="Icosidodecahedron",
-            family=PolyhedronFamily.ARCHIMEDEAN,
-            zone=CognitiveZone.CORTEX,
-            vertices=30,
-            edges=60,
-            faces=32,
-            genus=0,
+            index=7, name="Icosidodecahedron",
+            family=PolyhedronFamily.ARCHIMEDEAN, zone=CognitiveZone.CORTEX,
+            vertices=30, edges=60, faces=32, genus=0,
             face_types="20 triangles + 12 pentagons",
             symmetry_group="Ih",
             centroid_6d=_make_centroid_6d(7, CognitiveZone.CORTEX),
@@ -447,21 +400,17 @@ def build_registry() -> List[CrystalPolyhedron]:
             security_role="Geodesic smoothing for anomaly detection",
             dual="Rhombic Triacontahedron",
             adjacency=[3, 4, 6, 8, 15],
-            phi_weight=PHI**7,
+            phi_weight=PHI ** 7,
         ),
+
         # =================================================================
         # RISK ZONE: Kepler-Poinsot Solids (P8–P9) — Subconscious
         # χ ≤ 2 (P8: χ=-6), intentionally unstable — forces ejection
         # =================================================================
         CrystalPolyhedron(
-            index=8,
-            name="Small Stellated Dodecahedron",
-            family=PolyhedronFamily.KEPLER_POINSOT,
-            zone=CognitiveZone.RISK,
-            vertices=12,
-            edges=30,
-            faces=12,
-            genus=4,
+            index=8, name="Small Stellated Dodecahedron",
+            family=PolyhedronFamily.KEPLER_POINSOT, zone=CognitiveZone.RISK,
+            vertices=12, edges=30, faces=12, genus=4,
             face_types="12 pentagrams (self-intersecting)",
             symmetry_group="Ih",
             centroid_6d=_make_centroid_6d(8, CognitiveZone.RISK),
@@ -470,17 +419,12 @@ def build_registry() -> List[CrystalPolyhedron]:
             security_role="Instability marker — χ=-6 forces collapse",
             dual="Great Dodecahedron",
             adjacency=[3, 7, 9, 15],
-            phi_weight=PHI**8,
+            phi_weight=PHI ** 8,
         ),
         CrystalPolyhedron(
-            index=9,
-            name="Great Dodecahedron",
-            family=PolyhedronFamily.KEPLER_POINSOT,
-            zone=CognitiveZone.RISK,
-            vertices=12,
-            edges=30,
-            faces=12,
-            genus=4,
+            index=9, name="Great Dodecahedron",
+            family=PolyhedronFamily.KEPLER_POINSOT, zone=CognitiveZone.RISK,
+            vertices=12, edges=30, faces=12, genus=4,
             face_types="12 pentagons (deep intersecting)",
             symmetry_group="Ih",
             centroid_6d=_make_centroid_6d(9, CognitiveZone.RISK),
@@ -489,21 +433,17 @@ def build_registry() -> List[CrystalPolyhedron]:
             security_role="Maximum instability — deep non-convexity boundary",
             dual="Small Stellated Dodecahedron",
             adjacency=[4, 8, 10, 11],
-            phi_weight=PHI**9,
+            phi_weight=PHI ** 9,
         ),
+
         # =================================================================
         # RECURSIVE ZONE: Toroidal (P10–P11) — Cerebellum
         # χ = 0 (genus-1), self-stabilizing diagnostic loops
         # =================================================================
         CrystalPolyhedron(
-            index=10,
-            name="Szilassi Polyhedron",
-            family=PolyhedronFamily.TOROIDAL,
-            zone=CognitiveZone.RECURSIVE,
-            vertices=14,
-            edges=21,
-            faces=7,
-            genus=1,
+            index=10, name="Szilassi Polyhedron",
+            family=PolyhedronFamily.TOROIDAL, zone=CognitiveZone.RECURSIVE,
+            vertices=14, edges=21, faces=7, genus=1,
             face_types="7 hexagons (every face touches every other)",
             symmetry_group="C1",
             centroid_6d=_make_centroid_6d(10, CognitiveZone.RECURSIVE),
@@ -512,17 +452,12 @@ def build_registry() -> List[CrystalPolyhedron]:
             security_role="Skip-attack resistance — full face connectivity",
             dual="Császár Polyhedron",
             adjacency=[0, 5, 9, 11],
-            phi_weight=PHI**10,
+            phi_weight=PHI ** 10,
         ),
         CrystalPolyhedron(
-            index=11,
-            name="Császár Polyhedron",
-            family=PolyhedronFamily.TOROIDAL,
-            zone=CognitiveZone.RECURSIVE,
-            vertices=7,
-            edges=21,
-            faces=14,
-            genus=1,
+            index=11, name="Császár Polyhedron",
+            family=PolyhedronFamily.TOROIDAL, zone=CognitiveZone.RECURSIVE,
+            vertices=7, edges=21, faces=14, genus=1,
             face_types="14 triangles (dual to Szilassi)",
             symmetry_group="C1",
             centroid_6d=_make_centroid_6d(11, CognitiveZone.RECURSIVE),
@@ -531,21 +466,17 @@ def build_registry() -> List[CrystalPolyhedron]:
             security_role="Minimal-vertex triangulation — hard to spoof",
             dual="Szilassi Polyhedron",
             adjacency=[9, 10, 12, 13],
-            phi_weight=PHI**11,
+            phi_weight=PHI ** 11,
         ),
+
         # =================================================================
         # BRIDGE ZONE: Johnson Solids (P12–P13) — Connectome A
         # χ = 2, stable synaptic connectors
         # =================================================================
         CrystalPolyhedron(
-            index=12,
-            name="Pentagonal Bipyramid",
-            family=PolyhedronFamily.JOHNSON,
-            zone=CognitiveZone.BRIDGE,
-            vertices=7,
-            edges=15,
-            faces=10,
-            genus=0,
+            index=12, name="Pentagonal Bipyramid",
+            family=PolyhedronFamily.JOHNSON, zone=CognitiveZone.BRIDGE,
+            vertices=7, edges=15, faces=10, genus=0,
             face_types="10 equilateral triangles",
             symmetry_group="D5h",
             centroid_6d=_make_centroid_6d(12, CognitiveZone.BRIDGE),
@@ -553,17 +484,12 @@ def build_registry() -> List[CrystalPolyhedron]:
             cognitive_function="Domain connector A — pyramidal bridge",
             security_role="Dual-extension deviation trap",
             adjacency=[11, 13, 14],
-            phi_weight=PHI**12,
+            phi_weight=PHI ** 12,
         ),
         CrystalPolyhedron(
-            index=13,
-            name="Triangular Cupola",
-            family=PolyhedronFamily.JOHNSON,
-            zone=CognitiveZone.BRIDGE,
-            vertices=9,
-            edges=15,
-            faces=8,
-            genus=0,
+            index=13, name="Triangular Cupola",
+            family=PolyhedronFamily.JOHNSON, zone=CognitiveZone.BRIDGE,
+            vertices=9, edges=15, faces=8, genus=0,
             face_types="4 triangles + 3 squares + 1 hexagon",
             symmetry_group="C3v",
             centroid_6d=_make_centroid_6d(13, CognitiveZone.BRIDGE),
@@ -571,21 +497,17 @@ def build_registry() -> List[CrystalPolyhedron]:
             cognitive_function="Domain connector B — layered stacking",
             security_role="Cupola manifold for inter-zone bridging",
             adjacency=[11, 12, 15],
-            phi_weight=PHI**13,
+            phi_weight=PHI ** 13,
         ),
+
         # =================================================================
         # BRIDGE ZONE: Rhombic Variants (P14–P15) — Connectome B
         # χ = 2, space-filling tessellation connectors
         # =================================================================
         CrystalPolyhedron(
-            index=14,
-            name="Rhombic Dodecahedron",
-            family=PolyhedronFamily.RHOMBIC,
-            zone=CognitiveZone.BRIDGE,
-            vertices=14,
-            edges=24,
-            faces=12,
-            genus=0,
+            index=14, name="Rhombic Dodecahedron",
+            family=PolyhedronFamily.RHOMBIC, zone=CognitiveZone.BRIDGE,
+            vertices=14, edges=24, faces=12, genus=0,
             face_types="12 congruent rhombi",
             symmetry_group="Oh",
             centroid_6d=_make_centroid_6d(14, CognitiveZone.BRIDGE),
@@ -594,17 +516,12 @@ def build_registry() -> List[CrystalPolyhedron]:
             security_role="Dual to cuboctahedron — validates P6 paths",
             dual="Cuboctahedron",
             adjacency=[1, 6, 12, 15],
-            phi_weight=PHI**14,
+            phi_weight=PHI ** 14,
         ),
         CrystalPolyhedron(
-            index=15,
-            name="Bilinski Dodecahedron",
-            family=PolyhedronFamily.RHOMBIC,
-            zone=CognitiveZone.BRIDGE,
-            vertices=14,
-            edges=24,
-            faces=12,
-            genus=0,
+            index=15, name="Bilinski Dodecahedron",
+            family=PolyhedronFamily.RHOMBIC, zone=CognitiveZone.BRIDGE,
+            vertices=14, edges=24, faces=12, genus=0,
             face_types="12 golden rhombi (φ-ratio diagonals)",
             symmetry_group="D2h",
             centroid_6d=_make_centroid_6d(15, CognitiveZone.BRIDGE),
@@ -612,7 +529,7 @@ def build_registry() -> List[CrystalPolyhedron]:
             cognitive_function="Pattern matching — golden-ratio tessellation",
             security_role="φ-symmetric validation of harmonic paths",
             adjacency=[7, 8, 13, 14],
-            phi_weight=PHI**15,
+            phi_weight=PHI ** 15,
         ),
     ]
 
@@ -660,7 +577,6 @@ def get_by_name(name: str) -> Optional[CrystalPolyhedron]:
 # Validation
 # =============================================================================
 
-
 def validate_all() -> Tuple[bool, List[str]]:
     """
     Validate all 16 polyhedra against zone-dependent topology rules.
@@ -687,14 +603,20 @@ def validate_all() -> Tuple[bool, List[str]]:
         if p.family != PolyhedronFamily.KEPLER_POINSOT:
             expected = p.expected_euler()
             if chi != expected:
-                errors.append(f"P{p.index} {p.name}: χ={chi} ≠ 2-2g={expected} " f"(genus={p.genus})")
+                errors.append(
+                    f"P{p.index} {p.name}: χ={chi} ≠ 2-2g={expected} "
+                    f"(genus={p.genus})"
+                )
 
     # Verify adjacency graph is symmetric
     for p in registry:
         for adj_idx in p.adjacency:
             neighbor = registry[adj_idx]
             if p.index not in neighbor.adjacency:
-                errors.append(f"Asymmetric adjacency: P{p.index}→P{adj_idx} " f"but P{adj_idx}↛P{p.index}")
+                errors.append(
+                    f"Asymmetric adjacency: P{p.index}→P{adj_idx} "
+                    f"but P{adj_idx}↛P{p.index}"
+                )
 
     return len(errors) == 0, errors
 
@@ -733,7 +655,6 @@ def topology_report() -> Dict[str, Any]:
 # Self-Test
 # =============================================================================
 
-
 def self_test() -> Dict[str, Any]:
     """Run self-tests on the polyhedra registry."""
     results = {}
@@ -757,12 +678,14 @@ def self_test() -> Dict[str, Any]:
     risk = get_zone_polyhedra(CognitiveZone.RISK)
     recursive = get_zone_polyhedra(CognitiveZone.RECURSIVE)
     bridge = get_zone_polyhedra(CognitiveZone.BRIDGE)
-    if len(core) == 5 and len(cortex) == 3 and len(risk) == 2 and len(recursive) == 2 and len(bridge) == 4:
+    if len(core) == 5 and len(cortex) == 3 and len(risk) == 2 \
+       and len(recursive) == 2 and len(bridge) == 4:
         passed += 1
         results["zone_distribution"] = "PASS (5+3+2+2+4=16)"
     else:
         results["zone_distribution"] = (
-            f"FAIL ({len(core)}+{len(cortex)}+{len(risk)}" f"+{len(recursive)}+{len(bridge)})"
+            f"FAIL ({len(core)}+{len(cortex)}+{len(risk)}"
+            f"+{len(recursive)}+{len(bridge)})"
         )
 
     # Test 3: Topology validation
@@ -781,7 +704,10 @@ def self_test() -> Dict[str, Any]:
         passed += 1
         results["kepler_poinsot_chi"] = "PASS (P8 χ=-6, valid in Risk zone)"
     else:
-        results["kepler_poinsot_chi"] = f"FAIL (P8 χ={p8.euler_characteristic()}, " f"valid={p8.is_valid_topology()})"
+        results["kepler_poinsot_chi"] = (
+            f"FAIL (P8 χ={p8.euler_characteristic()}, "
+            f"valid={p8.is_valid_topology()})"
+        )
 
     # Test 5: Toroidal χ=0
     total += 1
@@ -795,7 +721,10 @@ def self_test() -> Dict[str, Any]:
 
     # Test 6: φ-weights are φ^index
     total += 1
-    phi_ok = all(abs(p.phi_weight - PHI**p.index) < 1e-6 for p in registry)
+    phi_ok = all(
+        abs(p.phi_weight - PHI ** p.index) < 1e-6
+        for p in registry
+    )
     if phi_ok:
         passed += 1
         results["phi_weights"] = "PASS (all weights = φ^index)"
@@ -836,7 +765,9 @@ if __name__ == "__main__":
     report = topology_report()
     for zone_name, info in report["zones"].items():
         chis = info["chi_values"]
-        print(f"  {zone_name:12s}: {info['count']} polyhedra, " f"χ={chis}, {info['stability']}")
-    print(f"\n  Total: V={report['totals']['V']}, " f"E={report['totals']['E']}, F={report['totals']['F']}")
+        print(f"  {zone_name:12s}: {info['count']} polyhedra, "
+              f"χ={chis}, {info['stability']}")
+    print(f"\n  Total: V={report['totals']['V']}, "
+          f"E={report['totals']['E']}, F={report['totals']['F']}")
     print(f"  Sum(χ) = {report['chi_sum']}")
     print(f"  All valid: {report['all_valid']}")

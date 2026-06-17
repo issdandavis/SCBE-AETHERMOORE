@@ -126,7 +126,7 @@ def token_rule(index: int) -> Dict[str, object]:
     cls = classify(index)
     return {
         "token_index": index,
-        "rule": index,  # byte value IS the Wolfram code
+        "rule": index,            # byte value IS the Wolfram code
         "class": cls,
         "class_name": CLASS_NAME[cls],
         "universal": index in UNIVERSAL_RULES,
@@ -162,14 +162,9 @@ def _demo() -> None:
     print(f"  universal (Turing-complete) tokens: {sorted(UNIVERSAL_RULES)}")
 
     print("\nnotable tokens:")
-    for idx, label in [
-        (0, "blank"),
-        (30, "Rule 30 — chaos / PRNG"),
-        (90, "Rule 90 — Sierpinski"),
-        (110, "Rule 110 — UNIVERSAL"),
-        (184, "Rule 184 — traffic"),
-        (255, "fill"),
-    ]:
+    for idx, label in [(0, "blank"), (30, "Rule 30 — chaos / PRNG"),
+                       (90, "Rule 90 — Sierpinski"), (110, "Rule 110 — UNIVERSAL"),
+                       (184, "Rule 184 — traffic"), (255, "fill")]:
         t = token_rule(idx)
         print(f"  token {idx:>3} [{t['wolfram_code_bits']}]  Class {t['class']:<3} {t['class_name']}")
 

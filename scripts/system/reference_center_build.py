@@ -82,11 +82,9 @@ def build_agent_card(
         lines.append("- none")
     else:
         for row in packets[:8]:
-            mtime = row.get("mtime", "")
-            status = row.get("status", "")
-            task_id = row.get("task_id", "")
-            packet_path = row.get("path", "")
-            lines.append(f"- `{mtime}` | `{status}` | {task_id} | {packet_path}")
+            lines.append(
+                f"- `{row.get('mtime','')}` | `{row.get('status','')}` | {row.get('task_id','')} | {row.get('path','')}"
+            )
     lines.extend(
         [
             "",

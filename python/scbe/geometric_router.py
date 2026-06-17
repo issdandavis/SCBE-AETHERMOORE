@@ -29,8 +29,8 @@ from typing import Dict, List, Sequence, Tuple
 import numpy as np
 
 TONGUES: Tuple[str, ...] = ("KO", "AV", "RU", "CA", "UM", "DR")
-PHI = (1.0 + 5.0**0.5) / 2.0
-PHI_W = np.array([PHI**k for k in range(6)])  # 1, 1.62, 2.62, 4.24, 6.85, 11.09
+PHI = (1.0 + 5.0 ** 0.5) / 2.0
+PHI_W = np.array([PHI ** k for k in range(6)])  # 1, 1.62, 2.62, 4.24, 6.85, 11.09
 _EPS = 1e-9
 _BALL = 0.93  # squash factor keeping points strictly inside the unit ball
 
@@ -95,7 +95,6 @@ def finsler_distance(p, q, agent) -> float:
 
 # --- geodesics: ray-trace the actual path through the lattice ----------------
 
-
 def _ball_to_klein(x: np.ndarray) -> np.ndarray:
     return 2.0 * x / (1.0 + float(x @ x))
 
@@ -116,12 +115,11 @@ def geodesic(p, q, steps: int = 16, agent=None) -> List[np.ndarray]:
 
 # --- fleet routing: tangent-vector parallel tracks ---------------------------
 
-
 @dataclass
 class Agent:
     name: str
-    tongue: object  # dict or 6-vector identity
-    pos: np.ndarray = field(default=None)  # current point in tongue space
+    tongue: object               # dict or 6-vector identity
+    pos: np.ndarray = field(default=None)   # current point in tongue space
     load: int = 0
 
     def __post_init__(self):
@@ -133,7 +131,7 @@ class Agent:
 @dataclass
 class Task:
     name: str
-    profile: object  # dict or 6-vector
+    profile: object              # dict or 6-vector
     agent: str = None
     cost: float = 0.0
 
@@ -141,16 +139,14 @@ class Task:
 @dataclass
 class Route:
     """One agent's parallel track: the tasks it owns + its geodesic ray through them."""
-
     agent: str
     tasks: List[str]
-    track: List[np.ndarray]  # sampled geodesic visiting the tasks in order
+    track: List[np.ndarray]      # sampled geodesic visiting the tasks in order
     total_cost: float
 
 
-def route_fleet(
-    agents: Sequence[Agent], tasks: Sequence[Task], pressure: float = 0.6, tour: bool = True
-) -> List[Route]:
+def route_fleet(agents: Sequence[Agent], tasks: Sequence[Task],
+                pressure: float = 0.6, tour: bool = True) -> List[Route]:
     """Assign every task to the agent whose Finsler metric makes it closest,
     with a FLUID PRESSURE term that penalizes piling onto a loaded agent — so the
     fleet spreads like an incompressible flow instead of all rushing one node.
@@ -167,7 +163,7 @@ def route_fleet(
         best, best_c = None, float("inf")
         for a in agents:
             d = finsler_distance(a.pos, t.profile, a.tongue)
-            c = d + pressure * loads[a.name]  # additive fluid back-pressure
+            c = d + pressure * loads[a.name]   # additive fluid back-pressure
             if c < best_c:
                 best, best_c = a, c
         t.agent = best.name
@@ -180,7 +176,8 @@ def route_fleet(
         owned = by_agent[a.name]
         if not tour:
             # assignment only — skip the O(k^2) geodesic ordering
-            routes.append(Route(a.name, [t.name for t in owned], [], sum(t.cost for t in owned)))
+            routes.append(Route(a.name, [t.name for t in owned], [],
+                                sum(t.cost for t in owned)))
             continue
         # order each agent's tasks along its geodesic (nearest-first greedy tour)
         seq, cur, tot = [], a.pos, 0.0
@@ -211,7 +208,6 @@ def round_robin(agents: Sequence[Agent], tasks: Sequence[Task]) -> float:
 
 # --- demo --------------------------------------------------------------------
 
-
 def _demo() -> None:
     rng = np.random.default_rng(7)
     # a fleet of 6 tongue-specialist agents (one strong tongue each)
@@ -236,15 +232,11 @@ def _demo() -> None:
     print("  parallel tracks (each agent = a tangent vector tracing a geodesic):")
     for r in routes:
         ray = f"{len(r.track)} pts" if r.track else "-"
-        print(
-            f"    {r.agent:<10} {len(r.tasks):>2} tasks  track {ray:<8} "
-            f"cost {r.total_cost:6.2f}   {', '.join(r.tasks[:5])}{' …' if len(r.tasks) > 5 else ''}"
-        )
+        print(f"    {r.agent:<10} {len(r.tasks):>2} tasks  track {ray:<8} "
+              f"cost {r.total_cost:6.2f}   {', '.join(r.tasks[:5])}{' …' if len(r.tasks) > 5 else ''}")
     print(f"\n  total routing cost  geometric: {geo_cost:7.2f}")
-    print(
-        f"                      round-robin: {rr_cost:7.2f}   "
-        f"-> geometric is {100 * (1 - geo_cost / rr_cost):.0f}% cheaper"
-    )
+    print(f"                      round-robin: {rr_cost:7.2f}   "
+          f"-> geometric is {100 * (1 - geo_cost / rr_cost):.0f}% cheaper")
     # show affinity: strongly-flavored tasks land on the matching specialist
     print("\n  affinity check (one-tongue tasks route to their specialist):")
     for t in tasks[:9]:
@@ -253,10 +245,8 @@ def _demo() -> None:
             print(f"    {t.name}  dominant {dom:<3} -> {t.agent:<10} (cost {t.cost:.2f})")
     # one ray-traced geodesic
     g = geodesic({"KO": 1.0}, {"DR": 1.0, "UM": 0.5}, steps=6, agent={"KO": 1.0})
-    print(
-        f"\n  ray-traced geodesic KO-agent -> DR/UM node ({len(g)} samples, "
-        f"endpoints ||{np.linalg.norm(g[0]):.2f}|| -> ||{np.linalg.norm(g[-1]):.2f}||)"
-    )
+    print(f"\n  ray-traced geodesic KO-agent -> DR/UM node ({len(g)} samples, "
+          f"endpoints ||{np.linalg.norm(g[0]):.2f}|| -> ||{np.linalg.norm(g[-1]):.2f}||)")
 
 
 if __name__ == "__main__":

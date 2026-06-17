@@ -21,17 +21,17 @@
     "postinstall": "npm run copy:assets"
   },
   "dependencies": {
-    "@capacitor/android": "^8.4.0",
-    "@capacitor/app": "^8.1.0",
-    "@capacitor/core": "^8.4.0",
-    "@capacitor/network": "^8.0.1",
-    "@capacitor/splash-screen": "^8.0.1",
-    "@capacitor/status-bar": "^8.0.2"
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/network": "^7.0.0",
+    "@capacitor/splash-screen": "^7.0.0",
+    "@capacitor/status-bar": "^7.0.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.4.0",
-    "cross-env": "^10.1.0",
-    "typescript": "^6.0.3"
+    "@capacitor/cli": "^7.0.0",
+    "cross-env": "^7.0.3",
+    "typescript": "^5.8.3"
   },
   "overrides": {
     "yauzl": "^3.2.1"
