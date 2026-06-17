@@ -1198,6 +1198,126 @@ def cmd_numfind(args: argparse.Namespace) -> int:
     return 2
 
 
+def cmd_crosstalk(args: argparse.Namespace) -> int:
+    """Governed AI-to-AI fleet dialogue: agents take turns; each turn must pass the sieve."""
+    topic = _arg_or_stdin(getattr(args, "topic", None))
+    if not topic:
+        print('usage: scbe crosstalk "<topic>" [--rounds N] [--agents N] [--offline]', file=sys.stderr)
+        return 2
+    try:
+        from src import fleet_crosstalk as fc
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"crosstalk unavailable: {exc}", file=sys.stderr)
+        return 1
+
+    n_agents = max(1, getattr(args, "agents", 2) or 2)
+    rounds = max(1, getattr(args, "rounds", 2) or 2)
+    backend = getattr(args, "backend", None)
+    model = getattr(args, "model", None)
+    pool = [
+        ("Proposer", "proposes concrete ideas"),
+        ("Skeptic", "stress-tests claims and surfaces risks"),
+        ("Synthesizer", "reconciles the views into a plan"),
+        ("Builder", "turns the plan into concrete next steps"),
+    ]
+    agents = []
+    for i in range(n_agents):
+        base_name, persona = pool[i % len(pool)]
+        name = base_name if i < len(pool) else f"{base_name}{i}"
+        agents.append(fc.Agent(name=name, persona=persona, backend=backend, model=model))
+
+    available = _detect_backends()
+    offline = getattr(args, "offline", False) or not available
+    if offline:
+        responder = fc.eliza_responder
+        mode = "offline (mechanical ELIZA)"
+    else:
+        responder = fc.make_ai_responder(ai_ask)
+        mode = f"live ({backend or available[0]})"
+
+    result = fc.run_crosstalk(
+        topic, agents, rounds, responder, pipeline_quick_score, gate=not getattr(args, "no_gate", False)
+    )
+    result["mode"] = mode
+
+    if getattr(args, "json_output", False):
+        print(json.dumps(result))
+        return 0
+    print(f"crosstalk · {mode} · {len(agents)} agents · {rounds} rounds")
+    print(f"topic: {topic}\n")
+    for t in result["turns"]:
+        if t["accepted"]:
+            print(f"  r{t['round']} {t['agent']}: {t['message']}")
+        else:
+            glyph = DECISION_GLYPH.get(t["decision"], "?")
+            print(f"  r{t['round']} {t['agent']}: [{glyph} {t['decision']} — withheld by sieve] {t['message']}")
+    g = result["governance"]
+    print(f"\ngovernance: {g['accepted']}/{g['total']} turns accepted, {g['withheld']} withheld · {g['by_decision']}")
+    return 0
+
+
+def cmd_primecat(args: argparse.Namespace) -> int:
+    """Prime-coded categories: assign primes, encode/decode items, sieve by target category."""
+    try:
+        from src.prime_category import PrimeCategories
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"primecat unavailable: {exc}", file=sys.stderr)
+        return 1
+
+    op = getattr(args, "pc_op", None)
+    as_json = getattr(args, "json_output", False)
+    if op is None:
+        print("usage: scbe primecat {assign|code|decode|match} ...", file=sys.stderr)
+        return 2
+
+    def _universe(s):
+        return [c for c in (s or "").replace(",", " ").split() if c]
+
+    try:
+        if op == "assign":
+            pc = PrimeCategories(getattr(args, "categories", []) or [])
+            mapping = pc.mapping
+            if as_json:
+                print(json.dumps({"op": "assign", "mapping": mapping}))
+            else:
+                for cat, prime in mapping.items():
+                    print(f"{cat}\t{prime}")
+            return 0
+
+        universe = _universe(getattr(args, "universe", None))
+        if not universe:
+            print("--universe is required (comma- or space-separated categories)", file=sys.stderr)
+            return 2
+        pc = PrimeCategories(universe)
+
+        if op == "code":
+            cats = getattr(args, "item", []) or []
+            code = pc.code(cats)
+            print(json.dumps({"op": "code", "categories": cats, "code": code}) if as_json else code)
+            return 0
+
+        if op == "decode":
+            code = _parse_bigint(args.code)
+            cats = pc.decode(code)
+            print(json.dumps({"op": "decode", "code": code, "categories": cats}) if as_json else " ".join(cats))
+            return 0
+
+        if op == "match":
+            code = _parse_bigint(args.code)
+            target = args.target
+            hit = pc.in_category(code, target)
+            if as_json:
+                print(json.dumps({"op": "match", "code": code, "target": target, "in_category": hit}))
+            else:
+                print(f"{code} {'is' if hit else 'is NOT'} in category '{target}'")
+            return 0 if hit else 1
+    except (KeyError, ValueError) as e:
+        print(f"primecat error: {e}", file=sys.stderr)
+        return 2
+    print(f"unknown primecat op '{op}'", file=sys.stderr)
+    return 2
+
+
 # Bit spine: byte-exact binary/hex/trit and tiny-machine command surface.
 SPINE_TEMPLATE_COMMANDS = {
     "users": [
@@ -4079,6 +4199,48 @@ Legacy (backward compat):
     nf_rng.add_argument("--limit", type=int, default=0, help="max primes to print (0 = all)")
     nf_rng.add_argument("--json", dest="json_output", action="store_true")
     nf_rng.set_defaults(func=cmd_numfind)
+
+    ct = sub.add_parser(
+        "crosstalk", aliases=["xt"], help='Governed AI-to-AI fleet dialogue ("scbe crosstalk \\"topic\\"")'
+    )
+    ct.add_argument("topic", nargs="?", help="discussion topic (or pipe via stdin)")
+    ct.add_argument("--rounds", type=int, default=2, help="rounds (each agent speaks once per round)")
+    ct.add_argument("--agents", type=int, default=2, help="number of fleet agents")
+    ct.add_argument("--backend", help="AI backend for live mode (claude/openai/anthropic/ollama/codex)")
+    ct.add_argument("--model", help="model name override")
+    ct.add_argument("--offline", action="store_true", help="force the deterministic offline responder")
+    ct.add_argument("--no-gate", dest="no_gate", action="store_true", help="score but don't withhold flagged turns")
+    ct.add_argument("--json", dest="json_output", action="store_true")
+    ct.set_defaults(func=cmd_crosstalk)
+
+    pcat = sub.add_parser(
+        "primecat", help='Prime-coded categories: assign primes & sieve items by category'
+    )
+    pcat_sub = pcat.add_subparsers(dest="pc_op")
+
+    pcat_as = pcat_sub.add_parser("assign", help="Assign a distinct prime to each category")
+    pcat_as.add_argument("categories", nargs="+", help="category names (the universe)")
+    pcat_as.add_argument("--json", dest="json_output", action="store_true")
+    pcat_as.set_defaults(func=cmd_primecat)
+
+    pcat_cd = pcat_sub.add_parser("code", help="Encode an item's categories as a prime product")
+    pcat_cd.add_argument("item", nargs="+", help="the item's categories")
+    pcat_cd.add_argument("--universe", required=True, help="full category universe (comma/space separated)")
+    pcat_cd.add_argument("--json", dest="json_output", action="store_true")
+    pcat_cd.set_defaults(func=cmd_primecat)
+
+    pcat_de = pcat_sub.add_parser("decode", help="Recover an item's categories by factoring its code")
+    pcat_de.add_argument("code", help="the prime-product code")
+    pcat_de.add_argument("--universe", required=True, help="full category universe (comma/space separated)")
+    pcat_de.add_argument("--json", dest="json_output", action="store_true")
+    pcat_de.set_defaults(func=cmd_primecat)
+
+    pcat_mt = pcat_sub.add_parser("match", help="Test whether a code belongs to a target category (divisibility sieve)")
+    pcat_mt.add_argument("code", help="the prime-product code")
+    pcat_mt.add_argument("target", help="target category")
+    pcat_mt.add_argument("--universe", required=True, help="full category universe (comma/space separated)")
+    pcat_mt.add_argument("--json", dest="json_output", action="store_true")
+    pcat_mt.set_defaults(func=cmd_primecat)
 
     # ─── Sacred Tongues as verbs — full names, no abbreviation ───
     spine = sub.add_parser("spine", help="Bit spine: binary, hex, trit, and tiny-machine actions")
