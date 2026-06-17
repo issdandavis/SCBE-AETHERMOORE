@@ -27,44 +27,10 @@ from __future__ import annotations
 import json
 import os
 import re
-import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional
-
-# ---------------------------------------------------------------------------
-#  Monotonic creation-timestamp source
-# ---------------------------------------------------------------------------
-#
-# `created_at_us` is both a human-facing wall-clock stamp and the sort key
-# for `list_aliases()`. On coarse-resolution clocks (notably Windows, where
-# `time.time()` granularity is ~15.6 ms) two registrations in quick
-# succession — e.g. register -> unregister -> re-register the same name —
-# can land on the *identical* microsecond value, making a freshly minted
-# entry indistinguishable from the one it replaced. Guard against that by
-# handing out strictly-increasing microsecond stamps: each new entry gets a
-# value at least 1 us greater than the previous one, while still tracking
-# real wall-clock time when the clock advances normally.
-
-_ts_lock = threading.Lock()
-_last_created_at_us = 0
-
-
-def _next_created_at_us() -> int:
-    """Return a strictly-increasing wall-clock microsecond timestamp.
-
-    Thread-safe and monotonic per process, so back-to-back registrations
-    never collide even on coarse-resolution system clocks.
-    """
-    global _last_created_at_us
-    now = int(time.time() * 1_000_000)
-    with _ts_lock:
-        if now <= _last_created_at_us:
-            now = _last_created_at_us + 1
-        _last_created_at_us = now
-        return now
-
 
 # ---------------------------------------------------------------------------
 #  Errors
@@ -207,7 +173,7 @@ class AliasRegistry:
             dst_tongue=dst_tongue.upper(),
             default_args=dict(default_args or {}),
             source_digest=source_digest,
-            created_at_us=_next_created_at_us(),
+            created_at_us=int(time.time() * 1_000_000),
             promoted_from_count=promoted_from_count,
         )
         self.aliases[name] = entry

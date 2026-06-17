@@ -25,6 +25,7 @@ from .chemical_fusion import FusionParams, FusionResult, fuse_atomic_states
 from .rhombic_bridge import rhombic_fusion, rhombic_score
 from .tongue_code_lanes import classify_code_lane_alignment
 
+
 PHI = (1.0 + np.sqrt(5.0)) / 2.0
 
 
@@ -166,13 +167,16 @@ def reduce_atomic_history(
     else:
         packet_tokens = list(tokens or [])
         states = [
-            map_token_to_atomic_state(token, language=language, context_class=context_class) for token in packet_tokens
+            map_token_to_atomic_state(token, language=language, context_class=context_class)
+            for token in packet_tokens
         ]
     fusion = fuse_atomic_states(states, params=params or FusionParams(rho_default=0.08))
 
     tau_rows = np.array([state_item.tau.as_tuple() for state_item in states], dtype=float)
     x_vector = np.mean(tau_rows, axis=0)
-    audio_vector = _normalize_vector(np.array([fusion.reconstruction_votes[tongue] for tongue in TONGUES], dtype=float))
+    audio_vector = _normalize_vector(
+        np.array([fusion.reconstruction_votes[tongue] for tongue in TONGUES], dtype=float)
+    )
     vision_vector = _normalize_vector(_periodic_view(states))
     governance = np.asarray(
         governance_proto if governance_proto is not None else np.zeros_like(audio_vector),

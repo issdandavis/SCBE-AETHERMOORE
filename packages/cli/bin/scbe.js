@@ -851,9 +851,6 @@ function inferCompass(command) {
 }
 
 function gateCommand(command, options = {}) {
-  if (process.env.SCBE_FORCE_GATE_FALLBACK === '1') {
-    return fallbackGateCommand(command, 'forced_fallback');
-  }
   // shellContext=true relaxes the blanket pipe/`;` block for paths that run the
   // command THROUGH a shell (scbe run -> PowerShell), while the dangerous-pattern
   // denies (recursive delete, curl|iex, encoded PS, secret paths) still apply.
@@ -870,60 +867,25 @@ function gateCommand(command, options = {}) {
     timeout: 5000,
   });
   if (child.status !== 0) {
-    return fallbackGateCommand(command, 'python_gate_unavailable', {
+    return {
+      allowed: true,
+      tier: 'WARN',
+      parser_ok: false,
+      findings: ['GeoSeal execution gate unavailable; command allowed with warning'],
       stderr_preview: String(child.stderr || '').slice(0, 500),
-    });
+    };
   }
   const parsed = parseJsonFromText(child.stdout);
   if (parsed) return parsed;
   {
-    return fallbackGateCommand(command, 'python_gate_non_json', {
-      stdout_preview: String(child.stdout || '').slice(0, 500),
-    });
-  }
-}
-
-function fallbackGateCommand(command, source, extra = {}) {
-  const lower = String(command || '').toLowerCase();
-  const findings = [];
-  if (/\b(remove-item|rm|del|rmdir)\b/.test(lower) && /\b(-recurse|-r|\/s)\b/.test(lower)) {
-    findings.push({ rule: 'fallback.recursive_delete', message: 'recursive delete command' });
-  }
-  if (/\b(force|\/q|-f)\b/.test(lower) && /\b(remove-item|rm|del|rmdir)\b/.test(lower)) {
-    findings.push({ rule: 'fallback.force_delete', message: 'forced delete command' });
-  }
-  if (/(secret|secrets|credential|credentials|connector_oauth|\.env|api[_-]?key|token)/.test(lower)) {
-    findings.push({ rule: 'fallback.secret_path', message: 'command touches a secret or credential path' });
-  }
-  if (/(curl|wget|irm|iwr|invoke-webrequest|invoke-restmethod).*(iex|invoke-expression|sh|bash|powershell)/.test(lower)) {
-    findings.push({ rule: 'fallback.download_to_exec', message: 'download-to-execute chain' });
-  }
-  if (/(encodedcommand|-enc)\b/.test(lower)) {
-    findings.push({ rule: 'fallback.encoded_powershell', message: 'encoded PowerShell command' });
-  }
-  if (findings.length) {
     return {
-      allowed: false,
-      tier: 'DENY',
+      allowed: true,
+      tier: 'WARN',
       parser_ok: false,
-      findings,
-      fallback_source: source,
-      ...extra,
+      findings: ['GeoSeal execution gate returned non-JSON; command allowed with warning'],
+      stdout_preview: String(child.stdout || '').slice(0, 500),
     };
   }
-  return {
-    allowed: true,
-    tier: 'WARN',
-    parser_ok: false,
-    findings: [
-      {
-        rule: `fallback.${source}`,
-        message: 'Python GeoSeal execution gate unavailable; allowed by limited JavaScript fallback scan',
-      },
-    ],
-    fallback_source: source,
-    ...extra,
-  };
 }
 
 function normalizeFindings(gate) {

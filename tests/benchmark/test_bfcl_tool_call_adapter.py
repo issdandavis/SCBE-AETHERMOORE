@@ -16,8 +16,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import pytest
-
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
@@ -92,21 +90,23 @@ def test_all_schemas_have_description():
 # ── Param extraction ───────────────────────────────────────────────────────────
 
 
-@pytest.mark.parametrize(
-    "args, expected_params",
-    [
-        # single param
-        (["-m", "module", "{task}"], ["task"]),
-        # multiple params, order preserved
-        (["--task", "{task}", "--type", "{taskType}", "--id", "{seriesId}"], ["task", "taskType", "seriesId"]),
-        # no params
-        (["--self-check"], []),
-        # {task} appears twice but should only appear once in output (deduplicated)
-        (["{task}", "--also", "{task}"], ["task"]),
-    ],
-)
-def test_extract_params(args, expected_params):
-    assert _extract_params(args) == expected_params
+def test_extract_params_single():
+    assert _extract_params(["-m", "module", "{task}"]) == ["task"]
+
+
+def test_extract_params_multi():
+    params = _extract_params(["--task", "{task}", "--type", "{taskType}", "--id", "{seriesId}"])
+    assert params == ["task", "taskType", "seriesId"]
+
+
+def test_extract_params_empty():
+    assert _extract_params(["--self-check"]) == []
+
+
+def test_extract_params_deduplicated():
+    # {task} appears twice but should only appear once in output
+    params = _extract_params(["{task}", "--also", "{task}"])
+    assert params == ["task"]
 
 
 # ── AST validator ──────────────────────────────────────────────────────────────

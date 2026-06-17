@@ -12,10 +12,7 @@ function Get-DirectoryBytes {
         $sum = Get-ChildItem -LiteralPath $Path -Force -Recurse -ErrorAction SilentlyContinue |
             Where-Object { -not $_.PSIsContainer } |
             Measure-Object -Property Length -Sum
-        if ($null -eq $sum.Sum) {
-            return [int64]0
-        }
-        return [int64]$sum.Sum
+        return [int64]($sum.Sum ?? 0)
     } catch {
         return [int64]0
     }

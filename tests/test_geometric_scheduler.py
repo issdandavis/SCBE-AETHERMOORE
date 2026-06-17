@@ -1,5 +1,4 @@
 """Geometric scheduler — real concurrent dispatch via manifold routing."""
-
 import threading
 
 import pytest
@@ -14,7 +13,6 @@ def _fleet():
 
 def _hetero_jobs(n=60, seed=5):
     import random
-
     rng = random.Random(seed)
     jobs = []
     for i in range(n):

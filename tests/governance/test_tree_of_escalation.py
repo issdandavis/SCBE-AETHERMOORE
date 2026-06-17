@@ -61,15 +61,8 @@ from src.governance.tree_of_escalation import (  # noqa: E402
 # --------------------------------------------------------------------------- #
 
 
-def test_enums_and_constants_structural():
-    """Consolidated pure enum/constant/literal invariants.
-
-    Merges twelve former one-assertion structural tests that never run
-    input through any logic. Each block below is the exact assertion from
-    the original standalone test (see git history for names).
-    """
-    # Lane enum — six tongues plus CUSTOM
-    assert {lane.value for lane in Lane} == {
+def test_lane_enum_has_six_tongues_plus_custom():
+    expected = {
         "koraelin",
         "avali",
         "runethic",
@@ -78,23 +71,54 @@ def test_enums_and_constants_structural():
         "draumric",
         "custom",
     }
-    # DEFAULT_LADDER excludes CUSTOM and has six lanes
+    assert {lane.value for lane in Lane} == expected
+
+
+def test_default_ladder_excludes_custom():
     assert Lane.CUSTOM not in DEFAULT_LADDER
     assert len(DEFAULT_LADDER) == 6
-    # LANE_PHI_WEIGHT ascends along the ladder
+
+
+def test_default_ladder_in_phi_weight_ascending_order():
     weights = [LANE_PHI_WEIGHT[lane] for lane in DEFAULT_LADDER]
     assert weights == sorted(weights)
-    # LANE_TIER assigns T1..T6 in ladder order
-    assert [LANE_TIER[lane] for lane in DEFAULT_LADDER] == [1, 2, 3, 4, 5, 6]
-    # CUSTOM intentionally absent from weight + tier maps
+
+
+def test_lane_tier_assignment_t1_to_t6():
+    tiers = [LANE_TIER[lane] for lane in DEFAULT_LADDER]
+    assert tiers == [1, 2, 3, 4, 5, 6]
+
+
+def test_custom_lane_intentionally_omitted_from_weight_and_tier():
     assert Lane.CUSTOM not in LANE_PHI_WEIGHT
     assert Lane.CUSTOM not in LANE_TIER
-    # Band — three concurrent substrates
+
+
+# --------------------------------------------------------------------------- #
+#  Band — three concurrent substrates
+# --------------------------------------------------------------------------- #
+
+
+def test_band_enum_has_three_substrates():
     assert {b.value for b in Band} == {"infra", "audible", "ultra"}
-    # Posture — humble vs rigid
+
+
+# --------------------------------------------------------------------------- #
+#  Posture — humble vs rigid
+# --------------------------------------------------------------------------- #
+
+
+def test_posture_enum_has_humble_and_rigid():
     assert {p.value for p in Posture} == {"humble", "rigid"}
-    # NodeKind covers all spec categories
-    assert {k.value for k in NodeKind} == {
+
+
+# --------------------------------------------------------------------------- #
+#  NodeKind covers all categories from the spec
+# --------------------------------------------------------------------------- #
+
+
+def test_node_kind_covers_all_spec_categories():
+    expected = {
         "op",
         "sandbox_provisional",
         "sandbox_inspection",
@@ -102,28 +126,7 @@ def test_enums_and_constants_structural():
         "null_bridge_void",
         "provisional_mint",
     }
-    # Termination enum has four states
-    assert {t.value for t in Termination} == {
-        "incomplete",
-        "abridged",
-        "provisional",
-        "refused",
-    }
-    # LANE_TO_TRI_BUNDLE_CODE covers all six tongues
-    assert LANE_TO_TRI_BUNDLE_CODE == {
-        Lane.KORAELIN: "ko",
-        Lane.AVALI: "av",
-        Lane.RUNETHIC: "ru",
-        Lane.CASSISIVADAN: "ca",
-        Lane.UMBROTH: "um",
-        Lane.DRAUMRIC: "dr",
-    }
-    # BAND_FREQUENCY_MULTIPLIER tri-octave signature
-    assert BAND_FREQUENCY_MULTIPLIER[Band.INFRA] == 0.25
-    assert BAND_FREQUENCY_MULTIPLIER[Band.AUDIBLE] == 1.0
-    assert BAND_FREQUENCY_MULTIPLIER[Band.ULTRA] == 4.0
-    # SYSTEM_FUNDAMENTAL is A4
-    assert SYSTEM_FUNDAMENTAL_HZ == 440.0
+    assert {k.value for k in NodeKind} == expected
 
 
 # --------------------------------------------------------------------------- #
@@ -761,7 +764,15 @@ def _all_perturbed_matrix() -> BridgeMatrix:
 
 
 # --- Termination enum ----------------------------------------------------- #
-# (pure-enum membership check folded into test_enums_and_constants_structural)
+
+
+def test_termination_enum_has_four_states():
+    assert {t.value for t in Termination} == {
+        "incomplete",
+        "abridged",
+        "provisional",
+        "refused",
+    }
 
 
 def test_tree_default_termination_is_incomplete():
@@ -965,8 +976,29 @@ def test_walker_converged_does_not_touch_registry():
 
 
 # --- Constants --------------------------------------------------------------#
-# (LANE_TO_TRI_BUNDLE_CODE, BAND_FREQUENCY_MULTIPLIER, and SYSTEM_FUNDAMENTAL_HZ
-#  literal checks folded into test_enums_and_constants_structural)
+
+
+def test_lane_to_tri_bundle_code_covers_all_six_tongues():
+    expected = {
+        Lane.KORAELIN: "ko",
+        Lane.AVALI: "av",
+        Lane.RUNETHIC: "ru",
+        Lane.CASSISIVADAN: "ca",
+        Lane.UMBROTH: "um",
+        Lane.DRAUMRIC: "dr",
+    }
+    assert LANE_TO_TRI_BUNDLE_CODE == expected
+
+
+def test_band_frequency_multiplier_tri_octave_signature():
+    # INFRA = -2 octaves, AUDIBLE = fundamental, ULTRA = +2 octaves
+    assert BAND_FREQUENCY_MULTIPLIER[Band.INFRA] == 0.25
+    assert BAND_FREQUENCY_MULTIPLIER[Band.AUDIBLE] == 1.0
+    assert BAND_FREQUENCY_MULTIPLIER[Band.ULTRA] == 4.0
+
+
+def test_system_fundamental_is_a4():
+    assert SYSTEM_FUNDAMENTAL_HZ == 440.0
 
 
 # --- AudioEvent ------------------------------------------------------------- #

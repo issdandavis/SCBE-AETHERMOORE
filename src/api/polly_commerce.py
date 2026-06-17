@@ -60,31 +60,6 @@ class Product:
 
 PRODUCT_CATALOG: Tuple[Product, ...] = (
     Product(
-        sku="scbe-black-box",
-        name="SCBE Black Box",
-        price_label="$19 self-serve",
-        short=(
-            "A local workstation failure report for Windows shutdowns, BSOD signals, "
-            "low disk, memory pressure, storage warnings, WHEA, service crashes, and "
-            "long AI job failure risk. Runs locally; writes text and JSON reports."
-        ),
-        checkout_url="https://ko-fi.com/izdandavis",
-        delivery_url="https://aethermoore.com/SCBE-AETHERMOORE/black-box.html",
-        keywords=(
-            "black box",
-            "pc crash",
-            "computer crash",
-            "windows shutdown",
-            "bsod",
-            "event 41",
-            "workstation",
-            "ai workstation",
-            "why did my pc shut down",
-            "diagnose pc",
-            "failure report",
-        ),
-    ),
-    Product(
         sku="scbe-service-credits",
         name="SCBE Service Credits",
         price_label="$5+ pay-as-you-go",

@@ -1,5 +1,4 @@
 """Tests for cross-language Rosetta + cross-compile game."""
-
 from python.scbe.cross_lang import lookup, concepts, grade, challenges, LANGUAGES
 
 
@@ -39,6 +38,6 @@ class TestGame:
 
     def test_challenge_has_no_answer_leak(self):
         for c in challenges(rounds=5, seed=3):
-            assert "answer" not in c  # AI must produce it
+            assert "answer" not in c          # AI must produce it
             assert c["from_lang"] != c["to_lang"]
             assert "from_code" in c and "to_lang" in c

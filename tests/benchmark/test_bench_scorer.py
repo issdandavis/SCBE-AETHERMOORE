@@ -3,8 +3,6 @@
 import sys
 from pathlib import Path
 
-import pytest
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from scripts.benchmark.bench_scorer import score_report
@@ -14,67 +12,52 @@ def _report(schema: str, summary: dict, **kwargs) -> dict:
     return {"schema_version": schema, "summary": summary, **kwargs}
 
 
-@pytest.mark.parametrize(
-    "report, expectations",
-    [
-        # test_hard_agentic_schema
-        (
-            _report(
-                "scbe_hard_agentic_benchmark_pretest_v1",
-                {"target_count": 14, "ready_or_pass": 12, "blocked_or_failed": 2, "decision": "READY"},
-                generated_at_utc="2026-05-29T00:00:00Z",
-                claim_boundary="local readiness lanes",
-            ),
-            {
-                "lane": "hard-agentic",
-                "pass_count": 12,
-                "total": 14,
-                "pass_rate": pytest.approx(12 / 14, abs=1e-6),
-                "decision": "READY",
-                "boundary": "local readiness lanes",
-            },
-        ),
-        # test_research_schema
-        (
-            _report(
-                "scbe_research_agent_fixture_benchmark_v1",
-                {"total": 10, "passed": 7, "failed": 3, "decision": "PASS"},
-                claim_boundary="local BrowseComp-style fixtures",
-            ),
-            {
-                "lane": "research",
-                "pass_count": 7,
-                "pass_rate": 7 / 10,
-            },
-        ),
-        # test_rubix_schema
-        (
-            _report(
-                "scbe_rubix_browser_hypercube_benchmark_v1",
-                {"total_paths": 5, "valid_paths": 5, "decision": "PASS"},
-            ),
-            {
-                "lane": "rubix-browser",
-                "pass_rate": 1.0,
-            },
-        ),
-        # test_arc_style_grid_schema
-        (
-            _report(
-                "scbe_arc_style_grid_benchmark_v1",
-                {"total": 8, "passed": 6, "decision": "PASS"},
-            ),
-            {
-                "lane": "arc-style-grid",
-                "pass_count": 6,
-            },
-        ),
-    ],
-)
-def test_schema_normalization(report, expectations):
+def test_hard_agentic_schema():
+    report = _report(
+        "scbe_hard_agentic_benchmark_pretest_v1",
+        {"target_count": 14, "ready_or_pass": 12, "blocked_or_failed": 2, "decision": "READY"},
+        generated_at_utc="2026-05-29T00:00:00Z",
+        claim_boundary="local readiness lanes",
+    )
     s = score_report(report)
-    for attr, expected in expectations.items():
-        assert getattr(s, attr) == expected
+    assert s.lane == "hard-agentic"
+    assert s.pass_count == 12
+    assert s.total == 14
+    assert abs(s.pass_rate - 12 / 14) < 1e-6
+    assert s.decision == "READY"
+    assert s.boundary == "local readiness lanes"
+
+
+def test_research_schema():
+    report = _report(
+        "scbe_research_agent_fixture_benchmark_v1",
+        {"total": 10, "passed": 7, "failed": 3, "decision": "PASS"},
+        claim_boundary="local BrowseComp-style fixtures",
+    )
+    s = score_report(report)
+    assert s.lane == "research"
+    assert s.pass_count == 7
+    assert s.pass_rate == 7 / 10
+
+
+def test_rubix_schema():
+    report = _report(
+        "scbe_rubix_browser_hypercube_benchmark_v1",
+        {"total_paths": 5, "valid_paths": 5, "decision": "PASS"},
+    )
+    s = score_report(report)
+    assert s.lane == "rubix-browser"
+    assert s.pass_rate == 1.0
+
+
+def test_arc_style_grid_schema():
+    report = _report(
+        "scbe_arc_style_grid_benchmark_v1",
+        {"total": 8, "passed": 6, "decision": "PASS"},
+    )
+    s = score_report(report)
+    assert s.lane == "arc-style-grid"
+    assert s.pass_count == 6
 
 
 def test_generic_fallback():

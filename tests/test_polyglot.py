@@ -1,5 +1,4 @@
 """Polyglot all-code compiler — emit + roundabout (defined undefined-zone) parity."""
-
 import pytest
 
 from python.scbe import polyglot as P
@@ -25,14 +24,14 @@ def test_roundabout_divide_by_zero():
     # eq: 3==4 -> 0.0 ; div: 2 / 0.0
     prog = P.program_bytes("eq", "div")
     with pytest.raises(ZeroDivisionError):
-        _run_python(prog, safe=False)  # raw: python raises
+        _run_python(prog, safe=False)          # raw: python raises
     assert _run_python(prog, safe=True) == 0.0  # roundabout: defined as 0.0
 
 
 def test_roundabout_sqrt_of_negative():
-    prog = P.program_bytes("sub", "sqrt")  # 3-4=-1 ; sqrt(-1)
+    prog = P.program_bytes("sub", "sqrt")       # 3-4=-1 ; sqrt(-1)
     with pytest.raises(ValueError):
-        _run_python(prog, safe=False)  # raw: math domain error
+        _run_python(prog, safe=False)           # raw: math domain error
     assert _run_python(prog, safe=True) == 0.0  # roundabout: defined as 0.0
 
 

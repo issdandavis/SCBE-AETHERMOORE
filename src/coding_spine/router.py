@@ -35,7 +35,7 @@ _python_path = str(_repo_root / "python")
 if _python_path not in sys.path:
     sys.path.insert(0, _python_path)
 
-from python.scbe.atomic_tokenization import (
+from scbe.atomic_tokenization import (
     TONGUES,
     AtomicTokenState,
     map_token_to_atomic_state,

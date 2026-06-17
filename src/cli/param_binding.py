@@ -213,10 +213,10 @@ class BoundCommand(BaseModel):
         lines: list[str] = []
         if sets:
             for name, members in sets.items():
-                parts = [f"--{m.replace('_', '-')}" for m in members]
+                parts = [f"--{m.replace('_','-')}" for m in members]
                 lines.append(f"[{name}]  " + " ".join(parts))
         else:
-            field_names = [f"--{n.replace('_', '-')}" for n in cls.model_fields]
+            field_names = [f"--{n.replace('_','-')}" for n in cls.model_fields]
             lines.append(" ".join(field_names))
         return "\n".join(lines)
 
