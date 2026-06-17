@@ -45,6 +45,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+
 def _resolve_version() -> str:
     # Single source of truth: the installed package metadata (pyproject = 4.2.1).
     # Falls back to the literal when running from a source tree that isn't installed.
@@ -860,14 +861,23 @@ def cmd_system_health(args: argparse.Namespace) -> int:
 
 def cmd_tongue_encode(args: argparse.Namespace) -> int:
     tongue = args.tongue.upper()
-    data = args.text.encode("utf-8") if getattr(args, "text", None) else sys.stdin.buffer.read()
+    if getattr(args, "text", None):
+        data = args.text.encode("utf-8")
+    elif not sys.stdin.isatty():
+        data = sys.stdin.buffer.read()
+    else:
+        print('usage: scbe tongues encode --tongue <t> --text "<text>"  (or pipe text via stdin)', file=sys.stderr)
+        return 2
     print(encode_bytes(tongue, data))
     return 0
 
 
 def cmd_tongue_decode(args: argparse.Namespace) -> int:
     tongue = args.tongue.upper()
-    text = args.text if getattr(args, "text", None) else sys.stdin.read()
+    text = _arg_or_stdin(getattr(args, "text", None))
+    if text is None:
+        print('usage: scbe tongues decode --tongue <t> --text "<tokens>"  (or pipe via stdin)', file=sys.stderr)
+        return 2
     data = decode_tokens(tongue, text)
     if getattr(args, "as_text", False):
         print(data.decode("utf-8", errors="replace"))
@@ -888,7 +898,11 @@ def cmd_tongue_list(_args: argparse.Namespace) -> int:
 
 
 def cmd_pipeline_run(args: argparse.Namespace) -> int:
-    text = args.text if getattr(args, "text", None) else sys.stdin.read().strip()
+    text = _arg_or_stdin(getattr(args, "text", None))
+    if text is None:
+        print('usage: scbe pipeline run --text "<text>"  (or pipe via stdin)', file=sys.stderr)
+        return 2
+    text = text.strip()
     result = pipeline_quick_score(text)
     if getattr(args, "json_output", False):
         print(json.dumps(result, indent=2))
@@ -984,6 +998,22 @@ def cmd_ai_check(args: argparse.Namespace) -> int:
 # ═══════════════════════════════════════════════════════════════
 
 DECISION_GLYPH = {"ALLOW": "✓", "QUARANTINE": "~", "ESCALATE": "!", "DENY": "✗"}
+
+
+def _interactive() -> bool:
+    """True only when a human is plausibly driving the CLI.
+
+    Requires BOTH stdin and stdout to be real TTYs, and honors explicit overrides.
+    A single-stream isatty() check is unreliable: on Windows, redirecting from NUL /
+    `/dev/null` makes stdin.isatty() falsely report True. Requiring both streams (plus
+    SCBE_NONINTERACTIVE / CI opt-outs) keeps agents, pipes, and CI on the safe path.
+    """
+    if os.environ.get("SCBE_NONINTERACTIVE") or os.environ.get("CI"):
+        return False
+    try:
+        return sys.stdin.isatty() and sys.stdout.isatty()
+    except Exception:
+        return False
 
 
 def _arg_or_stdin(value: Optional[str]) -> Optional[str]:
@@ -1352,6 +1382,325 @@ def _substrate_packet(
     return _json_safe(payload)
 
 
+# ── command octree ───────────────────────────────────────────────────────────
+# Place every top-level CLI command in a 3-axis cube and store it in the real
+# hyperbolic octree (src/crypto/octree.py). The three binary axes are semantic,
+# so the eight top-level octants are meaningful command families:
+#     x = act(1) / inspect(0)
+#     y = orchestration(1) / substrate(0)
+#     z = code(1) / text(0)
+# Inside an octant each command gets a deterministic name-hash offset, so the
+# octree subdivides further and "nearest" is well defined. The placement is an
+# honest taxonomy + hash spread — not a claim about tongue geometry (short
+# command tokens collapse to the same tau, so that would not discriminate them).
+_OCTREE_ACT = {
+    "enc", "dec", "do", "ask", "a", "chat", "code", "polyglot", "emit", "encode",
+    "encode-code", "code-matrix", "canvas", "fold", "bopit", "think", "think-syscall",
+    "cognition", "cog", "overcreate", "generate-cube", "illuminate", "route", "fleet",
+    "schedule", "inc", "spine", "chem", "move", "del", "push", "blocks", "stereo-code",
+}
+_OCTREE_ORCH = {
+    "ai", "ask", "a", "do", "chat", "route", "fleet", "schedule", "system", "status",
+    "st", "health", "doctor", "selftest", "move", "del", "push", "undo", "find", "f",
+    "open", "vault", "recent", "docs", "model", "colab", "workflow", "use", "flow",
+    "pollypad",
+}
+_OCTREE_CODE = {
+    "code", "polyglot", "emit", "encode", "encode-code", "code-matrix", "canvas",
+    "think", "think-syscall", "cognition", "cog", "bopit", "fold", "overcreate",
+    "generate-cube", "illuminate", "route", "fleet", "schedule", "spine", "cube",
+    "blocks", "stereo-code", "ai",
+}
+_OCTANT_LABELS = {
+    0b000: "read · substrate · text",
+    0b001: "act · substrate · text",
+    0b010: "read · orchestration · text",
+    0b011: "act · orchestration · text",
+    0b100: "read · substrate · code",
+    0b101: "act · substrate · code",
+    0b110: "read · orchestration · code",
+    0b111: "act · orchestration · code",
+}
+_OCTANT_COLOR = {
+    0b000: "cyan", 0b001: "gold", 0b010: "cyan", 0b011: "gold",
+    0b100: "magenta", 0b101: "red", 0b110: "magenta", 0b111: "red",
+}
+
+
+def _octant_bits(name: str) -> int:
+    key = name.lower()
+    x = 1 if key in _OCTREE_ACT else 0
+    y = 1 if key in _OCTREE_ORCH else 0
+    z = 1 if key in _OCTREE_CODE else 0
+    return (z << 2) | (y << 1) | x
+
+
+def _octree_coord(name: str):
+    """Deterministic point in the Poincare ball: octant corner + name-hash jitter."""
+    import hashlib
+
+    import numpy as np
+
+    bits = _octant_bits(name)
+    base = [0.45 if (bits >> axis) & 1 else -0.45 for axis in range(3)]
+    h = hashlib.sha256(name.encode("utf-8")).digest()
+    jitter = [(h[i] / 255.0 - 0.5) * 0.16 for i in range(3)]
+    v = np.array([base[i] + jitter[i] for i in range(3)])
+    norm = float(np.linalg.norm(v))
+    if norm >= 0.9:
+        v = v / norm * 0.9
+    return v, bits
+
+
+def _octree_commands():
+    """(name, help, octant_bits, coord) for every top-level CLI command."""
+    cli = build_cli()
+    out = []
+    for action in cli._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            for choice in action._choices_actions:
+                name = choice.dest
+                coord, bits = _octree_coord(name)
+                out.append((name, choice.help or "", bits, coord))
+            break
+    return out
+
+
+def cmd_octree(args: argparse.Namespace) -> int:
+    import textwrap
+
+    import numpy as np
+
+    try:
+        from src.crypto.octree import HyperbolicOctree
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"octree unavailable: {exc}", file=sys.stderr)
+        return 1
+
+    cmds = _octree_commands()
+    tree = HyperbolicOctree(grid_size=64, max_depth=6)
+    for _name, _help, bits, coord in cmds:
+        tree.insert(coord, _OCTANT_COLOR.get(bits, "cyan"))
+
+    as_json = getattr(args, "json_output", False)
+    near = getattr(args, "near", None) or getattr(args, "find", None)
+
+    if near:
+        qcoord, qbits = _octree_coord(near)
+        ranked = sorted(cmds, key=lambda c: float(np.linalg.norm(c[3] - qcoord)))
+        limit = getattr(args, "limit", 8) or 8
+        results = [c for c in ranked if c[0] != near][:limit]
+        if as_json:
+            print(json.dumps({
+                "query": near,
+                "query_octant": format(qbits, "03b"),
+                "neighbors": [
+                    {
+                        "command": c[0],
+                        "octant": format(c[2], "03b"),
+                        "distance": round(float(np.linalg.norm(c[3] - qcoord)), 4),
+                        "help": c[1],
+                    }
+                    for c in results
+                ],
+            }))
+            return 0
+        print(f"commands nearest to '{near}'  (octant {format(qbits, '03b')} · {_OCTANT_LABELS.get(qbits, '')})")
+        for c in results:
+            dist = float(np.linalg.norm(c[3] - qcoord))
+            print(f"  {dist:5.3f}  {c[0]:<16} {_OCTANT_LABELS.get(c[2], ''):<26} {c[1][:38]}")
+        return 0
+
+    by_octant: Dict[int, List[str]] = {}
+    for c in cmds:
+        by_octant.setdefault(c[2], []).append(c[0])
+
+    if as_json:
+        print(json.dumps({
+            "schema": "scbe_command_octree_v1",
+            "axes": {"x": "act/inspect", "y": "orchestration/substrate", "z": "code/text"},
+            "octants": {
+                format(b, "03b"): {
+                    "label": _OCTANT_LABELS[b],
+                    "commands": sorted(by_octant.get(b, [])),
+                }
+                for b in range(8)
+            },
+            "stats": tree.stats(),
+        }, indent=2))
+        return 0
+
+    print("SCBE command octree  —  axes: x=act/inspect · y=orchestration/substrate · z=code/text")
+    print("=" * 76)
+    for b in range(8):
+        members = sorted(by_octant.get(b, []))
+        if not members:
+            continue
+        print(f"[{format(b, '03b')}] {_OCTANT_LABELS[b]}  ({len(members)})")
+        print(textwrap.fill(" ".join(members), width=76, initial_indent="     ", subsequent_indent="     "))
+    stats = tree.stats()
+    print("-" * 76)
+    print(
+        f"octree: {stats['point_count']} commands · {stats['node_count']} nodes · "
+        f"{stats['leaf_count']} leaves · depth {stats['max_depth_used']}/{stats['max_depth']}"
+    )
+    print("tip: 'scbe octree --near polyglot' finds spatially nearby commands")
+    return 0
+
+
+# ── tool manifest (self-description for AI services) ──────────────────────────
+# Emit the entire CLI as machine-readable tool definitions so ANY AI service can
+# discover and register scbe's commands: native, MCP, OpenAI, or Anthropic shapes.
+def _param_type(action: argparse.Action) -> str:
+    if isinstance(action, (argparse._StoreTrueAction, argparse._StoreFalseAction, argparse._StoreConstAction)):
+        return "boolean"
+    if action.type is int:
+        return "integer"
+    if action.type is float:
+        return "number"
+    return "string"
+
+
+def _params_for(parser: argparse.ArgumentParser) -> List[Dict[str, Any]]:
+    params: List[Dict[str, Any]] = []
+    for a in parser._actions:
+        if isinstance(a, (argparse._HelpAction, argparse._SubParsersAction)):
+            continue
+        if a.dest in ("help", "==SUPPRESS=="):
+            continue
+        positional = not a.option_strings
+        required = bool(a.required) if not positional else (a.nargs not in ("?", "*"))
+        param: Dict[str, Any] = {
+            "name": a.dest,
+            "kind": "positional" if positional else "flag",
+            "type": _param_type(a),
+            "required": required,
+        }
+        if a.option_strings:
+            param["flags"] = list(a.option_strings)
+        if a.choices:
+            seen_c: set = set()
+            param["choices"] = [c for c in a.choices if not (c in seen_c or seen_c.add(c))]
+        if a.help and a.help != argparse.SUPPRESS:
+            param["description"] = a.help
+        if a.default not in (None, argparse.SUPPRESS, False):
+            param["default"] = a.default
+        if a.nargs not in (None, 0):
+            param["nargs"] = a.nargs
+        params.append(param)
+    return params
+
+
+def _walk_commands(parser: argparse.ArgumentParser, prefix: str = "") -> List[Dict[str, Any]]:
+    """Flatten the argparse tree into a list of callable leaf tools (groups become path prefixes)."""
+    out: List[Dict[str, Any]] = []
+    spa = next((a for a in parser._actions if isinstance(a, argparse._SubParsersAction)), None)
+    if spa is None:
+        return out
+    alias_map: Dict[int, List[str]] = {}
+    for nm, sub in spa.choices.items():
+        alias_map.setdefault(id(sub), []).append(nm)
+    for choice in spa._choices_actions:
+        name = choice.dest
+        sub = spa.choices.get(name)
+        if sub is None:
+            continue
+        path = f"{prefix} {name}".strip()
+        nested = next((a for a in sub._actions if isinstance(a, argparse._SubParsersAction)), None)
+        if nested is not None:
+            out.extend(_walk_commands(sub, path))
+            continue
+        if sub.get_default("func") is None:
+            continue
+        aliases = [a for a in alias_map.get(id(sub), []) if a != name]
+        params = _params_for(sub)
+        out.append({
+            "name": path.replace(" ", "."),
+            "path": path,
+            "invoke": f"scbe {path}",
+            "aliases": aliases,
+            "summary": choice.help or "",
+            "supports_json": any(getattr(a, "dest", None) == "json_output" for a in sub._actions),
+            "args": params,
+        })
+    return out
+
+
+def _tool_json_schema(tool: Dict[str, Any]) -> Dict[str, Any]:
+    props: Dict[str, Any] = {}
+    required: List[str] = []
+    for p in tool["args"]:
+        is_list = p.get("nargs") in ("*", "+")
+        node: Dict[str, Any] = {"type": "array", "items": {"type": p["type"]}} if is_list else {"type": p["type"]}
+        target = node["items"] if is_list else node
+        if p.get("choices"):
+            target["enum"] = p["choices"]
+        if p.get("description"):
+            node["description"] = p["description"]
+        if "default" in p:
+            node["default"] = p["default"]
+        props[p["name"]] = node
+        if p.get("required"):
+            required.append(p["name"])
+    schema: Dict[str, Any] = {"type": "object", "properties": props}
+    if required:
+        schema["required"] = required
+    schema["additionalProperties"] = False
+    return schema
+
+
+def _tool_id(tool: Dict[str, Any]) -> str:
+    return "scbe_" + tool["name"].replace(".", "_").replace("-", "_")
+
+
+def cmd_manifest(args: argparse.Namespace) -> int:
+    tools = _walk_commands(build_cli())
+    fmt = (getattr(args, "format", None) or "native").lower()
+    if fmt == "mcp":
+        payload: Any = {
+            "tools": [
+                {"name": _tool_id(t), "description": t["summary"] or t["path"], "inputSchema": _tool_json_schema(t)}
+                for t in tools
+            ]
+        }
+    elif fmt == "openai":
+        payload = [
+            {
+                "type": "function",
+                "function": {
+                    "name": _tool_id(t),
+                    "description": t["summary"] or t["path"],
+                    "parameters": _tool_json_schema(t),
+                },
+            }
+            for t in tools
+        ]
+    elif fmt == "anthropic":
+        payload = [
+            {"name": _tool_id(t), "description": t["summary"] or t["path"], "input_schema": _tool_json_schema(t)}
+            for t in tools
+        ]
+    elif fmt == "native":
+        payload = {
+            "schema": "scbe_tools_manifest_v1",
+            "version": VERSION,
+            "invoke_note": (
+                "Call as: scbe <path> [args]. Append --json on commands where "
+                "supports_json is true for machine-readable output."
+            ),
+            "tool_count": len(tools),
+            "tools": tools,
+        }
+    else:
+        print(f"unknown format '{fmt}'; choose from: native, mcp, openai, anthropic", file=sys.stderr)
+        return 2
+    if getattr(args, "pretty", False):
+        print(json.dumps(payload, indent=2))
+    else:
+        print(json.dumps(payload, separators=(",", ":")))
+    return 0
+
+
 def cmd_substrate_map(args: argparse.Namespace) -> int:
     text = _arg_or_stdin(getattr(args, "text", None))
     if text is None:
@@ -1594,20 +1943,141 @@ def cmd_encode(args: argparse.Namespace) -> int:
     return 0
 
 
+def _load_json_spec(path: Optional[str]) -> Optional[Any]:
+    """Load a JSON spec file for the route/schedule commands, or None if no path."""
+    if not path:
+        return None
+    with open(path, "r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
 def cmd_route(args: argparse.Namespace) -> int:
-    """Geometric fleet router — parallelism as tangent-vector tracks through the
-    tongue-weighted hyperbolic manifold (fluid-balanced geodesic routing)."""
-    from python.scbe.geometric_router import _demo
-    _demo()
+    """Geometric fleet router — assigns tasks to agents by tongue-weighted Finsler
+    distance with fluid back-pressure, then compares cost to a round-robin baseline.
+    Pass --fleet and --tasks JSON files to route a real workload."""
+    from python.scbe.geometric_router import Agent, Task, _demo, round_robin, route_fleet
+
+    as_json = getattr(args, "json_output", False)
+    try:
+        fleet_spec = _load_json_spec(getattr(args, "fleet", None))
+        tasks_spec = _load_json_spec(getattr(args, "tasks", None))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"route: {exc}", file=sys.stderr)
+        return 2
+
+    if not fleet_spec or not tasks_spec:
+        if as_json:
+            print(json.dumps({"ok": False, "command": "route", "error": {
+                "code": "no_input",
+                "message": "provide --fleet and --tasks JSON files to route a real workload",
+            }}, separators=(",", ":")))
+            return 2
+        print("(demo workload — pass --fleet and --tasks JSON files to route real work)\n")
+        _demo()
+        return 0
+
+    try:
+        fleet = [Agent(a["name"], a.get("tongue") or a.get("weights")) for a in fleet_spec]
+        tasks = [Task(t["name"], t.get("profile") or t.get("weights")) for t in tasks_spec]
+    except (KeyError, TypeError) as exc:
+        print(
+            f"route: bad fleet/tasks spec ({exc}); "
+            "need [{name, tongue|weights}] and [{name, profile|weights}]",
+            file=sys.stderr,
+        )
+        return 2
+
+    pressure = getattr(args, "pressure", 0.6)
+    routes = route_fleet(fleet, tasks, pressure=pressure)
+    geo_cost = sum(r.total_cost for r in routes)
+    rr_cost = round_robin(fleet, tasks)
+    savings = (1 - geo_cost / rr_cost) if rr_cost else 0.0
+
+    if as_json:
+        print(json.dumps({
+            "ok": True, "command": "route", "schema": "scbe_route_v1",
+            "data": {
+                "agents": len(fleet), "tasks": len(tasks), "pressure": pressure,
+                "geometric_cost": round(geo_cost, 4),
+                "round_robin_cost": round(rr_cost, 4),
+                "savings_fraction": round(savings, 4),
+                "routes": [
+                    {"agent": r.agent, "tasks": r.tasks, "total_cost": round(r.total_cost, 4)}
+                    for r in routes
+                ],
+            },
+        }, separators=(",", ":")))
+        return 0
+
+    print(f"Geometric fleet router — {len(fleet)} agents, {len(tasks)} tasks (pressure {pressure})\n")
+    for r in routes:
+        head = ", ".join(r.tasks[:5]) + (" …" if len(r.tasks) > 5 else "")
+        print(f"  {r.agent:<14} {len(r.tasks):>3} tasks  cost {r.total_cost:7.2f}   {head}")
+    print(f"\n  geometric: {geo_cost:7.2f}   round-robin: {rr_cost:7.2f}   -> {100 * savings:.0f}% cheaper")
     return 0
 
 
 def cmd_schedule(args: argparse.Namespace) -> int:
-    """Geometric scheduler — real concurrent dispatch routed through the manifold
-    (pull-based affinity work-stealing; 64% faster makespan on heterogeneous fleets)."""
-    from python.scbe.geometric_scheduler import _demo
-    _demo()
-    return 0
+    """Geometric scheduler — concurrent dispatch on a real thread pool, routing jobs
+    to workers by tongue-weighted affinity (geometric) or flat (round_robin).
+    Pass --fleet and --jobs JSON files to schedule a real workload."""
+    from python.scbe.geometric_scheduler import GeometricScheduler, Job, Worker, _demo
+
+    as_json = getattr(args, "json_output", False)
+    try:
+        fleet_spec = _load_json_spec(getattr(args, "fleet", None))
+        jobs_spec = _load_json_spec(getattr(args, "jobs", None))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"schedule: {exc}", file=sys.stderr)
+        return 2
+
+    if not fleet_spec or not jobs_spec:
+        if as_json:
+            print(json.dumps({"ok": False, "command": "schedule", "error": {
+                "code": "no_input",
+                "message": "provide --fleet and --jobs JSON files to schedule a real workload",
+            }}, separators=(",", ":")))
+            return 2
+        print("(demo workload — pass --fleet and --jobs JSON files to schedule real work)\n")
+        _demo()
+        return 0
+
+    try:
+        fleet = [Worker(name=w["name"], tongue=w.get("tongue") or w.get("weights")) for w in fleet_spec]
+        jobs = [
+            Job(name=j["name"], profile=j.get("profile") or j.get("weights"), base=float(j.get("base", 0.01)))
+            for j in jobs_spec
+        ]
+    except (KeyError, TypeError, ValueError) as exc:
+        print(
+            f"schedule: bad fleet/jobs spec ({exc}); "
+            "need [{name, tongue|weights}] and [{name, profile|weights, base}]",
+            file=sys.stderr,
+        )
+        return 2
+
+    mode = getattr(args, "mode", "geometric")
+    sched = GeometricScheduler(fleet, max_retries=getattr(args, "max_retries", 2))
+    report = sched.run(jobs, mode=mode)
+
+    if as_json:
+        print(json.dumps({
+            "ok": report.failed == 0, "command": "schedule", "schema": "scbe_schedule_v1",
+            "data": {
+                "mode": report.mode, "wall": round(report.wall, 4), "makespan": round(report.makespan, 4),
+                "done": report.done, "failed": report.failed,
+                "assignments": report.assignments,
+                "busy": {k: round(v, 4) for k, v in report.busy.items()},
+                "errors": report.errors,
+            },
+        }, separators=(",", ":")))
+        return 0 if report.failed == 0 else 1
+
+    print(f"Geometric scheduler — mode {report.mode}, {len(fleet)} workers, {len(jobs)} jobs\n")
+    for worker_name, names in report.assignments.items():
+        print(f"  {worker_name:<14} {len(names):>3} jobs  busy {report.busy.get(worker_name, 0.0):6.3f}s")
+    print(f"\n  wall {report.wall:.3f}s  makespan {report.makespan:.3f}s  done {report.done}  failed {report.failed}")
+    return 0 if report.failed == 0 else 1
 
 
 def cmd_polyglot(args: argparse.Namespace) -> int:
@@ -2646,6 +3116,9 @@ def cmd_do(args: argparse.Namespace) -> int:
 
 
 def cmd_chat(args: argparse.Namespace) -> int:
+    if not _interactive():
+        print('scbe chat is interactive-only; use `scbe ask "..."` for one-shot Q&A.', file=sys.stderr)
+        return 2
     available = _detect_backends()
     if not available:
         print("No AI backend found. You have Claude Code — make sure `claude` is on PATH,")
@@ -2701,6 +3174,8 @@ def _dir_size(p: Path) -> int:
 
 
 def _confirm(prompt: str) -> bool:
+    if not _interactive():
+        return False  # non-interactive: refuse the mutation unless --yes/--force was passed
     try:
         return input(prompt).strip().lower() in {"y", "yes"}
     except (EOFError, KeyboardInterrupt):
@@ -3202,11 +3677,32 @@ def _dispatch_scbe_args(args: List[str]) -> int:
         return _run_system_cli([*forwarded, *args[1:]])
 
     cli = build_cli()
-    parsed = cli.parse_args(args)
+    wants_json = "--json" in args
+    try:
+        parsed = cli.parse_args(args)
+    except SystemExit as exc:
+        # argparse already printed usage / -h; propagate its code (2 = usage error, 0 = help).
+        return exc.code if isinstance(exc.code, int) else 2
     if not hasattr(parsed, "func"):
-        cli.print_help()
-        return 0
-    return parsed.func(parsed)
+        # Group command with no subcommand (e.g. `scbe pipeline`): a usage error, not silent success.
+        print(f"scbe: '{args[0]}' needs a subcommand — run 'scbe {args[0]} -h' to see them.", file=sys.stderr)
+        return 2
+    try:
+        return parsed.func(parsed)
+    except KeyboardInterrupt:
+        return 130
+    except Exception as exc:  # top-level safety net: agents get a clean signal, never a raw traceback
+        if os.environ.get("SCBE_DEBUG"):
+            raise
+        if wants_json or getattr(parsed, "json_output", False):
+            print(json.dumps(
+                {"ok": False, "command": getattr(parsed, "command", args[0]),
+                 "error": {"code": "internal", "message": str(exc)}},
+                separators=(",", ":"),
+            ))
+        else:
+            print(f"scbe: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return 1
 
 
 def _handle_cli_command(argv: List[str]) -> int:
@@ -3519,6 +4015,29 @@ Legacy (backward compat):
     mp.add_argument("--json", dest="json_output", action="store_true")
     mp.set_defaults(func=cmd_substrate_map)
 
+    octree_p = sub.add_parser(
+        "octree",
+        aliases=["cmd-tree"],
+        help='Spatial map of every command in the hyperbolic octree ("scbe octree --near polyglot")',
+    )
+    octree_p.add_argument("--near", help="show commands spatially nearest to this command")
+    octree_p.add_argument("--find", help="alias for --near: nearest commands to a name")
+    octree_p.add_argument("--limit", type=int, default=8, help="how many neighbors to show")
+    octree_p.add_argument("--json", dest="json_output", action="store_true")
+    octree_p.set_defaults(func=cmd_octree)
+
+    manifest_p = sub.add_parser(
+        "manifest",
+        aliases=["tools", "capabilities"],
+        help='Emit all commands as machine-readable tool defs for any AI service ("scbe manifest --format mcp")',
+    )
+    manifest_p.add_argument(
+        "--format", choices=["native", "mcp", "openai", "anthropic"], default="native",
+        help="output shape: native | mcp | openai | anthropic",
+    )
+    manifest_p.add_argument("--pretty", action="store_true", help="pretty-print JSON")
+    manifest_p.set_defaults(func=cmd_manifest)
+
     ec = sub.add_parser(
         "encode-code",
         aliases=["code-matrix"],
@@ -3652,14 +4171,23 @@ Legacy (backward compat):
     rt = sub.add_parser(
         "route",
         aliases=["fleet"],
-        help='Geometric fleet routing — tangent-vector parallel tracks ("scbe route")',
+        help="Geometric fleet routing — assign tasks to agents by tongue affinity (--fleet f.json --tasks t.json)",
     )
+    rt.add_argument("--fleet", help="JSON file: [{name, tongue|weights}] agents")
+    rt.add_argument("--tasks", help="JSON file: [{name, profile|weights}] tasks")
+    rt.add_argument("--pressure", type=float, default=0.6, help="fluid back-pressure (default 0.6)")
+    rt.add_argument("--json", dest="json_output", action="store_true", help="machine-readable output")
     rt.set_defaults(func=cmd_route)
 
     sc = sub.add_parser(
         "schedule",
-        help='Geometric scheduler — real concurrent dispatch via manifold routing ("scbe schedule")',
+        help="Geometric scheduler — concurrent dispatch on a real thread pool (--fleet f.json --jobs j.json)",
     )
+    sc.add_argument("--fleet", help="JSON file: [{name, tongue|weights}] workers")
+    sc.add_argument("--jobs", help="JSON file: [{name, profile|weights, base}] jobs")
+    sc.add_argument("--mode", choices=["geometric", "round_robin"], default="geometric", help="routing mode")
+    sc.add_argument("--max-retries", dest="max_retries", type=int, default=2, help="per-job retries (default 2)")
+    sc.add_argument("--json", dest="json_output", action="store_true", help="machine-readable output")
     sc.set_defaults(func=cmd_schedule)
 
     bl = sub.add_parser(
@@ -3904,6 +4432,8 @@ MENU = """\
 
 def _menu_prompt(label: str) -> Optional[str]:
     """Read a line; return None on Ctrl+C / EOF so the menu can exit cleanly."""
+    if not _interactive():
+        return None  # non-interactive (agent / pipe / CI): never block on input()
     try:
         # Strip a leading UTF-8 BOM that Windows pipes prepend to stdin.
         return input(label).lstrip("﻿").strip()
@@ -4124,9 +4654,16 @@ def main() -> int:
     _enable_utf8_console()
 
     if len(sys.argv) == 1:
-        return interactive_menu()
+        if _interactive():
+            return interactive_menu()
+        # Non-interactive (agent / pipe / CI): never launch the blocking TUI — show help.
+        build_cli().print_help()
+        return 0
 
     if sys.argv[1] in ("menu", "app", "home"):
+        if not _interactive():
+            print("scbe: the interactive menu needs a terminal; run a subcommand (see 'scbe --help').", file=sys.stderr)
+            return 2
         return interactive_menu()
 
     # Natural-language fallback: if the first word isn't a known command (and
@@ -4138,16 +4675,27 @@ def main() -> int:
         compiled = _natural_command_args(prompt)
         if compiled:
             return _dispatch_scbe_args(compiled)
-        # Typo guard: a single bare token that closely matches a real command is
-        # almost certainly a mistype, not natural language — suggest it (exit 2)
-        # instead of burning an AI call. Multi-word input stays natural language.
-        if len(sys.argv) == 2:
-            matches = difflib.get_close_matches(first, sorted(_known_commands(build_cli())), n=3, cutoff=0.72)
-            if matches:
-                hint = matches[0] if len(matches) == 1 else ", ".join(matches)
-                print(f"scbe: unknown command '{first}'. Did you mean: {hint}?", file=sys.stderr)
-                print("Run 'scbe --help' for all commands, or 'scbe ask \"...\"' to ask the AI.", file=sys.stderr)
-                return 2
+        matches = difflib.get_close_matches(first, sorted(_known_commands(build_cli())), n=3, cutoff=0.6)
+        # Route unknown input to the AI ONLY when a human is driving (a real TTY) or
+        # the caller explicitly opted in. An agent / pipe / CI run gets a deterministic
+        # unknown-command error (exit 2) and NEVER a surprise billable model call.
+        ai_fallback_ok = _interactive() or os.environ.get("SCBE_AI_FALLBACK") == "1"
+        if not ai_fallback_ok:
+            hint = (" Did you mean: " + ", ".join(matches) + "?") if matches else ""
+            print(f"scbe: unknown command '{first}'.{hint}", file=sys.stderr)
+            print(
+                "Run 'scbe --help' or 'scbe manifest' for commands; "
+                "set SCBE_AI_FALLBACK=1 to send unknown input to the AI.",
+                file=sys.stderr,
+            )
+            return 2
+        # Typo guard: a single bare token that closely matches a real command is almost
+        # certainly a mistype, not natural language — suggest it instead of an AI call.
+        if len(sys.argv) == 2 and matches:
+            hint = matches[0] if len(matches) == 1 else ", ".join(matches)
+            print(f"scbe: unknown command '{first}'. Did you mean: {hint}?", file=sys.stderr)
+            print("Run 'scbe --help' for all commands, or 'scbe ask \"...\"' to ask the AI.", file=sys.stderr)
+            return 2
         return cmd_ask(argparse.Namespace(prompt=prompt, backend=None, model=None, json_output=False))
 
     if sys.argv[1] == "cli":
