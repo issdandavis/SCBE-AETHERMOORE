@@ -1541,6 +1541,75 @@ def cmd_primecat(args: argparse.Namespace) -> int:
     return 2
 
 
+_TANGENT_TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
+
+
+def _parse_tongue_profile(s: str) -> dict:
+    """Parse 'KO:1,DR:0.5' or 'KO,DR' or 'KO' into a tongue->weight profile."""
+    prof: dict = {}
+    for part in (s or "").replace(" ", "").split(","):
+        if not part:
+            continue
+        if ":" in part:
+            key, val = part.split(":", 1)
+            prof[key.upper()] = float(val)
+        else:
+            prof[part.upper()] = 1.0
+    bad = [k for k in prof if k not in _TANGENT_TONGUES]
+    if bad:
+        raise ValueError(f"unknown tongue(s) {bad}; choose from {list(_TANGENT_TONGUES)}")
+    if not prof:
+        raise ValueError("empty tongue profile")
+    return prof
+
+
+def cmd_tangent(args: argparse.Namespace) -> int:
+    """Tangential parallelism: route a fleet with bounded divergence from the prime line (keel)."""
+    try:
+        from python.scbe import geometric_router as gr
+        from python.scbe import tangent_parallel as tpar
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"tangent unavailable: {exc}", file=sys.stderr)
+        return 1
+    try:
+        goal = _parse_tongue_profile(getattr(args, "goal", None) or "DR:1,UM:0.5")
+        codes = [c for c in (getattr(args, "agents", None) or "KO,AV,RU").replace(" ", "").split(",") if c]
+        agents = [gr.Agent(f"agent-{c.upper()}", _parse_tongue_profile(c)) for c in codes]
+        raw_tasks = getattr(args, "tasks", None) or []
+        if raw_tasks:
+            tasks = []
+            for i, item in enumerate(raw_tasks):
+                name, prof = item.split("=", 1) if "=" in item else (f"task{i + 1}", item)
+                tasks.append(gr.Task(name, _parse_tongue_profile(prof)))
+        else:  # a real default scenario (computed, not faked)
+            tasks = [
+                gr.Task("nav", {"KO": 1.0, "AV": 0.5}),
+                gr.Task("synth", {"RU": 1.0, "CA": 0.5}),
+                gr.Task("ship", {"DR": 1.0}),
+                gr.Task("drift", {"CA": 1.0, "UM": 1.0}),
+            ]
+    except ValueError as e:
+        print(f"bad input: {e}", file=sys.stderr)
+        return 2
+
+    plan = tpar.plan(
+        agents, tasks, goal, max_divergence=getattr(args, "max_divergence", 1.5), nodes=getattr(args, "nodes", 1)
+    )
+    if getattr(args, "json_output", False):
+        print(json.dumps(plan.to_dict()))
+        return 0
+    print(f"tangential parallelism · {len(agents)} agents · {len(tasks)} tasks · bound={plan.bound} · nodes={plan.nodes}")
+    print(f"prime line (keel): {[round(x, 2) for x in plan.origin]} -> {[round(x, 2) for x in plan.goal]}")
+    for tr in plan.tracks:
+        flag = f"  (planed back {tr.reprojected})" if tr.reprojected else ""
+        print(
+            f"  {tr.agent}: tasks={tr.tasks} drift={tr.divergence:.3f} "
+            f"(raw {tr.raw_divergence:.3f}) align={tr.alignment:+.3f}{flag}"
+        )
+    print(f"grain alignment (fleet): {plan.grain_alignment:+.3f}  ·  max drift after bounding: {plan.max_divergence:.3f}")
+    return 0
+
+
 # Bit spine: byte-exact binary/hex/trit and tiny-machine command surface.
 SPINE_TEMPLATE_COMMANDS = {
     "users": [
@@ -4611,6 +4680,17 @@ Legacy (backward compat):
     pcat_mt.add_argument("--universe", required=True, help="full category universe (comma/space separated)")
     pcat_mt.add_argument("--json", dest="json_output", action="store_true")
     pcat_mt.set_defaults(func=cmd_primecat)
+
+    tg = sub.add_parser("tangent", aliases=["keel"], help="Tangential parallelism: bounded-divergence fleet routing")
+    tg.add_argument("tasks", nargs="*", help="tasks as name=PROFILE or PROFILE (e.g. build=KO:1,DR:0.5)")
+    tg.add_argument("--goal", help="destination tongue profile (the bow), e.g. DR:1,UM:0.5")
+    tg.add_argument("--agents", help="comma list of agent tongues, e.g. KO,AV,RU")
+    tg.add_argument(
+        "--max-divergence", dest="max_divergence", type=float, default=1.5, help="max drift from the keel"
+    )
+    tg.add_argument("--nodes", type=int, default=1, help="reconvergence checkpoints along the keel")
+    tg.add_argument("--json", dest="json_output", action="store_true")
+    tg.set_defaults(func=cmd_tangent)
 
     # ─── Sacred Tongues as verbs — full names, no abbreviation ───
     spine = sub.add_parser("spine", help="Bit spine: binary, hex, trit, and tiny-machine actions")
