@@ -16,6 +16,7 @@ from typing import Iterable, Sequence
 
 from .atomic_tokenization import AtomicTokenState, TONGUES
 
+
 CODE_LANE_REGISTRY = {
     "computational_isomorphism": {
         "KO": "lisp",

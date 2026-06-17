@@ -33,11 +33,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from python.scbe.geometric_router import (  # noqa: E402
-    Agent,
-    Task,
-    TONGUES,
-    finsler_distance,
-    route_fleet,
+    Agent, Task, TONGUES, finsler_distance, route_fleet,
 )
 
 
@@ -84,10 +80,8 @@ def main() -> int:
         rr_tot, rr_mk = sum(rr.values()), max(rr.values())
         ge_tot, ge_mk = sum(ge.values()), max(ge.values())
         mk_win = 100 * (1 - ge_mk / rr_mk) if rr_mk else 0.0
-        print(
-            f"  {skew:>5.2f} | {rr_tot:>10.1f} {rr_mk:>11.2f} | "
-            f"{ge_tot:>10.1f} {ge_mk:>11.2f} | makespan {mk_win:>4.0f}% faster"
-        )
+        print(f"  {skew:>5.2f} | {rr_tot:>10.1f} {rr_mk:>11.2f} | "
+              f"{ge_tot:>10.1f} {ge_mk:>11.2f} | makespan {mk_win:>4.0f}% faster")
     print("\n  total   = sum of per-task costs (throughput / tokens)")
     print("  makespan = slowest worker's load = PARALLEL wall-clock")
     print("  -> as the fleet gets heterogeneous, geometric routing cuts the makespan:")

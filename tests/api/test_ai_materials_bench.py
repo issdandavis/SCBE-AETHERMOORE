@@ -94,11 +94,11 @@ def test_named_material_drives_physics_and_flags_assumptions() -> None:
 
     assert result["cu_conductor"] == "copper"
     assert result["ag_conductor"] == "silver"
-    assert result["ag_r"] < result["cu_r"]  # silver is less resistive than copper
-    assert result["al_r"] > result["cu_r"]  # aluminum is more resistive
-    assert result["assumed_nclad"] is True  # missing variable is disclosed
+    assert result["ag_r"] < result["cu_r"]      # silver is less resistive than copper
+    assert result["al_r"] > result["cu_r"]      # aluminum is more resistive
+    assert result["assumed_nclad"] is True       # missing variable is disclosed
     assert result["nclad_echoed"] == 1.44
-    assert result["unphysical"] is True  # extreme inputs flagged non-physical
+    assert result["unphysical"] is True          # extreme inputs flagged non-physical
 
 
 def test_concept_report_is_a_sellable_deliverable() -> None:
@@ -125,15 +125,15 @@ def test_concept_report_is_a_sellable_deliverable() -> None:
         }).catch((e) => { console.error(e); process.exit(1); });
         """)
 
-    assert result["bom_items"] >= 5  # a real parts list
+    assert result["bom_items"] >= 5                      # a real parts list
     assert result["total_high"] > result["total_low"] > 0  # costed, with a range
-    assert result["voltage"] > 0  # derived operating voltage
-    assert result["max_current"] > 0  # derived safe-current limit
-    assert result["plan_steps"] >= 4  # a measurement protocol
-    assert result["report_has_bom"] is True  # the deliverable has the BOM
-    assert result["report_has_plan"] is True  # ...and the test plan
-    assert result["report_has_receipt"] is True  # ...and is provenance-stamped
-    assert result["report_len"] > 600  # a substantive document
+    assert result["voltage"] > 0                         # derived operating voltage
+    assert result["max_current"] > 0                     # derived safe-current limit
+    assert result["plan_steps"] >= 4                     # a measurement protocol
+    assert result["report_has_bom"] is True              # the deliverable has the BOM
+    assert result["report_has_plan"] is True             # ...and the test plan
+    assert result["report_has_receipt"] is True          # ...and is provenance-stamped
+    assert result["report_len"] > 600                    # a substantive document
 
 
 def test_ai_materials_bench_page_contains_visualizer() -> None:

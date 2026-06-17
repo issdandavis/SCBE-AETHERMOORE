@@ -311,7 +311,7 @@ def main():
     if helix["recall"] >= flat["recall"]:
         print("  Helix recall matches or beats flat")
     else:
-        print(f"  Helix recall tradeoff: {((flat['recall']-helix['recall'])/max(flat['recall'], 0.01))*100:.0f}% lower")
+        print(f"  Helix recall tradeoff: {((flat['recall']-helix['recall'])/max(flat['recall'],0.01))*100:.0f}% lower")
 
     # Key: does adversarial text end up FARTHER from center in hyperbolic?
     if helix["adv_radius"] > helix["tech_radius"]:

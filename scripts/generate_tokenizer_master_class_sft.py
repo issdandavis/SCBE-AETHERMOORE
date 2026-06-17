@@ -742,7 +742,7 @@ def generate_drift_corrections() -> int:
             )
             + "\n\n"
             f"**Violations:**\n{violation_text}\n"
-            f"**Action:** {'RECOMPUTE -- one or more ratios exceed tolerance. ' if violations else 'PASS -- all ratios within tolerance. '}"
+            f"**Action:** {'RECOMPUTE -- one or more ratios exceed tolerance. '  if violations else 'PASS -- all ratios within tolerance. '}"
             f"{'Snap all weights to exact phi^n values.' if violations else 'No correction needed this epoch.'}",
             balanced_scores("CA", "DR"),
             0.8,

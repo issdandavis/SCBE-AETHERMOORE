@@ -7,12 +7,12 @@ export type MetricsBackend = 'stdout' | 'datadog' | 'prom' | 'otlp';
 const backend: MetricsBackend = (process.env.SCBE_METRICS_BACKEND as MetricsBackend) || 'stdout';
 let warnedUnsupportedBackend = false;
 
-function warnFallbackBackendOnce() {
+function warnUnsupportedBackendOnce() {
   if (backend === 'stdout' || warnedUnsupportedBackend) return;
   warnedUnsupportedBackend = true;
-  logger.warn(`Backend '${backend}' is configured; using stdout metrics fallback.`, {
+  logger.warn(`Backend '${backend}' is configured but not implemented. Metrics will be dropped.`, {
     backend,
-    fallback: 'stdout',
+    hint: 'Use SCBE_METRICS_BACKEND=stdout or configure an exporter',
   });
 }
 
@@ -32,12 +32,17 @@ function filterTags(tags?: Tags): Record<string, string | number | boolean> | un
 
 export const metrics = {
   timing(name: string, valueMs: number, tags?: Tags) {
-    warnFallbackBackendOnce();
-    metricsLogger.timing(name, valueMs, filterTags(tags));
+    if (backend === 'stdout') {
+      metricsLogger.timing(name, valueMs, filterTags(tags));
+    }
+    // Future: implement datadog/prom/otlp exporters
+    warnUnsupportedBackendOnce();
   },
   incr(name: string, value = 1, tags?: Tags) {
-    warnFallbackBackendOnce();
-    metricsLogger.incr(name, value, filterTags(tags));
+    if (backend === 'stdout') {
+      metricsLogger.incr(name, value, filterTags(tags));
+    }
+    warnUnsupportedBackendOnce();
   },
   now() {
     return performance.now();

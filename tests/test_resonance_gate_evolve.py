@@ -257,7 +257,7 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
     print("  EVOLUTION COMPLETE")
     print(f"  Initial fitness: {initial_fitness:.2f}")
     print(f"  Final fitness:   {best_fitness:.2f}")
-    print(f"  Improvement:     {((best_fitness/max(initial_fitness, 1))-1)*100:.1f}%")
+    print(f"  Improvement:     {((best_fitness/max(initial_fitness,1))-1)*100:.1f}%")
     print(f"  Best params:     {best.get_params()}")
     print(f"{'=' * 60}")
 
@@ -282,7 +282,7 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
     # Test 4: Barrier cost ratio
     cost_0 = best.gate(0.0, t=0)["barrier_cost"]
     cost_3 = best.gate(3.0, t=0)["barrier_cost"]
-    print(f"  Barrier cost ratio (d*=3/d*=0): {cost_3/max(cost_0, 1e-10):.0f}x")
+    print(f"  Barrier cost ratio (d*=3/d*=0): {cost_3/max(cost_0,1e-10):.0f}x")
 
     # Save report
     report = {

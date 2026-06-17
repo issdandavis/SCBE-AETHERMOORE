@@ -54,9 +54,9 @@ import time
 # Constants
 # =============================================================================
 
-PHI = (1 + np.sqrt(5)) / 2  # Golden ratio φ ≈ 1.618
-PHI_INV = 2 / (1 + np.sqrt(5))  # 1/φ ≈ 0.618
-R_FIFTH = 3 / 2  # Perfect fifth
+PHI = (1 + np.sqrt(5)) / 2          # Golden ratio φ ≈ 1.618
+PHI_INV = 2 / (1 + np.sqrt(5))      # 1/φ ≈ 0.618
+R_FIFTH = 3 / 2                      # Perfect fifth
 PYTHAGOREAN_COMMA = 531441 / 524288  # 3^12 / 2^19
 
 
@@ -64,42 +64,37 @@ PYTHAGOREAN_COMMA = 531441 / 524288  # 3^12 / 2^19
 # Enums
 # =============================================================================
 
-
 class GovernanceMode(Enum):
     """FSGS governance modes (Section 6.4)."""
-
-    RUN = "RUN"  # (0,0) — Normal execution
-    HOLD = "HOLD"  # (0,1) — Pause and inspect
-    QUAR = "QUAR"  # (1,0) — Quarantine thought
+    RUN = "RUN"            # (0,0) — Normal execution
+    HOLD = "HOLD"          # (0,1) — Pause and inspect
+    QUAR = "QUAR"          # (1,0) — Quarantine thought
     ROLLBACK = "ROLLBACK"  # (1,1) — Revert to last safe state
 
 
 class PhaseState(Enum):
     """9-state phase diagram (Section 6.3)."""
-
-    RESONANT_LOCK = "resonant_lock"  # Stable harmonic convergence
-    ZERO_G_HOVER = "zero_g_hover"  # Floating — no net force
-    CREATIVE_TENSION = "creative_tension"  # Productive instability
-    COLLAPSE = "collapse"  # Thought structure failure
-    RECOVERY = "recovery"  # Rebuilding from collapse
-    DEEP_SLEEP = "deep_sleep"  # Minimal activity, self-repair
-    ALARM = "alarm"  # Security trigger
-    BRAID_WEAVE = "braid_weave"  # MSR generators active
-    HARMONIC_BLOOM = "harmonic_bloom"  # Optimal creative output
+    RESONANT_LOCK = "resonant_lock"       # Stable harmonic convergence
+    ZERO_G_HOVER = "zero_g_hover"         # Floating — no net force
+    CREATIVE_TENSION = "creative_tension" # Productive instability
+    COLLAPSE = "collapse"                 # Thought structure failure
+    RECOVERY = "recovery"                 # Rebuilding from collapse
+    DEEP_SLEEP = "deep_sleep"             # Minimal activity, self-repair
+    ALARM = "alarm"                       # Security trigger
+    BRAID_WEAVE = "braid_weave"           # MSR generators active
+    HARMONIC_BLOOM = "harmonic_bloom"     # Optimal creative output
 
 
 class FluxState(Enum):
     """Dimensional breathing states."""
-
-    POLLY = 1.0  # ν ≈ 1.0 — Full capability
-    QUASI = 0.5  # ν ≈ 0.5 — Defensive
-    DEMI = 0.1  # ν ≈ 0.1 — Survival
+    POLLY = 1.0   # ν ≈ 1.0 — Full capability
+    QUASI = 0.5   # ν ≈ 0.5 — Defensive
+    DEMI = 0.1    # ν ≈ 0.1 — Survival
 
 
 # =============================================================================
 # FSGS Control Symbol
 # =============================================================================
-
 
 @dataclass
 class FSGSSymbol:
@@ -109,7 +104,6 @@ class FSGSSymbol:
     m = movement bit: 0 = halt, 1 = step forward
     s = suppression bit: 0 = normal, 1 = dampen/suppress
     """
-
     m: int  # Movement bit
     s: int  # Suppression bit
 
@@ -135,7 +129,8 @@ _FSGS_MAP: Dict[Tuple[int, int], GovernanceMode] = {
 }
 
 
-def classify_to_fsgs(x: np.ndarray, threshold_quar: float = 0.7, threshold_hold: float = 0.3) -> FSGSSymbol:
+def classify_to_fsgs(x: np.ndarray, threshold_quar: float = 0.7,
+                     threshold_hold: float = 0.3) -> FSGSSymbol:
     """
     Classify a 21D state vector to an FSGS control symbol.
 
@@ -159,7 +154,6 @@ def classify_to_fsgs(x: np.ndarray, threshold_quar: float = 0.7, threshold_hold:
 # MSR Algebra: Mirror-Shift-Refactor
 # =============================================================================
 
-
 class MirrorShiftRefactor:
     """
     Mirror-Shift-Refactor algebra (Section 6.3).
@@ -180,7 +174,8 @@ class MirrorShiftRefactor:
     dimension d ≈ 1.614 ± 0.08, close to φ ≈ 1.618.
     """
 
-    def __init__(self, dim: int = 21, mirror_dims: Optional[List[int]] = None, trust_subspace_dim: int = 6):
+    def __init__(self, dim: int = 21, mirror_dims: Optional[List[int]] = None,
+                 trust_subspace_dim: int = 6):
         self.dim = dim
         self.mirror_dims = mirror_dims or list(range(6, 12))  # Mirror phase dims
         self.trust_dim = trust_subspace_dim
@@ -273,7 +268,7 @@ class MirrorShiftRefactor:
         box_counts = []
 
         for k in range(2, 8):
-            n_boxes = 2**k
+            n_boxes = 2 ** k
             box_size = max_extent / n_boxes
 
             # Count occupied boxes
@@ -313,7 +308,7 @@ class MirrorShiftRefactor:
             return np.zeros(self.dim)
 
         # Gradient of H(d*) = exp(d*²) is 2*d*·exp(d*²)·x_hat
-        grad_H = 2.0 * norm * np.exp(norm**2)
+        grad_H = 2.0 * norm * np.exp(norm ** 2)
         direction = np.zeros(self.dim)
         direction[:6] = -PHI_INV * grad_H * x[:6] / norm
 
@@ -327,17 +322,27 @@ class MirrorShiftRefactor:
         results = {}
 
         # M² = I
-        results["M_squared_is_I"] = np.allclose(self.mirror(self.mirror(x)), x, atol=1e-10)
+        results["M_squared_is_I"] = np.allclose(
+            self.mirror(self.mirror(x)), x, atol=1e-10
+        )
 
         # Π² = Π
         pi_x = self.refactor(x)
-        results["Pi_squared_is_Pi"] = np.allclose(self.refactor(pi_x), pi_x, atol=1e-10)
+        results["Pi_squared_is_Pi"] = np.allclose(
+            self.refactor(pi_x), pi_x, atol=1e-10
+        )
 
         # 0·X = 0
-        results["zero_absorbs"] = np.allclose(self.zero(x), np.zeros(self.dim), atol=1e-10)
+        results["zero_absorbs"] = np.allclose(
+            self.zero(x), np.zeros(self.dim), atol=1e-10
+        )
 
         # M·Π = Π·M (commutation)
-        results["M_Pi_commute"] = np.allclose(self.mirror(self.refactor(x)), self.refactor(self.mirror(x)), atol=1e-10)
+        results["M_Pi_commute"] = np.allclose(
+            self.mirror(self.refactor(x)),
+            self.refactor(self.mirror(x)),
+            atol=1e-10
+        )
 
         return results
 
@@ -345,7 +350,6 @@ class MirrorShiftRefactor:
 # =============================================================================
 # Hybrid Automaton: FSGS State Machine
 # =============================================================================
-
 
 @dataclass
 class HybridState:
@@ -356,16 +360,15 @@ class HybridState:
     Discrete: q ∈ {RUN, HOLD, QUAR, ROLLBACK}
     Phase: p ∈ {9-state phase diagram}
     """
-
-    x: np.ndarray  # 21D continuous state
+    x: np.ndarray                       # 21D continuous state
     q: GovernanceMode = GovernanceMode.RUN
     phase: PhaseState = PhaseState.RESONANT_LOCK
     flux: FluxState = FluxState.POLLY
-    energy: float = 0.0  # Accumulated energy cost
-    step_count: int = 0  # Steps since last mode change
+    energy: float = 0.0                 # Accumulated energy cost
+    step_count: int = 0                 # Steps since last mode change
     safe_checkpoint: Optional[np.ndarray] = None  # Last known safe state
 
-    def snapshot(self) -> "HybridState":
+    def snapshot(self) -> 'HybridState':
         """Create a checkpoint of current state."""
         return HybridState(
             x=self.x.copy(),
@@ -404,10 +407,10 @@ class FSGSAutomaton:
 
         # Trust ring learning rates (Section 2.1)
         self._alpha_map = {
-            "CORE": 1.0,  # Full speed
+            "CORE": 1.0,       # Full speed
             "INNER": PHI_INV,  # 0.618
-            "OUTER": PHI_INV**2,  # 0.382
-            "WALL": 0.0,  # Blocked
+            "OUTER": PHI_INV ** 2,  # 0.382
+            "WALL": 0.0,       # Blocked
         }
 
     def classify_trust_ring(self, x: np.ndarray) -> str:
@@ -505,17 +508,15 @@ class FSGSAutomaton:
         )
 
         # Log
-        self.history.append(
-            {
-                "step": new_state.step_count,
-                "sigma": sigma.label,
-                "mode": new_q.value,
-                "phase": new_phase.value,
-                "ring": ring,
-                "energy_delta": energy_delta,
-                "total_energy": new_state.energy,
-            }
-        )
+        self.history.append({
+            "step": new_state.step_count,
+            "sigma": sigma.label,
+            "mode": new_q.value,
+            "phase": new_phase.value,
+            "ring": ring,
+            "energy_delta": energy_delta,
+            "total_energy": new_state.energy,
+        })
 
         return new_state
 
@@ -579,8 +580,11 @@ class FSGSAutomaton:
 # Transition Function δ(q, σ, x)
 # =============================================================================
 
-
-def transition_function(q: GovernanceMode, sigma: FSGSSymbol, x: np.ndarray) -> GovernanceMode:
+def transition_function(
+    q: GovernanceMode,
+    sigma: FSGSSymbol,
+    x: np.ndarray
+) -> GovernanceMode:
     """
     Discrete transition function δ(q, σ, x).
 
@@ -619,7 +623,6 @@ def transition_function(q: GovernanceMode, sigma: FSGSSymbol, x: np.ndarray) -> 
 # =============================================================================
 # Integration Pipeline
 # =============================================================================
-
 
 def think_step(
     intent_21d: np.ndarray,
@@ -721,7 +724,6 @@ def mode_to_action(q: GovernanceMode, phase: PhaseState) -> Dict[str, Any]:
 # Self-Test
 # =============================================================================
 
-
 def self_test() -> Dict[str, Any]:
     """Run self-tests on the Aether Braid module."""
     results = {}
@@ -741,10 +743,10 @@ def self_test() -> Dict[str, Any]:
     # Test 2: FSGS symbol mapping
     total += 1
     symbols_ok = (
-        FSGSSymbol(0, 0).mode == GovernanceMode.RUN
-        and FSGSSymbol(0, 1).mode == GovernanceMode.HOLD
-        and FSGSSymbol(1, 0).mode == GovernanceMode.QUAR
-        and FSGSSymbol(1, 1).mode == GovernanceMode.ROLLBACK
+        FSGSSymbol(0, 0).mode == GovernanceMode.RUN and
+        FSGSSymbol(0, 1).mode == GovernanceMode.HOLD and
+        FSGSSymbol(1, 0).mode == GovernanceMode.QUAR and
+        FSGSSymbol(1, 1).mode == GovernanceMode.ROLLBACK
     )
     if symbols_ok:
         passed += 1

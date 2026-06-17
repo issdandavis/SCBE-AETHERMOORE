@@ -38,9 +38,6 @@ per-file-ignores =
     # deterministic_task_plan() repair-command corpus: literal shell/python -c
     # payloads (nested quoting, up to 1142 chars) must stay byte-exact for sandbox replay
     scripts/benchmark/scbe_governance_core.py: E501
-    # Generated self-contained benchmark kernels embed source payloads on one line.
-    scripts/kaggle/encoder_bench/encoder_bench_kernel.py: E501
-    scripts/kaggle_auto/rubix_bench_sc/rubix_bench_selfcontained.py: E501
     # Generated-document templates (LaTeX paper prose, product packet prose,
     # model-card JSONL examples, Colab cells with single-token URLs): lines live
     # inside triple-quoted templates and cannot wrap without changing output
