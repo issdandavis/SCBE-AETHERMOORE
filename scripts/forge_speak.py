@@ -18,7 +18,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from forge import _MOVES, _exec, assemble, show_signature  # noqa: E402
+from forge import _MOVES, _exec, assemble, prime_signature, show_signature  # noqa: E402
 from forge_ai import _BLOCKS, expand, provides  # noqa: E402
 
 # plain-English -> a capability the move library actually provides
@@ -98,6 +98,26 @@ def synth_spec(caps: list[str], text: str):
     return {"goal": text.strip(), "steps": steps}
 
 
+def _run_spec(move_tokens, spec):
+    """Assemble the given move tokens into a real app and verify it by RUNNING the spec.
+
+    Shared by both paths: derive (set-cover -> moves) and reuse (a remembered
+    recipe's proven moves). Reuse re-runs the spec too -- memory never replaces
+    verification, it only skips the planning.
+    """
+    name, src, _w, used = assemble(["app forged"] + list(move_tokens))
+    ok, results = True, []
+    with tempfile.TemporaryDirectory() as d:
+        app = Path(d) / f"{name}.py"
+        app.write_text(src, encoding="utf-8")
+        for argv, expect in spec["steps"]:
+            rc, out = _exec(app, argv)
+            good = rc == 0 and (expect is None or expect in out)
+            ok = ok and good
+            results.append((argv, good, out.strip()[:40]))
+    return used, src, ok, results
+
+
 def solve(spec):
     needed = {s[0][0] for s in spec["steps"]}
     candidates = list(_BLOCKS) + list(_MOVES)
@@ -108,16 +128,7 @@ def solve(spec):
             break
         plan.append(best)
         remaining -= provides(best)
-    name, src, _w, used = assemble(["app forged"] + expand(plan))
-    ok, results = True, []
-    with tempfile.TemporaryDirectory() as d:
-        app = Path(d) / f"{name}.py"
-        app.write_text(src, encoding="utf-8")
-        for argv, expect in spec["steps"]:
-            rc, out = _exec(app, argv)
-            good = rc == 0 and (expect is None or expect in out)
-            ok = ok and good
-            results.append((argv, good, out.strip()[:40]))
+    used, src, ok, results = _run_spec(expand(plan), spec)
     return plan, used, src, ok, results
 
 
@@ -129,8 +140,39 @@ def speak(text: str):
         print("  Try words like: add, see/list, mark done, count, remove, clear -- or 'a task tracker'.")
         return False
     print(f"  I UNDERSTOOD you want to: {', '.join(caps)}")
-    plan, used, src, ok, results = solve(synth_spec(caps, text))
+    spec = synth_spec(caps, text)
+
+    # MEMORY: every build checks the AI's build memory first. If a VERIFIED recipe
+    # already covers these capabilities, reuse its proven moves (skip planning);
+    # otherwise derive it now and remember it -- so each build makes the next faster.
+    # Memory is best-effort: any hiccup falls back to a fresh derive, never a crash.
+    hit, recipes = None, None
+    try:
+        from forge_memory import load, recall  # lazy import: forge_memory imports us
+
+        recipes = load()
+        hit = recall(set(caps), recipes)
+    except Exception:
+        recipes = None
+
+    if hit:
+        used, src, ok, results = _run_spec([m for m in hit["moves"] if m in _MOVES], spec)
+        plan = ["memory"]
+        origin = f'REUSED memory (deed {hit["deed"]}, first learned from "{hit["intent"]}")'
+    else:
+        plan, used, src, ok, results = solve(spec)
+        origin = "DERIVED fresh"
+        if ok and recipes is not None:
+            from forge_memory import save
+
+            recipes.append(
+                {"intent": text, "caps": caps, "moves": used, "deed": prime_signature(used), "verified": True}
+            )
+            save(recipes)
+            origin += f" -> REMEMBERED as recipe #{len(recipes)} (next time it's a reuse)"
+
     lines = src.count("\n") + 1
+    print(f"  -> {origin}")
     print(
         f"  -> built it from {len(plan)} building block(s): {', '.join(plan)}  "
         f"({len(used)} moves, {lines} lines, on the binary Turing base)"
