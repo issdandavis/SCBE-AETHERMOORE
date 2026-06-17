@@ -497,7 +497,7 @@ class MLDSA65:
 
         For verifiers that hold the signer's public key but not its secret — e.g.
         governance-authority verification, where the secret never leaves the signer.
-        Fail-closed: refuses (raises) rather than fake a result if no real backend.
+        Fail-closed: refuses (raises) rather than invent a result if no real backend.
         """
         if LIBOQS_AVAILABLE:
             alg = _select_mldsa_algorithm() or "ML-DSA-65"
@@ -507,7 +507,7 @@ class MLDSA65:
             return bool(_DilithiumPure.verify(public_key, message, signature))
         raise RuntimeError(
             "ML-DSA-65 verify_with_public_key requires a real PQC backend (liboqs or "
-            "pure-PQC); refusing to fake a verification result."
+            "pure-PQC); refusing to synthesize a verification result."
         )
 
 
