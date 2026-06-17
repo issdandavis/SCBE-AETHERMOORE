@@ -132,19 +132,21 @@ def solve(spec):
     return plan, used, src, ok, results
 
 
-def speak(text: str):
-    print(f'\n  YOU SAID: "{text}"')
+def forge(text: str) -> dict:
+    """The one build call: plain words -> a verified, remembered build.
+
+    Prints nothing and returns everything, so a HUMAN (the `scbe forge` CLI) and an
+    AI (calling this directly) take the EXACT same path: parse intent -> check build
+    memory -> reuse a proven recipe or derive + remember -> verify by RUNNING. The
+    `reused` flag and `deed` make the self-improving loop observable from outside.
+    """
     caps, gaps = parse_intent(text)
     if not caps:
-        print("  I couldn't turn that into something I can build yet.")
-        print("  Try words like: add, see/list, mark done, count, remove, clear -- or 'a task tracker'.")
-        return False
-    print(f"  I UNDERSTOOD you want to: {', '.join(caps)}")
+        return {"ok": False, "reason": "no-intent", "intent": text, "caps": [], "gaps": gaps}
     spec = synth_spec(caps, text)
 
-    # MEMORY: every build checks the AI's build memory first. If a VERIFIED recipe
-    # already covers these capabilities, reuse its proven moves (skip planning);
-    # otherwise derive it now and remember it -- so each build makes the next faster.
+    # MEMORY: reuse a VERIFIED recipe if one already covers these capabilities;
+    # otherwise derive now and remember it -- so each build makes the next faster.
     # Memory is best-effort: any hiccup falls back to a fresh derive, never a crash.
     hit, recipes = None, None
     try:
@@ -157,11 +159,11 @@ def speak(text: str):
 
     if hit:
         used, src, ok, results = _run_spec([m for m in hit["moves"] if m in _MOVES], spec)
-        plan = ["memory"]
+        plan, reused = ["memory"], True
         origin = f'REUSED memory (deed {hit["deed"]}, first learned from "{hit["intent"]}")'
     else:
         plan, used, src, ok, results = solve(spec)
-        origin = "DERIVED fresh"
+        origin, reused = "DERIVED fresh", False
         if ok and recipes is not None:
             from forge_memory import save
 
@@ -171,21 +173,48 @@ def speak(text: str):
             save(recipes)
             origin += f" -> REMEMBERED as recipe #{len(recipes)} (next time it's a reuse)"
 
-    lines = src.count("\n") + 1
-    print(f"  -> {origin}")
+    return {
+        "ok": ok,
+        "reason": "built",
+        "intent": text,
+        "caps": caps,
+        "gaps": gaps,
+        "plan": plan,
+        "used": used,
+        "src": src,
+        "results": results,
+        "origin": origin,
+        "reused": reused,
+        "deed": prime_signature(used),
+        "lines": src.count("\n") + 1,
+    }
+
+
+def speak(text: str):
+    """Human-facing printer over forge() -- the original plain-English experience."""
+    print(f'\n  YOU SAID: "{text}"')
+    r = forge(text)
+    if r.get("reason") == "no-intent":
+        print("  I couldn't turn that into something I can build yet.")
+        print("  Try words like: add, see/list, mark done, count, remove, clear -- or 'a task tracker'.")
+        return False
+    print(f"  I UNDERSTOOD you want to: {', '.join(r['caps'])}")
+    print(f"  -> {r['origin']}")
     print(
-        f"  -> built it from {len(plan)} building block(s): {', '.join(plan)}  "
-        f"({len(used)} moves, {lines} lines, on the binary Turing base)"
+        f"  -> built it from {len(r['plan'])} building block(s): {', '.join(r['plan'])}  "
+        f"({len(r['used'])} moves, {r['lines']} lines, on the binary Turing base)"
     )
     print()
-    for argv, good, out in results:
+    for argv, good, out in r["results"]:
         print(f"   [{'OK' if good else 'XX'}] forged {' '.join(argv):<16} -> {out}")
-    show_signature(used)
-    print(f"\n  BUILT + VERIFIED: {'YES -- it runs and does what you asked' if ok else 'NO'}")
-    if gaps:
-        print(f"  HONEST GAPS (no move for these yet): {', '.join(gaps)}")
-        print(f'   -> I built everything else and proved it. Say "add a {gaps[0].split(" / ")[0]} move" and I will.')
-    return ok
+    show_signature(r["used"])
+    print(f"\n  BUILT + VERIFIED: {'YES -- it runs and does what you asked' if r['ok'] else 'NO'}")
+    if r["gaps"]:
+        print(f"  HONEST GAPS (no move for these yet): {', '.join(r['gaps'])}")
+        print(
+            f'   -> I built everything else and proved it. Say "add a {r["gaps"][0].split(" / ")[0]} move" and I will.'
+        )
+    return r["ok"]
 
 
 def main():
