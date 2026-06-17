@@ -28,7 +28,7 @@ def _can_import_cryptography():
 
 # Configure pytest-asyncio
 pytestmark = pytest.mark.asyncio(loop_scope="function")
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 # Import modules to test
 import sys

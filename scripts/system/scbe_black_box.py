@@ -11,7 +11,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = REPO_ROOT / "artifacts" / "black_box"
 
@@ -76,7 +75,9 @@ def _powershell_json(script: str, timeout: int = 30) -> Any:
 def collect_disk_signals() -> list[dict[str, Any]]:
     disks: list[dict[str, Any]] = []
     if platform.system().lower() == "windows":
-        roots = sorted({f"{chr(code)}:\\" for code in range(ord("A"), ord("Z") + 1) if Path(f"{chr(code)}:\\").exists()})
+        roots = sorted(
+            {f"{chr(code)}:\\" for code in range(ord("A"), ord("Z") + 1) if Path(f"{chr(code)}:\\").exists()}
+        )
     else:
         roots = ["/"]
     for root in roots:
@@ -115,15 +116,17 @@ def collect_windows_event_signals(hours: int = 24, max_events: int = 120) -> dic
         return {"available": False, "reason": "windows_only_signal", "events": []}
     script = rf"""
 $start = (Get-Date).AddHours(-{int(hours)})
-$events = Get-WinEvent -FilterHashtable @{{LogName='System'; Level=1,2,3; StartTime=$start}} -MaxEvents {int(max_events)} -ErrorAction SilentlyContinue |
+$events = Get-WinEvent -FilterHashtable @{{LogName='System'; Level=1,2,3; StartTime=$start}} `
+  -MaxEvents {int(max_events)} -ErrorAction SilentlyContinue |
   Select-Object TimeCreated, Id, ProviderName, LevelDisplayName, Message
 $events | ForEach-Object {{
+  $msg = $_.Message -replace '\s+', ' '
   [pscustomobject]@{{
     time = $_.TimeCreated.ToString('o')
     id = $_.Id
     provider = $_.ProviderName
     level = $_.LevelDisplayName
-    message = ($_.Message -replace '\s+', ' ').Substring(0, [Math]::Min(360, ($_.Message -replace '\s+', ' ').Length))
+    message = $msg.Substring(0, [Math]::Min(360, $msg.Length))
   }}
 }} | ConvertTo-Json -Compress
 """
@@ -179,7 +182,10 @@ def analyze(signals: dict[str, Any]) -> list[Finding]:
                     code="disk_almost_full",
                     title=f"{disk['path']} is close to full",
                     evidence=[f"{disk['free_gb']} GB free ({disk['free_percent']}%)"],
-                    explanation="Jobs, browsers, model caches, and Windows updates can fail or force-shutdown workflows when the system drive runs out of space.",
+                    explanation=(
+                        "Jobs, browsers, model caches, and Windows updates can fail or force-shutdown workflows "
+                        "when the system drive runs out of space."
+                    ),
                     action="Clear cache/artifacts or move run outputs before starting long AI/browser/training jobs.",
                 )
             )
@@ -190,7 +196,9 @@ def analyze(signals: dict[str, Any]) -> list[Finding]:
                     code="disk_low",
                     title=f"{disk['path']} has limited free space",
                     evidence=[f"{disk['free_gb']} GB free ({disk['free_percent']}%)"],
-                    explanation="This is not an immediate crash, but it is the common pre-failure state for long local jobs.",
+                    explanation=(
+                        "This is not an immediate crash, but it is the common pre-failure state for long local jobs."
+                    ),
                     action="Free space before running builds, model downloads, indexing, or video/browser automation.",
                 )
             )
@@ -204,7 +212,9 @@ def analyze(signals: dict[str, Any]) -> list[Finding]:
                     code="memory_pressure",
                     title="Physical memory is critically low",
                     evidence=[f"{memory.get('free_gb')} GB free ({memory.get('free_percent')}%)"],
-                    explanation="Heavy swapping can make a workstation look hung and can kill browser, Python, or Node jobs.",
+                    explanation=(
+                        "Heavy swapping can make a workstation look hung and can kill browser, Python, or Node jobs."
+                    ),
                     action="Close high-memory processes or reduce local model/browser parallelism.",
                 )
             )
@@ -231,8 +241,14 @@ def analyze(signals: dict[str, Any]) -> list[Finding]:
                 code="unexpected_shutdown",
                 title="Windows recorded an unexpected shutdown",
                 evidence=[_event_text(e) for e in events if int(e.get("id", 0)) == 41][:3],
-                explanation="Event 41 means Windows restarted without a clean shutdown. It does not prove the root cause, but it confirms the black-box event happened.",
-                action="Correlate the minutes before this event with disk, driver, WHEA, BugCheck, and power events below.",
+                explanation=(
+                    "Event 41 means Windows restarted without a clean shutdown. It does not prove the root cause, "
+                    "but it confirms the black-box event happened."
+                ),
+                action=(
+                    "Correlate the minutes before this event with disk, driver, WHEA, BugCheck, and power events "
+                    "below."
+                ),
             )
         )
 
@@ -242,14 +258,26 @@ def analyze(signals: dict[str, Any]) -> list[Finding]:
                 severity="high",
                 code="bugcheck",
                 title="Windows recorded a bugcheck/BSOD signal",
-                evidence=[_event_text(e) for e in events if int(e.get("id", 0)) == 1001 or "bugcheck" in str(e.get("provider", "")).lower()][:3],
+                evidence=[
+                    _event_text(e)
+                    for e in events
+                    if int(e.get("id", 0)) == 1001 or "bugcheck" in str(e.get("provider", "")).lower()
+                ][:3],
                 explanation="This usually means a kernel driver, hardware path, or low-level subsystem failed.",
-                action="Preserve the dump path from the event, then check recent driver/storage/power events around the same timestamp.",
+                action=(
+                    "Preserve the dump path from the event, then check recent driver/storage/power events around "
+                    "the same timestamp."
+                ),
             )
         )
 
     disk_event_ids = {7, 11, 51, 55, 98, 129, 153, 157}
-    disk_events = [e for e in events if int(e.get("id", 0)) in disk_event_ids or str(e.get("provider", "")).lower() in {"disk", "ntfs", "storahci", "iaStorAC".lower()}]
+    disk_events = [
+        e
+        for e in events
+        if int(e.get("id", 0)) in disk_event_ids
+        or str(e.get("provider", "")).lower() in {"disk", "ntfs", "storahci", "iaStorAC".lower()}
+    ]
     if disk_events:
         findings.append(
             Finding(
@@ -257,12 +285,20 @@ def analyze(signals: dict[str, Any]) -> list[Finding]:
                 code="storage_warning",
                 title="Storage or filesystem warnings found",
                 evidence=[_event_text(e) for e in disk_events[:5]],
-                explanation="Disk/controller warnings before a crash are actionable. They often point to storage drivers, link power management, cabling, disk health, or filesystem trouble.",
-                action="Back up important work, check SMART/vendor tools, and review storage-controller driver and power-management settings.",
+                explanation=(
+                    "Disk/controller warnings before a crash are actionable. They often point to storage drivers, "
+                    "link power management, cabling, disk health, or filesystem trouble."
+                ),
+                action=(
+                    "Back up important work, check SMART/vendor tools, and review storage-controller driver and "
+                    "power-management settings."
+                ),
             )
         )
 
-    whea_events = [e for e in events if "whea" in str(e.get("provider", "")).lower() or int(e.get("id", 0)) in {17, 18, 19, 47}]
+    whea_events = [
+        e for e in events if "whea" in str(e.get("provider", "")).lower() or int(e.get("id", 0)) in {17, 18, 19, 47}
+    ]
     if whea_events:
         findings.append(
             Finding(
@@ -270,8 +306,14 @@ def analyze(signals: dict[str, Any]) -> list[Finding]:
                 code="hardware_error",
                 title="Hardware error signals found",
                 evidence=[_event_text(e) for e in whea_events[:5]],
-                explanation="WHEA events are hardware/firmware/driver-layer warnings. They matter before random shutdowns or job crashes.",
-                action="Check thermals, BIOS/firmware, memory stability, GPU/PCIe/storage devices, and recent driver changes.",
+                explanation=(
+                    "WHEA events are hardware/firmware/driver-layer warnings. They matter before random shutdowns "
+                    "or job crashes."
+                ),
+                action=(
+                    "Check thermals, BIOS/firmware, memory stability, GPU/PCIe/storage devices, and recent driver "
+                    "changes."
+                ),
             )
         )
 
@@ -283,8 +325,14 @@ def analyze(signals: dict[str, Any]) -> list[Finding]:
                 code="service_instability",
                 title="Multiple Windows service failures found",
                 evidence=[_event_text(e) for e in service_events[:5]],
-                explanation="Repeated service crashes can explain broken networking, stuck background tools, or failed app launches.",
-                action="Identify the repeated service name in the event messages and disable/update/reinstall the owning software.",
+                explanation=(
+                    "Repeated service crashes can explain broken networking, stuck background tools, or failed app "
+                    "launches."
+                ),
+                action=(
+                    "Identify the repeated service name in the event messages and disable/update/reinstall the "
+                    "owning software."
+                ),
             )
         )
 
@@ -295,8 +343,14 @@ def analyze(signals: dict[str, Any]) -> list[Finding]:
                 code="no_immediate_failure_signal",
                 title="No immediate black-box failure signal found",
                 evidence=["No critical disk/memory/shutdown patterns detected in the scanned window."],
-                explanation="This does not prove the machine is perfect; it means the cheap signals did not show a current failure pattern.",
-                action="Run again after a crash/hang or schedule it before long jobs to catch changing disk/memory/event patterns.",
+                explanation=(
+                    "This does not prove the machine is perfect; it means the cheap signals did not show a current "
+                    "failure pattern."
+                ),
+                action=(
+                    "Run again after a crash/hang or schedule it before long jobs to catch changing "
+                    "disk/memory/event patterns."
+                ),
             )
         )
     return findings
@@ -358,7 +412,9 @@ def build_report(hours: int = 24) -> BlackBoxReport:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="SCBE Black Box: explain PC/workstation failure risk in plain English.")
+    parser = argparse.ArgumentParser(
+        description="SCBE Black Box: explain PC/workstation failure risk in plain English."
+    )
     parser.add_argument("--hours", type=int, default=24, help="Windows Event Log lookback window.")
     parser.add_argument("--out-dir", default=str(DEFAULT_OUT), help="Directory for JSON and text reports.")
     parser.add_argument("--json", action="store_true", help="Print JSON instead of the text report.")

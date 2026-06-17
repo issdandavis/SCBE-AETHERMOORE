@@ -20,6 +20,8 @@
  */
 
 import { randomBytes, createHash } from 'crypto';
+import { ml_kem768 } from '@noble/post-quantum/ml-kem.js';
+import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js';
 
 // ============================================================
 // TYPE DEFINITIONS
@@ -455,7 +457,7 @@ export const ML_DSA_65_PARAMS = {
   securityLevel: 3, // NIST Level 3
   publicKeySize: 1952, // bytes
   secretKeySize: 4032, // bytes
-  signatureSize: 3293, // bytes
+  signatureSize: 3309, // bytes (ML-DSA-65 / FIPS 204; was 3293, the old Dilithium3 size)
   n: 256, // polynomial degree
   k: 6, // module rank (public)
   l: 5, // module rank (private)
@@ -523,12 +525,8 @@ export class MLKEM768 {
       }
     }
 
-    // Development stub: Generate deterministic test keys
-    // WARNING: NOT FOR PRODUCTION USE
-    const seed = randomBytes(32);
-    const publicKey = this.expandKey(seed, ML_KEM_768_PARAMS.publicKeySize, 'pk');
-    const secretKey = this.expandKey(seed, ML_KEM_768_PARAMS.secretKeySize, 'sk');
-
+    // Real ML-KEM-768 via @noble/post-quantum (pure-JS, no native deps required).
+    const { publicKey, secretKey } = ml_kem768.keygen();
     return { publicKey, secretKey };
   }
 
@@ -556,16 +554,9 @@ export class MLKEM768 {
       }
     }
 
-    // Development stub
-    const randomness = randomBytes(32);
-    const ciphertext = this.expandKey(
-      Buffer.concat([publicKey.slice(0, 32), randomness]),
-      ML_KEM_768_PARAMS.ciphertextSize,
-      'ct'
-    );
-    const sharedSecret = this.deriveSharedSecret(publicKey, randomness);
-
-    return { ciphertext, sharedSecret };
+    // Real ML-KEM-768 encapsulation (@noble/post-quantum).
+    const { cipherText, sharedSecret } = ml_kem768.encapsulate(publicKey);
+    return { ciphertext: cipherText, sharedSecret };
   }
 
   /**
@@ -594,8 +585,8 @@ export class MLKEM768 {
       }
     }
 
-    // Development stub: Deterministic decapsulation
-    return this.deriveSharedSecret(secretKey.slice(0, 32), ciphertext.slice(0, 32));
+    // Real ML-KEM-768 decapsulation (@noble/post-quantum).
+    return ml_kem768.decapsulate(ciphertext, secretKey);
   }
 
   // Helper methods
@@ -710,11 +701,8 @@ export class MLDSA65 {
       }
     }
 
-    // Development stub
-    const seed = randomBytes(32);
-    const publicKey = this.expandKey(seed, ML_DSA_65_PARAMS.publicKeySize, 'pk');
-    const secretKey = this.expandKey(seed, ML_DSA_65_PARAMS.secretKeySize, 'sk');
-
+    // Real ML-DSA-65 via @noble/post-quantum.
+    const { publicKey, secretKey } = ml_dsa65.keygen();
     return { publicKey, secretKey };
   }
 
@@ -742,12 +730,8 @@ export class MLDSA65 {
       }
     }
 
-    // Development stub: Deterministic signature
-    return this.expandKey(
-      Buffer.concat([Buffer.from(message), Buffer.from(secretKey.slice(0, 32))]),
-      ML_DSA_65_PARAMS.signatureSize,
-      'sig'
-    );
+    // Real ML-DSA-65 signature (@noble/post-quantum).
+    return ml_dsa65.sign(message, secretKey);
   }
 
   /**
@@ -781,12 +765,8 @@ export class MLDSA65 {
       }
     }
 
-    // No native liboqs available — refuse to verify with a stub.
-    // Silently returning true would be a critical security vulnerability.
-    throw new Error(
-      'ML-DSA-65 verify() requires native liboqs. Stub verification is disabled for safety. ' +
-        'Install liboqs-node or use registerSignature() to provide a real implementation.'
-    );
+    // Real ML-DSA-65 verification (@noble/post-quantum) — against the public key.
+    return ml_dsa65.verify(signature, message, publicKey);
   }
 
   // Helper methods
