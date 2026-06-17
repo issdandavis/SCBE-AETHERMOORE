@@ -5,10 +5,12 @@ from src.aetherbrowser.ws_feed import WsFeed
 
 
 class TestSquadCreation:
-    def test_squad_has_six_agents(self):
+    def test_squad_structure_six_agents_all_idle(self):
         feed = WsFeed()
         squad = AgentSquad(feed)
         assert len(squad.agents) == 6
+        for agent in squad.agents.values():
+            assert agent.state == AgentState.IDLE
 
     def test_all_tongues_present(self):
         feed = WsFeed()
@@ -22,12 +24,6 @@ class TestSquadCreation:
             TongueRole.UM,
             TongueRole.DR,
         }
-
-    def test_all_start_idle(self):
-        feed = WsFeed()
-        squad = AgentSquad(feed)
-        for agent in squad.agents.values():
-            assert agent.state == AgentState.IDLE
 
 
 class TestTaskDecomposition:

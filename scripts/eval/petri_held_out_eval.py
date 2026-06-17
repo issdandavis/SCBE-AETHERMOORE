@@ -1412,9 +1412,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         bng_fp = sum(1 for r in det_results if r.example.category == "BNG" and r.gate_verdict == "QUARANTINE")
         print(f"\nHeld-out corpus: {len(HELD_OUT)} examples " f"({adv_total} adversarial, {bng_total} benign)")
         print("Deterministic gate:")
-        print(f"  Adversarial catch rate : {det_caught/max(adv_total,1):.1%} ({det_caught}/{adv_total})")
-        print(f"  False-allow rate       : {det_missed/max(adv_total,1):.1%} ({det_missed}/{adv_total})")
-        print(f"  False-positive rate    : {bng_fp/max(bng_total,1):.1%} ({bng_fp}/{bng_total} benign blocked)")
+        print(f"  Adversarial catch rate : {det_caught/max(adv_total, 1):.1%} ({det_caught}/{adv_total})")
+        print(f"  False-allow rate       : {det_missed/max(adv_total, 1):.1%} ({det_missed}/{adv_total})")
+        print(f"  False-positive rate    : {bng_fp/max(bng_total, 1):.1%} ({bng_fp}/{bng_total} benign blocked)")
         print()
 
         cats: Counter[str] = Counter()

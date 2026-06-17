@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chemistry Set | AetherMoore</title>
+    <meta
+      name="description"
+      content="A visual AI chemistry set with an assistant, exact balancing math, safety boundaries, and exportable receipts."
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #090b0d;
+        --ink: #f4ecdc;
+        --muted: #b7b8aa;
+        --iron: #15191b;
+        --iron-2: #20262a;
+        --line: rgba(244, 236, 220, 0.18);
+        --amber: #e3b65a;
+        --copper: #b66a3c;
+        --verdigris: #55b7a4;
+        --blue: #7aa7ff;
+        --red: #e36b5d;
+        --green: #65d889;
+        --max: 1440px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #090b0d;
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      a { color: inherit; text-decoration: none; }
+      .shell {
+        width: min(var(--max), calc(100% - 28px));
+        margin: 0 auto;
+        padding: 18px 0 34px;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        min-height: 44px;
+        border-bottom: 1px solid var(--line);
+      }
+      .brand {
+        color: var(--amber);
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-size: 13px;
+      }
+      .nav {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(320px, 0.82fr) minmax(420px, 1.3fr) minmax(300px, 0.8fr);
+        gap: 14px;
+        align-items: stretch;
+        padding-top: 14px;
+      }
+      .panel {
+        min-width: 0;
+        background: var(--iron);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 44px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      .panel-title {
+        margin: 0;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--amber);
+      }
+      .panel-body { padding: 12px; }
+      .identity {
+        display: grid;
+        grid-template-columns: 58px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+      }
+      .seal {
+        width: 58px;
+        height: 58px;
+        border: 2px solid var(--amber);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(circle at 50% 42%, rgba(227, 182, 90, 0.22), rgba(182, 106, 60, 0.12) 42%, transparent 43%);
+        color: var(--amber);
+        font-weight: 900;
+      }
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
+      p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      label {
+        display: grid;
+        gap: 7px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+      textarea, select, input {
+        width: 100%;
+        border: 1px solid rgba(255,255,255,0.14);
+        border-radius: 8px;
+        background: #0c1012;
+        color: var(--ink);
+        padding: 11px;
+        font: inherit;
+      }
+      textarea {
+        min-height: 142px;
+        resize: vertical;
+        line-height: 1.45;
+      }
+      .field-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 44px;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      button {
+        border: 1px solid rgba(255,255,255,0.16);
+        border-radius: 8px;
+        min-height: 44px;
+        background: #22282c;
+        color: var(--ink);
+        font: inherit;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      button.primary {
+        background: var(--amber);
+        border-color: var(--amber);
+        color: #18130a;
+      }
+      button.icon { font-size: 18px; }
+      .examples {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .example {
+        width: 100%;
+        min-height: 38px;
+        text-align: left;
+        padding: 8px 10px;
+        color: var(--muted);
+        background: rgba(255,255,255,0.04);
+      }
+      .stage-wrap {
+        position: relative;
+        min-height: 590px;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 590px;
+        background: #090b0d;
+      }
+      .hud {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+      }
+      .hud-item {
+        min-height: 68px;
+        border: 1px solid rgba(244,236,220,0.2);
+        border-radius: 8px;
+        background: rgba(9, 11, 13, 0.78);
+        padding: 10px;
+      }
+      .hud-item strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--amber);
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .hud-item span {
+        color: var(--ink);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+      .assistant-feed {
+        display: grid;
+        gap: 9px;
+      }
+      .speech {
+        border-left: 3px solid var(--verdigris);
+        background: rgba(85, 183, 164, 0.08);
+        padding: 9px 10px;
+        color: var(--ink);
+        line-height: 1.38;
+      }
+      .receipt {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .kv {
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        padding: 10px;
+        background: rgba(255,255,255,0.04);
+      }
+      .kv strong {
+        display: block;
+        color: var(--amber);
+        margin-bottom: 5px;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .kv span {
+        overflow-wrap: anywhere;
+        color: var(--ink);
+      }
+      .hazard { border-color: rgba(227, 107, 93, 0.45); }
+      .status {
+        min-height: 20px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      pre {
+        max-height: 240px;
+        overflow: auto;
+        margin: 0;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        background: #07090a;
+        color: #d8f7e9;
+        padding: 10px;
+        font-size: 12px;
+      }
+      @media (max-width: 1180px) {
+        .workspace { grid-template-columns: 1fr 1.3fr; }
+        .right { grid-column: 1 / -1; }
+      }
+      @media (max-width: 780px) {
+        .workspace, .field-grid, .hud { grid-template-columns: 1fr; }
+        .stage-wrap { min-height: 520px; }
+        canvas { height: 520px; }
+        .topbar { align-items: flex-start; flex-direction: column; padding-bottom: 10px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/">AetherMoore</a>
+        <nav class="nav" aria-label="Product navigation">
+          <a href="/atomic-lab">Atomic Lab</a>
+          <a href="/products">Products</a>
+          <a href="/payments">Payments</a>
+        </nav>
+      </header>
+
+      <section class="workspace">
+        <aside class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">AI Chemistry Set</h2>
+          </div>
+          <div class="panel-body">
+            <div class="identity">
+              <div class="seal">AI</div>
+              <div>
+                <h1>Visual chemistry with real balancing math.</h1>
+                <p>Enter a reaction or lesson prompt. The assistant builds a safe visual bench, balances equations when possible, and exports a receipt.</p>
+              </div>
+            </div>
+
+            <form id="chemForm" style="margin-top: 14px">
+              <label>
+                Equation or lesson request
+                <textarea id="inputText">C3H8 + O2 -> CO2 + H2O</textarea>
+              </label>
+              <div class="field-grid">
+                <label>
+                  Level
+                  <select id="level">
+                    <option value="learner">Learner</option>
+                    <option value="builder">Builder</option>
+                    <option value="teacher">Teacher</option>
+                  </select>
+                </label>
+                <label>
+                  Visual mode
+                  <select id="visualMode">
+                    <option value="bench">Workbench</option>
+                    <option value="slate">Equation slate</option>
+                    <option value="assistant">Assistant focus</option>
+                  </select>
+                </label>
+              </div>
+              <div class="actions">
+                <button class="primary" type="submit">Run lesson</button>
+                <button class="icon" type="button" id="copyJson" title="Copy JSON receipt">▣</button>
+              </div>
+              <p class="status" id="status">Ready.</p>
+            </form>
+
+            <div class="examples">
+              <button class="example" type="button" data-example="CH4 + O2 -> CO2 + H2O">Methane combustion</button>
+              <button class="example" type="button" data-example="Fe + O2 -> Fe2O3">Iron oxide</button>
+              <button class="example" type="button" data-example="Explain why atoms must balance on both sides.">Concept lesson</button>
+            </div>
+          </div>
+        </aside>
+
+        <section class="panel stage-wrap" aria-label="Visual chemistry bench">
+          <canvas id="bench" width="900" height="620"></canvas>
+          <div class="hud">
+            <div class="hud-item"><strong>Equation</strong><span id="hudEquation">Awaiting run.</span></div>
+            <div class="hud-item"><strong>Math</strong><span id="hudMath">Exact balance when equation is supplied.</span></div>
+            <div class="hud-item"><strong>Safety</strong><span id="hudSafety">Educational mode.</span></div>
+          </div>
+        </section>
+
+        <aside class="panel right">
+          <div class="panel-head">
+            <h2 class="panel-title">Assistant + Receipt</h2>
+          </div>
+          <div class="panel-body">
+            <div class="assistant-feed" id="assistantFeed"></div>
+            <div class="receipt" id="receipt"></div>
+            <pre id="jsonOut">{}</pre>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      var lastResult = {};
+      var canvas = document.getElementById("bench");
+      var ctx = canvas.getContext("2d");
+
+      function esc(value) {
+        return String(value).replace(/[&<>"']/g, function (char) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+        });
+      }
+
+      function fitCanvas() {
+        var rect = canvas.getBoundingClientRect();
+        var ratio = window.devicePixelRatio || 1;
+        canvas.width = Math.max(360, Math.floor(rect.width * ratio));
+        canvas.height = Math.max(420, Math.floor(rect.height * ratio));
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        drawBench(lastResult);
+      }
+
+      function drawStone(x, y, w, h, color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = "rgba(244,236,220,0.08)";
+        ctx.strokeRect(x, y, w, h);
+      }
+
+      function drawFlask(x, y, scale, liquid, label) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+        ctx.strokeStyle = "rgba(244,236,220,0.72)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(22, 8);
+        ctx.lineTo(22, 44);
+        ctx.lineTo(5, 84);
+        ctx.quadraticCurveTo(28, 106, 51, 84);
+        ctx.lineTo(34, 44);
+        ctx.lineTo(34, 8);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fillStyle = liquid;
+        ctx.beginPath();
+        ctx.moveTo(10, 78);
+        ctx.quadraticCurveTo(28, 92, 46, 78);
+        ctx.lineTo(38, 62);
+        ctx.quadraticCurveTo(28, 68, 18, 62);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#f4ecdc";
+        ctx.font = "700 11px ui-sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(label, 28, 121);
+        ctx.restore();
+      }
+
+      function drawBench(data) {
+        var rect = canvas.getBoundingClientRect();
+        var w = rect.width || 900;
+        var h = rect.height || 620;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "#090b0d";
+        ctx.fillRect(0, 0, w, h);
+
+        for (var row = 0; row < 8; row += 1) {
+          for (var col = 0; col < 12; col += 1) {
+            drawStone(col * (w / 12), row * 54, w / 12 + 1, 55, row % 2 ? "#0d1113" : "#101416");
+          }
+        }
+
+        ctx.fillStyle = "#241711";
+        ctx.fillRect(0, h * 0.67, w, h * 0.33);
+        ctx.fillStyle = "#3a2519";
+        ctx.fillRect(0, h * 0.66, w, 18);
+        ctx.strokeStyle = "rgba(227,182,90,0.35)";
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.66);
+        ctx.lineTo(w, h * 0.66);
+        ctx.stroke();
+
+        ctx.fillStyle = "#21140e";
+        ctx.fillRect(w * 0.07, 30, w * 0.86, 18);
+        ctx.fillStyle = "#2f1e14";
+        ctx.fillRect(w * 0.09, 48, w * 0.82, 8);
+        for (var shelf = 0; shelf < 7; shelf += 1) {
+          var bx = w * (0.15 + shelf * 0.105);
+          ctx.fillStyle = ["#55b7a4", "#7aa7ff", "#b66a3c", "#65d889", "#e3b65a"][shelf % 5];
+          ctx.fillRect(bx, 20 + (shelf % 2) * 7, 11, 24);
+          ctx.strokeStyle = "rgba(244,236,220,0.38)";
+          ctx.strokeRect(bx, 20 + (shelf % 2) * 7, 11, 24);
+        }
+
+        var flameX = w * 0.87;
+        var flameY = h * 0.61;
+        ctx.fillStyle = "rgba(227,182,90,0.14)";
+        ctx.beginPath();
+        ctx.arc(flameX, flameY - 28, 58, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#7a482b";
+        ctx.fillRect(flameX - 8, flameY, 16, 42);
+        ctx.fillStyle = "#e3b65a";
+        ctx.beginPath();
+        ctx.moveTo(flameX, flameY - 44);
+        ctx.bezierCurveTo(flameX - 20, flameY - 18, flameX - 7, flameY - 4, flameX, flameY);
+        ctx.bezierCurveTo(flameX + 15, flameY - 9, flameX + 19, flameY - 24, flameX, flameY - 44);
+        ctx.fill();
+        ctx.fillStyle = "#f4ecdc";
+        ctx.beginPath();
+        ctx.moveTo(flameX, flameY - 27);
+        ctx.bezierCurveTo(flameX - 7, flameY - 16, flameX - 3, flameY - 8, flameX, flameY - 5);
+        ctx.bezierCurveTo(flameX + 6, flameY - 10, flameX + 7, flameY - 18, flameX, flameY - 27);
+        ctx.fill();
+
+        var equation = data && data.balance ? data.balance.balanced_equation : "AI Chemistry Set";
+        var input = data && data.input ? data.input : "C3H8 + O2 -> CO2 + H2O";
+
+        ctx.fillStyle = "#14191b";
+        ctx.strokeStyle = "rgba(227,182,90,0.55)";
+        ctx.lineWidth = 2;
+        ctx.fillRect(w * 0.14, 62, w * 0.72, 118);
+        ctx.strokeRect(w * 0.14, 62, w * 0.72, 118);
+        ctx.fillStyle = "#e3b65a";
+        ctx.font = "800 13px ui-sans-serif";
+        ctx.fillText("EQUATION SLATE", w * 0.17, 88);
+        ctx.fillStyle = "#f4ecdc";
+        ctx.font = "800 24px ui-sans-serif";
+        wrapCanvasText(equation, w * 0.17, 126, w * 0.66, 30);
+
+        var coeffs = data && data.balance ? data.balance.coefficients : [1, 5, 3, 4];
+        var colors = ["#55b7a4", "#7aa7ff", "#e3b65a", "#b66a3c", "#65d889"];
+        for (var i = 0; i < Math.min(5, coeffs.length); i += 1) {
+          drawFlask(w * (0.13 + i * 0.16), h * 0.43 + (i % 2) * 16, 1.05, colors[i % colors.length], String(coeffs[i]));
+        }
+
+        ctx.strokeStyle = "rgba(85,183,164,0.6)";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(w * 0.2, h * 0.43);
+        ctx.bezierCurveTo(w * 0.35, h * 0.24, w * 0.62, h * 0.24, w * 0.78, h * 0.43);
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(9,11,13,0.82)";
+        ctx.strokeStyle = "rgba(244,236,220,0.22)";
+        ctx.fillRect(w * 0.08, h * 0.78, w * 0.84, 72);
+        ctx.strokeRect(w * 0.08, h * 0.78, w * 0.84, 72);
+        ctx.fillStyle = "#55b7a4";
+        ctx.font = "800 13px ui-sans-serif";
+        ctx.fillText("ASSISTANT", w * 0.11, h * 0.81);
+        ctx.fillStyle = "#f4ecdc";
+        ctx.font = "600 15px ui-sans-serif";
+        wrapCanvasText(data && data.assistant ? data.assistant[0] : "Run a reaction to light the bench.", w * 0.11, h * 0.84, w * 0.78, 20);
+
+        ctx.fillStyle = "rgba(227,182,90,0.18)";
+        ctx.beginPath();
+        ctx.arc(w * 0.5, h * 0.47, 66, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(227,182,90,0.5)";
+        ctx.stroke();
+        for (var tick = 0; tick < 12; tick += 1) {
+          var a = (Math.PI * 2 * tick) / 12;
+          var x1 = w * 0.5 + Math.cos(a) * 74;
+          var y1 = h * 0.47 + Math.sin(a) * 74;
+          var x2 = w * 0.5 + Math.cos(a) * 84;
+          var y2 = h * 0.47 + Math.sin(a) * 84;
+          ctx.strokeStyle = tick % 3 === 0 ? "rgba(227,182,90,0.7)" : "rgba(244,236,220,0.26)";
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = "rgba(244,236,220,0.54)";
+        ctx.font = "700 12px ui-sans-serif";
+        ctx.fillText(input.slice(0, 72), w * 0.12, h * 0.64);
+
+        ctx.fillStyle = "rgba(85,183,164,0.12)";
+        ctx.strokeStyle = "rgba(85,183,164,0.55)";
+        ctx.beginPath();
+        ctx.arc(w * 0.13, h * 0.81, 27, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#55b7a4";
+        ctx.font = "900 13px ui-sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("AI", w * 0.13, h * 0.818);
+        ctx.textAlign = "left";
+      }
+
+      function wrapCanvasText(text, x, y, maxWidth, lineHeight) {
+        var words = String(text || "").split(/\s+/);
+        var line = "";
+        for (var n = 0; n < words.length; n += 1) {
+          var testLine = line ? line + " " + words[n] : words[n];
+          if (ctx.measureText(testLine).width > maxWidth && line) {
+            ctx.fillText(line, x, y);
+            line = words[n];
+            y += lineHeight;
+          } else {
+            line = testLine;
+          }
+        }
+        if (line) ctx.fillText(line, x, y);
+      }
+
+      function render(data) {
+        lastResult = data;
+        document.getElementById("jsonOut").textContent = JSON.stringify(data, null, 2);
+        document.getElementById("hudEquation").textContent = data.balance ? data.balance.balanced_equation : "No equation balanced yet.";
+        document.getElementById("hudMath").textContent = data.balance ? data.balance.math : (data.math_error || "Ask for a balanceable equation.");
+        document.getElementById("hudSafety").textContent = data.hazard_notes.join(" ");
+        document.getElementById("assistantFeed").innerHTML = data.assistant.map(function (line) {
+          return '<div class="speech">' + esc(line) + "</div>";
+        }).join("");
+        document.getElementById("receipt").innerHTML = [
+          '<div class="kv"><strong>Receipt</strong><span>' + esc(data.receipt_id) + '</span></div>',
+          '<div class="kv"><strong>Sellable output</strong><span>' + esc(data.sellable_output.offer) + '</span></div>',
+          '<div class="kv hazard"><strong>Boundary</strong><span>' + esc(data.hazard_notes.join(" ")) + '</span></div>'
+        ].join("");
+        drawBench(data);
+      }
+
+      document.querySelectorAll(".example").forEach(function (button) {
+        button.addEventListener("click", function () {
+          document.getElementById("inputText").value = button.getAttribute("data-example");
+          document.getElementById("chemForm").dispatchEvent(new Event("submit"));
+        });
+      });
+
+      document.getElementById("chemForm").addEventListener("submit", async function (event) {
+        event.preventDefault();
+        var status = document.getElementById("status");
+        status.textContent = "Running lesson...";
+        try {
+          var response = await fetch("/api/agent/ai-chemistry-set", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              input: document.getElementById("inputText").value,
+              level: document.getElementById("level").value,
+              visualMode: document.getElementById("visualMode").value
+            })
+          });
+          var data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Request failed");
+          render(data);
+          status.textContent = "Lesson ready.";
+        } catch (error) {
+          status.textContent = error.message || String(error);
+        }
+      });
+
+      document.getElementById("copyJson").addEventListener("click", async function () {
+        await navigator.clipboard.writeText(JSON.stringify(lastResult, null, 2));
+        document.getElementById("status").textContent = "Receipt copied.";
+      });
+
+      window.addEventListener("resize", fitCanvas);
+      fitCanvas();
+      document.getElementById("chemForm").dispatchEvent(new Event("submit"));
+    </script>
+  </body>
+</html>

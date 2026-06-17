@@ -7,6 +7,7 @@ from pathlib import Path
 from src.crypto.geoseal_execution_gate import (
     execute_governed_command,
     scan_command,
+    simulate_command,
 )
 from src.crypto.sealed_memory_packets import unseal_memory_packet
 
@@ -72,6 +73,35 @@ def test_recursive_powershell_delete_is_denied() -> None:
         assert decision.tier == "DENY", cmd
         assert not decision.allowed, cmd
         assert any(f.rule == "destructive-remove-item" for f in decision.findings), cmd
+
+
+def test_host_power_and_system_control_commands_are_denied() -> None:
+    # These do not necessarily delete files, but they can crash, sleep, reboot,
+    # disconnect, or destabilize the host. They must never pass through a test
+    # harness as ordinary benchmark/setup commands.
+    cases = {
+        "shutdown /s /t 0": "system-power-state",
+        "Restart-Computer -Force": "system-power-state",
+        "powercfg /hibernate off": "powercfg-state-change",
+        "powercfg -h off": "powercfg-state-change",
+        "bcdedit /set hypervisorlaunchtype off": "system-disk-boot-tool",
+        "diskpart /s script.txt": "system-disk-boot-tool",
+        "format C: /q": "system-disk-boot-tool",
+        "Disable-NetAdapter -Name Wi-Fi -Confirm:$false": "network-adapter-control",
+        "netsh winsock reset": "network-adapter-control",
+        "wsl --shutdown": "wsl-shutdown",
+        "docker system prune -a -f": "docker-system-prune-all",
+        "taskkill /F /T /IM python.exe": "broad-taskkill",
+        "Stop-Process -Name node -Force": "broad-stop-process",
+        "stress-ng --cpu 8 --timeout 60s": "host-stress-loop",
+        "while ($true) { python bench.py }": "host-stress-loop",
+        "while true; do python bench.py; done": "host-stress-loop",
+    }
+    for cmd, rule in cases.items():
+        decision = scan_command(cmd)
+        assert decision.tier == "DENY", cmd
+        assert not decision.allowed, cmd
+        assert any(f.rule == rule for f in decision.findings), cmd
 
 
 def test_inline_interpreter_is_quarantine_not_deny() -> None:
@@ -173,3 +203,69 @@ def test_exec_runs_bare_python_alias_after_resolution() -> None:
 
     assert result.ran, f"expected ran=True, got error={result.error!r}"
     assert "resolved-ok" in result.stdout
+
+
+# ── inline-payload logic detection (catches dangerous CODE inside `-c`) ──
+# These are scan-only: the dangerous payload is analysed, never executed.
+
+
+def test_inline_python_destructive_payload_is_denied() -> None:
+    # The dangerous logic lives inside the -c string; no rm/Remove-Item command
+    # SHAPE matches. The gate must look inside the payload and DENY it.
+    for code in (
+        "shutil.rmtree('build')",
+        "os.system('whatever')",
+        "os.remove('x')",
+        "__import__('os').system('y')",
+        "eval('1+1')",
+        "import socket",
+    ):
+        decision = scan_command(f'{sys.executable} -c "{code}"')
+        assert decision.tier == "DENY", code
+        assert not decision.allowed, code
+        assert any(f.rule.startswith("inline-danger") for f in decision.findings), code
+
+
+def test_benign_inline_python_payload_stays_quarantine() -> None:
+    decision = scan_command(f'{sys.executable} -c "print(2 + 2)"')
+    assert decision.tier == "QUARANTINE"
+    assert decision.allowed
+    assert not any(f.rule.startswith("inline-danger") for f in decision.findings)
+
+
+def test_inline_node_child_process_is_denied() -> None:
+    decision = scan_command("node -c \"require('child_process').execSync('id')\"")
+    assert decision.tier == "DENY"
+    assert any(f.rule == "inline-danger-node" for f in decision.findings)
+
+
+# ── simulate_command: pre-flight dry-run that NEVER executes ──
+
+
+def test_simulate_allows_a_good_command() -> None:
+    sim = simulate_command(f"{sys.executable} --version", max_tier="ALLOW")
+    assert sim.would_run
+    assert sim.decision.tier == "ALLOW"
+    assert sim.blocked_reason is None
+    assert sim.summary.startswith("WOULD RUN")
+
+
+def test_simulate_blocks_a_destructive_command() -> None:
+    sim = simulate_command("rm -rf /tmp/x", max_tier="QUARANTINE")
+    assert not sim.would_run
+    assert sim.decision.tier == "DENY"
+    assert sim.blocked_reason == "gate denied"
+    assert sim.summary.startswith("BLOCKED")
+
+
+def test_simulate_never_invokes_subprocess(monkeypatch) -> None:
+    # Hard proof of the safety contract: even for a command that WOULD run,
+    # simulate_command must not launch a subprocess.
+    import src.crypto.geoseal_execution_gate as gate
+
+    def _boom(*args, **kwargs):  # pragma: no cover - must never be called
+        raise AssertionError("simulate_command must not execute a subprocess")
+
+    monkeypatch.setattr(gate.subprocess, "run", _boom)
+    sim = gate.simulate_command(f'{sys.executable} -c "print(1)"', max_tier="QUARANTINE")
+    assert sim.would_run  # would run at QUARANTINE — but subprocess.run was never called
