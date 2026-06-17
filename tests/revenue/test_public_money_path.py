@@ -63,9 +63,13 @@ def test_workflow_snapshot_checkout_is_consistent_and_live_wired() -> None:
 def test_ai_workflow_snapshot_has_no_stale_39_dollar_copy() -> None:
     intake = read_doc("ai-workflow-snapshot.html")
     workflow = read_doc("workflow-snapshot.html")
+    polly = read_doc("static/polly-sidebar.js")
+    polly_agent = read_doc("static/polly-sidebar-agent.js")
 
     assert "$39" not in intake
     assert "cheaper $39" not in workflow
+    assert "$39" not in polly
+    assert "$39" not in polly_agent
     assert "$99 AI Workflow Snapshot" in intake
     assert "price_usd: 99" in intake
 
@@ -103,3 +107,21 @@ def test_ai_agent_governance_category_page_is_search_targeted() -> None:
     assert "https://aethermoore.com/SCBE-AETHERMOORE/ai-workflow-snapshot.html" in sitemap
     assert "https://aethermoore.com/SCBE-AETHERMOORE/cli.html" in sitemap
     assert '<link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/cli.html" />' in cli
+
+
+def test_workflow_machine_proof_page_is_discoverable_and_scoped() -> None:
+    homepage = read_doc("index.html")
+    machine = read_doc("workflow-machine.html")
+    sitemap = read_doc("sitemap.xml")
+    llms = read_doc("llms.txt")
+
+    assert 'href="workflow-machine.html"' in homepage
+    assert "https://aethermoore.com/SCBE-AETHERMOORE/workflow-machine.html" in sitemap
+    assert "Workflow machine proof" in llms
+
+    assert "Crank" in machine
+    assert "Forge memory" in machine
+    assert "scripts/forge_speak.py" in machine
+    assert "scripts/forge_memory.py --recipes" in machine
+    assert "re-verifies" in machine
+    assert "does not claim legal protection" in machine

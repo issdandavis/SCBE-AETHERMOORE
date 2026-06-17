@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AetherMoore Workflow Machine Proof</title>
+    <meta
+      name="description"
+      content="A concrete proof surface for AetherMoore's workflow machine: Crank, Forge speak, build memory, village flow maps, and torus addressing."
+    />
+    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/workflow-machine.html" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080c0e;
+        --panel: #121a1e;
+        --line: rgba(226, 204, 153, 0.24);
+        --text: #f7f0e2;
+        --muted: #aeb9b7;
+        --gold: #e0bb68;
+        --green: #22c79a;
+        --blue: #88b7ff;
+        --max: 1080px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        line-height: 1.55;
+      }
+      a {
+        color: inherit;
+      }
+      .wrap {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+      }
+      header,
+      section {
+        padding: 58px 0;
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        padding: 18px 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      nav a {
+        text-decoration: none;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+      h1 {
+        max-width: 12ch;
+        margin-bottom: 18px;
+        font-size: clamp(42px, 8vw, 82px);
+        line-height: 0.95;
+      }
+      h2 {
+        margin-bottom: 14px;
+        font-size: clamp(28px, 4vw, 44px);
+        line-height: 1.05;
+      }
+      h3 {
+        margin-bottom: 8px;
+      }
+      .eyebrow {
+        margin-bottom: 12px;
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .lead {
+        max-width: 72ch;
+        color: #d8dfdc;
+        font-size: 21px;
+      }
+      .grid,
+      .grid-3 {
+        display: grid;
+        gap: 16px;
+      }
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 22px;
+        background: var(--panel);
+      }
+      .card p,
+      li {
+        color: var(--muted);
+      }
+      .tag {
+        display: inline-flex;
+        margin-bottom: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+        padding: 5px 9px;
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: 800;
+      }
+      code,
+      pre {
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+      }
+      pre {
+        overflow-x: auto;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 8px;
+        padding: 16px;
+        background: #050708;
+        color: #d8fff3;
+        font-size: 13px;
+      }
+      .btn-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 22px;
+      }
+      .btn {
+        display: inline-flex;
+        min-height: 46px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        padding: 11px 16px;
+        background: rgba(255, 255, 255, 0.06);
+        font-weight: 900;
+        text-decoration: none;
+      }
+      .primary {
+        color: #12100a;
+        background: var(--gold);
+        border-color: var(--gold);
+      }
+      .ok {
+        color: var(--green);
+      }
+      footer {
+        padding: 36px 0 52px;
+        color: var(--muted);
+        background: #050708;
+      }
+      @media (max-width: 850px) {
+        .grid,
+        .grid-3 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <nav aria-label="Workflow machine navigation">
+        <a href="index.html">Home</a>
+        <a href="workflow-snapshot.html">Workflow Snapshot</a>
+        <a href="proof-workbench.html">Proof Workbench</a>
+        <a href="research/">Research</a>
+        <a href="payments.html">Payments</a>
+      </nav>
+    </div>
+
+    <header>
+      <div class="wrap">
+        <p class="eyebrow">Proof surface</p>
+        <h1>The workflow machine is real code.</h1>
+        <p class="lead">
+          AetherMoore is not a receipt page. It is a controlled execution pattern for long AI work:
+          intent enters, phases settle, outputs are cataloged, and verified recipes can be reused
+          without skipping verification.
+        </p>
+        <div class="btn-row">
+          <a class="btn primary" href="workflow-snapshot.html">Buy $99 Snapshot</a>
+          <a class="btn" href="https://github.com/issdandavis/SCBE-AETHERMOORE">Open source</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <div class="wrap grid-3">
+          <article class="card">
+            <span class="tag">Crank</span>
+            <h2>Intent becomes settled phases.</h2>
+            <p>
+              <code>python/crank</code> turns a vague task into ordered phases. Each phase must
+              produce a non-empty output, pass a gate, and avoid repeating earlier output.
+            </p>
+          </article>
+          <article class="card">
+            <span class="tag">Forge memory</span>
+            <h2>Verified builds become recipes.</h2>
+            <p>
+              <code>scripts/forge_speak.py</code> checks build memory first. A matching verified
+              recipe skips planning, but still rebuilds and re-runs the spec.
+            </p>
+          </article>
+          <article class="card">
+            <span class="tag">Torus / village</span>
+            <h2>The map stays inspectable.</h2>
+            <p>
+              <code>scripts/village.py</code> makes a flow map compile into code.
+              <code>scripts/forge_torus.py</code> gives a build a reversible topological address.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap grid">
+          <article class="card">
+            <p class="eyebrow">Run it</p>
+            <h2>Plain English to verified build.</h2>
+            <pre><code>python scripts/forge_speak.py "let me tag things, find them, and export my list"</code></pre>
+            <p>
+              Expected behavior: the controller parses capabilities, assembles a real app, runs the
+              requested commands, emits a reversible prime deed, and reports
+              <strong class="ok">BUILT + VERIFIED: YES</strong> only after execution.
+            </p>
+          </article>
+          <article class="card">
+            <p class="eyebrow">Reuse rule</p>
+            <h2>Memory is not a shortcut around proof.</h2>
+            <pre><code>python scripts/forge_memory.py --recipes</code></pre>
+            <p>
+              A remembered recipe is only eligible when it is marked verified and covers the needed
+              capabilities. Reuse still rebuilds and re-verifies the spec, so the memory path is a
+              planning shortcut, not a fake success.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap grid">
+          <article class="card">
+            <p class="eyebrow">Mechanical model</p>
+            <h2>Why this is useful.</h2>
+            <ul>
+              <li>Mechanical calculator lesson: no half-turned gears; every phase must settle.</li>
+              <li>
+                Fixed-point lesson: convert vague work into bounded representation before running.
+              </li>
+              <li>
+                Topology lesson: lift the run into a structure where drift and collisions show up.
+              </li>
+              <li>
+                Product lesson: a buyer gets a workflow route, catalog, receipts, and next fixes.
+              </li>
+            </ul>
+          </article>
+          <article class="card">
+            <p class="eyebrow">Scope boundary</p>
+            <h2>What this does not claim.</h2>
+            <p>
+              This page does not claim legal protection, certification, autonomous correctness, or
+              universal safety. It shows a concrete workflow-control mechanism: bounded phases,
+              verification, memory reuse with re-verification, and inspectable build addresses.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <p>
+          AetherMoore sells scoped workflow artifacts: intent maps, routes, checkpoints, catalogs,
+          receipts, and next fixes.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
