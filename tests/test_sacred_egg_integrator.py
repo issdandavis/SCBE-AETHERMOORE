@@ -16,7 +16,6 @@ Tests cover:
 
 import base64
 import json
-import os
 
 import pytest
 
@@ -53,11 +52,17 @@ def integrator(xt):
 
 @pytest.fixture
 def key_pair():
-    """Deterministic KEM/DSA key pair for tests (base64)."""
-    # Demo stubs: pk == sk for simplicity (cli_toolkit uses HMAC-based mocks)
-    pk = base64.b64encode(os.urandom(32)).decode()
-    sk = pk  # In the demo stub, pk/sk are interchangeable
-    return pk, sk
+    """Real ML-KEM-768 + ML-DSA-65 key bundles (public, secret) for the egg seal path.
+
+    Returns (public_bundle, secret_bundle). The egg path now does genuine PQC, so
+    these are real keypairs; dependent tests skip where native liboqs is absent.
+    """
+    from src.symphonic_cipher.scbe_aethermoore.cli_toolkit import geoseal_keygen
+
+    try:
+        return geoseal_keygen()
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
 
 
 @pytest.fixture

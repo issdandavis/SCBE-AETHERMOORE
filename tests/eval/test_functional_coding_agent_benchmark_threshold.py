@@ -20,6 +20,74 @@ def _load_module():
     return module
 
 
+def test_property_probes_reject_an_input_keyed_overfit_stub():
+    """Soundness: a stub that only echoes the fixed checks (input-keyed lookup, no
+    real logic) passes the contract checks but must FAIL once unseen reference-oracle
+    probes are scored. This is the fixture-overfit hole the probes close."""
+    module = _load_module()
+    task = next(t for t in module.TASKS if t.task_id == "score_add")
+    overfit = (
+        "function evaluate(input, state) {\n"
+        "  if (input.points === 5) { state.score = 13; return 13; }\n"
+        "  if (input.points === -2) { state.score = 8; return 8; }\n"
+        "  return 0;\n"
+        "}"
+    )
+
+    fixed_only = module.score_candidate(overfit, task)
+    probed = module.score_candidate(overfit, task, probe_count=8, probe_seed=1234)
+
+    assert fixed_only["passed"] is True  # gameable against the fixed checks alone
+    assert probed["passed"] is False  # but the unseen probes catch it
+    assert probed["probe_checks_passed"] < probed["probe_checks_total"]
+
+
+def test_property_probes_do_not_reject_a_correct_implementation():
+    """The probes must not produce false rejections: a genuinely correct
+    implementation passes every probe across all built-in oracle tasks."""
+    module = _load_module()
+    correct = {
+        "score_add": "function evaluate(input, state) { state.score += input.points; return state.score; }",
+        "heal_clamp": (
+            "function evaluate(input, state) { state.hp = Math.min(state.hp + input.heal, state.maxHp); "
+            'state.events.push("healed"); return state.hp; }'
+        ),
+        "inventory_unique": (
+            "function evaluate(input, state) { if (!state.inventory.includes(input.item)) "
+            "state.inventory.push(input.item); return state.inventory.length; }"
+        ),
+        "cooldown_gate": (
+            "function evaluate(input, state) { if (state.cooldown > 0) { state.cooldown -= 1; return false; } "
+            "state.cooldown = input.cooldown; state.actions += 1; return true; }"
+        ),
+        "quest_flags": (
+            "function evaluate(input, state) { if (input.required.every(f => state.flags.includes(f))) { "
+            "if (!state.rewards.includes(input.reward)) state.rewards.push(input.reward); return true; } "
+            "return false; }"
+        ),
+        "weighted_choice": (
+            "function evaluate(input, state) { let c = 0; for (const o of input.options) { c += o.weight; "
+            "if (c > input.roll) return o.id; } return input.options[input.options.length - 1].id; }"
+        ),
+    }
+    for task in module.TASKS:
+        score = module.score_candidate(correct[task.task_id], task, probe_count=10, probe_seed=7)
+        assert score["probe_checks_total"] == 10, task.task_id
+        assert score["probe_checks_passed"] == 10, task.task_id
+        assert score["passed"] is True, task.task_id
+
+
+def test_file_loaded_tasks_have_no_oracle_and_score_on_fixed_checks_only():
+    """File-loaded tasks carry no reference oracle, so probing is a no-op for them
+    (scored exactly as before) rather than silently claiming probe coverage."""
+    module = _load_module()
+    tasks = module.load_task_file(REPO_ROOT / "config" / "eval" / "common_agentic_benchmark_tasks.v1.json")
+    task = tasks[0]
+    assert task.probe is None
+    score = module.score_candidate("function evaluate(input, state) { return null; }", task, probe_count=8)
+    assert score["probe_checks_total"] == 0
+
+
 def test_benchmark_exits_nonzero_when_below_min_pass_rate(tmp_path: Path):
     candidate_file = tmp_path / "candidates.json"
     candidate_file.write_text(

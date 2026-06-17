@@ -48,6 +48,9 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert "'api/polly'" in ignore_source
     assert "'api/billing'" in ignore_source
     assert "'docs/app-config.json'" in ignore_source
+    assert "'docs/ai-chemistry-set.html'" in ignore_source
+    assert "'docs/ai-materials-bench.html'" in ignore_source
+    assert "'docs/ai-waves-lab.html'" in ignore_source
     assert "'docs/robots.txt'" in ignore_source
     assert "'docs/sitemap.xml'" in ignore_source
     assert "'docs/solutions.html'" in ignore_source
@@ -86,6 +89,13 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert ("^/hire/?$", "/api/agent/hire.js") in routes
     assert ("^/SCBE-AETHERMOORE/hire\\.html$", "/api/agent/hire.js") in routes
     assert ("^/products/?$", "/api/agent/products.js") in routes
+    assert ("^/atomic-lab/?$", "/api/agent/atomic-lab-page.js") in routes
+    assert ("^/ai-chemistry-set/?$", "/api/agent/ai-chemistry-set-page.js") in routes
+    assert ("^/ai-materials-bench/?$", "/api/agent/ai-materials-bench-page.js") in routes
+    assert ("^/ai-waves-lab/?$", "/api/agent/ai-waves-lab-page.js") in routes
+    assert ("^/SCBE-AETHERMOORE/ai-chemistry-set\\.html$", "/api/agent/ai-chemistry-set-page.js") in routes
+    assert ("^/SCBE-AETHERMOORE/ai-materials-bench\\.html$", "/api/agent/ai-materials-bench-page.js") in routes
+    assert ("^/SCBE-AETHERMOORE/ai-waves-lab\\.html$", "/api/agent/ai-waves-lab-page.js") in routes
     assert ("^/SCBE-AETHERMOORE/products\\.html$", "/api/agent/products.js") in routes
     assert ("^/solutions/?$", "/api/agent/solutions.js") in routes
     assert ("^/SCBE-AETHERMOORE/solutions\\.html$", "/api/agent/solutions.js") in routes
@@ -158,6 +168,12 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
     assert "!docs/app-config.json" in ignore
     assert "!docs/robots.txt" in ignore
     assert "!docs/sitemap.xml" in ignore
+    assert "!docs/index.html" in ignore
+    assert "!docs/atomic-lab.html" in ignore
+    assert "!docs/ai-chemistry-set.html" in ignore
+    assert "!docs/ai-materials-bench.html" in ignore
+    assert "!docs/ai-waves-lab.html" in ignore
+    assert "!docs/geoseal-hermes.html" in ignore
     assert "!docs/solutions.html" in ignore
     assert "!docs/products.html" in ignore
     assert "!docs/packages.html" in ignore

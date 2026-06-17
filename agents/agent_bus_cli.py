@@ -31,7 +31,7 @@ def _parse_args() -> argparse.Namespace:
     run.add_argument("prompt")
     run.add_argument("--mode", choices=common_modes, default="headless")
     run.add_argument("--max-sources", type=int, default=3)
-    run.add_argument("--budget", type=float, default=0.0, help="Max USD-equivalent (0 = unbounded; advisory)")
+    run.add_argument("--budget", type=float, default=0.0, help="Max USD-equivalent (0 = unbounded; enforced)")
     run.add_argument("--no-search", action="store_true")
     run.add_argument("--agent-id", default="agent-bus-cli")
 
@@ -39,11 +39,13 @@ def _parse_args() -> argparse.Namespace:
     summ.add_argument("query")
     summ.add_argument("--mode", choices=common_modes, default="headless")
     summ.add_argument("--max-sources", type=int, default=5)
+    summ.add_argument("--budget", type=float, default=0.0, help="Max USD-equivalent (0 = unbounded; enforced)")
     summ.add_argument("--agent-id", default="agent-bus-cli")
 
     ana = sub.add_parser("analyze", help="Analyze a single page")
     ana.add_argument("url")
     ana.add_argument("--mode", choices=common_modes, default="headless")
+    ana.add_argument("--budget", type=float, default=0.0, help="Max USD-equivalent (0 = unbounded; enforced)")
     ana.add_argument("--agent-id", default="agent-bus-cli")
 
     sub.add_parser("perf", help="Show recent performance window")
@@ -77,7 +79,7 @@ def _parse_args() -> argparse.Namespace:
 async def _run(args: argparse.Namespace) -> Dict[str, Any]:
     from agents.agent_bus import AgentBus
 
-    bus = AgentBus(browser_mode=args.mode, agent_id=args.agent_id)
+    bus = AgentBus(browser_mode=args.mode, agent_id=args.agent_id, budget_usd=args.budget)
     await bus.start()
     try:
         result = await bus.ask(
@@ -85,6 +87,7 @@ async def _run(args: argparse.Namespace) -> Dict[str, Any]:
             search_first=not args.no_search,
             max_sources=args.max_sources,
         )
+        result["session_cost_usd"] = round(bus.cost.spent_usd, 6)
     finally:
         await bus.stop()
     return result
@@ -93,7 +96,7 @@ async def _run(args: argparse.Namespace) -> Dict[str, Any]:
 async def _summarize(args: argparse.Namespace) -> Dict[str, Any]:
     from agents.agent_bus import AgentBus
 
-    bus = AgentBus(browser_mode=args.mode, agent_id=args.agent_id)
+    bus = AgentBus(browser_mode=args.mode, agent_id=args.agent_id, budget_usd=args.budget)
     await bus.start()
     try:
         return await bus.search_and_summarize(args.query, max_sources=args.max_sources)
@@ -104,7 +107,7 @@ async def _summarize(args: argparse.Namespace) -> Dict[str, Any]:
 async def _analyze(args: argparse.Namespace) -> Dict[str, Any]:
     from agents.agent_bus import AgentBus
 
-    bus = AgentBus(browser_mode=args.mode, agent_id=args.agent_id)
+    bus = AgentBus(browser_mode=args.mode, agent_id=args.agent_id, budget_usd=args.budget)
     await bus.start()
     try:
         return await bus.analyze_page(args.url)

@@ -21,7 +21,13 @@ jobs:
       - name: Local deterministic review gate
         shell: bash
         run: |
-          set -euo pipefail
+          # Note: intentionally NOT using `set -e`. Each check below is allowed
+          # to fail and record its findings; we aggregate every problem and exit
+          # once at the end. With `set -e`, the first failing check (typically
+          # `git diff --check`) killed the step before the summary, file list,
+          # or conflict-marker scan could run — so reviewers only saw a bare
+          # "exit code 2" with no guidance.
+          set -uo pipefail
 
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
@@ -37,26 +43,72 @@ jobs:
           # genuinely contributed.
           range_base="$(git merge-base "$base" "$head")"
 
-          echo "## Local deterministic review gate" >> "$GITHUB_STEP_SUMMARY"
-          echo >> "$GITHUB_STEP_SUMMARY"
-          echo "- External AI invoked: no" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Repository comment written: no" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Base: \`${base}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Head: \`${head}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Merge-base: \`${range_base}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo >> "$GITHUB_STEP_SUMMARY"
-
-          git diff --check "$range_base" "$head"
           git diff --name-only "$range_base" "$head" > changed-files.txt
+          file_count="$(wc -l < changed-files.txt | tr -d ' ')"
 
-          if git grep -nE '^(<<<<<<<|>>>>>>>)' -- \
+          {
+            echo "## Local deterministic review gate"
+            echo
+            echo "- External AI invoked: no"
+            echo "- Repository comment written: no"
+            echo "- Base: \`${base}\`"
+            echo "- Head: \`${head}\`"
+            echo "- Merge-base: \`${range_base}\`"
+            echo "- Changed files: ${file_count}"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          failures=0
+
+          # --- Whitespace errors (trailing whitespace, space-before-tab, etc.)
+          # `git diff --check` exits non-zero when the diff introduces whitespace
+          # errors. Capture its report so we can surface the exact file:line in
+          # the job summary instead of burying it in raw logs.
+          whitespace_report="$(git diff --check "$range_base" "$head")"
+          if [ -n "$whitespace_report" ]; then
+            failures=1
+            {
+              echo "### ❌ Whitespace errors"
+              echo
+              echo "The PR introduces whitespace errors (e.g. trailing whitespace)."
+              echo "Fix locally, then commit:"
+              echo
+              echo '```bash'
+              echo "git diff --check ${range_base} ${head}   # list offending lines"
+              echo "# strip trailing whitespace from the files git names, e.g.:"
+              echo "#   sed -i 's/[[:space:]]*\$//' path/to/file"
+              echo '```'
+              echo
+              echo '```'
+              echo "$whitespace_report"
+              echo '```'
+              echo
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          # --- Unresolved merge-conflict markers
+          conflict_report="$(git grep -nE '^(<<<<<<<|>>>>>>>)' -- \
             ':!node_modules/**' \
             ':!artifacts/**' \
             ':!training-data/**' \
-            ':!**/target/**'; then
-            echo "Conflict markers found." >&2
+            ':!**/target/**' || true)"
+          if [ -n "$conflict_report" ]; then
+            failures=1
+            {
+              echo "### ❌ Merge-conflict markers"
+              echo
+              echo "Unresolved conflict markers were found in tracked files:"
+              echo
+              echo '```'
+              echo "$conflict_report"
+              echo '```'
+              echo
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [ "$failures" -ne 0 ]; then
+            echo "Deterministic review gate failed; see the job summary for details." >&2
             exit 1
           fi
 
-          file_count="$(wc -l < changed-files.txt | tr -d ' ')"
-          echo "- Changed files: ${file_count}" >> "$GITHUB_STEP_SUMMARY"
+          echo "### ✅ Gate passed" >> "$GITHUB_STEP_SUMMARY"

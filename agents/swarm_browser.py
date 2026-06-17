@@ -449,6 +449,45 @@ class ClickerAgent(SwarmAgent):
 
         return None
 
+    def _assess_target_risk(self, target: str) -> float:
+        """Assess click-target risk so the Judge can veto a dangerous click.
+
+        Mirrors ScoutAgent._assess_url_risk: a click is only as safe as what it
+        commits. Destructive and authorizing actions score highest.
+        """
+        t = (target or "").lower()
+
+        # Destructive / irreversible
+        if any(x in t for x in ["delete", "remove", "destroy", "wipe", "erase", "drop", "format"]):
+            return 0.95
+        # Financial / authorization commits
+        if any(
+            x in t
+            for x in [
+                "transfer",
+                "withdraw",
+                "send money",
+                "pay",
+                "purchase",
+                "buy",
+                "checkout",
+                "authorize",
+                "approve",
+                "grant",
+            ]
+        ):
+            return 0.9
+        # Credential / submission surfaces
+        if any(x in t for x in ["password", "login", "sign in", "signin", "submit", "confirm", "2fa", "otp"]):
+            return 0.7
+        # Account / admin surfaces
+        if any(x in t for x in ["account", "settings", "admin", "billing", "permission"]):
+            return 0.5
+        # Benign navigation-ish clicks
+        if any(x in t for x in ["search", "next", "back", "home", "menu", "close", "cancel"]):
+            return 0.2
+        return 0.4  # Default
+
 
 class TyperAgent(SwarmAgent):
     """UM - Text input and form filling specialist."""
@@ -494,6 +533,35 @@ class TyperAgent(SwarmAgent):
             agent=self.tongue, action_id=action_id, decision="ALLOW", confidence=0.85, reasoning="Non-sensitive input"
         )
 
+    def _assess_input_risk(self, text: str, field_type: str = "text") -> float:
+        """Assess typed-input risk so the Judge can veto a dangerous type.
+
+        Two dimensions, take the max:
+          * WHERE it is typed -- a credential/financial field sits in the
+            ESCALATE band (0.8), matching this agent's own sensitive-field
+            vote (typing a password is approve-worthy, not forbidden).
+          * WHAT is typed -- the membrane scanner scores the content for
+            injection/exfil; a genuine threat reaches the veto band (>0.9).
+        The raw text never leaves this method (only the score is returned),
+        preserving the "never include actual text in context" rule.
+        """
+        field = (field_type or "text").lower()
+        if field in ("password", "ssn", "credit_card", "bank_account", "secret", "api_key"):
+            field_risk = 0.8
+        elif field in ("email", "phone", "address", "name"):
+            field_risk = 0.5
+        else:
+            field_risk = 0.3
+
+        content_risk = 0.0
+        try:
+            scan = scan_text_for_threats(text or "")
+            content_risk = float(getattr(scan, "risk_score", 0.0) or 0.0)
+        except Exception:  # noqa: BLE001 - a scanner failure must not crash a type
+            content_risk = 0.0
+
+        return min(1.0, max(field_risk, content_risk))
+
 
 class JudgeAgent(SwarmAgent):
     """DR - Final decision and safety approval specialist."""
@@ -511,34 +579,70 @@ class JudgeAgent(SwarmAgent):
             votes = payload.get("votes", [])
             decision = self._aggregate_votes(votes)
 
+            # judge_override is True exactly when the Judge's binding vote
+            # tightened the outcome away from the count-only Byzantine tally.
+            counts = self._count_decisions(votes)
+            judge_override = decision != self._tally_consensus(counts)
+
             return self.create_message(
-                "final_decision", {"decision": decision, "votes": votes, "judge_override": False}
+                "final_decision",
+                {"decision": decision, "votes": votes, "judge_override": judge_override},
             )
 
         return None
 
-    def _aggregate_votes(self, votes: List[Dict]) -> str:
-        """Aggregate votes using Byzantine-safe consensus."""
-        decision_counts = {"ALLOW": 0, "QUARANTINE": 0, "ESCALATE": 0, "DENY": 0}
-
+    @staticmethod
+    def _count_decisions(votes: List[Dict]) -> Dict[str, int]:
+        counts = {"ALLOW": 0, "QUARANTINE": 0, "ESCALATE": 0, "DENY": 0}
         for vote in votes:
             decision = vote.get("decision", "DENY")
-            decision_counts[decision] = decision_counts.get(decision, 0) + 1
+            counts[decision] = counts.get(decision, 0) + 1
+        return counts
 
+    @staticmethod
+    def _tally_consensus(decision_counts: Dict[str, int]) -> str:
+        """Count-only Byzantine rule (no Judge override) -- f=2 safe."""
         # Need 4/6 for ALLOW (Byzantine safe with f=2)
         if decision_counts["ALLOW"] >= 4:
             return "ALLOW"
-
-        # Any DENY is concerning
+        # Any two DENY votes are concerning
         if decision_counts["DENY"] >= 2:
             return "DENY"
-
         # Escalate if uncertain
         if decision_counts["ESCALATE"] >= 2:
             return "ESCALATE"
-
         # Default to quarantine
         return "QUARANTINE"
+
+    def _aggregate_votes(self, votes: List[Dict]) -> str:
+        """Aggregate votes using Byzantine-safe consensus with a BINDING Judge veto.
+
+        The Judge (DR) only ever *tightens* the count-only tally, as its
+        ``vote()`` docstring promises ("veto power for high-risk actions"):
+          * a Judge DENY (its risk>0.9 veto path) denies the action outright,
+            even if every other agent voted ALLOW;
+          * a Judge ESCALATE (risk>0.7) cannot be overridden into a plain
+            ALLOW by a 4/6 majority -- the action escalates for review.
+        The Judge can never *loosen* a denial reached on the tally.
+        """
+        decision_counts = self._count_decisions(votes)
+
+        judge_decision = None
+        for vote in votes:
+            if vote.get("agent") == SacredTongue.DR.value:
+                judge_decision = vote.get("decision", "DENY")
+
+        # Binding veto: a Judge DENY overrides the tally entirely.
+        if judge_decision == "DENY":
+            return "DENY"
+
+        tally = self._tally_consensus(decision_counts)
+
+        # A Judge escalation cannot be voted down into an ALLOW.
+        if judge_decision == "ESCALATE" and tally == "ALLOW":
+            return "ESCALATE"
+
+        return tally
 
     async def vote(self, action_id: str, action: str, context: Dict[str, Any]) -> SwarmVote:
         """Judge has veto power for high-risk actions."""
@@ -590,9 +694,14 @@ class SwarmBrowser:
         scbe_url: str = "http://127.0.0.1:8080",
         hub_primary_path: str = "artifacts/swarm_hub/primary.jsonl",
         hub_replica_paths: Optional[List[str]] = None,
+        unattended: bool = False,
     ):
         self.browser = browser_backend
         self.scbe_url = scbe_url
+        # Headless / unattended use: no human operator is present, so a decision
+        # that asks for one (ESCALATE/QUARANTINE) cannot be satisfied and must
+        # fail closed with an explicit reason rather than dangling as "pending".
+        self.unattended = unattended
         self.hub = DecentralizedHub(
             primary_path=hub_primary_path,
             replica_paths=hub_replica_paths,
@@ -619,6 +728,26 @@ class SwarmBrowser:
             "payload": payload,
         }
         return self.hub.write(record)
+
+    def _resolve_execution(self, decision: str) -> Dict[str, Any]:
+        """Decide whether a consensus decision may execute, and record why.
+
+        Only ALLOW ever executes. In unattended (headless) mode there is no
+        operator to approve an ESCALATE/QUARANTINE, so those fail closed --
+        the effective decision becomes DENY with an explicit audit reason --
+        instead of silently not executing or waiting on a prompt that will
+        never come. Attended mode keeps the literal decision (a human can act
+        on an ESCALATE later).
+        """
+        if decision == "ALLOW":
+            return {"execute": True, "effective_decision": "ALLOW", "auto_resolution": None}
+        if self.unattended and decision in ("ESCALATE", "QUARANTINE"):
+            return {
+                "execute": False,
+                "effective_decision": "DENY",
+                "auto_resolution": (f"headless: {decision} needs an operator; none present -> withheld (fail-closed)"),
+            }
+        return {"execute": False, "effective_decision": decision, "auto_resolution": None}
 
     async def initialize(self) -> bool:
         """Activate all agents (Megazord assembly)."""
@@ -698,15 +827,20 @@ class SwarmBrowser:
         # Get consensus
         consensus = await self.roundtable_consensus(action_id, "navigate", {"url": url, "risk_score": risk_score})
 
+        gate = self._resolve_execution(consensus["final_decision"])
         result = {
             "action": "navigate",
             "url": url,
             "decision": consensus["final_decision"],
+            "effective_decision": gate["effective_decision"],
+            "unattended": self.unattended,
             "risk_score": risk_score,
             "executed": False,
         }
+        if gate["auto_resolution"]:
+            result["auto_resolution"] = gate["auto_resolution"]
 
-        if consensus["final_decision"] == "ALLOW":
+        if gate["execute"]:
             # Execute navigation via browser backend
             if self.browser:
                 await self.browser.navigate(url)
@@ -728,18 +862,30 @@ class SwarmBrowser:
         vision_result = await self.agents[SacredTongue.AV].process(vision_msg)
         coordinates = vision_result.payload.get("coordinates", [0, 0])
 
-        # Get consensus
-        consensus = await self.roundtable_consensus(action_id, "click", {"target": target, "coordinates": coordinates})
+        # A click is only as safe as what it commits -- risk-score the target so
+        # the Judge can veto a destructive/authorizing click, just like navigate.
+        risk_score = self.agents[SacredTongue.CA]._assess_target_risk(target)
 
+        # Get consensus
+        consensus = await self.roundtable_consensus(
+            action_id, "click", {"target": target, "coordinates": coordinates, "risk_score": risk_score}
+        )
+
+        gate = self._resolve_execution(consensus["final_decision"])
         result = {
             "action": "click",
             "target": target,
             "coordinates": coordinates,
             "decision": consensus["final_decision"],
+            "effective_decision": gate["effective_decision"],
+            "unattended": self.unattended,
+            "risk_score": risk_score,
             "executed": False,
         }
+        if gate["auto_resolution"]:
+            result["auto_resolution"] = gate["auto_resolution"]
 
-        if consensus["final_decision"] == "ALLOW":
+        if gate["execute"]:
             # Execute click via Clicker agent
             click_msg = SwarmMessage(
                 id=action_id,
@@ -755,8 +901,14 @@ class SwarmBrowser:
         self._hub_event("swarm_action", result)
         return result
 
-    async def type_text(self, selector: str, text: str) -> Dict[str, Any]:
-        """Type with swarm consensus."""
+    async def type_text(self, selector: str, text: str, field_type: str = "text") -> Dict[str, Any]:
+        """Type with swarm consensus.
+
+        Pass field_type (e.g. "password", "credit_card") so the swarm can treat
+        credential/financial fields as sensitive. Input is risk-scored by the
+        Typer (membrane scan of content + field sensitivity) so the Judge's
+        binding veto applies; the raw text never enters the context or receipt.
+        """
         action_id = f"type-{len(self.action_history)}"
 
         # Reader analyzes the form field
@@ -770,20 +922,33 @@ class SwarmBrowser:
 
         await self.agents[SacredTongue.RU].process(reader_msg)
 
+        # A type is only as safe as its content + target field. Score it so the
+        # Judge can veto, exactly like navigate/click. (Score only -- no text.)
+        risk_score = self.agents[SacredTongue.UM]._assess_input_risk(text, field_type)
+
         # Get consensus (never include actual text in context)
         consensus = await self.roundtable_consensus(
-            action_id, "type", {"selector": selector, "text_length": len(text), "field_type": "text"}
+            action_id,
+            "type",
+            {"selector": selector, "text_length": len(text), "field_type": field_type, "risk_score": risk_score},
         )
 
+        gate = self._resolve_execution(consensus["final_decision"])
         result = {
             "action": "type",
             "selector": selector,
             "text_length": len(text),
+            "field_type": field_type,
             "decision": consensus["final_decision"],
+            "effective_decision": gate["effective_decision"],
+            "unattended": self.unattended,
+            "risk_score": risk_score,
             "executed": False,
         }
+        if gate["auto_resolution"]:
+            result["auto_resolution"] = gate["auto_resolution"]
 
-        if consensus["final_decision"] == "ALLOW":
+        if gate["execute"]:
             # Execute typing via Typer agent
             type_msg = SwarmMessage(
                 id=action_id, from_agent=SacredTongue.UM, to_agent=None, action="type", payload={"text": text}

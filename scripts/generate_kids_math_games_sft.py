@@ -636,10 +636,10 @@ def gen_nim_strategy(count: int) -> List[GameRecord]:
                     "Non-zero — you're winning!\n"
                     "Find a pile to reduce so new Nim-sum = 0:\n"
                     + "\n".join(
-                        f"  Pile {i+1} ({[p1h,p2h,p3h][i]}): "
-                        f"target = {[p1h,p2h,p3h][i]} XOR {nim_sum_3} = {[p1h,p2h,p3h][i] ^ nim_sum_3}"
+                        f"  Pile {i+1} ({[p1h, p2h, p3h][i]}): "
+                        f"target = {[p1h, p2h, p3h][i]} XOR {nim_sum_3} = {[p1h, p2h, p3h][i] ^ nim_sum_3}"
                         + (
-                            f" ← VALID (reduce to {[p1h,p2h,p3h][i] ^ nim_sum_3})"
+                            f" ← VALID (reduce to {[p1h, p2h, p3h][i] ^ nim_sum_3})"
                             if ([p1h, p2h, p3h][i] ^ nim_sum_3) < [p1h, p2h, p3h][i]
                             else " ← invalid (would increase)"
                         )

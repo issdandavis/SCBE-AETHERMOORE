@@ -126,7 +126,7 @@ u = 0.5
 check(
     "L6: Breathing changes distances",
     breathe(u, 1.5) > u and breathe(u, 0.7) < u,
-    f"expand={breathe(u,1.5):.4f}, contract={breathe(u,0.7):.4f}",
+    f"expand={breathe(u, 1.5):.4f}, contract={breathe(u, 0.7):.4f}",
 )
 
 
@@ -658,7 +658,7 @@ check("H(d,R) > 1 for d > 0", H_wall(0.1, PHI) > 1.0)
 check(
     "H(d,R) super-exponential growth",
     H_wall(3, PHI) > 50,
-    f"H(3,phi)={H_wall(3,PHI):.2f}, phi^9≈76",
+    f"H(3,phi)={H_wall(3, PHI):.2f}, phi^9≈76",
 )
 
 # Convexity: d^2 H / d(d)^2 > 0

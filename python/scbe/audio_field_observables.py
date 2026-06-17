@@ -110,11 +110,7 @@ def _count_peaks(powers: list[float], *, threshold_ratio: float = 0.1) -> int:
     threshold = peak_power * threshold_ratio
     count = 0
     for index in range(1, len(powers) - 1):
-        if (
-            powers[index] >= threshold
-            and powers[index] >= powers[index - 1]
-            and powers[index] >= powers[index + 1]
-        ):
+        if powers[index] >= threshold and powers[index] >= powers[index - 1] and powers[index] >= powers[index + 1]:
             count += 1
     return count
 
@@ -156,9 +152,7 @@ def _compute_field_coupling(
     if model.kind == "generic":
         return None, "unmodeled-acoustic-observation"
     if model.kind == "magnetoelastic":
-        coupling = max(
-            0.0, min(1.0, model.coupling_gain * stability / (1.0 + dispersion_proxy))
-        )
+        coupling = max(0.0, min(1.0, model.coupling_gain * stability / (1.0 + dispersion_proxy)))
         return coupling, "strain-magnetization coupling proxy"
     if model.kind == "magnetosonic":
         if model.sound_speed_mps is None or model.alfven_speed_mps is None:
@@ -201,15 +195,8 @@ def analyze_audio_field(
     frequencies = [index * bin_width for index in range(len(powers))]
 
     energy_log = math.log(EPS + sum(value * value for value in samples))
-    centroid = (
-        sum(freq * power for freq, power in zip(frequencies, powers)) / total_power
-    )
-    variance = (
-        sum(
-            ((freq - centroid) ** 2) * power for freq, power in zip(frequencies, powers)
-        )
-        / total_power
-    )
+    centroid = sum(freq * power for freq, power in zip(frequencies, powers)) / total_power
+    variance = sum(((freq - centroid) ** 2) * power for freq, power in zip(frequencies, powers)) / total_power
     bandwidth = math.sqrt(max(0.0, variance))
     cutoff_index = int(len(powers) * high_frequency_cutoff_ratio)
     high_frequency_ratio = sum(powers[cutoff_index:]) / total_power
@@ -217,9 +204,7 @@ def analyze_audio_field(
     stability = 1.0 - high_frequency_ratio
     dispersion_proxy = bandwidth / (centroid + EPS) if centroid > EPS else 0.0
     modal_count = _count_peaks(powers)
-    modal_state = recouple_to_integer(
-        modal_count, min_value=0, max_value=64, tolerance=0.0
-    )
+    modal_state = recouple_to_integer(modal_count, min_value=0, max_value=64, tolerance=0.0)
 
     phases = _unwrap_phase([math.atan2(value.imag, value.real) for value in spectrum])
     phase_wrap_count = 0
@@ -262,8 +247,7 @@ def generate_sine(
 ) -> list[float]:
     sample_count = max(1, int(sample_rate_hz * duration_s))
     return [
-        amplitude * math.sin(2.0 * math.pi * frequency_hz * index / sample_rate_hz)
-        for index in range(sample_count)
+        amplitude * math.sin(2.0 * math.pi * frequency_hz * index / sample_rate_hz) for index in range(sample_count)
     ]
 
 

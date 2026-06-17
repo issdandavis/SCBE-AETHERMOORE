@@ -34,10 +34,12 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from python.scbe import units as _U
 from python.scbe.reaction_state import (
     ReactionEndpoint,
     ReactionRecalculation,
     build_reaction_state_packet,
+    unit_check,
 )
 
 OUT_DIR = REPO_ROOT / "artifacts" / "benchmarks" / "compound_decomposition_recomposition"
@@ -613,7 +615,22 @@ def run_case(case: CompoundCase) -> dict[str, Any]:
         ],
         recalculation=ReactionRecalculation(
             scientific_checks_ok=ok,
-            unit_checks_ok=math.isfinite(dim["moles"]) and math.isfinite(dim["molecules"]),
+            # Real dimensional check (not just isfinite): grams / (g/mol) must be
+            # moles, and moles * Avogadro must be a dimensionless molecule count.
+            unit_checks_ok=unit_check(
+                lambda: _U.assert_dim(
+                    _U.mul(
+                        _U.div(
+                            _U.q(case.sample_grams, _U.GRAM),
+                            _U.q(desc["mol_wt"], _U.G_PER_MOL),
+                        ),
+                        _U.q(1, _U.AVOGADRO),
+                    ),
+                    _U.DIMENSIONLESS,
+                )
+            )[0]
+            and math.isfinite(dim["moles"])
+            and math.isfinite(dim["molecules"]),
             identity_ok=selected["canonical_smiles"] == expected_canonical,
             extra={
                 "formula_ok": desc["formula"] == case.expected_formula,

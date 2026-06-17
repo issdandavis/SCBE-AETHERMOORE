@@ -90,6 +90,7 @@ from src.crypto.geoseal_execution_gate import (
     append_sealed_exec_audit,
     execute_governed_command,
     scan_command,
+    simulate_command,
 )
 from src.crypto.geoseal_legitimacy import CoarseLocation, run_legitimacy_trial
 from src.research_navigation import (
@@ -2560,6 +2561,70 @@ def cmd_exec(args: argparse.Namespace) -> int:
     if not result.ran:
         return 2
     return result.returncode or 0
+
+
+def cmd_simulate(args: argparse.Namespace) -> int:
+    """CLI: dry-run a command through the GeoSeal gate WITHOUT executing it.
+
+    Pre-flight check — prints the verdict (WOULD RUN / BLOCKED) and findings,
+    never launches a subprocess. Exit 0 = would run, 2 = would be blocked, so it
+    drops into scripts as a guard before the real run.
+    """
+    cleaned = _strip_argv_separator(args.command)
+    command = subprocess.list2cmdline(cleaned) if isinstance(cleaned, list) else cleaned
+    if not command:
+        print("simulate command is empty", file=sys.stderr)
+        return 2
+    sim = simulate_command(
+        command,
+        max_tier=args.max_tier,
+        claimed_paths=args.claimed_path or [],
+    )
+    payload = {"version": "geoseal-simulate-v1", **sim.to_dict()}
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(sim.summary)
+        for finding in sim.decision.findings:
+            print(f"  - {finding.rule}: {finding.message}")
+        if sim.blocked_reason:
+            print(f"[blocked] {sim.blocked_reason} — nothing was executed")
+        else:
+            print(f"[ok] would run at max-tier={args.max_tier} — nothing was executed")
+    return 0 if sim.would_run else 2
+
+
+def cmd_poly_mountain(args: argparse.Namespace) -> int:
+    """CLI: assemble the polylinear-recursive-mountain route packet for a goal.
+
+    Emits the runtime context lattice (context views + octree, six tongue views,
+    DH sectors, HYDRA lanes, recursive checkpoint policy) and proves the route is
+    satisfiable with Z3 before any lane acts. Exit 0 = may proceed, 2 = blocked.
+    """
+    goal = " ".join(args.goal).strip() if isinstance(args.goal, list) else (args.goal or "").strip()
+    if not goal:
+        print("poly-mountain requires --goal", file=sys.stderr)
+        return 2
+    from python.scbe.poly_mountain import build_packet
+
+    pkt = build_packet(goal, token_cap=args.token_cap, tool_cap=args.tool_cap)
+    if args.json:
+        print(json.dumps(pkt, indent=2))
+    else:
+        rs = pkt["route_satisfiability"]
+        lanes = ", ".join(f"{ln['name']}->{ln['writes']}" for ln in pkt["assigned_lanes"])
+        print(f"poly-mountain: {goal}")
+        print(f"  sectors : {', '.join(pkt['dh_sector_labels'])}")
+        print(f"  lanes   : {lanes}")
+        print(
+            f"  route   : satisfiable={rs.get('satisfiable')} (z3; "
+            f"{rs.get('total_token_budget')} tok / {rs.get('total_tool_budget')} tools)"
+        )
+        if rs.get("violations"):
+            print(f"  violations: {rs['violations']}")
+        print(f"  gate    : {pkt['apply_gate']['engine']} verified={pkt['apply_gate']['verified']}")
+        print(f"  proceed : {pkt['may_proceed']}")
+    return 0 if pkt["may_proceed"] else 2
 
 
 def cmd_legitimacy_trial(args: argparse.Namespace) -> int:
@@ -5743,6 +5808,42 @@ def build_parser() -> argparse.ArgumentParser:
     p_exec.add_argument("--no-audit", action="store_true")
     p_exec.add_argument("--json", action="store_true")
     p_exec.set_defaults(func=cmd_exec)
+
+    p_simulate = sub.add_parser(
+        "simulate",
+        help="Dry-run a command through the GeoSeal gate — check the verdict; never executes",
+    )
+    p_simulate.add_argument("command", nargs=argparse.REMAINDER, help="Command to parse, scan, and preview")
+    p_simulate.add_argument(
+        "--max-tier",
+        default="ALLOW",
+        choices=["ALLOW", "QUARANTINE", "ESCALATE"],
+        dest="max_tier",
+        help="Highest execution-gate tier that would be allowed to run",
+    )
+    p_simulate.add_argument(
+        "--claimed-path",
+        action="append",
+        default=[],
+        dest="claimed_path",
+        help="Path prefix the command is allowed to touch; repeatable",
+    )
+    p_simulate.add_argument("--json", action="store_true")
+    p_simulate.set_defaults(func=cmd_simulate)
+
+    p_poly = sub.add_parser(
+        "poly-mountain",
+        help="Assemble the polylinear-recursive-mountain route packet for a goal (Z3-gated)",
+    )
+    p_poly.add_argument("--goal", nargs="+", required=True, help="The goal to route")
+    p_poly.add_argument(
+        "--token-cap", type=int, default=100000, dest="token_cap", help="Max total token budget across lanes (Z3 bound)"
+    )
+    p_poly.add_argument(
+        "--tool-cap", type=int, default=20, dest="tool_cap", help="Max total tool-call budget across lanes (Z3 bound)"
+    )
+    p_poly.add_argument("--json", action="store_true")
+    p_poly.set_defaults(func=cmd_poly_mountain)
 
     p_legitimacy = sub.add_parser(
         "legitimacy-trial",
