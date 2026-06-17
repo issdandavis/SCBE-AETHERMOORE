@@ -31,6 +31,8 @@ _BLOCKS: dict[str, list[str]] = {
     "tracker": ["add", "list", "done"],     # a thing you add to, see, and complete
     "counter": ["count", "clear"],           # totals + reset
     "manager": ["tracker", "counter", "remove"],  # a BLOCK OF BLOCKS
+    "planner": ["tracker", "due", "agenda", "priority", "sort"],  # a day-planner
+    "organizer": ["tracker", "tag", "find", "export"],           # tag/search/export
 }
 
 
