@@ -1309,7 +1309,7 @@ def _parse_bigint(s: str) -> int:
     return int(s, 0) if s[:2].lower() in ("0x", "0o", "0b") else int(s)
 
 
-_NUMFIND_MAX_NTH = 5_000_000  # sieve stays ~100 MB / ~1 s
+_NUMFIND_MAX_NTH = 5_000_000  # the 5M-th prime sieves in ~5 s / a few hundred MB — practical ceiling
 _NUMFIND_MAX_RANGE_SPAN = 10_000_000  # segmented-sieve span guard
 
 
