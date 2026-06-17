@@ -293,7 +293,7 @@
         "<p><strong>Static Polly commands:</strong></p>" +
         '<ul class="polly-list">' +
         "<li><code>help me choose a product</code> - routes to the product picker</li>" +
-        "<li><code>how much is the workflow snapshot?</code> - returns the $39 starter path</li>" +
+        "<li><code>how much is the workflow snapshot?</code> - returns the $99 starter path</li>" +
         "<li><code>make my AI agent safer</code> - opens the governance route</li>" +
         "<li><code>/export</code> - download conversation as JSONL</li>" +
         "<li><code>/clear</code> - clear thread and memory</li>" +
@@ -324,7 +324,7 @@
     addMsg(
       thread,
       "assistant",
-      "<p>This page is in static mode, so " + esc(kind) + " is not connected here.</p><p>Use the $39 intake page to download a JSON packet, then send it through Proton/Gmail manually.</p>",
+      "<p>This page is in static mode, so " + esc(kind) + " is not connected here.</p><p>Use the $99 intake page to download a JSON packet, then send it through Proton/Gmail manually.</p>",
       chip("No backend", "lore") + chip("Static Polly", "online")
     );
   }
@@ -337,24 +337,24 @@
       return {
         intent: "guide",
         text:
-          "Best first path: start with the **$39 AI Workflow Snapshot** if you have one agent workflow, prompt chain, repo link, MCP stack, or automation flow you want reviewed.\n\n" +
+          "Best first path: start with the **$99 AI Workflow Snapshot** if you have one agent workflow, prompt chain, repo link, MCP stack, or automation flow you want reviewed.\n\n" +
           "If you only want templates, use the lower-cost toolkit/training products. If you need hands-on help, use the custom governance route.",
         actions: [
-          { label: "Start $39 Snapshot", url: "ai-workflow-snapshot.html" },
+          { label: "Start $99 Snapshot", url: "ai-workflow-snapshot.html" },
           { label: "Open product picker", url: "products.html#fitCard" },
           { label: "Ask about my setup", prompt: "I have an AI workflow. What should I send for a snapshot?" },
         ],
       };
     }
 
-    if (/(workflow snapshot|starter read|snapshot price|\$39|39 dollar|\$99|99 dollar|how much)/.test(t)) {
+    if (/(workflow snapshot|starter read|snapshot price|\$99|99 dollar|how much)/.test(t)) {
       return {
         intent: "buy",
         text:
-          "The **AI Workflow Snapshot** is the small first paid step: **$39** for one concise receipt-style read on one workflow.\n\n" +
+          "The **AI Workflow Snapshot** is the small first paid step: **$99** for one concise receipt-style read on one workflow.\n\n" +
           "You send the setup, prompt chain, repo link, MCP stack, automation flow, or workflow diagram. The output is drift risks, unsafe tool paths, observability gaps, and three next fixes.",
         actions: [
-          { label: "Start $39 Snapshot", url: "ai-workflow-snapshot.html" },
+          { label: "Start $99 Snapshot", url: "ai-workflow-snapshot.html" },
           { label: "See proof demo", url: "proof-workbench.html" },
         ],
       };
@@ -369,7 +369,7 @@
           "- **Custom governance help**: deeper review, integration, or agent-bus setup.\n\n" +
           "The useful input is concrete: the workflow, tools it can call, failure you fear, and any logs or screenshots.",
         actions: [
-          { label: "Start with $39", url: "ai-workflow-snapshot.html" },
+          { label: "Start with $99", url: "ai-workflow-snapshot.html" },
           { label: "Custom help", url: "hire.html" },
           { label: "What should I send?", prompt: "What should I send you for an AI agent workflow review?" },
         ],
@@ -418,7 +418,7 @@
       return {
         intent: "help",
         text:
-          "I can route you without a paid AI call. Ask about: **what to buy**, **$39 workflow snapshot**, **making an AI agent safer**, **SCBE**, **proof demo**, or **contacting Issac**.",
+          "I can route you without a paid AI call. Ask about: **what to buy**, **$99 workflow snapshot**, **making an AI agent safer**, **SCBE**, **proof demo**, or **contacting Issac**.",
         actions: [
           { label: "Help me choose", prompt: "What should I buy if I am new here?" },
           { label: "Snapshot price", prompt: "How much is the workflow snapshot?" },
@@ -441,7 +441,7 @@
         "- **Proof demo** if you want to see the governance receipt idea first.",
       actions: [
         { label: "Help me choose", prompt: "What should I buy if I am new here?" },
-        { label: "Start $39 Snapshot", url: "ai-workflow-snapshot.html" },
+        { label: "Start $99 Snapshot", url: "ai-workflow-snapshot.html" },
         { label: "Custom help", url: "hire.html" },
         { label: "Proof demo", url: "proof-workbench.html" },
       ],
