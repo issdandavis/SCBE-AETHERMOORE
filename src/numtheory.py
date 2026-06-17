@@ -36,6 +36,11 @@ class FactorizationTimeout(Exception):
     """Raised when factoring exceeds the supplied wall-clock budget."""
 
 
+def _check_deadline(deadline: Optional[float]) -> None:
+    if deadline is not None and time.monotonic() >= deadline:
+        raise FactorizationTimeout()
+
+
 def is_prime(n: int) -> bool:
     """Return True iff n is prime. Deterministic below DETERMINISTIC_BOUND."""
     if n < 2:
@@ -72,29 +77,34 @@ def _pollard_brent(n: int, deadline: Optional[float]) -> int:
         return 3
     c = 1
     while True:
-        if deadline is not None and time.monotonic() > deadline:
-            raise FactorizationTimeout()
+        _check_deadline(deadline)
         y, m = 2, 128
         g = q = r = 1
         x = ys = 0
         while g == 1:
+            _check_deadline(deadline)
             x = y
-            for _ in range(r):
+            for i in range(r):
+                if i % 1024 == 0:
+                    _check_deadline(deadline)
                 y = (y * y + c) % n
             k = 0
             while k < r and g == 1:
+                _check_deadline(deadline)
                 ys = y
-                for _ in range(min(m, r - k)):
+                for i in range(min(m, r - k)):
+                    if i % 1024 == 0:
+                        _check_deadline(deadline)
                     y = (y * y + c) % n
                     q = q * abs(x - y) % n
                 g = gcd(q, n)
                 k += m
             r *= 2
-            if deadline is not None and time.monotonic() > deadline:
-                raise FactorizationTimeout()
+            _check_deadline(deadline)
         if g == n:  # backtrack to recover a factor missed by the batched gcd
             g = 1
             while g == 1:
+                _check_deadline(deadline)
                 ys = (ys * ys + c) % n
                 g = gcd(abs(x - ys), n)
         if g != n:
@@ -113,15 +123,18 @@ def prime_factors(n: int, time_budget_s: Optional[float] = 20.0) -> List[int]:
         while n % p == 0:
             factors.append(p)
             n //= p
-    deadline = (time.monotonic() + time_budget_s) if time_budget_s else None
+    deadline = (time.monotonic() + time_budget_s) if time_budget_s is not None else None
     stack = [n] if n > 1 else []
     while stack:
+        _check_deadline(deadline)
         m = stack.pop()
         if m == 1:
             continue
+        _check_deadline(deadline)
         if is_prime(m):
             factors.append(m)
             continue
+        _check_deadline(deadline)
         d = _pollard_brent(m, deadline)
         stack.append(d)
         stack.append(m // d)
