@@ -15,6 +15,7 @@ This lifts a Forge build onto it:
 
     python scripts/forge_torus.py            # lift a sample build onto the torus
 """
+
 from __future__ import annotations
 
 import math
@@ -56,8 +57,9 @@ def lift(moves: list[str]):
     sig = prime_signature(moves)
     addr = [angles(byte)[0] for byte in sig.to_bytes((sig.bit_length() + 7) // 8, "big")]
     print(f"\n  the program's TOPOLOGICAL ADDRESS = its deed ({sig}) traced on the torus:")
-    print("    first axis of each deed-byte (deg): "
-          + " ".join(f"{round(math.degrees(a) % 360):>3}" for a in addr[:16]))
+    print(
+        "    first axis of each deed-byte (deg): " + " ".join(f"{round(math.degrees(a) % 360):>3}" for a in addr[:16])
+    )
     print("\n  the map IS the program: a path on a real surface; the deed is its address;")
     print("  and it's reversible -- the deed factors back to the exact moves. Topology, made literal.\n")
 
