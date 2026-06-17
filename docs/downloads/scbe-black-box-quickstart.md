@@ -7,6 +7,12 @@ It is self-serve. No installation service is required.
 
 ## Run
 
+From the downloadable Black Box bundle:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run-windows.ps1
+```
+
 From the repository or Workcell bundle:
 
 ```powershell

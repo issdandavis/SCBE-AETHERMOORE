@@ -24,6 +24,28 @@ function checkoutUrlFromEnv(envName, fallback) {
 
 const PRODUCT_CATALOG = [
   {
+    sku: 'scbe-black-box',
+    name: 'SCBE Black Box',
+    priceLabel: '$19 self-serve',
+    short:
+      'Local workstation failure report for Windows shutdowns, BSOD signals, low disk, memory pressure, storage warnings, WHEA, service crashes, and long AI job failure risk.',
+    checkoutUrl: 'https://ko-fi.com/izdandavis',
+    deliveryUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/black-box.html',
+    keywords: [
+      'black box',
+      'pc crash',
+      'computer crash',
+      'windows shutdown',
+      'bsod',
+      'event 41',
+      'workstation',
+      'ai workstation',
+      'why did my pc shut down',
+      'diagnose pc',
+      'failure report',
+    ],
+  },
+  {
     sku: 'scbe-service-credits',
     name: 'SCBE Service Credits',
     priceLabel: '$5+ pay-as-you-go',

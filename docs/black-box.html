@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <title>SCBE Black Box | PC shutdown and AI workstation failure report</title>
+    <meta
+      name="description"
+      content="SCBE Black Box is a local self-serve report for Windows shutdowns, BSOD signals, low disk, memory pressure, WHEA, storage warnings, and long AI job failure risk."
+    />
+    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/black-box.html" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080b0f;
+        --panel: #111821;
+        --panel-soft: #0d1219;
+        --line: rgba(236, 185, 84, 0.24);
+        --text: #f7f1e6;
+        --muted: #aeb8c5;
+        --gold: #e2b560;
+        --green: #2ed3a3;
+        --red: #ff786f;
+        --blue: #8db7ff;
+        --max: 1120px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background:
+          linear-gradient(rgba(8, 11, 15, 0.82), rgba(8, 11, 15, 0.96)),
+          url('hero.svg') center top / cover fixed,
+          var(--bg);
+        color: var(--text);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        line-height: 1.55;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgba(8, 11, 15, 0.9);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(14px);
+      }
+      .topbar-inner,
+      .section-inner {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+      }
+      .topbar-inner {
+        min-height: 66px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+      }
+      .brand {
+        color: var(--gold);
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 16px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .hero {
+        min-height: calc(100vh - 66px);
+        display: grid;
+        align-items: center;
+        padding: 70px 0 54px;
+      }
+      .hero-grid {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+        gap: 28px;
+        align-items: center;
+      }
+      .eyebrow {
+        margin: 0 0 14px;
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+      h1 {
+        max-width: 12ch;
+        margin-bottom: 20px;
+        font-size: clamp(44px, 8vw, 88px);
+        line-height: 0.94;
+        letter-spacing: 0;
+      }
+      h2 {
+        margin-bottom: 14px;
+        font-size: clamp(28px, 4vw, 46px);
+        line-height: 1.04;
+      }
+      h3 {
+        margin-bottom: 8px;
+        font-size: 19px;
+      }
+      .lead {
+        max-width: 66ch;
+        color: #d4dde4;
+        font-size: clamp(18px, 2.1vw, 22px);
+      }
+      .cta-row,
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 22px;
+      }
+      .btn {
+        display: inline-flex;
+        min-height: 48px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        padding: 12px 18px;
+        font-weight: 900;
+      }
+      .btn-primary {
+        border-color: var(--gold);
+        background: var(--gold);
+        color: #12110d;
+      }
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .terminal {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(13, 18, 25, 0.94);
+        padding: 18px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+      }
+      .terminal pre {
+        overflow: auto;
+        margin: 0;
+        color: #dbe8ef;
+        white-space: pre-wrap;
+        font-size: 14px;
+      }
+      .high {
+        color: var(--red);
+      }
+      .ok {
+        color: var(--green);
+      }
+      section {
+        padding: 68px 0;
+        background: rgba(8, 11, 15, 0.94);
+      }
+      section:nth-of-type(even) {
+        background: rgba(13, 18, 25, 0.96);
+      }
+      .grid-3,
+      .grid-2 {
+        display: grid;
+        gap: 16px;
+      }
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 22px;
+      }
+      .card p,
+      li {
+        color: var(--muted);
+      }
+      .price {
+        display: block;
+        margin: 10px 0;
+        color: var(--gold);
+        font-size: 32px;
+        font-weight: 950;
+      }
+      .steps {
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+      }
+      .step {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: var(--panel-soft);
+        padding: 18px;
+      }
+      code {
+        color: var(--blue);
+      }
+      @media (max-width: 860px) {
+        .hero-grid,
+        .grid-3,
+        .grid-2 {
+          grid-template-columns: 1fr;
+        }
+        .hero {
+          min-height: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">AetherMoore</a>
+        <nav class="nav" aria-label="Primary navigation">
+          <a href="products.html">Products</a>
+          <a href="payments.html">Payments</a>
+          <a href="support.html">Support</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-grid">
+          <div>
+            <p class="eyebrow">Self-serve workstation black box</p>
+            <h1>Find out why the machine failed.</h1>
+            <p class="lead">
+              SCBE Black Box is a local report for Windows shutdowns, BSOD signals, low disk, memory
+              pressure, storage warnings, and long AI job failure risk. The buyer runs it. It writes
+              a plain-English report. No support call required.
+            </p>
+            <div class="cta-row">
+              <a
+                class="btn btn-primary"
+                href="https://ko-fi.com/izdandavis"
+                target="_blank"
+                rel="noopener"
+                >Buy / tip on Ko-fi</a
+              >
+              <a class="btn btn-secondary" href="payments.html#cash-app">Cash App $IzzyDDavis7</a>
+              <a class="btn btn-secondary" href="downloads/scbe-black-box-quickstart.md"
+                >Read quickstart</a
+              >
+            </div>
+          </div>
+          <div class="terminal" aria-label="Example SCBE Black Box report">
+            <pre>SCBE Black Box Report
+
+Action needed: SCBE Black Box found a likely failure or pre-failure signal.
+
+- <span class="high">[HIGH]</span> Windows recorded an unexpected shutdown
+  Why: Event 41 means Windows restarted without a clean shutdown.
+  Do:  Correlate the minutes before this event with disk, driver, WHEA,
+       BugCheck, and power events below.
+
+- <span class="ok">[MEDIUM]</span> C:\ has limited free space
+  Why: This is the common pre-failure state for long local jobs.</pre>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-inner">
+          <p class="eyebrow">What it actually does</p>
+          <h2>A local scanner that turns crash clues into next actions.</h2>
+          <div class="grid-3">
+            <article class="card">
+              <h3>Checks failure signals</h3>
+              <p>
+                Disk space, memory pressure, Event 41 unexpected shutdowns, bugcheck events, storage
+                warnings, WHEA hardware warnings, service crashes, and top memory users.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Writes buyer-visible files</h3>
+              <p>
+                The tool writes <code>latest_black_box_report.txt</code> for humans and
+                <code>latest_black_box_report.json</code> for automation.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Runs without a server</h3>
+              <p>
+                No account, no dashboard, no API key, no remote upload. It runs on the buyer's
+                machine and leaves the report on disk.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-inner">
+          <p class="eyebrow">Offer</p>
+          <h2>One product. Three clear paths.</h2>
+          <div class="grid-3">
+            <article class="card">
+              <h3>Self-serve Black Box</h3>
+              <span class="price">$19</span>
+              <p>Download ZIP, run the scanner, read the report. Best for one workstation.</p>
+            </article>
+            <article class="card">
+              <h3>Report explanation</h3>
+              <span class="price">$99</span>
+              <p>
+                Buyer sends the generated report and receives a concise explanation and next steps.
+              </p>
+            </article>
+            <article class="card">
+              <h3>AI lab reliability audit</h3>
+              <span class="price">$499+</span>
+              <p>
+                For teams running local agents, browser fleets, model jobs, or build workstations.
+              </p>
+            </article>
+          </div>
+          <div class="actions">
+            <a
+              class="btn btn-primary"
+              href="https://ko-fi.com/izdandavis"
+              target="_blank"
+              rel="noopener"
+              >Buy on Ko-fi</a
+            >
+            <a
+              class="btn btn-secondary"
+              href="mailto:aethermoregames@pm.me?subject=SCBE%20Black%20Box%20purchase"
+              >Request card link / invoice</a
+            >
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-inner">
+          <p class="eyebrow">Use</p>
+          <h2>Buyer path after payment.</h2>
+          <div class="steps">
+            <div class="step">
+              <strong>1. Download the ZIP.</strong>
+              <p>
+                The bundle contains the scanner, quickstart, Windows script, Unix script, manifest,
+                and sample output.
+              </p>
+            </div>
+            <div class="step">
+              <strong>2. Run one command.</strong>
+              <p>
+                Windows: <code>powershell -ExecutionPolicy Bypass -File .\run-windows.ps1</code>
+              </p>
+            </div>
+            <div class="step">
+              <strong>3. Read the report.</strong>
+              <p>
+                Open <code>report/latest_black_box_report.txt</code>. If it flags high severity, act
+                before long jobs.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
