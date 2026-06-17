@@ -29,6 +29,9 @@ Legacy commands (backward compat):
 from __future__ import annotations
 
 import argparse
+import base64
+import binascii
+import codecs
 import ctypes
 import difflib
 import hashlib
@@ -42,6 +45,7 @@ import signal
 import subprocess
 import sys
 import time
+import unicodedata
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -425,11 +429,99 @@ _INJECTION_FAMILIES: Dict[str, "re.Pattern[str]"] = {
         r"\bformat\s+c:|\bshutdown\b|:\(\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:",
         re.I,
     ),
+    "destructive-intent": re.compile(
+        r"\b(delete|drop|destroy|wipe|erase|remove|truncate|purge|nuke|clear)\b"
+        r"[\s\S]{0,80}\b(production|prod|customer|customers|user|users|database|"
+        r"databases|db|bucket|buckets|table|tables|server|cluster|disk|drive|"
+        r"filesystem|secrets?|keys?|backups?)\b"
+        r"|\b(production|prod|customer|customers|user|users|database|databases|db|"
+        r"bucket|buckets|table|tables|server|cluster|disk|drive|filesystem|"
+        r"secrets?|keys?|backups?)\b[\s\S]{0,80}"
+        r"\b(delete|drop|destroy|wipe|erase|remove|truncate|purge|nuke|clear)\b",
+        re.I,
+    ),
 }
 # Per matched family penalty added to d* OUTSIDE the benign-word discount.
 # Tuned to the L13 thresholds: 1 family -> H_eff ~0.29 (ESCALATE, blocked in
 # gate mode); 2+ families -> H_eff <0.2 (DENY).
 _INTENT_PENALTY = 2.5
+
+_ZERO_WIDTH_OR_CONTROL = re.compile(r"[\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]")
+_B64_TOKEN = re.compile(r"\b[A-Za-z0-9+/_-]{16,}={0,2}\b")
+_LEET_TABLE = str.maketrans({
+    "0": "o",
+    "1": "i",
+    "3": "e",
+    "4": "a",
+    "5": "s",
+    "7": "t",
+    "@": "a",
+    "$": "s",
+    "!": "i",
+})
+_HOMOGLYPH_TABLE = str.maketrans({
+    "а": "a", "А": "a",  # Cyrillic
+    "е": "e", "Е": "e",
+    "о": "o", "О": "o",
+    "р": "p", "Р": "p",
+    "с": "c", "С": "c",
+    "х": "x", "Х": "x",
+    "у": "y", "У": "y",
+    "і": "i", "І": "i",
+    "ԁ": "d",
+    "ɑ": "a", "ο": "o", "Ο": "o",  # Greek/Latin lookalikes
+    "ρ": "p", "Ρ": "p",
+    "ϲ": "c",
+})
+
+
+def _normalize_for_intent(text: str) -> str:
+    """Collapse cheap encoding tricks before deterministic intent matching."""
+    normalized = unicodedata.normalize("NFKC", text).translate(_HOMOGLYPH_TABLE)
+    normalized = _ZERO_WIDTH_OR_CONTROL.sub("", normalized).casefold()
+    return re.sub(r"\s+", " ", normalized).strip()
+
+
+def _decoded_base64_candidates(text: str) -> List[str]:
+    candidates: List[str] = []
+    for token in _B64_TOKEN.findall(text)[:8]:
+        compact = token.replace("-", "+").replace("_", "/")
+        compact += "=" * (-len(compact) % 4)
+        try:
+            raw = base64.b64decode(compact.encode("ascii"), validate=True)
+        except (binascii.Error, ValueError):
+            continue
+        if not raw or len(raw) > 4096:
+            continue
+        try:
+            decoded = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            decoded = raw.decode("latin-1", errors="ignore")
+        if decoded and any(ch.isalpha() for ch in decoded):
+            candidates.append(decoded)
+    return candidates
+
+
+def _intent_scan_candidates(text: str) -> List[str]:
+    base = _normalize_for_intent(text)
+    candidates = [base]
+    candidates.append(base.translate(_LEET_TABLE))
+    try:
+        candidates.append(codecs.decode(base, "rot_13"))
+    except Exception:
+        pass
+    for decoded in _decoded_base64_candidates(text):
+        norm = _normalize_for_intent(decoded)
+        candidates.append(norm)
+        candidates.append(norm.translate(_LEET_TABLE))
+
+    seen = set()
+    unique: List[str] = []
+    for candidate in candidates:
+        if candidate and candidate not in seen:
+            unique.append(candidate)
+            seen.add(candidate)
+    return unique[:20]
 
 
 def _adversarial_intent(text: str) -> Tuple[float, List[str]]:
@@ -440,7 +532,11 @@ def _adversarial_intent(text: str) -> Tuple[float, List[str]]:
     rescued by reading as ordinary prose. Pattern-based and intentionally
     transparent — the labels are surfaced in the score for auditability.
     """
-    labels = [name for name, rx in _INJECTION_FAMILIES.items() if rx.search(text)]
+    labels: List[str] = []
+    for candidate in _intent_scan_candidates(text):
+        for name, rx in _INJECTION_FAMILIES.items():
+            if name not in labels and rx.search(candidate):
+                labels.append(name)
     return float(len(labels)), labels
 
 

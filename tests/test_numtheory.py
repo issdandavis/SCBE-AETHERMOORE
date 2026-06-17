@@ -63,6 +63,17 @@ def test_factorization_prime_power():
     assert nt.factorization(3**13) == {3: 13}
 
 
+def test_factorization_zero_budget_times_out_before_hard_work():
+    p = nt.next_prime(10**9)
+    q = nt.next_prime(10**10)
+    with pytest.raises(nt.FactorizationTimeout):
+        nt.factorization(p * q, time_budget_s=0.0)
+
+
+def test_factorization_none_budget_disables_timeout():
+    assert nt.factorization(91, time_budget_s=None) == {7: 1, 13: 1}
+
+
 @pytest.mark.parametrize(
     "k,expected",
     [(1, 2), (2, 3), (3, 5), (6, 13), (100, 541), (1000, 7919), (10000, 104729)],
