@@ -1,6 +1,6 @@
 # AetherMoore Research Packet Standard
 
-Status: operating standard for public research packets  
+Status: operating standard for public research packets
 Updated: 2026-06-17
 
 This standard defines what "convert a note into research" means for AetherMoore.
@@ -64,4 +64,3 @@ can be useful leads, but they are not enough for a research-grade packet.
 These packets do not make legal claims, legal advice, patentability opinions,
 compliance certifications, or guarantees. They are technical research artifacts
 with explicit uncertainty, source provenance, and validation status.
-

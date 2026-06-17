@@ -1,8 +1,8 @@
 # Space Life-Support Animals, Husbandry, and Micro-Energy Concepts
 
-Status: Idea Seed -> Research Brief scaffold  
-Date: 2026-06-17  
-Topic lanes: space systems, life systems, energy systems  
+Status: Idea Seed -> Research Brief scaffold
+Date: 2026-06-17
+Topic lanes: space systems, life systems, energy systems
 Legal boundary: no legal claims, no patentability claim, no compliance claim
 
 ## Abstract
@@ -138,4 +138,3 @@ spacecraft systems budgets.
   and resource-loop ideas?
 - What animal studies already exist that make this direction unnecessary,
   unethical, or technically useful?
-
