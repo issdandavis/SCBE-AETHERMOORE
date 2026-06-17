@@ -30,33 +30,118 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _safe_log_text(value: object) -> str:
+    text = str(value)
+    for marker in ("sk-", "rk_", "ghp_", "hf_", "xai-", "SAM-"):
+        if marker in text:
+            return "[redacted-sensitive-error]"
+    return text.replace("\r", "\\r").replace("\n", "\\n")[:240]
+
+
 sys.path.insert(0, str(REPO_ROOT))
 
 # ── External published baselines ──────────────────────────────────────────────
 
 EXTERNAL_BASELINES = {
     "safety_classifiers": [
-        {"name": "WildGuard", "score": 0.877, "metric": "balanced_accuracy", "source": "arxiv:2406.18495"},
-        {"name": "LlamaGuard-3", "score": 0.825, "metric": "balanced_accuracy", "source": "Meta AI, 2024"},
-        {"name": "GPT-4-based", "score": 0.860, "metric": "balanced_accuracy", "source": "OpenAI safety eval, 2024"},
-        {"name": "ShieldLM", "score": 0.803, "metric": "balanced_accuracy", "source": "arxiv:2402.09571"},
+        {
+            "name": "WildGuard",
+            "score": 0.877,
+            "metric": "balanced_accuracy",
+            "source": "arxiv:2406.18495",
+        },
+        {
+            "name": "LlamaGuard-3",
+            "score": 0.825,
+            "metric": "balanced_accuracy",
+            "source": "Meta AI, 2024",
+        },
+        {
+            "name": "GPT-4-based",
+            "score": 0.860,
+            "metric": "balanced_accuracy",
+            "source": "OpenAI safety eval, 2024",
+        },
+        {
+            "name": "ShieldLM",
+            "score": 0.803,
+            "metric": "balanced_accuracy",
+            "source": "arxiv:2402.09571",
+        },
     ],
     "llm_quality_mmlu": [
-        {"name": "llama-3.3-70b", "score": 0.832, "metric": "5-shot MMLU", "source": "Meta AI blog 2024"},
-        {"name": "gpt-4o-mini", "score": 0.820, "metric": "5-shot MMLU", "source": "OpenAI evals 2024"},
-        {"name": "gpt-4o", "score": 0.887, "metric": "5-shot MMLU", "source": "OpenAI evals 2024"},
-        {"name": "claude-3.5-sonnet", "score": 0.889, "metric": "5-shot MMLU", "source": "Anthropic evals 2024"},
+        {
+            "name": "llama-3.3-70b",
+            "score": 0.832,
+            "metric": "5-shot MMLU",
+            "source": "Meta AI blog 2024",
+        },
+        {
+            "name": "gpt-4o-mini",
+            "score": 0.820,
+            "metric": "5-shot MMLU",
+            "source": "OpenAI evals 2024",
+        },
+        {
+            "name": "gpt-4o",
+            "score": 0.887,
+            "metric": "5-shot MMLU",
+            "source": "OpenAI evals 2024",
+        },
+        {
+            "name": "claude-3.5-sonnet",
+            "score": 0.889,
+            "metric": "5-shot MMLU",
+            "source": "Anthropic evals 2024",
+        },
     ],
     "cli_capability": [
-        {"name": "claude-code", "score": 1.0, "metric": "11/11 criteria", "source": "docs.claude.com"},
-        {"name": "gemini-cli", "score": 0.909, "metric": "10/11 criteria", "source": "geminicli.com/docs"},
-        {"name": "codex-cli", "score": 0.818, "metric": "9/11 criteria", "source": "help.openai.com"},
-        {"name": "aider", "score": 0.727, "metric": "8/11 criteria", "source": "aider.chat/docs"},
+        {
+            "name": "claude-code",
+            "score": 1.0,
+            "metric": "11/11 criteria",
+            "source": "docs.claude.com",
+        },
+        {
+            "name": "gemini-cli",
+            "score": 0.909,
+            "metric": "10/11 criteria",
+            "source": "geminicli.com/docs",
+        },
+        {
+            "name": "codex-cli",
+            "score": 0.818,
+            "metric": "9/11 criteria",
+            "source": "help.openai.com",
+        },
+        {
+            "name": "aider",
+            "score": 0.727,
+            "metric": "8/11 criteria",
+            "source": "aider.chat/docs",
+        },
     ],
     "latency_p50_ms": [
-        {"name": "cerebras llama", "score": 920, "metric": "p50 TTFT ms", "source": "artificialanalysis.ai 2025"},
-        {"name": "groq llama", "score": 2659, "metric": "p50 TTFT ms", "source": "artificialanalysis.ai 2025"},
-        {"name": "openai gpt-4o-mini", "score": 1500, "metric": "p50 TTFT ms", "source": "artificialanalysis.ai 2025"},
+        {
+            "name": "cerebras llama",
+            "score": 920,
+            "metric": "p50 TTFT ms",
+            "source": "artificialanalysis.ai 2025",
+        },
+        {
+            "name": "groq llama",
+            "score": 2659,
+            "metric": "p50 TTFT ms",
+            "source": "artificialanalysis.ai 2025",
+        },
+        {
+            "name": "openai gpt-4o-mini",
+            "score": 1500,
+            "metric": "p50 TTFT ms",
+            "source": "artificialanalysis.ai 2025",
+        },
     ],
 }
 
@@ -65,7 +150,12 @@ EXTERNAL_BASELINES = {
 KNOWLEDGE_QUESTIONS = [
     {
         "q": "What is the speed of light in a vacuum (approximate)?",
-        "choices": {"A": "3×10^8 m/s", "B": "3×10^6 m/s", "C": "3×10^10 m/s", "D": "1×10^6 m/s"},
+        "choices": {
+            "A": "3×10^8 m/s",
+            "B": "3×10^6 m/s",
+            "C": "3×10^10 m/s",
+            "D": "1×10^6 m/s",
+        },
         "answer": "A",
         "category": "physics",
     },
@@ -110,7 +200,12 @@ KNOWLEDGE_QUESTIONS = [
         "answer": "B",
         "category": "biology",
     },
-    {"q": "What is √144?", "choices": {"A": "12", "B": "14", "C": "11", "D": "13"}, "answer": "A", "category": "math"},
+    {
+        "q": "What is √144?",
+        "choices": {"A": "12", "B": "14", "C": "11", "D": "13"},
+        "answer": "A",
+        "category": "math",
+    },
     {
         "q": "What does HTTP stand for?",
         "choices": {
@@ -197,7 +292,10 @@ def _measure_petri_recall() -> dict[str, Any]:
         return {"recall": None, "hit": 0, "total": 0, "corpus_available": False}
 
     try:
-        from src.cli.petri_pattern_filter import is_meta_ai_auditor_phrasing, is_non_latin_script_input
+        from src.cli.petri_pattern_filter import (
+            is_meta_ai_auditor_phrasing,
+            is_non_latin_script_input,
+        )
 
         total, hit, regex_only, tongue_only, both_hit = 0, 0, 0, 0, 0
         for f in sorted(seeds_dir.glob("*.md")):
@@ -227,7 +325,13 @@ def _measure_petri_recall() -> dict[str, Any]:
             "both": both_hit,
         }
     except Exception as exc:
-        return {"recall": None, "hit": 0, "total": 0, "corpus_available": False, "error": str(exc)}
+        return {
+            "recall": None,
+            "hit": 0,
+            "total": 0,
+            "corpus_available": False,
+            "error": str(exc),
+        }
 
 
 # ── Layer 2: CLI capability ───────────────────────────────────────────────────
@@ -256,7 +360,10 @@ def run_cli_benchmark() -> dict[str, Any]:
                     full_data = json.loads(Path(summary["json"]).read_text())
                 except Exception:
                     pass
-            scbe_row = next((r for r in ranking if r["name"] == "scbe-geoseal"), ranking[0] if ranking else {})
+            scbe_row = next(
+                (r for r in ranking if r["name"] == "scbe-geoseal"),
+                ranking[0] if ranking else {},
+            )
             return {
                 "ok": True,
                 "scbe_score": scbe_row,
@@ -265,7 +372,12 @@ def run_cli_benchmark() -> dict[str, Any]:
                 "elapsed_s": elapsed,
             }
         except Exception as exc:
-            return {"ok": False, "error": str(exc), "raw": proc.stdout[:500], "elapsed_s": elapsed}
+            return {
+                "ok": False,
+                "error": str(exc),
+                "raw": proc.stdout[:500],
+                "elapsed_s": elapsed,
+            }
     return {"ok": False, "error": proc.stderr[:500], "elapsed_s": elapsed}
 
 
@@ -273,7 +385,12 @@ def run_cli_benchmark() -> dict[str, Any]:
 
 
 def _openai_chat_request(
-    base_url: str, api_key: str, model: str, prompt: str, timeout: int = 30, max_tokens: int = 500
+    base_url: str,
+    api_key: str,
+    model: str,
+    prompt: str,
+    timeout: int = 30,
+    max_tokens: int = 500,
 ) -> tuple[str, float]:
     """Fire a single chat completion request and return (response_text, latency_ms).
     max_tokens=500 required for reasoning models (zai-glm-4.7, gpt-oss-*) to complete chain-of-thought.
@@ -325,7 +442,14 @@ def run_squad_latency_benchmark() -> dict[str, Any]:
         ("groq", "https://api.groq.com/openai/v1", groq_key, "llama-3.3-70b-versatile"),
     ]:
         if not api_key:
-            providers.append({"provider": name, "ok": False, "error": "no api key", "latencies_ms": []})
+            providers.append(
+                {
+                    "provider": name,
+                    "ok": False,
+                    "error": "no api key",
+                    "latencies_ms": [],
+                }
+            )
             continue
 
         latencies = []
@@ -395,8 +519,18 @@ def run_knowledge_benchmark(skip_live: bool = False) -> dict[str, Any]:
     providers_tested = []
 
     for name, base_url, api_key, model in [
-        ("cerebras", "https://api.cerebras.ai/v1", os.environ.get("CEREBRAS_API_KEY", ""), "zai-glm-4.7"),
-        ("groq", "https://api.groq.com/openai/v1", os.environ.get("GROQ_API_KEY", ""), "llama-3.3-70b-versatile"),
+        (
+            "cerebras",
+            "https://api.cerebras.ai/v1",
+            os.environ.get("CEREBRAS_API_KEY", ""),
+            "zai-glm-4.7",
+        ),
+        (
+            "groq",
+            "https://api.groq.com/openai/v1",
+            os.environ.get("GROQ_API_KEY", ""),
+            "llama-3.3-70b-versatile",
+        ),
     ]:
         if not api_key:
             providers_tested.append({"provider": name, "ok": False, "error": "no api key"})
@@ -594,7 +728,7 @@ def main() -> int:
             if p.get("ok"):
                 print(f"      {p['provider']:12s}  p50={p['p50_ms']:.0f}ms  ({p['latencies_ms']})")
             else:
-                print(f"      {p['provider']:12s}  {p.get('error', 'failed')}")
+                print(f"      {p['provider']:12s}  {_safe_log_text(p.get('error', 'failed'))}")
 
     print("\n[4/5] Knowledge accuracy (10 MMLU-style Q)...", flush=True)
     knowledge = run_knowledge_benchmark(skip_live=args.skip_live)
@@ -605,7 +739,7 @@ def main() -> int:
             if p.get("ok"):
                 print(f"      {p['provider']:12s}  {p['correct']}/{p['total']}  ({p['accuracy']:.0%})")
             else:
-                print(f"      {p['provider']:12s}  {p.get('error', 'failed')}")
+                print(f"      {p['provider']:12s}  {_safe_log_text(p.get('error', 'failed'))}")
 
     print("\n[5/5] TypeScript test suite...", flush=True)
     tests = run_test_suite_benchmark()
@@ -660,7 +794,10 @@ def main() -> int:
         print(f"    {'SCBE hybrid':20s}  {gov.get('hybrid_detection_rate', 0):.1%}  ← SCBE")
         print(f"    {'SCBE blind-only':20s}  {gov.get('blind_detection_rate', 0):.1%}")
     if knowledge.get("ok"):
-        best_know = max((p["accuracy"] for p in knowledge.get("providers", []) if p.get("ok")), default=None)
+        best_know = max(
+            (p["accuracy"] for p in knowledge.get("providers", []) if p.get("ok")),
+            default=None,
+        )
         if best_know is not None:
             print("  LLM knowledge (MMLU-style 10Q):")
             for b in EXTERNAL_BASELINES["llm_quality_mmlu"]:

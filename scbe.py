@@ -19,7 +19,6 @@ Usage:
 Legacy commands (backward compat):
   scbe cli       — Launch interactive CLI
   scbe agent     — Launch AI agent
-  scbe demo      — Run demo
 
 @module cli/scbe
 @layer Layer 14
@@ -3609,8 +3608,10 @@ def _run_system_cli(args: List[str]) -> int:
 LEGACY_SCRIPTS = {
     "cli": "scbe-cli.py",
     "agent": "scbe-agent.py",
-    "demo": "demo-cli.py",
-    "memory": "demo_memory_shard.py",
+    # NOTE: "demo" (demo-cli.py) and "memory" (demo_memory_shard.py) were removed
+    # here — those scripts do not exist in the repo, so registering them only
+    # produced dead `scbe demo` / `scbe memory` subcommands that printed
+    # "Legacy script not found". scbe-cli.py and scbe-agent.py do exist.
 }
 
 SYSTEM_AGENT_SUBCOMMANDS = {
@@ -3781,7 +3782,7 @@ Commands by category:
   Notes/Vault     find (f) · open · vault · recent · docs
   Files           move · del · push · undo
   Chemistry       chem (atomize/bonds/convert/orbitals)
-  System          status (st) · health · doctor · selftest · memory
+  System          status (st) · health · doctor · selftest · system
   (tip: run `scbe <command> -h` for details, or just type plain English)
 
 Examples:
@@ -3803,7 +3804,6 @@ Examples:
 Legacy (backward compat):
   scbe cli                          Interactive CLI
   scbe agent                        AI agent
-  scbe demo                         Demo mode
   scbe doctor --json
   scbe model plan --profile coder-qwen-local --json
   scbe model train --profile coder-qwen-local

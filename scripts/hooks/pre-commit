@@ -23,7 +23,10 @@ PATTERNS = [
     (r"hf_[A-Za-z0-9]{30,}", "HuggingFace token"),
     (r"KGAT_[A-Za-z0-9]{20,}", "Kaggle token"),
     (r"xai-[A-Za-z0-9]{20,}", "xAI API key"),
-    (r"SAM-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "SAM.gov API key"),
+    (
+        r"SAM-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+        "SAM.gov API key",
+    ),
     (r"glpat-[A-Za-z0-9_-]{20,}", "GitLab PAT"),
     (r"eyJ[A-Za-z0-9_-]{50,}\.[A-Za-z0-9_-]{50,}", "JWT token"),
 ]
@@ -31,13 +34,12 @@ PATTERNS = [
 
 def staged_files() -> list[str]:
     result = subprocess.run(
-        ["git", "diff", "--cached", "--name-only"],
-        capture_output=True, text=True
+        ["git", "diff", "--cached", "--name-only"], capture_output=True, text=True
     )
     return [f.strip() for f in result.stdout.splitlines() if f.strip()]
 
 
-def check_secrets(files: list[str]) -> list[tuple[str, str, str]]:
+def check_secrets(files: list[str]) -> list[tuple[str, str]]:
     found = []
     for filepath in files:
         try:
@@ -46,7 +48,7 @@ def check_secrets(files: list[str]) -> list[tuple[str, str, str]]:
             for pattern, name in PATTERNS:
                 for m in re.findall(pattern, content):
                     if "[SCRUBBED" not in m:
-                        found.append((filepath, name, m[:20] + "..."))
+                        found.append((filepath, name))
         except FileNotFoundError:
             pass
     return found
@@ -65,12 +67,15 @@ def run_prettier(files: list[str]) -> bool:
         return True
 
     if not PRETTIER_BIN.exists():
-        print("[pre-commit] prettier not found at node_modules/prettier/bin/prettier.cjs — skipping format step")
+        print(
+            "[pre-commit] prettier not found at node_modules/prettier/bin/prettier.cjs — skipping format step"
+        )
         return True
 
     result = subprocess.run(
         ["node", str(PRETTIER_BIN), "--write", *ts_files],
-        capture_output=True, text=True
+        capture_output=True,
+        text=True,
     )
     if result.returncode != 0:
         print(f"[pre-commit] prettier failed:\n{result.stderr}")
@@ -102,7 +107,7 @@ if __name__ == "__main__":
         print(f"\n{'='*60}")
         print(f"BLOCKED: {len(secrets)} SECRET(S) DETECTED")
         print(f"{'='*60}")
-        for path, name, _preview in secrets:
+        for path, name in secrets:
             # Do NOT echo the matched secret value — report only where + what type.
             print(f"  [{name}] {path}")
         print("\nReplace secrets with [SCRUBBED:type] before committing.")

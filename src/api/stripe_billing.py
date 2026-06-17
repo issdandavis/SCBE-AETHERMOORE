@@ -1,5 +1,17 @@
 """Stripe billing integration for SCBE SaaS API.
 
+============================================================================
+CANONICAL LIVE MONEY PATH. This module (mounted in the canonical app
+src/api/main.py) plus the Stripe Payment Links registered in docs/offers.json
+is the ONE path that takes real money. It uses real Stripe price/product IDs
+(price_1TBnUm.../prod_UA7k...) and needs no Stripe SDK (raw urllib).
+
+There is a SECOND, parallel billing stack under api/billing/ (Stripe SDK +
+SQLAlchemy) behind the separate api/main.py app. That one uses PLACEHOLDER
+price IDs and is NOT the live revenue path — see api/billing/routes.py. Do not
+add new money logic there; add it here (or as a Payment Link in offers.json).
+============================================================================
+
 Provides:
 - Checkout session creation for 3 plan tiers
 - Webhook handler for subscription lifecycle events
@@ -131,13 +143,20 @@ def _persist_key(record: Dict[str, Any]) -> None:
     if cipher is None:
         return
     _KEYS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    safe = dict(record)
-    api_key = safe.pop("api_key", "")
-    if api_key:
-        safe["api_key_enc"] = cipher.encrypt(api_key.encode("utf-8")).decode("ascii")
+    raw_api_key = str(record.get("api_key") or "")
+    if not raw_api_key:
+        return
+    stored_record = {
+        "customer_id": record.get("customer_id", ""),
+        "subscription_id": record.get("subscription_id", ""),
+        "plan": record.get("plan", ""),
+        "email": record.get("email", ""),
+        "created_at": record.get("created_at", int(time.time())),
+        "api_key_enc": cipher.encrypt(raw_api_key.encode("utf-8")).decode("ascii"),
+    }
     try:
         with open(_KEYS_FILE, "a", encoding="utf-8") as f:
-            f.write(json.dumps(safe) + "\n")
+            f.write(json.dumps(stored_record, sort_keys=True) + "\n")
     except Exception as exc:
         LOGGER.warning("Failed to persist API key record: %s", exc)
 

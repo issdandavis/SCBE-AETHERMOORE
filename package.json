@@ -131,6 +131,10 @@
     "cash:launch-readiness:gate": "python scripts/system/product_launch_readiness.py --fail-on-not-ready",
     "writing:package": "python scripts/package_products.py --product writing",
     "writing:package:all": "python scripts/package_products.py --product all",
+    "release:workcell": "python scripts/system/build_workcell_download.py",
+    "release:blackbox": "python scripts/system/build_black_box_download.py",
+    "blackbox:prove": "python scripts/system/prove_black_box_value.py",
+    "blackbox:report": "python scripts/system/scbe_black_box.py --no-fail-on-high",
     "video:verify": "node scripts/video/verify.js",
     "video:quality-gate": "node scripts/video/quality_gate.js",
     "video:manifest": "node scripts/video/package_manifest.js",
@@ -324,6 +328,10 @@
     "qs": "^6.15.2",
     "minimatch@10.2.5": {
       "brace-expansion": "^5.0.6"
-    }
+    },
+    "@opentelemetry/core": "2.8.0",
+    "@opentelemetry/resources": "2.8.0",
+    "@opentelemetry/sdk-trace-base": "2.8.0",
+    "@opentelemetry/sdk-trace-node": "2.8.0"
   }
 }
