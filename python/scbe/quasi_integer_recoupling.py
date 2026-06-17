@@ -13,6 +13,7 @@ from dataclasses import asdict, dataclass, field
 from math import isfinite
 from typing import Any, Literal
 
+
 RecouplingDecision = Literal["RECOUPLED", "AMBIGUOUS", "OUT_OF_RANGE", "INVALID"]
 
 
@@ -53,7 +54,10 @@ class QuasiIntegerRecoupling:
 def integer_states(min_value: int, max_value: int) -> list[RecouplingState]:
     if min_value > max_value:
         raise ValueError("min_value must be <= max_value")
-    return [RecouplingState(float(value), str(value)) for value in range(min_value, max_value + 1)]
+    return [
+        RecouplingState(float(value), str(value))
+        for value in range(min_value, max_value + 1)
+    ]
 
 
 def half_integer_states(min_value: int, max_value: int) -> list[RecouplingState]:
@@ -110,7 +114,11 @@ def recouple_to_states(
         key=lambda item: (item[0], item[1].value, item[1].label),
     )
     best_error, best_state = ranked[0]
-    tied = [state for error, state in ranked if abs(error - best_error) <= tie_tolerance]
+    tied = [
+        state
+        for error, state in ranked
+        if abs(error - best_error) <= tie_tolerance
+    ]
     if len(tied) > 1:
         return QuasiIntegerRecoupling(
             raw_value=raw_value,

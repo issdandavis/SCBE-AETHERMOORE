@@ -48,7 +48,8 @@ def encode_corpus(paths: List[str], workers: Optional[int] = None) -> List[Dict[
 
 
 def find_python_files(root: str = ".") -> List[str]:
-    junk = ("node_modules", "pytest_temp_root", "liboqs", "__pycache__", "artifacts", "external", ".git")
+    junk = ("node_modules", "pytest_temp_root", "liboqs", "__pycache__",
+            "artifacts", "external", ".git")
     out: List[str] = []
     for dp, _dn, fn in os.walk(root):
         low = dp.replace("\\", "/").lower()
@@ -62,7 +63,6 @@ def find_python_files(root: str = ".") -> List[str]:
 
 def _bench() -> None:
     import time
-
     files = find_python_files(".")[:1500]
     print(f"corpus: {len(files)} python files, cores={cpu_count()}\n")
     # serial
@@ -76,7 +76,8 @@ def _bench() -> None:
     tp = time.time() - t0
     ok = sum(1 for r in p if r["ok"])
     print(f"  serial   : {len(files)/ts:7.0f} files/s   {n_serial/ts:10,.0f} nodes/s")
-    print(f"  parallel : {len(files)/tp:7.0f} files/s   {n_serial/tp:10,.0f} nodes/s " f"  ({ts/tp:.1f}x over serial)")
+    print(f"  parallel : {len(files)/tp:7.0f} files/s   {n_serial/tp:10,.0f} nodes/s "
+          f"  ({ts/tp:.1f}x over serial)")
     print(f"  encoded ok: {ok}/{len(files)}   total nodes: {n_serial:,}")
 
 

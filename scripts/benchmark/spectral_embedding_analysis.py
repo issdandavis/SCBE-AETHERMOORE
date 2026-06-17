@@ -377,8 +377,8 @@ def run_spectral_analysis():
         td = data["tongue_dominance"][0]
         print(
             f"{cat:<18} {td.dominant_tongue:>10} {td.dominance_ratio:>9.2f} "
-            f"{td.tongue_energies.get('KO', 0):>8.4f} {td.tongue_energies.get('AV', 0):>8.4f} "
-            f"{td.tongue_energies.get('RU', 0):>8.4f} {td.tongue_energies.get('DR', 0):>8.4f}"
+            f"{td.tongue_energies.get('KO',0):>8.4f} {td.tongue_energies.get('AV',0):>8.4f} "
+            f"{td.tongue_energies.get('RU',0):>8.4f} {td.tongue_energies.get('DR',0):>8.4f}"
         )
 
     print(f"\n{'PASS 6: SETTLING DYNAMICS':^80}")

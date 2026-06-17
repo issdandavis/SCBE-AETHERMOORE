@@ -19,6 +19,7 @@ Usage:
 Legacy commands (backward compat):
   scbe cli       — Launch interactive CLI
   scbe agent     — Launch AI agent
+  scbe demo      — Run demo
 
 @module cli/scbe
 @layer Layer 14
@@ -29,9 +30,6 @@ Legacy commands (backward compat):
 from __future__ import annotations
 
 import argparse
-import base64
-import binascii
-import codecs
 import ctypes
 import difflib
 import hashlib
@@ -44,25 +42,11 @@ import shutil
 import signal
 import subprocess
 import sys
-import tempfile
 import time
-import unicodedata
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-
-def _resolve_version() -> str:
-    # Single source of truth: the installed package metadata (pyproject = 4.2.1).
-    # Falls back to the literal when running from a source tree that isn't installed.
-    try:
-        from importlib.metadata import version as _pkg_version
-
-        return _pkg_version("scbe-aethermoore")
-    except Exception:
-        return "4.2.1"
-
-
-VERSION = _resolve_version()
+VERSION = "2.0.0"
 REPO_ROOT = Path(__file__).resolve().parent
 FORWARDED_SYSTEM_COMMANDS = {
     "pollypad": ["pollypad"],
@@ -95,148 +79,50 @@ except (AttributeError, OSError):
 
 _CANONICAL_TONGUES: Dict[str, Tuple[List[str], List[str]]] = {
     "KO": (
-        [
-            "sil",
-            "kor",
-            "vel",
-            "zar",
-            "keth",
-            "thul",
-            "nav",
-            "ael",
-            "ra",
-            "med",
-            "gal",
-            "lan",
-            "joy",
-            "good",
-            "nex",
-            "vara",
-        ],
-        ["a", "ae", "ei", "ia", "oa", "uu", "eth", "ar", "or", "il", "an", "en", "un", "ir", "oth", "esh"],
+        ["sil", "kor", "vel", "zar", "keth", "thul", "nav", "ael",
+         "ra", "med", "gal", "lan", "joy", "good", "nex", "vara"],
+        ["a", "ae", "ei", "ia", "oa", "uu", "eth", "ar",
+         "or", "il", "an", "en", "un", "ir", "oth", "esh"],
     ),
     "AV": (
-        [
-            "saina",
-            "talan",
-            "vessa",
-            "maren",
-            "oriel",
-            "serin",
-            "nurel",
-            "lirea",
-            "kiva",
-            "lumen",
-            "calma",
-            "ponte",
-            "verin",
-            "nava",
-            "sela",
-            "tide",
-        ],
-        ["a", "e", "i", "o", "u", "y", "la", "re", "na", "sa", "to", "mi", "ve", "ri", "en", "ul"],
+        ["saina", "talan", "vessa", "maren", "oriel", "serin", "nurel", "lirea",
+         "kiva", "lumen", "calma", "ponte", "verin", "nava", "sela", "tide"],
+        ["a", "e", "i", "o", "u", "y", "la", "re",
+         "na", "sa", "to", "mi", "ve", "ri", "en", "ul"],
     ),
     "RU": (
-        [
-            "khar",
-            "drath",
-            "bront",
-            "vael",
-            "ur",
-            "mem",
-            "krak",
-            "tharn",
-            "groth",
-            "basalt",
-            "rune",
-            "sear",
-            "oath",
-            "gnarl",
-            "rift",
-            "iron",
-        ],
-        ["ak", "eth", "ik", "ul", "or", "ar", "um", "on", "ir", "esh", "nul", "vek", "dra", "kh", "va", "th"],
+        ["khar", "drath", "bront", "vael", "ur", "mem", "krak", "tharn",
+         "groth", "basalt", "rune", "sear", "oath", "gnarl", "rift", "iron"],
+        ["ak", "eth", "ik", "ul", "or", "ar", "um", "on",
+         "ir", "esh", "nul", "vek", "dra", "kh", "va", "th"],
     ),
     "CA": (
-        [
-            "bip",
-            "bop",
-            "klik",
-            "loopa",
-            "ifta",
-            "thena",
-            "elsa",
-            "spira",
-            "rythm",
-            "quirk",
-            "fizz",
-            "gear",
-            "pop",
-            "zip",
-            "mix",
-            "chass",
-        ],
-        ["a", "e", "i", "o", "u", "y", "ta", "na", "sa", "ra", "lo", "mi", "ki", "zi", "qwa", "sh"],
+        ["bip", "bop", "klik", "loopa", "ifta", "thena", "elsa", "spira",
+         "rythm", "quirk", "fizz", "gear", "pop", "zip", "mix", "chass"],
+        ["a", "e", "i", "o", "u", "y", "ta", "na",
+         "sa", "ra", "lo", "mi", "ki", "zi", "qwa", "sh"],
     ),
     "UM": (
-        [
-            "veil",
-            "zhur",
-            "nar",
-            "shul",
-            "math",
-            "hollow",
-            "hush",
-            "thorn",
-            "dusk",
-            "echo",
-            "ink",
-            "wisp",
-            "bind",
-            "ache",
-            "null",
-            "shade",
-        ],
-        ["a", "e", "i", "o", "u", "ae", "sh", "th", "ak", "ul", "or", "ir", "en", "on", "vek", "nul"],
+        ["veil", "zhur", "nar", "shul", "math", "hollow", "hush", "thorn",
+         "dusk", "echo", "ink", "wisp", "bind", "ache", "null", "shade"],
+        ["a", "e", "i", "o", "u", "ae", "sh", "th",
+         "ak", "ul", "or", "ir", "en", "on", "vek", "nul"],
     ),
     "DR": (
-        [
-            "anvil",
-            "tharn",
-            "mek",
-            "grond",
-            "draum",
-            "ektal",
-            "temper",
-            "forge",
-            "stone",
-            "steam",
-            "oath",
-            "seal",
-            "frame",
-            "pillar",
-            "rivet",
-            "ember",
-        ],
-        ["a", "e", "i", "o", "u", "ae", "rak", "mek", "tharn", "grond", "vek", "ul", "or", "ar", "en", "on"],
+        ["anvil", "tharn", "mek", "grond", "draum", "ektal", "temper", "forge",
+         "stone", "steam", "oath", "seal", "frame", "pillar", "rivet", "ember"],
+        ["a", "e", "i", "o", "u", "ae", "rak", "mek",
+         "tharn", "grond", "vek", "ul", "or", "ar", "en", "on"],
     ),
 }
 
 TONGUE_NAMES = {
-    "KO": "Kor'aelin",
-    "AV": "Avali",
-    "RU": "Runethic",
-    "CA": "Cassisivadan",
-    "UM": "Umbroth",
-    "DR": "Draumric",
+    "KO": "Kor'aelin", "AV": "Avali", "RU": "Runethic",
+    "CA": "Cassisivadan", "UM": "Umbroth", "DR": "Draumric",
 }
 TONGUE_DOMAINS = {
-    "KO": "nonce/flow/intent",
-    "AV": "aad/header/metadata",
-    "RU": "salt/binding",
-    "CA": "ciphertext/bitcraft",
-    "UM": "redaction/veil",
-    "DR": "tag/structure",
+    "KO": "nonce/flow/intent", "AV": "aad/header/metadata", "RU": "salt/binding",
+    "CA": "ciphertext/bitcraft", "UM": "redaction/veil", "DR": "tag/structure",
 }
 TONGUE_ALIASES = {
     "ko": "KO",
@@ -266,7 +152,9 @@ def _build_decode_map(tongue: str) -> Dict[str, int]:
 
 
 # Pre-built decode maps — avoids rebuilding on every call
-_DECODE_CACHE: Dict[str, Dict[str, int]] = {t: _build_decode_map(t) for t in _CANONICAL_TONGUES}
+_DECODE_CACHE: Dict[str, Dict[str, int]] = {
+    t: _build_decode_map(t) for t in _CANONICAL_TONGUES
+}
 
 
 def encode_bytes(tongue: str, data: bytes) -> str:
@@ -302,15 +190,15 @@ def decode_tokens(tongue: str, text: str) -> bytes:
 # Reference byte-frequency distribution for "normal English prose".
 # Derived from the character class ratios of a 100K-word fiction corpus.
 _REF_PROFILE = {
-    "alpha_ratio": 0.78,  # letters dominate
-    "digit_ratio": 0.02,  # sparse digits
-    "space_ratio": 0.16,  # word gaps
-    "punct_ratio": 0.03,  # commas, periods, quotes
-    "control_ratio": 0.0,  # zero control chars
-    "highbyte_ratio": 0.0,  # zero non-ASCII in English baseline
-    "shannon": 4.2,  # bits/byte for English text
-    "bigram_shannon": 7.5,  # bits per character pair
-    "repetition": 0.35,  # unique_bytes / total_bytes (moderate diversity)
+    "alpha_ratio": 0.78,      # letters dominate
+    "digit_ratio": 0.02,      # sparse digits
+    "space_ratio": 0.16,      # word gaps
+    "punct_ratio": 0.03,      # commas, periods, quotes
+    "control_ratio": 0.0,     # zero control chars
+    "highbyte_ratio": 0.0,    # zero non-ASCII in English baseline
+    "shannon": 4.2,           # bits/byte for English text
+    "bigram_shannon": 7.5,    # bits per character pair
+    "repetition": 0.35,       # unique_bytes / total_bytes (moderate diversity)
 }
 
 
@@ -420,9 +308,9 @@ def _naturalness(text: str) -> Tuple[float, float]:
     return wordlike / n, common / n
 
 
-def _distribution_distance(
-    profile: Dict[str, float], freq: List[int], total: int, bigram_h: float, wordlike: float, common: float
-) -> float:
+def _distribution_distance(profile: Dict[str, float], freq: List[int],
+                           total: int, bigram_h: float,
+                           wordlike: float, common: float) -> float:
     """Distance from "normal language" — higher means more suspicious.
 
     Keyed on *what kind of bytes* are present (meaningful at any length),
@@ -442,18 +330,18 @@ def _distribution_distance(
     text_deficit = max(0.0, 0.50 - text_ratio)
 
     struct = (
-        4.0 * digit_excess  # digit-heavy → encoded / payload
-        + 8.0 * punct_excess  # symbol-heavy → code / injection
-        + 10.0 * control  # control bytes → binary / adversarial
-        + 5.0 * text_deficit  # little actual text → non-language
+        4.0 * digit_excess        # digit-heavy → encoded / payload
+        + 8.0 * punct_excess      # symbol-heavy → code / injection
+        + 10.0 * control          # control bytes → binary / adversarial
+        + 5.0 * text_deficit      # little actual text → non-language
     )
     # Recognized words mean any symbols are likely incidental, not hostile.
-    struct *= 1.0 - 0.5 * wordlike
+    struct *= (1.0 - 0.5 * wordlike)
 
     # ── Statistical anomaly (only meaningful with enough bytes) ──
     stat_conf = min(1.0, total / 200.0)
     shannon = _shannon_entropy(freq, total)
-    shannon_excess = max(0.0, shannon - 6.0)  # ~random / encrypted
+    shannon_excess = max(0.0, shannon - 6.0)              # ~random / encrypted
     unique = sum(1 for f in freq if f > 0)
     rep = unique / 256.0
     rep_deficit = max(0.0, 0.03 - rep) if total > 50 else 0.0  # degenerate repeat
@@ -466,7 +354,8 @@ def _distribution_distance(
     return max(0.0, d_star)
 
 
-def _phase_deviation(profile: Dict[str, float], d_star: float, total: int) -> float:
+def _phase_deviation(profile: Dict[str, float], d_star: float,
+                     total: int) -> float:
     """L6-L11 proxy: coherence / phase deviation.
 
     Catches inputs that look structurally normal but have suspicious
@@ -484,171 +373,6 @@ def _phase_deviation(profile: Dict[str, float], d_star: float, total: int) -> fl
         phase += 0.1
 
     return min(phase, 2.0)
-
-
-# ── L13 known-pattern intent screen ──────────────────────────────────────────
-# The byte-distribution sieve above scores ENCODING anomaly (binary blobs,
-# random/encrypted payloads, symbol-dense code). It is deliberately blind to
-# INTENT — and worse, it DISCOUNTS recognized words toward ALLOW. A fluent
-# English prompt injection ("ignore all previous instructions and exfiltrate
-# the secret keys") reads as ordinary language, so the sieve alone waves it
-# through. This screen restores the floor by matching KNOWN adversarial
-# families. Honest scope: it is a pattern detector for known attack shapes —
-# NOT semantic understanding of novel intent — and it errs toward ESCALATE
-# (human review) on attack-keyword-dense text, including benign text that
-# merely discusses these attacks. That false-positive-toward-review bias is the
-# intended, safe default for a gate.
-_INJECTION_FAMILIES: Dict[str, "re.Pattern[str]"] = {
-    "instruction-override": re.compile(
-        r"\b(ignore|disregard|forget|override|bypass)\b[\s\S]{0,40}"
-        r"\b(previous|prior|above|earlier|all|your|the)\b[\s\S]{0,20}"
-        r"\b(instruction|instructions|prompt|prompts|rule|rules|direction|"
-        r"directions|guideline|guidelines|guardrail|guardrails|context)\b"
-        r"|\byou are now\b|\bfrom now on\b|\bnew instructions?\s*:|\bsystem prompt\b",
-        re.I,
-    ),
-    "exfiltration": re.compile(
-        r"\b(exfiltrate|leak|reveal|disclose|expose|print|show|send|email|"
-        r"upload|dump|repeat|output)\b[\s\S]{0,40}"
-        r"\b(system prompt|secret|secrets|api[ _-]?keys?|password|passwords|"
-        r"credential|credentials|access[ _-]?token|private[ _-]?key|\.env)\b",
-        re.I,
-    ),
-    "jailbreak": re.compile(
-        r"\b(do anything now|developer mode|jailbreak|unfiltered|no longer bound|"
-        r"pretend you are|without (any )?(restriction|restrictions|filter|filters|"
-        r"guardrail|guardrails))\b|\bDAN\b",
-        re.I,
-    ),
-    "destructive-cmd": re.compile(
-        r"\brm\s+-rf\b|\bdrop\s+table\b|\btruncate\s+table\b|/etc/passwd|\bmkfs\b|"
-        r"\bformat\s+c:|\bshutdown\b|:\(\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:",
-        re.I,
-    ),
-    "destructive-intent": re.compile(
-        r"\b(delete|drop|destroy|wipe|erase|remove|truncate|purge|nuke|clear)\b"
-        r"[\s\S]{0,80}\b(production|prod|customer|customers|user|users|database|"
-        r"databases|db|bucket|buckets|table|tables|server|cluster|disk|drive|"
-        r"filesystem|secrets?|keys?|backups?)\b"
-        r"|\b(production|prod|customer|customers|user|users|database|databases|db|"
-        r"bucket|buckets|table|tables|server|cluster|disk|drive|filesystem|"
-        r"secrets?|keys?|backups?)\b[\s\S]{0,80}"
-        r"\b(delete|drop|destroy|wipe|erase|remove|truncate|purge|nuke|clear)\b",
-        re.I,
-    ),
-}
-# Per matched family penalty added to d* OUTSIDE the benign-word discount.
-# Tuned to the L13 thresholds: 1 family -> H_eff ~0.29 (ESCALATE, blocked in
-# gate mode); 2+ families -> H_eff <0.2 (DENY).
-_INTENT_PENALTY = 2.5
-
-_ZERO_WIDTH_OR_CONTROL = re.compile(r"[\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]")
-_B64_TOKEN = re.compile(r"\b[A-Za-z0-9+/_-]{16,}={0,2}\b")
-_LEET_TABLE = str.maketrans(
-    {
-        "0": "o",
-        "1": "i",
-        "3": "e",
-        "4": "a",
-        "5": "s",
-        "7": "t",
-        "@": "a",
-        "$": "s",
-        "!": "i",
-    }
-)
-_HOMOGLYPH_TABLE = str.maketrans(
-    {
-        "а": "a",
-        "А": "a",  # Cyrillic
-        "е": "e",
-        "Е": "e",
-        "о": "o",
-        "О": "o",
-        "р": "p",
-        "Р": "p",
-        "с": "c",
-        "С": "c",
-        "х": "x",
-        "Х": "x",
-        "у": "y",
-        "У": "y",
-        "і": "i",
-        "І": "i",
-        "ԁ": "d",
-        "ɑ": "a",
-        "ο": "o",
-        "Ο": "o",  # Greek/Latin lookalikes
-        "ρ": "p",
-        "Ρ": "p",
-        "ϲ": "c",
-    }
-)
-
-
-def _normalize_for_intent(text: str) -> str:
-    """Collapse cheap encoding tricks before deterministic intent matching."""
-    normalized = unicodedata.normalize("NFKC", text).translate(_HOMOGLYPH_TABLE)
-    normalized = _ZERO_WIDTH_OR_CONTROL.sub("", normalized).casefold()
-    return re.sub(r"\s+", " ", normalized).strip()
-
-
-def _decoded_base64_candidates(text: str) -> List[str]:
-    candidates: List[str] = []
-    for token in _B64_TOKEN.findall(text)[:8]:
-        compact = token.replace("-", "+").replace("_", "/")
-        compact += "=" * (-len(compact) % 4)
-        try:
-            raw = base64.b64decode(compact.encode("ascii"), validate=True)
-        except (binascii.Error, ValueError):
-            continue
-        if not raw or len(raw) > 4096:
-            continue
-        try:
-            decoded = raw.decode("utf-8")
-        except UnicodeDecodeError:
-            decoded = raw.decode("latin-1", errors="ignore")
-        if decoded and any(ch.isalpha() for ch in decoded):
-            candidates.append(decoded)
-    return candidates
-
-
-def _intent_scan_candidates(text: str) -> List[str]:
-    base = _normalize_for_intent(text)
-    candidates = [base]
-    candidates.append(base.translate(_LEET_TABLE))
-    try:
-        candidates.append(codecs.decode(base, "rot_13"))
-    except Exception:
-        pass
-    for decoded in _decoded_base64_candidates(text):
-        norm = _normalize_for_intent(decoded)
-        candidates.append(norm)
-        candidates.append(norm.translate(_LEET_TABLE))
-
-    seen = set()
-    unique: List[str] = []
-    for candidate in candidates:
-        if candidate and candidate not in seen:
-            unique.append(candidate)
-            seen.add(candidate)
-    return unique[:20]
-
-
-def _adversarial_intent(text: str) -> Tuple[float, List[str]]:
-    """Return (risk, labels) for known attack families present in `text`.
-
-    risk is the count of distinct families matched; each adds `_INTENT_PENALTY`
-    to d* without the natural-language discount, so a fluent injection cannot be
-    rescued by reading as ordinary prose. Pattern-based and intentionally
-    transparent — the labels are surfaced in the score for auditability.
-    """
-    labels: List[str] = []
-    for candidate in _intent_scan_candidates(text):
-        for name, rx in _INJECTION_FAMILIES.items():
-            if name not in labels and rx.search(candidate):
-                labels.append(name)
-    return float(len(labels)), labels
 
 
 def pipeline_quick_score(text: str) -> Dict[str, Any]:
@@ -672,12 +396,6 @@ def pipeline_quick_score(text: str) -> Dict[str, Any]:
 
     # L4-L5: geometry sieve — how far from normal language?
     d_star = _distribution_distance(profile, freq, n, bigram_h, wordlike, common)
-
-    # L13 intent screen — known adversarial patterns add a penalty that BYPASSES
-    # the benign-language discount, so a fluent prompt injection can't be rescued
-    # by reading as natural language (the exact gap the byte-sieve alone misses).
-    intent_risk, intent_flags = _adversarial_intent(text)
-    d_star = d_star + _INTENT_PENALTY * intent_risk
 
     # L6-L11: dynamics sieve — coherence and phase checks
     pd = _phase_deviation(profile, d_star, n)
@@ -708,7 +426,6 @@ def pipeline_quick_score(text: str) -> Dict[str, Any]:
         "H_eff": round(H_eff, 6),
         "phase_deviation": round(pd, 6),
         "decision": decision,
-        "intent_flags": intent_flags,
         "digest_hex": digest[:16].hex(),
     }
 
@@ -833,7 +550,6 @@ def ai_review(filepath: str) -> Dict[str, Any]:
 # ═══════════════════════════════════════════════════════════════
 # Commands
 # ═══════════════════════════════════════════════════════════════
-
 
 def cmd_status(args: argparse.Namespace) -> int:
     ts_files = list(REPO_ROOT.glob("src/**/*.ts"))
@@ -1067,79 +783,16 @@ def cmd_system_health(args: argparse.Namespace) -> int:
     return 0
 
 
-def _run_proof_subprocess(cmd: List[str], *, env: Optional[Dict[str, str]] = None, timeout: int = 180) -> int:
-    proc = subprocess.run(
-        cmd,
-        cwd=REPO_ROOT,
-        env=env,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=timeout,
-        check=False,
-    )
-    if proc.stdout:
-        print(proc.stdout, end="" if proc.stdout.endswith("\n") else "\n")
-    if proc.stderr:
-        print(proc.stderr, file=sys.stderr, end="" if proc.stderr.endswith("\n") else "\n")
-    return proc.returncode
-
-
-def cmd_prove(args: argparse.Namespace) -> int:
-    """Run the public product proof paths from one CLI entrypoint."""
-    target = args.prove_cmd
-    if target == "forge":
-        intent = args.intent or "let me tag things, find them, and export my list"
-        with tempfile.TemporaryDirectory(prefix="scbe-forge-proof-") as tmp:
-            env = os.environ.copy()
-            env["FORGE_RECIPES_PATH"] = str(Path(tmp) / "forge_recipes.json")
-            print("SCBE Forge proof run")
-            print("====================")
-            print("Run 1: derive, build, verify, remember")
-            rc1 = _run_proof_subprocess(
-                [sys.executable, str(REPO_ROOT / "scripts" / "forge_speak.py"), intent], env=env
-            )
-            if rc1 != 0:
-                return rc1
-            print()
-            print("Run 2: reuse remembered recipe, rebuild, re-verify")
-            rc2 = _run_proof_subprocess(
-                [sys.executable, str(REPO_ROOT / "scripts" / "forge_speak.py"), intent], env=env
-            )
-            if rc2 == 0:
-                print()
-                print("PROOF COMPLETE: memory reused a verified recipe and still re-ran the spec.")
-            return rc2
-
-    if target == "black-box":
-        cmd = [sys.executable, str(REPO_ROOT / "scripts" / "system" / "prove_black_box_value.py")]
-        if args.out_dir:
-            cmd.extend(["--out-dir", args.out_dir])
-        return _run_proof_subprocess(cmd, timeout=240)
-
-    print("scbe prove needs a subcommand: forge or black-box", file=sys.stderr)
-    return 2
-
-
 def cmd_tongue_encode(args: argparse.Namespace) -> int:
     tongue = args.tongue.upper()
-    if getattr(args, "text", None):
-        data = args.text.encode("utf-8")
-    elif not sys.stdin.isatty():
-        data = sys.stdin.buffer.read()
-    else:
-        print('usage: scbe tongues encode --tongue <t> --text "<text>"  (or pipe text via stdin)', file=sys.stderr)
-        return 2
+    data = args.text.encode("utf-8") if getattr(args, "text", None) else sys.stdin.buffer.read()
     print(encode_bytes(tongue, data))
     return 0
 
 
 def cmd_tongue_decode(args: argparse.Namespace) -> int:
     tongue = args.tongue.upper()
-    text = _arg_or_stdin(getattr(args, "text", None))
-    if text is None:
-        print('usage: scbe tongues decode --tongue <t> --text "<tokens>"  (or pipe via stdin)', file=sys.stderr)
-        return 2
+    text = args.text if getattr(args, "text", None) else sys.stdin.read()
     data = decode_tokens(tongue, text)
     if getattr(args, "as_text", False):
         print(data.decode("utf-8", errors="replace"))
@@ -1160,11 +813,7 @@ def cmd_tongue_list(_args: argparse.Namespace) -> int:
 
 
 def cmd_pipeline_run(args: argparse.Namespace) -> int:
-    text = _arg_or_stdin(getattr(args, "text", None))
-    if text is None:
-        print('usage: scbe pipeline run --text "<text>"  (or pipe via stdin)', file=sys.stderr)
-        return 2
-    text = text.strip()
+    text = args.text if getattr(args, "text", None) else sys.stdin.read().strip()
     result = pipeline_quick_score(text)
     if getattr(args, "json_output", False):
         print(json.dumps(result, indent=2))
@@ -1209,10 +858,8 @@ def cmd_ai_review(args: argparse.Namespace) -> int:
         print(f"Error: {result['error']}")
         return 1
     print(f"File: {result['file']}")
-    print(
-        f"  Lines: {result['total_lines']} total, {result['code_lines']} code, "
-        f"{result['blank_lines']} blank, {result['comment_lines']} comments"
-    )
+    print(f"  Lines: {result['total_lines']} total, {result['code_lines']} code, "
+          f"{result['blank_lines']} blank, {result['comment_lines']} comments")
     print(f"  Functions: {result['functions']}, Classes: {result['classes']}")
     print(f"  Max indent: {result['max_indent']} spaces")
     print(f"  Verdict: {result['verdict']}")
@@ -1230,10 +877,8 @@ def cmd_ai_check(args: argparse.Namespace) -> int:
         return 1
 
     print(f"=== {args.file} ===")
-    print(
-        f"  {review_result['code_lines']} code, "
-        f"{review_result['functions']} funcs, {review_result['classes']} classes"
-    )
+    print(f"  {review_result['code_lines']} code, "
+          f"{review_result['functions']} funcs, {review_result['classes']} classes")
 
     all_ok = True
     if lint_result.get("compiles") is False:
@@ -1266,22 +911,6 @@ def cmd_ai_check(args: argparse.Namespace) -> int:
 DECISION_GLYPH = {"ALLOW": "✓", "QUARANTINE": "~", "ESCALATE": "!", "DENY": "✗"}
 
 
-def _interactive() -> bool:
-    """True only when a human is plausibly driving the CLI.
-
-    Requires BOTH stdin and stdout to be real TTYs, and honors explicit overrides.
-    A single-stream isatty() check is unreliable: on Windows, redirecting from NUL /
-    `/dev/null` makes stdin.isatty() falsely report True. Requiring both streams (plus
-    SCBE_NONINTERACTIVE / CI opt-outs) keeps agents, pipes, and CI on the safe path.
-    """
-    if os.environ.get("SCBE_NONINTERACTIVE") or os.environ.get("CI"):
-        return False
-    try:
-        return sys.stdin.isatty() and sys.stdout.isatty()
-    except Exception:
-        return False
-
-
 def _arg_or_stdin(value: Optional[str]) -> Optional[str]:
     """Return the positional value, or read piped stdin, or None."""
     if value:
@@ -1303,8 +932,6 @@ def cmd_score(args: argparse.Namespace) -> int:
     else:
         glyph = DECISION_GLYPH.get(r["decision"], "?")
         print(f"{glyph} {r['decision']}  (H_eff={r['H_eff']}, d*={r['d_star']})")
-        if r.get("intent_flags"):
-            print(f"  intent screen: {', '.join(r['intent_flags'])}")
     if getattr(args, "gate", False) and r["decision"] in ("DENY", "ESCALATE"):
         return 1
     return 0
@@ -1353,319 +980,6 @@ def cmd_dec(args: argparse.Namespace) -> int:
         sys.stdout.buffer.write(data)
     else:
         print(data.decode("utf-8", errors="replace"))
-    return 0
-
-
-def _parse_bigint(s: str) -> int:
-    """Parse a (possibly huge) integer; accepts commas, underscores, 0x/0o/0b."""
-    s = s.strip().replace(",", "").replace("_", "")
-    if not s:
-        raise ValueError("empty number")
-    return int(s, 0) if s[:2].lower() in ("0x", "0o", "0b") else int(s)
-
-
-_NUMFIND_MAX_NTH = 5_000_000  # the 5M-th prime sieves in ~5 s / a few hundred MB — practical ceiling
-_NUMFIND_MAX_RANGE_SPAN = 10_000_000  # segmented-sieve span guard
-
-
-def cmd_numfind(args: argparse.Namespace) -> int:
-    """Fast number-finding: primality, factorization, nth/next prime, prime ranges."""
-    try:
-        from src import numtheory as nt
-    except Exception as exc:  # pragma: no cover - defensive
-        print(f"numfind unavailable: {exc}", file=sys.stderr)
-        return 1
-
-    op = getattr(args, "nf_op", None)
-    as_json = getattr(args, "json_output", False)
-    if op is None:
-        print("usage: scbe numfind {isprime|factor|nth|next|primes} ...", file=sys.stderr)
-        return 2
-    try:
-        if op == "isprime":
-            n = _parse_bigint(args.n)
-            verdict = nt.is_prime(n)
-            proven = n < nt.DETERMINISTIC_BOUND
-            if as_json:
-                print(json.dumps({"op": "isprime", "n": n, "is_prime": verdict, "deterministic": proven}))
-            else:
-                label = "prime" if verdict else ("composite" if n >= 2 else "not prime")
-                note = "" if proven else "  (strong probable prime — above deterministic bound)"
-                print(f"{n} is {label}{note}")
-            return 0 if verdict else 1
-
-        if op == "next":
-            n = _parse_bigint(args.n)
-            p = nt.next_prime(n)
-            print(json.dumps({"op": "next", "n": n, "next_prime": p}) if as_json else p)
-            return 0
-
-        if op == "nth":
-            k = _parse_bigint(args.k)
-            if k < 1:
-                print("k must be >= 1", file=sys.stderr)
-                return 2
-            if k > _NUMFIND_MAX_NTH:
-                print(f"k too large (max {_NUMFIND_MAX_NTH:,}) — would exceed the sieve budget", file=sys.stderr)
-                return 2
-            p = nt.nth_prime(k)
-            print(json.dumps({"op": "nth", "k": k, "prime": p}) if as_json else p)
-            return 0
-
-        if op == "factor":
-            n = _parse_bigint(args.n)
-            budget = getattr(args, "max_seconds", 20.0)
-            try:
-                fac = nt.factorization(n, time_budget_s=budget)
-            except nt.FactorizationTimeout:
-                print(f"could not factor {n} within {budget:g}s", file=sys.stderr)
-                return 1
-            pairs = sorted(fac.items())
-            if as_json:
-                print(
-                    json.dumps(
-                        {
-                            "op": "factor",
-                            "n": n,
-                            "factors": [[p, e] for p, e in pairs],
-                            "is_prime": n >= 2 and len(pairs) == 1 and pairs[0][1] == 1,
-                        }
-                    )
-                )
-            elif n < 2:
-                print(f"{n} has no prime factorization")
-            else:
-                pretty = " * ".join(f"{p}^{e}" if e > 1 else f"{p}" for p, e in pairs)
-                print(f"{n} = {pretty}")
-            return 0
-
-        if op == "primes":
-            lo = _parse_bigint(args.lo)
-            hi = _parse_bigint(args.hi)
-            if hi - lo > _NUMFIND_MAX_RANGE_SPAN:
-                print(f"range too wide (max span {_NUMFIND_MAX_RANGE_SPAN:,})", file=sys.stderr)
-                return 2
-            primes = nt.primes_in_range(lo, hi)
-            limit = getattr(args, "limit", 0) or 0
-            shown = primes[:limit] if limit > 0 else primes
-            truncated = limit > 0 and len(primes) > limit
-            if as_json:
-                print(
-                    json.dumps(
-                        {
-                            "op": "primes",
-                            "lo": lo,
-                            "hi": hi,
-                            "count": len(primes),
-                            "primes": shown,
-                            "truncated": truncated,
-                        }
-                    )
-                )
-            else:
-                print(f"{len(primes)} prime(s) in [{lo}, {hi})")
-                if shown:
-                    print(" ".join(str(p) for p in shown))
-                    if truncated:
-                        print(f"... ({len(primes) - limit} more; raise --limit to see them)")
-            return 0
-    except ValueError as e:
-        print(f"bad number: {e}", file=sys.stderr)
-        return 2
-    print(f"unknown numfind op '{op}'", file=sys.stderr)
-    return 2
-
-
-def cmd_crosstalk(args: argparse.Namespace) -> int:
-    """Governed AI-to-AI fleet dialogue: agents take turns; each turn must pass the sieve."""
-    topic = _arg_or_stdin(getattr(args, "topic", None))
-    if not topic:
-        print('usage: scbe crosstalk "<topic>" [--rounds N] [--agents N] [--offline]', file=sys.stderr)
-        return 2
-    try:
-        from src import fleet_crosstalk as fc
-    except Exception as exc:  # pragma: no cover - defensive
-        print(f"crosstalk unavailable: {exc}", file=sys.stderr)
-        return 1
-
-    n_agents = max(1, getattr(args, "agents", 2) or 2)
-    rounds = max(1, getattr(args, "rounds", 2) or 2)
-    backend = getattr(args, "backend", None)
-    model = getattr(args, "model", None)
-    pool = [
-        ("Proposer", "proposes concrete ideas"),
-        ("Skeptic", "stress-tests claims and surfaces risks"),
-        ("Synthesizer", "reconciles the views into a plan"),
-        ("Builder", "turns the plan into concrete next steps"),
-    ]
-    agents = []
-    for i in range(n_agents):
-        base_name, persona = pool[i % len(pool)]
-        name = base_name if i < len(pool) else f"{base_name}{i}"
-        agents.append(fc.Agent(name=name, persona=persona, backend=backend, model=model))
-
-    available = _detect_backends()
-    offline = getattr(args, "offline", False) or not available
-    if offline:
-        responder = fc.eliza_responder
-        mode = "offline (mechanical ELIZA)"
-    else:
-        responder = fc.make_ai_responder(ai_ask)
-        mode = f"live ({backend or available[0]})"
-
-    result = fc.run_crosstalk(
-        topic, agents, rounds, responder, pipeline_quick_score, gate=not getattr(args, "no_gate", False)
-    )
-    result["mode"] = mode
-
-    if getattr(args, "json_output", False):
-        print(json.dumps(result))
-        return 0
-    print(f"crosstalk · {mode} · {len(agents)} agents · {rounds} rounds")
-    print(f"topic: {topic}\n")
-    for t in result["turns"]:
-        if t["accepted"]:
-            print(f"  r{t['round']} {t['agent']}: {t['message']}")
-        else:
-            glyph = DECISION_GLYPH.get(t["decision"], "?")
-            print(f"  r{t['round']} {t['agent']}: [{glyph} {t['decision']} — withheld by sieve] {t['message']}")
-    g = result["governance"]
-    print(f"\ngovernance: {g['accepted']}/{g['total']} turns accepted, {g['withheld']} withheld · {g['by_decision']}")
-    return 0
-
-
-def cmd_primecat(args: argparse.Namespace) -> int:
-    """Prime-coded categories: assign primes, encode/decode items, sieve by target category."""
-    try:
-        from src.prime_category import PrimeCategories
-    except Exception as exc:  # pragma: no cover - defensive
-        print(f"primecat unavailable: {exc}", file=sys.stderr)
-        return 1
-
-    op = getattr(args, "pc_op", None)
-    as_json = getattr(args, "json_output", False)
-    if op is None:
-        print("usage: scbe primecat {assign|code|decode|match} ...", file=sys.stderr)
-        return 2
-
-    def _universe(s):
-        return [c for c in (s or "").replace(",", " ").split() if c]
-
-    try:
-        if op == "assign":
-            pc = PrimeCategories(getattr(args, "categories", []) or [])
-            mapping = pc.mapping
-            if as_json:
-                print(json.dumps({"op": "assign", "mapping": mapping}))
-            else:
-                for cat, prime in mapping.items():
-                    print(f"{cat}\t{prime}")
-            return 0
-
-        universe = _universe(getattr(args, "universe", None))
-        if not universe:
-            print("--universe is required (comma- or space-separated categories)", file=sys.stderr)
-            return 2
-        pc = PrimeCategories(universe)
-
-        if op == "code":
-            cats = getattr(args, "item", []) or []
-            code = pc.code(cats)
-            print(json.dumps({"op": "code", "categories": cats, "code": code}) if as_json else code)
-            return 0
-
-        if op == "decode":
-            code = _parse_bigint(args.code)
-            cats = pc.decode(code)
-            print(json.dumps({"op": "decode", "code": code, "categories": cats}) if as_json else " ".join(cats))
-            return 0
-
-        if op == "match":
-            code = _parse_bigint(args.code)
-            target = args.target
-            hit = pc.in_category(code, target)
-            if as_json:
-                print(json.dumps({"op": "match", "code": code, "target": target, "in_category": hit}))
-            else:
-                print(f"{code} {'is' if hit else 'is NOT'} in category '{target}'")
-            return 0 if hit else 1
-    except (KeyError, ValueError) as e:
-        print(f"primecat error: {e}", file=sys.stderr)
-        return 2
-    print(f"unknown primecat op '{op}'", file=sys.stderr)
-    return 2
-
-
-_TANGENT_TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
-
-
-def _parse_tongue_profile(s: str) -> dict:
-    """Parse 'KO:1,DR:0.5' or 'KO,DR' or 'KO' into a tongue->weight profile."""
-    prof: dict = {}
-    for part in (s or "").replace(" ", "").split(","):
-        if not part:
-            continue
-        if ":" in part:
-            key, val = part.split(":", 1)
-            prof[key.upper()] = float(val)
-        else:
-            prof[part.upper()] = 1.0
-    bad = [k for k in prof if k not in _TANGENT_TONGUES]
-    if bad:
-        raise ValueError(f"unknown tongue(s) {bad}; choose from {list(_TANGENT_TONGUES)}")
-    if not prof:
-        raise ValueError("empty tongue profile")
-    return prof
-
-
-def cmd_tangent(args: argparse.Namespace) -> int:
-    """Tangential parallelism: route a fleet with bounded divergence from the prime line (keel)."""
-    try:
-        from python.scbe import geometric_router as gr
-        from python.scbe import tangent_parallel as tpar
-    except Exception as exc:  # pragma: no cover - defensive
-        print(f"tangent unavailable: {exc}", file=sys.stderr)
-        return 1
-    try:
-        goal = _parse_tongue_profile(getattr(args, "goal", None) or "DR:1,UM:0.5")
-        codes = [c for c in (getattr(args, "agents", None) or "KO,AV,RU").replace(" ", "").split(",") if c]
-        agents = [gr.Agent(f"agent-{c.upper()}", _parse_tongue_profile(c)) for c in codes]
-        raw_tasks = getattr(args, "tasks", None) or []
-        if raw_tasks:
-            tasks = []
-            for i, item in enumerate(raw_tasks):
-                name, prof = item.split("=", 1) if "=" in item else (f"task{i + 1}", item)
-                tasks.append(gr.Task(name, _parse_tongue_profile(prof)))
-        else:  # a real default scenario (computed, not faked)
-            tasks = [
-                gr.Task("nav", {"KO": 1.0, "AV": 0.5}),
-                gr.Task("synth", {"RU": 1.0, "CA": 0.5}),
-                gr.Task("ship", {"DR": 1.0}),
-                gr.Task("drift", {"CA": 1.0, "UM": 1.0}),
-            ]
-    except ValueError as e:
-        print(f"bad input: {e}", file=sys.stderr)
-        return 2
-
-    plan = tpar.plan(
-        agents, tasks, goal, max_divergence=getattr(args, "max_divergence", 1.5), nodes=getattr(args, "nodes", 1)
-    )
-    if getattr(args, "json_output", False):
-        print(json.dumps(plan.to_dict()))
-        return 0
-    print(
-        f"tangential parallelism · {len(agents)} agents · {len(tasks)} tasks · bound={plan.bound} · nodes={plan.nodes}"
-    )
-    print(f"prime line (keel): {[round(x, 2) for x in plan.origin]} -> {[round(x, 2) for x in plan.goal]}")
-    for tr in plan.tracks:
-        flag = f"  (planed back {tr.reprojected})" if tr.reprojected else ""
-        print(
-            f"  {tr.agent}: tasks={tr.tasks} drift={tr.divergence:.3f} "
-            f"(raw {tr.raw_divergence:.3f}) align={tr.alignment:+.3f}{flag}"
-        )
-    print(
-        f"grain alignment (fleet): {plan.grain_alignment:+.3f}  ·  max drift after bounding: {plan.max_divergence:.3f}"
-    )
     return 0
 
 
@@ -1782,7 +1096,6 @@ def _spine_packet(text: str) -> Dict[str, Any]:
             "schema": "scbe_bit_spine_packet_v1",
             "text": text,
             "views": {
-                "bits": packet["binary"],
                 "binary": packet["binary"],
                 "hex": packet["hex"],
                 "trits": packet["trits"],
@@ -1906,10 +1219,16 @@ def _substrate_packet(
     from src.tokenizer.chemistry_command_stack import build_chemistry_command_stack
 
     tokens = _chem_tokens(text)
-    states = [map_token_to_atomic_state(token, language=language, context_class=context_class) for token in tokens]
+    states = [
+        map_token_to_atomic_state(token, language=language, context_class=context_class)
+        for token in tokens
+    ]
     fusion = fuse_atomic_states(states) if states else None
     spine = BitSpine(text.encode("utf-8"))
-    tongue_projection = {tongue: encode_bytes(tongue, text.encode("utf-8")) for tongue in _CANONICAL_TONGUES}
+    tongue_projection = {
+        tongue: encode_bytes(tongue, text.encode("utf-8"))
+        for tongue in _CANONICAL_TONGUES
+    }
     workflow_units = [build_atomic_workflow_unit(token) for token in tokens]
     workflow = compose_workflow(tokens) if tokens else None
     atomic_states = [_atomic_state_payload(state) for state in states]
@@ -1955,417 +1274,6 @@ def _substrate_packet(
     return _json_safe(payload)
 
 
-# ── command octree ───────────────────────────────────────────────────────────
-# Place every top-level CLI command in a 3-axis cube and store it in the real
-# hyperbolic octree (src/crypto/octree.py). The three binary axes are semantic,
-# so the eight top-level octants are meaningful command families:
-#     x = act(1) / inspect(0)
-#     y = orchestration(1) / substrate(0)
-#     z = code(1) / text(0)
-# Inside an octant each command gets a deterministic name-hash offset, so the
-# octree subdivides further and "nearest" is well defined. The placement is an
-# honest taxonomy + hash spread — not a claim about tongue geometry (short
-# command tokens collapse to the same tau, so that would not discriminate them).
-_OCTREE_ACT = {
-    "enc",
-    "dec",
-    "do",
-    "ask",
-    "a",
-    "chat",
-    "code",
-    "polyglot",
-    "emit",
-    "encode",
-    "encode-code",
-    "code-matrix",
-    "canvas",
-    "fold",
-    "bopit",
-    "think",
-    "think-syscall",
-    "cognition",
-    "cog",
-    "overcreate",
-    "generate-cube",
-    "illuminate",
-    "route",
-    "fleet",
-    "schedule",
-    "inc",
-    "spine",
-    "chem",
-    "move",
-    "del",
-    "push",
-    "blocks",
-    "stereo-code",
-}
-_OCTREE_ORCH = {
-    "ai",
-    "ask",
-    "a",
-    "do",
-    "chat",
-    "route",
-    "fleet",
-    "schedule",
-    "system",
-    "status",
-    "st",
-    "health",
-    "doctor",
-    "selftest",
-    "move",
-    "del",
-    "push",
-    "undo",
-    "find",
-    "f",
-    "open",
-    "vault",
-    "recent",
-    "docs",
-    "model",
-    "colab",
-    "workflow",
-    "use",
-    "flow",
-    "pollypad",
-}
-_OCTREE_CODE = {
-    "code",
-    "polyglot",
-    "emit",
-    "encode",
-    "encode-code",
-    "code-matrix",
-    "canvas",
-    "think",
-    "think-syscall",
-    "cognition",
-    "cog",
-    "bopit",
-    "fold",
-    "overcreate",
-    "generate-cube",
-    "illuminate",
-    "route",
-    "fleet",
-    "schedule",
-    "spine",
-    "cube",
-    "blocks",
-    "stereo-code",
-    "ai",
-}
-_OCTANT_LABELS = {
-    0b000: "read · substrate · text",
-    0b001: "act · substrate · text",
-    0b010: "read · orchestration · text",
-    0b011: "act · orchestration · text",
-    0b100: "read · substrate · code",
-    0b101: "act · substrate · code",
-    0b110: "read · orchestration · code",
-    0b111: "act · orchestration · code",
-}
-_OCTANT_COLOR = {
-    0b000: "cyan",
-    0b001: "gold",
-    0b010: "cyan",
-    0b011: "gold",
-    0b100: "magenta",
-    0b101: "red",
-    0b110: "magenta",
-    0b111: "red",
-}
-
-
-def _octant_bits(name: str) -> int:
-    key = name.lower()
-    x = 1 if key in _OCTREE_ACT else 0
-    y = 1 if key in _OCTREE_ORCH else 0
-    z = 1 if key in _OCTREE_CODE else 0
-    return (z << 2) | (y << 1) | x
-
-
-def _octree_coord(name: str):
-    """Deterministic point in the Poincare ball: octant corner + name-hash jitter."""
-    import hashlib
-
-    import numpy as np
-
-    bits = _octant_bits(name)
-    base = [0.45 if (bits >> axis) & 1 else -0.45 for axis in range(3)]
-    h = hashlib.sha256(name.encode("utf-8")).digest()
-    jitter = [(h[i] / 255.0 - 0.5) * 0.16 for i in range(3)]
-    v = np.array([base[i] + jitter[i] for i in range(3)])
-    norm = float(np.linalg.norm(v))
-    if norm >= 0.9:
-        v = v / norm * 0.9
-    return v, bits
-
-
-def _octree_commands():
-    """(name, help, octant_bits, coord) for every top-level CLI command."""
-    cli = build_cli()
-    out = []
-    for action in cli._actions:
-        if isinstance(action, argparse._SubParsersAction):
-            for choice in action._choices_actions:
-                name = choice.dest
-                coord, bits = _octree_coord(name)
-                out.append((name, choice.help or "", bits, coord))
-            break
-    return out
-
-
-def cmd_octree(args: argparse.Namespace) -> int:
-    import textwrap
-
-    import numpy as np
-
-    try:
-        from src.crypto.octree import HyperbolicOctree
-    except Exception as exc:  # pragma: no cover - defensive
-        print(f"octree unavailable: {exc}", file=sys.stderr)
-        return 1
-
-    cmds = _octree_commands()
-    tree = HyperbolicOctree(grid_size=64, max_depth=6)
-    for _name, _help, bits, coord in cmds:
-        tree.insert(coord, _OCTANT_COLOR.get(bits, "cyan"))
-
-    as_json = getattr(args, "json_output", False)
-    near = getattr(args, "near", None) or getattr(args, "find", None)
-
-    if near:
-        qcoord, qbits = _octree_coord(near)
-        ranked = sorted(cmds, key=lambda c: float(np.linalg.norm(c[3] - qcoord)))
-        limit = getattr(args, "limit", 8) or 8
-        results = [c for c in ranked if c[0] != near][:limit]
-        if as_json:
-            print(
-                json.dumps(
-                    {
-                        "query": near,
-                        "query_octant": format(qbits, "03b"),
-                        "neighbors": [
-                            {
-                                "command": c[0],
-                                "octant": format(c[2], "03b"),
-                                "distance": round(float(np.linalg.norm(c[3] - qcoord)), 4),
-                                "help": c[1],
-                            }
-                            for c in results
-                        ],
-                    }
-                )
-            )
-            return 0
-        print(f"commands nearest to '{near}'  (octant {format(qbits, '03b')} · {_OCTANT_LABELS.get(qbits, '')})")
-        for c in results:
-            dist = float(np.linalg.norm(c[3] - qcoord))
-            print(f"  {dist:5.3f}  {c[0]:<16} {_OCTANT_LABELS.get(c[2], ''):<26} {c[1][:38]}")
-        return 0
-
-    by_octant: Dict[int, List[str]] = {}
-    for c in cmds:
-        by_octant.setdefault(c[2], []).append(c[0])
-
-    if as_json:
-        print(
-            json.dumps(
-                {
-                    "schema": "scbe_command_octree_v1",
-                    "axes": {"x": "act/inspect", "y": "orchestration/substrate", "z": "code/text"},
-                    "octants": {
-                        format(b, "03b"): {
-                            "label": _OCTANT_LABELS[b],
-                            "commands": sorted(by_octant.get(b, [])),
-                        }
-                        for b in range(8)
-                    },
-                    "stats": tree.stats(),
-                },
-                indent=2,
-            )
-        )
-        return 0
-
-    print("SCBE command octree  —  axes: x=act/inspect · y=orchestration/substrate · z=code/text")
-    print("=" * 76)
-    for b in range(8):
-        members = sorted(by_octant.get(b, []))
-        if not members:
-            continue
-        print(f"[{format(b, '03b')}] {_OCTANT_LABELS[b]}  ({len(members)})")
-        print(textwrap.fill(" ".join(members), width=76, initial_indent="     ", subsequent_indent="     "))
-    stats = tree.stats()
-    print("-" * 76)
-    print(
-        f"octree: {stats['point_count']} commands · {stats['node_count']} nodes · "
-        f"{stats['leaf_count']} leaves · depth {stats['max_depth_used']}/{stats['max_depth']}"
-    )
-    print("tip: 'scbe octree --near polyglot' finds spatially nearby commands")
-    return 0
-
-
-# ── tool manifest (self-description for AI services) ──────────────────────────
-# Emit the entire CLI as machine-readable tool definitions so ANY AI service can
-# discover and register scbe's commands: native, MCP, OpenAI, or Anthropic shapes.
-def _param_type(action: argparse.Action) -> str:
-    if isinstance(action, (argparse._StoreTrueAction, argparse._StoreFalseAction, argparse._StoreConstAction)):
-        return "boolean"
-    if action.type is int:
-        return "integer"
-    if action.type is float:
-        return "number"
-    return "string"
-
-
-def _params_for(parser: argparse.ArgumentParser) -> List[Dict[str, Any]]:
-    params: List[Dict[str, Any]] = []
-    for a in parser._actions:
-        if isinstance(a, (argparse._HelpAction, argparse._SubParsersAction)):
-            continue
-        if a.dest in ("help", "==SUPPRESS=="):
-            continue
-        positional = not a.option_strings
-        required = bool(a.required) if not positional else (a.nargs not in ("?", "*"))
-        param: Dict[str, Any] = {
-            "name": a.dest,
-            "kind": "positional" if positional else "flag",
-            "type": _param_type(a),
-            "required": required,
-        }
-        if a.option_strings:
-            param["flags"] = list(a.option_strings)
-        if a.choices:
-            seen_c: set = set()
-            param["choices"] = [c for c in a.choices if not (c in seen_c or seen_c.add(c))]
-        if a.help and a.help != argparse.SUPPRESS:
-            param["description"] = a.help
-        if a.default not in (None, argparse.SUPPRESS, False):
-            param["default"] = a.default
-        if a.nargs not in (None, 0):
-            param["nargs"] = a.nargs
-        params.append(param)
-    return params
-
-
-def _walk_commands(parser: argparse.ArgumentParser, prefix: str = "") -> List[Dict[str, Any]]:
-    """Flatten the argparse tree into a list of callable leaf tools (groups become path prefixes)."""
-    out: List[Dict[str, Any]] = []
-    spa = next((a for a in parser._actions if isinstance(a, argparse._SubParsersAction)), None)
-    if spa is None:
-        return out
-    alias_map: Dict[int, List[str]] = {}
-    for nm, sub in spa.choices.items():
-        alias_map.setdefault(id(sub), []).append(nm)
-    for choice in spa._choices_actions:
-        name = choice.dest
-        sub = spa.choices.get(name)
-        if sub is None:
-            continue
-        path = f"{prefix} {name}".strip()
-        nested = next((a for a in sub._actions if isinstance(a, argparse._SubParsersAction)), None)
-        if nested is not None:
-            out.extend(_walk_commands(sub, path))
-            continue
-        if sub.get_default("func") is None:
-            continue
-        aliases = [a for a in alias_map.get(id(sub), []) if a != name]
-        params = _params_for(sub)
-        out.append(
-            {
-                "name": path.replace(" ", "."),
-                "path": path,
-                "invoke": f"scbe {path}",
-                "aliases": aliases,
-                "summary": choice.help or "",
-                "supports_json": any(getattr(a, "dest", None) == "json_output" for a in sub._actions),
-                "args": params,
-            }
-        )
-    return out
-
-
-def _tool_json_schema(tool: Dict[str, Any]) -> Dict[str, Any]:
-    props: Dict[str, Any] = {}
-    required: List[str] = []
-    for p in tool["args"]:
-        is_list = p.get("nargs") in ("*", "+")
-        node: Dict[str, Any] = {"type": "array", "items": {"type": p["type"]}} if is_list else {"type": p["type"]}
-        target = node["items"] if is_list else node
-        if p.get("choices"):
-            target["enum"] = p["choices"]
-        if p.get("description"):
-            node["description"] = p["description"]
-        if "default" in p:
-            node["default"] = p["default"]
-        props[p["name"]] = node
-        if p.get("required"):
-            required.append(p["name"])
-    schema: Dict[str, Any] = {"type": "object", "properties": props}
-    if required:
-        schema["required"] = required
-    schema["additionalProperties"] = False
-    return schema
-
-
-def _tool_id(tool: Dict[str, Any]) -> str:
-    return "scbe_" + tool["name"].replace(".", "_").replace("-", "_")
-
-
-def cmd_manifest(args: argparse.Namespace) -> int:
-    tools = _walk_commands(build_cli())
-    fmt = (getattr(args, "format", None) or "native").lower()
-    if fmt == "mcp":
-        payload: Any = {
-            "tools": [
-                {"name": _tool_id(t), "description": t["summary"] or t["path"], "inputSchema": _tool_json_schema(t)}
-                for t in tools
-            ]
-        }
-    elif fmt == "openai":
-        payload = [
-            {
-                "type": "function",
-                "function": {
-                    "name": _tool_id(t),
-                    "description": t["summary"] or t["path"],
-                    "parameters": _tool_json_schema(t),
-                },
-            }
-            for t in tools
-        ]
-    elif fmt == "anthropic":
-        payload = [
-            {"name": _tool_id(t), "description": t["summary"] or t["path"], "input_schema": _tool_json_schema(t)}
-            for t in tools
-        ]
-    elif fmt == "native":
-        payload = {
-            "schema": "scbe_tools_manifest_v1",
-            "version": VERSION,
-            "invoke_note": (
-                "Call as: scbe <path> [args]. Append --json on commands where "
-                "supports_json is true for machine-readable output."
-            ),
-            "tool_count": len(tools),
-            "tools": tools,
-        }
-    else:
-        print(f"unknown format '{fmt}'; choose from: native, mcp, openai, anthropic", file=sys.stderr)
-        return 2
-    if getattr(args, "pretty", False):
-        print(json.dumps(payload, indent=2))
-    else:
-        print(json.dumps(payload, separators=(",", ":")))
-    return 0
-
-
 def cmd_substrate_map(args: argparse.Namespace) -> int:
     text = _arg_or_stdin(getattr(args, "text", None))
     if text is None:
@@ -2393,144 +1301,6 @@ def cmd_substrate_map(args: argparse.Namespace) -> int:
         element = state["element"]
         print(f"  {state['token']:<16} {state['semantic_class']:<14} {element['symbol']} tau={state['tau']}")
     return 0
-
-
-def cmd_forge(args: argparse.Namespace) -> int:
-    """Front door: speak an intention -> build a real app, verify by RUNNING it, remember it.
-
-    One object (the build) with many faces: the source you can keep (--out), its
-    lossless prime deed (factors back to the exact moves), the village map (--village),
-    and its place on SCBE's torus (--torus). Humans and AIs call the same forge()
-    underneath, so every build also checks the build memory first and reuses a proven
-    recipe when one fits -- the system gets faster and surer the more it is used.
-    """
-    scripts_dir = REPO_ROOT / "scripts"
-    if str(scripts_dir) not in sys.path:
-        sys.path.insert(0, str(scripts_dir))
-    try:
-        from forge_speak import forge as _forge
-    except Exception as exc:  # pragma: no cover - import guard
-        print(f"forge unavailable: {exc}")
-        return 1
-
-    as_json = getattr(args, "json_output", False)
-
-    # --chat: conversational front for messy/plain words -- talk until it's buildable
-    if getattr(args, "chat", False):
-        try:
-            from forge_chat import chat_loop
-        except Exception as exc:  # pragma: no cover - import guard
-            print(f"chat unavailable: {exc}")
-            return 1
-        chat_loop()
-        return 0
-
-    # --recipes: show what the Forge has already learned (its build memory)
-    if getattr(args, "recipes", False):
-        try:
-            from forge_memory import load as _load
-
-            recipes = _load()
-        except Exception:
-            recipes = []
-        if as_json:
-            print(json.dumps({"recipes": recipes}, indent=2))
-            return 0
-        print(f"\n  the Forge has learned {len(recipes)} recipe(s) (reused on a matching request):")
-        for i, r in enumerate(recipes, 1):
-            print(f"   {i}. \"{r['intent']}\"  ->  {', '.join(r['moves'])}   (deed {r['deed']})")
-        if not recipes:
-            print('   (none yet -- `scbe forge "a task tracker I can mark done"` teaches it one)')
-        print()
-        return 0
-
-    intention = " ".join(args.words).strip() if args.words else ""
-    if not intention:
-        print("  speak what you want to build, in plain words. examples:")
-        print('    scbe forge "a task tracker I can mark done and count"')
-        print('    scbe forge "let me add things, see them, and clear the list" --out todo.py')
-        print('    scbe forge "a day planner with due dates" --village')
-        print("    scbe forge --recipes        # what it has learned")
-        return 2
-
-    r = _forge(intention)
-    if r.get("reason") == "no-intent":
-        if as_json:
-            # same key set as the success payload (nulls/empties) so consumers never KeyError
-            print(
-                json.dumps(
-                    {
-                        "ok": False,
-                        "reason": "no-intent",
-                        "intent": intention,
-                        "caps": [],
-                        "gaps": r.get("gaps", []),
-                        "plan": [],
-                        "used": [],
-                        "origin": None,
-                        "reused": False,
-                        "deed": None,
-                        "lines": 0,
-                        "results": [],
-                    },
-                    indent=2,
-                )
-            )
-        else:
-            print(f'\n  could not turn "{intention}" into a build yet.')
-            print("  try words like: add, see/list, mark done, count, remove, clear -- or 'a task tracker'.")
-        return 1
-
-    # write the actual app -- the sellable bit: speak -> get a runnable file you keep
-    out_path = getattr(args, "out", None)
-    if out_path:
-        dest = Path(out_path)
-        if dest.parent and not dest.parent.exists():
-            dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_text(r["src"], encoding="utf-8")
-
-    if as_json:
-        keys = ("ok", "reason", "intent", "caps", "gaps", "plan", "used", "origin", "reused", "deed", "lines")
-        payload = {k: r[k] for k in keys}
-        payload["results"] = [{"argv": a, "ok": g, "out": o} for a, g, o in r["results"]]
-        if out_path:
-            payload["out"] = str(out_path)
-        print(json.dumps(payload, indent=2))
-        return 0 if r["ok"] else 1
-
-    # human view: the verified build, then (optionally) its other faces
-    print(f'\n  YOU SAID: "{intention}"')
-    print(f"  understood: {', '.join(r['caps'])}")
-    print(f"  -> {r['origin']}")
-    print(f"  -> {len(r['used'])} moves, {r['lines']} lines, on the binary Turing base: {', '.join(r['used'])}")
-    print()
-    for argv, good, out in r["results"]:
-        print(f"   [{'OK' if good else 'XX'}] {' '.join(argv):<16} -> {out}")
-    print("\n  the build's DEED (one lossless number; factors back to the exact moves):")
-    print(f"    {r['deed']}")
-    if out_path:
-        print(f"  -> wrote the runnable app to {out_path}   (try: python {out_path} --help)")
-
-    if getattr(args, "village", False):
-        try:
-            from village import Village
-
-            print("\n  the build as a VILLAGE (flow-based map; data runs down the roads):")
-            print(Village.from_plan(r["used"]).render())
-        except Exception as exc:
-            print(f"  (village view unavailable: {exc})")
-    if getattr(args, "torus", False):
-        try:
-            from forge_torus import lift
-
-            lift(r["used"])
-        except Exception as exc:
-            print(f"  (torus view unavailable: {exc})")
-
-    if r["gaps"]:
-        print(f"\n  honest gaps (no move yet): {', '.join(r['gaps'])}")
-    print(f"\n  BUILT + VERIFIED: {'YES -- it runs and does what you asked' if r['ok'] else 'NO'}\n")
-    return 0 if r["ok"] else 1
 
 
 def cmd_spine(args: argparse.Namespace) -> int:
@@ -2689,7 +1459,8 @@ def cmd_encode(args: argparse.Namespace) -> int:
 
     paths = getattr(args, "files", []) or []
     if not paths:
-        print("usage: scbe encode FILE [FILE...]  |  scbe encode --corpus DIR [--out f.bin]", file=sys.stderr)
+        print("usage: scbe encode FILE [FILE...]  |  scbe encode --corpus DIR [--out f.bin]",
+              file=sys.stderr)
         return 2
 
     use_python = getattr(args, "python", False) or not rcr.rust_encoder_available()
@@ -2745,176 +1516,20 @@ def cmd_encode(args: argparse.Namespace) -> int:
     return 0
 
 
-def _load_json_spec(path: Optional[str]) -> Optional[Any]:
-    """Load a JSON spec file for the route/schedule commands, or None if no path."""
-    if not path:
-        return None
-    with open(path, "r", encoding="utf-8") as handle:
-        return json.load(handle)
-
-
 def cmd_route(args: argparse.Namespace) -> int:
-    """Geometric fleet router — assigns tasks to agents by tongue-weighted Finsler
-    distance with fluid back-pressure, then compares cost to a round-robin baseline.
-    Pass --fleet and --tasks JSON files to route a real workload."""
-    from python.scbe.geometric_router import Agent, Task, _demo, round_robin, route_fleet
-
-    as_json = getattr(args, "json_output", False)
-    try:
-        fleet_spec = _load_json_spec(getattr(args, "fleet", None))
-        tasks_spec = _load_json_spec(getattr(args, "tasks", None))
-    except (OSError, json.JSONDecodeError) as exc:
-        print(f"route: {exc}", file=sys.stderr)
-        return 2
-
-    if not fleet_spec or not tasks_spec:
-        if as_json:
-            print(
-                json.dumps(
-                    {
-                        "ok": False,
-                        "command": "route",
-                        "error": {
-                            "code": "no_input",
-                            "message": "provide --fleet and --tasks JSON files to route a real workload",
-                        },
-                    },
-                    separators=(",", ":"),
-                )
-            )
-            return 2
-        print("(demo workload — pass --fleet and --tasks JSON files to route real work)\n")
-        _demo()
-        return 0
-
-    try:
-        fleet = [Agent(a["name"], a.get("tongue") or a.get("weights")) for a in fleet_spec]
-        tasks = [Task(t["name"], t.get("profile") or t.get("weights")) for t in tasks_spec]
-    except (KeyError, TypeError) as exc:
-        print(
-            f"route: bad fleet/tasks spec ({exc}); " "need [{name, tongue|weights}] and [{name, profile|weights}]",
-            file=sys.stderr,
-        )
-        return 2
-
-    pressure = getattr(args, "pressure", 0.6)
-    routes = route_fleet(fleet, tasks, pressure=pressure)
-    geo_cost = sum(r.total_cost for r in routes)
-    rr_cost = round_robin(fleet, tasks)
-    savings = (1 - geo_cost / rr_cost) if rr_cost else 0.0
-
-    if as_json:
-        print(
-            json.dumps(
-                {
-                    "ok": True,
-                    "command": "route",
-                    "schema": "scbe_route_v1",
-                    "data": {
-                        "agents": len(fleet),
-                        "tasks": len(tasks),
-                        "pressure": pressure,
-                        "geometric_cost": round(geo_cost, 4),
-                        "round_robin_cost": round(rr_cost, 4),
-                        "savings_fraction": round(savings, 4),
-                        "routes": [
-                            {"agent": r.agent, "tasks": r.tasks, "total_cost": round(r.total_cost, 4)} for r in routes
-                        ],
-                    },
-                },
-                separators=(",", ":"),
-            )
-        )
-        return 0
-
-    print(f"Geometric fleet router — {len(fleet)} agents, {len(tasks)} tasks (pressure {pressure})\n")
-    for r in routes:
-        head = ", ".join(r.tasks[:5]) + (" …" if len(r.tasks) > 5 else "")
-        print(f"  {r.agent:<14} {len(r.tasks):>3} tasks  cost {r.total_cost:7.2f}   {head}")
-    print(f"\n  geometric: {geo_cost:7.2f}   round-robin: {rr_cost:7.2f}   -> {100 * savings:.0f}% cheaper")
+    """Geometric fleet router — parallelism as tangent-vector tracks through the
+    tongue-weighted hyperbolic manifold (fluid-balanced geodesic routing)."""
+    from python.scbe.geometric_router import _demo
+    _demo()
     return 0
 
 
 def cmd_schedule(args: argparse.Namespace) -> int:
-    """Geometric scheduler — concurrent dispatch on a real thread pool, routing jobs
-    to workers by tongue-weighted affinity (geometric) or flat (round_robin).
-    Pass --fleet and --jobs JSON files to schedule a real workload."""
-    from python.scbe.geometric_scheduler import GeometricScheduler, Job, Worker, _demo
-
-    as_json = getattr(args, "json_output", False)
-    try:
-        fleet_spec = _load_json_spec(getattr(args, "fleet", None))
-        jobs_spec = _load_json_spec(getattr(args, "jobs", None))
-    except (OSError, json.JSONDecodeError) as exc:
-        print(f"schedule: {exc}", file=sys.stderr)
-        return 2
-
-    if not fleet_spec or not jobs_spec:
-        if as_json:
-            print(
-                json.dumps(
-                    {
-                        "ok": False,
-                        "command": "schedule",
-                        "error": {
-                            "code": "no_input",
-                            "message": "provide --fleet and --jobs JSON files to schedule a real workload",
-                        },
-                    },
-                    separators=(",", ":"),
-                )
-            )
-            return 2
-        print("(demo workload — pass --fleet and --jobs JSON files to schedule real work)\n")
-        _demo()
-        return 0
-
-    try:
-        fleet = [Worker(name=w["name"], tongue=w.get("tongue") or w.get("weights")) for w in fleet_spec]
-        jobs = [
-            Job(name=j["name"], profile=j.get("profile") or j.get("weights"), base=float(j.get("base", 0.01)))
-            for j in jobs_spec
-        ]
-    except (KeyError, TypeError, ValueError) as exc:
-        print(
-            f"schedule: bad fleet/jobs spec ({exc}); "
-            "need [{name, tongue|weights}] and [{name, profile|weights, base}]",
-            file=sys.stderr,
-        )
-        return 2
-
-    mode = getattr(args, "mode", "geometric")
-    sched = GeometricScheduler(fleet, max_retries=getattr(args, "max_retries", 2))
-    report = sched.run(jobs, mode=mode)
-
-    if as_json:
-        print(
-            json.dumps(
-                {
-                    "ok": report.failed == 0,
-                    "command": "schedule",
-                    "schema": "scbe_schedule_v1",
-                    "data": {
-                        "mode": report.mode,
-                        "wall": round(report.wall, 4),
-                        "makespan": round(report.makespan, 4),
-                        "done": report.done,
-                        "failed": report.failed,
-                        "assignments": report.assignments,
-                        "busy": {k: round(v, 4) for k, v in report.busy.items()},
-                        "errors": report.errors,
-                    },
-                },
-                separators=(",", ":"),
-            )
-        )
-        return 0 if report.failed == 0 else 1
-
-    print(f"Geometric scheduler — mode {report.mode}, {len(fleet)} workers, {len(jobs)} jobs\n")
-    for worker_name, names in report.assignments.items():
-        print(f"  {worker_name:<14} {len(names):>3} jobs  busy {report.busy.get(worker_name, 0.0):6.3f}s")
-    print(f"\n  wall {report.wall:.3f}s  makespan {report.makespan:.3f}s  done {report.done}  failed {report.failed}")
-    return 0 if report.failed == 0 else 1
+    """Geometric scheduler — real concurrent dispatch routed through the manifold
+    (pull-based affinity work-stealing; 64% faster makespan on heterogeneous fleets)."""
+    from python.scbe.geometric_scheduler import _demo
+    _demo()
+    return 0
 
 
 def cmd_polyglot(args: argparse.Namespace) -> int:
@@ -2945,207 +1560,14 @@ def cmd_polyglot(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_code(args: argparse.Namespace) -> int:
-    """Front door: type tokens, see the perfect code. The keyboard layer over the cube."""
-    from python.scbe import frontdoor as F
-
-    toks = getattr(args, "tokens", []) or []
-    langs = F.P.languages() if getattr(args, "all", False) else (getattr(args, "lang", None) or ["python"])
-    color = not getattr(args, "no_color", False)
-    tongue = getattr(args, "tongue", None) or "ko"
-    board = getattr(args, "board", False)
-    if getattr(args, "repl", False) or not toks:
-        return F._repl(langs, color, tongue, board)
-    try:
-        print(F.render(" ".join(toks), langs, color, tongue=tongue, board=board))
-        return 0
-    except ValueError as e:
-        print(str(e), file=sys.stderr)
-        return 1
-
-
-def cmd_canvas(args: argparse.Namespace) -> int:
-    """Render a program as a zoomable, self-contained HTML cube canvas."""
-    from python.scbe import canvas as CV
-
-    toks = getattr(args, "tokens", []) or []
-    if not toks:
-        print("usage: scbe canvas + sqrt * --out cube.html", file=sys.stderr)
-        return 2
-    try:
-        html = CV.build_html(" ".join(toks), getattr(args, "tongue", None) or "ko")
-    except ValueError as e:
-        print(str(e), file=sys.stderr)
-        return 1
-    out = getattr(args, "out", None) or "cube_canvas.html"
-    with open(out, "w", encoding="utf-8") as fh:
-        fh.write(html)
-    print("wrote %s (%d bytes) — open it in a browser" % (out, len(html)))
-    return 0
-
-
-def cmd_illuminate(args: argparse.Namespace) -> int:
-    """Mass-generate cube programs and curate them by the bicameral gap (MAP-Elites)."""
-    from python.scbe import illuminate as IL
-
-    arch = IL.illuminate(
-        generations=getattr(args, "gens", 4) or 4,
-        batch=getattr(args, "batch", 250) or 250,
-        seed=getattr(args, "seed", 7) or 7,
-    )
-    gallery = getattr(args, "gallery", None)
-    if gallery:
-        from python.scbe import canvas as CV
-
-        html = CV.build_gallery(arch, getattr(args, "tongue", None) or "ko")
-        with open(gallery, "w", encoding="utf-8") as fh:
-            fh.write(html)
-        print("wrote %s (%d niches, %d bytes) — open it in a browser" % (gallery, len(arch), len(html)))
-        return 0
-    if getattr(args, "governance", False):
-        from python.scbe import cognition_syscall as CS
-
-        payload = CS.govern_archive(arch)
-        if getattr(args, "json_output", False):
-            print(json.dumps(payload, indent=2, sort_keys=True))
-        else:
-            print(IL.render_archive(arch))
-            print(CS.render_archive_governance(payload))
-        return 0
-    print(IL.render_archive(arch))
-    return 0
-
-
-def cmd_think(args: argparse.Namespace) -> int:
-    """Bicameral cognition: logic vs intuition hemispheres, reconciled + interpreted."""
-    from python.scbe import bicameral as TH
-    from python.scbe import frontdoor as F
-
-    toks = getattr(args, "tokens", []) or []
-    if not toks:
-        print("usage: scbe think + sqrt *", file=sys.stderr)
-        return 2
-    try:
-        names, prog = F.tokens_to_program(" ".join(toks))
-    except ValueError as e:
-        print(str(e), file=sys.stderr)
-        return 1
-    print("THINKING about: " + " ".join(names))
-    print(TH.render(prog))
-    return 0
-
-
-def cmd_think_syscall(args: argparse.Namespace) -> int:
-    """Cognition syscall: bicameral thought -> L13 governance receipt."""
-    from python.scbe import cognition_syscall as CS
-
-    toks = getattr(args, "tokens", []) or []
-    if not toks:
-        print("usage: scbe think-syscall + sqrt *", file=sys.stderr)
-        return 2
-    try:
-        receipt = CS.receipt_from_text(" ".join(toks), tongue=getattr(args, "tongue", None))
-    except ValueError as e:
-        print(str(e), file=sys.stderr)
-        return 1
-    if getattr(args, "json_output", False):
-        print(json.dumps(receipt, indent=2, sort_keys=True))
-    else:
-        print(CS.render_receipt(receipt))
-    return 0
-
-
-def cmd_overcreate(args: argparse.Namespace) -> int:
-    """Over-create cube programs, then rank by bicameral surprise."""
-    from python.scbe import overcreation as OC
-
-    try:
-        payload = OC.run_loop(
-            count=getattr(args, "count", 256),
-            seed=getattr(args, "seed", 0),
-            top=getattr(args, "top", 8),
-            min_len=getattr(args, "min_len", 1),
-            max_len=getattr(args, "max_len", 10),
-            max_abs_result=getattr(args, "max_abs_result", 1_000_000.0),
-        )
-    except ValueError as e:
-        print(str(e), file=sys.stderr)
-        return 2
-    if getattr(args, "json_output", False):
-        print(json.dumps(payload, indent=2, sort_keys=True))
-    else:
-        print(OC.render(payload))
-    return 0
-
-
-def cmd_fold(args: argparse.Namespace) -> int:
-    """Origami: unfold the cube to paper, fold a fan/crane, or play the number game."""
-    from python.scbe import origami
-
-    prog = getattr(args, "fortune", None)
-    if prog is not None:
-        from python.scbe import frontdoor as F
-
-        names, _ = F.tokens_to_program(prog)
-        ft = origami.FortuneTeller.from_program(names)
-        picks = getattr(args, "pick", None) or [1]
-        landed = ft.play(picks)
-        print("fortune teller (from %s)" % (names or ["add"]))
-        print("  cells:", ft.flaps())
-        print("  pick %s -> flap '%s' -> runs to %s" % (picks, landed, origami._run_op(landed)))
-        return 0
-    shape = getattr(args, "shape", None) or "net"
-    if shape == "net":
-        print("the cube unfolds to a sheet (its net):")
-        print(origami.render_net())
-    elif shape == "fan":
-        n = getattr(args, "n", 6) or 6
-        print("fold it into a fan (%d creases):" % n)
-        print(origami.crease_pattern(origami.accordion(n)))
-    elif shape == "crane":
-        print("crane fold sequence:")
-        for i, step in enumerate(origami.crane(), 1):
-            print("  %d. %s" % (i, step))
-    return 0
-
-
-def cmd_bopit(args: argparse.Namespace) -> int:
-    """Bop-It cube controller: twist a face, hear the command, run it."""
-    from python.scbe import cube_controller as C
-
-    moves = getattr(args, "moves", []) or []
-    voice = getattr(args, "voice", False)
-    port = getattr(args, "serial", None)
-    if port:  # a real cube on a serial/USB port
-        from python.scbe import cube_bridge as BR
-
-        try:
-            return BR.bridge(BR.SerialSource(port, getattr(args, "baud", 115200)), voice)
-        except RuntimeError as e:  # pyserial missing
-            print(str(e), file=sys.stderr)
-            return 1
-    if getattr(args, "sim", None):  # a simulated cube (wire string)
-        from python.scbe import cube_bridge as BR
-
-        return BR.bridge(BR.SimSource(args.sim), voice)
-    if getattr(args, "repl", False) or not moves:
-        return C.bop_it(voice)
-    try:
-        print("CUBE CONTROLLER")
-        C.narrate(C.parse_moves(" ".join(moves)), voice)
-        return 0
-    except ValueError as e:
-        print(str(e), file=sys.stderr)
-        return 1
-
-
 def cmd_blocks(args: argparse.Namespace) -> int:
     """Scratch-style command blocks with a built-in destructive double-check."""
     from python.scbe.blocks import BlockProgram, BlockError, catalog_summary
 
     op = getattr(args, "op", None)
     if op:
-        prog = BlockProgram().add(op, getattr(args, "target", None) or "", confirm=getattr(args, "confirm", None))
+        prog = BlockProgram().add(op, getattr(args, "target", None) or "",
+                                  confirm=getattr(args, "confirm", None))
         print(prog.render())
         try:
             result = prog.run_plan()
@@ -3191,7 +1613,6 @@ def cmd_stereo_code(args: argparse.Namespace) -> int:
 def cmd_lookup(args: argparse.Namespace) -> int:
     """Cross-language Rosetta lookup for a coding concept."""
     from python.scbe.cross_lang import lookup, concepts, grade, LANGUAGES
-
     concept = getattr(args, "concept", None)
     if not concept:
         print("concepts:  " + ", ".join(concepts()))
@@ -3228,7 +1649,6 @@ def cmd_lookup(args: argparse.Namespace) -> int:
 def cmd_game(args: argparse.Namespace) -> int:
     """Cross-compile mini-game: translate a concept from one language to another."""
     from python.scbe.cross_lang import challenges, grade, ROSETTA
-
     g = getattr(args, "grade", None)
     if g:
         r = grade(g[0], g[1], g[2])
@@ -3258,8 +1678,8 @@ def cmd_game(args: argparse.Namespace) -> int:
     return 0
 
 
-_PHI = (1 + 5**0.5) / 2
-_TONGUE_HZ = {code: 440.0 * _PHI**i for i, code in enumerate(["KO", "AV", "RU", "CA", "UM", "DR"])}
+_PHI = (1 + 5 ** 0.5) / 2
+_TONGUE_HZ = {code: 440.0 * _PHI ** i for i, code in enumerate(["KO", "AV", "RU", "CA", "UM", "DR"])}
 _NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 
@@ -3302,18 +1722,10 @@ def _describe_signature(text: str) -> Dict[str, Any]:
     code = codes[sum(raw) % 6] if raw else "KO"
     hz = _TONGUE_HZ[code]
 
-    texture = {
-        "ALLOW": "smooth, calm",
-        "QUARANTINE": "grainy, tense",
-        "ESCALATE": "sharp, jagged",
-        "DENY": "hot, violent",
-    }[decision]
-    taste = {
-        "ALLOW": "clean — tastes right",
-        "QUARANTINE": "off — needs a look",
-        "ESCALATE": "bitter — handle with care",
-        "DENY": "spoiled — reject",
-    }[decision]
+    texture = {"ALLOW": "smooth, calm", "QUARANTINE": "grainy, tense",
+               "ESCALATE": "sharp, jagged", "DENY": "hot, violent"}[decision]
+    taste = {"ALLOW": "clean — tastes right", "QUARANTINE": "off — needs a look",
+             "ESCALATE": "bitter — handle with care", "DENY": "spoiled — reject"}[decision]
 
     return {
         "what": what,
@@ -3347,10 +1759,8 @@ def cmd_cube(args: argparse.Namespace) -> int:
     print(f"cube '{token}'  core={f['core']['hex']}  bijective={f['bijective']}")
     if ch.get("real_element"):
         e = ch["real_element"]
-        print(
-            f"  chemistry : {e['symbol']} (Z={e['Z']}, group {e['group']}, period {e['period']}, "
-            f"valence {e['valence']}, EN {e['electronegativity']})"
-        )
+        print(f"  chemistry : {e['symbol']} (Z={e['Z']}, group {e['group']}, period {e['period']}, "
+              f"valence {e['valence']}, EN {e['electronegativity']})")
     elif ch.get("composition"):
         comp = " + ".join(f"{n}x{s}" for s, n in ch["composition"].items())
         print(f"  chemistry : compound {comp}")
@@ -3449,7 +1859,9 @@ def _atomic_state_payload(state: Any) -> Dict[str, Any]:
 def _fusion_payload(result: Any) -> Dict[str, Any]:
     return {
         "tau_hat": result.tau_hat,
-        "reconstruction_votes": {tongue: _chem_round(vote) for tongue, vote in result.reconstruction_votes.items()},
+        "reconstruction_votes": {
+            tongue: _chem_round(vote) for tongue, vote in result.reconstruction_votes.items()
+        },
         "signed_edge_tension": _chem_round(result.signed_edge_tension),
         "coherence_penalty": _chem_round(result.coherence_penalty),
         "valence_pressure": _chem_round(result.valence_pressure),
@@ -3542,23 +1954,6 @@ def cmd_chem_bonds(args: argparse.Namespace) -> int:
     return 0
 
 
-def _chem_convert_engine_unavailable(payload: Dict[str, Any], engine: str, args: argparse.Namespace) -> int:
-    """Report a missing optional conversion engine cleanly instead of crashing.
-
-    ``rdkit`` / ``openbabel`` are optional, molecule-native adapters and are not
-    in requirements.txt. When the engine module is absent we emit a structured
-    JSON receipt (``--json``) or a one-line stderr message and exit non-zero,
-    rather than letting the ``ImportError`` escape as a stack trace.
-    """
-    message = f"chem convert engine '{engine}' is not installed; install it to use this adapter (pip install {engine})"
-    if getattr(args, "json_output", False):
-        payload.update({"available": False, "error": message})
-        print(json.dumps(payload))
-    else:
-        print(f"error: {message}", file=sys.stderr)
-    return 3
-
-
 def cmd_chem_convert(args: argparse.Namespace) -> int:
     smiles = _arg_or_stdin(getattr(args, "smiles", None))
     if not smiles:
@@ -3577,11 +1972,8 @@ def cmd_chem_convert(args: argparse.Namespace) -> int:
     }
 
     if engine == "rdkit":
-        try:
-            from rdkit import Chem
-            from rdkit.Chem import Descriptors
-        except ImportError:
-            return _chem_convert_engine_unavailable(payload, engine, args)
+        from rdkit import Chem
+        from rdkit.Chem import Descriptors
 
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
@@ -3604,10 +1996,7 @@ def cmd_chem_convert(args: argparse.Namespace) -> int:
             }
         )
     elif engine == "openbabel":
-        try:
-            from openbabel import pybel
-        except ImportError:
-            return _chem_convert_engine_unavailable(payload, engine, args)
+        from openbabel import pybel
 
         try:
             mol = pybel.readstring("smi", smiles)
@@ -3638,7 +2027,10 @@ def cmd_chem_orbitals(args: argparse.Namespace) -> int:
 
     print(f"chem orbitals: {payload['manifold']} total_m_states={payload['total_m_states']}")
     for orbital in payload["orbitals"]:
-        print(f"  {orbital['abbr']} {orbital['orbital_name']}: " f"l={orbital['l']} r={orbital['poincare_r']}")
+        print(
+            f"  {orbital['abbr']} {orbital['orbital_name']}: "
+            f"l={orbital['l']} r={orbital['poincare_r']}"
+        )
     print(f"  boundary: {CHEM_CLAIM_BOUNDARY}")
     return 0
 
@@ -3735,16 +2127,12 @@ def cmd_explain(args: argparse.Namespace) -> int:
     if getattr(args, "json_output", False):
         t = args.target.upper().replace("LAYER", "L").replace(" ", "")
         info = LAYER_GUIDE.get(t)
-        print(
-            json.dumps(
-                {
-                    "target": args.target,
-                    "name": info[0] if info else None,
-                    "description": info[1] if info else None,
-                    "text": text,
-                }
-            )
-        )
+        print(json.dumps({
+            "target": args.target,
+            "name": info[0] if info else None,
+            "description": info[1] if info else None,
+            "text": text,
+        }))
     else:
         print(text)
     return 0
@@ -3763,7 +2151,8 @@ def cmd_check(args: argparse.Namespace) -> int:
     if getattr(args, "json_output", False):
         print(json.dumps({"file": args.file, "clean": clean, "lint": lint, "review": review}))
     else:
-        print(f"{args.file}: {review['code_lines']} code, " f"{review['functions']} funcs, {review['classes']} classes")
+        print(f"{args.file}: {review['code_lines']} code, "
+              f"{review['functions']} funcs, {review['classes']} classes")
         if lint.get("compiles") is False:
             print(f"  ✗ {lint['syntax_error']}")
         if lint["issue_count"]:
@@ -3803,7 +2192,8 @@ def _detect_backends() -> List[str]:
 
 def _run_backend_cli(cmd: List[str]) -> str:
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180)
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=180)
     except FileNotFoundError:
         return f"(backend not found: {cmd[0]})"
     except subprocess.TimeoutExpired:
@@ -3831,66 +2221,30 @@ def _ask_ollama(prompt: str, model: Optional[str]) -> str:
     return _run_backend_cli(["ollama", "run", model or "llama3.2", prompt])
 
 
-# Forced "show thinking" mode (2026 API). Adaptive thinking is the supported
-# mechanism (budget_tokens is rejected on Opus 4.7/4.8). display:"summarized" is
-# REQUIRED to actually surface reasoning on the latest models, where thinking.display
-# defaults to "omitted" (the thinking field comes back empty). See:
-# https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking
-THINK_EFFORT = "high"
-
-
-def _anthropic_body(prompt: str, model: Optional[str], think: bool) -> Dict[str, Any]:
-    body: Dict[str, Any] = {
-        "model": model or "claude-sonnet-4-6",
-        "max_tokens": 8000 if think else 1024,  # thinking shares the max_tokens budget
-        "messages": [{"role": "user", "content": prompt}],
-    }
-    if think:
-        body["thinking"] = {"type": "adaptive", "display": "summarized"}
-        body["output_config"] = {"effort": THINK_EFFORT}
-    return body
-
-
-def _anthropic_extract(data: Dict[str, Any], think: bool) -> str:
-    content = data.get("content", [])
-    answer = "".join(b.get("text", "") for b in content if b.get("type") == "text").strip()
-    if not think:
-        return answer
-    thinking = "\n".join(
-        b.get("thinking", "") for b in content if b.get("type") == "thinking" and b.get("thinking")
-    ).strip()
-    if thinking:
-        return f"[thinking]\n{thinking}\n\n[answer]\n{answer}"
-    return f"[thinking: none surfaced - model answered directly]\n\n{answer}"
-
-
-def _ask_api(prompt: str, model: Optional[str], provider: str, think: bool = False) -> str:
+def _ask_api(prompt: str, model: Optional[str], provider: str) -> str:
     import urllib.request
-
     if provider == "anthropic":
-        body = _anthropic_body(prompt, model, think)
+        body = {"model": model or "claude-sonnet-4-6", "max_tokens": 1024,
+                "messages": [{"role": "user", "content": prompt}]}
         req = urllib.request.Request(
             "https://api.anthropic.com/v1/messages",
             data=json.dumps(body).encode(),
-            headers={
-                "x-api-key": os.environ["ANTHROPIC_API_KEY"],
-                "anthropic-version": "2023-06-01",
-                "content-type": "application/json",
-            },
-        )
+            headers={"x-api-key": os.environ["ANTHROPIC_API_KEY"],
+                     "anthropic-version": "2023-06-01", "content-type": "application/json"})
         try:
-            with urllib.request.urlopen(req, timeout=180) as resp:
+            with urllib.request.urlopen(req, timeout=120) as resp:
                 data = json.loads(resp.read())
-            return _anthropic_extract(data, think)
+            return "".join(b.get("text", "") for b in data.get("content", [])).strip()
         except Exception as e:  # network/auth errors shouldn't crash the CLI
             return f"(anthropic API error: {e})"
     if provider == "openai":
-        body = {"model": model or "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}]}
+        body = {"model": model or "gpt-4o-mini",
+                "messages": [{"role": "user", "content": prompt}]}
         req = urllib.request.Request(
             "https://api.openai.com/v1/chat/completions",
             data=json.dumps(body).encode(),
-            headers={"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}", "content-type": "application/json"},
-        )
+            headers={"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}",
+                     "content-type": "application/json"})
         try:
             with urllib.request.urlopen(req, timeout=120) as resp:
                 data = json.loads(resp.read())
@@ -3900,9 +2254,8 @@ def _ask_api(prompt: str, model: Optional[str], provider: str, think: bool = Fal
     return f"(unknown provider: {provider})"
 
 
-def ai_ask(
-    prompt: str, backend: Optional[str] = None, model: Optional[str] = None, think: bool = False
-) -> Tuple[str, str]:
+def ai_ask(prompt: str, backend: Optional[str] = None,
+           model: Optional[str] = None) -> Tuple[str, str]:
     """Return (answer, backend_used). Picks the first available backend."""
     available = _detect_backends()
     if not available:
@@ -3921,7 +2274,7 @@ def ai_ask(
         return _ask_codex(prompt, model), chosen
     if chosen == "ollama":
         return _ask_ollama(prompt, model), chosen
-    return _ask_api(prompt, model, chosen, think=think), chosen
+    return _ask_api(prompt, model, chosen), chosen
 
 
 def _render_history(history: List[Tuple[str, str]], new_q: str) -> str:
@@ -3948,12 +2301,8 @@ def cmd_ask(args: argparse.Namespace) -> int:
         print('usage: scbe ask "<question>"   (or pipe text via stdin)', file=sys.stderr)
         return 2
     # ask = explain, never act — wrap so agentic backends just answer.
-    answer, backend = ai_ask(
-        _ANSWER_ONLY + prompt,
-        getattr(args, "backend", None),
-        getattr(args, "model", None),
-        think=getattr(args, "think", False),
-    )
+    answer, backend = ai_ask(_ANSWER_ONLY + prompt, getattr(args, "backend", None),
+                             getattr(args, "model", None))
     if getattr(args, "json_output", False):
         print(json.dumps({"prompt": prompt, "backend": backend, "answer": answer}))
     else:
@@ -3976,9 +2325,6 @@ def cmd_do(args: argparse.Namespace) -> int:
 
 
 def cmd_chat(args: argparse.Namespace) -> int:
-    if not _interactive():
-        print('scbe chat is interactive-only; use `scbe ask "..."` for one-shot Q&A.', file=sys.stderr)
-        return 2
     available = _detect_backends()
     if not available:
         print("No AI backend found. You have Claude Code — make sure `claude` is on PATH,")
@@ -4034,8 +2380,6 @@ def _dir_size(p: Path) -> int:
 
 
 def _confirm(prompt: str) -> bool:
-    if not _interactive():
-        return False  # non-interactive: refuse the mutation unless --yes/--force was passed
     try:
         return input(prompt).strip().lower() in {"y", "yes"}
     except (EOFError, KeyboardInterrupt):
@@ -4145,7 +2489,8 @@ def cmd_undo(_args: argparse.Namespace) -> int:
 # ═══════════════════════════════════════════════════════════════
 
 _FIND_PRUNE = {".git", ".obsidian", "node_modules", "external", "dist", "__pycache__", "cache~1"}
-_FIND_JUNK_SUB = ("repository mirror", "plugin-backups", "codex-runtimes", "\\cache\\", "\\appdata\\", "site-packages")
+_FIND_JUNK_SUB = ("repository mirror", "plugin-backups", "codex-runtimes",
+                  "\\cache\\", "\\appdata\\", "site-packages")
 _FIND_EXTS = {".md", ".docx", ".pdf", ".txt", ".doc", ".epub"}
 
 
@@ -4175,7 +2520,7 @@ def _find_roots() -> List[Path]:
 def cmd_find(args: argparse.Namespace) -> int:
     query = (getattr(args, "query", None) or "").lower()
     if not query:
-        print("usage: scbe find <text>   (matches your note/doc filenames)", file=sys.stderr)
+        print('usage: scbe find <text>   (matches your note/doc filenames)', file=sys.stderr)
         return 2
     exts = {"." + args.ext.lstrip(".").lower()} if getattr(args, "ext", None) else _FIND_EXTS
     content = getattr(args, "content", False)
@@ -4212,7 +2557,7 @@ def cmd_find(args: argparse.Namespace) -> int:
                                 txt = fh.read()
                             idx = txt.lower().find(query)
                             if idx >= 0:
-                                snippet = "..." + txt[max(0, idx - 30) : idx + 60].replace("\n", " ").strip() + "..."
+                                snippet = "..." + txt[max(0, idx - 30): idx + 60].replace("\n", " ").strip() + "..."
                     except OSError:
                         pass
                 if not (name_hit or snippet):
@@ -4245,7 +2590,7 @@ def cmd_open(args: argparse.Namespace) -> int:
     """Find the best-matching note/doc by name and open it in the default app."""
     query = (getattr(args, "query", None) or "").lower()
     if not query:
-        print("usage: scbe open <text>   (opens the newest matching note/doc)", file=sys.stderr)
+        print('usage: scbe open <text>   (opens the newest matching note/doc)', file=sys.stderr)
         return 2
     best: Optional[Tuple[float, str, str]] = None
     for root in _find_roots():
@@ -4353,7 +2698,8 @@ def cmd_recent(args: argparse.Namespace) -> int:
                 if not m:
                     continue  # recent = only date-stamped notes (real dated work)
                 try:
-                    d = time.mktime(time.strptime(f"{m.group(1)}-{m.group(2)}-{m.group(3)}", "%Y-%m-%d"))
+                    d = time.mktime(time.strptime(
+                        f"{m.group(1)}-{m.group(2)}-{m.group(3)}", "%Y-%m-%d"))
                 except (ValueError, OverflowError):
                     continue
                 full = os.path.join(dirpath, fn)
@@ -4365,14 +2711,11 @@ def cmd_recent(args: argparse.Namespace) -> int:
     items.sort(reverse=True)
     items = items[:limit]
     if getattr(args, "json_output", False):
-        print(
-            json.dumps(
-                [{"date": time.strftime("%Y-%m-%d", time.localtime(d)), "name": n, "path": p} for d, p, n in items]
-            )
-        )
+        print(json.dumps([{"date": time.strftime("%Y-%m-%d", time.localtime(d)), "name": n, "path": p}
+                          for d, p, n in items]))
         return 0
     print(f"Your {len(items)} most recent notes:")
-    for d, _p, n in items:
+    for d, p, n in items:
         print(f"  {time.strftime('%Y-%m-%d', time.localtime(d))}  {n}")
     return 0
 
@@ -4394,7 +2737,8 @@ def cmd_docs_verify(args: argparse.Namespace) -> int:
 def cmd_docs_attest(args: argparse.Namespace) -> int:
     out_path = getattr(args, "out", "training/doc_manifest.json")
     return subprocess.run(
-        [sys.executable, str(REPO_ROOT / "training" / "doc_verifier.py"), "--attest", args.members, "--out", out_path],
+        [sys.executable, str(REPO_ROOT / "training" / "doc_verifier.py"),
+         "--attest", args.members, "--out", out_path],
     ).returncode
 
 
@@ -4468,10 +2812,8 @@ def _run_system_cli(args: List[str]) -> int:
 LEGACY_SCRIPTS = {
     "cli": "scbe-cli.py",
     "agent": "scbe-agent.py",
-    # NOTE: "demo" (demo-cli.py) and "memory" (demo_memory_shard.py) were removed
-    # here — those scripts do not exist in the repo, so registering them only
-    # produced dead `scbe demo` / `scbe memory` subcommands that printed
-    # "Legacy script not found". scbe-cli.py and scbe-agent.py do exist.
+    "demo": "demo-cli.py",
+    "memory": "demo_memory_shard.py",
 }
 
 SYSTEM_AGENT_SUBCOMMANDS = {
@@ -4537,37 +2879,11 @@ def _dispatch_scbe_args(args: List[str]) -> int:
         return _run_system_cli([*forwarded, *args[1:]])
 
     cli = build_cli()
-    wants_json = "--json" in args
-    try:
-        parsed = cli.parse_args(args)
-    except SystemExit as exc:
-        # argparse already printed usage / -h; propagate its code (2 = usage error, 0 = help).
-        return exc.code if isinstance(exc.code, int) else 2
+    parsed = cli.parse_args(args)
     if not hasattr(parsed, "func"):
-        # Group command with no subcommand (e.g. `scbe pipeline`): a usage error, not silent success.
-        print(f"scbe: '{args[0]}' needs a subcommand — run 'scbe {args[0]} -h' to see them.", file=sys.stderr)
-        return 2
-    try:
-        return parsed.func(parsed)
-    except KeyboardInterrupt:
-        return 130
-    except Exception as exc:  # top-level safety net: agents get a clean signal, never a raw traceback
-        if os.environ.get("SCBE_DEBUG"):
-            raise
-        if wants_json or getattr(parsed, "json_output", False):
-            print(
-                json.dumps(
-                    {
-                        "ok": False,
-                        "command": getattr(parsed, "command", args[0]),
-                        "error": {"code": "internal", "message": str(exc)},
-                    },
-                    separators=(",", ":"),
-                )
-            )
-        else:
-            print(f"scbe: {type(exc).__name__}: {exc}", file=sys.stderr)
-        return 1
+        cli.print_help()
+        return 0
+    return parsed.func(parsed)
 
 
 def _handle_cli_command(argv: List[str]) -> int:
@@ -4647,7 +2963,7 @@ Commands by category:
   Notes/Vault     find (f) · open · vault · recent · docs
   Files           move · del · push · undo
   Chemistry       chem (atomize/bonds/convert/orbitals)
-  System          status (st) · health · doctor · selftest · system
+  System          status (st) · health · doctor · selftest · memory
   (tip: run `scbe <command> -h` for details, or just type plain English)
 
 Examples:
@@ -4669,6 +2985,7 @@ Examples:
 Legacy (backward compat):
   scbe cli                          Interactive CLI
   scbe agent                        AI agent
+  scbe demo                         Demo mode
   scbe doctor --json
   scbe model plan --profile coder-qwen-local --json
   scbe model train --profile coder-qwen-local
@@ -4763,28 +3080,12 @@ Legacy (backward compat):
     sh.add_argument("--top-processes", type=int, default=15)
     sh.set_defaults(func=cmd_system_health)
 
-    prove = sub.add_parser("prove", help="Run product proof paths without setup or sales copy")
-    prove_sub = prove.add_subparsers(dest="prove_cmd")
-    pf = prove_sub.add_parser("forge", help="Prove the workflow machine: derive, verify, remember, reuse")
-    pf.add_argument(
-        "intent",
-        nargs="?",
-        help='Plain-English workflow request to build (default: "let me tag things, find them, and export my list")',
-    )
-    pf.set_defaults(func=cmd_prove)
-    pb = prove_sub.add_parser("black-box", help="Build and run the PC Black Box proof bundle")
-    pb.add_argument("--out-dir", help="Output directory for the buyer ZIP and proof run")
-    pb.set_defaults(func=cmd_prove)
-
     # ─── compact verbs (human + AI surface) ───
-    ak = sub.add_parser("ask", aliases=["a"], help='Ask the AI a question ("scbe ask "..."")')
+    ak = sub.add_parser("ask", aliases=["a"], help='Ask the AI a question ("scbe ask \"...\"")')
     ak.add_argument("prompt", nargs="?", help="question (or pipe via stdin)")
     ak.add_argument("--backend", choices=list(AI_BACKENDS), help="force a backend (default: auto)")
     ak.add_argument("--model", help="model name for the chosen backend")
     ak.add_argument("--json", dest="json_output", action="store_true")
-    ak.add_argument(
-        "--think", action="store_true", help="force adaptive thinking and SHOW the reasoning (anthropic backend)"
-    )
     ak.set_defaults(func=cmd_ask)
 
     ch = sub.add_parser("chat", help="Interactive AI chat with memory (any available model)")
@@ -4792,7 +3093,7 @@ Legacy (backward compat):
     ch.add_argument("--model")
     ch.set_defaults(func=cmd_chat)
 
-    do = sub.add_parser("do", help='Tell the AI to DO a task — agentic ("scbe do "..."")')
+    do = sub.add_parser("do", help='Tell the AI to DO a task — agentic ("scbe do \"...\"")')
     do.add_argument("task", nargs="?", help="task (or pipe via stdin)")
     do.add_argument("--backend", choices=list(AI_BACKENDS))
     do.add_argument("--model")
@@ -4811,94 +3112,12 @@ Legacy (backward compat):
     en.add_argument("--json", dest="json_output", action="store_true")
     en.set_defaults(func=cmd_enc)
 
-    de = sub.add_parser("dec", help='Decode Sacred Tongue tokens to text ("scbe dec ko "..."")')
+    de = sub.add_parser("dec", help='Decode Sacred Tongue tokens to text ("scbe dec ko \"...\"")')
     de.add_argument("tongue", choices=ALL_TONGUES, metavar="tongue")
     de.add_argument("text", nargs="?", help="tokens to decode (or pipe via stdin)")
     de.add_argument("--json", dest="json_output", action="store_true")
     de.add_argument("--raw", action="store_true", help="write raw bytes to stdout")
     de.set_defaults(func=cmd_dec)
-
-    nf = sub.add_parser(
-        "numfind", aliases=["nf"], help='Fast number-finding: primes & factorization ("scbe numfind factor 360")'
-    )
-    nf_sub = nf.add_subparsers(dest="nf_op")
-
-    nf_ip = nf_sub.add_parser("isprime", help="Test whether a number is prime (deterministic below ~3.3e24)")
-    nf_ip.add_argument("n", help="integer to test (decimal, or 0x/0o/0b prefixed)")
-    nf_ip.add_argument("--json", dest="json_output", action="store_true")
-    nf_ip.set_defaults(func=cmd_numfind)
-
-    nf_fac = nf_sub.add_parser("factor", help="Prime-factorize a number (Pollard rho + Miller-Rabin)")
-    nf_fac.add_argument("n", help="integer to factor")
-    nf_fac.add_argument("--max-seconds", dest="max_seconds", type=float, default=20.0, help="wall-clock budget")
-    nf_fac.add_argument("--json", dest="json_output", action="store_true")
-    nf_fac.set_defaults(func=cmd_numfind)
-
-    nf_nth = nf_sub.add_parser("nth", help="Find the k-th prime, 1-indexed (nth 1 = 2)")
-    nf_nth.add_argument("k", help="prime index (1-based)")
-    nf_nth.add_argument("--json", dest="json_output", action="store_true")
-    nf_nth.set_defaults(func=cmd_numfind)
-
-    nf_next = nf_sub.add_parser("next", help="Find the smallest prime greater than n")
-    nf_next.add_argument("n", help="lower bound (exclusive)")
-    nf_next.add_argument("--json", dest="json_output", action="store_true")
-    nf_next.set_defaults(func=cmd_numfind)
-
-    nf_rng = nf_sub.add_parser("primes", help="List primes in the half-open range [lo, hi)")
-    nf_rng.add_argument("lo", help="range start (inclusive)")
-    nf_rng.add_argument("hi", help="range end (exclusive)")
-    nf_rng.add_argument("--limit", type=int, default=0, help="max primes to print (0 = all)")
-    nf_rng.add_argument("--json", dest="json_output", action="store_true")
-    nf_rng.set_defaults(func=cmd_numfind)
-
-    ct = sub.add_parser(
-        "crosstalk", aliases=["xt"], help='Governed AI-to-AI fleet dialogue ("scbe crosstalk \\"topic\\"")'
-    )
-    ct.add_argument("topic", nargs="?", help="discussion topic (or pipe via stdin)")
-    ct.add_argument("--rounds", type=int, default=2, help="rounds (each agent speaks once per round)")
-    ct.add_argument("--agents", type=int, default=2, help="number of fleet agents")
-    ct.add_argument("--backend", help="AI backend for live mode (claude/openai/anthropic/ollama/codex)")
-    ct.add_argument("--model", help="model name override")
-    ct.add_argument("--offline", action="store_true", help="force the deterministic offline responder")
-    ct.add_argument("--no-gate", dest="no_gate", action="store_true", help="score but don't withhold flagged turns")
-    ct.add_argument("--json", dest="json_output", action="store_true")
-    ct.set_defaults(func=cmd_crosstalk)
-
-    pcat = sub.add_parser("primecat", help="Prime-coded categories: assign primes & sieve items by category")
-    pcat_sub = pcat.add_subparsers(dest="pc_op")
-
-    pcat_as = pcat_sub.add_parser("assign", help="Assign a distinct prime to each category")
-    pcat_as.add_argument("categories", nargs="+", help="category names (the universe)")
-    pcat_as.add_argument("--json", dest="json_output", action="store_true")
-    pcat_as.set_defaults(func=cmd_primecat)
-
-    pcat_cd = pcat_sub.add_parser("code", help="Encode an item's categories as a prime product")
-    pcat_cd.add_argument("item", nargs="+", help="the item's categories")
-    pcat_cd.add_argument("--universe", required=True, help="full category universe (comma/space separated)")
-    pcat_cd.add_argument("--json", dest="json_output", action="store_true")
-    pcat_cd.set_defaults(func=cmd_primecat)
-
-    pcat_de = pcat_sub.add_parser("decode", help="Recover an item's categories by factoring its code")
-    pcat_de.add_argument("code", help="the prime-product code")
-    pcat_de.add_argument("--universe", required=True, help="full category universe (comma/space separated)")
-    pcat_de.add_argument("--json", dest="json_output", action="store_true")
-    pcat_de.set_defaults(func=cmd_primecat)
-
-    pcat_mt = pcat_sub.add_parser("match", help="Test whether a code belongs to a target category (divisibility sieve)")
-    pcat_mt.add_argument("code", help="the prime-product code")
-    pcat_mt.add_argument("target", help="target category")
-    pcat_mt.add_argument("--universe", required=True, help="full category universe (comma/space separated)")
-    pcat_mt.add_argument("--json", dest="json_output", action="store_true")
-    pcat_mt.set_defaults(func=cmd_primecat)
-
-    tg = sub.add_parser("tangent", aliases=["keel"], help="Tangential parallelism: bounded-divergence fleet routing")
-    tg.add_argument("tasks", nargs="*", help="tasks as name=PROFILE or PROFILE (e.g. build=KO:1,DR:0.5)")
-    tg.add_argument("--goal", help="destination tongue profile (the bow), e.g. DR:1,UM:0.5")
-    tg.add_argument("--agents", help="comma list of agent tongues, e.g. KO,AV,RU")
-    tg.add_argument("--max-divergence", dest="max_divergence", type=float, default=1.5, help="max drift from the keel")
-    tg.add_argument("--nodes", type=int, default=1, help="reconvergence checkpoints along the keel")
-    tg.add_argument("--json", dest="json_output", action="store_true")
-    tg.set_defaults(func=cmd_tangent)
 
     # ─── Sacred Tongues as verbs — full names, no abbreviation ───
     spine = sub.add_parser("spine", help="Bit spine: binary, hex, trit, and tiny-machine actions")
@@ -4964,23 +3183,6 @@ Legacy (backward compat):
     systems.add_argument("--json", dest="json_output", action="store_true")
     systems.set_defaults(func=cmd_code_systems)
 
-    forge_p = sub.add_parser(
-        "forge",
-        help="Speak an intention; build + verify + remember a real app (run `scbe forge` for examples)",
-    )
-    forge_p.add_argument("words", nargs="*", help="what you want, in plain words")
-    forge_p.add_argument("--out", metavar="PATH", help="write the built, verified app to a file you can run")
-    forge_p.add_argument("--village", action="store_true", help="also show the build as a village map (flow view)")
-    forge_p.add_argument("--torus", action="store_true", help="also lift the build onto SCBE's 3-torus (topology view)")
-    forge_p.add_argument("--recipes", action="store_true", help="show what the Forge has learned (build memory)")
-    forge_p.add_argument(
-        "--chat", action="store_true", help="conversational mode -- talk in plain words until it can build"
-    )
-    forge_p.add_argument(
-        "--json", dest="json_output", action="store_true", help="machine-readable output (stable key set)"
-    )
-    forge_p.set_defaults(func=cmd_forge)
-
     mp = sub.add_parser(
         "map",
         aliases=["substrate"],
@@ -4992,31 +3194,6 @@ Legacy (backward compat):
     mp.add_argument("--limit", type=int, default=8, help="rows to show in text mode")
     mp.add_argument("--json", dest="json_output", action="store_true")
     mp.set_defaults(func=cmd_substrate_map)
-
-    octree_p = sub.add_parser(
-        "octree",
-        aliases=["cmd-tree"],
-        help='Spatial map of every command in the hyperbolic octree ("scbe octree --near polyglot")',
-    )
-    octree_p.add_argument("--near", help="show commands spatially nearest to this command")
-    octree_p.add_argument("--find", help="alias for --near: nearest commands to a name")
-    octree_p.add_argument("--limit", type=int, default=8, help="how many neighbors to show")
-    octree_p.add_argument("--json", dest="json_output", action="store_true")
-    octree_p.set_defaults(func=cmd_octree)
-
-    manifest_p = sub.add_parser(
-        "manifest",
-        aliases=["tools", "capabilities"],
-        help='Emit all commands as machine-readable tool defs for any AI service ("scbe manifest --format mcp")',
-    )
-    manifest_p.add_argument(
-        "--format",
-        choices=["native", "mcp", "openai", "anthropic"],
-        default="native",
-        help="output shape: native | mcp | openai | anthropic",
-    )
-    manifest_p.add_argument("--pretty", action="store_true", help="pretty-print JSON")
-    manifest_p.set_defaults(func=cmd_manifest)
 
     ec = sub.add_parser(
         "encode-code",
@@ -5033,11 +3210,13 @@ Legacy (backward compat):
         help='Fast AST->cube-matrix via the Rust hot loop ("scbe encode file.py")',
     )
     en.add_argument("files", nargs="*", help="Python source file(s)")
-    en.add_argument("--json", dest="json_output", action="store_true", help="emit full matrix JSON for the first file")
+    en.add_argument("--json", dest="json_output", action="store_true",
+                    help="emit full matrix JSON for the first file")
     en.add_argument("--python", action="store_true", help="force the Python encoder")
     en.add_argument("--corpus", help="encode a whole directory tree (ruff 109x throughput)")
     en.add_argument("--out", help="with --corpus: write SCBEAST2 binary matrices")
-    en.add_argument("--limit-files", dest="limit_files", type=int, help="with --corpus: cap number of files")
+    en.add_argument("--limit-files", dest="limit_files", type=int,
+                    help="with --corpus: cap number of files")
     en.set_defaults(func=cmd_encode)
 
     pg = sub.add_parser(
@@ -5049,129 +3228,21 @@ Legacy (backward compat):
     pg.add_argument("--lang", help="target language (default python)")
     pg.add_argument("--all", action="store_true", help="emit to every registered language")
     pg.add_argument("--list", dest="list_langs", action="store_true", help="list languages + ops")
-    pg.add_argument(
-        "--safe",
-        action="store_true",
-        help="roundabout mode: define undefined zones (div0, sqrt-neg -> 0) so every language agrees",
-    )
+    pg.add_argument("--safe", action="store_true",
+                    help="roundabout mode: define undefined zones (div0, sqrt-neg -> 0) so every language agrees")
     pg.set_defaults(func=cmd_polyglot)
-
-    cd = sub.add_parser(
-        "code",
-        help='Type tokens, see the perfect code ("scbe code + sqrt mul inc" or "scbe code --repl")',
-    )
-    cd.add_argument("tokens", nargs="*", help="token stream: symbols (+ - * / sqrt), names, 0xNN hex, or tongue tokens")
-    cd.add_argument("--lang", action="append", help="language face (repeatable); default python")
-    cd.add_argument("--all", action="store_true", help="show every language face")
-    cd.add_argument("--tongue", default="ko", help="Sacred Tongue keyboard (ko av ru ca um dr)")
-    cd.add_argument("--board", action="store_true", help="show the go-board / cube embedding (mid-nibble, notes, RGB)")
-    cd.add_argument("--repl", action="store_true", help="interactive hit-Enter loop")
-    cd.add_argument("--no-color", action="store_true", help="disable ANSI styling")
-    cd.set_defaults(func=cmd_code)
-
-    bp = sub.add_parser(
-        "bopit",
-        help='Bop-It cube controller: twist a face, hear the command ("scbe bopit R U F\'")',
-    )
-    bp.add_argument("moves", nargs="*", help="twist sequence in cube notation: R U F' L' ...")
-    bp.add_argument("--voice", action="store_true", help="say the commands aloud (Windows SAPI)")
-    bp.add_argument("--repl", action="store_true", help="interactive twist loop")
-    bp.add_argument("--serial", metavar="PORT", help="read a real cube from a serial port (e.g. COM3); needs pyserial")
-    bp.add_argument("--baud", type=int, default=115200, help="serial baud rate (default 115200)")
-    bp.add_argument("--sim", metavar="WIRE", help='simulate a cube from a wire string, e.g. "R U F\' GO"')
-    bp.set_defaults(func=cmd_bopit)
-
-    fl = sub.add_parser(
-        "fold",
-        help=(
-            "Origami: unfold the cube to paper, fold a fan/crane, or the number game "
-            '("scbe fold --fortune "+ * sqrt inc" --pick 4 3 2")'
-        ),
-    )
-    fl.add_argument("--shape", choices=["net", "fan", "crane"], help="what to fold (default net)")
-    fl.add_argument("--n", type=int, default=6, help="number of creases for a fan")
-    fl.add_argument("--fortune", metavar="PROGRAM", help="build a fortune teller from a token program")
-    fl.add_argument("--pick", type=int, nargs="+", help="fortune-teller picks, e.g. --pick 4 3 2")
-    fl.set_defaults(func=cmd_fold)
-
-    tk = sub.add_parser(
-        "think",
-        help='Bicameral cognition: logic vs intuition, reconciled ("scbe think + sqrt *")',
-    )
-    tk.add_argument("tokens", nargs="*", help="token program, e.g. + sqrt *")
-    tk.set_defaults(func=cmd_think)
-
-    ts = sub.add_parser(
-        "think-syscall",
-        aliases=["cognition", "cog"],
-        help='Cognition syscall: bicameral thought -> L13 decision ("scbe cog + sqrt *")',
-    )
-    ts.add_argument("tokens", nargs="*", help="token program, e.g. + sqrt *")
-    ts.add_argument("--tongue", default=None, help="Sacred Tongue keyboard for token input")
-    ts.add_argument("--json", dest="json_output", action="store_true", help="emit JSON receipt")
-    ts.set_defaults(func=cmd_think_syscall)
-
-    oc = sub.add_parser(
-        "overcreate",
-        aliases=["generate-cube"],
-        help='Generate cube programs and rank bicameral surprise ("scbe overcreate --count 256")',
-    )
-    oc.add_argument("--count", type=int, default=256, help="programs to generate before filtering")
-    oc.add_argument("--seed", type=int, default=0, help="deterministic random seed")
-    oc.add_argument("--top", type=int, default=8, help="ranked candidates to show")
-    oc.add_argument("--min-len", type=int, default=1, help="minimum program length")
-    oc.add_argument("--max-len", type=int, default=10, help="maximum program length")
-    oc.add_argument(
-        "--max-abs-result",
-        type=float,
-        default=1_000_000.0,
-        help="reject candidates whose logic or intuition exceeds this bound",
-    )
-    oc.add_argument("--json", dest="json_output", action="store_true", help="emit JSON payload")
-    oc.set_defaults(func=cmd_overcreate)
-
-    il = sub.add_parser(
-        "illuminate",
-        help="Mass-generate cube programs, curate by the bicameral gap (MAP-Elites over-creation)",
-    )
-    il.add_argument("--gens", type=int, default=4, help="generations of generate+curate")
-    il.add_argument("--batch", type=int, default=250, help="programs per generation")
-    il.add_argument("--seed", type=int, default=7)
-    il.add_argument("--governance", action="store_true", help="append cognition syscall decision counts")
-    il.add_argument("--json", dest="json_output", action="store_true", help="with --governance, emit JSON receipts")
-    il.add_argument("--gallery", metavar="PATH", help="render the archive as a navigable HTML gallery")
-    il.add_argument("--tongue", default="ko", help="Sacred Tongue for gallery thumbnails")
-    il.set_defaults(func=cmd_illuminate)
-
-    cv = sub.add_parser(
-        "canvas",
-        help='Render a program as a zoomable HTML cube canvas ("scbe canvas + sqrt * --out cube.html")',
-    )
-    cv.add_argument("tokens", nargs="*", help="token program, e.g. + sqrt *")
-    cv.add_argument("--out", default="cube_canvas.html", help="output HTML file")
-    cv.add_argument("--tongue", default="ko", help="Sacred Tongue for spelling")
-    cv.set_defaults(func=cmd_canvas)
 
     rt = sub.add_parser(
         "route",
         aliases=["fleet"],
-        help="Geometric fleet routing — assign tasks to agents by tongue affinity (--fleet f.json --tasks t.json)",
+        help='Geometric fleet routing — tangent-vector parallel tracks ("scbe route")',
     )
-    rt.add_argument("--fleet", help="JSON file: [{name, tongue|weights}] agents")
-    rt.add_argument("--tasks", help="JSON file: [{name, profile|weights}] tasks")
-    rt.add_argument("--pressure", type=float, default=0.6, help="fluid back-pressure (default 0.6)")
-    rt.add_argument("--json", dest="json_output", action="store_true", help="machine-readable output")
     rt.set_defaults(func=cmd_route)
 
     sc = sub.add_parser(
         "schedule",
-        help="Geometric scheduler — concurrent dispatch on a real thread pool (--fleet f.json --jobs j.json)",
+        help='Geometric scheduler — real concurrent dispatch via manifold routing ("scbe schedule")',
     )
-    sc.add_argument("--fleet", help="JSON file: [{name, tongue|weights}] workers")
-    sc.add_argument("--jobs", help="JSON file: [{name, profile|weights, base}] jobs")
-    sc.add_argument("--mode", choices=["geometric", "round_robin"], default="geometric", help="routing mode")
-    sc.add_argument("--max-retries", dest="max_retries", type=int, default=2, help="per-job retries (default 2)")
-    sc.add_argument("--json", dest="json_output", action="store_true", help="machine-readable output")
     sc.set_defaults(func=cmd_schedule)
 
     bl = sub.add_parser(
@@ -5208,12 +3279,8 @@ Legacy (backward compat):
     gm.set_defaults(func=cmd_game)
 
     tongue_verbs = {
-        "koraelin": "ko",
-        "avali": "av",
-        "runethic": "ru",
-        "cassisivadan": "ca",
-        "umbroth": "um",
-        "draumric": "dr",
+        "koraelin": "ko", "avali": "av", "runethic": "ru",
+        "cassisivadan": "ca", "umbroth": "um", "draumric": "dr",
     }
     for fullname, code in tongue_verbs.items():
         name = TONGUE_NAMES[code.upper()]
@@ -5256,7 +3323,7 @@ Legacy (backward compat):
     ds = sub.add_parser(
         "describe",
         aliases=["desc"],
-        help='5-senses signature: see/hear/feel ("scbe describe "..."")',
+        help='5-senses signature: see/hear/feel ("scbe describe \"...\"")',
     )
     ds.add_argument("text", nargs="?", help="text to describe (or pipe via stdin)")
     ds.add_argument("--json", dest="json_output", action="store_true")
@@ -5384,7 +3451,6 @@ Legacy (backward compat):
 # the same code paths the flags use.
 # ═══════════════════════════════════════════════════════════════
 
-
 def _banner() -> str:
     """Self-aligning title box — stays square for any version string."""
     w = 60
@@ -5421,8 +3487,6 @@ MENU = """\
 
 def _menu_prompt(label: str) -> Optional[str]:
     """Read a line; return None on Ctrl+C / EOF so the menu can exit cleanly."""
-    if not _interactive():
-        return None  # non-interactive (agent / pipe / CI): never block on input()
     try:
         # Strip a leading UTF-8 BOM that Windows pipes prepend to stdin.
         return input(label).lstrip("﻿").strip()
@@ -5593,7 +3657,8 @@ def _natural_command_args(prompt: str) -> Optional[List[str]]:
             return with_json(["enc", tongue.lower(), text])
 
     decode_match = re.search(
-        rf"\b(?:decode|read)\s+(?P<text>.+?)\s+" rf"(?:from|in|as)\s+(?P<tongue>{tongue_names})\b",
+        rf"\b(?:decode|read)\s+(?P<text>.+?)\s+"
+        rf"(?:from|in|as)\s+(?P<tongue>{tongue_names})\b",
         lowered,
     )
     if decode_match:
@@ -5642,16 +3707,9 @@ def main() -> int:
     _enable_utf8_console()
 
     if len(sys.argv) == 1:
-        if _interactive():
-            return interactive_menu()
-        # Non-interactive (agent / pipe / CI): never launch the blocking TUI — show help.
-        build_cli().print_help()
-        return 0
+        return interactive_menu()
 
     if sys.argv[1] in ("menu", "app", "home"):
-        if not _interactive():
-            print("scbe: the interactive menu needs a terminal; run a subcommand (see 'scbe --help').", file=sys.stderr)
-            return 2
         return interactive_menu()
 
     # Natural-language fallback: if the first word isn't a known command (and
@@ -5663,27 +3721,16 @@ def main() -> int:
         compiled = _natural_command_args(prompt)
         if compiled:
             return _dispatch_scbe_args(compiled)
-        matches = difflib.get_close_matches(first, sorted(_known_commands(build_cli())), n=3, cutoff=0.6)
-        # Route unknown input to the AI ONLY when a human is driving (a real TTY) or
-        # the caller explicitly opted in. An agent / pipe / CI run gets a deterministic
-        # unknown-command error (exit 2) and NEVER a surprise billable model call.
-        ai_fallback_ok = _interactive() or os.environ.get("SCBE_AI_FALLBACK") == "1"
-        if not ai_fallback_ok:
-            hint = (" Did you mean: " + ", ".join(matches) + "?") if matches else ""
-            print(f"scbe: unknown command '{first}'.{hint}", file=sys.stderr)
-            print(
-                "Run 'scbe --help' or 'scbe manifest' for commands; "
-                "set SCBE_AI_FALLBACK=1 to send unknown input to the AI.",
-                file=sys.stderr,
-            )
-            return 2
-        # Typo guard: a single bare token that closely matches a real command is almost
-        # certainly a mistype, not natural language — suggest it instead of an AI call.
-        if len(sys.argv) == 2 and matches:
-            hint = matches[0] if len(matches) == 1 else ", ".join(matches)
-            print(f"scbe: unknown command '{first}'. Did you mean: {hint}?", file=sys.stderr)
-            print("Run 'scbe --help' for all commands, or 'scbe ask \"...\"' to ask the AI.", file=sys.stderr)
-            return 2
+        # Typo guard: a single bare token that closely matches a real command is
+        # almost certainly a mistype, not natural language — suggest it (exit 2)
+        # instead of burning an AI call. Multi-word input stays natural language.
+        if len(sys.argv) == 2:
+            matches = difflib.get_close_matches(first, sorted(_known_commands(build_cli())), n=3, cutoff=0.72)
+            if matches:
+                hint = matches[0] if len(matches) == 1 else ", ".join(matches)
+                print(f"scbe: unknown command '{first}'. Did you mean: {hint}?", file=sys.stderr)
+                print("Run 'scbe --help' for all commands, or 'scbe ask \"...\"' to ask the AI.", file=sys.stderr)
+                return 2
         return cmd_ask(argparse.Namespace(prompt=prompt, backend=None, model=None, json_output=False))
 
     if sys.argv[1] == "cli":

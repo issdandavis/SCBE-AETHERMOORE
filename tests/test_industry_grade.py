@@ -510,27 +510,10 @@ class TestSelfHealingWorkflow:
         assert all(r[0] for r in results)  # All succeeded
         assert healer.metrics["total_operations"] == 20
 
-    def test_109_exponential_backoff(self, monkeypatch):
+    def test_109_exponential_backoff(self):
         """Retry should use exponential backoff."""
         healer = SelfHealingOrchestrator(max_retries=3)
         timestamps = []
-
-        # Use a deterministic virtual clock so the test measures the *requested*
-        # backoff durations rather than real wall-clock sleeps. Real time.sleep on
-        # fast/coarse-granularity machines (Windows timer ~15.6ms) inflates the tiny
-        # first delay relative to the second, intermittently breaking the ratio
-        # assertion. Advancing a virtual clock by exactly the requested duration
-        # removes that jitter while still verifying genuine exponential growth.
-        virtual_now = [0.0]
-
-        def fake_sleep(duration):
-            virtual_now[0] += duration
-
-        def fake_time():
-            return virtual_now[0]
-
-        monkeypatch.setattr(time, "sleep", fake_sleep)
-        monkeypatch.setattr(time, "time", fake_time)
 
         def timed_fail():
             timestamps.append(time.time())

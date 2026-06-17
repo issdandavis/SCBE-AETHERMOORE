@@ -1742,7 +1742,7 @@ def run(pairs: list, output: str, dry_run: bool) -> None:
             type_counts["CROSS_PARALLEL"] = type_counts.get("CROSS_PARALLEL", 0) + 1
 
     print("Polyglot SFT generator")
-    print(f"  Pairs: {[f'{s}->{d}' for s, d in pairs]}")
+    print(f"  Pairs: {[f'{s}->{d}' for s,d in pairs]}")
     print(f"  Records: {len(records)}")
     for t, c in sorted(type_counts.items()):
         print(f"    {t}: {c}")

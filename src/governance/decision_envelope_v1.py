@@ -4,8 +4,7 @@ Decision Envelope v1 (protobuf-first governance contract).
 This module implements:
 1) Dynamic protobuf message classes for DecisionEnvelopeV1.
 2) Deterministic canonical protobuf bytes for signing.
-3) HMAC-SHA256 MAC (symmetric integrity) + real ML-DSA-65 signing/verification
-   (asymmetric authority non-repudiation, via src/crypto/pqc_liboqs).
+3) HMAC-SHA256 signing/verification (dev placeholder for ML-DSA).
 4) Deterministic MMR leaf hash canonicalization.
 5) JSON / JSON-LD projection with signed protobuf hash reference.
 6) Resource-aware envelope check: "given state, is action inside envelope?"
@@ -668,11 +667,8 @@ def sign_envelope_hmac(envelope: Any, signing_key: bytes | str, *, set_mmr_hook:
     """
     Sign envelope with deterministic protobuf payload hash.
 
-    Symmetric authenticity tag: HMAC-SHA256(signing_key, signed_payload_hash). This is
-    a real MAC for shared-secret integrity, NOT an asymmetric signature — anyone holding
-    the key can produce it, so it provides no non-repudiation. For real authority
-    signatures use :func:`sign_envelope_mldsa` (asymmetric ML-DSA-65, verified with the
-    public key alone).
+    Dev placeholder signature:
+      HMAC-SHA256(signing_key, signed_payload_hash)
     """
     key = signing_key.encode("utf-8") if isinstance(signing_key, str) else bytes(signing_key)
     env = _copy_envelope(envelope)
@@ -718,81 +714,6 @@ def verify_envelope_hmac(
 
     expected_sig = hmac.new(key_bytes, expected_payload_hash, hashlib.sha256).digest()
     if not hmac.compare_digest(expected_sig, bytes(envelope.authority.signature)):
-        return False, "signature mismatch"
-
-    if len(envelope.audit.mmr_fields) > 0 and bytes(envelope.audit.mmr_leaf_hash):
-        expected_mmr = mmr_leaf_hash(envelope, mmr_fields=tuple(envelope.audit.mmr_fields))
-        if bytes(envelope.audit.mmr_leaf_hash) != expected_mmr:
-            return False, "mmr_leaf_hash mismatch"
-
-    return True, "ok"
-
-
-def sign_envelope_mldsa(envelope: Any, keypair: Any, *, set_mmr_hook: bool = True) -> Any:
-    """Sign the envelope authority with a real ML-DSA-65 signature (FIPS 204).
-
-    Unlike :func:`sign_envelope_hmac` (a symmetric MAC — anyone holding the shared key
-    can forge), this is asymmetric: verification needs only the PUBLIC key, giving real
-    authority non-repudiation. ``keypair`` is an ``MLDSAKeyPair`` (public_key,
-    secret_key) from ``src/crypto/pqc_liboqs``; the secret never leaves the signer.
-    """
-    from src.crypto.pqc_liboqs import MLDSA65, MLDSAKeyPair  # lazy: keep module importable without liboqs
-
-    kp = keypair if isinstance(keypair, MLDSAKeyPair) else MLDSAKeyPair(*keypair)
-    env = _copy_envelope(envelope)
-    if int(env.authority.issued_at_ms) == 0:
-        env.authority.issued_at_ms = _now_ms()
-    if set_mmr_hook and len(env.audit.mmr_fields) == 0:
-        env.audit.mmr_fields.extend(MMR_REQUIRED_FIELDS_V1)
-
-    payload_hash = signed_payload_hash(env)
-    env.authority.signed_payload_hash = payload_hash
-    env.authority.signature = MLDSA65.from_keypair(kp).sign(payload_hash)
-
-    if set_mmr_hook:
-        env.audit.mmr_leaf_hash = mmr_leaf_hash(env, mmr_fields=tuple(env.audit.mmr_fields))
-    return env
-
-
-def verify_envelope_mldsa(
-    envelope: Any,
-    public_key_lookup: Callable[[str, str], bytes | None],
-    *,
-    now_ms: int | None = None,
-) -> tuple[bool, str]:
-    """Verify an envelope signed by :func:`sign_envelope_mldsa` using the issuer's PUBLIC key.
-
-    ``public_key_lookup(issuer, key_id)`` returns the ML-DSA-65 public key bytes (or
-    None). The secret key is never needed to verify, so a forged signature or a tampered
-    payload (which changes ``signed_payload_hash``) is rejected.
-    """
-    from src.crypto.pqc_liboqs import MLDSA65
-
-    errors = validate_envelope_schema(envelope)
-    if errors:
-        return False, "; ".join(errors)
-
-    current_ms = int(now_ms if now_ms is not None else _now_ms())
-    if current_ms < int(envelope.authority.valid_from_ms):
-        return False, "envelope not yet valid"
-    if current_ms > int(envelope.authority.valid_until_ms):
-        return False, "envelope expired"
-
-    public_key = public_key_lookup(str(envelope.authority.issuer), str(envelope.authority.key_id))
-    if public_key is None:
-        return False, "no public key available for issuer/key_id"
-
-    expected_payload_hash = signed_payload_hash(envelope)
-    if bytes(envelope.authority.signed_payload_hash) != expected_payload_hash:
-        return False, "signed_payload_hash mismatch"
-
-    try:
-        ok = MLDSA65.verify_with_public_key(
-            bytes(public_key), expected_payload_hash, bytes(envelope.authority.signature)
-        )
-    except Exception as exc:  # backend missing / malformed signature
-        return False, f"signature verification error: {exc}"
-    if not ok:
         return False, "signature mismatch"
 
     if len(envelope.audit.mmr_fields) > 0 and bytes(envelope.audit.mmr_leaf_hash):

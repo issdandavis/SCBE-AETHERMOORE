@@ -346,10 +346,10 @@ def cmd_status(args):
     for p in packets[-10:]:
         ack_tag = " [ACK-NEEDED]" if p.get("ack_required") and p.get("intent") != "ack" else ""
         print(
-            f"  {p.get('created_at', '')} {p.get('from', '')} -> {p.get('to', '')} "
-            f"| {p.get('intent', '')} | {p.get('status', '')}{ack_tag}"
+            f"  {p.get('created_at','')} {p.get('from','')} -> {p.get('to','')} "
+            f"| {p.get('intent','')} | {p.get('status','')}{ack_tag}"
         )
-        print(f"    {p.get('summary', '')[:100]}")
+        print(f"    {p.get('summary','')[:100]}")
 
     # JSONL lane tail
     lane_file = GITHUB_LANES / "cross_talk.jsonl"
@@ -361,8 +361,8 @@ def cmd_status(args):
             try:
                 d = json.loads(line)
                 print(
-                    f"  {d.get('created_at', '')} {d.get('from', '')} -> {d.get('to', '')} "
-                    f"| {d.get('intent', d.get('type', ''))}"
+                    f"  {d.get('created_at','')} {d.get('from','')} -> {d.get('to','')} "
+                    f"| {d.get('intent', d.get('type',''))}"
                 )
             except Exception:
                 pass
@@ -375,11 +375,9 @@ def cmd_status(args):
         for line in recent:
             try:
                 d = json.loads(line)
-                timestamp = d.get("timestamp_utc", "")
-                agent = d.get("agent", "")
-                callsign = d.get("callsign", "")
-                status = d.get("status", "")
-                print(f"  {timestamp} {agent} ({callsign}) — {status}")
+                print(
+                    f"  {d.get('timestamp_utc','')} {d.get('agent','')} ({d.get('callsign','')}) — {d.get('status','')}"
+                )
             except Exception:
                 pass
 
@@ -453,10 +451,9 @@ def cmd_roster(args):
         for aid, info in agents.items():
             enabled = info.get("enabled", True)
             tag = "ACTIVE" if enabled else "DISABLED"
-            display_name = info.get("display_name", aid)
-            provider = info.get("provider", "?")
-            model = info.get("model", "?")
-            print(f"  [{tag}] {aid}: {display_name} ({provider}/{model})")
+            print(
+                f"  [{tag}] {aid}: {info.get('display_name',aid)} ({info.get('provider','?')}/{info.get('model','?')})"
+            )
     else:
         print("No agent_squad.json found.")
 

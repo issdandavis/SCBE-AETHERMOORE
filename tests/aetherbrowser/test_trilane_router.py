@@ -21,50 +21,52 @@ def router():
 
 
 class TestIntentClassification:
-    @pytest.mark.parametrize(
-        "text,expected_intent",
-        [
-            # scrape intent
-            ("scrape the top 50 arXiv papers", TaskIntent.SCRAPE),
-            ("extract all links from this page", TaskIntent.SCRAPE),
-            ("crawl github.com for repos", TaskIntent.SCRAPE),
-            ("bulk download PDFs", TaskIntent.SCRAPE),
-            # interact intent
-            ("click the login button", TaskIntent.INTERACT),
-            ("fill out the contact form", TaskIntent.INTERACT),
-            ("navigate to github.com and open settings", TaskIntent.INTERACT),
-            ("type my username into the field", TaskIntent.INTERACT),
-            # verify intent
-            ("check if the shopify store looks right", TaskIntent.VERIFY),
-            ("verify the homepage screenshot", TaskIntent.VERIFY),
-            ("inspect the layout visually", TaskIntent.VERIFY),
-            # post intent
-            ("post this article to dev.to", TaskIntent.POST),
-            ("publish the blog post", TaskIntent.POST),
-            ("tweet about the new release", TaskIntent.POST),
-            ("share the new release on twitter", TaskIntent.POST),
-            # monitor intent
-            ("watch for price changes on amazon", TaskIntent.MONITOR),
-            ("monitor the CI pipeline", TaskIntent.MONITOR),
-            ("track when the page updates", TaskIntent.MONITOR),
-            # research intent
-            ("research AI safety papers", TaskIntent.RESEARCH),
-            ("find information about transformers", TaskIntent.RESEARCH),
-            ("search for competitor products", TaskIntent.RESEARCH),
-            # train intent
-            ("train the model by watching me browse", TaskIntent.TRAIN),
-            ("capture this session for SFT dataset", TaskIntent.TRAIN),
-            ("shadow learn from this interaction", TaskIntent.TRAIN),
-            # default to research
-            ("tell me about the weather", TaskIntent.RESEARCH),
-            # url boosts scrape
-            ("https://arxiv.org/list/cs.AI", TaskIntent.SCRAPE),
-            # large number boosts scrape
-            ("get 100 papers from arxiv", TaskIntent.SCRAPE),
-        ],
-    )
-    def test_classify_intent(self, router, text, expected_intent):
-        assert router.classify_intent(text) == expected_intent
+    def test_scrape_intent(self, router):
+        assert router.classify_intent("scrape the top 50 arXiv papers") == TaskIntent.SCRAPE
+        assert router.classify_intent("extract all links from this page") == TaskIntent.SCRAPE
+        assert router.classify_intent("crawl github.com for repos") == TaskIntent.SCRAPE
+        assert router.classify_intent("bulk download PDFs") == TaskIntent.SCRAPE
+
+    def test_interact_intent(self, router):
+        assert router.classify_intent("click the login button") == TaskIntent.INTERACT
+        assert router.classify_intent("fill out the contact form") == TaskIntent.INTERACT
+        assert router.classify_intent("navigate to github.com and open settings") == TaskIntent.INTERACT
+        assert router.classify_intent("type my username into the field") == TaskIntent.INTERACT
+
+    def test_verify_intent(self, router):
+        assert router.classify_intent("check if the shopify store looks right") == TaskIntent.VERIFY
+        assert router.classify_intent("verify the homepage screenshot") == TaskIntent.VERIFY
+        assert router.classify_intent("inspect the layout visually") == TaskIntent.VERIFY
+
+    def test_post_intent(self, router):
+        assert router.classify_intent("post this article to dev.to") == TaskIntent.POST
+        assert router.classify_intent("publish the blog post") == TaskIntent.POST
+        assert router.classify_intent("tweet about the new release") == TaskIntent.POST
+        assert router.classify_intent("share the new release on twitter") == TaskIntent.POST
+
+    def test_monitor_intent(self, router):
+        assert router.classify_intent("watch for price changes on amazon") == TaskIntent.MONITOR
+        assert router.classify_intent("monitor the CI pipeline") == TaskIntent.MONITOR
+        assert router.classify_intent("track when the page updates") == TaskIntent.MONITOR
+
+    def test_research_intent(self, router):
+        assert router.classify_intent("research AI safety papers") == TaskIntent.RESEARCH
+        assert router.classify_intent("find information about transformers") == TaskIntent.RESEARCH
+        assert router.classify_intent("search for competitor products") == TaskIntent.RESEARCH
+
+    def test_train_intent(self, router):
+        assert router.classify_intent("train the model by watching me browse") == TaskIntent.TRAIN
+        assert router.classify_intent("capture this session for SFT dataset") == TaskIntent.TRAIN
+        assert router.classify_intent("shadow learn from this interaction") == TaskIntent.TRAIN
+
+    def test_default_to_research(self, router):
+        assert router.classify_intent("tell me about the weather") == TaskIntent.RESEARCH
+
+    def test_url_boosts_scrape(self, router):
+        assert router.classify_intent("https://arxiv.org/list/cs.AI") == TaskIntent.SCRAPE
+
+    def test_large_number_boosts_scrape(self, router):
+        assert router.classify_intent("get 100 papers from arxiv") == TaskIntent.SCRAPE
 
 
 # =============================================================================

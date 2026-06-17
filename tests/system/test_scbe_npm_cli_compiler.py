@@ -148,17 +148,11 @@ def test_cli_liboqs_reports_native_proof_receipt() -> None:
 
 
 def test_cli_liboqs_reports_source_checkout_required_outside_repo(tmp_path: Path) -> None:
-    # Simulate an installed npm package: copy the whole CLI package (bin + lib +
-    # package.json) into node_modules, not just bin/scbe.js. scbe.js eagerly
-    # requires ../lib/*, so a bin-only copy can never load — and from this
-    # location repoRoot() resolves to tmp_path (no src/ tree), which is exactly
-    # the "source checkout required" condition under test.
-    package_src = CLI.parent.parent
     package_root = tmp_path / "node_modules" / "scbe-aethermoore-cli"
-    shutil.copytree(package_src / "bin", package_root / "bin")
-    shutil.copytree(package_src / "lib", package_root / "lib")
-    shutil.copy2(package_src / "package.json", package_root / "package.json")
-    copied_cli = package_root / "bin" / "scbe.js"
+    bin_dir = package_root / "bin"
+    bin_dir.mkdir(parents=True)
+    copied_cli = bin_dir / "scbe.js"
+    shutil.copy2(CLI, copied_cli)
 
     proc = subprocess.run(
         ["node", str(copied_cli), "liboqs", "--json"],

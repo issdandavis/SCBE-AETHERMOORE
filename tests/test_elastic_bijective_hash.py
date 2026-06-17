@@ -1,5 +1,4 @@
 """Tests for the Elastic Bijective Hash (python/scbe/elastic_bijective_hash.py)."""
-
 from __future__ import annotations
 
 import random

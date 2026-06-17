@@ -586,14 +586,6 @@ def extract_file_declarations(path: str, limit: int = 24) -> list[str]:
         r"\bfunction\s+([A-Za-z_][A-Za-z0-9_]*)",
         r"\b(?:const|let|var)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=",
         r"\bexport\s+(?:class|function|const|let)\s+([A-Za-z_][A-Za-z0-9_]*)",
-        # TypeScript (the repo's canonical language): interfaces, type aliases, enums,
-        # abstract classes, and `export default class/function` were previously missed,
-        # producing false symbol_not_found flags on valid .ts patches.
-        r"\b(?:export\s+)?interface\s+([A-Za-z_][A-Za-z0-9_]*)",
-        r"\b(?:export\s+)?type\s+([A-Za-z_][A-Za-z0-9_]*)\s*[=<]",
-        r"\b(?:export\s+)?(?:const\s+)?enum\s+([A-Za-z_][A-Za-z0-9_]*)",
-        r"\b(?:export\s+)?abstract\s+class\s+([A-Za-z_][A-Za-z0-9_]*)",
-        r"\bexport\s+default\s+(?:abstract\s+)?(?:class|function)\s+([A-Za-z_][A-Za-z0-9_]*)",
     )
     for pattern in patterns:
         declarations.extend(match.group(1) for match in re.finditer(pattern, content))
@@ -1075,19 +1067,13 @@ def _file_contains_symbol(path: str, symbol: str) -> bool:
         content = target.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return False
-    name = re.escape(symbol)
     patterns = (
-        rf"\bclass\s+{name}\b",
-        rf"\bdef\s+{name}\b",
-        rf"\bfunction\s+{name}\b",
-        rf"\b(?:const|let|var)\s+{name}\b",
-        rf"\bexport\s+(?:class|function|const|let)\s+{name}\b",
-        # TypeScript declarations (canonical language) the old patterns missed
-        rf"\binterface\s+{name}\b",
-        rf"\btype\s+{name}\b",
-        rf"\benum\s+{name}\b",
-        rf"\babstract\s+class\s+{name}\b",
-        rf"\bexport\s+default\s+(?:abstract\s+)?(?:class|function)\s+{name}\b",
+        rf"\bclass\s+{re.escape(symbol)}\b",
+        rf"\bdef\s+{re.escape(symbol)}\b",
+        rf"\bfunction\s+{re.escape(symbol)}\b",
+        rf"\bconst\s+{re.escape(symbol)}\b",
+        rf"\blet\s+{re.escape(symbol)}\b",
+        rf"\bexport\s+(?:class|function|const|let)\s+{re.escape(symbol)}\b",
     )
     return any(re.search(pattern, content) for pattern in patterns)
 

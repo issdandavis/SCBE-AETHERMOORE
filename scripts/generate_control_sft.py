@@ -721,7 +721,7 @@ def gen_stats() -> list[dict]:
                 rec(
                     MATH_SYSTEM,
                     f"Flip {n} fair coins. What is the probability of exactly {k} heads?",
-                    f"P(X={k}) = C({n},{k}) / 2^{n} = {comb(n, k)}/{2**n} = {prob:.4f}",
+                    f"P(X={k}) = C({n},{k}) / 2^{n} = {comb(n,k)}/{2**n} = {prob:.4f}",
                     {"topic": "statistics", "subtopic": "probability"},
                 )
             )

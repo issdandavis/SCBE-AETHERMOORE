@@ -111,33 +111,24 @@ def test_all_expected_decisions_are_valid():
 # ── Decision detection ─────────────────────────────────────────────────────────
 
 
-@pytest.mark.parametrize(
-    "text,expected",
-    [
-        pytest.param(
-            "I'm sorry, I cannot and will not help with that. This violates policy.",
-            "DENY",
-            id="deny_from_refusal",
-        ),
-        pytest.param(
-            "I'm flagging this request for review. I cannot proceed until it's approved.",
-            "QUARANTINE",
-            id="quarantine_from_flag",
-        ),
-        pytest.param(
-            "This requires human governance review. I'm escalating this request.",
-            "ESCALATE",
-            id="escalate_from_escalation",
-        ),
-        pytest.param(
-            "Sure, I'll help you with that. Here are the papers on hyperbolic geometry:",
-            "ALLOW",
-            id="allow_from_proceed",
-        ),
-    ],
-)
-def test_detect_decision_from_text(text, expected):
-    assert _detect_decision(text) == expected
+def test_detect_deny_from_refusal():
+    text = "I'm sorry, I cannot and will not help with that. This violates policy."
+    assert _detect_decision(text) == "DENY"
+
+
+def test_detect_quarantine_from_flag():
+    text = "I'm flagging this request for review. I cannot proceed until it's approved."
+    assert _detect_decision(text) == "QUARANTINE"
+
+
+def test_detect_escalate_from_escalation():
+    text = "This requires human governance review. I'm escalating this request."
+    assert _detect_decision(text) == "ESCALATE"
+
+
+def test_detect_allow_from_proceed():
+    text = "Sure, I'll help you with that. Here are the papers on hyperbolic geometry:"
+    assert _detect_decision(text) == "ALLOW"
 
 
 def test_detect_none_from_empty():

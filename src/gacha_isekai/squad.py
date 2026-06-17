@@ -150,7 +150,7 @@ class GachaSquad:
         loyalty = max(0.1, 1.0 - d)
 
         member = SquadMember(
-            name=f"{rarity}_{tongue}_{rng.randint(100, 999)}",
+            name=f"{rarity}_{tongue}_{rng.randint(100,999)}",
             tongue=tongue,
             role=role,
             position=pos,
@@ -208,7 +208,7 @@ class GachaSquad:
 
         role = TongueRole[enemy_tongue] if enemy_tongue in TongueRole.__members__ else TongueRole.KO
         recruit = SquadMember(
-            name=f"Shadow_{enemy_tongue}_{random.randint(100, 999)}",
+            name=f"Shadow_{enemy_tongue}_{random.randint(100,999)}",
             tongue=enemy_tongue,
             role=role,
             position=new_pos,
