@@ -1,0 +1,19 @@
+[
+  {
+    "intent": "I want a task tracker with due dates",
+    "caps": [
+      "due",
+      "add",
+      "list",
+      "done"
+    ],
+    "moves": [
+      "due",
+      "add",
+      "list",
+      "done"
+    ],
+    "deed": 3292800,
+    "verified": true
+  }
+]
