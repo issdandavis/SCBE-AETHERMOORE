@@ -361,7 +361,7 @@ def main():
     improvement = combined["f1"] - keyword_only["f1"]
     print(f"\n  Keyword alone: F1={keyword_only['f1']}")
     print(f"  Full stack:    F1={combined['f1']}")
-    print(f"  Improvement:   +{improvement:.3f} F1 ({improvement/max(keyword_only['f1'], 0.001)*100:.0f}%)")
+    print(f"  Improvement:   +{improvement:.3f} F1 ({improvement/max(keyword_only['f1'],0.001)*100:.0f}%)")
 
     # Save report
     report = {

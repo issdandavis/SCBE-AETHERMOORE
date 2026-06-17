@@ -44,58 +44,13 @@ def parse_python_to_ir(source: str, module_name: str = "module") -> PrismModule:
     )
 
 
-def _find_matching_brace(source: str, open_index: int) -> int:
-    depth = 0
-    in_string: str | None = None
-    escaped = False
-
-    for index in range(open_index, len(source)):
-        char = source[index]
-        if in_string:
-            if escaped:
-                escaped = False
-            elif char == "\\":
-                escaped = True
-            elif char == in_string:
-                in_string = None
-            continue
-        if char in {"'", '"', "`"}:
-            in_string = char
-            continue
-        if char == "{":
-            depth += 1
-        elif char == "}":
-            depth -= 1
-            if depth == 0:
-                return index
-    raise ValueError("Unbalanced braces in TypeScript function body.")
-
-
-def _normalise_ts_body(body: str) -> List[str]:
-    lines: List[str] = []
-    for raw_line in body.splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("//"):
-            continue
-        if line.endswith(";"):
-            line = line[:-1].rstrip()
-        lines.append(line)
-    return lines
-
-
 def parse_typescript_to_ir(source: str, module_name: str = "module") -> PrismModule:
-    pattern = re.compile(
-        r"(?:export\s+)?function\s+([A-Za-z_][A-Za-z0-9_]*)\s*\((.*?)\)\s*(?::\s*([^{]+))?\{",
-        re.DOTALL,
-    )
+    pattern = re.compile(r"function\s+([A-Za-z_][A-Za-z0-9_]*)\s*\((.*?)\)\s*\{", re.DOTALL)
     functions: List[PrismFunction] = []
 
     for match in pattern.finditer(source):
         name = match.group(1)
         raw_args = match.group(2).strip()
-        returns = match.group(3).strip() if match.group(3) else None
-        close_index = _find_matching_brace(source, match.end() - 1)
-        body = source[match.end() : close_index]
         args: List[str] = []
         if raw_args:
             for part in raw_args.split(","):
@@ -108,9 +63,8 @@ def parse_typescript_to_ir(source: str, module_name: str = "module") -> PrismMod
             PrismFunction(
                 name=name,
                 args=args,
-                body=_normalise_ts_body(body),
-                returns=returns,
-                metadata={"source": "typescript_regex", "body_source": "safe_subset"},
+                body=["// TODO: translate implementation"],
+                metadata={"source": "typescript_regex"},
             )
         )
 

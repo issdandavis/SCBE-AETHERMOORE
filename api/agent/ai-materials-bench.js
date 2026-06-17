@@ -18,22 +18,6 @@ const CONDUCTORS = {
   iron: { name: 'iron', rho: 9.71e-8, density: 7874 },
 };
 
-// Rough hobbyist-scale costs so the bench can COST a build, not just describe it.
-// Ranges in USD, not supplier quotes. Magnet wire is priced per metre by conductor.
-const WIRE_COST_PER_M = {
-  copper: 0.12, silver: 1.1, gold: 9, aluminum: 0.09, tungsten: 0.45, nichrome: 0.3, iron: 0.1,
-};
-const PART_COSTS = {
-  tube: { label: 'Borosilicate or quartz tube', low: 8, high: 26 },
-  carbon: { label: 'Graphene / CNT / pyrolytic-graphite film', low: 11, high: 32 },
-  ferrite: { label: 'Split ferrite sleeve or soft-magnetic segments', low: 5, high: 18 },
-  insulation: { label: 'Polyimide (Kapton) tape', low: 6, high: 12 },
-  hookup: { label: 'Leads, lugs, current-limited supply hookup', low: 7, high: 20 },
-};
-
-function round2(n) { return Math.round(n * 100) / 100; }
-function round3(n) { return Math.round(n * 1000) / 1000; }
-
 function detectConductor(concept, body) {
   const explicit = String((body && body.conductor) || '').trim().toLowerCase();
   if (explicit && CONDUCTORS[explicit]) return CONDUCTORS[explicit];
@@ -173,136 +157,6 @@ function flags(calc) {
   return out;
 }
 
-// A costed parts list derived from the computed wire length + the chosen conductor.
-function billOfMaterials(calc, conductor) {
-  const wireLen = calc.estimates.wire_length_m;
-  const perM = WIRE_COST_PER_M[conductor.name] || 0.12;
-  const items = [
-    {
-      part: `${conductor.name} enameled magnet wire (~${wireLen} m + winding margin)`,
-      qty: '1 spool',
-      est_usd_low: round2(Math.max(9, wireLen * perM)),
-      est_usd_high: round2(Math.max(15, wireLen * perM * 1.9)),
-    },
-    { part: `${PART_COSTS.tube.label} (~${calc.inputs.length_mm} mm)`, qty: '1', est_usd_low: PART_COSTS.tube.low, est_usd_high: PART_COSTS.tube.high },
-    { part: PART_COSTS.carbon.label, qty: '1 sheet/wrap', est_usd_low: PART_COSTS.carbon.low, est_usd_high: PART_COSTS.carbon.high },
-    { part: PART_COSTS.ferrite.label, qty: '1 set', est_usd_low: PART_COSTS.ferrite.low, est_usd_high: PART_COSTS.ferrite.high },
-    { part: PART_COSTS.insulation.label, qty: '1 roll', est_usd_low: PART_COSTS.insulation.low, est_usd_high: PART_COSTS.insulation.high },
-    { part: PART_COSTS.hookup.label, qty: '1 set', est_usd_low: PART_COSTS.hookup.low, est_usd_high: PART_COSTS.hookup.high },
-  ];
-  const low = round2(items.reduce((sum, item) => sum + item.est_usd_low, 0));
-  const high = round2(items.reduce((sum, item) => sum + item.est_usd_high, 0));
-  return {
-    currency: 'USD',
-    items,
-    estimated_total_low: low,
-    estimated_total_high: high,
-    note: 'Rough hobbyist-scale estimates, not supplier quotes. Cost varies with grade, supplier, and quantity. A current-limited bench supply is assumed already on hand.',
-  };
-}
-
-// Derive a real operating envelope: voltage at the set current, and the max
-// continuous current that keeps coil dissipation inside a bench-thermal budget.
-function safetyEnvelope(calc) {
-  const resistanceOhm = calc.estimates.coil_resistance_ohm;
-  const currentA = calc.inputs.current_a;
-  const powerBudgetW = 5;
-  const maxCurrentA = resistanceOhm > 0 ? round3(Math.sqrt(powerBudgetW / resistanceOhm)) : null;
-  const voltageV = round3(currentA * resistanceOhm);
-  const guidance = [
-    'Always drive from a current-limited bench supply; set the limit before connecting the coil.',
-    `At ${currentA} A the coil dissipates ~${calc.estimates.coil_power_w} W and needs ~${voltageV} V across it.`,
-  ];
-  if (maxCurrentA !== null) {
-    guidance.push(`Keep continuous current at or below ~${maxCurrentA} A to stay within a ${powerBudgetW} W bench-thermal budget; pulse/duty-cycle above that.`);
-  }
-  if (calc.inputs.frequency_hz > 100000) {
-    guidance.push('At this drive frequency, watch skin effect and parasitic heating; the DC resistance understates AC losses.');
-  }
-  return {
-    coil_voltage_v: voltageV,
-    coil_power_w: calc.estimates.coil_power_w,
-    power_budget_w: powerBudgetW,
-    within_power_budget: calc.estimates.coil_power_w <= powerBudgetW,
-    max_continuous_current_a: maxCurrentA,
-    guidance,
-  };
-}
-
-// Concrete measurement checkpoints with target values pulled from the physics.
-function testPlan(calc) {
-  const e = calc.estimates;
-  const steps = [
-    { step: 'Measure coil DC resistance with a multimeter before applying power.', target: `~${e.coil_resistance_ohm} ohm (allow +/-15% for winding and lead variance)` },
-    { step: 'Connect a current-limited supply and ramp current slowly from zero.', target: `Hold the limit at or below ${calc.inputs.current_a} A` },
-    { step: 'Measure axial magnetic field at the coil center with a Hall/gauss probe.', target: `~${e.solenoid_field_mt} mT at ${calc.inputs.current_a} A (ideal-solenoid estimate; real coils read lower)` },
-    { step: 'Run energized for a timed interval and log coil temperature.', target: `~${e.coil_power_w} W dissipation; stop if temperature rise exceeds ~40 C` },
-  ];
-  if (e.optical_na_estimate > 0) {
-    steps.push({ step: 'Couple light through the core and check guiding/leakage.', target: `Numerical aperture ~${e.optical_na_estimate} from n_core/n_clad` });
-  }
-  return steps;
-}
-
-// Assemble everything into one self-contained Markdown deliverable (the paid artifact).
-function buildReport(ctx) {
-  const { concept, receiptId, stamp, stack, calc, bom, safety, plan, riskFlags } = ctx;
-  const e = calc.estimates;
-  const lines = [];
-  lines.push('# AI Materials Bench - Concept Report');
-  lines.push('');
-  lines.push('**Product:** AetherMoore AI Materials Bench  ');
-  lines.push(`**Receipt:** \`${receiptId}\`  `);
-  lines.push(`**Date:** ${stamp}  `);
-  lines.push(`**Conductor:** ${calc.conductor} (rho = ${calc.conductor_resistivity_ohm_m} ohm-m)`);
-  lines.push('');
-  lines.push('## Concept');
-  lines.push(concept);
-  lines.push('');
-  lines.push('## Inputs');
-  Object.entries(calc.inputs).forEach(([k, v]) => lines.push(`- ${k}: ${v}`));
-  if (calc.assumed.length) {
-    lines.push('');
-    lines.push('### Assumed / clamped');
-    calc.assumed.forEach((a) => lines.push(`- ${a}`));
-  }
-  lines.push('');
-  lines.push('## Material stack');
-  stack.forEach((layer) => lines.push(`- **${layer.layer}** - ${layer.material} (${layer.role})`));
-  lines.push('');
-  lines.push('## Estimated physics');
-  lines.push(`- Solenoid field: ${e.solenoid_field_mt} mT`);
-  lines.push(`- Coil resistance: ${e.coil_resistance_ohm} ohm`);
-  lines.push(`- Coil power: ${e.coil_power_w} W`);
-  lines.push(`- Wire length: ${e.wire_length_m} m`);
-  lines.push(`- Skin depth: ${e.skin_depth_mm === null ? 'n/a (DC)' : e.skin_depth_mm + ' mm'}`);
-  lines.push(`- Optical NA: ${e.optical_na_estimate}`);
-  lines.push('');
-  lines.push('## Bill of materials (rough estimate)');
-  lines.push('| Part | Qty | Est. USD |');
-  lines.push('| --- | --- | --- |');
-  bom.items.forEach((i) => lines.push(`| ${i.part} | ${i.qty} | $${i.est_usd_low} - $${i.est_usd_high} |`));
-  lines.push(`| **Total** |  | **$${bom.estimated_total_low} - $${bom.estimated_total_high}** |`);
-  lines.push('');
-  lines.push(`_${bom.note}_`);
-  lines.push('');
-  lines.push('## Safety envelope');
-  lines.push(`- Coil voltage at set current: ~${safety.coil_voltage_v} V`);
-  lines.push(`- Power budget: ${safety.power_budget_w} W (${safety.within_power_budget ? 'within budget' : 'OVER budget - reduce current/turns'})`);
-  if (safety.max_continuous_current_a !== null) lines.push(`- Max continuous current: ~${safety.max_continuous_current_a} A`);
-  safety.guidance.forEach((g) => lines.push(`- ${g}`));
-  lines.push('');
-  lines.push('## Test plan');
-  plan.forEach((p, idx) => lines.push(`${idx + 1}. ${p.step}\n   _Target:_ ${p.target}`));
-  lines.push('');
-  lines.push('## Risk flags');
-  riskFlags.forEach((f) => lines.push(`- ${f}`));
-  lines.push('');
-  lines.push('---');
-  lines.push('_Generated by AetherMoore AI Materials Bench. First-pass engineering estimates for bench prototyping - validate with current-limited low-voltage tests before committing to a design._');
-  return lines.join('\n');
-}
-
 module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -313,29 +167,19 @@ module.exports = async function handler(req, res) {
     const concept = String(body.concept || 'glass tube with carbon layer, copper coil, and ferrite flux guide').trim();
     const conductor = detectConductor(concept, body);
     const calc = compute(body, conductor);
-    const receiptId = `matbench_${sha(JSON.stringify({ concept, inputs: calc.inputs })).slice(0, 16)}`;
-    const stamp = new Date().toISOString().slice(0, 10);
-    const stack = materialsFor(concept, conductor);
-    const bom = billOfMaterials(calc, conductor);
-    const safety = safetyEnvelope(calc);
-    const plan = testPlan(calc);
-    const riskFlags = flags(calc);
     const result = {
       ok: true,
       schema_version: 'aethermoore_ai_materials_bench_v1',
       product: 'AI Materials Bench',
-      receipt_id: receiptId,
+      receipt_id: `matbench_${sha(JSON.stringify({ concept, inputs: calc.inputs })).slice(0, 16)}`,
       concept,
       architecture: {
         name: 'magneto-optic composite tube sleeve',
-        stack,
+        stack: materialsFor(concept, conductor),
         purpose: 'model a glass/fiber tube with conductive carbon skin, coil winding, magnetic flux shaping, and optical lane.',
       },
       math: calc,
-      bill_of_materials: bom,
-      safety,
-      test_plan: plan,
-      risk_flags: riskFlags,
+      risk_flags: flags(calc),
       visual_stage: {
         panels: ['cross-section', 'field lines', 'thermal lane', 'optical lane', 'receipt'],
         draw_hints: ['tube core', 'carbon sleeve', 'copper winding', 'ferrite segments', 'light path'],
@@ -346,10 +190,8 @@ module.exports = async function handler(req, res) {
         'Measure coil resistance before energizing.',
         'Start with current-limited low-voltage tests and log field/heat/optical readings.',
       ],
-      report_markdown: buildReport({ concept, receiptId, stamp, stack, calc, bom, safety, plan, riskFlags }),
       sellable_output: {
-        offer: 'Downloadable concept report: material stack, costed bill of materials, field/heat/optical estimates, a measurement test plan, a safety envelope, and a signed receipt.',
-        deliverable: 'report_markdown (export to .md / print to PDF)',
+        offer: 'Visual material-stack model with field, heat, optical estimates, risk flags, and receipt.',
         starter_price: '$49 concept report or $199 prototype worksheet pack',
       },
     };

@@ -150,7 +150,7 @@ def write_markdown_index(path: Path, index: dict[str, Any]) -> None:
                 f"- ok: `{step['ok']}`",
                 f"- return_code: `{step['return_code']}`",
                 f"- duration_seconds: `{step['duration_seconds']}`",
-                f"- command: `{' '.join(step['command'])}`",
+                f"- command: `{ ' '.join(step['command']) }`",
                 f"- stdout: `{step['stdout_path']}`",
                 f"- stderr: `{step['stderr_path']}`",
             ]

@@ -1,5 +1,4 @@
 """Tests for the polylinear-recursive-mountain runtime packet."""
-
 from __future__ import annotations
 
 from python.scbe.poly_mountain import build_packet, route_satisfiability
@@ -8,15 +7,9 @@ from python.scbe.poly_mountain import build_packet, route_satisfiability
 def test_packet_has_all_section11_fields():
     pkt = build_packet("fix the failing GeoSeal route test")
     for key in (
-        "goal",
-        "context_views",
-        "tongue_views",
-        "dh_sector_labels",
-        "assigned_lanes",
-        "checkpoint_policy",
-        "route_satisfiability",
-        "apply_gate",
-        "may_proceed",
+        "goal", "context_views", "tongue_views", "dh_sector_labels",
+        "assigned_lanes", "checkpoint_policy", "route_satisfiability",
+        "apply_gate", "may_proceed",
     ):
         assert key in pkt, key
 
@@ -31,8 +24,8 @@ def test_six_tongue_views():
 def test_default_route_is_satisfiable_and_may_proceed():
     pkt = build_packet("implement and verify a small helper")
     rs = pkt["route_satisfiability"]
-    assert rs["available"] is True  # z3 installed
-    assert rs["satisfiable"] is True  # distinct lane writes, bounded budgets
+    assert rs["available"] is True       # z3 installed
+    assert rs["satisfiable"] is True     # distinct lane writes, bounded budgets
     assert pkt["may_proceed"] is True
 
 

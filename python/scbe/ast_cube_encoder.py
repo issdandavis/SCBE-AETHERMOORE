@@ -50,47 +50,12 @@ except ModuleNotFoundError:  # pragma: no cover - direct script execution
 
 # fixed structural vocabulary -> stable ids (extend freely; 0 = unknown)
 _NODE_TYPES = [
-    "Module",
-    "FunctionDef",
-    "AsyncFunctionDef",
-    "ClassDef",
-    "Return",
-    "Assign",
-    "AugAssign",
-    "AnnAssign",
-    "For",
-    "While",
-    "If",
-    "With",
-    "Raise",
-    "Try",
-    "Import",
-    "ImportFrom",
-    "Expr",
-    "Call",
-    "Name",
-    "Attribute",
-    "Constant",
-    "BinOp",
-    "UnaryOp",
-    "BoolOp",
-    "Compare",
-    "arguments",
-    "arg",
-    "keyword",
-    "List",
-    "Tuple",
-    "Dict",
-    "Set",
-    "Subscript",
-    "Lambda",
-    "comprehension",
-    "ListComp",
-    "DictComp",
-    "GeneratorExp",
-    "Starred",
-    "Slice",
-    "JoinedStr",
+    "Module", "FunctionDef", "AsyncFunctionDef", "ClassDef", "Return", "Assign",
+    "AugAssign", "AnnAssign", "For", "While", "If", "With", "Raise", "Try",
+    "Import", "ImportFrom", "Expr", "Call", "Name", "Attribute", "Constant",
+    "BinOp", "UnaryOp", "BoolOp", "Compare", "arguments", "arg", "keyword",
+    "List", "Tuple", "Dict", "Set", "Subscript", "Lambda", "comprehension",
+    "ListComp", "DictComp", "GeneratorExp", "Starred", "Slice", "JoinedStr",
 ]
 _TYPE_ID = {t: i + 1 for i, t in enumerate(_NODE_TYPES)}
 
@@ -110,79 +75,33 @@ FACE_LEGEND = {t: TONGUE_ROLE[t]["role"] for t in TONGUES}
 FACE_RULES = {
     # Kor'aelin — Control Flow: branches, loops, jumps.
     "KO": {
-        "If",
-        "IfExp",
-        "For",
-        "AsyncFor",
-        "While",
-        "Return",
-        "Break",
-        "Continue",
-        "Try",
-        "Match",
-        "comprehension",
+        "If", "IfExp", "For", "AsyncFor", "While", "Return", "Break",
+        "Continue", "Try", "Match", "comprehension",
     },
     # Avali — Input/Output: calls, imports, attribute access, the I/O surface.
     "AV": {
-        "Call",
-        "Import",
-        "ImportFrom",
-        "arguments",
-        "arg",
-        "keyword",
-        "Attribute",
-        "Expr",
-        "JoinedStr",
+        "Call", "Import", "ImportFrom", "arguments", "arg", "keyword",
+        "Attribute", "Expr", "JoinedStr",
     },
     # Runethic — Scope/Context: anything that opens a naming scope or context.
     "RU": {
-        "Module",
-        "FunctionDef",
-        "AsyncFunctionDef",
-        "ClassDef",
-        "Lambda",
-        "With",
-        "AsyncWith",
-        "Global",
-        "Nonlocal",
-        "comprehension",
+        "Module", "FunctionDef", "AsyncFunctionDef", "ClassDef", "Lambda",
+        "With", "AsyncWith", "Global", "Nonlocal", "comprehension",
     },
     # Cassisivadan — Math/Logic: arithmetic, comparison, indexing, numbers.
     "CA": {
-        "BinOp",
-        "UnaryOp",
-        "BoolOp",
-        "Compare",
-        "AugAssign",
-        "Subscript",
-        "Slice",
-        "Constant",
+        "BinOp", "UnaryOp", "BoolOp", "Compare", "AugAssign", "Subscript",
+        "Slice", "Constant",
     },
     # Umbroth — Security: trust boundaries, error handling, mutation, deletion.
     "UM": {
-        "Try",
-        "Raise",
-        "Assert",
-        "Delete",
-        "Global",
-        "Nonlocal",
-        "Import",
-        "ImportFrom",
+        "Try", "Raise", "Assert", "Delete", "Global", "Nonlocal",
+        "Import", "ImportFrom",
     },
     # Draumric — Transforms: assignment and data-shape construction.
     "DR": {
-        "Assign",
-        "AnnAssign",
-        "List",
-        "Tuple",
-        "Dict",
-        "Set",
-        "ListComp",
-        "DictComp",
-        "SetComp",
-        "GeneratorExp",
-        "Starred",
-        "JoinedStr",
+        "Assign", "AnnAssign", "List", "Tuple", "Dict", "Set", "ListComp",
+        "DictComp", "SetComp", "GeneratorExp", "Starred", "JoinedStr",
     },
 }
 
@@ -311,11 +230,11 @@ def _face_trits(node: ast.AST, token: str) -> Dict[str, int]:
 
     if isinstance(node, ast.Name):
         if isinstance(node.ctx, ast.Store):
-            out["UM"] = 1  # binding / mutation -> Security boundary
-            out["DR"] = 1  # writing a value -> Transform target
+            out["UM"] = 1   # binding / mutation -> Security boundary
+            out["DR"] = 1   # writing a value -> Transform target
             out["AV"] = -1
         elif isinstance(node.ctx, ast.Load):
-            out["AV"] = 1  # reading a value -> I/O surface
+            out["AV"] = 1   # reading a value -> I/O surface
             out["UM"] = -1
 
     _FACE_CACHE[_ck] = out
@@ -329,12 +248,12 @@ def _active_faces(node: ast.AST, ntype: str) -> List[str]:
     """
     if isinstance(node, ast.Constant):
         if isinstance(node.value, str):
-            return ["DR"]  # string literal -> data / Transforms
-        return ["CA"]  # number / bool / None -> Math/Logic
+            return ["DR"]            # string literal -> data / Transforms
+        return ["CA"]                # number / bool / None -> Math/Logic
     if isinstance(node, ast.Name):
         if isinstance(node.ctx, ast.Store):
-            return ["UM", "DR"]  # binding -> Security boundary + Transform target
-        return ["AV"]  # load -> I/O surface
+            return ["UM", "DR"]      # binding -> Security boundary + Transform target
+        return ["AV"]                # load -> I/O surface
     return [t for t in TONGUES if ntype in FACE_RULES[t]]
 
 
@@ -357,23 +276,16 @@ def encode(src: str) -> Dict[str, Any]:
             level = depth - 1
             h = splitmix64(((path[-1] + 1) << 21) ^ ((level + 1) * _GOLDEN))
             w = level + 1
-            loc = [(parent_loc[d] + ((h >> (8 * d)) & 0xFF) * w) & 0xFFFF for d in range(LOCATION_DIMS)]
-        tr = [trit.get(t, 0) for t in TONGUES]  # ints already; one pass
+            loc = [(parent_loc[d] + ((h >> (8 * d)) & 0xFF) * w) & 0xFFFF
+                   for d in range(LOCATION_DIMS)]
+        tr = [trit.get(t, 0) for t in TONGUES]            # ints already; one pass
         vec = [_TYPE_ID.get(ntype, 0), depth]
         vec += tr
         vec += loc
-        nodes.append(
-            {
-                "type": ntype,
-                "token": token,
-                "depth": depth,
-                "face_trits": dict(zip(TONGUES, tr)),
-                "roles": [TONGUE_ROLE[t]["role"] for t in _active_faces(node, ntype)],
-                "path": path,
-                "location": loc,
-                "vector": vec,
-            }
-        )
+        nodes.append({"type": ntype, "token": token, "depth": depth,
+                      "face_trits": dict(zip(TONGUES, tr)),
+                      "roles": [TONGUE_ROLE[t]["role"] for t in _active_faces(node, ntype)],
+                      "path": path, "location": loc, "vector": vec})
         for ci, child in enumerate(ast.iter_child_nodes(node)):
             walk(child, depth + 1, path + [ci], loc)
 
@@ -408,7 +320,8 @@ def encode_matrix(src: str) -> Dict[str, Any]:
             loc = [0] * LOCATION_DIMS
         else:
             h = splitmix64(((last_idx + 1) << 21) ^ (depth * golden))
-            loc = [(parent_loc[d] + ((h >> (8 * d)) & 0xFF) * depth) & 0xFFFF for d in range(LOCATION_DIMS)]
+            loc = [(parent_loc[d] + ((h >> (8 * d)) & 0xFF) * depth) & 0xFFFF
+                   for d in range(LOCATION_DIMS)]
         row = [tid.get(ntype, 0), depth]
         row += [trit.get(t, 0) for t in tongues]
         row += loc
@@ -473,7 +386,8 @@ def _demo() -> None:
         print(f"    {ln}")
     print(f"\nAST nodes: {enc['shape'][0]}   vector dim: {enc['shape'][1]}")
     approx_bpe = max(1, len(src) // 4)  # ~1 token / 4 chars for a transformer
-    print(f"transformer subword tokens (~len/4): {approx_bpe}   " f"-> AST-vector nodes: {enc['shape'][0]}")
+    print(f"transformer subword tokens (~len/4): {approx_bpe}   "
+          f"-> AST-vector nodes: {enc['shape'][0]}")
     print("\nfirst 8 nodes — the faces that light up carry the meaning:")
     print("   node            tok          active roles")
     for n in enc["nodes"][:8]:
@@ -482,7 +396,6 @@ def _demo() -> None:
 
     # nested complexity: same token, different locations -> different vectors
     from collections import defaultdict
-
     by_tok = defaultdict(list)
     for n in enc["nodes"]:
         by_tok[n["token"]].append(n)
@@ -498,7 +411,8 @@ def _demo() -> None:
     norm = ast.unparse(ast.parse(src))
     print(f"\nsemantic AST round-trip: {recovered == norm}")
     print(f"exact source lane: {verify_bijective_layer(enc)}")
-    print(f"each token bijective across faces: " f"{all(CubeToken(n['token']).is_bijective() for n in enc['nodes'])}")
+    print(f"each token bijective across faces: "
+          f"{all(CubeToken(n['token']).is_bijective() for n in enc['nodes'])}")
     print("\n-> (N x D) integer matrix for a matrix-field/Mamba model; the location")
     print("   axes give every cube its address in the nested hyper-structure.")
 

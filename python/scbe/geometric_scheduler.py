@@ -37,31 +37,27 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 import numpy as np
 
 from python.scbe.geometric_router import (
-    Agent,
-    TONGUES,
-    agent_scale,
-    finsler_scaled,
+    Agent, TONGUES, agent_scale, finsler_scaled,
 )
 
 
 @dataclass
 class Job:
     name: str
-    profile: Any  # tongue profile (dict or 6-vec)
+    profile: Any                       # tongue profile (dict or 6-vec)
     work: Optional[Callable[[float], Any]] = None  # work(penalty) -> result
-    base: float = 0.01  # base latency units (seconds, demo scale)
+    base: float = 0.01                 # base latency units (seconds, demo scale)
 
 
 @dataclass
 class Worker(Agent):
     """An Agent that can also do work (inherits tongue identity + manifold pos)."""
-
     _scale: Optional[np.ndarray] = field(default=None, repr=False)
 
     @property
     def scale(self) -> np.ndarray:
         if self._scale is None:
-            self._scale = agent_scale(self.tongue)  # cache immutable per-axis scale
+            self._scale = agent_scale(self.tongue)   # cache immutable per-axis scale
         return self._scale
 
 
@@ -82,10 +78,10 @@ def _execute(worker: Worker, job: Job) -> Any:
     pen = 1.0 + finsler_scaled(worker.scale, worker.pos, job.profile)
     if job.work is not None:
         return job.work(pen)
-    serve = getattr(worker, "serve", None)  # a model/agent worker serves the job itself
+    serve = getattr(worker, "serve", None)   # a model/agent worker serves the job itself
     if serve is not None:
         return serve(job, pen)
-    time.sleep(job.base * pen)  # else model generic agent latency (I/O-bound)
+    time.sleep(job.base * pen)               # else model generic agent latency (I/O-bound)
     return f"{job.name}@{worker.name}"
 
 
@@ -118,7 +114,7 @@ class GeometricScheduler:
         for wi, w in enumerate(W):
             for ji, j in enumerate(jobs):
                 cost[wi, ji] = finsler_scaled(w.scale, w.pos, j.profile)
-        best = cost.argmin(axis=0)  # job -> index of its cheapest worker
+        best = cost.argmin(axis=0)               # job -> index of its cheapest worker
         defer_cap = max(1, nW // 2)
 
         available = set(range(nJ))
@@ -167,11 +163,12 @@ class GeometricScheduler:
                             # routing (a strongly-KO job won't land on a DR model) -
                             # unless the job is badly starved (hard cap forces progress).
                             ratio = cost[wi, ji] / max(cost[best[ji], ji], 1e-9)
-                            if (defers[ji] >= defer_cap and ratio <= 4.0) or defers[ji] >= defer_cap * 4:
+                            if (defers[ji] >= defer_cap and ratio <= 4.0) \
+                                    or defers[ji] >= defer_cap * 4:
                                 available.discard(ji)
                                 idx = ji
                                 break
-                            defers[ji] += 1  # let the specialist take it first
+                            defers[ji] += 1               # let the specialist take it first
                             deferred.append((c, ji))
                         for item in deferred:
                             heapq.heappush(heap, item)
@@ -200,22 +197,18 @@ class GeometricScheduler:
                     results[job.name] = res
 
         t0 = time.perf_counter()
-        threads = [threading.Thread(target=loop, args=(wi,), name=W[wi].name) for wi in range(nW)]
+        threads = [threading.Thread(target=loop, args=(wi,), name=W[wi].name)
+                   for wi in range(nW)]
         for t in threads:
             t.start()
         for t in threads:
             t.join()
         wall = time.perf_counter() - t0
         return SchedReport(
-            mode=mode,
-            wall=wall,
-            makespan=max(busy.values()) if busy else 0.0,
-            assignments=assigned,
-            busy=busy,
-            done=sum(len(v) for v in assigned.values()),
-            failed=len(errors),
-            results=results,
-            errors=errors,
+            mode=mode, wall=wall, makespan=max(busy.values()) if busy else 0.0,
+            assignments=assigned, busy=busy,
+            done=sum(len(v) for v in assigned.values()), failed=len(errors),
+            results=results, errors=errors,
         )
 
 
@@ -233,16 +226,17 @@ class StreamScheduler:
     lets workers drain; join() returns the SchedReport.
     """
 
-    def __init__(self, workers: Sequence[Worker], max_retries: int = 2, purge_every: int = 0):
+    def __init__(self, workers: Sequence[Worker], max_retries: int = 2,
+                 purge_every: int = 0):
         if not workers:
             raise ValueError("need at least one worker")
         self.workers = list(workers)
         self.max_retries = max_retries
-        self.purge_every = purge_every  # 0 = pure phi, no purge passes
+        self.purge_every = purge_every          # 0 = pure phi, no purge passes
         self._cv = threading.Condition()
-        self._jobs: Dict[int, Job] = {}  # jid -> job (waiting)
+        self._jobs: Dict[int, Job] = {}         # jid -> job (waiting)
         self._cost: Dict[int, np.ndarray] = {}  # jid -> per-worker cost row
-        self._order = 0  # submit sequence (age)
+        self._order = 0                          # submit sequence (age)
         self._jid = 0
         self._retries: Dict[int, int] = {}
         self._closed = False
@@ -266,7 +260,8 @@ class StreamScheduler:
             jid = self._jid
             self._jid += 1
             self._jobs[jid] = job
-            self._cost[jid] = np.array([finsler_scaled(w.scale, w.pos, job.profile) for w in self.workers])
+            self._cost[jid] = np.array(
+                [finsler_scaled(w.scale, w.pos, job.profile) for w in self.workers])
             self._jobs[jid]._order = self._order  # type: ignore[attr-defined]
             self._order += 1
             self._retries[jid] = 0
@@ -304,7 +299,7 @@ class StreamScheduler:
                 with self._cv:
                     self._retries[jid] += 1
                     if self._retries[jid] <= self.max_retries:
-                        self._jobs[jid] = job  # re-queue live
+                        self._jobs[jid] = job          # re-queue live
                         self._cost[jid] = cost_row
                         self._cv.notify_all()
                     else:
@@ -320,9 +315,8 @@ class StreamScheduler:
     def start(self) -> "StreamScheduler":
         self._started = True
         self._wall_start = time.perf_counter()
-        self._threads = [
-            threading.Thread(target=self._loop, args=(wi,), name=w.name) for wi, w in enumerate(self.workers)
-        ]
+        self._threads = [threading.Thread(target=self._loop, args=(wi,), name=w.name)
+                         for wi, w in enumerate(self.workers)]
         for t in self._threads:
             t.start()
         return self
@@ -340,20 +334,15 @@ class StreamScheduler:
         wall = time.perf_counter() - self._wall_start if self._wall_start else 0.0
         return SchedReport(
             mode=f"stream/{'purge' if self.purge_every else 'phi'}",
-            wall=wall,
-            makespan=max(self.busy.values()) if self.busy else 0.0,
-            assignments=self.assigned,
-            busy=self.busy,
-            done=sum(len(v) for v in self.assigned.values()),
-            failed=len(self.errors),
-            results=self.results,
-            errors=self.errors,
+            wall=wall, makespan=max(self.busy.values()) if self.busy else 0.0,
+            assignments=self.assigned, busy=self.busy,
+            done=sum(len(v) for v in self.assigned.values()), failed=len(self.errors),
+            results=self.results, errors=self.errors,
         )
 
 
 def _demo() -> None:
     import random
-
     rng = random.Random(7)
     fleet = [Worker(f"{t}-agent", {t: 1.0}) for t in TONGUES]
     jobs = []
@@ -369,15 +358,11 @@ def _demo() -> None:
     ge = sched.run(jobs, mode="geometric")
     for r in (rr, ge):
         loads = " ".join(f"{n.split('-')[0]}:{len(v)}" for n, v in r.assignments.items())
-        print(
-            f"  {r.mode:<12} wall {r.wall:5.2f}s  makespan {r.makespan:5.2f}s  "
-            f"done {r.done}/{len(jobs)} fail {r.failed}"
-        )
+        print(f"  {r.mode:<12} wall {r.wall:5.2f}s  makespan {r.makespan:5.2f}s  "
+              f"done {r.done}/{len(jobs)} fail {r.failed}")
         print(f"               loads  {loads}")
-    print(
-        f"\n  geometric wall-clock {100 * (1 - ge.wall / rr.wall):.0f}% faster, "
-        f"makespan {100 * (1 - ge.makespan / rr.makespan):.0f}% lower (real dispatch)"
-    )
+    print(f"\n  geometric wall-clock {100 * (1 - ge.wall / rr.wall):.0f}% faster, "
+          f"makespan {100 * (1 - ge.makespan / rr.makespan):.0f}% lower (real dispatch)")
     print("  precomputed costs + per-worker heaps (no Finsler under lock); best-worker")
     print("  preference + defer-cap stops over-stealing and starvation.")
 
