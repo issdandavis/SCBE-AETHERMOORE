@@ -13,6 +13,7 @@ mapping -- you pick by goal.
 
     python scripts/experiments/prime_count.py
 """
+
 from __future__ import annotations
 
 # Fermat primes -- the example template the idea uses.
@@ -35,7 +36,7 @@ def freq_octave(n: int, P: list[int], base: float = 2.0):
     if k < 0:
         return base ** (n / P[0])  # interpolate up to the first anchor
     if k >= len(P) - 1:
-        return base ** k
+        return base**k
     width = P[k + 1] - P[k]
     return base ** (k + r / width)
 
@@ -76,7 +77,6 @@ def main():
 
     print("\n2) compound primes (primorial chain -- products of the template):")
     chain = primorial_chain(P)
-    acc = 1
     for p, c in zip(P, chain):
         print(f"   x{p:<6} -> {c}")
 

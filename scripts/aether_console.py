@@ -10,6 +10,7 @@ Run it:
     python scripts/aether_console.py
     python scripts/aether_console.py --demo     # non-interactive render (for tests)
 """
+
 from __future__ import annotations
 
 import json
@@ -23,8 +24,14 @@ REPO = Path(__file__).resolve().parent.parent
 CATALOG = Path(__file__).resolve().parent / "powershell" / "AetherMenu.catalog.json"
 
 _C = {
-    "cyan": "\033[36m", "dim": "\033[2m", "green": "\033[32m", "yellow": "\033[33m",
-    "red": "\033[31m", "bold": "\033[1m", "mag": "\033[35m", "reset": "\033[0m",
+    "cyan": "\033[36m",
+    "dim": "\033[2m",
+    "green": "\033[32m",
+    "yellow": "\033[33m",
+    "red": "\033[31m",
+    "bold": "\033[1m",
+    "mag": "\033[35m",
+    "reset": "\033[0m",
 }
 
 

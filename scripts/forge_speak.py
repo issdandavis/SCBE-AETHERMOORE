@@ -10,6 +10,7 @@ faking it). No model backend required -- a deterministic intent parser, so every
     python scripts/forge_speak.py "I want a task tracker I can mark done and count"
     python scripts/forge_speak.py "let me add things, see them, and clear the list"
 """
+
 from __future__ import annotations
 
 import sys
@@ -40,8 +41,11 @@ _INTENT = {
 _TRACKER_WORDS = ("task", "todo", "to-do", "to do", "tracker", "checklist", "list of")
 # things we honestly still do NOT have a move for (so we say so instead of faking)
 _GAPS = {
-    "remind": "reminders", "recur": "recurring tasks", "repeat": "recurring tasks",
-    "sync": "cloud sync", "share": "sharing with people",
+    "remind": "reminders",
+    "recur": "recurring tasks",
+    "repeat": "recurring tasks",
+    "sync": "cloud sync",
+    "share": "sharing with people",
 }
 
 
@@ -127,8 +131,10 @@ def speak(text: str):
     print(f"  I UNDERSTOOD you want to: {', '.join(caps)}")
     plan, used, src, ok, results = solve(synth_spec(caps, text))
     lines = src.count("\n") + 1
-    print(f"  -> built it from {len(plan)} building block(s): {', '.join(plan)}  "
-          f"({len(used)} moves, {lines} lines, on the binary Turing base)")
+    print(
+        f"  -> built it from {len(plan)} building block(s): {', '.join(plan)}  "
+        f"({len(used)} moves, {lines} lines, on the binary Turing base)"
+    )
     print()
     for argv, good, out in results:
         print(f"   [{'OK' if good else 'XX'}] forged {' '.join(argv):<16} -> {out}")
