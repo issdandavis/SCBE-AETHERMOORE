@@ -158,30 +158,13 @@ def load_catalog() -> dict[str, Any]:
     return json.loads(CATALOG.read_text(encoding="utf-8"))
 
 
-def slug_href(path: str, from_dir: Path) -> str:
-    target = DOCS / path
-    return (
-        Path(path).as_posix()
-        if from_dir == DOCS
-        else Path("../" * len(from_dir.relative_to(DOCS).parts))
-        .joinpath(path)
-        .as_posix()
-    )
-
-
 def tags_html(tags: list[str]) -> str:
-    return (
-        '<div class="tags">'
-        + "".join(f'<span class="tag">{html.escape(tag)}</span>' for tag in tags)
-        + "</div>"
-    )
+    return '<div class="tags">' + "".join(f'<span class="tag">{html.escape(tag)}</span>' for tag in tags) + "</div>"
 
 
 def link(path: str, label: str, current: Path) -> str:
     target = DOCS / path
-    href = Path(
-        *([".."] * len(current.relative_to(DOCS).parts)), target.relative_to(DOCS)
-    ).as_posix()
+    href = Path(*([".."] * len(current.relative_to(DOCS).parts)), target.relative_to(DOCS)).as_posix()
     return f'<a href="{html.escape(href)}">{html.escape(label)}</a>'
 
 
@@ -246,9 +229,7 @@ def md_to_html(markdown: str) -> str:
 
         if line.startswith("```"):
             if in_code:
-                out.append(
-                    "<pre><code>" + html.escape("\n".join(code_lines)) + "</code></pre>"
-                )
+                out.append("<pre><code>" + html.escape("\n".join(code_lines)) + "</code></pre>")
                 code_lines = []
                 in_code = False
             else:
@@ -333,11 +314,7 @@ def is_table_start(lines: list[str], index: int) -> bool:
         return False
     first = lines[index].strip()
     second = lines[index + 1].strip()
-    return (
-        first.startswith("|")
-        and first.endswith("|")
-        and set(second.replace("|", "").replace(" ", "")) <= {"-", ":"}
-    )
+    return first.startswith("|") and first.endswith("|") and set(second.replace("|", "").replace(" ", "")) <= {"-", ":"}
 
 
 def parse_table(lines: list[str]) -> tuple[str, int]:
@@ -368,6 +345,8 @@ def paper_body(paper: dict[str, Any], source_html: str | None = None) -> str:
     if paper.get("source_md"):
         links.append(link(paper["source_md"], "Source note", PAPERS))
     action = " | ".join(links)
+    source_note = html.escape(paper.get("source_md", "catalog-only"))
+    generator_note = "scripts/research/build_research_library.py"
     return f"""
 <p class="kicker">AetherMoore Research Packet</p>
 <h1>{html.escape(paper["title"])}</h1>
@@ -381,7 +360,7 @@ def paper_body(paper: dict[str, Any], source_html: str | None = None) -> str:
 <p class="meta">{action}</p>
 <h2>Source Text</h2>
 {source_html or "<p>See linked PDF/source note.</p>"}
-<p class="source">Generated from <code>{html.escape(paper.get("source_md", "catalog-only"))}</code> by <code>scripts/research/build_research_library.py</code>.</p>
+<p class="source">Generated from <code>{source_note}</code> by <code>{generator_note}</code>.</p>
 """
 
 
@@ -394,11 +373,7 @@ def build_pages(catalog: dict[str, Any]) -> list[Path]:
 
     cards = []
     for topic in catalog["topics"]:
-        topic_papers = [
-            p
-            for p in catalog["papers"]
-            if topic["id"] in p.get("topics", [p.get("topic")])
-        ]
+        topic_papers = [p for p in catalog["papers"] if topic["id"] in p.get("topics", [p.get("topic")])]
         count = len(topic_papers)
         cards.append(
             f'<a class="card" href="topics/{html.escape(topic["id"])}.html">'
@@ -408,33 +383,43 @@ def build_pages(catalog: dict[str, Any]) -> list[Path]:
             f'<p>{count} packet{"s" if count != 1 else ""}</p>'
             "</a>"
         )
+    index_intro = (
+        "This page turns the loose research pile into a browsable, tagged library. "
+        "Conversion here means research structure: topic framing, source ledger, "
+        "review model, validation plan, claim boundary, and then HTML/PDF output. "
+        "It is not just a file-format change."
+    )
+    standard_link = link(
+        catalog.get("standard", "research/RESEARCH_PACKET_STANDARD.md"),
+        "Read the research packet standard",
+        OUT_ROOT,
+    )
+    all_cards = "".join(paper_card(p, OUT_ROOT) for p in catalog["papers"])
     index_body = f"""
 <p class="kicker">AetherMoore Research Library</p>
 <h1>Research packets by topic</h1>
-<p class="abstract">This page turns the loose research pile into a browsable, tagged library. Conversion here means research structure: topic framing, source ledger, review model, validation plan, claim boundary, and then HTML/PDF output. It is not just a file-format change.</p>
-<p>{link(catalog.get("standard", "research/RESEARCH_PACKET_STANDARD.md"), "Read the research packet standard", OUT_ROOT)}</p>
+<p class="abstract">{html.escape(index_intro)}</p>
+<p>{standard_link}</p>
 <div class="grid">{''.join(cards)}</div>
 <h2>All Packets</h2>
-<div class="grid">{''.join(paper_card(p, OUT_ROOT) for p in catalog["papers"])}</div>
+<div class="grid">{all_cards}</div>
 """
     index_path = OUT_ROOT / "index.html"
-    index_path.write_text(
-        page("Research Library", index_body, OUT_ROOT), encoding="utf-8"
-    )
+    index_path.write_text(page("Research Library", index_body, OUT_ROOT), encoding="utf-8")
     written.append(index_path)
 
     for topic_id, topic in topics.items():
-        topic_papers = [
-            p
-            for p in catalog["papers"]
-            if topic_id in p.get("topics", [p.get("topic")])
-        ]
+        topic_papers = [p for p in catalog["papers"] if topic_id in p.get("topics", [p.get("topic")])]
+        topic_cards = (
+            "".join(paper_card(p, TOPICS) for p in topic_papers)
+            or "<p>No promoted packets yet. This topic lane is ready for notes.</p>"
+        )
         body = f"""
 <p class="kicker">Research Topic</p>
 <h1>{html.escape(topic["label"])}</h1>
 <p class="abstract">{html.escape(topic["description"])}</p>
 {tags_html(topic.get("tags", []))}
-<div class="grid">{''.join(paper_card(p, TOPICS) for p in topic_papers) or '<p>No promoted packets yet. This topic lane is ready for notes.</p>'}</div>
+<div class="grid">{topic_cards}</div>
 """
         path = TOPICS / f"{topic_id}.html"
         path.write_text(page(topic["label"], body, TOPICS), encoding="utf-8")
@@ -444,9 +429,7 @@ def build_pages(catalog: dict[str, Any]) -> list[Path]:
         source_html = None
         source = paper.get("source_md")
         if source and rel(source).exists():
-            source_html = md_to_html(
-                rel(source).read_text(encoding="utf-8", errors="replace")
-            )
+            source_html = md_to_html(rel(source).read_text(encoding="utf-8", errors="replace"))
         body = paper_body(paper, source_html)
         path = DOCS / paper["html"]
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -520,11 +503,7 @@ def validate(catalog: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     topics = {topic["id"] for topic in catalog.get("topics", [])}
     for paper in catalog.get("papers", []):
-        missing_topics = [
-            topic
-            for topic in paper.get("topics", [paper.get("topic")])
-            if topic not in topics
-        ]
+        missing_topics = [topic for topic in paper.get("topics", [paper.get("topic")]) if topic not in topics]
         if missing_topics:
             errors.append(f"{paper['id']}: unknown topics {missing_topics}")
         for key in ("source_md", "html"):
@@ -541,9 +520,7 @@ def validate(catalog: dict[str, Any]) -> list[str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Build the AetherMoore static research library."
-    )
+    parser = argparse.ArgumentParser(description="Build the AetherMoore static research library.")
     parser.add_argument(
         "--check",
         action="store_true",
