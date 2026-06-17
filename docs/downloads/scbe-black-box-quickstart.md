@@ -5,7 +5,24 @@ run is likely to fail.
 
 It is self-serve. No installation service is required.
 
+## Prove It Locally
+
+From the repo:
+
+```powershell
+npm run blackbox:prove
+```
+
+That command builds the buyer ZIP, runs the bundled scanner, and prints the top
+finding plus the text/JSON report paths.
+
 ## Run
+
+From the downloadable Black Box bundle:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run-windows.ps1
+```
 
 From the repository or Workcell bundle:
 

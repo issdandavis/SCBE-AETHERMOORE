@@ -74,6 +74,8 @@ The installable package surface is the simplest public entry point.
 
 Neither Python nor npm package requires a server, API key, or external network call. The full pipeline runs locally.
 
+**Self-serve product:** [SCBE Black Box](https://aethermoore.com/SCBE-AETHERMOORE/black-box.html) is the buyer-ready workstation failure report: run it locally before long AI/browser/build jobs and get a plain-English report for shutdown, BSOD, disk, memory, WHEA, and storage-warning signals.
+
 **Free local use + paid hosted runs:** The packages are free under `MIT OR Apache-2.0`. If you want SCBE to run hosted routing, a governed report, or a benchmark pass:
 
 - Hosted run intake: [aethermoore.com/SCBE-AETHERMOORE/hosted-run.html](https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html)
