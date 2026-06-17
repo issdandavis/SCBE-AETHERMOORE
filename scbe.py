@@ -912,6 +912,27 @@ def _semantic_intent(candidate: str) -> List[str]:
     return hits
 
 
+_MODEL_INTENT_THRESHOLD = float(os.environ.get("SCBE_INTENT_MODEL_THRESHOLD", "0.8"))
+
+
+def _maybe_model_intent(text: str) -> Optional[float]:
+    """Optional ONNX injection probability. Returns None at ZERO cost unless
+    SCBE_INTENT_MODEL is set AND the optimum/transformers backend + model are present,
+    so the default gate stays pure-Python with no new dependency or download.
+    See scripts/intent_classifier.py for activation."""
+    if os.environ.get("SCBE_INTENT_MODEL", "").strip().lower() in ("", "0", "false", "no"):
+        return None
+    try:
+        scripts_dir = str(REPO_ROOT / "scripts")
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        from intent_classifier import injection_probability
+
+        return injection_probability(text)
+    except Exception:
+        return None
+
+
 def pipeline_quick_score(text: str) -> Dict[str, Any]:
     """Lightweight 14-layer scoring — natural sieve, no hash.
 
@@ -938,6 +959,13 @@ def pipeline_quick_score(text: str) -> Dict[str, Any]:
     # the benign-language discount, so a fluent prompt injection can't be rescued
     # by reading as natural language (the exact gap the byte-sieve alone misses).
     intent_risk, intent_flags = _adversarial_intent(text)
+    # Optional ONNX classifier second pass (off by default; pure-Python gate otherwise
+    # unchanged). It runs on the same text after canonicalization and only ADDS signal.
+    model_prob = _maybe_model_intent(text)
+    if model_prob is not None and model_prob >= _MODEL_INTENT_THRESHOLD:
+        if "model:injection" not in intent_flags:
+            intent_flags = intent_flags + ["model:injection"]
+        intent_risk += 1.0
     d_star = d_star + _INTENT_PENALTY * intent_risk
 
     # L6-L11: dynamics sieve — coherence and phase checks
