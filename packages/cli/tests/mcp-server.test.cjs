@@ -80,44 +80,51 @@ test('resolveArgs serializes typed params and rejects malformed raw args', () =>
   ]);
   assert.throws(() => resolveArgs(abacusSpec, { args: [{ bad: true }] }), /items must be/);
   assert.throws(() => resolveArgs(abacusSpec, ['run']), /arguments must be an object/);
-  assert.throws(() => resolveArgs(abacusSpec, { subcommand: 'run', d_h: 0.4 }), /missing required param "pd"/);
+  assert.throws(
+    () => resolveArgs(abacusSpec, { subcommand: 'run', d_h: 0.4 }),
+    /missing required param "pd"/
+  );
 });
 
-test('server lists safe tools, runs them, and refuses withheld tools over stdio', { timeout: 60000 }, async () => {
-  const transport = new StdioClientTransport({ command: process.execPath, args: [SERVER] });
-  const client = new Client({ name: 'scbe-mcp-test', version: '1.0.0' }, { capabilities: {} });
-  await client.connect(transport);
-  try {
-    const listed = await client.listTools();
-    const names = new Set(listed.tools.map((t) => t.name));
-    assert.ok(names.has('scbe_version'), 'scbe_version tool should be listed');
-    assert.ok(names.has('scbe_rns'), 'scbe_rns tool should be listed');
-    assert.ok(names.has('scbe_flow'), 'scbe_flow tool should be listed');
-    assert.equal(names.has('scbe_push'), false, 'scbe_push must not be AI-callable over MCP');
-    assert.equal(names.has('scbe_exec'), false, 'scbe_exec must not be AI-callable over MCP');
-    assert.equal(names.has('scbe_run'), false, 'scbe_run must not be AI-callable over MCP');
+test(
+  'server lists safe tools, runs them, and refuses withheld tools over stdio',
+  { timeout: 60000 },
+  async () => {
+    const transport = new StdioClientTransport({ command: process.execPath, args: [SERVER] });
+    const client = new Client({ name: 'scbe-mcp-test', version: '1.0.0' }, { capabilities: {} });
+    await client.connect(transport);
+    try {
+      const listed = await client.listTools();
+      const names = new Set(listed.tools.map((t) => t.name));
+      assert.ok(names.has('scbe_version'), 'scbe_version tool should be listed');
+      assert.ok(names.has('scbe_rns'), 'scbe_rns tool should be listed');
+      assert.ok(names.has('scbe_flow'), 'scbe_flow tool should be listed');
+      assert.equal(names.has('scbe_push'), false, 'scbe_push must not be AI-callable over MCP');
+      assert.equal(names.has('scbe_exec'), false, 'scbe_exec must not be AI-callable over MCP');
+      assert.equal(names.has('scbe_run'), false, 'scbe_run must not be AI-callable over MCP');
 
-    const ver = await client.callTool({ name: 'scbe_version', arguments: { json: true } });
-    assert.equal(ver.isError || false, false);
-    const verObj = JSON.parse(ver.content.map((c) => c.text).join(''));
-    assert.ok(verObj && typeof verObj === 'object');
+      const ver = await client.callTool({ name: 'scbe_version', arguments: { json: true } });
+      assert.equal(ver.isError || false, false);
+      const verObj = JSON.parse(ver.content.map((c) => c.text).join(''));
+      assert.ok(verObj && typeof verObj === 'object');
 
-    const demo = await client.callTool({ name: 'scbe_demo', arguments: { json: true } });
-    assert.equal(demo.isError || false, false);
-    const demoObj = JSON.parse(demo.content.map((c) => c.text).join(''));
-    assert.equal(demoObj.decision, 'DENY');
+      const demo = await client.callTool({ name: 'scbe_demo', arguments: { json: true } });
+      assert.equal(demo.isError || false, false);
+      const demoObj = JSON.parse(demo.content.map((c) => c.text).join(''));
+      assert.equal(demoObj.decision, 'DENY');
 
-    const bad = await client.callTool({
-      name: 'scbe_abacus',
-      arguments: { subcommand: 'walk', d_h: 0.4, pd: 0.1 },
-    });
-    assert.equal(bad.isError, true);
-    assert.match(bad.content.map((c) => c.text).join(''), /must be one of/);
+      const bad = await client.callTool({
+        name: 'scbe_abacus',
+        arguments: { subcommand: 'walk', d_h: 0.4, pd: 0.1 },
+      });
+      assert.equal(bad.isError, true);
+      assert.match(bad.content.map((c) => c.text).join(''), /must be one of/);
 
-    const denied = await client.callTool({ name: 'scbe_push', arguments: { args: ['main'] } });
-    assert.equal(denied.isError, true);
-    assert.match(denied.content.map((c) => c.text).join(''), /Unknown tool/);
-  } finally {
-    await client.close();
+      const denied = await client.callTool({ name: 'scbe_push', arguments: { args: ['main'] } });
+      assert.equal(denied.isError, true);
+      assert.match(denied.content.map((c) => c.text).join(''), /Unknown tool/);
+    } finally {
+      await client.close();
+    }
   }
-});
+);

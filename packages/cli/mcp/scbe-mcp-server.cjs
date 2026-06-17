@@ -189,7 +189,12 @@ function runScbe(commandName, args, wantJson, timeoutMs) {
         if (!error) {
           resolve({ error: null, status: 0, stdout, stderr });
         } else if (error.killed && error.signal) {
-          resolve({ error: { code: 'ETIMEDOUT', message: error.message }, status: null, stdout, stderr });
+          resolve({
+            error: { code: 'ETIMEDOUT', message: error.message },
+            status: null,
+            stdout,
+            stderr,
+          });
         } else if (typeof error.code === 'number') {
           // Normal nonzero exit: not a spawn failure.
           resolve({ error: null, status: error.code, stdout, stderr });
