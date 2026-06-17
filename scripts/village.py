@@ -15,6 +15,7 @@ signature, Turing base) is the inside; this form grows out of it.
 
     python scripts/village.py            # an AI lays out a village, renders + compiles it
 """
+
 from __future__ import annotations
 
 import sys
@@ -22,13 +23,13 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from forge import _MOVES, _exec, assemble, prime_signature, render_glyph  # noqa: E402
+from forge import _exec, assemble, prime_signature, render_glyph  # noqa: E402
 
 
 class Village:
     def __init__(self):
-        self.buildings: list[dict] = []   # {id, move, x, y}
-        self.roads: list[tuple] = []      # (from_id, to_id) -- data flows along it
+        self.buildings: list[dict] = []  # {id, move, x, y}
+        self.roads: list[tuple] = []  # (from_id, to_id) -- data flows along it
 
     # ---- authoring (what an AI does: it writes the village as data) ----
     def place(self, move: str, x: int | None = None, y: int = 0) -> int:
@@ -86,13 +87,15 @@ class Village:
         by_id = {b["id"]: b for b in self.buildings}
         seen = set()
         while cur is not None and cur not in seen:
-            seen.add(cur); order_ids.append(cur); cur = succ.get(cur)
+            seen.add(cur)
+            order_ids.append(cur)
+            cur = succ.get(cur)
         for b in self.buildings:
             if b["id"] not in seen:
                 order_ids.append(b["id"])
         labels = [by_id[i]["move"][:6].center(6) for i in order_ids]
         tops = "  ".join(".----." for _ in labels)
-        mids = "->".join(f"|{l}|" for l in labels)
+        mids = "->".join(f"|{label}|" for label in labels)
         bots = "  ".join("'----'" for _ in labels)
         return "\n".join(["   " + tops, "   " + mids, "   " + bots])
 
@@ -105,8 +108,14 @@ class Village:
             app.write_text(src, encoding="utf-8")
             rc, _out = _exec(app, ["--help"])
         sig = prime_signature(used)
-        return {"moves": used, "lines": src.count("\n") + 1, "runs": rc == 0,
-                "warnings": warnings, "deed": sig, "glyph": render_glyph(sig)}
+        return {
+            "moves": used,
+            "lines": src.count("\n") + 1,
+            "runs": rc == 0,
+            "warnings": warnings,
+            "deed": sig,
+            "glyph": render_glyph(sig),
+        }
 
 
 def main():
@@ -126,6 +135,7 @@ def main():
 
     print("\n  what the AI sees (the village as data it can read + rewrite):")
     import json
+
     print("   " + json.dumps(v.to_dict())[:200] + " ...")
     print()
 
