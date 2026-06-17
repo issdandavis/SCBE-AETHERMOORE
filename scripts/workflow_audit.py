@@ -181,7 +181,7 @@ def emit_github_outputs(totals: Dict[str, int]) -> None:
         f"high_count={totals.get('high', 0)}",
         f"medium_count={totals.get('medium', 0)}",
         f"low_count={totals.get('low', 0)}",
-        f"status={'fail' if totals.get('high', 0) > 0 else 'pass'}",
+        f"status={ 'fail' if totals.get('high', 0) > 0 else 'pass' }",
     ]
     github_output.write_text("\n".join(payload) + "\n", encoding="utf-8")
 

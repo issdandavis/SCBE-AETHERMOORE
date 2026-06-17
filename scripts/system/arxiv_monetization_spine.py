@@ -347,7 +347,7 @@ def _build_markdown_report(
         price_range = f"${offer.get('price_min_usd', 0):,} - ${offer.get('price_max_usd', 0):,}"
         title = str(lead.get("title", "")).replace("|", " ")
         lines.append(
-            f"| {lead.get('rank', '-')} | {lead.get('money_score', 0):.4f} "
+            f"| {lead.get('rank', '-') } | {lead.get('money_score', 0):.4f} "
             f"| {offer.get('label', '')} | {price_range} | {title} |"
         )
 

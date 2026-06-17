@@ -105,8 +105,12 @@ def fuse_atomic_states(
     for i, j in edges_norm:
         if i < 0 or j < 0 or i >= n or j >= n or i == j:
             continue
-        edge_weight = float(edge_weights.get((i, j), edge_weights.get((j, i), params.lambda_default)))
-        delta_chi = state_list[i].element.electronegativity - state_list[j].element.electronegativity
+        edge_weight = float(
+            edge_weights.get((i, j), edge_weights.get((j, i), params.lambda_default))
+        )
+        delta_chi = (
+            state_list[i].element.electronegativity - state_list[j].element.electronegativity
+        )
         signed_edge_tension += edge_weight * float(delta_chi)
         coherence_penalty += params.coherence_default * edge_weight * abs(float(delta_chi))
         for tongue in TONGUES:
@@ -149,7 +153,10 @@ def fuse_tokens(
     valence_weights: Optional[Sequence[float]] = None,
     edges: Optional[Sequence[Tuple[int, int]]] = None,
 ) -> Tuple[Dict[Tongue, int], Dict[Tongue, float], list[Element]]:
-    states = [map_token_to_atomic_state(token, language=language, context_class=context_class) for token in tokens]
+    states = [
+        map_token_to_atomic_state(token, language=language, context_class=context_class)
+        for token in tokens
+    ]
     result = fuse_atomic_states(
         states,
         params=params,

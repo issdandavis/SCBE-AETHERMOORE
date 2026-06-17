@@ -4,6 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCBE = REPO_ROOT / "scbe.py"
 GEOSEAL = REPO_ROOT / "bin" / "geoseal.cjs"

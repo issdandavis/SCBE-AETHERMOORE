@@ -1,5 +1,5 @@
 """Tests for the parallel corpus encoder (serial path — multiprocessing is env-flaky in CI)."""
-
+import os
 from python.scbe.encode_corpus import encode_file, encode_corpus, find_python_files
 
 

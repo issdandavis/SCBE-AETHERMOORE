@@ -1128,7 +1128,7 @@ def generate_intent_response(record: dict) -> str:
     # If we did not find specific matches, give general explanations
     if not explained:
         for key in ["claim_colab_worker", "colab_worker_ready", "critical-update", "unknown", "colab_worker_evidence"]:
-            response_parts.append(f"- {intent_explanations.get(key.replace('-', '_'), '')}\n\n")
+            response_parts.append(f"- {intent_explanations.get(key.replace('-','_'), '')}\n\n")
 
     response_parts.append(
         "The key idea is that every message between AI agents has a clear label. "

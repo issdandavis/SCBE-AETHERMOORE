@@ -382,7 +382,7 @@ def _markdown(report: dict[str, object]) -> str:
     assert isinstance(snapshot, dict)
     for check in snapshot["checks"]:
         assert isinstance(check, dict)
-        lines.append(f"- `{' '.join(check['command'])}` -> {check['returncode']}")
+        lines.append(f"- `{ ' '.join(check['command']) }` -> {check['returncode']}")
     return "\n".join(lines) + "\n"
 
 

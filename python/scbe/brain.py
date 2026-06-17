@@ -51,20 +51,14 @@ logger = logging.getLogger(__name__)
 
 try:
     from .rhombic_bridge import rhombic_fusion, rhombic_score
-
     _HAS_RHOMBIC = True
 except Exception:
     _HAS_RHOMBIC = False
 
 # Import circuit flow (resolve path relative to this file)
 _circuit_flow_dir = os.path.join(
-    os.path.dirname(__file__),
-    "..",
-    "..",
-    "src",
-    "symphonic_cipher",
-    "scbe_aethermoore",
-    "ai_brain",
+    os.path.dirname(__file__), "..", "..", "src",
+    "symphonic_cipher", "scbe_aethermoore", "ai_brain",
 )
 if os.path.isdir(_circuit_flow_dir) and _circuit_flow_dir not in sys.path:
     sys.path.insert(0, _circuit_flow_dir)
@@ -77,7 +71,6 @@ try:
         GovernanceAction,
         harmonic_wall_cost,
     )
-
     _HAS_CIRCUIT_FLOW = True
 except ImportError:
     _HAS_CIRCUIT_FLOW = False
@@ -86,14 +79,14 @@ except ImportError:
 # Constants
 # ============================================================================
 
-GOLDEN_RATIO = (1 + np.sqrt(5)) / 2  # φ ≈ 1.618033988749895
+GOLDEN_RATIO = (1 + np.sqrt(5)) / 2    # φ ≈ 1.618033988749895
 GOLDEN_RATIO_INV = 2 / (1 + np.sqrt(5))  # 1/φ ≈ 0.618
-PYTHAGOREAN_COMMA = 531441 / 524288  # 3^12 / 2^19
-R_FIFTH = 3 / 2  # Perfect fifth harmonic ratio
-DIMENSIONS_21D = 21  # Full state vector dimension
-DIMENSIONS_6D = 6  # Hyperbolic subspace
-TUBE_RADIUS = 0.15  # Trust tube ε
-POINCARE_BALL_SAFETY_RADIUS = 0.95  # Safety margin inside r=1 boundary
+PYTHAGOREAN_COMMA = 531441 / 524288      # 3^12 / 2^19
+R_FIFTH = 3 / 2                           # Perfect fifth harmonic ratio
+DIMENSIONS_21D = 21                        # Full state vector dimension
+DIMENSIONS_6D = 6                          # Hyperbolic subspace
+TUBE_RADIUS = 0.15                         # Trust tube ε
+POINCARE_BALL_SAFETY_RADIUS = 0.95         # Safety margin inside r=1 boundary
 
 
 def _project_to_poincare_ball(
@@ -112,45 +105,20 @@ def _project_to_poincare_ball(
     radius = safety_radius * (np.tanh(norm) / norm)
     return (vector.astype(float)) * radius
 
-
 # Six Sacred Tongues (Neurotransmitters)
 TONGUES = {
-    "KO": {"name": "Kor'aelin", "weight": 1.00, "analog": "Dopamine", "function": "Motivation/Intent", "phase": 0.0},
-    "AV": {
-        "name": "Avali",
-        "weight": GOLDEN_RATIO**1,
-        "analog": "Acetylcholine",
-        "function": "Attention/Context",
-        "phase": np.pi / 3,
-    },
-    "RU": {
-        "name": "Runethic",
-        "weight": GOLDEN_RATIO**2,
-        "analog": "Serotonin",
-        "function": "Memory Consolidation",
-        "phase": 2 * np.pi / 3,
-    },
-    "CA": {
-        "name": "Cassisivadan",
-        "weight": GOLDEN_RATIO**3,
-        "analog": "Glutamate",
-        "function": "Execution",
-        "phase": np.pi,
-    },
-    "UM": {
-        "name": "Umbroth",
-        "weight": GOLDEN_RATIO**4,
-        "analog": "GABA",
-        "function": "Suppression",
-        "phase": 4 * np.pi / 3,
-    },
-    "DR": {
-        "name": "Draumric",
-        "weight": GOLDEN_RATIO**5,
-        "analog": "Cortisol",
-        "function": "Lock/Seal",
-        "phase": 5 * np.pi / 3,
-    },
+    "KO": {"name": "Kor'aelin", "weight": 1.00, "analog": "Dopamine",
+            "function": "Motivation/Intent", "phase": 0.0},
+    "AV": {"name": "Avali", "weight": GOLDEN_RATIO ** 1, "analog": "Acetylcholine",
+            "function": "Attention/Context", "phase": np.pi / 3},
+    "RU": {"name": "Runethic", "weight": GOLDEN_RATIO ** 2, "analog": "Serotonin",
+            "function": "Memory Consolidation", "phase": 2 * np.pi / 3},
+    "CA": {"name": "Cassisivadan", "weight": GOLDEN_RATIO ** 3, "analog": "Glutamate",
+            "function": "Execution", "phase": np.pi},
+    "UM": {"name": "Umbroth", "weight": GOLDEN_RATIO ** 4, "analog": "GABA",
+            "function": "Suppression", "phase": 4 * np.pi / 3},
+    "DR": {"name": "Draumric", "weight": GOLDEN_RATIO ** 5, "analog": "Cortisol",
+            "function": "Lock/Seal", "phase": 5 * np.pi / 3},
 }
 
 
@@ -158,27 +126,23 @@ TONGUES = {
 # Enums
 # ============================================================================
 
-
 class FluxState(Enum):
     """Dimensional breathing states (Section 6.2)."""
-
-    POLLY = 1.0  # ν ≈ 1.0 — Full capability, all 16 polyhedra
-    QUASI = 0.5  # ν ≈ 0.5 — Defensive, Core + Cortex (8)
-    DEMI = 0.1  # ν ≈ 0.1 — Survival, Core only (5)
+    POLLY = 1.0   # ν ≈ 1.0 — Full capability, all 16 polyhedra
+    QUASI = 0.5   # ν ≈ 0.5 — Defensive, Core + Cortex (8)
+    DEMI = 0.1    # ν ≈ 0.1 — Survival, Core only (5)
 
 
 class TrustRing(Enum):
     """Trust regions in the Poincaré ball (Section 2.1)."""
-
-    CORE = "core"  # r < 0.3  — 5ms latency
-    INNER = "inner"  # 0.3–0.7  — 30ms latency
-    OUTER = "outer"  # 0.7–0.9  — 200ms latency
-    WALL = "wall"  # r ≥ 0.9  — DENY
+    CORE = "core"       # r < 0.3  — 5ms latency
+    INNER = "inner"     # 0.3–0.7  — 30ms latency
+    OUTER = "outer"     # 0.7–0.9  — 200ms latency
+    WALL = "wall"       # r ≥ 0.9  — DENY
 
 
 class ThoughtStatus(Enum):
     """Thought execution status."""
-
     SUCCESS = "success"
     BLOCKED = "blocked"
     ESCALATED = "escalated"
@@ -189,11 +153,9 @@ class ThoughtStatus(Enum):
 # Data Classes
 # ============================================================================
 
-
 @dataclass
 class ThoughtResult:
     """Result of a thought execution through the full pipeline."""
-
     status: ThoughtStatus
     ring: TrustRing
     energy_cost: float
@@ -211,7 +173,6 @@ class ThoughtResult:
 # ============================================================================
 # Poincaré Ball (The Skull) — Section 2.1
 # ============================================================================
-
 
 class PoincareBall:
     """
@@ -251,8 +212,8 @@ class PoincareBall:
         d_H(u,v) = arcosh(1 + 2||u-v||² / ((1-||u||²)(1-||v||²)))
         """
         u, v = np.asarray(u, dtype=float), np.asarray(v, dtype=float)
-        norm_u_sq = min(np.sum(u**2), 0.9999)
-        norm_v_sq = min(np.sum(v**2), 0.9999)
+        norm_u_sq = min(np.sum(u ** 2), 0.9999)
+        norm_v_sq = min(np.sum(v ** 2), 0.9999)
         diff_sq = np.sum((u - v) ** 2)
         delta = 2 * diff_sq / ((1 - norm_u_sq) * (1 - norm_v_sq))
         return float(np.arccosh(1 + delta))
@@ -274,13 +235,12 @@ class PoincareBall:
         Section 2.1 bone density — skull wall energy cost.
         """
         depth = 14  # 14-layer pipeline depth
-        return float(np.exp(r**2 * depth))
+        return float(np.exp(r ** 2 * depth))
 
 
 # ============================================================================
 # PHDM Lattice (The Brain Tissue) — Section 2.2
 # ============================================================================
-
 
 class PHDMLattice:
     """
@@ -301,7 +261,11 @@ class PHDMLattice:
     def _generate_projection_matrix(self) -> np.ndarray:
         """Generate 6D→3D icosahedral projection matrix."""
         phi = GOLDEN_RATIO
-        return np.array([[1, phi, 0, -1, phi, 0], [phi, 0, 1, phi, 0, -1], [0, 1, phi, 0, -1, phi]]) / np.sqrt(2 + phi)
+        return np.array([
+            [1, phi, 0, -1, phi, 0],
+            [phi, 0, 1, phi, 0, -1],
+            [0, 1, phi, 0, -1, phi]
+        ]) / np.sqrt(2 + phi)
 
     def rotate_6d_projection(self):
         """Phason shift - rotate the projection angle (key rotation)"""
@@ -320,17 +284,16 @@ class PHDMLattice:
         """Emergency mode - only Platonic solids accessible"""
         registry = self.registry or []
         self.active_polyhedra = {
-            p.name for p in registry if p.family == "platonic" or getattr(p, "type", None) == "platonic"
+            p.name for p in registry
+            if p.family == "platonic" or getattr(p, "type", None) == "platonic"
         }
         logger.warning("DEMI mode: restricted to Platonic solids only")
-
     @property
     def router(self):
         """Lazy-load Hamiltonian router."""
         if self._router is None:
             try:
                 from .phdm_router import HamiltonianRouter
-
                 self._router = HamiltonianRouter()
             except ImportError:
                 self._router = None
@@ -342,7 +305,6 @@ class PHDMLattice:
         if self._registry is None:
             try:
                 from .phdm_polyhedra import get_registry
-
                 self._registry = get_registry()
             except ImportError:
                 self._registry = None
@@ -351,7 +313,8 @@ class PHDMLattice:
     def get_active_count(self) -> int:
         """Count active polyhedra based on flux state."""
         if self.registry is None:
-            zone_counts = {"core": 5, "cortex": 3, "risk": 2, "recursive": 2, "bridge": 4}
+            zone_counts = {"core": 5, "cortex": 3, "risk": 2,
+                           "recursive": 2, "bridge": 4}
             return sum(zone_counts.get(z, 0) for z in self.active_zones)
         return sum(1 for p in self.registry if p.zone.value in self.active_zones)
 
@@ -422,7 +385,8 @@ class PHDMLattice:
             # Full Hamiltonian routing
             active_nodes = set()
             if self.registry:
-                active_nodes = {p.index for p in self.registry if p.zone.value in self.active_zones}
+                active_nodes = {p.index for p in self.registry
+                                if p.zone.value in self.active_zones}
             if not active_nodes:
                 active_nodes = set(range(16))
 
@@ -460,7 +424,6 @@ class PHDMLattice:
 # 21D Embedder — Section 4.1
 # ============================================================================
 
-
 def embed_to_21d(text: str, context: Optional[Dict] = None) -> np.ndarray:
     """
     Embed text intent into the full 21D state vector.
@@ -485,7 +448,7 @@ def embed_to_21d(text: str, context: Optional[Dict] = None) -> np.ndarray:
     for i, (code, tongue) in enumerate(TONGUES.items()):
         weight = tongue["weight"]
         phase_angle = tongue["phase"]
-        phase[i] = (weight / GOLDEN_RATIO**5) * np.cos(phase_angle) * 0.5
+        phase[i] = (weight / GOLDEN_RATIO ** 5) * np.cos(phase_angle) * 0.5
 
     # 3D flux: dimensional breathing state
     flux_val = context.get("flux", FluxState.POLLY)
@@ -507,16 +470,14 @@ def embed_to_21d(text: str, context: Optional[Dict] = None) -> np.ndarray:
     session_hash = int(hashlib.sha256(session_id.encode()).hexdigest()[:8], 16)
     session_norm = (session_hash % 1000) / 1000
 
-    audit = np.array(
-        [
-            ts_norm * 0.5,
-            user_norm * 0.5,
-            session_norm * 0.5,
-            0.0,  # Layer traversal depth
-            0.0,  # Decimal drift
-            0.0,  # Provenance chain
-        ]
-    )
+    audit = np.array([
+        ts_norm * 0.5,
+        user_norm * 0.5,
+        session_norm * 0.5,
+        0.0,  # Layer traversal depth
+        0.0,  # Decimal drift
+        0.0,  # Provenance chain
+    ])
 
     return np.concatenate([hyperbolic, phase, flux, audit])
 
@@ -532,7 +493,7 @@ def embed_vector_to_21d(vector: np.ndarray, context: Optional[Dict] = None) -> n
 
     # Fill phase from tongues
     for i, tongue in enumerate(TONGUES.values()):
-        result[6 + i] = (tongue["weight"] / GOLDEN_RATIO**5) * 0.5
+        result[6 + i] = (tongue["weight"] / GOLDEN_RATIO ** 5) * 0.5
 
     # Flux
     flux_val = context.get("flux", FluxState.POLLY)
@@ -545,7 +506,6 @@ def embed_vector_to_21d(vector: np.ndarray, context: Optional[Dict] = None) -> n
 # ============================================================================
 # AetherBrain: The Complete Cognitive Architecture
 # ============================================================================
-
 
 class AetherBrain:
     """
@@ -602,10 +562,11 @@ class AetherBrain:
         if self._automaton is None:
             try:
                 from .aether_braid import FSGSAutomaton, HybridState
-
                 self._automaton = FSGSAutomaton(dim=DIMENSIONS_21D)
                 x0 = np.zeros(DIMENSIONS_21D)
-                self._hybrid_state = HybridState(x=x0, safe_checkpoint=x0.copy())
+                self._hybrid_state = HybridState(
+                    x=x0, safe_checkpoint=x0.copy()
+                )
             except ImportError:
                 pass
         return self._automaton
@@ -707,7 +668,7 @@ class AetherBrain:
 
     def _trace_to_result(
         self,
-        trace: "CircuitTrace",
+        trace: 'CircuitTrace',
         ring: TrustRing,
         start_time: float,
     ) -> ThoughtResult:
@@ -755,9 +716,8 @@ class AetherBrain:
             f"energy={trace.total_energy:.2f}, gov={gov}, "
             f"tongue={trace.intent_tongue}, digest={trace.trace_digest}"
         )
-        audit_id = self._log_audit(
-            "ALLOWED" if status == ThoughtStatus.SUCCESS else "ESCALATED", audit_msg, ring, trace.total_energy
-        )
+        audit_id = self._log_audit("ALLOWED" if status == ThoughtStatus.SUCCESS else "ESCALATED",
+                                   audit_msg, ring, trace.total_energy)
 
         return ThoughtResult(
             status=status,
@@ -821,7 +781,9 @@ class AetherBrain:
         elapsed_ms = (time.time() - start_time) * 1000 + base_latency
         governance_mode = context.get("governance_mode", "standard")
         phase_state = context.get("phase_state", "nominal")
-        audit_id = self._log_audit("ALLOWED", f"Ring={ring.value}, cost={energy_cost:.2e} (legacy)", ring, energy_cost)
+        audit_id = self._log_audit(
+            "ALLOWED", f"Ring={ring.value}, cost={energy_cost:.2e} (legacy)", ring, energy_cost
+        )
 
         return ThoughtResult(
             status=ThoughtStatus.SUCCESS,
@@ -855,12 +817,12 @@ class AetherBrain:
     def _fail_to_noise(self, reason: str, ring: TrustRing, start_time: float) -> ThoughtResult:
         """Security response: decay to entropy (random noise output)."""
         elapsed_ms = (time.time() - start_time) * 1000
-        self._log_audit("FAILED", reason, ring, float("inf"))
+        self._log_audit("FAILED", reason, ring, float('inf'))
 
         return ThoughtResult(
             status=ThoughtStatus.FAILED,
             ring=ring,
-            energy_cost=float("inf"),
+            energy_cost=float('inf'),
             latency_ms=elapsed_ms,
             governance_mode="ROLLBACK",
             result=os.urandom(64).hex(),
@@ -869,7 +831,9 @@ class AetherBrain:
 
     def _log_audit(self, status: str, message: str, ring: TrustRing, energy: float) -> str:
         """Log thought to immutable audit trail."""
-        audit_id = hashlib.sha256(f"{time.time()}{message}{len(self.thought_log)}".encode()).hexdigest()[:16]
+        audit_id = hashlib.sha256(
+            f"{time.time()}{message}{len(self.thought_log)}".encode()
+        ).hexdigest()[:16]
         entry = {
             "id": audit_id,
             "timestamp": time.time(),
@@ -902,7 +866,11 @@ class AetherBrain:
                 sync_fn(new_state)
             except Exception as exc:
                 logger.warning(f"Circuit flux sync failed: {exc}")
-        self._log_audit("FLUX_CHANGE", f"{old_state.name} → {new_state.name}", TrustRing.CORE, 0)
+        self._log_audit(
+            "FLUX_CHANGE",
+            f"{old_state.name} → {new_state.name}",
+            TrustRing.CORE, 0
+        )
 
     def get_status(self) -> Dict[str, Any]:
         """Get current brain status."""
@@ -935,7 +903,6 @@ class AetherBrain:
 # Convenience Functions
 # ============================================================================
 
-
 def embed_text(text: str, dimensions: int = DIMENSIONS_6D) -> np.ndarray:
     """Convert text to a vector for brain processing."""
     text_hash = hashlib.sha256(text.encode()).digest()
@@ -955,7 +922,6 @@ def create_brain(max_energy: float = 1e6) -> AetherBrain:
 # ============================================================================
 # Self-Test
 # ============================================================================
-
 
 def self_test() -> Dict[str, Any]:
     """Run comprehensive self-tests on the AetherBrain."""
@@ -980,7 +946,9 @@ def self_test() -> Dict[str, Any]:
     result = brain.think(intent, {})
     if result.status == ThoughtStatus.SUCCESS:
         passed += 1
-        results["safe_thought"] = f"PASS (ring={result.ring.value}, mode={result.governance_mode})"
+        results["safe_thought"] = (
+            f"PASS (ring={result.ring.value}, mode={result.governance_mode})"
+        )
     else:
         results["safe_thought"] = f"FAIL ({result.status.value}: {result.reason})"
 
@@ -1041,7 +1009,10 @@ def self_test() -> Dict[str, Any]:
     # Test 8: Tongue weights are φ-scaled
     total += 1
     weights = [t["weight"] for t in TONGUES.values()]
-    phi_ok = all(abs(weights[i] - GOLDEN_RATIO**i) < 0.1 for i in range(len(weights)))
+    phi_ok = all(
+        abs(weights[i] - GOLDEN_RATIO ** i) < 0.1
+        for i in range(len(weights))
+    )
     if phi_ok:
         passed += 1
         results["tongue_phi_weights"] = "PASS (all weights ≈ φ^k)"
@@ -1055,7 +1026,9 @@ def self_test() -> Dict[str, Any]:
     bd_far = brain.skull.bone_density(0.9)
     if bd_near < bd_mid < bd_far:
         passed += 1
-        results["bone_density"] = f"PASS (r=0.1:{bd_near:.1f}, r=0.5:{bd_mid:.1f}, r=0.9:{bd_far:.1f})"
+        results["bone_density"] = (
+            f"PASS (r=0.1:{bd_near:.1f}, r=0.5:{bd_mid:.1f}, r=0.9:{bd_far:.1f})"
+        )
     else:
         results["bone_density"] = "FAIL"
 
@@ -1141,7 +1114,8 @@ if __name__ == "__main__":
     for state in [FluxState.QUASI, FluxState.DEMI, FluxState.POLLY]:
         brain.set_flux(state)
         status = brain.get_status()
-        print(f"  {state.name}: {status['active_polyhedra']} polyhedra, " f"zones={status['active_zones']}")
+        print(f"  {state.name}: {status['active_polyhedra']} polyhedra, "
+              f"zones={status['active_zones']}")
 
     # Phason shift
     print("\n--- Phason Defense ---\n")

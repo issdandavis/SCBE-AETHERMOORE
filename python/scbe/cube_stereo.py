@@ -41,20 +41,20 @@ def _relation_lens(source: str) -> List[Dict[str, Any]]:
     tree = ast.parse(source)
     out: List[Dict[str, Any]] = []
 
-    def walk(node: ast.AST, parent: Optional[int], field: str, child_index: int, depth: int) -> None:
+    def walk(node: ast.AST, parent: Optional[int], field: str,
+             child_index: int, depth: int) -> None:
         idx = len(out)
-        out.append(
-            {
-                "index": idx,
-                "node_type": type(node).__name__,
-                "parent": parent,
-                "field": field,
-                "child_index": child_index,
-                "depth": depth,
-                # compact relation vector for the stereo stack
-                "relation_vec": [(parent + 1) if parent is not None else 0, child_index, depth, _field_id(field)],
-            }
-        )
+        out.append({
+            "index": idx,
+            "node_type": type(node).__name__,
+            "parent": parent,
+            "field": field,
+            "child_index": child_index,
+            "depth": depth,
+            # compact relation vector for the stereo stack
+            "relation_vec": [(parent + 1) if parent is not None else 0,
+                             child_index, depth, _field_id(field)],
+        })
         ci = 0
         for fname, value in ast.iter_fields(node):
             values = value if isinstance(value, list) else [value]
@@ -77,21 +77,19 @@ def stereo_encode(source: str) -> Dict[str, Any]:
     locked = 0
     for i in range(n):
         a, b = lens_a[i], nodes_b[i]
-        ok = a["node_type"] == b["type"]
+        ok = (a["node_type"] == b["type"])
         locked += int(ok)
-        stereo.append(
-            {
-                "index": i,
-                "node_type": a["node_type"],
-                "token": b["token"],
-                "locked": ok,  # do both lenses see the same node?
-                "lens_a_relation": {k: a[k] for k in ("parent", "field", "child_index", "depth")},
-                "lens_b_faces": b["face_trits"],
-                "roles": b.get("roles", []),  # Sacred-Tongue roles this node plays
-                "lens_b_location": b["location"],
-                "stereo_vector": a["relation_vec"] + b["vector"],
-            }
-        )
+        stereo.append({
+            "index": i,
+            "node_type": a["node_type"],
+            "token": b["token"],
+            "locked": ok,                       # do both lenses see the same node?
+            "lens_a_relation": {k: a[k] for k in ("parent", "field", "child_index", "depth")},
+            "lens_b_faces": b["face_trits"],
+            "roles": b.get("roles", []),        # Sacred-Tongue roles this node plays
+            "lens_b_location": b["location"],
+            "stereo_vector": a["relation_vec"] + b["vector"],
+        })
 
     width = len(stereo[0]["stereo_vector"]) if stereo else 0
     return {
@@ -116,12 +114,12 @@ def _demo() -> None:
     )
     s = stereo_encode(src)
     print("Cube Stereo - two lenses, one 3D view\n")
-    print(f"  nodes: {s['node_count']}   stereo vector width: {s['stereo_width']}" f"  (lensA relation + lensB vector)")
-    print(
-        f"  lens LOCK (same node in both): {s['lock_ratio']*100:.0f}%"
-        f"   [A={s['lens_a_count']} B={s['lens_b_count']}]"
-    )
-    print("  faces carry Sacred-Tongue roles: " + ", ".join(f"{t}={r}" for t, r in s["face_legend"].items()))
+    print(f"  nodes: {s['node_count']}   stereo vector width: {s['stereo_width']}"
+          f"  (lensA relation + lensB vector)")
+    print(f"  lens LOCK (same node in both): {s['lock_ratio']*100:.0f}%"
+          f"   [A={s['lens_a_count']} B={s['lens_b_count']}]")
+    print("  faces carry Sacred-Tongue roles: "
+          + ", ".join(f"{t}={r}" for t, r in s["face_legend"].items()))
     print("\n  first 6 tokens through both lenses:")
     print("   node           tok        | active roles                   | lensB location")
     for t in s["tokens"][:6]:

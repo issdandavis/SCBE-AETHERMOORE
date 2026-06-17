@@ -27,7 +27,6 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - direct execution
     import sys
     from pathlib import Path
-
     sys.path.append(str(Path(__file__).resolve().parents[2]))
     from python.scbe.tongue_roles import TONGUE_ROLE, TONGUES
 
@@ -71,7 +70,10 @@ _LANE_FOR_SECTOR = {
 
 def _tongue_views(goal: str) -> Dict[str, Dict[str, str]]:
     """Project the goal through all six Sacred-Tongue roles."""
-    return {t: {"role": TONGUE_ROLE[t]["role"], "lens": f"{_TONGUE_LENS[t]} — for: {goal}"} for t in TONGUES}
+    return {
+        t: {"role": TONGUE_ROLE[t]["role"], "lens": f"{_TONGUE_LENS[t]} — for: {goal}"}
+        for t in TONGUES
+    }
 
 
 def _dh_sectors(goal: str) -> List[str]:
@@ -86,30 +88,16 @@ def _assign_lanes(sectors: List[str]) -> List[Dict[str, Any]]:
     lanes: Dict[str, Dict[str, Any]] = {}
     for sec in sectors:
         role, target = _LANE_FOR_SECTOR.get(sec, ("Builder", "impl"))
-        lane = lanes.setdefault(
-            role,
-            {
-                "name": role,
-                "role": role,
-                "sectors": [],
-                "writes": target,
-                "token_budget": 20000,
-                "tool_budget": 4,
-            },
-        )
+        lane = lanes.setdefault(role, {
+            "name": role, "role": role, "sectors": [], "writes": target,
+            "token_budget": 20000, "tool_budget": 4,
+        })
         lane["sectors"].append(sec)
     # Memory lane always present — it owns the recursive checkpoint anchor.
-    lanes.setdefault(
-        "Memory",
-        {
-            "name": "Memory",
-            "role": "Memory",
-            "sectors": ["memory"],
-            "writes": "checkpoint-log",
-            "token_budget": 8000,
-            "tool_budget": 1,
-        },
-    )
+    lanes.setdefault("Memory", {
+        "name": "Memory", "role": "Memory", "sectors": ["memory"], "writes": "checkpoint-log",
+        "token_budget": 8000, "tool_budget": 1,
+    })
     return list(lanes.values())
 
 
@@ -129,12 +117,11 @@ def _apply_gate(goal: str) -> Dict[str, Any]:
     gate: Dict[str, Any] = {
         "engine": "scbe.blocks",
         "policy": "destructive ops require an explicit confirm reason; "
-        "drive/home/system-scope destruction is refused outright (no override)",
+                  "drive/home/system-scope destruction is refused outright (no override)",
         "verified": False,
     }
     try:
         from python.scbe import blocks  # noqa: F401  (presence is the verification)
-
         gate["verified"] = True
     except Exception as exc:  # pragma: no cover - defensive
         gate["error"] = f"{type(exc).__name__}: {exc}"
@@ -172,12 +159,8 @@ def route_satisfiability(
     try:
         import z3
     except ImportError:  # pragma: no cover - z3 optional
-        return {
-            "engine": "z3",
-            "available": False,
-            "satisfiable": None,
-            "note": "z3 not installed (pip install z3-solver)",
-        }
+        return {"engine": "z3", "available": False, "satisfiable": None,
+                "note": "z3 not installed (pip install z3-solver)"}
 
     s = z3.Solver()
     writers = [ln for ln in lanes if ln.get("writes")]
@@ -202,11 +185,8 @@ def route_satisfiability(
 
     res = s.check()
     out: Dict[str, Any] = {
-        "engine": "z3",
-        "available": True,
-        "satisfiable": res == z3.sat,
-        "token_cap": token_cap,
-        "tool_cap": tool_cap,
+        "engine": "z3", "available": True, "satisfiable": res == z3.sat,
+        "token_cap": token_cap, "tool_cap": tool_cap,
         "total_token_budget": sum(int(ln.get("token_budget", 0)) for ln in lanes),
         "total_tool_budget": sum(int(ln.get("tool_budget", 0)) for ln in lanes),
     }
@@ -226,11 +206,8 @@ def route_satisfiability(
 
 
 def build_packet(
-    goal: str,
-    *,
-    candidates: Optional[List[Dict[str, Any]]] = None,
-    token_cap: int = 100_000,
-    tool_cap: int = 20,
+    goal: str, *, candidates: Optional[List[Dict[str, Any]]] = None,
+    token_cap: int = 100_000, tool_cap: int = 20,
 ) -> Dict[str, Any]:
     """Assemble the full polylinear-recursive-mountain packet for a goal."""
     sectors = _dh_sectors(goal)
@@ -253,7 +230,6 @@ def build_packet(
 def _demo() -> None:
     import json
     import sys
-
     try:
         sys.stdout.reconfigure(encoding="utf-8")
     except (AttributeError, ValueError):
@@ -263,11 +239,9 @@ def _demo() -> None:
     print(f"  goal            : {pkt['goal']}")
     print(f"  dh sectors      : {pkt['dh_sector_labels']}")
     print(f"  lanes           : {[ln['name'] + '->' + ln['writes'] for ln in pkt['assigned_lanes']]}")
-    print(
-        f"  route satisfiable: {pkt['route_satisfiability']['satisfiable']} "
-        f"(z3, {pkt['route_satisfiability']['total_token_budget']} tok / "
-        f"{pkt['route_satisfiability']['total_tool_budget']} tools)"
-    )
+    print(f"  route satisfiable: {pkt['route_satisfiability']['satisfiable']} "
+          f"(z3, {pkt['route_satisfiability']['total_token_budget']} tok / "
+          f"{pkt['route_satisfiability']['total_tool_budget']} tools)")
     print(f"  apply gate      : {pkt['apply_gate']['engine']} verified={pkt['apply_gate']['verified']}")
     print(f"  may proceed     : {pkt['may_proceed']}")
     print(f"  tongue views    : {list(pkt['tongue_views'].keys())}")

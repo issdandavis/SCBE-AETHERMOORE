@@ -48,8 +48,8 @@ from enum import Enum
 
 PHI = (1 + np.sqrt(5)) / 2
 PHI_INV = 2 / (1 + np.sqrt(5))
-HBAR = 1.0545718e-34  # Reduced Planck constant (J·s)
-PLANCK_TIME = 5.391e-44  # Planck time (s)
+HBAR = 1.0545718e-34       # Reduced Planck constant (J·s)
+PLANCK_TIME = 5.391e-44    # Planck time (s)
 R_FIFTH = 3 / 2
 
 
@@ -57,12 +57,10 @@ R_FIFTH = 3 / 2
 # Quantum State Representations
 # =============================================================================
 
-
 class QuantumBasis(Enum):
     """Basis states for lattice qubits."""
-
-    GROUND = 0  # |0⟩ — inactive node
-    EXCITED = 1  # |1⟩ — active node
+    GROUND = 0     # |0⟩ — inactive node
+    EXCITED = 1    # |1⟩ — active node
 
 
 @dataclass
@@ -72,10 +70,9 @@ class LatticeQubit:
 
     State: |ψ⟩ = α|0⟩ + β|1⟩ where |α|² + |β|² = 1
     """
-
-    index: int  # Polyhedron index (0-15)
-    alpha: complex = 1.0  # Amplitude for |0⟩
-    beta: complex = 0.0  # Amplitude for |1⟩
+    index: int               # Polyhedron index (0-15)
+    alpha: complex = 1.0     # Amplitude for |0⟩
+    beta: complex = 0.0      # Amplitude for |1⟩
 
     def __post_init__(self):
         self._normalize()
@@ -144,19 +141,23 @@ IDENTITY = np.eye(2, dtype=complex)
 HADAMARD = np.array([[1, 1], [1, -1]], dtype=complex) / np.sqrt(2)
 
 # Phase gate parameterized by golden ratio
-PHI_GATE = np.array([[1, 0], [0, np.exp(2j * np.pi / PHI)]], dtype=complex)
-
+PHI_GATE = np.array([
+    [1, 0],
+    [0, np.exp(2j * np.pi / PHI)]
+], dtype=complex)
 
 # Phason rotation gate: R(θ) = exp(-i·θ·Z/2)
 def phason_gate(theta: float) -> np.ndarray:
     """Phason shift as unitary rotation."""
-    return np.array([[np.exp(-1j * theta / 2), 0], [0, np.exp(1j * theta / 2)]], dtype=complex)
+    return np.array([
+        [np.exp(-1j * theta / 2), 0],
+        [0, np.exp(1j * theta / 2)]
+    ], dtype=complex)
 
 
 # =============================================================================
 # Quantum Lattice State
 # =============================================================================
-
 
 @dataclass
 class QuantumLatticeState:
@@ -172,7 +173,6 @@ class QuantumLatticeState:
     Entanglement is tracked via correlation matrices rather than
     full density matrices.
     """
-
     qubits: List[LatticeQubit] = field(default_factory=list)
     entanglement_map: Dict[Tuple[int, int], float] = field(default_factory=dict)
     time: float = 0.0
@@ -271,7 +271,6 @@ class QuantumLatticeState:
 # Quantum Hamiltonian for Lattice Dynamics
 # =============================================================================
 
-
 @dataclass
 class LatticeHamiltonian:
     """
@@ -283,7 +282,6 @@ class LatticeHamiltonian:
         wᵢⱼ = φ-weighted coupling between sites i and j
         hᵢ  = local field from trust ring position
     """
-
     n_sites: int = 16
     couplings: Dict[Tuple[int, int], float] = field(default_factory=dict)
     local_fields: np.ndarray = field(default_factory=lambda: np.zeros(16))
@@ -311,13 +309,22 @@ class LatticeHamiltonian:
         E = Σᵢⱼ wᵢⱼ ⟨σᵢᶻ⟩⟨σⱼᶻ⟩ + Σᵢ hᵢ ⟨σᵢˣ⟩
         """
         # ⟨σᶻ⟩ = P(|0⟩) - P(|1⟩)
-        sigma_z = np.array([q.probability_ground - q.probability_excited for q in state.qubits])
+        sigma_z = np.array([
+            q.probability_ground - q.probability_excited
+            for q in state.qubits
+        ])
 
         # ⟨σˣ⟩ = 2·Re(α*·β)
-        sigma_x = np.array([2 * np.real(np.conj(q.alpha) * q.beta) for q in state.qubits])
+        sigma_x = np.array([
+            2 * np.real(np.conj(q.alpha) * q.beta)
+            for q in state.qubits
+        ])
 
         # Coupling energy
-        E_coupling = sum(w * sigma_z[i] * sigma_z[j] for (i, j), w in self.couplings.items())
+        E_coupling = sum(
+            w * sigma_z[i] * sigma_z[j]
+            for (i, j), w in self.couplings.items()
+        )
 
         # Local field energy
         E_local = float(np.dot(self.local_fields, sigma_x))
@@ -328,7 +335,6 @@ class LatticeHamiltonian:
 # =============================================================================
 # Quantum Phason Dynamics
 # =============================================================================
-
 
 class QuantumPhasonEngine:
     """
@@ -370,9 +376,10 @@ class QuantumPhasonEngine:
             for q in state.qubits:
                 # Bias toward excited with probability φ/(1+φ)
                 theta = 2 * np.arccos(np.sqrt(1 / (1 + PHI)))
-                rotation = np.array(
-                    [[np.cos(theta / 2), -np.sin(theta / 2)], [np.sin(theta / 2), np.cos(theta / 2)]], dtype=complex
-                )
+                rotation = np.array([
+                    [np.cos(theta / 2), -np.sin(theta / 2)],
+                    [np.sin(theta / 2), np.cos(theta / 2)]
+                ], dtype=complex)
                 q.apply_gate(rotation)
 
         # Set up Hamiltonian couplings
@@ -413,13 +420,10 @@ class QuantumPhasonEngine:
                 h = self.hamiltonian.local_fields[i]
                 if abs(h) > 1e-15:
                     # σˣ rotation
-                    rx = np.array(
-                        [
-                            [np.cos(h * dt / 2), -1j * np.sin(h * dt / 2)],
-                            [-1j * np.sin(h * dt / 2), np.cos(h * dt / 2)],
-                        ],
-                        dtype=complex,
-                    )
+                    rx = np.array([
+                        [np.cos(h * dt / 2), -1j * np.sin(h * dt / 2)],
+                        [-1j * np.sin(h * dt / 2), np.cos(h * dt / 2)]
+                    ], dtype=complex)
                     state.qubits[i].apply_gate(rx)
 
             state.time = (step + 1) * dt
@@ -475,7 +479,10 @@ class QuantumPhasonEngine:
 
     def _snapshot(self, state: QuantumLatticeState) -> QuantumLatticeState:
         """Create a snapshot of the current state."""
-        new_qubits = [LatticeQubit(index=q.index, alpha=q.alpha, beta=q.beta) for q in state.qubits]
+        new_qubits = [
+            LatticeQubit(index=q.index, alpha=q.alpha, beta=q.beta)
+            for q in state.qubits
+        ]
         return QuantumLatticeState(
             qubits=new_qubits,
             entanglement_map=dict(state.entanglement_map),
@@ -486,7 +493,6 @@ class QuantumPhasonEngine:
 # =============================================================================
 # Time Quasicrystal Extension
 # =============================================================================
-
 
 class TimeQuasicrystal:
     """
@@ -576,7 +582,6 @@ class TimeQuasicrystal:
 # Self-Test
 # =============================================================================
 
-
 def self_test() -> Dict[str, Any]:
     """Run self-tests on the quantum lattice module."""
     results = {}
@@ -628,7 +633,10 @@ def self_test() -> Dict[str, Any]:
     state2 = QuantumLatticeState()
     state2.superpose_all()
     state2.phason_shift(np.pi / PHI)
-    norms_ok = all(abs(abs(q.alpha) ** 2 + abs(q.beta) ** 2 - 1.0) < 1e-10 for q in state2.qubits)
+    norms_ok = all(
+        abs(abs(q.alpha) ** 2 + abs(q.beta) ** 2 - 1.0) < 1e-10
+        for q in state2.qubits
+    )
     if norms_ok:
         passed += 1
         results["phason_unitary"] = "PASS (all qubits normalized after shift)"
@@ -673,7 +681,9 @@ def self_test() -> Dict[str, Any]:
         # Check ratio approaches φ
         intervals = np.diff(times)
         mean_ratio = np.mean(intervals[1:] / (intervals[:-1] + 1e-15))
-        results["time_quasicrystal"] = f"PASS (quasiperiodic, mean_ratio={mean_ratio:.3f}, φ={PHI:.3f})"
+        results["time_quasicrystal"] = (
+            f"PASS (quasiperiodic, mean_ratio={mean_ratio:.3f}, φ={PHI:.3f})"
+        )
     else:
         results["time_quasicrystal"] = f"FAIL (qp={is_qp}, n={len(times)})"
 
