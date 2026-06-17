@@ -11,9 +11,11 @@ the more it builds. The win compounds with build complexity.
     python scripts/forge_memory.py "a to-do where I set deadlines and mark things done"
     python scripts/forge_memory.py --recipes      # what it has learned
 """
+
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -22,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from forge import _MOVES, _exec, assemble, prime_signature  # noqa: E402
 from forge_speak import parse_intent, synth_spec  # noqa: E402
 
-RECIPES = Path(__file__).resolve().parent / "forge_recipes.json"
+RECIPES = Path(os.environ.get("FORGE_RECIPES_PATH") or Path(__file__).resolve().parent / "forge_recipes.json")
 
 
 def load() -> list:
@@ -44,6 +46,7 @@ def _build(moves: list, spec: dict):
     name, src, _w, used = assemble(["app m"] + [m for m in moves if m in _MOVES])
     ok = True
     import tempfile
+
     with tempfile.TemporaryDirectory() as d:
         app = Path(d) / "m.py"
         app.write_text(src, encoding="utf-8")
@@ -69,7 +72,10 @@ def build_with_memory(intent: str):
         print(f'\n  "{intent}"')
         print(f"  -> REUSED a remembered recipe (deed {hit['deed']})")
         print(f"     learned from: \"{hit['intent']}\"")
-        print(f"  -> rebuilt {len(used)} moves, verified by running: {'YES' if ok else 'NO'}   {dt:.0f}ms (no re-derivation)")
+        print(
+            f"  -> rebuilt {len(used)} moves, verified by running: "
+            f"{'YES' if ok else 'NO'}   {dt:.0f}ms (no re-derivation)"
+        )
     else:
         # derive: cover the caps with the smallest move-set, build, verify, remember
         used, src, ok = _build(caps, spec)

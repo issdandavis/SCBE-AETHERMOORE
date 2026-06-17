@@ -16,6 +16,7 @@ Canonical repository: https://github.com/issdandavis/SCBE-AETHERMOORE
 - Agent demos: https://aethermoore.com/SCBE-AETHERMOORE/agents.html
 - Chat: https://aethermoore.com/SCBE-AETHERMOORE/chat.html
 - Products: https://aethermoore.com/SCBE-AETHERMOORE/products.html
+- Workflow machine proof: https://aethermoore.com/SCBE-AETHERMOORE/workflow-machine.html
 - Bookshelf and KDP/direct-process status: https://aethermoore.com/SCBE-AETHERMOORE/books.html
 - Working AI writing and security guides: https://aethermoore.com/SCBE-AETHERMOORE/guides.html
 - Behind-the-scenes writing process pack checkout: https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n
