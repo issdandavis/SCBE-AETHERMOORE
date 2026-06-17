@@ -44,6 +44,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 import unicodedata
 from pathlib import Path
@@ -1064,6 +1065,60 @@ def cmd_system_health(args: argparse.Namespace) -> int:
     if not getattr(args, "no_write", False):
         print(f"  Artifact: {json_path}")
     return 0
+
+
+def _run_proof_subprocess(cmd: List[str], *, env: Optional[Dict[str, str]] = None, timeout: int = 180) -> int:
+    proc = subprocess.run(
+        cmd,
+        cwd=REPO_ROOT,
+        env=env,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=timeout,
+        check=False,
+    )
+    if proc.stdout:
+        print(proc.stdout, end="" if proc.stdout.endswith("\n") else "\n")
+    if proc.stderr:
+        print(proc.stderr, file=sys.stderr, end="" if proc.stderr.endswith("\n") else "\n")
+    return proc.returncode
+
+
+def cmd_prove(args: argparse.Namespace) -> int:
+    """Run the public product proof paths from one CLI entrypoint."""
+    target = args.prove_cmd
+    if target == "forge":
+        intent = args.intent or "let me tag things, find them, and export my list"
+        with tempfile.TemporaryDirectory(prefix="scbe-forge-proof-") as tmp:
+            env = os.environ.copy()
+            env["FORGE_RECIPES_PATH"] = str(Path(tmp) / "forge_recipes.json")
+            print("SCBE Forge proof run")
+            print("====================")
+            print("Run 1: derive, build, verify, remember")
+            rc1 = _run_proof_subprocess(
+                [sys.executable, str(REPO_ROOT / "scripts" / "forge_speak.py"), intent], env=env
+            )
+            if rc1 != 0:
+                return rc1
+            print()
+            print("Run 2: reuse remembered recipe, rebuild, re-verify")
+            rc2 = _run_proof_subprocess(
+                [sys.executable, str(REPO_ROOT / "scripts" / "forge_speak.py"), intent], env=env
+            )
+            if rc2 == 0:
+                print()
+                print("PROOF COMPLETE: memory reused a verified recipe and still re-ran the spec.")
+            return rc2
+
+    if target == "black-box":
+        cmd = [sys.executable, str(REPO_ROOT / "scripts" / "system" / "prove_black_box_value.py")]
+        if args.out_dir:
+            cmd.extend(["--out-dir", args.out_dir])
+        return _run_proof_subprocess(cmd, timeout=240)
+
+    print("scbe prove needs a subcommand: forge or black-box", file=sys.stderr)
+    return 2
 
 
 def cmd_tongue_encode(args: argparse.Namespace) -> int:
@@ -3015,31 +3070,31 @@ def cmd_overcreate(args: argparse.Namespace) -> int:
 
 def cmd_fold(args: argparse.Namespace) -> int:
     """Origami: unfold the cube to paper, fold a fan/crane, or play the number game."""
-    from python.scbe import origami as O
+    from python.scbe import origami
 
     prog = getattr(args, "fortune", None)
     if prog is not None:
         from python.scbe import frontdoor as F
 
         names, _ = F.tokens_to_program(prog)
-        ft = O.FortuneTeller.from_program(names)
+        ft = origami.FortuneTeller.from_program(names)
         picks = getattr(args, "pick", None) or [1]
         landed = ft.play(picks)
         print("fortune teller (from %s)" % (names or ["add"]))
         print("  cells:", ft.flaps())
-        print("  pick %s -> flap '%s' -> runs to %s" % (picks, landed, O._run_op(landed)))
+        print("  pick %s -> flap '%s' -> runs to %s" % (picks, landed, origami._run_op(landed)))
         return 0
     shape = getattr(args, "shape", None) or "net"
     if shape == "net":
         print("the cube unfolds to a sheet (its net):")
-        print(O.render_net())
+        print(origami.render_net())
     elif shape == "fan":
         n = getattr(args, "n", 6) or 6
         print("fold it into a fan (%d creases):" % n)
-        print(O.crease_pattern(O.accordion(n)))
+        print(origami.crease_pattern(origami.accordion(n)))
     elif shape == "crane":
         print("crane fold sequence:")
-        for i, step in enumerate(O.crane(), 1):
+        for i, step in enumerate(origami.crane(), 1):
             print("  %d. %s" % (i, step))
     return 0
 
@@ -4307,7 +4362,7 @@ def cmd_recent(args: argparse.Namespace) -> int:
         )
         return 0
     print(f"Your {len(items)} most recent notes:")
-    for d, p, n in items:
+    for d, _p, n in items:
         print(f"  {time.strftime('%Y-%m-%d', time.localtime(d))}  {n}")
     return 0
 
@@ -4698,6 +4753,19 @@ Legacy (backward compat):
     sh.add_argument("--top-processes", type=int, default=15)
     sh.set_defaults(func=cmd_system_health)
 
+    prove = sub.add_parser("prove", help="Run product proof paths without setup or sales copy")
+    prove_sub = prove.add_subparsers(dest="prove_cmd")
+    pf = prove_sub.add_parser("forge", help="Prove the workflow machine: derive, verify, remember, reuse")
+    pf.add_argument(
+        "intent",
+        nargs="?",
+        help='Plain-English workflow request to build (default: "let me tag things, find them, and export my list")',
+    )
+    pf.set_defaults(func=cmd_prove)
+    pb = prove_sub.add_parser("black-box", help="Build and run the PC Black Box proof bundle")
+    pb.add_argument("--out-dir", help="Output directory for the buyer ZIP and proof run")
+    pb.set_defaults(func=cmd_prove)
+
     # ─── compact verbs (human + AI surface) ───
     ak = sub.add_parser("ask", aliases=["a"], help='Ask the AI a question ("scbe ask "..."")')
     ak.add_argument("prompt", nargs="?", help="question (or pipe via stdin)")
@@ -5002,7 +5070,10 @@ Legacy (backward compat):
 
     fl = sub.add_parser(
         "fold",
-        help='Origami: unfold the cube to paper, fold a fan/crane, or the number game ("scbe fold --fortune "+ * sqrt inc" --pick 4 3 2")',
+        help=(
+            "Origami: unfold the cube to paper, fold a fan/crane, or the number game "
+            '("scbe fold --fortune "+ * sqrt inc" --pick 4 3 2")'
+        ),
     )
     fl.add_argument("--shape", choices=["net", "fan", "crane"], help="what to fold (default net)")
     fl.add_argument("--n", type=int, default=6, help="number of creases for a fan")

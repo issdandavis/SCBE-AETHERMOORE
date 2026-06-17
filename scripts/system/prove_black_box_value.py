@@ -20,7 +20,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    out_dir = Path(args.out_dir)
+    out_dir = Path(args.out_dir).resolve()
     manifest = build_black_box_download(out_dir, verify=True)
     bundle_dir = out_dir / manifest["bundle_name"]
     proof_dir = bundle_dir / "proof-run"

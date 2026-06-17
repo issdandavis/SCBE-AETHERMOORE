@@ -298,6 +298,7 @@ def _exec(app: Path, argv: list[str]):
     r = subprocess.run(
         [sys.executable, str(app), *argv],
         capture_output=True,
+        cwd=app.parent,
         text=True,
         encoding="utf-8",
         errors="replace",
