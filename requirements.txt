@@ -51,3 +51,6 @@ openpyxl==3.1.5
 # Optional: Visualization (for extended demos)
 # matplotlib>=3.5.0
 z3-solver>=4.12
+
+# MCP SDK — for the SCBE CLI MCP server (tools/mcp/scbe_cli_server.py)
+mcp[cli]>=1.28
