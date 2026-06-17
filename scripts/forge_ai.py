@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from forge import _MOVES, _PUZZLES, _exec, assemble  # noqa: E402
+from forge import _MOVES, _PUZZLES, _exec, assemble, show_signature  # noqa: E402
 
 # Layer 2+: blocks are compositions of moves; blocks may contain BLOCKS (hierarchy).
 _BLOCKS: dict[str, list[str]] = {
@@ -97,6 +97,7 @@ def auto_solve(puzzle: str):
     for argv, good, out in results:
         print(f"   [{'OK' if good else 'XX'}] {name} {' '.join(argv):<18} -> {out}")
     lev = round(lines / max(1, len(plan)), 1)
+    show_signature(used)
     print("\n  " + "=" * 58)
     print(f"  blocks: {len(plan)}   primitive moves: {len(used)}   lines: {lines}   "
           f"leverage: {lev} lines/block   {dt:.0f}ms")

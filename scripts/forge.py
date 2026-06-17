@@ -158,6 +158,52 @@ _PUZZLES = {
 }
 
 
+# --- lossless prime signature + glyph: "no number lost; too long -> a shape" --------
+_PRIMES_POS = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71]
+_MOVE_ID = {name: i + 1 for i, name in enumerate(_MOVES)}  # stable id per move
+
+
+def prime_signature(used: list[str]) -> int:
+    """Ordered move list -> ONE number (Godel/prime code). Reversible; loses nothing."""
+    sig = 1
+    for i, m in enumerate(used):
+        sig *= _PRIMES_POS[i] ** _MOVE_ID.get(m, 0)
+    return sig
+
+
+def decode_signature(sig: int) -> list[str]:
+    """Factor the number back to the EXACT ordered move list."""
+    inv = {v: k for k, v in _MOVE_ID.items()}
+    out = []
+    for p in _PRIMES_POS:
+        if sig % p != 0:
+            break
+        e = 0
+        while sig % p == 0:
+            sig //= p
+            e += 1
+        out.append(inv.get(e, "?"))
+    return out
+
+
+def render_glyph(sig: int, width: int = 16) -> list[str]:
+    """Fold the (possibly huge) number into a 2D shape: its bits on a grid -- a glyph."""
+    nbytes = max(1, (sig.bit_length() + 7) // 8)
+    bits = bin(int.from_bytes(sig.to_bytes(nbytes, "big"), "big"))[2:].zfill(nbytes * 8)
+    rows = [bits[i:i + width] for i in range(0, len(bits), width)]
+    return ["".join("#" if b == "1" else "." for b in r) for r in rows]
+
+
+def show_signature(used: list[str]):
+    sig = prime_signature(used)
+    ok = decode_signature(sig) == used
+    print(f"\n  prime signature (one number, reversible): {sig}")
+    print(f"   factors back to: {decode_signature(sig)}   NO MOVE LOST: {ok}")
+    print("   too long to read in a line -> it becomes a SHAPE:")
+    for row in render_glyph(sig):
+        print("     " + row)
+
+
 def parse_moves(text: str) -> list[str]:
     raw = [m.strip() for chunk in text.split(";") for m in chunk.split("\n")]
     return [m for m in raw if m]
@@ -246,6 +292,7 @@ def solve(move_text: str, puzzle: str | None = None):
 
     dt = (time.perf_counter() - t0) * 1000
     leverage = round(lines / max(1, len(used)), 1)
+    show_signature(used)
     print("\n  " + "=" * 56)
     print(f"  moves: {len(used)}   lines: {lines}   leverage: {leverage} lines/move   {dt:.0f}ms")
     if solved is not None:

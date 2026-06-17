@@ -17,7 +17,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from forge import _MOVES, _exec, assemble  # noqa: E402
+from forge import _MOVES, _exec, assemble, show_signature  # noqa: E402
 from forge_ai import _BLOCKS, expand, provides  # noqa: E402
 
 # plain-English -> a capability the move library actually provides
@@ -110,6 +110,7 @@ def speak(text: str):
     print()
     for argv, good, out in results:
         print(f"   [{'OK' if good else 'XX'}] forged {' '.join(argv):<16} -> {out}")
+    show_signature(used)
     print(f"\n  BUILT + VERIFIED: {'YES -- it runs and does what you asked' if ok else 'NO'}")
     if gaps:
         print(f"  HONEST GAPS (no move for these yet): {', '.join(gaps)}")
