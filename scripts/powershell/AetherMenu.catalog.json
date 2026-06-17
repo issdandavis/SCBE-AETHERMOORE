@@ -72,7 +72,7 @@
       "actions": [
         {
           "label": "Turn my writing into secret tokens",
-          "command": "python scbe.py enc ko {input}",
+          "command": "python scbe.py enc ko \"{input}\"",
           "needs_input": true,
           "input_prompt": "What text do you want to turn into secret tokens?",
           "run_mode": "direct",
@@ -81,7 +81,7 @@
         },
         {
           "label": "Read my secret tokens back as plain text",
-          "command": "python scbe.py dec ko {input}",
+          "command": "python scbe.py dec ko \"{input}\"",
           "needs_input": true,
           "input_prompt": "Paste the Kor'aelin tokens to turn back into text",
           "run_mode": "direct",
@@ -90,7 +90,7 @@
         },
         {
           "label": "Hide my writing in the veil tongue",
-          "command": "python scbe.py enc um {input}",
+          "command": "python scbe.py enc um \"{input}\"",
           "needs_input": true,
           "input_prompt": "What text do you want to hide in the Umbroth veil tongue?",
           "run_mode": "direct",
@@ -99,7 +99,7 @@
         },
         {
           "label": "Lock my writing with the binding tongue",
-          "command": "python scbe.py enc ru {input}",
+          "command": "python scbe.py enc ru \"{input}\"",
           "needs_input": true,
           "input_prompt": "What text do you want to bind in the Runethic tongue?",
           "run_mode": "direct",
@@ -228,7 +228,7 @@
         },
         {
           "label": "Check one of my files for problems",
-          "command": "python scbe.py ai check {input}",
+          "command": "python scbe.py ai check \"{input}\"",
           "needs_input": true,
           "input_prompt": "Which file? (path to the file, e.g. scbe.py)",
           "run_mode": "direct",
@@ -288,7 +288,7 @@
         },
         {
           "label": "Translate code into another language",
-          "command": "python scbe.py polyglot add mul --lang {input}",
+          "command": "python scbe.py polyglot add mul --lang \"{input}\"",
           "needs_input": true,
           "input_prompt": "Which language? (e.g. rust, javascript, python, go, java)",
           "run_mode": "direct",
@@ -306,7 +306,7 @@
         },
         {
           "label": "Explain a part of the safety system",
-          "command": "python scbe.py ai explain {input}",
+          "command": "python scbe.py ai explain \"{input}\"",
           "needs_input": true,
           "input_prompt": "Which layer or idea? (e.g. L13, harmonic, breathing)",
           "run_mode": "direct",
@@ -486,7 +486,7 @@
         },
         {
           "label": "Explain a layer by its number",
-          "command": "python scbe.py ai explain {input}",
+          "command": "python scbe.py ai explain \"{input}\"",
           "needs_input": true,
           "input_prompt": "Which layer? Type a number L1 through L14 (for example L12):",
           "run_mode": "direct",
