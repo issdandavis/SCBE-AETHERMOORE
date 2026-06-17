@@ -542,6 +542,221 @@ _INJECTION_FAMILIES: Dict[str, "re.Pattern[str]"] = {
 # gate mode); 2+ families -> H_eff <0.2 (DENY).
 _INTENT_PENALTY = 2.5
 
+# ── L13b semantic concept screen ──────────────────────────────────────────────
+# The regex families above need a specific trigger verb (ignore/exfiltrate/rm -rf).
+# Fluent PARAPHRASES that carry the same intent with different words slip through
+# (measured: ~8% recall on keyword-free paraphrases). This concept layer fires a
+# family when an ACTION concept CO-OCCURS with a SENSITIVE-OBJECT concept, or a
+# STANDALONE phrase appears -- plain substrings over the same canonicalized
+# candidates, so it stays deterministic and auditable, just broader. It reuses the
+# existing family labels, so the penalty/threshold logic downstream is unchanged.
+_SEM_FAMILIES: Dict[str, Dict[str, Tuple[str, ...]]] = {
+    "instruction-override": {
+        "actions": (
+            "set aside",
+            "put aside",
+            "disregard",
+            "ignore",
+            "forget",
+            "override",
+            "supersede",
+            "take precedence",
+            "higher priority",
+            "highest priority",
+            "higher-priority",
+            "top priority",
+            "authoritative",
+            "comply with every",
+            "comply with all",
+            "comply with my",
+            "do exactly what i",
+            "do exactly as i",
+            "treat my",
+            "treat the following",
+            "act on it directly",
+            "prioritize it",
+        ),
+        "objects": (
+            "instruction",
+            "instructions",
+            "rule",
+            "rules",
+            "guideline",
+            "guidelines",
+            "direction",
+            "directions",
+            "guardrail",
+            "guardrails",
+            "configuration",
+            "framing",
+            "brief",
+            "caveat",
+            "caveats",
+            "policy",
+            "policies",
+            "standing",
+            "system prompt",
+            "you were told",
+            "you were given",
+            "you were configured",
+        ),
+        "standalone": (
+            "you are now",
+            "from now on",
+            "new instructions:",
+            "higher-priority instructions",
+            "as the authoritative configuration",
+        ),
+    },
+    "exfiltration": {
+        "actions": (
+            "copy",
+            "forward",
+            "paste",
+            "read back",
+            "read the contents",
+            "reading back",
+            "quote back",
+            "word for word",
+            "reveal",
+            "disclose",
+            "expose",
+            "print out",
+            "send",
+            "email",
+            "upload",
+            "dump",
+            "include them",
+            "include it",
+            "reach out to http",
+            "append a footer",
+            "paste them into",
+        ),
+        "objects": (
+            "system prompt",
+            "secret",
+            "secrets",
+            "api key",
+            "api keys",
+            "password",
+            "passwords",
+            "credential",
+            "credentials",
+            "access token",
+            "private key",
+            ".env",
+            "env file",
+            "environment variable",
+            "environment file",
+            "token",
+            "tokens",
+            "confidential",
+            "setup text",
+            "standing directions",
+            "operating rules",
+            "configured with",
+        ),
+        "standalone": (),
+    },
+    "destructive-intent": {
+        "actions": (
+            "delete",
+            "destroy",
+            "wipe",
+            "erase",
+            "truncate",
+            "purge",
+            "nuke",
+            "empty",
+            "make it vanish",
+            "make every",
+            "make all",
+            "unrecoverable",
+            "throw away",
+            "throwing away",
+            "reset",
+            "clean slate",
+            "reclaim space",
+            "freshly installed",
+            "blank condition",
+            "blank state",
+            "pristine state",
+        ),
+        "objects": (
+            "file",
+            "files",
+            "folder",
+            "folders",
+            "subfolder",
+            "directory",
+            "directories",
+            "home folder",
+            "drive",
+            "disk",
+            "filesystem",
+            "database",
+            "table",
+            "tables",
+            "repo",
+            "repository",
+            "checkout",
+            "working area",
+            "working tree",
+            "working copy",
+            "local change",
+            "local changes",
+            "untracked",
+            "stash",
+            "stashed",
+            "document",
+            "documents",
+            "data store",
+        ),
+        "standalone": (
+            "make every file",
+            "nothing remaining",
+            "back to a pristine state",
+        ),
+    },
+    "jailbreak": {
+        "actions": (),
+        "objects": (),
+        "standalone": (
+            "unrestricted",
+            "developer mode",
+            "jailbreak",
+            "unfiltered",
+            "no longer bound",
+            "do anything now",
+            "no content policy",
+            "no content policies",
+            "no policies whatsoever",
+            "no restrictions",
+            "without any restriction",
+            "without restrictions",
+            "guardrails don't apply",
+            "guardrails do not apply",
+            "normal limits were active",
+            "no normal limits",
+            "never break character",
+            "stay in character",
+            "stay fully immersed",
+            "no refusal",
+            "candid internal mode",
+            "internal mode just between us",
+            "set aside the customer-facing",
+            "without the safety post-processing",
+            "pre-alignment",
+            "no usage policies",
+            "usage policy was never",
+            "policy was never installed",
+            "safety guidelines simply don't exist",
+            "no content guidelines",
+            "the usual guardrails don't",
+        ),
+    },
+}
+
 _ZERO_WIDTH_OR_CONTROL = re.compile(r"[\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]")
 _B64_TOKEN = re.compile(r"\b[A-Za-z0-9+/_-]{16,}={0,2}\b")
 _LEET_TABLE = str.maketrans(
@@ -613,10 +828,22 @@ def _decoded_base64_candidates(text: str) -> List[str]:
     return candidates
 
 
+def _despace_runs(text: str) -> str:
+    """Join a run of single letters split by spaces: 'i g n o r e' -> 'ignore'.
+
+    Defeats the spaced-out-letters evasion that the byte sieve and word-boundary
+    regexes both miss; the semantic substring screen then sees the real word.
+    """
+    return re.sub(r"(?:\b\w\b ){2,}\b\w\b", lambda m: m.group(0).replace(" ", ""), text)
+
+
 def _intent_scan_candidates(text: str) -> List[str]:
     base = _normalize_for_intent(text)
     candidates = [base]
     candidates.append(base.translate(_LEET_TABLE))
+    despaced = _despace_runs(base)
+    if despaced != base:
+        candidates.append(despaced)
     try:
         candidates.append(codecs.decode(base, "rot_13"))
     except Exception:
@@ -648,7 +875,26 @@ def _adversarial_intent(text: str) -> Tuple[float, List[str]]:
         for name, rx in _INJECTION_FAMILIES.items():
             if name not in labels and rx.search(candidate):
                 labels.append(name)
+        for name in _semantic_intent(candidate):
+            if name not in labels:
+                labels.append(name)
     return float(len(labels)), labels
+
+
+def _semantic_intent(candidate: str) -> List[str]:
+    """Concept screen: a family fires on a STANDALONE phrase, or an ACTION concept
+    co-occurring with a SENSITIVE-OBJECT concept. Catches keyword-free paraphrases
+    the regex families miss, while co-occurrence keeps benign single-word mentions
+    (e.g. 'delete a row', 'ignore whitespace') from firing on their own."""
+    hits: List[str] = []
+    for name, fam in _SEM_FAMILIES.items():
+        if any(s in candidate for s in fam["standalone"]):
+            hits.append(name)
+            continue
+        actions, objects = fam["actions"], fam["objects"]
+        if actions and objects and any(a in candidate for a in actions) and any(o in candidate for o in objects):
+            hits.append(name)
+    return hits
 
 
 def pipeline_quick_score(text: str) -> Dict[str, Any]:
