@@ -1,0 +1,499 @@
+{
+  "categories": [
+    {
+      "category": "GitHub",
+      "icon": "🐙",
+      "actions": [
+        {
+          "label": "See why my build broke",
+          "command": "gh run list --repo issdandavis/SCBE-AETHERMOORE --limit 10",
+          "desc": "Shows your latest automated checks (CI runs) with pass/fail status, newest first",
+          "needs_input": false,
+          "run_mode": "direct",
+          "verified": true
+        },
+        {
+          "label": "Read the full error log for a failed run",
+          "command": "gh run view {input} --repo issdandavis/SCBE-AETHERMOORE --log-failed",
+          "desc": "Opens the detailed log for one run so you can see exactly what failed",
+          "input_prompt": "Which run? Paste the run ID from the build list (the long number)",
+          "needs_input": true,
+          "run_mode": "direct",
+          "verified": true
+        },
+        {
+          "label": "Check on my pull requests",
+          "command": "gh pr list --repo issdandavis/SCBE-AETHERMOORE --limit 20",
+          "desc": "Lists all open pull requests (proposed changes) with their numbers and titles",
+          "needs_input": false,
+          "run_mode": "direct",
+          "verified": true
+        },
+        {
+          "label": "Look at one pull request in detail",
+          "command": "gh pr view {input} --repo issdandavis/SCBE-AETHERMOORE",
+          "desc": "Shows the title, description, checks, and review status for one pull request",
+          "input_prompt": "Which pull request? Enter its number (e.g. 2295)",
+          "needs_input": true,
+          "run_mode": "direct",
+          "verified": true
+        },
+        {
+          "label": "Save and send my work to GitHub",
+          "command": "git add -A && git commit -m \"{input}\" && git push",
+          "desc": "Saves all your changes with a short note and uploads them to GitHub",
+          "input_prompt": "In a few words, what did you change? (this becomes the save note)",
+          "needs_input": true,
+          "run_mode": "confirm",
+          "verified": true
+        },
+        {
+          "label": "Open a pull request for my changes",
+          "command": "gh pr create --repo issdandavis/SCBE-AETHERMOORE --fill",
+          "desc": "Proposes your pushed changes for review and merging, using your last save note as the title",
+          "needs_input": false,
+          "run_mode": "confirm",
+          "verified": true
+        },
+        {
+          "label": "Merge a pull request into the project",
+          "command": "gh pr merge {input} --repo issdandavis/SCBE-AETHERMOORE --squash",
+          "desc": "Combines an approved pull request into the main project (squashed into one tidy change)",
+          "input_prompt": "Which pull request should I merge in? Enter its number",
+          "needs_input": true,
+          "run_mode": "confirm",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "category": "Tokens & Cube",
+      "icon": "🔡",
+      "actions": [
+        {
+          "label": "Turn my writing into secret tokens",
+          "command": "python scbe.py enc ko {input}",
+          "needs_input": true,
+          "input_prompt": "What text do you want to turn into secret tokens?",
+          "run_mode": "direct",
+          "desc": "Encodes your text into Kor'aelin sacred-tongue tokens",
+          "verified": true
+        },
+        {
+          "label": "Read my secret tokens back as plain text",
+          "command": "python scbe.py dec ko {input}",
+          "needs_input": true,
+          "input_prompt": "Paste the Kor'aelin tokens to turn back into text",
+          "run_mode": "direct",
+          "desc": "Decodes Kor'aelin tokens back into the original words",
+          "verified": true
+        },
+        {
+          "label": "Hide my writing in the veil tongue",
+          "command": "python scbe.py enc um {input}",
+          "needs_input": true,
+          "input_prompt": "What text do you want to hide in the Umbroth veil tongue?",
+          "run_mode": "direct",
+          "desc": "Encodes your text into Umbroth (the redaction/veil tongue)",
+          "verified": true
+        },
+        {
+          "label": "Lock my writing with the binding tongue",
+          "command": "python scbe.py enc ru {input}",
+          "needs_input": true,
+          "input_prompt": "What text do you want to bind in the Runethic tongue?",
+          "run_mode": "direct",
+          "desc": "Encodes your text into Runethic (the salt/binding tongue)",
+          "verified": true
+        },
+        {
+          "label": "See all six sacred tongues I can use",
+          "command": "python scbe.py tongues list",
+          "needs_input": false,
+          "input_prompt": "",
+          "run_mode": "direct",
+          "desc": "Lists the 6 sacred tongues with samples and what each is for",
+          "verified": true
+        },
+        {
+          "label": "Turn my writing into tokens (any tongue)",
+          "command": "python scbe.py enc {input}",
+          "needs_input": true,
+          "input_prompt": "Type a tongue code (ko, av, ru, ca, um, dr) then your text",
+          "run_mode": "direct",
+          "desc": "Encodes text into the tongue you pick (ko/av/ru/ca/um/dr)",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "category": "Chemistry",
+      "icon": "🧪",
+      "actions": [
+        {
+          "label": "Turn my words into atoms",
+          "command": "python scbe.py chem atomize \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "What text should I turn into atomic states?",
+          "run_mode": "direct",
+          "desc": "Maps each word in your text to an atomic token state (elements + 6-tongue charges)",
+          "verified": true
+        },
+        {
+          "label": "Translate an SCBE action to chemistry",
+          "command": "python scbe.py chem map-semantics --operation \"{input}\" --chemical-analogue \"ionic dissociation\"",
+          "needs_input": true,
+          "input_prompt": "Which SCBE operation? (e.g. release, bind, compare)",
+          "run_mode": "direct",
+          "desc": "Shows the chemistry analogue (like dissociation or bonding) for an SCBE operation",
+          "verified": true
+        },
+        {
+          "label": "Clean up a molecule formula",
+          "command": "python scbe.py chem convert --smiles \"{input}\" --to can",
+          "needs_input": true,
+          "input_prompt": "Paste a SMILES molecule string (e.g. CCO for ethanol)",
+          "run_mode": "direct",
+          "desc": "Converts a SMILES molecule into its clean canonical form via RDKit/Open Babel",
+          "verified": true
+        },
+        {
+          "label": "Check how strongly six tongues bond",
+          "command": "python scbe.py chem bonds 1.0 0.5 0.2 0.8 0.3 0.6",
+          "needs_input": false,
+          "input_prompt": "",
+          "run_mode": "direct",
+          "desc": "Scores the 6 Sacred Tongue coordinates as molecule-like bonds and reports stability",
+          "verified": true
+        },
+        {
+          "label": "Show the orbital shell map",
+          "command": "python scbe.py chem orbitals --json",
+          "needs_input": false,
+          "input_prompt": "",
+          "run_mode": "direct",
+          "desc": "Prints the GeoSeed golden-ratio orbital shells for all six tongues (s/p/d/f/g/h)",
+          "verified": true
+        },
+        {
+          "label": "Check the chemistry engine is healthy",
+          "command": "python scbe.py chem benchmark --inventory-only --json",
+          "needs_input": false,
+          "input_prompt": "",
+          "run_mode": "direct",
+          "desc": "Fast inventory of the chemistry capability files and runtime probes with pass rate",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "category": "Safety & Governance",
+      "icon": "🛡️",
+      "actions": [
+        {
+          "label": "Is this text risky? Allow or block",
+          "command": "python scbe.py score \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "Paste the text you want checked for risk",
+          "run_mode": "direct",
+          "desc": "Scores your text and tells you ALLOW (safe) or DENY (risky)",
+          "verified": true
+        },
+        {
+          "label": "Pass/fail safety check on this text",
+          "command": "python scbe.py score --gate \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "Paste the text to run through the safety gate",
+          "run_mode": "direct",
+          "desc": "Runs the gate that flags a failure if the text is blocked",
+          "verified": true
+        },
+        {
+          "label": "See the full safety breakdown for this text",
+          "command": "python scbe.py pipeline run --text \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "Paste the text you want a detailed safety report on",
+          "run_mode": "direct",
+          "desc": "Runs the full 14-layer governance check and shows every score",
+          "verified": true
+        },
+        {
+          "label": "Get the safety result as data (JSON)",
+          "command": "python scbe.py score --json \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "Paste the text to score and get JSON back",
+          "run_mode": "direct",
+          "desc": "Same risk check but returns machine-readable JSON details",
+          "verified": true
+        },
+        {
+          "label": "Check one of my files for problems",
+          "command": "python scbe.py ai check {input}",
+          "needs_input": true,
+          "input_prompt": "Which file? (path to the file, e.g. scbe.py)",
+          "run_mode": "direct",
+          "desc": "Lints and reviews a code file and lists any issues found",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "category": "Code & AI",
+      "icon": "🤖",
+      "actions": [
+        {
+          "label": "Ask the AI anything",
+          "command": "python scbe.py ask \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "What do you want to ask the AI?",
+          "run_mode": "direct",
+          "desc": "Type a question in plain English and get a straight answer from the AI.",
+          "verified": true
+        },
+        {
+          "label": "Have the AI do a task for me",
+          "command": "python scbe.py do \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "What should the AI do? (describe the task)",
+          "run_mode": "confirm",
+          "desc": "Tell the AI a task and let it work on it for you (can change files).",
+          "verified": true
+        },
+        {
+          "label": "Check my code file for problems",
+          "command": "python scbe.py ai lint \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "Which file? (paste the full path to your code file)",
+          "run_mode": "direct",
+          "desc": "Scans a code file for errors and red flags, and tells you if it's broken.",
+          "verified": true
+        },
+        {
+          "label": "Get a plain review of my code",
+          "command": "python scbe.py ai review \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "Which file? (paste the full path to your code file)",
+          "run_mode": "direct",
+          "desc": "Reads your code file and gives friendly suggestions on what to improve.",
+          "verified": true
+        },
+        {
+          "label": "Full health check on my code",
+          "command": "python scbe.py ai check \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "Which file? (paste the full path to your code file)",
+          "run_mode": "direct",
+          "desc": "Runs both the problem scan and the review in one go for a full report.",
+          "verified": true
+        },
+        {
+          "label": "Translate code into another language",
+          "command": "python scbe.py polyglot add mul --lang {input}",
+          "needs_input": true,
+          "input_prompt": "Which language? (e.g. rust, javascript, python, go, java)",
+          "run_mode": "direct",
+          "desc": "Turns a small program into the programming language you pick.",
+          "verified": true
+        },
+        {
+          "label": "Show all languages I can translate to",
+          "command": "python scbe.py polyglot --list",
+          "needs_input": false,
+          "input_prompt": "",
+          "run_mode": "direct",
+          "desc": "Lists every programming language and operation the translator supports.",
+          "verified": true
+        },
+        {
+          "label": "Explain a part of the safety system",
+          "command": "python scbe.py ai explain {input}",
+          "needs_input": true,
+          "input_prompt": "Which layer or idea? (e.g. L13, harmonic, breathing)",
+          "run_mode": "direct",
+          "desc": "Explains a pipeline layer or concept in simple terms.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "category": "Notes & Vault",
+      "icon": "📒",
+      "actions": [
+        {
+          "label": "Find one of my notes by name",
+          "command": "python scbe.py find \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "What word should be in the note's name?",
+          "run_mode": "direct",
+          "desc": "Searches all your vaults for notes/docs whose filename matches your text",
+          "verified": true
+        },
+        {
+          "label": "Search inside my notes for a word",
+          "command": "python scbe.py find -c \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "What word or phrase should I look for inside your notes?",
+          "run_mode": "direct",
+          "desc": "Looks inside the text of your notes, not just the filenames",
+          "verified": true
+        },
+        {
+          "label": "Open the newest note about something",
+          "command": "python scbe.py open \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "What is the note about? (a word from its name)",
+          "run_mode": "direct",
+          "desc": "Finds the newest matching note and opens it in your default app",
+          "verified": true
+        },
+        {
+          "label": "Show what I worked on lately",
+          "command": "python scbe.py recent",
+          "needs_input": false,
+          "input_prompt": "",
+          "run_mode": "direct",
+          "desc": "Lists your most recently dated notes so you can pick up where you left off",
+          "verified": true
+        },
+        {
+          "label": "See all my note vaults",
+          "command": "python scbe.py vault",
+          "needs_input": false,
+          "input_prompt": "",
+          "run_mode": "direct",
+          "desc": "Lists your real Obsidian vaults and how many notes each holds",
+          "verified": true
+        },
+        {
+          "label": "Open one of my vault folders",
+          "command": "python scbe.py vault \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "Which vault? (a word from its folder name, e.g. Avalon)",
+          "run_mode": "direct",
+          "desc": "Opens the matching vault folder in File Explorer",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "category": "System & Health",
+      "icon": "🩺",
+      "actions": [
+        {
+          "label": "Check if my PC is healthy",
+          "command": "python scbe.py health",
+          "needs_input": false,
+          "run_mode": "direct",
+          "desc": "Checks your RAM, free disk space, and warns if anything is running low",
+          "input_prompt": "",
+          "verified": true
+        },
+        {
+          "label": "Make sure SCBE itself is working",
+          "command": "python scbe.py selftest",
+          "needs_input": false,
+          "run_mode": "direct",
+          "desc": "Runs a quick self-test of all the core parts and tells you if everything passed",
+          "input_prompt": "",
+          "verified": true
+        },
+        {
+          "label": "See what SCBE knows about my project",
+          "command": "python scbe.py status",
+          "needs_input": false,
+          "run_mode": "direct",
+          "desc": "Shows the project version, languages, tongues, and pipeline layers at a glance",
+          "input_prompt": "",
+          "verified": true
+        },
+        {
+          "label": "Check my tools are set up right",
+          "command": "python scbe.py doctor",
+          "needs_input": false,
+          "run_mode": "direct",
+          "desc": "Checks that helper tools like git, node, and gh are installed and shows what's missing",
+          "input_prompt": "",
+          "verified": true
+        },
+        {
+          "label": "Get a clear warning if storage is low",
+          "command": "python scbe.py health --warn-disk-free-gb 25",
+          "needs_input": false,
+          "run_mode": "direct",
+          "desc": "Runs the PC health check and flags low disk space sooner so you get more warning",
+          "input_prompt": "",
+          "verified": true
+        },
+        {
+          "label": "Save a health report I can keep",
+          "command": "python scbe.py health --json",
+          "needs_input": false,
+          "run_mode": "direct",
+          "desc": "Runs the health check and prints a full report you can save or share",
+          "input_prompt": "",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "category": "See & Feel (Synesthesia)",
+      "icon": "🌈",
+      "actions": [
+        {
+          "label": "See, hear & feel my words",
+          "command": "python scbe.py describe \"{input}\"",
+          "needs_input": true,
+          "input_prompt": "Type any words you want to experience across the senses:",
+          "run_mode": "direct",
+          "desc": "Renders your text as a sound wave, a musical note, a texture, a taste, and a flow — all five senses at once.",
+          "verified": true
+        },
+        {
+          "label": "Show me a quick taste of the senses",
+          "command": "python scbe.py describe \"hello world\"",
+          "needs_input": false,
+          "input_prompt": "",
+          "run_mode": "direct",
+          "desc": "A ready-made example so you can instantly see what the synesthesia view looks like.",
+          "verified": true
+        },
+        {
+          "label": "What does my writing taste like?",
+          "command": "python scbe.py describe \"I love you\"",
+          "needs_input": false,
+          "input_prompt": "",
+          "run_mode": "direct",
+          "desc": "Runs a warm example phrase to show the taste and feel readouts (clean, smooth, calm).",
+          "verified": true
+        },
+        {
+          "label": "Explain what the Risk layer does",
+          "command": "python scbe.py ai explain L13",
+          "needs_input": false,
+          "input_prompt": "",
+          "run_mode": "direct",
+          "desc": "Plain explanation of L13, the layer that decides Allow / Quarantine / Escalate / Deny.",
+          "verified": true
+        },
+        {
+          "label": "Explain what the Sound layer does",
+          "command": "python scbe.py ai explain L14",
+          "needs_input": false,
+          "input_prompt": "",
+          "run_mode": "direct",
+          "desc": "Plain explanation of L14, the audio axis that turns text into tones and cymatic sound.",
+          "verified": true
+        },
+        {
+          "label": "Explain a layer by its number",
+          "command": "python scbe.py ai explain {input}",
+          "needs_input": true,
+          "input_prompt": "Which layer? Type a number L1 through L14 (for example L12):",
+          "run_mode": "direct",
+          "desc": "Tells you in plain words what any of the 14 layers (L1-L14) actually does.",
+          "verified": true
+        }
+      ]
+    }
+  ]
+}
