@@ -437,7 +437,7 @@ class ReplayProtector:
         # Check timestamp freshness
         age_ms = now_ms - envelope.timestamp_ms
         if age_ms > self.max_age * 1000:
-            return False, f"Envelope too old: {age_ms/1000:.1f}s"
+            return False, f"Envelope too old: {age_ms / 1000:.1f}s"
 
         if age_ms < -60000:  # 1 minute future tolerance
             return False, "Envelope timestamp in future"

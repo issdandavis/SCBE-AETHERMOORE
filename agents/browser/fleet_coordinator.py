@@ -33,7 +33,7 @@ class AetherbrowseFleet:
                 backend=self.config.backend,
                 host=self.config.host,
                 port=self.config.port,
-                agent_id=f"aetherbrowse-fleet-{idx+1}",
+                agent_id=f"aetherbrowse-fleet-{idx + 1}",
                 auto_escalate=self.config.auto_escalate,
                 safe_radius=self.config.safe_radius,
                 phdm_dim=self.config.phdm_dim,

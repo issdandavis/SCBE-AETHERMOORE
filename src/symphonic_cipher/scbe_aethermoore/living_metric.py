@@ -665,7 +665,7 @@ def self_test() -> Dict[str, Any]:
     return {
         "passed": passed,
         "total": total,
-        "success_rate": f"{passed}/{total} ({100*passed/total:.1f}%)",
+        "success_rate": f"{passed}/{total} ({100 * passed / total:.1f}%)",
         "results": results,
     }
 
@@ -705,7 +705,7 @@ if __name__ == "__main__":
     for P in [0.1, 0.3, 0.5, 0.7, 0.9]:
         engine.reset_hysteresis()
         result = engine.compute_metric(intent, pressure=P, use_hysteresis=False)
-        print(f"  {P*100:5.0f}%   | {result.stiffness:9.3f} | {result.energy:9.2f} | {result.state.value}")
+        print(f"  {P * 100:5.0f}%   | {result.stiffness:9.3f} | {result.energy:9.2f} | {result.state.value}")
 
     # Anti-fragile summary
     print("\n" + "-" * 70)

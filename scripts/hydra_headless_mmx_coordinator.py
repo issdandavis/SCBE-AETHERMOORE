@@ -226,7 +226,7 @@ async def _run(args: argparse.Namespace) -> dict[str, Any]:
 
     tab_ids: list[str] = []
     for i in range(tab_count):
-        created = await limb.create_tab(f"tab-{i+1}")
+        created = await limb.create_tab(f"tab-{i + 1}")
         if created:
             tab_ids.append(created)
     if not tab_ids:

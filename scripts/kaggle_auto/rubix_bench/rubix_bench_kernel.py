@@ -5,9 +5,7 @@ Clones the public SCBE-AETHERMOORE repo and runs the polyglot emit-throughput
 benchmark: one CA-opcode core -> all 18 language faces. No GPU needed.
 """
 
-import os
-import subprocess
-import sys
+import os, subprocess, sys
 
 os.environ.setdefault("PYTHONUTF8", "1")
 WORK = "/kaggle/working/scbe"
@@ -30,7 +28,6 @@ for n, L in [(5000, 12), (20000, 16)]:
         check=True,
     )
 # machine + scale context
-import multiprocessing
-import platform
+import multiprocessing, platform
 
 print(f"\nkaggle node: {platform.platform()}  cores={multiprocessing.cpu_count()}")

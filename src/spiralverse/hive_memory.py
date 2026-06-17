@@ -673,7 +673,7 @@ class OfflineResilience:
         for i in range(0, count, batch_size):
             batch = self.offline_buffer[i : i + batch_size]
             await hive_client.bulk_upload(batch)
-            print(f"  Uploaded batch {i//batch_size + 1}/{(count + batch_size - 1)//batch_size}")
+            print(f"  Uploaded batch {i // batch_size + 1}/{(count + batch_size - 1) // batch_size}")
 
         self.offline_buffer.clear()
         self.offline_since = None

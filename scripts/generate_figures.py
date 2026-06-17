@@ -127,8 +127,8 @@ def figure2():
     print("  +--------+--------------+----------+------------------------------+")
     print()
     print("  Critical thresholds:")
-    print(f"  128-bit (post-quantum):  d_crit = {math.sqrt(128*math.log(2)):.4f}")
-    print(f"  256-bit (classical):     d_crit = {math.sqrt(256*math.log(2)):.4f}")
+    print(f"  128-bit (post-quantum):  d_crit = {math.sqrt(128 * math.log(2)):.4f}")
+    print(f"  256-bit (classical):     d_crit = {math.sqrt(256 * math.log(2)):.4f}")
     print()
 
 

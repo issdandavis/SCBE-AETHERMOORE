@@ -119,7 +119,7 @@ def render(board: dict, only_pack: str | None, max_per_pack: int) -> str:
             if url:
                 out_lines.append(f"        {url}")
         if len(animals) > max_per_pack:
-            out_lines.append(f"    ... +{len(animals)-max_per_pack} more (run with --max {len(animals)} to see all)")
+            out_lines.append(f"    ... +{len(animals) - max_per_pack} more (run with --max {len(animals)} to see all)")
 
         # Show bus command for the most urgent
         if urgent:

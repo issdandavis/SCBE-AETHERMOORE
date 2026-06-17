@@ -532,7 +532,7 @@ def main():
     print(f"  Total pairs    : {actual_count}")
     print()
     print(f"  {'Directory':<40} {'Scanned':>8} {'W/Pairs':>8} {'Pairs':>8}")
-    print(f"  {'-'*40} {'-'*8} {'-'*8} {'-'*8}")
+    print(f"  {'-' * 40} {'-' * 8} {'-' * 8} {'-' * 8}")
     for dir_label, stats in dir_stats.items():
         print(f"  {dir_label:<40} {stats['scanned']:>8} {stats['files']:>8} {stats['pairs']:>8}")
     print()

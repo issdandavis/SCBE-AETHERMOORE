@@ -528,9 +528,9 @@ def main():
     failed = sum(1 for r in RESULTS if not r["passed"])
     total_time = sum(r["time"] for r in RESULTS)
 
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print(f"RESULTS: {passed}/{len(RESULTS)} PASS  |  {failed} FAIL  |  {total_time:.1f}s total")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
 
     if failed:
         print("\nFailed tests:")

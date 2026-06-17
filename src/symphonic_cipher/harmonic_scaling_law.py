@@ -1205,7 +1205,7 @@ class FractalDimensionAnalyzer:
             Dictionary with spectrum data
         """
         if axis_index < 0 or axis_index >= self.n_dims:
-            raise ValueError(f"axis_index must be in [0, {self.n_dims-1}]")
+            raise ValueError(f"axis_index must be in [0, {self.n_dims - 1}]")
 
         if other_r_values is None:
             other_r_values = np.full(self.n_dims, 0.5)
@@ -3849,7 +3849,9 @@ class PolyhedralHamiltonianDefense:
             P = self.polyhedra[idx]
             chi = P.euler_characteristic()
             lines.append(
-                f"{i+1:2d}. {P.name:30s} " f"V={P.vertices:2d} E={P.edges:2d} F={P.faces:2d} " f"χ={chi:2d} g={P.genus}"
+                f"{i + 1:2d}. {P.name:30s} "
+                f"V={P.vertices:2d} E={P.edges:2d} F={P.faces:2d} "
+                f"χ={chi:2d} g={P.genus}"
             )
 
         return "\n".join(lines)

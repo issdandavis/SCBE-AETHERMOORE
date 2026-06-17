@@ -2037,7 +2037,7 @@ class ComplianceReportGenerator:
                 "total": len(tests),
                 "passed": passed,
                 "failed": len(tests) - passed,
-                "coverage": f"{(passed/len(tests)*100):.1f}%" if tests else "N/A",
+                "coverage": f"{(passed / len(tests) * 100):.1f}%" if tests else "N/A",
             }
         return summary
 
@@ -2050,7 +2050,7 @@ class ComplianceReportGenerator:
             summary[layer.value] = {
                 "total": len(tests),
                 "passed": passed,
-                "coverage": f"{(passed/len(tests)*100):.1f}%" if tests else "N/A",
+                "coverage": f"{(passed / len(tests) * 100):.1f}%" if tests else "N/A",
             }
         return summary
 
@@ -2116,7 +2116,7 @@ class ComplianceReportGenerator:
 
 **Generated:** {report.generated_at}
 **Version:** {report.scbe_version}
-**Pass Rate:** {report.pass_rate*100:.1f}% ({report.passed_tests}/{report.total_tests})
+**Pass Rate:** {report.pass_rate * 100:.1f}% ({report.passed_tests}/{report.total_tests})
 
 ---
 
@@ -2127,7 +2127,7 @@ class ComplianceReportGenerator:
 | Total Tests | {report.total_tests} |
 | Passed | {report.passed_tests} |
 | Failed | {report.failed_tests} |
-| Pass Rate | {report.pass_rate*100:.1f}% |
+| Pass Rate | {report.pass_rate * 100:.1f}% |
 
 ---
 
@@ -2250,7 +2250,7 @@ class ComplianceReportGenerator:
                     <div class="text-sm text-gray-400">Failed</div>
                 </div>
                 <div class="text-center p-4 bg-purple-500/20 rounded-xl">
-                    <div class="text-3xl font-bold text-purple-400">{report.pass_rate*100:.1f}%</div>
+                    <div class="text-3xl font-bold text-purple-400">{report.pass_rate * 100:.1f}%</div>
                     <div class="text-sm text-gray-400">Pass Rate</div>
                 </div>
             </div>

@@ -476,7 +476,7 @@ class LearningEpoch:
         if total == 0:
             return "silent"
         angel_pct = self.angel_count / total * 100
-        return f"{angel_pct:.0f}% angel / {100-angel_pct:.0f}% demon"
+        return f"{angel_pct:.0f}% angel / {100 - angel_pct:.0f}% demon"
 
 
 @dataclass

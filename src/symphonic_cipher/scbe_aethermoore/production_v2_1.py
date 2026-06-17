@@ -1438,9 +1438,9 @@ def simulate_byzantine_attack(
     passed = attack_success_rate < 0.1 and honest_success_rate > 0.8
 
     if verbose:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("BYZANTINE ATTACK SIMULATION")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"  Agents: {n_agents} ({n_honest} honest, {n_byzantine} Byzantine)")
         print(f"  Results: ALLOW={results['allow']}, QUARANTINE={results['quarantine']}, DENY={results['deny']}")
         print(f"  Byzantine allowed: {byzantine_allowed}/{n_byzantine} ({attack_success_rate:.1%})")
@@ -1448,7 +1448,7 @@ def simulate_byzantine_attack(
         print(f"  Majority decision: {majority_decision}")
         print(f"  f < n/3 tolerance: {'✓' if tolerance_met else '✗'}")
         print(f"  Attack {'BLOCKED' if passed else 'SUCCEEDED'}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
     return {
         "n_agents": n_agents,

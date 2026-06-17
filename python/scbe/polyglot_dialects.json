@@ -87,9 +87,7 @@
    "#include <iostream>",
    "#include <cmath>",
    "#include <vector>",
-   "#include <algorithm>",
-   "#include <charconv>",
-   "#include <string>"
+   "#include <algorithm>"
   ],
   "fn_open": "double {fn}(double a0, double b0, double c0) {",
   "stack_init": "std::vector<double> s; s.push_back(a0); s.push_back(b0); s.push_back(c0);",
@@ -119,8 +117,7 @@
   "cmp_tmpl": "(({cond}) ? 1.0 : 0.0)",
   "main_tmpl": [
    "int main() {",
-   "    char _b[32]; auto _r = std::to_chars(_b, _b + sizeof(_b), {fn}(2.0, 3.0, 4.0));",
-   "    std::cout << std::string(_b, _r.ptr) << \"\\n\";",
+   "    std::cout << {fn}(2.0, 3.0, 4.0) << std::endl;",
    "    return 0;",
    "}"
   ],
@@ -347,8 +344,7 @@
   "comment": "//",
   "indent": "    ",
   "prelude": [
-   "<?php",
-   "ini_set('precision', -1);"
+   "<?php"
   ],
   "fn_open": "function {fn}($a0, $b0, $c0) {",
   "stack_init": "$s = array($a0, $b0, $c0);",
@@ -380,8 +376,8 @@
    "echo {fn}(2.0, 3.0, 4.0), \"\\n\";"
   ],
   "binop_over": {},
-  "var_a": "$a",
-  "var_b": "$b"
+  "expr_a": "$a",
+  "expr_b": "$b"
  },
  {
   "name": "lua",
@@ -418,10 +414,7 @@
   "main_tmpl": [
    "print({fn}(2.0, 3.0, 4.0))"
   ],
-  "binop_over": {},
-  "cmp_over": {
-   "neq": "~="
-  }
+  "binop_over": {}
  },
  {
   "name": "scala",
@@ -541,10 +534,7 @@
   "main_tmpl": [
    "main :: IO ()",
    "main = print ({fn} 2.0 3.0 4.0)"
-  ],
-  "cmp_over": {
-   "neq": "/="
-  }
+  ]
  },
  {
   "name": "zig",
@@ -577,7 +567,7 @@
    "pow": "std.math.pow(f64, {a}, {b})",
    "min": "@min({a}, {b})",
    "max": "@max({a}, {b})",
-   "mod": "@mod({a}, {b})"
+   "mod": "@rem({a}, {b})"
   },
   "cmp_tmpl": "(if ({cond}) @as(f64, 1.0) else @as(f64, 0.0))",
   "binop_over": {},

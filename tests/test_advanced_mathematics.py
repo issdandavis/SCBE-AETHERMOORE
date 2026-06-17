@@ -99,8 +99,8 @@ class TelemetryCollector:
         print("ADVANCED MATHEMATICS TEST TELEMETRY SUMMARY")
         print("=" * 80)
         print(f"Total Tests: {total}")
-        print(f"Passed: {passed} ({100*passed/total:.1f}%)")
-        print(f"Failed: {failed} ({100*failed/total:.1f}%)")
+        print(f"Passed: {passed} ({100 * passed / total:.1f}%)")
+        print(f"Failed: {failed} ({100 * failed / total:.1f}%)")
         print("\nBy Category:")
 
         categories = {}

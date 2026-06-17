@@ -83,34 +83,19 @@ class TestPerpEchoFormula:
 
 class TestFrequencyToHarmonicNumber:
 
-    def test_harmonic_constants(self):
-        """Pure algebraic identities of the log-phi harmonic + polar origin.
-
-        Consolidates the single-assertion constant tests
-        (test_unison_is_zero, test_phi_is_one, test_phi_squared_is_two,
-        test_zero_ratio, test_negative_ratio, test_zero_harmonic_at_origin)
-        into one — every original assertion is preserved verbatim.
-        """
-        # Ratio 1.0 → harmonic 0 (no movement).
+    def test_unison_is_zero(self):
+        """Ratio 1.0 → harmonic 0 (no movement)."""
         assert frequency_to_harmonic_number(1.0) == 0.0
 
-        # Ratio phi → harmonic 1 (by definition of log-phi).
+    def test_phi_is_one(self):
+        """Ratio phi → harmonic 1 (by definition of log-phi)."""
         h = frequency_to_harmonic_number(PHI)
         assert abs(h - 1.0) < 1e-10
 
-        # Ratio phi² → harmonic 2.
+    def test_phi_squared_is_two(self):
+        """Ratio phi² → harmonic 2."""
         h = frequency_to_harmonic_number(PHI**2)
         assert abs(h - 2.0) < 1e-10
-
-        # Zero ratio → harmonic 0 (edge case).
-        assert frequency_to_harmonic_number(0.0) == 0.0
-
-        # Negative ratio → harmonic 0 (edge case).
-        assert frequency_to_harmonic_number(-1.0) == 0.0
-
-        # Harmonic 0 → near origin (r ≈ 0).
-        theta, r = harmonic_to_polar(0.0)
-        assert r < 1.0  # very close to center
 
     def test_dead_tones_are_irrational(self):
         """Dead tone harmonics should NOT be integers (they're gaps)."""
@@ -125,6 +110,14 @@ class TestFrequencyToHarmonicNumber:
         h_seventh = frequency_to_harmonic_number(16 / 9)
         assert h_fifth < h_sixth < h_seventh
 
+    def test_zero_ratio(self):
+        """Zero ratio → harmonic 0 (edge case)."""
+        assert frequency_to_harmonic_number(0.0) == 0.0
+
+    def test_negative_ratio(self):
+        """Negative ratio → harmonic 0 (edge case)."""
+        assert frequency_to_harmonic_number(-1.0) == 0.0
+
 
 # ---------------------------------------------------------------------------
 # Polar Mapping
@@ -132,6 +125,11 @@ class TestFrequencyToHarmonicNumber:
 
 
 class TestHarmonicToPolar:
+
+    def test_zero_harmonic_at_origin(self):
+        """Harmonic 0 → near origin (r ≈ 0)."""
+        theta, r = harmonic_to_polar(0.0)
+        assert r < 1.0  # very close to center
 
     def test_radius_saturates(self):
         """Large harmonics → radius approaches max."""
@@ -181,7 +179,7 @@ class TestScatterColorQuad:
             # Normalize to [-pi, pi] to handle wrap-around
             diff = (diff + math.pi) % TAU - math.pi
             # Allow for material hue shift to perturb slightly (metallic=0.08 stacks)
-            assert abs(abs(diff) - math.pi / 2) < 0.3, f"Hue gap {i}→{i+1} not ~90°: {math.degrees(diff):.1f}°"
+            assert abs(abs(diff) - math.pi / 2) < 0.3, f"Hue gap {i}→{i + 1} not ~90°: {math.degrees(diff):.1f}°"
 
     def test_tongue_phase_rotates_all(self):
         """Different tongue phases produce different color sets."""

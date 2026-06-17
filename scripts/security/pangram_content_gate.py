@@ -392,13 +392,13 @@ def _print_result(result: ContentGateResult, json_mode: bool = False):
         )
         return
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"PANGRAM CONTENT GATE RESULT: {result.decision}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Files checked : {result.files_checked}")
     print(f"Words checked : {result.words_checked}")
     print(f"API calls used: {result.api_calls_used}")
-    print(f"{'-'*60}")
+    print(f"{'-' * 60}")
 
     for f in result.findings:
         print(f"\n[{f.severity}] {f.category}")
@@ -411,7 +411,7 @@ def _print_result(result: ContentGateResult, json_mode: bool = False):
             if len(f.windows) > 3:
                 print(f"    ... and {len(f.windows) - 3} more")
 
-    print(f"\n{'='*60}\n")
+    print(f"\n{'=' * 60}\n")
 
 
 def main():

@@ -663,7 +663,7 @@ def self_test() -> Dict[str, Any]:
     return {
         "passed": passed,
         "total": total,
-        "success_rate": f"{passed}/{total} ({100*passed/total:.1f}%)",
+        "success_rate": f"{passed}/{total} ({100 * passed / total:.1f}%)",
         "results": results,
     }
 
@@ -713,7 +713,7 @@ if __name__ == "__main__":
 
     print(f"   State:     {result.state.value}")
     print(f"   Consensus: {result.consensus_value}")
-    print(f"   Δt:        {result.time_delta*1000:.2f} ms")
+    print(f"   Δt:        {result.time_delta * 1000:.2f} ms")
 
     if result.state == ConsensusState.SETTLED:
         print(f"   K(t):      [REDACTED {len(result.key)} bytes]")

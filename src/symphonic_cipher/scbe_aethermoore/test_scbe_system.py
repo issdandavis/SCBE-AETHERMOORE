@@ -99,7 +99,7 @@ class TestRunner:
         return {
             "passed": passed,
             "total": total,
-            "success_rate": f"{100*passed/total:.1f}%" if total > 0 else "N/A",
+            "success_rate": f"{100 * passed / total:.1f}%" if total > 0 else "N/A",
             "by_category": by_category,
             "total_time_ms": sum(r.duration_ms for r in self.results),
         }

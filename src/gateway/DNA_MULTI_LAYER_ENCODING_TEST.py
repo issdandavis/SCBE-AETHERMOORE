@@ -401,8 +401,8 @@ def test_attack_resistance():
     print("COMPARISON")
     print("=" * 80)
     print(f"Morse-only:       {morse_complexity:.2e} (baseline)")
-    print(f"Hybrid (M+E):     {hybrid_complexity:.2e} ({hybrid_complexity/morse_complexity:.2f}x harder)")
-    print(f"Full multi-layer: {full_complexity:.2e} ({full_complexity/morse_complexity:.2f}x harder)")
+    print(f"Hybrid (M+E):     {hybrid_complexity:.2e} ({hybrid_complexity / morse_complexity:.2f}x harder)")
+    print(f"Full multi-layer: {full_complexity:.2e} ({full_complexity / morse_complexity:.2f}x harder)")
 
     print("\n🎯 RESULT:")
     if full_complexity > hybrid_complexity > morse_complexity:

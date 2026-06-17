@@ -509,8 +509,8 @@ class TestGateWithAdversarialCorpus:
 
         print("\n  Gate decisions on 91 attacks:")
         for d, c in sorted(attack_decisions.items()):
-            print(f"    {d}: {c} ({c/total*100:.0f}%)")
-        print(f"  Non-ALLOW rate: {total_non_allow}/{total} ({total_non_allow/total*100:.0f}%)")
+            print(f"    {d}: {c} ({c / total * 100:.0f}%)")
+        print(f"  Non-ALLOW rate: {total_non_allow}/{total} ({total_non_allow / total * 100:.0f}%)")
 
         # Should catch at least some attacks
         assert total_non_allow > 0

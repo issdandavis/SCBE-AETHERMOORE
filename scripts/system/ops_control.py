@@ -375,11 +375,9 @@ def cmd_status(args):
         for line in recent:
             try:
                 d = json.loads(line)
-                timestamp = d.get("timestamp_utc", "")
-                agent = d.get("agent", "")
-                callsign = d.get("callsign", "")
-                status = d.get("status", "")
-                print(f"  {timestamp} {agent} ({callsign}) — {status}")
+                print(
+                    f"  {d.get('timestamp_utc', '')} {d.get('agent', '')} ({d.get('callsign', '')}) — {d.get('status', '')}"
+                )
             except Exception:
                 pass
 
@@ -453,10 +451,9 @@ def cmd_roster(args):
         for aid, info in agents.items():
             enabled = info.get("enabled", True)
             tag = "ACTIVE" if enabled else "DISABLED"
-            display_name = info.get("display_name", aid)
-            provider = info.get("provider", "?")
-            model = info.get("model", "?")
-            print(f"  [{tag}] {aid}: {display_name} ({provider}/{model})")
+            print(
+                f"  [{tag}] {aid}: {info.get('display_name', aid)} ({info.get('provider', '?')}/{info.get('model', '?')})"
+            )
     else:
         print("No agent_squad.json found.")
 

@@ -226,9 +226,9 @@ class TestFullBenchmark:
         out.write_text(json.dumps(report, indent=2), encoding="utf-8")
 
         # Print summary
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("  SCBE ADVERSARIAL BENCHMARK RESULTS")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"  Attacks: {attack_result.total_attacks}")
         print(f"  Detected: {attack_result.detected_count} ({attack_result.detection_rate:.1%})")
         print(f"  Missed: {attack_result.missed_count} ({attack_result.attack_success_rate:.1%} ASR)")

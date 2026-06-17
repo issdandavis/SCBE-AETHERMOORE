@@ -147,9 +147,11 @@ def simulate_attack_scenario():
     print(f"  Total attack time steps: {attacks_happened}")
     print(
         f"  Traditional system caught: {traditional_catches}/{attacks_happened}"
-        f" ({100*traditional_catches/max(1, attacks_happened):.0f}%)"
+        f" ({100 * traditional_catches / max(1, attacks_happened):.0f}%)"
     )
-    print(f"  SCBE system caught: {scbe_catches}/{attacks_happened} ({100*scbe_catches/max(1, attacks_happened):.0f}%)")
+    print(
+        f"  SCBE system caught: {scbe_catches}/{attacks_happened} ({100 * scbe_catches / max(1, attacks_happened):.0f}%)"
+    )
     print()
 
     if scbe_catches > traditional_catches:

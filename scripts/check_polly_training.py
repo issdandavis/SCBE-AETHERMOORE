@@ -20,9 +20,9 @@ def check(logfile):
 
     step, total = int(pbar[-1][0]), int(pbar[-1][1])
     pct = step / total * 100
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"POLLY V2 TRAINING — {logfile}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Progress: {step}/{total} ({pct:.1f}%)")
 
     train_blocks = []
@@ -67,7 +67,7 @@ def check(logfile):
     if "Training complete!" in text:
         print("\n  *** TRAINING COMPLETE ***")
 
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
 
 if __name__ == "__main__":

@@ -713,7 +713,7 @@ def print_security_table(R: float = DEFAULT_R) -> str:
         h = harmonic_scale(d, R)
         log2_h = math.log2(h)
         aes = 128 + int(log2_h)
-        lines.append(f"{d:>3} | {d*d:>4} | {h:>15,.2f} | {log2_h:>10.2f} | AES-{aes:>7}")
+        lines.append(f"{d:>3} | {d * d:>4} | {h:>15,.2f} | {log2_h:>10.2f} | AES-{aes:>7}")
 
     lines.append("=" * 70)
     lines.append("Base: AES-128 (128 bits)")

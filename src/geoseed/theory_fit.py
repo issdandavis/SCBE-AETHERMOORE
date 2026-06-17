@@ -262,7 +262,7 @@ def fit_all_theories() -> Dict[str, FitResult]:
 
         notes_parts = []
         if name == "compton_orbital":
-            notes_parts.append(f"exp λ={exp_lam:.4f} vs φ={PHI:.4f}  (ratio {exp_lam/PHI:.4f})")
+            notes_parts.append(f"exp λ={exp_lam:.4f} vs φ={PHI:.4f}  (ratio {exp_lam / PHI:.4f})")
         if name == "bohr":
             notes_parts.append(f"power-law p={pl_p:.4f} (expected p≈2 for 1/n²)")
         if name == "geoseed_lb":
@@ -344,7 +344,7 @@ def crossover_analysis() -> CrossoverAnalysis:
         f"Peak divergence at {tongue_names[peak_shell]}: "
         f"Compton={c_evs[peak_shell]:.3f} eV vs Bohr={b_evs[peak_shell]:.3f} eV "
         f"({peak_ratio:.2f}x).  "
-        f"Compton-orbital retains ~{c_evs[-1]/b_evs[-1]:.1f}x more energy at the DR shell."
+        f"Compton-orbital retains ~{c_evs[-1] / b_evs[-1]:.1f}x more energy at the DR shell."
     )
 
     return CrossoverAnalysis(
@@ -488,7 +488,7 @@ def fit_report() -> str:
         lines.append(
             f"  {t:<10}  {comb.bind_ev[i]:>12.4f}  {comb.curv_ev[i]:>12.4f}  "
             f"{comb.total_ev[i]:>12.4f}  {comb.bohr_ev[i]:>12.4f}  "
-            f"{comb.curv_fraction[i]*100:>6.1f}%"
+            f"{comb.curv_fraction[i] * 100:>6.1f}%"
         )
     lines.append("=" * 72)
     return "\n".join(lines)
@@ -874,8 +874,8 @@ def duality_report() -> str:
         lines.append(
             f"  {t:<10}  {ws.target_evs[i]:>10.4f}  {ws.linear_predictions[i]:>10.4f}"
             f"  {ws.logadd_predictions[i]:>10.4f}"
-            f"  {ws.linear_predictions[i]-ws.target_evs[i]:>+10.4f}"
-            f"  {ws.logadd_predictions[i]-ws.target_evs[i]:>+10.4f}"
+            f"  {ws.linear_predictions[i] - ws.target_evs[i]:>+10.4f}"
+            f"  {ws.logadd_predictions[i] - ws.target_evs[i]:>+10.4f}"
         )
     lines.append("=" * 72)
     return "\n".join(lines)

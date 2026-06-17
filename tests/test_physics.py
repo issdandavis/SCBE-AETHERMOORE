@@ -42,7 +42,7 @@ def main():
     print("\n[3] HYDROGEN ATOM")
     for n in [1, 2, 3]:
         result = quantum_mechanics({"principal_quantum_number": n})
-        print(f"    n={n}: E = {result['hydrogen_energy_eV']:.2f} eV, r = {result['orbital_radius']*1e12:.1f} pm")
+        print(f"    n={n}: E = {result['hydrogen_energy_eV']:.2f} eV, r = {result['orbital_radius'] * 1e12:.1f} pm")
 
     # 4. Electromagnetism: Two protons
     print("\n[4] TWO PROTONS (1 femtometer apart)")
@@ -77,7 +77,7 @@ def main():
     # 8. Black hole
     print("\n[8] BLACK HOLE (10 solar masses)")
     result = relativity({"black_hole_mass": 10 * 1.989e30})
-    print(f"    Schwarzschild radius: {result['schwarzschild_radius']/1000:.1f} km")
+    print(f"    Schwarzschild radius: {result['schwarzschild_radius'] / 1000:.1f} km")
 
     print("\n" + "=" * 60)
     print(" All calculations use real physics constants")

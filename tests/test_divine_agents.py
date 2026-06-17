@@ -81,7 +81,7 @@ class TestHistoricalEras:
             current_end = HISTORICAL_ERAS[ERA_ORDER[i]]["range"][1]
             next_start = HISTORICAL_ERAS[ERA_ORDER[i + 1]]["range"][0]
             assert current_end == next_start, (
-                f"Gap between {ERA_ORDER[i]} (ends {current_end}) and " f"{ERA_ORDER[i+1]} (starts {next_start})"
+                f"Gap between {ERA_ORDER[i]} (ends {current_end}) and " f"{ERA_ORDER[i + 1]} (starts {next_start})"
             )
 
 

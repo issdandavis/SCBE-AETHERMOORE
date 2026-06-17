@@ -55,24 +55,26 @@ for pf in prompt_files:
     ch_dir = OUTPUT_DIR / ch_id
     ch_dir.mkdir(exist_ok=True)
 
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print(f"  {ch_id}: {chapter_data.get('title', '')[:50]}")
     print(f"  {len(chapter_data['panels'])} panels")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
 
     results = []
     for i, panel in enumerate(chapter_data["panels"]):
         out_path = ch_dir / f"{panel['id']}.png"
 
         if out_path.exists():
-            print(f"  [{i+1}] {panel['id']} — exists, skipping")
+            print(f"  [{i + 1}] {panel['id']} — exists, skipping")
             total_skipped += 1
             results.append({"id": panel["id"], "path": str(out_path), "skipped": True})
             continue
 
         t0 = time.time()
         print(
-            f"  [{i+1}/{len(chapter_data['panels'])}] {panel['id']} ({panel['w']}x{panel['h']})...", end=" ", flush=True
+            f"  [{i + 1}/{len(chapter_data['panels'])}] {panel['id']} ({panel['w']}x{panel['h']})...",
+            end=" ",
+            flush=True,
         )
 
         image = pipe(
@@ -108,19 +110,19 @@ for pf in prompt_files:
         )
 
 elapsed_total = time.time() - t0_global
-print(f"\n{'='*50}")
+print(f"\n{'=' * 50}")
 print("  COMPLETE")
 print(f"  Generated: {total_generated} panels")
 print(f"  Skipped: {total_skipped} panels")
-print(f"  Total time: {elapsed_total:.0f}s ({elapsed_total/60:.1f}m)")
+print(f"  Total time: {elapsed_total:.0f}s ({elapsed_total / 60:.1f}m)")
 print(f"  Output: {OUTPUT_DIR}")
-print(f"{'='*50}")
+print(f"{'=' * 50}")
 
 # Cell 5: Zip for download
 import shutil
 
 shutil.make_archive("six_tongues_panels", "zip", OUTPUT_DIR)
-print(f"Download: six_tongues_panels.zip ({os.path.getsize('six_tongues_panels.zip')/1024/1024:.1f} MB)")
+print(f"Download: six_tongues_panels.zip ({os.path.getsize('six_tongues_panels.zip') / 1024 / 1024:.1f} MB)")
 
 # In Colab, run this to download:
 # from google.colab import files

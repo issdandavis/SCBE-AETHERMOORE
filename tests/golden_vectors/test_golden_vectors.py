@@ -190,7 +190,7 @@ class TestPhiShellRadius:
         """Shell radii must increase with k (approaching boundary)."""
         radii = [phi_shell_radius(k) for k in range(6)]
         for i in range(1, len(radii)):
-            assert radii[i] > radii[i - 1], f"r({i})={radii[i]} <= r({i-1})={radii[i-1]}"
+            assert radii[i] > radii[i - 1], f"r({i})={radii[i]} <= r({i - 1})={radii[i - 1]}"
 
     def test_bounded_in_unit_ball(self) -> None:
         """All shell radii must be in (0, 1)."""
@@ -233,7 +233,7 @@ class TestHarmonicCostAtShell:
         """Higher shells must be more expensive."""
         costs = [harmonic_cost_at_shell(k, 4.0) for k in range(6)]
         for i in range(1, len(costs)):
-            assert costs[i] > costs[i - 1], f"cost(k={i}) not > cost(k={i-1})"
+            assert costs[i] > costs[i - 1], f"cost(k={i}) not > cost(k={i - 1})"
 
 
 # ---------------------------------------------------------------------------

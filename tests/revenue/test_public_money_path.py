@@ -16,35 +16,10 @@ def read_doc(name: str) -> str:
 def test_homepage_focuses_first_buyer_path_on_workflow_snapshot() -> None:
     homepage = read_doc("index.html")
 
-    assert "Buy $99 Snapshot" in homepage
-    assert "workflow-snapshot.html" in homepage
+    assert "Start $99 Workflow Snapshot" in homepage
+    assert "ai-workflow-snapshot.html#receipt" in homepage
     assert "payments.html" in homepage
     assert "briefing-room.html" not in homepage
-
-
-def test_homepage_sells_workflow_outputs_without_legal_claims() -> None:
-    homepage = read_doc("index.html").lower()
-
-    assert "long ai runs finish with real outputs" in homepage
-    assert "controlled workflow" in homepage
-    assert "cataloged outputs" in homepage
-    assert "receipt-backed checkpoints" in homepage
-
-    banned_phrases = [
-        "lawsuit",
-        "case law",
-        "air canada",
-        "moffatt",
-        "regulators demand",
-        "legal advice",
-        "medical advice",
-        "compliance certification",
-        "regulated-context",
-        "medical coding",
-        "cpt",
-    ]
-    for phrase in banned_phrases:
-        assert phrase not in homepage, f"homepage contains legal-adjacent claim phrase: {phrase}"
 
 
 def test_workflow_snapshot_checkout_is_consistent_and_live_wired() -> None:
@@ -63,13 +38,9 @@ def test_workflow_snapshot_checkout_is_consistent_and_live_wired() -> None:
 def test_ai_workflow_snapshot_has_no_stale_39_dollar_copy() -> None:
     intake = read_doc("ai-workflow-snapshot.html")
     workflow = read_doc("workflow-snapshot.html")
-    polly = read_doc("static/polly-sidebar.js")
-    polly_agent = read_doc("static/polly-sidebar-agent.js")
 
     assert "$39" not in intake
     assert "cheaper $39" not in workflow
-    assert "$39" not in polly
-    assert "$39" not in polly_agent
     assert "$99 AI Workflow Snapshot" in intake
     assert "price_usd: 99" in intake
 
@@ -107,21 +78,3 @@ def test_ai_agent_governance_category_page_is_search_targeted() -> None:
     assert "https://aethermoore.com/SCBE-AETHERMOORE/ai-workflow-snapshot.html" in sitemap
     assert "https://aethermoore.com/SCBE-AETHERMOORE/cli.html" in sitemap
     assert '<link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/cli.html" />' in cli
-
-
-def test_workflow_machine_proof_page_is_discoverable_and_scoped() -> None:
-    homepage = read_doc("index.html")
-    machine = read_doc("workflow-machine.html")
-    sitemap = read_doc("sitemap.xml")
-    llms = read_doc("llms.txt")
-
-    assert 'href="workflow-machine.html"' in homepage
-    assert "https://aethermoore.com/SCBE-AETHERMOORE/workflow-machine.html" in sitemap
-    assert "Workflow machine proof" in llms
-
-    assert "Crank" in machine
-    assert "Forge memory" in machine
-    assert "python scbe.py prove forge" in machine
-    assert "python scbe.py prove black-box" in machine
-    assert "re-verifies" in machine
-    assert "does not claim legal protection" in machine

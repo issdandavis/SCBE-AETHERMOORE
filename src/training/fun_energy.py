@@ -1038,9 +1038,9 @@ if __name__ == "__main__":
     echo_energy = sum(r["power"] for r in records if r["mode"] == "echo")
     print()
     print("Energy budget breakdown:")
-    print(f"  Trickle:  {trickle_energy:.3f}  ({100*trickle_energy/total_energy:.1f}%)")
-    print(f"  Burst:    {burst_energy:.3f}  ({100*burst_energy/total_energy:.1f}%)")
-    print(f"  Echo:     {echo_energy:.3f}  ({100*echo_energy/total_energy:.1f}%)")
+    print(f"  Trickle:  {trickle_energy:.3f}  ({100 * trickle_energy / total_energy:.1f}%)")
+    print(f"  Burst:    {burst_energy:.3f}  ({100 * burst_energy / total_energy:.1f}%)")
+    print(f"  Echo:     {echo_energy:.3f}  ({100 * echo_energy / total_energy:.1f}%)")
     print(f"  Total:    {total_energy:.3f}")
 
     # FunEnergyLoss module demo

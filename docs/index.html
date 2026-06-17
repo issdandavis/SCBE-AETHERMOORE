@@ -4,15 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <title>AetherMoore | Long-Run AI Workflow Control</title>
+    <title>AetherMoore | Polished AI Output Systems</title>
     <meta
       name="description"
-      content="AetherMoore helps teams run long multi-step AI workflows that stay on intention, produce cataloged deliverables, and leave an audit trail."
+      content="AetherMoore turns experimental AI, atomic workflow, and chemistry command systems into polished front ends with working back ends."
     />
-    <meta property="og:title" content="AetherMoore AI Workflow Control" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta property="og:title" content="AetherMoore Output Systems" />
     <meta
       property="og:description"
-      content="Long AI workflows drift. We help keep them bounded, cataloged, and inspectable."
+      content="Polished tools that take user input and return useful outputs: atomic workflow maps, chemistry command stacks, lead recovery, and workflow snapshots."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://aethermoore.com/" />
@@ -21,55 +22,45 @@
     <style>
       :root {
         color-scheme: dark;
-        --bg: #090d10;
-        --panel: #12191d;
-        --panel-2: #172226;
-        --line: rgba(226, 204, 153, 0.22);
-        --text: #f7f0e2;
+        --bg: #0b0f12;
+        --panel: #151d20;
+        --panel-soft: #10171a;
+        --line: rgba(219, 196, 145, 0.2);
+        --text: #f6f1e8;
         --muted: #aeb9b7;
         --gold: #e0bb68;
-        --green: #22c79a;
-        --blue: #88b7ff;
-        --red: #ff7d72;
+        --green: #23c99d;
+        --blue: #86b7ff;
         --max: 1120px;
+        --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
       }
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
       body {
         margin: 0;
         background:
-          linear-gradient(rgba(9, 13, 16, 0.78), rgba(9, 13, 16, 0.98)),
-          url('hero.svg') center top / cover fixed,
+          linear-gradient(rgba(11, 15, 18, 0.76), rgba(11, 15, 18, 0.96)),
+          url("hero.svg") center top / cover fixed,
           var(--bg);
         color: var(--text);
-        font-family:
-          Inter,
-          ui-sans-serif,
-          system-ui,
-          -apple-system,
-          BlinkMacSystemFont,
-          'Segoe UI',
-          sans-serif;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         line-height: 1.55;
       }
-      a {
-        color: inherit;
-      }
-      .wrap {
-        width: min(var(--max), calc(100% - 32px));
-        margin: 0 auto;
-      }
+      a { color: inherit; text-decoration: none; }
       .topbar {
         position: sticky;
         top: 0;
         z-index: 10;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        background: rgba(9, 13, 16, 0.9);
+        background: rgba(11, 15, 18, 0.88);
         backdrop-filter: blur(14px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       }
-      .topbar .wrap {
-        min-height: 64px;
+      .topbar-inner, .section-inner, .footer-inner {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+      }
+      .topbar-inner {
+        min-height: 68px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -77,484 +68,388 @@
       }
       .brand {
         color: var(--gold);
-        font-size: 13px;
         font-weight: 900;
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        text-decoration: none;
+        font-size: 13px;
       }
-      nav {
+      .nav {
         display: flex;
         flex-wrap: wrap;
         justify-content: flex-end;
-        gap: 16px;
+        gap: 18px;
         color: var(--muted);
         font-size: 14px;
       }
-      nav a {
-        text-decoration: none;
-      }
-      nav a:hover {
-        color: var(--text);
-      }
-      .nav-cta {
-        color: #11110d;
+      .nav a:hover { color: var(--text); }
+      .nav .nav-cta {
+        color: #10120d;
         background: var(--gold);
         border-radius: 999px;
         padding: 8px 12px;
         font-weight: 800;
       }
       .hero {
-        min-height: calc(100vh - 64px);
+        min-height: calc(100vh - 68px);
         display: grid;
         align-items: center;
-        padding: 72px 0 54px;
+        padding: 72px 0 56px;
       }
       .hero-grid {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
         display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
         gap: 34px;
         align-items: end;
       }
       .eyebrow {
-        margin: 0 0 14px;
         color: var(--gold);
         font-size: 12px;
         font-weight: 900;
         letter-spacing: 0.16em;
         text-transform: uppercase;
+        margin: 0 0 16px;
       }
-      h1,
-      h2,
-      h3,
-      p {
-        margin-top: 0;
-      }
+      h1, h2, h3, p { margin-top: 0; }
       h1 {
-        max-width: 12ch;
+        max-width: 11ch;
         margin-bottom: 20px;
-        font-size: clamp(44px, 8vw, 88px);
-        line-height: 0.94;
+        font-size: clamp(44px, 8vw, 92px);
+        line-height: 0.93;
         letter-spacing: 0;
       }
       h2 {
         margin-bottom: 14px;
-        font-size: clamp(28px, 4vw, 46px);
-        line-height: 1.05;
+        font-size: clamp(30px, 4vw, 48px);
+        line-height: 1.04;
         letter-spacing: 0;
       }
-      h3 {
-        margin-bottom: 8px;
-        font-size: 20px;
-      }
+      h3 { margin-bottom: 8px; font-size: 20px; }
       .lead {
-        max-width: 68ch;
-        color: #d8dfdc;
+        max-width: 64ch;
+        color: #d5ddda;
         font-size: clamp(18px, 2.2vw, 23px);
+        margin-bottom: 26px;
       }
-      .plain {
-        color: var(--muted);
-        font-size: 18px;
-      }
-      .cta-row,
-      .link-row {
+      .cta-row {
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
-        margin-top: 22px;
+        margin-bottom: 18px;
       }
       .btn {
-        min-height: 48px;
         display: inline-flex;
+        min-height: 48px;
         align-items: center;
         justify-content: center;
-        border: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
         padding: 12px 18px;
-        color: var(--text);
-        background: rgba(255, 255, 255, 0.06);
         font-weight: 900;
-        text-decoration: none;
       }
       .btn-primary {
-        color: #14120d;
         background: var(--gold);
+        color: #12110d;
         border-color: var(--gold);
+        box-shadow: var(--shadow);
       }
-      .btn-green {
-        color: #06120f;
-        background: var(--green);
-        border-color: var(--green);
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
       }
-      .hero-card,
-      .card,
-      .receipt {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: rgba(18, 25, 29, 0.94);
-      }
-      .hero-card {
-        padding: 22px;
-      }
-      .receipt {
-        display: grid;
+      .proof {
+        display: flex;
+        flex-wrap: wrap;
         gap: 10px;
-        margin-top: 16px;
-        padding: 14px;
-        background: rgba(255, 255, 255, 0.04);
-      }
-      .row {
-        display: grid;
-        grid-template-columns: 130px minmax(0, 1fr);
-        gap: 10px;
-        padding: 10px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      }
-      .row:last-child {
-        border-bottom: 0;
-      }
-      .row span {
-        color: var(--muted);
-      }
-      .row strong {
-        color: var(--green);
-      }
-      section {
-        padding: 66px 0;
-        background: rgba(9, 13, 16, 0.94);
-      }
-      section:nth-of-type(even) {
-        background: rgba(15, 23, 26, 0.95);
-      }
-      .section-head {
-        max-width: 760px;
-        margin-bottom: 26px;
-      }
-      .grid-3,
-      .grid-2 {
-        display: grid;
-        gap: 16px;
-      }
-      .grid-3 {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-      .grid-2 {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .card {
-        padding: 22px;
-      }
-      .card p,
-      li {
-        color: var(--muted);
-      }
-      .tag {
-        display: inline-flex;
-        margin-bottom: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        border-radius: 999px;
-        padding: 5px 9px;
-        color: var(--gold);
-        font-size: 12px;
-        font-weight: 800;
-      }
-      .price {
-        color: var(--gold);
-        font-size: 32px;
-        font-weight: 950;
-      }
-      .warning {
-        border-color: rgba(255, 125, 114, 0.38);
-        background: rgba(255, 125, 114, 0.08);
-      }
-      .small {
         color: var(--muted);
         font-size: 14px;
       }
-      ul {
-        margin: 0;
-        padding-left: 20px;
+      .proof span {
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 7px 10px;
       }
-      footer {
-        padding: 40px 0 56px;
+      .demo-panel, .card {
+        background: rgba(15, 21, 24, 0.92);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 22px;
+        box-shadow: var(--shadow);
+      }
+      .output-box {
+        display: grid;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .output-row {
+        display: grid;
+        grid-template-columns: 130px minmax(0, 1fr);
+        gap: 10px;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .output-row span { color: var(--muted); }
+      .output-row strong { color: var(--green); }
+      section {
+        padding: 72px 0;
+        background: rgba(11, 15, 18, 0.94);
+      }
+      section:nth-of-type(even) { background: rgba(16, 23, 26, 0.95); }
+      .section-head {
+        max-width: 780px;
+        margin-bottom: 26px;
+      }
+      .section-copy {
         color: var(--muted);
-        background: #070a0c;
+        font-size: 18px;
+        max-width: 780px;
       }
-      @media (max-width: 850px) {
-        .hero-grid,
-        .grid-3,
-        .grid-2 {
-          grid-template-columns: 1fr;
+      .grid-3, .grid-2 {
+        display: grid;
+        gap: 16px;
+      }
+      .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .card { box-shadow: none; }
+      .card p, li { color: var(--muted); }
+      .card strong {
+        display: block;
+        color: var(--text);
+        margin-bottom: 8px;
+      }
+      .card.featured {
+        border-color: rgba(35, 201, 157, 0.54);
+        background: linear-gradient(180deg, rgba(35, 201, 157, 0.12), rgba(21, 29, 32, 0.95));
+      }
+      .price {
+        display: block;
+        margin: 10px 0;
+        color: var(--gold);
+        font-size: 34px;
+        font-weight: 950;
+      }
+      .steps {
+        display: grid;
+        gap: 12px;
+        counter-reset: step;
+      }
+      .step {
+        position: relative;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 18px 18px 18px 64px;
+      }
+      .step::before {
+        counter-increment: step;
+        content: counter(step);
+        position: absolute;
+        left: 18px;
+        top: 18px;
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--gold);
+        color: #12110d;
+        font-weight: 950;
+      }
+      .final { text-align: center; }
+      .final .section-copy { margin: 0 auto 22px; }
+      footer {
+        background: #070a0c;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: var(--muted);
+        padding: 26px 0;
+        font-size: 14px;
+      }
+      .footer-inner {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+      .footer-links a { color: var(--text); }
+      @media (max-width: 880px) {
+        .hero-grid, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+        .hero { min-height: auto; }
+      }
+      @media (max-width: 560px) {
+        .topbar-inner {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 14px 0;
         }
-        .hero {
-          min-height: auto;
-        }
-        h1 {
-          max-width: 10ch;
-        }
-        .row {
-          grid-template-columns: 1fr;
-        }
+        .output-row { grid-template-columns: 1fr; }
+        h1 { font-size: 44px; }
+        .btn { width: 100%; }
       }
     </style>
   </head>
   <body>
     <header class="topbar">
-      <div class="wrap">
-        <a class="brand" href="index.html">AetherMoore</a>
-        <nav aria-label="Primary navigation">
-          <a href="#pilot">Free pilot</a>
-          <a href="#offer">What you get</a>
-          <a href="#proof">Proof</a>
-          <a href="products.html">Products</a>
-          <a href="research/">Research</a>
+      <div class="topbar-inner">
+        <a class="brand" href="/">AetherMoore</a>
+        <nav class="nav" aria-label="Primary navigation">
+          <a href="#products">Products</a>
+          <a href="atomic-lab">Atomic Lab</a>
+          <a href="ai-waves-lab">Waves Lab</a>
+          <a href="#ship">Ship Plan</a>
           <a href="payments.html">Payments</a>
-          <a
-            class="nav-cta"
-            href="mailto:ai@aethermoore.com?subject=Free%20AI%20workflow%20control%20pilot"
-            >Claim pilot</a
-          >
+          <a class="nav-cta" href="mailto:ai@aethermoore.com?subject=Product%20setup">Start setup</a>
         </nav>
       </div>
     </header>
 
     <main>
       <section class="hero">
-        <div class="wrap hero-grid">
+        <div class="hero-grid">
           <div>
-            <p class="eyebrow">AI workflow control</p>
-            <h1>Make long AI runs finish with real outputs.</h1>
+            <p class="eyebrow">Built in public · working tools, real receipts</p>
+            <h1>Type a task in. Get a working output you can export.</h1>
             <p class="lead">
-              Multi-hour AI work drifts unless it has a route, checkpoints, receipts, and a final
-              catalog. We help turn messy agent runs into bounded workflows that preserve intent,
-              produce named deliverables, and show what happened at every step.
+              No demos that go nowhere. Each AetherMoore tool takes a plain task and returns a
+              structured, exportable result — atoms, a command stack, risk flags, a signed
+              receipt — running live in your browser. No signup to try it.
             </p>
             <div class="cta-row">
-              <a class="btn btn-green" href="#pilot">Claim a free pilot spot</a>
-              <a class="btn btn-primary" href="workflow-snapshot.html">Buy $99 Snapshot</a>
-              <a class="btn" href="payments.html">Pay / request invoice</a>
+              <a class="btn btn-primary" href="ai-materials-bench">Try a live tool — no signup</a>
+              <a class="btn btn-secondary" href="#products">See all products</a>
             </div>
-            <p class="small">
-              First pilots are free while the offer is being validated. Keep the workflow map,
-              catalog, and receipts if they help. Scoped outputs, no mystery platform, no broad
-              protection promise.
-            </p>
+          <div class="proof">
+            <span>Front end</span>
+            <span>API result</span>
+            <span>Exportable JSON</span>
+            <span>GeoSeal route</span>
+            <span>Setup service</span>
+          </div>
           </div>
 
-          <aside class="hero-card" aria-label="Example workflow catalog">
-            <p class="eyebrow">Example workflow catalog</p>
-            <h2>One vague run becomes a controlled build.</h2>
-            <div class="receipt">
-              <div class="row">
-                <span>Intent</span><strong>Build buyer-ready support guardrail</strong>
-              </div>
-              <div class="row">
-                <span>Route</span><strong>Research -> policy map -> test prompts -> report</strong>
-              </div>
-              <div class="row">
-                <span>Checkpoints</span
-                ><strong>Approve source list, policy rules, final fixes</strong>
-              </div>
-              <div class="row">
-                <span>Catalog</span><strong>Files, links, logs, decisions, gaps</strong>
-              </div>
-              <div class="row">
-                <span>Receipt</span><strong>What ran, what changed, what still needs review</strong>
-              </div>
+          <aside class="demo-panel" aria-label="Output preview">
+            <p class="eyebrow">Example output</p>
+            <h2>Task in. System map out.</h2>
+            <div class="output-box">
+              <div class="output-row"><span>Input</span><strong>Qualify missed HVAC calls</strong></div>
+              <div class="output-row"><span>Atoms</span><strong>observe -> gate -> transmit -> report</strong></div>
+              <div class="output-row"><span>Chem Stack</span><strong>measure, bind, verify, export</strong></div>
+              <div class="output-row"><span>Deliverable</span><strong>Lead workflow + weekly report</strong></div>
             </div>
           </aside>
         </div>
       </section>
 
-      <section id="pilot">
-        <div class="wrap grid-2">
+      <section id="products">
+        <div class="section-inner">
           <div class="section-head">
-            <p class="eyebrow">Free pilot</p>
-            <h2>Send one messy AI workflow. Get a bounded build plan and catalog.</h2>
-            <p class="plain">
-              Best fit: a chatbot, code assistant, browser agent, support automation, research
-              packet builder, internal search bot, or any multi-step AI process where drift, missing
-              logs, or unfinished deliverables are the problem.
-            </p>
-            <div class="cta-row">
-              <a
-                class="btn btn-green"
-                href="mailto:ai@aethermoore.com?subject=Free%20AI%20workflow%20control%20pilot&body=Workflow%20to%20review:%0AWhat%20could%20go%20wrong:%0AWhat%20logs%20or%20screenshots%20I%20can%20share:%0ADeadline:%0A"
-                >Email pilot request</a
-              >
-              <a class="btn" href="workflow-snapshot.html#free-check">Use the checklist</a>
-            </div>
-          </div>
-          <article class="card warning">
-            <h3>Honest boundary</h3>
-            <p>
-              The receipt is not the whole product. The product is the controlled workflow: clear
-              intent, staged steps, cataloged outputs, evidence for each decision, and a next-run
-              route that is harder to drift from.
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <section id="offer">
-        <div class="wrap">
-          <div class="section-head">
-            <p class="eyebrow">What we sell</p>
-            <h2>Small paid products with clear outputs.</h2>
-            <p class="plain">
-              The product is not "governance" as a vague word. The product is a usable workflow
-              route, a deliverable catalog, receipt-backed checkpoints, and the next fixes for one
-              real system.
+            <p class="eyebrow">What we have to sell</p>
+            <h2>Four products, each with an output users can understand.</h2>
+            <p class="section-copy">
+              The site should lead with tools that produce visible results. Deeper research,
+              simulations, and internal architecture stay behind the product pages until they
+              support a customer outcome.
             </p>
           </div>
           <div class="grid-3">
-            <article class="card">
-              <span class="tag">Starter service</span>
-              <h3>Workflow Snapshot</h3>
-              <p class="price">$99</p>
+            <article class="card featured">
+              <strong>Atomic Output Lab</strong>
+              <span class="price">$99 setup / $29 report</span>
               <p>
-                One workflow, one concise build map: intent, stages, outputs, unsafe tool paths,
-                missing receipts, and three next fixes.
+                Turns a user workflow into semantic atoms, chemistry-style command steps, risk
+                flags, and an exportable implementation plan.
               </p>
-              <a class="btn btn-primary" href="workflow-snapshot.html">Start snapshot</a>
+              <a class="btn btn-primary" href="atomic-lab">Open product</a>
             </article>
             <article class="card">
-              <span class="tag">Deeper service</span>
-              <h3>Governance Snapshot</h3>
-              <p class="price">$500</p>
+              <strong>GeoSeal Hermes</strong>
+              <span class="price">$99 setup / CLI support</span>
               <p>
-                A longer multi-tier review for workflows with buyer, grant, subcontract, or
-                high-stakes internal pressure. Still scoped to workflow design, evidence, and
-                delivery.
+                A courier-style interface for the GeoSeal CLI: plain task in, route command,
+                backend choice, policy, and receipt id out.
               </p>
-              <a class="btn" href="governance-snapshot.html">Compare scope</a>
+              <a class="btn btn-secondary" href="geoseal-hermes">Open product</a>
             </article>
             <article class="card">
-              <span class="tag">DIY package</span>
-              <h3>Toolkit / Vault</h3>
-              <p class="price">$29</p>
+              <strong>Chemistry Command Stack</strong>
+              <span class="price">$199 setup</span>
               <p>
-                Templates, training material, and manuals for people who want to build their own
-                routed workflow, catalog, and receipt path instead of buying a review.
+                Packages the chemistry/atomic command model into structured command recipes for
+                simulation, workflow design, or technical planning.
               </p>
-              <a class="btn" href="ai-agent-governance-toolkit.html">Open toolkit</a>
             </article>
             <article class="card">
-              <span class="tag">Direct download</span>
-              <h3>Behind-The-Scenes Process Pack</h3>
-              <p class="price">$7</p>
+              <strong>AI Waves Lab</strong>
+              <span class="price">$49 report / $199 worksheet</span>
               <p>
-                A small writing-process packet: prompts, humanization pass, guide files, and
-                delivery notes. Process material, not the KDP manuscripts.
+                Converts fiber, optics, interference, and photonic-route concepts into visual
+                wave diagrams, calculations, assumptions, limits, and JSON receipts.
               </p>
-              <a class="btn" href="https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n"
-                >Buy process pack</a
-              >
+              <a class="btn btn-secondary" href="ai-waves-lab">Open product</a>
             </article>
           </div>
         </div>
       </section>
 
-      <section>
-        <div class="wrap">
+      <section id="ship">
+        <div class="section-inner">
           <div class="section-head">
-            <p class="eyebrow">Concrete use cases</p>
-            <h2>Three places controlled workflows matter.</h2>
+            <p class="eyebrow">How we ship fast</p>
+            <h2>Each product gets the same clean package.</h2>
           </div>
-          <div class="grid-3">
-            <article class="card">
-              <h3>Customer support guardrail</h3>
-              <p>
-                Review where a chatbot might make commitments outside its policy, tool access, or
-                human-approval path.
-              </p>
+          <div class="steps">
+            <article class="step">
+              <h3>One narrow input</h3>
+              <p>User enters a task, workflow, command, or business problem. No giant repo tour.</p>
             </article>
-            <article class="card">
-              <h3>Code assistant receipt</h3>
-              <p>
-                Keep a multi-step code run aligned: task intent, files touched, tests run, review
-                gaps, and the final patch catalog before production.
-              </p>
+            <article class="step">
+              <h3>One useful backend result</h3>
+              <p>The API returns atoms, command steps, result summary, next actions, and JSON.</p>
             </article>
-            <article class="card">
-              <h3>Research packet review trail</h3>
-              <p>
-                Keep source lists, claim boundaries, reviewer passes, open questions, and final
-                artifacts tied to one navigable packet.
-              </p>
+            <article class="step">
+              <h3>One payment path</h3>
+              <p>Sell setup, monthly operation, or downloadable reports from a clear payment page.</p>
             </article>
           </div>
         </div>
       </section>
 
-      <section id="proof">
-        <div class="wrap grid-2">
-          <div>
-            <p class="eyebrow">Proof surfaces</p>
-            <h2>Inspect the machinery after the offer makes sense.</h2>
-            <p class="plain">
-              The demos and repos are supporting evidence, not the first sales pitch. Use them to
-              verify that there is real code under the workflow-control language.
-            </p>
-          </div>
-          <div class="grid-2">
-            <article class="card">
-              <h3>Operator Agent Bus</h3>
-              <p>Bounded task packets, dispatch receipts, and local-first execution paths.</p>
-              <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">Open repo</a>
-            </article>
-            <article class="card">
-              <h3>Workflow machine</h3>
-              <p>Crank, Forge memory, Village maps, and Torus addresses as runnable proof.</p>
-              <a href="workflow-machine.html">Open proof page</a>
-            </article>
-            <article class="card">
-              <h3>Live pages</h3>
-              <p>Browser demos are labeled as demos. Local CLI commands are labeled as local.</p>
-              <a href="agents.html">Open agents page</a>
-            </article>
-            <article class="card">
-              <h3>Research library</h3>
-              <p>
-                Topic-indexed packets with abstracts, claim boundaries, review models, and PDFs.
-              </p>
-              <a href="research/">Open research</a>
-            </article>
-            <article class="card">
-              <h3>Delivery manual</h3>
-              <p>How paid packets, receipts, recovery, and support are supposed to work.</p>
-              <a href="product-manual/delivery-and-access.html">Read manual</a>
-            </article>
-            <article class="card">
-              <h3>Payment center</h3>
-              <p>Stripe, Ko-fi, Cash App, and invoice routes with buyer expectations.</p>
-              <a href="payments.html">Open payments</a>
-            </article>
+      <section class="final">
+        <div class="section-inner">
+          <p class="eyebrow">Build the sellable version</p>
+          <h2>Start with Atomic Output Lab, then add paid exports.</h2>
+          <p class="section-copy">
+            This gives us a polished front end now, a working API now, and a path to charge for
+            custom reports, setup, and monthly workflow automation.
+          </p>
+          <div class="cta-row" style="justify-content: center">
+            <a class="btn btn-primary" href="atomic-lab">Run the lab</a>
+            <a class="btn btn-secondary" href="mailto:ai@aethermoore.com?subject=Atomic%20Output%20Lab">Request setup</a>
           </div>
         </div>
       </section>
     </main>
 
     <footer>
-      <div class="wrap">
-        <p>
-          AetherMoore is run by Issac Davis. This site sells long-run AI workflow control,
-          cataloging, receipt-backed review, and related tooling. Outputs are scoped workflow
-          artifacts, not guarantees of business, safety, certification, or dispute outcomes.
-        </p>
-        <div class="link-row">
-          <a href="mailto:ai@aethermoore.com">ai@aethermoore.com</a>
-          <a href="support.html">Support</a>
-          <a href="terms.html">Terms</a>
-          <a href="privacy.html">Privacy</a>
-          <a href="https://ko-fi.com/izdandavis">Ko-fi</a>
-          <a href="https://www.youtube.com/channel/UCO9aJ-ZH0Ddg_F0Dr655WIQ">YouTube</a>
-          <a href="https://huggingface.co/issdandavis">Hugging Face</a>
-          <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
+      <div class="footer-inner">
+        <div>AetherMoore. Polished AI output systems by Issac Davis.</div>
+        <div class="footer-links">
+          <a href="atomic-lab">Atomic Lab</a>
+          <a href="ai-waves-lab">Waves Lab</a>
+          <a href="geoseal-hermes">GeoSeal Hermes</a>
+          <a href="products.html">Products</a>
+          <a href="payments.html">Payments</a>
+          <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener">GitHub</a>
         </div>
       </div>
     </footer>
-
-    <script src="static/polly-funnel.js" data-page="home"></script>
   </body>
 </html>

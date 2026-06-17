@@ -107,7 +107,7 @@ t0 = time.time()
 for i, p in enumerate(PANELS):
     out = OUT / f"{p['id']}.png"
     if out.exists():
-        print(f"  [{i+1}] {p['id']} exists, skip")
+        print(f"  [{i + 1}] {p['id']} exists, skip")
         continue
 
     for attempt in range(3):
@@ -118,19 +118,19 @@ for i, p in enumerate(PANELS):
                     f.write(resp.content)
                 total += 1
                 elapsed = time.time() - t0
-                print(f"  [{i+1}/20] {p['id']} — {len(resp.content)//1024}KB ({elapsed:.0f}s)")
+                print(f"  [{i + 1}/20] {p['id']} — {len(resp.content) // 1024}KB ({elapsed:.0f}s)")
                 break
             elif resp.status_code == 429:
                 print("  Rate limited, waiting 30s...")
                 time.sleep(30)
             else:
-                print(f"  {p['id']} — {resp.status_code}, retry {attempt+1}")
+                print(f"  {p['id']} — {resp.status_code}, retry {attempt + 1}")
                 time.sleep(5)
         except Exception as e:
-            print(f"  {p['id']} — error: {e}, retry {attempt+1}")
+            print(f"  {p['id']} — error: {e}, retry {attempt + 1}")
             time.sleep(5)
 
     time.sleep(1)
 
 elapsed = time.time() - t0
-print(f"\nDone: {total} panels in {elapsed:.0f}s ({elapsed/60:.1f}m)")
+print(f"\nDone: {total} panels in {elapsed:.0f}s ({elapsed / 60:.1f}m)")

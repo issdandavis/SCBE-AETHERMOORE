@@ -619,7 +619,7 @@ class TestSecurityStackIntegration:
     def test_layer_ordering(self):
         """Verify layers are in correct order."""
         for i, layer in enumerate(self.SECURITY_LAYERS):
-            assert layer["id"] == i + 1, f"Layer {i+1} has wrong ID"
+            assert layer["id"] == i + 1, f"Layer {i + 1} has wrong ID"
 
     def test_all_layers_have_function(self):
         """Each layer must have a defined function."""

@@ -289,26 +289,26 @@ def run_correctness_benchmarks() -> dict:
     # Print summary
     n = results["total_samples"]
     print(f"\n  Samples:                {n}")
-    print(f"  T in [0,1]:             {results['t_in_range']}/{n} ({100*results['t_in_range']/n:.1f}%)")
+    print(f"  T in [0,1]:             {results['t_in_range']}/{n} ({100 * results['t_in_range'] / n:.1f}%)")
     print(
-        f"  Amplitude invariant:    {results['amplitude_invariant']}/{n} ({100*results['amplitude_invariant']/n:.1f}%)"
+        f"  Amplitude invariant:    {results['amplitude_invariant']}/{n} ({100 * results['amplitude_invariant'] / n:.1f}%)"
     )
     print(f"  Outcomes seen:          {results['outcomes_seen']}")
     print(f"  All 4 outcomes:         {results['all_four_outcomes']}")
     print(f"  Policy=False reflects:  {results['policy_false_always_reflects']}")
     print(
         f"  Maturity ordering:      {results['maturity_ordering_correct']}/{results['maturity_ordering_tested']} "
-        f"({100*results['maturity_ordering_correct']/results['maturity_ordering_tested']:.1f}%)"
+        f"({100 * results['maturity_ordering_correct'] / results['maturity_ordering_tested']:.1f}%)"
     )
     print(
         f"  RED harder than GREEN:  {results['red_harder_than_green']}/{results['red_green_tested']} "
-        f"({100*results['red_harder_than_green']/results['red_green_tested']:.1f}%)"
+        f"({100 * results['red_harder_than_green'] / results['red_green_tested']:.1f}%)"
     )
     print(f"  Violations:             {len(results['violations'])}")
 
     print("\n  Outcome distribution:")
     for outcome, count in sorted(results["outcome_distribution"].items()):
-        print(f"    {outcome:12s}: {count:4d} ({100*count/n:.1f}%)")
+        print(f"    {outcome:12s}: {count:4d} ({100 * count / n:.1f}%)")
 
     print("\n  By zone (mean T):")
     for z in ZONES:
@@ -622,7 +622,7 @@ def run_comparison_benchmarks() -> dict:
         f"  {'System':<16} {'FPR':>8} {'FNR':>8} {'Prec':>8} {'Recall':>8} "
         f"{'F1':>8} {'Levels':>8} {'us/op':>8} {'ops/s':>10}"
     )
-    print(f"  {'-'*16} {'-'*8} {'-'*8} {'-'*8} {'-'*8} {'-'*8} {'-'*8} {'-'*8} {'-'*10}")
+    print(f"  {'-' * 16} {'-' * 8} {'-' * 8} {'-' * 8} {'-' * 8} {'-' * 8} {'-' * 8} {'-' * 8} {'-' * 10}")
     for name in ["binary", "linear", "harmonic_wall", "phase_tunnel"]:
         c = comparison[name]
         print(
@@ -915,15 +915,15 @@ def run_browser_benchmarks() -> dict:
         print(f"    Total phase-read attempts: {pr['total_phase_reads']}")
         print(
             f"    Binary allowed:            {pr['binary_allowed']} "
-            f"({100*pr['binary_allowed']/pr['total_phase_reads']:.0f}%)"
+            f"({100 * pr['binary_allowed'] / pr['total_phase_reads']:.0f}%)"
         )
         print(
             f"    Harmonic wall allowed:     {pr['harmonic_allowed']} "
-            f"({100*pr['harmonic_allowed']/pr['total_phase_reads']:.0f}%)"
+            f"({100 * pr['harmonic_allowed'] / pr['total_phase_reads']:.0f}%)"
         )
         print(
             f"    Phase tunnel allowed:      {pr['phase_tunnel_allowed']} "
-            f"({100*pr['phase_tunnel_allowed']/pr['total_phase_reads']:.0f}%)"
+            f"({100 * pr['phase_tunnel_allowed'] / pr['total_phase_reads']:.0f}%)"
         )
         print(
             f"    -> Phase tunnel provides {pr['phase_tunnel_allowed'] - pr['binary_allowed']} "
@@ -957,7 +957,7 @@ def run_maturity_benchmarks() -> dict:
     print(
         f"\n  {'Maturity':<28} {'Zone':<8} {'d_H':<6} {'mean_T':<10} {'tunnel%':<10} {'commit%':<10} {'factorial':<14}"
     )
-    print(f"  {'-'*28} {'-'*8} {'-'*6} {'-'*10} {'-'*10} {'-'*10} {'-'*14}")
+    print(f"  {'-' * 28} {'-' * 8} {'-' * 6} {'-' * 10} {'-' * 10} {'-' * 10} {'-' * 14}")
 
     for n_scars in SCAR_LEVELS:
         kernel = make_kernel(n_scars)
@@ -1001,7 +1001,7 @@ def run_maturity_benchmarks() -> dict:
                 fmat_str = f"{fmat:.0f}" if fmat < 1e6 else f"{fmat:.2e}"
                 print(
                     f"  {label:<28} {zone:<8} {d_H:<6.1f} {mean_t:<10.4f} "
-                    f"{100*tunnel_pct:<10.1f} {100*commit_pct:<10.1f} {fmat_str:<14}"
+                    f"{100 * tunnel_pct:<10.1f} {100 * commit_pct:<10.1f} {fmat_str:<14}"
                 )
 
             results["tiers"][str(n_scars)]["zones"][zone] = zone_results
@@ -1009,7 +1009,7 @@ def run_maturity_benchmarks() -> dict:
     # Davis Formula comparison: show how factorial context scaling relates
     print("\n  Davis Formula comparison (S = t / (i * C! * (1+d))):")
     print(f"  {'Scars':<8} {'factorial':<14} {'Davis S(t=10,i=1,C=scars,d=0)':<36} {'Trust factor':<14}")
-    print(f"  {'-'*8} {'-'*14} {'-'*36} {'-'*14}")
+    print(f"  {'-' * 8} {'-' * 14} {'-' * 36} {'-' * 14}")
 
     for n_scars in SCAR_LEVELS:
         kernel = make_kernel(n_scars)
@@ -1143,7 +1143,7 @@ def run_performance_benchmarks() -> dict:
     # Print summary
     print(f"\n  {n:,} iterations per system\n")
     print(f"  {'System':<24} {'us/op':>10} {'ops/sec':>14} {'slowdown':>10}")
-    print(f"  {'-'*24} {'-'*10} {'-'*14} {'-'*10}")
+    print(f"  {'-' * 24} {'-' * 10} {'-' * 14} {'-' * 10}")
 
     fastest_ops = max(r["ops_per_second"] for r in results.values())
 

@@ -93,7 +93,7 @@ Detailed Proof:
     print("\nParseval verification:")
     print(f"  Time-domain energy: {time_energy:.4f}")
     print(f"  Freq-domain energy: {freq_energy:.4f}")
-    print(f"  Relative error: {abs(time_energy - freq_energy)/time_energy:.2e}")
+    print(f"  Relative error: {abs(time_energy - freq_energy) / time_energy:.2e}")
 
     # Phase invariance check
     print("\n--- PHASE INVARIANCE CHECK ---")

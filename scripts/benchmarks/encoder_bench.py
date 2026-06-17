@@ -208,9 +208,9 @@ def main() -> int:
     out_path.write_text(json.dumps(card, indent=2), encoding="utf-8")
 
     print(f"corpus: {len(files)} files / {loc} LOC")
-    print(f"python : median {py['median']*1000:.2f} ms  CV {py['cv_pct']}%  (n={py['runs']})")
+    print(f"python : median {py['median'] * 1000:.2f} ms  CV {py['cv_pct']}%  (n={py['runs']})")
     if rust:
-        print(f"rust   : median {rust['median']*1000:.2f} ms  CV {rust['cv_pct']}%  (n={rust['runs']})")
+        print(f"rust   : median {rust['median'] * 1000:.2f} ms  CV {rust['cv_pct']}%  (n={rust['runs']})")
         verdict = f"{speedup}x faster" if stable else f"{speedup}x (UNSTABLE - re-run)"
         print(f"e2e    : {verdict}  (small corpus, incl. subprocess startup)")
         if pure:

@@ -43,20 +43,6 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
 // interactive loop will time out unless driven non-interactively.
 const INTERACTIVE = new Set(['shell', 'terminal', 'advisor']);
 
-// AI clients should not receive arbitrary shell, git-write, or remote-write
-// tools by default. Those commands remain available in the human CLI; the MCP
-// bridge exposes the safe/read/compute surface.
-const MCP_DENIED_COMMANDS = new Set([
-  'commit',
-  'exec',
-  'prepush',
-  'push',
-  'run',
-  'shell',
-  'store',
-  'terminal',
-]);
-
 function toolName(commandName) {
   return `scbe_${commandName.replace(/-/g, '_')}`;
 }
@@ -72,7 +58,6 @@ function buildToolDefinitions() {
   const specByTool = new Map();
 
   for (const c of manifest.commands) {
-    if (MCP_DENIED_COMMANDS.has(c.name)) continue;
     const name = toolName(c.name);
     commandFor.set(name, c.name);
     specByTool.set(name, c);
@@ -146,22 +131,8 @@ function buildToolDefinitions() {
  * caller gets a clear error instead of a malformed command.
  */
 function resolveArgs(spec, callArgs) {
-  if (callArgs && (typeof callArgs !== 'object' || Array.isArray(callArgs))) {
-    throw new Error('arguments must be an object');
-  }
   const raw = callArgs && callArgs.args;
-  if (raw !== undefined && !Array.isArray(raw)) {
-    throw new Error('"args" must be an array of strings');
-  }
-  if (Array.isArray(raw) && raw.length > 0) {
-    for (const item of raw) {
-      const t = typeof item;
-      if (item === null || (t !== 'string' && t !== 'number' && t !== 'boolean')) {
-        throw new Error('"args" items must be strings, numbers, or booleans');
-      }
-    }
-    return raw.map(String);
-  }
+  if (Array.isArray(raw) && raw.length > 0) return raw.map(String);
   if (spec && Array.isArray(spec.params) && spec.params.length) {
     return serializeParams(spec, callArgs || {});
   }
@@ -189,12 +160,7 @@ function runScbe(commandName, args, wantJson, timeoutMs) {
         if (!error) {
           resolve({ error: null, status: 0, stdout, stderr });
         } else if (error.killed && error.signal) {
-          resolve({
-            error: { code: 'ETIMEDOUT', message: error.message },
-            status: null,
-            stdout,
-            stderr,
-          });
+          resolve({ error: { code: 'ETIMEDOUT', message: error.message }, status: null, stdout, stderr });
         } else if (typeof error.code === 'number') {
           // Normal nonzero exit: not a spawn failure.
           resolve({ error: null, status: error.code, stdout, stderr });
@@ -214,14 +180,7 @@ async function main() {
   server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
 
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
-    const params = req && req.params && typeof req.params === 'object' ? req.params : {};
-    const { name, arguments: callArgs } = params;
-    if (typeof name !== 'string') {
-      return {
-        isError: true,
-        content: [{ type: 'text', text: 'Tool name must be a string' }],
-      };
-    }
+    const { name, arguments: callArgs } = req.params;
     const commandName = commandFor.get(name);
     if (!commandName) {
       return {

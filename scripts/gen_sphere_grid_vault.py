@@ -566,7 +566,7 @@ format: "sft"
 
         # concepts.md
         concept_sections = "\n\n".join(
-            f"### {i+1}. {c}\n\nEssential for {name} at tier {tier_num}." for i, c in enumerate(concepts)
+            f"### {i + 1}. {c}\n\nEssential for {name} at tier {tier_num}." for i, c in enumerate(concepts)
         )
         write_note(
             sdir / "concepts.md",

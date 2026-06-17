@@ -552,7 +552,7 @@ async def kiosk_mode():
         intent = router.classify_intent(text)
         lanes = router.select_lanes(intent, text)
         print(f"\nIntent:  {intent.value}")
-        print(f"Lanes:   {', '.join(lane.value for lane in lanes)}")
+        print(f"Lanes:   {', '.join(l.value for l in lanes)}")
 
         # Execute
         result = await router.execute(text)

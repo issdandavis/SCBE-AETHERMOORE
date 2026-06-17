@@ -102,8 +102,8 @@ class TelemetryCollector:
         print("ADVANCED MATHEMATICS TEST TELEMETRY SUMMARY")
         print("=" * 80)
         print(f"Total Tests: {total}")
-        print(f"Passed: {passed} ({100*passed/total:.1f}%)")
-        print(f"Failed: {failed} ({100*failed/total:.1f}%)")
+        print(f"Passed: {passed} ({100 * passed / total:.1f}%)")
+        print(f"Failed: {failed} ({100 * failed / total:.1f}%)")
         print("\nBy Category:")
 
         categories = {}
@@ -242,7 +242,9 @@ def test_coherence_bounds(collector: TelemetryCollector):
     passed = violations == 0
     telem.complete(passed)
 
-    print(f"✓ {telem.test_name}: {'PASS' if passed else 'FAIL'} " f"({telem.duration_ms:.2f}ms, {iterations*3} checks)")
+    print(
+        f"✓ {telem.test_name}: {'PASS' if passed else 'FAIL'} " f"({telem.duration_ms:.2f}ms, {iterations * 3} checks)"
+    )
     return passed
 
 
@@ -302,7 +304,7 @@ def main():
     print("\n✓ Telemetry exported to test_telemetry_advanced_math.json")
     print(f"  Session duration: {data['session_duration_ms']:.2f}ms")
     print(f"  Total tests: {data['total_tests']}")
-    print(f"  Pass rate: {100*data['passed_tests']/data['total_tests']:.1f}%")
+    print(f"  Pass rate: {100 * data['passed_tests'] / data['total_tests']:.1f}%")
 
     # Return exit code
     return 0 if all(results) else 1

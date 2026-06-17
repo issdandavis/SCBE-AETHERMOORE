@@ -1759,7 +1759,7 @@ def run(pairs: list, output: str, dry_run: bool) -> None:
     print("\n  Tongue distribution:")
     for t, c in sorted(tongue_counts.items(), key=lambda x: -x[1]):
         lang = LANG_MAP.get(t, t)
-        print(f"    {t} ({lang}): {'#'*c} {c}")
+        print(f"    {t} ({lang}): {'#' * c} {c}")
 
     if dry_run:
         print("\nDRY RUN — sample record 0:")

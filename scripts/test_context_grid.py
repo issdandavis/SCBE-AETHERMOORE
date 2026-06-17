@@ -137,7 +137,7 @@ def main():
 
     print("  Top 5 fused results:")
     for i, r in enumerate(fused[:5]):
-        print(f"    {i+1}. [{r.tongue}] {r.title} (trust={r.trust_score:.3f}, via={r.retrieval_method})")
+        print(f"    {i + 1}. [{r.tongue}] {r.title} (trust={r.trust_score:.3f}, via={r.retrieval_method})")
 
     # =====================================================================
     # TEST 4: Tongue-Filtered Retrieval

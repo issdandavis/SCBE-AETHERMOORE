@@ -10,10 +10,7 @@ $script:IssacCommandCenterRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).P
 $script:IssacHydraShim = Join-Path $script:IssacCommandCenterRoot "scripts\hydra.ps1"
 $script:IssacSkillSummary = Join-Path $script:IssacCommandCenterRoot "artifacts\skill_synthesis\summary.md"
 $script:IssacSkillRefreshScript = Join-Path $script:IssacCommandCenterRoot "scripts\system\refresh_universal_skill_synthesis.py"
-$script:IssacSkillStackScript = Join-Path $script:IssacCommandCenterRoot "external\codex-skills-live\skill-synthesis\scripts\compose_skill_stack.py"
-if (-not (Test-Path -LiteralPath $script:IssacSkillStackScript)) {
-    $script:IssacSkillStackScript = "C:\Users\issda\.codex\skills\skill-synthesis\scripts\compose_skill_stack.py"
-}
+$script:IssacSkillStackScript = "C:\Users\issda\.codex\skills\skill-synthesis\scripts\compose_skill_stack.py"
 $script:IssacCrossTalkRelay = Join-Path $script:IssacCommandCenterRoot "scripts\system\crosstalk_relay.py"
 $script:IssacBrowserService = Join-Path $script:IssacCommandCenterRoot "scripts\run_aetherbrowse_service.ps1"
 $script:IssacHydraTunnel = Join-Path $script:IssacCommandCenterRoot "scripts\system\start_hydra_terminal_tunnel.ps1"

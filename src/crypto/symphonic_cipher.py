@@ -254,4 +254,4 @@ if __name__ == "__main__":
 
     # Generate waveform
     waveform = generate_symphonic_sequence(sequence)
-    print(f"[SYMPHONIC] Generated {len(waveform)} samples ({len(waveform)/SAMPLE_RATE:.2f}s)")
+    print(f"[SYMPHONIC] Generated {len(waveform)} samples ({len(waveform) / SAMPLE_RATE:.2f}s)")

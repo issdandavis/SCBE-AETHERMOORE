@@ -534,7 +534,7 @@ def load_eval_items(path: Path) -> List[EvalItem]:
                 continue
             items.append(
                 EvalItem(
-                    eval_id=str(obj.get("id", f"eval-{len(items)+1:03d}")),
+                    eval_id=str(obj.get("id", f"eval-{len(items) + 1:03d}")),
                     query=query,
                     expected_paths=expected_paths,
                     eval_type=str(obj.get("type", "generic")),

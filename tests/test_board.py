@@ -30,7 +30,7 @@ def test_mid_nibble_is_the_seam_bits_2_to_5():
 def test_place_recover_round_trips():
     rng = random.Random(5)
     ops = sorted(P.SCALAR_OPS)
-    for _seed in range(20):
+    for seed in range(20):
         prog = P.program_bytes(*[rng.choice(ops) for _ in range(rng.randint(0, 12))])
         assert B.recover(B.place(prog)) == prog
         assert B.is_reversible(prog)

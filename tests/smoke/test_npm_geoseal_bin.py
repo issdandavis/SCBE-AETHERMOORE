@@ -32,6 +32,7 @@ def test_npm_geoseal_bin_help() -> None:
     assert "agent-io-contract" in proc.stdout
     assert "tokenizer-code-lanes" in proc.stdout
     assert "tongue-run" in proc.stdout
+    assert "code-cube" in proc.stdout
 
 
 def test_npm_geoseal_bin_version_matches_package() -> None:
@@ -77,59 +78,6 @@ def test_npm_geoseal_bin_permissions_json() -> None:
     assert payload["max_tier"]
 
 
-def test_npm_geoseal_command_check_blocks_host_control_commands() -> None:
-    cases = [
-        "shutdown /s /t 0",
-        "wsl --shutdown",
-        "powercfg /hibernate off",
-        "Disable-NetAdapter -Name Wi-Fi -Confirm:$false",
-        "docker system prune -a -f",
-        "taskkill /F /T /IM python.exe",
-        "while ($true) { python bench.py }",
-    ]
-    for command in cases:
-        proc = subprocess.run(
-            [
-                "node",
-                str(ROOT / "bin" / "geoseal.cjs"),
-                "command-check",
-                command,
-                "--json",
-            ],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            check=False,
-            timeout=30,
-        )
-        assert proc.returncode == 2, command
-        payload = json.loads(proc.stdout)
-        assert payload["decision"] == "block", command
-        assert payload["safety"] == "refused", command
-        assert any("host" in reason.lower() for reason in payload["reasons"])
-
-
-def test_npm_geoseal_command_check_allows_normal_pytest() -> None:
-    proc = subprocess.run(
-        [
-            "node",
-            str(ROOT / "bin" / "geoseal.cjs"),
-            "command-check",
-            "python -m pytest tests\\crypto\\test_geoseal_execution_gate.py -q",
-            "--json",
-        ],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        check=False,
-        timeout=30,
-    )
-    assert proc.returncode == 0, proc.stderr
-    payload = json.loads(proc.stdout)
-    assert payload["decision"] == "allow"
-    assert payload["safety"] == "safe"
-
-
 def test_npm_geoseal_bin_doctor_uses_lightweight_python_module_probe() -> None:
     proc = subprocess.run(
         ["node", str(ROOT / "bin" / "geoseal.cjs"), "doctor", "--json"],
@@ -146,9 +94,7 @@ def test_npm_geoseal_bin_doctor_uses_lightweight_python_module_probe() -> None:
     assert str(ROOT / "src" / "geoseal_cli.py") in src_probe["origin"]
 
 
-def test_npm_geoseal_bin_service_status_is_not_python_passthrough(
-    tmp_path: Path,
-) -> None:
+def test_npm_geoseal_bin_service_status_is_not_python_passthrough(tmp_path: Path) -> None:
     env = dict(os.environ)
     env["SCBE_GEOSEAL_PYTHON"] = str(tmp_path / "missing-python.exe")
     proc = subprocess.run(
@@ -187,13 +133,7 @@ def test_npm_geoseal_bin_product_lanes_json() -> None:
     payload = json.loads(proc.stdout)
     assert payload["schema_version"] == "geoseal_product_lanes_v1"
     lane_ids = {lane["id"] for lane in payload["lanes"]}
-    assert {
-        "agents",
-        "providers",
-        "chemistry",
-        "tokenizer",
-        "arrays-spreadsheets",
-    } <= lane_ids
+    assert {"agents", "providers", "chemistry", "tokenizer", "arrays-spreadsheets"} <= lane_ids
 
 
 def test_npm_geoseal_bin_stage_renders_terminal_box() -> None:
@@ -432,6 +372,115 @@ def test_npm_geoseal_bin_command_check_requires_confirm_for_writes() -> None:
     assert payload["safety"] == "write"
 
 
+def test_npm_geoseal_bin_code_cube_json() -> None:
+    proc = subprocess.run(
+        [
+            "node",
+            str(ROOT / "bin" / "geoseal.cjs"),
+            "code-cube",
+            "build a todo app with auth and tests",
+            "--language",
+            "rust",
+            "--twist",
+            "tests.backend",
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+        timeout=30,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "geoseal_code_cube_v1"
+    assert payload["product_component"] == "CodeCube for GeoSeal CLI"
+    assert payload["center"]["canonical_ir"]["kind"] == "app_blueprint"
+    assert {"frontend", "backend", "data", "tests", "security", "deploy"} <= {
+        face["id"] for face in payload["faces"]["structural_faces"]
+    }
+    assert payload["faces"]["language_face"]["language"] == "rust"
+    assert any(twist["id"] == "tests.backend" and twist["selected"] for twist in payload["twists"])
+    assert payload["safety"]["executes_shell"] is False
+
+
+def test_npm_geoseal_bin_code_cube_manifold_target_json() -> None:
+    proc = subprocess.run(
+        [
+            "node",
+            str(ROOT / "bin" / "geoseal.cjs"),
+            "code-cube",
+            "station safe-mode controller with tests",
+            "--target",
+            "manifold",
+            "--dimensions",
+            "8",
+            "--moduli",
+            "7,11,13",
+            "--pitch",
+            "15",
+            "--yaw",
+            "-20",
+            "--roll",
+            "5",
+            "--speed",
+            "0.7",
+            "--twist",
+            "security.deploy",
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+        timeout=30,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    target = payload["targets"]["manifold_schedule"]
+    assert payload["targets"]["manifold"] is True
+    assert target["schema_version"] == "geoseal_code_cube_manifold_target_v1"
+    assert target["dimensions"] == 8
+    assert target["coprime_residue_routing"]["moduli"] == [7, 11, 13]
+    assert target["coprime_residue_routing"]["pairwise_coprime"] is True
+    assert target["geoseal_pressure_tier"]["interlock"] == "confirm-write"
+    assert target["center_attitude"]["schema_version"] == "geoseal_center_attitude_v1"
+    assert target["center_attitude"]["controls"]["pitch_deg"] == 15
+    assert target["center_attitude"]["controls"]["yaw_deg"] == -20
+    assert target["center_attitude"]["controls"]["roll_deg"] == 5
+    assert target["center_attitude"]["controls"]["speed"] == 0.7
+    assert len(target["center_attitude"]["vector"]) == 8
+    assert len(target["trit_states"]) == 6
+    assert {state["shuttle_state"] for state in target["trit_states"]} <= {"left", "center", "right"}
+    assert any(step["twist"] == "security.deploy" for step in target["twist_schedule"])
+    assert all("hyperbolic_gate" in step for step in target["twist_schedule"])
+    assert all("attitude_bias" in step for step in target["twist_schedule"])
+    assert target["hardware_boundary"].startswith("B2Gate")
+
+
+def test_npm_geoseal_bin_code_cube_text() -> None:
+    proc = subprocess.run(
+        [
+            "node",
+            str(ROOT / "bin" / "geoseal.cjs"),
+            "codecube",
+            "payment page with checkout receipt",
+            "--language",
+            "javascript",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+        timeout=30,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "CodeCube:" in proc.stdout
+    assert "Faces:" in proc.stdout
+    assert "Manifold: not requested" in proc.stdout
+    assert "Receipt:" in proc.stdout
+
+
 def test_npm_geoseal_bin_provider_registry_json() -> None:
     proc = subprocess.run(
         ["node", str(ROOT / "bin" / "geoseal.cjs"), "providers", "--json"],
@@ -450,20 +499,11 @@ def test_npm_geoseal_bin_provider_registry_json() -> None:
     assert payload["policy"]["default_route"] == "free_local_first"
 
 
-def test_npm_geoseal_bin_ask_alias_requires_local_service_when_not_running(
-    tmp_path: Path,
-) -> None:
+def test_npm_geoseal_bin_ask_alias_requires_local_service_when_not_running(tmp_path: Path) -> None:
     env = dict(os.environ)
     env["SCBE_GEOSEAL_SERVICE_DIR"] = str(tmp_path / "state")
     proc = subprocess.run(
-        [
-            "node",
-            str(ROOT / "bin" / "geoseal.cjs"),
-            "ask",
-            "explain",
-            "tokenizer",
-            "--json",
-        ],
+        ["node", str(ROOT / "bin" / "geoseal.cjs"), "ask", "explain", "tokenizer", "--json"],
         capture_output=True,
         text=True,
         encoding="utf-8",

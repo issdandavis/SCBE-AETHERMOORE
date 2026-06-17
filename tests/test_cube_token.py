@@ -71,6 +71,6 @@ class TestFaceFormations:
         assert tongue_for_language("nonsense") is None
 
     def test_formations_preserve_bijection(self):
-        cube = CubeToken("compile")
-        for tongue, spec in cube.all_formations().items():
+        c = CubeToken("compile")
+        for tongue, spec in CubeToken("compile").all_formations().items():
             assert CubeToken.from_face(tongue, spec["encoding"]).token == "compile"

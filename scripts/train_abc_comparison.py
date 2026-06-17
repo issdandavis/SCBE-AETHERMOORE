@@ -202,13 +202,13 @@ def train_group(
     out = output_dir or (OUTPUT_ROOT / f"group_{group_name}")
     os.makedirs(str(out), exist_ok=True)
 
-    log.info(f"\n{'='*60}")
+    log.info(f"\n{'=' * 60}")
     log.info(f"GROUP {group_name}: {len(records)} records, {epochs} epochs")
     log.info(f"Base: {base_model}")
     if adapter_path:
         log.info(f"Adapter: {adapter_path}")
     log.info(f"Output: {out}")
-    log.info(f"{'='*60}")
+    log.info(f"{'=' * 60}")
 
     if dry_run:
         log.info(f"DRY RUN — skipping training for Group {group_name}")
@@ -317,7 +317,7 @@ def train_group(
     log.info(f"Training Group {group_name}...")
     trainer.train()
     elapsed = time.time() - start_time
-    log.info(f"Group {group_name} training completed in {elapsed/60:.1f} minutes")
+    log.info(f"Group {group_name} training completed in {elapsed / 60:.1f} minutes")
 
     # Save adapter
     adapter_out = str(out / "final_adapter")
@@ -435,9 +435,9 @@ def compare_results():
         log.info("Need at least 2 groups to compare. Run training first.")
         return
 
-    print(f"\n{'='*80}")
+    print(f"\n{'=' * 80}")
     print("A/B/C COMPARISON RESULTS")
-    print(f"{'='*80}")
+    print(f"{'=' * 80}")
 
     categories = list({r["category"] for results in groups.values() for r in results})
     categories.sort()

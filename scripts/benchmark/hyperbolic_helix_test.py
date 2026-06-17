@@ -301,17 +301,21 @@ def main():
 
     print("Analysis:")
     if helix["separation"] > flat["separation"]:
-        print(f"  Helix separation beats flat by {((helix['separation']/flat['separation'])-1)*100:+.1f}%")
+        print(f"  Helix separation beats flat by {((helix['separation'] / flat['separation']) - 1) * 100:+.1f}%")
     else:
-        print(f"  Flat separation beats helix by {((flat['separation']/helix['separation'])-1)*100:+.1f}%")
+        print(f"  Flat separation beats helix by {((flat['separation'] / helix['separation']) - 1) * 100:+.1f}%")
 
     if helix["separation"] > hyp["separation"]:
-        print(f"  Helix separation beats plain hyperbolic by {((helix['separation']/hyp['separation'])-1)*100:+.1f}%")
+        print(
+            f"  Helix separation beats plain hyperbolic by {((helix['separation'] / hyp['separation']) - 1) * 100:+.1f}%"
+        )
 
     if helix["recall"] >= flat["recall"]:
         print("  Helix recall matches or beats flat")
     else:
-        print(f"  Helix recall tradeoff: {((flat['recall']-helix['recall'])/max(flat['recall'], 0.01))*100:.0f}% lower")
+        print(
+            f"  Helix recall tradeoff: {((flat['recall'] - helix['recall']) / max(flat['recall'], 0.01)) * 100:.0f}% lower"
+        )
 
     # Key: does adversarial text end up FARTHER from center in hyperbolic?
     if helix["adv_radius"] > helix["tech_radius"]:

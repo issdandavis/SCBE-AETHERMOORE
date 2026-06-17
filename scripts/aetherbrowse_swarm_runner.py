@@ -526,8 +526,8 @@ def main() -> None:
         active_page_locks.add(lock_id)
 
     def run_one(i: int, job: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-        job_id = _sid(str(job.get("job_id", f"job-{i+1:03d}")))
-        aid = str(job.get("agent_id", f"agent-{i+1}"))
+        job_id = _sid(str(job.get("job_id", f"job-{i + 1:03d}")))
+        aid = str(job.get("agent_id", f"agent-{i + 1}"))
         sid = str(job.get("session_id", f"{aid}-session"))
         mission_id = _mission_id(job, run_id)
         worker_id = _worker_id(job, aid)
@@ -542,7 +542,7 @@ def main() -> None:
             "lease": lease,
             "source": job.get("source", "swarm"),
             "workflow_id": job.get("workflow_id", "swarm-run"),
-            "run_id": job.get("run_id", f"run-{int(time.time())}-{i+1}"),
+            "run_id": job.get("run_id", f"run-{int(time.time())}-{i + 1}"),
             "dry_run": bool(job.get("dry_run", False)),
         }
         pqc_result = _pqc_audit(job, payload, tier)
@@ -555,7 +555,7 @@ def main() -> None:
             "lease": lease,
             "source": job.get("source", "swarm"),
             "workflow_id": job.get("workflow_id", "swarm-run"),
-            "run_id": job.get("run_id", f"run-{run_id}-{i+1}"),
+            "run_id": job.get("run_id", f"run-{run_id}-{i + 1}"),
             "dry_run": bool(job.get("dry_run", False)),
         }
         pqc_result = _pqc_audit(job, payload_base, tier)
@@ -752,7 +752,7 @@ def main() -> None:
                 "antivirus": antivirus_report,
             }
             print(
-                f"[job {idx+1}] job_id={out['job_id']} decision={decision} "
+                f"[job {idx + 1}] job_id={out['job_id']} decision={decision} "
                 f"score={v['verification_score']} elapsed_ms={out['elapsed_ms']}"
             )
 

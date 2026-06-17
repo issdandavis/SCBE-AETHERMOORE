@@ -605,7 +605,7 @@ def demo():
     )
 
     print(f"    Start: {start_light} -> End: {end_light}")
-    print(f"    Points: 10, Duration: {len(samples_light)/SAMPLE_RATE:.2f}s")
+    print(f"    Points: 10, Duration: {len(samples_light) / SAMPLE_RATE:.2f}s")
     print(f"    Frequencies: {[f'{i.frequency:.0f}Hz' for i in intents_light[:5]]}...")
     print(f"    Polarity: {intents_light[0].polarity} -> {intents_light[-1].polarity}")
 
@@ -629,7 +629,7 @@ def demo():
     )
 
     print(f"    Start: {start_shadow} -> End: {end_shadow}")
-    print(f"    Points: 15, Duration: {len(samples_shadow)/SAMPLE_RATE:.2f}s")
+    print(f"    Points: 15, Duration: {len(samples_shadow) / SAMPLE_RATE:.2f}s")
     print(f"    Frequencies: {[f'{i.frequency:.0f}Hz' for i in intents_shadow[:5]]}...")
     print(f"    Polarity: {intents_shadow[0].polarity} -> {intents_shadow[-1].polarity}")
 
@@ -652,7 +652,7 @@ def demo():
 
     print(f"    Start (light): {start_cross}")
     print(f"    End (shadow):  {end_cross}")
-    print(f"    Points: 25, Duration: {len(samples_cross)/SAMPLE_RATE:.2f}s")
+    print(f"    Points: 25, Duration: {len(samples_cross) / SAMPLE_RATE:.2f}s")
 
     # Show frequency progression
     freqs = [i.frequency for i in intents_cross]

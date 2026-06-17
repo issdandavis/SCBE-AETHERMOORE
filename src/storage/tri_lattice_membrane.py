@@ -337,13 +337,13 @@ class TriLatticeMembrane:
             self._feedback_count += 1
 
             if target == "lattice25d" and self._try_lattice25d(record, index + hop + 1000):
-                record.accepted_by = f"lattice25d_feedback_{hop+1}"
+                record.accepted_by = f"lattice25d_feedback_{hop + 1}"
                 self._lattice25d_count += 1
                 self._records[record.record_id] = record
                 return record
 
             if target == "quasicrystal" and self._try_quasicrystal(record):
-                record.accepted_by = f"quasicrystal_feedback_{hop+1}"
+                record.accepted_by = f"quasicrystal_feedback_{hop + 1}"
                 self._qc_count += 1
                 self._records[record.record_id] = record
                 return record

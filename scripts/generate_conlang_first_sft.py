@@ -283,7 +283,7 @@ def generate_grammar_lessons() -> list:
             f"This is not metaphor — in the Sacred Tongue lattice, {full_name} literally "
             "occupies this frequency band.\n\n"
             "**Practice phrase:** Say these five words aloud:\n"
-            + "\n".join(f"  {i+1}. `{spec.prefixes[i*3]}'{spec.suffixes[i*2]}`" for i in range(5))
+            + "\n".join(f"  {i + 1}. `{spec.prefixes[i * 3]}'{spec.suffixes[i * 2]}`" for i in range(5))
         )
 
         records.append(

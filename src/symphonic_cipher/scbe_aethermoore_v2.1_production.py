@@ -596,7 +596,7 @@ def demo():
     print(f"    Tokens: {tokens}")
     signal = encode_message(token_ids, secret_key)
     print(f"    Audio signal length: {len(signal)} samples")
-    print(f"    Duration: {len(signal)/SAMPLE_RATE:.2f}s")
+    print(f"    Duration: {len(signal) / SAMPLE_RATE:.2f}s")
 
     # Resonance refractoring
     print("\n[5] Resonance Refractoring...")

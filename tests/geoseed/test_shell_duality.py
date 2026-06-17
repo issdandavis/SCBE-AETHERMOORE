@@ -125,7 +125,7 @@ def test_angles_monotone_increasing(dual):
     """Shell angle grows outward as curvature dominates."""
     angles = [math.degrees(dual.relation_angle(k)) for k in range(1, 7)]
     for i in range(1, 6):
-        assert angles[i] > angles[i - 1], f"angle not increasing at k={i+1}: {angles[i]:.2f} <= {angles[i-1]:.2f}"
+        assert angles[i] > angles[i - 1], f"angle not increasing at k={i + 1}: {angles[i]:.2f} <= {angles[i - 1]:.2f}"
 
 
 def test_angles_approach_90(dual):
@@ -238,7 +238,7 @@ def test_field_all_outer_shells_curv_dominant(field_obj):
     states = field_obj.states()
     for i in range(1, 6):
         bind, curv = states[i]
-        assert curv > bind, f"Shell {i+1} not curv-dominant: bind={bind}, curv={curv}"
+        assert curv > bind, f"Shell {i + 1} not curv-dominant: bind={bind}, curv={curv}"
 
 
 def test_field_to_dict(field_obj, rydberg):
@@ -325,7 +325,7 @@ def test_rel_compton_phi_scaling(rel, rydberg):
     """Each successive Compton shell is 1/φ of the previous."""
     for k in range(1, 6):
         ratio = rel.compton_ev(k) / rel.compton_ev(k + 1)
-        assert abs(ratio - PHI) < 1e-9, f"Compton k={k}→{k+1} ratio {ratio} ≠ φ"
+        assert abs(ratio - PHI) < 1e-9, f"Compton k={k}→{k + 1} ratio {ratio} ≠ φ"
 
 
 def test_rel_coupling_formula(rel):

@@ -62,9 +62,9 @@ class TestFullCorpusBenchmark:
         out = tmp_path / "adversarial_benchmark.json"
         out.write_text(json.dumps(report, indent=2))
 
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("  SCBE ADVERSARIAL BENCHMARK")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(
             f"  Detection: {attack_result.detection_rate:.1%}"
             f" ({attack_result.detected_count}/{attack_result.total_attacks})"

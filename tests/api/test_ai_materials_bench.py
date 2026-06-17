@@ -136,11 +136,14 @@ def test_concept_report_is_a_sellable_deliverable() -> None:
     assert result["report_len"] > 600  # a substantive document
 
 
-def test_ai_materials_bench_page_contains_visualizer() -> None:
+def test_ai_materials_bench_page_runs_in_browser() -> None:
     page = (REPO_ROOT / "docs" / "ai-materials-bench.html").read_text(encoding="utf-8")
 
-    assert "Fiber/tube stack visualizer with real math" in page
-    assert "<canvas" in page
-    assert "magneto-optic composite tube sleeve" in page
-    assert "/api/agent/ai-materials-bench" in page
-    assert "Download concept report" in page
+    assert "concept report" in page.lower()  # the value proposition
+    assert "<canvas" in page  # the visualizer
+    assert "magneto-optic composite tube sleeve" in page  # the architecture
+    assert "Download concept report" in page  # the exportable deliverable
+    assert "computeLocal" in page  # self-contained in-browser engine
+    assert "No signup, no server" in page  # the promise the hero makes
+    # The flagship demo must NOT depend on a backend (works on static GitHub Pages).
+    assert "/api/agent/ai-materials-bench" not in page

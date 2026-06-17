@@ -153,7 +153,7 @@ def main() -> None:
 
     # Assign IDs
     for i, record in enumerate(all_records):
-        record["id"] = f"sft-gen-{i+1:04d}"
+        record["id"] = f"sft-gen-{i + 1:04d}"
 
     # Write output
     output_path = Path(args.output)

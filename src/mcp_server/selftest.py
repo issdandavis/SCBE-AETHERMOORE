@@ -19,9 +19,9 @@ from src.mcp_server.semantic_mesh import (
 
 
 def selftest():
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("  SCBE Semantic Mesh — Self-Test")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     passed = 0
     failed = 0
@@ -190,9 +190,9 @@ def selftest():
     check("MCP stats succeeds", "content" in resp["result"])
 
     # ── Summary ───────────────────────────────────────────────────
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  Results: {passed} passed, {failed} failed")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     return failed == 0
 

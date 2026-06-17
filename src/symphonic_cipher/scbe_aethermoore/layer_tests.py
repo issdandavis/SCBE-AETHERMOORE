@@ -538,7 +538,7 @@ def test_cpse_physics() -> List[LayerTestResult]:
             input_summary="P_target, load=0 vs load=1",
             output_summary=f"jitter_low={diff_low:.4f}, jitter_high={diff_high:.4f}",
             expected="Higher load → more jitter",
-            actual=f"Ratio = {diff_high/(diff_low+1e-10):.2f}x",
+            actual=f"Ratio = {diff_high / (diff_low + 1e-10):.2f}x",
             drift_metrics={"jitter_ratio": diff_high / (diff_low + 1e-10)},
         )
     )
@@ -701,7 +701,7 @@ def test_L5_hyperbolic_distance() -> List[LayerTestResult]:
             test_name="triangle_inequality",
             passed=passed,
             input_summary="u,v,w in ball",
-            output_summary=f"d(u,v)={d_uv:.6f}, d(u,w)+d(w,v)={d_uw+d_wv:.6f}",
+            output_summary=f"d(u,v)={d_uv:.6f}, d(u,w)+d(w,v)={d_uw + d_wv:.6f}",
             expected="d(u,v) <= d(u,w) + d(w,v)",
             actual=f"diff = {d_uv - (d_uw + d_wv):.10f}",
             drift_metrics={"triangle_slack": d_uw + d_wv - d_uv},
@@ -906,7 +906,7 @@ def test_L8_breathing_transform() -> List[LayerTestResult]:
             input_summary=f"||u||={norm_before:.6f}, b=0.5",
             output_summary=f"||B(u)||={norm_after:.6f}",
             expected="||B_0.5(u)|| < ||u||",
-            actual=f"ratio = {norm_after/norm_before:.6f}",
+            actual=f"ratio = {norm_after / norm_before:.6f}",
             drift_metrics={"contraction_ratio": norm_after / norm_before},
         )
     )
@@ -926,7 +926,7 @@ def test_L8_breathing_transform() -> List[LayerTestResult]:
             input_summary=f"||u||={norm_before:.6f}, b=1.5",
             output_summary=f"||B(u)||={norm_after:.6f}",
             expected="||u|| < ||B_1.5(u)|| < 1",
-            actual=f"ratio = {norm_after/norm_before:.6f}",
+            actual=f"ratio = {norm_after / norm_before:.6f}",
             drift_metrics={"expansion_ratio": norm_after / norm_before},
         )
     )
@@ -1135,7 +1135,7 @@ def test_L11_triadic_distance() -> List[LayerTestResult]:
             input_summary="Compare d1=1 vs d2=1",
             output_summary=f"d_tri(1,0,0)={d3a:.6f}, d_tri(0,1,0)={d3b:.6f}",
             expected="d_tri(1,0,0) > d_tri(0,1,0) (λ1 > λ2)",
-            actual=f"ratio = {d3a/d3b:.4f}",
+            actual=f"ratio = {d3a / d3b:.4f}",
             drift_metrics={"weight_ratio": d3a / d3b},
         )
     )
@@ -1199,7 +1199,7 @@ def test_L12_harmonic_scaling() -> List[LayerTestResult]:
             input_summary="d=0,1,2,3",
             output_summary=f"H0={H0:.2f}, H1={H1:.2f}, H2={H2:.2f}, H3={H3:.2f}",
             expected="H(3) > H(2) > H(1) > H(0)",
-            actual=f"H3/H2 = {H3/H2:.2f}",
+            actual=f"H3/H2 = {H3 / H2:.2f}",
             drift_metrics={"growth_ratio": H3 / H2},
         )
     )
@@ -1495,7 +1495,7 @@ def test_intersections() -> List[LayerTestResult]:
             input_summary=f"d*(u)={d_before:.4f}, b=1.1",
             output_summary=f"d*(B(u))={d_after:.4f}",
             expected="d*(B_1.1(u)) > d*(u)",
-            actual=f"ratio = {d_after/d_before:.4f}",
+            actual=f"ratio = {d_after / d_before:.4f}",
             drift_metrics={"distance_ratio": d_after / d_before},
         )
     )
@@ -1696,7 +1696,7 @@ def run_all_tests(verbose: bool = True) -> TestSuiteResult:
 
     if verbose:
         print("\n" + "=" * 80)
-        print(f"TOTAL: {suite.passed}/{suite.total} passed ({100*suite.passed/suite.total:.1f}%)")
+        print(f"TOTAL: {suite.passed}/{suite.total} passed ({100 * suite.passed / suite.total:.1f}%)")
         if suite.failed > 0:
             print(f"FAILED: {suite.failed} tests")
         print("=" * 80)

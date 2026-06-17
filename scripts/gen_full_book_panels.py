@@ -446,13 +446,15 @@ def generate_panels(chapter_data, pipe=None):
     for i, p in enumerate(chapter_data["panels"]):
         out_path = out_dir / f"{p['id']}.png"
         if out_path.exists():
-            print(f"  [{i+1}/{len(chapter_data['panels'])}] {p['id']} — exists, skipping")
+            print(f"  [{i + 1}/{len(chapter_data['panels'])}] {p['id']} — exists, skipping")
             results.append({"id": p["id"], "path": str(out_path), "skipped": True})
             continue
 
         t0 = time.time()
         print(
-            f"  [{i+1}/{len(chapter_data['panels'])}] {p['id']} ({p['w']}x{p['h']}) {p['type']}...", end=" ", flush=True
+            f"  [{i + 1}/{len(chapter_data['panels'])}] {p['id']} ({p['w']}x{p['h']}) {p['type']}...",
+            end=" ",
+            flush=True,
         )
 
         image = pipe(
@@ -606,17 +608,17 @@ def main():
 
     t0_total = time.time()
     for ch_id, chapter_data in all_prompts.items():
-        print(f"\n{'='*50}")
+        print(f"\n{'=' * 50}")
         print(f"  {ch_id}: {chapter_data['title'][:50]}")
         print(f"  {chapter_data['panel_count']} panels")
-        print(f"{'='*50}")
+        print(f"{'=' * 50}")
         generate_panels(chapter_data, pipe)
 
     elapsed_total = time.time() - t0_total
-    print(f"\n{'='*50}")
-    print(f"  COMPLETE: {total_panels} panels in {elapsed_total:.0f}s ({elapsed_total/60:.1f}m)")
+    print(f"\n{'=' * 50}")
+    print(f"  COMPLETE: {total_panels} panels in {elapsed_total:.0f}s ({elapsed_total / 60:.1f}m)")
     print(f"  Output: {OUT_BASE}")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
 
 
 if __name__ == "__main__":

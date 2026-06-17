@@ -403,9 +403,9 @@ def print_summary(
     children = wrapper.get("childContinuityBag", [])
 
     W = 62
-    print(f"\n{'='*W}")
+    print(f"\n{'=' * W}")
     print(f"Application : {wrapper.get('applicationNumberText')}")
-    print(f"Title       : {meta.get('inventionTitle', '—')[:W-14]}")
+    print(f"Title       : {meta.get('inventionTitle', '—')[:W - 14]}")
     print(f"Status      : [{meta.get('applicationStatusCode')}] {meta.get('applicationStatusDescriptionText')}")
     print(f"Status date : {meta.get('applicationStatusDate')}")
     print(f"Examiner    : {meta.get('examinerNameText', '—')}  (AU {meta.get('groupArtUnitNumber', '—')})")
@@ -556,7 +556,7 @@ def print_summary(
         else:
             print("\nNo changes since last check.")
 
-    print(f"{'='*W}\n")
+    print(f"{'=' * W}\n")
 
 
 # ---------------------------------------------------------------------------

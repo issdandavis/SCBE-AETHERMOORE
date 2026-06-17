@@ -1656,16 +1656,16 @@ def main():
     print(f"DPO: {dpo_path} ({len(dpo_records)} records)")
 
     # Stats summary
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("SNIPER CRYSTAL GENERATOR v1.0")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Base crystals:       {len(crystals)}")
     print(f"SFT records:         {len(all_sft)}")
     print(f"DPO pairs:           {len(dpo_records)}")
     print(f"Regimes:             {len(regime_counts)}")
     print(f"Failure types:       {len(fail_counts)}")
     print(f"Difficulty spread:   {dict(sorted(diff_counts.items()))}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
 
 if __name__ == "__main__":

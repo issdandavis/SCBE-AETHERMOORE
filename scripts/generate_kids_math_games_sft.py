@@ -260,7 +260,7 @@ def gen_chess_territory(count: int) -> List[GameRecord]:
                 assistant="A rook controls its entire row (4 squares) and entire column (4 squares). "
                 "Subtract 1 because its own square was counted twice.\n"
                 f"Controlled squares: 4 + 4 - 1 = {rook_control}.\n"
-                f"That's {rook_control}/16 = {rook_control/16*100:.1f}% of the board from ONE piece!",
+                f"That's {rook_control}/16 = {rook_control / 16 * 100:.1f}% of the board from ONE piece!",
                 difficulty="easy",
                 concept="coverage",
                 tongue=tongue,
@@ -295,11 +295,11 @@ def gen_chess_territory(count: int) -> List[GameRecord]:
                 user=f"Two knights on a 5x5 grid: Knight A at {k1}, Knight B at {k2}. "
                 "How many total squares are controlled? Any overlap?",
                 assistant=f"Knight A at {k1} controls {len(k1_squares)} squares "
-                f"(itself + {len(k1_squares)-1} L-shaped moves that land on the board).\n"
+                f"(itself + {len(k1_squares) - 1} L-shaped moves that land on the board).\n"
                 f"Knight B at {k2} controls {len(k2_squares)} squares.\n"
                 f"Overlap: {overlap} square{'s' if overlap != 1 else ''} controlled by BOTH.\n"
                 f"Total unique controlled: {len(k1_squares)} + {len(k2_squares)} - {overlap} = {total}.\n"
-                f"Coverage: {total}/25 = {total/25*100:.0f}% of the board.",
+                f"Coverage: {total}/25 = {total / 25 * 100:.0f}% of the board.",
                 difficulty="medium",
                 concept="coverage",
                 tongue=tongue,
@@ -432,9 +432,9 @@ def gen_resource_race(count: int) -> List[GameRecord]:
                 game="resource-race",
                 system=sys_msg,
                 user=f"{budget_h} coins. Three players. Each player's coins have DIMINISHING returns:\n"
-                f"Player A: 1st coin = {base_values[0]} pts, 2nd = {base_values[0]-1}, 3rd = {base_values[0]-2}, ...\n"
-                f"Player B: 1st = {base_values[1]}, 2nd = {base_values[1]-1}, ...\n"
-                f"Player C: 1st = {base_values[2]}, 2nd = {base_values[2]-1}, ...\n"
+                f"Player A: 1st coin = {base_values[0]} pts, 2nd = {base_values[0] - 1}, 3rd = {base_values[0] - 2}, ...\n"
+                f"Player B: 1st = {base_values[1]}, 2nd = {base_values[1] - 1}, ...\n"
+                f"Player C: 1st = {base_values[2]}, 2nd = {base_values[2] - 1}, ...\n"
                 "Best allocation?",
                 assistant="With diminishing returns, spreading is BETTER than concentrating!\n"
                 f"All to Player A: {greedy_all} points (later coins are worth 0 or 1).\n"
@@ -523,12 +523,12 @@ def gen_color_clash(count: int) -> List[GameRecord]:
                 game="color-clash",
                 system=sys_msg,
                 user=f"{n} players in a circle: A—B—C—D—E—A. Each connected to their neighbors. "
-                f"How many colors? What if it was {n+1} players in a circle?",
+                f"How many colors? What if it was {n + 1} players in a circle?",
                 assistant=f"Odd cycle ({n} players): needs 3 colors!\n"
                 "Try 2: A=red, B=blue, C=red, D=blue, E=? "
                 "E is next to D (blue) AND A (red) — can't use either. Need a 3rd color.\n"
                 f"Answer: 3 colors for {n}-cycle.\n\n"
-                f"Even cycle ({n+1} players): only 2 colors!\n"
+                f"Even cycle ({n + 1} players): only 2 colors!\n"
                 "A=red, B=blue, C=red, D=blue, E=red, F=blue — it wraps perfectly.\n\n"
                 "Rule: Odd cycles need 3 colors, even cycles need 2. "
                 "Parity strikes again — just like tile-swap permutations!",
@@ -636,7 +636,7 @@ def gen_nim_strategy(count: int) -> List[GameRecord]:
                     "Non-zero — you're winning!\n"
                     "Find a pile to reduce so new Nim-sum = 0:\n"
                     + "\n".join(
-                        f"  Pile {i+1} ({[p1h, p2h, p3h][i]}): "
+                        f"  Pile {i + 1} ({[p1h, p2h, p3h][i]}): "
                         f"target = {[p1h, p2h, p3h][i]} XOR {nim_sum_3} = {[p1h, p2h, p3h][i] ^ nim_sum_3}"
                         + (
                             f" ← VALID (reduce to {[p1h, p2h, p3h][i] ^ nim_sum_3})"
@@ -899,9 +899,9 @@ def gen_gravity_puzzles(count: int) -> List[GameRecord]:
                 f"{m1} × {v1} = ({m1} + {m2}) × v_final\n"
                 f"{m1 * v1} = {m1 + m2} × v_final\n"
                 f"v_final = {m1 * v1}/{m1 + m2} = {v_final:.2f} m/s\n\n"
-                f"Energy lost: KE_before = ½×{m1}×{v1}² = {0.5*m1*v1**2:.1f} J\n"
-                f"KE_after = ½×{m1+m2}×{v_final:.2f}² = {0.5*(m1+m2)*v_final**2:.1f} J\n"
-                f"Lost to heat/deformation: {0.5*m1*v1**2 - 0.5*(m1+m2)*v_final**2:.1f} J",
+                f"Energy lost: KE_before = ½×{m1}×{v1}² = {0.5 * m1 * v1**2:.1f} J\n"
+                f"KE_after = ½×{m1 + m2}×{v_final:.2f}² = {0.5 * (m1 + m2) * v_final**2:.1f} J\n"
+                f"Lost to heat/deformation: {0.5 * m1 * v1**2 - 0.5 * (m1 + m2) * v_final**2:.1f} J",
                 difficulty="medium",
                 concept="physics",
                 tongue=tongue,
@@ -926,8 +926,8 @@ def gen_gravity_puzzles(count: int) -> List[GameRecord]:
                 assistant="v_escape = √(2GM/R)\n"
                 f"= √(2 × 6.674×10⁻¹¹ × {planet_mass_kg:.2e} / {planet_radius:.3e})\n"
                 f"= √({2 * G * planet_mass_kg / planet_radius:.4e})\n"
-                f"= {v_escape:.0f} m/s = {v_escape/1000:.1f} km/s\n\n"
-                f"That's {v_escape/343:.0f}x the speed of sound!\n"
+                f"= {v_escape:.0f} m/s = {v_escape / 1000:.1f} km/s\n\n"
+                f"That's {v_escape / 343:.0f}x the speed of sound!\n"
                 "Below this speed, what goes up MUST come down. "
                 f"Above it, goodbye {planet_name}.\n"
                 "This is why the SCBE Poincare ball has a boundary — "
@@ -1021,7 +1021,7 @@ def gen_pattern_lock(count: int) -> List[GameRecord]:
                 f"Starting from {a}, {b}.\n"
                 f"Next two: {fib[6]}, {fib[7]}\n\n"
                 "Ratio of consecutive terms:\n"
-                + "\n".join(f"  {fib[i+1]}/{fib[i]} = {fib[i+1]/fib[i]:.4f}" for i in range(len(fib) - 1))
+                + "\n".join(f"  {fib[i + 1]}/{fib[i]} = {fib[i + 1] / fib[i]:.4f}" for i in range(len(fib) - 1))
                 + f"\n\nConverges to φ (phi) = {PHI:.6f} — the golden ratio!\n"
                 f"Latest ratio here is {ratio:.4f}.\n"
                 "No matter what you start with (except 0,0), the ratio ALWAYS converges to phi. "
@@ -1103,7 +1103,7 @@ def gen_multi_objective(count: int) -> List[GameRecord]:
                 "If each phase needs ≥1 token in its stat:\n"
                 "Optimal: Attack=1, Defense=10, Speed=1 → 1×2 + 10×3 + 1×1 = 33.\n"
                 "vs Even: 4,4,4 → 4×2 + 4×3 + 4×1 = 8+12+4 = 24.\n\n"
-                f"The weighted allocation beats even split by {33-24} points. "
+                f"The weighted allocation beats even split by {33 - 24} points. "
                 "Invest where the multiplier is highest!",
                 difficulty="medium",
                 concept="pareto",
@@ -1216,11 +1216,11 @@ def main():
 
     # Stats
     file_size = OUTPUT_PATH.stat().st_size
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("GENERATION COMPLETE")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     print(f"  Total records:  {len(all_records):>8,}")
-    print(f"  File size:      {file_size:>8,} bytes ({file_size/1024/1024:.1f} MB)")
+    print(f"  File size:      {file_size:>8,} bytes ({file_size / 1024 / 1024:.1f} MB)")
 
     # Distribution
     game_counts = {}
@@ -1251,21 +1251,21 @@ def main():
 
     print("\n  Game distribution:")
     for g, c in sorted(game_counts.items()):
-        print(f"    {g:30s} {c:5d} ({c/len(all_records)*100:5.1f}%)")
+        print(f"    {g:30s} {c:5d} ({c / len(all_records) * 100:5.1f}%)")
 
     print("\n  Math type distribution:")
     for m, c in sorted(math_counts.items()):
-        print(f"    {m:30s} {c:5d} ({c/len(all_records)*100:5.1f}%)")
+        print(f"    {m:30s} {c:5d} ({c / len(all_records) * 100:5.1f}%)")
 
     print("\n  Tongue distribution:")
     for t in TONGUES:
         c = tongue_counts.get(t, 0)
-        print(f"    {t} ({TONGUE_NAMES[t]:15s}) {c:5d} ({c/len(all_records)*100:5.1f}%)")
+        print(f"    {t} ({TONGUE_NAMES[t]:15s}) {c:5d} ({c / len(all_records) * 100:5.1f}%)")
 
     print("\n  Difficulty distribution:")
     for d in DIFFICULTIES:
         c = diff_counts.get(d, 0)
-        print(f"    {d:10s} {c:5d} ({c/len(all_records)*100:5.1f}%)")
+        print(f"    {d:10s} {c:5d} ({c / len(all_records) * 100:5.1f}%)")
 
 
 if __name__ == "__main__":

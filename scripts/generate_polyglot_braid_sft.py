@@ -335,7 +335,7 @@ def main():
     # Per-concept records
     for i, result in enumerate(results):
         concept = result.concept
-        print(f'  [{i+1}/{len(results)}] Generating records for "{concept.concept_id}"...')
+        print(f'  [{i + 1}/{len(results)}] Generating records for "{concept.concept_id}"...')
         records = generate_concept_analysis_records(result)
         all_records.extend(records)
 

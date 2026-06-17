@@ -371,7 +371,7 @@ def run_flux_analysis():
 
         print(f"\n  Avg flux — Technical: {avg_tech:.4f}  Adversarial: {avg_adv:.4f}  Story: {avg_story:.4f}")
         if avg_adv > avg_tech:
-            print(f"  >>> Adversarial inputs have {avg_adv/avg_tech:.1f}x more flux than technical")
+            print(f"  >>> Adversarial inputs have {avg_adv / avg_tech:.1f}x more flux than technical")
         print()
 
         all_results[method] = {

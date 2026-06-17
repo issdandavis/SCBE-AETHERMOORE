@@ -565,7 +565,7 @@ def print_report(
 
     print(f"\n  {'GROUNDED CONCEPTS':^86}")
     print(f"  {'Label':<30} {'Domain':<18} {'MeanSim':>8} {'Var':>8} {'MaxDiv':>8} {'Score':>8}")
-    print(f"  {'-'*30} {'-'*18} {'-'*8} {'-'*8} {'-'*8} {'-'*8}")
+    print(f"  {'-' * 30} {'-' * 18} {'-' * 8} {'-' * 8} {'-' * 8} {'-' * 8}")
     for r in grounded:
         print(
             f"  {r.label:<30} {r.domain:<18} {r.mean_similarity:>8.4f} "
@@ -574,7 +574,7 @@ def print_report(
 
     print(f"\n  {'HALLUCINATED CONCEPTS':^86}")
     print(f"  {'Label':<30} {'Domain':<18} {'MeanSim':>8} {'Var':>8} {'MaxDiv':>8} {'Score':>8}")
-    print(f"  {'-'*30} {'-'*18} {'-'*8} {'-'*8} {'-'*8} {'-'*8}")
+    print(f"  {'-' * 30} {'-' * 18} {'-' * 8} {'-' * 8} {'-' * 8} {'-' * 8}")
     for r in hallucinated:
         print(
             f"  {r.label:<30} {r.domain:<18} {r.mean_similarity:>8.4f} "

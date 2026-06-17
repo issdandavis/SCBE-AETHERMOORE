@@ -247,7 +247,7 @@ def main():
         info = analyze_voice(kokoro_out)
         print(
             f"  kokoro_baseline.wav: {info.get('duration', 0):.1f}s, "
-            f"{info.get('size_kb', 0)}KB ({time.time()-t0:.1f}s)"
+            f"{info.get('size_kb', 0)}KB ({time.time() - t0:.1f}s)"
         )
     else:
         print("  FAILED — Kokoro model files may not be present")
@@ -262,7 +262,7 @@ def main():
         ok = attempt_hf_voice_clone(ref_wavs[0], test_text, hf_out, hf_token)
         if ok:
             info = analyze_voice(hf_out)
-            print(f"  hf_voice_clone.wav: {info.get('duration', 0):.1f}s ({time.time()-t0:.1f}s)")
+            print(f"  hf_voice_clone.wav: {info.get('duration', 0):.1f}s ({time.time() - t0:.1f}s)")
         else:
             print("  XTTS API not available — will need local setup or ElevenLabs")
     else:
@@ -291,7 +291,7 @@ def main():
         print(f"    {w.name} — {info.get('duration', 0):.1f}s")
 
     total_ref = sum(analyze_voice(w).get("duration", 0) for w in ref_wavs[:2])
-    print(f"\n  Total reference: {total_ref:.0f}s ({total_ref/60:.1f} minutes)")
+    print(f"\n  Total reference: {total_ref:.0f}s ({total_ref / 60:.1f} minutes)")
 
     print(f"\n  Output files in: {VOICE_DIR}")
     for f in sorted(VOICE_DIR.glob("*.wav")):
@@ -302,13 +302,13 @@ def main():
     if total_ref >= 120:
         print(f"    You have {total_ref:.0f}s — enough for F5-TTS and XTTS basic clone")
     if total_ref < 360:
-        print(f"    Record {max(0, 360-total_ref):.0f}s more for best XTTS quality")
+        print(f"    Record {max(0, 360 - total_ref):.0f}s more for best XTTS quality")
     print(f"    ElevenLabs Instant clone works NOW with your {total_ref:.0f}s")
     print("    For audiobook chapters, use the combined_reference.wav as the voice seed")
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("VOICE CLONE TEST COMPLETE")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
 
 if __name__ == "__main__":

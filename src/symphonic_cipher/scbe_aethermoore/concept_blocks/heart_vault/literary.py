@@ -297,7 +297,7 @@ def detect_literary_devices(text: str) -> List[LiteraryHit]:
         if word.rstrip(".,!?;:") in PERSONIFICATION_VERBS:
             # Check if preceding word is an inanimate subject
             if i > 0 and words[i - 1].rstrip(".,!?;:") in PERSONIFICATION_SUBJECTS:
-                span = f"{words[i-1]} {word}"
+                span = f"{words[i - 1]} {word}"
                 hits.append(
                     LiteraryHit(
                         device=LiteraryDevice.PERSONIFICATION,

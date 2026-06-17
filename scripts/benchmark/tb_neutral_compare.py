@@ -361,9 +361,9 @@ def _print_governance_report(report: dict[str, Any]) -> None:
     s = report["summary"]
     blocked = s["deny"]
     executed = s["allow"] + s["quarantine"]
-    print(f"\n{'='*68}")
+    print(f"\n{'=' * 68}")
     print(f"SCBE Governance Pre-Screen — {report['task_count']} neutral terminal-bench tasks")
-    print(f"{'='*68}")
+    print(f"{'=' * 68}")
     print("\n  Tier breakdown (H = harmonic wall score):")
     print(f"    ALLOW      {s['allow']:>3}  — {_TIER_ACTION['ALLOW']}")
     print(f"    QUARANTINE {s['quarantine']:>3}  — {_TIER_ACTION['QUARANTINE']}")
@@ -374,7 +374,7 @@ def _print_governance_report(report: dict[str, Any]) -> None:
     print("\n  Interpretation: QUARANTINE is NOT a rejection. The agent executes the")
     print("  command and records a governance receipt. DENY is the only blocking tier.")
     print(f"\n{'Task':<38} {'Tier':<12} {'Action'}")
-    print(f"{'-'*68}")
+    print(f"{'-' * 68}")
     for t in report["tasks"]:
         action = _TIER_ACTION[t["overall_tier"]]
         print(f"  {t['task_id']:<36} {t['overall_tier']:<12} {action}")
@@ -384,9 +384,9 @@ def _print_governance_report(report: dict[str, Any]) -> None:
 def _print_run_report(report: dict[str, Any]) -> None:
     o = report["oracle"]
     s = report["scbe"]
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Terminal-Bench Run — {report['task_count']} neutral tasks")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"  Oracle: {o['passed']}/{o['total']} passed")
     print(f"  SCBE:   {s['passed']}/{s['total']} passed")
     print(f"  Delta:  {report['delta_pass']:+d}")

@@ -257,7 +257,7 @@ def gen_geometry() -> list[dict]:
             rec(
                 MATH_SYSTEM,
                 f"A right triangle has legs {a} and {b}. Find the hypotenuse.",
-                f"c² = a² + b² = {a}² + {b}² = {a*a} + {b*b} = {a*a + b*b}\n" f"c = √{c*c} = {c}",
+                f"c² = a² + b² = {a}² + {b}² = {a * a} + {b * b} = {a * a + b * b}\n" f"c = √{c * c} = {c}",
                 {"topic": "geometry", "subtopic": "pythagorean"},
             )
         )
@@ -697,7 +697,7 @@ def gen_stats() -> list[dict]:
                 rec(
                     MATH_SYSTEM,
                     f"What is the probability of rolling a {target} on a fair 6-sided die?",
-                    f"P({target}) = 1/6 ≈ {1/6:.4f}",
+                    f"P({target}) = 1/6 ≈ {1 / 6:.4f}",
                     {"topic": "statistics", "subtopic": "probability"},
                 )
             )
@@ -930,8 +930,8 @@ def gen_word_problems() -> list[dict]:
             rec(
                 MATH_SYSTEM,
                 f"Mix {v1}L of {c1}% solution with {v2}L of {c2}% solution. " "What is the resulting concentration?",
-                f"Total solute = {c1}%×{v1} + {c2}%×{v2} = {c1*v1/100:.2f} + {c2*v2/100:.2f} = {(c1*v1+c2*v2)/100:.2f}\n"
-                f"Total volume = {v1+v2}L\n"
+                f"Total solute = {c1}%×{v1} + {c2}%×{v2} = {c1 * v1 / 100:.2f} + {c2 * v2 / 100:.2f} = {(c1 * v1 + c2 * v2) / 100:.2f}\n"
+                f"Total volume = {v1 + v2}L\n"
                 f"Concentration = {result_conc:.2f}%",
                 {"topic": "word_problems", "subtopic": "mixtures"},
             )
@@ -1028,7 +1028,7 @@ def gen_trig() -> list[dict]:
                 f"Triangle with sides a={a}, b={b} and included angle C={C_deg}°. Find side c.",
                 "c² = a² + b² - 2ab·cos(C)\n"
                 f"c² = {a}² + {b}² - 2({a})({b})cos({C_deg}°)\n"
-                f"c² = {a*a} + {b*b} - {2*a*b}×{math.cos(C_rad):.4f} = {c_sq:.4f}\n"
+                f"c² = {a * a} + {b * b} - {2 * a * b}×{math.cos(C_rad):.4f} = {c_sq:.4f}\n"
                 f"c = {c:.4f}",
                 {"topic": "trigonometry", "subtopic": "law_of_cosines"},
             )
@@ -1089,7 +1089,7 @@ def main():
     topics = Counter(r["tags"]["topic"] for r in all_records)
     print("\n  Topic distribution:")
     for t, c in sorted(topics.items()):
-        print(f"    {t:<25} {c:>5} ({100*c/len(all_records):.1f}%)")
+        print(f"    {t:<25} {c:>5} ({100 * c / len(all_records):.1f}%)")
 
 
 if __name__ == "__main__":

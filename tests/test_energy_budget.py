@@ -448,10 +448,10 @@ class TestForagingInvariants:
             costs.append(harmonic_cost(coords, centroid))
         # Each axis should give a different cost (due to phi-weighting)
         for i in range(len(costs) - 1):
-            assert costs[i] != costs[i + 1], f"Axes {i} and {i+1} gave same cost"
+            assert costs[i] != costs[i + 1], f"Axes {i} and {i + 1} gave same cost"
         # Higher-indexed axes should cost more (phi^k weighting)
         for i in range(len(costs) - 1):
-            assert costs[i] < costs[i + 1], f"Axis {i} should cost less than {i+1}"
+            assert costs[i] < costs[i + 1], f"Axis {i} should cost less than {i + 1}"
 
     def test_lifespan_bounded_by_budget(self):
         """integral_0^T cost(t) dt <= E_total must hold."""
