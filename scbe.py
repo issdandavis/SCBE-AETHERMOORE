@@ -2415,6 +2415,16 @@ def cmd_forge(args: argparse.Namespace) -> int:
 
     as_json = getattr(args, "json_output", False)
 
+    # --chat: conversational front for messy/plain words -- talk until it's buildable
+    if getattr(args, "chat", False):
+        try:
+            from forge_chat import chat_loop
+        except Exception as exc:  # pragma: no cover - import guard
+            print(f"chat unavailable: {exc}")
+            return 1
+        chat_loop()
+        return 0
+
     # --recipes: show what the Forge has already learned (its build memory)
     if getattr(args, "recipes", False):
         try:
@@ -4963,6 +4973,9 @@ Legacy (backward compat):
     forge_p.add_argument("--village", action="store_true", help="also show the build as a village map (flow view)")
     forge_p.add_argument("--torus", action="store_true", help="also lift the build onto SCBE's 3-torus (topology view)")
     forge_p.add_argument("--recipes", action="store_true", help="show what the Forge has learned (build memory)")
+    forge_p.add_argument(
+        "--chat", action="store_true", help="conversational mode -- talk in plain words until it can build"
+    )
     forge_p.add_argument(
         "--json", dest="json_output", action="store_true", help="machine-readable output (stable key set)"
     )
