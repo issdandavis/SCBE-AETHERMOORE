@@ -3,7 +3,6 @@ import codecs
 
 from scbe import pipeline_quick_score
 
-
 BLOCKING_DECISIONS = {"ESCALATE", "DENY"}
 
 

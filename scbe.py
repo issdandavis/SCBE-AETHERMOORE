@@ -94,50 +94,148 @@ except (AttributeError, OSError):
 
 _CANONICAL_TONGUES: Dict[str, Tuple[List[str], List[str]]] = {
     "KO": (
-        ["sil", "kor", "vel", "zar", "keth", "thul", "nav", "ael",
-         "ra", "med", "gal", "lan", "joy", "good", "nex", "vara"],
-        ["a", "ae", "ei", "ia", "oa", "uu", "eth", "ar",
-         "or", "il", "an", "en", "un", "ir", "oth", "esh"],
+        [
+            "sil",
+            "kor",
+            "vel",
+            "zar",
+            "keth",
+            "thul",
+            "nav",
+            "ael",
+            "ra",
+            "med",
+            "gal",
+            "lan",
+            "joy",
+            "good",
+            "nex",
+            "vara",
+        ],
+        ["a", "ae", "ei", "ia", "oa", "uu", "eth", "ar", "or", "il", "an", "en", "un", "ir", "oth", "esh"],
     ),
     "AV": (
-        ["saina", "talan", "vessa", "maren", "oriel", "serin", "nurel", "lirea",
-         "kiva", "lumen", "calma", "ponte", "verin", "nava", "sela", "tide"],
-        ["a", "e", "i", "o", "u", "y", "la", "re",
-         "na", "sa", "to", "mi", "ve", "ri", "en", "ul"],
+        [
+            "saina",
+            "talan",
+            "vessa",
+            "maren",
+            "oriel",
+            "serin",
+            "nurel",
+            "lirea",
+            "kiva",
+            "lumen",
+            "calma",
+            "ponte",
+            "verin",
+            "nava",
+            "sela",
+            "tide",
+        ],
+        ["a", "e", "i", "o", "u", "y", "la", "re", "na", "sa", "to", "mi", "ve", "ri", "en", "ul"],
     ),
     "RU": (
-        ["khar", "drath", "bront", "vael", "ur", "mem", "krak", "tharn",
-         "groth", "basalt", "rune", "sear", "oath", "gnarl", "rift", "iron"],
-        ["ak", "eth", "ik", "ul", "or", "ar", "um", "on",
-         "ir", "esh", "nul", "vek", "dra", "kh", "va", "th"],
+        [
+            "khar",
+            "drath",
+            "bront",
+            "vael",
+            "ur",
+            "mem",
+            "krak",
+            "tharn",
+            "groth",
+            "basalt",
+            "rune",
+            "sear",
+            "oath",
+            "gnarl",
+            "rift",
+            "iron",
+        ],
+        ["ak", "eth", "ik", "ul", "or", "ar", "um", "on", "ir", "esh", "nul", "vek", "dra", "kh", "va", "th"],
     ),
     "CA": (
-        ["bip", "bop", "klik", "loopa", "ifta", "thena", "elsa", "spira",
-         "rythm", "quirk", "fizz", "gear", "pop", "zip", "mix", "chass"],
-        ["a", "e", "i", "o", "u", "y", "ta", "na",
-         "sa", "ra", "lo", "mi", "ki", "zi", "qwa", "sh"],
+        [
+            "bip",
+            "bop",
+            "klik",
+            "loopa",
+            "ifta",
+            "thena",
+            "elsa",
+            "spira",
+            "rythm",
+            "quirk",
+            "fizz",
+            "gear",
+            "pop",
+            "zip",
+            "mix",
+            "chass",
+        ],
+        ["a", "e", "i", "o", "u", "y", "ta", "na", "sa", "ra", "lo", "mi", "ki", "zi", "qwa", "sh"],
     ),
     "UM": (
-        ["veil", "zhur", "nar", "shul", "math", "hollow", "hush", "thorn",
-         "dusk", "echo", "ink", "wisp", "bind", "ache", "null", "shade"],
-        ["a", "e", "i", "o", "u", "ae", "sh", "th",
-         "ak", "ul", "or", "ir", "en", "on", "vek", "nul"],
+        [
+            "veil",
+            "zhur",
+            "nar",
+            "shul",
+            "math",
+            "hollow",
+            "hush",
+            "thorn",
+            "dusk",
+            "echo",
+            "ink",
+            "wisp",
+            "bind",
+            "ache",
+            "null",
+            "shade",
+        ],
+        ["a", "e", "i", "o", "u", "ae", "sh", "th", "ak", "ul", "or", "ir", "en", "on", "vek", "nul"],
     ),
     "DR": (
-        ["anvil", "tharn", "mek", "grond", "draum", "ektal", "temper", "forge",
-         "stone", "steam", "oath", "seal", "frame", "pillar", "rivet", "ember"],
-        ["a", "e", "i", "o", "u", "ae", "rak", "mek",
-         "tharn", "grond", "vek", "ul", "or", "ar", "en", "on"],
+        [
+            "anvil",
+            "tharn",
+            "mek",
+            "grond",
+            "draum",
+            "ektal",
+            "temper",
+            "forge",
+            "stone",
+            "steam",
+            "oath",
+            "seal",
+            "frame",
+            "pillar",
+            "rivet",
+            "ember",
+        ],
+        ["a", "e", "i", "o", "u", "ae", "rak", "mek", "tharn", "grond", "vek", "ul", "or", "ar", "en", "on"],
     ),
 }
 
 TONGUE_NAMES = {
-    "KO": "Kor'aelin", "AV": "Avali", "RU": "Runethic",
-    "CA": "Cassisivadan", "UM": "Umbroth", "DR": "Draumric",
+    "KO": "Kor'aelin",
+    "AV": "Avali",
+    "RU": "Runethic",
+    "CA": "Cassisivadan",
+    "UM": "Umbroth",
+    "DR": "Draumric",
 }
 TONGUE_DOMAINS = {
-    "KO": "nonce/flow/intent", "AV": "aad/header/metadata", "RU": "salt/binding",
-    "CA": "ciphertext/bitcraft", "UM": "redaction/veil", "DR": "tag/structure",
+    "KO": "nonce/flow/intent",
+    "AV": "aad/header/metadata",
+    "RU": "salt/binding",
+    "CA": "ciphertext/bitcraft",
+    "UM": "redaction/veil",
+    "DR": "tag/structure",
 }
 TONGUE_ALIASES = {
     "ko": "KO",
@@ -167,9 +265,7 @@ def _build_decode_map(tongue: str) -> Dict[str, int]:
 
 
 # Pre-built decode maps — avoids rebuilding on every call
-_DECODE_CACHE: Dict[str, Dict[str, int]] = {
-    t: _build_decode_map(t) for t in _CANONICAL_TONGUES
-}
+_DECODE_CACHE: Dict[str, Dict[str, int]] = {t: _build_decode_map(t) for t in _CANONICAL_TONGUES}
 
 
 def encode_bytes(tongue: str, data: bytes) -> str:
@@ -205,15 +301,15 @@ def decode_tokens(tongue: str, text: str) -> bytes:
 # Reference byte-frequency distribution for "normal English prose".
 # Derived from the character class ratios of a 100K-word fiction corpus.
 _REF_PROFILE = {
-    "alpha_ratio": 0.78,      # letters dominate
-    "digit_ratio": 0.02,      # sparse digits
-    "space_ratio": 0.16,      # word gaps
-    "punct_ratio": 0.03,      # commas, periods, quotes
-    "control_ratio": 0.0,     # zero control chars
-    "highbyte_ratio": 0.0,    # zero non-ASCII in English baseline
-    "shannon": 4.2,           # bits/byte for English text
-    "bigram_shannon": 7.5,    # bits per character pair
-    "repetition": 0.35,       # unique_bytes / total_bytes (moderate diversity)
+    "alpha_ratio": 0.78,  # letters dominate
+    "digit_ratio": 0.02,  # sparse digits
+    "space_ratio": 0.16,  # word gaps
+    "punct_ratio": 0.03,  # commas, periods, quotes
+    "control_ratio": 0.0,  # zero control chars
+    "highbyte_ratio": 0.0,  # zero non-ASCII in English baseline
+    "shannon": 4.2,  # bits/byte for English text
+    "bigram_shannon": 7.5,  # bits per character pair
+    "repetition": 0.35,  # unique_bytes / total_bytes (moderate diversity)
 }
 
 
@@ -323,9 +419,9 @@ def _naturalness(text: str) -> Tuple[float, float]:
     return wordlike / n, common / n
 
 
-def _distribution_distance(profile: Dict[str, float], freq: List[int],
-                           total: int, bigram_h: float,
-                           wordlike: float, common: float) -> float:
+def _distribution_distance(
+    profile: Dict[str, float], freq: List[int], total: int, bigram_h: float, wordlike: float, common: float
+) -> float:
     """Distance from "normal language" — higher means more suspicious.
 
     Keyed on *what kind of bytes* are present (meaningful at any length),
@@ -345,18 +441,18 @@ def _distribution_distance(profile: Dict[str, float], freq: List[int],
     text_deficit = max(0.0, 0.50 - text_ratio)
 
     struct = (
-        4.0 * digit_excess        # digit-heavy → encoded / payload
-        + 8.0 * punct_excess      # symbol-heavy → code / injection
-        + 10.0 * control          # control bytes → binary / adversarial
-        + 5.0 * text_deficit      # little actual text → non-language
+        4.0 * digit_excess  # digit-heavy → encoded / payload
+        + 8.0 * punct_excess  # symbol-heavy → code / injection
+        + 10.0 * control  # control bytes → binary / adversarial
+        + 5.0 * text_deficit  # little actual text → non-language
     )
     # Recognized words mean any symbols are likely incidental, not hostile.
-    struct *= (1.0 - 0.5 * wordlike)
+    struct *= 1.0 - 0.5 * wordlike
 
     # ── Statistical anomaly (only meaningful with enough bytes) ──
     stat_conf = min(1.0, total / 200.0)
     shannon = _shannon_entropy(freq, total)
-    shannon_excess = max(0.0, shannon - 6.0)              # ~random / encrypted
+    shannon_excess = max(0.0, shannon - 6.0)  # ~random / encrypted
     unique = sum(1 for f in freq if f > 0)
     rep = unique / 256.0
     rep_deficit = max(0.0, 0.03 - rep) if total > 50 else 0.0  # degenerate repeat
@@ -369,8 +465,7 @@ def _distribution_distance(profile: Dict[str, float], freq: List[int],
     return max(0.0, d_star)
 
 
-def _phase_deviation(profile: Dict[str, float], d_star: float,
-                     total: int) -> float:
+def _phase_deviation(profile: Dict[str, float], d_star: float, total: int) -> float:
     """L6-L11 proxy: coherence / phase deviation.
 
     Catches inputs that look structurally normal but have suspicious
@@ -448,31 +543,46 @@ _INTENT_PENALTY = 2.5
 
 _ZERO_WIDTH_OR_CONTROL = re.compile(r"[\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]")
 _B64_TOKEN = re.compile(r"\b[A-Za-z0-9+/_-]{16,}={0,2}\b")
-_LEET_TABLE = str.maketrans({
-    "0": "o",
-    "1": "i",
-    "3": "e",
-    "4": "a",
-    "5": "s",
-    "7": "t",
-    "@": "a",
-    "$": "s",
-    "!": "i",
-})
-_HOMOGLYPH_TABLE = str.maketrans({
-    "а": "a", "А": "a",  # Cyrillic
-    "е": "e", "Е": "e",
-    "о": "o", "О": "o",
-    "р": "p", "Р": "p",
-    "с": "c", "С": "c",
-    "х": "x", "Х": "x",
-    "у": "y", "У": "y",
-    "і": "i", "І": "i",
-    "ԁ": "d",
-    "ɑ": "a", "ο": "o", "Ο": "o",  # Greek/Latin lookalikes
-    "ρ": "p", "Ρ": "p",
-    "ϲ": "c",
-})
+_LEET_TABLE = str.maketrans(
+    {
+        "0": "o",
+        "1": "i",
+        "3": "e",
+        "4": "a",
+        "5": "s",
+        "7": "t",
+        "@": "a",
+        "$": "s",
+        "!": "i",
+    }
+)
+_HOMOGLYPH_TABLE = str.maketrans(
+    {
+        "а": "a",
+        "А": "a",  # Cyrillic
+        "е": "e",
+        "Е": "e",
+        "о": "o",
+        "О": "o",
+        "р": "p",
+        "Р": "p",
+        "с": "c",
+        "С": "c",
+        "х": "x",
+        "Х": "x",
+        "у": "y",
+        "У": "y",
+        "і": "i",
+        "І": "i",
+        "ԁ": "d",
+        "ɑ": "a",
+        "ο": "o",
+        "Ο": "o",  # Greek/Latin lookalikes
+        "ρ": "p",
+        "Ρ": "p",
+        "ϲ": "c",
+    }
+)
 
 
 def _normalize_for_intent(text: str) -> str:
@@ -722,6 +832,7 @@ def ai_review(filepath: str) -> Dict[str, Any]:
 # ═══════════════════════════════════════════════════════════════
 # Commands
 # ═══════════════════════════════════════════════════════════════
+
 
 def cmd_status(args: argparse.Namespace) -> int:
     ts_files = list(REPO_ROOT.glob("src/**/*.ts"))
@@ -1043,8 +1154,10 @@ def cmd_ai_review(args: argparse.Namespace) -> int:
         print(f"Error: {result['error']}")
         return 1
     print(f"File: {result['file']}")
-    print(f"  Lines: {result['total_lines']} total, {result['code_lines']} code, "
-          f"{result['blank_lines']} blank, {result['comment_lines']} comments")
+    print(
+        f"  Lines: {result['total_lines']} total, {result['code_lines']} code, "
+        f"{result['blank_lines']} blank, {result['comment_lines']} comments"
+    )
     print(f"  Functions: {result['functions']}, Classes: {result['classes']}")
     print(f"  Max indent: {result['max_indent']} spaces")
     print(f"  Verdict: {result['verdict']}")
@@ -1062,8 +1175,10 @@ def cmd_ai_check(args: argparse.Namespace) -> int:
         return 1
 
     print(f"=== {args.file} ===")
-    print(f"  {review_result['code_lines']} code, "
-          f"{review_result['functions']} funcs, {review_result['classes']} classes")
+    print(
+        f"  {review_result['code_lines']} code, "
+        f"{review_result['functions']} funcs, {review_result['classes']} classes"
+    )
 
     all_ok = True
     if lint_result.get("compiles") is False:
@@ -1194,7 +1309,7 @@ def _parse_bigint(s: str) -> int:
     return int(s, 0) if s[:2].lower() in ("0x", "0o", "0b") else int(s)
 
 
-_NUMFIND_MAX_NTH = 5_000_000          # sieve stays ~100 MB / ~1 s
+_NUMFIND_MAX_NTH = 5_000_000  # sieve stays ~100 MB / ~1 s
 _NUMFIND_MAX_RANGE_SPAN = 10_000_000  # segmented-sieve span guard
 
 
@@ -1252,12 +1367,16 @@ def cmd_numfind(args: argparse.Namespace) -> int:
                 return 1
             pairs = sorted(fac.items())
             if as_json:
-                print(json.dumps({
-                    "op": "factor",
-                    "n": n,
-                    "factors": [[p, e] for p, e in pairs],
-                    "is_prime": n >= 2 and len(pairs) == 1 and pairs[0][1] == 1,
-                }))
+                print(
+                    json.dumps(
+                        {
+                            "op": "factor",
+                            "n": n,
+                            "factors": [[p, e] for p, e in pairs],
+                            "is_prime": n >= 2 and len(pairs) == 1 and pairs[0][1] == 1,
+                        }
+                    )
+                )
             elif n < 2:
                 print(f"{n} has no prime factorization")
             else:
@@ -1276,10 +1395,18 @@ def cmd_numfind(args: argparse.Namespace) -> int:
             shown = primes[:limit] if limit > 0 else primes
             truncated = limit > 0 and len(primes) > limit
             if as_json:
-                print(json.dumps({
-                    "op": "primes", "lo": lo, "hi": hi,
-                    "count": len(primes), "primes": shown, "truncated": truncated,
-                }))
+                print(
+                    json.dumps(
+                        {
+                            "op": "primes",
+                            "lo": lo,
+                            "hi": hi,
+                            "count": len(primes),
+                            "primes": shown,
+                            "truncated": truncated,
+                        }
+                    )
+                )
             else:
                 print(f"{len(primes)} prime(s) in [{lo}, {hi})")
                 if shown:
@@ -1651,16 +1778,10 @@ def _substrate_packet(
     from src.tokenizer.chemistry_command_stack import build_chemistry_command_stack
 
     tokens = _chem_tokens(text)
-    states = [
-        map_token_to_atomic_state(token, language=language, context_class=context_class)
-        for token in tokens
-    ]
+    states = [map_token_to_atomic_state(token, language=language, context_class=context_class) for token in tokens]
     fusion = fuse_atomic_states(states) if states else None
     spine = BitSpine(text.encode("utf-8"))
-    tongue_projection = {
-        tongue: encode_bytes(tongue, text.encode("utf-8"))
-        for tongue in _CANONICAL_TONGUES
-    }
+    tongue_projection = {tongue: encode_bytes(tongue, text.encode("utf-8")) for tongue in _CANONICAL_TONGUES}
     workflow_units = [build_atomic_workflow_unit(token) for token in tokens]
     workflow = compose_workflow(tokens) if tokens else None
     atomic_states = [_atomic_state_payload(state) for state in states]
@@ -1718,22 +1839,97 @@ def _substrate_packet(
 # honest taxonomy + hash spread — not a claim about tongue geometry (short
 # command tokens collapse to the same tau, so that would not discriminate them).
 _OCTREE_ACT = {
-    "enc", "dec", "do", "ask", "a", "chat", "code", "polyglot", "emit", "encode",
-    "encode-code", "code-matrix", "canvas", "fold", "bopit", "think", "think-syscall",
-    "cognition", "cog", "overcreate", "generate-cube", "illuminate", "route", "fleet",
-    "schedule", "inc", "spine", "chem", "move", "del", "push", "blocks", "stereo-code",
+    "enc",
+    "dec",
+    "do",
+    "ask",
+    "a",
+    "chat",
+    "code",
+    "polyglot",
+    "emit",
+    "encode",
+    "encode-code",
+    "code-matrix",
+    "canvas",
+    "fold",
+    "bopit",
+    "think",
+    "think-syscall",
+    "cognition",
+    "cog",
+    "overcreate",
+    "generate-cube",
+    "illuminate",
+    "route",
+    "fleet",
+    "schedule",
+    "inc",
+    "spine",
+    "chem",
+    "move",
+    "del",
+    "push",
+    "blocks",
+    "stereo-code",
 }
 _OCTREE_ORCH = {
-    "ai", "ask", "a", "do", "chat", "route", "fleet", "schedule", "system", "status",
-    "st", "health", "doctor", "selftest", "move", "del", "push", "undo", "find", "f",
-    "open", "vault", "recent", "docs", "model", "colab", "workflow", "use", "flow",
+    "ai",
+    "ask",
+    "a",
+    "do",
+    "chat",
+    "route",
+    "fleet",
+    "schedule",
+    "system",
+    "status",
+    "st",
+    "health",
+    "doctor",
+    "selftest",
+    "move",
+    "del",
+    "push",
+    "undo",
+    "find",
+    "f",
+    "open",
+    "vault",
+    "recent",
+    "docs",
+    "model",
+    "colab",
+    "workflow",
+    "use",
+    "flow",
     "pollypad",
 }
 _OCTREE_CODE = {
-    "code", "polyglot", "emit", "encode", "encode-code", "code-matrix", "canvas",
-    "think", "think-syscall", "cognition", "cog", "bopit", "fold", "overcreate",
-    "generate-cube", "illuminate", "route", "fleet", "schedule", "spine", "cube",
-    "blocks", "stereo-code", "ai",
+    "code",
+    "polyglot",
+    "emit",
+    "encode",
+    "encode-code",
+    "code-matrix",
+    "canvas",
+    "think",
+    "think-syscall",
+    "cognition",
+    "cog",
+    "bopit",
+    "fold",
+    "overcreate",
+    "generate-cube",
+    "illuminate",
+    "route",
+    "fleet",
+    "schedule",
+    "spine",
+    "cube",
+    "blocks",
+    "stereo-code",
+    "ai",
 }
 _OCTANT_LABELS = {
     0b000: "read · substrate · text",
@@ -1746,8 +1942,14 @@ _OCTANT_LABELS = {
     0b111: "act · orchestration · code",
 }
 _OCTANT_COLOR = {
-    0b000: "cyan", 0b001: "gold", 0b010: "cyan", 0b011: "gold",
-    0b100: "magenta", 0b101: "red", 0b110: "magenta", 0b111: "red",
+    0b000: "cyan",
+    0b001: "gold",
+    0b010: "cyan",
+    0b011: "gold",
+    0b100: "magenta",
+    0b101: "red",
+    0b110: "magenta",
+    0b111: "red",
 }
 
 
@@ -1815,19 +2017,23 @@ def cmd_octree(args: argparse.Namespace) -> int:
         limit = getattr(args, "limit", 8) or 8
         results = [c for c in ranked if c[0] != near][:limit]
         if as_json:
-            print(json.dumps({
-                "query": near,
-                "query_octant": format(qbits, "03b"),
-                "neighbors": [
+            print(
+                json.dumps(
                     {
-                        "command": c[0],
-                        "octant": format(c[2], "03b"),
-                        "distance": round(float(np.linalg.norm(c[3] - qcoord)), 4),
-                        "help": c[1],
+                        "query": near,
+                        "query_octant": format(qbits, "03b"),
+                        "neighbors": [
+                            {
+                                "command": c[0],
+                                "octant": format(c[2], "03b"),
+                                "distance": round(float(np.linalg.norm(c[3] - qcoord)), 4),
+                                "help": c[1],
+                            }
+                            for c in results
+                        ],
                     }
-                    for c in results
-                ],
-            }))
+                )
+            )
             return 0
         print(f"commands nearest to '{near}'  (octant {format(qbits, '03b')} · {_OCTANT_LABELS.get(qbits, '')})")
         for c in results:
@@ -1840,18 +2046,23 @@ def cmd_octree(args: argparse.Namespace) -> int:
         by_octant.setdefault(c[2], []).append(c[0])
 
     if as_json:
-        print(json.dumps({
-            "schema": "scbe_command_octree_v1",
-            "axes": {"x": "act/inspect", "y": "orchestration/substrate", "z": "code/text"},
-            "octants": {
-                format(b, "03b"): {
-                    "label": _OCTANT_LABELS[b],
-                    "commands": sorted(by_octant.get(b, [])),
-                }
-                for b in range(8)
-            },
-            "stats": tree.stats(),
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "schema": "scbe_command_octree_v1",
+                    "axes": {"x": "act/inspect", "y": "orchestration/substrate", "z": "code/text"},
+                    "octants": {
+                        format(b, "03b"): {
+                            "label": _OCTANT_LABELS[b],
+                            "commands": sorted(by_octant.get(b, [])),
+                        }
+                        for b in range(8)
+                    },
+                    "stats": tree.stats(),
+                },
+                indent=2,
+            )
+        )
         return 0
 
     print("SCBE command octree  —  axes: x=act/inspect · y=orchestration/substrate · z=code/text")
@@ -1938,15 +2149,17 @@ def _walk_commands(parser: argparse.ArgumentParser, prefix: str = "") -> List[Di
             continue
         aliases = [a for a in alias_map.get(id(sub), []) if a != name]
         params = _params_for(sub)
-        out.append({
-            "name": path.replace(" ", "."),
-            "path": path,
-            "invoke": f"scbe {path}",
-            "aliases": aliases,
-            "summary": choice.help or "",
-            "supports_json": any(getattr(a, "dest", None) == "json_output" for a in sub._actions),
-            "args": params,
-        })
+        out.append(
+            {
+                "name": path.replace(" ", "."),
+                "path": path,
+                "invoke": f"scbe {path}",
+                "aliases": aliases,
+                "summary": choice.help or "",
+                "supports_json": any(getattr(a, "dest", None) == "json_output" for a in sub._actions),
+                "args": params,
+            }
+        )
     return out
 
 
@@ -2210,8 +2423,7 @@ def cmd_encode(args: argparse.Namespace) -> int:
 
     paths = getattr(args, "files", []) or []
     if not paths:
-        print("usage: scbe encode FILE [FILE...]  |  scbe encode --corpus DIR [--out f.bin]",
-              file=sys.stderr)
+        print("usage: scbe encode FILE [FILE...]  |  scbe encode --corpus DIR [--out f.bin]", file=sys.stderr)
         return 2
 
     use_python = getattr(args, "python", False) or not rcr.rust_encoder_available()
@@ -2291,10 +2503,19 @@ def cmd_route(args: argparse.Namespace) -> int:
 
     if not fleet_spec or not tasks_spec:
         if as_json:
-            print(json.dumps({"ok": False, "command": "route", "error": {
-                "code": "no_input",
-                "message": "provide --fleet and --tasks JSON files to route a real workload",
-            }}, separators=(",", ":")))
+            print(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "command": "route",
+                        "error": {
+                            "code": "no_input",
+                            "message": "provide --fleet and --tasks JSON files to route a real workload",
+                        },
+                    },
+                    separators=(",", ":"),
+                )
+            )
             return 2
         print("(demo workload — pass --fleet and --tasks JSON files to route real work)\n")
         _demo()
@@ -2305,8 +2526,7 @@ def cmd_route(args: argparse.Namespace) -> int:
         tasks = [Task(t["name"], t.get("profile") or t.get("weights")) for t in tasks_spec]
     except (KeyError, TypeError) as exc:
         print(
-            f"route: bad fleet/tasks spec ({exc}); "
-            "need [{name, tongue|weights}] and [{name, profile|weights}]",
+            f"route: bad fleet/tasks spec ({exc}); " "need [{name, tongue|weights}] and [{name, profile|weights}]",
             file=sys.stderr,
         )
         return 2
@@ -2318,19 +2538,27 @@ def cmd_route(args: argparse.Namespace) -> int:
     savings = (1 - geo_cost / rr_cost) if rr_cost else 0.0
 
     if as_json:
-        print(json.dumps({
-            "ok": True, "command": "route", "schema": "scbe_route_v1",
-            "data": {
-                "agents": len(fleet), "tasks": len(tasks), "pressure": pressure,
-                "geometric_cost": round(geo_cost, 4),
-                "round_robin_cost": round(rr_cost, 4),
-                "savings_fraction": round(savings, 4),
-                "routes": [
-                    {"agent": r.agent, "tasks": r.tasks, "total_cost": round(r.total_cost, 4)}
-                    for r in routes
-                ],
-            },
-        }, separators=(",", ":")))
+        print(
+            json.dumps(
+                {
+                    "ok": True,
+                    "command": "route",
+                    "schema": "scbe_route_v1",
+                    "data": {
+                        "agents": len(fleet),
+                        "tasks": len(tasks),
+                        "pressure": pressure,
+                        "geometric_cost": round(geo_cost, 4),
+                        "round_robin_cost": round(rr_cost, 4),
+                        "savings_fraction": round(savings, 4),
+                        "routes": [
+                            {"agent": r.agent, "tasks": r.tasks, "total_cost": round(r.total_cost, 4)} for r in routes
+                        ],
+                    },
+                },
+                separators=(",", ":"),
+            )
+        )
         return 0
 
     print(f"Geometric fleet router — {len(fleet)} agents, {len(tasks)} tasks (pressure {pressure})\n")
@@ -2357,10 +2585,19 @@ def cmd_schedule(args: argparse.Namespace) -> int:
 
     if not fleet_spec or not jobs_spec:
         if as_json:
-            print(json.dumps({"ok": False, "command": "schedule", "error": {
-                "code": "no_input",
-                "message": "provide --fleet and --jobs JSON files to schedule a real workload",
-            }}, separators=(",", ":")))
+            print(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "command": "schedule",
+                        "error": {
+                            "code": "no_input",
+                            "message": "provide --fleet and --jobs JSON files to schedule a real workload",
+                        },
+                    },
+                    separators=(",", ":"),
+                )
+            )
             return 2
         print("(demo workload — pass --fleet and --jobs JSON files to schedule real work)\n")
         _demo()
@@ -2385,16 +2622,26 @@ def cmd_schedule(args: argparse.Namespace) -> int:
     report = sched.run(jobs, mode=mode)
 
     if as_json:
-        print(json.dumps({
-            "ok": report.failed == 0, "command": "schedule", "schema": "scbe_schedule_v1",
-            "data": {
-                "mode": report.mode, "wall": round(report.wall, 4), "makespan": round(report.makespan, 4),
-                "done": report.done, "failed": report.failed,
-                "assignments": report.assignments,
-                "busy": {k: round(v, 4) for k, v in report.busy.items()},
-                "errors": report.errors,
-            },
-        }, separators=(",", ":")))
+        print(
+            json.dumps(
+                {
+                    "ok": report.failed == 0,
+                    "command": "schedule",
+                    "schema": "scbe_schedule_v1",
+                    "data": {
+                        "mode": report.mode,
+                        "wall": round(report.wall, 4),
+                        "makespan": round(report.makespan, 4),
+                        "done": report.done,
+                        "failed": report.failed,
+                        "assignments": report.assignments,
+                        "busy": {k: round(v, 4) for k, v in report.busy.items()},
+                        "errors": report.errors,
+                    },
+                },
+                separators=(",", ":"),
+            )
+        )
         return 0 if report.failed == 0 else 1
 
     print(f"Geometric scheduler — mode {report.mode}, {len(fleet)} workers, {len(jobs)} jobs\n")
@@ -2475,12 +2722,15 @@ def cmd_illuminate(args: argparse.Namespace) -> int:
     """Mass-generate cube programs and curate them by the bicameral gap (MAP-Elites)."""
     from python.scbe import illuminate as IL
 
-    arch = IL.illuminate(generations=getattr(args, "gens", 4) or 4,
-                         batch=getattr(args, "batch", 250) or 250,
-                         seed=getattr(args, "seed", 7) or 7)
+    arch = IL.illuminate(
+        generations=getattr(args, "gens", 4) or 4,
+        batch=getattr(args, "batch", 250) or 250,
+        seed=getattr(args, "seed", 7) or 7,
+    )
     gallery = getattr(args, "gallery", None)
     if gallery:
         from python.scbe import canvas as CV
+
         html = CV.build_gallery(arch, getattr(args, "tongue", None) or "ko")
         with open(gallery, "w", encoding="utf-8") as fh:
             fh.write(html)
@@ -2488,6 +2738,7 @@ def cmd_illuminate(args: argparse.Namespace) -> int:
         return 0
     if getattr(args, "governance", False):
         from python.scbe import cognition_syscall as CS
+
         payload = CS.govern_archive(arch)
         if getattr(args, "json_output", False):
             print(json.dumps(payload, indent=2, sort_keys=True))
@@ -2568,6 +2819,7 @@ def cmd_fold(args: argparse.Namespace) -> int:
     prog = getattr(args, "fortune", None)
     if prog is not None:
         from python.scbe import frontdoor as F
+
         names, _ = F.tokens_to_program(prog)
         ft = O.FortuneTeller.from_program(names)
         picks = getattr(args, "pick", None) or [1]
@@ -2598,15 +2850,17 @@ def cmd_bopit(args: argparse.Namespace) -> int:
     moves = getattr(args, "moves", []) or []
     voice = getattr(args, "voice", False)
     port = getattr(args, "serial", None)
-    if port:                                      # a real cube on a serial/USB port
+    if port:  # a real cube on a serial/USB port
         from python.scbe import cube_bridge as BR
+
         try:
             return BR.bridge(BR.SerialSource(port, getattr(args, "baud", 115200)), voice)
-        except RuntimeError as e:                 # pyserial missing
+        except RuntimeError as e:  # pyserial missing
             print(str(e), file=sys.stderr)
             return 1
-    if getattr(args, "sim", None):                # a simulated cube (wire string)
+    if getattr(args, "sim", None):  # a simulated cube (wire string)
         from python.scbe import cube_bridge as BR
+
         return BR.bridge(BR.SimSource(args.sim), voice)
     if getattr(args, "repl", False) or not moves:
         return C.bop_it(voice)
@@ -2625,8 +2879,7 @@ def cmd_blocks(args: argparse.Namespace) -> int:
 
     op = getattr(args, "op", None)
     if op:
-        prog = BlockProgram().add(op, getattr(args, "target", None) or "",
-                                  confirm=getattr(args, "confirm", None))
+        prog = BlockProgram().add(op, getattr(args, "target", None) or "", confirm=getattr(args, "confirm", None))
         print(prog.render())
         try:
             result = prog.run_plan()
@@ -2672,6 +2925,7 @@ def cmd_stereo_code(args: argparse.Namespace) -> int:
 def cmd_lookup(args: argparse.Namespace) -> int:
     """Cross-language Rosetta lookup for a coding concept."""
     from python.scbe.cross_lang import lookup, concepts, grade, LANGUAGES
+
     concept = getattr(args, "concept", None)
     if not concept:
         print("concepts:  " + ", ".join(concepts()))
@@ -2708,6 +2962,7 @@ def cmd_lookup(args: argparse.Namespace) -> int:
 def cmd_game(args: argparse.Namespace) -> int:
     """Cross-compile mini-game: translate a concept from one language to another."""
     from python.scbe.cross_lang import challenges, grade, ROSETTA
+
     g = getattr(args, "grade", None)
     if g:
         r = grade(g[0], g[1], g[2])
@@ -2737,8 +2992,8 @@ def cmd_game(args: argparse.Namespace) -> int:
     return 0
 
 
-_PHI = (1 + 5 ** 0.5) / 2
-_TONGUE_HZ = {code: 440.0 * _PHI ** i for i, code in enumerate(["KO", "AV", "RU", "CA", "UM", "DR"])}
+_PHI = (1 + 5**0.5) / 2
+_TONGUE_HZ = {code: 440.0 * _PHI**i for i, code in enumerate(["KO", "AV", "RU", "CA", "UM", "DR"])}
 _NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 
@@ -2781,10 +3036,18 @@ def _describe_signature(text: str) -> Dict[str, Any]:
     code = codes[sum(raw) % 6] if raw else "KO"
     hz = _TONGUE_HZ[code]
 
-    texture = {"ALLOW": "smooth, calm", "QUARANTINE": "grainy, tense",
-               "ESCALATE": "sharp, jagged", "DENY": "hot, violent"}[decision]
-    taste = {"ALLOW": "clean — tastes right", "QUARANTINE": "off — needs a look",
-             "ESCALATE": "bitter — handle with care", "DENY": "spoiled — reject"}[decision]
+    texture = {
+        "ALLOW": "smooth, calm",
+        "QUARANTINE": "grainy, tense",
+        "ESCALATE": "sharp, jagged",
+        "DENY": "hot, violent",
+    }[decision]
+    taste = {
+        "ALLOW": "clean — tastes right",
+        "QUARANTINE": "off — needs a look",
+        "ESCALATE": "bitter — handle with care",
+        "DENY": "spoiled — reject",
+    }[decision]
 
     return {
         "what": what,
@@ -2818,8 +3081,10 @@ def cmd_cube(args: argparse.Namespace) -> int:
     print(f"cube '{token}'  core={f['core']['hex']}  bijective={f['bijective']}")
     if ch.get("real_element"):
         e = ch["real_element"]
-        print(f"  chemistry : {e['symbol']} (Z={e['Z']}, group {e['group']}, period {e['period']}, "
-              f"valence {e['valence']}, EN {e['electronegativity']})")
+        print(
+            f"  chemistry : {e['symbol']} (Z={e['Z']}, group {e['group']}, period {e['period']}, "
+            f"valence {e['valence']}, EN {e['electronegativity']})"
+        )
     elif ch.get("composition"):
         comp = " + ".join(f"{n}x{s}" for s, n in ch["composition"].items())
         print(f"  chemistry : compound {comp}")
@@ -2918,9 +3183,7 @@ def _atomic_state_payload(state: Any) -> Dict[str, Any]:
 def _fusion_payload(result: Any) -> Dict[str, Any]:
     return {
         "tau_hat": result.tau_hat,
-        "reconstruction_votes": {
-            tongue: _chem_round(vote) for tongue, vote in result.reconstruction_votes.items()
-        },
+        "reconstruction_votes": {tongue: _chem_round(vote) for tongue, vote in result.reconstruction_votes.items()},
         "signed_edge_tension": _chem_round(result.signed_edge_tension),
         "coherence_penalty": _chem_round(result.coherence_penalty),
         "valence_pressure": _chem_round(result.valence_pressure),
@@ -3109,10 +3372,7 @@ def cmd_chem_orbitals(args: argparse.Namespace) -> int:
 
     print(f"chem orbitals: {payload['manifold']} total_m_states={payload['total_m_states']}")
     for orbital in payload["orbitals"]:
-        print(
-            f"  {orbital['abbr']} {orbital['orbital_name']}: "
-            f"l={orbital['l']} r={orbital['poincare_r']}"
-        )
+        print(f"  {orbital['abbr']} {orbital['orbital_name']}: " f"l={orbital['l']} r={orbital['poincare_r']}")
     print(f"  boundary: {CHEM_CLAIM_BOUNDARY}")
     return 0
 
@@ -3209,12 +3469,16 @@ def cmd_explain(args: argparse.Namespace) -> int:
     if getattr(args, "json_output", False):
         t = args.target.upper().replace("LAYER", "L").replace(" ", "")
         info = LAYER_GUIDE.get(t)
-        print(json.dumps({
-            "target": args.target,
-            "name": info[0] if info else None,
-            "description": info[1] if info else None,
-            "text": text,
-        }))
+        print(
+            json.dumps(
+                {
+                    "target": args.target,
+                    "name": info[0] if info else None,
+                    "description": info[1] if info else None,
+                    "text": text,
+                }
+            )
+        )
     else:
         print(text)
     return 0
@@ -3233,8 +3497,7 @@ def cmd_check(args: argparse.Namespace) -> int:
     if getattr(args, "json_output", False):
         print(json.dumps({"file": args.file, "clean": clean, "lint": lint, "review": review}))
     else:
-        print(f"{args.file}: {review['code_lines']} code, "
-              f"{review['functions']} funcs, {review['classes']} classes")
+        print(f"{args.file}: {review['code_lines']} code, " f"{review['functions']} funcs, {review['classes']} classes")
         if lint.get("compiles") is False:
             print(f"  ✗ {lint['syntax_error']}")
         if lint["issue_count"]:
@@ -3274,8 +3537,7 @@ def _detect_backends() -> List[str]:
 
 def _run_backend_cli(cmd: List[str]) -> str:
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True,
-                           encoding="utf-8", errors="replace", timeout=180)
+        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180)
     except FileNotFoundError:
         return f"(backend not found: {cmd[0]})"
     except subprocess.TimeoutExpired:
@@ -3329,8 +3591,7 @@ def _anthropic_extract(data: Dict[str, Any], think: bool) -> str:
     if not think:
         return answer
     thinking = "\n".join(
-        b.get("thinking", "") for b in content
-        if b.get("type") == "thinking" and b.get("thinking")
+        b.get("thinking", "") for b in content if b.get("type") == "thinking" and b.get("thinking")
     ).strip()
     if thinking:
         return f"[thinking]\n{thinking}\n\n[answer]\n{answer}"
@@ -3339,13 +3600,18 @@ def _anthropic_extract(data: Dict[str, Any], think: bool) -> str:
 
 def _ask_api(prompt: str, model: Optional[str], provider: str, think: bool = False) -> str:
     import urllib.request
+
     if provider == "anthropic":
         body = _anthropic_body(prompt, model, think)
         req = urllib.request.Request(
             "https://api.anthropic.com/v1/messages",
             data=json.dumps(body).encode(),
-            headers={"x-api-key": os.environ["ANTHROPIC_API_KEY"],
-                     "anthropic-version": "2023-06-01", "content-type": "application/json"})
+            headers={
+                "x-api-key": os.environ["ANTHROPIC_API_KEY"],
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            },
+        )
         try:
             with urllib.request.urlopen(req, timeout=180) as resp:
                 data = json.loads(resp.read())
@@ -3353,13 +3619,12 @@ def _ask_api(prompt: str, model: Optional[str], provider: str, think: bool = Fal
         except Exception as e:  # network/auth errors shouldn't crash the CLI
             return f"(anthropic API error: {e})"
     if provider == "openai":
-        body = {"model": model or "gpt-4o-mini",
-                "messages": [{"role": "user", "content": prompt}]}
+        body = {"model": model or "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}]}
         req = urllib.request.Request(
             "https://api.openai.com/v1/chat/completions",
             data=json.dumps(body).encode(),
-            headers={"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}",
-                     "content-type": "application/json"})
+            headers={"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}", "content-type": "application/json"},
+        )
         try:
             with urllib.request.urlopen(req, timeout=120) as resp:
                 data = json.loads(resp.read())
@@ -3369,8 +3634,9 @@ def _ask_api(prompt: str, model: Optional[str], provider: str, think: bool = Fal
     return f"(unknown provider: {provider})"
 
 
-def ai_ask(prompt: str, backend: Optional[str] = None,
-           model: Optional[str] = None, think: bool = False) -> Tuple[str, str]:
+def ai_ask(
+    prompt: str, backend: Optional[str] = None, model: Optional[str] = None, think: bool = False
+) -> Tuple[str, str]:
     """Return (answer, backend_used). Picks the first available backend."""
     available = _detect_backends()
     if not available:
@@ -3416,8 +3682,12 @@ def cmd_ask(args: argparse.Namespace) -> int:
         print('usage: scbe ask "<question>"   (or pipe text via stdin)', file=sys.stderr)
         return 2
     # ask = explain, never act — wrap so agentic backends just answer.
-    answer, backend = ai_ask(_ANSWER_ONLY + prompt, getattr(args, "backend", None),
-                             getattr(args, "model", None), think=getattr(args, "think", False))
+    answer, backend = ai_ask(
+        _ANSWER_ONLY + prompt,
+        getattr(args, "backend", None),
+        getattr(args, "model", None),
+        think=getattr(args, "think", False),
+    )
     if getattr(args, "json_output", False):
         print(json.dumps({"prompt": prompt, "backend": backend, "answer": answer}))
     else:
@@ -3609,8 +3879,7 @@ def cmd_undo(_args: argparse.Namespace) -> int:
 # ═══════════════════════════════════════════════════════════════
 
 _FIND_PRUNE = {".git", ".obsidian", "node_modules", "external", "dist", "__pycache__", "cache~1"}
-_FIND_JUNK_SUB = ("repository mirror", "plugin-backups", "codex-runtimes",
-                  "\\cache\\", "\\appdata\\", "site-packages")
+_FIND_JUNK_SUB = ("repository mirror", "plugin-backups", "codex-runtimes", "\\cache\\", "\\appdata\\", "site-packages")
 _FIND_EXTS = {".md", ".docx", ".pdf", ".txt", ".doc", ".epub"}
 
 
@@ -3640,7 +3909,7 @@ def _find_roots() -> List[Path]:
 def cmd_find(args: argparse.Namespace) -> int:
     query = (getattr(args, "query", None) or "").lower()
     if not query:
-        print('usage: scbe find <text>   (matches your note/doc filenames)', file=sys.stderr)
+        print("usage: scbe find <text>   (matches your note/doc filenames)", file=sys.stderr)
         return 2
     exts = {"." + args.ext.lstrip(".").lower()} if getattr(args, "ext", None) else _FIND_EXTS
     content = getattr(args, "content", False)
@@ -3677,7 +3946,7 @@ def cmd_find(args: argparse.Namespace) -> int:
                                 txt = fh.read()
                             idx = txt.lower().find(query)
                             if idx >= 0:
-                                snippet = "..." + txt[max(0, idx - 30): idx + 60].replace("\n", " ").strip() + "..."
+                                snippet = "..." + txt[max(0, idx - 30) : idx + 60].replace("\n", " ").strip() + "..."
                     except OSError:
                         pass
                 if not (name_hit or snippet):
@@ -3710,7 +3979,7 @@ def cmd_open(args: argparse.Namespace) -> int:
     """Find the best-matching note/doc by name and open it in the default app."""
     query = (getattr(args, "query", None) or "").lower()
     if not query:
-        print('usage: scbe open <text>   (opens the newest matching note/doc)', file=sys.stderr)
+        print("usage: scbe open <text>   (opens the newest matching note/doc)", file=sys.stderr)
         return 2
     best: Optional[Tuple[float, str, str]] = None
     for root in _find_roots():
@@ -3818,8 +4087,7 @@ def cmd_recent(args: argparse.Namespace) -> int:
                 if not m:
                     continue  # recent = only date-stamped notes (real dated work)
                 try:
-                    d = time.mktime(time.strptime(
-                        f"{m.group(1)}-{m.group(2)}-{m.group(3)}", "%Y-%m-%d"))
+                    d = time.mktime(time.strptime(f"{m.group(1)}-{m.group(2)}-{m.group(3)}", "%Y-%m-%d"))
                 except (ValueError, OverflowError):
                     continue
                 full = os.path.join(dirpath, fn)
@@ -3831,8 +4099,11 @@ def cmd_recent(args: argparse.Namespace) -> int:
     items.sort(reverse=True)
     items = items[:limit]
     if getattr(args, "json_output", False):
-        print(json.dumps([{"date": time.strftime("%Y-%m-%d", time.localtime(d)), "name": n, "path": p}
-                          for d, p, n in items]))
+        print(
+            json.dumps(
+                [{"date": time.strftime("%Y-%m-%d", time.localtime(d)), "name": n, "path": p} for d, p, n in items]
+            )
+        )
         return 0
     print(f"Your {len(items)} most recent notes:")
     for d, p, n in items:
@@ -3857,8 +4128,7 @@ def cmd_docs_verify(args: argparse.Namespace) -> int:
 def cmd_docs_attest(args: argparse.Namespace) -> int:
     out_path = getattr(args, "out", "training/doc_manifest.json")
     return subprocess.run(
-        [sys.executable, str(REPO_ROOT / "training" / "doc_verifier.py"),
-         "--attest", args.members, "--out", out_path],
+        [sys.executable, str(REPO_ROOT / "training" / "doc_verifier.py"), "--attest", args.members, "--out", out_path],
     ).returncode
 
 
@@ -4019,11 +4289,16 @@ def _dispatch_scbe_args(args: List[str]) -> int:
         if os.environ.get("SCBE_DEBUG"):
             raise
         if wants_json or getattr(parsed, "json_output", False):
-            print(json.dumps(
-                {"ok": False, "command": getattr(parsed, "command", args[0]),
-                 "error": {"code": "internal", "message": str(exc)}},
-                separators=(",", ":"),
-            ))
+            print(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "command": getattr(parsed, "command", args[0]),
+                        "error": {"code": "internal", "message": str(exc)},
+                    },
+                    separators=(",", ":"),
+                )
+            )
         else:
             print(f"scbe: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 1
@@ -4223,13 +4498,14 @@ Legacy (backward compat):
     sh.set_defaults(func=cmd_system_health)
 
     # ─── compact verbs (human + AI surface) ───
-    ak = sub.add_parser("ask", aliases=["a"], help='Ask the AI a question ("scbe ask \"...\"")')
+    ak = sub.add_parser("ask", aliases=["a"], help='Ask the AI a question ("scbe ask "..."")')
     ak.add_argument("prompt", nargs="?", help="question (or pipe via stdin)")
     ak.add_argument("--backend", choices=list(AI_BACKENDS), help="force a backend (default: auto)")
     ak.add_argument("--model", help="model name for the chosen backend")
     ak.add_argument("--json", dest="json_output", action="store_true")
-    ak.add_argument("--think", action="store_true",
-                    help="force adaptive thinking and SHOW the reasoning (anthropic backend)")
+    ak.add_argument(
+        "--think", action="store_true", help="force adaptive thinking and SHOW the reasoning (anthropic backend)"
+    )
     ak.set_defaults(func=cmd_ask)
 
     ch = sub.add_parser("chat", help="Interactive AI chat with memory (any available model)")
@@ -4237,7 +4513,7 @@ Legacy (backward compat):
     ch.add_argument("--model")
     ch.set_defaults(func=cmd_chat)
 
-    do = sub.add_parser("do", help='Tell the AI to DO a task — agentic ("scbe do \"...\"")')
+    do = sub.add_parser("do", help='Tell the AI to DO a task — agentic ("scbe do "..."")')
     do.add_argument("task", nargs="?", help="task (or pipe via stdin)")
     do.add_argument("--backend", choices=list(AI_BACKENDS))
     do.add_argument("--model")
@@ -4256,7 +4532,7 @@ Legacy (backward compat):
     en.add_argument("--json", dest="json_output", action="store_true")
     en.set_defaults(func=cmd_enc)
 
-    de = sub.add_parser("dec", help='Decode Sacred Tongue tokens to text ("scbe dec ko \"...\"")')
+    de = sub.add_parser("dec", help='Decode Sacred Tongue tokens to text ("scbe dec ko "..."")')
     de.add_argument("tongue", choices=ALL_TONGUES, metavar="tongue")
     de.add_argument("text", nargs="?", help="tokens to decode (or pipe via stdin)")
     de.add_argument("--json", dest="json_output", action="store_true")
@@ -4309,9 +4585,7 @@ Legacy (backward compat):
     ct.add_argument("--json", dest="json_output", action="store_true")
     ct.set_defaults(func=cmd_crosstalk)
 
-    pcat = sub.add_parser(
-        "primecat", help='Prime-coded categories: assign primes & sieve items by category'
-    )
+    pcat = sub.add_parser("primecat", help="Prime-coded categories: assign primes & sieve items by category")
     pcat_sub = pcat.add_subparsers(dest="pc_op")
 
     pcat_as = pcat_sub.add_parser("assign", help="Assign a distinct prime to each category")
@@ -4431,7 +4705,9 @@ Legacy (backward compat):
         help='Emit all commands as machine-readable tool defs for any AI service ("scbe manifest --format mcp")',
     )
     manifest_p.add_argument(
-        "--format", choices=["native", "mcp", "openai", "anthropic"], default="native",
+        "--format",
+        choices=["native", "mcp", "openai", "anthropic"],
+        default="native",
         help="output shape: native | mcp | openai | anthropic",
     )
     manifest_p.add_argument("--pretty", action="store_true", help="pretty-print JSON")
@@ -4452,13 +4728,11 @@ Legacy (backward compat):
         help='Fast AST->cube-matrix via the Rust hot loop ("scbe encode file.py")',
     )
     en.add_argument("files", nargs="*", help="Python source file(s)")
-    en.add_argument("--json", dest="json_output", action="store_true",
-                    help="emit full matrix JSON for the first file")
+    en.add_argument("--json", dest="json_output", action="store_true", help="emit full matrix JSON for the first file")
     en.add_argument("--python", action="store_true", help="force the Python encoder")
     en.add_argument("--corpus", help="encode a whole directory tree (ruff 109x throughput)")
     en.add_argument("--out", help="with --corpus: write SCBEAST2 binary matrices")
-    en.add_argument("--limit-files", dest="limit_files", type=int,
-                    help="with --corpus: cap number of files")
+    en.add_argument("--limit-files", dest="limit_files", type=int, help="with --corpus: cap number of files")
     en.set_defaults(func=cmd_encode)
 
     pg = sub.add_parser(
@@ -4470,8 +4744,11 @@ Legacy (backward compat):
     pg.add_argument("--lang", help="target language (default python)")
     pg.add_argument("--all", action="store_true", help="emit to every registered language")
     pg.add_argument("--list", dest="list_langs", action="store_true", help="list languages + ops")
-    pg.add_argument("--safe", action="store_true",
-                    help="roundabout mode: define undefined zones (div0, sqrt-neg -> 0) so every language agrees")
+    pg.add_argument(
+        "--safe",
+        action="store_true",
+        help="roundabout mode: define undefined zones (div0, sqrt-neg -> 0) so every language agrees",
+    )
     pg.set_defaults(func=cmd_polyglot)
 
     cd = sub.add_parser(
@@ -4489,19 +4766,19 @@ Legacy (backward compat):
 
     bp = sub.add_parser(
         "bopit",
-        help="Bop-It cube controller: twist a face, hear the command (\"scbe bopit R U F'\")",
+        help='Bop-It cube controller: twist a face, hear the command ("scbe bopit R U F\'")',
     )
     bp.add_argument("moves", nargs="*", help="twist sequence in cube notation: R U F' L' ...")
     bp.add_argument("--voice", action="store_true", help="say the commands aloud (Windows SAPI)")
     bp.add_argument("--repl", action="store_true", help="interactive twist loop")
     bp.add_argument("--serial", metavar="PORT", help="read a real cube from a serial port (e.g. COM3); needs pyserial")
     bp.add_argument("--baud", type=int, default=115200, help="serial baud rate (default 115200)")
-    bp.add_argument("--sim", metavar="WIRE", help="simulate a cube from a wire string, e.g. \"R U F' GO\"")
+    bp.add_argument("--sim", metavar="WIRE", help='simulate a cube from a wire string, e.g. "R U F\' GO"')
     bp.set_defaults(func=cmd_bopit)
 
     fl = sub.add_parser(
         "fold",
-        help='Origami: unfold the cube to paper, fold a fan/crane, or the number game ("scbe fold --fortune \"+ * sqrt inc\" --pick 4 3 2")',
+        help='Origami: unfold the cube to paper, fold a fan/crane, or the number game ("scbe fold --fortune "+ * sqrt inc" --pick 4 3 2")',
     )
     fl.add_argument("--shape", choices=["net", "fan", "crane"], help="what to fold (default net)")
     fl.add_argument("--n", type=int, default=6, help="number of creases for a fan")
@@ -4623,8 +4900,12 @@ Legacy (backward compat):
     gm.set_defaults(func=cmd_game)
 
     tongue_verbs = {
-        "koraelin": "ko", "avali": "av", "runethic": "ru",
-        "cassisivadan": "ca", "umbroth": "um", "draumric": "dr",
+        "koraelin": "ko",
+        "avali": "av",
+        "runethic": "ru",
+        "cassisivadan": "ca",
+        "umbroth": "um",
+        "draumric": "dr",
     }
     for fullname, code in tongue_verbs.items():
         name = TONGUE_NAMES[code.upper()]
@@ -4667,7 +4948,7 @@ Legacy (backward compat):
     ds = sub.add_parser(
         "describe",
         aliases=["desc"],
-        help='5-senses signature: see/hear/feel ("scbe describe \"...\"")',
+        help='5-senses signature: see/hear/feel ("scbe describe "..."")',
     )
     ds.add_argument("text", nargs="?", help="text to describe (or pipe via stdin)")
     ds.add_argument("--json", dest="json_output", action="store_true")
@@ -4794,6 +5075,7 @@ Legacy (backward compat):
 # existing command, so the menu stays a thin, friendly veneer over
 # the same code paths the flags use.
 # ═══════════════════════════════════════════════════════════════
+
 
 def _banner() -> str:
     """Self-aligning title box — stays square for any version string."""
@@ -5003,8 +5285,7 @@ def _natural_command_args(prompt: str) -> Optional[List[str]]:
             return with_json(["enc", tongue.lower(), text])
 
     decode_match = re.search(
-        rf"\b(?:decode|read)\s+(?P<text>.+?)\s+"
-        rf"(?:from|in|as)\s+(?P<tongue>{tongue_names})\b",
+        rf"\b(?:decode|read)\s+(?P<text>.+?)\s+" rf"(?:from|in|as)\s+(?P<tongue>{tongue_names})\b",
         lowered,
     )
     if decode_match:
