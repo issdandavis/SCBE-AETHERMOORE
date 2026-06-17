@@ -160,7 +160,12 @@ def main(argv=None):
             sp.add_argument(aname, **akw)
     args = p.parse_args(argv)
     items = _load()
-    COMMANDS[args.cmd]["fn"](args, items)
+    try:
+        COMMANDS[args.cmd]["fn"](args, items)
+    except IndexError:
+        idx = getattr(args, "index", "?")
+        print(f"no item at index {{idx}} (have {{len(items)}})")
+        raise SystemExit(2)
     _save(items)
 
 

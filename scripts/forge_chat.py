@@ -173,17 +173,9 @@ class Conversation:
         return False
 
 
-def main():
-    says = [a for i, a in enumerate(sys.argv) if sys.argv[i - 1] == "--say"]
+def chat_loop():
+    """Interactive conversational build loop. Shared by this script and `scbe forge --chat`."""
     convo = Conversation()
-    if says:  # scripted (for tests / demos)
-        for line in says:
-            print(f"\n  YOU: {line}")
-            if convo.turn(line):
-                break
-        else:
-            print("\n  (still gathering -- add another --say, or it builds once it's buildable)")
-        return
     print("  AETHER: tell me what you want to make. plain words. (ctrl+c to quit)")
     try:
         while True:
@@ -197,6 +189,20 @@ def main():
                 convo.__init__()
     except (KeyboardInterrupt, EOFError):
         print("\n  later.")
+
+
+def main():
+    says = [a for i, a in enumerate(sys.argv) if sys.argv[i - 1] == "--say"]
+    if says:  # scripted (for tests / demos)
+        convo = Conversation()
+        for line in says:
+            print(f"\n  YOU: {line}")
+            if convo.turn(line):
+                break
+        else:
+            print("\n  (still gathering -- add another --say, or it builds once it's buildable)")
+        return
+    chat_loop()
 
 
 if __name__ == "__main__":
