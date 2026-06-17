@@ -516,7 +516,7 @@ def test_kor_aelin_lisp():
     tokens = make_instruction("ko", verb_byte, subj_byte, obj_byte)
     print(f"\n{'='*60}")
     print(f"KOR'AELIN (VSO/Lisp): {' '.join(tokens)}")
-    print(f"  Decoded: ({VERB_OPS[(8,0)][0]} 5 8)")
+    print(f"  Decoded: ({VERB_OPS[(8, 0)][0]} 5 8)")
 
     result = eval_ko_vso(vm, tokens)
     print(f"  Result: {result}")
@@ -550,7 +550,7 @@ def test_avali_python():
     s_tok = byte_to_token("av", subj_byte)
     byte_to_token("av", verb_byte)
     o_tok = byte_to_token("av", obj_byte)
-    print(f"  Decoded: {s_tok}.{VERB_OPS[(8,2)][0]}({o_tok}) = 7 * 3")
+    print(f"  Decoded: {s_tok}.{VERB_OPS[(8, 2)][0]}({o_tok}) = 7 * 3")
 
     result = eval_av_svo(vm, tokens)
     print(f"  Result: {result}")
@@ -574,7 +574,7 @@ def test_runethic_forth():
     tokens = make_instruction("ru", verb_byte, subj_byte, obj_byte)
     print(f"\n{'='*60}")
     print(f"RUNETHIC (SOV/Forth): {' '.join(tokens)}")
-    print(f"  Decoded: 10 4 {VERB_OPS[(8,1)][0]}")
+    print(f"  Decoded: 10 4 {VERB_OPS[(8, 1)][0]}")
 
     result = eval_ru_sov(vm, tokens)
     print(f"  Result: {result}")
@@ -598,7 +598,7 @@ def test_cassisivadan_sql():
     tokens = make_instruction("ca", verb_byte, ctx_byte, arg_byte)
     print(f"\n{'='*60}")
     print(f"CASSISIVADAN (V2/SQL): {' '.join(tokens)}")
-    print(f"  Decoded: WHERE 9 {VERB_OPS[(9,3)][0]} 5")
+    print(f"  Decoded: WHERE 9 {VERB_OPS[(9, 3)][0]} 5")
 
     result = eval_ca_v2(vm, tokens)
     print(f"  Result: {result} ({'TRUE' if result else 'FALSE'})")

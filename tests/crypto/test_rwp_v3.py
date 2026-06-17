@@ -130,11 +130,18 @@ class TestRWPv3Protocol:
         assert tokenizer.validate_section_integrity("ct", envelope.ct)
         assert tokenizer.validate_section_integrity("tag", envelope.tag)
 
-    def test_encrypt_decrypt_roundtrip(self):
-        """Message should encrypt and decrypt correctly."""
+    @pytest.mark.parametrize(
+        "plaintext",
+        [
+            pytest.param(b"Hello, Mars!", id="basic"),
+            pytest.param(b"", id="empty"),
+            pytest.param(secrets.token_bytes(10000), id="large"),
+        ],
+    )
+    def test_encrypt_decrypt_roundtrip(self, plaintext):
+        """Message should encrypt and decrypt correctly (basic, empty, and large plaintexts)."""
         protocol = RWPv3Protocol(enable_pqc=False)
         password = b"test-password"
-        plaintext = b"Hello, Mars!"
 
         envelope = protocol.encrypt(password, plaintext)
         decrypted = protocol.decrypt(password, envelope)
@@ -205,21 +212,6 @@ class TestRWPv3Protocol:
         salt = SACRED_TONGUE_TOKENIZER.decode_section("salt", envelope.salt)
         assert len(salt) == 16
 
-    def test_empty_plaintext(self):
-        """Empty plaintext should work."""
-        protocol = RWPv3Protocol(enable_pqc=False)
-        envelope = protocol.encrypt(b"password", b"")
-        decrypted = protocol.decrypt(b"password", envelope)
-        assert decrypted == b""
-
-    def test_large_plaintext(self):
-        """Large plaintext should work."""
-        protocol = RWPv3Protocol(enable_pqc=False)
-        plaintext = secrets.token_bytes(10000)
-        envelope = protocol.encrypt(b"password", plaintext)
-        decrypted = protocol.decrypt(b"password", envelope)
-        assert decrypted == plaintext
-
     def test_derive_key_fallback_is_not_fast_hashing(self, monkeypatch):
         """Argon2 fallback should remain a real KDF, not a fast digest."""
         protocol = object.__new__(RWPv3Protocol)
@@ -252,11 +244,18 @@ class TestConvenienceAPI:
         assert "ct" in result
         assert "tag" in result
 
-    def test_encrypt_decrypt_message_roundtrip(self):
-        """String message should roundtrip through convenience API."""
-        envelope = rwp_encrypt_message("password", "Hello, Mars!")
-        message = rwp_decrypt_message("password", envelope)
-        assert message == "Hello, Mars!"
+    @pytest.mark.parametrize(
+        "message",
+        [
+            pytest.param("Hello, Mars!", id="ascii"),
+            pytest.param("Hello, 火星! 🚀", id="unicode"),
+        ],
+    )
+    def test_encrypt_decrypt_message_roundtrip(self, message):
+        """String message should roundtrip through convenience API (ascii and unicode)."""
+        envelope = rwp_encrypt_message("password", message)
+        decrypted = rwp_decrypt_message("password", envelope)
+        assert decrypted == message
 
     def test_encrypt_with_metadata(self):
         """Metadata should be included as AAD."""
@@ -267,13 +266,6 @@ class TestConvenienceAPI:
         aad_bytes = SACRED_TONGUE_TOKENIZER.decode_section("aad", envelope["aad"])
         aad_dict = json.loads(aad_bytes.decode("utf-8"))
         assert aad_dict == metadata
-
-    def test_unicode_message(self):
-        """Unicode messages should work."""
-        message = "Hello, 火星! 🚀"
-        envelope = rwp_encrypt_message("password", message)
-        decrypted = rwp_decrypt_message("password", envelope)
-        assert decrypted == message
 
     def test_wrong_password_message(self):
         """Wrong password should raise ValueError."""

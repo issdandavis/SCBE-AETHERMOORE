@@ -129,6 +129,17 @@ if symphonic_cipher._VARIANT == "root": # "root" or "src"
 
 When writing new tests, be explicit about which module you need. The `tests/conftest.py` adds the project root to `sys.path` and patches `ai_brain` submodule aliases for legacy import paths.
 
+## Critical Gotcha: Canonical Money Path (two billing stacks)
+
+There are **two** billing stacks behind **two** FastAPI apps. Only one takes real money.
+
+| Stack | App | State |
+|-------|-----|-------|
+| `src/api/stripe_billing.py` + `docs/offers.json` | `src/api/main.py` (canonical) | **LIVE** — real Stripe price/product IDs + Payment Links (`plink_*`), raw urllib, no SDK |
+| `api/billing/` (SDK + SQLAlchemy) | `api/main.py` (separate) | **Not live** — placeholder price IDs, `import stripe` not in `requirements.txt`; retained only because `api/auth.py` + `api/keys/` import its DB models + rate-limit tiers |
+
+The live Vercel webhook is `api/billing/stripe_webhook.js` (independent JS, pinned `plink_` IDs). **Add new checkout/subscription money logic to `src/api/stripe_billing.py` or as a Payment Link in `docs/offers.json` — never to `api/billing/routes.py`.** Keep `api/billing/tiers.py` prices from drifting against `docs/offers.json`.
+
 ## liboqs PQC Migration
 
 Newer versions of liboqs renamed algorithms:
@@ -181,9 +192,9 @@ Three coordination systems operate across the fleet:
 
 | System | Location | Purpose |
 |--------|----------|---------|
-| **HYDRA** | `hydra/` (Python, 40+ files) | Central orchestrator: Spine, Heads, Limbs, Ledger, BFT consensus |
+| **HYDRA** | `hydra/` here = storage-geometry subset only; full runtime in the **`scbe-agents`** repo | Concept/design lives in **Notion**. The orchestrator (Spine, Heads, Limbs, BFT consensus) **moved to `scbe-agents`**; this repo retains the storage-geometry subset: octree_sphere_grid, quadtree25d, voxel_storage, color_dimension, lattice25d_ops + ledger/turnstile. So `from hydra.spine/head/switchboard/limbs/research import …` resolve only in `scbe-agents` — in this repo those endpoints return 503. |
 | **Fleet** | `src/fleet/` (TypeScript, 50+ files) | Agent registry, task dispatch, governance, Polly Pads, swarm coordination |
-| **Juggling Scheduler** | `src/fleet/juggling-scheduler.ts` + `hydra/juggling_scheduler.py` | Physics-based task-flight coordination |
+| **Juggling Scheduler** | `src/fleet/juggling-scheduler.ts` (the Python `hydra/juggling_scheduler.py` moved to `scbe-agents`) | Physics-based task-flight coordination |
 | **Red/Blue Arena** | `src/security-engine/redblue-arena.ts` | Adversarial model-vs-model security simulation |
 
 **Juggling Scheduler** models task coordination as a physics juggling system: balls=TaskCapsules, hands=AgentSlots, throws=handoffs, arcs=deadline windows, drops=failures. Seven rules: (1) never throw to unready hand, (2) predicted catch windows, (3) fewer handoffs for high-inertia tasks, (4) higher arcs for risky tasks, (5) detect phase drift, (6) interception paths, (7) ledger catches not throws.
@@ -372,6 +383,11 @@ Add axiom compliance comments where applicable: `// A4: Clamping` or `# A2: Unit
 - **TypeScript is canonical** (production). Update TS first, then Python.
 - Cross-language parity tests in `tests/cross-language/` and `tests/interop/`.
 
+### Code Locality
+- A command's logic lives **inside its package** (e.g. `packages/cli/`, `packages/agent-bus/`), not scattered into root-level scripts or a parallel sibling file. Fold new behavior into the existing module that owns that surface.
+- The repo root is for **standard project files only** (README, LICENSE, CHANGELOG, CONTRIBUTING, SECURITY, agent-instruction files, build/config manifests). Do not add new top-level scripts or docs there — put scripts under `scripts/`, docs under `docs/`.
+- Before declaring a path a submodule, confirm there is a tracked gitlink for it; a `.gitmodules` stanza with no gitlink is dead and should not be added.
+
 ### When Adding Features
 1. Tag files with `@layer` comments
 2. Document which axiom your code satisfies
@@ -470,7 +486,7 @@ Docker Compose files: `docker-compose.yml`, `docker-compose.api.yml`, `docker-co
 | `docs/SYSTEM_ARCHITECTURE.md` | Detailed architecture |
 | `ARCHITECTURE.md` | High-level architecture overview |
 | `docs/LANGUES_WEIGHTING_SYSTEM.md` | Langues metric deep dive |
-| `docs/hydra/ARCHITECTURE.md` | HYDRA orchestration |
+| HYDRA orchestration | Concept/design in **Notion**; full runtime in the **`scbe-agents`** repo (the old `docs/hydra/ARCHITECTURE.md` is not present in this repo) |
 | `docs/PUBLISHING.md` | Safe release flow |
 | `docs/AETHERBROWSE_BLUEPRINT.md` | AetherBrowse browser agent design |
 | `docs/API.md` | API reference |

@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atomic Output Lab | AetherMoore</title>
+    <meta
+      name="description"
+      content="Turn workflows into semantic atoms, chemistry command stacks, and implementation outputs."
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0f12;
+        --panel: #151d20;
+        --panel-soft: #10171a;
+        --line: rgba(219, 196, 145, 0.2);
+        --text: #f6f1e8;
+        --muted: #aeb9b7;
+        --gold: #e0bb68;
+        --green: #23c99d;
+        --blue: #86b7ff;
+        --red: #ff8a7a;
+        --max: 1180px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(180deg, #0b0f12, #10171a 48%, #0b0f12);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      a { color: inherit; text-decoration: none; }
+      .shell {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 56px;
+      }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 38px;
+      }
+      .brand {
+        color: var(--gold);
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 13px;
+      }
+      .nav {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
+        gap: 20px;
+        align-items: start;
+      }
+      .eyebrow {
+        margin: 0 0 14px;
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 {
+        max-width: 11ch;
+        margin-bottom: 18px;
+        font-size: clamp(42px, 7vw, 76px);
+        line-height: 0.94;
+      }
+      h2 { margin-bottom: 10px; }
+      p { color: var(--muted); line-height: 1.55; }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 20px;
+      }
+      textarea, select, input {
+        width: 100%;
+        border: 1px solid rgba(255,255,255,0.14);
+        border-radius: 8px;
+        background: var(--panel-soft);
+        color: var(--text);
+        padding: 12px;
+        font: inherit;
+      }
+      textarea {
+        min-height: 180px;
+        resize: vertical;
+        line-height: 1.45;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 12px 0;
+      }
+      label {
+        display: grid;
+        gap: 7px;
+        color: var(--muted);
+        font-weight: 800;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+      }
+      button, .btn {
+        border: 1px solid rgba(255,255,255,0.16);
+        border-radius: 8px;
+        min-height: 44px;
+        padding: 10px 14px;
+        color: var(--text);
+        background: rgba(255,255,255,0.06);
+        font: inherit;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      .primary {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: #12110d;
+      }
+      .result-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 16px;
+      }
+      .result-card {
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        background: rgba(255,255,255,0.04);
+        padding: 16px;
+      }
+      .result-card strong {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text);
+      }
+      .pill-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .pill {
+        border: 1px solid rgba(255,255,255,0.13);
+        border-radius: 999px;
+        padding: 6px 9px;
+        background: rgba(255,255,255,0.05);
+        color: var(--green);
+        font-size: 13px;
+        font-weight: 800;
+      }
+      pre {
+        overflow: auto;
+        max-height: 360px;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        background: #070b0d;
+        padding: 14px;
+        color: #d6efe7;
+      }
+      .status { color: var(--muted); }
+      .error { color: var(--red); }
+      @media (max-width: 900px) {
+        .hero, .result-grid, .form-grid { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 560px) {
+        .topbar { align-items: flex-start; flex-direction: column; }
+        h1 { font-size: 42px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/">AetherMoore</a>
+        <nav class="nav" aria-label="Product navigation">
+          <a href="/">Home</a>
+          <a href="payments.html">Payments</a>
+          <a href="products.html">Products</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Atomic Output Lab</p>
+          <h1>Turn messy work into structured output.</h1>
+          <p>
+            Enter a workflow, business task, or technical command. The backend returns semantic
+            atoms, chemistry command steps, risk flags, and a usable implementation plan.
+          </p>
+          <p>
+            This is the first polished front end for the atomic and chemistry systems: one input,
+            one output, one result a customer can understand.
+          </p>
+        </div>
+
+        <form class="panel" id="labForm">
+          <label>
+            Workflow or command
+            <textarea id="inputText">Qualify missed HVAC calls, collect urgency, ZIP code, and best callback time, then send a weekly report to the owner.</textarea>
+          </label>
+          <div class="form-grid">
+            <label>
+              Output mode
+              <select id="mode">
+                <option value="business">Business workflow</option>
+                <option value="chemistry">Chemistry command</option>
+                <option value="software">Software workflow</option>
+              </select>
+            </label>
+            <label>
+              Customer type
+              <input id="customer" value="local service business" />
+            </label>
+          </div>
+          <div class="actions">
+            <button class="primary" type="submit">Generate output</button>
+            <button type="button" id="copyJson">Copy JSON</button>
+          </div>
+          <p class="status" id="status">Ready.</p>
+        </form>
+      </section>
+
+      <section id="results" class="result-grid" aria-live="polite"></section>
+      <section class="panel" style="margin-top: 14px">
+        <h2>Export</h2>
+        <pre id="jsonOut">{}</pre>
+      </section>
+    </main>
+
+    <script>
+      var lastResult = {};
+      var examples = {
+        business: "Qualify missed HVAC calls, collect urgency, ZIP code, and best callback time, then send a weekly report to the owner.",
+        chemistry: "Measure water sample, identify pH drift, stabilize fragment, bind corrective operation, verify reversibility.",
+        software: "Scan repository, find failing tests, route risky files for review, patch the bug, and emit a release note."
+      };
+
+      document.getElementById("mode").addEventListener("change", function (event) {
+        document.getElementById("inputText").value = examples[event.target.value] || examples.business;
+      });
+
+      function esc(value) {
+        return String(value).replace(/[&<>"']/g, function (char) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+        });
+      }
+
+      function pills(items) {
+        return '<div class="pill-row">' + items.map(function (item) {
+          return '<span class="pill">' + esc(item) + '</span>';
+        }).join("") + "</div>";
+      }
+
+      function render(data) {
+        lastResult = data;
+        document.getElementById("jsonOut").textContent = JSON.stringify(data, null, 2);
+        document.getElementById("results").innerHTML = [
+          '<article class="result-card"><strong>Summary</strong><p>' + esc(data.summary) + '</p></article>',
+          '<article class="result-card"><strong>Semantic atoms</strong>' + pills(data.semantic_atoms.map(function (a) { return a.role + ":" + a.token; })) + '</article>',
+          '<article class="result-card"><strong>Chemistry command stack</strong>' + pills(data.chemistry_stack.map(function (c) { return c.primitive; })) + '</article>',
+          '<article class="result-card"><strong>Next actions</strong><p>' + esc(data.next_actions.join(" ")) + '</p></article>'
+        ].join("");
+      }
+
+      document.getElementById("labForm").addEventListener("submit", async function (event) {
+        event.preventDefault();
+        var status = document.getElementById("status");
+        status.textContent = "Generating...";
+        status.className = "status";
+        try {
+          var response = await fetch("/api/agent/atomic-lab", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              input: document.getElementById("inputText").value,
+              mode: document.getElementById("mode").value,
+              customer: document.getElementById("customer").value
+            })
+          });
+          var data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Request failed");
+          render(data);
+          status.textContent = "Output ready.";
+        } catch (error) {
+          status.textContent = error.message || String(error);
+          status.className = "status error";
+        }
+      });
+
+      document.getElementById("copyJson").addEventListener("click", async function () {
+        await navigator.clipboard.writeText(JSON.stringify(lastResult, null, 2));
+        document.getElementById("status").textContent = "JSON copied.";
+      });
+
+      document.getElementById("labForm").dispatchEvent(new Event("submit"));
+    </script>
+  </body>
+</html>

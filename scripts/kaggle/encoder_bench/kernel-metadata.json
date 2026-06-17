@@ -1,0 +1,13 @@
+{
+ "id": "issacizrealdavis/scbe-ast-encoder-benchmark",
+ "title": "SCBE AST Encoder Benchmark",
+ "code_file": "encoder_bench_kernel.py",
+ "language": "python",
+ "kernel_type": "script",
+ "is_private": "true",
+ "enable_gpu": "false",
+ "enable_internet": "true",
+ "dataset_sources": [],
+ "competition_sources": [],
+ "kernel_sources": []
+}

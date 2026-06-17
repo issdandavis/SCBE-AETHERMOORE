@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GeoSeal Hermes | AetherMoore</title>
+    <meta
+      name="description"
+      content="GeoSeal Hermes turns plain tasks into sealed CLI routes, receipts, and dispatch commands."
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #090d10;
+        --panel: #131b1f;
+        --soft: #0f1518;
+        --line: rgba(224, 187, 104, 0.22);
+        --text: #f6f1e8;
+        --muted: #aeb9b7;
+        --gold: #e0bb68;
+        --green: #23c99d;
+        --blue: #86b7ff;
+        --max: 1160px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(rgba(9, 13, 16, 0.78), rgba(9, 13, 16, 0.98)),
+          url("hero.svg") center top / cover fixed,
+          var(--bg);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      a { color: inherit; text-decoration: none; }
+      .shell {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 56px;
+      }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 42px;
+      }
+      .brand {
+        color: var(--gold);
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 13px;
+      }
+      .nav {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(340px, 1.1fr);
+        gap: 20px;
+        align-items: start;
+      }
+      .eyebrow {
+        margin: 0 0 14px;
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 {
+        max-width: 10ch;
+        margin-bottom: 18px;
+        font-size: clamp(42px, 7vw, 78px);
+        line-height: 0.94;
+      }
+      p {
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .panel, .card {
+        background: rgba(19, 27, 31, 0.94);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 20px;
+      }
+      label {
+        display: grid;
+        gap: 7px;
+        color: var(--muted);
+        font-weight: 800;
+      }
+      textarea, select, input {
+        width: 100%;
+        border: 1px solid rgba(255,255,255,0.14);
+        border-radius: 8px;
+        background: var(--soft);
+        color: var(--text);
+        padding: 12px;
+        font: inherit;
+      }
+      textarea {
+        min-height: 150px;
+        resize: vertical;
+        line-height: 1.45;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 12px 0;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      button, .btn {
+        border: 1px solid rgba(255,255,255,0.16);
+        border-radius: 8px;
+        min-height: 44px;
+        padding: 10px 14px;
+        color: var(--text);
+        background: rgba(255,255,255,0.06);
+        font: inherit;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      .primary {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: #12110d;
+      }
+      .results {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 16px;
+      }
+      .card strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+      code, pre {
+        font-family: "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+      }
+      pre {
+        overflow: auto;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        background: #06090b;
+        color: #d6efe7;
+        padding: 14px;
+      }
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .pill {
+        border: 1px solid rgba(255,255,255,0.13);
+        border-radius: 999px;
+        padding: 6px 9px;
+        background: rgba(255,255,255,0.05);
+        color: var(--green);
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .status { color: var(--muted); }
+      @media (max-width: 900px) {
+        .hero, .results, .grid { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 560px) {
+        .topbar { align-items: flex-start; flex-direction: column; }
+        h1 { font-size: 42px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/">AetherMoore</a>
+        <nav class="nav" aria-label="Product navigation">
+          <a href="/">Home</a>
+          <a href="atomic-lab">Atomic Lab</a>
+          <a href="payments.html">Payments</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <div>
+          <p class="eyebrow">GeoSeal Hermes</p>
+          <h1>The courier layer for AI work.</h1>
+          <p>
+            Hermes turns a plain request into a sealed route: which command to run, which backend to
+            use, what receipt should be returned, and what guardrails apply before dispatch.
+          </p>
+          <p>
+            This is the polished front end for the GeoSeal CLI. The CLI remains the engine; this
+            page makes it easy for customers and operators to understand the next command.
+          </p>
+        </div>
+
+        <form class="panel" id="hermesForm">
+          <label>
+            Task to route
+            <textarea id="task">Package the Atomic Output Lab as a customer demo, verify the API, and create a receipt.</textarea>
+          </label>
+          <div class="grid">
+            <label>
+              Route type
+              <select id="routeType">
+                <option value="local">Local first</option>
+                <option value="api">API service</option>
+                <option value="hosted">Hosted run</option>
+              </select>
+            </label>
+            <label>
+              Output
+              <select id="outputMode">
+                <option value="json">JSON receipt</option>
+                <option value="brief">Operator brief</option>
+              </select>
+            </label>
+          </div>
+          <div class="actions">
+            <button class="primary" type="submit">Build route</button>
+            <button type="button" id="copyCommand">Copy command</button>
+          </div>
+          <p class="status" id="status">Ready.</p>
+        </form>
+      </section>
+
+      <section class="results" id="results" aria-live="polite"></section>
+      <section class="panel" style="margin-top: 14px">
+        <h2>Receipt JSON</h2>
+        <pre id="jsonOut">{}</pre>
+      </section>
+    </main>
+
+    <script>
+      var lastCommand = "";
+
+      function esc(value) {
+        return String(value).replace(/[&<>"']/g, function (char) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+        });
+      }
+
+      function pills(items) {
+        return '<div class="pill-row">' + items.map(function (item) {
+          return '<span class="pill">' + esc(item) + '</span>';
+        }).join("") + "</div>";
+      }
+
+      function render(data) {
+        lastCommand = data.command;
+        document.getElementById("jsonOut").textContent = JSON.stringify(data, null, 2);
+        document.getElementById("results").innerHTML = [
+          '<article class="card"><strong>Command</strong><pre>' + esc(data.command) + '</pre></article>',
+          '<article class="card"><strong>Route</strong>' + pills([data.route_type, data.backend, data.policy]) + '</article>',
+          '<article class="card"><strong>Receipt</strong><p>' + esc(data.receipt_id) + '</p><p>' + esc(data.summary) + '</p></article>',
+          '<article class="card"><strong>Next steps</strong><p>' + esc(data.next_steps.join(" ")) + '</p></article>'
+        ].join("");
+      }
+
+      document.getElementById("hermesForm").addEventListener("submit", async function (event) {
+        event.preventDefault();
+        var status = document.getElementById("status");
+        status.textContent = "Building route...";
+        var response = await fetch("/api/agent/geoseal-hermes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            task: document.getElementById("task").value,
+            route_type: document.getElementById("routeType").value,
+            output_mode: document.getElementById("outputMode").value
+          })
+        });
+        var data = await response.json();
+        if (!response.ok) {
+          status.textContent = data.error || "Route failed.";
+          return;
+        }
+        render(data);
+        status.textContent = "Route ready.";
+      });
+
+      document.getElementById("copyCommand").addEventListener("click", async function () {
+        await navigator.clipboard.writeText(lastCommand);
+        document.getElementById("status").textContent = "Command copied.";
+      });
+
+      document.getElementById("hermesForm").dispatchEvent(new Event("submit"));
+    </script>
+  </body>
+</html>

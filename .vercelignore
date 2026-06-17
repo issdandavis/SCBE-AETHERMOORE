@@ -8,6 +8,12 @@
 !docs/app-config.json
 !docs/robots.txt
 !docs/sitemap.xml
+!docs/index.html
+!docs/atomic-lab.html
+!docs/ai-chemistry-set.html
+!docs/ai-materials-bench.html
+!docs/ai-waves-lab.html
+!docs/geoseal-hermes.html
 !docs/solutions.html
 !docs/products.html
 !docs/packages.html

@@ -105,9 +105,7 @@ def breath(state: GridState, omega: float) -> GridState:
     return replace(state, breath_phase=state.breath_phase + float(omega))
 
 
-def compose(
-    f: Callable[..., GridState], g: Callable[..., GridState]
-) -> Callable[..., GridState]:
+def compose(f: Callable[..., GridState], g: Callable[..., GridState]) -> Callable[..., GridState]:
     """Function composition (axiom A5): compose(f, g)(x) == f(g(x))."""
 
     def composed(state: GridState, *args: Any, **kwargs: Any) -> GridState:

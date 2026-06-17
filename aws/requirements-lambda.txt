@@ -2,8 +2,8 @@
 # Use: pip install -r requirements-lambda.txt -t ./package
 
 # FastAPI and ASGI adapter
-fastapi>=0.136.1
-pydantic>=2.5.0
+fastapi>=0.136.3
+pydantic>=2.13.4
 mangum>=0.21.0
 
 # Core dependencies

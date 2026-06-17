@@ -67,7 +67,11 @@ class EphemeralNudge:
 
     @property
     def is_expired(self) -> bool:
-        return time.time() > self.created_at + self.ttl_seconds
+        # Use >= so a nudge with ttl_seconds=0 (or any elapsed >= ttl) is
+        # expired at the boundary, independent of clock resolution. Without
+        # this, on coarse-resolution clocks time.time() can equal created_at
+        # in the same tick, leaving a zero-TTL nudge spuriously active.
+        return time.time() >= self.created_at + self.ttl_seconds
 
     @property
     def is_active(self) -> bool:

@@ -10,6 +10,7 @@ dangerous command shapes before GeoSeal launches a subprocess.
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import ctypes
 import json
@@ -92,6 +93,34 @@ class ExecGateResult:
         }
 
 
+@dataclass(frozen=True)
+class ExecGateSimulation:
+    """Dry-run preview: what execute_governed_command WOULD do, without running.
+
+    Pure analysis (parse + policy scan). NEVER launches a subprocess, so it is
+    safe to call from a live terminal as a pre-flight check before any real run.
+    """
+
+    decision: ExecGateDecision
+    would_run: bool
+    max_tier: str
+    resolved_argv: list[str] = field(default_factory=list)
+    runtime_note: Optional[str] = None
+    blocked_reason: Optional[str] = None
+    summary: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "decision": self.decision.to_dict(),
+            "would_run": self.would_run,
+            "max_tier": self.max_tier,
+            "resolved_argv": self.resolved_argv,
+            "runtime_note": self.runtime_note,
+            "blocked_reason": self.blocked_reason,
+            "summary": self.summary,
+        }
+
+
 def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
@@ -121,7 +150,10 @@ def _windows_command_line_to_argv(command: str) -> list[str]:
     argc = ctypes.c_int()
     shell32 = ctypes.windll.shell32
     kernel32 = ctypes.windll.kernel32
-    shell32.CommandLineToArgvW.argtypes = [ctypes.c_wchar_p, ctypes.POINTER(ctypes.c_int)]
+    shell32.CommandLineToArgvW.argtypes = [
+        ctypes.c_wchar_p,
+        ctypes.POINTER(ctypes.c_int),
+    ]
     shell32.CommandLineToArgvW.restype = ctypes.POINTER(ctypes.c_wchar_p)
     kernel32.LocalFree.argtypes = [ctypes.c_void_p]
     kernel32.LocalFree.restype = ctypes.c_void_p
@@ -134,15 +166,149 @@ def _windows_command_line_to_argv(command: str) -> list[str]:
         kernel32.LocalFree(argv_ptr)
 
 
-def scan_command(command: str, *, claimed_paths: Optional[Sequence[str]] = None) -> ExecGateDecision:
-    """Parse and scan a command without executing it."""
+# ── inline-payload inspection ────────────────────────────────────────────────
+# scan_command catches dangerous command SHAPES. For `python -c "<code>"` and
+# `node -c "<code>"` the dangerous logic lives INSIDE the payload string, which
+# no command-shape regex can see (e.g. `python -c "import shutil; shutil.rmtree(p)"`
+# matches no rm/Remove-Item pattern). These helpers parse that payload and DENY it
+# when it destroys files, spawns processes, evaluates dynamically, or reaches for
+# raw OS/socket/registry access — closing the inline-interpreter smuggling gap.
+_PY_DANGER_DOTTED = {
+    ("shutil", "rmtree"),
+    ("os", "system"),
+    ("os", "remove"),
+    ("os", "unlink"),
+    ("os", "rmdir"),
+    ("os", "removedirs"),
+    ("os", "popen"),
+    ("os", "kill"),
+    ("os", "execv"),
+    ("subprocess", "run"),
+    ("subprocess", "call"),
+    ("subprocess", "Popen"),
+    ("subprocess", "check_call"),
+    ("subprocess", "check_output"),
+}
+_PY_DANGER_NAMES = {"eval", "exec", "compile", "__import__"}
+_PY_DANGER_MODULES = {"ctypes", "socket", "winreg", "pty"}
 
+_NODE_DANGER = [
+    (r"child_process", "spawns child processes"),
+    (r"\bfs\.(rm|rmdir|rmSync|rmdirSync|unlink|unlinkSync)\b", "deletes files"),
+    (r"\bexecSync\b|\bspawnSync\b|\bexec\s*\(", "executes shell/process"),
+]
+
+
+def _inline_payload(argv: Sequence[str]) -> Optional[str]:
+    """The string after a `-c` flag, if present."""
+    for i in range(1, len(argv) - 1):
+        if argv[i] == "-c":
+            return argv[i + 1]
+    return None
+
+
+def _scan_python_payload(code: str) -> list[GateFinding]:
+    """AST-scan an inline python payload for destructive / dynamic operations."""
+    findings: list[GateFinding] = []
+    try:
+        tree = ast.parse(code)
+    except SyntaxError:
+        return findings  # unparseable — the interpreter-level QUARANTINE still applies
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            fn = node.func
+            if isinstance(fn, ast.Attribute) and isinstance(fn.value, ast.Name):
+                pair = (fn.value.id, fn.attr)
+                if pair in _PY_DANGER_DOTTED:
+                    findings.append(
+                        GateFinding(
+                            "inline-danger-call",
+                            "DENY",
+                            f"inline python calls {pair[0]}.{pair[1]}()",
+                            evidence=f"{pair[0]}.{pair[1]}",
+                        )
+                    )
+            elif isinstance(fn, ast.Name) and fn.id in _PY_DANGER_NAMES:
+                findings.append(
+                    GateFinding(
+                        "inline-danger-call",
+                        "DENY",
+                        f"inline python calls {fn.id}()",
+                        evidence=fn.id,
+                    )
+                )
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                root = alias.name.split(".")[0]
+                if root in _PY_DANGER_MODULES:
+                    findings.append(
+                        GateFinding(
+                            "inline-danger-import",
+                            "DENY",
+                            f"inline python imports {root}",
+                            evidence=root,
+                        )
+                    )
+        elif isinstance(node, ast.ImportFrom):
+            root = (node.module or "").split(".")[0]
+            if root in _PY_DANGER_MODULES:
+                findings.append(
+                    GateFinding(
+                        "inline-danger-import",
+                        "DENY",
+                        f"inline python imports {root}",
+                        evidence=root,
+                    )
+                )
+    return findings
+
+
+def _scan_node_payload(code: str) -> list[GateFinding]:
+    """Regex-scan an inline node payload for destructive / process operations."""
+    findings: list[GateFinding] = []
+    for pattern, message in _NODE_DANGER:
+        if re.search(pattern, code):
+            findings.append(
+                GateFinding(
+                    "inline-danger-node",
+                    "DENY",
+                    f"inline node {message}",
+                    evidence=pattern,
+                )
+            )
+    return findings
+
+
+def scan_command(
+    command: str,
+    *,
+    claimed_paths: Optional[Sequence[str]] = None,
+    shell_context: bool = False,
+) -> ExecGateDecision:
+    """Parse and scan a command without executing it.
+
+    Args:
+        command: The raw command string to inspect (never executed).
+        claimed_paths: Optional declared path scope; touching paths outside it
+            is flagged as ``unclaimed-path``.
+        shell_context: When True, the command is expected to run *through* a
+            shell (e.g. ``scbe run`` -> PowerShell), so the blanket pipe/chain
+            metacharacter DENY is relaxed. The dangerous-pattern denies
+            (recursive delete, curl|sh, encoded PowerShell, secret paths) and
+            the ``curl|sh`` download-to-exec rule still apply regardless.
+
+    Returns:
+        An ``ExecGateDecision`` with the resolved tier and findings.
+    """
     findings: list[GateFinding] = []
     argv, parse_findings = _parse_command(command)
     findings.extend(parse_findings)
     command_l = command.lower()
 
-    if any(marker in command for marker in ("|", "&&", "||", ";")):
+    # A2: the structural shell-metachar block is relaxed in shell_context (the
+    # caller intentionally routes through a shell); dangerous-pattern denies
+    # below are unconditional.
+    if not shell_context and any(marker in command for marker in ("|", "&&", "||", ";")):
         findings.append(
             GateFinding(
                 "shell-metachar",
@@ -153,12 +319,91 @@ def scan_command(command: str, *, claimed_paths: Optional[Sequence[str]] = None)
         )
 
     deny_patterns: list[tuple[str, str, str]] = [
-        (r"\brm\s+-rf\b", "destructive-rm", "recursive force delete"),
-        (r"\bremove-item\b.*\b-recurse\b", "destructive-remove-item", "recursive PowerShell delete"),
-        (r"\binvoke-expression\b|\biex\b", "powershell-iex", "dynamic PowerShell execution"),
-        (r"\bcurl\b.*\|\s*(sh|bash|powershell|pwsh|iex)\b", "curl-pipe-exec", "download-to-exec chain"),
-        (r"\bwget\b.*\|\s*(sh|bash|powershell|pwsh|iex)\b", "wget-pipe-exec", "download-to-exec chain"),
-        (r"config[/\\]connector_oauth", "connector-secret-path", "connector OAuth secret path"),
+        (
+            r"\bwsl(?:\.exe)?\b.*(?:\s|^)--shutdown\b",
+            "wsl-shutdown",
+            "WSL VM shutdown command",
+        ),
+        (
+            r"\b(?:shutdown|restart-computer|stop-computer|poweroff|reboot)\b",
+            "system-power-state",
+            "host power-state command",
+        ),
+        (
+            r"\bpowercfg\b.*\b(?:hibernate|standby|sleep|h(?:ibernate)?\s+(?:on|off)|-h\s+(?:on|off))\b",
+            "powercfg-state-change",
+            "host sleep/hibernate configuration change",
+        ),
+        (
+            r"\b(?:bcdedit|diskpart|format|manage-bde|reagentc)\b",
+            "system-disk-boot-tool",
+            "boot/disk/system configuration tool",
+        ),
+        (
+            r"\b(?:disable-netadapter|restart-netadapter|enable-netadapter|netsh)\b",
+            "network-adapter-control",
+            "network adapter or stack control",
+        ),
+        (
+            r"\bdocker\b\s+system\s+prune\b.*(?:\s-a\b|\s--all\b)",
+            "docker-system-prune-all",
+            "global Docker prune-all command",
+        ),
+        (
+            r"\btaskkill\b.*(?:\s/f\b|\s/t\b).*(?:\s/im\s+\*|\s/pid\s+0\b|python\.exe|node\.exe|code\.exe)",
+            "broad-taskkill",
+            "broad forced process kill",
+        ),
+        (
+            r"\bstop-process\b.*(?:-force|\s-id\s+0\b|-name\s+\*|python|node|code)",
+            "broad-stop-process",
+            "broad forced PowerShell process kill",
+        ),
+        (
+            r"\b(?:stress|stress-ng|sysbench)\b|\bwhile\s+(?:true\b|\(\s*\$true\s*\))",
+            "host-stress-loop",
+            "host stress or unbounded loop command",
+        ),
+        # destructive-rm must catch recursive+force in ANY flag form/order, not just the
+        # literal "-rf". The old `\brm\s+-rf\b` ALLOWED `rm -fr`, `rm -r -f`, and
+        # `rm --recursive --force` (a real bypass — confirmed via scan_command). Require
+        # an `rm` token plus a recursive flag AND a force flag anywhere after it: bundled
+        # (-rf/-fr/-vrf), split (-r -f), or long (--recursive/--force). The `\s-` (not \b)
+        # before each flag avoids the same boundary trap that disabled -recurse below.
+        # Plain `rm`, `rm -f`, and `rm -r` stay ALLOWED (each lookahead needs the other).
+        (
+            r"\brm\b(?=.*(?:\s-[a-z]*r[a-z]*\b|\s--recursive\b))(?=.*(?:\s-[a-z]*f[a-z]*\b|\s--force\b))",
+            "destructive-rm",
+            "recursive force delete",
+        ),
+        # The leading boundary before "-recurse" must NOT be \b — \b never matches
+        # between a space and a hyphen, so `\b-recurse` silently disabled this rule and
+        # `Remove-Item -Recurse -Force` (and the `rm`/`ri` aliases) were ALLOWED.
+        (
+            r"\b(?:remove-item|ri|rm)\b.*(?:\s|^)-recurse\b",
+            "destructive-remove-item",
+            "recursive PowerShell delete",
+        ),
+        (
+            r"\binvoke-expression\b|\biex\b",
+            "powershell-iex",
+            "dynamic PowerShell execution",
+        ),
+        (
+            r"\bcurl\b.*\|\s*(sh|bash|powershell|pwsh|iex)\b",
+            "curl-pipe-exec",
+            "download-to-exec chain",
+        ),
+        (
+            r"\bwget\b.*\|\s*(sh|bash|powershell|pwsh|iex)\b",
+            "wget-pipe-exec",
+            "download-to-exec chain",
+        ),
+        (
+            r"config[/\\]connector_oauth",
+            "connector-secret-path",
+            "connector OAuth secret path",
+        ),
         (r"\.env(\.|$|\s)", "env-secret-path", "environment secret file path"),
     ]
     for pattern, rule, message in deny_patterns:
@@ -169,7 +414,13 @@ def scan_command(command: str, *, claimed_paths: Optional[Sequence[str]] = None)
         executable = Path(argv[0]).name.lower()
         if executable in {"powershell", "powershell.exe", "pwsh", "pwsh.exe"}:
             if any(arg.lower() in {"-encodedcommand", "-enc"} for arg in argv[1:]):
-                findings.append(GateFinding("encoded-powershell", "DENY", "encoded PowerShell commands are blocked"))
+                findings.append(
+                    GateFinding(
+                        "encoded-powershell",
+                        "DENY",
+                        "encoded PowerShell commands are blocked",
+                    )
+                )
         if executable in {"python", "python.exe", "py", "node", "node.exe"} and "-c" in argv[1:]:
             findings.append(
                 GateFinding(
@@ -179,6 +430,13 @@ def scan_command(command: str, *, claimed_paths: Optional[Sequence[str]] = None)
                     evidence=argv[0],
                 )
             )
+            # Look INSIDE the -c payload: dangerous logic there is DENY, not just QUARANTINE.
+            payload = _inline_payload(argv)
+            if payload:
+                if executable.startswith("node"):
+                    findings.extend(_scan_node_payload(payload))
+                else:
+                    findings.extend(_scan_python_payload(payload))
 
     if claimed_paths:
         normalized_claims = [Path(path).as_posix().lower().strip("/") for path in claimed_paths]
@@ -368,3 +626,40 @@ def execute_governed_command(
                 audit_written=audit_written,
             )
     return result
+
+
+def simulate_command(
+    command: str,
+    *,
+    max_tier: str = "ALLOW",
+    claimed_paths: Optional[Sequence[str]] = None,
+) -> ExecGateSimulation:
+    """Pre-flight dry-run: report what execute_governed_command WOULD do.
+
+    Parses, scans, and resolves the runtime exactly like the real path, then
+    reports whether the command WOULD run at ``max_tier`` and why it would be
+    blocked otherwise. It NEVER launches a subprocess, so it is safe to run in a
+    live terminal — preview here, then do real execution in a sandbox.
+    """
+
+    if max_tier not in TIER_RANK:
+        raise ValueError(f"unknown max_tier: {max_tier}")
+    decision = scan_command(command, claimed_paths=claimed_paths)
+    would_run = decision.allowed and TIER_RANK[decision.tier] <= TIER_RANK[max_tier]
+    resolved_argv, runtime_note = _resolve_runtime(decision.argv)
+    blocked_reason: Optional[str] = None
+    if not would_run:
+        blocked_reason = "gate denied" if decision.tier == "DENY" else f"tier {decision.tier} exceeds max {max_tier}"
+    rules = ", ".join(sorted({f.rule for f in decision.findings})) or "none"
+    verb = "WOULD RUN" if would_run else "BLOCKED"
+    shown = " ".join(resolved_argv) if resolved_argv else command
+    summary = f"{verb} [{decision.tier}] {shown}  (findings: {rules})"
+    return ExecGateSimulation(
+        decision=decision,
+        would_run=would_run,
+        max_tier=max_tier,
+        resolved_argv=resolved_argv,
+        runtime_note=runtime_note,
+        blocked_reason=blocked_reason,
+        summary=summary,
+    )
