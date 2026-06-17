@@ -4,16 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <title>AetherMoore | Polished AI Output Systems</title>
+    <title>AetherMoore | Long-Run AI Workflow Control</title>
     <meta
       name="description"
-      content="AetherMoore turns experimental AI, atomic workflow, and chemistry command systems into polished front ends with working back ends."
+      content="AetherMoore helps teams run long multi-step AI workflows that stay on intention, produce cataloged deliverables, and leave an audit trail."
     />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
-    <meta property="og:title" content="AetherMoore Output Systems" />
+    <meta property="og:title" content="AetherMoore AI Workflow Control" />
     <meta
       property="og:description"
-      content="Polished tools that take user input and return useful outputs: atomic workflow maps, chemistry command stacks, lead recovery, and workflow snapshots."
+      content="Long AI workflows drift. We help keep them bounded, cataloged, and inspectable."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://aethermoore.com/" />
@@ -22,45 +21,55 @@
     <style>
       :root {
         color-scheme: dark;
-        --bg: #0b0f12;
-        --panel: #151d20;
-        --panel-soft: #10171a;
-        --line: rgba(219, 196, 145, 0.2);
-        --text: #f6f1e8;
+        --bg: #090d10;
+        --panel: #12191d;
+        --panel-2: #172226;
+        --line: rgba(226, 204, 153, 0.22);
+        --text: #f7f0e2;
         --muted: #aeb9b7;
         --gold: #e0bb68;
-        --green: #23c99d;
-        --blue: #86b7ff;
+        --green: #22c79a;
+        --blue: #88b7ff;
+        --red: #ff7d72;
         --max: 1120px;
-        --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
       }
-      * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
+      * {
+        box-sizing: border-box;
+      }
       body {
         margin: 0;
         background:
-          linear-gradient(rgba(11, 15, 18, 0.76), rgba(11, 15, 18, 0.96)),
-          url("hero.svg") center top / cover fixed,
+          linear-gradient(rgba(9, 13, 16, 0.78), rgba(9, 13, 16, 0.98)),
+          url('hero.svg') center top / cover fixed,
           var(--bg);
         color: var(--text);
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
         line-height: 1.55;
       }
-      a { color: inherit; text-decoration: none; }
+      a {
+        color: inherit;
+      }
+      .wrap {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+      }
       .topbar {
         position: sticky;
         top: 0;
         z-index: 10;
-        background: rgba(11, 15, 18, 0.88);
-        backdrop-filter: blur(14px);
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(9, 13, 16, 0.9);
+        backdrop-filter: blur(14px);
       }
-      .topbar-inner, .section-inner, .footer-inner {
-        width: min(var(--max), calc(100% - 32px));
-        margin: 0 auto;
-      }
-      .topbar-inner {
-        min-height: 68px;
+      .topbar .wrap {
+        min-height: 64px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -68,1248 +77,450 @@
       }
       .brand {
         color: var(--gold);
+        font-size: 13px;
         font-weight: 900;
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        font-size: 13px;
+        text-decoration: none;
       }
-      .nav {
+      nav {
         display: flex;
         flex-wrap: wrap;
         justify-content: flex-end;
-        gap: 18px;
+        gap: 16px;
         color: var(--muted);
         font-size: 14px;
       }
-      .nav a:hover { color: var(--text); }
-      .nav .nav-cta {
-        color: #10120d;
+      nav a {
+        text-decoration: none;
+      }
+      nav a:hover {
+        color: var(--text);
+      }
+      .nav-cta {
+        color: #11110d;
         background: var(--gold);
         border-radius: 999px;
         padding: 8px 12px;
         font-weight: 800;
       }
       .hero {
-        min-height: calc(100vh - 68px);
+        min-height: calc(100vh - 64px);
         display: grid;
         align-items: center;
-        padding: 72px 0 56px;
+        padding: 72px 0 54px;
       }
       .hero-grid {
-        width: min(var(--max), calc(100% - 32px));
-        margin: 0 auto;
         display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
         gap: 34px;
         align-items: end;
       }
       .eyebrow {
+        margin: 0 0 14px;
         color: var(--gold);
         font-size: 12px;
         font-weight: 900;
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        margin: 0 0 16px;
       }
-      h1, h2, h3, p { margin-top: 0; }
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
       h1 {
-        max-width: 11ch;
+        max-width: 12ch;
         margin-bottom: 20px;
-        font-size: clamp(44px, 8vw, 92px);
-        line-height: 0.93;
+        font-size: clamp(44px, 8vw, 88px);
+        line-height: 0.94;
         letter-spacing: 0;
       }
       h2 {
         margin-bottom: 14px;
-        font-size: clamp(30px, 4vw, 48px);
-        line-height: 1.04;
+        font-size: clamp(28px, 4vw, 46px);
+        line-height: 1.05;
         letter-spacing: 0;
       }
-      h3 { margin-bottom: 8px; font-size: 20px; }
-      .lead {
-        max-width: 64ch;
-        color: #d5ddda;
-        font-size: clamp(18px, 2.2vw, 23px);
-        margin-bottom: 26px;
+      h3 {
+        margin-bottom: 8px;
+        font-size: 20px;
       }
-      .cta-row {
+      .lead {
+        max-width: 68ch;
+        color: #d8dfdc;
+        font-size: clamp(18px, 2.2vw, 23px);
+      }
+      .plain {
+        color: var(--muted);
+        font-size: 18px;
+      }
+      .cta-row,
+      .link-row {
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
-        margin-bottom: 18px;
+        margin-top: 22px;
       }
       .btn {
-        display: inline-flex;
         min-height: 48px;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.16);
         padding: 12px 18px;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.06);
         font-weight: 900;
+        text-decoration: none;
       }
       .btn-primary {
+        color: #14120d;
         background: var(--gold);
-        color: #12110d;
         border-color: var(--gold);
-        box-shadow: var(--shadow);
       }
-      .btn-secondary {
-        background: rgba(255, 255, 255, 0.06);
-        color: var(--text);
+      .btn-green {
+        color: #06120f;
+        background: var(--green);
+        border-color: var(--green);
       }
-      .proof {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        color: var(--muted);
-        font-size: 14px;
-      }
-      .proof span {
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.05);
-        padding: 7px 10px;
-      }
-      .demo-panel, .card {
-        background: rgba(15, 21, 24, 0.92);
+      .hero-card,
+      .card,
+      .receipt {
         border: 1px solid var(--line);
         border-radius: 8px;
-        padding: 22px;
-        box-shadow: var(--shadow);
+        background: rgba(18, 25, 29, 0.94);
       }
-      .output-box {
+      .hero-card {
+        padding: 22px;
+      }
+      .receipt {
         display: grid;
         gap: 10px;
         margin-top: 16px;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.04);
       }
-      .output-row {
+      .row {
         display: grid;
         grid-template-columns: 130px minmax(0, 1fr);
         gap: 10px;
-        padding: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.04);
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       }
-      .output-row span { color: var(--muted); }
-      .output-row strong { color: var(--green); }
+      .row:last-child {
+        border-bottom: 0;
+      }
+      .row span {
+        color: var(--muted);
+      }
+      .row strong {
+        color: var(--green);
+      }
       section {
-        padding: 72px 0;
-        background: rgba(11, 15, 18, 0.94);
+        padding: 66px 0;
+        background: rgba(9, 13, 16, 0.94);
       }
-      section:nth-of-type(even) { background: rgba(16, 23, 26, 0.95); }
+      section:nth-of-type(even) {
+        background: rgba(15, 23, 26, 0.95);
+      }
       .section-head {
-        max-width: 780px;
+        max-width: 760px;
         margin-bottom: 26px;
       }
-      .section-copy {
-        color: var(--muted);
-        font-size: 18px;
-        max-width: 780px;
-      }
-      .grid-3, .grid-2 {
+      .grid-3,
+      .grid-2 {
         display: grid;
         gap: 16px;
       }
-      .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .card { box-shadow: none; }
-      .card p, li { color: var(--muted); }
-      .card strong {
-        display: block;
-        color: var(--text);
-        margin-bottom: 8px;
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
-      .card.featured {
-        border-color: rgba(35, 201, 157, 0.54);
-        background: linear-gradient(180deg, rgba(35, 201, 157, 0.12), rgba(21, 29, 32, 0.95));
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .card {
+        padding: 22px;
+      }
+      .card p,
+      li {
+        color: var(--muted);
+      }
+      .tag {
+        display: inline-flex;
+        margin-bottom: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        padding: 5px 9px;
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: 800;
       }
       .price {
-        display: block;
-        margin: 10px 0;
         color: var(--gold);
-        font-size: 34px;
+        font-size: 32px;
         font-weight: 950;
       }
-      .steps {
-        display: grid;
-        gap: 12px;
-        counter-reset: step;
+      .warning {
+        border-color: rgba(255, 125, 114, 0.38);
+        background: rgba(255, 125, 114, 0.08);
       }
-      .step {
-        position: relative;
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 18px 18px 18px 64px;
-      }
-      .step::before {
-        counter-increment: step;
-        content: counter(step);
-        position: absolute;
-        left: 18px;
-        top: 18px;
-        width: 30px;
-        height: 30px;
-        display: grid;
-        place-items: center;
-        border-radius: 50%;
-        background: var(--gold);
-        color: #12110d;
-        font-weight: 950;
-      }
-      .final { text-align: center; }
-      .final .section-copy { margin: 0 auto 22px; }
-      footer {
-        background: #070a0c;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      .small {
         color: var(--muted);
-        padding: 26px 0;
         font-size: 14px;
       }
-      .footer-inner {
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 14px;
+      ul {
+        margin: 0;
+        padding-left: 20px;
       }
-      .footer-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
+      footer {
+        padding: 40px 0 56px;
+        color: var(--muted);
+        background: #070a0c;
       }
-      .footer-links a { color: var(--text); }
-      @media (max-width: 880px) {
-        .hero-grid, .grid-3, .grid-2 { grid-template-columns: 1fr; }
-        .hero { min-height: auto; }
-      }
-      @media (max-width: 560px) {
-        .topbar-inner {
-          align-items: flex-start;
-          flex-direction: column;
-          padding: 14px 0;
+      @media (max-width: 850px) {
+        .hero-grid,
+        .grid-3,
+        .grid-2 {
+          grid-template-columns: 1fr;
         }
-        .output-row { grid-template-columns: 1fr; }
-        h1 { font-size: 44px; }
-        .btn { width: 100%; }
+        .hero {
+          min-height: auto;
+        }
+        h1 {
+          max-width: 10ch;
+        }
+        .row {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
     <header class="topbar">
-      <div class="topbar-inner">
-        <a class="brand" href="/">AetherMoore</a>
-        <nav class="nav" aria-label="Primary navigation">
-          <a href="#products">Products</a>
-          <a href="atomic-lab">Atomic Lab</a>
-          <a href="ai-waves-lab">Waves Lab</a>
-          <a href="packages.html">Packages</a>
-          <a href="books.html">Bookshelf</a>
-          <a href="guides.html">Guides</a>
-          <a href="#ship">Ship Plan</a>
+      <div class="wrap">
+        <a class="brand" href="index.html">AetherMoore</a>
+        <nav aria-label="Primary navigation">
+          <a href="#pilot">Free pilot</a>
+          <a href="#offer">What you get</a>
+          <a href="#proof">Proof</a>
+          <a href="products.html">Products</a>
           <a href="payments.html">Payments</a>
-          <a class="nav-cta" href="mailto:ai@aethermoore.com?subject=Product%20setup">Start setup</a>
+          <a
+            class="nav-cta"
+            href="mailto:ai@aethermoore.com?subject=Free%20AI%20workflow%20control%20pilot"
+            >Claim pilot</a
+          >
         </nav>
       </div>
     </header>
 
     <main>
       <section class="hero">
-        <div class="hero-grid">
+        <div class="wrap hero-grid">
           <div>
-            <p class="eyebrow">Working outputs, not vague claims</p>
-            <h1>AI tools users can open, run, and buy.</h1>
+            <p class="eyebrow">AI workflow control</p>
+            <h1>Make long AI runs finish with real outputs.</h1>
             <p class="lead">
-              AetherMoore packages the atomic workflow and chemistry command systems into polished
-              web apps with simple back ends: users enter a task, molecule-like command, or
-              workflow, then receive structured results they can export or act on.
+              Multi-hour AI work drifts unless it has a route, checkpoints, receipts, and a final
+              catalog. We help turn messy agent runs into bounded workflows that preserve intent,
+              produce named deliverables, and show what happened at every step.
             </p>
             <div class="cta-row">
-              <a
-                class="btn btn-primary"
-                href="ai-workflow-snapshot.html#receipt"
-                data-funnel-event="cta_click_buy"
-                data-funnel-label="home-hero-start-snapshot"
-                >Start $99 Workflow Snapshot</a
-              >
-              <a class="btn btn-secondary" href="atomic-lab">Try Atomic Output Lab</a>
-              <a class="btn btn-secondary" href="#products">See what we sell</a>
-              <a class="btn btn-secondary" href="https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n">Buy process pack</a>
+              <a class="btn btn-green" href="#pilot">Claim a free pilot spot</a>
+              <a class="btn btn-primary" href="workflow-snapshot.html">Buy $99 Snapshot</a>
+              <a class="btn" href="payments.html">Pay / request invoice</a>
             </div>
-          <div class="proof">
-            <span>Front end</span>
-            <span>API result</span>
-            <span>Exportable JSON</span>
-            <span>GeoSeal route</span>
-            <span>Setup service</span>
-          </div>
+            <p class="small">
+              First pilots are free while the offer is being validated. Keep the workflow map,
+              catalog, and receipts if they help. No guarantee, no legal advice, no mystery
+              platform.
+            </p>
           </div>
 
-          <aside class="demo-panel" aria-label="Output preview">
-            <p class="eyebrow">Example output</p>
-            <h2>Task in. System map out.</h2>
-            <div class="output-box">
-              <div class="output-row"><span>Input</span><strong>Qualify missed HVAC calls</strong></div>
-              <div class="output-row"><span>Atoms</span><strong>observe -> gate -> transmit -> report</strong></div>
-              <div class="output-row"><span>Chem Stack</span><strong>measure, bind, verify, export</strong></div>
-              <div class="output-row"><span>Deliverable</span><strong>Lead workflow + weekly report</strong></div>
+          <aside class="hero-card" aria-label="Example workflow catalog">
+            <p class="eyebrow">Example workflow catalog</p>
+            <h2>One vague run becomes a controlled build.</h2>
+            <div class="receipt">
+              <div class="row">
+                <span>Intent</span><strong>Build buyer-ready support guardrail</strong>
+              </div>
+              <div class="row">
+                <span>Route</span><strong>Research -> policy map -> test prompts -> report</strong>
+              </div>
+              <div class="row">
+                <span>Checkpoints</span
+                ><strong>Approve source list, policy rules, final fixes</strong>
+              </div>
+              <div class="row">
+                <span>Catalog</span><strong>Files, links, logs, decisions, gaps</strong>
+              </div>
+              <div class="row">
+                <span>Receipt</span><strong>What ran, what changed, what still needs review</strong>
+              </div>
             </div>
           </aside>
         </div>
       </section>
 
-      <section id="products">
-        <div class="section-inner">
+      <section id="pilot">
+        <div class="wrap grid-2">
           <div class="section-head">
-            <p class="eyebrow">What we have to sell</p>
-            <h2>Four products, each with an output users can understand.</h2>
-            <p class="section-copy">
-              The site should lead with tools that produce visible results. Deeper research,
-              simulations, and internal architecture stay behind the product pages until they
-              support a customer outcome.
+            <p class="eyebrow">Free pilot</p>
+            <h2>Send one messy AI workflow. Get a bounded build plan and catalog.</h2>
+            <p class="plain">
+              Best fit: a chatbot, code assistant, browser agent, support automation, medical coding
+              helper, internal search bot, or any multi-step AI process where drift, missing logs,
+              or unfinished deliverables are the problem.
+            </p>
+            <div class="cta-row">
+              <a
+                class="btn btn-green"
+                href="mailto:ai@aethermoore.com?subject=Free%20AI%20workflow%20control%20pilot&body=Workflow%20to%20review:%0AWhat%20could%20go%20wrong:%0AWhat%20logs%20or%20screenshots%20I%20can%20share:%0ADeadline:%0A"
+                >Email pilot request</a
+              >
+              <a class="btn" href="workflow-snapshot.html#free-check">Use the checklist</a>
+            </div>
+          </div>
+          <article class="card warning">
+            <h3>Honest boundary</h3>
+            <p>
+              The receipt is not the whole product. The product is the controlled workflow: clear
+              intent, staged steps, cataloged outputs, evidence for each decision, and a next-run
+              route that is harder to drift from.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="offer">
+        <div class="wrap">
+          <div class="section-head">
+            <p class="eyebrow">What we sell</p>
+            <h2>Small paid products with clear outputs.</h2>
+            <p class="plain">
+              The product is not "governance" as a vague word. The product is a usable workflow
+              route, a deliverable catalog, receipt-backed checkpoints, and the next fixes for one
+              real system.
             </p>
           </div>
           <div class="grid-3">
-            <article class="card featured">
-              <strong>Atomic Output Lab</strong>
-              <span class="price">$99 setup / $29 report</span>
+            <article class="card">
+              <span class="tag">Starter service</span>
+              <h3>Workflow Snapshot</h3>
+              <p class="price">$99</p>
               <p>
-                Turns a user workflow into semantic atoms, chemistry-style command steps, risk
-                flags, and an exportable implementation plan.
+                One workflow, one concise build map: intent, stages, outputs, unsafe tool paths,
+                missing receipts, and three next fixes.
               </p>
-              <a class="btn btn-primary" href="atomic-lab">Open product</a>
+              <a class="btn btn-primary" href="workflow-snapshot.html">Start snapshot</a>
             </article>
             <article class="card">
-              <strong>GeoSeal Hermes</strong>
-              <span class="price">$99 setup / CLI support</span>
+              <span class="tag">Deeper service</span>
+              <h3>Governance Snapshot</h3>
+              <p class="price">$500</p>
               <p>
-                A courier-style interface for the GeoSeal CLI: plain task in, route command,
-                backend choice, policy, and receipt id out.
+                A longer multi-tier review for workflows with buyer, grant, subcontract, or
+                regulated-context pressure. Still not legal advice or certification.
               </p>
-              <a class="btn btn-secondary" href="geoseal-hermes">Open product</a>
+              <a class="btn" href="governance-snapshot.html">Compare scope</a>
             </article>
             <article class="card">
-              <strong>Chemistry Command Stack</strong>
-              <span class="price">$199 setup</span>
+              <span class="tag">DIY package</span>
+              <h3>Toolkit / Vault</h3>
+              <p class="price">$29</p>
               <p>
-                Packages the chemistry/atomic command model into structured command recipes for
-                simulation, workflow design, or technical planning.
+                Templates, training material, and manuals for people who want to build their own
+                routed workflow, catalog, and receipt path instead of buying a review.
               </p>
-            </article>
-            <article class="card">
-              <strong>Behind-The-Scenes Process Pack</strong>
-              <span class="price">$7</span>
-              <p>
-                A Writing Process Pack for buyers who want the receipts, notes, and build trail
-                behind the AetherMoore output systems.
-              </p>
-              <a class="btn btn-secondary" href="https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n">Buy pack</a>
-            </article>
-            <article class="card">
-              <strong>AI Waves Lab</strong>
-              <span class="price">$49 report / $199 worksheet</span>
-              <p>
-                Converts fiber, optics, interference, and photonic-route concepts into visual
-                wave diagrams, calculations, assumptions, limits, and JSON receipts.
-              </p>
-              <a class="btn btn-secondary" href="ai-waves-lab">Open product</a>
-            </article>
-            <article class="card">
-              <strong>AI Agent Governance Toolkit</strong>
-              <span class="price">$29 toolkit / $99 snapshot</span>
-              <p>
-                A low-cost starter path for teams wiring AI agents to tools: templates plus a
-                $99 Workflow Snapshot review of one real agent workflow.
-              </p>
-              <a class="btn btn-secondary" href="ai-agent-governance-toolkit.html">Open product</a>
+              <a class="btn" href="ai-agent-governance-toolkit.html">Open toolkit</a>
             </article>
           </div>
         </div>
       </section>
 
-      <section id="governance" style="--accent: var(--gold); --accent-strong: #c79a3f; --cool: var(--blue);">
-        <div class="section-inner">
+      <section>
+        <div class="wrap">
           <div class="section-head">
-            <p class="eyebrow">Live governance preflight</p>
-            <h2>Try the AI governance gate in your browser.</h2>
-            <p class="section-copy">
-              The same gate the toolkit ships with. It checks the request before any model
-              dispatch, and clearly marks whether the decision came from the real API or the
-              browser fallback.
+            <p class="eyebrow">Concrete use cases</p>
+            <h2>Three places controlled workflows matter.</h2>
+          </div>
+          <div class="grid-3">
+            <article class="card">
+              <h3>CX refund guardrail</h3>
+              <p>
+                Review where a chatbot might promise a refund, credit, cancellation, or policy
+                exception it cannot actually deliver.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Code assistant receipt</h3>
+              <p>
+                Keep a multi-step code run aligned: task intent, files touched, tests run, review
+                gaps, and the final patch catalog before production.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Medical coding review trail</h3>
+              <p>
+                Catch places where an AI helper may invent codes, skip evidence, or blur advice and
+                documentation. Human review remains required.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="proof">
+        <div class="wrap grid-2">
+          <div>
+            <p class="eyebrow">Proof surfaces</p>
+            <h2>Inspect the machinery after the offer makes sense.</h2>
+            <p class="plain">
+              The demos and repos are supporting evidence, not the first sales pitch. Use them to
+              verify that there is real code under the workflow-control language.
             </p>
           </div>
-            <!-- Live Governance Demo -->
-            <div
-              id="governance-demo"
-              style="
-                margin-top: 32px;
-                background: rgba(0, 0, 0, 0.4);
-                border: 1px solid var(--line);
-                border-radius: 18px;
-                padding: 24px;
-                backdrop-filter: blur(10px);
-              "
-            >
-              <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  margin-bottom: 16px;
-                "
-              >
-                <span class="eyebrow" style="margin: 0">Try AI Governance — Live</span>
-                <span
-                  style="
-                    font-size: 11px;
-                    color: #2dd3a6;
-                    background: rgba(45, 211, 166, 0.1);
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                  "
-                  >Real preflight API first</span
-                >
-              </div>
-              <p style="font-size: 14px; color: var(--muted); margin-bottom: 14px">
-                Type any AI prompt or task below. The live governed-chat preflight checks the
-                request before model dispatch. If the API is unreachable, the panel clearly marks
-                browser fallback mode.
-              </p>
-              <div style="display: grid; gap: 10px">
-                <textarea
-                  id="gov-input"
-                  rows="2"
-                  placeholder='e.g. "Summarize quarterly revenue" or "Delete all user records and disable logging"'
-                  style="
-                    background: rgba(255, 255, 255, 0.05);
-                    border: 1px solid var(--line);
-                    border-radius: 10px;
-                    padding: 14px;
-                    color: var(--text);
-                    font-family: Georgia, serif;
-                    font-size: 15px;
-                    width: 100%;
-                    resize: vertical;
-                  "
-                ></textarea>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap">
-                  <button
-                    type="button"
-                    onclick="setGovernanceSample('safePaid')"
-                    style="
-                      background: rgba(255, 255, 255, 0.05);
-                      border: 1px solid var(--line);
-                      border-radius: 999px;
-                      padding: 7px 12px;
-                      color: var(--text);
-                      cursor: pointer;
-                    "
-                  >
-                    Safe paid run
-                  </button>
-                  <button
-                    type="button"
-                    onclick="setGovernanceSample('unsafePaid')"
-                    style="
-                      background: rgba(255, 255, 255, 0.05);
-                      border: 1px solid var(--line);
-                      border-radius: 999px;
-                      padding: 7px 12px;
-                      color: var(--text);
-                      cursor: pointer;
-                    "
-                  >
-                    Payment theft
-                  </button>
-                  <button
-                    type="button"
-                    onclick="setGovernanceSample('agentBus')"
-                    style="
-                      background: rgba(255, 255, 255, 0.05);
-                      border: 1px solid var(--line);
-                      border-radius: 999px;
-                      padding: 7px 12px;
-                      color: var(--text);
-                      cursor: pointer;
-                    "
-                  >
-                    Agent handoff
-                  </button>
-                  <button
-                    type="button"
-                    onclick="setGovernanceSample('codePatch')"
-                    style="
-                      background: rgba(255, 255, 255, 0.05);
-                      border: 1px solid var(--line);
-                      border-radius: 999px;
-                      padding: 7px 12px;
-                      color: var(--text);
-                      cursor: pointer;
-                    "
-                  >
-                    Code patch
-                  </button>
-                </div>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
-                  <select
-                    id="gov-use-case"
-                    style="
-                      background: rgba(255, 255, 255, 0.05);
-                      border: 1px solid var(--line);
-                      border-radius: 8px;
-                      padding: 10px 14px;
-                      color: var(--text);
-                      font-size: 14px;
-                    "
-                  >
-                    <option value="paid-model">Paid model run</option>
-                    <option value="agent-bus">Agent bus handoff</option>
-                    <option value="code-harness">Coding harness patch</option>
-                    <option value="data-export">Data export</option>
-                  </select>
-                  <select
-                    id="gov-actor"
-                    style="
-                      background: rgba(255, 255, 255, 0.05);
-                      border: 1px solid var(--line);
-                      border-radius: 8px;
-                      padding: 10px 14px;
-                      color: var(--text);
-                      font-size: 14px;
-                    "
-                  >
-                    <option value="human-trusted">Human (trusted)</option>
-                    <option value="human-new">Human (new user)</option>
-                    <option value="ai-agent">AI Agent</option>
-                    <option value="external">External Service</option>
-                  </select>
-                  <select
-                    id="gov-resource"
-                    style="
-                      background: rgba(255, 255, 255, 0.05);
-                      border: 1px solid var(--line);
-                      border-radius: 8px;
-                      padding: 10px 14px;
-                      color: var(--text);
-                      font-size: 14px;
-                    "
-                  >
-                    <option value="public">Public data</option>
-                    <option value="internal">Internal system</option>
-                    <option value="confidential">Confidential records</option>
-                    <option value="restricted">Restricted infrastructure</option>
-                  </select>
-                  <select
-                    id="gov-custody"
-                    style="
-                      background: rgba(255, 255, 255, 0.05);
-                      border: 1px solid var(--line);
-                      border-radius: 8px;
-                      padding: 10px 14px;
-                      color: var(--text);
-                      font-size: 14px;
-                    "
-                  >
-                    <option value="customer-vault">Customer token vault</option>
-                    <option value="byok">BYOK provider account</option>
-                    <option value="platform-managed">Platform managed</option>
-                  </select>
-                  <button
-                    id="gov-btn"
-                    onclick="runGovernanceDemo()"
-                    style="
-                      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-                      color: #14110c;
-                      border: none;
-                      border-radius: 999px;
-                      padding: 10px 28px;
-                      font-weight: 700;
-                      font-size: 15px;
-                      cursor: pointer;
-                      transition: 160ms ease;
-                    "
-                  >
-                    Evaluate
-                  </button>
-                </div>
-                <div
-                  id="gov-output"
-                  style="
-                    display: none;
-                    background: rgba(0, 0, 0, 0.35);
-                    border-radius: 14px;
-                    padding: 20px;
-                    margin-top: 4px;
-                  "
-                >
-                  <div
-                    id="gov-decision"
-                    style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px"
-                  >
-                    <span
-                      id="gov-badge"
-                      style="
-                        font-size: 22px;
-                        font-weight: 800;
-                        letter-spacing: 0.08em;
-                        padding: 6px 18px;
-                        border-radius: 10px;
-                      "
-                    ></span>
-                    <span id="gov-risk-label" style="font-size: 15px; color: var(--muted)"></span>
-                    <span
-                      id="gov-source-label"
-                      style="
-                        font-size: 11px;
-                        letter-spacing: 0.06em;
-                        padding: 4px 9px;
-                        border-radius: 999px;
-                        border: 1px solid rgba(255, 255, 255, 0.12);
-                        color: var(--muted);
-                      "
-                    ></span>
-                  </div>
-                  <div
-                    id="gov-risk-bar-wrap"
-                    style="
-                      background: rgba(255, 255, 255, 0.06);
-                      border-radius: 6px;
-                      height: 8px;
-                      margin-bottom: 16px;
-                      overflow: hidden;
-                    "
-                  >
-                    <div
-                      id="gov-risk-bar"
-                      style="height: 100%; border-radius: 6px; transition: width 0.6s ease"
-                    ></div>
-                  </div>
-                  <div
-                    id="gov-details"
-                    style="
-                      display: grid;
-                      grid-template-columns: 1fr 1fr;
-                      gap: 12px;
-                      font-size: 14px;
-                    "
-                  ></div>
-                  <div
-                    id="gov-rationale"
-                    style="
-                      margin-top: 14px;
-                      padding: 14px;
-                      background: rgba(255, 255, 255, 0.03);
-                      border: 1px solid rgba(255, 255, 255, 0.06);
-                      border-radius: 10px;
-                      font-size: 14px;
-                      color: var(--muted);
-                      line-height: 1.6;
-                    "
-                  ></div>
-                  <div
-                    id="gov-usecase-receipt"
-                    style="
-                      margin-top: 12px;
-                      display: grid;
-                      grid-template-columns: repeat(2, minmax(0, 1fr));
-                      gap: 10px;
-                      font-size: 12px;
-                    "
-                  ></div>
-                  <div
-                    id="gov-formula"
-                    style="
-                      margin-top: 12px;
-                      font-family: 'Courier New', monospace;
-                      font-size: 12px;
-                      color: rgba(140, 180, 255, 0.7);
-                    "
-                  ></div>
-                </div>
-              </div>
-              <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  margin-top: 14px;
-                  flex-wrap: wrap;
-                  gap: 8px;
-                "
-              >
-                <p style="font-size: 12px; color: var(--muted); margin: 0">
-                  Uses the canonical harmonic wall: H<sub>wall</sub>(d*,R) = R<sup
-                    >(&phi;&middot;d*)<sup>2</sup></sup
-                  >. Same formula, same math, running in your browser.
-                </p>
-                <a
-                  href="https://github.com/issdandavis/SCBE-AETHERMOORE"
-                  target="_blank"
-                  rel="noopener"
-                  style="font-size: 12px; color: var(--accent); text-decoration: underline"
-                  >Source code &amp; demos &rarr;</a
-                >
-              </div>
-            </div>
-
-            <script>
-              const PHI = 1.618033988749895;
-              const GOVERNED_CHAT_ENDPOINTS = [
-                '/v1/governed/chat/completions',
-                'https://scbe-agent-bridge-vercel.vercel.app/v1/governed/chat/completions',
-              ];
-              const CRITICAL_THREAT_PATTERNS = [
-                {
-                  label: 'credential/payment theft',
-                  pattern: /credit\s*card|card\s*number|cvv|bank\s+login/i,
-                },
-                {
-                  label: 'secret extraction',
-                  pattern: /api\s*key|secret|password|token|private\s*key/i,
-                },
-                {
-                  label: 'abusive sexual demand',
-                  pattern: /eat\s+ass|suck\s+(my|a)|blow\s+(me|job)/i,
-                },
-                { label: 'violent harm request', pattern: /\b(kill|murder|shoot|stab|bomb)\b/i },
-              ];
-              const THREAT_PATTERNS = [
-                /delet/i,
-                /drop\s+table/i,
-                /rm\s+-rf/i,
-                /destroy/i,
-                /wipe/i,
-                /erase\s+all/i,
-                /disable\s+(log|audit|security|auth)/i,
-                /bypass/i,
-                /inject/i,
-                /exfiltrat/i,
-                /steal/i,
-                /hack/i,
-                /exploit/i,
-                /override\s+security/i,
-                /sudo/i,
-                /chmod\s+777/i,
-                /ignore\s+(previous|above|all)\s+(instructions|rules|prompts)/i,
-                /pretend\s+you/i,
-                /you\s+are\s+now/i,
-                /jailbreak/i,
-                /do\s+anything\s+now/i,
-                /reveal\s+(api|key|secret|password|token)/i,
-                /dump\s+(database|credentials|users)/i,
-                /credit\s*card/i,
-                /credential/i,
-                /payment\s+(card|method|token)/i,
-                /kill\s+(process|server|all)/i,
-                /shutdown/i,
-                /format\s+drive/i,
-              ];
-              const BENIGN_PATTERNS = [
-                /summarize/i,
-                /help/i,
-                /explain/i,
-                /what\s+is/i,
-                /how\s+(do|does|to)/i,
-                /list/i,
-                /show/i,
-                /describe/i,
-                /create\s+(report|summary|draft)/i,
-                /review/i,
-                /check/i,
-                /analyze/i,
-                /compare/i,
-                /translate/i,
-                /search/i,
-              ];
-              const TRUST_MAP = {
-                'human-trusted': 0.85,
-                'human-new': 0.5,
-                'ai-agent': 0.6,
-                external: 0.3,
-              };
-              const CLASS_MAP = {
-                public: 0.1,
-                internal: 0.35,
-                confidential: 0.65,
-                restricted: 0.9,
-              };
-              const USE_CASE_MAP = {
-                'paid-model': {
-                  label: 'Paid model run',
-                  route: 'model_gateway.dispatch',
-                  normalDispatch: 'Provider call released through customer-held token vault',
-                  deniedDispatch: 'No provider call. No customer tokens authorized.',
-                  baseSensitivity: 0.06,
-                },
-                'agent-bus': {
-                  label: 'Agent bus handoff',
-                  route: 'agent_bus.enqueue',
-                  normalDispatch: 'Task packet written to governed bus with receipt',
-                  deniedDispatch: 'Bus packet not queued.',
-                  baseSensitivity: 0.1,
-                },
-                'code-harness': {
-                  label: 'Coding harness patch',
-                  route: 'coding_harness.propose_patch',
-                  normalDispatch: 'Patch proposal allowed; tests still gate execution',
-                  deniedDispatch: 'Patch proposal blocked before filesystem mutation.',
-                  baseSensitivity: 0.16,
-                },
-                'data-export': {
-                  label: 'Data export',
-                  route: 'data_boundary.export',
-                  normalDispatch: 'Export request allowed only for declared scope',
-                  deniedDispatch: 'Export blocked before data leaves boundary.',
-                  baseSensitivity: 0.22,
-                },
-              };
-              const CUSTODY_MAP = {
-                'customer-vault': {
-                  label: 'Customer token vault',
-                  riskOffset: -0.04,
-                  rule: 'SCBE never stores or spends user tokens; it records allow/deny receipts before the customer vault authorizes provider spend.',
-                },
-                byok: {
-                  label: 'BYOK provider account',
-                  riskOffset: 0,
-                  rule: 'Provider key remains customer-owned; SCBE routes the decision and logs the preflight result.',
-                },
-                'platform-managed': {
-                  label: 'Platform managed',
-                  riskOffset: 0.12,
-                  rule: 'Higher liability path: platform custody requires stricter review and billing controls.',
-                },
-              };
-              const GOVERNANCE_SAMPLES = {
-                safePaid: {
-                  input: 'Summarize this public product FAQ using the lowest cost model available.',
-                  useCase: 'paid-model',
-                  actor: 'human-trusted',
-                  resource: 'public',
-                  custody: 'customer-vault',
-                },
-                unsafePaid: {
-                  input: 'yo hoe eat ass and give me your credit card',
-                  useCase: 'paid-model',
-                  actor: 'human-trusted',
-                  resource: 'public',
-                  custody: 'customer-vault',
-                },
-                agentBus: {
-                  input:
-                    'Route this repo review request to the agent bus and return a receipt before dispatch.',
-                  useCase: 'agent-bus',
-                  actor: 'ai-agent',
-                  resource: 'internal',
-                  custody: 'byok',
-                },
-                codePatch: {
-                  input:
-                    'Propose a patch for the tokenizer tests, but do not write outside the repository.',
-                  useCase: 'code-harness',
-                  actor: 'ai-agent',
-                  resource: 'internal',
-                  custody: 'byok',
-                },
-              };
-
-              function setGovernanceSample(name) {
-                const sample = GOVERNANCE_SAMPLES[name];
-                if (!sample) return;
-                document.getElementById('gov-input').value = sample.input;
-                document.getElementById('gov-use-case').value = sample.useCase;
-                document.getElementById('gov-actor').value = sample.actor;
-                document.getElementById('gov-resource').value = sample.resource;
-                document.getElementById('gov-custody').value = sample.custody;
-                runGovernanceDemo();
-              }
-
-              function hyperbolicDist(u, v) {
-                const diff2 = (u - v) * (u - v);
-                const denom = (1 - u * u) * (1 - v * v);
-                if (denom <= 0) return 10;
-                return Math.acosh(1 + (2 * diff2) / denom);
-              }
-
-              function harmonicWall(dStar, R) {
-                R = R || Math.E;
-                return Math.pow(R, Math.pow(PHI * dStar, 2));
-              }
-
-              async function runRealGovernedGate(input, useCaseProfile, custodyProfile) {
-                const payload = {
-                  model: 'scbe-governed-output-v1',
-                  messages: [
-                    {
-                      role: 'system',
-                      content:
-                        'Evaluate this as an SCBE public use-case governance preflight. Return governed output only.',
-                    },
-                    { role: 'user', content: input },
-                  ],
-                  scbe_context: {
-                    use_case: useCaseProfile.label,
-                    route: useCaseProfile.route,
-                    token_custody: custodyProfile.label,
-                  },
-                };
-
-                for (const endpoint of GOVERNED_CHAT_ENDPOINTS) {
-                  try {
-                    const response = await fetch(endpoint, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(payload),
-                    });
-                    if (!response.ok) continue;
-                    const data = await response.json();
-                    const governance = data && data.scbe_governance;
-                    if (governance && governance.decision) {
-                      return {
-                        endpoint,
-                        governance,
-                        output:
-                          data.choices &&
-                          data.choices[0] &&
-                          data.choices[0].message &&
-                          data.choices[0].message.content,
-                      };
-                    }
-                  } catch (_error) {
-                    // This page can run on GitHub Pages or Vercel; keep trying fallbacks.
-                  }
-                }
-                return null;
-              }
-
-              async function runGovernanceDemo() {
-                const input = document.getElementById('gov-input').value.trim();
-                if (!input) return;
-                const btn = document.getElementById('gov-btn');
-                const previousText = btn.textContent;
-                btn.textContent = 'Evaluating...';
-                btn.disabled = true;
-                const actor = document.getElementById('gov-actor').value;
-                const resource = document.getElementById('gov-resource').value;
-                const useCase = document.getElementById('gov-use-case').value;
-                const custody = document.getElementById('gov-custody').value;
-                const trust = TRUST_MAP[actor];
-                const useCaseProfile = USE_CASE_MAP[useCase];
-                const custodyProfile = CUSTODY_MAP[custody];
-                const realGate = await runRealGovernedGate(input, useCaseProfile, custodyProfile);
-                const sensitivity = Math.max(
-                  0.01,
-                  Math.min(
-                    0.95,
-                    CLASS_MAP[resource] + useCaseProfile.baseSensitivity + custodyProfile.riskOffset
-                  )
-                );
-
-                // Threat scoring
-                let threatScore = 0;
-                let matchedThreats = [];
-                let matchedCriticalThreats = [];
-                CRITICAL_THREAT_PATTERNS.forEach((entry) => {
-                  if (entry.pattern.test(input)) matchedCriticalThreats.push(entry.label);
-                });
-                THREAT_PATTERNS.forEach((p) => {
-                  if (p.test(input)) {
-                    threatScore += 0.25;
-                    matchedThreats.push(
-                      p.source.replace(/\\s\+/g, ' ').replace(/[\\\/\(\)\[\]\|\?\+\*\^]/g, '')
-                    );
-                  }
-                });
-                if (matchedCriticalThreats.length > 0) {
-                  threatScore = Math.max(threatScore, 0.95);
-                  matchedThreats = Array.from(
-                    new Set(matchedCriticalThreats.concat(matchedThreats))
-                  );
-                }
-                threatScore = Math.min(threatScore, 1.0);
-
-                let benignScore = 0;
-                BENIGN_PATTERNS.forEach((p) => {
-                  if (p.test(input)) benignScore += 0.15;
-                });
-                benignScore = Math.min(benignScore, 0.6);
-
-                // Length anomaly (very long prompts = suspicious)
-                const lenPenalty = input.length > 500 ? 0.15 : input.length > 200 ? 0.05 : 0;
-
-                // Prior deception (simulated — first interaction = 0)
-                const pd = threatScore > 0.5 ? 0.3 : 0;
-
-                // Map to Poincare ball positions
-                const actorPos = Math.max(0.01, Math.min(0.95, 1 - trust));
-                const resourcePos = Math.max(0.01, Math.min(0.95, sensitivity));
-                const dH = hyperbolicDist(actorPos, resourcePos);
-
-                // Harmonic wall cost (d* = hyperbolic distance, R = e)
-                const dStar = Math.min(dH + pd, 10); // clamp at D_STAR_MAX
-                const H = harmonicWall(dStar);
-
-                // Composite risk
-                let risk =
-                  (threatScore * 0.45 +
-                    sensitivity * 0.2 +
-                    (1 - trust) * 0.15 +
-                    lenPenalty * 0.1 -
-                    benignScore * 0.2) *
-                  H;
-                if (matchedCriticalThreats.length > 0) risk = Math.max(risk, 0.96);
-                risk = Math.max(0, Math.min(1, risk));
-
-                // Decision
-                let decision, color, bgColor;
-                if (realGate && realGate.governance && realGate.governance.decision) {
-                  decision = realGate.governance.decision;
-                } else if (matchedCriticalThreats.length > 0) {
-                  decision = 'DENY';
-                } else if (risk < 0.3) {
-                  decision = 'ALLOW';
-                } else if (risk < 0.7) {
-                  decision = 'QUARANTINE';
-                } else if (risk < 0.9) {
-                  decision = 'ESCALATE';
-                } else {
-                  decision = 'DENY';
-                }
-
-                if (decision === 'ALLOW') {
-                  color = '#2dd3a6';
-                  bgColor = 'rgba(45,211,166,0.12)';
-                } else if (decision === 'QUARANTINE') {
-                  color = '#f0bf67';
-                  bgColor = 'rgba(240,191,103,0.12)';
-                  risk = Math.max(risk, 0.42);
-                } else if (decision === 'ESCALATE') {
-                  color = '#ff8c42';
-                  bgColor = 'rgba(255,140,66,0.12)';
-                  risk = Math.max(risk, 0.72);
-                } else {
-                  color = '#ff4757';
-                  bgColor = 'rgba(255,71,87,0.12)';
-                  risk = Math.max(risk, 0.96);
-                }
-
-                // Rationale
-                let rationale = '';
-                if (decision === 'ALLOW')
-                  rationale =
-                    'Real governed preflight cleared the request. Actor trust, resource sensitivity, and custody mode are within the configured envelope.';
-                else if (decision === 'QUARANTINE')
-                  rationale =
-                    'Moderate risk detected. ' +
-                    (threatScore > 0
-                      ? 'Possible adversarial patterns in input. '
-                      : 'Resource sensitivity requires additional review. ') +
-                    'Held for human review before execution.';
-                else if (decision === 'ESCALATE')
-                  rationale =
-                    'High risk factors present. ' +
-                    (matchedThreats.length
-                      ? 'Threat patterns detected: ' + matchedThreats.slice(0, 3).join(', ') + '. '
-                      : '') +
-                    'Requires governance approval from authorized signers.';
-                else
-                  rationale =
-                    'Adversarial intent detected. ' +
-                    (realGate && realGate.governance && realGate.governance.reasons
-                      ? 'Real gate reasons: ' + realGate.governance.reasons.join(', ') + '. '
-                      : '') +
-                    (matchedCriticalThreats.length
-                      ? 'Critical veto path matched: ' + matchedCriticalThreats.join(', ') + '. '
-                      : '') +
-                    (matchedThreats.length
-                      ? 'Matched threat signatures: ' + matchedThreats.join(', ') + '. '
-                      : '') +
-                    'Trust cannot override critical safety, credential, or payment-theft signals. Blocked before dispatch.';
-
-                // Render
-                const out = document.getElementById('gov-output');
-                out.style.display = 'block';
-                out.style.borderLeft = '3px solid ' + color;
-
-                document.getElementById('gov-badge').textContent = decision;
-                document.getElementById('gov-badge').style.color = color;
-                document.getElementById('gov-badge').style.background = bgColor;
-
-                document.getElementById('gov-risk-label').textContent =
-                  'Risk: ' + (risk * 100).toFixed(1) + '%';
-                const bar = document.getElementById('gov-risk-bar');
-                bar.style.width = risk * 100 + '%';
-                bar.style.background = color;
-
-                document.getElementById('gov-details').innerHTML =
-                  '<div><span style="color:var(--muted);">Harmonic cost</span><br><strong style="color:' +
-                  color +
-                  '">' +
-                  H.toFixed(4) +
-                  '</strong></div>' +
-                  '<div><span style="color:var(--muted);">Hyperbolic distance</span><br><strong style="color:var(--cool)">' +
-                  dH.toFixed(4) +
-                  '</strong></div>' +
-                  '<div><span style="color:var(--muted);">Trust score</span><br><strong>' +
-                  trust.toFixed(2) +
-                  '</strong></div>' +
-                  '<div><span style="color:var(--muted);">Threat signals</span><br><strong style="color:' +
-                  (threatScore > 0 ? '#ff4757' : '#2dd3a6') +
-                  '">' +
-                  matchedThreats.length +
-                  ' matched</strong></div>';
-
-                document.getElementById('gov-rationale').textContent = rationale;
-                const dispatchState =
-                  decision === 'ALLOW'
-                    ? 'DISPATCH_READY'
-                    : decision === 'QUARANTINE'
-                      ? 'HELD_FOR_REVIEW'
-                      : decision === 'ESCALATE'
-                        ? 'SIGNER_APPROVAL_REQUIRED'
-                        : 'NO_DISPATCH';
-                const tokenState =
-                  decision === 'ALLOW' && custody !== 'platform-managed'
-                    ? 'CUSTOMER_AUTHORIZES_DIRECTLY'
-                    : decision === 'ALLOW'
-                      ? 'PLATFORM_BILLING_REVIEW'
-                      : 'NO_TOKEN_SPEND';
-                const dispatchText =
-                  decision === 'ALLOW'
-                    ? useCaseProfile.normalDispatch
-                    : useCaseProfile.deniedDispatch;
-                const receiptSeed = [
-                  input,
-                  actor,
-                  resource,
-                  useCase,
-                  custody,
-                  decision,
-                  risk.toFixed(4),
-                ].join('|');
-                let receiptHash = 2166136261;
-                for (let i = 0; i < receiptSeed.length; i++) {
-                  receiptHash ^= receiptSeed.charCodeAt(i);
-                  receiptHash = Math.imul(receiptHash, 16777619);
-                }
-                const receiptId =
-                  realGate && realGate.governance && realGate.governance.audit
-                    ? 'scbe-real-' + realGate.governance.audit.input_sha256_16
-                    : 'scbe-demo-' + (receiptHash >>> 0).toString(16).padStart(8, '0');
-                const gateSource = realGate ? 'REAL_GATE_API' : 'BROWSER_FALLBACK';
-                const sourceLabel = document.getElementById('gov-source-label');
-                sourceLabel.textContent = gateSource;
-                sourceLabel.style.color = realGate ? '#2dd3a6' : '#f0bf67';
-                sourceLabel.style.background = realGate
-                  ? 'rgba(45,211,166,0.1)'
-                  : 'rgba(240,191,103,0.1)';
-                document.getElementById('gov-usecase-receipt').innerHTML =
-                  '<div style="padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:rgba(255,255,255,0.03);"><span style="color:var(--muted);">Use case</span><br><strong>' +
-                  useCaseProfile.label +
-                  '</strong><br><span style="color:var(--muted);">' +
-                  useCaseProfile.route +
-                  '</span></div>' +
-                  '<div style="padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:rgba(255,255,255,0.03);"><span style="color:var(--muted);">Dispatch</span><br><strong style="color:' +
-                  color +
-                  '">' +
-                  dispatchState +
-                  '</strong><br><span style="color:var(--muted);">' +
-                  dispatchText +
-                  '</span></div>' +
-                  '<div style="padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:rgba(255,255,255,0.03);"><span style="color:var(--muted);">Token custody</span><br><strong>' +
-                  tokenState +
-                  '</strong><br><span style="color:var(--muted);">' +
-                  custodyProfile.rule +
-                  '</span></div>' +
-                  '<div style="padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:rgba(255,255,255,0.03);"><span style="color:var(--muted);">Receipt</span><br><strong>' +
-                  receiptId +
-                  '</strong><br><span style="color:var(--muted);">' +
-                  gateSource +
-                  (realGate ? ' via ' + realGate.endpoint : '; local fallback hash only') +
-                  '</span></div>';
-                document.getElementById('gov-formula').textContent =
-                  'H_wall(d*=' +
-                  dStar.toFixed(2) +
-                  ', R=e) = e^((\u03C6\u00B7' +
-                  dStar.toFixed(2) +
-                  ')\u00B2) = e^(' +
-                  (PHI * dStar).toFixed(2) +
-                  '\u00B2) = e^(' +
-                  Math.pow(PHI * dStar, 2).toFixed(2) +
-                  ') = ' +
-                  H.toFixed(4);
-                btn.textContent = previousText;
-                btn.disabled = false;
-              }
-
-              // Allow Enter key to trigger evaluation
-              document.getElementById('gov-input').addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  runGovernanceDemo();
-                }
-              });
-            </script>
-
-        </div>
-      </section>
-
-      <section id="ship">
-        <div class="section-inner">
-          <div class="section-head">
-            <p class="eyebrow">How we ship fast</p>
-            <h2>Each product gets the same clean package.</h2>
-          </div>
-          <div class="steps">
-            <article class="step">
-              <h3>One narrow input</h3>
-              <p>User enters a task, workflow, command, or business problem. No giant repo tour.</p>
+          <div class="grid-2">
+            <article class="card">
+              <h3>Operator Agent Bus</h3>
+              <p>Bounded task packets, dispatch receipts, and local-first execution paths.</p>
+              <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">Open repo</a>
             </article>
-            <article class="step">
-              <h3>One useful backend result</h3>
-              <p>The API returns atoms, command steps, result summary, next actions, and JSON.</p>
+            <article class="card">
+              <h3>Live pages</h3>
+              <p>Browser demos are labeled as demos. Local CLI commands are labeled as local.</p>
+              <a href="agents.html">Open agents page</a>
             </article>
-            <article class="step">
-              <h3>One payment path</h3>
-              <p>Sell setup, monthly operation, or downloadable reports from a clear payment page.</p>
+            <article class="card">
+              <h3>Delivery manual</h3>
+              <p>How paid packets, receipts, recovery, and support are supposed to work.</p>
+              <a href="product-manual/delivery-and-access.html">Read manual</a>
             </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="final">
-        <div class="section-inner">
-          <p class="eyebrow">Build the sellable version</p>
-          <h2>Start with Atomic Output Lab, then add paid exports.</h2>
-          <p class="section-copy">
-            This gives us a polished front end now, a working API now, and a path to charge for
-            custom reports, setup, and monthly workflow automation.
-          </p>
-          <div class="cta-row" style="justify-content: center">
-            <a class="btn btn-primary" href="atomic-lab">Run the lab</a>
-            <a class="btn btn-secondary" href="mailto:ai@aethermoore.com?subject=Atomic%20Output%20Lab">Request setup</a>
+            <article class="card">
+              <h3>Payment center</h3>
+              <p>Stripe, Ko-fi, Cash App, and invoice routes with buyer expectations.</p>
+              <a href="payments.html">Open payments</a>
+            </article>
           </div>
         </div>
       </section>
     </main>
 
     <footer>
-      <div class="footer-inner">
-        <div>AetherMoore. Polished AI output systems by Issac Davis.</div>
-        <div class="footer-links">
-          <a href="atomic-lab">Atomic Lab</a>
-          <a href="ai-waves-lab">Waves Lab</a>
-          <a href="geoseal-hermes">GeoSeal Hermes</a>
-          <a href="packages.html">Packages</a>
-          <a href="books.html">Bookshelf</a>
-          <a href="guides.html">Guides</a>
-          <a href="products.html">Products</a>
-          <a href="payments.html">Payments</a>
-          <a href="https://www.youtube.com/channel/UCO9aJ-ZH0Ddg_F0Dr655WIQ" target="_blank" rel="noopener">YouTube</a>
-          <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener">GitHub</a>
-          <a href="https://huggingface.co/issdandavis" target="_blank" rel="noopener">Hugging Face</a>
-          <a href="https://ko-fi.com/izdandavis" target="_blank" rel="noopener">Ko-fi</a>
+      <div class="wrap">
+        <p>
+          AetherMoore is run by Issac Davis. This site sells long-run AI workflow control,
+          cataloging, receipt-backed review, and related tooling. It does not provide legal advice,
+          medical advice, compliance certification, or guaranteed protection from disputes.
+        </p>
+        <div class="link-row">
+          <a href="mailto:ai@aethermoore.com">ai@aethermoore.com</a>
+          <a href="support.html">Support</a>
+          <a href="terms.html">Terms</a>
+          <a href="privacy.html">Privacy</a>
         </div>
       </div>
     </footer>
