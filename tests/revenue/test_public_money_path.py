@@ -16,10 +16,35 @@ def read_doc(name: str) -> str:
 def test_homepage_focuses_first_buyer_path_on_workflow_snapshot() -> None:
     homepage = read_doc("index.html")
 
-    assert "Start $99 Workflow Snapshot" in homepage
-    assert "ai-workflow-snapshot.html#receipt" in homepage
+    assert "Buy $99 Snapshot" in homepage
+    assert "workflow-snapshot.html" in homepage
     assert "payments.html" in homepage
     assert "briefing-room.html" not in homepage
+
+
+def test_homepage_sells_workflow_outputs_without_legal_claims() -> None:
+    homepage = read_doc("index.html").lower()
+
+    assert "long ai runs finish with real outputs" in homepage
+    assert "controlled workflow" in homepage
+    assert "cataloged outputs" in homepage
+    assert "receipt-backed checkpoints" in homepage
+
+    banned_phrases = [
+        "lawsuit",
+        "case law",
+        "air canada",
+        "moffatt",
+        "regulators demand",
+        "legal advice",
+        "medical advice",
+        "compliance certification",
+        "regulated-context",
+        "medical coding",
+        "cpt",
+    ]
+    for phrase in banned_phrases:
+        assert phrase not in homepage, f"homepage contains legal-adjacent claim phrase: {phrase}"
 
 
 def test_workflow_snapshot_checkout_is_consistent_and_live_wired() -> None:
