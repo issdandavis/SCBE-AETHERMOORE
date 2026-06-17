@@ -1090,6 +1090,114 @@ def cmd_dec(args: argparse.Namespace) -> int:
     return 0
 
 
+def _parse_bigint(s: str) -> int:
+    """Parse a (possibly huge) integer; accepts commas, underscores, 0x/0o/0b."""
+    s = s.strip().replace(",", "").replace("_", "")
+    if not s:
+        raise ValueError("empty number")
+    return int(s, 0) if s[:2].lower() in ("0x", "0o", "0b") else int(s)
+
+
+_NUMFIND_MAX_NTH = 5_000_000          # sieve stays ~100 MB / ~1 s
+_NUMFIND_MAX_RANGE_SPAN = 10_000_000  # segmented-sieve span guard
+
+
+def cmd_numfind(args: argparse.Namespace) -> int:
+    """Fast number-finding: primality, factorization, nth/next prime, prime ranges."""
+    try:
+        from src import numtheory as nt
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"numfind unavailable: {exc}", file=sys.stderr)
+        return 1
+
+    op = getattr(args, "nf_op", None)
+    as_json = getattr(args, "json_output", False)
+    if op is None:
+        print("usage: scbe numfind {isprime|factor|nth|next|primes} ...", file=sys.stderr)
+        return 2
+    try:
+        if op == "isprime":
+            n = _parse_bigint(args.n)
+            verdict = nt.is_prime(n)
+            proven = n < nt.DETERMINISTIC_BOUND
+            if as_json:
+                print(json.dumps({"op": "isprime", "n": n, "is_prime": verdict, "deterministic": proven}))
+            else:
+                label = "prime" if verdict else ("composite" if n >= 2 else "not prime")
+                note = "" if proven else "  (strong probable prime — above deterministic bound)"
+                print(f"{n} is {label}{note}")
+            return 0 if verdict else 1
+
+        if op == "next":
+            n = _parse_bigint(args.n)
+            p = nt.next_prime(n)
+            print(json.dumps({"op": "next", "n": n, "next_prime": p}) if as_json else p)
+            return 0
+
+        if op == "nth":
+            k = _parse_bigint(args.k)
+            if k < 1:
+                print("k must be >= 1", file=sys.stderr)
+                return 2
+            if k > _NUMFIND_MAX_NTH:
+                print(f"k too large (max {_NUMFIND_MAX_NTH:,}) — would exceed the sieve budget", file=sys.stderr)
+                return 2
+            p = nt.nth_prime(k)
+            print(json.dumps({"op": "nth", "k": k, "prime": p}) if as_json else p)
+            return 0
+
+        if op == "factor":
+            n = _parse_bigint(args.n)
+            budget = getattr(args, "max_seconds", 20.0)
+            try:
+                fac = nt.factorization(n, time_budget_s=budget)
+            except nt.FactorizationTimeout:
+                print(f"could not factor {n} within {budget:g}s", file=sys.stderr)
+                return 1
+            pairs = sorted(fac.items())
+            if as_json:
+                print(json.dumps({
+                    "op": "factor",
+                    "n": n,
+                    "factors": [[p, e] for p, e in pairs],
+                    "is_prime": n >= 2 and len(pairs) == 1 and pairs[0][1] == 1,
+                }))
+            elif n < 2:
+                print(f"{n} has no prime factorization")
+            else:
+                pretty = " * ".join(f"{p}^{e}" if e > 1 else f"{p}" for p, e in pairs)
+                print(f"{n} = {pretty}")
+            return 0
+
+        if op == "primes":
+            lo = _parse_bigint(args.lo)
+            hi = _parse_bigint(args.hi)
+            if hi - lo > _NUMFIND_MAX_RANGE_SPAN:
+                print(f"range too wide (max span {_NUMFIND_MAX_RANGE_SPAN:,})", file=sys.stderr)
+                return 2
+            primes = nt.primes_in_range(lo, hi)
+            limit = getattr(args, "limit", 0) or 0
+            shown = primes[:limit] if limit > 0 else primes
+            truncated = limit > 0 and len(primes) > limit
+            if as_json:
+                print(json.dumps({
+                    "op": "primes", "lo": lo, "hi": hi,
+                    "count": len(primes), "primes": shown, "truncated": truncated,
+                }))
+            else:
+                print(f"{len(primes)} prime(s) in [{lo}, {hi})")
+                if shown:
+                    print(" ".join(str(p) for p in shown))
+                    if truncated:
+                        print(f"... ({len(primes) - limit} more; raise --limit to see them)")
+            return 0
+    except ValueError as e:
+        print(f"bad number: {e}", file=sys.stderr)
+        return 2
+    print(f"unknown numfind op '{op}'", file=sys.stderr)
+    return 2
+
+
 # Bit spine: byte-exact binary/hex/trit and tiny-machine command surface.
 SPINE_TEMPLATE_COMMANDS = {
     "users": [
@@ -3938,6 +4046,39 @@ Legacy (backward compat):
     de.add_argument("--json", dest="json_output", action="store_true")
     de.add_argument("--raw", action="store_true", help="write raw bytes to stdout")
     de.set_defaults(func=cmd_dec)
+
+    nf = sub.add_parser(
+        "numfind", aliases=["nf"], help='Fast number-finding: primes & factorization ("scbe numfind factor 360")'
+    )
+    nf_sub = nf.add_subparsers(dest="nf_op")
+
+    nf_ip = nf_sub.add_parser("isprime", help="Test whether a number is prime (deterministic below ~3.3e24)")
+    nf_ip.add_argument("n", help="integer to test (decimal, or 0x/0o/0b prefixed)")
+    nf_ip.add_argument("--json", dest="json_output", action="store_true")
+    nf_ip.set_defaults(func=cmd_numfind)
+
+    nf_fac = nf_sub.add_parser("factor", help="Prime-factorize a number (Pollard rho + Miller-Rabin)")
+    nf_fac.add_argument("n", help="integer to factor")
+    nf_fac.add_argument("--max-seconds", dest="max_seconds", type=float, default=20.0, help="wall-clock budget")
+    nf_fac.add_argument("--json", dest="json_output", action="store_true")
+    nf_fac.set_defaults(func=cmd_numfind)
+
+    nf_nth = nf_sub.add_parser("nth", help="Find the k-th prime, 1-indexed (nth 1 = 2)")
+    nf_nth.add_argument("k", help="prime index (1-based)")
+    nf_nth.add_argument("--json", dest="json_output", action="store_true")
+    nf_nth.set_defaults(func=cmd_numfind)
+
+    nf_next = nf_sub.add_parser("next", help="Find the smallest prime greater than n")
+    nf_next.add_argument("n", help="lower bound (exclusive)")
+    nf_next.add_argument("--json", dest="json_output", action="store_true")
+    nf_next.set_defaults(func=cmd_numfind)
+
+    nf_rng = nf_sub.add_parser("primes", help="List primes in the half-open range [lo, hi)")
+    nf_rng.add_argument("lo", help="range start (inclusive)")
+    nf_rng.add_argument("hi", help="range end (exclusive)")
+    nf_rng.add_argument("--limit", type=int, default=0, help="max primes to print (0 = all)")
+    nf_rng.add_argument("--json", dest="json_output", action="store_true")
+    nf_rng.set_defaults(func=cmd_numfind)
 
     # ─── Sacred Tongues as verbs — full names, no abbreviation ───
     spine = sub.add_parser("spine", help="Bit spine: binary, hex, trit, and tiny-machine actions")
