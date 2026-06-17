@@ -1,0 +1,13 @@
+{
+ "id": "issacizrealdavis/rubix-cube-full-system-benchmark",
+ "title": "Rubik's Cube Coding System - Full-System Benchmark",
+ "code_file": "comprehensive_selfcontained.py",
+ "language": "python",
+ "kernel_type": "script",
+ "is_private": "true",
+ "enable_gpu": "false",
+ "enable_internet": "false",
+ "dataset_sources": [],
+ "competition_sources": [],
+ "kernel_sources": []
+}
