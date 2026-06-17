@@ -91,9 +91,18 @@ _providers: Dict[str, Any] = {}
 
 
 def get_spine() -> Any:
-    """Return the shared HydraSpine singleton, or raise if not initialized."""
+    """Return the shared HydraSpine singleton, or 503 if the orchestrator is unavailable.
+
+    Startup wires this via init_hydra_spine(); if the hydra.spine/head modules are not
+    present in this build, init fails non-fatally (see main.py) and _spine stays None.
+    We return 503 (feature unavailable) rather than 500 so clients can tell a missing
+    optional subsystem apart from a server bug — the rest of the API is unaffected.
+    """
     if _spine is None:
-        raise HTTPException(500, "HYDRA spine not initialized")
+        raise HTTPException(
+            503,
+            "HYDRA orchestrator is not available in this build " "(hydra.spine/head modules are not present).",
+        )
     return _spine
 
 

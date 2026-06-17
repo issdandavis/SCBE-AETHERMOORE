@@ -39,9 +39,9 @@ def check(logfile):
     if train_blocks:
         first = train_blocks[0]
         last = train_blocks[-1]
-        print(f"\n  First: loss={first['loss']}, acc={first.get('mean_token_accuracy','?')}")
+        print(f"\n  First: loss={first['loss']}, acc={first.get('mean_token_accuracy', '?')}")
         print(
-            f"  Latest: loss={last['loss']}, acc={last.get('mean_token_accuracy','?')}, epoch={last.get('epoch','?')}"
+            f"  Latest: loss={last['loss']}, acc={last.get('mean_token_accuracy', '?')}, epoch={last.get('epoch', '?')}"
         )
 
         # Check for convergence
@@ -53,7 +53,7 @@ def check(logfile):
     if eval_blocks:
         print("\n  Eval results:")
         for e in eval_blocks:
-            print(f"    eval_loss={e['eval_loss']}, epoch={e.get('epoch','?')}")
+            print(f"    eval_loss={e['eval_loss']}, epoch={e.get('epoch', '?')}")
 
     # Check for errors
     if "error" in text.lower() or "OOM" in text or "CUDA error" in text:

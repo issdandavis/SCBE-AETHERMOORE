@@ -52,6 +52,48 @@ class PrototypePowerBudget:
     def combined_after_power_management_w(self) -> float:
         return self.combined_raw_w * self.pmic_efficiency
 
+    @property
+    def stronger_individual_w(self) -> float:
+        return max(self.em_output_w, self.teng_output_w)
+
+    @property
+    def additive_gain_ratio(self) -> float:
+        return net_gain_ratio(
+            self.combined_after_power_management_w,
+            self.em_output_w,
+            self.teng_output_w,
+        )
+
+    @property
+    def clears_additive_gate(self) -> bool:
+        return self.combined_after_power_management_w > self.stronger_individual_w
+
+    def clears_margin_gate(self, minimum_gain_ratio: float = 1.2) -> bool:
+        """Return True only if combined output clears a practical margin.
+
+        A barely-positive ratio can disappear into measurement error, drag, or
+        rectifier losses. Use this for prototype go/no-go decisions.
+        """
+        if minimum_gain_ratio <= 1.0:
+            raise ValueError("minimum_gain_ratio must be > 1.0")
+        return self.additive_gain_ratio >= minimum_gain_ratio
+
+    def decision_packet(self) -> dict[str, float | bool | str]:
+        """Bench-test decision packet for the M-TEF make-or-break gate."""
+        minimum_gain_ratio = 1.2
+        return {
+            "schema_version": "mtef_additive_gate_v1",
+            "mechanical_input_w": self.mechanical_input_w,
+            "em_output_w": self.em_output_w,
+            "teng_output_w": self.teng_output_w,
+            "combined_after_power_management_w": self.combined_after_power_management_w,
+            "stronger_individual_w": self.stronger_individual_w,
+            "additive_gain_ratio": self.additive_gain_ratio,
+            "clears_additive_gate": self.clears_additive_gate,
+            "minimum_practical_gain_ratio": minimum_gain_ratio,
+            "clears_practical_margin": self.clears_margin_gate(minimum_gain_ratio),
+        }
+
 
 def mechanical_power_from_stroke(force_n: float, stroke_m: float, cycles_per_second: float) -> float:
     """Estimate average mechanical input power for a repeated stroke.

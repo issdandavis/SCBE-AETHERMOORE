@@ -358,12 +358,10 @@ describe('UnifiedSCBEGateway', () => {
       expect(typeof kex.timestamp).toBe('number');
     });
 
-    it('supports ML-KEM-1024 algorithm', async () => {
-      const kex = await gateway.initiateQuantumKeyExchange('peer-2', 'ML-KEM-1024');
-      expect(kex.algorithm).toBe('ML-KEM-1024');
-      // ML-KEM-1024 key should be larger than ML-KEM-768
-      const kex768 = await gateway.initiateQuantumKeyExchange('peer-3', 'ML-KEM-768');
-      expect(kex.publicKey.length).toBeGreaterThan(kex768.publicKey.length);
+    it('rejects unsupported ML-KEM-1024 rather than faking support', async () => {
+      await expect(gateway.initiateQuantumKeyExchange('peer-2', 'ML-KEM-1024')).rejects.toThrow(
+        "Unsupported KEM algorithm 'ML-KEM-1024'"
+      );
     });
 
     it('generates unique session IDs', async () => {

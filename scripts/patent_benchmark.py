@@ -570,10 +570,10 @@ def _markdown_table(metrics_list: List[ConditionMetrics]) -> str:
         "## SCBE Runtime Governance Benchmark",
         "",
         f"Corpus: {len(ADVERSARIAL)} adversarial ("
-        f"{len([c for c in ADVERSARIAL if c.category=='prompt_injection'])} prompt injection, "
-        f"{len([c for c in ADVERSARIAL if c.category=='tool_misuse'])} tool misuse, "
-        f"{len([c for c in ADVERSARIAL if c.category=='unicode_confusable'])} unicode confusable, "
-        f"{len([c for c in ADVERSARIAL if c.category=='session_drift'])} session drift) "
+        f"{len([c for c in ADVERSARIAL if c.category == 'prompt_injection'])} prompt injection, "
+        f"{len([c for c in ADVERSARIAL if c.category == 'tool_misuse'])} tool misuse, "
+        f"{len([c for c in ADVERSARIAL if c.category == 'unicode_confusable'])} unicode confusable, "
+        f"{len([c for c in ADVERSARIAL if c.category == 'session_drift'])} session drift) "
         f"+ {len(BENIGN)} benign",
         "",
         "| Condition | False-Allow | False-Allow % | False-Block | False-Block % | Mean Latency ms | Geometry Reached % | Audit Complete % |",
@@ -601,11 +601,11 @@ def _markdown_table(metrics_list: List[ConditionMetrics]) -> str:
         d = m.decisions
         lines.append(
             f"| **{m.condition}** "
-            f"| {d.get('ALLOW',0)} "
-            f"| {d.get('DENY',0)} "
-            f"| {d.get('QUARANTINE',0)} "
-            f"| {d.get('REROUTE',0)} "
-            f"| {d.get('REVIEW',0)} |"
+            f"| {d.get('ALLOW', 0)} "
+            f"| {d.get('DENY', 0)} "
+            f"| {d.get('QUARANTINE', 0)} "
+            f"| {d.get('REROUTE', 0)} "
+            f"| {d.get('REVIEW', 0)} |"
         )
     lines += [
         "",

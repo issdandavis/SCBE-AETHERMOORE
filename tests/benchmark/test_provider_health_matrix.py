@@ -4,6 +4,8 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from scripts.benchmark.provider_health_matrix import (
@@ -37,12 +39,46 @@ def test_tier_coverage():
     assert "paid" in tiers
 
 
-def test_key_missing_status_when_no_env_var(monkeypatch):
-    monkeypatch.delenv("CEREBRAS_API_KEY", raising=False)
-    spec = _spec(name="cerebras", env_vars=["CEREBRAS_API_KEY"])
-    h = check_provider(spec, probe=False)
-    assert h.status == "KEY_MISSING"
-    assert h.key_configured is False
+@pytest.mark.parametrize(
+    "condition, expected_status",
+    [
+        ("key_missing", "KEY_MISSING"),
+        ("probe_succeeds", "READY"),
+        ("probe_fails", "UNREACHABLE"),
+    ],
+)
+def test_health_status_matrix(monkeypatch, condition, expected_status):
+    if condition == "key_missing":
+        # No env var set -> KEY_MISSING, key not configured, no probe.
+        monkeypatch.delenv("CEREBRAS_API_KEY", raising=False)
+        spec = _spec(name="cerebras", env_vars=["CEREBRAS_API_KEY"])
+        h = check_provider(spec, probe=False)
+        assert h.status == expected_status
+        assert h.key_configured is False
+        return
+
+    # Probe-path cases: key configured, probe enabled, _PROBE_MAP patched.
+    monkeypatch.setenv("TEST_KEY_XYZ", "fake-key")
+    spec = _spec(name="fake", tier="free", env_vars=["TEST_KEY_XYZ"])
+
+    if condition == "probe_succeeds":
+
+        def fake_probe(s):
+            return True, 42, None
+
+    else:  # probe_fails
+
+        def fake_probe(s):
+            return False, None, "connection refused"
+
+    with patch.dict("scripts.benchmark.provider_health_matrix._PROBE_MAP", {"_probe_openai_compat": fake_probe}):
+        h = check_provider(spec, probe=True)
+
+    assert h.status == expected_status
+    if condition == "probe_succeeds":
+        assert h.latency_ms == 42
+    else:  # probe_fails
+        assert "connection refused" in (h.error or "")
 
 
 def test_no_key_required_for_local():
@@ -50,32 +86,6 @@ def test_no_key_required_for_local():
     h = check_provider(spec, probe=False)
     assert h.key_configured is True
     assert h.status != "KEY_MISSING"
-
-
-def test_ready_when_probe_succeeds(monkeypatch):
-    monkeypatch.setenv("TEST_KEY_XYZ", "fake-key")
-    spec = _spec(name="fake", tier="free", env_vars=["TEST_KEY_XYZ"])
-
-    def fake_probe(s):
-        return True, 42, None
-
-    with patch.dict("scripts.benchmark.provider_health_matrix._PROBE_MAP", {"_probe_openai_compat": fake_probe}):
-        h = check_provider(spec, probe=True)
-    assert h.status == "READY"
-    assert h.latency_ms == 42
-
-
-def test_unreachable_when_probe_fails(monkeypatch):
-    monkeypatch.setenv("TEST_KEY_XYZ", "fake-key")
-    spec = _spec(name="fake", tier="free", env_vars=["TEST_KEY_XYZ"])
-
-    def fake_probe(s):
-        return False, None, "connection refused"
-
-    with patch.dict("scripts.benchmark.provider_health_matrix._PROBE_MAP", {"_probe_openai_compat": fake_probe}):
-        h = check_provider(spec, probe=True)
-    assert h.status == "UNREACHABLE"
-    assert "connection refused" in (h.error or "")
 
 
 def test_build_matrix_schema(monkeypatch):

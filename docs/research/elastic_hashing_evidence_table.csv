@@ -1,0 +1,6 @@
+claim,source,published_at,verified_with,confidence
+"The primary paper is by Farach-Colton, Krapivin, and Kuszmaul and studies open addressing without reordering.","https://arxiv.org/abs/2501.02305","2025-01-04","https://arxiv.org/html/2501.02305v1","high"
+"Elastic hashing is the paper's non-greedy construction; it probes deeper during insertion while controlling search probe complexity.","https://arxiv.org/html/2501.02305v1","2025-01-04","Paper Section 2, lines 67-124 in fetched HTML","high"
+"Funnel hashing is the paper's greedy construction that improves worst-case expected probe complexity versus the prior Yao-conjecture expectation.","https://arxiv.org/html/2501.02305v1","2025-01-04","Paper Section 3, lines 191-262 in fetched HTML","high"
+"A public Python package claims implementations of both ElasticHashTable and FunnelHashTable, but it is third-party and should be treated as reference code, not authority.","https://pypi.org/project/open-elastic-hash/","2025-03-02","PyPI project metadata and description","medium"
+"The SCBE current file is a reversible splitmix64 double-hashing table, not the paper's multi-array/batch elastic construction.","local:python/scbe/elastic_bijective_hash.py","2026-06-14","Compared local code against arXiv algorithm description","high"

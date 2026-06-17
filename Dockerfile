@@ -15,8 +15,9 @@ RUN npm install --legacy-peer-deps
 # Copy source code
 COPY src/ ./src/
 
-# Build TypeScript
-RUN npm run build || true
+# Build TypeScript — fail the image build on a broken build instead of
+# silently shipping an incomplete image ("|| true" masked tsc failures).
+RUN npm run build
 
 # Stage 2: Build liboqs C library
 FROM python:3.11-slim AS liboqs-builder

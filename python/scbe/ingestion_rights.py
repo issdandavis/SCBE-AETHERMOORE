@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import hashlib
 import json
 from datetime import UTC, datetime
@@ -14,12 +15,19 @@ RIGHTS_SCHEMA_PATH = REPO_ROOT / "schemas" / "ingestion_rights_record.schema.jso
 DEFAULT_SOURCE_REGISTRY_PATH = REPO_ROOT / "config" / "research" / "source_registry.json"
 
 
+@functools.lru_cache(maxsize=None)
 def _load_validator(path: Path) -> Draft202012Validator:
-    return Draft202012Validator(json.loads(path.read_text(encoding="utf-8")))
+    # Lazy: the schema files live at the repo root and may be absent in an installed
+    # wheel, so only read them when a validator is actually used — not at import time.
+    return Draft202012Validator(json.loads(Path(path).read_text(encoding="utf-8")))
 
 
-SOURCE_VALIDATOR = _load_validator(SOURCE_SCHEMA_PATH)
-RIGHTS_VALIDATOR = _load_validator(RIGHTS_SCHEMA_PATH)
+def __getattr__(name: str):  # PEP 562 — keep SOURCE_VALIDATOR / RIGHTS_VALIDATOR lazy
+    if name == "SOURCE_VALIDATOR":
+        return _load_validator(SOURCE_SCHEMA_PATH)
+    if name == "RIGHTS_VALIDATOR":
+        return _load_validator(RIGHTS_SCHEMA_PATH)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def load_source_registry(path: Path | None = None) -> List[Dict[str, Any]]:
@@ -28,7 +36,7 @@ def load_source_registry(path: Path | None = None) -> List[Dict[str, Any]]:
     if not isinstance(records, list):
         raise ValueError("Source registry must be a JSON array of source records")
     for record in records:
-        SOURCE_VALIDATOR.validate(record)
+        _load_validator(SOURCE_SCHEMA_PATH).validate(record)
     return records
 
 
@@ -136,5 +144,5 @@ def classify_ingestion_rights_record(
         "reviewed_at": datetime.now(UTC).isoformat() if reviewed_by else None,
         "reviewer_notes": reviewer_notes,
     }
-    RIGHTS_VALIDATOR.validate(rights_record)
+    _load_validator(RIGHTS_SCHEMA_PATH).validate(rights_record)
     return rights_record
