@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Research Library | AetherMoore Research</title>
+<style>
+:root {
+  color-scheme: light;
+  --ink: #17201d;
+  --muted: #5b6762;
+  --rule: #d8ded8;
+  --paper: #fffdf7;
+  --wash: #f3f6f0;
+  --accent: #0f6f61;
+  --gold: #8b6a16;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--wash);
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.58;
+}
+a { color: var(--accent); }
+.shell {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 28px 20px 56px;
+}
+.paper {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  box-shadow: 0 18px 45px rgba(23, 32, 29, 0.08);
+  padding: 44px;
+}
+.kicker {
+  color: var(--gold);
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 10px 0 10px;
+  font-size: 36px;
+  line-height: 1.08;
+}
+h2 {
+  margin-top: 34px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 24px;
+}
+h3 { margin-top: 28px; font-size: 18px; }
+p { margin: 12px 0; }
+.subtitle, .abstract, .meta, .boundary {
+  color: var(--muted);
+}
+.abstract, .boundary {
+  border-left: 4px solid var(--accent);
+  padding-left: 16px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+.card {
+  display: block;
+  min-height: 100%;
+  padding: 18px;
+  border: 1px solid var(--rule);
+  background: #fff;
+  text-decoration: none;
+}
+.card h3 { margin-top: 0; color: var(--ink); }
+.card p { color: var(--muted); }
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.tag {
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 3px 9px;
+  color: var(--muted);
+  background: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+.source {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+}
+pre, code {
+  font-family: Consolas, "Courier New", monospace;
+}
+pre {
+  overflow-x: auto;
+  padding: 14px;
+  border: 1px solid var(--rule);
+  background: #f8faf7;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: 14px;
+}
+th, td {
+  border: 1px solid var(--rule);
+  padding: 8px;
+  vertical-align: top;
+}
+th { background: #f1f5ef; }
+@media (max-width: 700px) {
+  .paper { padding: 24px; }
+  h1 { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav class="nav"><a href="../index.html">Home</a><a href="../research/index.html">Research Library</a><a href="../payments.html">Payments</a></nav>
+<main class="paper">
+
+<p class="kicker">AetherMoore Research Library</p>
+<h1>Research packets by topic</h1>
+<p class="abstract">This page turns the loose research pile into a browsable, tagged library. Conversion here means research structure: topic framing, source ledger, review model, validation plan, claim boundary, and then HTML/PDF output. It is not just a file-format change.</p>
+<p><a href="../research/RESEARCH_PACKET_STANDARD.md">Read the research packet standard</a></p>
+<div class="grid"><a class="card" href="topics/space-systems.html"><h3>Space Systems</h3><p>Space chemistry, orbital analogies, microgravity fluids, and resource-management concepts with explicit claim boundaries.</p><div class="tags"><span class="tag">space</span><span class="tag">microgravity</span><span class="tag">orbital</span><span class="tag">water</span><span class="tag">energy</span><span class="tag">systems</span></div><p>4 packets</p></a><a class="card" href="topics/materials-chemistry.html"><h3>Materials and Chemistry</h3><p>Chemistry-native CLI work, molecular AI targets, lattice materials, and component-level research packets.</p><div class="tags"><span class="tag">chemistry</span><span class="tag">materials</span><span class="tag">molecules</span><span class="tag">lattice</span><span class="tag">triboelectric</span><span class="tag">energy</span></div><p>4 packets</p></a><a class="card" href="topics/autonomy-swarms.html"><h3>Autonomy and Swarms</h3><p>Agent training, drone autonomy patterns, swarm coordination, and governed task execution.</p><div class="tags"><span class="tag">autonomy</span><span class="tag">swarms</span><span class="tag">agents</span><span class="tag">simulation</span><span class="tag">training</span><span class="tag">robotics</span></div><p>2 packets</p></a><a class="card" href="topics/ai-governance.html"><h3>AI Governance</h3><p>Evidence receipts, alignment gates, benchmark claims, safety boundaries, and audit trails.</p><div class="tags"><span class="tag">governance</span><span class="tag">receipts</span><span class="tag">alignment</span><span class="tag">audit</span><span class="tag">benchmarks</span></div><p>3 packets</p></a><a class="card" href="topics/language-code-systems.html"><h3>Language and Code Systems</h3><p>Sacred Tongues, token maps, coding systems, reversible encodings, and CLI-native representation work.</p><div class="tags"><span class="tag">language</span><span class="tag">code</span><span class="tag">tokens</span><span class="tag">encodings</span><span class="tag">cli</span></div><p>2 packets</p></a><a class="card" href="topics/life-systems.html"><h3>Life Systems</h3><p>Reserved topic lane for plants, animals, bio-inspired systems, ecological routing, and biology-facing research packets.</p><div class="tags"><span class="tag">plants</span><span class="tag">animals</span><span class="tag">biology</span><span class="tag">ecology</span><span class="tag">bio-inspired</span></div><p>1 packet</p></a></div>
+<h2>All Packets</h2>
+<div class="grid"><article class="card"><h3><a href="../research/papers/mtef-fluid-cell.html">Magneto-Triboelectric Fluid Cell Research Compendium</a></h3><p>Literature-backed prototype rationale for a hybrid electromagnetic, triboelectric, and multi-fluid energy-harvesting cell.</p><div class="tags"><span class="tag">space</span><span class="tag">materials</span><span class="tag">ferrofluid</span><span class="tag">triboelectric</span><span class="tag">energy-harvesting</span><span class="tag">microgravity</span></div><p><strong>Status:</strong> AI-assisted literature synthesis; integrated hardware unproven.</p><p><strong>Grade:</strong> Research Packet</p><p><a href="../research/papers/mtef-fluid-cell.html">Magneto-Triboelectric Fluid Cell Research Compendium</a> <a href="../research/mtef_research_compendium_2026-06-17.pdf">PDF</a></p></article><article class="card"><h3><a href="../research/papers/space-chemistry-cli.html">Chemistry-Native CLI and Space Chemistry Systems</a></h3><p>A governed command-line evidence room for chemistry, space chemistry, and external scientific engine bridges.</p><div class="tags"><span class="tag">space</span><span class="tag">chemistry</span><span class="tag">cli</span><span class="tag">nasa-cea</span><span class="tag">pahdb</span><span class="tag">receipts</span></div><p><strong>Status:</strong> Research brief and product-scoping note.</p><p><strong>Grade:</strong> Research Brief</p><p><a href="../research/papers/space-chemistry-cli.html">Chemistry-Native CLI and Space Chemistry Systems</a> <a href="../research/papers/pdf/space-chemistry-cli.pdf">PDF</a></p></article><article class="card"><h3><a href="../research/papers/autonomy-training-patterns.html">Drone Autonomy Training Patterns for SCBE Agent Training</a></h3><p>Mapping public autonomy-program patterns onto coding-agent gates, simulations, and promotion tiers.</p><div class="tags"><span class="tag">autonomy</span><span class="tag">swarms</span><span class="tag">agents</span><span class="tag">simulation</span><span class="tag">training</span><span class="tag">assurance</span></div><p><strong>Status:</strong> Public-pattern synthesis; not a physical drone capability claim.</p><p><strong>Grade:</strong> Research Brief</p><p><a href="../research/papers/autonomy-training-patterns.html">Drone Autonomy Training Patterns for SCBE Agent Training</a> <a href="../research/papers/pdf/autonomy-training-patterns.pdf">PDF</a></p></article><article class="card"><h3><a href="../research/papers/layered-lattice-molecular-ai.html">Layered-Lattice Molecular AI: Beatable Targets</a></h3><p>A narrow competitive lane for robust molecular reasoning under topology loss, activity cliffs, and explanation pressure.</p><div class="tags"><span class="tag">chemistry</span><span class="tag">molecules</span><span class="tag">lattice</span><span class="tag">activity-cliffs</span><span class="tag">explainability</span></div><p><strong>Status:</strong> Research and product-targeting brief.</p><p><strong>Grade:</strong> Research Brief</p><p><a href="../research/papers/layered-lattice-molecular-ai.html">Layered-Lattice Molecular AI: Beatable Targets</a> <a href="../research/papers/pdf/layered-lattice-molecular-ai.pdf">PDF</a></p></article><article class="card"><h3><a href="../research/papers/geoseed-orbital-model.html">GeoSeed Orbital Model</a></h3><p>A deterministic geometry analogy connecting Sacred Tongues, orbital shells, and hyperbolic radial spacing.</p><div class="tags"><span class="tag">geometry</span><span class="tag">orbital</span><span class="tag">sacred-tongues</span><span class="tag">hyperbolic</span><span class="tag">code</span></div><p><strong>Status:</strong> Implemented deterministic analogy, not quantum-chemistry simulation.</p><p><strong>Grade:</strong> Research Brief</p><p><a href="../research/papers/geoseed-orbital-model.html">GeoSeed Orbital Model</a> <a href="../research/papers/pdf/geoseed-orbital-model.pdf">PDF</a></p></article><article class="card"><h3><a href="../research/papers/fabrication-cell-tech-tree.html">Task-Autonomous Fabrication Cell Tech Tree</a></h3><p>A build-sense-correct loop for governed fabrication workflows inside a human-specified goal envelope.</p><div class="tags"><span class="tag">fabrication</span><span class="tag">robotics</span><span class="tag">agents</span><span class="tag">governance</span><span class="tag">receipts</span></div><p><strong>Status:</strong> R&amp;D stepping-stone note and build queue seed.</p><p><strong>Grade:</strong> Research Brief</p><p><a href="../research/papers/fabrication-cell-tech-tree.html">Task-Autonomous Fabrication Cell Tech Tree</a> <a href="../research/papers/pdf/fabrication-cell-tech-tree.pdf">PDF</a></p></article><article class="card"><h3><a href="../research/papers/wolfram-token-map.html">Wolfram Token Map</a></h3><p>A language and code-system research note for symbolic token structure.</p><div class="tags"><span class="tag">tokens</span><span class="tag">wolfram</span><span class="tag">language</span><span class="tag">code</span><span class="tag">symbolic</span></div><p><strong>Status:</strong> Internal research note.</p><p><strong>Grade:</strong> Idea Seed</p><p><a href="../research/papers/wolfram-token-map.html">Wolfram Token Map</a> <a href="../research/papers/pdf/wolfram-token-map.pdf">PDF</a></p></article><article class="card"><h3><a href="../research/papers/space-life-support-animals.html">Space Life-Support Animals, Husbandry, and Micro-Energy Concepts</a></h3><p>A research scaffold for animal husbandry, habitat telemetry, welfare boundaries, and micro-energy recovery in long-duration space systems.</p><div class="tags"><span class="tag">space</span><span class="tag">animals</span><span class="tag">life-support</span><span class="tag">husbandry</span><span class="tag">energy</span><span class="tag">welfare</span></div><p><strong>Status:</strong> Research Brief scaffold; sources and validation passes still needed.</p><p><strong>Grade:</strong> Idea Seed</p><p><a href="../research/papers/space-life-support-animals.html">Space Life-Support Animals, Husbandry, and Micro-Energy Concepts</a> <a href="../research/papers/pdf/space-life-support-animals.pdf">PDF</a></p></article></div>
+
+</main>
+</div>
+</body>
+</html>
