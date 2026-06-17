@@ -1598,7 +1598,9 @@ def cmd_tangent(args: argparse.Namespace) -> int:
     if getattr(args, "json_output", False):
         print(json.dumps(plan.to_dict()))
         return 0
-    print(f"tangential parallelism · {len(agents)} agents · {len(tasks)} tasks · bound={plan.bound} · nodes={plan.nodes}")
+    print(
+        f"tangential parallelism · {len(agents)} agents · {len(tasks)} tasks · bound={plan.bound} · nodes={plan.nodes}"
+    )
     print(f"prime line (keel): {[round(x, 2) for x in plan.origin]} -> {[round(x, 2) for x in plan.goal]}")
     for tr in plan.tracks:
         flag = f"  (planed back {tr.reprojected})" if tr.reprojected else ""
@@ -1606,7 +1608,9 @@ def cmd_tangent(args: argparse.Namespace) -> int:
             f"  {tr.agent}: tasks={tr.tasks} drift={tr.divergence:.3f} "
             f"(raw {tr.raw_divergence:.3f}) align={tr.alignment:+.3f}{flag}"
         )
-    print(f"grain alignment (fleet): {plan.grain_alignment:+.3f}  ·  max drift after bounding: {plan.max_divergence:.3f}")
+    print(
+        f"grain alignment (fleet): {plan.grain_alignment:+.3f}  ·  max drift after bounding: {plan.max_divergence:.3f}"
+    )
     return 0
 
 
@@ -2334,6 +2338,134 @@ def cmd_substrate_map(args: argparse.Namespace) -> int:
         element = state["element"]
         print(f"  {state['token']:<16} {state['semantic_class']:<14} {element['symbol']} tau={state['tau']}")
     return 0
+
+
+def cmd_forge(args: argparse.Namespace) -> int:
+    """Front door: speak an intention -> build a real app, verify by RUNNING it, remember it.
+
+    One object (the build) with many faces: the source you can keep (--out), its
+    lossless prime deed (factors back to the exact moves), the village map (--village),
+    and its place on SCBE's torus (--torus). Humans and AIs call the same forge()
+    underneath, so every build also checks the build memory first and reuses a proven
+    recipe when one fits -- the system gets faster and surer the more it is used.
+    """
+    scripts_dir = REPO_ROOT / "scripts"
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+    try:
+        from forge_speak import forge as _forge
+    except Exception as exc:  # pragma: no cover - import guard
+        print(f"forge unavailable: {exc}")
+        return 1
+
+    as_json = getattr(args, "json_output", False)
+
+    # --recipes: show what the Forge has already learned (its build memory)
+    if getattr(args, "recipes", False):
+        try:
+            from forge_memory import load as _load
+
+            recipes = _load()
+        except Exception:
+            recipes = []
+        if as_json:
+            print(json.dumps({"recipes": recipes}, indent=2))
+            return 0
+        print(f"\n  the Forge has learned {len(recipes)} recipe(s) (reused on a matching request):")
+        for i, r in enumerate(recipes, 1):
+            print(f"   {i}. \"{r['intent']}\"  ->  {', '.join(r['moves'])}   (deed {r['deed']})")
+        if not recipes:
+            print('   (none yet -- `scbe forge "a task tracker I can mark done"` teaches it one)')
+        print()
+        return 0
+
+    intention = " ".join(args.words).strip() if args.words else ""
+    if not intention:
+        print("  speak what you want to build, in plain words. examples:")
+        print('    scbe forge "a task tracker I can mark done and count"')
+        print('    scbe forge "let me add things, see them, and clear the list" --out todo.py')
+        print('    scbe forge "a day planner with due dates" --village')
+        print("    scbe forge --recipes        # what it has learned")
+        return 2
+
+    r = _forge(intention)
+    if r.get("reason") == "no-intent":
+        if as_json:
+            # same key set as the success payload (nulls/empties) so consumers never KeyError
+            print(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "reason": "no-intent",
+                        "intent": intention,
+                        "caps": [],
+                        "gaps": r.get("gaps", []),
+                        "plan": [],
+                        "used": [],
+                        "origin": None,
+                        "reused": False,
+                        "deed": None,
+                        "lines": 0,
+                        "results": [],
+                    },
+                    indent=2,
+                )
+            )
+        else:
+            print(f'\n  could not turn "{intention}" into a build yet.')
+            print("  try words like: add, see/list, mark done, count, remove, clear -- or 'a task tracker'.")
+        return 1
+
+    # write the actual app -- the sellable bit: speak -> get a runnable file you keep
+    out_path = getattr(args, "out", None)
+    if out_path:
+        dest = Path(out_path)
+        if dest.parent and not dest.parent.exists():
+            dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(r["src"], encoding="utf-8")
+
+    if as_json:
+        keys = ("ok", "reason", "intent", "caps", "gaps", "plan", "used", "origin", "reused", "deed", "lines")
+        payload = {k: r[k] for k in keys}
+        payload["results"] = [{"argv": a, "ok": g, "out": o} for a, g, o in r["results"]]
+        if out_path:
+            payload["out"] = str(out_path)
+        print(json.dumps(payload, indent=2))
+        return 0 if r["ok"] else 1
+
+    # human view: the verified build, then (optionally) its other faces
+    print(f'\n  YOU SAID: "{intention}"')
+    print(f"  understood: {', '.join(r['caps'])}")
+    print(f"  -> {r['origin']}")
+    print(f"  -> {len(r['used'])} moves, {r['lines']} lines, on the binary Turing base: {', '.join(r['used'])}")
+    print()
+    for argv, good, out in r["results"]:
+        print(f"   [{'OK' if good else 'XX'}] {' '.join(argv):<16} -> {out}")
+    print("\n  the build's DEED (one lossless number; factors back to the exact moves):")
+    print(f"    {r['deed']}")
+    if out_path:
+        print(f"  -> wrote the runnable app to {out_path}   (try: python {out_path} --help)")
+
+    if getattr(args, "village", False):
+        try:
+            from village import Village
+
+            print("\n  the build as a VILLAGE (flow-based map; data runs down the roads):")
+            print(Village.from_plan(r["used"]).render())
+        except Exception as exc:
+            print(f"  (village view unavailable: {exc})")
+    if getattr(args, "torus", False):
+        try:
+            from forge_torus import lift
+
+            lift(r["used"])
+        except Exception as exc:
+            print(f"  (torus view unavailable: {exc})")
+
+    if r["gaps"]:
+        print(f"\n  honest gaps (no move yet): {', '.join(r['gaps'])}")
+    print(f"\n  BUILT + VERIFIED: {'YES -- it runs and does what you asked' if r['ok'] else 'NO'}\n")
+    return 0 if r["ok"] else 1
 
 
 def cmd_spine(args: argparse.Namespace) -> int:
@@ -4685,9 +4817,7 @@ Legacy (backward compat):
     tg.add_argument("tasks", nargs="*", help="tasks as name=PROFILE or PROFILE (e.g. build=KO:1,DR:0.5)")
     tg.add_argument("--goal", help="destination tongue profile (the bow), e.g. DR:1,UM:0.5")
     tg.add_argument("--agents", help="comma list of agent tongues, e.g. KO,AV,RU")
-    tg.add_argument(
-        "--max-divergence", dest="max_divergence", type=float, default=1.5, help="max drift from the keel"
-    )
+    tg.add_argument("--max-divergence", dest="max_divergence", type=float, default=1.5, help="max drift from the keel")
     tg.add_argument("--nodes", type=int, default=1, help="reconvergence checkpoints along the keel")
     tg.add_argument("--json", dest="json_output", action="store_true")
     tg.set_defaults(func=cmd_tangent)
@@ -4755,6 +4885,20 @@ Legacy (backward compat):
     )
     systems.add_argument("--json", dest="json_output", action="store_true")
     systems.set_defaults(func=cmd_code_systems)
+
+    forge_p = sub.add_parser(
+        "forge",
+        help="Speak an intention; build + verify + remember a real app (run `scbe forge` for examples)",
+    )
+    forge_p.add_argument("words", nargs="*", help="what you want, in plain words")
+    forge_p.add_argument("--out", metavar="PATH", help="write the built, verified app to a file you can run")
+    forge_p.add_argument("--village", action="store_true", help="also show the build as a village map (flow view)")
+    forge_p.add_argument("--torus", action="store_true", help="also lift the build onto SCBE's 3-torus (topology view)")
+    forge_p.add_argument("--recipes", action="store_true", help="show what the Forge has learned (build memory)")
+    forge_p.add_argument(
+        "--json", dest="json_output", action="store_true", help="machine-readable output (stable key set)"
+    )
+    forge_p.set_defaults(func=cmd_forge)
 
     mp = sub.add_parser(
         "map",
