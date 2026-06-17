@@ -121,7 +121,7 @@ def test_workflow_machine_proof_page_is_discoverable_and_scoped() -> None:
 
     assert "Crank" in machine
     assert "Forge memory" in machine
-    assert "scripts/forge_speak.py" in machine
-    assert "scripts/forge_memory.py --recipes" in machine
+    assert "python scbe.py prove forge" in machine
+    assert "python scbe.py prove black-box" in machine
     assert "re-verifies" in machine
     assert "does not claim legal protection" in machine

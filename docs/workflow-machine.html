@@ -239,21 +239,22 @@
           <article class="card">
             <p class="eyebrow">Run it</p>
             <h2>Plain English to verified build.</h2>
-            <pre><code>python scripts/forge_speak.py "let me tag things, find them, and export my list"</code></pre>
+            <pre><code>python scbe.py prove forge</code></pre>
             <p>
               Expected behavior: the controller parses capabilities, assembles a real app, runs the
-              requested commands, emits a reversible prime deed, and reports
-              <strong class="ok">BUILT + VERIFIED: YES</strong> only after execution.
+              requested commands, emits a reversible prime deed, then runs the same request again
+              through build memory. It reports <strong class="ok">BUILT + VERIFIED: YES</strong>
+              only after execution.
             </p>
           </article>
           <article class="card">
             <p class="eyebrow">Reuse rule</p>
             <h2>Memory is not a shortcut around proof.</h2>
-            <pre><code>python scripts/forge_memory.py --recipes</code></pre>
+            <pre><code>python scbe.py prove black-box</code></pre>
             <p>
-              A remembered recipe is only eligible when it is marked verified and covers the needed
-              capabilities. Reuse still rebuilds and re-verifies the spec, so the memory path is a
-              planning shortcut, not a fake success.
+              The Black Box proof path builds the buyer ZIP, runs the included scanner locally, and
+              prints the top finding plus text/JSON report paths. It is the same rule: show the
+              artifact, run it, and print where the result landed.
             </p>
           </article>
         </div>
@@ -283,7 +284,7 @@
             <p>
               This page does not claim legal protection, certification, autonomous correctness, or
               universal safety. It shows a concrete workflow-control mechanism: bounded phases,
-              verification, memory reuse with re-verification, and inspectable build addresses.
+              verification, memory reuse that re-verifies the run, and inspectable build addresses.
             </p>
           </article>
         </div>
