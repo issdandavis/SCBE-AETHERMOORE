@@ -87,8 +87,47 @@ _MOVES: dict[str, dict] = {
         ),
         "register": '    "clear": {"fn": _cmd_clear, "help": "remove everything", "args": []},',
     },
+    "due": {
+        "desc": 'set a due date on an item by index',
+        "handler": 'def _cmd_due(args, items):\n    items[args.index]["due"] = args.date\n    print(f"due {args.date}: {items[args.index][\'text\']}")',
+        "register": '    "due": {"fn": _cmd_due, "help": "set a due date by index", "args": [("index", {"type": int}), ("date", {})]},',
+    },
+    "agenda": {
+        "desc": 'list items showing due dates',
+        "handler": 'def _cmd_agenda(args, items):\n    if not items:\n        print("(empty)")\n    for i, x in enumerate(items):\n        mark = "x" if x["done"] else " "\n        due = x.get("due")\n        suffix = f" (due: {due})" if due else ""\n        print(f"{i}. [{mark}] {x[\'text\']}{suffix}")',
+        "register": '    "agenda": {"fn": _cmd_agenda, "help": "list items with due dates", "args": []},',
+    },
+    "find": {
+        "desc": 'search items by a word and print the matching ones with their index',
+        "handler": 'def _cmd_find(args, items):\n    needle = args.word.lower()\n    hits = [(i, x) for i, x in enumerate(items) if needle in x["text"].lower()]\n    if not hits:\n        print(f"no matches for: {args.word}")\n        return\n    for i, x in hits:\n        mark = "x" if x["done"] else " "\n        print(f"{i}. [{mark}] {x[\'text\']}")',
+        "register": '    "find": {"fn": _cmd_find, "help": "find items by word", "args": [("word", {})]},',
+    },
+    "edit": {
+        "desc": "change an item's text by index",
+        "handler": 'def _cmd_edit(args, items):\n    old = items[args.index]["text"]\n    items[args.index]["text"] = args.text\n    print(f"edited {args.index}: {old!r} -> {args.text!r}")',
+        "register": '    "edit": {"fn": _cmd_edit, "help": "edit item text by index", "args": [("index", {"type": int}), ("text", {})]},',
+    },
+    "priority": {
+        "desc": 'set priority (high/medium/low) on an item by index',
+        "handler": 'def _cmd_priority(args, items):\n    level = args.level.lower()\n    valid = ("high", "medium", "low")\n    if level not in valid:\n        print(f"invalid priority: {args.level} (use high/medium/low)")\n        return\n    items[args.index]["priority"] = level\n    print(f"priority: {items[args.index][\'text\']} -> {level}")',
+        "register": '    "priority": {"fn": _cmd_priority, "help": "set priority high/medium/low on an item", "args": [("index", {"type": int}), ("level", {})]},',
+    },
+    "sort": {
+        "desc": 'reorder items by priority (high first)',
+        "handler": 'def _cmd_sort(args, items):\n    rank = {"high": 0, "medium": 1, "low": 2, "none": 3}\n    items.sort(key=lambda x: rank.get(x.get("priority", "none"), 3))\n    print(f"sorted {len(items)} items by priority")',
+        "register": '    "sort": {"fn": _cmd_sort, "help": "sort items by priority", "args": []},',
+    },
+    "tag": {
+        "desc": 'tag an item by index',
+        "handler": 'def _cmd_tag(args, items):\n    item = items[args.index]\n    item.setdefault("tags", []).append(args.label)\n    print(f"tagged {args.index} with {args.label}: {item[\'tags\']}")',
+        "register": '    "tag": {"fn": _cmd_tag, "help": "tag an item", "args": [("index", {"type": int}), ("label", {})]},',
+    },
+    "export": {
+        "desc": 'write items to items.md as a checklist',
+        "handler": 'def _cmd_export(args, items):\n    from pathlib import Path\n    out = Path("items.md")\n    lines = ["# Items", ""]\n    for x in items:\n        mark = "x" if x["done"] else " "\n        lines.append(f"- [{mark}] {x[\'text\']}")\n    if not items:\n        lines.append("_(no items)_")\n    out.write_text("\\n".join(lines) + "\\n", encoding="utf-8")\n    print(f"exported {len(items)} items -> {out}")',
+        "register": '    "export": {"fn": _cmd_export, "help": "write items to items.md checklist", "args": []},',
+    },
 }
-
 _APP_TEMPLATE = '''#!/usr/bin/env python3
 """{name} -- forged by Aether Speed Forge from {nmoves} moves: {movestr}"""
 import argparse
@@ -153,6 +192,16 @@ _PUZZLES = {
             (["count"], "2 items"),
             (["clear"], "cleared 2"),
             (["count"], "0 items"),
+        ],
+    },
+    "planner": {
+        "goal": "Plan tasks with due dates, priorities, and search.",
+        "steps": [
+            (["add", "buy milk"], "added"),
+            (["due", "0", "friday"], "due friday"),
+            (["agenda"], "friday"),
+            (["priority", "0", "high"], "priority"),
+            (["find", "milk"], "buy milk"),
         ],
     },
 }

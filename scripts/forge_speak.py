@@ -28,14 +28,20 @@ _INTENT = {
     "count": ["count", "total", "how many", "number of", "tally"],
     "clear": ["clear", "reset", "empty", "wipe", "delete all", "start over"],
     "remove": ["remove", "delete", "drop", "take off", "get rid"],
+    "due": ["due", "deadline", "due date"],
+    "agenda": ["agenda", "schedule", "what's due", "whats due", "upcoming"],
+    "find": ["find", "search", "look for", "lookup"],
+    "edit": ["edit", "rename", "change the"],
+    "priority": ["priority", "important", "urgent", "rank"],
+    "sort": ["sort", "reorder", "in order"],
+    "tag": ["tag", "label", "categor"],
+    "export": ["export", "save to file", "markdown"],
 }
 _TRACKER_WORDS = ("task", "todo", "to-do", "to do", "tracker", "checklist", "list of")
-# things we honestly do NOT have a move for yet (so we say so instead of faking)
+# things we honestly still do NOT have a move for (so we say so instead of faking)
 _GAPS = {
-    "due date": "due-dates / deadlines", "deadline": "due-dates / deadlines",
-    "priority": "priority levels", "tag": "tags / labels", "label": "tags / labels",
-    "sort": "sorting", "search": "search / filter", "filter": "search / filter",
-    "remind": "reminders", "category": "categories", "edit": "editing an item",
+    "remind": "reminders", "recur": "recurring tasks", "repeat": "recurring tasks",
+    "sync": "cloud sync", "share": "sharing with people",
 }
 
 
@@ -67,6 +73,22 @@ def synth_spec(caps: list[str], text: str):
         steps.append((["remove", "0"], "removed"))
     if "clear" in caps:
         steps.append((["clear"], "cleared"))
+    if "due" in caps and "add" in caps:
+        steps.append((["due", "0", "friday"], "due friday"))
+    if "agenda" in caps:
+        steps.append((["agenda"], "milk" if "add" in caps else None))
+    if "priority" in caps and "add" in caps:
+        steps.append((["priority", "0", "high"], "priority"))
+    if "find" in caps and "add" in caps:
+        steps.append((["find", "milk"], "milk"))
+    if "tag" in caps and "add" in caps:
+        steps.append((["tag", "0", "home"], None))
+    if "sort" in caps and "add" in caps:
+        steps.append((["sort"], None))
+    if "edit" in caps and "add" in caps:
+        steps.append((["edit", "0", "bread"], "edited"))
+    if "export" in caps:
+        steps.append((["export"], None))
     if not steps and caps:
         steps.append(([caps[0]], None))
     return {"goal": text.strip(), "steps": steps}
