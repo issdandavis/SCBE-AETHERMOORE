@@ -15,7 +15,7 @@ machine are entirely real. An LLM 'build' executor can drop in later unchanged.
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from python.crank import GateVerdict, Phase, turn
 from python.loom import cross_check, emit_c, emit_js, emit_python, mirror_check, parse, run
@@ -51,18 +51,32 @@ def _verify(intent: str, ctx: Dict[str, Any]) -> Dict[str, Any]:
     prog = parse(b["assembly"])
     init = {"r1": b["a"], "r2": b["b"]}
     expected = b["a"] + b["b"] if b["op"] == "add" else b["a"] * b["b"]
-    report = cross_check(prog, [init])
-    got = report["rows"][0]["results"]["reference"]
+    source = {
+        "python": emit_python(prog, init),
+        "javascript": emit_js(prog, init),
+        "c": emit_c(prog, init),
+    }
+    # Run the bounded, loop-detecting reference FIRST. An LLM-proposed program may
+    # not halt; cross_check execs the emitted Python in-process (no budget), so we
+    # never cross-check a program that hasn't already halted with the right answer.
+    ref = run(prog, init, max_steps=500_000)
+    if not ref.halted or ref.output != [expected]:
+        return {
+            "verified": False,
+            "expected": expected,
+            "got": ref.output,
+            "ref_status": ref.status,
+            "backends": ["reference"],
+            "source": source,
+        }
+    report = cross_check(prog, [init])  # safe now: the reference halted with the expected answer
     return {
-        "verified": report["all_agree"] and got == [expected],
+        "verified": report["all_agree"],
         "expected": expected,
-        "got": got,
+        "got": ref.output,
+        "ref_status": ref.status,
         "backends": report["backends"],
-        "source": {
-            "python": emit_python(prog, init),
-            "javascript": emit_js(prog, init),
-            "c": emit_c(prog, init),
-        },
+        "source": source,
     }
 
 
@@ -98,11 +112,58 @@ def _gate(phase: str, output: Any) -> GateVerdict:
     return GateVerdict(True)
 
 
-def forge(intent: str):
-    """Run the full workflow machine on a plain-English request; return the crank Catalog."""
+_LOOM_PROMPT = (
+    "You write programs for a tiny register machine called Loom. Instruction set:\n"
+    "  inc R     ; R += 1\n"
+    "  dec R L   ; if R > 0 then R -= 1 (fall through) else goto L\n"
+    "  jmp L     ; goto L\n"
+    "  out R     ; append R to the output\n"
+    "  halt      ; stop\n"
+    "Registers are non-negative integers starting at 0; the inputs are in r1 and r2; "
+    "a label is 'name:' (its own line or prefixing an instruction); ';' starts a comment.\n\n"
+    "Write a Loom program that computes the {op} of r1 and r2, leaves the result in r3, "
+    "then does 'out r3' and 'halt'. Output ONLY the program inside a ```loom code block."
+)
+
+
+def _extract_loom(raw: str) -> str:
+    """Pull a Loom program out of an LLM reply (a fenced ```code``` block if present)."""
+    if not raw:
+        return ""
+    match = re.search(r"```(?:loom|asm|text|)\s*(.+?)```", raw, re.DOTALL)
+    return (match.group(1) if match else raw).strip()
+
+
+def make_llm_build_executor(ask: Callable[[str], str]) -> Callable[[str, Dict[str, Any]], Optional[Dict[str, Any]]]:
+    """Wrap an LLM ``ask(prompt) -> str`` into a build phase.
+
+    The LLM *proposes* a Loom program; the verify/review phases then GATE it — a
+    wrong, looping, or malformed program is caught (verification fails -> blocked,
+    or it doesn't parse -> drift). AI proposes, the machine verifies.
+    """
+
+    def build(intent: str, ctx: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        spec = ctx["outputs"]["understand"]
+        assembly = _extract_loom(ask(_LOOM_PROMPT.format(op=spec["op"])))
+        try:
+            parse(assembly)  # must be a valid Loom program, else -> drift
+        except Exception:
+            return None
+        return {"op": spec["op"], "a": spec["a"], "b": spec["b"], "assembly": assembly, "source": "llm"}
+
+    return build
+
+
+def forge(intent: str, build: Optional[Callable[[str, Dict[str, Any]], Any]] = None):
+    """Run the full workflow machine on a plain-English request; return the crank Catalog.
+
+    By default the 'build' phase is the deterministic Loom synthesizer. Pass a build
+    executor — e.g. ``make_llm_build_executor(ask)`` — to have an AI propose the
+    program instead; the verify/review phases gate whatever it produces.
+    """
     phases = [
         Phase("understand", _understand),
-        Phase("build", _build),
+        Phase("build", build if build is not None else _build),
         Phase("verify", _verify),
         Phase("review", _review),
         Phase("deliver", _deliver),
