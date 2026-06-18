@@ -1,4 +1,4 @@
-# KDP Bookforge Checklist
+# AetherMoore Book Studio KDP Checklist
 
 Use this before uploading a Kindle eBook, paperback, or hardcover to Amazon KDP.
 

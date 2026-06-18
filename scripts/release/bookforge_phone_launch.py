@@ -38,7 +38,7 @@ def write_phone_card(url: str, port: int) -> Path:
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Bookforge Phone Launch</title>
+    <title>AetherMoore Book Studio Phone Launch</title>
     <style>
       body {{ margin: 0; font: 18px/1.5 system-ui, sans-serif; background: #f7f1e6; color: #18211f; }}
       main {{ width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: 48px 0; }}
@@ -49,7 +49,7 @@ def write_phone_card(url: str, port: int) -> Path:
   </head>
   <body>
     <main>
-      <h1>Bookforge is running</h1>
+      <h1>AetherMoore Book Studio is running</h1>
       <div class="card">
         <p>Open this URL on your phone while it is on the same Wi-Fi network:</p>
         <p><a href="{url}">{url}</a></p>
@@ -67,7 +67,7 @@ def write_phone_card(url: str, port: int) -> Path:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Serve Bookforge Studio on the LAN for phone testing.")
+    parser = argparse.ArgumentParser(description="Serve AetherMoore Book Studio on the LAN for phone testing.")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--open-card", action="store_true", help="Open the local launch card in the desktop browser.")
@@ -89,8 +89,8 @@ def main() -> int:
     if args.open_card:
         webbrowser.open(card.resolve().as_uri())
 
-    print("Bookforge Studio phone launch", flush=True)
-    print("==============================", flush=True)
+    print("AetherMoore Book Studio phone launch", flush=True)
+    print("====================================", flush=True)
     print(f"Phone URL : {url}", flush=True)
     print(f"Local URL : {local_url}", flush=True)
     print(f"Launch card: {card}", flush=True)

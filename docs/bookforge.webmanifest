@@ -1,7 +1,7 @@
 {
-  "name": "Bookforge Writing Studio",
-  "short_name": "Bookforge",
-  "description": "Write scenes, prep KDP, calculate cover dimensions, and build book-derived cover briefs.",
+  "name": "AetherMoore Book Studio",
+  "short_name": "Book Studio",
+  "description": "Write scenes, prep KDP, calculate cover dimensions, and build book-derived cover briefs with the Bookforge engine.",
   "start_url": "bookforge-writing-studio.html",
   "scope": "./",
   "display": "standalone",
