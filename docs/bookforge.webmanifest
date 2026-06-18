@@ -1,0 +1,19 @@
+{
+  "name": "Bookforge Writing Studio",
+  "short_name": "Bookforge",
+  "description": "Write scenes, prep KDP, calculate cover dimensions, and build book-derived cover briefs.",
+  "start_url": "bookforge-writing-studio.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f1e6",
+  "theme_color": "#8b3b41",
+  "categories": ["books", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "static/bookforge-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
