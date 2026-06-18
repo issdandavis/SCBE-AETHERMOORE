@@ -3030,10 +3030,10 @@
     "javascript": {
       "lex": "Tokenizer scans UTF-16 source into tokens (handles ASI rules)",
       "parse": "Recursive-descent parser builds an ESTree-style AST",
-      "ir": "AST then engine bytecode (e.g. V8 Ignition bytecode)",
+      "ir": "AST then engine bytecode/baseline/JIT tiers (e.g. V8 Ignition bytecode, Sparkplug, Maglev, TurboFan)",
       "exec_model": "jit",
       "runtime": "JS engine (V8, SpiderMonkey, JavaScriptCore) on Node.js or a browser",
-      "on_enter": "The engine (e.g. V8) parses source to an AST, Ignition compiles it to bytecode and interprets it, and TurboFan JIT-compiles hot functions to native code."
+      "on_enter": "The engine (e.g. V8) parses source to an AST, Ignition compiles it to bytecode and interprets it, Sparkplug baseline-compiles hot code, Maglev optimizes suitable hot functions, and TurboFan handles higher-tier optimizing JIT compilation."
     },
     "typescript": {
       "lex": "TypeScript compiler tokenizes source including type-annotation tokens",
