@@ -34,6 +34,8 @@ def test_known_cells_are_right():
     assert GRID["var_const"]["javascript"]["code"].startswith("const")
     assert "for x in xs" in GRID["for_each"]["rust"]["code"]
     assert GRID["string_interp"]["c"]["code"] == "n/a"  # C has no string interpolation
+    assert "Sparkplug" in DATA["pipeline"]["javascript"]["ir"]
+    assert "Maglev" in DATA["pipeline"]["javascript"]["on_enter"]
 
 
 def test_similarity_ridge_is_data_derived_and_sensible():
