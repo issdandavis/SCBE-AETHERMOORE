@@ -164,6 +164,28 @@ harmonicWall(result.d_star); // cost in [1, ∞)
 
 ---
 
+## Detection performance (measured)
+
+Two tiers, one API. `scan()` runs a fast, deterministic, **zero-dependency** screen — a byte/entropy sieve plus a canonicalized pattern & concept screen that defeats homoglyph, zero-width, leet, base64, spaced-letter, and Unicode tag-block smuggling — and returns a full audit digest. An **optional** CPU model raises recall on paraphrased / novel attacks.
+
+Measured on a held-out paraphrased-injection corpus (56 attacks / 32 hard negatives), blocked-recall vs benign false-positive rate:
+
+| Mode | Recall (blocked) | Benign FP | Latency | Footprint |
+|---|---|---|---|---|
+| **Default** — pure-Python screen | 50% | 28% | ~0 ms | zero dependencies |
+| **+ Model gate** (`SCBE_INJECTION_MODEL=1`) | **93%** | 34% | ~45 ms/prompt warm (CPU) | one ONNX model, no GPU |
+
+The model is **off by default** — `scan()` stays pure-Python with no extra dependency or download until you opt in. A model-only hit is `ESCALATE` (human review), not `DENY`. The classifier is [ProtectAI's Apache-2.0 DeBERTa](https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2); the recall lift comes from the fine-tuned classifier, not the geometry. Honest scope: the default screen is a fast deterministic filter with an audit trail, not a general semantic-intent solver — that is what the model tier is for.
+
+Enable the model tier:
+
+```bash
+pip install "scbe-aethermoore[ml-onnx]"   # no-torch CPU path
+export SCBE_INJECTION_MODEL=1             # first call downloads the model (~740 MB), then cached
+```
+
+---
+
 ## Terminology Decoder
 
 SCBE uses custom vocabulary. Each coined term maps to a standard technical concept.
