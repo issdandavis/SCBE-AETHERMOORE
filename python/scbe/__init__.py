@@ -131,6 +131,13 @@ from .reaction_harness import (
     ReactionFieldCheck,
     evaluate_bijective_reaction,
 )
+from .chemistry_dimensions import (
+    ChemistryDimensionError,
+    ElementDimension,
+    analyze_formula,
+    analyze_many,
+    element_dimension,
+)
 from .quasi_integer_recoupling import (
     CHEMICAL_BOND_ORDER_STATES,
     FORMAL_CHARGE_STATES,
@@ -208,6 +215,11 @@ __all__ += [
     "ReactionFieldCheck",
     "BijectiveReactionResult",
     "evaluate_bijective_reaction",
+    "ChemistryDimensionError",
+    "ElementDimension",
+    "analyze_formula",
+    "analyze_many",
+    "element_dimension",
     "RecouplingState",
     "QuasiIntegerRecoupling",
     "CHEMICAL_BOND_ORDER_STATES",

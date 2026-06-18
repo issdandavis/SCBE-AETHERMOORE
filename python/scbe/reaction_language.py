@@ -82,6 +82,20 @@ NAME_TO_SMILES: Dict[str, str] = {
 _VERB_SIGNALS: List[Tuple[str, List[str]]] = [
     ("checkpoint", ["checkpoint", "merkle", "anchor", "notarize", "seal the chain", "receipt chain"]),
     ("geometry", ["geometry", "shape", "3d", "conformer", "rotor", "point group", "structure of"]),
+    (
+        "dimensions",
+        [
+            "dimension",
+            "dimensional analysis",
+            "composition",
+            "atomic composition",
+            "atom count",
+            "protons",
+            "neutrons",
+            "electrons",
+            "molar mass",
+        ],
+    ),
     ("screen", ["screen", "controlled", "dangerous", "hazardous", "banned", "illegal", "weapon", "schedule"]),
     ("balance", ["balance", "combust", "combustion", "burn", "stoichiometry", "equation", "react"]),
 ]
@@ -217,6 +231,20 @@ def _find_path(text: str) -> Optional[str]:
     return None
 
 
+def _find_formula(text: str) -> Optional[str]:
+    for tok in re.findall(r"[A-Za-z0-9^+\-()]+", text):
+        if _FORMULA_RE.match(tok) and any(c.isupper() for c in tok):
+            return tok
+    formulas, _ = _resolve_species_formula(text)
+    if formulas:
+        return formulas[0]
+    lowered = text.lower()
+    for name in sorted(NAME_TO_FORMULA, key=len, reverse=True):
+        if re.search(rf"\b{re.escape(name)}\b", lowered):
+            return NAME_TO_FORMULA[name]
+    return None
+
+
 def _plan_balance(text: str) -> ReactionPlan:
     notes: List[str] = []
     eq = _parse_equation(text)
@@ -329,8 +357,31 @@ def _plan_checkpoint(text: str) -> ReactionPlan:
     )
 
 
+def _plan_dimensions(text: str) -> ReactionPlan:
+    formula = _find_formula(text)
+    if formula:
+        return ReactionPlan(
+            "dimensions",
+            {"formula": formula},
+            f"react dimensions --formula {formula}",
+            0.86,
+            notes=[
+                "formula-level atom/proton/neutron/electron ledger",
+                "not thermodynamics, kinetics, toxicity, synthesis, or bioactivity",
+            ],
+        )
+    return ReactionPlan(
+        "dimensions",
+        {},
+        "react dimensions --formula <FORMULA>",
+        0.3,
+        clarification="Which formula should I analyze? Give a formula like C6H12O6, H2O, or NH4^+.",
+    )
+
+
 _DISPATCH = {
     "balance": _plan_balance,
+    "dimensions": _plan_dimensions,
     "screen": _plan_screen,
     "geometry": _plan_geometry,
     "checkpoint": _plan_checkpoint,
@@ -339,6 +390,7 @@ _DISPATCH = {
 VERBS_HELP = (
     "I understand these reaction requests:\n"
     "  balance    e.g. 'balance propane combustion' / 'balance C3H8 + O2 -> CO2 + H2O'\n"
+    "  dimensions e.g. 'atomic composition of glucose' / 'dimensions C6H12O6'\n"
     "  screen     e.g. 'is ethanol controlled?' / 'screen CCO'\n"
     "  geometry   e.g. 'what shape is CO2?' / 'geometry of ethanol'\n"
     "  checkpoint e.g. 'checkpoint artifacts/demo/methalox/signed_chain.json'"
