@@ -7,6 +7,9 @@ path). inverse()/undo() walk the cube back to solved -- exactly, by group theory
 is why 'unsexy' is the inverse of 'sexy' and 'hedge' is the inverse of 'sledge'.
 """
 
+from hypothesis import given
+from hypothesis import strategies as st
+
 from python.scbe import polyglot as P
 from python.scbe.cube_controller import _expand_names, run_program
 from python.scbe.triggers import (
@@ -15,11 +18,35 @@ from python.scbe.triggers import (
     expand_trigger,
     inverse,
     invert_move,
+    normalize_move,
     recognize,
     trigger_moves,
     trigger_program,
     undo,
 )
+
+# move spellings incl. case / whitespace / curly-quote variants to exercise normalization
+_MOVE_TOKENS = [
+    "R",
+    "L",
+    "U",
+    "D",
+    "F",
+    "B",
+    "R'",
+    "L'",
+    "U'",
+    "D'",
+    "F'",
+    "B'",
+    "R2",
+    "U2",
+    "F2",
+    "r",
+    "u'",
+    " D ",
+    "F’",
+]
 
 
 def test_every_trigger_uses_only_real_controller_moves():
@@ -56,6 +83,12 @@ def test_inverse_is_an_involution():
     assert invert_move("R") == "R'"
     assert invert_move("R'") == "R"
     assert invert_move("U2") == "U2"  # a double turn is its own inverse
+
+
+@given(st.lists(st.sampled_from(_MOVE_TOKENS), max_size=16))
+def test_inverse_is_an_involution_over_random_sequences(seq):
+    # undoing the undo returns the sequence in its canonical spelling, for ANY move stream
+    assert inverse(inverse(seq)) == [normalize_move(m) for m in seq]
 
 
 def test_named_undo_pairs_are_real_inverses():
