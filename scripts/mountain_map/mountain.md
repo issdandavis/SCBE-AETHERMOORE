@@ -1,9 +1,22 @@
-# The mountain, from data: language similarity by identical construct spelling
+# Syntactic phylogeny: language similarity by identical construct spelling
 
 Edge = fraction of the 32 constructs two languages spell *identically* (normalized).
-Computed from the table, not asserted. Higher = closer faces of the same mountain.
+Computed from the table, not asserted -- but this is SURFACE spelling, a family tree of
+NOTATION (brace / colon / ML family), NOT the shape of the computation.
 
-## Nearest neighbours (each language's 3 closest faces)
+## What this is NOT
+
+Surface spelling is not semantics, and the two come apart:
+- identical spelling, different meaning: `==` is one glyph in Java/C#/JS/Python but means
+  reference vs value vs coercing equality (`1 == "1"` is False in Python, true in JS).
+- different spelling, same computation: Haskell `map f xs` and Python `[f(x) for x in xs]`
+  compute the same thing -- yet Haskell scores as the outlier here.
+So these distances are notation lineage, not semantic distance. Use this as a TRANSPILER
+WORK-ALLOCATION map: identical cells emit trivially; the divergences (the Haskell column)
+are where real semantic effort lives. The same-computation axis is the IR +
+polyglot_conformance.py (which RUNS the backends); see semantic_vs_syntax.py for proof.
+
+## Nearest neighbours (each language's 3 closest faces by notation)
 
 - **python** -> ruby (0.41), swift (0.38), lua (0.34)
 - **javascript** -> typescript (0.91), csharp (0.56), java (0.50)
