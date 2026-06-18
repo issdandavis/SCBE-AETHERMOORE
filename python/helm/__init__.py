@@ -1,45 +1,55 @@
-"""Helm — the operator loop: AI runs the reversible work, humans approve the gates.
+"""Helm — the operator loop: approval is a procedure, not a person.
 
-    from python.helm import Step, run_objective, render
+Each step carries **approval criteria**. If the criteria are met, the step is
+approved and runs — that's it. The AI runs the whole loop on its own; a human
+encodes the criteria once.
+
+    from python.helm import Step, run_objective, render, upstream, flag, human
 
     steps = [
-        Step("research", "research", lambda obj, ctx: f"notes on {obj}"),
-        Step("build",    "build",    lambda obj, ctx: build_it(obj)),       # autonomous
-        Step("verify",   "verify",   lambda obj, ctx: verify(ctx)),          # autonomous
-        Step("deploy",   "deploy",   lambda obj, ctx: ship_to_prod(ctx)),    # GATED -> queued
-        Step("charge",   "spend",    lambda obj, ctx: enable_billing()),     # GATED -> queued
+        Step("build",  "build",  build_fn),                                  # no criteria -> just runs
+        Step("verify", "verify", verify_fn),
+        Step("deploy", "deploy", ship_fn, criteria=(                          # ships ONLY when:
+            upstream("verify", "ok", True),                                   #   verify said ok
+            flag("within_budget"),                                           #   budget switch on
+        )),
+        Step("charge", "spend",  bill_fn, criteria=(human("approved_spend"),)),  # genuine human gate
     ]
-    run = run_objective("ship the tool", steps)
-    run.needs_human            # True — deploy + charge are queued
+    run = run_objective("ship the tool", steps, context={"within_budget": True})
+    run.fully_autonomous     # True iff every step's criteria were met and it ran
     print(render(run))
-    # after you approve:
-    run2 = run_objective("ship the tool", steps, approvals={"deploy"})  # deploy now executes
 
-The loop runs everything reversible/low-stakes itself and parks money/deploy/legal/
-destructive/admin steps for a human. Steps are pluggable callables, so codeforge
-(build+verify), the governance gate, and shell/tools drop straight in.
+Criteria builders: ``upstream(step, key, equals)`` (an earlier step's result),
+``flag(key)`` / ``human(key)`` (a context switch), ``met(name, fn)`` (any predicate).
+Steps and criteria are pluggable callables — codeforge, the gate, and tools drop in.
 """
 
 from .machine import (
-    HUMAN_GATED_KINDS,
     Action,
-    GateVerdict,
+    Check,
+    Criterion,
     OperatorRun,
     Receipt,
     Step,
-    default_policy,
+    flag,
+    human,
+    met,
     render,
     run_objective,
+    upstream,
 )
 
 __all__ = [
     "Step",
+    "Criterion",
     "Action",
-    "GateVerdict",
+    "Check",
     "Receipt",
     "OperatorRun",
     "run_objective",
     "render",
-    "default_policy",
-    "HUMAN_GATED_KINDS",
+    "met",
+    "flag",
+    "human",
+    "upstream",
 ]

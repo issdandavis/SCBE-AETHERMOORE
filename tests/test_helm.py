@@ -1,60 +1,80 @@
-"""Tests for Helm — the operator loop (AI runs reversible work, humans approve gates)."""
+"""Tests for Helm — criteria-based approval (meets criteria -> approved -> runs)."""
 
-from python.helm import Step, default_policy, render, run_objective
+from python.helm import Step, flag, human, met, render, run_objective, upstream
 
 
-def _steps(side_effects):
-    """A realistic objective: research/build/verify are autonomous; deploy + charge are gated.
-    `side_effects` is a dict the actions flip so we can prove what actually ran."""
+def test_no_criteria_runs_unconditionally():
+    fx = {}
+    run = run_objective("x", [Step("a", "build", lambda o, c: fx.setdefault("a", True))])
+    assert fx == {"a": True} and run.approved == 1 and run.fully_autonomous
 
-    def mark(name):
-        def action(obj, ctx):
-            side_effects[name] = True
-            return f"{name}:{obj}"
 
-        return action
+def test_met_criteria_approve_and_run():
+    fx = {}
+    step = Step(
+        "deploy", "deploy", lambda o, c: fx.setdefault("deployed", True), criteria=(met("ready", lambda o, c, s: True),)
+    )
+    run = run_objective("x", [step])
+    assert fx.get("deployed") is True
+    assert run.receipts[0].status == "approved"
 
-    return [
-        Step("research", "research", mark("research")),
-        Step("build", "build", mark("build")),
-        Step("verify", "verify", mark("verify")),
-        Step("deploy", "deploy", mark("deploy")),  # gated
-        Step("charge", "spend", mark("charge")),  # gated
+
+def test_unmet_criteria_deny_and_do_not_run():
+    fx = {}
+    step = Step(
+        "deploy",
+        "deploy",
+        lambda o, c: fx.setdefault("deployed", True),
+        criteria=(met("ready", lambda o, c, s: False),),
+    )
+    run = run_objective("x", [step])
+    assert "deployed" not in fx  # the action never fired
+    assert run.denied_count == 1 and run.approved == 0
+    r = run.receipts[0]
+    assert r.status == "denied" and "ready" in r.reason
+
+
+def test_upstream_criterion_gates_on_an_earlier_result():
+    fx = {}
+    steps = [
+        Step("build", "build", lambda o, c: {"verified": True}),
+        Step(
+            "deploy",
+            "deploy",
+            lambda o, c: fx.setdefault("shipped", True),
+            criteria=(upstream("build", "verified", True),),
+        ),
     ]
+    run = run_objective("ship", steps)
+    assert fx.get("shipped") is True and run.fully_autonomous
+
+    # now make the build NOT verify -> deploy must be denied, must not ship
+    fx2 = {}
+    steps[0] = Step("build", "build", lambda o, c: {"verified": False})
+    steps[1] = Step(
+        "deploy",
+        "deploy",
+        lambda o, c: fx2.setdefault("shipped", True),
+        criteria=(upstream("build", "verified", True),),
+    )
+    run2 = run_objective("ship", steps)
+    assert "shipped" not in fx2 and run2.denied_count == 1
 
 
-def test_autonomous_steps_run_gated_steps_are_parked():
-    fx = {}
-    run = run_objective("ship the tool", _steps(fx))
-    # the reversible work ran
-    assert fx == {"research": True, "build": True, "verify": True}
-    # the gated work did NOT run — it's queued, not executed
-    assert "deploy" not in fx and "charge" not in fx
-    assert run.autonomous_done == 3 and run.pending_approval == 2
-    assert run.needs_human is True
-    assert {q["step"] for q in run.approval_queue} == {"deploy", "charge"}
+def test_flag_criterion_from_context():
+    step = Step("deploy", "deploy", lambda o, c: "shipped", criteria=(flag("within_budget"),))
+    assert run_objective("x", [step]).denied_count == 1  # flag absent -> denied
+    assert run_objective("x", [step], context={"within_budget": True}).approved == 1  # flag set -> approved
 
 
-def test_approval_lets_a_gated_step_execute():
-    fx = {}
-    run = run_objective("ship the tool", _steps(fx), approvals={"deploy"})
-    assert fx.get("deploy") is True  # deploy ran because it was approved
-    assert "charge" not in fx  # charge still parked
-    assert run.approved_done == 1 and run.pending_approval == 1
-    deploy = next(r for r in run.receipts if r.step == "deploy")
-    assert deploy.status == "approved-done"
+def test_human_criterion_is_just_a_context_signal():
+    step = Step("charge", "spend", lambda o, c: "charged", criteria=(human("approved_spend"),))
+    assert run_objective("x", [step]).denied_count == 1  # no human signal -> denied
+    assert run_objective("x", [step], context={"approved_spend": True}).approved == 1
 
 
-def test_irreversible_step_is_gated_even_if_kind_is_benign():
-    fx = {}
-    steps = [Step("rewrite_history", "edit", lambda o, c: fx.setdefault("ran", True), reversible=False)]
-    run = run_objective("x", steps)
-    assert "ran" not in fx and run.pending_approval == 1
-    assert "irreversible" in run.approval_queue[0]["reason"]
-
-
-def test_failing_autonomous_step_does_not_abort_the_run():
-    def boom(obj, ctx):
+def test_failing_action_is_recorded_and_loop_continues():
+    def boom(o, c):
         raise RuntimeError("kaboom")
 
     fx = {}
@@ -64,37 +84,29 @@ def test_failing_autonomous_step_does_not_abort_the_run():
         Step("c", "build", lambda o, c: fx.setdefault("c", True)),
     ]
     run = run_objective("x", steps)
-    assert fx == {"a": True, "c": True}  # c still ran after b failed
-    assert run.failed == 1 and run.autonomous_done == 2
+    assert fx == {"a": True, "c": True} and run.failed == 1 and run.approved == 2
     assert next(r for r in run.receipts if r.step == "b").status == "failed"
 
 
+def test_criterion_that_errors_is_treated_as_not_met():
+    def explode(o, c, s):
+        raise ValueError("bad check")
+
+    step = Step("deploy", "deploy", lambda o, c: "shipped", criteria=(met("boom", explode),))
+    run = run_objective("x", [step])
+    assert run.denied_count == 1 and run.receipts[0].status == "denied"
+
+
 def test_run_is_deterministic_and_chain_tamper_evident():
-    a = run_objective("same", _steps({}))
-    b = run_objective("same", _steps({}))
-    assert a.chain_digest == b.chain_digest
-    # a different objective -> different chain (the receipt chain reflects the run)
-    c = run_objective("different", _steps({}))
-    assert c.chain_digest != a.chain_digest
+    steps = [Step("a", "build", lambda o, c: "A"), Step("b", "verify", lambda o, c: "B")]
+    assert run_objective("same", steps).chain_digest == run_objective("same", steps).chain_digest
+    assert run_objective("other", steps).chain_digest != run_objective("same", steps).chain_digest
 
 
-def test_default_policy_classifies_correctly():
-    assert default_policy(Step("x", "build", lambda o, c: None)).gated is False
-    assert default_policy(Step("x", "verify", lambda o, c: None)).gated is False
-    for kind in ("spend", "deploy", "legal", "destructive", "admin", "credential", "publish"):
-        assert default_policy(Step("x", kind, lambda o, c: None)).gated is True
-
-
-def test_later_steps_see_earlier_results():
+def test_render_marks_autonomous_and_denials():
     steps = [
-        Step("a", "build", lambda o, c: "A"),
-        Step("b", "verify", lambda o, c: f"saw:{c['results']['a']}"),
+        Step("build", "build", lambda o, c: {"verified": True}),
+        Step("deploy", "deploy", lambda o, c: "x", criteria=(upstream("build", "verified", False),)),
     ]
-    run = run_objective("x", steps)
-    assert run.results["b"] == "saw:A"
-
-
-def test_render_surfaces_the_queue():
-    text = render(run_objective("ship", _steps({})))
-    assert "AWAITING YOU" in text and "APPROVAL QUEUE" in text
-    assert "deploy" in text and "charge" in text
+    text = render(run_objective("x", steps))
+    assert "denied" in text and "deploy" in text
