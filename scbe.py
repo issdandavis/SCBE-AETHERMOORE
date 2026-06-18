@@ -975,23 +975,30 @@ def _semantic_intent(candidate: str) -> List[str]:
     return hits
 
 
-_MODEL_INTENT_THRESHOLD = float(os.environ.get("SCBE_INTENT_MODEL_THRESHOLD", "0.8"))
+_MODEL_INTENT_THRESHOLD = float(os.environ.get("SCBE_INJECTION_MODEL_THRESHOLD", "0.5"))
+_INTENT_MODEL_MOD = None
 
 
 def _maybe_model_intent(text: str) -> Optional[float]:
-    """Optional ONNX injection probability. Returns None at ZERO cost unless
-    SCBE_INTENT_MODEL is set AND the optimum/transformers backend + model are present,
-    so the default gate stays pure-Python with no new dependency or download.
-    See scripts/intent_classifier.py for activation."""
-    if os.environ.get("SCBE_INTENT_MODEL", "").strip().lower() in ("", "0", "false", "no"):
-        return None
-    try:
-        scripts_dir = str(REPO_ROOT / "scripts")
-        if scripts_dir not in sys.path:
-            sys.path.insert(0, scripts_dir)
-        from intent_classifier import injection_probability
+    """Optional model-grade injection probability via python/scbe/intent_model.py.
 
-        return injection_probability(text)
+    Returns None at ZERO cost unless SCBE_INJECTION_MODEL is set AND the backend
+    (optimum/transformers + the model) is present, so the default gate stays
+    pure-Python with no new dependency or download. Loaded BY PATH so the
+    python.scbe package __init__ (which eagerly imports numpy/brain) is not pulled in."""
+    if not os.environ.get("SCBE_INJECTION_MODEL", "").strip():
+        return None
+    global _INTENT_MODEL_MOD
+    try:
+        if _INTENT_MODEL_MOD is None:
+            import importlib.util
+
+            path = str(REPO_ROOT / "python" / "scbe" / "intent_model.py")
+            spec = importlib.util.spec_from_file_location("scbe_intent_model", path)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            _INTENT_MODEL_MOD = mod
+        return _INTENT_MODEL_MOD.injection_prob(text)
     except Exception:
         return None
 

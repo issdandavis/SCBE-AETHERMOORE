@@ -3,7 +3,7 @@
 Verifies the integration logic WITHOUT downloading the ~740MB model: the hook is
 inert by default (pure-Python gate unchanged) and, when a stub returns a high
 injection probability, the gate lifts intent risk and escalates. The real model is
-opt-in (SCBE_INTENT_MODEL=1) and exercised separately once it is installed.
+opt-in (SCBE_INJECTION_MODEL=1) and exercised separately once it is installed.
 """
 
 import sys
@@ -14,14 +14,14 @@ import scbe  # noqa: E402
 
 
 def test_hook_off_by_default(monkeypatch):
-    monkeypatch.delenv("SCBE_INTENT_MODEL", raising=False)
+    monkeypatch.delenv("SCBE_INJECTION_MODEL", raising=False)
     r = scbe.pipeline_quick_score("a perfectly ordinary sentence about gardening")
     assert "model:injection" not in r["intent_flags"]
     assert r["decision"] == "ALLOW"
 
 
 def test_maybe_model_intent_none_when_disabled(monkeypatch):
-    monkeypatch.delenv("SCBE_INTENT_MODEL", raising=False)
+    monkeypatch.delenv("SCBE_INJECTION_MODEL", raising=False)
     assert scbe._maybe_model_intent("anything at all") is None
 
 
@@ -34,6 +34,6 @@ def test_hook_escalates_when_stub_flags(monkeypatch):
 
 
 def test_hook_below_threshold_does_not_flag(monkeypatch):
-    monkeypatch.setattr(scbe, "_maybe_model_intent", lambda _t: 0.5)
+    monkeypatch.setattr(scbe, "_maybe_model_intent", lambda _t: 0.3)
     r = scbe.pipeline_quick_score("a normal sentence about hiking trails")
     assert "model:injection" not in r["intent_flags"]
