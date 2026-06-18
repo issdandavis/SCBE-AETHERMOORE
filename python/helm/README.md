@@ -9,11 +9,14 @@ Standalone (stdlib only). Steps are pluggable callables, so the real work plugs 
 ```bash
 python -m python.helm.demo
 python -m python.helm.tool_forge_demo
+python -m python.helm.tool_forge_bench
 ```
 
 The demo is side-effect free. It shows static playability checking, dry-run proof without calling real step bodies, concurrent DAG execution, storylet selection from derived factors, and a broken graph caught before execution.
 
 `tool_forge_demo` shows the agent-as-tool-maker loop: propose a tiny tool, intentionally fail verification once, repair it, verify again, and keep the working tool plus a receipt in a temp workspace.
+
+`tool_forge_bench` turns that loop into a small local benchmark: four tool-making tasks, public examples, hidden checks, repair, kept tools, and per-task JSON receipts. It is not a claim to beat SWE-bench or Terminal-Bench; it measures the thing those benchmarks still leave thinly covered: whether an agent can create a new tool, verify it, repair it, and reuse the verified artifact.
 
 ## What's gated vs autonomous
 The default policy parks a step for human approval if its kind is **spend / deploy / publish / legal / destructive / admin / credential / email**, *or* if it's flagged **irreversible**. Everything else (`build`, `verify`, `research`, `draft`, `edit`, …) the AI runs on its own.
