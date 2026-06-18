@@ -50,11 +50,17 @@ def _seal(rec: dict) -> str:
 
 @dataclass
 class Region:
-    """A cognitive node -- a tool or model-call surface the connectome can route to."""
+    """A cognitive node -- a tool or model-call surface the connectome can route to.
+
+    r is the radial position in the Poincare skull (0 = stable core, ->1 = the Wall);
+    ring names the anatomical layer (core / cortex / bridge / cerebellum / risk).
+    """
 
     name: str
     role: str
     handler: Callable[[str], str]
+    r: float = 0.0
+    ring: str = ""
 
 
 @dataclass
