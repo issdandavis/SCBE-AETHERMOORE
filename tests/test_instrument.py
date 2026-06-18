@@ -2,7 +2,17 @@
 
 import pytest
 
-from python.scbe.instrument import ca_word_for_opcode, modes, notes_to_ops, play, scale
+from python.scbe.instrument import (
+    ca_word_for_opcode,
+    emit_all,
+    faces,
+    keyspace,
+    melody_for_ops,
+    modes,
+    notes_to_ops,
+    play,
+    scale,
+)
 
 
 def test_coding_scale_maps_notes_to_ca_ops():
@@ -27,6 +37,21 @@ def test_ca_mode_executes_and_round_trips_native_keys():
     assert result["value"] == 50
     assert result["song_back"] == "bip'a bip'i"
     assert result["bijective"] is True
+    assert [key["op_id"] for key in result["melody"]] == [0, 2]
+
+
+def test_keyspace_uses_wavelength_and_instrument_axes():
+    first = keyspace(0)
+    wrapped = keyspace(12)
+
+    assert first["note"] == "C3"
+    assert first["instrument"] == "piano"
+    assert first["light_nm"] == 380.0
+    assert first["color"].startswith("#")
+    assert wrapped["note"] == "C4"
+    assert wrapped["instrument"] == "strings"
+    assert wrapped["light_nm"] > first["light_nm"]
+    assert melody_for_ops(["add", "mul"]) == [keyspace(0), keyspace(2)]
 
 
 def test_play_executes_python_face_and_reads_song_back():
@@ -58,6 +83,16 @@ def test_non_python_faces_emit_traceable_code_without_execution():
     assert haskell["song_back"] == "C E"
     assert "add (0x00)" in rust["code"]
     assert "caAdd" in haskell["code"]
+
+
+def test_emit_all_covers_registered_language_faces_for_scalar_song():
+    emitted = emit_all("C E")
+
+    assert set(emitted) == set(faces())
+    assert len(emitted) >= 18
+    assert all(not source.startswith("ERROR:") for source in emitted.values())
+    assert "add (0x00)" in emitted["python"]
+    assert "mul (0x02)" in emitted["rust"]
 
 
 def test_unknown_note_is_rejected():
