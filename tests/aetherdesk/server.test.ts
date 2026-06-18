@@ -38,7 +38,7 @@ describe('AetherDesk server — health + introspection', () => {
     expect(body.schema).toBe('aetherdesk_health_v0');
   });
 
-  it('GET /api/commands lists all five spec commands', async () => {
+  it('GET /api/commands lists the spec commands plus app launcher tiles', async () => {
     const { status, body } = await fetchJson(`${baseUrl}/api/commands`);
     expect(status).toBe(200);
     expect(body.ok).toBe(true);
@@ -47,17 +47,24 @@ describe('AetherDesk server — health + introspection', () => {
     expect(ids).toEqual([
       'benchmark_cli',
       'benchmark_coding_agents',
+      'chemistry_lookup',
+      'forge_demo',
+      'instrument_play',
       'research_aether_lattice',
+      'rosetta_demo',
+      'token_lookup',
       'ts_tests',
       'typecheck',
     ]);
   });
 
-  it('every command surface includes label, npm_script, risk_tier, description', async () => {
+  it('every command surface includes launcher metadata', async () => {
     const { body } = await fetchJson(`${baseUrl}/api/commands`);
     for (const c of body.commands) {
       expect(typeof c.label).toBe('string');
       expect(typeof c.npm_script).toBe('string');
+      expect(typeof c.category).toBe('string');
+      expect(typeof c.icon).toBe('string');
       expect(typeof c.risk_tier).toBe('string');
       expect(typeof c.description).toBe('string');
       expect(c.label.length).toBeGreaterThan(0);
@@ -68,12 +75,17 @@ describe('AetherDesk server — health + introspection', () => {
 describe('AetherDesk server — allowlist enforcement (security boundary)', () => {
   it('POST /api/run/<known> resolves to a known command id without spawning', async () => {
     // We don't actually invoke runCommand here (it spawns npm). We verify
-    // that the allowlist export contains exactly the spec's five entries.
+    // that the allowlist export contains only the bounded launcher entries.
     const ids = Object.keys(aetherdesk.COMMAND_ALLOWLIST).sort();
     expect(ids).toEqual([
       'benchmark_cli',
       'benchmark_coding_agents',
+      'chemistry_lookup',
+      'forge_demo',
+      'instrument_play',
       'research_aether_lattice',
+      'rosetta_demo',
+      'token_lookup',
       'ts_tests',
       'typecheck',
     ]);

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AetherDesk Operator Shell v0</title>
+    <title>AetherDesk Operator Shell v1</title>
     <style>
       :root {
         --bg: #0b0d12;
@@ -114,15 +114,29 @@
         color: var(--accent);
       }
       .commands {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
         gap: 10px;
+      }
+      .category {
+        margin: 0 0 16px 0;
+      }
+      .category-title {
+        margin: 0 0 8px 0;
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
       }
       .cmd {
         background: var(--panel);
         border: 1px solid var(--border);
         border-radius: 6px;
         padding: 12px 14px;
+        min-height: 156px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
       }
       .cmd-head {
         display: flex;
@@ -133,6 +147,17 @@
       .cmd-label {
         font-weight: 600;
         font-size: 14px;
+      }
+      .cmd-icon {
+        width: 26px;
+        height: 26px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent);
+        margin-right: 8px;
       }
       .cmd-tier {
         font-size: 10px;
@@ -261,11 +286,11 @@
   <body>
     <header>
       <h1>AetherDesk</h1>
-      <span class="sub">Operator Shell v0 — local only · 127.0.0.1</span>
+      <span class="sub">Operator Shell v1 - local only - 127.0.0.1</span>
     </header>
     <main>
       <section class="panel">
-        <h2>Terminal Task Pane</h2>
+        <h2>App Launcher</h2>
         <div id="commands" class="commands"><p class="empty">loading...</p></div>
       </section>
       <section class="panel">
@@ -292,22 +317,41 @@
       async function loadCommands() {
         const r = await fetch('/api/commands').then((r) => r.json());
         cmdsEl.innerHTML = '';
+        const groups = new Map();
         for (const c of r.commands) {
+          const key = c.category || 'Commands';
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(c);
+        }
+        const order = ['Tools', 'Build', 'Checks', 'Benchmarks', 'Research', 'Commands'];
+        const sortedGroups = [...groups.keys()].sort((a, b) => {
+          const ia = order.includes(a) ? order.indexOf(a) : order.length;
+          const ib = order.includes(b) ? order.indexOf(b) : order.length;
+          return ia === ib ? a.localeCompare(b) : ia - ib;
+        });
+        for (const group of sortedGroups) {
+          const wrap = document.createElement('div');
+          wrap.className = 'category';
+          wrap.innerHTML = `<h3 class="category-title">${escapeHtml(group)}</h3><div class="commands"></div>`;
+          const grid = wrap.querySelector('.commands');
+          for (const c of groups.get(group)) {
           const div = document.createElement('div');
           div.className = 'cmd';
           div.innerHTML = `
             <div class="cmd-head">
-              <div class="cmd-label">${c.label}</div>
+              <div class="cmd-label"><span class="cmd-icon">${iconGlyph(c.icon)}</span>${escapeHtml(c.label)}</div>
               <div class="cmd-tier">${c.risk_tier}</div>
             </div>
-            <div class="cmd-desc">${c.description}</div>
+            <div class="cmd-desc">${escapeHtml(c.description)}</div>
             <div class="cmd-row">
               <code class="cmd-script">npm run ${c.npm_script}</code>
               <button class="run" data-id="${c.id}">Run</button>
             </div>
             <div class="status" id="status-${c.id}"></div>
           `;
-          cmdsEl.appendChild(div);
+            grid.appendChild(div);
+          }
+          cmdsEl.appendChild(wrap);
         }
         cmdsEl.querySelectorAll('button.run').forEach((b) => {
           b.addEventListener('click', () => runCommand(b.dataset.id, b));
@@ -390,6 +434,23 @@
 
       function escapeHtml(s) {
         return String(s).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c]);
+      }
+
+      function iconGlyph(name) {
+        return (
+          {
+            agent: 'AG',
+            atom: 'At',
+            chart: 'CH',
+            check: 'OK',
+            faces: '18',
+            forge: 'FG',
+            lattice: 'LX',
+            music: 'CE',
+            test: 'TS',
+            token: 'TK',
+          }[name] || 'SC'
+        );
       }
 
       async function loadProviders() {
