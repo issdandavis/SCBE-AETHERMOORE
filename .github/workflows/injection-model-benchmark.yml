@@ -1,13 +1,15 @@
 name: injection-model-benchmark
 
-# Measures the OPTIONAL second-tier classifier (python/scbe/intent_model.py) on
-# the independent held-out corpus — the honest "does the model beat the 25%
+# Measures the OPTIONAL second-tier classifier (src/scbe_aethermoore/intent_model.py)
+# on the independent held-out corpus — the honest "does the model beat the 25%
 # pattern ceiling, and at what false-positive cost" number. The local dev box has
 # no ML libs, so this is where that measurement actually happens.
 
 on:
   push:
     paths:
+      - "src/scbe_aethermoore/intent_model.py"
+      - "src/scbe_aethermoore/_intent_screen.py"
       - "python/scbe/intent_model.py"
       - "scbe.py"
       - "tests/test_intent_model_benchmark.py"
