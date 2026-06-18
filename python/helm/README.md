@@ -8,9 +8,12 @@ Standalone (stdlib only). Steps are pluggable callables, so the real work plugs 
 
 ```bash
 python -m python.helm.demo
+python -m python.helm.tool_forge_demo
 ```
 
 The demo is side-effect free. It shows static playability checking, dry-run proof without calling real step bodies, concurrent DAG execution, storylet selection from derived factors, and a broken graph caught before execution.
+
+`tool_forge_demo` shows the agent-as-tool-maker loop: propose a tiny tool, intentionally fail verification once, repair it, verify again, and keep the working tool plus a receipt in a temp workspace.
 
 ## What's gated vs autonomous
 The default policy parks a step for human approval if its kind is **spend / deploy / publish / legal / destructive / admin / credential / email**, *or* if it's flagged **irreversible**. Everything else (`build`, `verify`, `research`, `draft`, `edit`, …) the AI runs on its own.
