@@ -351,3 +351,6 @@ docs/proposals/*.zip
 # Stray root-level images (analysis screenshots, scratch PNGs). Intentional
 # repo images live under a named dir (kindle-app/, ui/, docs/...), never at root.
 /*.png
+
+# generated audit-receipt runs
+audit_attestation/
