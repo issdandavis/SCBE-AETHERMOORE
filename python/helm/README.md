@@ -4,6 +4,14 @@
 
 Standalone (stdlib only). Steps are pluggable callables, so the real work plugs straight in: **codeforge** (build + verify), the **governance gate** (safe-to-act), `crank` (receipted sub-runs), shell/tools.
 
+## Try it
+
+```bash
+python -m python.helm.demo
+```
+
+The demo is side-effect free. It shows static playability checking, dry-run proof without calling real step bodies, concurrent DAG execution, storylet selection from derived factors, and a broken graph caught before execution.
+
 ## What's gated vs autonomous
 The default policy parks a step for human approval if its kind is **spend / deploy / publish / legal / destructive / admin / credential / email**, *or* if it's flagged **irreversible**. Everything else (`build`, `verify`, `research`, `draft`, `edit`, …) the AI runs on its own.
 
