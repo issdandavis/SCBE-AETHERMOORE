@@ -151,8 +151,8 @@ def direct_runtime_probes() -> list[dict[str, Any]]:
     probes: list[dict[str, Any]] = []
 
     try:
-        atomic = import_module("scbe.atomic_tokenization")
-        fusion = import_module("scbe.chemical_fusion")
+        atomic = import_module("python.scbe.atomic_tokenization")
+        fusion = import_module("python.scbe.chemical_fusion")
         tokens = ["encrypt", "payload", "before", "allow"]
         states = [atomic.map_token_to_atomic_state(token, context_class="cli") for token in tokens]
         fused = fusion.fuse_atomic_states(states)
