@@ -12,6 +12,8 @@ from python.scbe.instrument import (
     notes_to_ops,
     play,
     scale,
+    semantic_choices,
+    semantic_coverage,
 )
 
 
@@ -52,6 +54,14 @@ def test_keyspace_uses_wavelength_and_instrument_axes():
     assert wrapped["instrument"] == "strings"
     assert wrapped["light_nm"] > first["light_nm"]
     assert melody_for_ops(["add", "mul"]) == [keyspace(0), keyspace(2)]
+
+
+def test_instrument_surfaces_semantic_template_choices():
+    assert semantic_coverage()["covered"] == 64
+    choices = semantic_choices("xor")
+    assert choices[0]["name"] == "bitwise_i64"
+    assert choices[0]["family"] == "bitwise"
+    assert choices[0]["portable"] is True
 
 
 def test_play_executes_python_face_and_reads_song_back():

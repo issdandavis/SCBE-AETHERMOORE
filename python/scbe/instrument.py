@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from typing import Dict, List, Sequence
 
+from .ca_semantics import coverage_report, template_choices
 from .ca_opcode_table import OP_TABLE
 from .tongue_isa import (
     SUPPORTED_TARGETS,
@@ -141,6 +142,28 @@ def melody_for_ops(op_names: Sequence[str]) -> List[dict]:
     """Return the pitch/timbre/color key sequence for a list of CA op names."""
 
     return [keyspace(_NAME_TO_BYTE[op]) for op in op_names]
+
+
+def semantic_choices(op_name: str) -> List[dict]:
+    """Return the available semantic template choices for an op as plain data."""
+
+    return [
+        {
+            "name": choice.name,
+            "family": choice.family,
+            "arity": choice.arity,
+            "result_shape": choice.result_shape,
+            "portable": choice.portable,
+            "description": choice.description,
+        }
+        for choice in template_choices(op_name)
+    ]
+
+
+def semantic_coverage() -> dict:
+    """Return coverage for the CA semantic-template registry."""
+
+    return coverage_report()
 
 
 MODES: Dict[str, Dict[str, str]] = {
