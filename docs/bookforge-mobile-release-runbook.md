@@ -1,8 +1,8 @@
-# Bookforge Mobile Release Runbook
+# AetherMoore Book Studio Mobile Release Runbook
 
 This is the annoying part turned into a checklist.
 
-Goal: ship Bookforge Writing Studio as a web/PWA first, then wrap it for Google Play and the Apple App Store only after the web version proves people use it.
+Goal: ship AetherMoore Book Studio as a web/PWA first, then wrap it for Google Play and the Apple App Store only after the web version proves people use it.
 
 Current product surface:
 
@@ -34,7 +34,7 @@ App stores require icons, screenshots, privacy answers, account paperwork, revie
 
 Minimum launch copy:
 
-> Bookforge Writing Studio is a free mobile-friendly workbench for writers: scene packet, KDP checklist, cover/spine math, and book-derived cover prompt waves. Use it before fighting KDP upload.
+> AetherMoore Book Studio is a free mobile-friendly workbench for writers: scene packet, KDP checklist, cover/spine math, and book-derived cover prompt waves. Use it before fighting KDP upload.
 
 ## Phase 2: PWA Readiness
 
@@ -47,8 +47,8 @@ Minimum launch copy:
 
 Suggested app metadata:
 
-- App name: `Bookforge Studio`
-- Short name: `Bookforge`
+- App name: `AetherMoore Book Studio`
+- Short name: `Book Studio`
 - Category: `Productivity` or `Books & Reference`
 - Tagline: `Write scenes, prep KDP, and build cover briefs.`
 
@@ -98,13 +98,13 @@ Official sources:
 - Screenshots and previews: <https://developer.apple.com/help/app-store-connect/manage-app-information/upload-app-previews-and-screenshots/>
 - App Review Guidelines: <https://developer.apple.com/app-store/review/guidelines/>
 
-## Store Privacy Draft For Bookforge
+## Store Privacy Draft For AetherMoore Book Studio
 
 Use this only if the app remains local/static and does not add accounts, analytics, cloud storage, ads, or remote AI calls.
 
 Plain-English position:
 
-> Bookforge Studio is a local-first writing and publishing helper. The app lets users enter book setup details, scene notes, and cover brief notes in their browser. The basic app does not require an account and does not intentionally upload manuscript text, scene notes, or cover prompts to AetherMoore servers.
+> AetherMoore Book Studio is a local-first writing and publishing helper powered by the Bookforge engine. The app lets users enter book setup details, scene notes, and cover brief notes in their browser. The basic app does not require an account and does not intentionally upload manuscript text, scene notes, or cover prompts to AetherMoore servers.
 
 Data safety draft:
 
