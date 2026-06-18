@@ -456,7 +456,7 @@ def scan_command(
     return ExecGateDecision(
         command_sha256=_sha256_text(command),
         tier=tier,
-        allowed=tier != "DENY",
+        allowed=tier == "ALLOW",
         argv=argv,
         findings=findings,
         parser_ok=not any(finding.rule == "parse-error" for finding in findings),
@@ -547,7 +547,7 @@ def execute_governed_command(
     if max_tier not in TIER_RANK:
         raise ValueError(f"unknown max_tier: {max_tier}")
     decision = scan_command(command, claimed_paths=claimed_paths)
-    allowed_by_threshold = decision.allowed and TIER_RANK[decision.tier] <= TIER_RANK[max_tier]
+    allowed_by_threshold = decision.tier != "DENY" and TIER_RANK[decision.tier] <= TIER_RANK[max_tier]
     started = time.time()
     resolved_argv, runtime_note = _resolve_runtime(decision.argv)
 
@@ -645,7 +645,7 @@ def simulate_command(
     if max_tier not in TIER_RANK:
         raise ValueError(f"unknown max_tier: {max_tier}")
     decision = scan_command(command, claimed_paths=claimed_paths)
-    would_run = decision.allowed and TIER_RANK[decision.tier] <= TIER_RANK[max_tier]
+    would_run = decision.tier != "DENY" and TIER_RANK[decision.tier] <= TIER_RANK[max_tier]
     resolved_argv, runtime_note = _resolve_runtime(decision.argv)
     blocked_reason: Optional[str] = None
     if not would_run:

@@ -62,6 +62,14 @@ def test_geometry_by_name_and_by_smiles():
     assert by_smiles.verb == "geometry" and by_smiles.args["smiles"] == "CCO"
 
 
+def test_dimensions_by_name_and_formula():
+    by_name = plan_from_text("atomic composition of glucose")
+    assert by_name.verb == "dimensions" and by_name.confident
+    assert by_name.args["formula"] == "C6H12O6"
+    by_formula = plan_from_text("dimensions NH4^+")
+    assert by_formula.verb == "dimensions" and by_formula.args["formula"] == "NH4^+"
+
+
 def test_checkpoint_extracts_path():
     plan = plan_from_text("checkpoint artifacts/demo/methalox/signed_chain.json")
     assert plan.verb == "checkpoint" and plan.confident
@@ -119,6 +127,15 @@ def test_build_ask_explain_does_not_execute():
     payload = build_ask("balance methane combustion", execute=False)
     assert payload["executed"] is False
     assert payload["canonical_command"].startswith("react balance")
+
+
+def test_build_ask_executes_dimensions():
+    from scripts.reaction_cli import build_ask
+
+    payload = build_ask("atomic composition of glucose")
+    assert payload["executed"] is True and payload["ok"] is True
+    assert payload["verb"] == "dimensions"
+    assert payload["result"]["totals"]["protons"] == 96
 
 
 def test_build_ask_clarifies_without_executing():

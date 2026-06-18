@@ -1,0 +1,3151 @@
+{
+  "meta": {
+    "source": "mountain-map workflow wj6ean30f (author + adversarial verify)",
+    "languages": [
+      "python",
+      "javascript",
+      "typescript",
+      "c",
+      "cpp",
+      "csharp",
+      "go",
+      "rust",
+      "java",
+      "kotlin",
+      "swift",
+      "ruby",
+      "php",
+      "lua",
+      "scala",
+      "julia",
+      "haskell",
+      "zig"
+    ],
+    "constructs": [
+      "line_comment",
+      "block_comment",
+      "stmt_terminator",
+      "var_mutable",
+      "var_const",
+      "int_literal",
+      "float_literal",
+      "string_literal",
+      "bool_literal",
+      "null_literal",
+      "logical_and",
+      "logical_or",
+      "logical_not",
+      "if_else",
+      "for_each",
+      "for_range",
+      "while",
+      "switch_match",
+      "break",
+      "continue",
+      "func_def",
+      "return",
+      "lambda",
+      "list_literal",
+      "map_literal",
+      "index_access",
+      "length",
+      "string_concat",
+      "string_interp",
+      "print_stdout",
+      "read_line",
+      "import_module"
+    ]
+  },
+  "grid": {
+    "line_comment": {
+      "python": {
+        "code": "# comment",
+        "confidence": "high",
+        "note": "Hash starts a line comment to EOL."
+      },
+      "ruby": {
+        "code": "# comment",
+        "confidence": "high",
+        "note": "Hash to EOL."
+      },
+      "php": {
+        "code": "// comment",
+        "confidence": "high",
+        "note": "'//' or '#' both work to EOL."
+      },
+      "javascript": {
+        "code": "// comment",
+        "confidence": "high",
+        "note": "Double-slash line comment."
+      },
+      "typescript": {
+        "code": "// comment",
+        "confidence": "high",
+        "note": "Same as JS."
+      },
+      "lua": {
+        "code": "-- comment",
+        "confidence": "high",
+        "note": "Double-hyphen line comment."
+      },
+      "c": {
+        "code": "// comment",
+        "confidence": "high",
+        "note": "// supported since C99; /* */ also works."
+      },
+      "cpp": {
+        "code": "// comment",
+        "confidence": "high",
+        "note": ""
+      },
+      "rust": {
+        "code": "// comment",
+        "confidence": "high",
+        "note": "/// is a doc comment."
+      },
+      "zig": {
+        "code": "// comment",
+        "confidence": "high",
+        "note": "/// is a doc comment; no block comments exist."
+      },
+      "java": {
+        "code": "// comment",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "// comment",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "// comment",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "// comment",
+        "confidence": "high",
+        "note": ""
+      },
+      "go": {
+        "code": "// comment",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "// comment",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "# comment",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "-- comment",
+        "confidence": "high",
+        "note": ""
+      }
+    },
+    "block_comment": {
+      "python": {
+        "code": "n/a",
+        "confidence": "high",
+        "note": "No true block comment; triple-quoted strings '''...''' are often used as a substitute but are string literals."
+      },
+      "ruby": {
+        "code": "=begin\n=end",
+        "confidence": "high",
+        "note": "=begin/=end must start at column 0 on their own lines."
+      },
+      "php": {
+        "code": "/* ... */",
+        "confidence": "high",
+        "note": "C-style, non-nesting."
+      },
+      "javascript": {
+        "code": "/* comment */",
+        "confidence": "high",
+        "note": "C-style block, can span lines."
+      },
+      "typescript": {
+        "code": "/* comment */",
+        "confidence": "high",
+        "note": "Same as JS."
+      },
+      "lua": {
+        "code": "--[[ comment ]]",
+        "confidence": "high",
+        "note": "Long-bracket block comment; --[==[ ]==] for nesting."
+      },
+      "c": {
+        "code": "/* comment */",
+        "confidence": "high",
+        "note": "Cannot be nested in C."
+      },
+      "cpp": {
+        "code": "/* comment */",
+        "confidence": "high",
+        "note": "Not nestable."
+      },
+      "rust": {
+        "code": "/* comment */",
+        "confidence": "high",
+        "note": "Block comments can nest in Rust."
+      },
+      "zig": {
+        "code": "n/a",
+        "confidence": "high",
+        "note": "Zig deliberately has no block comments; only // line comments."
+      },
+      "java": {
+        "code": "/* comment */",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "/* comment */",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "/* comment */",
+        "confidence": "high",
+        "note": "nestable in Kotlin"
+      },
+      "scala": {
+        "code": "/* comment */",
+        "confidence": "high",
+        "note": "nestable in Scala"
+      },
+      "go": {
+        "code": "/* ... */",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "/* ... */",
+        "confidence": "high",
+        "note": "Nestable in Swift."
+      },
+      "julia": {
+        "code": "#= ... =#",
+        "confidence": "high",
+        "note": "Nestable."
+      },
+      "haskell": {
+        "code": "{- ... -}",
+        "confidence": "high",
+        "note": "Nestable."
+      }
+    },
+    "stmt_terminator": {
+      "python": {
+        "code": "newline",
+        "confidence": "high",
+        "note": "Newline ends a statement; ';' is optional separator."
+      },
+      "ruby": {
+        "code": "newline",
+        "confidence": "high",
+        "note": "Newline ends a statement; ';' optional separator."
+      },
+      "php": {
+        "code": ";",
+        "confidence": "high",
+        "note": "Semicolon required; optional before closing ?>."
+      },
+      "javascript": {
+        "code": ";",
+        "confidence": "high",
+        "note": "Semicolon; optional via ASI but canonical to use."
+      },
+      "typescript": {
+        "code": ";",
+        "confidence": "high",
+        "note": "Semicolon; ASI applies as in JS."
+      },
+      "lua": {
+        "code": "newline",
+        "confidence": "high",
+        "note": "Statements separated by newline; ; optional/allowed."
+      },
+      "c": {
+        "code": ";",
+        "confidence": "high",
+        "note": "Semicolon terminates statements."
+      },
+      "cpp": {
+        "code": ";",
+        "confidence": "high",
+        "note": ""
+      },
+      "rust": {
+        "code": ";",
+        "confidence": "high",
+        "note": "Semicolon ends statements; trailing expression without ; is the block value."
+      },
+      "zig": {
+        "code": ";",
+        "confidence": "high",
+        "note": ""
+      },
+      "java": {
+        "code": ";",
+        "confidence": "high",
+        "note": "semicolon required"
+      },
+      "csharp": {
+        "code": ";",
+        "confidence": "high",
+        "note": "semicolon required"
+      },
+      "kotlin": {
+        "code": "newline",
+        "confidence": "high",
+        "note": "semicolons optional; newline ends statements"
+      },
+      "scala": {
+        "code": "newline",
+        "confidence": "high",
+        "note": "semicolons optional; newline ends statements"
+      },
+      "go": {
+        "code": "newline",
+        "confidence": "high",
+        "note": "Semicolons auto-inserted by lexer; newlines terminate statements."
+      },
+      "swift": {
+        "code": "newline",
+        "confidence": "high",
+        "note": "Semicolons optional; required only to separate multiple statements on one line."
+      },
+      "julia": {
+        "code": "newline",
+        "confidence": "high",
+        "note": "Newline ends statement; ; optional/suppresses REPL output and separates inline statements."
+      },
+      "haskell": {
+        "code": "n/a",
+        "confidence": "high",
+        "note": "Layout/indentation-sensitive; no terminator. (; and {} optional in explicit-layout blocks like do.)"
+      }
+    },
+    "var_mutable": {
+      "python": {
+        "code": "x = 1",
+        "confidence": "high",
+        "note": "All names are rebindable; no declaration keyword."
+      },
+      "ruby": {
+        "code": "x = 1",
+        "confidence": "high",
+        "note": "Local variable; no declaration keyword."
+      },
+      "php": {
+        "code": "$x = 1;",
+        "confidence": "high",
+        "note": "Variables start with $; no type declaration needed."
+      },
+      "javascript": {
+        "code": "let x = 1;",
+        "confidence": "high",
+        "note": "let is the modern mutable binding."
+      },
+      "typescript": {
+        "code": "let x = 1;",
+        "confidence": "high",
+        "note": "Type inferred as number; let x: number = 1 to annotate."
+      },
+      "lua": {
+        "code": "local x = 1",
+        "confidence": "high",
+        "note": "local declares a mutable local variable."
+      },
+      "c": {
+        "code": "int x = 1;",
+        "confidence": "high",
+        "note": "Variables are mutable by default."
+      },
+      "cpp": {
+        "code": "int x = 1;",
+        "confidence": "high",
+        "note": "auto x = 1; also idiomatic."
+      },
+      "rust": {
+        "code": "let mut x = 1;",
+        "confidence": "high",
+        "note": "let bindings are immutable unless marked mut."
+      },
+      "zig": {
+        "code": "var x: i32 = 1;",
+        "confidence": "high",
+        "note": "var is mutable; type may be inferred as 'var x = @as(i32, 1);'."
+      },
+      "java": {
+        "code": "int x = 1;",
+        "confidence": "high",
+        "note": "or var x = 1; (Java 10+)"
+      },
+      "csharp": {
+        "code": "var x = 1;",
+        "confidence": "high",
+        "note": "or int x = 1;"
+      },
+      "kotlin": {
+        "code": "var x = 1",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "var x = 1",
+        "confidence": "high",
+        "note": ""
+      },
+      "go": {
+        "code": "x := 1",
+        "confidence": "high",
+        "note": "Or var x = 1 / var x int = 1."
+      },
+      "swift": {
+        "code": "var x = 1",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "x = 1",
+        "confidence": "high",
+        "note": "All bindings reassignable by default."
+      },
+      "haskell": {
+        "code": "x <- newIORef 1",
+        "confidence": "medium",
+        "note": "Pure bindings are immutable; true mutable cell needs IORef/STRef in a monad. let x = 1 is an immutable binding."
+      }
+    },
+    "var_const": {
+      "python": {
+        "code": "X = 1",
+        "confidence": "high",
+        "note": "No real constants; UPPERCASE is convention only. typing.Final is a hint, not enforced."
+      },
+      "ruby": {
+        "code": "X = 1",
+        "confidence": "high",
+        "note": "Capitalized name is a constant; reassignment only warns, not enforced."
+      },
+      "php": {
+        "code": "const X = 1;",
+        "confidence": "high",
+        "note": "const at compile time; define('X', 1) at runtime. No $ on constants."
+      },
+      "javascript": {
+        "code": "const x = 1;",
+        "confidence": "high",
+        "note": "const binding is immutable (binding, not deep)."
+      },
+      "typescript": {
+        "code": "const x = 1;",
+        "confidence": "high",
+        "note": "const binding."
+      },
+      "lua": {
+        "code": "local x <const> = 1",
+        "confidence": "high",
+        "note": "<const> attribute (Lua 5.4+); earlier Lua has no const."
+      },
+      "c": {
+        "code": "const int x = 1;",
+        "confidence": "high",
+        "note": "const qualifier; not always a true compile-time constant (a const int is not a constant expression usable in array bounds at block scope)."
+      },
+      "cpp": {
+        "code": "const int x = 1;",
+        "confidence": "high",
+        "note": "constexpr int x = 1; for compile-time constants."
+      },
+      "rust": {
+        "code": "let x = 1;",
+        "confidence": "high",
+        "note": "Immutable let binding; const X: i32 = 1; for a true compile-time constant."
+      },
+      "zig": {
+        "code": "const x = 1;",
+        "confidence": "high",
+        "note": "const is an immutable binding; comptime by default for literals."
+      },
+      "java": {
+        "code": "final int x = 1;",
+        "confidence": "high",
+        "note": "final makes binding immutable"
+      },
+      "csharp": {
+        "code": "const int x = 1;",
+        "confidence": "high",
+        "note": "const for compile-time; readonly for fields"
+      },
+      "kotlin": {
+        "code": "val x = 1",
+        "confidence": "high",
+        "note": "val = read-only; const val only for compile-time top-level/object"
+      },
+      "scala": {
+        "code": "val x = 1",
+        "confidence": "high",
+        "note": "val is immutable binding"
+      },
+      "go": {
+        "code": "const x = 1",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "let x = 1",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "const x = 1",
+        "confidence": "high",
+        "note": "const binds type/identity; not a deep-immutable value."
+      },
+      "haskell": {
+        "code": "x = 1",
+        "confidence": "high",
+        "note": "Top-level/let binding; immutable by default."
+      }
+    },
+    "int_literal": {
+      "python": {
+        "code": "42",
+        "confidence": "high",
+        "note": "Arbitrary-precision int."
+      },
+      "ruby": {
+        "code": "42",
+        "confidence": "high",
+        "note": "Arbitrary precision (Integer)."
+      },
+      "php": {
+        "code": "42",
+        "confidence": "high",
+        "note": "Platform-width int."
+      },
+      "javascript": {
+        "code": "42",
+        "confidence": "high",
+        "note": "No separate int type; Number."
+      },
+      "typescript": {
+        "code": "42",
+        "confidence": "high",
+        "note": "number type; no separate int."
+      },
+      "lua": {
+        "code": "42",
+        "confidence": "high",
+        "note": "Integer subtype in Lua 5.3+; just number before."
+      },
+      "c": {
+        "code": "42",
+        "confidence": "high",
+        "note": ""
+      },
+      "cpp": {
+        "code": "42",
+        "confidence": "high",
+        "note": ""
+      },
+      "rust": {
+        "code": "42",
+        "confidence": "high",
+        "note": "Defaults to i32; suffixes like 42u64."
+      },
+      "zig": {
+        "code": "42",
+        "confidence": "high",
+        "note": "Untyped comptime_int until coerced."
+      },
+      "java": {
+        "code": "42",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "42",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "42",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "42",
+        "confidence": "high",
+        "note": ""
+      },
+      "go": {
+        "code": "42",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "42",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "42",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "42",
+        "confidence": "high",
+        "note": ""
+      }
+    },
+    "float_literal": {
+      "python": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "IEEE 754 double."
+      },
+      "ruby": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "IEEE 754 double."
+      },
+      "php": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "IEEE 754 double."
+      },
+      "javascript": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "IEEE 754 double."
+      },
+      "typescript": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "number type."
+      },
+      "lua": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "Float subtype."
+      },
+      "c": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "double by default; 3.14f for float."
+      },
+      "cpp": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "double; 3.14f for float."
+      },
+      "rust": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "Defaults to f64."
+      },
+      "zig": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "Untyped comptime_float until coerced."
+      },
+      "java": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "double by default; 3.14f for float"
+      },
+      "csharp": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "double by default; 3.14f for float, 3.14m for decimal"
+      },
+      "kotlin": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "Double by default; 3.14f for Float"
+      },
+      "scala": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": "Double by default; 3.14f for Float"
+      },
+      "go": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "3.14",
+        "confidence": "high",
+        "note": ""
+      }
+    },
+    "string_literal": {
+      "python": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": "Single or double quotes equivalent."
+      },
+      "ruby": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": "Double quotes allow interpolation/escapes; single quotes are literal."
+      },
+      "php": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": "Double quotes interpolate; single quotes are literal."
+      },
+      "javascript": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": "Single or double quotes both valid."
+      },
+      "typescript": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": "Same as JS."
+      },
+      "lua": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": "Double or single quotes; [[...]] for long strings."
+      },
+      "c": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": "char array (NUL-terminated)."
+      },
+      "cpp": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": "const char[]; \"hi\"s gives std::string with using namespace std::string_literals."
+      },
+      "rust": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": "&str slice; String::from(\"hi\") for owned."
+      },
+      "zig": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": "Type *const [2:0]u8 (NUL-terminated byte array pointer)."
+      },
+      "java": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": ""
+      },
+      "go": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": "Double quotes; single quotes are Char."
+      },
+      "haskell": {
+        "code": "\"hi\"",
+        "confidence": "high",
+        "note": ""
+      }
+    },
+    "bool_literal": {
+      "python": {
+        "code": "True",
+        "confidence": "high",
+        "note": "Capitalized; subclass of int."
+      },
+      "ruby": {
+        "code": "true",
+        "confidence": "high",
+        "note": "Lowercase; instance of TrueClass."
+      },
+      "php": {
+        "code": "true",
+        "confidence": "high",
+        "note": "Case-insensitive keyword (true/TRUE)."
+      },
+      "javascript": {
+        "code": "true",
+        "confidence": "high",
+        "note": "Boolean literal."
+      },
+      "typescript": {
+        "code": "true",
+        "confidence": "high",
+        "note": "boolean."
+      },
+      "lua": {
+        "code": "true",
+        "confidence": "high",
+        "note": "Boolean true."
+      },
+      "c": {
+        "code": "true",
+        "confidence": "high",
+        "note": "Requires <stdbool.h> (C99); 1 also works. C23 makes true a keyword."
+      },
+      "cpp": {
+        "code": "true",
+        "confidence": "high",
+        "note": "bool is a built-in keyword."
+      },
+      "rust": {
+        "code": "true",
+        "confidence": "high",
+        "note": ""
+      },
+      "zig": {
+        "code": "true",
+        "confidence": "high",
+        "note": ""
+      },
+      "java": {
+        "code": "true",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "true",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "true",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "true",
+        "confidence": "high",
+        "note": ""
+      },
+      "go": {
+        "code": "true",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "true",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "true",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "True",
+        "confidence": "high",
+        "note": "Capitalized constructor."
+      }
+    },
+    "null_literal": {
+      "python": {
+        "code": "None",
+        "confidence": "high",
+        "note": "The singleton NoneType value."
+      },
+      "ruby": {
+        "code": "nil",
+        "confidence": "high",
+        "note": "Singleton of NilClass."
+      },
+      "php": {
+        "code": "null",
+        "confidence": "high",
+        "note": "Case-insensitive keyword."
+      },
+      "javascript": {
+        "code": "null",
+        "confidence": "high",
+        "note": "null; undefined also exists distinctly."
+      },
+      "typescript": {
+        "code": "null",
+        "confidence": "high",
+        "note": "null; undefined also distinct."
+      },
+      "lua": {
+        "code": "nil",
+        "confidence": "high",
+        "note": "nil is the absence value."
+      },
+      "c": {
+        "code": "NULL",
+        "confidence": "high",
+        "note": "Null pointer constant from <stddef.h>; C23 adds nullptr."
+      },
+      "cpp": {
+        "code": "nullptr",
+        "confidence": "high",
+        "note": "Preferred over NULL since C++11."
+      },
+      "rust": {
+        "code": "None",
+        "confidence": "high",
+        "note": "No null; absence is Option::None (with Some(v) for present)."
+      },
+      "zig": {
+        "code": "null",
+        "confidence": "high",
+        "note": "Only valid for optional types (?T); not a general value."
+      },
+      "java": {
+        "code": "null",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "null",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "null",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "null",
+        "confidence": "high",
+        "note": "discouraged; idiomatic Scala uses Option/None"
+      },
+      "go": {
+        "code": "nil",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "nil",
+        "confidence": "high",
+        "note": "Only for Optional types."
+      },
+      "julia": {
+        "code": "nothing",
+        "confidence": "high",
+        "note": "nothing is the unit/none value; missing exists separately for data."
+      },
+      "haskell": {
+        "code": "Nothing",
+        "confidence": "high",
+        "note": "No null; absence modeled by Maybe's Nothing constructor."
+      }
+    },
+    "logical_and": {
+      "python": {
+        "code": "a and b",
+        "confidence": "high",
+        "note": "Keyword, short-circuiting, returns an operand."
+      },
+      "ruby": {
+        "code": "a && b",
+        "confidence": "high",
+        "note": "&& short-circuits; 'and' exists with lower precedence."
+      },
+      "php": {
+        "code": "$a && $b",
+        "confidence": "high",
+        "note": "&& short-circuits; 'and' exists with lower precedence."
+      },
+      "javascript": {
+        "code": "a && b",
+        "confidence": "high",
+        "note": "Short-circuit AND."
+      },
+      "typescript": {
+        "code": "a && b",
+        "confidence": "high",
+        "note": "Short-circuit AND."
+      },
+      "lua": {
+        "code": "a and b",
+        "confidence": "high",
+        "note": "Keyword and."
+      },
+      "c": {
+        "code": "&&",
+        "confidence": "high",
+        "note": ""
+      },
+      "cpp": {
+        "code": "&&",
+        "confidence": "high",
+        "note": "'and' keyword also valid."
+      },
+      "rust": {
+        "code": "&&",
+        "confidence": "high",
+        "note": ""
+      },
+      "zig": {
+        "code": "and",
+        "confidence": "high",
+        "note": "Keyword, not && ."
+      },
+      "java": {
+        "code": "a && b",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "a && b",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "a && b",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "a && b",
+        "confidence": "high",
+        "note": ""
+      },
+      "go": {
+        "code": "a && b",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "a && b",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "a && b",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "a && b",
+        "confidence": "high",
+        "note": ""
+      }
+    },
+    "logical_or": {
+      "python": {
+        "code": "a or b",
+        "confidence": "high",
+        "note": "Keyword, short-circuiting, returns an operand."
+      },
+      "ruby": {
+        "code": "a || b",
+        "confidence": "high",
+        "note": "|| short-circuits; 'or' exists with lower precedence."
+      },
+      "php": {
+        "code": "$a || $b",
+        "confidence": "high",
+        "note": "|| short-circuits; 'or' exists with lower precedence."
+      },
+      "javascript": {
+        "code": "a || b",
+        "confidence": "high",
+        "note": "Short-circuit OR."
+      },
+      "typescript": {
+        "code": "a || b",
+        "confidence": "high",
+        "note": "Short-circuit OR."
+      },
+      "lua": {
+        "code": "a or b",
+        "confidence": "high",
+        "note": "Keyword or."
+      },
+      "c": {
+        "code": "||",
+        "confidence": "high",
+        "note": ""
+      },
+      "cpp": {
+        "code": "||",
+        "confidence": "high",
+        "note": "'or' keyword also valid."
+      },
+      "rust": {
+        "code": "||",
+        "confidence": "high",
+        "note": ""
+      },
+      "zig": {
+        "code": "or",
+        "confidence": "high",
+        "note": "Keyword, not || ."
+      },
+      "java": {
+        "code": "a || b",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "a || b",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "a || b",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "a || b",
+        "confidence": "high",
+        "note": ""
+      },
+      "go": {
+        "code": "a || b",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "a || b",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "a || b",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "a || b",
+        "confidence": "high",
+        "note": ""
+      }
+    },
+    "logical_not": {
+      "python": {
+        "code": "not a",
+        "confidence": "high",
+        "note": "Keyword."
+      },
+      "ruby": {
+        "code": "!a",
+        "confidence": "high",
+        "note": "'not' keyword also exists with lower precedence."
+      },
+      "php": {
+        "code": "!$a",
+        "confidence": "high",
+        "note": ""
+      },
+      "javascript": {
+        "code": "!a",
+        "confidence": "high",
+        "note": "Logical NOT."
+      },
+      "typescript": {
+        "code": "!a",
+        "confidence": "high",
+        "note": "Logical NOT."
+      },
+      "lua": {
+        "code": "not a",
+        "confidence": "high",
+        "note": "Keyword not."
+      },
+      "c": {
+        "code": "!",
+        "confidence": "high",
+        "note": ""
+      },
+      "cpp": {
+        "code": "!",
+        "confidence": "high",
+        "note": "'not' keyword also valid."
+      },
+      "rust": {
+        "code": "!",
+        "confidence": "high",
+        "note": ""
+      },
+      "zig": {
+        "code": "!",
+        "confidence": "high",
+        "note": "! for bool negation."
+      },
+      "java": {
+        "code": "!a",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "!a",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "!a",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "!a",
+        "confidence": "high",
+        "note": ""
+      },
+      "go": {
+        "code": "!a",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "!a",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "!a",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "not a",
+        "confidence": "high",
+        "note": "not is a function, not an operator."
+      }
+    },
+    "if_else": {
+      "python": {
+        "code": "if cond:\n    pass\nelse:\n    pass",
+        "confidence": "high",
+        "note": "Colon + indented block; 'elif' for chains."
+      },
+      "ruby": {
+        "code": "if cond\n  # ...\nelse\n  # ...\nend",
+        "confidence": "high",
+        "note": "No colons; terminated by 'end'; 'elsif' for chains."
+      },
+      "php": {
+        "code": "if ($cond) {\n} else {\n}",
+        "confidence": "high",
+        "note": "Parens around condition; braces; 'elseif' for chains."
+      },
+      "javascript": {
+        "code": "if (cond) {\n} else {\n}",
+        "confidence": "high",
+        "note": "Parenthesized condition, braced blocks."
+      },
+      "typescript": {
+        "code": "if (cond) {\n} else {\n}",
+        "confidence": "high",
+        "note": "Same as JS."
+      },
+      "lua": {
+        "code": "if cond then\nelse\nend",
+        "confidence": "high",
+        "note": "then/else/end keywords; elseif for chaining."
+      },
+      "c": {
+        "code": "if (cond) {\n} else {\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "cpp": {
+        "code": "if (cond) {\n} else {\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "rust": {
+        "code": "if cond {\n} else {\n}",
+        "confidence": "high",
+        "note": "No parens around condition; braces required."
+      },
+      "zig": {
+        "code": "if (cond) {\n} else {\n}",
+        "confidence": "high",
+        "note": "Parens around condition required."
+      },
+      "java": {
+        "code": "if (cond) {\n} else {\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "if (cond) {\n} else {\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "if (cond) {\n} else {\n}",
+        "confidence": "high",
+        "note": "if is an expression in Kotlin"
+      },
+      "scala": {
+        "code": "if (cond) {\n} else {\n}",
+        "confidence": "high",
+        "note": "if is an expression; Scala 3 allows if cond then a else b"
+      },
+      "go": {
+        "code": "if cond {\n} else {\n}",
+        "confidence": "high",
+        "note": "Braces mandatory; else on same line as closing brace."
+      },
+      "swift": {
+        "code": "if cond {\n} else {\n}",
+        "confidence": "high",
+        "note": "Braces mandatory; no parens needed."
+      },
+      "julia": {
+        "code": "if cond\nelse\nend",
+        "confidence": "high",
+        "note": "No braces; terminated by end."
+      },
+      "haskell": {
+        "code": "if cond then x else y",
+        "confidence": "high",
+        "note": "else is mandatory (if is an expression)."
+      }
+    },
+    "for_each": {
+      "python": {
+        "code": "for x in xs:\n    pass",
+        "confidence": "high",
+        "note": "Iterates any iterable."
+      },
+      "ruby": {
+        "code": "xs.each { |x| }",
+        "confidence": "high",
+        "note": "Idiomatic iteration via .each; 'for x in xs' exists but is rare."
+      },
+      "php": {
+        "code": "foreach ($xs as $x) {\n}",
+        "confidence": "high",
+        "note": "foreach ($xs as $k => $v) for keys."
+      },
+      "javascript": {
+        "code": "for (const x of xs) {}",
+        "confidence": "high",
+        "note": "for...of iterates values; for...in is keys."
+      },
+      "typescript": {
+        "code": "for (const x of xs) {}",
+        "confidence": "high",
+        "note": "for...of over iterable."
+      },
+      "lua": {
+        "code": "for _, x in ipairs(xs) do end",
+        "confidence": "high",
+        "note": "ipairs for arrays; pairs for all keys."
+      },
+      "c": {
+        "code": "for (size_t i = 0; i < n; i++) { x = xs[i]; }",
+        "confidence": "high",
+        "note": "No native foreach; iterate by index over an array of length n."
+      },
+      "cpp": {
+        "code": "for (auto x : xs) {\n}",
+        "confidence": "high",
+        "note": "Range-based for since C++11; use auto& to avoid copies."
+      },
+      "rust": {
+        "code": "for x in xs {\n}",
+        "confidence": "high",
+        "note": "Iterates by IntoIterator; use &xs to borrow."
+      },
+      "zig": {
+        "code": "for (xs) |x| {\n}",
+        "confidence": "high",
+        "note": "Capture syntax |x|; for (xs, 0..) |x, i| to also get index."
+      },
+      "java": {
+        "code": "for (var x : xs) { }",
+        "confidence": "high",
+        "note": "enhanced for-loop"
+      },
+      "csharp": {
+        "code": "foreach (var x in xs) { }",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "for (x in xs) { }",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "for (x <- xs) { }",
+        "confidence": "high",
+        "note": "or xs.foreach(x => ...)"
+      },
+      "go": {
+        "code": "for _, x := range xs {\n}",
+        "confidence": "high",
+        "note": "Use i, x for index too."
+      },
+      "swift": {
+        "code": "for x in xs {\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "for x in xs\nend",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "forM_ xs $ \\x -> ...",
+        "confidence": "high",
+        "note": "From Control.Monad; or mapM_ f xs. Pure iteration is usually map/fold."
+      }
+    },
+    "for_range": {
+      "python": {
+        "code": "for i in range(n):\n    pass",
+        "confidence": "high",
+        "note": "range(n) yields 0..n-1."
+      },
+      "ruby": {
+        "code": "n.times { |i| }",
+        "confidence": "high",
+        "note": "n.times yields 0..n-1; (0...n).each also works."
+      },
+      "php": {
+        "code": "for ($i = 0; $i < $n; $i++) {\n}",
+        "confidence": "high",
+        "note": "C-style counted loop."
+      },
+      "javascript": {
+        "code": "for (let i = 0; i < n; i++) {}",
+        "confidence": "high",
+        "note": "Classic counted loop."
+      },
+      "typescript": {
+        "code": "for (let i = 0; i < n; i++) {}",
+        "confidence": "high",
+        "note": "Counted loop."
+      },
+      "lua": {
+        "code": "for i = 0, n - 1 do end",
+        "confidence": "high",
+        "note": "Numeric for is inclusive; 0..n-1 mimics 0-based range."
+      },
+      "c": {
+        "code": "for (int i = 0; i < n; i++) {\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "cpp": {
+        "code": "for (int i = 0; i < n; i++) {\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "rust": {
+        "code": "for i in 0..n {\n}",
+        "confidence": "high",
+        "note": "0..n is exclusive of n; 0..=n is inclusive."
+      },
+      "zig": {
+        "code": "for (0..n) |i| {\n}",
+        "confidence": "high",
+        "note": "Range form added in modern Zig; while loop also common."
+      },
+      "java": {
+        "code": "for (int i = 0; i < n; i++) { }",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "for (int i = 0; i < n; i++) { }",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "for (i in 0 until n) { }",
+        "confidence": "high",
+        "note": "0..n is inclusive of n"
+      },
+      "scala": {
+        "code": "for (i <- 0 until n) { }",
+        "confidence": "high",
+        "note": "0 to n is inclusive"
+      },
+      "go": {
+        "code": "for i := 0; i < n; i++ {\n}",
+        "confidence": "high",
+        "note": "Go's only loop keyword is for."
+      },
+      "swift": {
+        "code": "for i in 0..<n {\n}",
+        "confidence": "high",
+        "note": "0..<n half-open; 0...n closed."
+      },
+      "julia": {
+        "code": "for i in 0:n-1\nend",
+        "confidence": "high",
+        "note": "Ranges are inclusive; 0:n-1 for 0..n-1."
+      },
+      "haskell": {
+        "code": "forM_ [0..n-1] $ \\i -> ...",
+        "confidence": "high",
+        "note": "[0..n-1] is the range list."
+      }
+    },
+    "while": {
+      "python": {
+        "code": "while cond:\n    pass",
+        "confidence": "high",
+        "note": "Standard while."
+      },
+      "ruby": {
+        "code": "while cond\n  # ...\nend",
+        "confidence": "high",
+        "note": "Terminated by 'end'."
+      },
+      "php": {
+        "code": "while ($cond) {\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "javascript": {
+        "code": "while (cond) {}",
+        "confidence": "high",
+        "note": "Standard while."
+      },
+      "typescript": {
+        "code": "while (cond) {}",
+        "confidence": "high",
+        "note": "Standard while."
+      },
+      "lua": {
+        "code": "while cond do end",
+        "confidence": "high",
+        "note": "while/do/end."
+      },
+      "c": {
+        "code": "while (cond) {\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "cpp": {
+        "code": "while (cond) {\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "rust": {
+        "code": "while cond {\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "zig": {
+        "code": "while (cond) {\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "java": {
+        "code": "while (cond) { }",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "while (cond) { }",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "while (cond) { }",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "while (cond) { }",
+        "confidence": "high",
+        "note": ""
+      },
+      "go": {
+        "code": "for cond {\n}",
+        "confidence": "high",
+        "note": "No while keyword; for with single condition."
+      },
+      "swift": {
+        "code": "while cond {\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "while cond\nend",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "when cond $ ...",
+        "confidence": "low",
+        "note": "No native while; recursion is idiomatic, or Control.Monad.Loops.whileM. No single canonical spelling."
+      }
+    },
+    "switch_match": {
+      "python": {
+        "code": "match x:\n    case 1:\n        pass",
+        "confidence": "high",
+        "note": "Structural pattern match, Python 3.10+."
+      },
+      "ruby": {
+        "code": "case x\nwhen 1\n  # ...\nend",
+        "confidence": "high",
+        "note": "case/when uses === matching; case/in adds pattern matching (Ruby 3.0+)."
+      },
+      "php": {
+        "code": "switch ($x) {\n  case 1:\n    break;\n}",
+        "confidence": "high",
+        "note": "switch falls through without break; match($x){1=>...} (PHP 8) is strict no-fallthrough."
+      },
+      "javascript": {
+        "code": "switch (x) {\n  case 1: break;\n}",
+        "confidence": "high",
+        "note": "switch; no pattern matching in JS."
+      },
+      "typescript": {
+        "code": "switch (x) {\n  case 1: break;\n}",
+        "confidence": "high",
+        "note": "switch; no native pattern matching."
+      },
+      "lua": {
+        "code": "n/a",
+        "confidence": "high",
+        "note": "Lua has no switch/match; use if-elseif chain or a dispatch table."
+      },
+      "c": {
+        "code": "switch (x) {\n  case 1: break;\n}",
+        "confidence": "high",
+        "note": "switch on integer/enum only; no pattern matching."
+      },
+      "cpp": {
+        "code": "switch (x) {\n  case 1: break;\n}",
+        "confidence": "high",
+        "note": "Integral/enum switch only; no true pattern matching pre-C++26."
+      },
+      "rust": {
+        "code": "match x {\n  1 => {}, _ => {},\n}",
+        "confidence": "high",
+        "note": "match must be exhaustive; _ is the catch-all arm."
+      },
+      "zig": {
+        "code": "switch (x) {\n  1 => {}, else => {},\n}",
+        "confidence": "high",
+        "note": "Must be exhaustive; else is the catch-all prong."
+      },
+      "java": {
+        "code": "switch (x) {\n case 1 -> doA();\n default -> doB();\n}",
+        "confidence": "high",
+        "note": "arrow switch (Java 14+)"
+      },
+      "csharp": {
+        "code": "switch (x) {\n case 1: doA(); break;\n default: doB(); break;\n}",
+        "confidence": "high",
+        "note": "or switch expression: x switch { 1 => a, _ => b }"
+      },
+      "kotlin": {
+        "code": "when (x) {\n 1 -> doA()\n else -> doB()\n}",
+        "confidence": "high",
+        "note": "when expression"
+      },
+      "scala": {
+        "code": "x match {\n case 1 => doA()\n case _ => doB()\n}",
+        "confidence": "high",
+        "note": "pattern match"
+      },
+      "go": {
+        "code": "switch x {\ncase 1:\n}",
+        "confidence": "high",
+        "note": "No fallthrough by default."
+      },
+      "swift": {
+        "code": "switch x {\ncase 1:\n}",
+        "confidence": "high",
+        "note": "Must be exhaustive; supports pattern matching."
+      },
+      "julia": {
+        "code": "n/a",
+        "confidence": "high",
+        "note": "No built-in switch; idiom is if/elseif or @match from Match.jl package."
+      },
+      "haskell": {
+        "code": "case x of\n  1 -> ...",
+        "confidence": "high",
+        "note": "Pattern matching via case ... of."
+      }
+    },
+    "break": {
+      "python": {
+        "code": "break",
+        "confidence": "high",
+        "note": ""
+      },
+      "ruby": {
+        "code": "break",
+        "confidence": "high",
+        "note": ""
+      },
+      "php": {
+        "code": "break;",
+        "confidence": "high",
+        "note": "Optional level: break 2;."
+      },
+      "javascript": {
+        "code": "break;",
+        "confidence": "high",
+        "note": "Exit loop/switch."
+      },
+      "typescript": {
+        "code": "break;",
+        "confidence": "high",
+        "note": "Exit loop/switch."
+      },
+      "lua": {
+        "code": "break",
+        "confidence": "high",
+        "note": "Breaks innermost loop."
+      },
+      "c": {
+        "code": "break;",
+        "confidence": "high",
+        "note": ""
+      },
+      "cpp": {
+        "code": "break;",
+        "confidence": "high",
+        "note": ""
+      },
+      "rust": {
+        "code": "break;",
+        "confidence": "high",
+        "note": "Can break with a value from loop: break val;"
+      },
+      "zig": {
+        "code": "break;",
+        "confidence": "high",
+        "note": "Labeled blocks can break with a value: break :blk val;"
+      },
+      "java": {
+        "code": "break;",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "break;",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "break",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "n/a",
+        "confidence": "medium",
+        "note": "no language break; needs scala.util.control.Breaks. Idiomatic code avoids it"
+      },
+      "go": {
+        "code": "break",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "break",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "break",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "n/a",
+        "confidence": "high",
+        "note": "No loops/break; control flow is recursion and higher-order functions."
+      }
+    },
+    "continue": {
+      "python": {
+        "code": "continue",
+        "confidence": "high",
+        "note": ""
+      },
+      "ruby": {
+        "code": "next",
+        "confidence": "high",
+        "note": "'next', not 'continue'."
+      },
+      "php": {
+        "code": "continue;",
+        "confidence": "high",
+        "note": "Optional level: continue 2;."
+      },
+      "javascript": {
+        "code": "continue;",
+        "confidence": "high",
+        "note": "Next iteration."
+      },
+      "typescript": {
+        "code": "continue;",
+        "confidence": "high",
+        "note": "Next iteration."
+      },
+      "lua": {
+        "code": "goto continue",
+        "confidence": "medium",
+        "note": "No continue keyword; idiom is goto continue with ::continue:: label before end (Lua 5.2+)."
+      },
+      "c": {
+        "code": "continue;",
+        "confidence": "high",
+        "note": ""
+      },
+      "cpp": {
+        "code": "continue;",
+        "confidence": "high",
+        "note": ""
+      },
+      "rust": {
+        "code": "continue;",
+        "confidence": "high",
+        "note": ""
+      },
+      "zig": {
+        "code": "continue;",
+        "confidence": "high",
+        "note": ""
+      },
+      "java": {
+        "code": "continue;",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "continue;",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "continue",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "n/a",
+        "confidence": "medium",
+        "note": "no continue keyword; idiomatic code uses filter/recursion or guard"
+      },
+      "go": {
+        "code": "continue",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "continue",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "continue",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "n/a",
+        "confidence": "high",
+        "note": "No loop continue; use guards/recursion."
+      }
+    },
+    "func_def": {
+      "python": {
+        "code": "def f(a, b):\n    return a + b",
+        "confidence": "high",
+        "note": "'def' with colon + indented body."
+      },
+      "ruby": {
+        "code": "def f(a, b)\n  a + b\nend",
+        "confidence": "high",
+        "note": "Last expression is the implicit return."
+      },
+      "php": {
+        "code": "function f($a, $b) {\n  return $a + $b;\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "javascript": {
+        "code": "function f(a, b) {\n  return a + b;\n}",
+        "confidence": "high",
+        "note": "Function declaration."
+      },
+      "typescript": {
+        "code": "function f(a: number, b: number): number {\n  return a + b;\n}",
+        "confidence": "high",
+        "note": "Typed parameters and return type."
+      },
+      "lua": {
+        "code": "function f(a, b)\n  return a + b\nend",
+        "confidence": "high",
+        "note": "function/end; local function for locals."
+      },
+      "c": {
+        "code": "int f(int a, int b) {\n  return a + b;\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "cpp": {
+        "code": "int f(int a, int b) {\n  return a + b;\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "rust": {
+        "code": "fn f(a: i32, b: i32) -> i32 {\n  a + b\n}",
+        "confidence": "high",
+        "note": "Trailing expression (no ;) is the return value."
+      },
+      "zig": {
+        "code": "fn f(a: i32, b: i32) i32 {\n  return a + b;\n}",
+        "confidence": "high",
+        "note": "Return type follows params with no arrow."
+      },
+      "java": {
+        "code": "int f(int a, int b) {\n return a + b;\n}",
+        "confidence": "high",
+        "note": "method; must live in a class"
+      },
+      "csharp": {
+        "code": "int F(int a, int b) {\n return a + b;\n}",
+        "confidence": "high",
+        "note": "method; lives in a class/struct"
+      },
+      "kotlin": {
+        "code": "fun f(a: Int, b: Int): Int {\n return a + b\n}",
+        "confidence": "high",
+        "note": "or fun f(a: Int, b: Int) = a + b"
+      },
+      "scala": {
+        "code": "def f(a: Int, b: Int): Int = a + b",
+        "confidence": "high",
+        "note": ""
+      },
+      "go": {
+        "code": "func f(a, b int) int {\n\treturn a + b\n}",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "func f(_ a: Int, _ b: Int) -> Int {\n  return a + b\n}",
+        "confidence": "high",
+        "note": "_ suppresses argument labels."
+      },
+      "julia": {
+        "code": "function f(a, b)\n    return a + b\nend",
+        "confidence": "high",
+        "note": "Or one-line f(a, b) = a + b."
+      },
+      "haskell": {
+        "code": "f a b = a + b",
+        "confidence": "high",
+        "note": ""
+      }
+    },
+    "return": {
+      "python": {
+        "code": "return value",
+        "confidence": "high",
+        "note": "Bare 'return' yields None."
+      },
+      "ruby": {
+        "code": "return value",
+        "confidence": "high",
+        "note": "Explicit; usually omitted in favor of implicit last-expression return."
+      },
+      "php": {
+        "code": "return $value;",
+        "confidence": "high",
+        "note": ""
+      },
+      "javascript": {
+        "code": "return value;",
+        "confidence": "high",
+        "note": "Return statement."
+      },
+      "typescript": {
+        "code": "return value;",
+        "confidence": "high",
+        "note": "Return statement."
+      },
+      "lua": {
+        "code": "return value",
+        "confidence": "high",
+        "note": "return; must be last statement in a block."
+      },
+      "c": {
+        "code": "return x;",
+        "confidence": "high",
+        "note": ""
+      },
+      "cpp": {
+        "code": "return x;",
+        "confidence": "high",
+        "note": ""
+      },
+      "rust": {
+        "code": "return x;",
+        "confidence": "high",
+        "note": "Often omitted in favor of trailing expression."
+      },
+      "zig": {
+        "code": "return x;",
+        "confidence": "high",
+        "note": ""
+      },
+      "java": {
+        "code": "return x;",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "return x;",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "return x",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "return x",
+        "confidence": "medium",
+        "note": "explicit return discouraged; last expression is the value"
+      },
+      "go": {
+        "code": "return v",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "return v",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "return v",
+        "confidence": "high",
+        "note": "Last expression also returns implicitly."
+      },
+      "haskell": {
+        "code": "x",
+        "confidence": "high",
+        "note": "Functions yield their body expression; there is no return statement. (return in do is monadic pure, not control flow.)"
+      }
+    },
+    "lambda": {
+      "python": {
+        "code": "lambda x: x",
+        "confidence": "high",
+        "note": "Single-expression anonymous function."
+      },
+      "ruby": {
+        "code": "->(x) { x }",
+        "confidence": "high",
+        "note": "Stabby lambda; lambda { |x| x } equivalent."
+      },
+      "php": {
+        "code": "fn($x) => $x",
+        "confidence": "high",
+        "note": "Arrow fn (PHP 7.4+) auto-captures by value; function($x){return $x;} is the closure form."
+      },
+      "javascript": {
+        "code": "x => x",
+        "confidence": "high",
+        "note": "Arrow function; (x) => x also fine."
+      },
+      "typescript": {
+        "code": "(x: number) => x",
+        "confidence": "high",
+        "note": "Arrow function with type annotation."
+      },
+      "lua": {
+        "code": "function(x) return x end",
+        "confidence": "high",
+        "note": "Anonymous function expression; no arrow syntax."
+      },
+      "c": {
+        "code": "n/a",
+        "confidence": "high",
+        "note": "Standard C has no closures/lambdas; only function pointers to named functions."
+      },
+      "cpp": {
+        "code": "[](int x) { return x; }",
+        "confidence": "high",
+        "note": "Lambda since C++11; [] is the capture list."
+      },
+      "rust": {
+        "code": "|x| x",
+        "confidence": "high",
+        "note": "Closure; |x| { ... } for a block body."
+      },
+      "zig": {
+        "code": "n/a",
+        "confidence": "medium",
+        "note": "No closures/lambdas; functions can't capture environment. Nested named/anonymous fns exist but capture nothing."
+      },
+      "java": {
+        "code": "x -> x",
+        "confidence": "high",
+        "note": "lambda; needs functional-interface target type"
+      },
+      "csharp": {
+        "code": "x => x",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "{ x -> x }",
+        "confidence": "high",
+        "note": "single param can use implicit it"
+      },
+      "scala": {
+        "code": "x => x",
+        "confidence": "high",
+        "note": "or _ placeholder syntax"
+      },
+      "go": {
+        "code": "func(x int) int { return x }",
+        "confidence": "high",
+        "note": "Anonymous func; closures supported."
+      },
+      "swift": {
+        "code": "{ x in x }",
+        "confidence": "high",
+        "note": "Closure expression."
+      },
+      "julia": {
+        "code": "x -> x",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "\\x -> x",
+        "confidence": "high",
+        "note": "Backslash is lambda."
+      }
+    },
+    "list_literal": {
+      "python": {
+        "code": "[1, 2, 3]",
+        "confidence": "high",
+        "note": "Mutable list."
+      },
+      "ruby": {
+        "code": "[1, 2, 3]",
+        "confidence": "high",
+        "note": "Array literal."
+      },
+      "php": {
+        "code": "[1, 2, 3]",
+        "confidence": "high",
+        "note": "array(1,2,3) is the older form."
+      },
+      "javascript": {
+        "code": "[1, 2, 3]",
+        "confidence": "high",
+        "note": "Array literal."
+      },
+      "typescript": {
+        "code": "[1, 2, 3]",
+        "confidence": "high",
+        "note": "Array literal; type number[]."
+      },
+      "lua": {
+        "code": "{1, 2, 3}",
+        "confidence": "high",
+        "note": "Table with sequential integer keys (1-based)."
+      },
+      "c": {
+        "code": "int xs[] = {1, 2, 3};",
+        "confidence": "high",
+        "note": "Fixed-size array initializer; no built-in dynamic list."
+      },
+      "cpp": {
+        "code": "std::vector<int> xs = {1, 2, 3};",
+        "confidence": "high",
+        "note": "Brace-init list; requires <vector>."
+      },
+      "rust": {
+        "code": "vec![1, 2, 3]",
+        "confidence": "high",
+        "note": "vec! macro builds a Vec; [1,2,3] is a fixed array."
+      },
+      "zig": {
+        "code": "[_]i32{ 1, 2, 3 }",
+        "confidence": "high",
+        "note": "Fixed array; [_] infers length. Dynamic lists use std.ArrayList (needs an allocator)."
+      },
+      "java": {
+        "code": "List.of(1, 2, 3)",
+        "confidence": "high",
+        "note": "immutable; new ArrayList<>(List.of(1,2,3)) for mutable"
+      },
+      "csharp": {
+        "code": "new List<int> { 1, 2, 3 }",
+        "confidence": "high",
+        "note": "or collection expression [1, 2, 3] (C# 12+)"
+      },
+      "kotlin": {
+        "code": "listOf(1, 2, 3)",
+        "confidence": "high",
+        "note": "immutable; mutableListOf(1,2,3) for mutable"
+      },
+      "scala": {
+        "code": "List(1, 2, 3)",
+        "confidence": "high",
+        "note": "immutable; ListBuffer/ArrayBuffer for mutable"
+      },
+      "go": {
+        "code": "[]int{1, 2, 3}",
+        "confidence": "high",
+        "note": "Slice literal (dynamic)."
+      },
+      "swift": {
+        "code": "[1, 2, 3]",
+        "confidence": "high",
+        "note": "Array literal."
+      },
+      "julia": {
+        "code": "[1, 2, 3]",
+        "confidence": "high",
+        "note": "Vector{Int}."
+      },
+      "haskell": {
+        "code": "[1, 2, 3]",
+        "confidence": "high",
+        "note": ""
+      }
+    },
+    "map_literal": {
+      "python": {
+        "code": "{\"a\": 1}",
+        "confidence": "high",
+        "note": "dict literal; keys are objects (here a string)."
+      },
+      "ruby": {
+        "code": "{ a: 1 }",
+        "confidence": "high",
+        "note": "{ a: 1 } means key :a symbol; {\"a\" => 1} for string key."
+      },
+      "php": {
+        "code": "[\"a\" => 1]",
+        "confidence": "high",
+        "note": "Associative array; same array type as lists."
+      },
+      "javascript": {
+        "code": "{ a: 1 }",
+        "confidence": "high",
+        "note": "Object literal (string-keyed). Map for true map type."
+      },
+      "typescript": {
+        "code": "{ a: 1 }",
+        "confidence": "high",
+        "note": "Object literal; Record/Map for map types."
+      },
+      "lua": {
+        "code": "{a = 1}",
+        "confidence": "high",
+        "note": "Table with named keys; {[\"a\"]=1} for string keys."
+      },
+      "c": {
+        "code": "n/a",
+        "confidence": "high",
+        "note": "No built-in map/dict type or literal in standard C."
+      },
+      "cpp": {
+        "code": "std::map<std::string,int> m = {{\"a\", 1}};",
+        "confidence": "high",
+        "note": "Requires <map>; std::unordered_map for a hash map."
+      },
+      "rust": {
+        "code": "HashMap::from([(\"a\", 1)])",
+        "confidence": "high",
+        "note": "No map literal syntax; std::collections::HashMap::from over an array of pairs."
+      },
+      "zig": {
+        "code": "n/a",
+        "confidence": "high",
+        "note": "No map literal; build std.AutoHashMap/StringHashMap at runtime with an allocator."
+      },
+      "java": {
+        "code": "Map.of(\"a\", 1)",
+        "confidence": "high",
+        "note": "no key:value syntax; uses comma-separated pairs"
+      },
+      "csharp": {
+        "code": "new Dictionary<string, int> { [\"a\"] = 1 }",
+        "confidence": "high",
+        "note": "or { {\"a\", 1} }"
+      },
+      "kotlin": {
+        "code": "mapOf(\"a\" to 1)",
+        "confidence": "high",
+        "note": "to creates a Pair"
+      },
+      "scala": {
+        "code": "Map(\"a\" -> 1)",
+        "confidence": "high",
+        "note": "-> creates a tuple"
+      },
+      "go": {
+        "code": "map[string]int{\"a\": 1}",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "[\"a\": 1]",
+        "confidence": "high",
+        "note": "Dictionary literal."
+      },
+      "julia": {
+        "code": "Dict(\"a\" => 1)",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "Map.fromList [(\"a\", 1)]",
+        "confidence": "high",
+        "note": "From Data.Map; no literal dict syntax."
+      }
+    },
+    "index_access": {
+      "python": {
+        "code": "xs[0]",
+        "confidence": "high",
+        "note": "Zero-based; negative indexes from end."
+      },
+      "ruby": {
+        "code": "xs[0]",
+        "confidence": "high",
+        "note": "Zero-based; negative from end."
+      },
+      "php": {
+        "code": "$xs[0]",
+        "confidence": "high",
+        "note": "Zero-based for list arrays."
+      },
+      "javascript": {
+        "code": "xs[0]",
+        "confidence": "high",
+        "note": "Zero-based bracket index."
+      },
+      "typescript": {
+        "code": "xs[0]",
+        "confidence": "high",
+        "note": "Bracket index."
+      },
+      "lua": {
+        "code": "xs[1]",
+        "confidence": "high",
+        "note": "Tables are 1-based; xs[1] is the first element."
+      },
+      "c": {
+        "code": "xs[0]",
+        "confidence": "high",
+        "note": ""
+      },
+      "cpp": {
+        "code": "xs[0]",
+        "confidence": "high",
+        "note": "xs.at(0) does bounds-checking."
+      },
+      "rust": {
+        "code": "xs[0]",
+        "confidence": "high",
+        "note": "Panics on out-of-bounds; xs.get(0) returns Option."
+      },
+      "zig": {
+        "code": "xs[0]",
+        "confidence": "high",
+        "note": ""
+      },
+      "java": {
+        "code": "xs.get(0)",
+        "confidence": "high",
+        "note": "xs[0] for arrays"
+      },
+      "csharp": {
+        "code": "xs[0]",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "xs[0]",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "xs(0)",
+        "confidence": "high",
+        "note": "apply method; parentheses not brackets"
+      },
+      "go": {
+        "code": "xs[0]",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "xs[0]",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "xs[1]",
+        "confidence": "high",
+        "note": "1-indexed; xs[1] is first element. (xs[0] would error.)"
+      },
+      "haskell": {
+        "code": "xs !! 0",
+        "confidence": "high",
+        "note": "!! is list indexing (O(n))."
+      }
+    },
+    "length": {
+      "python": {
+        "code": "len(xs)",
+        "confidence": "high",
+        "note": "Built-in len()."
+      },
+      "ruby": {
+        "code": "xs.length",
+        "confidence": "high",
+        "note": ".size is an alias."
+      },
+      "php": {
+        "code": "count($xs)",
+        "confidence": "high",
+        "note": "count() for arrays; strlen() for strings."
+      },
+      "javascript": {
+        "code": "xs.length",
+        "confidence": "high",
+        "note": "Array length property."
+      },
+      "typescript": {
+        "code": "xs.length",
+        "confidence": "high",
+        "note": "Array length."
+      },
+      "lua": {
+        "code": "#xs",
+        "confidence": "high",
+        "note": "Length operator # on sequence tables/strings."
+      },
+      "c": {
+        "code": "sizeof(xs) / sizeof(xs[0])",
+        "confidence": "high",
+        "note": "Works only for arrays in scope, not pointers; no general length op."
+      },
+      "cpp": {
+        "code": "xs.size()",
+        "confidence": "high",
+        "note": "For std containers; std::size(xs) is generic (C++17)."
+      },
+      "rust": {
+        "code": "xs.len()",
+        "confidence": "high",
+        "note": ""
+      },
+      "zig": {
+        "code": "xs.len",
+        "confidence": "high",
+        "note": "A field (not a call) on arrays/slices."
+      },
+      "java": {
+        "code": "xs.size()",
+        "confidence": "high",
+        "note": "xs.length for arrays; xs.length() for String"
+      },
+      "csharp": {
+        "code": "xs.Count",
+        "confidence": "high",
+        "note": "xs.Length for arrays/strings; xs.Count() LINQ for IEnumerable"
+      },
+      "kotlin": {
+        "code": "xs.size",
+        "confidence": "high",
+        "note": "xs.length for String"
+      },
+      "scala": {
+        "code": "xs.length",
+        "confidence": "high",
+        "note": "or xs.size"
+      },
+      "go": {
+        "code": "len(xs)",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "xs.count",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "length(xs)",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "length xs",
+        "confidence": "high",
+        "note": ""
+      }
+    },
+    "string_concat": {
+      "python": {
+        "code": "a + b",
+        "confidence": "high",
+        "note": "'+' concatenates strings."
+      },
+      "ruby": {
+        "code": "a + b",
+        "confidence": "high",
+        "note": "'+' concatenates; '<<' mutates in place."
+      },
+      "php": {
+        "code": "$a . $b",
+        "confidence": "high",
+        "note": "Dot operator, not '+'."
+      },
+      "javascript": {
+        "code": "a + b",
+        "confidence": "high",
+        "note": "+ concatenates strings."
+      },
+      "typescript": {
+        "code": "a + b",
+        "confidence": "high",
+        "note": "+ concatenation."
+      },
+      "lua": {
+        "code": "a .. b",
+        "confidence": "high",
+        "note": "Concatenation operator is .. (two dots)."
+      },
+      "c": {
+        "code": "strcat(a, b);",
+        "confidence": "high",
+        "note": "In-place; a must have room. Use snprintf for safety; no + operator."
+      },
+      "cpp": {
+        "code": "a + b",
+        "confidence": "high",
+        "note": "For std::string; operator+ concatenates."
+      },
+      "rust": {
+        "code": "format!(\"{}{}\", a, b)",
+        "confidence": "high",
+        "note": "Also a.to_string() + &b; format! is most general."
+      },
+      "zig": {
+        "code": "a ++ b",
+        "confidence": "medium",
+        "note": "++ concatenates only at comptime (known-length arrays); runtime concat needs std.mem.concat with an allocator."
+      },
+      "java": {
+        "code": "a + b",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "a + b",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "a + b",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "a + b",
+        "confidence": "high",
+        "note": ""
+      },
+      "go": {
+        "code": "a + b",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "a + b",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "a * b",
+        "confidence": "high",
+        "note": "* concatenates strings in Julia, not +."
+      },
+      "haskell": {
+        "code": "a ++ b",
+        "confidence": "high",
+        "note": "++ concatenates lists (String = [Char])."
+      }
+    },
+    "string_interp": {
+      "python": {
+        "code": "f\"hi {name}\"",
+        "confidence": "high",
+        "note": "f-string, Python 3.6+."
+      },
+      "ruby": {
+        "code": "\"hi #{name}\"",
+        "confidence": "high",
+        "note": "Only inside double-quoted strings."
+      },
+      "php": {
+        "code": "\"hi $name\"",
+        "confidence": "high",
+        "note": "Inside double quotes; \"hi {$name}\" for complex expressions."
+      },
+      "javascript": {
+        "code": "`hi ${name}`",
+        "confidence": "high",
+        "note": "Template literal with backticks."
+      },
+      "typescript": {
+        "code": "`hi ${name}`",
+        "confidence": "high",
+        "note": "Template literal."
+      },
+      "lua": {
+        "code": "n/a",
+        "confidence": "high",
+        "note": "No string interpolation; use string.format(\"hi %s\", name) or .. concat. Lua 5.4 has no interp."
+      },
+      "c": {
+        "code": "n/a",
+        "confidence": "high",
+        "note": "No string interpolation; use printf/snprintf format strings."
+      },
+      "cpp": {
+        "code": "std::format(\"hi {}\", name)",
+        "confidence": "high",
+        "note": "std::format since C++20 (<format>); no inline interpolation in the literal."
+      },
+      "rust": {
+        "code": "format!(\"hi {name}\")",
+        "confidence": "high",
+        "note": "Inline named captures in format strings since Rust 1.58."
+      },
+      "zig": {
+        "code": "n/a",
+        "confidence": "high",
+        "note": "No string interpolation; use std.fmt with \"{s}\" placeholders, e.g. std.debug.print(\"hi {s}\", .{name})."
+      },
+      "java": {
+        "code": "\"hi \" + name",
+        "confidence": "medium",
+        "note": "no built-in interpolation in stable Java; use concatenation or String.format(\"hi %s\", name)"
+      },
+      "csharp": {
+        "code": "$\"hi {name}\"",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "\"hi $name\"",
+        "confidence": "high",
+        "note": "${expr} for expressions"
+      },
+      "scala": {
+        "code": "s\"hi $name\"",
+        "confidence": "high",
+        "note": "s-interpolator; ${expr} for expressions"
+      },
+      "go": {
+        "code": "fmt.Sprintf(\"hi %s\", name)",
+        "confidence": "high",
+        "note": "No native interpolation syntax; use Sprintf."
+      },
+      "swift": {
+        "code": "\"hi \\(name)\"",
+        "confidence": "high",
+        "note": "Backslash-paren interpolation."
+      },
+      "julia": {
+        "code": "\"hi $name\"",
+        "confidence": "high",
+        "note": "$name or $(expr)."
+      },
+      "haskell": {
+        "code": "n/a",
+        "confidence": "medium",
+        "note": "No native interpolation in standard Haskell; use printf or Text.Printf, or the interpolate/string-interpolate package."
+      }
+    },
+    "print_stdout": {
+      "python": {
+        "code": "print(\"hi\")",
+        "confidence": "high",
+        "note": "Adds trailing newline."
+      },
+      "ruby": {
+        "code": "puts \"hi\"",
+        "confidence": "high",
+        "note": "puts adds newline; print does not."
+      },
+      "php": {
+        "code": "echo \"hi\";",
+        "confidence": "high",
+        "note": "echo (language construct); print() also works."
+      },
+      "javascript": {
+        "code": "console.log(\"hi\");",
+        "confidence": "high",
+        "note": "console.log to stdout."
+      },
+      "typescript": {
+        "code": "console.log(\"hi\");",
+        "confidence": "high",
+        "note": "console.log."
+      },
+      "lua": {
+        "code": "print(\"hi\")",
+        "confidence": "high",
+        "note": "print adds newline; io.write for no newline."
+      },
+      "c": {
+        "code": "printf(\"hi\\n\");",
+        "confidence": "high",
+        "note": "Requires <stdio.h>."
+      },
+      "cpp": {
+        "code": "std::cout << \"hi\\n\";",
+        "confidence": "high",
+        "note": "<iostream>; C++23 adds std::println(\"hi\")."
+      },
+      "rust": {
+        "code": "println!(\"hi\");",
+        "confidence": "high",
+        "note": "Macro; appends newline. print! without newline."
+      },
+      "zig": {
+        "code": "std.debug.print(\"hi\\n\", .{});",
+        "confidence": "high",
+        "note": "Goes to stderr actually; true stdout uses std.io.getStdOut().writer().print(...)."
+      },
+      "java": {
+        "code": "System.out.println(\"hi\");",
+        "confidence": "high",
+        "note": ""
+      },
+      "csharp": {
+        "code": "Console.WriteLine(\"hi\");",
+        "confidence": "high",
+        "note": ""
+      },
+      "kotlin": {
+        "code": "println(\"hi\")",
+        "confidence": "high",
+        "note": ""
+      },
+      "scala": {
+        "code": "println(\"hi\")",
+        "confidence": "high",
+        "note": ""
+      },
+      "go": {
+        "code": "fmt.Println(\"hi\")",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "print(\"hi\")",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "println(\"hi\")",
+        "confidence": "high",
+        "note": ""
+      },
+      "haskell": {
+        "code": "putStrLn \"hi\"",
+        "confidence": "high",
+        "note": "print adds quotes/uses Show; putStrLn for raw strings."
+      }
+    },
+    "read_line": {
+      "python": {
+        "code": "input()",
+        "confidence": "high",
+        "note": "Reads one line, strips trailing newline; optional prompt arg."
+      },
+      "ruby": {
+        "code": "gets",
+        "confidence": "high",
+        "note": "Returns the line including trailing newline (or nil at EOF); gets.chomp to strip."
+      },
+      "php": {
+        "code": "fgets(STDIN)",
+        "confidence": "high",
+        "note": "Returns line with trailing newline; rtrim() to strip. CLI SAPI."
+      },
+      "javascript": {
+        "code": "require('readline').createInterface({input:process.stdin}).question('', l => {})",
+        "confidence": "medium",
+        "note": "Node has no sync readline builtin; readline module is canonical async way."
+      },
+      "typescript": {
+        "code": "require('readline').createInterface({input:process.stdin}).question('', (l: string) => {})",
+        "confidence": "medium",
+        "note": "Same Node readline module as JS; no sync builtin."
+      },
+      "lua": {
+        "code": "io.read(\"l\")",
+        "confidence": "high",
+        "note": "Reads a line from stdin; io.read() defaults to a line too (\"*l\" pre-5.3)."
+      },
+      "c": {
+        "code": "fgets(buf, sizeof(buf), stdin);",
+        "confidence": "high",
+        "note": "Reads up to size-1 chars including newline; <stdio.h>."
+      },
+      "cpp": {
+        "code": "std::getline(std::cin, line);",
+        "confidence": "high",
+        "note": "<string>/<iostream>; line is a std::string."
+      },
+      "rust": {
+        "code": "std::io::stdin().read_line(&mut line)?;",
+        "confidence": "high",
+        "note": "line is a mutable String; keeps the trailing newline."
+      },
+      "zig": {
+        "code": "try std.io.getStdIn().reader().readUntilDelimiterOrEof(&buf, '\\n');",
+        "confidence": "medium",
+        "note": "Reads into a fixed buffer; readUntilDelimiterAlloc with an allocator for dynamic length."
+      },
+      "java": {
+        "code": "new BufferedReader(new InputStreamReader(System.in)).readLine()",
+        "confidence": "high",
+        "note": "or new Scanner(System.in).nextLine()"
+      },
+      "csharp": {
+        "code": "Console.ReadLine()",
+        "confidence": "high",
+        "note": "returns string? (may be null at EOF)"
+      },
+      "kotlin": {
+        "code": "readLine()",
+        "confidence": "high",
+        "note": "returns String?; readlnOrNull()/readln() newer"
+      },
+      "scala": {
+        "code": "scala.io.StdIn.readLine()",
+        "confidence": "high",
+        "note": ""
+      },
+      "go": {
+        "code": "bufio.NewReader(os.Stdin).ReadString('\\n')",
+        "confidence": "high",
+        "note": "Or fmt.Scanln(&s)."
+      },
+      "swift": {
+        "code": "readLine()",
+        "confidence": "high",
+        "note": "Returns String? (Optional)."
+      },
+      "julia": {
+        "code": "readline()",
+        "confidence": "high",
+        "note": "Reads from stdin by default."
+      },
+      "haskell": {
+        "code": "getLine",
+        "confidence": "high",
+        "note": "getLine :: IO String."
+      }
+    },
+    "import_module": {
+      "python": {
+        "code": "import m",
+        "confidence": "high",
+        "note": "'from m import x' also available."
+      },
+      "ruby": {
+        "code": "require \"m\"",
+        "confidence": "high",
+        "note": "'require' loads once; 'require_relative' for local paths."
+      },
+      "php": {
+        "code": "require \"m.php\";",
+        "confidence": "high",
+        "note": "require/include load files; 'use' imports namespaced symbols, not files."
+      },
+      "javascript": {
+        "code": "import m from \"m\";",
+        "confidence": "high",
+        "note": "ESM import; CommonJS: const m = require(\"m\")."
+      },
+      "typescript": {
+        "code": "import m from \"m\";",
+        "confidence": "high",
+        "note": "ESM import; canonical in TS."
+      },
+      "lua": {
+        "code": "local m = require(\"m\")",
+        "confidence": "high",
+        "note": "require loads and caches a module."
+      },
+      "c": {
+        "code": "#include <m.h>",
+        "confidence": "high",
+        "note": "Textual header inclusion via preprocessor; no module system pre-C23."
+      },
+      "cpp": {
+        "code": "#include <m>",
+        "confidence": "high",
+        "note": "Classic include; C++20 modules use 'import m;'."
+      },
+      "rust": {
+        "code": "use m;",
+        "confidence": "high",
+        "note": "use brings paths into scope; external crates declared in Cargo.toml."
+      },
+      "zig": {
+        "code": "const m = @import(\"m\");",
+        "confidence": "high",
+        "note": "@import is a builtin returning the module's struct; std is @import(\"std\")."
+      },
+      "java": {
+        "code": "import m;",
+        "confidence": "high",
+        "note": "imports a type/package, e.g. import java.util.List;"
+      },
+      "csharp": {
+        "code": "using m;",
+        "confidence": "high",
+        "note": "imports a namespace, e.g. using System;"
+      },
+      "kotlin": {
+        "code": "import m",
+        "confidence": "high",
+        "note": "e.g. import kotlin.math.PI"
+      },
+      "scala": {
+        "code": "import m",
+        "confidence": "high",
+        "note": "e.g. import scala.collection.mutable"
+      },
+      "go": {
+        "code": "import \"m\"",
+        "confidence": "high",
+        "note": ""
+      },
+      "swift": {
+        "code": "import m",
+        "confidence": "high",
+        "note": ""
+      },
+      "julia": {
+        "code": "import m",
+        "confidence": "high",
+        "note": "Or using m to bring exports into scope."
+      },
+      "haskell": {
+        "code": "import M",
+        "confidence": "high",
+        "note": "Module names are capitalized."
+      }
+    }
+  },
+  "pipeline": {
+    "python": {
+      "lex": "CPython tokenizer (Parser/tokenizer.c) emits a token stream with INDENT/DEDENT tokens",
+      "parse": "PEG parser builds a concrete then abstract syntax tree",
+      "ir": "AST -> compiled to CPython bytecode (code objects, .pyc)",
+      "exec_model": "bytecode-vm",
+      "runtime": "CPython VM (stack-based evaluation loop, ceval.c)",
+      "on_enter": "CPython lexes and PEG-parses the source to an AST, compiles it to .pyc bytecode, then the CPython stack VM evaluates the bytecode."
+    },
+    "ruby": {
+      "lex": "MRI/CRuby lexer (Ripper-style scanner in parse.y) produces tokens",
+      "parse": "Bison-generated LALR parser builds an AST (node tree)",
+      "ir": "AST compiled to YARV instruction sequences (ISeq) bytecode",
+      "exec_model": "bytecode-vm",
+      "runtime": "YARV (Yet Another Ruby VM) in CRuby/MRI; optional YJIT for hot paths",
+      "on_enter": "CRuby lexes and parses the source to an AST, compiles it into YARV ISeq bytecode, then the YARV stack VM executes it (optionally JIT-compiling hot methods via YJIT)."
+    },
+    "php": {
+      "lex": "Zend re2c-generated lexer (zend_language_scanner) tokenizes, splitting HTML vs PHP modes",
+      "parse": "Bison LALR parser (zend_language_parser) builds an AST",
+      "ir": "AST compiled to Zend opcodes (op_array)",
+      "exec_model": "bytecode-vm",
+      "runtime": "Zend Engine VM; OPcache caches compiled opcodes; optional JIT (PHP 8+)",
+      "on_enter": "The Zend Engine lexes and parses each request's script to an AST, compiles it to opcodes (cached by OPcache), then the Zend VM executes the opcodes, with optional JIT to native code in PHP 8+."
+    },
+    "javascript": {
+      "lex": "Tokenizer scans UTF-16 source into tokens (handles ASI rules)",
+      "parse": "Recursive-descent parser builds an ESTree-style AST",
+      "ir": "AST then engine bytecode/baseline/JIT tiers (e.g. V8 Ignition bytecode, Sparkplug, Maglev, TurboFan)",
+      "exec_model": "jit",
+      "runtime": "JS engine (V8, SpiderMonkey, JavaScriptCore) on Node.js or a browser",
+      "on_enter": "The engine (e.g. V8) parses source to an AST, Ignition compiles it to bytecode and interprets it, Sparkplug baseline-compiles hot code, Maglev optimizes suitable hot functions, and TurboFan handles higher-tier optimizing JIT compilation."
+    },
+    "typescript": {
+      "lex": "TypeScript compiler tokenizes source including type-annotation tokens",
+      "parse": "tsc parser builds a TypeScript AST (superset of ESTree) with type nodes",
+      "ir": "TS AST; type-checked then emitted as JavaScript (types erased)",
+      "exec_model": "transpiled",
+      "runtime": "None of its own; emitted JS runs on a JS engine (V8 etc.) via Node or browser",
+      "on_enter": "tsc type-checks the TS AST then strips types and emits JavaScript, which a JS engine like V8 then JIT-executes (or ts-node/tsx transpiles on the fly)."
+    },
+    "lua": {
+      "lex": "Hand-written lexer scans source into tokens",
+      "parse": "Single-pass recursive-descent parser that emits bytecode directly (no persistent AST)",
+      "ir": "Register-based Lua bytecode (chunk of instructions)",
+      "exec_model": "bytecode-vm",
+      "runtime": "The Lua virtual machine (lua_State); LuaJIT adds a tracing JIT",
+      "on_enter": "luac/the interpreter compiles source in one pass to register-based bytecode, then the Lua VM executes that bytecode (LuaJIT can trace and JIT hot paths to native code)."
+    },
+    "c": {
+      "lex": "hand-written lexer in the C compiler (e.g. clang/gcc) after the C preprocessor expands macros/includes",
+      "parse": "recursive-descent parser producing an AST",
+      "ir": "compiler IR (clang -> LLVM IR; gcc -> GIMPLE/RTL)",
+      "exec_model": "aot-native",
+      "runtime": "none (links against libc; no managed runtime)",
+      "on_enter": "The preprocessor expands directives, the compiler lexes/parses to an AST, lowers to IR (LLVM IR or GIMPLE), optimizes and emits a native object, then the linker produces a machine-code executable the OS runs directly."
+    },
+    "cpp": {
+      "lex": "hand-written lexer in the C++ compiler after preprocessing",
+      "parse": "recursive-descent parser (with template/overload handling) producing an AST",
+      "ir": "compiler IR (clang -> LLVM IR; gcc -> GIMPLE/RTL)",
+      "exec_model": "aot-native",
+      "runtime": "none (links libc/libstdc++; no managed runtime)",
+      "on_enter": "The preprocessor runs, the compiler parses to an AST, instantiates templates and resolves overloads, lowers to IR, optimizes and emits native object code, then the linker builds a native executable run directly by the OS."
+    },
+    "rust": {
+      "lex": "rustc lexer tokenizes source (after macro-aware lexing)",
+      "parse": "recursive-descent parser -> AST, then macro expansion",
+      "ir": "AST -> HIR -> MIR -> LLVM IR",
+      "exec_model": "aot-native",
+      "runtime": "minimal (no GC/VM; small std runtime: panic handler, stack unwinding, allocator)",
+      "on_enter": "rustc lexes/parses to an AST, expands macros, lowers to HIR then MIR (borrow-checked there), emits LLVM IR which LLVM optimizes into a native binary linked with the small Rust std runtime and run directly."
+    },
+    "zig": {
+      "lex": "Zig compiler tokenizer",
+      "parse": "recursive-descent parser -> AST",
+      "ir": "AST -> ZIR -> AIR -> LLVM IR (or Zig self-hosted backend)",
+      "exec_model": "aot-native",
+      "runtime": "none (no GC/VM; minimal std startup)",
+      "on_enter": "The Zig compiler tokenizes and parses to an AST, lowers to ZIR then per-function AIR (running comptime evaluation), emits machine code via the LLVM or self-hosted backend, and links a native executable run directly by the OS."
+    },
+    "java": {
+      "lex": "javac scanner tokenizes .java source into Java tokens",
+      "parse": "recursive-descent parser builds a compiler AST (com.sun.source Tree)",
+      "ir": "JVM bytecode (.class files); HotSpot also uses internal C1/C2 IR + Sea-of-Nodes",
+      "exec_model": "mixed",
+      "runtime": "JVM (HotSpot)",
+      "on_enter": "javac compiles .java to .class bytecode, then the JVM loads and interprets it, with HotSpot JIT-compiling hot methods to native code."
+    },
+    "csharp": {
+      "lex": "Roslyn lexer tokenizes .cs source",
+      "parse": "Roslyn parser builds a syntax tree (red-green tree)",
+      "ir": "CIL/MSIL bytecode in a managed assembly (.dll/.exe)",
+      "exec_model": "mixed",
+      "runtime": ".NET CLR (CoreCLR)",
+      "on_enter": "Roslyn compiles C# to CIL bytecode in an assembly, then the CLR JIT-compiles CIL to native code at runtime (or AOT via ReadyToRun/NativeAOT)."
+    },
+    "kotlin": {
+      "lex": "Kotlin compiler lexer tokenizes .kt source",
+      "parse": "parser builds a PSI/FIR tree (frontend IR)",
+      "ir": "JVM bytecode by default (also Kotlin/JS, Kotlin/Native LLVM IR)",
+      "exec_model": "mixed",
+      "runtime": "JVM (HotSpot) for the default target",
+      "on_enter": "kotlinc compiles .kt to JVM .class bytecode, then the JVM interprets and JIT-compiles it just like Java."
+    },
+    "scala": {
+      "lex": "Scala compiler (scalac/dotc) scanner tokenizes .scala source",
+      "parse": "parser builds an AST; Scala 3 lowers through TASTy trees",
+      "ir": "JVM bytecode (.class); Scala 3 also emits TASTy; internal Tree/Type IR",
+      "exec_model": "mixed",
+      "runtime": "JVM (HotSpot)",
+      "on_enter": "scalac compiles .scala to JVM .class bytecode, then the JVM interprets and JIT-compiles it like other JVM languages."
+    },
+    "go": {
+      "lex": "hand-written scanner (go/scanner) producing tokens with automatic semicolon insertion",
+      "parse": "recursive-descent parser (go/parser) -> AST (go/ast)",
+      "ir": "go/ast -> typed SSA IR (cmd/compile/internal/ssa)",
+      "exec_model": "aot-native",
+      "runtime": "Go runtime linked into the binary (goroutine scheduler, garbage collector); no separate VM",
+      "on_enter": "The gc compiler lexes and parses each package to an AST, type-checks it, lowers to SSA IR, optimizes and emits machine code, then the linker produces a single static native executable embedding the Go runtime which the OS runs directly."
+    },
+    "swift": {
+      "lex": "hand-written lexer in the Swift compiler frontend producing tokens",
+      "parse": "recursive-descent parser -> AST",
+      "ir": "AST -> typechecked AST -> SIL (Swift Intermediate Language) -> LLVM IR",
+      "exec_model": "aot-native",
+      "runtime": "Swift runtime library (ARC reference counting, metadata, dynamic casting); no managed VM",
+      "on_enter": "swiftc lexes and parses source to an AST, type-checks it, lowers to SIL for Swift-specific optimization, emits LLVM IR which LLVM compiles to a native object, and the linker produces a native binary linked against the Swift runtime."
+    },
+    "julia": {
+      "lex": "Julia/femtolisp-based lexer tokenizing source",
+      "parse": "parser (flisp, or JuliaSyntax.jl in recent versions) -> surface AST of Expr objects",
+      "ir": "lowered AST -> typed Julia IR (CodeInfo/SSA) -> LLVM IR -> native code",
+      "exec_model": "jit",
+      "runtime": "Julia runtime with LLVM-based JIT and a garbage collector",
+      "on_enter": "Julia parses source to Expr ASTs, lowers and macro-expands them, then type-infers and JIT-compiles each method specialization through LLVM to native code on first call, executing under the Julia runtime/GC."
+    },
+    "haskell": {
+      "lex": "GHC lexer with layout (indentation) algorithm inserting virtual braces/semicolons",
+      "parse": "parser -> HsSyn AST",
+      "ir": "HsSyn -> Core (System FC) -> STG -> Cmm -> native or LLVM code (or bytecode in GHCi)",
+      "exec_model": "aot-native",
+      "runtime": "GHC RTS (lazy graph-reduction evaluator, garbage collector, green-thread scheduler)",
+      "on_enter": "GHC lexes with layout handling and parses to an AST, type-checks and desugars to Core, optimizes Core, lowers through STG and Cmm to native machine code, and links a binary that runs under the GHC RTS performing lazy evaluation; GHCi instead interprets bytecode."
+    }
+  }
+}

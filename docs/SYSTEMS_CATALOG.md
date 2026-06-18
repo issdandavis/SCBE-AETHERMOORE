@@ -55,6 +55,17 @@ _Verified 2026-06-16: `scbe -V` → `scbe 4.2.1`; CLI smoke green; wheel install
   kernel builder (`scripts/kaggle/build_encoder_kernel.py`).
 - **Research docs** — `research/aether-manifold/` (fluidic-computer design + rotation
   algebra), `research/marketing/playbook.md`, `articles/` (build-in-public posts).
+- **Research library** — `docs/research/index.html` + `docs/research/research_catalog.json`
+  organize topic-indexed packets across space systems, materials/chemistry, autonomy/swarms,
+  AI governance, language/code systems, and life systems. "Conversion" means structured
+  research framing, review model, validation plan, claim boundary, and then HTML/PDF output.
+- **M-TEF research packet** — `docs/research/mtef_research_compendium_2026-06-17.md`
+  and the linked PDF preserve the Magneto-Triboelectric Fluid Cell literature synthesis.
+  Treat it as concept/prototype evidence, not proof of a working device.
+- **Space life-support animals packet** —
+  `docs/research/space_life_support_animals_husbandry_energy_2026-06-17.md` captures the
+  animal-husbandry / micro-energy idea as an Idea Seed with required source, welfare,
+  physics-budget, and red-team passes before any stronger claim.
 
 ---
 _Regenerate the canonical list anytime with `scbe systems` (or `scbe systems --json`)._

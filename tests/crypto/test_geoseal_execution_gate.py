@@ -108,7 +108,7 @@ def test_inline_interpreter_is_quarantine_not_deny() -> None:
     decision = scan_command(f"{sys.executable} -c \"print('ok')\"")
 
     assert decision.tier == "QUARANTINE"
-    assert decision.allowed
+    assert not decision.allowed
     assert any(finding.rule == "inline-interpreter" for finding in decision.findings)
 
 
@@ -229,7 +229,7 @@ def test_inline_python_destructive_payload_is_denied() -> None:
 def test_benign_inline_python_payload_stays_quarantine() -> None:
     decision = scan_command(f'{sys.executable} -c "print(2 + 2)"')
     assert decision.tier == "QUARANTINE"
-    assert decision.allowed
+    assert not decision.allowed
     assert not any(f.rule.startswith("inline-danger") for f in decision.findings)
 
 
@@ -256,6 +256,19 @@ def test_simulate_blocks_a_destructive_command() -> None:
     assert sim.decision.tier == "DENY"
     assert sim.blocked_reason == "gate denied"
     assert sim.summary.startswith("BLOCKED")
+
+
+def test_simulate_fails_closed_on_quarantine_by_default() -> None:
+    command = f'{sys.executable} -c "print(1)"'
+
+    default_cap = simulate_command(command, max_tier="ALLOW")
+    explicit_cap = simulate_command(command, max_tier="QUARANTINE")
+
+    assert default_cap.decision.tier == "QUARANTINE"
+    assert not default_cap.decision.allowed
+    assert not default_cap.would_run
+    assert default_cap.blocked_reason == "tier QUARANTINE exceeds max ALLOW"
+    assert explicit_cap.would_run
 
 
 def test_simulate_never_invokes_subprocess(monkeypatch) -> None:

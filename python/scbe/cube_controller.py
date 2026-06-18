@@ -54,6 +54,17 @@ except Exception:  # pragma: no cover - optional
     _HAVE_TONGUES = False
 
 
+def _expand_names(text: str) -> str:
+    """Lazily expand speedcuber trigger names (sexy, sledge, sune ...) to moves; no-op if the
+    triggers module is absent. Imported lazily so triggers can import this module back."""
+    try:
+        from .triggers import expand_names
+
+        return expand_names(text)
+    except Exception:  # pragma: no cover - optional
+        return text
+
+
 def parse_moves(text: str) -> List[str]:
     """Text like "R U F'" -> a validated move list (raises on an unknown twist)."""
     out: List[str] = []
@@ -159,7 +170,7 @@ def bop_it(voice: bool = False) -> int:
         if not line:
             continue
         try:
-            narrate(parse_moves(line), voice)
+            narrate(parse_moves(_expand_names(line)), voice)
         except ValueError as e:
             print("  " + str(e))
 
@@ -168,15 +179,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     import argparse
 
     ap = argparse.ArgumentParser(prog="scbe-bopit", description="twist the cube, hear the command")
-    ap.add_argument("moves", nargs="*", help="twist sequence, e.g. R U F'")
+    ap.add_argument("moves", nargs="*", help="twist sequence or trigger names, e.g. R U F'  or  sexy sledge")
     ap.add_argument("--voice", action="store_true", help="say it aloud (Windows SAPI)")
     ap.add_argument("--repl", action="store_true", help="interactive twist loop")
+    ap.add_argument("--triggers", action="store_true", help="list speedcuber triggers (the move stdlib)")
     a = ap.parse_args(argv)
+    if a.triggers:
+        from .triggers import main as triggers_main
+
+        return triggers_main(["--list"])
     if a.repl or not a.moves:
         return bop_it(a.voice)
     try:
         print("CUBE CONTROLLER")
-        narrate(parse_moves(" ".join(a.moves)), a.voice)
+        narrate(parse_moves(_expand_names(" ".join(a.moves))), a.voice)
         return 0
     except ValueError as e:
         print(str(e), file=sys.stderr)

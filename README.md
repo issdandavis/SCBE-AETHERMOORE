@@ -164,6 +164,28 @@ harmonicWall(result.d_star); // cost in [1, ∞)
 
 ---
 
+## Detection performance (measured)
+
+Two tiers, one API. `scan()` runs a fast, deterministic, **zero-dependency** screen — a byte/entropy sieve plus a canonicalized pattern & concept screen that defeats homoglyph, zero-width, leet, base64, spaced-letter, and Unicode tag-block smuggling — and returns a full audit digest. An **optional** CPU model raises recall on paraphrased / novel attacks.
+
+Measured on a held-out paraphrased-injection corpus (56 attacks / 32 hard negatives), blocked-recall vs benign false-positive rate:
+
+| Mode | Recall (blocked) | Benign FP | Latency | Footprint |
+|---|---|---|---|---|
+| **Default** — pure-Python screen | 50% | 28% | ~0 ms | zero dependencies |
+| **+ Model gate** (`SCBE_INJECTION_MODEL=1`) | **93%** | 34% | ~45 ms/prompt warm (CPU) | one ONNX model, no GPU |
+
+The model is **off by default** — `scan()` stays pure-Python with no extra dependency or download until you opt in. A model-only hit is `ESCALATE` (human review), not `DENY`. The classifier is [ProtectAI's Apache-2.0 DeBERTa](https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2); the recall lift comes from the fine-tuned classifier, not the geometry. Honest scope: the default screen is a fast deterministic filter with an audit trail, not a general semantic-intent solver — that is what the model tier is for.
+
+Enable the model tier:
+
+```bash
+pip install "scbe-aethermoore[ml-onnx]"   # no-torch CPU path
+export SCBE_INJECTION_MODEL=1             # first call downloads the model (~740 MB), then cached
+```
+
+---
+
 ## Terminology Decoder
 
 SCBE uses custom vocabulary. Each coined term maps to a standard technical concept.
@@ -244,6 +266,8 @@ Canonical formula lock: [docs/specs/SCBE_CANONICAL_CONSTANTS.md](docs/specs/SCBE
 
 **Petri seed gate (Anthropic adversarial seeds):** 171/173 correctly denied or escalated at v7-matched config (1.16% false-allow). Notes: [docs/external/PETRI_FINDINGS_2026_05_08.md](docs/external/PETRI_FINDINGS_2026_05_08.md).
 
+**Opt-in model gate delta:** see [Detection performance (measured)](#detection-performance-measured) above — pure-Python **50%** → model **92.9%** recall on the held-out paraphrase corpus. Reproduce with `pip install .[ml-onnx]`, `SCBE_INJECTION_MODEL=1`, and `pytest tests/test_intent_model_benchmark.py -q`.
+
 ---
 
 ## Government and Contracting
@@ -258,8 +282,6 @@ SCBE-AETHERMOORE has a government contracting surface.
 - **Capability docs**: [M5 Mesh Product & Service Blueprint](docs/M5_MESH_PRODUCT_SERVICE_BLUEPRINT.md)
 
 Custom AI work is available for clients that need procurement-ready, clearance-sensitive, or regulated workflow support: private AI governance overlays, air-gapped/offline deployments, redacted-data evaluation harnesses, audit receipts, and client-specific agent controls. CAGE/SAM registration supports vendor and subcontract routing; any classified, export-controlled, or otherwise restricted data must stay inside the client's approved environment under the client's security process.
-
-For government contracting inquiries: issdandavis7795@gmail.com
 
 ---
 

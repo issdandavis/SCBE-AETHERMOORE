@@ -26,6 +26,7 @@ from python.scbe.audio_field_observables import (
     generate_decaying_sine,
     generate_sine,
 )
+from python.scbe.chemistry_dimensions import ChemistryDimensionError, analyze_formula
 from python.scbe.controlled_substances import ControlledSubstanceDenied, screen_input
 from python.scbe.geometry_view import GeometryEngineError, geometry_view_packet
 from python.scbe.reaction_balance import BalanceError, balance_reaction_packet
@@ -428,6 +429,31 @@ def print_human_balance(payload: dict[str, Any]) -> None:
         print(f"WARNING {flag}")
 
 
+def build_dimensions(formula: str) -> dict[str, Any]:
+    try:
+        return {"ok": True, **analyze_formula(formula)}
+    except (BalanceError, ChemistryDimensionError) as exc:
+        return {
+            "schema_version": "scbe_react_dimensions_v1",
+            "ok": False,
+            "formula": formula,
+            "error": str(exc),
+        }
+
+
+def print_human_dimensions(payload: dict[str, Any]) -> None:
+    if not payload.get("ok"):
+        print(f"reaction dimensions: FAILED {payload.get('error', '')}")
+        return
+    totals = payload["totals"]
+    print(
+        "reaction dimensions: "
+        f"{payload['formula']} atoms={totals['atoms']} protons={totals['protons']} "
+        f"neutrons={totals['neutrons_common_isotope']} electrons={totals['electrons']} "
+        f"charge={totals['charge']} molar_mass={totals['molar_mass_g_mol']} g/mol"
+    )
+
+
 def build_geometry(smiles: str) -> dict[str, Any]:
     try:
         packet = geometry_view_packet(smiles).sign(SIGNER_AGENT_ID)
@@ -541,6 +567,8 @@ def print_human_checkpoint(payload: dict[str, Any]) -> None:
 def _execute_plan(plan: "ReactionPlan") -> dict[str, Any]:
     if plan.verb == "balance":
         return build_balance(plan.args["reactants"], plan.args["products"])
+    if plan.verb == "dimensions":
+        return build_dimensions(plan.args["formula"])
     if plan.verb == "screen":
         return build_screen(plan.args["input"])
     if plan.verb == "geometry":
@@ -606,6 +634,7 @@ def print_human_ask(payload: dict[str, Any]) -> None:
     result = payload.get("result", {})
     {
         "balance": print_human_balance,
+        "dimensions": print_human_dimensions,
         "screen": print_human_screen,
         "geometry": print_human_geometry,
         "checkpoint": print_human_checkpoint,
@@ -633,6 +662,9 @@ def main() -> int:
     geometry_parser = sub.add_parser("geometry")
     geometry_parser.add_argument("--smiles", required=True, help="SMILES string, e.g. CCO")
     geometry_parser.add_argument("--json", action="store_true")
+    dimensions_parser = sub.add_parser("dimensions")
+    dimensions_parser.add_argument("--formula", required=True, help="formula, e.g. C6H12O6 or NH4^+")
+    dimensions_parser.add_argument("--json", action="store_true")
     screen_parser = sub.add_parser("screen")
     screen_parser.add_argument("--input", required=True, help="SMILES string or CAS number to screen")
     screen_parser.add_argument("--json", action="store_true")
@@ -696,6 +728,13 @@ def main() -> int:
             print(json.dumps(payload, indent=2))
         else:
             print_human_geometry(payload)
+        return 0 if payload["ok"] else 1
+    if args.cmd == "dimensions":
+        payload = build_dimensions(args.formula)
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print_human_dimensions(payload)
         return 0 if payload["ok"] else 1
     if args.cmd == "screen":
         payload = build_screen(args.input)

@@ -16,6 +16,7 @@ looks good, feed its unified diff through ``scripts/agents/safe_apply.py``.
 from __future__ import annotations
 
 import argparse
+import ast
 import importlib.util
 import json
 import os
@@ -586,6 +587,14 @@ def extract_file_declarations(path: str, limit: int = 24) -> list[str]:
         r"\bfunction\s+([A-Za-z_][A-Za-z0-9_]*)",
         r"\b(?:const|let|var)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=",
         r"\bexport\s+(?:class|function|const|let)\s+([A-Za-z_][A-Za-z0-9_]*)",
+        # TypeScript (the repo's canonical language): interfaces, type aliases, enums,
+        # abstract classes, and `export default class/function` were previously missed,
+        # producing false symbol_not_found flags on valid .ts patches.
+        r"\b(?:export\s+)?interface\s+([A-Za-z_][A-Za-z0-9_]*)",
+        r"\b(?:export\s+)?type\s+([A-Za-z_][A-Za-z0-9_]*)\s*[=<]",
+        r"\b(?:export\s+)?(?:const\s+)?enum\s+([A-Za-z_][A-Za-z0-9_]*)",
+        r"\b(?:export\s+)?abstract\s+class\s+([A-Za-z_][A-Za-z0-9_]*)",
+        r"\bexport\s+default\s+(?:abstract\s+)?(?:class|function)\s+([A-Za-z_][A-Za-z0-9_]*)",
     )
     for pattern in patterns:
         declarations.extend(match.group(1) for match in re.finditer(pattern, content))
@@ -1067,15 +1076,80 @@ def _file_contains_symbol(path: str, symbol: str) -> bool:
         content = target.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return False
+    if _text_declares_symbol(content, symbol):
+        return True
+    if target.suffix == ".py":
+        return _python_import_makes_symbol_available(target, content, symbol)
+    return False
+
+
+def _text_declares_symbol(content: str, symbol: str) -> bool:
+    name = re.escape(symbol)
     patterns = (
-        rf"\bclass\s+{re.escape(symbol)}\b",
-        rf"\bdef\s+{re.escape(symbol)}\b",
-        rf"\bfunction\s+{re.escape(symbol)}\b",
-        rf"\bconst\s+{re.escape(symbol)}\b",
-        rf"\blet\s+{re.escape(symbol)}\b",
-        rf"\bexport\s+(?:class|function|const|let)\s+{re.escape(symbol)}\b",
+        rf"\bclass\s+{name}\b",
+        rf"\bdef\s+{name}\b",
+        rf"\bfunction\s+{name}\b",
+        rf"\b(?:const|let|var)\s+{name}\b",
+        rf"\bexport\s+(?:class|function|const|let)\s+{name}\b",
+        # TypeScript declarations (canonical language) the old patterns missed
+        rf"\binterface\s+{name}\b",
+        rf"\btype\s+{name}\b",
+        rf"\benum\s+{name}\b",
+        rf"\babstract\s+class\s+{name}\b",
+        rf"\bexport\s+default\s+(?:abstract\s+)?(?:class|function)\s+{name}\b",
     )
     return any(re.search(pattern, content) for pattern in patterns)
+
+
+def _python_import_makes_symbol_available(target: Path, content: str, symbol: str) -> bool:
+    try:
+        tree = ast.parse(content)
+    except SyntaxError:
+        return False
+    for node in ast.iter_child_nodes(tree):
+        if isinstance(node, ast.ImportFrom):
+            if any((alias.asname or alias.name).split(".")[0] == symbol for alias in node.names):
+                source = _resolve_python_import_source(target, node.module, node.level)
+                if source is None:
+                    if node.level:
+                        return False
+                    # Imported from stdlib/third-party or a module outside this repo. It is
+                    # available to the file even though this repo cannot prove its declaration.
+                    return True
+                try:
+                    source_text = source.read_text(encoding="utf-8", errors="replace")
+                except OSError:
+                    return False
+                return _text_declares_symbol(source_text, symbol)
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                exposed = alias.asname or alias.name.split(".")[0]
+                if exposed == symbol:
+                    return True
+    return False
+
+
+def _resolve_python_import_source(target: Path, module: str | None, level: int) -> Path | None:
+    if level:
+        base = target.parent
+        for _ in range(max(0, level - 1)):
+            base = base.parent
+        parts = module.split(".") if module else []
+        candidates = [base.joinpath(*parts).with_suffix(".py"), base.joinpath(*parts, "__init__.py")]
+    elif module:
+        parts = module.split(".")
+        candidates = [
+            REPO_ROOT.joinpath(*parts).with_suffix(".py"),
+            REPO_ROOT.joinpath(*parts, "__init__.py"),
+            REPO_ROOT.joinpath("src", *parts).with_suffix(".py"),
+            REPO_ROOT.joinpath("src", *parts, "__init__.py"),
+        ]
+    else:
+        return None
+    for candidate in candidates:
+        if candidate.exists() and candidate.is_file():
+            return candidate
+    return None
 
 
 def quality_flags(

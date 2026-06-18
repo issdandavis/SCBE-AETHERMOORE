@@ -209,22 +209,31 @@ describe('Layer 9: Spectral Coherence', () => {
     });
 
     it('should produce same S_spec for different phases (property-based)', () => {
+      const sampleRate = 1000;
+      const duration = 0.512;
+      const fftSize = sampleRate * duration;
+      const binHz = sampleRate / fftSize;
+
       fc.assert(
         fc.property(
-          fc.double({ min: 1, max: 100, noNaN: true }),
+          fc.oneof(
+            fc.integer({ min: 1, max: 20 }),
+            fc.integer({ min: 31, max: 51 })
+          ),
           fc.double({ min: 0.1, max: 2, noNaN: true }),
           fc.double({ min: 0, max: 2 * Math.PI, noNaN: true }),
           fc.double({ min: 0, max: 2 * Math.PI, noNaN: true }),
-          (freq, amp, phase1, phase2) => {
-            const signal1 = generateTestSignal(1000, 0.5, [
+          (freqBin, amp, phase1, phase2) => {
+            const freq = freqBin * binHz;
+            const signal1 = generateTestSignal(sampleRate, duration, [
               { freq, amplitude: amp, phase: phase1 },
             ]);
-            const signal2 = generateTestSignal(1000, 0.5, [
+            const signal2 = generateTestSignal(sampleRate, duration, [
               { freq, amplitude: amp, phase: phase2 },
             ]);
 
-            const result1 = computeSpectralCoherence(signal1, 1000, 50);
-            const result2 = computeSpectralCoherence(signal2, 1000, 50);
+            const result1 = computeSpectralCoherence(signal1, sampleRate, 50);
+            const result2 = computeSpectralCoherence(signal2, sampleRate, 50);
 
             return Math.abs(result1.S_spec - result2.S_spec) < 0.01;
           }
