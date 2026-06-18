@@ -57,9 +57,15 @@ def _backend():
         from optimum.onnxruntime import ORTModelForSequenceClassification  # type: ignore
         from transformers import AutoTokenizer  # type: ignore
 
-        tok = AutoTokenizer.from_pretrained(mid)
-        mdl = ORTModelForSequenceClassification.from_pretrained(mid)
-        return ("onnx", tok, mdl)
+        # ProtectAI (and most pre-exported repos) ship the ONNX weights + tokenizer in
+        # an `onnx/` subfolder; load from there first (no torch export), then the root.
+        for sub in ("onnx", ""):
+            try:
+                tok = AutoTokenizer.from_pretrained(mid, subfolder=sub)
+                mdl = ORTModelForSequenceClassification.from_pretrained(mid, subfolder=sub)
+                return ("onnx", tok, mdl)
+            except Exception:
+                continue
     except Exception:
         pass
     # Reliable fallback: a transformers text-classification pipeline (torch).
