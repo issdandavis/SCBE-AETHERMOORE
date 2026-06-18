@@ -1,6 +1,11 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
 
-if [ -x packages/agent-bus/node_modules/.bin/lint-staged ]; then
-  cd packages/agent-bus && ./node_modules/.bin/lint-staged
+set -eu
+
+HOOK_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+PACKAGE_DIR="$(CDPATH= cd -- "$HOOK_DIR/.." && pwd)"
+
+if [ -x "$PACKAGE_DIR/node_modules/.bin/lint-staged" ]; then
+  cd "$PACKAGE_DIR"
+  ./node_modules/.bin/lint-staged
 fi
