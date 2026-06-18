@@ -154,6 +154,28 @@ def run_cranium_demo() -> int:
     return 0
 
 
+def run_scrutiny_demo() -> int:
+    from scbe_aethermoore import scan
+    from scbe_aethermoore.synapses import Connectome, Region, Synapse
+
+    c = Connectome()
+    c.add_region(Region("review", "reviewer", lambda m: "reviewed"))
+    for tongue in ("KO", "AV", "RU", "CA", "UM", "DR"):
+        c.add_synapse(Synapse(tongue, "review", tongue))
+    msg = "hi"  # a borderline (QUARANTINE) message
+    print("\n  TONGUE-WEIGHTED SCRUTINY  same message, different synapse weight\n  " + "-" * 70)
+    print(f"  message={msg!r}  gate decision={scan(msg)['decision']}")
+    for tongue in ("KO", "AV", "RU", "CA", "UM", "DR"):
+        r = c.fire(tongue, "review", msg)
+        sc = r["scrutiny"]
+        print(
+            f"     {tongue} (w={sc['weight']:<5} {sc['level']:<9}) blocks on "
+            f"{str(sc['block_on']):<38} -> {r['status']}"
+        )
+    print("  " + "-" * 70 + "\n")
+    return 0
+
+
 def main() -> int:
     if "--demo" in sys.argv:
         return run_demo()
@@ -161,6 +183,8 @@ def main() -> int:
         return run_triangle_demo()
     if "--cranium" in sys.argv:
         return run_cranium_demo()
+    if "--scrutiny" in sys.argv:
+        return run_scrutiny_demo()
     _build_mcp().run()
     return 0
 
