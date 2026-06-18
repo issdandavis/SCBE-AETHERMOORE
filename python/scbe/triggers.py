@@ -91,9 +91,15 @@ def expand_trigger(name: str) -> List[str]:
     return list(TRIGGERS[name.lower()].moves)
 
 
+def normalize_move(move: str) -> str:
+    """Canonicalize a move's spelling only: trim, uppercase the face, ASCII the prime
+    (curly ’ -> '). No inversion -- this is the spelling normal form invert_move builds on."""
+    return move.strip().upper().replace("’", "'")
+
+
 def invert_move(move: str) -> str:
     """One move -> its inverse: R<->R', and an X2 double turn is its own inverse."""
-    m = move.strip().upper().replace("’", "'")
+    m = normalize_move(move)
     if m.endswith("2"):
         return m
     if m.endswith("'"):
