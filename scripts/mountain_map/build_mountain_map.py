@@ -1,13 +1,18 @@
 """Build the cross-language "mountain map" from the verified construct data.
 
-Three views of one mountain (the computation), seen from 18 language faces:
+Three views across 18 language faces. NOTE: this is a NOTATION map, not a computation map --
+view 2 is a syntactic phylogeny (surface spelling), which anti-correlates with semantics; the
+same-computation axis is the IR + polyglot_conformance.py, not this.
 
   1. construct_table.csv / .xlsx -- the basic table: every curated construct x every
      language, with a per-cell confidence (the map carries its own provenance).
-  2. mountain.dot / mountain.md  -- the flow graph: languages are nodes, edge weight is
-     how many constructs two languages spell IDENTICALLY (computed from the table, not
-     asserted). The ridge that falls out -- brace-family vs colon-family -- is data, not a
-     drawing.
+  2. mountain.dot / mountain.md  -- a SYNTACTIC PHYLOGENY: languages are nodes, edge weight
+     is how many constructs two languages spell IDENTICALLY (computed from the table, not
+     asserted). It is a family tree of NOTATION (brace / colon / ML family), NOT computational
+     distance -- surface spelling anti-correlates with semantics (`==` is one glyph with three
+     meanings; `map f xs` vs a comprehension is one meaning in two spellings). Use it as a
+     transpiler work-allocation map; the same-computation axis is the IR + polyglot_conformance.py
+     (which RUNS the backends). See semantic_vs_syntax.py for the executed proof.
   3. pipeline_map.md             -- what happens when you hit Enter: per language, the
      source -> lex -> parse -> IR -> execute path.
 
@@ -136,13 +141,26 @@ def write_mountain(data: dict, sim: Dict[str, Dict[str, float]], dot: Path, md: 
     dot.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     rows = [
-        "# The mountain, from data: language similarity by identical construct spelling",
+        "# Syntactic phylogeny: language similarity by identical construct spelling",
         "",
         "Edge = fraction of the %d constructs two languages spell *identically* (normalized)."
         % len(data["meta"]["constructs"]),
-        "Computed from the table, not asserted. Higher = closer faces of the same mountain.",
+        "Computed from the table, not asserted -- but this is SURFACE spelling, a family tree of",
+        "NOTATION (brace / colon / ML family), NOT the shape of the computation.",
         "",
-        "## Nearest neighbours (each language's 3 closest faces)",
+        "## What this is NOT",
+        "",
+        "Surface spelling is not semantics, and the two come apart:",
+        "- identical spelling, different meaning: `==` is one glyph in Java/C#/JS/Python but means",
+        '  reference vs value vs coercing equality (`1 == "1"` is False in Python, true in JS).',
+        "- different spelling, same computation: Haskell `map f xs` and Python `[f(x) for x in xs]`",
+        "  compute the same thing -- yet Haskell scores as the outlier here.",
+        "So these distances are notation lineage, not semantic distance. Use this as a TRANSPILER",
+        "WORK-ALLOCATION map: identical cells emit trivially; the divergences (the Haskell column)",
+        "are where real semantic effort lives. The same-computation axis is the IR +",
+        "polyglot_conformance.py (which RUNS the backends); see semantic_vs_syntax.py for proof.",
+        "",
+        "## Nearest neighbours (each language's 3 closest faces by notation)",
         "",
     ]
     for a in langs:
