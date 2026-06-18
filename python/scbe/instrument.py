@@ -17,7 +17,12 @@ from __future__ import annotations
 from typing import Dict, List, Sequence
 
 from .ca_opcode_table import OP_TABLE
-from .tongue_isa import compile_ca_tokens, disassemble, runtime_prelude
+from .tongue_isa import (
+    SUPPORTED_TARGETS,
+    compile_ca_tokens,
+    disassemble,
+    runtime_prelude,
+)
 
 _NAME_TO_BYTE: Dict[str, int] = {entry.name: op_id for op_id, entry in OP_TABLE.items()}
 
@@ -85,6 +90,57 @@ def ca_word_for_opcode(op_id: int) -> str:
 
 def _ca_scale_for_ops(op_names: Sequence[str]) -> Dict[str, str]:
     return {ca_word_for_opcode(_NAME_TO_BYTE[op]): op for op in op_names}
+
+
+_NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+_INSTRUMENTS = ["piano", "strings", "brass", "woodwinds", "mallets", "synth"]
+
+
+def _nm_to_hex(nm: float) -> str:
+    """Approximate a visible wavelength, in nanometers, as an RGB hex color."""
+
+    if nm < 380 or nm > 750:
+        r = g = b = 0.0
+    elif nm < 440:
+        r, g, b = -(nm - 440) / 60, 0.0, 1.0
+    elif nm < 490:
+        r, g, b = 0.0, (nm - 440) / 50, 1.0
+    elif nm < 510:
+        r, g, b = 0.0, 1.0, -(nm - 510) / 20
+    elif nm < 580:
+        r, g, b = (nm - 510) / 70, 1.0, 0.0
+    elif nm < 645:
+        r, g, b = 1.0, -(nm - 645) / 65, 0.0
+    else:
+        r, g, b = 1.0, 0.0, 0.0
+    return "#" + "".join(
+        f"{int(max(0.0, min(1.0, channel)) * 255):02X}" for channel in (r, g, b)
+    )
+
+
+def keyspace(op_id: int) -> dict:
+    """Return the multisensory key for an op: pitch, instrument, and color wavelength."""
+
+    op_id = int(op_id) % 64
+    midi = 48 + op_id
+    hz = 440.0 * 2 ** ((midi - 69) / 12)
+    light_nm = round(380.0 + (op_id / 63.0) * 370.0, 1)
+    return {
+        "op_id": op_id,
+        "note": _NOTE_NAMES[midi % 12] + str(midi // 12 - 1),
+        "midi": midi,
+        "hz": round(hz, 2),
+        "sound_wavelength_cm": round(34300.0 / hz, 2),
+        "instrument": _INSTRUMENTS[(op_id // 12) % len(_INSTRUMENTS)],
+        "light_nm": light_nm,
+        "color": _nm_to_hex(light_nm),
+    }
+
+
+def melody_for_ops(op_names: Sequence[str]) -> List[dict]:
+    """Return the pitch/timbre/color key sequence for a list of CA op names."""
+
+    return [keyspace(_NAME_TO_BYTE[op]) for op in op_names]
 
 
 MODES: Dict[str, Dict[str, str]] = {
@@ -165,7 +221,62 @@ def play(
         "code": code,
         "song_back": song_back,
         "bijective": song_back == normalized,
+        "melody": melody_for_ops(ops),
     }
+
+
+def faces() -> List[str]:
+    """Return every source face the instrument can emit to.
+
+    ``tongue_isa`` is the verified stack-machine path for eight targets. ``polyglot``
+    adds broader scalar-source emission for the rest. The union is the honest face set.
+    """
+
+    langs = set(SUPPORTED_TARGETS)
+    try:
+        from . import polyglot
+
+        langs.update(polyglot.languages())
+    except Exception:
+        pass
+    return sorted(langs)
+
+
+def emit_all(song: str, mode: str = "coding") -> Dict[str, str]:
+    """Emit one scalar song into every registered language face.
+
+    The broad 18-face path uses ``polyglot.emit`` and therefore supports the scalar
+    op subset that polyglot declares. The eight ``tongue_isa`` targets stay available
+    through ``play(..., face=...)`` for the executable/disassemblable stack-machine path.
+    """
+
+    ops = notes_to_ops(song, mode)
+    tokens = [_NAME_TO_BYTE[op] for op in ops]
+    out: Dict[str, str] = {}
+    try:
+        from . import polyglot
+    except Exception as exc:
+        for face in SUPPORTED_TARGETS:
+            try:
+                out[face] = _assemble(
+                    compile_ca_tokens(tokens, target=face, fn_name="play"), face
+                )
+            except Exception as face_exc:
+                out[face] = f"ERROR: {type(face_exc).__name__}: {face_exc}"
+        out["_polyglot"] = f"ERROR: {type(exc).__name__}: {exc}"
+        return out
+
+    for face in faces():
+        try:
+            if face in polyglot.languages():
+                out[face] = polyglot.emit(tokens, face, fn_name="play", safe=True)
+            else:
+                out[face] = _assemble(
+                    compile_ca_tokens(tokens, target=face, fn_name="play"), face
+                )
+        except Exception as exc:
+            out[face] = f"ERROR: {type(exc).__name__}: {exc}"
+    return out
 
 
 def main() -> int:
@@ -178,6 +289,7 @@ def main() -> int:
         f"play(\"bip'a bip'i\", mode='ca') ops={ca['ops']} value={ca['value']} "
         f"song_back={ca['song_back']!r} bijective={ca['bijective']}"
     )
+    print(f"faces={len(faces())} melody={ca['melody']}")
     return 0
 
 
