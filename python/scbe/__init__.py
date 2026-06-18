@@ -138,6 +138,7 @@ from .chemistry_dimensions import (
     analyze_many,
     element_dimension,
 )
+from .token_lookup import lookup_token, lookup_tokens
 from .quasi_integer_recoupling import (
     CHEMICAL_BOND_ORDER_STATES,
     FORMAL_CHARGE_STATES,
@@ -220,6 +221,8 @@ __all__ += [
     "analyze_formula",
     "analyze_many",
     "element_dimension",
+    "lookup_token",
+    "lookup_tokens",
     "RecouplingState",
     "QuasiIntegerRecoupling",
     "CHEMICAL_BOND_ORDER_STATES",
