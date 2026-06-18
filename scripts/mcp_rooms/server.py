@@ -70,6 +70,15 @@ def _build_mcp():
             [{"name": r.name, "ring": r.ring, "r": r.r, "role": r.role} for r in CRANIUM.regions.values()], indent=2
         )
 
+    @mcp.tool()
+    def geometry_route(x: float, y: float) -> str:
+        """Route a continuous intent point onto the nearest PHDM rail via Trust Tube projection.
+        Inside the tube it routes (returns the region + next region); outside it re-anchors. The
+        cranium's valid transitions are DERIVED from the rails, not a hand-wired edge list."""
+        from scbe_aethermoore.geometry import route_intent
+
+        return json.dumps(route_intent((x, y)), indent=2)
+
     return mcp
 
 
@@ -176,6 +185,27 @@ def run_scrutiny_demo() -> int:
     return 0
 
 
+def run_geometry_demo() -> int:
+    from scbe_aethermoore.geometry import build_geometric_cranium, positions, rail_edges, route_intent
+
+    print("\n  GEOMETRY ROUTER  edges DERIVED from the rails; intent routed via the Trust Tube\n  " + "-" * 70)
+    print(f"  rail-derived synapses: {len(rail_edges())}")
+    on = think(build_geometric_cranium(), ["cube", "octahedron", "dodecahedron", "icosahedron"], "verify facts")
+    off = think(build_geometric_cranium(), ["cube", "octahedron", "tetrahedron"], "verify")
+    print(f"  on-rail  thought: {on['status']:<10} {on['route']}")
+    print(f"  off-rail thought: {off['status']:<10} (octahedron->tetrahedron is on no rail)")
+    pos = positions()
+    inside = (pos["cube"][0] + 0.02, pos["cube"][1])
+    for label, pt in [("intent near cube", inside), ("drifted intent", (0.9, 0.9))]:
+        r = route_intent(pt)
+        print(
+            f"  {label:<18} dist={r['distance']:<7} in_tube={str(r['in_tube']):<6} "
+            f"rail={r['rail']:<14} -> {r['action']}"
+        )
+    print("  " + "-" * 70 + "\n")
+    return 0
+
+
 def main() -> int:
     if "--demo" in sys.argv:
         return run_demo()
@@ -185,6 +215,8 @@ def main() -> int:
         return run_cranium_demo()
     if "--scrutiny" in sys.argv:
         return run_scrutiny_demo()
+    if "--geometry" in sys.argv:
+        return run_geometry_demo()
     _build_mcp().run()
     return 0
 
