@@ -16,8 +16,9 @@ from __future__ import annotations
 
 from typing import Dict, List, Sequence
 
-from .ca_semantics import coverage_report, template_choices
 from .ca_opcode_table import OP_TABLE
+from .ca_semantics import coverage_report, template_choices
+from .chemistry_dimensions import analyze_formula
 from .tongue_isa import (
     SUPPORTED_TARGETS,
     compile_ca_tokens,
@@ -164,6 +165,12 @@ def semantic_coverage() -> dict:
     """Return coverage for the CA semantic-template registry."""
 
     return coverage_report()
+
+
+def chemistry(formula: str) -> dict:
+    """Run the first-class chemistry action for formula dimensional analysis."""
+
+    return analyze_formula(formula)
 
 
 MODES: Dict[str, Dict[str, str]] = {

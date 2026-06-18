@@ -4,6 +4,7 @@ import pytest
 
 from python.scbe.instrument import (
     ca_word_for_opcode,
+    chemistry,
     emit_all,
     faces,
     keyspace,
@@ -62,6 +63,14 @@ def test_instrument_surfaces_semantic_template_choices():
     assert choices[0]["name"] == "bitwise_i64"
     assert choices[0]["family"] == "bitwise"
     assert choices[0]["portable"] is True
+
+
+def test_instrument_has_first_class_chemistry_action():
+    row = chemistry("C6H12O6")
+
+    assert row["totals"]["protons"] == 96
+    assert row["totals"]["electrons"] == 96
+    assert row["totals"]["neutrons_common_isotope"] == 84
 
 
 def test_play_executes_python_face_and_reads_song_back():
