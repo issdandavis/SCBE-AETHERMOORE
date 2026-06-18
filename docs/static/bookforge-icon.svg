@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bookforge">
+  <rect width="512" height="512" rx="96" fill="#8b3b41" />
+  <path d="M122 132h140c52 0 94 42 94 94v154H216c-52 0-94-42-94-94V132Z" fill="#fff8ec" />
+  <path d="M196 132h194v248H252c-31 0-56-25-56-56V132Z" fill="#f0d9b5" />
+  <path d="M164 182h70M164 224h118M164 266h96M236 182h106M236 224h88" stroke="#8b3b41" stroke-width="18" stroke-linecap="round" />
+  <path d="M352 132v248" stroke="#4f775c" stroke-width="18" stroke-linecap="round" />
+  <path d="M108 400h296" stroke="#fff8ec" stroke-width="24" stroke-linecap="round" />
+</svg>

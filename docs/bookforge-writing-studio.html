@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bookforge Writing Studio | AetherMoore</title>
+    <meta
+      name="description"
+      content="A simple Bookforge writing and KDP prep studio: scene builder, manuscript checklist, cover math, and source-linked KDP requirements."
+    />
+    <meta name="theme-color" content="#8b3b41" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Bookforge" />
+    <link rel="manifest" href="bookforge.webmanifest" />
+    <link rel="icon" href="static/bookforge-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="static/bookforge-icon.svg" />
+    <link rel="stylesheet" href="static/packages/package-products.css" />
+    <style>
+      body[data-package-theme="bookforge"] {
+        --bg: #f7f1e6;
+        --bg-2: #e2eadf;
+        --text: #18211f;
+        --muted: #3f4c48;
+        --panel: rgba(255, 255, 255, 0.9);
+      }
+
+      body[data-package-theme="bookforge"] .button.secondary {
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      body[data-package-theme="bookforge"] .studio-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.75fr);
+        gap: 18px;
+      }
+
+      .studio-panel {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--panel);
+        padding: 20px;
+      }
+
+      .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        color: var(--muted);
+        font-weight: 750;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 10px 12px;
+        background: #fffdf8;
+        color: var(--text);
+        font: inherit;
+      }
+
+      textarea {
+        min-height: 132px;
+        resize: vertical;
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .metric {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 12px;
+        background: rgba(255, 253, 248, 0.88);
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 4px;
+        font-size: 1.22rem;
+      }
+
+      .checklist {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .checklist li {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 10px;
+        align-items: start;
+        border-top: 1px solid var(--line);
+        padding-top: 10px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .source-list {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .output-box {
+        min-height: 210px;
+        white-space: pre-wrap;
+      }
+
+      .wave-list {
+        display: grid;
+        gap: 10px;
+        margin: 14px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .wave-list li {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(255, 253, 248, 0.78);
+        padding: 12px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      @media (max-width: 900px) {
+        body[data-package-theme="bookforge"] .studio-grid,
+        .field-grid,
+        .metric-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body data-package-theme="bookforge">
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="index.html">AetherMoore</a>
+        <nav class="nav" aria-label="Primary">
+          <a href="products.html">Products</a>
+          <a href="packages.html">Packages</a>
+          <a href="guides.html">Guides</a>
+          <a href="books.html">Books</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Bookforge Writing Studio</p>
+            <h1>Write the scene. Check the book. Build the files.</h1>
+            <p class="lede">
+              A simple publishing workbench for writers: scene packet, KDP readiness checklist, print-cover math, and
+              source-linked Amazon requirements in one mobile-friendly page.
+            </p>
+            <code class="command">bookforge build bookforge.json</code>
+            <div class="cta-row">
+              <a class="button" href="#studio">Open Studio</a>
+              <a class="button secondary" href="https://buy.stripe.com/14AbJ20hQ79ZboYfWSdby0n">Buy Writing Pack - $7</a>
+              <a class="button secondary" href="downloads/kdp-bookforge-checklist.md">Download Checklist</a>
+              <a class="button secondary" href="#phone">Install on Phone</a>
+              <a class="button secondary" href="packages/scbe-bookforge.html">Bookforge Package</a>
+            </div>
+          </div>
+          <div class="visual">
+            <div class="terminal-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="terminal-body">
+              <div><strong>1. Scene</strong> -> goal, conflict, hidden want</div>
+              <div><strong>2. Manuscript</strong> -> trim, margins, AI disclosure</div>
+              <div><strong>3. Cover</strong> -> page count drives spine width</div>
+              <div><strong>4. Export</strong> -> PDF, EPUB, DOCX, checklist</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="band reveal" id="studio">
+          <div class="section-head">
+            <h2>Use It First</h2>
+            <p class="section-note">
+              The first product rule: no mysticism. A buyer should be able to enter book facts, get the cover math, and
+              know exactly what remains before KDP upload.
+            </p>
+          </div>
+          <div class="studio-grid">
+            <article class="studio-panel">
+              <h3>Book Setup</h3>
+              <div class="field-grid">
+                <label>
+                  Trim size
+                  <select id="trim">
+                    <option value="6x9">6 x 9 in</option>
+                    <option value="5.5x8.5">5.5 x 8.5 in</option>
+                    <option value="5x8">5 x 8 in</option>
+                    <option value="8.5x11">8.5 x 11 in</option>
+                  </select>
+                </label>
+                <label>
+                  Page count
+                  <input id="pages" type="number" min="24" max="830" value="320" />
+                </label>
+                <label>
+                  Paper / ink
+                  <select id="paper">
+                    <option value="cream_bw">Cream paper, black and white</option>
+                    <option value="white_bw">White paper, black and white</option>
+                    <option value="color">Color interior</option>
+                  </select>
+                </label>
+                <label>
+                  Format target
+                  <select id="format">
+                    <option value="paperback">Paperback</option>
+                    <option value="hardcover">Hardcover</option>
+                    <option value="ebook">Kindle eBook</option>
+                  </select>
+                </label>
+              </div>
+              <div class="metric-grid" aria-live="polite">
+                <div class="metric">Spine width<strong id="spineWidth">0.800 in</strong></div>
+                <div class="metric">Full cover width<strong id="coverWidth">12.050 in</strong></div>
+                <div class="metric">Full cover height<strong id="coverHeight">9.250 in</strong></div>
+              </div>
+              <p class="section-note" id="spineNote">
+                Spine text is allowed only when the print book has more than 79 pages.
+              </p>
+            </article>
+
+            <article class="studio-panel">
+              <h3>Scene Packet</h3>
+              <label>
+                What is this scene supposed to do?
+                <textarea id="sceneGoal">A character wants something practical, but the conversation reveals what they are hiding.</textarea>
+              </label>
+              <div class="cta-row">
+                <button class="button" type="button" id="buildPacket">Build Packet</button>
+              </div>
+              <pre class="command output-box" id="scenePacket"></pre>
+            </article>
+          </div>
+        </section>
+
+        <section class="band reveal">
+          <div class="section-head">
+            <h2>KDP Upload Checklist</h2>
+            <p class="section-note">
+              These are source-linked checkpoints, not legal advice. The app should hyperlink Amazon's current pages so
+              the user can verify the rule before upload.
+            </p>
+          </div>
+          <div class="detail-grid">
+            <article class="panel">
+              <h3>Manuscript</h3>
+              <ul class="checklist">
+                <li><input type="checkbox" />Final trim size chosen before cover is built.</li>
+                <li><input type="checkbox" />Bleed and margins checked for print layout.</li>
+                <li><input type="checkbox" />Images are at least 300 DPI for print quality.</li>
+                <li><input type="checkbox" />eBook manuscript does not include the cover image inside the file.</li>
+              </ul>
+            </article>
+            <article class="panel">
+              <h3>Cover</h3>
+              <ul class="checklist">
+                <li><input type="checkbox" />Paperback/hardcover cover is a single PDF: back + spine + front.</li>
+                <li><input type="checkbox" />Page count is final before cover wrap is generated.</li>
+                <li><input type="checkbox" />No spine text unless page count is over 79 pages.</li>
+                <li><input type="checkbox" />Kindle cover is JPEG/TIFF, ideal 2560 x 1600 px, under 50 MB.</li>
+              </ul>
+            </article>
+            <article class="panel">
+              <h3>Publishing Form</h3>
+              <ul class="checklist">
+                <li><input type="checkbox" />Title, subtitle, author, description, categories, and keywords ready.</li>
+                <li><input type="checkbox" />AI-generated text/images/translations disclosed when required by KDP.</li>
+                <li><input type="checkbox" />AI-assisted editing/brainstorming separated from AI-generated final content.</li>
+                <li><input type="checkbox" />Final preview checked in KDP Print Previewer before publishing.</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="band reveal" id="cover-lab">
+          <div class="section-head">
+            <h2>Cover Lab</h2>
+            <p class="section-note">
+              KDP's cover tools are the fallback. The better workflow is book-derived: read the manuscript, outline the
+              visual scene, generate roughs, choose a direction, then build the print wrap in layers.
+            </p>
+          </div>
+          <div class="studio-grid">
+            <article class="studio-panel">
+              <h3>Cover Source</h3>
+              <div class="field-grid">
+                <label>
+                  Book title
+                  <input id="coverTitle" value="The Six Tongues Protocol" />
+                </label>
+                <label>
+                  Genre / shelf
+                  <input id="coverGenre" value="science fantasy, literary adventure" />
+                </label>
+              </div>
+              <label>
+                Book-derived scene or motif
+                <textarea id="coverScene">A luminous language engine under an old city, six symbolic channels moving through glass, stone, air, and water.</textarea>
+              </label>
+              <label>
+                Avoid / forbidden cover tells
+                <textarea id="coverAvoid">No readable text in generated art. No fake author name. No watermark. No generic floating face. No cluttered symbols.</textarea>
+              </label>
+              <div class="cta-row">
+                <button class="button" type="button" id="buildCoverBrief">Build Cover Brief</button>
+              </div>
+            </article>
+
+            <article class="studio-panel">
+              <h3>Layered Prompt Pack</h3>
+              <pre class="command output-box" id="coverBrief"></pre>
+            </article>
+          </div>
+          <div class="detail-grid" style="margin-top: 18px">
+            <article class="panel">
+              <h3>Wave 1: Roughs</h3>
+              <p>
+                Generate 4-8 small compositions from the book motif. Judge only silhouette, shelf signal, and emotion.
+                Do not add title text yet.
+              </p>
+            </article>
+            <article class="panel">
+              <h3>Wave 2: Layer Build</h3>
+              <p>
+                Generate front art, background extension, spine texture, and back-cover atmosphere separately. Composite
+                them into the Bookforge cover wrap after page count is final.
+              </p>
+            </article>
+            <article class="panel">
+              <h3>Wave 3: Type + KDP Proof</h3>
+              <p>
+                Add title, author, subtitle, spine text, barcode safe area, and blurb in layout software or code. Then
+                verify dimensions with the KDP calculator and Print Previewer.
+              </p>
+            </article>
+          </div>
+          <ul class="wave-list">
+            <li>
+              <strong>User choice matters:</strong> the app should let the writer pick the strongest rough before
+              spending time on final art.
+            </li>
+            <li>
+              <strong>Book contents drive the art:</strong> the prompt should come from manuscript themes, character
+              pressure, setting, motifs, and genre shelf expectations.
+            </li>
+            <li>
+              <strong>Generated art should have no text:</strong> typography belongs in the final cover layout, not in
+              the image model output.
+            </li>
+          </ul>
+        </section>
+
+        <section class="band reveal">
+          <div class="section-head">
+            <h2>Source Links</h2>
+            <p class="section-note">
+              The app should keep these links visible, because KDP rules change and upload rejection usually comes from
+              one missed mechanical detail.
+            </p>
+          </div>
+          <div class="product-grid">
+            <article class="panel">
+              <h3>KDP Requirements</h3>
+              <ul class="source-list">
+                <li><a href="https://kdp.amazon.com/help/topic/G201953020">Create a Paperback Cover - Amazon KDP</a></li>
+                <li><a href="https://kdp.amazon.com/help/topic/G201857950">Paperback Submission Guidelines - Amazon KDP</a></li>
+                <li><a href="https://kdp.amazon.com/help/topic/GVBQ3CMEQW3W2VL6">Set Trim Size, Bleed, and Margins - Amazon KDP</a></li>
+                <li><a href="https://kdp.amazon.com/cover-templates">Print Cover Calculator and Templates - Amazon KDP</a></li>
+              </ul>
+            </article>
+            <article class="panel">
+              <h3>Images and AI</h3>
+              <ul class="source-list">
+                <li><a href="https://kdp.amazon.com/help/topic/G200645690">eBook Cover Image Requirements - Amazon KDP</a></li>
+                <li><a href="https://kdp.amazon.com/help/topic/G202169030">Format Images in Your Book - Amazon KDP</a></li>
+                <li><a href="https://kdp.amazon.com/help/topic/G200672390">Content Guidelines and AI Disclosure - Amazon KDP</a></li>
+                <li><a href="https://kdp.amazon.com/help?topicId=G200645680">eBook Manuscript Formatting Guide - Amazon KDP</a></li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="band reveal" id="phone">
+          <div class="section-head">
+            <h2>Phone Install</h2>
+            <p class="section-note">
+              Bookforge Studio is now PWA-ready. The release script serves it on your local network so your phone can
+              open it, install it, and use it like an app before any app-store paperwork.
+            </p>
+          </div>
+          <div class="product-grid">
+            <article class="panel">
+              <h3>Run This</h3>
+              <code class="command">python scripts/release/bookforge_phone_launch.py</code>
+              <p>Open the printed Phone URL on the same Wi-Fi network, then use Add to Home Screen / Install app.</p>
+            </article>
+            <article class="panel">
+              <h3>What It Proves</h3>
+              <p>
+                The app can be used from a phone right now: scene packets, KDP checklist, cover math, and Cover Lab
+                prompts without waiting for Google Play or Apple review.
+              </p>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">Bookforge Writing Studio. Simple first, native/mobile later.</footer>
+    </div>
+    <script src="static/packages/package-products.js"></script>
+    <script>
+      if ("serviceWorker" in navigator && location.protocol !== "file:") {
+        navigator.serviceWorker.register("bookforge-sw.js").catch(() => {});
+      }
+
+      const trimSizes = {
+        "6x9": [6, 9],
+        "5.5x8.5": [5.5, 8.5],
+        "5x8": [5, 8],
+        "8.5x11": [8.5, 11],
+      };
+      const pageFactor = {
+        cream_bw: 0.0025,
+        white_bw: 0.002252,
+        color: 0.002347,
+      };
+      const trim = document.getElementById("trim");
+      const pages = document.getElementById("pages");
+      const paper = document.getElementById("paper");
+      const format = document.getElementById("format");
+      const spineWidth = document.getElementById("spineWidth");
+      const coverWidth = document.getElementById("coverWidth");
+      const coverHeight = document.getElementById("coverHeight");
+      const spineNote = document.getElementById("spineNote");
+      const sceneGoal = document.getElementById("sceneGoal");
+      const scenePacket = document.getElementById("scenePacket");
+      const coverTitle = document.getElementById("coverTitle");
+      const coverGenre = document.getElementById("coverGenre");
+      const coverScene = document.getElementById("coverScene");
+      const coverAvoid = document.getElementById("coverAvoid");
+      const coverBrief = document.getElementById("coverBrief");
+
+      function inches(value) {
+        return `${value.toFixed(3)} in`;
+      }
+
+      function recalc() {
+        const [w, h] = trimSizes[trim.value];
+        const count = Math.max(0, Number.parseInt(pages.value || "0", 10));
+        const bleed = 0.125;
+        const spine = count * pageFactor[paper.value];
+        spineWidth.textContent = inches(spine);
+        coverWidth.textContent = format.value === "ebook" ? "N/A" : inches(w * 2 + spine + bleed * 2);
+        coverHeight.textContent = format.value === "ebook" ? "N/A" : inches(h + bleed * 2);
+        if (format.value === "ebook") {
+          spineNote.textContent = "Kindle eBook covers use an image file, not a print wrap. KDP lists 2560 x 1600 px as ideal.";
+        } else if (count <= 79) {
+          spineNote.textContent = "Do not include spine text. KDP says print books need more than 79 pages for spine text.";
+        } else {
+          spineNote.textContent = "Spine text can be considered, but keep text away from fold edges and verify in KDP Previewer.";
+        }
+      }
+
+      function buildScenePacket() {
+        const goal = sceneGoal.value.trim() || "A scene with a clear want, pressure, and consequence.";
+        scenePacket.textContent = [
+          "SCENE PACKET",
+          `Goal: ${goal}`,
+          "Character want: What do they need right now?",
+          "Hidden pressure: What are they avoiding saying?",
+          "Object/setting anchor: One thing the reader can see or touch.",
+          "Dialogue rule: No perfect thesis ending.",
+          "Revision pass: cut explanation, increase behavior, preserve voice.",
+        ].join("\\n");
+      }
+
+      function buildCoverBrief() {
+        const title = coverTitle.value.trim() || "Untitled Book";
+        const genre = coverGenre.value.trim() || "fiction";
+        const scene = coverScene.value.trim() || "A visually specific scene from the book.";
+        const avoid = coverAvoid.value.trim() || "No text, no watermark, no fake cover typography.";
+        coverBrief.textContent = [
+          "BOOK-DERIVED COVER BRIEF",
+          `Title for layout pass: ${title}`,
+          `Shelf / genre signal: ${genre}`,
+          `Core visual scene: ${scene}`,
+          "",
+          "WAVE 1 - ROUGH THUMBNAILS",
+          "Create 6 distinct cover-art roughs. No text. No watermark. Judge composition only.",
+          "",
+          "WAVE 2 - FRONT ART",
+          `High-quality book cover illustration for ${genre}: ${scene}. Strong central silhouette, clear focal point, print-ready detail, no text, no watermark.`,
+          "",
+          "WAVE 3 - WRAP LAYERS",
+          "Generate background extension for spine/back cover using the same palette and lighting. Keep the center quiet enough for blurb and barcode layout.",
+          "",
+          "WAVE 4 - TYPOGRAPHY/LAYOUT",
+          "Add title, subtitle, author, spine text, back-cover blurb, and barcode safe area outside the image model.",
+          "",
+          `AVOID: ${avoid}`,
+        ].join("\\n");
+      }
+
+      [trim, pages, paper, format].forEach((input) => input.addEventListener("input", recalc));
+      document.getElementById("buildPacket").addEventListener("click", buildScenePacket);
+      document.getElementById("buildCoverBrief").addEventListener("click", buildCoverBrief);
+      recalc();
+      buildScenePacket();
+      buildCoverBrief();
+    </script>
+  </body>
+</html>
