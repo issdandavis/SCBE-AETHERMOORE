@@ -3409,6 +3409,38 @@ def cmd_chem_lookup(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_chem_represent(args: argparse.Namespace) -> int:
+    from python.scbe.representation_report import build_representation_report
+
+    text = _arg_or_stdin(getattr(args, "text", None))
+    if not text:
+        print('usage: scbe chem represent "<text>"   (or pipe via stdin)', file=sys.stderr)
+        return 2
+    payload = build_representation_report(
+        text,
+        language=getattr(args, "language", None),
+        context_class=getattr(args, "context", None),
+    )
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+        return 0
+
+    summary = payload["summary"]
+    material = summary["material_totals"]
+    print(f"chem represent: {payload['token_count']} token(s)")
+    print("  tokens:", ", ".join(payload["tokens"]))
+    print("  semantic classes:", summary["semantic_class_counts"])
+    print("  tau totals:", summary["tau_totals"])
+    print(
+        "  material totals: "
+        f"hits={summary['material_hit_count']} atoms={material['atoms']} "
+        f"protons={material['protons']} electrons={material['electrons']} "
+        f"molar_mass={material['molar_mass_g_mol']} g/mol"
+    )
+    print("  boundary: representation + formula-level dimensions; not wet-lab advice")
+    return 0
+
+
 def cmd_chem_bonds(args: argparse.Namespace) -> int:
     from src.governance.chemical_bonds import TONGUES, TongueMolecule
 
@@ -5216,6 +5248,13 @@ Legacy (backward compat):
     cl.add_argument("--context", help="optional context class, e.g. operator, timeline, safety")
     cl.add_argument("--json", dest="json_output", action="store_true")
     cl.set_defaults(func=cmd_chem_lookup)
+
+    cr = chem_sub.add_parser("represent", help="Representation report over tokens plus material chemistry dimensions")
+    cr.add_argument("text", nargs="?", help="text/formulas to represent (or pipe via stdin)")
+    cr.add_argument("--language", help="optional language code for token-class overrides")
+    cr.add_argument("--context", help="optional context class, e.g. operator, timeline, safety")
+    cr.add_argument("--json", dest="json_output", action="store_true")
+    cr.set_defaults(func=cmd_chem_represent)
 
     cb = chem_sub.add_parser("bonds", help="Analyze the 6 Sacred Tongue coordinate bonds")
     cb.add_argument("coords", nargs=6, type=float, metavar="coord")

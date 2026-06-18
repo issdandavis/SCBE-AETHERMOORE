@@ -139,6 +139,7 @@ from .chemistry_dimensions import (
     element_dimension,
 )
 from .token_lookup import lookup_token, lookup_tokens
+from .representation_report import build_representation_report, representation_tokens
 from .quasi_integer_recoupling import (
     CHEMICAL_BOND_ORDER_STATES,
     FORMAL_CHARGE_STATES,
@@ -223,6 +224,8 @@ __all__ += [
     "element_dimension",
     "lookup_token",
     "lookup_tokens",
+    "build_representation_report",
+    "representation_tokens",
     "RecouplingState",
     "QuasiIntegerRecoupling",
     "CHEMICAL_BOND_ORDER_STATES",
