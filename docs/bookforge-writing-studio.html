@@ -149,6 +149,22 @@
           grid-template-columns: 1fr;
         }
       }
+
+      @media (max-width: 560px) {
+        body[data-package-theme="bookforge"] .hero {
+          gap: 24px;
+        }
+
+        body[data-package-theme="bookforge"] h1 {
+          font-size: 2.05rem;
+          line-height: 1.04;
+          overflow-wrap: anywhere;
+        }
+
+        body[data-package-theme="bookforge"] .command {
+          width: 100%;
+        }
+      }
     </style>
   </head>
   <body data-package-theme="bookforge">
@@ -167,7 +183,7 @@
         <section class="hero">
           <div class="hero-copy">
             <p class="eyebrow">AetherMoore Book Studio</p>
-            <h1>Write the scene. Check the book. Build the files.</h1>
+            <h1>Write the scene.<br />Check the book.<br />Build the files.</h1>
             <p class="lede">
               A simple publishing workbench for writers: scene packet, KDP readiness checklist, print-cover math, and
               source-linked Amazon requirements in one mobile-friendly page.
