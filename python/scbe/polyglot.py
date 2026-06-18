@@ -11,9 +11,12 @@ Unlike tongue_isa (which bakes a field per language into every opcode), each
 language here is a pure DATA `Dialect` — a registry entry. Adding a language is
 one independent track: fill a Dialect literal, register it. Nothing else changes.
 
-Emitted source is validated two ways:
-  * real compile+run where the toolchain exists (python always; node/rust/...),
-  * tree-sitter parse (rust/ast_cube_poly) for every language without a toolchain.
+Conformance is checked by polyglot_conformance.py: it compiles+runs each backend that has
+a LOCAL toolchain (python in-process, javascript via node, rust via rustc) and reports the
+rest as emitted-but-unverified -- never as agreement. "Compiles no matter what" means the
+emitter PRODUCES source for every backend; it does NOT mean the backends compute identical
+results -- they provably diverge on e.g. .5 rounding (Python half-to-even vs JS/Rust),
+which the harness surfaces as DISAGREE rather than hiding.
 
 Op coverage (v1, the cleanly-portable scalar core over a float64 stack):
   arithmetic  add sub mul div mod neg inc dec
