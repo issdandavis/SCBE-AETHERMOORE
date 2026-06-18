@@ -48,7 +48,7 @@ def positions() -> Dict[str, Tuple[float, float]]:
     """Each region as a point in the Poincare disk: radius = r, angle spread by index."""
     n = len(_REGIONS)
     pos = {"entry": (0.0, 0.0)}
-    for i, (name, ring, r, fn) in enumerate(_REGIONS):
+    for i, (name, _ring, r, _fn) in enumerate(_REGIONS):
         theta = 2.0 * math.pi * i / n
         pos[name] = (r * math.cos(theta), r * math.sin(theta))
     return pos
