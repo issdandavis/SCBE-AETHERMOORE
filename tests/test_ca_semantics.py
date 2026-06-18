@@ -11,9 +11,7 @@ def test_every_ca_opcode_has_a_template_choice():
 
     assert report["covered"] == 64
     assert report["missing"] == []
-    assert {"aggregate", "arithmetic", "bitwise", "predicate", "ternary"}.issubset(
-        report["families"]
-    )
+    assert {"aggregate", "arithmetic", "bitwise", "predicate", "ternary"}.issubset(report["families"])
     for entry in OP_TABLE.values():
         choices = S.template_choices(entry.name)
         assert choices
