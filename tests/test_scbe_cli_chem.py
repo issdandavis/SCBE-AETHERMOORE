@@ -38,7 +38,33 @@ def test_chem_atomize_exposes_atomic_token_states() -> None:
     assert payload["tokens"] == ["release", "payload", "after", "compare"]
     assert {"tau_hat", "reconstruction_votes"} <= set(payload["fusion"])
     assert {"token", "semantic_class", "element", "tau"} <= set(payload["states"][0])
+    assert payload["lookup_units"][0]["schema_version"] == "scbe_token_lookup_v1"
+    assert payload["lookup_units"][0]["byte_signature"]["hex"]
     assert "wet-lab" in payload["claim_boundary"]
+
+
+def test_chem_lookup_exposes_atomic_style_lookup_for_formula() -> None:
+    result = run_scbe("chem", "lookup", "C6H12O6", "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["schema_version"] == "scbe_token_lookup_v1"
+    assert payload["token"] == "C6H12O6"
+    assert payload["material"]["kind"] == "formula"
+    assert payload["material"]["dimensions"]["totals"]["protons"] == 96
+    assert payload["material"]["dimensions"]["totals"]["electrons"] == 96
+
+
+def test_chem_represent_summarizes_tokens_and_material_dimensions() -> None:
+    result = run_scbe("chem", "represent", "Fe build H2O", "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["schema_version"] == "scbe_representation_report_v1"
+    assert payload["tokens"] == ["Fe", "build", "H2O"]
+    assert payload["summary"]["material_hit_count"] == 2
+    assert payload["summary"]["material_totals"]["protons"] == 36
+    assert payload["summary"]["semantic_class_counts"] == {"ACTION": 1, "ENTITY": 2}
 
 
 def test_chem_bonds_exposes_sacred_tongue_molecule_report() -> None:

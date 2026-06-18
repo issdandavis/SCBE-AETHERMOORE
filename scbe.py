@@ -3325,6 +3325,7 @@ def _fusion_payload(result: Any) -> Dict[str, Any]:
 def cmd_chem_atomize(args: argparse.Namespace) -> int:
     from python.scbe.atomic_tokenization import map_token_to_atomic_state
     from python.scbe.chemical_fusion import fuse_atomic_states
+    from python.scbe.token_lookup import lookup_tokens
 
     text = _arg_or_stdin(getattr(args, "text", None))
     if not text:
@@ -3350,6 +3351,11 @@ def cmd_chem_atomize(args: argparse.Namespace) -> int:
         "tokens": tokens,
         "token_count": len(tokens),
         "states": [_atomic_state_payload(state) for state in states],
+        "lookup_units": lookup_tokens(
+            tokens,
+            language=getattr(args, "language", None),
+            context_class=getattr(args, "context", None),
+        )["rows"],
         "fusion": _fusion_payload(fusion),
         "claim_boundary": CHEM_CLAIM_BOUNDARY,
     }
@@ -3362,6 +3368,76 @@ def cmd_chem_atomize(args: argparse.Namespace) -> int:
     print("  tau_hat:", payload["fusion"]["tau_hat"])
     print("  elements:", " ".join(state["element"]["symbol"] for state in payload["states"]))
     print(f"  boundary: {CHEM_CLAIM_BOUNDARY}")
+    return 0
+
+
+def cmd_chem_lookup(args: argparse.Namespace) -> int:
+    from python.scbe.token_lookup import lookup_token
+
+    token = _arg_or_stdin(getattr(args, "token", None))
+    if not token:
+        print('usage: scbe chem lookup "<token>"   (or pipe via stdin)', file=sys.stderr)
+        return 2
+    payload = lookup_token(
+        token.strip(),
+        language=getattr(args, "language", None),
+        context_class=getattr(args, "context", None),
+    )
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+        return 0
+
+    semantic = payload["semantic"]
+    material = payload["material"]
+    print(f"chem lookup: {payload['token']}")
+    print(
+        "  semantic: "
+        f"{semantic['semantic_class']} -> {semantic['semantic_element']['symbol']} "
+        f"tau={semantic['tau']}"
+    )
+    print(f"  bytes: {' '.join(payload['byte_signature']['hex'])}")
+    if material:
+        kind = material["kind"]
+        label = material.get("formula") or material.get("symbol")
+        totals = material["dimensions"]["totals"] if material.get("dimensions") else None
+        if totals:
+            print(
+                f"  material: {kind} {label} atoms={totals['atoms']} "
+                f"protons={totals['protons']} electrons={totals['electrons']}"
+            )
+    print("  boundary: deterministic representation lookup; not wet-lab advice")
+    return 0
+
+
+def cmd_chem_represent(args: argparse.Namespace) -> int:
+    from python.scbe.representation_report import build_representation_report
+
+    text = _arg_or_stdin(getattr(args, "text", None))
+    if not text:
+        print('usage: scbe chem represent "<text>"   (or pipe via stdin)', file=sys.stderr)
+        return 2
+    payload = build_representation_report(
+        text,
+        language=getattr(args, "language", None),
+        context_class=getattr(args, "context", None),
+    )
+    if getattr(args, "json_output", False):
+        print(json.dumps(payload))
+        return 0
+
+    summary = payload["summary"]
+    material = summary["material_totals"]
+    print(f"chem represent: {payload['token_count']} token(s)")
+    print("  tokens:", ", ".join(payload["tokens"]))
+    print("  semantic classes:", summary["semantic_class_counts"])
+    print("  tau totals:", summary["tau_totals"])
+    print(
+        "  material totals: "
+        f"hits={summary['material_hit_count']} atoms={material['atoms']} "
+        f"protons={material['protons']} electrons={material['electrons']} "
+        f"molar_mass={material['molar_mass_g_mol']} g/mol"
+    )
+    print("  boundary: representation + formula-level dimensions; not wet-lab advice")
     return 0
 
 
@@ -5165,6 +5241,20 @@ Legacy (backward compat):
     ca.add_argument("--context", help="optional context class, e.g. operator, timeline, safety")
     ca.add_argument("--json", dest="json_output", action="store_true")
     ca.set_defaults(func=cmd_chem_atomize)
+
+    cl = chem_sub.add_parser("lookup", help="Atomic-style lookup row for one tokenizer token")
+    cl.add_argument("token", nargs="?", help="token to look up (or pipe via stdin)")
+    cl.add_argument("--language", help="optional language code for token-class overrides")
+    cl.add_argument("--context", help="optional context class, e.g. operator, timeline, safety")
+    cl.add_argument("--json", dest="json_output", action="store_true")
+    cl.set_defaults(func=cmd_chem_lookup)
+
+    cr = chem_sub.add_parser("represent", help="Representation report over tokens plus material chemistry dimensions")
+    cr.add_argument("text", nargs="?", help="text/formulas to represent (or pipe via stdin)")
+    cr.add_argument("--language", help="optional language code for token-class overrides")
+    cr.add_argument("--context", help="optional context class, e.g. operator, timeline, safety")
+    cr.add_argument("--json", dest="json_output", action="store_true")
+    cr.set_defaults(func=cmd_chem_represent)
 
     cb = chem_sub.add_parser("bonds", help="Analyze the 6 Sacred Tongue coordinate bonds")
     cb.add_argument("coords", nargs=6, type=float, metavar="coord")

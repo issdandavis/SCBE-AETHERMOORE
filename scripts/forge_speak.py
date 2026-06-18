@@ -190,14 +190,13 @@ def forge(text: str) -> dict:
     }
 
 
-def speak(text: str):
-    """Human-facing printer over forge() -- the original plain-English experience."""
+def _render(text: str, r: dict):
+    """Print the plain-English forge result (shared by speak() and the --out path)."""
     print(f'\n  YOU SAID: "{text}"')
-    r = forge(text)
     if r.get("reason") == "no-intent":
         print("  I couldn't turn that into something I can build yet.")
         print("  Try words like: add, see/list, mark done, count, remove, clear -- or 'a task tracker'.")
-        return False
+        return
     print(f"  I UNDERSTOOD you want to: {', '.join(r['caps'])}")
     print(f"  -> {r['origin']}")
     print(
@@ -214,12 +213,45 @@ def speak(text: str):
         print(
             f'   -> I built everything else and proved it. Say "add a {r["gaps"][0].split(" / ")[0]} move" and I will.'
         )
+
+
+def speak(text: str):
+    """Human-facing printer over forge() -- the original plain-English experience."""
+    r = forge(text)
+    _render(text, r)
     return r["ok"]
 
 
 def main():
-    text = " ".join(sys.argv[1:]).strip() or "I want a task tracker I can mark done and count"
-    speak(text)
+    # Free-text intent, with an optional "--out PATH" that SAVES the forged+verified app.
+    # Honest by design: it writes only a build that actually verified, and a write
+    # failure is reported and exits non-zero -- never swallowed into a fake success.
+    argv = list(sys.argv[1:])
+    out_path = None
+    if "--out" in argv:
+        i = argv.index("--out")
+        if i + 1 >= len(argv):
+            print("  error: --out needs a file path, e.g. --out app.py", file=sys.stderr)
+            raise SystemExit(2)
+        out_path = argv[i + 1]
+        del argv[i : i + 2]
+    text = " ".join(argv).strip() or "I want a task tracker I can mark done and count"
+
+    if out_path is None:
+        speak(text)
+        return
+
+    r = forge(text)
+    _render(text, r)
+    if not r.get("ok"):
+        print(f"\n  NOT writing {out_path}: the build did not verify (won't save broken code).", file=sys.stderr)
+        raise SystemExit(1)
+    try:
+        Path(out_path).write_text(r["src"], encoding="utf-8")
+    except OSError as e:
+        print(f"\n  COULD NOT WRITE {out_path}: {e}", file=sys.stderr)
+        raise SystemExit(1)
+    print(f"\n  WROTE the forged, verified app -> {out_path}  ({r['lines']} lines)")
 
 
 if __name__ == "__main__":
