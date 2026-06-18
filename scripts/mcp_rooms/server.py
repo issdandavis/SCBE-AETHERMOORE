@@ -20,9 +20,11 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 from scbe_aethermoore.rooms import build_security_room  # noqa: E402
 from scbe_aethermoore.synapses import build_support_triangle, support_call  # noqa: E402
+from scbe_aethermoore.cranium import build_cranium, think  # noqa: E402
 
 ROOM = build_security_room()
 TRIANGLE = build_support_triangle()  # MCP triangle: guard / worker / support
+CRANIUM = build_cranium()  # the full 16-region Crystal Cranium connectome
 
 
 def _build_mcp():
@@ -53,6 +55,20 @@ def _build_mcp():
         Tongue weight; attacks are refused at the guard synapse before any work runs."""
         out = support_call(TRIANGLE, message)
         return json.dumps(out, indent=2)
+
+    @mcp.tool()
+    def think_through_cranium(message: str, path: list[str]) -> str:
+        """Run a THOUGHT as a path of regions through the 16-region Crystal Cranium. Each hop
+        is governed + receipted; a risk-zone visit is forced to bounce back to the core; an
+        edge-less jump is blocked; energy is budgeted. path is a list of region names."""
+        return json.dumps(think(build_cranium(), path, message), indent=2)
+
+    @mcp.resource("cranium://regions")
+    def cranium_regions() -> str:
+        """The 16 cranium regions with their ring and radial position."""
+        return json.dumps(
+            [{"name": r.name, "ring": r.ring, "r": r.r, "role": r.role} for r in CRANIUM.regions.values()], indent=2
+        )
 
     return mcp
 
@@ -109,11 +125,42 @@ def run_triangle_demo() -> int:
     return 0
 
 
+CRANIUM_DEMO = [
+    ("safe (core)", ["cube", "octahedron", "dodecahedron", "icosahedron"]),
+    ("creative (cortex)", ["cube", "rhombic_dodecahedron", "rhombicuboctahedron", "snub_dodecahedron"]),
+    (
+        "risk visit -> bounce",
+        [
+            "cube",
+            "rhombic_dodecahedron",
+            "rhombicuboctahedron",
+            "johnson_a",
+            "snub_dodecahedron",
+            "johnson_b",
+            "small_stellated_dodecahedron",
+        ],
+    ),
+    ("orthogonal jump", ["cube", "great_stellated_dodecahedron"]),
+]
+
+
+def run_cranium_demo() -> int:
+    print("\n  CRYSTAL CRANIUM  16 regions; thoughts = governed paths through the brain\n  " + "-" * 70)
+    for name, path in CRANIUM_DEMO:
+        out = think(build_cranium(), path, "verify and plan these facts safely")
+        print(f"  {name:<22} status={out['status']:<16} energy={out['total_energy']:<7} sealed={out['sealed']}")
+        print(f"     rings: {' -> '.join(out['rings'])}")
+    print("  " + "-" * 70 + "\n")
+    return 0
+
+
 def main() -> int:
     if "--demo" in sys.argv:
         return run_demo()
     if "--triangle" in sys.argv:
         return run_triangle_demo()
+    if "--cranium" in sys.argv:
+        return run_cranium_demo()
     _build_mcp().run()
     return 0
 
