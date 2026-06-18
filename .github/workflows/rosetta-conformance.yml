@@ -14,6 +14,7 @@ on:
       - "python/scbe/polyglot.py"
       - "python/scbe/polyglot_dialects.json"
       - "python/scbe/loomflow.py"
+      - "python/scbe/loomtongue.py"
       - ".github/workflows/rosetta-conformance.yml"
 
 jobs:
@@ -45,3 +46,7 @@ jobs:
         run: |
           PYTHONPATH=. python -m python.scbe.loomflow sum_1_to_5
           PYTHONPATH=. python -m python.scbe.loomflow factorial_5
+      - name: Loomtongue -- the SAME loop played in the conlang, verified across faces
+        run: |
+          PYTHONPATH=. python -m python.scbe.loomtongue sum_1_to_5
+          PYTHONPATH=. python -m python.scbe.loomtongue factorial_5
