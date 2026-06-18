@@ -23,6 +23,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install Python deps (the scbe package __init__ pulls in numpy)
+        run: pip install numpy
       - name: Show available toolchains
         run: |
           set +e
