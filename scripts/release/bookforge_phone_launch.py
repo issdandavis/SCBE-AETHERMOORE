@@ -8,7 +8,6 @@ import sys
 import webbrowser
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DOCS_DIR = REPO_ROOT / "docs"
 APP_PAGE = "bookforge-writing-studio.html"
@@ -38,24 +37,48 @@ def write_phone_card(url: str, port: int) -> Path:
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Bookforge Phone Launch</title>
+    <title>AetherMoore Book Studio Phone Launch</title>
     <style>
-      body {{ margin: 0; font: 18px/1.5 system-ui, sans-serif; background: #f7f1e6; color: #18211f; }}
-      main {{ width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: 48px 0; }}
+      body {{
+        margin: 0;
+        font: 18px/1.5 system-ui, sans-serif;
+        background: #f7f1e6;
+        color: #18211f;
+      }}
+      main {{
+        width: min(760px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 48px 0;
+      }}
       a {{ color: #8b3b41; font-weight: 800; }}
-      .card {{ border: 1px solid rgba(24, 33, 31, .18); border-radius: 12px; background: #fffdf8; padding: 22px; }}
-      code {{ display: block; overflow-wrap: anywhere; margin-top: 12px; padding: 12px; background: #f0d9b5; border-radius: 8px; }}
+      .card {{
+        border: 1px solid rgba(24, 33, 31, .18);
+        border-radius: 12px;
+        background: #fffdf8;
+        padding: 22px;
+      }}
+      code {{
+        display: block;
+        overflow-wrap: anywhere;
+        margin-top: 12px;
+        padding: 12px;
+        background: #f0d9b5;
+        border-radius: 8px;
+      }}
     </style>
   </head>
   <body>
     <main>
-      <h1>Bookforge is running</h1>
+      <h1>AetherMoore Book Studio is running</h1>
       <div class="card">
         <p>Open this URL on your phone while it is on the same Wi-Fi network:</p>
         <p><a href="{url}">{url}</a></p>
         <code>{url}</code>
         <p>Then use your browser menu: <strong>Add to Home Screen</strong> / <strong>Install app</strong>.</p>
-        <p>If your phone cannot reach it, confirm both devices are on the same Wi-Fi and Windows Firewall allows Python on port {port}.</p>
+        <p>
+          If your phone cannot reach it, confirm both devices are on the same Wi-Fi and Windows Firewall
+          allows Python on port {port}.
+        </p>
       </div>
     </main>
   </body>
@@ -67,11 +90,14 @@ def write_phone_card(url: str, port: int) -> Path:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Serve Bookforge Studio on the LAN for phone testing.")
+    description = "Serve AetherMoore Book Studio on the LAN for phone testing."
+    parser = argparse.ArgumentParser(description=description)
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--open-card", action="store_true", help="Open the local launch card in the desktop browser.")
-    parser.add_argument("--card-only", action="store_true", help="Write the launch card and print URLs without starting a server.")
+    parser.add_argument(
+        "--card-only", action="store_true", help="Write the launch card and print URLs without starting a server."
+    )
     return parser.parse_args()
 
 
@@ -89,23 +115,35 @@ def main() -> int:
     if args.open_card:
         webbrowser.open(card.resolve().as_uri())
 
-    print("Bookforge Studio phone launch", flush=True)
-    print("==============================", flush=True)
+    print("AetherMoore Book Studio phone launch", flush=True)
+    print("====================================", flush=True)
     print(f"Phone URL : {url}", flush=True)
     print(f"Local URL : {local_url}", flush=True)
     print(f"Launch card: {card}", flush=True)
     print("", flush=True)
-    print("On phone: open the Phone URL on the same Wi-Fi, then Add to Home Screen / Install app.", flush=True)
-    print("Note: full PWA service-worker install needs HTTPS after deployment; local LAN is for immediate phone testing.", flush=True)
+    print(
+        "On phone: open the Phone URL on the same Wi-Fi, then Add to Home Screen / Install app.",
+        flush=True,
+    )
+    print(
+        "Note: full PWA service-worker install needs HTTPS after deployment; local LAN is for immediate phone testing.",
+        flush=True,
+    )
     if args.card_only:
         return 0
 
-    handler = lambda *a, **kw: http.server.SimpleHTTPRequestHandler(*a, directory=str(DOCS_DIR), **kw)
+    def handler(*args, **kwargs):
+        return http.server.SimpleHTTPRequestHandler(*args, directory=str(DOCS_DIR), **kwargs)
+
     try:
         server = ReusableTCPServer((args.host, args.port), handler)
     except OSError as exc:
         print(f"Could not bind {args.host}:{args.port}: {exc}", file=sys.stderr, flush=True)
-        print("Try another port, for example: python scripts/release/bookforge_phone_launch.py --port 8766", file=sys.stderr, flush=True)
+        print(
+            "Try another port, for example: python scripts/release/bookforge_phone_launch.py --port 8766",
+            file=sys.stderr,
+            flush=True,
+        )
         return 3
 
     with server:
