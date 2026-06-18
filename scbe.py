@@ -1068,6 +1068,7 @@ def pipeline_quick_score(text: str) -> Dict[str, Any]:
         "phase_deviation": round(pd, 6),
         "decision": decision,
         "intent_flags": intent_flags,
+        "intent_model_prob": round(model_prob, 4) if model_prob is not None else None,
         "digest_hex": digest[:16].hex(),
     }
 
