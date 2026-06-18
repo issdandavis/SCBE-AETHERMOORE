@@ -203,7 +203,8 @@ def _demo() -> None:
     for ch in challenges(rounds=3, seed=7):
         print(f"   [{ch['round']}] {ch['from_lang']}: {ch['from_code']:<22} -> {ch['to_lang']}?")
     print("\ngrade an answer:")
-    print(f"   {grade('print', 'rust', 'println!(\"hi\")')}")
+    sample_answer = 'println!("hi")'
+    print(f"   {grade('print', 'rust', sample_answer)}")
 
 
 if __name__ == "__main__":
