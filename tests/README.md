@@ -342,5 +342,5 @@ describe('Spectral Coherence Property Tests', () => {
 
 - [SCBE 14-Layer Architecture](../docs/ARCHITECTURE.md)
 - [Canonical spec](../docs/SPEC.md)
-- [Patent claims coverage](../docs/PATENT_CLAIMS_COVERAGE.md)
+- [Patent claim tests](./test_aethermoore_patents.py)
 - [NIST PQC Standards](https://csrc.nist.gov/projects/post-quantum-cryptography)

@@ -63,7 +63,7 @@ The system is organized into layers.  Each layer groups related modules by funct
 
 ### Mathematical layer
 
-- **[Harmonic Scaling](../LAYER_INDEX.md)** (Beta · v4.0.3)
+- **[Harmonic Scaling](./LAYER_INDEX.md)** (Beta · v4.0.3)
   - *Reference documentation and formal methods.*  Describes the mathematical principles behind hyperbolic embeddings, stability metrics, and harmonic scaling.  Used to guide the design of embeddings and verification systems.  Contains proofs and citations but is not a runtime component.
 
 - **[Hyperbolic Models](../src/harmonic/hyperbolic.ts)** (Experimental)
