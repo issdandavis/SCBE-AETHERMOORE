@@ -33,7 +33,16 @@ TOL = 1e-9  # absolute+relative tolerance for "agree"
 
 # Backends we know HOW to run locally. A backend not listed here is emitted but has no
 # runner, so it can only ever be reported as unverified -- not as agreement.
-_RUNNER_TOOL = {"python": None, "javascript": "node", "rust": "rustc"}
+_RUNNER_TOOL = {
+    "python": None,
+    "javascript": "node",
+    "rust": "rustc",
+    "c": "cc",
+    "go": "go",
+    "ruby": "ruby",
+    "php": "php",
+    "lua": "lua",
+}
 
 
 def _toolchain_ok(lang: str) -> bool:
@@ -92,7 +101,58 @@ def run_rust(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
         return _run_subprocess_float([str(exe)])
 
 
-_RUNNERS = {"python": run_python, "javascript": run_node, "rust": run_rust}
+def run_c(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
+    src = P.emit(prog, "c") + '\nint main(void) { printf("%%.17g\\n", tongue_fn(%s)); return 0; }\n' % _arglist(args)
+    with tempfile.TemporaryDirectory() as td:
+        f = Path(td) / "prog.c"
+        f.write_text(src, encoding="utf-8")
+        exe = Path(td) / ("prog.exe" if shutil.which("cmd") else "prog")
+        subprocess.run(["cc", str(f), "-lm", "-o", str(exe)], capture_output=True, text=True, timeout=120, check=True)
+        return _run_subprocess_float([str(exe)])
+
+
+def run_go(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
+    src = P.emit(prog, "go") + "\nfunc main() { fmt.Println(tongue_fn(%s)) }\n" % _arglist(args)
+    with tempfile.TemporaryDirectory() as td:
+        f = Path(td) / "prog.go"
+        f.write_text(src, encoding="utf-8")
+        return _run_subprocess_float(["go", "run", str(f)], timeout=120)
+
+
+def run_ruby(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
+    src = P.emit(prog, "ruby") + "\nputs tongue_fn(%s)\n" % _arglist(args)
+    with tempfile.TemporaryDirectory() as td:
+        f = Path(td) / "prog.rb"
+        f.write_text(src, encoding="utf-8")
+        return _run_subprocess_float(["ruby", str(f)])
+
+
+def run_php(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
+    src = P.emit(prog, "php") + "\necho tongue_fn(%s);\n" % _arglist(args)
+    with tempfile.TemporaryDirectory() as td:
+        f = Path(td) / "prog.php"
+        f.write_text(src, encoding="utf-8")
+        return _run_subprocess_float(["php", str(f)])
+
+
+def run_lua(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
+    src = P.emit(prog, "lua") + "\nprint(tongue_fn(%s))\n" % _arglist(args)
+    with tempfile.TemporaryDirectory() as td:
+        f = Path(td) / "prog.lua"
+        f.write_text(src, encoding="utf-8")
+        return _run_subprocess_float(["lua", str(f)])
+
+
+_RUNNERS = {
+    "python": run_python,
+    "javascript": run_node,
+    "rust": run_rust,
+    "c": run_c,
+    "go": run_go,
+    "ruby": run_ruby,
+    "php": run_php,
+    "lua": run_lua,
+}
 
 
 @dataclass
