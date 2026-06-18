@@ -266,14 +266,7 @@ Canonical formula lock: [docs/specs/SCBE_CANONICAL_CONSTANTS.md](docs/specs/SCBE
 
 **Petri seed gate (Anthropic adversarial seeds):** 171/173 correctly denied or escalated at v7-matched config (1.16% false-allow). Notes: [docs/external/PETRI_FINDINGS_2026_05_08.md](docs/external/PETRI_FINDINGS_2026_05_08.md).
 
-**Opt-in model gate delta (held-out paraphrase corpus):**
-
-| Mode | Recall (blocked) | Benign FPR | Latency |
-|---|---:|---:|---:|
-| Pure-Python default | 50.0% | 28.1% | ~0 ms |
-| `SCBE_INJECTION_MODEL=1` + `[ml-onnx]` | 92.9% | 34.4% | ~44 ms/prompt CPU |
-
-The default gate remains local, deterministic, and zero-dependency. The optional model gate adds the ProtectAI DeBERTa classifier as a second-tier review layer: model-only hits are `ESCALATE`, not automatic `DENY`. Reproduce with `pip install .[ml-onnx]`, `SCBE_INJECTION_MODEL=1`, and `pytest tests/test_intent_model_benchmark.py -q`.
+**Opt-in model gate delta:** see [Detection performance (measured)](#detection-performance-measured) above — pure-Python **50%** → model **92.9%** recall on the held-out paraphrase corpus. Reproduce with `pip install .[ml-onnx]`, `SCBE_INJECTION_MODEL=1`, and `pytest tests/test_intent_model_benchmark.py -q`.
 
 ---
 
