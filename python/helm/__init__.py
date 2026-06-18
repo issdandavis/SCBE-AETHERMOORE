@@ -23,23 +23,44 @@ destructive/admin steps for a human. Steps are pluggable callables, so codeforge
 from .machine import (
     HUMAN_GATED_KINDS,
     Action,
+    Criterion,
+    CriterionDescriptor,
     GateVerdict,
     OperatorRun,
     Receipt,
     Step,
     default_policy,
+    flag,
+    human,
+    met,
     render,
     run_objective,
+    upstream,
 )
+from .dag import run_dag
+from .playability import PlayabilityReport, dry_run, static_check
+from .storylet import Storylet, run_storylets
 
 __all__ = [
     "Step",
     "Action",
+    "Criterion",
+    "CriterionDescriptor",
     "GateVerdict",
     "Receipt",
     "OperatorRun",
     "run_objective",
+    "run_dag",
+    "Storylet",
+    "run_storylets",
+    "PlayabilityReport",
+    "static_check",
+    "dry_run",
     "render",
     "default_policy",
     "HUMAN_GATED_KINDS",
+    "met",
+    "flag",
+    "human",
+    "upstream",
 ]
