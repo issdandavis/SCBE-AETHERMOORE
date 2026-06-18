@@ -2,14 +2,31 @@
 
 import pytest
 
-from python.scbe.instrument import modes, notes_to_ops, play, scale
+from python.scbe.instrument import ca_word_for_opcode, modes, notes_to_ops, play, scale
 
 
 def test_coding_scale_maps_notes_to_ca_ops():
-    assert modes() == ["coding"]
+    assert modes() == ["ca", "coding"]
     assert scale("coding")["C"] == "add"
     assert scale("coding")["E"] == "mul"
     assert notes_to_ops("C E") == ["add", "mul"]
+
+
+def test_ca_mode_uses_canonical_cassisivadan_words():
+    assert ca_word_for_opcode(0x00) == "bip'a"
+    assert ca_word_for_opcode(0x02) == "bip'i"
+    assert scale("ca")["bip'a"] == "add"
+    assert scale("ca")["bip'i"] == "mul"
+    assert notes_to_ops("bip'a bip'i", mode="ca") == ["add", "mul"]
+
+
+def test_ca_mode_executes_and_round_trips_native_keys():
+    result = play("bip'a bip'i", mode="ca", face="python", args=(10, 3, 2))
+
+    assert result["ops"] == ["add", "mul"]
+    assert result["value"] == 50
+    assert result["song_back"] == "bip'a bip'i"
+    assert result["bijective"] is True
 
 
 def test_play_executes_python_face_and_reads_song_back():

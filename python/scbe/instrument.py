@@ -1,8 +1,9 @@
 """The Instrument: play a token-song; it manifests verified code in any language face.
 
-A song is a sequence of notes. A mode maps notes to CA opcodes: "coding" ships now;
-chemistry, movement, or flight can plug in later as different scales over the same
-keys. The chain is:
+A song is a sequence of keys. A mode maps keys to CA opcodes: "coding" ships with
+Western note names, and "ca" ships with the canonical Cassisivadan byte words from
+the root ``scbe.py`` encoder. Chemistry, movement, or flight can plug in later as
+different scales over the same opcode body. The chain is:
 
     notes -> mode/scale -> op names -> CA opcode bytes -> target-language source
 
@@ -20,21 +21,75 @@ from .tongue_isa import compile_ca_tokens, disassemble, runtime_prelude
 
 _NAME_TO_BYTE: Dict[str, int] = {entry.name: op_id for op_id, entry in OP_TABLE.items()}
 
+# Canonical CA byte words. Keep this table aligned with root scbe.py's
+# _CANONICAL_TONGUES["ca"] encoder so the instrument's native keys are the real
+# Cassisivadan spellings, not local placeholders.
+_CA_PREFIXES = [
+    "bip",
+    "bop",
+    "klik",
+    "loopa",
+    "ifta",
+    "thena",
+    "elsa",
+    "spira",
+    "rythm",
+    "quirk",
+    "fizz",
+    "gear",
+    "pop",
+    "zip",
+    "mix",
+    "chass",
+]
+_CA_SUFFIXES = [
+    "a",
+    "e",
+    "i",
+    "o",
+    "u",
+    "y",
+    "ta",
+    "na",
+    "sa",
+    "ra",
+    "lo",
+    "mi",
+    "ki",
+    "zi",
+    "qwa",
+    "sh",
+]
+
+_CODING_SCALE: Dict[str, str] = {
+    "C": "add",
+    "D": "sub",
+    "E": "mul",
+    "F": "div",
+    "G": "inc",
+    "A": "dec",
+    "B": "neg",
+    "C#": "mod",
+    "D#": "abs",
+    "F#": "eq",
+    "G#": "lt",
+    "A#": "gt",
+}
+
+
+def ca_word_for_opcode(op_id: int) -> str:
+    """Return the canonical Cassisivadan word for a CA opcode byte."""
+
+    return f"{_CA_PREFIXES[(op_id >> 4) & 0xF]}'{_CA_SUFFIXES[op_id & 0xF]}"
+
+
+def _ca_scale_for_ops(op_names: Sequence[str]) -> Dict[str, str]:
+    return {ca_word_for_opcode(_NAME_TO_BYTE[op]): op for op in op_names}
+
+
 MODES: Dict[str, Dict[str, str]] = {
-    "coding": {
-        "C": "add",
-        "D": "sub",
-        "E": "mul",
-        "F": "div",
-        "G": "inc",
-        "A": "dec",
-        "B": "neg",
-        "C#": "mod",
-        "D#": "abs",
-        "F#": "eq",
-        "G#": "lt",
-        "A#": "gt",
-    },
+    "ca": _ca_scale_for_ops(_CODING_SCALE.values()),
+    "coding": _CODING_SCALE,
 }
 
 
@@ -78,11 +133,15 @@ def _assemble(prog, face: str) -> str:
 
 def _run_python(code: str, args: Sequence[float]):
     ns: Dict[str, object] = {}
-    exec(code, ns)  # noqa: S102 - executing emitted code from this module to verify it runs.
+    exec(
+        code, ns
+    )  # noqa: S102 - executing emitted code from this module to verify it runs.
     return ns["play"](*args)
 
 
-def play(song: str, mode: str = "coding", face: str = "python", args: Sequence[float] = ()) -> dict:
+def play(
+    song: str, mode: str = "coding", face: str = "python", args: Sequence[float] = ()
+) -> dict:
     """Play a song in a mode and manifest it in a language face."""
 
     ops = notes_to_ops(song, mode)
@@ -111,7 +170,14 @@ def play(song: str, mode: str = "coding", face: str = "python", args: Sequence[f
 
 def main() -> int:
     r = play("C E", face="python", args=(10, 3, 2))
-    print(f"play('C E') ops={r['ops']} value={r['value']} song_back={r['song_back']!r} bijective={r['bijective']}")
+    print(
+        f"play('C E') ops={r['ops']} value={r['value']} song_back={r['song_back']!r} bijective={r['bijective']}"
+    )
+    ca = play("bip'a bip'i", mode="ca", face="python", args=(10, 3, 2))
+    print(
+        f"play(\"bip'a bip'i\", mode='ca') ops={ca['ops']} value={ca['value']} "
+        f"song_back={ca['song_back']!r} bijective={ca['bijective']}"
+    )
     return 0
 
 
