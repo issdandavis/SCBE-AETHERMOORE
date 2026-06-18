@@ -216,10 +216,7 @@ describe('Layer 9: Spectral Coherence', () => {
 
       fc.assert(
         fc.property(
-          fc.oneof(
-            fc.integer({ min: 1, max: 20 }),
-            fc.integer({ min: 31, max: 51 })
-          ),
+          fc.oneof(fc.integer({ min: 1, max: 20 }), fc.integer({ min: 31, max: 51 })),
           fc.double({ min: 0.1, max: 2, noNaN: true }),
           fc.double({ min: 0, max: 2 * Math.PI, noNaN: true }),
           fc.double({ min: 0, max: 2 * Math.PI, noNaN: true }),
