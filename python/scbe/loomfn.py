@@ -12,6 +12,10 @@ keeps that exact shape and adds the two things a real language needs:
     Calling convention is caller-saves: a call snapshots all scalar slots, zeroes them, binds the
     params, and jumps; `ret` restores the snapshot and delivers the result into `d`. That gives
     real local scoping and real RECURSION (factorial, fibonacci) -- not just inline blocks.
+  * STRINGS (also the heap): a string IS an array of character codes, so it reuses every array op
+    (len = `alen`, char at i = `get`, build = `arr`/`push`). The only new moves are `strlit A text`
+    (load a literal into string A) and `chr d c` (d = code point of char c). Both expand to numeric
+    array literals at emit time, so the faces stay purely numeric and cross-face agreement is free.
 
 The value model is index-based: scalar slots live in one flat array `s` (name->index resolved at
 emit time), which makes a call-frame snapshot a single copy of `s` in every language. A Python
@@ -40,8 +44,11 @@ Instr = Tuple[str, Tuple[str, ...]]
 _ARITH = {"add": "+", "sub": "-", "mul": "*", "div": "/"}
 _CMP = {"lt": "<", "le": "<=", "gt": ">", "ge": ">=", "eq": "==", "ne": "!="}
 _ARR = {"arr", "push", "pop", "get", "set", "alen"}
+_STR = {"strlit", "chr"}  # strings ARE arrays of char codes; these two just load literals
 _FN = {"func", "ret", "call"}
-_OPS = {"const", "mov", "inc", "dec", "label", "jmp", "brz", "print", "halt"} | set(_ARITH) | set(_CMP) | _ARR | _FN
+_OPS = (
+    {"const", "mov", "inc", "dec", "label", "jmp", "brz", "print", "halt"} | set(_ARITH) | set(_CMP) | _ARR | _STR | _FN
+)
 
 
 def parse(text: str) -> List[Instr]:
@@ -52,9 +59,15 @@ def parse(text: str) -> List[Instr]:
         if not line:
             continue
         parts = line.split()
-        op, args = parts[0].lower(), tuple(parts[1:])
+        op = parts[0].lower()
         if op not in _OPS:
             raise ValueError("unknown op %r (have %s)" % (op, ", ".join(sorted(_OPS))))
+        if op == "strlit":  # strlit DEST the rest is the literal (joined; no /, #, ; or newline)
+            args: Tuple[str, ...] = (parts[1], " ".join(parts[2:]))
+        elif op == "chr":  # chr DEST <single-char>  -> DEST = its code point
+            args = (parts[1], parts[2])
+        else:
+            args = tuple(parts[1:])
         prog.append((op, args))
     return prog
 
@@ -83,6 +96,10 @@ def _classify(op: str, a: Tuple[str, ...]) -> Tuple[List[str], List[str]]:
         ar, sc = [a[0]], [a[1], a[2]]
     elif op == "alen":
         sc, ar = [a[0]], [a[1]]
+    elif op == "strlit":
+        ar = [a[0]]  # the destination string lives in the array heap
+    elif op == "chr":
+        sc = [a[0]]
     elif op == "func":
         sc = list(a[1:])  # params (a[0] is the function name)
     elif op == "ret":
@@ -171,6 +188,12 @@ def interpret(prog: Sequence[Instr], step_limit: int = 1_000_000) -> List[float]
             pc += 1
         elif op == "alen":
             s[a[0]] = float(len(h[a[1]]))
+            pc += 1
+        elif op == "strlit":
+            h[a[0]] = [float(ord(c)) for c in a[1]]
+            pc += 1
+        elif op == "chr":
+            s[a[0]] = float(ord(a[1]))
             pc += 1
         elif op == "label" or op == "func":
             pc += 1
@@ -265,6 +288,13 @@ def _arm(prog, k, lang, six, aix, labels, funcs, nslots) -> List[str]:
             "rust": "%s = h[%d].len() as f64;",
         }[lang]
         return [ln % (S(a[0]), aix[a[1]]), nxt(k + 1)]
+    if op == "strlit":  # a string is its char codes; emit a numeric array literal -> faces stay numeric
+        codes = [ord(c) for c in a[1]]
+        body = ", ".join("%d.0" % c for c in codes)
+        lit = "vec![%s]" % body if lang == "rust" else "[%s]" % body
+        return ["h[%d] = %s%s" % (aix[a[0]], lit, semi), nxt(k + 1)]
+    if op == "chr":
+        return ["%s = %d.0%s" % (S(a[0]), ord(a[1]), semi), nxt(k + 1)]
     if op == "label" or op == "func":
         return [nxt(k + 1)]
     if op == "jmp":
@@ -492,6 +522,12 @@ EXAMPLES = {
     "sum_array_fn": "arr xs / const v 10 / push xs v / const v 20 / push xs v / const v 30 / push xs v / "
     "call r total / print r / halt / func total / const acc 0 / const j 0 / alen len xs / label sl / lt c j len / "
     "brz c done / get e xs j / add acc acc e / inc j / jmp sl / label done / ret acc",
+    # a string is an array of char codes: strlit loads the literal, chr loads one char's code.
+    "str_len": "strlit s hello / alen n s / print n / halt",  # -> 5
+    "vowel_count": "strlit s programming / const j 0 / alen n s / const cnt 0 / chr va a / chr ve e / chr vi i / "
+    "chr vo o / chr vu u / label lp / lt c j n / brz c done / get ch s j / eq e1 ch va / eq e2 ch ve / eq e3 ch vi / "
+    "eq e4 ch vo / eq e5 ch vu / add t e1 e2 / add t t e3 / add t t e4 / add t t e5 / brz t skip / inc cnt / "
+    "label skip / inc j / jmp lp / label done / print cnt / halt",  # 'programming' -> 3 (o, a, i)
 }
 
 
