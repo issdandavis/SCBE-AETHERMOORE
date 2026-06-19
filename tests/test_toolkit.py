@@ -65,6 +65,29 @@ def test_transcript_is_tamper_evident():
     assert tk.verify() is False
 
 
+def test_reordering_records_breaks_the_seal_chain():
+    tk = default_toolkit()
+    tk.invoke("is_prime", 5)
+    tk.invoke("is_prime", 7)
+    assert tk.verify() is True
+    tk.transcript[0], tk.transcript[1] = tk.transcript[1], tk.transcript[0]  # reorder
+    assert tk.verify() is False  # the forward chain (prev seal) catches it
+
+
+def test_swapping_a_composition_payload_breaks_verify():
+    tk = default_toolkit()
+    r = tk.invoke("place", [1, 2, 3])
+    assert tk.verify() is True
+    r["result_obj"] = [9, 9, 9]  # swap the live payload another tool would consume
+    assert tk.verify() is False  # result_hash is sealed, so the swap is caught
+
+
+def test_subprocess_spawning_tools_are_guarded():
+    tk = default_toolkit()
+    for name in ("conformance", "run_public_bench"):
+        assert tk.by_name(name).safety == "guarded"  # they execute code -> must need a confirm
+
+
 def test_most_tools_are_importable_here():
     tk = default_toolkit()
     avail = tk.available()
