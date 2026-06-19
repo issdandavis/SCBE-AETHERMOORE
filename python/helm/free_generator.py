@@ -69,7 +69,7 @@ def make_generator(
         )
         try:
             return strip_to_code(_chat([{"role": "user", "content": prompt}], base=base, key=key, model=model))
-        except Exception as exc:  # honest failure: a stub that FAILS verification, never wrong code
+        except Exception as exc:  # fail closed: emit code that FAILS the tests, never confident-wrong code
             return f"# generation failed ({type(exc).__name__}: {exc})\ndef _failed(*a, **k):\n    return None\n"
 
     generator.__name__ = "free_llm(%s)" % model
