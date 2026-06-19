@@ -11,7 +11,8 @@ nothing exotic).
     tool is reported UNAVAILABLE, never crashing the toolbox.
   * governed: `safe` tools (pure computation) run freely; `guarded` tools (file/desktop/stateful, or
     anything that executes code) need a confirm reason; a destructive string in any argument is
-    REFUSED outright.
+    REFUSED outright. (The destructive screen matches a specific never-delete pattern set --
+    rm -rf, format, mkfs, dd, fdisk, wipe, ... -- it is a guardrail, not an exhaustive denylist.)
   * sealed: each call appends {tool, args, result, decision, prev, result_hash, seal}; the seal binds
     the PRIOR seal + a digest of the result, so `verify()` catches mutation, insertion, reordering,
     AND a swapped composition payload. (A holder of the live Toolkit could recompute the chain -- for

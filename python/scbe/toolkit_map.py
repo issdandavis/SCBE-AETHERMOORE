@@ -360,7 +360,9 @@ class TaskMap:
 
         A failed call (or a stepwise run that drifted) emits a sealed failure record AND a sealed
         diagnosis with a next-safe-move recommendation. A confirmation-required failure is NOT
-        auto-retried -- the diagnosis surfaces the confirm requirement (retry_safe=False).
+        auto-retried -- the diagnosis surfaces the confirm requirement (retry_safe=False). When a
+        `run_stepwise` call drifts, failure_map.localize is run on the (task, proposer) to place the
+        wall step (out["drift"]) -- the diagnosis recommendation is then to offload that step.
         """
         rec = self.tk.invoke(tool, *args, confirm=confirm)
         ro = rec.get("result_obj")
@@ -368,6 +370,9 @@ class TaskMap:
         out: Dict[str, object] = {"tool": tool, "decision": rec["decision"], "sealed": True}
         if rec["decision"] != "ALLOWED" or drifted:
             out["diagnosis"] = self.tk.diagnose(rec)  # classify cause + recommend, sealed into the chain
+            if drifted and tool == "run_stepwise" and len(args) >= 2:
+                # genuinely localize the wall with failure_map (we have the task + proposer here)
+                out["drift"] = self.diagnose_drift(args[0], args[1])
         else:
             out["result"] = rec["result"]
         out["chain_ok"] = self.tk.verify()  # the seal chain still holds after the failure + diagnosis
