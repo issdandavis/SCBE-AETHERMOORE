@@ -71,3 +71,24 @@ def test_cli_claim_and_audit_run():
     assert rg.main(["--audit", "--registry", str(REGISTRY)]) == 0
     # strict mode exits nonzero when an overlap is found
     assert rg.main(["--claim", "a string as a heap array of char codes", "--registry", str(REGISTRY), "--strict"]) == 1
+
+
+def test_concept_trigger_flags_a_tc_reencoding_that_jaccard_misses():
+    # a 'turing rubix' re-encoding shares almost no tokens with 'binary spine' (Jaccard < 0.5),
+    # but it IS just Brainfuck again -- the concept trigger must catch it against the registered cores
+    reg = rg.load_registry(REGISTRY)
+    claim = "turing rubix: cube moves as a brainfuck instruction surface over an unbounded tape, turing complete"
+    assert rg.check(claim, reg, 0.5) == []  # the honest limit: Jaccard alone does NOT catch it
+    cm = rg.concept_matches(claim, reg)
+    phrases = {p for p, _ in cm}
+    assert {"brainfuck", "turing complete", "unbounded tape"} & phrases  # the concept trigger DOES
+    flagged = {m for _, mods in cm for m in mods}
+    assert any("bit_spine" in m for m in flagged)  # flagged against the registered BF/TC core
+
+
+def test_concept_trigger_is_quiet_on_unrelated_work():
+    reg = rg.load_registry(REGISTRY)
+    assert rg.concept_matches("a graded reasoning ladder scored by exact match", reg) == []
+    # and strict mode now blocks a TC re-encoding even with zero Jaccard overlap
+    args = ["--claim", "encode brainfuck as dance moves, turing complete", "--registry", str(REGISTRY), "--strict"]
+    assert rg.main(args) == 1
