@@ -23,7 +23,9 @@ computes that delta -- but a real lift number needs a real model plugged into bo
 from __future__ import annotations
 
 import argparse
-from typing import Any, Callable, Dict, List, Sequence
+import os
+import re
+from typing import Any, Callable, Dict, List, Optional, Sequence
 
 from .ladder import render_climb, run_ladder
 
@@ -110,6 +112,35 @@ def reference_climber(item: Dict[str, Any]) -> str:
 def naive_climber(item: Dict[str, Any]) -> str:
     """The floor: no answer. Should clear nothing."""
     return ""
+
+
+def _extract_answer(text: str) -> str:
+    """Pull a clean answer out of a model reply -- the last number if any, else the stripped text."""
+    nums = re.findall(r"-?\d+(?:\.\d+)?", text or "")
+    return nums[-1] if nums else (text or "").strip()
+
+
+def llm_climber(model: Optional[str] = None, base: Optional[str] = None, key: Optional[str] = None) -> Climber:
+    """A REAL model in the climber slot: ask it each question, return its final answer. Reuses
+    helm.free_generator's transport (any OpenAI-compatible endpoint; Ollama by default). On a dead
+    endpoint it returns '' (scores 0) -- never a fabricated pass. This is the RAW baseline; a
+    harnessed/tooled climber goes in the other slot of measure_lift."""
+    from . import free_generator as fg
+
+    base = base or os.environ.get("SCBE_LLM_BASE", fg.DEFAULT_BASE)
+    key = key or os.environ.get("SCBE_LLM_KEY", "ollama")
+    model = model or os.environ.get("SCBE_LLM_MODEL", fg.DEFAULT_MODEL)
+
+    def climber(item: Dict[str, Any]) -> str:
+        prompt = item["question"] + "\n\nAnswer with ONLY the final answer (a number), nothing else."
+        try:
+            out = fg._chat([{"role": "user", "content": prompt}], base=base, key=key, model=model)
+        except Exception:
+            return ""  # honest: a dead endpoint scores 0, never fabricates a pass
+        return _extract_answer(out)
+
+    climber.__name__ = "llm(%s)" % model
+    return climber
 
 
 def run_reasoning(

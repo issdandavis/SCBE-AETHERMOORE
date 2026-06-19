@@ -62,3 +62,32 @@ def test_measure_lift_reports_the_delta():
     # MECHANISM CHECK ONLY (naive baseline vs reference tooled) -- not a capability claim
     r = measure_lift(naive_climber, reference_climber)
     assert r["tier_lift"] == 5 and r["total_lift"] == 20
+
+
+def test_llm_climber_extracts_the_answer_and_grades(monkeypatch):
+    # a mocked model that wraps the right answer in prose -- tests extraction + grading, no live call
+    from python.helm import free_generator as fg
+    from python.helm.reasoning_ladder import REASONING_LADDER, llm_climber
+
+    answers = {it["question"]: it["answer"] for tier in REASONING_LADDER for it in tier["items"]}
+
+    def fake_chat(messages, **kw):
+        q = messages[0]["content"].split("\n\n")[0]
+        return "Let me think... the answer is %s." % answers.get(q, "0")
+
+    monkeypatch.setattr(fg, "_chat", fake_chat)
+    s = run_reasoning(llm_climber(model="mock"))
+    assert s["highest_tier_cleared"] == 5 and s["total_passed"] == 20
+
+
+def test_llm_climber_dead_endpoint_scores_zero(monkeypatch):
+    # a dead endpoint must score 0, never a fabricated pass (honest like free_generator)
+    from python.helm import free_generator as fg
+    from python.helm.reasoning_ladder import llm_climber
+
+    def boom(messages, **kw):
+        raise ConnectionError("no model running")
+
+    monkeypatch.setattr(fg, "_chat", boom)
+    s = run_reasoning(llm_climber())
+    assert s["total_passed"] == 0
