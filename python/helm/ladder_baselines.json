@@ -1,17 +1,20 @@
 {
   "schema": "scbe_ladder_baselines_v1",
   "measured": "2026-06-19",
-  "note": "RAW small-model baselines (no harness/rails) -- the floor any harness must beat with the SAME model. Single run; LLM output is non-deterministic, so treat as approximate (a stability/variance pass will tighten these). Findings: these are CODER models -- strong on the code ladder (~87%), weak on math reasoning (~45-50%); and 1.5b vs 3b barely differ -- size is not the lever, the harness is.",
+  "note": "RAW small-model baselines (no harness/rails) -- the floor any harness must beat with the SAME model. 3-run variance bands added; temperature 0, so variance is low (code is deterministic across runs; reasoning moves +-1). Findings: coder models strong on the code ladder (~87%), weak on math reasoning (~40-50%); 1.5b vs 3b barely differ -- size is not the lever, the harness is.",
+  "method": "3 runs per model per ladder; min/mean/max over the 3 totals; per_tier from a representative run.",
   "reasoning_ladder": {
-    "qwen2.5-coder:1.5b": {"total": 9, "of": 20, "contiguous_tier": 1,
+    "of": 20,
+    "qwen2.5-coder:1.5b": {"runs": [9, 8, 8], "min": 8, "mean": 8.3, "max": 9,
       "per_tier": {"arithmetic": 4, "pre-algebra": 3, "competition-lite": 1, "multi-step": 1, "hard": 0}},
-    "qwen2.5-coder:3b": {"total": 10, "of": 20, "contiguous_tier": 1,
+    "qwen2.5-coder:3b": {"runs": [10, 10, 10], "min": 10, "mean": 10.0, "max": 10,
       "per_tier": {"arithmetic": 4, "pre-algebra": 3, "competition-lite": 2, "multi-step": 1, "hard": 0}}
   },
   "code_curriculum": {
-    "qwen2.5-coder:1.5b": {"total": 13, "of": 15, "contiguous_tier": 1,
+    "of": 15,
+    "qwen2.5-coder:1.5b": {"runs": [13, 13, 13], "min": 13, "mean": 13.0, "max": 13,
       "per_tier": {"elementary": 3, "middle-school": 2, "high-school": 3, "undergrad": 3, "grad/phd+": 2}},
-    "qwen2.5-coder:3b": {"total": 13, "of": 15, "contiguous_tier": 1,
+    "qwen2.5-coder:3b": {"runs": [13, 13, 13], "min": 13, "mean": 13.0, "max": 13,
       "per_tier": {"elementary": 3, "middle-school": 2, "high-school": 3, "undergrad": 2, "grad/phd+": 3}}
   }
 }
