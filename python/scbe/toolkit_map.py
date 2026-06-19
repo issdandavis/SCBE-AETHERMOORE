@@ -4,9 +4,10 @@ The toolbox (toolkit.py) is flat; this gives it a SHAPE. The tools are laid out 
 each demonstrating a distinct system, connected by unlock edges. The map does three things:
 
   * UPDATES PER TASK -- each area runs a real demo through the sealed toolkit; clearing it marks the
-    area CLEARED, records which tools were seen, and UNLOCKS the next area. Progress is sealed.
-  * GUIDES -- given a task in plain words, `route()` picks the right AVAILABLE area and names the one
-    tool to reach for (and why), so a weak model never has to pick from 81 tools blind.
+    area CLEARED, records which tools were seen, and UNLOCKS the next area. (Each tool CALL is sealed
+    in the toolkit transcript; the area-status bookkeeping itself is plain map state.)
+  * GUIDES -- given a task in plain words, `route()` picks the right area and names the one tool to
+    reach for (and why), so a weak model never has to pick from the whole catalog blind.
   * SEES THE USE -- every area actually invokes its system (sieve classifies a number, the board
     round-trips, loomflow runs an IR cross-face, a game is played sealed, ...), so the demo IS proof.
 
@@ -21,6 +22,7 @@ the next so the tour continues. Every tool call is governed + SHA-256 sealed by 
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional, Tuple
 
@@ -38,7 +40,8 @@ def _demo_sieve(tk: Toolkit) -> Tuple[bool, str]:
     res = tk.invoke("run_stepwise", task, prop)["result_obj"]
     pr = tk.invoke("is_prime", 7)["result_obj"]
     fac = tk.invoke("factorization", 91)["result_obj"]
-    ok = bool(res and res.get("completed") and pr is True and fac == {7: 1, 13: 1})
+    built = task is not None and callable(prop)  # the sieve task + the proposer were really produced
+    ok = bool(built and res and res.get("completed") and pr is True and fac == {7: 1, 13: 1})
     return ok, "classify(7)->%s; is_prime(7)=%s; 91=%s" % (res.get("answer") if res else None, pr, fac)
 
 
@@ -53,8 +56,13 @@ def _demo_loomflow(tk: Toolkit) -> Tuple[bool, str]:
     prog = tk.invoke("parse", "const a 5\nconst b 3\nadd c a b\nprint c")["result_obj"]
     val = tk.invoke("interpret", prog)["result_obj"]
     src = tk.invoke("emit", prog, "python")["result_obj"]
-    ok = val == [8.0] and isinstance(src, str) and "def run" in src
-    return ok, "interpret=%s; emit('python') has def run=%s" % (val, "def run" in (src or ""))
+    parsed = isinstance(prog, list) and len(prog) == 4  # the IR really parsed (4 instructions)
+    ok = parsed and val == [8.0] and isinstance(src, str) and "def run" in src
+    return ok, "parsed %d instrs; interpret=%s; emit('python') has def run=%s" % (
+        len(prog) if isinstance(prog, list) else -1,
+        val,
+        "def run" in (src or ""),
+    )
 
 
 def _demo_cross_face(tk: Toolkit) -> Tuple[bool, str]:
@@ -71,7 +79,8 @@ def _demo_board(tk: Toolkit) -> Tuple[bool, str]:
     rev = tk.invoke("is_reversible", [1, 2, 3])["result_obj"]
     cube = tk.invoke("to_cube", 0x15)["result_obj"]
     fc = tk.invoke("from_cube", *cube)["result_obj"]
-    ok = prog2 == [1, 2, 3] and rev is True and fc == 0x15
+    shapes = isinstance(stones, list) and len(stones) == 3 and isinstance(cube, tuple) and len(cube) == 3
+    ok = shapes and prog2 == [1, 2, 3] and rev is True and fc == 0x15
     return ok, "recover(place)=%s; reversible=%s; from_cube(to_cube(0x15))=0x%02x" % (prog2, rev, fc)
 
 
@@ -96,12 +105,17 @@ def _demo_bit_dna(tk: Toolkit) -> Tuple[bool, str]:
 def _demo_geometry(tk: Toolkit) -> Tuple[bool, str]:
     st = tk.invoke("self_test")
     reg = tk.invoke("build_registry")
-    ri = tk.invoke("route_intent", (0.05, 0.08))  # needs src/ on path -> may be UNAVAILABLE here
-    ok = st["decision"] == "ALLOWED" and reg["decision"] == "ALLOWED"
-    return ok, "phdm self_test=%s; build_registry=%s; geometry.route_intent=%s" % (
+    rr = tk.invoke("round_robin", [], [])  # the fleet router actually runs (cost over an empty fleet = 0.0)
+    ok = (
+        st["decision"] == "ALLOWED"
+        and reg["decision"] == "ALLOWED"
+        and rr["decision"] == "ALLOWED"
+        and isinstance(rr["result_obj"], float)
+    )
+    return ok, "phdm self_test=%s; build_registry=%s; round_robin(empty fleet)=%s" % (
         st["decision"],
         reg["decision"],
-        ri["decision"],
+        rr["result_obj"],
     )
 
 
@@ -136,7 +150,7 @@ def _demo_ledger(tk: Toolkit) -> Tuple[bool, str]:
 def _demo_geoseal(tk: Toolkit) -> Tuple[bool, str]:
     hd = tk.invoke("hyperbolic_distance", [0.1, 0.0, 0.0], [0.0, 0.1, 0.0])
     val = hd["result_obj"]
-    ok = hd["decision"] == "ALLOWED" and isinstance(val, float) and val > 0
+    ok = hd["decision"] == "ALLOWED" and isinstance(val, float) and not math.isnan(val) and 0 < val < 5
     return ok, "hyperbolic_distance ~ %s" % (round(val, 3) if isinstance(val, float) else hd["decision"])
 
 
@@ -149,11 +163,18 @@ def _demo_leveling(tk: Toolkit) -> Tuple[bool, str]:
 
 def _demo_rosetta(tk: Toolkit) -> Tuple[bool, str]:
     pb = tk.invoke("program_bytes", "add")["result_obj"]
-    conf = tk.invoke("conformance", pb, [[1.0, 2.0, 3.0]])  # 'add' is ternary tongue_fn(a,b,c)
+    conf = tk.invoke("conformance", pb, [[1.0, 2.0, 3.0]], confirm="cross-face benchmark")  # guarded: runs code
     obj = conf["result_obj"]
-    ok = conf["decision"] == "ALLOWED" and obj is not None
     summ = obj.get("summary") if isinstance(obj, dict) else None
-    return ok, "conformance across backends ran; summary=%s" % (summ if summ else conf["decision"])
+    ok = (
+        conf["decision"] == "ALLOWED"
+        and isinstance(obj, dict)
+        and isinstance(summ, dict)
+        and summ.get("runnable_backends", 0) > 0
+    )
+    rb = (summ or {}).get("runnable_backends", 0)
+    va = (summ or {}).get("verified_agree", 0)
+    return ok, "conformance ran %d backends; %d verified-agree across faces" % (rb, va)
 
 
 @dataclass
@@ -229,7 +250,7 @@ def _areas() -> List[Area]:
         Area(
             "Geometry Router",
             "route intents/agents by hyperbolic geometry",
-            ["route_intent", "self_test"],
+            ["round_robin", "self_test", "build_registry"],
             "Bit Spine + DNA",
             _demo_geometry,
             ["route", "assign", "agent", "fleet", "which", "geometry"],

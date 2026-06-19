@@ -3,14 +3,19 @@
 This is the AI's toolbox. It catalogs the actual callable tools across the repo (coding, math,
 geometry, control, governance, measurement, language, verification), and exposes ONE governed way to
 call any of them: every invocation is allowlist/safety-screened, runs the destructive-command screen
-(the never-delete rule), and is SHA-256 SEALED into a tamper-evident transcript -- reusing the real
-sealing primitives from desktop_access (no new "geoseal" invented; the seal IS geoseal here).
+(the never-delete rule), and is SHA-256 SEALED into a forward-chained transcript -- reusing the real
+SHA-256 seal from desktop_access (the in-system "geoseal" layer; the security is the standard hash,
+nothing exotic).
 
   * lazy + robust: a tool's module is imported only when first used; if a dependency is missing the
     tool is reported UNAVAILABLE, never crashing the toolbox.
-  * governed: `safe` tools (pure computation) run freely; `guarded` tools (file/desktop/stateful)
-    need a confirm reason; a destructive string in any argument is REFUSED outright.
-  * sealed: each call appends {tool, args, result, decision, seal}; `verify()` re-checks every seal.
+  * governed: `safe` tools (pure computation) run freely; `guarded` tools (file/desktop/stateful, or
+    anything that executes code) need a confirm reason; a destructive string in any argument is
+    REFUSED outright.
+  * sealed: each call appends {tool, args, result, decision, prev, result_hash, seal}; the seal binds
+    the PRIOR seal + a digest of the result, so `verify()` catches mutation, insertion, reordering,
+    AND a swapped composition payload. (A holder of the live Toolkit could recompute the chain -- for
+    cross-boundary integrity, sign the final seal with an external key.)
 
     from python.scbe.toolkit import default_toolkit
     tk = default_toolkit()
@@ -21,13 +26,23 @@ sealing primitives from desktop_access (no new "geoseal" invented; the seal IS g
 
 from __future__ import annotations
 
+import hashlib
 import importlib
+import secrets
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
 from .desktop_access import _DESTRUCTIVE, _seal
 
 _RESULT_CAP = 240  # how much of a result repr to keep in the sealed record
+
+
+def _digest(obj: Any) -> str:
+    """A stable SHA-256 digest of a (possibly unserializable) result, for sealing composition payloads."""
+    try:
+        return hashlib.sha256(repr(obj).encode("utf-8")).hexdigest()[:16]
+    except Exception:
+        return "?"
 
 
 @dataclass(frozen=True)
@@ -605,7 +620,7 @@ CATALOG: List[Tool] = [
         "run_public_bench",
         "measurement",
         "run problems vs a generator; verify hidden asserts in a subprocess",
-        "safe",
+        "guarded",  # executes candidate code in a subprocess
     ),
     Tool(
         "climb_on_board",
@@ -621,7 +636,7 @@ CATALOG: List[Tool] = [
         "conformance",
         "measurement",
         "compile + run a program across every polyglot backend",
-        "safe",
+        "guarded",  # compiles + executes generated code in external toolchains
     ),
     Tool(
         "benchmark",
@@ -685,6 +700,7 @@ class Toolkit:
 
     tools: List[Tool] = field(default_factory=lambda: list(CATALOG))
     transcript: List[dict] = field(default_factory=list)
+    nonce: str = field(default_factory=lambda: secrets.token_hex(8))  # binds this session's seal chain
 
     def by_name(self, name: str) -> Optional[Tool]:
         return next((t for t in self.tools if t.name == name), None)
@@ -729,17 +745,30 @@ class Toolkit:
                 rec.update(decision="ALLOWED", result=repr(result_obj)[:_RESULT_CAP])
             except Exception as e:  # a tool that errors is reported, never silently 'ok'
                 rec.update(decision="ERROR", result="%s: %s" % (type(e).__name__, e))
+        # forward-chain: each seal binds the prior seal (or the session nonce) + a digest of the
+        # composition payload, so fabricating, reordering, or mutating any record fails verify().
+        rec["prev"] = self.transcript[-1]["seal"] if self.transcript else self.nonce
+        rec["result_hash"] = _digest(result_obj) if result_obj is not None else ""
         rec["seal"] = _seal(rec)
         self.transcript.append(rec)
-        rec["result_obj"] = result_obj  # not sealed (may be unserializable); for tool composition
+        rec["result_obj"] = result_obj  # the live payload (its digest is sealed; the object itself is not)
         return rec
 
     def verify(self) -> bool:
-        """The whole tool session is tamper-evident: every seal still matches."""
-        return all(
-            r.get("seal") == _seal({k: v for k, v in r.items() if k not in ("seal", "result_obj")})
-            for r in self.transcript
-        )
+        """Tamper-evident: the seal chain detects mutation, insertion, reordering, AND a swapped
+        result_obj (its digest is sealed). A holder of the live Toolkit could recompute the chain --
+        for cross-boundary integrity, sign the final seal with an external key."""
+        prev = self.nonce
+        for r in self.transcript:
+            body = {k: v for k, v in r.items() if k not in ("seal", "result_obj")}
+            if r.get("seal") != _seal(body):
+                return False  # record mutated
+            if r.get("prev") != prev:
+                return False  # inserted / reordered / fabricated
+            if "result_obj" in r and r["result_obj"] is not None and r.get("result_hash") != _digest(r["result_obj"]):
+                return False  # composition payload swapped
+            prev = r["seal"]
+        return True
 
 
 def default_toolkit() -> Toolkit:
