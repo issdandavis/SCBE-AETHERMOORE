@@ -115,6 +115,41 @@ describe('AetherDesk server — allowlist enforcement (security boundary)', () =
   });
 });
 
+describe('AetherDesk server — bounded shell profiles', () => {
+  it('GET /api/shell/profiles lists bounded shell profiles without raw command text', async () => {
+    const { status, body } = await fetchJson(`${baseUrl}/api/shell/profiles`);
+    expect(status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(body.schema).toBe('aetherdesk_shell_profiles_v0');
+    const ids = body.profiles.map((p: { id: string }) => p.id).sort();
+    expect(ids).toEqual(['git_status', 'powershell_probe', 'pwd']);
+    for (const p of body.profiles) {
+      expect(typeof p.label).toBe('string');
+      expect(typeof p.shell).toBe('string');
+      expect(typeof p.risk_tier).toBe('string');
+      expect(typeof p.description).toBe('string');
+      expect(p.command).toBeUndefined();
+      expect(p.args).toBeUndefined();
+    }
+  });
+
+  it('POST /api/shell/run rejects arbitrary shell text', async () => {
+    const { status, body } = await fetchJson(`${baseUrl}/api/shell/run`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id: 'Get-ChildItem; Remove-Item C:\\\\' }),
+    });
+    expect(status).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.error).toMatch(/not allowlisted/i);
+  });
+
+  it('shell allowlist export contains only bounded profiles', () => {
+    const ids = Object.keys(aetherdesk.SHELL_ALLOWLIST).sort();
+    expect(ids).toEqual(['git_status', 'powershell_probe', 'pwd']);
+  });
+});
+
 describe('AetherDesk server — receipt schema + listing', () => {
   it('buildReceipt produces an aetherdesk_receipt_v0 with the required fields', () => {
     const r = aetherdesk.buildReceipt({
@@ -314,5 +349,47 @@ describe('AetherDesk server — Provider Status (v0.1)', () => {
     } finally {
       delete process.env[KEY];
     }
+  });
+});
+
+describe('AetherDesk server — desktop UI is served', () => {
+  function fetchText(url: string) {
+    return fetch(url).then((r) =>
+      r.text().then((t) => ({ status: r.status, type: r.headers.get('content-type'), body: t }))
+    );
+  }
+
+  it('GET / serves the desktop shell as HTML', async () => {
+    const { status, type, body } = await fetchText(`${baseUrl}/`);
+    expect(status).toBe(200);
+    expect(type).toMatch(/text\/html/);
+    expect(body).toContain('<title>');
+  });
+
+  it('the served shell includes every app-window surface', async () => {
+    const { body } = await fetchText(`${baseUrl}/`);
+    for (const app of [
+      'browser',
+      'word',
+      'editor',
+      'image',
+      'speech',
+      'vision',
+      'receipts',
+      'providers',
+    ]) {
+      expect(body).toContain(`id="window-${app}"`);
+    }
+  });
+
+  it('the served shell carries no removed Kimi branding', async () => {
+    const { body } = await fetchText(`${baseUrl}/`);
+    expect(body.toLowerCase()).not.toContain('kimi');
+  });
+
+  it('snap-full controls render a real glyph, not a broken placeholder', async () => {
+    const { body } = await fetchText(`${baseUrl}/`);
+    // regression guard: the launcher/terminal/receipts/providers snap-full buttons once showed a lone "?"
+    expect(body).not.toMatch(/title="Snap full">\?</);
   });
 });

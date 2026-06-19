@@ -147,8 +147,16 @@
       }
 
       .window.hidden,
+      .window.minimized,
       .start-menu.hidden {
         display: none;
+      }
+
+      .window.maximized {
+        left: 8px !important;
+        top: 8px !important;
+        width: calc(100vw - 16px) !important;
+        height: calc(100vh - 66px) !important;
       }
 
       .window.active {
@@ -246,6 +254,46 @@
         bottom: 68px;
         width: 360px;
         height: 360px;
+      }
+
+      #window-browser,
+      #window-word,
+      #window-editor,
+      #window-image,
+      #window-speech,
+      #window-vision {
+        width: min(780px, calc(100vw - 190px));
+        height: min(560px, calc(100vh - 124px));
+      }
+
+      #window-browser {
+        left: 172px;
+        top: 112px;
+      }
+
+      #window-word {
+        left: 220px;
+        top: 132px;
+      }
+
+      #window-editor {
+        left: 260px;
+        top: 152px;
+      }
+
+      #window-image {
+        left: 300px;
+        top: 172px;
+      }
+
+      #window-speech {
+        left: 340px;
+        top: 192px;
+      }
+
+      #window-vision {
+        left: 380px;
+        top: 212px;
       }
 
       .toolbar {
@@ -423,6 +471,101 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
         gap: 8px;
+      }
+
+      .app-pane {
+        height: 100%;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 10px;
+      }
+
+      .app-pane.two-row {
+        grid-template-rows: auto 1fr;
+      }
+
+      .app-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .app-toolbar input,
+      .app-toolbar select {
+        min-width: 150px;
+        height: 32px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        padding: 0 9px;
+      }
+
+      .browser-frame {
+        width: 100%;
+        height: 100%;
+        min-height: 320px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+      }
+
+      .doc-editor,
+      .code-editor,
+      .speech-text {
+        width: 100%;
+        height: 100%;
+        min-height: 320px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 12px;
+        background: #fff;
+        color: var(--text);
+        resize: none;
+        outline: none;
+        font: 14px/1.5 "Segoe UI", Arial, sans-serif;
+      }
+
+      .code-editor {
+        font-family: Consolas, monospace;
+        font-size: 12px;
+      }
+
+      .word-surface {
+        min-height: 320px;
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        color: var(--text);
+        line-height: 1.6;
+        overflow: auto;
+        outline: none;
+      }
+
+      .image-stage {
+        min-height: 320px;
+        border: 1px dashed rgba(0, 120, 212, 0.36);
+        border-radius: 7px;
+        background: #fff;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+
+      .image-stage img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+
+      .app-output {
+        min-height: 34px;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--paper2);
+        color: var(--muted);
+        font: 11px/1.35 Consolas, monospace;
+        white-space: pre-wrap;
       }
 
       .receipts,
@@ -680,8 +823,32 @@
           <span class="label">Apps</span>
         </button>
         <button class="desktop-icon" data-open="terminal">
-          <span class="app-icon">KT</span>
-          <span class="label">Kimi Terminal</span>
+          <span class="app-icon">TM</span>
+          <span class="label">Terminal</span>
+        </button>
+        <button class="desktop-icon" data-open="browser">
+          <span class="app-icon">WB</span>
+          <span class="label">Web</span>
+        </button>
+        <button class="desktop-icon" data-open="word">
+          <span class="app-icon">SW</span>
+          <span class="label">Spiral Word</span>
+        </button>
+        <button class="desktop-icon" data-open="editor">
+          <span class="app-icon">ED</span>
+          <span class="label">Editor</span>
+        </button>
+        <button class="desktop-icon" data-open="image">
+          <span class="app-icon">IM</span>
+          <span class="label">Image</span>
+        </button>
+        <button class="desktop-icon" data-open="speech">
+          <span class="app-icon">VO</span>
+          <span class="label">Voice</span>
+        </button>
+        <button class="desktop-icon" data-open="vision">
+          <span class="app-icon">VI</span>
+          <span class="label">Vision</span>
         </button>
         <button class="desktop-icon" data-open="receipts">
           <span class="app-icon">RC</span>
@@ -697,8 +864,8 @@
         <div class="titlebar">
           <div class="title"><span class="app-icon">AP</span><span>Apps</span></div>
           <div class="controls">
-            <button class="control" data-open="launcher" title="Show">-</button>
-            <button class="control" data-open="launcher" title="Focus">□</button>
+            <button class="control" data-minimize="launcher" title="Minimize">-</button>
+            <button class="control" data-snap="launcher:full" title="Snap full">□</button>
             <button class="control close" data-close="launcher" title="Close">x</button>
           </div>
         </div>
@@ -713,10 +880,10 @@
 
       <section class="window" id="window-terminal" data-app="terminal">
         <div class="titlebar">
-          <div class="title"><span class="app-icon">KT</span><span>Kimi Terminal</span></div>
+          <div class="title"><span class="app-icon">TM</span><span>Terminal</span></div>
           <div class="controls">
-            <button class="control" data-open="terminal" title="Show">-</button>
-            <button class="control" data-open="terminal" title="Focus">□</button>
+            <button class="control" data-minimize="terminal" title="Minimize">-</button>
+            <button class="control" data-snap="terminal:full" title="Snap full">□</button>
             <button class="control close" data-close="terminal" title="Close">x</button>
           </div>
         </div>
@@ -724,13 +891,12 @@
           <div class="terminal">
             <div class="terminal-screen" id="terminal-screen">
               <pre>AetherDesk Terminal
-adapter: Kimi shell visual layer
 boundary: allowlisted app actions only
 
-commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
+commands: help, apps, open word, run instrument_play, snap left, clear</pre>
             </div>
             <label class="terminal-input">
-              <span>kimi&gt;</span>
+              <span>ad&gt;</span>
               <input id="terminal-input" autocomplete="off" spellcheck="false" value="help" />
             </label>
             <div class="terminal-actions" id="terminal-actions"></div>
@@ -743,8 +909,8 @@ commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
         <div class="titlebar">
           <div class="title"><span class="app-icon">RC</span><span>GeoSeal Receipts</span></div>
           <div class="controls">
-            <button class="control" data-open="receipts" title="Show">-</button>
-            <button class="control" data-open="receipts" title="Focus">□</button>
+            <button class="control" data-minimize="receipts" title="Minimize">-</button>
+            <button class="control" data-snap="receipts:full" title="Snap full">□</button>
             <button class="control close" data-close="receipts" title="Close">x</button>
           </div>
         </div>
@@ -758,8 +924,8 @@ commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
         <div class="titlebar">
           <div class="title"><span class="app-icon">PV</span><span>Provider Status</span></div>
           <div class="controls">
-            <button class="control" data-open="providers" title="Show">-</button>
-            <button class="control" data-open="providers" title="Focus">□</button>
+            <button class="control" data-minimize="providers" title="Minimize">-</button>
+            <button class="control" data-snap="providers:full" title="Snap full">□</button>
             <button class="control close" data-close="providers" title="Close">x</button>
           </div>
         </div>
@@ -769,6 +935,152 @@ commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
             <button id="refresh-providers" class="chrome-button">Refresh</button>
           </div>
           <div id="providers" class="providers"><p class="empty">checking...</p></div>
+        </div>
+      </section>
+
+      <section class="window hidden" id="window-browser" data-app="browser">
+        <div class="titlebar">
+          <div class="title"><span class="app-icon">WB</span><span>Web Browser</span></div>
+          <div class="controls">
+            <button class="control" data-snap="browser:left" title="Snap left">L</button>
+            <button class="control" data-minimize="browser" title="Minimize">-</button>
+            <button class="control" data-snap="browser:full" title="Snap full">□</button>
+            <button class="control close" data-close="browser" title="Close">x</button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="app-pane two-row">
+            <div class="app-toolbar">
+              <input id="browser-url" value="https://example.com" aria-label="URL" />
+              <button class="chrome-button" id="browser-go">Go</button>
+              <button class="chrome-button" id="browser-open-external">Open Outside</button>
+            </div>
+            <iframe id="browser-frame" class="browser-frame" src="about:blank" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
+          </div>
+        </div>
+      </section>
+
+      <section class="window hidden" id="window-word" data-app="word">
+        <div class="titlebar">
+          <div class="title"><span class="app-icon">SW</span><span>Spiral Word Lite</span></div>
+          <div class="controls">
+            <button class="control" data-snap="word:left" title="Snap left">L</button>
+            <button class="control" data-minimize="word" title="Minimize">-</button>
+            <button class="control" data-snap="word:full" title="Snap full">□</button>
+            <button class="control close" data-close="word" title="Close">x</button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="app-pane">
+            <div class="app-toolbar">
+              <button class="chrome-button" id="word-save">Save Local</button>
+              <button class="chrome-button" id="word-load">Load</button>
+              <button class="chrome-button" id="word-copy">Copy Text</button>
+              <span class="status" id="word-status">Spiral Word-backed surface; ledger wiring next.</span>
+            </div>
+            <article id="word-surface" class="word-surface" contenteditable="true" spellcheck="true">
+              <h2>AetherDesk Document</h2>
+              <p>This is the lightweight writing surface. It stores locally now and can be wired to Spiral Word records.</p>
+            </article>
+            <div class="app-output" id="word-output">ready</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="window hidden" id="window-editor" data-app="editor">
+        <div class="titlebar">
+          <div class="title"><span class="app-icon">ED</span><span>Code Editor</span></div>
+          <div class="controls">
+            <button class="control" data-snap="editor:right" title="Snap right">R</button>
+            <button class="control" data-minimize="editor" title="Minimize">-</button>
+            <button class="control" data-snap="editor:full" title="Snap full">□</button>
+            <button class="control close" data-close="editor" title="Close">x</button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="app-pane">
+            <div class="app-toolbar">
+              <select id="editor-language">
+                <option>javascript</option>
+                <option>python</option>
+                <option>markdown</option>
+                <option>json</option>
+              </select>
+              <button class="chrome-button" id="editor-format">Format JSON</button>
+              <button class="chrome-button" id="editor-copy">Copy</button>
+            </div>
+            <textarea id="code-editor" class="code-editor" spellcheck="false">{"hello":"aetherdesk","tools":["apps","terminal","receipts"]}</textarea>
+            <div class="app-output" id="editor-output">ready</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="window hidden" id="window-image" data-app="image">
+        <div class="titlebar">
+          <div class="title"><span class="app-icon">IM</span><span>Image Processor</span></div>
+          <div class="controls">
+            <button class="control" data-snap="image:left" title="Snap left">L</button>
+            <button class="control" data-minimize="image" title="Minimize">-</button>
+            <button class="control" data-snap="image:full" title="Snap full">□</button>
+            <button class="control close" data-close="image" title="Close">x</button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="app-pane">
+            <div class="app-toolbar">
+              <input id="image-file" type="file" accept="image/*" />
+              <label>Brightness <input id="image-brightness" type="range" min="50" max="150" value="100" /></label>
+              <label>Contrast <input id="image-contrast" type="range" min="50" max="150" value="100" /></label>
+              <button class="chrome-button" id="image-reset">Reset</button>
+            </div>
+            <div class="image-stage"><img id="image-preview" alt="image preview" /></div>
+            <div class="app-output" id="image-output">load an image</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="window hidden" id="window-speech" data-app="speech">
+        <div class="titlebar">
+          <div class="title"><span class="app-icon">VO</span><span>Voice Tools</span></div>
+          <div class="controls">
+            <button class="control" data-snap="speech:right" title="Snap right">R</button>
+            <button class="control" data-minimize="speech" title="Minimize">-</button>
+            <button class="control" data-snap="speech:full" title="Snap full">□</button>
+            <button class="control close" data-close="speech" title="Close">x</button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="app-pane">
+            <div class="app-toolbar">
+              <button class="chrome-button" id="speech-listen">Voice to Text</button>
+              <button class="chrome-button" id="speech-speak">Text to Voice</button>
+              <button class="chrome-button" id="speech-stop">Stop</button>
+            </div>
+            <textarea id="speech-text" class="speech-text">AetherDesk can speak this text and use browser speech recognition when available.</textarea>
+            <div class="app-output" id="speech-output">ready</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="window hidden" id="window-vision" data-app="vision">
+        <div class="titlebar">
+          <div class="title"><span class="app-icon">VI</span><span>Image Recognition</span></div>
+          <div class="controls">
+            <button class="control" data-snap="vision:right" title="Snap right">R</button>
+            <button class="control" data-minimize="vision" title="Minimize">-</button>
+            <button class="control" data-snap="vision:full" title="Snap full">□</button>
+            <button class="control close" data-close="vision" title="Close">x</button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="app-pane">
+            <div class="app-toolbar">
+              <input id="vision-file" type="file" accept="image/*" />
+              <button class="chrome-button" id="vision-analyze">Analyze Pixels</button>
+            </div>
+            <div class="image-stage"><canvas id="vision-canvas" width="640" height="360"></canvas></div>
+            <div class="app-output" id="vision-output">load an image for local pixel analysis</div>
+          </div>
         </div>
       </section>
 
@@ -783,7 +1095,13 @@ commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
         <div class="taskbar-center">
           <button id="start-button" title="Start">AD</button>
           <button data-open="launcher" class="active" title="Apps">AP</button>
-          <button data-open="terminal" title="Kimi Terminal">KT</button>
+          <button data-open="terminal" title="Terminal">TM</button>
+          <button data-open="browser" title="Web">WB</button>
+          <button data-open="word" title="Spiral Word">SW</button>
+          <button data-open="editor" title="Editor">ED</button>
+          <button data-open="image" title="Image">IM</button>
+          <button data-open="speech" title="Voice">VO</button>
+          <button data-open="vision" title="Vision">VI</button>
           <button data-open="receipts" title="Receipts">RC</button>
           <button data-open="providers" title="Providers">PV</button>
         </div>
@@ -802,11 +1120,25 @@ commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
       const terminalStatusEl = $('[data-terminal-status]');
       const desktopIconsEl = $('#desktop-icons');
       const startGridEl = $('#start-grid');
+      const builtInApps = [
+        { label: 'Apps', icon: 'AP', open: 'launcher' },
+        { label: 'Terminal', icon: 'TM', open: 'terminal' },
+        { label: 'Web', icon: 'WB', open: 'browser' },
+        { label: 'Spiral Word', icon: 'SW', open: 'word' },
+        { label: 'Editor', icon: 'ED', open: 'editor' },
+        { label: 'Image', icon: 'IM', open: 'image' },
+        { label: 'Voice', icon: 'VO', open: 'speech' },
+        { label: 'Vision', icon: 'VI', open: 'vision' },
+        { label: 'Receipts', icon: 'RC', open: 'receipts' },
+        { label: 'Providers', icon: 'PV', open: 'providers' },
+      ];
       const terminalActionIds = ['chemistry_lookup', 'token_lookup', 'instrument_play', 'rosetta_demo', 'forge_demo'];
+      const shellActionIds = ['pwd', 'git_status', 'powershell_probe'];
       let z = 10;
       let lastCommands = [];
+      let shellProfiles = [];
       let terminalLog =
-        'AetherDesk Terminal\nadapter: Kimi shell visual layer\nboundary: allowlisted app actions only\n\ncommands: help, apps, open apps, open receipts, run instrument_play, clear';
+        'AetherDesk Terminal\nboundary: allowlisted app actions only\n\ncommands: help, apps, shell, open word, run instrument_play, ps git_status, snap left, clear';
 
       function tickClock() {
         const now = new Date();
@@ -833,19 +1165,58 @@ commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
         const win = $(`#window-${app}`);
         if (!win) return;
         win.classList.remove('hidden');
+        win.classList.remove('minimized');
         win.style.zIndex = String(++z);
         setActive(app);
         $('#start-menu').classList.add('hidden');
       }
 
+      function minimizeApp(app) {
+        const win = $(`#window-${app}`);
+        if (!win) return;
+        win.classList.add('minimized');
+        $(`#taskbar [data-open="${app}"]`)?.classList.remove('active');
+      }
+
       function closeApp(app) {
         const win = $(`#window-${app}`);
-        if (win) win.classList.add('hidden');
+        if (win) {
+          win.classList.add('hidden');
+          win.classList.remove('minimized', 'maximized');
+        }
         $(`#taskbar [data-open="${app}"]`)?.classList.remove('active');
+      }
+
+      function snapApp(app, mode) {
+        const win = $(`#window-${app}`);
+        if (!win) return;
+        win.classList.remove('hidden', 'minimized', 'maximized');
+        win.style.zIndex = String(++z);
+        if (mode === 'full') {
+          win.classList.add('maximized');
+        } else {
+          win.classList.remove('maximized');
+          const gap = 8;
+          const taskbar = 58;
+          const w = Math.floor((window.innerWidth - gap * 3) / 2);
+          const h = window.innerHeight - taskbar - gap * 2;
+          win.style.top = `${gap}px`;
+          win.style.width = `${w}px`;
+          win.style.height = `${h}px`;
+          win.style.left = mode === 'right' ? `${w + gap * 2}px` : `${gap}px`;
+        }
+        setActive(app);
       }
 
       function bindChrome() {
         $$('[data-open]').forEach((el) => el.addEventListener('click', () => openApp(el.dataset.open)));
+        $$('[data-minimize]').forEach((el) => el.addEventListener('click', () => minimizeApp(el.dataset.minimize)));
+        $$('[data-snap]').forEach((el) =>
+          el.addEventListener('click', () => {
+            const [app, mode] = el.dataset.snap.split(':');
+            snapApp(app, mode);
+          })
+        );
         $$('[data-close]').forEach((el) => el.addEventListener('click', () => closeApp(el.dataset.close)));
         $$('.window').forEach((w) => {
           w.addEventListener('pointerdown', () => {
@@ -874,6 +1245,8 @@ commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
       async function loadCommands() {
         const r = await fetch('/api/commands').then((r) => r.json());
         lastCommands = r.commands || [];
+        const shell = await fetch('/api/shell/profiles').then((r) => r.json()).catch(() => ({ profiles: [] }));
+        shellProfiles = shell.profiles || [];
         renderLauncher(lastCommands);
         renderDesktopApps(lastCommands);
         renderStartMenu(lastCommands);
@@ -904,10 +1277,7 @@ commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
       function renderStartMenu(commands) {
         startGridEl.innerHTML = '';
         const pinned = [
-          { label: 'Apps', icon: 'AP', open: 'launcher' },
-          { label: 'Terminal', icon: 'KT', open: 'terminal' },
-          { label: 'Receipts', icon: 'RC', open: 'receipts' },
-          { label: 'Providers', icon: 'PV', open: 'providers' },
+          ...builtInApps,
           ...orderedCommands(commands).slice(0, 6).map((c) => ({ label: shortLabel(c.label), icon: iconGlyph(c.icon), run: c.id })),
         ];
         for (const item of pinned) {
@@ -930,6 +1300,17 @@ commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
           b.dataset.id = c.id;
           b.textContent = c.label;
           b.addEventListener('click', () => runCommand(c.id, b));
+          wrap.appendChild(b);
+        }
+        const shellById = new Map(shellProfiles.map((p) => [p.id, p]));
+        for (const id of shellActionIds) {
+          const p = shellById.get(id);
+          if (!p) continue;
+          const b = document.createElement('button');
+          b.className = 'run';
+          b.dataset.shell = p.id;
+          b.textContent = `PS: ${p.label}`;
+          b.addEventListener('click', () => runShellProfile(p.id, b));
           wrap.appendChild(b);
         }
       }
@@ -1050,21 +1431,53 @@ commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
         }
       }
 
+      async function runShellProfile(id, btn) {
+        const profile = shellProfiles.find((p) => p.id === id);
+        if (btn) btn.disabled = true;
+        appendTerminal(`> ps ${id}\nstatus: running`);
+        terminalStatusEl.textContent = `${profile?.label || id}: running`;
+        terminalStatusEl.className = 'status running';
+        try {
+          const r = await fetch('/api/shell/run', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ id }),
+          }).then((r) => r.json());
+          if (!r.ok) throw new Error(r.error || 'unknown');
+          const msg = `${r.receipt.result} (exit ${r.receipt.exit_code}, ${Math.round(r.receipt.duration_ms / 1000)}s)`;
+          terminalStatusEl.textContent = `${profile?.label || id}: ${msg}`;
+          terminalStatusEl.className = 'status ' + r.receipt.result;
+          appendTerminal(`result: ${msg}\nreceipt: ${r.receipt.task_id}\n\n${tail(r.receipt.stdout_tail || r.receipt.stderr_tail || '', 1600)}`);
+        } catch (err) {
+          const msg = 'error: ' + String(err.message || err);
+          terminalStatusEl.textContent = msg;
+          terminalStatusEl.className = 'status fail';
+          appendTerminal(msg);
+        } finally {
+          if (btn) btn.disabled = false;
+          loadReceipts();
+        }
+      }
+
       function handleTerminal(text) {
         if (!text) return;
         const lower = text.toLowerCase();
-        appendTerminal(`kimi> ${text}`);
+        appendTerminal(`ad> ${text}`);
         if (lower === 'clear') {
           terminalLog = '';
           paintTerminal();
           return;
         }
         if (lower === 'help') {
-          appendTerminal('help | apps | receipts | providers | open <app> | run <command_id> | clear');
+          appendTerminal('help | apps | shell | open <app> | run <command_id> | ps <profile_id> | snap left|right|full | clear');
           return;
         }
         if (lower === 'apps') {
-          appendTerminal(lastCommands.map((c) => `${c.id} - ${c.label}`).join('\n'));
+          appendTerminal([...builtInApps.map((a) => `${a.open} - ${a.label}`), ...lastCommands.map((c) => `${c.id} - ${c.label}`)].join('\n'));
+          return;
+        }
+        if (lower === 'shell') {
+          appendTerminal(shellProfiles.map((p) => `${p.id} - ${p.label} (${p.shell})`).join('\n'));
           return;
         }
         if (lower === 'receipts') {
@@ -1079,11 +1492,42 @@ commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
         }
         if (lower.startsWith('open ')) {
           const app = lower.slice(5).trim();
-          const map = { apps: 'launcher', launcher: 'launcher', terminal: 'terminal', receipts: 'receipts', providers: 'providers' };
+          const map = {
+            apps: 'launcher',
+            launcher: 'launcher',
+            terminal: 'terminal',
+            browser: 'browser',
+            web: 'browser',
+            word: 'word',
+            spiralword: 'word',
+            editor: 'editor',
+            code: 'editor',
+            image: 'image',
+            speech: 'speech',
+            voice: 'speech',
+            vision: 'vision',
+            receipts: 'receipts',
+            providers: 'providers',
+          };
           if (map[app]) {
             openApp(map[app]);
             appendTerminal(`opened ${app}`);
           } else appendTerminal(`unknown app: ${app}`);
+          return;
+        }
+        if (lower.startsWith('snap ')) {
+          const mode = lower.slice(5).trim();
+          const current = document.querySelector('.window.active')?.dataset.app || 'terminal';
+          if (['left', 'right', 'full'].includes(mode)) {
+            snapApp(current, mode);
+            appendTerminal(`snapped ${current} ${mode}`);
+          } else appendTerminal('snap expects left, right, or full');
+          return;
+        }
+        if (lower.startsWith('ps ')) {
+          const id = text.slice(3).trim();
+          if (shellProfiles.some((p) => p.id === id)) runShellProfile(id, null);
+          else appendTerminal(`shell profile not allowlisted: ${id}`);
           return;
         }
         if (lower.startsWith('run ')) {
@@ -1133,6 +1577,146 @@ commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
         }[name] || 'SC';
       }
 
+      function bindWorkspaceApps() {
+        $('#browser-go')?.addEventListener('click', () => {
+          const url = normalizeUrl($('#browser-url').value);
+          $('#browser-url').value = url;
+          $('#browser-frame').src = url;
+        });
+        $('#browser-open-external')?.addEventListener('click', () => {
+          window.open(normalizeUrl($('#browser-url').value), '_blank', 'noopener,noreferrer');
+        });
+
+        $('#word-save')?.addEventListener('click', () => {
+          localStorage.setItem('aetherdesk.word.html', $('#word-surface').innerHTML);
+          $('#word-output').textContent = `saved ${new Date().toLocaleTimeString()}`;
+        });
+        $('#word-load')?.addEventListener('click', () => {
+          $('#word-surface').innerHTML = localStorage.getItem('aetherdesk.word.html') || $('#word-surface').innerHTML;
+          $('#word-output').textContent = 'loaded local document';
+        });
+        $('#word-copy')?.addEventListener('click', async () => {
+          await navigator.clipboard?.writeText($('#word-surface').innerText || '');
+          $('#word-output').textContent = 'copied plain text';
+        });
+
+        $('#editor-format')?.addEventListener('click', () => {
+          try {
+            $('#code-editor').value = JSON.stringify(JSON.parse($('#code-editor').value), null, 2);
+            $('#editor-output').textContent = 'formatted JSON';
+          } catch (err) {
+            $('#editor-output').textContent = `format failed: ${err.message || err}`;
+          }
+        });
+        $('#editor-copy')?.addEventListener('click', async () => {
+          await navigator.clipboard?.writeText($('#code-editor').value);
+          $('#editor-output').textContent = 'copied editor buffer';
+        });
+
+        const updateImageFilter = () => {
+          const img = $('#image-preview');
+          img.style.filter = `brightness(${$('#image-brightness').value}%) contrast(${$('#image-contrast').value}%)`;
+          $('#image-output').textContent = img.src ? `filter ${img.style.filter}` : 'load an image';
+        };
+        $('#image-file')?.addEventListener('change', (e) => loadImageFile(e.target.files?.[0], $('#image-preview'), $('#image-output')));
+        $('#image-brightness')?.addEventListener('input', updateImageFilter);
+        $('#image-contrast')?.addEventListener('input', updateImageFilter);
+        $('#image-reset')?.addEventListener('click', () => {
+          $('#image-brightness').value = 100;
+          $('#image-contrast').value = 100;
+          updateImageFilter();
+        });
+
+        $('#speech-speak')?.addEventListener('click', () => {
+          const utterance = new SpeechSynthesisUtterance($('#speech-text').value);
+          speechSynthesis.cancel();
+          speechSynthesis.speak(utterance);
+          $('#speech-output').textContent = 'speaking';
+        });
+        $('#speech-stop')?.addEventListener('click', () => {
+          speechSynthesis.cancel();
+          $('#speech-output').textContent = 'stopped';
+        });
+        $('#speech-listen')?.addEventListener('click', () => {
+          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          if (!SpeechRecognition) {
+            $('#speech-output').textContent = 'speech recognition unavailable in this browser';
+            return;
+          }
+          const rec = new SpeechRecognition();
+          rec.lang = 'en-US';
+          rec.interimResults = false;
+          rec.onresult = (e) => {
+            $('#speech-text').value += `\n${e.results[0][0].transcript}`;
+            $('#speech-output').textContent = 'transcribed speech';
+          };
+          rec.onerror = (e) => ($('#speech-output').textContent = `speech error: ${e.error}`);
+          rec.start();
+          $('#speech-output').textContent = 'listening';
+        });
+
+        $('#vision-file')?.addEventListener('change', (e) => drawVisionImage(e.target.files?.[0]));
+        $('#vision-analyze')?.addEventListener('click', analyzeVisionPixels);
+      }
+
+      function normalizeUrl(value) {
+        const s = String(value || '').trim();
+        if (!s) return 'about:blank';
+        if (/^(https?:|about:)/i.test(s)) return s;
+        return `https://${s}`;
+      }
+
+      function loadImageFile(file, img, out) {
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+          out.textContent = `${file.name}: ${img.naturalWidth}x${img.naturalHeight}`;
+        };
+        img.src = url;
+      }
+
+      function drawVisionImage(file) {
+        if (!file) return;
+        const canvas = $('#vision-canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+          const w = Math.max(1, Math.floor(img.width * scale));
+          const h = Math.max(1, Math.floor(img.height * scale));
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, w, h);
+          $('#vision-output').textContent = `${file.name}: ${img.width}x${img.height}`;
+        };
+        img.src = URL.createObjectURL(file);
+      }
+
+      function analyzeVisionPixels() {
+        const canvas = $('#vision-canvas');
+        const ctx = canvas.getContext('2d');
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let r = 0;
+        let g = 0;
+        let b = 0;
+        let n = 0;
+        for (let i = 0; i < data.length; i += 16) {
+          if (data[i + 3] === 0) continue;
+          r += data[i];
+          g += data[i + 1];
+          b += data[i + 2];
+          n++;
+        }
+        if (!n) {
+          $('#vision-output').textContent = 'no visible pixels found';
+          return;
+        }
+        r = Math.round(r / n);
+        g = Math.round(g / n);
+        b = Math.round(b / n);
+        const brightness = Math.round((r + g + b) / 3);
+        $('#vision-output').textContent = `avg rgb(${r}, ${g}, ${b}) | brightness ${brightness}/255 | sampled ${n} pixels`;
+      }
+
       async function loadProviders() {
         const providersEl = $('#providers');
         const stampEl = $('#provider-stamp');
@@ -1168,6 +1752,7 @@ commands: help, apps, open apps, open receipts, run instrument_play, clear</pre>
 
       $('#refresh-providers').addEventListener('click', loadProviders);
       bindChrome();
+      bindWorkspaceApps();
       tickClock();
       setInterval(tickClock, 30000);
       loadCommands();
