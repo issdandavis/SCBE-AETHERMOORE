@@ -183,6 +183,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--curve", choices=CURVES, default="linear", help="the slope shape (level design)")
     ap.add_argument("--patience", type=int, default=1, help="consecutive crashes the rider survives")
     ap.add_argument("--compare", action="store_true", help="the same capped rider on every slope shape")
+    ap.add_argument("--llm", action="store_true", help="ride a free local small model (Ollama via helm.free_generator)")
+    ap.add_argument("--model", help="model id for --llm (default: SCBE_LLM_MODEL or the free_generator default)")
     a = ap.parse_args(list(argv) if argv is not None else None)
 
     if a.compare:
@@ -198,13 +200,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     if a.naive:
         gen = naive_generator
+    elif a.llm:
+        from .free_generator import make_generator
+
+        gen = make_generator(model=a.model)
     elif a.capped is not None:
         gen = skill_capped_generator(a.capped, curve=a.curve)
     else:
         gen = reference_generator
     r = ride(gen, curve=a.curve, patience=a.patience)
     print(render(r))
-    if a.capped is not None:
+    if a.capped is not None or a.llm:
         c = cliff_vs_slope(gen, curve=a.curve, patience=a.patience)
         print(
             "\n  CLIFF vs SLOPE: the tier cliff says 'tier %d (%s)'; the slope also credits %s"
