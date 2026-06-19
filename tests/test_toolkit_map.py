@@ -61,3 +61,36 @@ def test_strategize_counts_and_recommends_a_move():
     assert isinstance(s["bitboards"], dict) and "high_value" in s["bitboards"]
     rec = s["recommended"]
     assert rec and rec["lane"] and rec["card"] and isinstance(rec["score"], float)
+
+
+def test_run_diagnoses_a_failure_and_keeps_the_chain():
+    m = TaskMap()
+    out = m.run("run_level", [])  # guarded, no confirm
+    assert out["decision"] == "NEEDS_CONFIRM"
+    assert out["diagnosis"]["cause"] == "needs_confirm" and out["diagnosis"]["retry_safe"] is False
+    assert out["chain_ok"] is True  # chain verification still passes after the sealed diagnosis
+
+
+def test_run_allowed_call_has_no_diagnosis():
+    m = TaskMap()
+    out = m.run("is_prime", 7)
+    assert out["decision"] == "ALLOWED" and "diagnosis" not in out and out["chain_ok"] is True
+
+
+def test_confirmation_required_failure_is_not_auto_retried():
+    m = TaskMap()
+    m.run("run_level", [])  # must NOT silently retry with a confirm
+    allowed_runs = [r for r in m.tk.transcript if r.get("tool") == "run_level" and r.get("decision") == "ALLOWED"]
+    assert allowed_runs == []  # no auto-retry happened
+
+
+def test_diagnose_drift_localizes_the_wall_via_failure_map():
+    from python.scbe.sieve_calc import classify_number_task
+    from python.scbe.stepwise import scripted_proposer
+
+    m = TaskMap()
+    # 91 is composite; a model that always says 'prime' drifts at the label step
+    drift = m.diagnose_drift(classify_number_task(91), scripted_proposer(["prime", "prime", "prime", "prime"]))
+    assert drift["cleared"] is False
+    assert drift["drift"]["stuck_at"] == "label"  # failure_map localizes the wall step
+    assert "offload" in drift["recovery"] and "sieve_calc" in drift["recovery"]
