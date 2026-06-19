@@ -24,3 +24,4 @@ python/scbe/pair_loop.py :: juggling harness routing small or free models - impr
 python/scbe/game_board.py :: a task as a board game - the rules are governance, winning is the work
 python/scbe/failure_map.py :: aggregate stepwise runs across tasks and models into a drift map - per-run drift point, per-task wall, cross-model clearers, universal-fail steps
 scripts/system/agentic_pazaak_board.py :: pazaak bitboard planner - score task lanes by value and risk and verified, recommend the next card move
+python/helm/host_capability.py :: probe the host for toolchains models and resources and certify which capabilities run here (aetherdesk boot check)
