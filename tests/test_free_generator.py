@@ -35,3 +35,34 @@ def test_endpoint_failure_fails_verification_not_silently_wrong(monkeypatch):
     monkeypatch.setattr(fg, "_chat", boom)
     s = run_public_bench(probs, generator=fg.make_generator(), public_k=1)
     assert s["verified"] == 0  # a dead endpoint yields a stub that FAILS -- never ships wrong code
+
+
+def test_repair_generator_uses_execution_feedback_to_fix(monkeypatch):
+    # bad code first -> public fails -> repair prompt includes the failure -> good code -> passes.
+    # proves the loop FIRES and acts on execution feedback (not a no-op).
+    calls = []
+
+    def fake_chat(messages, **kw):
+        calls.append(messages[0]["content"])
+        return "def f():\n    return 0" if len(calls) == 1 else "def add(a, b):\n    return a + b"
+
+    monkeypatch.setattr(fg, "_chat", fake_chat)
+    gen = fg.make_repair_generator(model="mock", rounds=2)
+    out = gen({"prompt": "add a and b", "test_list": ["assert add(1,2)==3", "assert add(5,5)==10"], "test_imports": []})
+    assert len(calls) == 2  # the loop retried after the public failure
+    assert "FAILED" in calls[1]  # the retry prompt carried the execution feedback
+    assert "def add" in out  # and the repaired code is what's returned
+
+
+def test_repair_generator_only_sees_public_not_hidden(monkeypatch):
+    # the repair loop must never receive the hidden tests -- honest lift, not leakage
+    seen = []
+
+    def fake_chat(messages, **kw):
+        seen.append(messages[0]["content"])
+        return "def f():\n    return 1"  # always wrong -> forces every repair round to run
+
+    monkeypatch.setattr(fg, "_chat", fake_chat)
+    gen = fg.make_repair_generator(model="mock", rounds=2, public_k=1)
+    gen({"prompt": "p", "test_list": ["assert f()==1", "assert f()==2  # HIDDEN"], "test_imports": []})
+    assert not any("HIDDEN" in s for s in seen)  # the hidden assert never reached the model

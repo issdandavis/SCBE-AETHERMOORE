@@ -34,6 +34,20 @@ The thesis is **lift**: not a smarter model, the *same* model with its choices r
 
 **Honest caveats:** program-aided reasoning (PAL/PoT) is an established technique, not novel here. It lifts *computation-heavy* reasoning specifically (plays to a coder model's strength: writing code), and is **not** universal — tool/rails routing gave no lift on some tasks elsewhere. The contiguous-tier metric *understates* it (PAL trips one trivial arithmetic item → reads tier 0); the **total** (8.3 → 15) is the signal.
 
+### Same routing on the CODE ladder — and the contrast that matters
+
+`make_repair_generator`: write code → run the **public** test → on failure, feed the error back and retry (hidden held out, no leakage).
+
+| 1.5B, code ladder | total /15 |
+|---|---|
+| RAW (single shot) | 13 |
+| repair (2 rounds) | **13** |
+| **lift** | **+0** |
+
+The +0 is the finding, not a dud. The loop **fires** on both remaining misses (public fails for `fizzbuzz` + `regex`; a unit test proves it retries with the failure in the prompt) — but the 1.5B regenerates code that *still fails*. It can't act on the signal: `fizzbuzz` is a **prior-override** (it keeps writing the reflexive Fizz/Buzz despite the failing test), `regex` is a real **capability ceiling**.
+
+**The lesson:** tool-routing lifts when it **supplies a missing capability** (compute the math the model can't do in its head → reasoning **+6–7**); it does **nothing** when the failure is a prior or capability ceiling (code **+0**). This is "harness rescues interface/computation gaps, not capability" in two contrasting measurements.
+
 ## Reproduce
 
 ```bash

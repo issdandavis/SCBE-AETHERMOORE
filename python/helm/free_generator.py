@@ -74,3 +74,52 @@ def make_generator(
 
     generator.__name__ = "free_llm(%s)" % model
     return generator
+
+
+def make_repair_generator(
+    base: Optional[str] = None,
+    key: Optional[str] = None,
+    model: Optional[str] = None,
+    public_k: int = 1,
+    rounds: int = 2,
+) -> Callable[[Dict[str, Any]], str]:
+    """Execution-feedback repair -- the CODE-ladder analog of routing reasoning through execution.
+
+    The model writes code; we RUN it against the PUBLIC example(s) only and, on failure, feed the code
+    plus the failing assert back and let it fix, up to `rounds` times. Hidden tests stay held out (the
+    model never sees them), so any gain is honest lift, not leakage. Same model -- only the routing
+    changed: the executor checks the model's choice and the error corrects it."""
+    base = base or os.environ.get("SCBE_LLM_BASE", DEFAULT_BASE)
+    key = key or os.environ.get("SCBE_LLM_KEY", "ollama")
+    model = model or os.environ.get("SCBE_LLM_MODEL", DEFAULT_MODEL)
+    first = make_generator(base=base, key=key, model=model, public_k=public_k)
+
+    def generator(problem: Dict[str, Any]) -> str:
+        from . import public_bench as pb  # lazy import avoids any cycle
+
+        public = list(problem.get("test_list", []))[:public_k]
+        imports = list(problem.get("test_imports", []))
+        code = first(problem)
+        for _ in range(rounds):
+            res = pb._verify(code, public, [], imports)  # PUBLIC only; hidden never shown
+            if res.get("public_passed"):
+                break
+            fails = "; ".join(res.get("public_failures", []) or [])[:300]
+            prompt = (
+                (problem.get("prompt") or problem.get("text") or "").strip()
+                + "\n\nYour previous code:\n"
+                + code
+                + "\n\nIt FAILED this check:\n"
+                + "\n".join(public)
+                + "\nError: "
+                + (fails or "did not pass")
+                + "\nReturn ONLY corrected Python code."
+            )
+            try:
+                code = strip_to_code(_chat([{"role": "user", "content": prompt}], base=base, key=key, model=model))
+            except Exception:
+                break
+        return code
+
+    generator.__name__ = "repair_llm(%s,r=%d)" % (model, rounds)
+    return generator
