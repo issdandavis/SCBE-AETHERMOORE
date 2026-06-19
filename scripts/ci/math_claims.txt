@@ -22,3 +22,5 @@ python/scbe/bijective_dna.py :: opcode strand with an involution complement and 
 python/scbe/stepwise.py :: guided step machine - run calc steps in code, a misstep rewinds to before the bad step and retries with rebuilt context
 python/scbe/pair_loop.py :: juggling harness routing small or free models - improvise only when needed, by strength
 python/scbe/game_board.py :: a task as a board game - the rules are governance, winning is the work
+python/scbe/failure_map.py :: aggregate stepwise runs across tasks and models into a drift map - per-run drift point, per-task wall, cross-model clearers, universal-fail steps
+scripts/system/agentic_pazaak_board.py :: pazaak bitboard planner - score task lanes by value and risk and verified, recommend the next card move
