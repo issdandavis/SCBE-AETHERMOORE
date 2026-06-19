@@ -53,6 +53,17 @@ PT1 = [  # elementary, but not the canonical one-liners
         "def count_odds(xs):\n    return sum(1 for x in xs if x % 2 != 0)\n",
         ["assert count_odds([1, 2, 3, 4]) == 2", "assert count_odds([2, 4]) == 0", "assert count_odds([1, 3, 5]) == 3"],
     ),
+    _p(
+        "p1_clamp",
+        "Write `clamp(x, lo, hi)` returning x limited to the range [lo, hi] (lo if below, hi if above).",
+        "def clamp(x, lo, hi):\n    return max(lo, min(x, hi))\n",
+        [
+            "assert clamp(5, 0, 10) == 5",
+            "assert clamp(-3, 0, 10) == 0",
+            "assert clamp(15, 0, 10) == 10",
+            "assert clamp(7, 7, 7) == 7",
+        ],
+    ),
 ]
 
 PT2 = [  # loops + strings, twisted
@@ -90,6 +101,20 @@ PT2 = [  # loops + strings, twisted
             "assert consonant_count('hello') == 3",
             "assert consonant_count('aeiou') == 0",
             "assert consonant_count('xyz') == 3",
+        ],
+    ),
+    _p(
+        "p2_caesar_shift",
+        "Write `caesar_shift(s, k)` that shifts each lowercase letter in s forward by k positions in the alphabet "
+        "(wrapping z->a), leaving every other character unchanged.",
+        "def caesar_shift(s, k):\n    out = []\n    for c in s:\n        if 'a' <= c <= 'z':\n"
+        "            out.append(chr((ord(c) - 97 + k) % 26 + 97))\n        else:\n            out.append(c)\n"
+        "    return ''.join(out)\n",
+        [
+            "assert caesar_shift('abc', 1) == 'bcd'",
+            "assert caesar_shift('xyz', 2) == 'zab'",
+            "assert caesar_shift('hello', 0) == 'hello'",
+            "assert caesar_shift('a b', 1) == 'b c'",
         ],
     ),
 ]
@@ -130,6 +155,17 @@ PT3 = [  # algorithms, twisted
             "assert count_less([2, 2, 2], 2) == 0",
         ],
     ),
+    _p(
+        "p3_coprime",
+        "Write `coprime(a, b)` returning True iff a and b are coprime (their greatest common divisor is 1).",
+        "def coprime(a, b):\n    from math import gcd\n    return gcd(a, b) == 1\n",
+        [
+            "assert coprime(7, 5) == True",
+            "assert coprime(12, 8) == False",
+            "assert coprime(1, 9) == True",
+            "assert coprime(6, 9) == False",
+        ],
+    ),
 ]
 
 PT4 = [  # data structures + DP, twisted
@@ -168,6 +204,18 @@ PT4 = [  # data structures + DP, twisted
             "assert longest_decreasing([1, 2, 3]) == 1",
             "assert longest_decreasing([]) == 0",
             "assert longest_decreasing([9, 8, 7]) == 3",
+        ],
+    ),
+    _p(
+        "p4_most_common_char",
+        "Write `most_common_char(s)` returning the most frequent character in the non-empty string s; "
+        "on a tie, return the smallest character.",
+        "def most_common_char(s):\n    from collections import Counter\n    c = Counter(s)\n"
+        "    return min(c, key=lambda ch: (-c[ch], ch))\n",
+        [
+            "assert most_common_char('aabbbc') == 'b'",
+            "assert most_common_char('abab') == 'a'",
+            "assert most_common_char('z') == 'z'",
         ],
     ),
 ]
@@ -216,6 +264,22 @@ PT5 = [  # hard DP / strings, twisted
             "assert is_subsequence('axc', 'ahbgdc') == False",
             "assert is_subsequence('', 'abc') == True",
             "assert is_subsequence('abc', 'ab') == False",
+        ],
+    ),
+    _p(
+        "p5_lcsubstr",
+        "Write `longest_common_substring(a, b)` returning the length of the longest CONTIGUOUS substring common to "
+        "strings a and b (contiguous, not a subsequence).",
+        "def longest_common_substring(a, b):\n    m, n = len(a), len(b)\n    best = 0\n"
+        "    dp = [[0] * (n + 1) for _ in range(m + 1)]\n"
+        "    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n"
+        "            if a[i - 1] == b[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n"
+        "                if dp[i][j] > best:\n                    best = dp[i][j]\n    return best\n",
+        [
+            "assert longest_common_substring('abcde', 'zbcdf') == 3",
+            "assert longest_common_substring('abc', 'abc') == 3",
+            "assert longest_common_substring('abc', 'xyz') == 0",
+            "assert longest_common_substring('aaa', 'aa') == 2",
         ],
     ),
 ]
