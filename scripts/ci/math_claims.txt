@@ -19,3 +19,6 @@ python/scbe/geometric_router.py :: route tasks to agents by tongue-weighted fins
 python/scbe/geometric_router.py#streams :: bind two instruction streams where their embedded points are within epsilon, a depth coordinate gating the distance
 python/scbe/dna_parse.py :: bijective hex to base-4 codec, one nibble is two base-4 symbols
 python/scbe/bijective_dna.py :: opcode strand with an involution complement and midpoint replication-fork assembly across language faces
+python/scbe/stepwise.py :: guided step machine - run calc steps in code, a misstep rewinds to before the bad step and retries with rebuilt context
+python/scbe/pair_loop.py :: juggling harness routing small or free models - improvise only when needed, by strength
+python/scbe/game_board.py :: a task as a board game - the rules are governance, winning is the work
