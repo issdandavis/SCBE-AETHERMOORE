@@ -104,3 +104,69 @@ def test_rust_face_agrees_on_arrays_and_recursion():
     for name in ("array_max", "factorial_recursive", "fib_recursive", "sum_array_fn"):
         r = verify(parse(EXAMPLES[name]), faces=("rust",))
         assert r["results"]["rust"] == {"status": "AGREE", "value": _EXPECT[name]}
+
+
+# --- strings (text values as heap arrays of char codes) ------------------------
+
+_STR_EXPECT = {
+    "string_reverse": "olleh",
+    "string_concat": "foobar",
+    "fizzbuzz_15": "FizzBuzz",
+    "char_match": 1.0,
+}
+
+
+def test_reference_strings_text_in_text_out():
+    assert _ref("string_reverse") == "olleh"  # str literal -> index -> prints
+    assert _ref("string_concat") == "foobar"  # concat appends one code array onto another
+    assert _ref("fizzbuzz_15") == "FizzBuzz"  # mod + a text branch
+    assert _ref("char_match") == 1.0  # char literal compared to a string's first code
+
+
+def test_string_is_a_heap_array_of_char_codes():
+    # a string literal is exactly its character codes; array ops read it
+    prog = parse('str s "Hi" / const z 0 / get c s z / alen n s / print c / halt')
+    assert interpret(prog)[-1] == float(ord("H"))  # get s[0] -> 'H' code 72
+    prog2 = parse('str s "hello" / alen n s / print n / halt')
+    assert interpret(prog2)[-1] == 5.0  # alen is string length
+
+
+def test_char_and_mod_ops():
+    assert interpret(parse('char d "(" / print d / halt'))[-1] == 40.0  # '(' code
+    assert interpret(parse("const a 17 / const b 5 / mod r a b / print r / halt"))[-1] == 2.0
+    assert interpret(parse("const a 15 / const b 5 / mod r a b / print r / halt"))[-1] == 0.0
+
+
+def test_unterminated_string_literal_raises():
+    with pytest.raises(ValueError, match="unterminated string"):
+        parse('str s "oops')
+
+
+def test_python_face_matches_reference_on_strings_unconditionally():
+    for name, expect in _STR_EXPECT.items():
+        r = verify(parse(EXAMPLES[name]), faces=("python",))
+        assert r["reference"] == expect
+        assert r["results"]["python"] == {"status": "AGREE", "value": expect}
+
+
+def test_a_wrong_text_answer_is_a_disagree_not_a_pass():
+    # agreement is exact-string: a face printing the wrong text must not count as verified
+    prog = parse('str s "olleh" / prints s / halt')  # prints "olleh"
+    r = verify(prog, faces=("python",))
+    assert r["reference"] == "olleh"
+    # sanity: a different reference string would not match this output
+    assert "hello" != r["results"]["python"]["value"]
+
+
+@pytest.mark.skipif(not _HAVE_NODE, reason="node not installed")
+def test_javascript_face_agrees_on_strings():
+    for name, expect in _STR_EXPECT.items():
+        r = verify(parse(EXAMPLES[name]), faces=("javascript",))
+        assert r["results"]["javascript"] == {"status": "AGREE", "value": expect}
+
+
+@pytest.mark.skipif(not _HAVE_RUST, reason="rustc not installed")
+def test_rust_face_agrees_on_strings():
+    for name, expect in _STR_EXPECT.items():
+        r = verify(parse(EXAMPLES[name]), faces=("rust",))
+        assert r["results"]["rust"] == {"status": "AGREE", "value": expect}
