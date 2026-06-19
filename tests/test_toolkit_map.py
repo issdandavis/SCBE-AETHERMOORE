@@ -94,3 +94,16 @@ def test_diagnose_drift_localizes_the_wall_via_failure_map():
     assert drift["cleared"] is False
     assert drift["drift"]["stuck_at"] == "label"  # failure_map localizes the wall step
     assert "offload" in drift["recovery"] and "sieve_calc" in drift["recovery"]
+
+
+def test_run_with_drifted_stepwise_diagnoses_and_localizes_live():
+    from python.scbe.sieve_calc import classify_number_task
+    from python.scbe.stepwise import scripted_proposer
+
+    m = TaskMap()
+    out = m.run("run_stepwise", classify_number_task(91), scripted_proposer(["prime", "prime", "prime", "prime"]))
+    assert out["decision"] == "ALLOWED"  # the tool call itself succeeded; the RESULT drifted
+    assert out["diagnosis"]["cause"] == "step_drift" and out["diagnosis"]["retry_safe"] is False
+    assert out["chain_ok"] is True
+    # the LIVE run() path actually ran failure_map.localize -> the wall step
+    assert out["drift"]["drift"]["stuck_at"] == "label" and "offload" in out["drift"]["recovery"]

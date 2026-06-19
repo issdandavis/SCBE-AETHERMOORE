@@ -103,6 +103,15 @@ def test_diagnose_destructive_is_not_retried():
     assert d["cause"] == "refused_destructive" and d["retry_safe"] is False
 
 
+def test_diagnose_no_tool_and_error_classify_and_seal():
+    tk = default_toolkit()
+    d1 = tk.diagnose(tk.invoke("no_such_tool"))
+    assert d1["cause"] == "unknown_tool" and d1["retry_safe"] is False
+    d2 = tk.diagnose(tk.invoke("from_cube", 1))  # wrong arity -> the tool raises -> ERROR
+    assert d2["cause"] == "tool_error" and d2["retry_safe"] is False
+    assert tk.verify() is True  # both diagnoses sealed into the chain
+
+
 def test_diagnose_unavailable_suggests_a_safe_same_domain_alternative():
     # deterministic: a broken tool + an importable same-domain alternative (env-independent)
     tools = [
