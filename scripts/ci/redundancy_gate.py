@@ -103,6 +103,36 @@ def audit(registry: Sequence[Tuple[str, str]], threshold: float = 0.5) -> List[T
     return sorted(hits, key=lambda h: -h[2])
 
 
+# High-signal concepts where a re-implementation/re-encoding is common and adds NO new power
+# (re-encoding Brainfuck as cube moves is still Brainfuck -- same TC, zero new capability). If a new
+# claim AND a registered module both mention one, flag it for review even when token-overlap is low:
+# the lexical gate misses these (different surface vocab, same idea -- e.g. 'cube moves' vs 'binary spine').
+_CONCEPTS = [
+    "turing complete",
+    "turing-complete",
+    "brainfuck",
+    "minsky",
+    "register machine",
+    "unbounded tape",
+    "two-counter",
+    "2-counter",
+]
+
+
+def concept_matches(claim: str, registry: Sequence[Tuple[str, str]]) -> List[Tuple[str, List[str]]]:
+    """High-signal concept words shared between `claim` and registered claims -- catches re-encodings
+    token-overlap misses (a 'cube moves' claim won't Jaccard-match 'binary spine', but both say
+    'turing complete' / 'brainfuck'). Returns [(concept, [modules that also claim it])]."""
+    low = claim.lower()
+    out: List[Tuple[str, List[str]]] = []
+    for phrase in _CONCEPTS:
+        if phrase in low:
+            mods = [m for m, cl in registry if phrase in cl.lower()]
+            if mods:
+                out.append((phrase, mods))
+    return out
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     ap = argparse.ArgumentParser(
         prog="redundancy-gate", description="surface conceptually-redundant work before it lands"
@@ -124,12 +154,18 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if a.claim:
         hits = check(a.claim, reg, a.threshold)
-        if not hits:
-            print("no claim on main overlaps >= %.2f -- looks new, clear to build" % a.threshold)
+        concepts = concept_matches(a.claim, reg)
+        if not hits and not concepts:
+            print("no overlap >= %.2f and no flagged concepts -- looks new, clear to build" % a.threshold)
             return 0
-        print("REVIEW -- this overlaps existing work (might be redundant before you write a line):")
-        for mod, c, s in hits:
-            print('  %.2f  %s\n        "%s"' % (s, mod, c))
+        if hits:
+            print("REVIEW -- overlaps existing work (might be redundant before you write a line):")
+            for mod, c, s in hits:
+                print('  %.2f  %s\n        "%s"' % (s, mod, c))
+        if concepts:
+            print("CONCEPT FLAGS -- a re-encodable concept (re-encoding adds NO power); review the cores:")
+            for phrase, mods in concepts:
+                print("  '%s' -> %s" % (phrase, ", ".join(mods)))
         return 1 if a.strict else 0
 
     ap.error('give --claim "<one-line math>" or --audit')
