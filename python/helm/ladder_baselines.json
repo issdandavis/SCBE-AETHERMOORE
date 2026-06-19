@@ -16,5 +16,13 @@
       "per_tier": {"elementary": 3, "middle-school": 2, "high-school": 3, "undergrad": 3, "grad/phd+": 2}},
     "qwen2.5-coder:3b": {"runs": [13, 13, 13], "min": 13, "mean": 13.0, "max": 13,
       "per_tier": {"elementary": 3, "middle-school": 2, "high-school": 3, "undergrad": 2, "grad/phd+": 3}}
+  },
+  "walls": {
+    "note": "Specific items both models consistently fail -- the capability basement. Verified REAL misses, not extraction artifacts (p4 'perimeter 5x8' -> 3b answers 42, expected 26: small models flub even easy word problems). fizzbuzz is a UNIVERSAL code wall = the memorized-prior ceiling, independently reproducing the stepwise finding.",
+    "reasoning_both_miss": ["p4", "c2", "c3", "m1", "m3", "m4", "h1", "h2", "h3", "h4"],
+    "reasoning_only_1.5b_misses": ["c1", "p1"],
+    "code_both_miss": ["t2_fizzbuzz"],
+    "code_only_1.5b_misses": ["t5_regex"],
+    "code_only_3b_misses": ["t4_lis"]
   }
 }
