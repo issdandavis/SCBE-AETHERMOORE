@@ -18,8 +18,8 @@ from python.helm.perturbed import PERTURBED_CURRICULUM, verify_buildable  # noqa
 
 def test_perturbed_ladder_is_solvable_and_floored():
     r = verify_buildable()
-    assert r["problems"] == 15
-    assert r["reference_verified"] == 15  # the answer key clears all -> the twists are solvable
+    assert r["problems"] == 20
+    assert r["reference_verified"] == 20  # the answer key clears all -> the twists are solvable
     assert r["naive_verified"] == 0  # the failing stub clears none -> a real floor
 
 
@@ -27,12 +27,12 @@ def test_perturbed_problems_are_disjoint_from_the_canonical_ones():
     canon = {p["task_id"] for t in CURRICULUM for p in t["problems"]}
     pert = {p["task_id"] for t in PERTURBED_CURRICULUM for p in t["problems"]}
     assert not (canon & pert)  # no shared task ids -- these are new problems
-    assert len(pert) == 15
+    assert len(pert) == 20
 
 
 def test_perturbed_mirrors_the_tier_structure():
     assert [t["tier"] for t in PERTURBED_CURRICULUM] == [1, 2, 3, 4, 5]
-    assert all(len(t["problems"]) == 3 for t in PERTURBED_CURRICULUM)
+    assert all(len(t["problems"]) == 4 for t in PERTURBED_CURRICULUM)
 
 
 def test_a_twisted_reference_encodes_the_new_spec_not_the_canonical_one():
