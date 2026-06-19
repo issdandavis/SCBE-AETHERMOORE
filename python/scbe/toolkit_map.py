@@ -71,11 +71,23 @@ def _demo_loomflow(tk: Toolkit) -> Tuple[bool, str]:
 
 
 def _demo_cross_face(tk: Toolkit) -> Tuple[bool, str]:
-    v = tk.invoke("verify", tk.invoke("parse", "const a 5\nprint a")["result_obj"], faces=["python"])["result_obj"]
+    # Run the FULL face set (python/javascript/rust), each emitted + EXECUTED + compared to the
+    # reference -- so "faces agree" is literal cross-face agreement, not one-face-vs-reference.
+    faces = ("python", "javascript", "rust")
+    v = tk.invoke("verify", tk.invoke("parse", "const a 5\nprint a")["result_obj"], faces=faces)["result_obj"]
     p2 = tk.invoke("parse_fn", "const a 6\nconst b 7\nmul c a b\nprint c")["result_obj"]
-    v2 = tk.invoke("verify_fn", p2, faces=("python",))["result_obj"]
-    ok = bool(v and v["results"]["python"]["status"] == "AGREE" and v2 and v2["reference"] == 42.0)
-    return ok, "loomflow python=AGREE; loomfn mul -> reference %s" % (v2["reference"] if v2 else None)
+    v2 = tk.invoke("verify_fn", p2, faces=faces)["result_obj"]
+
+    def cross_agree(res) -> bool:
+        # literal cross-face: >= 2 faces actually RAN and AGREED, and NONE disagreed (a missing
+        # toolchain is NO_TOOLCHAIN, not a pass; a real mismatch is DISAGREE and fails the area)
+        return bool(res) and len(res["verified"]) >= 2 and not res["disagree"]
+
+    ok = cross_agree(v) and cross_agree(v2) and bool(v2) and v2["reference"] == 42.0
+    return ok, "loomflow faces agree=%s; loomfn mul=42 faces agree=%s" % (
+        sorted(v["verified"]) if v else [],
+        sorted(v2["verified"]) if v2 else [],
+    )
 
 
 def _demo_board(tk: Toolkit) -> Tuple[bool, str]:
