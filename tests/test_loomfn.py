@@ -75,6 +75,34 @@ def test_unknown_op_and_unknown_function_raise():
         interpret(parse("call r nope / halt"))
 
 
+# --- strings (a string is an array of char codes) ------------------------------
+
+
+def test_strlit_loads_a_string_as_char_codes():
+    # strlit builds the code-point array; get reads one code back
+    assert interpret(parse("strlit s abc / const i 0 / get c s i / print c / halt"))[-1] == 97.0  # 'a'
+    assert interpret(parse("strlit s abc / alen n s / print n / halt"))[-1] == 3.0  # length
+    assert interpret(parse("strlit s / alen n s / print n / halt"))[-1] == 0.0  # empty string
+
+
+def test_chr_gives_a_char_code():
+    assert interpret(parse("chr d a / print d / halt"))[-1] == 97.0
+    assert interpret(parse("chr d z / print d / halt"))[-1] == 122.0
+
+
+def test_reference_string_programs():
+    assert _ref("str_len") == 5.0  # len('hello')
+    assert _ref("vowel_count") == 3.0  # 'programming' -> o, a, i
+
+
+@pytest.mark.skipif(not (_HAVE_NODE and _HAVE_RUST), reason="node+rustc needed")
+def test_string_program_agrees_across_faces():
+    # the real point: a string program computes the same answer in python, js, and rust
+    r = verify(parse(EXAMPLES["vowel_count"]))
+    assert r["reference"] == 3.0
+    assert r["verified_count"] == 3 and not r["disagree"]
+
+
 # --- emit + cross-face agreement ----------------------------------------------
 
 
