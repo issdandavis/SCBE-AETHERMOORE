@@ -397,6 +397,49 @@ class TaskMap:
         )
         return {"cleared": False, "drift": loc, "recovery": rec}
 
+    def _match_tool(self, raw: str, names: List[str]) -> str:
+        """Pull a tool name out of a model's free-text reply (exact match, else contained)."""
+        r = (raw or "").strip()
+        for n in names:
+            if r == n:
+                return n
+        for n in names:
+            if n in r:
+                return n
+        return r.split()[0] if r.split() else ""
+
+    def walk(self, ask: Callable[[str], str], verbose: bool = False) -> Dict[str, object]:
+        """A model WALKS the map: at each area it is shown the goal + that area's tools (with one-line
+        descriptions) and must name the tool to use. The map then clears the area (real demo, sealed)
+        and unlocks the next. Returns the journey + how often the model's pick was a legal/sensible
+        tool for that area -- i.e. whether the guided structure lets a weak model navigate.
+        """
+        journey: List[dict] = []
+        for area in self.areas:
+            tools = [(t, self.tk.by_name(t).one_line if self.tk.by_name(t) else "") for t in area.tools_used]
+            listing = "\n".join("  - %s: %s" % (n, d) for n, d in tools)
+            prompt = (
+                "You are walking a toolbox one area at a time.\n"
+                "Area: %s\nGoal: %s\nTools available here:\n%s\n"
+                "Reply with ONLY the exact tool name that best fits the goal." % (area.name, area.goal, listing)
+            )
+            pick = self._match_tool(ask(prompt), [n for n, _ in tools])
+            legal = pick in area.tools_used
+            adv = self.advance(area.name)  # the area's real demo clears + seals it
+            step = {"area": area.name, "pick": pick, "legal": legal, "cleared": bool(adv.get("cleared"))}
+            journey.append(step)
+            if verbose:
+                print(
+                    "  %-22s model->%-20s legal=%-5s cleared=%s" % (area.name, pick or "(none)", legal, step["cleared"])
+                )
+        return {
+            "journey": journey,
+            "legal_picks": sum(1 for s in journey if s["legal"]),
+            "areas": len(self.areas),
+            "cleared": sum(1 for s in journey if s["cleared"]),
+            "sealed": self.tk.verify(),
+        }
+
     def advance(self, name: str) -> Dict[str, object]:
         """Run an area's demo through the sealed toolkit; clear + unlock on success."""
         a = self._area(name)

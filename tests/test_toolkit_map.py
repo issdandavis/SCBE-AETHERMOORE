@@ -96,6 +96,21 @@ def test_diagnose_drift_localizes_the_wall_via_failure_map():
     assert "offload" in drift["recovery"] and "sieve_calc" in drift["recovery"]
 
 
+def test_a_model_can_walk_the_whole_map():
+    # a stub navigator that picks the first tool listed for each area (always legal) -> full walk
+    def first_tool_ask(prompt):
+        for line in prompt.splitlines():
+            line = line.strip()
+            if line.startswith("- "):
+                return line[2:].split(":", 1)[0].strip()
+        return ""
+
+    m = TaskMap()
+    w = m.walk(first_tool_ask)
+    assert w["areas"] == 13 and w["legal_picks"] == 13  # every pick was a legal tool for its area
+    assert w["cleared"] == 13 and w["sealed"] is True  # the map cleared + sealed the whole tour
+
+
 def test_run_with_drifted_stepwise_diagnoses_and_localizes_live():
     from python.scbe.sieve_calc import classify_number_task
     from python.scbe.stepwise import scripted_proposer
