@@ -80,6 +80,18 @@ def test_llm_climber_extracts_the_answer_and_grades(monkeypatch):
     assert s["highest_tier_cleared"] == 5 and s["total_passed"] == 20
 
 
+def test_extract_answer_handles_real_model_quirks():
+    from python.helm.reasoning_ladder import _extract_answer
+
+    assert _extract_answer("The answer is 56.") == "56"
+    assert _extract_answer("It costs $30") == "30"
+    assert _extract_answer("about 30%") == "30"
+    assert _extract_answer("1,000 ways") == "1000"  # the real bug: commas used to split into '000'
+    assert _extract_answer("7*8 = 56, so 56") == "56"  # non-grouping comma left alone
+    assert _extract_answer("-5 degrees") == "-5"
+    assert _extract_answer("no number here") == "no number here"  # falls back to text
+
+
 def test_llm_climber_dead_endpoint_scores_zero(monkeypatch):
     # a dead endpoint must score 0, never a fabricated pass (honest like free_generator)
     from python.helm import free_generator as fg
