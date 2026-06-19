@@ -10,7 +10,9 @@
 
 python/scbe/loomfn.py :: dispatch-loop vm with a call-frame stack and heap arrays over a flat slot store, emitted to language faces
 python/scbe/loomfn.py#strings :: a string is a heap array of char codes
-python/helm/curriculum.py :: score a code generator by held-out hidden tests, graded into difficulty tiers
+python/helm/ladder.py :: graded tier-ladder kernel - score a climber per tier, report the highest contiguous tier cleared from the bottom
+python/helm/curriculum.py :: score a code generator by held-out hidden tests, graded into difficulty tiers (uses the ladder kernel)
+python/helm/reasoning_ladder.py :: score an answer generator by held-out exact-match reasoning questions, graded into difficulty tiers (uses the ladder kernel)
 python/helm/substrate_climber.py :: differential testing - emit a program to multiple language faces, run each, require agreement
 python/helm/public_bench.py :: run a generated program against public and held-out hidden asserts in a sandbox, detect overfit
 python/scbe/geometric_router.py :: route tasks to agents by tongue-weighted finsler distance through a hyperbolic manifold

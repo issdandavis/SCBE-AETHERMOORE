@@ -26,8 +26,9 @@ from the bottom -- you don't get a PhD by acing the PhD test while failing 3rd-g
 from __future__ import annotations
 
 import argparse
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence
 
+from .ladder import run_ladder
 from .public_bench import Generator, naive_generator, reference_generator, run_public_bench
 
 
@@ -246,35 +247,24 @@ def run_curriculum(
 ) -> Dict[str, Any]:
     """Run a climber up the ladder. A tier is cleared only if every problem passes hidden checks;
     the climb is the highest CONTIGUOUS tier cleared from the bottom."""
-    per_tier: List[Dict[str, Any]] = []
-    for t in tiers:
+
+    def score(t: Dict[str, Any]) -> Dict[str, Any]:
         s = run_public_bench(t["problems"], generator=generator, public_k=public_k)
-        per_tier.append(
-            {
-                "tier": t["tier"],
-                "grade": t["grade"],
-                "attempted": s["attempted"],
-                "verified": s["verified"],
-                "overfit_caught": s["overfit_caught"],
-                "cleared": s["attempted"] > 0 and s["verified"] == s["attempted"],
-                "pass_rate": s["pass_rate"],
-            }
-        )
-    climb = 0
-    for r in per_tier:
-        if r["cleared"]:
-            climb = r["tier"]
-        else:
-            break
-    cleared_grade = next((r["grade"] for r in per_tier if r["tier"] == climb), "none")
+        return {
+            "attempted": s["attempted"],
+            "passed": s["verified"],
+            "extra": {"verified": s["verified"], "overfit_caught": s["overfit_caught"], "pass_rate": s["pass_rate"]},
+        }
+
+    res = run_ladder(tiers, score)  # shared kernel: per-tier score -> highest contiguous tier
     return {
         "generator": generator.__name__,
         "public_k": public_k,
-        "highest_tier_cleared": climb,
-        "highest_grade_cleared": cleared_grade,
-        "total_verified": sum(r["verified"] for r in per_tier),
-        "total_problems": sum(r["attempted"] for r in per_tier),
-        "tiers": per_tier,
+        "highest_tier_cleared": res["highest_tier_cleared"],
+        "highest_grade_cleared": res["highest_grade_cleared"],
+        "total_verified": res["total_passed"],
+        "total_problems": res["total"],
+        "tiers": res["tiers"],
     }
 
 
