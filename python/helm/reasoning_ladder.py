@@ -25,6 +25,8 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import subprocess
+import sys
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
 from .ladder import render_climb, run_ladder
@@ -142,6 +144,52 @@ def llm_climber(model: Optional[str] = None, base: Optional[str] = None, key: Op
         return _extract_answer(out)
 
     climber.__name__ = "llm(%s)" % model
+    return climber
+
+
+def _strip_code(text: str) -> str:
+    """Pull a python code block out of a model reply (fenced if present, else the raw text)."""
+    m = re.search(r"```(?:python)?\s*\n(.*?)```", text or "", re.DOTALL)
+    return (m.group(1) if m else (text or "")).strip()
+
+
+def _run_python(code: str, timeout: int = 10) -> str:
+    """Execute model-written code in an isolated subprocess (mirrors public_bench); return stdout.
+    A timeout kills runaways; any failure yields '' so the climber scores 0, never a fabricated pass."""
+    try:
+        proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=timeout)
+        return proc.stdout
+    except Exception:
+        return ""
+
+
+def program_aided_climber(
+    model: Optional[str] = None, base: Optional[str] = None, key: Optional[str] = None
+) -> Climber:
+    """PAL (program-aided): the SAME model, but instead of doing the arithmetic in its head it WRITES a
+    short Python program that computes the answer; we EXECUTE it in a sandboxed subprocess and read the
+    printed number. Reasoning routed through a tool/logic-gate (code execution). This is the LIFT slot
+    for measure_lift -- it plays to a coder model's strength (write code) and offloads the mental math
+    these models botch. A dead endpoint or non-running code scores 0, never a fabricated pass."""
+    from . import free_generator as fg
+
+    base = base or os.environ.get("SCBE_LLM_BASE", fg.DEFAULT_BASE)
+    key = key or os.environ.get("SCBE_LLM_KEY", "ollama")
+    model = model or os.environ.get("SCBE_LLM_MODEL", fg.DEFAULT_MODEL)
+
+    def climber(item: Dict[str, Any]) -> str:
+        prompt = (
+            item["question"]
+            + "\n\nWrite a short Python program that computes the answer and prints ONLY the final number "
+            + "(just the number, no words). Output only the code."
+        )
+        try:
+            out = fg._chat([{"role": "user", "content": prompt}], base=base, key=key, model=model)
+        except Exception:
+            return ""
+        return _extract_answer(_run_python(_strip_code(out)))
+
+    climber.__name__ = "pal(%s)" % model
     return climber
 
 

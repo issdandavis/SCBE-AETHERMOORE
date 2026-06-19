@@ -92,6 +92,32 @@ def test_extract_answer_handles_real_model_quirks():
     assert _extract_answer("no number here") == "no number here"  # falls back to text
 
 
+def test_program_aided_executes_model_written_code(monkeypatch):
+    # PAL path: model writes python -> sandboxed subprocess runs it -> printed number is extracted + graded
+    from python.helm import free_generator as fg
+    from python.helm.reasoning_ladder import REASONING_LADDER, program_aided_climber
+
+    answers = {it["question"]: it["answer"] for tier in REASONING_LADDER for it in tier["items"]}
+
+    def fake_chat(messages, **kw):
+        q = messages[0]["content"].split("\n\n")[0]
+        return "```python\nprint(%s)\n```" % answers.get(q, "0")
+
+    monkeypatch.setattr(fg, "_chat", fake_chat)
+    s = run_reasoning(program_aided_climber(model="mock"))
+    assert s["highest_tier_cleared"] == 5 and s["total_passed"] == 20
+
+
+def test_program_aided_non_code_scores_zero(monkeypatch):
+    # prose (no runnable code) must score 0, never a fabricated pass
+    from python.helm import free_generator as fg
+    from python.helm.reasoning_ladder import program_aided_climber
+
+    monkeypatch.setattr(fg, "_chat", lambda messages, **kw: "I think the answer is probably around forty.")
+    s = run_reasoning(program_aided_climber(model="mock"))
+    assert s["total_passed"] == 0
+
+
 def test_llm_climber_dead_endpoint_scores_zero(monkeypatch):
     # a dead endpoint must score 0, never a fabricated pass (honest like free_generator)
     from python.helm import free_generator as fg

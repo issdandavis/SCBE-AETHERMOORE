@@ -24,5 +24,12 @@
     "code_both_miss": ["t2_fizzbuzz"],
     "code_only_1.5b_misses": ["t5_regex"],
     "code_only_3b_misses": ["t4_lis"]
+  },
+  "lift": {
+    "note": "FIRST measured LIFT -- the thesis: NOT a smarter model, the SAME model with its choices routed through a tool/logic-gate. program_aided_climber = the model WRITES a short python program that computes the answer, executed in a sandboxed subprocess; RAW = it does the arithmetic in its head. Plays to a coder model's strength (write code) and offloads the mental math it botches.",
+    "method": "measure_lift(llm_climber, program_aided_climber) on the reasoning ladder, SAME model in both slots.",
+    "qwen2.5-coder:1.5b": {"raw_mean": 8.3, "raw_runs": [9, 8, 8], "pal_runs": [15, 15, 15], "pal_total": 15,
+      "total_lift": "+6 to +7 of 20", "note": "stable +6-7. The contiguous-tier metric UNDERSTATES it (PAL trips one arithmetic item, so contiguous reads T0) -- the TOTAL (8.3 -> 15) is the real signal."},
+    "qwen2.5-coder:3b": "unavailable -- model removed during disk cleanup; re-pull (ollama pull qwen2.5-coder:3b) to measure"
   }
 }
