@@ -103,6 +103,39 @@ def test_string_program_agrees_across_faces():
     assert r["verified_count"] == 3 and not r["disagree"]
 
 
+# --- text OUTPUT (prints): the verified answer can now be a string --------------
+
+
+def test_prints_makes_the_answer_text():
+    assert _ref("string_reverse") == "olleh"  # read s back-to-front, print the new string
+    assert _ref("string_concat") == "foobar"  # concat then prints
+    # prints decodes the code array; concat appends B onto A in place
+    assert interpret(parse("strlit a ab / strlit b cd / concat a b / prints a / halt"))[-1] == "abcd"
+
+
+def test_text_answer_is_compared_as_an_exact_string():
+    # the reference is a str, so verify compares strings (not floats) and python matches unconditionally
+    r = verify(parse(EXAMPLES["string_reverse"]), faces=("python",))
+    assert r["reference"] == "olleh"
+    assert r["results"]["python"] == {"status": "AGREE", "value": "olleh"}
+
+
+def test_numeric_answers_still_compare_as_numbers():
+    # regression: adding the text path must not break numeric verification
+    r = verify(parse(EXAMPLES["factorial_recursive"]), faces=("python",))
+    assert r["reference"] == 120.0
+    assert r["results"]["python"] == {"status": "AGREE", "value": 120.0}
+
+
+@pytest.mark.skipif(not (_HAVE_NODE and _HAVE_RUST), reason="node+rustc needed")
+def test_text_output_agrees_across_faces():
+    # "olleh" in python must equal "olleh" in js and rust -- text answers are cross-face verified too
+    for name in ("string_reverse", "string_concat"):
+        r = verify(parse(EXAMPLES[name]))
+        assert isinstance(r["reference"], str)
+        assert r["verified_count"] == 3 and not r["disagree"]
+
+
 # --- emit + cross-face agreement ----------------------------------------------
 
 
