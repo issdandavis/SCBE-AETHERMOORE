@@ -26,6 +26,7 @@ const PORT = Number(process.env.AETHERDESK_PORT || 5717);
 const HOST = '127.0.0.1';
 const MAX_OUTPUT_TAIL_BYTES = 8192;
 const COMMAND_TIMEOUT_MS = 10 * 60 * 1000;
+const SHELL_TIMEOUT_MS = 45 * 1000;
 
 // The allowlist is the security boundary. Every entry is a {npm, script}
 // reference resolved against package.json scripts. Frontend cannot pass a
@@ -111,6 +112,38 @@ const COMMAND_ALLOWLIST = Object.freeze({
     icon: 'faces',
     risk_tier: 'read-only',
     description: 'Show one code-song across proven-equal language faces.',
+  },
+});
+
+// Shell profiles are real host commands, but still bounded. The UI can request
+// only these IDs; it cannot pass arbitrary PowerShell or command text.
+const SHELL_ALLOWLIST = Object.freeze({
+  pwd: {
+    label: 'Working Directory',
+    shell: 'powershell',
+    args: ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', 'Get-Location | Select-Object -ExpandProperty Path'],
+    risk_tier: 'read-only',
+    description: 'Show the AetherDesk server working directory.',
+  },
+  git_status: {
+    label: 'Git Status',
+    shell: 'git',
+    args: ['status', '--short', '--branch'],
+    risk_tier: 'read-only',
+    description: 'Show the current repo branch and pending local changes.',
+  },
+  powershell_probe: {
+    label: 'PowerShell Probe',
+    shell: 'powershell',
+    args: [
+      '-NoProfile',
+      '-ExecutionPolicy',
+      'Bypass',
+      '-Command',
+      '$PSVersionTable.PSVersion.ToString(); Get-Command powershell | Select-Object -ExpandProperty Source',
+    ],
+    risk_tier: 'read-only',
+    description: 'Verify that the PowerShell lane is callable.',
   },
 });
 
@@ -270,6 +303,96 @@ function runCommand(commandId) {
   });
 }
 
+function buildShellReceipt({
+  profileId,
+  exitCode,
+  stdoutTail,
+  stderrTail,
+  startedAt,
+  finishedAt,
+  artifactPath,
+}) {
+  const entry = SHELL_ALLOWLIST[profileId];
+  const commandStr = [entry.shell, ...entry.args].join(' ');
+  const result = exitCode === 0 ? 'pass' : 'fail';
+  return {
+    schema: 'aetherdesk_receipt_v0',
+    task_id: `${utcStamp()}_shell_${profileId}`,
+    command_id: `shell:${profileId}`,
+    command_label: `Shell: ${entry.label}`,
+    command: commandStr,
+    command_digest: sha256(Buffer.from(commandStr, 'utf8')),
+    risk_tier: entry.risk_tier,
+    allowed_paths: ['<repo-readonly>'],
+    started_at: startedAt,
+    finished_at: finishedAt,
+    duration_ms: new Date(finishedAt).getTime() - new Date(startedAt).getTime(),
+    exit_code: exitCode,
+    result,
+    stdout_tail: stdoutTail,
+    stderr_tail: stderrTail,
+    artifact_path: artifactPath,
+  };
+}
+
+function runShellProfile(profileId) {
+  return new Promise((resolve) => {
+    const entry = SHELL_ALLOWLIST[profileId];
+    if (!entry) {
+      return resolve({ ok: false, error: 'shell profile not allowlisted' });
+    }
+    const startedAt = new Date().toISOString();
+    const stdoutChunks = [];
+    const stderrChunks = [];
+    const child = spawn(entry.shell, entry.args, {
+      cwd: REPO_ROOT,
+      env: process.env,
+      shell: false,
+    });
+    const timer = setTimeout(() => {
+      try {
+        child.kill('SIGTERM');
+      } catch (_err) {
+        /* swallow */
+      }
+    }, SHELL_TIMEOUT_MS);
+    child.stdout.on('data', (d) => stdoutChunks.push(d.toString('utf8')));
+    child.stderr.on('data', (d) => stderrChunks.push(d.toString('utf8')));
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      const finishedAt = new Date().toISOString();
+      const receipt = buildShellReceipt({
+        profileId,
+        exitCode: code,
+        stdoutTail: tailBytes(stdoutChunks.join(''), MAX_OUTPUT_TAIL_BYTES),
+        stderrTail: tailBytes(stderrChunks.join(''), MAX_OUTPUT_TAIL_BYTES),
+        startedAt,
+        finishedAt,
+        artifactPath: null,
+      });
+      const filePath = writeReceipt(receipt);
+      receipt.artifact_path = path.relative(REPO_ROOT, filePath).replace(/\\/g, '/');
+      resolve({ ok: true, receipt });
+    });
+    child.on('error', (err) => {
+      clearTimeout(timer);
+      const finishedAt = new Date().toISOString();
+      const receipt = buildShellReceipt({
+        profileId,
+        exitCode: -1,
+        stdoutTail: '',
+        stderrTail: `[spawn error] ${String(err && err.message ? err.message : err)}`,
+        startedAt,
+        finishedAt,
+        artifactPath: null,
+      });
+      const filePath = writeReceipt(receipt);
+      receipt.artifact_path = path.relative(REPO_ROOT, filePath).replace(/\\/g, '/');
+      resolve({ ok: true, receipt });
+    });
+  });
+}
+
 // Provider status checks — read-only. Never expose secret values, only
 // their presence as booleans. HTTP probes use a hard 1.5s timeout so a
 // single slow provider can't block the whole panel.
@@ -369,6 +492,17 @@ function buildApp() {
     res.json({ ok: true, schema: 'aetherdesk_commands_v0', commands: items });
   });
 
+  app.get('/api/shell/profiles', (_req, res) => {
+    const profiles = Object.entries(SHELL_ALLOWLIST).map(([id, entry]) => ({
+      id,
+      label: entry.label,
+      shell: entry.shell,
+      risk_tier: entry.risk_tier,
+      description: entry.description,
+    }));
+    res.json({ ok: true, schema: 'aetherdesk_shell_profiles_v0', profiles });
+  });
+
   app.get('/api/receipts', (req, res) => {
     const limit = Math.max(1, Math.min(200, Number(req.query.limit || 50)));
     res.json({ ok: true, schema: 'aetherdesk_receipt_list_v0', receipts: listReceipts(limit) });
@@ -386,6 +520,16 @@ function buildApp() {
       return res.status(400).json({ ok: false, error: 'command not allowlisted', command_id: id });
     }
     const result = await runCommand(id);
+    if (!result.ok) return res.status(500).json(result);
+    res.json(result);
+  });
+
+  app.post('/api/shell/run', async (req, res) => {
+    const id = String((req.body && req.body.id) || '');
+    if (!Object.prototype.hasOwnProperty.call(SHELL_ALLOWLIST, id)) {
+      return res.status(400).json({ ok: false, error: 'shell profile not allowlisted', profile_id: id });
+    }
+    const result = await runShellProfile(id);
     if (!result.ok) return res.status(500).json(result);
     res.json(result);
   });
@@ -411,6 +555,7 @@ if (require.main === module) {
 module.exports = {
   buildApp,
   COMMAND_ALLOWLIST,
+  SHELL_ALLOWLIST,
   PROVIDER_DEFS,
   buildReceipt,
   listReceipts,
@@ -421,5 +566,5 @@ module.exports = {
   RECEIPTS_DIR,
   HOST,
   PORT,
-  _private: { tailBytes, sha256, runCommand, probeHttp },
+  _private: { tailBytes, sha256, runCommand, runShellProfile, probeHttp },
 };
