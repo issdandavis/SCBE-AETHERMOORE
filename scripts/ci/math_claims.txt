@@ -1,0 +1,19 @@
+# math-claims registry -- the one line of math each module implements.
+#
+# THE RULE (the second immune system): before new work lands, write its one-line math claim and
+# run  `python scripts/ci/redundancy_gate.py --claim "<your one-liner>"`.  Review anything it
+# surfaces BEFORE building -- that is what catches conceptually-redundant work (the #2422/#2423
+# two-string-designs near-collision) that execution + cross-face cannot see.
+#
+# Format:  <path>[#tag] :: <one-line math claim, in shared vocabulary>
+# Keep claims in shared words; the gate matches keywords, not meaning.
+
+python/scbe/loomfn.py :: dispatch-loop vm with a call-frame stack and heap arrays over a flat slot store, emitted to language faces
+python/scbe/loomfn.py#strings :: a string is a heap array of char codes
+python/helm/curriculum.py :: score a code generator by held-out hidden tests, graded into difficulty tiers
+python/helm/substrate_climber.py :: differential testing - emit a program to multiple language faces, run each, require agreement
+python/helm/public_bench.py :: run a generated program against public and held-out hidden asserts in a sandbox, detect overfit
+python/scbe/geometric_router.py :: route tasks to agents by tongue-weighted finsler distance through a hyperbolic manifold
+python/scbe/geometric_router.py#streams :: bind two instruction streams where their embedded points are within epsilon, a depth coordinate gating the distance
+python/scbe/dna_parse.py :: bijective hex to base-4 codec, one nibble is two base-4 symbols
+python/scbe/bijective_dna.py :: opcode strand with an involution complement and midpoint replication-fork assembly across language faces
