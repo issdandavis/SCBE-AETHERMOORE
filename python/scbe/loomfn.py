@@ -13,9 +13,12 @@ keeps that exact shape and adds the two things a real language needs:
     params, and jumps; `ret` restores the snapshot and delivers the result into `d`. That gives
     real local scoping and real RECURSION (factorial, fibonacci) -- not just inline blocks.
   * STRINGS (also the heap): a string IS an array of character codes, so it reuses every array op
-    (len = `alen`, char at i = `get`, build = `arr`/`push`). The only new moves are `strlit A text`
-    (load a literal into string A) and `chr d c` (d = code point of char c). Both expand to numeric
-    array literals at emit time, so the faces stay purely numeric and cross-face agreement is free.
+    (len = `alen`, char at i = `get`, build = `arr`/`push`). `strlit A text` loads a literal into
+    string A and `chr d c` gives the code point of char c -- both expand to numeric array literals,
+    so reading stays purely numeric. `concat A B` appends B onto A. The one op that makes the
+    program's ANSWER text is `prints A` (print string A decoded): the verifier then compares the
+    answer as an exact STRING, so text-producing problems (reverse, fizzbuzz) are cross-face verified
+    too -- "olleh" in python must equal "olleh" in js and rust, or it is a DISAGREE.
 
 The value model is index-based: scalar slots live in one flat array `s` (name->index resolved at
 emit time), which makes a call-frame snapshot a single copy of `s` in every language. A Python
@@ -44,7 +47,7 @@ Instr = Tuple[str, Tuple[str, ...]]
 _ARITH = {"add": "+", "sub": "-", "mul": "*", "div": "/"}
 _CMP = {"lt": "<", "le": "<=", "gt": ">", "ge": ">=", "eq": "==", "ne": "!="}
 _ARR = {"arr", "push", "pop", "get", "set", "alen"}
-_STR = {"strlit", "chr"}  # strings ARE arrays of char codes; these two just load literals
+_STR = {"strlit", "chr", "prints", "concat"}  # strings ARE arrays of char codes; prints emits text
 _FN = {"func", "ret", "call"}
 _OPS = (
     {"const", "mov", "inc", "dec", "label", "jmp", "brz", "print", "halt"} | set(_ARITH) | set(_CMP) | _ARR | _STR | _FN
@@ -100,6 +103,10 @@ def _classify(op: str, a: Tuple[str, ...]) -> Tuple[List[str], List[str]]:
         ar = [a[0]]  # the destination string lives in the array heap
     elif op == "chr":
         sc = [a[0]]
+    elif op == "prints":
+        ar = [a[0]]  # decode + print one string (array of codes) as text
+    elif op == "concat":
+        ar = [a[0], a[1]]  # append string B onto string A
     elif op == "func":
         sc = list(a[1:])  # params (a[0] is the function name)
     elif op == "ret":
@@ -143,7 +150,7 @@ def interpret(prog: Sequence[Instr], step_limit: int = 1_000_000) -> List[float]
     s: Dict[str, float] = {n: 0.0 for n in _slots(prog)}
     h: Dict[str, List[float]] = {n: [] for n in _arrays(prog)}
     call: List[Tuple[int, str, Dict[str, float]]] = []  # (return_pc, dest, saved scalar slots)
-    out: List[float] = []
+    out: List = []  # printed answers: a float (print) or a str (prints)
     pc, steps = 0, 0
     while 0 <= pc < len(prog):
         steps += 1
@@ -194,6 +201,12 @@ def interpret(prog: Sequence[Instr], step_limit: int = 1_000_000) -> List[float]
             pc += 1
         elif op == "chr":
             s[a[0]] = float(ord(a[1]))
+            pc += 1
+        elif op == "concat":
+            h[a[0]].extend(h[a[1]])
+            pc += 1
+        elif op == "prints":
+            out.append("".join(chr(int(c)) for c in h[a[0]]))
             pc += 1
         elif op == "label" or op == "func":
             pc += 1
@@ -295,6 +308,21 @@ def _arm(prog, k, lang, six, aix, labels, funcs, nslots) -> List[str]:
         return ["h[%d] = %s%s" % (aix[a[0]], lit, semi), nxt(k + 1)]
     if op == "chr":
         return ["%s = %d.0%s" % (S(a[0]), ord(a[1]), semi), nxt(k + 1)]
+    if op == "concat":
+        cc = {
+            "python": "h[%d].extend(h[%d])" % (aix[a[0]], aix[a[1]]),
+            "javascript": "for (const _e of h[%d]) h[%d].push(_e);" % (aix[a[1]], aix[a[0]]),
+            "rust": "{ let _b = h[%d].clone(); h[%d].extend(_b); }" % (aix[a[1]], aix[a[0]]),
+        }[lang]
+        return [cc, nxt(k + 1)]
+    if op == "prints":  # decode the code array to text and emit it as the answer
+        pr = {
+            "python": "_out.append(''.join(chr(int(_c)) for _c in h[%d]))" % aix[a[0]],
+            "javascript": "console.log(h[%d].map(_c => String.fromCharCode(_c)).join(''));" % aix[a[0]],
+            "rust": '{ let _s: String = h[%d].iter().map(|c| (*c as u8) as char).collect(); println!("{}", _s); }'
+            % aix[a[0]],
+        }[lang]
+        return [pr, nxt(k + 1)]
     if op == "label" or op == "func":
         return [nxt(k + 1)]
     if op == "jmp":
@@ -448,34 +476,53 @@ def emit(prog: Sequence[Instr], lang: str) -> str:
 _RUN = {"python": None, "javascript": "node", "rust": "rustc"}
 
 
-def _last_float(stdout: str) -> Optional[float]:
-    line = (stdout.strip().splitlines() or [""])[-1].strip()
+def _parse_float(line: Optional[str]) -> Optional[float]:
+    if line is None:
+        return None
     if line.lower() in ("nan", "-nan"):
         return float("nan")
-    return float(line) if line not in ("", "None", "null") else None
+    try:
+        return float(line)
+    except ValueError:
+        return None
 
 
-def run_face(prog: Sequence[Instr], lang: str) -> Optional[float]:
+def _face_line(prog: Sequence[Instr], lang: str) -> Optional[str]:
+    """Emit + run a face; return its last stdout line verbatim (a number OR a text answer)."""
     src = emit(prog, lang)
     with tempfile.TemporaryDirectory() as td:
         ext = {"python": "py", "javascript": "js", "rust": "rs"}[lang]
         f = Path(td) / ("prog." + ext)
         f.write_text(src, encoding="utf-8")
         if lang == "python":
-            return _last_float(
-                subprocess.run([sys.executable, str(f)], capture_output=True, text=True, timeout=30).stdout
+            stdout = subprocess.run([sys.executable, str(f)], capture_output=True, text=True, timeout=30).stdout
+        elif lang == "javascript":
+            stdout = subprocess.run(["node", str(f)], capture_output=True, text=True, timeout=30).stdout
+        else:
+            exe = Path(td) / ("prog.exe" if shutil.which("cmd") else "prog")
+            subprocess.run(
+                ["rustc", "-O", str(f), "-o", str(exe)], capture_output=True, text=True, timeout=120, check=True
             )
-        if lang == "javascript":
-            return _last_float(subprocess.run(["node", str(f)], capture_output=True, text=True, timeout=30).stdout)
-        exe = Path(td) / ("prog.exe" if shutil.which("cmd") else "prog")
-        subprocess.run(["rustc", "-O", str(f), "-o", str(exe)], capture_output=True, text=True, timeout=120, check=True)
-        return _last_float(subprocess.run([str(exe)], capture_output=True, text=True, timeout=30).stdout)
+            stdout = subprocess.run([str(exe)], capture_output=True, text=True, timeout=30).stdout
+    lines = stdout.strip().splitlines()
+    line = lines[-1].strip() if lines else ""
+    return None if line in ("", "None", "null") else line
+
+
+def run_face(prog: Sequence[Instr], lang: str) -> Optional[float]:
+    """Back-compatible numeric runner: the face's last line parsed as a float (None if it is text)."""
+    return _parse_float(_face_line(prog, lang))
 
 
 def verify(prog: Sequence[Instr], faces: Sequence[str] = ("python", "javascript", "rust")) -> dict:
-    """Run the reference, then every face with a local toolchain; compare each honestly."""
+    """Run the reference, then every face with a local toolchain; compare each honestly.
+
+    The answer is whatever the program printed last -- a number (compared within 1e-9) or text from
+    `prints` (compared as an exact string). A face is AGREE only if it actually ran and matched.
+    """
     ref = interpret(prog)
     reference = ref[-1] if ref else None
+    text_answer = isinstance(reference, str)
     results: Dict[str, dict] = {}
     for lang in faces:
         tool = _RUN.get(lang, "<none>")
@@ -483,12 +530,19 @@ def verify(prog: Sequence[Instr], faces: Sequence[str] = ("python", "javascript"
             results[lang] = {"status": "NO_TOOLCHAIN", "value": None}
             continue
         try:
-            v = run_face(prog, lang)
+            line = _face_line(prog, lang)
         except Exception as e:
             results[lang] = {"status": "ERROR", "value": None, "note": "%s: %s" % (type(e).__name__, e)}
             continue
-        agree = v == reference or (v is not None and reference is not None and abs(v - reference) <= 1e-9)
-        results[lang] = {"status": "AGREE" if agree else "DISAGREE", "value": v}
+        if text_answer:
+            value: object = line
+            agree = line == reference
+        else:
+            value = _parse_float(line)
+            agree = value == reference or (
+                value is not None and reference is not None and abs(value - reference) <= 1e-9
+            )
+        results[lang] = {"status": "AGREE" if agree else "DISAGREE", "value": value}
     verified = [lang for lang, r in results.items() if r["status"] == "AGREE"]
     return {
         "reference": reference,
@@ -528,6 +582,11 @@ EXAMPLES = {
     "chr vo o / chr vu u / label lp / lt c j n / brz c done / get ch s j / eq e1 ch va / eq e2 ch ve / eq e3 ch vi / "
     "eq e4 ch vo / eq e5 ch vu / add t e1 e2 / add t t e3 / add t t e4 / add t t e5 / brz t skip / inc cnt / "
     "label skip / inc j / jmp lp / label done / print cnt / halt",  # 'programming' -> 3 (o, a, i)
+    # TEXT OUTPUT (prints): reverse a string -> "olleh"  (read s back-to-front into r, then print r)
+    "string_reverse": "strlit s hello / arr r / alen n s / const one 1 / const i 0 / label lp / lt c i n / "
+    "brz c done / sub k n one / sub k k i / get ch s k / push r ch / inc i / jmp lp / label done / prints r / halt",
+    # TEXT OUTPUT (concat + prints): join two strings -> "foobar"
+    "string_concat": "strlit a foo / strlit b bar / concat a b / prints a / halt",
 }
 
 
