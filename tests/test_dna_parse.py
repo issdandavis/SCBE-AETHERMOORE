@@ -1,8 +1,10 @@
-"""dna_parse: hex braided into a DNA duplex -- fork-parse (each side does half) + a complement
-strand that self-checks (a mutated base is caught).
+"""dna_parse: a bijective hex<->base-4 codec (the load-bearing part) plus two demos.
 
-hex<->DNA is a bijection (1 digit = 2 bases); the reverse-complement is a full redundant copy;
-the fork-parse splits at the midpoint and must equal the plain value; corruption breaks the duplex.
+The bijection is real and tested (1 hex digit = 2 base-4 symbols, round-trips exactly). The
+midpoint "fork" reduces to nibble concatenation on a power-of-2 base (so it just equals the plain
+value -- a demo, not a faster algorithm), and the reverse-complement is a detection-only redundant
+copy (dominated by a CRC -- a demo, not a verification primitive). These tests pin the bijection
+and confirm the demos compute what they claim, nothing more.
 """
 
 import sys
