@@ -24,7 +24,7 @@ The geometry is the user's own (vault docs 123/124):
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Sequence, Tuple
 
 import numpy as np
 
@@ -232,7 +232,7 @@ def _demo() -> None:
 
     print("Geometric fleet router — tangent-vector parallel tracks\n")
     print(f"  fleet: {len(fleet)} tongue-specialist agents   tasks: {len(tasks)}")
-    print(f"  metric: tongue-weighted Poincare (Finsler), phi-tongue tensor\n")
+    print("  metric: tongue-weighted Poincare (Finsler), phi-tongue tensor\n")
     print("  parallel tracks (each agent = a tangent vector tracing a geodesic):")
     for r in routes:
         ray = f"{len(r.track)} pts" if r.track else "-"
@@ -259,5 +259,114 @@ def _demo() -> None:
     )
 
 
+# --- instruction-stream routing: shapes that INTERSECT ----------------------
+# A complementary geometry to the fleet router above. The fleet router routes tasks to
+# agents by DISTANCE; this routes instruction streams to each other by INTERSECTION.
+#
+# A stream is an EDGE of a shape: an ordered list of steps (the buttons) embedded as
+# points, where each coordinate is its OWN function of the step index -- so a side can be
+# STRAIGHT in one dimension and CURVED/squiggly in another. A "background DEPTH" coordinate
+# GATES binding: two edges can cross in the visible dimensions yet sit at different depths
+# (pass over/under each other) and never bind. Where two edges come within eps they bind --
+# step i of one stream co-fires with step j of the other. Reshape the curves and you reshape
+# which instructions compose; that is the routing. phi is available (golden) only as a
+# deterministic curve SHAPE, not mysticism.
+
+Dim = Callable[[float], float]
+
+
+def straight(slope: float, offset: float = 0.0) -> Dim:
+    """A side that is a straight line in this dimension."""
+    return lambda t: slope * t + offset
+
+
+def curved(amp: float, freq: float = 1.0, phase: float = 0.0) -> Dim:
+    """A side curved/squiggly in this dimension (a sine wave)."""
+    return lambda t: amp * float(np.sin(freq * t + phase))
+
+
+def golden(amp: float) -> Dim:
+    """A side spaced by the golden angle -- phi as a deterministic shape (even, non-repeating)."""
+    ga = 2.0 * np.pi * (1.0 - 1.0 / PHI)
+    return lambda t: amp * float(np.sin(ga * t))
+
+
+def depth(value: float) -> Dim:
+    """A flat background-depth coordinate -- the gate dimension (constant along the edge)."""
+    return lambda t: float(value)
+
+
+@dataclass
+class Stream:
+    """One edge of a shape: ordered steps embedded as points, each dimension its own
+    function of the step index."""
+
+    name: str
+    steps: List[str]
+    dims: List[Dim]
+
+    def point(self, i: int) -> np.ndarray:
+        t = float(i)
+        return np.array([d(t) for d in self.dims], dtype=float)
+
+
+def bind_streams(a: Stream, b: Stream, eps: float) -> List[Dict[str, Any]]:
+    """Every (step of a, step of b) whose embedded points are within eps -- the intersections."""
+    out: List[Dict[str, Any]] = []
+    for i in range(len(a.steps)):
+        pa = a.point(i)
+        for j in range(len(b.steps)):
+            d = float(np.linalg.norm(pa - b.point(j)))
+            if d <= eps:
+                out.append({"a_i": i, "a": a.steps[i], "b_j": j, "b": b.steps[j], "dist": round(d, 9)})
+    return out
+
+
+def route_streams(primary: Stream, others: Sequence[Stream], eps: float) -> List[Dict[str, Any]]:
+    """Walk the primary edge in order; at each step, co-fire steps from the other shapes whose
+    edges intersect (come within eps) at that point. The schedule IS the routed order."""
+    schedule: List[Dict[str, Any]] = []
+    for i in range(len(primary.steps)):
+        pa = primary.point(i)
+        co: List[Dict[str, Any]] = []
+        for o in others:
+            for j in range(len(o.steps)):
+                d = float(np.linalg.norm(pa - o.point(j)))
+                if d <= eps:
+                    co.append({"stream": o.name, "j": j, "step": o.steps[j], "dist": round(d, 9)})
+        co.sort(key=lambda c: (c["dist"], c["stream"], c["j"]))
+        schedule.append({"i": i, "step": primary.steps[i], "bind": co})
+    return schedule
+
+
+def render_route(schedule: Sequence[Dict[str, Any]]) -> str:
+    lines = ["GEOMETRIC ROUTE  (primary rail; co-fired bindings where shapes intersect)"]
+    for row in schedule:
+        binds = ", ".join("%s:%s" % (c["stream"], c["step"]) for c in row["bind"]) or "-"
+        lines.append("  %2d  %-12s -> %s" % (row["i"], row["step"], binds))
+    return "\n".join(lines)
+
+
+def _demo_streams() -> None:
+    # rail: a straight line of system steps along x, at depth 0
+    rail = Stream(
+        "rail",
+        ["inspect", "validate", "encode", "compare", "repair", "report"],
+        [straight(1.0), depth(0.0), depth(0.0)],
+    )
+    # safety: an edge curved in the y dimension that dips down to the rail (y~0) every other step
+    safety = Stream(
+        "safety",
+        ["chk0", "chk1", "chk2", "chk3", "chk4", "chk5"],
+        [straight(1.0), curved(2.0, float(np.pi) / 2.0), depth(0.0)],
+    )
+    # deep: the SAME curve, but parked at depth 5 -- it crosses in x,y yet must never bind
+    deep = Stream("deep", [f"d{i}" for i in range(6)], [straight(1.0), curved(2.0, float(np.pi) / 2.0), depth(5.0)])
+
+    print("\n" + render_route(route_streams(rail, [safety, deep], eps=0.25)))
+    print("  safety binds where its curve meets the rail; 'deep' never binds (depth gates it).")
+
+
 if __name__ == "__main__":
     _demo()
+    _demo_streams()

@@ -4,12 +4,18 @@ import numpy as np
 
 from python.scbe.geometric_router import (
     Agent,
+    Stream,
     Task,
     TONGUES,
+    bind_streams,
+    curved,
+    depth,
     finsler_distance,
     geodesic,
     route_fleet,
     round_robin,
+    route_streams,
+    straight,
 )
 
 
@@ -56,3 +62,44 @@ def test_geodesic_samples_and_endpoints():
     g = geodesic({"KO": 1.0}, {"DR": 1.0}, steps=10)
     assert len(g) == 11
     assert all(np.linalg.norm(p) < 1.0 for p in g)  # stays inside the ball
+
+
+# --- instruction-stream routing: shapes that intersect ------------------------
+
+import math  # noqa: E402
+
+
+def test_two_straight_edges_intersect_once():
+    # A runs along x at y=0; B is a vertical line at x=2 -- they cross at exactly one point
+    a = Stream("A", ["a0", "a1", "a2", "a3"], [straight(1.0), depth(0.0)])
+    b = Stream("B", ["b0", "b1", "b2", "b3"], [depth(2.0), straight(1.0, -2.0)])
+    binds = bind_streams(a, b, eps=0.4)
+    assert len(binds) == 1
+    assert (binds[0]["a"], binds[0]["b"]) == ("a2", "b2")
+
+
+def test_curved_edge_meets_rail_at_predicted_steps():
+    # a straight rail at y=0; a sine edge dips to y~0 at even steps -> binds there, not at odd steps
+    rail = Stream("rail", [f"r{i}" for i in range(6)], [straight(1.0), depth(0.0)])
+    wave = Stream("wave", [f"w{i}" for i in range(6)], [straight(1.0), curved(2.0, math.pi / 2)])
+    binds = bind_streams(rail, wave, eps=0.25)
+    assert sorted(x["a_i"] for x in binds) == [0, 2, 4]  # the curve touches the line at even steps
+
+
+def test_depth_gates_binding():
+    # the SAME crossing curve binds at depth 0 but NOT when parked at a different depth
+    rail = Stream("rail", [f"r{i}" for i in range(6)], [straight(1.0), depth(0.0), depth(0.0)])
+    near = Stream("near", [f"n{i}" for i in range(6)], [straight(1.0), curved(2.0, math.pi / 2), depth(0.0)])
+    far = Stream("far", [f"f{i}" for i in range(6)], [straight(1.0), curved(2.0, math.pi / 2), depth(5.0)])
+    assert len(bind_streams(rail, near, eps=0.25)) > 0
+    assert len(bind_streams(rail, far, eps=0.25)) == 0  # crosses in x,y but depth gates it out
+
+
+def test_route_schedule_is_deterministic_and_well_shaped():
+    rail = Stream("rail", ["inspect", "validate", "encode", "compare"], [straight(1.0), depth(0.0)])
+    safety = Stream("safety", ["s0", "s1", "s2", "s3"], [straight(1.0), curved(2.0, math.pi / 2)])
+    r1 = route_streams(rail, [safety], eps=0.25)
+    r2 = route_streams(rail, [safety], eps=0.25)
+    assert r1 == r2  # deterministic (parameter is the step index; no time, no randomness)
+    assert [row["step"] for row in r1] == ["inspect", "validate", "encode", "compare"]
+    assert r1[0]["bind"] and not r1[1]["bind"]  # binds at step 0, not at step 1
