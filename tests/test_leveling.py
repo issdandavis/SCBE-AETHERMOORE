@@ -100,3 +100,15 @@ def test_curve_rescales_height_for_the_same_cleared_levels():
     gentle = ride(gen, curve="gentle")
     assert steep["cleared"] == gentle["cleared"]  # same problems pass/fail -- the curve is a lens
     assert steep["peak_difficulty"] > gentle["peak_difficulty"]  # steep front-loads difficulty
+
+
+# --- the small-model climb wires up (no network needed to construct it) ---------
+
+
+def test_llm_generator_composes_offline():
+    # the small-model climb is `ride(make_generator())`; building the generator must not hit the
+    # network -- it only calls the endpoint when actually invoked on a problem.
+    from python.helm.free_generator import make_generator
+
+    gen = make_generator(model="dummy-model")
+    assert callable(gen)  # ready to drop into ride() / cliff_vs_slope() once a model is serving
