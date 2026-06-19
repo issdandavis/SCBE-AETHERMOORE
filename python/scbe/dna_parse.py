@@ -1,23 +1,27 @@
-"""dna_parse: parse hex by REPLICATION FORK, with a complement strand that self-checks.
+"""dna_parse: a bijective hex<->base-4 codec, plus two honest demos.
 
-Sibling to bijective_dna.py (which does this for OPCODE strands); this does it for hex DATA, to
-braid the hex_to_int board task into the DNA model. Two distinct mechanisms, both real, kept honest:
+DEMOTED 2026-06-18 after a self-audit (the metaphor was carrying weight the math won't bear).
+Reducing each borrowed word to its one line of math:
 
-  * CELL DIVISION = each side does half.  A hex value is positional base-16. Split the string at a
-    MIDPOINT and parse each half INDEPENDENTLY (a replication fork: left half and right half grow at
-    once), then join: value = left * 16^len(right) + right. Recurse, and it's a divide-and-conquer
-    parse whose two sides are independent work -- genuinely parallelizable, log-depth. This is the
-    "each side does half the work" reading, and it's correct here (unlike for the complement strand).
+  * KEEP -- the bijection.  "hex<->DNA" reduces to: a base is 2 bits, so one hex digit = exactly 2
+    base-4 symbols over {A,C,G,T} (established DNA-data-storage coding). `to_dna`/`from_dna`
+    round-trip exactly. This is the only load-bearing claim and it stands.
 
-  * COMPLEMENT STRAND = a redundant self-check.  Hex<->DNA is a clean bijection: a base is 2 bits, so
-    one hex digit = exactly 2 bases (established DNA-data-storage coding). Watson-Crick pairing
-    A<->T, C<->G is 2-bit complement, so the antiparallel partner is the reverse-complement -- a
-    SECOND FULL copy of the value (not half). A duplex parses two independent ways that must agree, so
-    a single mutated base is caught. That is verification baked into the representation.
+  * DEMO ONLY -- the "replication fork".  `fork_parse` reduces to: value = left*16^len(right) + right.
+    But 16^k is a power of two, so the multiply is a shift and the add never carries -- on a
+    power-of-2 base this is just CONCATENATING the nibbles, which Horner's O(n) loop already does.
+    The recursion buys NOTHING on hex. Divide-and-conquer base conversion only earns its keep on
+    NON-power-of-2 bases (base 10) with fast bignum multiply -- and even there, CPython's int() is
+    already subquadratic, so the technique only matters in a target without optimized bignum. Kept
+    as an illustration, not an algorithm.
 
-HONEST: the power is the bijection + the fork + the complement check; "cell division"/"DNA" are the
-names, not the magic. This is a Python REFERENCE (tested below); the cross-face loomfn board version
-of the fork-parse is the next step.
+  * DEMO ONLY -- the "complement self-check".  The reverse-complement (Watson-Crick A<->T C<->G =
+    2-bit complement) is a 2x redundant copy that only DETECTS a single flipped base. As an integrity
+    code it is strictly dominated: a 1-bit parity detects any single flip at ~1/n the cost; a CRC
+    detects far more; Reed-Solomon corrects. Its only non-dominated role would be a second
+    INDEPENDENT decode path -- but this stores a byte-for-byte copy, not independent logic, and the
+    py/js/rust cross-face check already gives three independent paths. So: not a verification
+    primitive. Use a CRC. Kept as a bijection demo.
 """
 
 from __future__ import annotations
@@ -63,10 +67,13 @@ def duplex(hexstr: str) -> Tuple[str, str]:
     return s, reverse_complement(s)
 
 
-# --- the replication fork: each side does half ----------------------------------
+# --- midpoint split (DEMO: on a power-of-2 base this is just nibble concatenation) ----------------
 def fork_parse(hexstr: str) -> int:
-    """Parse hex by splitting at the midpoint and parsing each half independently, then joining.
-    value = left * 16^len(right) + right. The two sides are independent work (parallelizable)."""
+    """Parse hex by splitting at the midpoint and joining: value = left*16^len(right) + right.
+    NOTE: 16^k is a power of two, so this reduces to concatenating nibbles -- the same thing Horner's
+    O(n) loop does. The recursion is illustrative, not faster. Divide-and-conquer only helps on
+    non-power-of-2 bases with fast bignum multiply (and even then, CPython's int() is already
+    subquadratic). Kept as a demo; `int(hexstr, 16)` is the right tool."""
     if hexstr == "":
         return 0
     if len(hexstr) == 1:
@@ -89,10 +96,11 @@ def fork_tree(hexstr: str) -> Dict[str, Any]:
     }
 
 
-# --- parse with the complement self-check ---------------------------------------
+# --- complement check (DEMO: a 2x redundant copy, detection-only, dominated by a CRC) ------------
 def parse_checked(hexstr: str) -> Tuple[int, bool]:
-    """Braid into a duplex, fork-parse the value, and confirm the two strands are truly
-    complementary (a mutated base breaks this). ok=True means the duplex is self-consistent."""
+    """Parse, and confirm the two strands reverse-complement each other. ok=True == self-consistent.
+    NOTE: this is a 2x redundant copy that only DETECTS one flipped base -- a CRC does that better
+    for a fraction of the cost. Not a verification primitive; kept as a bijection demo."""
     s, partner = duplex(hexstr)
     ok = reverse_complement(s) == partner and reverse_complement(partner) == s and from_dna(s) == hexstr.lower()
     return fork_parse(hexstr), ok
