@@ -115,8 +115,10 @@ def naive_climber(item: Dict[str, Any]) -> str:
 
 
 def _extract_answer(text: str) -> str:
-    """Pull a clean answer out of a model reply -- the last number if any, else the stripped text."""
-    nums = re.findall(r"-?\d+(?:\.\d+)?", text or "")
+    """Pull a clean answer out of a model reply -- the last number, else the stripped text.
+    Strips digit-grouping commas first (a real model quirk: '1,000' must read as 1000, not 000)."""
+    cleaned = re.sub(r"(?<=\d),(?=\d)", "", text or "")  # 1,000 -> 1000 (only commas between digits)
+    nums = re.findall(r"-?\d+(?:\.\d+)?", cleaned)
     return nums[-1] if nums else (text or "").strip()
 
 
