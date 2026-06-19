@@ -54,11 +54,16 @@ def test_a_genuinely_new_claim_is_clear():
     assert hits == []  # nothing like it on main -> clear to build
 
 
-def test_seed_registry_has_no_internal_false_positives():
-    # the modules actually on main are distinct; the gate must not cry wolf on them
+def test_seed_registry_surfaces_only_the_known_kernel_sibling_overlap():
+    # curriculum + reasoning_ladder are intentional siblings on ladder.py: the gate SHOULD flag them
+    # (same "score a generator on held-out items, graded into tiers" shape), and that overlap is
+    # acknowledged -- resolved by the shared kernel, not by hiding it. NOTHING ELSE may overlap.
     reg = rg.load_registry(REGISTRY)
-    assert len(reg) >= 8
-    assert rg.audit(reg, threshold=0.5) == []
+    assert len(reg) >= 10
+    pairs = {frozenset((m1, m2)) for m1, m2, _ in rg.audit(reg, threshold=0.5)}
+    sibling = frozenset(("python/helm/curriculum.py", "python/helm/reasoning_ladder.py"))
+    assert sibling in pairs  # the gate catches the real, intended overlap
+    assert all(p == sibling for p in pairs)  # and surfaces no other (unacknowledged) redundancy
 
 
 def test_cli_claim_and_audit_run():
