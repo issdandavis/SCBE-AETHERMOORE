@@ -1,0 +1,17 @@
+{
+  "schema": "scbe_ladder_baselines_v1",
+  "measured": "2026-06-19",
+  "note": "RAW small-model baselines (no harness/rails) -- the floor any harness must beat with the SAME model. Single run; LLM output is non-deterministic, so treat as approximate (a stability/variance pass will tighten these). Findings: these are CODER models -- strong on the code ladder (~87%), weak on math reasoning (~45-50%); and 1.5b vs 3b barely differ -- size is not the lever, the harness is.",
+  "reasoning_ladder": {
+    "qwen2.5-coder:1.5b": {"total": 9, "of": 20, "contiguous_tier": 1,
+      "per_tier": {"arithmetic": 4, "pre-algebra": 3, "competition-lite": 1, "multi-step": 1, "hard": 0}},
+    "qwen2.5-coder:3b": {"total": 10, "of": 20, "contiguous_tier": 1,
+      "per_tier": {"arithmetic": 4, "pre-algebra": 3, "competition-lite": 2, "multi-step": 1, "hard": 0}}
+  },
+  "code_curriculum": {
+    "qwen2.5-coder:1.5b": {"total": 13, "of": 15, "contiguous_tier": 1,
+      "per_tier": {"elementary": 3, "middle-school": 2, "high-school": 3, "undergrad": 3, "grad/phd+": 2}},
+    "qwen2.5-coder:3b": {"total": 13, "of": 15, "contiguous_tier": 1,
+      "per_tier": {"elementary": 3, "middle-school": 2, "high-school": 3, "undergrad": 2, "grad/phd+": 3}}
+  }
+}
