@@ -770,6 +770,71 @@ class Toolkit:
             prev = r["seal"]
         return True
 
+    def _safe_alternative(self, domain: Optional[str], exclude: str) -> Optional[str]:
+        """A different SAFE, importable tool in the same domain -- a recovery suggestion."""
+        avail = self.available()
+        for t in self.tools:
+            if t.domain == domain and t.name != exclude and t.safety == "safe" and avail.get(t.name):
+                return t.name
+        return None
+
+    def diagnose(self, record: dict) -> dict:
+        """Classify why a tool call failed and recommend the next SAFE move; seal the diagnosis.
+
+        Governance/environment failures are classified by the gate decision; a confirmation-required
+        failure is NEVER auto-retried (retry_safe=False) -- it surfaces the confirm requirement. The
+        diagnosis is appended to the same sealed chain, so the failure + its diagnosis are auditable.
+        """
+        decision = record.get("decision")
+        tool = record.get("tool", "")
+        domain = self.by_name(tool).domain if self.by_name(tool) else None
+        if decision == "NEEDS_CONFIRM":
+            cause, retry_safe = "needs_confirm", False
+            recovery = (
+                "guarded tool: re-invoke %r WITH confirm='<reason>'. Do NOT auto-retry -- surface to a human/policy."
+                % tool
+            )
+        elif decision == "REFUSED":
+            cause, retry_safe = "refused_destructive", False
+            recovery = "blocked by the never-delete screen. Remove the destructive content; do NOT retry."
+        elif decision == "UNAVAILABLE":
+            alt = self._safe_alternative(domain, tool)
+            cause, retry_safe = "unavailable_dependency", bool(alt)
+            recovery = (
+                ("dependency missing here; use a same-domain available tool: %r" % alt)
+                if alt
+                else "no available same-domain alternative; install the dep or pick another domain."
+            )
+        elif decision == "NO_TOOL":
+            cause, retry_safe = "unknown_tool", False
+            recovery = "no tool named %r; consult toolkit.list() for the catalog." % tool
+        elif decision == "ERROR":
+            alt = self._safe_alternative(domain, tool)
+            cause, retry_safe = "tool_error", False
+            recovery = "the tool raised (%s). Check args; or try %r." % (str(record.get("result", ""))[:70], alt)
+        else:
+            ro = record.get("result_obj")
+            if isinstance(ro, dict) and ro.get("completed") is False and ro.get("stuck_at"):
+                cause, retry_safe = "step_drift", False
+                recovery = (
+                    "stepwise drifted at step %r -- offload that step to a deterministic calc tool "
+                    "(sieve_calc) so the model only judges." % ro.get("stuck_at")
+                )
+            else:
+                cause, retry_safe, recovery = "none", True, "no failure"
+        diag = {
+            "hop": len(self.transcript) + 1,
+            "diagnose": tool,
+            "from_decision": decision,
+            "cause": cause,
+            "recovery": recovery,
+            "retry_safe": retry_safe,
+            "prev": self.transcript[-1]["seal"] if self.transcript else self.nonce,
+        }
+        diag["seal"] = _seal(diag)
+        self.transcript.append(diag)
+        return diag
+
 
 def default_toolkit() -> Toolkit:
     return Toolkit()

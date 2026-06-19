@@ -88,6 +88,33 @@ def test_subprocess_spawning_tools_are_guarded():
         assert tk.by_name(name).safety == "guarded"  # they execute code -> must need a confirm
 
 
+def test_diagnose_needs_confirm_does_not_retry_and_seals():
+    tk = default_toolkit()
+    rec = tk.invoke("run_level", [])  # guarded, no confirm -> NEEDS_CONFIRM
+    d = tk.diagnose(rec)
+    assert d["cause"] == "needs_confirm" and d["retry_safe"] is False  # never auto-retry a confirm gate
+    assert "confirm" in d["recovery"].lower()
+    assert tk.verify() is True  # the diagnosis is sealed into the same chain
+
+
+def test_diagnose_destructive_is_not_retried():
+    tk = default_toolkit()
+    d = tk.diagnose(tk.invoke("is_prime", "rm -rf /"))
+    assert d["cause"] == "refused_destructive" and d["retry_safe"] is False
+
+
+def test_diagnose_unavailable_suggests_a_safe_same_domain_alternative():
+    # deterministic: a broken tool + an importable same-domain alternative (env-independent)
+    tools = [
+        Tool("broken_router", "no.such.module", "x", "routing", "n/a", "safe"),
+        Tool("good_router", "src.numtheory", "is_prime", "routing", "an importable stand-in", "safe"),
+    ]
+    tk = Toolkit(tools=tools)
+    d = tk.diagnose(tk.invoke("broken_router"))
+    assert d["cause"] == "unavailable_dependency"
+    assert d["retry_safe"] is True and "good_router" in d["recovery"]  # a real same-domain alternative
+
+
 def test_most_tools_are_importable_here():
     tk = default_toolkit()
     avail = tk.available()

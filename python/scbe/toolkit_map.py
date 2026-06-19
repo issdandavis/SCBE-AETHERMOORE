@@ -10,6 +10,11 @@ each demonstrating a distinct system, connected by unlock edges. The map does th
     reach for (and why), so a weak model never has to pick from the whole catalog blind.
   * SEES THE USE -- every area actually invokes its system (sieve classifies a number, the board
     round-trips, loomflow runs an IR cross-face, a game is played sealed, ...), so the demo IS proof.
+  * DIAGNOSES -- `run()` is the nervous system: execute -> seal -> verify -> on failure, classify the
+    cause and recommend the next SAFE move. Governance/env failures are classified by the gate
+    decision (needs-confirm / refused / unavailable / error); a stepwise run that drifts is localized
+    by failure_map (which step is the wall) -> offload it. A confirmation-required failure is NEVER
+    auto-retried; it surfaces the confirm requirement. The diagnosis is sealed into the same chain.
 
 An area whose dependency is missing on this box is honestly SKIPPED (not faked), and still unlocks
 the next so the tour continues. Every tool call is governed + SHA-256 sealed by the toolkit.
@@ -350,6 +355,43 @@ class TaskMap:
         )
         return {"bitboards": bb, "recommended": rec}
 
+    def run(self, tool: str, *args: object, confirm: Optional[str] = None) -> Dict[str, object]:
+        """The nervous system: execute -> seal -> verify -> diagnose on failure -> recommend recovery.
+
+        A failed call (or a stepwise run that drifted) emits a sealed failure record AND a sealed
+        diagnosis with a next-safe-move recommendation. A confirmation-required failure is NOT
+        auto-retried -- the diagnosis surfaces the confirm requirement (retry_safe=False).
+        """
+        rec = self.tk.invoke(tool, *args, confirm=confirm)
+        ro = rec.get("result_obj")
+        drifted = isinstance(ro, dict) and ro.get("completed") is False
+        out: Dict[str, object] = {"tool": tool, "decision": rec["decision"], "sealed": True}
+        if rec["decision"] != "ALLOWED" or drifted:
+            out["diagnosis"] = self.tk.diagnose(rec)  # classify cause + recommend, sealed into the chain
+        else:
+            out["result"] = rec["result"]
+        out["chain_ok"] = self.tk.verify()  # the seal chain still holds after the failure + diagnosis
+        return out
+
+    def diagnose_drift(self, task: object, proposer: Callable) -> Dict[str, object]:
+        """Use failure_map to localize WHERE a stepwise run drifted, and recommend offloading the wall.
+
+        This is the step-drift arm of the diagnose stage: where a tool-call failure is a governance
+        decision, a stepwise failure is a model drifting at a specific step -- failure_map says which.
+        """
+        from .failure_map import localize
+
+        loc = localize(task, proposer)
+        if loc.get("cleared"):
+            return {"cleared": True, "recovery": None, "drift": loc}
+        wall = loc.get("stuck_at")
+        rec = (
+            "wall at step %r (point %s/%s); offload step %r to a deterministic calc tool "
+            "(sieve_calc.classify_number_task) so the model only judges."
+            % (wall, loc.get("stuck_index"), loc.get("total"), wall)
+        )
+        return {"cleared": False, "drift": loc, "recovery": rec}
+
     def advance(self, name: str) -> Dict[str, object]:
         """Run an area's demo through the sealed toolkit; clear + unlock on success."""
         a = self._area(name)
@@ -412,6 +454,28 @@ def main(argv: Optional[List[str]] = None) -> int:
         "\n  cleared %d/%d areas (%d skipped for missing deps); %d sealed tool calls; transcript verified: %s"
         % (summary["cleared"], summary["total"], summary["skipped"], summary["tool_calls"], summary["sealed"])
     )
+
+    print("\n== NERVOUS SYSTEM: execute -> seal -> verify -> DIAGNOSE failure -> recommend recovery ==")
+    m2 = TaskMap()
+    for label, call in [
+        ("guarded, no confirm", lambda: m2.run("run_level", [])),
+        ("destructive arg", lambda: m2.run("is_prime", "rm -rf /")),
+        ("missing dependency", lambda: m2.run("route_intent", (0.05, 0.08))),
+    ]:
+        out = call()
+        d = out.get("diagnosis", {})
+        print(
+            "  %-20s -> %-13s cause=%-22s retry_safe=%s chain_ok=%s"
+            % (label, out["decision"], d.get("cause"), d.get("retry_safe"), out["chain_ok"])
+        )
+        print("      recovery: %s" % d.get("recovery", "")[:96])
+
+    print("\n  step-drift diagnosis via failure_map (a model that drifts at step 'label'):")
+    from .sieve_calc import classify_number_task
+    from .stepwise import scripted_proposer
+
+    drift = m2.diagnose_drift(classify_number_task(91), scripted_proposer(["prime", "prime", "prime", "prime"]))
+    print("      %s" % drift["recovery"])
     return 0
 
 
