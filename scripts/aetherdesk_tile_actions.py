@@ -94,11 +94,100 @@ def rosetta_demo() -> None:
     )
 
 
+def curriculum_demo() -> None:
+    from python.helm.curriculum import run_curriculum
+
+    s = run_curriculum()  # answer-key climber: validates the ladder is solvable
+    emit(
+        {
+            "schema": "aetherdesk_tile_action_v1",
+            "tile": "curriculum",
+            "label": "Coding Ladder",
+            "highest_tier_cleared": s["highest_tier_cleared"],
+            "highest_grade": s["highest_grade_cleared"],
+            "total_verified": s["total_verified"],
+            "total": s["total_problems"],
+        }
+    )
+
+
+def reasoning_demo() -> None:
+    from python.helm.reasoning_ladder import run_reasoning
+
+    s = run_reasoning()  # answer-key climber: validates the grader
+    emit(
+        {
+            "schema": "aetherdesk_tile_action_v1",
+            "tile": "reasoning",
+            "label": "Reasoning Ladder",
+            "highest_tier_cleared": s["highest_tier_cleared"],
+            "highest_grade": s["highest_grade_cleared"],
+            "total_passed": s["total_passed"],
+            "total": s["total"],
+        }
+    )
+
+
+def stepwise_demo() -> None:
+    from python.scbe.stepwise import number_label_task, run_stepwise, scripted_proposer
+
+    r = run_stepwise(number_label_task(6), scripted_proposer(["Buzz", "Fizz"]))  # missteps then rewinds to ok
+    emit(
+        {
+            "schema": "aetherdesk_tile_action_v1",
+            "tile": "stepwise",
+            "label": "Stepwise (rewind on misstep)",
+            "completed": r["completed"],
+            "answer": r.get("answer"),
+            "rewinds": r["rewinds"],
+            "model_calls": r["model_calls"],
+        }
+    )
+
+
+def failuremap_demo() -> None:
+    from python.scbe.failure_map import clears_through, render_map, run_map, seq_task
+
+    tasks = [seq_task("alpha", ["a1", "a2", "a3"]), seq_task("beta", ["b1", "b2"])]
+    m = run_map(tasks, {"strong": clears_through(9), "mid": clears_through(2), "weak": clears_through(0)})
+    emit(
+        {
+            "schema": "aetherdesk_tile_action_v1",
+            "tile": "failuremap",
+            "label": "Failure Map",
+            "universal_fail": m["universal_fail"],
+            "walls": {t: m["per_task"][t]["wall"] for t in m["tasks"]},
+            "report": render_map(m),  # cells use tuple keys; the rendered text is the serializable view
+        }
+    )
+
+
+def host_check() -> None:
+    from python.helm.host_capability import certify, render
+
+    c = certify(probe_network=True)
+    emit(
+        {
+            "schema": "aetherdesk_tile_action_v1",
+            "tile": "hostcheck",
+            "label": "Host Capability",
+            "verdict": c["verdict"],
+            "runnable": c["runnable"],
+            "report": render(c),
+        }
+    )
+
+
 ACTIONS = {
     "chemistry": chemistry_lookup,
+    "curriculum": curriculum_demo,
+    "failuremap": failuremap_demo,
     "forge": forge_demo,
+    "hostcheck": host_check,
     "instrument": instrument_play,
+    "reasoning": reasoning_demo,
     "rosetta": rosetta_demo,
+    "stepwise": stepwise_demo,
     "token": token_lookup,
 }
 
