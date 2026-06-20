@@ -95,7 +95,7 @@ jobs:
               ;;
             monitor)
               # Split comma-separated URLs into JSON array
-              URLS_JSON=$(python -c "import json,sys; print(json.dumps('$QUERY'.split(',')))")
+              URLS_JSON=$(QUERY="$QUERY" python -c "import json, os; print(json.dumps(os.environ['QUERY'].split(',')))")
               python -m agents.browser_tools monitor_sites "{\"urls\": $URLS_JSON}" \
                 > artifacts/agent-router/result.json
               ;;
