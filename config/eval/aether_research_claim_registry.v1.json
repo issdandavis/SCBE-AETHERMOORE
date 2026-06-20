@@ -15,7 +15,11 @@
       "claim": "SWE-Bench Pro contains 1,865 problems sourced from 41 maintained repositories, including public, held-out, and commercial/proprietary sets.",
       "source_url": "https://arxiv.org/abs/2509.16941",
       "repo_action": "Keep SWE-Bench Pro in Aether Coding Score real-repo-repair lane, but require official/full-run or reproducible subset evidence before assigning points.",
-      "public_language": "SWE-Bench Pro is a valid target lane for long-horizon repository repair. No SCBE score is claimed until a run packet exists."
+      "public_language": "SWE-Bench Pro is a valid target lane for long-horizon repository repair. No SCBE score is claimed until a run packet exists.",
+      "evidence": {
+        "kind": "script",
+        "path": "scripts/benchmark/swe_local_benchmark.py"
+      }
     },
     {
       "claim_id": "terminal_bench_2_hard_cli_tasks",
@@ -24,7 +28,11 @@
       "claim": "Terminal-Bench 2.0 is described as 89 hard terminal-environment tasks with tests and an evaluation harness.",
       "source_url": "https://arxiv.org/abs/2601.11868",
       "repo_action": "Keep Terminal-Bench 2.0 in terminal-execution lane and build only a small reproducible subset adapter first.",
-      "public_language": "Terminal-Bench 2.0 is a valid target lane for terminal agent ability. Smoke runs do not prove capability."
+      "public_language": "Terminal-Bench 2.0 is a valid target lane for terminal agent ability. Smoke runs do not prove capability.",
+      "evidence": {
+        "kind": "script",
+        "path": "scripts/benchmark/terminal_bench_adapter.py"
+      }
     },
     {
       "claim_id": "latent_fusion_jailbreak",
@@ -33,7 +41,11 @@
       "claim": "Latent Fusion Jailbreak is a white-box latent-space jailbreak that blends harmful and benign hidden states to mask malicious intent.",
       "source_url": "https://arxiv.org/abs/2508.10029",
       "repo_action": "Add semantic-blending checks to the security backlog; do not claim current SCBE coverage until a regression test exists.",
-      "public_language": "Representation blending is a relevant threat model for future SCBE red-team lanes."
+      "public_language": "Representation blending is a relevant threat model for future SCBE red-team lanes.",
+      "evidence": {
+        "kind": "backlog",
+        "note": "no regression test yet; 0/56 injection_eval_corpus positives are blending/midpoint attacks, so coverage is NOT claimed"
+      }
     },
     {
       "claim_id": "riemannian_adamw_curvature_aware",
@@ -42,7 +54,11 @@
       "claim": "Curvature-aware hyperbolic learning work derives Riemannian AdamW and discusses instability when learning manifold curvature.",
       "source_url": "https://arxiv.org/abs/2405.13979",
       "repo_action": "Treat learnable curvature and Riemannian AdamW as experimental NSM geometry backlog, not canonical SCBE math.",
-      "public_language": "Learnable curvature is an experimental research direction for NSM geometry."
+      "public_language": "Learnable curvature is an experimental research direction for NSM geometry.",
+      "evidence": {
+        "kind": "backlog",
+        "note": "experimental NSM geometry; not canonical SCBE math"
+      }
     },
     {
       "claim_id": "lorentz_model_stability_tradeoff",
@@ -51,7 +67,11 @@
       "claim": "Numerical-stability research compares Poincare ball and Lorentz models and validates Lorentz advantages from an optimization perspective while noting representation tradeoffs.",
       "source_url": "https://arxiv.org/abs/2211.00181",
       "repo_action": "Add Lorentz-model parity tests only after current Poincare NSM anchors are committed and fenced as experimental.",
-      "public_language": "Lorentz geometry may be a stability comparison lane; it is not a current production dependency."
+      "public_language": "Lorentz geometry may be a stability comparison lane; it is not a current production dependency.",
+      "evidence": {
+        "kind": "backlog",
+        "note": "Lorentz parity tests deferred until Poincare NSM anchors are committed and fenced experimental"
+      }
     },
     {
       "claim_id": "eu_gpai_code_final_version",
@@ -60,7 +80,11 @@
       "claim": "The European Commission received the final General-Purpose AI Code of Practice on 2025-07-10; it covers transparency, copyright, and safety/security chapters.",
       "source_url": "https://digital-strategy.ec.europa.eu/en/news/general-purpose-ai-code-practice-now-available",
       "repo_action": "Use EU GPAI Code as compliance-context mapping only; do not imply SCBE certification or legal compliance without counsel and evidence.",
-      "public_language": "SCBE can map audit artifacts to EU GPAI Code themes; this is alignment mapping, not certification."
+      "public_language": "SCBE can map audit artifacts to EU GPAI Code themes; this is alignment mapping, not certification.",
+      "evidence": {
+        "kind": "backlog",
+        "note": "compliance-context mapping only; no SCBE certification claimed"
+      }
     },
     {
       "claim_id": "nvidia_openshell_out_of_process_policy",
@@ -69,7 +93,11 @@
       "claim": "NVIDIA describes OpenShell as out-of-process policy enforcement with sandbox, policy engine, privacy router, deny-by-default posture, live policy updates, and audit trail.",
       "source_url": "https://developer.nvidia.com/blog/run-autonomous-self-evolving-agents-more-safely-with-nvidia-openshell/",
       "repo_action": "Benchmark SCBE against external-runtime control patterns: out-of-process policy, deny-by-default permissions, isolated execution, and audit trail.",
-      "public_language": "External runtime governance is becoming a mainstream agent-safety pattern; SCBE should prove comparable controls with local evidence."
+      "public_language": "External runtime governance is becoming a mainstream agent-safety pattern; SCBE should prove comparable controls with local evidence.",
+      "evidence": {
+        "kind": "backlog",
+        "note": "benchmark-target only; no openshell out-of-process anchor exists in-repo yet"
+      }
     },
     {
       "claim_id": "aethelgard_dynamic_capability_governance",
