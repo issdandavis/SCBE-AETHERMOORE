@@ -46,3 +46,19 @@ def test_differential_shared_and_distinguishing():
 def test_phase_deviation_is_circular():
     d = td.differential("send the message", "reveal the secret")  # AV(60) vs UM(240) -> 180deg = pi
     assert abs(d["phase_dev"] - 3.14159) < 0.01
+
+
+def test_hyperbolic_drift_is_monotone_in_governance_weight():
+    # REAL Poincare distance from center: AV < CA < UM < DR (governance costs exponentially more)
+    av = td.hyper_drift("send the message")
+    ca = td.hyper_drift("compute the sum")
+    um = td.hyper_drift("reveal the secret key")
+    dr = td.hyper_drift("verify the signature token")
+    assert td.hyper_drift("") == 0.0  # the safe center
+    assert 0 < av < ca < um < dr  # strictly increasing with phi-weight
+
+
+def test_hyperbolic_distance_is_symmetric_and_nonnegative():
+    a, b = "send the message", "reveal the secret key"
+    assert td.hyper_distance(a, b) == td.hyper_distance(b, a)
+    assert td.hyper_distance(a, b) > 0 and td.hyper_distance(a, a) == 0.0
