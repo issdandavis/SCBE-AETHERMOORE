@@ -1113,13 +1113,8 @@ function scaffoldAgentCommand(board, terminalState = '') {
     return ':files reset_context';
   }
 
-  const backtickCommands = [...objective.matchAll(/`([^`]+)`/g)]
-    .map((m) => m[1].trim())
-    .filter((cmd) => /^[a-zA-Z0-9_.:/\\-]+(?:\s+[^`;&|<>]+)*$/.test(cmd));
-  if (backtickCommands.length > 0) {
-    const cmd = backtickCommands[0];
-    if (/^(npm|node|python|pytest|git|rg|grep|ls|dir|cat|type)\b/i.test(cmd)) return cmd;
-  }
+  // Never execute or forward backticked snippets from task text.
+  // They are attacker-controlled input in agent-json harness contexts.
 
   if (/test/i.test(lower) && /package/i.test(lower)) return ':test npm test';
   if (/find|search|where/i.test(lower)) {
