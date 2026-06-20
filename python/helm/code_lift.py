@@ -159,6 +159,24 @@ def render(rep: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _ollama_ask(model: str):
+    """An ask(prompt)->str over Ollama's OpenAI-compatible endpoint, for the recovery (repair-loop) run."""
+    import os
+
+    from .free_generator import DEFAULT_BASE, _chat, strip_to_code
+
+    base = os.environ.get("SCBE_LLM_BASE", DEFAULT_BASE)
+    key = os.environ.get("SCBE_LLM_KEY", "ollama")
+
+    def ask(prompt: str) -> str:
+        try:
+            return strip_to_code(_chat([{"role": "user", "content": prompt}], base=base, key=key, model=model))
+        except Exception as exc:  # fail closed: emit failing code, never a fabricated pass
+            return "# generation failed (%s)\ndef _f(*a, **k):\n    return None\n" % type(exc).__name__
+
+    return ask
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(
         prog="scbe-code-lift", description="base-vs-trained code capability lift on held-out MBPP"
@@ -168,16 +186,39 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="HARNESS CHECK ONLY: stub(base) vs answer-key(trained) over the offline fixture -- proves the math",
     )
+    ap.add_argument("--base", default=None, help="ollama model id for the BASE slot (e.g. qwen2.5-coder:1.5b)")
+    ap.add_argument("--trained", default=None, help="ollama model id for the TRAINED slot (e.g. vtc-qwen15)")
+    ap.add_argument("--corpus", default=None, help="training corpus jsonl; its task_ids are excluded from eval")
+    ap.add_argument("--limit", type=int, default=300, help="pull this many MBPP problems before excluding train ids")
+    ap.add_argument("--recovery", action="store_true", help="also run the repair-loop recovery measurement")
+    ap.add_argument("--rounds", type=int, default=3, help="repair rounds per problem (with --recovery)")
     a = ap.parse_args(list(argv) if argv is not None else None)
+
     if a.demo:
         probs = pb.load_fixture()
         rep = measure_code_lift(pb.naive_generator, pb.reference_generator, probs)
         print("[DEMO = harness check, NOT a model result: 'base' is a failing stub, 'trained' is the answer key]")
         print(render(rep))
         return 0
-    print("code_lift is a library; the real run lives in notebooks/vtc_lift_qwen15_colab.ipynb")
-    print("  (base = the stock checkpoint, trained = QLoRA-adapted, both over the held-out eval set).")
-    print("  CLI smoke: --demo runs the answer-key-vs-stub harness check over the offline fixture.")
+
+    if a.base and a.trained:  # local base-vs-trained over ollama (e.g. stock vs the imported QLoRA model)
+        from .free_generator import make_generator
+        from .vtc_split import load_corpus, split_by_task_id
+
+        records = load_corpus(a.corpus)
+        eval_problems = split_by_task_id(records, pb.pull_mbpp(limit=a.limit))["eval_problems"]
+        print("held-out: %d problems (excluded %d trained task_ids)" % (len(eval_problems), len(records)))
+        rep = measure_code_lift(make_generator(model=a.base), make_generator(model=a.trained), eval_problems)
+        print(render(rep))
+        if a.recovery:
+            rec = measure_recovery_lift(_ollama_ask(a.base), _ollama_ask(a.trained), eval_problems, rounds=a.rounds)
+            print(render(rec))
+        return 0
+
+    print("code_lift: run a real comparison with")
+    print("  --base <ollama_model> --trained <ollama_model> [--corpus <jsonl>] [--recovery]")
+    print("  or --demo for the offline answer-key-vs-stub harness check.")
+    print("  The Colab run lives in notebooks/vtc_lift_qwen15_colab.ipynb.")
     return 0
 
 
