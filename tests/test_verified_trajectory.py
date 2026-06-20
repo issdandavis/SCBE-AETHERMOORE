@@ -62,3 +62,18 @@ def test_harvest_traces_keeps_only_verified_multiturn():
     assert r["verified"] == 1
     rec = r["records"][0]
     assert rec["messages"][0]["role"] == "system" and rec["meta"]["verified"] is True
+
+
+def test_refine_dedups_prefers_repair_and_tags_station_manager():
+    def rec(task, repaired, final="def f():\n    return 1"):
+        return {
+            "messages": [{"role": "user", "content": "p"}, {"role": "assistant", "content": final}],
+            "meta": {"task_id": task, "repaired": repaired, "attempts": 2 if repaired else 1, "verified": True},
+        }
+
+    recs = [rec("A", False), rec("A", True), rec("B", False), rec("C", False, "x")]  # C is degenerate
+    out = vt.refine(recs)
+    assert out["total"] == 2  # A deduped (repair kept) + B; C dropped as degenerate
+    grades = {r["meta"]["task_id"]: r["meta"]["grade"] for r in out["records"]}
+    assert grades["A"] == "manager" and grades["B"] == "station"
+    assert out["manager"] == 1 and out["station"] == 1 and out["deduped_from"] == 4
