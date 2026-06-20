@@ -23,9 +23,23 @@ _spec.loader.exec_module(M)
 
 def test_verify_polyglot_agrees_across_faces():
     r = M._verify_polyglot(["mul", "gt"], [[2.0, 3.0, 4.0], [10.0, 3.0, 2.0]])
-    assert r["verified"] is True
-    assert r["disagree"] == []
-    assert r["agree"] >= 1  # at least one non-reference backend ran and matched (more if toolchains present)
+    assert r["disagree"] == []  # no face ever diverged (holds with or without toolchains)
+    # "verified" requires a real cross-check: a second backend actually ran and agreed
+    if r["agree"] >= 1:
+        assert r["verified"] is True
+    else:
+        assert r["verified"] is False  # nothing cross-checked -> NOT verified, honestly
+
+
+def test_verify_polyglot_unverified_when_no_second_backend(monkeypatch):
+    # if no other backend runs, an empty disagree must NOT read as verified -- the session-long lesson
+    from python.scbe import polyglot_conformance as PC
+
+    monkeypatch.setattr(PC, "_toolchain_ok", lambda lang: False)  # pretend node/rustc/etc are all absent
+    r = M._verify_polyglot(["mul", "gt"])
+    assert r["agree"] == 0 and r["disagree"] == []
+    assert r["verified"] is False
+    assert "UNVERIFIED" in r["verdict"]
 
 
 def test_verify_polyglot_rejects_off_vocabulary_ops():
@@ -35,10 +49,12 @@ def test_verify_polyglot_rejects_off_vocabulary_ops():
 
 def test_verify_conlang_runs_and_is_bijective():
     r = M._verify_conlang("sum_1_to_5")  # built-in example, looked up by name
-    assert r["verified"] is True
-    assert r["bijective"] is True
-    assert math.isclose(float(r["answer"]), 15.0)
-    assert r["read_back"]  # the program decoded straight back out of the opcodes
+    assert r["bijective"] is True  # toolchain-free: decoded straight back out of the opcodes
+    assert r["read_back"]
+    assert math.isclose(float(r["answer"]), 15.0)  # python reference, always available
+    assert r["disagree"] == []
+    if r["agree"]:
+        assert r["verified"] is True
 
 
 def test_verify_conlang_bad_program_is_an_error_not_a_crash():
@@ -48,8 +64,10 @@ def test_verify_conlang_bad_program_is_an_error_not_a_crash():
 
 def test_verify_loomfn_arrays_and_arithmetic():
     r = M._verify_loomfn("const a 5 / const b 3 / add c a b / print c")
-    assert r["verified"] is True
-    assert math.isclose(float(r["answer"]), 8.0)
+    assert r["disagree"] == []
+    assert math.isclose(float(r["answer"]), 8.0)  # python reference
+    if r["agree"]:
+        assert r["verified"] is True
 
 
 def test_score_intent_allows_benign_denies_attack():
