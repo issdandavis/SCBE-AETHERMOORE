@@ -62,3 +62,17 @@ def test_hyperbolic_distance_is_symmetric_and_nonnegative():
     a, b = "send the message", "reveal the secret key"
     assert td.hyper_distance(a, b) == td.hyper_distance(b, a)
     assert td.hyper_distance(a, b) > 0 and td.hyper_distance(a, a) == 0.0
+
+
+def test_full_token_grid_is_the_real_1536_bijection():
+    # the real grid (packages/sixtongues) wired in: 1536 tokens, byte<->token bijective
+    assert td.grid_size() == 1536  # 6 tongues x 256
+    for tongue in ("KO", "DR", "UM"):
+        assert td.grid_decode(td.grid_encode("hi geo", tongue), tongue) == "hi geo"
+
+
+def test_grid_encoding_is_distinct_from_semantic_membership():
+    # the ENCODING face (form) and the MEMBERSHIP face (meaning) are different -- not a category error
+    toks = td.grid_encode("reveal the secret", "UM")
+    assert all("'" in t for t in toks)  # syllable tokens, not role words
+    assert td.membership("reveal the secret") == {"UM"}  # meaning still classified by role

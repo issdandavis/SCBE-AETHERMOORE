@@ -154,6 +154,54 @@ def hyper_drift(text: str) -> float:
     return round(hyperbolic_distance([0.0] * len(CODES), embed(text)), 3)
 
 
+# ---- THE FULL TOKEN GRID (encoding face) ----
+# Research result: the real "full token grid" is packages/sixtongues -- a 16x16 byte->syllable codec
+# per tongue (16 prefixes x 16 suffixes = 256 tokens/tongue, 1536 total), bijective (byte<->token), and
+# also exposed as a HuggingFace vocab-replacement tokenizer (src/tokenizer/sacred_tongues_hf.py:
+# "6 tongues x 256 tokens = 1,536"). Its crypto domains ALIGN to the doc's semantic roles (KO nonce/
+# intent, AV header/transport, RU salt/binding, CA ciphertext/compute, UM redaction, DR tag/auth).
+# HONEST: this grid is an ENCODING face (form: bytes -> tongue-syllables), NOT a semantic classifier.
+# So membership() above stays role-based (meaning); this is the distinct codec face. A semantic
+# 256-word-per-tongue lexicon does not exist in the repo -- not fabricating one.
+_GRID_CACHE: Dict[str, object] = {}
+_GRID_CODE = {"KO": "ko", "AV": "av", "RU": "ru", "CA": "ca", "UM": "um", "DR": "dr"}
+
+
+def _grid():
+    """Load the real sixtongues grid (packages/sixtongues, not on the import path) once, by file."""
+    if "m" not in _GRID_CACHE:
+        import importlib.util
+        import pathlib
+
+        path = pathlib.Path(__file__).resolve().parents[2] / "packages" / "sixtongues" / "sixtongues.py"
+        spec = importlib.util.spec_from_file_location("_sixtongues_grid", path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)  # type: ignore[union-attr]
+        _GRID_CACHE["m"] = mod
+    return _GRID_CACHE["m"]
+
+
+def grid_encode(text: str, tongue: str = "KO") -> List[str]:
+    """ENCODING face: byte-encode text through the REAL full 16x16 grid (256 tokens/tongue, 1536 total)
+    -- the bijective byte<->token codec from packages/sixtongues. Distinct from semantic membership."""
+    m = _grid()
+    spec = m.TONGUES[_GRID_CODE[tongue]]
+    return [m.byte_to_token(b, spec) for b in text.encode("utf-8")]
+
+
+def grid_decode(tokens: Sequence[str], tongue: str = "KO") -> str:
+    """Inverse of grid_encode (proves the full grid is a real bijection, not a stub)."""
+    m = _grid()
+    spec = m.TONGUES[_GRID_CODE[tongue]]
+    return bytes(m.token_to_byte(t, spec) for t in tokens).decode("utf-8", "replace")
+
+
+def grid_size() -> int:
+    """Total tokens in the real grid (should be 1536 = 6 tongues x 256)."""
+    m = _grid()
+    return sum(len(t.prefixes) * len(t.suffixes) for t in m.TONGUES.values())
+
+
 def render(text: str) -> str:
     d = drift(text)
     parts = ["%s(%s)" % (c, TONGUES[c][0].split("/")[0]) for c in d["membership"]]
