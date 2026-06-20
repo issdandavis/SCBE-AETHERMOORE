@@ -72,29 +72,91 @@ def lift_from_solve(base_solve: Dict[str, Any], trained_solve: Dict[str, Any]) -
     }
 
 
+Ask = Callable[[str], str]
+
+
+def solve_rate_with_repair(
+    problems: Sequence[Dict[str, Any]], ask: Ask, public_k: int = 1, rounds: int = 3
+) -> Dict[str, Any]:
+    """Like solve_rate, but the model runs the write->run->repair LOOP (solve_with_trace) instead of one
+    shot. Beyond solved/total it records `recovered` = problems solved ONLY after a failed attempt -- the
+    behavior VTC trains on. recovery_rate = recovered / solved. `ask` is prompt->str (the loop re-prompts
+    with execution feedback), distinct from solve_rate's problem->code Generator."""
+    from .verified_trajectory import solve_with_trace
+
+    solved_ids = set()
+    recovered = 0
+    attempted = 0
+    for p in problems:
+        asserts = list(p.get("test_list", []))
+        if len(asserts) <= public_k:
+            continue
+        attempted += 1
+        tr = solve_with_trace(p, ask, public_k=public_k, rounds=rounds)  # verifies on held-out hidden
+        if tr["verified"]:
+            solved_ids.add(p.get("task_id"))
+            if tr["attempts"] > 1:  # needed a repair -> the model RECOVERED
+                recovered += 1
+    solved = len(solved_ids)
+    return {
+        "solved": solved,
+        "total": attempted,
+        "solved_ids": solved_ids,
+        "recovered": recovered,
+        "recovery_rate": round(recovered / solved, 3) if solved else 0.0,
+    }
+
+
+def recovery_lift(base_solve: Dict[str, Any], trained_solve: Dict[str, Any]) -> Dict[str, Any]:
+    """The VTC thesis number for the REPAIR loop: does training raise the rate at which the model solves
+    only AFTER failing once? Built from two solve_rate_with_repair() results. recovery_lift > 0 is the
+    specific, falsifiable claim VTC makes; net solve lift (lift_from_solve) is the raw-capability number."""
+    base_solve, trained_solve = dict(base_solve), dict(trained_solve)
+    report = lift_from_solve(base_solve, trained_solve)
+    report["base_recovery_rate"] = base_solve.get("recovery_rate", 0.0)
+    report["trained_recovery_rate"] = trained_solve.get("recovery_rate", 0.0)
+    report["recovery_lift"] = round(report["trained_recovery_rate"] - report["base_recovery_rate"], 3)
+    report["base_recovered"] = base_solve.get("recovered", 0)
+    report["trained_recovered"] = trained_solve.get("recovered", 0)
+    return report
+
+
+def measure_recovery_lift(
+    base: Ask, trained: Ask, eval_problems: Sequence[Dict[str, Any]], public_k: int = 1, rounds: int = 3
+) -> Dict[str, Any]:
+    """Run BOTH models through the repair loop on the SAME held-out problems; return solve lift + the
+    recovery lift (the repair-behavior delta). `base`/`trained` are prompt->str (e.g. LoRA-off vs -on)."""
+    return recovery_lift(
+        solve_rate_with_repair(eval_problems, base, public_k, rounds),
+        solve_rate_with_repair(eval_problems, trained, public_k, rounds),
+    )
+
+
 def measure_code_lift(
     base: Generator, trained: Generator, eval_problems: Sequence[Dict[str, Any]], public_k: int = 1
 ) -> Dict[str, Any]:
     """Run BOTH generators over the SAME held-out problems and return the execution-verified delta.
     newly_solved = the thesis number (trained solves, base failed); regressed = the reverse."""
-    return lift_from_solve(
-        solve_rate(eval_problems, base, public_k), solve_rate(eval_problems, trained, public_k)
-    )
+    return lift_from_solve(solve_rate(eval_problems, base, public_k), solve_rate(eval_problems, trained, public_k))
 
 
 def render(rep: Dict[str, Any]) -> str:
-    return "\n".join(
-        [
-            "VTC CODE LIFT  (base vs trained, execution-verified on held-out MBPP)",
-            "  base solved   : %d / %d" % (rep["base_solved"], rep["total"]),
-            "  trained solved: %d / %d" % (rep["trained_solved"], rep["total"]),
-            "  newly solved  : %d  %s   <- trained passes, base could not (the lift)"
-            % (len(rep["newly_solved"]), sorted(rep["newly_solved"])),
-            "  regressed     : %d  %s   <- base passed, trained broke"
-            % (len(rep["regressed"]), sorted(rep["regressed"])),
-            "  NET LIFT      : %+d" % rep["net_lift"],
+    lines = [
+        "VTC CODE LIFT  (base vs trained, execution-verified on held-out MBPP)",
+        "  base solved   : %d / %d" % (rep["base_solved"], rep["total"]),
+        "  trained solved: %d / %d" % (rep["trained_solved"], rep["total"]),
+        "  newly solved  : %d  %s   <- trained passes, base could not (the lift)"
+        % (len(rep["newly_solved"]), sorted(rep["newly_solved"])),
+        "  regressed     : %d  %s   <- base passed, trained broke" % (len(rep["regressed"]), sorted(rep["regressed"])),
+        "  NET LIFT      : %+d" % rep["net_lift"],
+    ]
+    if "recovery_lift" in rep:  # repair-loop run -> show the recovery (solve-after-failure) delta too
+        lines += [
+            "  recovery rate : base %.3f -> trained %.3f  (solved only after a failed attempt)"
+            % (rep["base_recovery_rate"], rep["trained_recovery_rate"]),
+            "  RECOVERY LIFT : %+.3f   <- the VTC thesis: learned to recover from failure?" % rep["recovery_lift"],
         ]
-    )
+    return "\n".join(lines)
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:

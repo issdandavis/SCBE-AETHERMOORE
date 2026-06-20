@@ -1,15 +1,17 @@
-"""Tests for the VTC train/measure pipeline: freeze_dataset + vtc_lift.
+"""Tests for the VTC pipeline pieces this session added/consolidated:
+  * freeze_dataset -- corpus freezing, provenance, drift detection (GPU-free).
+  * code_lift recovery -- solve-after-failure measurement via the repair loop (the VTC thesis number).
 
-These cover the pure, GPU-free logic: dataset freezing/provenance/drift-detection, and the lift
-measurement on a hand-built problem with controllable ask() callables (no model needed).
+The lift here is exercised on a hand-built problem with controllable ask() callables, so no model or
+network is needed. (Single-shot solve_rate / split logic is covered by tests/test_vtc_lift_harness.py.)
 """
 
 from __future__ import annotations
 
 import json
 
+from python.helm.code_lift import measure_recovery_lift, recovery_lift, render, solve_rate_with_repair
 from python.helm.freeze_dataset import dataset_stats, freeze, sha256_file, verify_freeze
-from python.helm.vtc_lift import corpus_task_ids, evaluate, held_out, measure_vtc_lift, render
 
 # ---- a tiny self-contained problem (no model, no network) --------------------------------------
 PROBLEM = {
@@ -72,49 +74,42 @@ def test_freeze_writes_manifest_backup_and_detects_drift(tmp_path):
     assert m["sha256"] == sha256_file(data)
     assert m["records"] == 1 and m["frozen_at"] == "2026-06-20T00:00:00Z"
     assert manifest_path.exists()
-    # backup is hash-named and is a byte copy
     backups = list(backup_dir.glob("*.jsonl"))
     assert len(backups) == 1 and m["sha256"][:12] in backups[0].name
     assert sha256_file(backups[0]) == m["sha256"]
 
-    # drift detection: clean match, then mutate the dataset
     assert verify_freeze(manifest_path)["ok"] is True
     with open(data, "a", encoding="utf-8") as f:
         f.write(json.dumps({"messages": [], "meta": {"verified": True, "task_id": 2}}) + "\n")
     assert verify_freeze(manifest_path)["ok"] is False
 
 
-# ---- vtc_lift ----------------------------------------------------------------------------------
-def test_corpus_task_ids_and_held_out(tmp_path):
-    data = tmp_path / "c.jsonl"
-    _write_corpus(data, [{"meta": {"task_id": 1}}, {"meta": {"task_id": 3}}])
-    ids = corpus_task_ids(data)
-    assert ids == {1, 3}
-    pool = [{"task_id": 1}, {"task_id": 2}, {"task_id": 3}, {"task_id": 4}]
-    assert [p["task_id"] for p in held_out(pool, ids)] == [2, 4]
+# ---- code_lift recovery (solve-after-failure via the repair loop) -------------------------------
+def test_solve_rate_with_repair_counts_recovery():
+    good = solve_rate_with_repair([PROBLEM], _correct_ask)
+    assert good["solved"] == 1 and good["recovered"] == 0 and good["recovery_rate"] == 0.0
 
+    bad = solve_rate_with_repair([PROBLEM], _wrong_ask)
+    assert bad["solved"] == 0
 
-def test_evaluate_solves_and_counts_recovery():
-    good = evaluate(_correct_ask, [PROBLEM])
-    assert good["solved"] == 1 and good["first_try"] == 1 and good["recovered"] == 0
-
-    bad = evaluate(_wrong_ask, [PROBLEM])
-    assert bad["solved"] == 0 and bad["failure_classes"]  # something bucketed
-
-    rec = evaluate(_make_recovering_ask(), [PROBLEM])
+    rec = solve_rate_with_repair([PROBLEM], _make_recovering_ask())
     assert rec["solved"] == 1 and rec["recovered"] == 1 and rec["recovery_rate"] == 1.0
 
 
-def test_measure_vtc_lift_reports_gain_and_recovery():
-    report = measure_vtc_lift(_wrong_ask, _correct_ask, [PROBLEM])
-    assert report["base_solved"] == 0 and report["trained_solved"] == 1
-    assert report["solved_lift"] == 1 and report["gained"] == [1] and report["regressed"] == []
-    assert "PROVEN" in render(report)
+def test_recovery_lift_reports_solve_and_recovery_delta():
+    # base never recovers (0 solved), trained solves only after a repair -> both solve-lift and recovery-lift
+    base = solve_rate_with_repair([PROBLEM], _wrong_ask)
+    trained = solve_rate_with_repair([PROBLEM], _make_recovering_ask())
+    rep = recovery_lift(base, trained)
+    assert rep["net_lift"] == 1 and rep["newly_solved"] == {1}
+    assert rep["recovery_lift"] == 1.0
+    out = render(rep)
+    assert "RECOVERY LIFT" in out and "NET LIFT" in out
 
-    # recovery lift: base never recovers, trained solves only after a repair
-    rep2 = measure_vtc_lift(_wrong_ask, _make_recovering_ask(), [PROBLEM])
-    assert rep2["recovery_lift"] == 1.0
 
-    # no-lift case is reported honestly
-    flat = measure_vtc_lift(_correct_ask, _correct_ask, [PROBLEM])
-    assert flat["solved_lift"] == 0 and "NO LIFT" in render(flat)
+def test_measure_recovery_lift_end_to_end_and_no_lift_case():
+    rep = measure_recovery_lift(_wrong_ask, _correct_ask, [PROBLEM])
+    assert rep["base_solved"] == 0 and rep["trained_solved"] == 1 and rep["net_lift"] == 1
+
+    flat = measure_recovery_lift(_correct_ask, _correct_ask, [PROBLEM])
+    assert flat["net_lift"] == 0 and flat["recovery_lift"] == 0.0  # honest: no lift reported as no lift
