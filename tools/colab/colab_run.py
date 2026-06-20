@@ -190,14 +190,18 @@ def _extract_block(text: str, marker: str) -> Optional[str]:
 
 
 def _feed_upload(page: Any, upload: str) -> bool:
-    """If a files.upload() input is on the page, hand it the local corpus. Returns True once fed."""
-    try:
-        if page.query_selector("input[type=file]"):
-            page.set_input_files("input[type=file]", upload, timeout=5000)
-            _log("fed corpus %s to the notebook's upload cell" % upload)
-            return True
-    except Exception:
-        pass
+    """Hand the local corpus to a pending files.upload() input. Colab renders that widget inside a
+    sandboxed OUTPUT IFRAME, so the <input type=file> is NOT in the main frame -- search EVERY frame and
+    set the first one found (this is the fix that made the upload feed actually work)."""
+    for fr in page.frames:
+        try:
+            el = fr.query_selector("input[type=file]")
+            if el:
+                el.set_input_files(upload, timeout=5000)
+                _log("fed corpus %s to the notebook's upload cell" % upload)
+                return True
+        except Exception:
+            continue
     return False
 
 
