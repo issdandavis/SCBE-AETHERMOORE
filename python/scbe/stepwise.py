@@ -12,12 +12,18 @@ mistake into the final answer with no chance to recover. This machine removes bo
     (the walls + a correctness test) accepts or rejects it. A rejected value is a MISSTEP: the
     machine stays put (the bad value is never committed), emits a WARNING, rebuilds the context from
     the goal + the steps that already ran + what went wrong, and lets the model try again from
-    exactly the position before the misstep. After `max_rewinds` it stops honestly at that step --
-    that is the model's real ceiling, surfaced, not a corrupted answer.
+    exactly the position before the misstep.
+  * AUTO-OFFLOAD ON FAILURE -- a `choice` step may register an `oracle`: a deterministic tool that
+    computes the correct value. When the model burns its rewinds and still can't, the machine does
+    NOT go stuck -- it falls back to the oracle (correct by construction) and continues. This is the
+    measured lift, automated: the harness SUPPLIES the capability the model lacks instead of just
+    surfacing the wall. The honest boundary holds: a step with NO oracle (a genuine judgement the
+    code can't do) still stops honestly. And the oracle's value is itself checked, so even a buggy
+    oracle can never ship a wrong answer -- it falls through to stuck.
 
-So the scaffold carries the exactness and the memory; the model only supplies judgement, and its
-mistakes are caught and rewound instead of shipped. Proposers are pluggable callables; the scripted
-stubs prove the loop by construction, and a real model drops into the same slot.
+So the scaffold carries the exactness, the memory, AND a tool fallback; the model supplies judgement,
+its mistakes are caught + rewound, and the steps a tool CAN do are auto-rescued when it can't.
+Proposers are pluggable callables; the scripted stubs prove the loop, a real model drops into the slot.
 
     t = number_label_task(6)                 # r3=6%3, r5=6%5 done by CALC; the label is the choice
     run_stepwise(t, scripted_proposer(["Buzz", "Fizz"]))   # 'Buzz' missteps -> rewind -> 'Fizz' ok
@@ -35,13 +41,16 @@ Proposer = Callable[[str, List[str]], str]
 @dataclass
 class Step:
     """One step. A `calc` step is deterministic (code, never the model). A `choice` step asks the
-    model for a value, gated by `options` (the legal set / walls) and `check` (is it correct)."""
+    model for a value, gated by `options` (the legal set / walls) and `check` (is it correct). An
+    optional `oracle` is a deterministic tool that computes the correct value -- the auto-offload
+    fallback used when the model exhausts its rewinds on this step."""
 
     name: str
     key: str
     calc: Optional[Callable[[Dict[str, Any]], Any]] = None
     options: Optional[Callable[[Dict[str, Any]], List[str]]] = None
     check: Optional[Callable[[Dict[str, Any], str], bool]] = None
+    oracle: Optional[Callable[[Dict[str, Any]], Any]] = None
 
     def is_calc(self) -> bool:
         return self.calc is not None
@@ -70,13 +79,20 @@ def build_context(task: Task, state: Dict[str, Any], step: Step, options: List[s
     return "\n".join(lines)
 
 
-def run_stepwise(task: Task, proposer: Proposer, max_rewinds: int = 3) -> Dict[str, Any]:
-    """Walk the steps. Calc steps run in code; choice steps call the model and rewind on a misstep."""
+def run_stepwise(task: Task, proposer: Proposer, max_rewinds: int = 3, allow_offload: bool = True) -> Dict[str, Any]:
+    """Walk the steps. Calc steps run in code; choice steps call the model and rewind on a misstep.
+
+    When a choice step exhausts its rewinds: if `allow_offload` and the step has an `oracle`, fall
+    back to the oracle (auto-offload) instead of going stuck -- but only if the oracle's value passes
+    the step's check, so a wrong answer is never shipped. With no oracle (or allow_offload=False) the
+    step stops honestly at the model's ceiling. `allow_offload=False` measures the un-rescued baseline.
+    """
     state: Dict[str, Any] = {}
     trace: List[dict] = []
     pos = 0
     total_rewinds = 0
     model_calls = 0
+    offloaded: List[str] = []
     while pos < len(task.steps):
         step = task.steps[pos]
         if step.is_calc():
@@ -103,14 +119,23 @@ def run_stepwise(task: Task, proposer: Proposer, max_rewinds: int = 3) -> Dict[s
             total_rewinds += 1
             why = "not in the allowed set" if not legal else "failed the step's check"
             trace.append({"step": step.name, "source": "model", "value": value, "status": "misstep", "why": why})
-            if rewinds > max_rewinds:  # exhausted -> honest ceiling at this step
+            if rewinds > max_rewinds:  # model exhausted -> try the deterministic oracle, else stop honestly
                 state.pop("_warning", None)
+                if allow_offload and step.oracle is not None:
+                    ov = step.oracle(state)
+                    if step.check is None or step.check(state, ov):  # oracle is checked too: never ship wrong
+                        state[step.key] = ov
+                        offloaded.append(step.name)
+                        trace.append({"step": step.name, "source": "offload", "value": ov, "status": "ok"})
+                        pos += 1
+                        break
                 return {
                     "completed": False,
                     "stuck_at": step.name,
                     "state": state,
                     "rewinds": total_rewinds,
                     "model_calls": model_calls,
+                    "offloaded": offloaded,
                     "trace": trace,
                 }
             # rewind: position is unchanged (the bad value was never committed); retry with a warning
@@ -126,6 +151,7 @@ def run_stepwise(task: Task, proposer: Proposer, max_rewinds: int = 3) -> Dict[s
         "state": state,
         "rewinds": total_rewinds,
         "model_calls": model_calls,
+        "offloaded": offloaded,
         "trace": trace,
     }
 
@@ -181,6 +207,7 @@ def number_label_task(i: int) -> Task:
                 "label",
                 options=lambda st: list(_LABELS) + [str(i)],
                 check=lambda st, v: v == correct_label(st),
+                oracle=correct_label,  # the rule itself: auto-offload fallback when the model can't
             ),
         ],
     )
@@ -203,9 +230,17 @@ def main(argv: Optional[List[str]] = None) -> int:
         print("  %-6s %-6s %-9s %s%s" % (t["step"], t["source"], t["status"], t["value"], extra))
     print("  -> %s   completed=%s  rewinds=%d" % (r["answer"], r["completed"], r["rewinds"]))
 
-    print("\n== stuck: a model that keeps mis-stepping stops honestly at its ceiling ==")
-    r = run_stepwise(number_label_task(6), always_proposer("Buzz"), max_rewinds=2)
-    print("  completed=%s  stuck_at=%s  rewinds=%d" % (r["completed"], r.get("stuck_at"), r["rewinds"]))
+    print("\n== a model that NEVER gets it: without auto-offload it stops honestly ==")
+    r = run_stepwise(number_label_task(6), always_proposer("Buzz"), max_rewinds=2, allow_offload=False)
+    print("  allow_offload=False -> completed=%s  stuck_at=%s" % (r["completed"], r.get("stuck_at")))
+
+    print("\n== same hopeless model, WITH auto-offload: the oracle (the rule) rescues the step ==")
+    r = run_stepwise(number_label_task(6), always_proposer("Buzz"), max_rewinds=2, allow_offload=True)
+    print(
+        "  allow_offload=True  -> completed=%s  answer=%r  offloaded=%s"
+        % (r["completed"], r.get("answer"), r["offloaded"])
+    )
+    print("  (the model burned its tries; the deterministic rule supplied the right label -> 6 is 'Fizz')")
     return 0
 
 
