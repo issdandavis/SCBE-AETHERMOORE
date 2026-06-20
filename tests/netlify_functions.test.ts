@@ -60,6 +60,7 @@ describe('Netlify functions', () => {
   beforeEach(() => {
     blobMock.data.clear();
     vi.clearAllMocks();
+    process.env.GOVERNANCE_RECEIPT_API_KEY = 'test-receipt-key';
   });
 
   it('returns API health', async () => {
@@ -136,7 +137,9 @@ describe('Netlify functions', () => {
     const submitBody = await submit.json();
 
     const res = await governanceReceipt(
-      new Request(`https://example.com/api/governance/receipts/${submitBody.receipt}`)
+      new Request(`https://example.com/api/governance/receipts/${submitBody.receipt}`, {
+        headers: { Authorization: 'Bearer test-receipt-key' },
+      })
     );
     const body = await res.json();
 
@@ -145,13 +148,28 @@ describe('Netlify functions', () => {
     expect(body.record.receipt).toBe(submitBody.receipt);
     expect(body.record.status).toBe('queued');
     expect(body.record.payload.intent).toBe('persist receipt in blobs');
-    expect(body.record.netlify.siteId).toBe('site_test');
+    expect(body.record.payload.source).toBe('vitest');
+    expect(body.record.payload.metadata).toBeUndefined();
+    expect(body.record.netlify).toBeUndefined();
+  });
+
+  it('requires an API key before returning governance receipts', async () => {
+    const res = await governanceReceipt(
+      new Request(
+        'https://example.com/api/governance/receipts/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      )
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(401);
+    expect(body.error).toBe('unauthorized');
   });
 
   it('returns 404 for missing governance receipts', async () => {
     const res = await governanceReceipt(
       new Request(
-        'https://example.com/api/governance/receipts/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        'https://example.com/api/governance/receipts/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        { headers: { 'x-api-key': 'test-receipt-key' } }
       )
     );
     const body = await res.json();

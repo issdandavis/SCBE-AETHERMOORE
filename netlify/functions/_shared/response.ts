@@ -37,7 +37,7 @@ export function corsPreflight(methods: string[]): Response {
     status: 204,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key',
       'Access-Control-Allow-Methods': ['OPTIONS', ...methods].join(', '),
       'Access-Control-Max-Age': '86400',
     },
