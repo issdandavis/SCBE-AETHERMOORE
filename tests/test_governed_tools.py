@@ -109,7 +109,9 @@ def test_helm_adapter_feeds_governed_tools_to_tool_trajectory():
             return "```python\ndef add(a, b):\n    return a + b\n```\nCALL run_code"
         return "ANSWER:\n```python\ndef add(a, b):\n    return a + b\n```"
 
-    tr = solve_with_tools(PROBLEM, ask, tools=tools, max_steps=4)
+    # few_shot=False: this scripted ask answers as soon as it sees a TOOL turn, and the few-shot demo
+    # carries one -- a deterministic solver needs no protocol coaxing, so opt out of the demo here.
+    tr = solve_with_tools(PROBLEM, ask, tools=tools, max_steps=4, few_shot=False)
 
     assert tr["verified"] is True
     assert tr["used_tool"] is True

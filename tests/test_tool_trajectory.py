@@ -8,6 +8,7 @@ is NOT counted as verified tool use.
 from __future__ import annotations
 
 from python.helm.tool_trajectory import (
+    FEWSHOT_TURNS,
     _factor,
     _is_prime,
     _safe_calc,
@@ -71,6 +72,32 @@ def test_repair_biased_prompt_mode_adds_feedback_loop_instruction():
     assert tr["verified"] is True
     assert "Repair-biased harvest mode" in seen["system"]
     assert "quick minimal candidate" in seen["user"]
+
+
+def test_few_shot_demo_coaxes_then_is_stripped_from_record():
+    # guards the bootstrap that fixes the 0-tool-use wall against being silently dropped again
+    assert FEWSHOT_TURNS, "the few-shot bootstrap demo must exist"
+
+    seen = {}
+
+    def ask(msgs):
+        seen["prompt"] = [dict(m) for m in msgs]
+        return "ANSWER:\n```python\ndef add(a, b):\n    return a + b\n```"
+
+    tr = solve_with_tools(PROBLEM, ask, max_steps=1, few_shot=True)
+    # the model SAW the worked demo (coaxing)...
+    assert any("triple(n)" in m["content"] for m in seen["prompt"])
+    # ...but the demo is STRIPPED from the saved record (we train on the model's own trajectory only)
+    assert all("triple(n)" not in m["content"] for m in tr["messages"])
+
+    seen2 = {}
+
+    def ask2(msgs):
+        seen2["prompt"] = [dict(m) for m in msgs]
+        return "ANSWER:\n```python\ndef add(a, b):\n    return a + b\n```"
+
+    solve_with_tools(PROBLEM, ask2, max_steps=1, few_shot=False)
+    assert all("triple(n)" not in m["content"] for m in seen2["prompt"])  # opt-out shows no demo
 
 
 def test_held_back_rejects_shown_test_only_pass():
