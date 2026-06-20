@@ -1,0 +1,203 @@
+"""Builder for notebooks/vtc_better_colab.ipynb -- the BETTER-DATA variant (bigger model).
+
+The first notebook used unsloth-from-git, whose Colab install wedged for 20+ min. This one drops
+unsloth (and trl) entirely: standard transformers.Trainer + peft + bitsandbytes (all install in ~1
+min, no source builds), corpus fed via files.upload() (no Drive auth hang). Same honest measurement:
+base (LoRA-off) vs trained (LoRA-on) on held-out MBPP, execution-verified. See python/helm/code_lift.py.
+
+    python notebooks/build_vtc_lift_fast_nb.py
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+
+def md(*lines: str) -> dict:
+    return {"cell_type": "markdown", "metadata": {}, "source": [x if x.endswith("\n") else x + "\n" for x in lines]}
+
+
+def code(*lines: str) -> dict:
+    return {
+        "cell_type": "code",
+        "metadata": {},
+        "execution_count": None,
+        "outputs": [],
+        "source": [x if x.endswith("\n") else x + "\n" for x in lines],
+    }
+
+
+CELLS = [
+    md(
+        "# VTC BETTER-data lift  -- qwen2.5-coder-3B, Colab T4",
+        "",
+        "Plain MBPP trajectories showed ~null lift. This tests the other hypothesis -- **better data, not",
+        "more**: graft the 8 execution-verified PITFALL->fix traces (`better_corpus`) onto the MBPP base and",
+        "train the bigger **3B** model on the union, then measure base (LoRA-off) vs trained (LoRA-on) on",
+        "held-out MBPP, execution-verified. The pitfall task_ids aren't in the MBPP id space, so they're pure",
+        "TRAIN data -- the held-out eval stays clean.",
+        "",
+        "Standard `transformers.Trainer` + `peft` + `bitsandbytes` (no unsloth). Honest: report `newly_solved`,",
+        "`regressed`, and n together; a handful of pitfall traces is a small intervention -- expect a small",
+        "effect at most, and the verifier will say so either way.",
+    ),
+    md("## 1. Install (fast -- no unsloth, no source builds)"),
+    code(
+        "!pip install -q -U peft bitsandbytes accelerate datasets 'transformers>=4.44'",
+        "import torch",
+        "print('CUDA available:', torch.cuda.is_available())  # must be True (Runtime>Change runtime type>T4)",
+    ),
+    md("## 2. Harness code + BETTER corpus (MBPP union the verified pitfall traces)"),
+    code(
+        "import os, sys",
+        "!git clone --depth 1 https://github.com/issdandavis/SCBE-AETHERMOORE.git scbe || true",
+        "sys.path.insert(0, '/content/scbe')",
+        "MBPP_PATH = '/content/vtc_mbpp_refined.jsonl'",
+        "if not os.path.exists(MBPP_PATH):",
+        "    from google.colab import files  # the terminal driver feeds this input; or pick the file yourself",
+        "    up = files.upload(); MBPP_PATH = '/content/' + next(iter(up))",
+        "# 'better data, not more': graft the 8 execution-verified pitfall->fix traces onto the MBPP base.",
+        "from python.helm.better_corpus import build as build_better",
+        "CORPUS_PATH = '/content/vtc_better.jsonl'",
+        "info = build_better(MBPP_PATH, CORPUS_PATH)",
+        "print('better corpus:', info)  # {total, from_mbpp, pitfalls}",
+        "os.environ['SCBE_VTC_CORPUS'] = CORPUS_PATH",
+        "print('corpus:', CORPUS_PATH)",
+    ),
+    md("## 3. Config"),
+    code(
+        "BASE_MODEL = 'Qwen/Qwen2.5-Coder-3B-Instruct'  # 3B > 1.5B and still fits a T4 in 4-bit; 7B needs L4/A100",
+        "OUT = '/content/vtc-fast-run'",
+        "TRAIN_SFT = '/content/train.sft.jsonl'",
+        "PUBLIC_K = 1",
+        "EVAL_LIMIT = 50      # held-out problems to eval (more = better signal, slower)",
+        "MAXLEN = 2048",
+        "EPOCHS = 2",
+        "MAX_NEW_TOKENS = 512",
+    ),
+    md("## 4. Honest split (train ids vs disjoint held-out MBPP)"),
+    code(
+        "from python.helm import public_bench as pb",
+        "from python.helm.vtc_split import load_corpus, split_by_task_id, write_train_sft",
+        "records = load_corpus(CORPUS_PATH)",
+        "problems = pb.pull_mbpp()",
+        "split = split_by_task_id(records, problems, public_k=PUBLIC_K)",
+        "write_train_sft(split['train_records'], TRAIN_SFT)",
+        "eval_problems = split['eval_problems'][:EVAL_LIMIT] if EVAL_LIMIT else split['eval_problems']",
+        "assert not (split['train_ids'] & {p['task_id'] for p in eval_problems}), 'train/eval LEAK'",
+        "print('train records:', len(split['train_records']), ' held-out eval:', len(eval_problems))",
+    ),
+    md("## 5. Load 4-bit model + LoRA adapter + generators"),
+    code(
+        "import re",
+        "from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig",
+        "from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training",
+        "",
+        "bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type='nf4',",
+        "                        bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)",
+        "tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)",
+        "if tokenizer.pad_token is None: tokenizer.pad_token = tokenizer.eos_token",
+        "model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, quantization_config=bnb, device_map='auto')",
+        "model = prepare_model_for_kbit_training(model)",
+        "model = get_peft_model(model, LoraConfig(r=16, lora_alpha=32, lora_dropout=0,",
+        "    target_modules=['q_proj','k_proj','v_proj','o_proj','gate_proj','up_proj','down_proj'],",
+        "    bias='none', task_type='CAUSAL_LM'))",
+        "model.print_trainable_parameters()",
+        "",
+        "def make_prompt(problem):",
+        "    public = '\\n'.join(list(problem.get('test_list', []))[:PUBLIC_K])",
+        "    return ((problem.get('prompt') or problem.get('text') or '').strip()",
+        "            + '\\n\\nWrite a complete Python solution. It must make this example pass:\\n'",
+        "            + public + '\\nReturn ONLY the code.')",
+        "",
+        "def extract_code(text):",
+        "    # robust: largest fenced block; else drop leading prose to the first code line. Handles",
+        "    # unclosed ``` (truncated gen) and bare code with no fences -- why base scored 0 before.",
+        "    blocks = re.findall(r'```(?:python)?\\s*(.*?)```', text or '', re.S)",
+        "    if blocks: return max(blocks, key=len).strip()",
+        "    body = re.sub(r'^\\s*```(?:python)?\\s*', '', (text or '').strip())",
+        "    lines = body.splitlines()",
+        "    for i, ln in enumerate(lines):",
+        "        if ln.lstrip().startswith(('def ', 'import ', 'from ', 'class ', '@')):",
+        "            return '\\n'.join(lines[i:]).strip()",
+        "    return body.strip()",
+        "",
+        "def _gen(prompt):",
+        "    text = tokenizer.apply_chat_template([{'role':'user','content':prompt}], tokenize=False,",
+        "             add_generation_prompt=True)",
+        "    enc = tokenizer(text, return_tensors='pt').to(model.device)",
+        "    out = model.generate(**enc, max_new_tokens=MAX_NEW_TOKENS, do_sample=False,",
+        "             pad_token_id=tokenizer.eos_token_id)",
+        "    return tokenizer.decode(out[0][enc['input_ids'].shape[1]:], skip_special_tokens=True)",
+        "",
+        "make_hf_generator = lambda: (lambda problem: extract_code(_gen(make_prompt(problem))))",
+        "make_hf_ask = lambda: _gen  # prompt -> str, for the repair loop",
+    ),
+    md("## 6. Train (QLoRA SFT via transformers.Trainer -- no trl)"),
+    code(
+        "from datasets import load_dataset",
+        "from transformers import Trainer, TrainingArguments, DataCollatorForLanguageModeling",
+        "train_ds = load_dataset('json', data_files=TRAIN_SFT, split='train')",
+        "def tok(ex):",
+        "    text = tokenizer.apply_chat_template(ex['messages'], tokenize=False, add_generation_prompt=False)",
+        "    return tokenizer(text, truncation=True, max_length=MAXLEN)",
+        "train_tok = train_ds.map(tok, remove_columns=train_ds.column_names)",
+        "args = TrainingArguments(output_dir=OUT, per_device_train_batch_size=2, gradient_accumulation_steps=8,",
+        "    num_train_epochs=EPOCHS, learning_rate=2e-4, warmup_ratio=0.05, lr_scheduler_type='cosine',",
+        "    logging_steps=10, bf16=True, optim='paged_adamw_8bit', report_to='none', save_strategy='no')",
+        "Trainer(model=model, args=args, train_dataset=train_tok,",
+        "        data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False)).train()",
+    ),
+    md("## 7. Measure: base (LoRA-off) vs trained (LoRA-on), execution-verified"),
+    code(
+        "from python.helm.code_lift import solve_rate, lift_from_solve, render",
+        "from python.helm import public_bench as _pb",
+        "model.eval()",
+        "gen = make_hf_generator()",
+        "",
+        "# DIAGNOSTIC: show 2 BASE generations so a 0-score is debuggable (extracted code + does it pass public?)",
+        "for p in eval_problems[:2]:",
+        "    with model.disable_adapter():",
+        "        code = extract_code(_gen(make_prompt(p)))",
+        "    chk = _pb._verify(code, p['test_list'][:PUBLIC_K], [], p.get('test_imports', []))",
+        "    print('--- task', p['task_id'], '| public_passed:', chk['public_passed'], '---')",
+        "    print(code[:200].replace(chr(10), ' | '))",
+        "",
+        "print('Evaluating BASE (adapter disabled)...')",
+        "with model.disable_adapter():",
+        "    base = solve_rate(eval_problems, gen, public_k=PUBLIC_K)",
+        "print('Evaluating TRAINED (adapter enabled)...')",
+        "trained = solve_rate(eval_problems, gen, public_k=PUBLIC_K)",
+        "report = lift_from_solve(base, trained)",
+        "print(); print(render(report)); print()",
+        "print('newly solved ids:', sorted(report['newly_solved']))",
+        "print('regressed ids   :', sorted(report['regressed']))",
+    ),
+    md(
+        "## Notes",
+        "- `NET LIFT` is the headline the terminal driver waits for. `newly_solved > 0` is the only thing that",
+        "  shows capability lift; `net_lift <= 0` is a real result (clean verified data, no transfer here).",
+        "- Determinism: `do_sample=False`, so base and trained are compared on identical greedy decoding.",
+    ),
+]
+
+
+def build() -> dict:
+    return {
+        "cells": CELLS,
+        "metadata": {
+            "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+            "language_info": {"name": "python"},
+            "accelerator": "GPU",
+            "colab": {"provenance": [], "gpuType": "T4"},
+        },
+        "nbformat": 4,
+        "nbformat_minor": 5,
+    }
+
+
+if __name__ == "__main__":
+    out = Path(__file__).with_name("vtc_better_colab.ipynb")
+    out.write_text(json.dumps(build(), indent=1, ensure_ascii=False), encoding="utf-8")
+    print("wrote", out, "with", len(CELLS), "cells")
