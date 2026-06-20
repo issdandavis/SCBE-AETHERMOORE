@@ -108,7 +108,11 @@ def _resolve_data_root(repo_root: Path, profile_path: Path, raw_root: str) -> Pa
     root = Path(raw_root)
     if root.is_absolute():
         return root
-    return (repo_root / root).resolve() if profile_path.parent == repo_root / DEFAULT_PROFILE_DIR else (profile_path.parent / root).resolve()
+    return (
+        (repo_root / root).resolve()
+        if profile_path.parent == repo_root / DEFAULT_PROFILE_DIR
+        else (profile_path.parent / root).resolve()
+    )
 
 
 def _count_jsonl_rows(path: Path) -> int:
@@ -166,14 +170,20 @@ def build_training_plan(repo_root: Path, profile_path: Path) -> dict[str, Any]:
     profile = load_profile(profile_path)
     dataset_cfg = profile["dataset"]
     data_root = _resolve_data_root(repo_root, profile_path, _coerce_string(dataset_cfg.get("root"), "training-data"))
-    train_rows, total_train_rows = _dataset_rows(data_root, _coerce_str_list(dataset_cfg.get("train_files")), split="train")
+    train_rows, total_train_rows = _dataset_rows(
+        data_root, _coerce_str_list(dataset_cfg.get("train_files")), split="train"
+    )
     eval_rows, total_eval_rows = _dataset_rows(data_root, _coerce_str_list(dataset_cfg.get("eval_files")), split="eval")
     all_rows = train_rows + eval_rows
     missing = [row["name"] for row in all_rows if not row["exists"]]
     output_dir = Path(_coerce_string(profile["training"].get("output_dir"), f"training/runs/{profile['profile_id']}"))
     if not output_dir.is_absolute():
         output_dir = (repo_root / output_dir).resolve()
-    emit_path = Path(_coerce_string(profile["execution"].get("default_emit_path"), f"artifacts/model_training/{profile['profile_id']}-train.py"))
+    emit_path = Path(
+        _coerce_string(
+            profile["execution"].get("default_emit_path"), f"artifacts/model_training/{profile['profile_id']}-train.py"
+        )
+    )
     if not emit_path.is_absolute():
         emit_path = (repo_root / emit_path).resolve()
     return {
@@ -469,10 +479,7 @@ def build_training_preflight(repo_root: Path, profile_path: Path) -> dict[str, A
     profile = load_profile(profile_path)
     plan = build_training_plan(repo_root, profile_path)
 
-    dependencies = {
-        name: _dependency_status(name)
-        for name in ("datasets", "transformers", "trl", "unsloth")
-    }
+    dependencies = {name: _dependency_status(name) for name in ("datasets", "transformers", "trl", "unsloth")}
     torch_runtime = _inspect_torch_runtime()
     nvidia_smi = _inspect_nvidia_smi()
     token_env = _coerce_string(profile["hub"].get("token_env"), "HF_TOKEN")
@@ -553,10 +560,15 @@ def build_training_preflight(repo_root: Path, profile_path: Path) -> dict[str, A
         "plan": plan,
     }
 
+
 def _render_training_script(profile: dict[str, Any], plan: dict[str, Any]) -> str:
     profile_json = json.dumps(profile, indent=2, ensure_ascii=True)
-    train_files_json = json.dumps([row["path"] for row in plan["train_datasets"] if row["exists"]], indent=2, ensure_ascii=True)
-    eval_files_json = json.dumps([row["path"] for row in plan["eval_datasets"] if row["exists"]], indent=2, ensure_ascii=True)
+    train_files_json = json.dumps(
+        [row["path"] for row in plan["train_datasets"] if row["exists"]], indent=2, ensure_ascii=True
+    )
+    eval_files_json = json.dumps(
+        [row["path"] for row in plan["eval_datasets"] if row["exists"]], indent=2, ensure_ascii=True
+    )
     output_dir_literal = repr(plan["output_dir"])
     return f'''#!/usr/bin/env python3
 """Generated SCBE model training script."""
@@ -652,7 +664,10 @@ def main() -> int:
         r=int(train_cfg.get("lora_rank", 32)),
         lora_alpha=int(train_cfg.get("lora_alpha", 64)),
         lora_dropout=float(train_cfg.get("lora_dropout", 0.0)),
-        target_modules=list(train_cfg.get("target_modules") or ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]),
+        target_modules=list(
+            train_cfg.get("target_modules")
+            or ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+        ),
         bias="none",
         use_gradient_checkpointing="unsloth",
         random_state=42,
@@ -720,7 +735,9 @@ if __name__ == "__main__":
 '''
 
 
-def emit_training_script(repo_root: Path, profile_path: Path, output_path: Path | None = None) -> tuple[Path, dict[str, Any]]:
+def emit_training_script(
+    repo_root: Path, profile_path: Path, output_path: Path | None = None
+) -> tuple[Path, dict[str, Any]]:
     profile = load_profile(profile_path)
     plan = build_training_plan(repo_root, profile_path)
     target = output_path or Path(plan["default_emit_path"])
@@ -729,5 +746,3 @@ def emit_training_script(repo_root: Path, profile_path: Path, output_path: Path 
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(_render_training_script(profile, plan), encoding="utf-8")
     return target, plan
-
-

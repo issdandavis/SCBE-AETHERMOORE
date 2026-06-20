@@ -250,11 +250,11 @@ ROUNDS = {
         # promotion frozen-eval gate remains a clean unseen check.
         "eval_files": [
             "bijective_codeflow_v1_holdout.sft.jsonl",  # 104 rows  in-dist sanity
-            "aligned_foundations_holdout.sft.jsonl",  #  15 rows  v1 +803%
-            "atomic_workflow_stage6_repair_holdout.sft.jsonl",  #  10 rows  v1 +299%
-            "atomic_workflow_stage6_holdout.sft.jsonl",  #  13 rows  v1 +136%
-            "command_lattice_seed_holdout.sft.jsonl",  #   2 rows  v1 +559%
-            "coding_system_full_v1_holdout.sft.jsonl",  #   8 rows  in-dist
+            "aligned_foundations_holdout.sft.jsonl",  # 15 rows  v1 +803%
+            "atomic_workflow_stage6_repair_holdout.sft.jsonl",  # 10 rows  v1 +299%
+            "atomic_workflow_stage6_holdout.sft.jsonl",  # 13 rows  v1 +136%
+            "command_lattice_seed_holdout.sft.jsonl",  # 2 rows  v1 +559%
+            "coding_system_full_v1_holdout.sft.jsonl",  # 8 rows  in-dist
             "cross_tongue_dialogue_bijective_v1_holdout.sft.jsonl",  # 2 rows  in-dist
         ],
         "hf_repo": "issdandavis/scbe-bijective-tongue-coder-qwen-kaggle-v2",
@@ -1118,8 +1118,8 @@ def main():
                 else:
                     print("WARNING: submission.json not found in output")
         else:
-            print(f"\nKernel running. Check status with:")
-            print(f"  python scripts/kaggle_auto/launch.py --status")
+            print("\nKernel running. Check status with:")
+            print("  python scripts/kaggle_auto/launch.py --status")
             print(f"  kaggle kernels status {KAGGLE_USER}/{ARC_KERNEL_SLUG}")
         return
 
@@ -1142,7 +1142,8 @@ def main():
             print("Probe running. Check with:")
             print(f"  kaggle kernels status {KAGGLE_USER}/{TOKENIZER_PROBE_SLUG}")
             print(
-                f"  kaggle kernels output {KAGGLE_USER}/{TOKENIZER_PROBE_SLUG} -p artifacts/kaggle_output/{TOKENIZER_PROBE_SLUG}"
+                f"  kaggle kernels output {KAGGLE_USER}/{TOKENIZER_PROBE_SLUG} "
+                f"-p artifacts/kaggle_output/{TOKENIZER_PROBE_SLUG}"
             )
         return
 
@@ -1229,10 +1230,10 @@ def main():
                 print("Waiting 30s before next round...")
                 time.sleep(30)
         else:
-            print(f"\nKernel running. Check status with:")
-            print(f"  python scripts/kaggle_auto/launch.py --status")
+            print("\nKernel running. Check status with:")
+            print("  python scripts/kaggle_auto/launch.py --status")
             print(f"  kaggle kernels status {KAGGLE_USER}/{slug}")
-            print(f"\nPull output when done:")
+            print("\nPull output when done:")
             print(f"  python scripts/kaggle_auto/launch.py --pull --round {round_name}")
 
 

@@ -1,6 +1,9 @@
 """Generate 20 hand-crafted Chapter 1 panels via HF API with locked character descriptions."""
 
-import requests, os, time
+import os
+import time
+
+import requests
 from pathlib import Path
 
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
@@ -118,7 +121,7 @@ for i, p in enumerate(PANELS):
                 print(f"  [{i+1}/20] {p['id']} — {len(resp.content)//1024}KB ({elapsed:.0f}s)")
                 break
             elif resp.status_code == 429:
-                print(f"  Rate limited, waiting 30s...")
+                print("  Rate limited, waiting 30s...")
                 time.sleep(30)
             else:
                 print(f"  {p['id']} — {resp.status_code}, retry {attempt+1}")

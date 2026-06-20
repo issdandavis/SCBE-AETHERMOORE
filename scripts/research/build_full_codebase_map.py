@@ -389,7 +389,9 @@ def write_outputs(records: list[FileRecord], stats: dict[str, dict[str, object]]
     report.append("## Scope")
     report.append("")
     report.append(
-        "This report is the repo-wide map for `SCBE-AETHERMOORE` generated from a full file scan. It covers every file under the repository root except VCS internals and transient caches such as `.git`, `node_modules`, and `__pycache__`."
+        "This report is the repo-wide map for `SCBE-AETHERMOORE` generated from a full file scan. "
+        "It covers every file under the repository root except VCS internals and transient caches "
+        "such as `.git`, `node_modules`, and `__pycache__`."
     )
     report.append("")
     report.append("The goal is two-layered:")
@@ -400,7 +402,9 @@ def write_outputs(records: list[FileRecord], stats: dict[str, dict[str, object]]
     report.append("## Repo Identity")
     report.append("")
     report.append(
-        "SCBE-AETHERMOORE is a hybrid monorepo spanning a TypeScript governance and crypto core, Python API/runtime services, operator scripts, dataset and artifact lanes, and extensive documentation/research surfaces."
+        "SCBE-AETHERMOORE is a hybrid monorepo spanning a TypeScript governance and crypto core, "
+        "Python API/runtime services, operator scripts, dataset and artifact lanes, "
+        "and extensive documentation/research surfaces."
     )
     report.append("")
     report.append("## Totals")
@@ -453,17 +457,21 @@ def write_outputs(records: list[FileRecord], stats: dict[str, dict[str, object]]
     report.append("## Research Conclusions")
     report.append("")
     report.append(
-        "1. The repo is not one product surface; it is a mesh of core math, runtime services, operator control, research, and content pipelines."
+        "1. The repo is not one product surface; it is a mesh of core math, runtime services, "
+        "operator control, research, and content pipelines."
     )
     report.append(
-        "2. The TypeScript core and Python runtime lanes coexist rather than cleanly replacing one another; both must be mapped when making claims about the system."
+        "2. The TypeScript core and Python runtime lanes coexist rather than cleanly replacing "
+        "one another; both must be mapped when making claims about the system."
     )
     report.append("3. `scripts/` is a real operational control plane, not just glue code.")
     report.append(
-        "4. `docs/`, `artifacts/`, and `training-data/` are substantial parts of system knowledge, but they should be separated from proof of runtime behavior."
+        "4. `docs/`, `artifacts/`, and `training-data/` are substantial parts of system knowledge, "
+        "but they should be separated from proof of runtime behavior."
     )
     report.append(
-        "5. Any future benchmark or architecture claim should cite both the canonical core lane and the exact runtime lane used."
+        "5. Any future benchmark or architecture claim should cite both the canonical core lane "
+        "and the exact runtime lane used."
     )
     report.append("")
     report.append("## Exhaustive Inventory Artifacts")

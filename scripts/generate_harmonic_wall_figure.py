@@ -240,7 +240,7 @@ def main() -> int:
     md = [
         "# Figure 1 - Harmonic Wall Scaling",
         "",
-        f"- Formula: `H(d,R)=R^(d^2)`",
+        "- Formula: `H(d,R)=R^(d^2)`",
         f"- Domain: `d={args.d_min}..{args.d_max}`, `R={','.join(f'{r:.4g}' for r in r_values)}`",
         f"- Data: `{csv_path.relative_to(REPO_ROOT).as_posix()}`",
         f"- Figure: `{svg_path.relative_to(REPO_ROOT).as_posix()}`",

@@ -63,18 +63,14 @@ def main() -> int:
                 summary["already_moved"].append(f"{name} -> {dst.relative_to(REPO).as_posix()}")
                 continue
             if dst.exists() and src.exists():
-                summary["skipped_collision"].append(
-                    f"{name} (both src and dst exist; manual review)"
-                )
+                summary["skipped_collision"].append(f"{name} (both src and dst exist; manual review)")
                 continue
             if not src.exists():
                 summary["errors"].append(f"{name} (source missing)")
                 continue
             kind, msg = git_mv(src, dst)
             if msg == "ok" or kind == "rename":
-                summary["moved"].append(
-                    f"{name} -> {dst.relative_to(REPO).as_posix()} via {kind}"
-                )
+                summary["moved"].append(f"{name} -> {dst.relative_to(REPO).as_posix()} via {kind}")
             else:
                 summary["errors"].append(f"{name}: {msg}")
 

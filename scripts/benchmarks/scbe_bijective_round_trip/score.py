@@ -205,12 +205,8 @@ def score(
         "schema": SCHEMA,
         "n_rows": n,
         "overall_score": round(overall, 6),
-        "task_breakdown": {
-            t: {"n": len(v), "mean": round(sum(v) / len(v), 6)} for t, v in sorted(by_task.items())
-        },
-        "tongue_breakdown": {
-            t: {"n": len(v), "mean": round(sum(v) / len(v), 6)} for t, v in sorted(by_tongue.items())
-        },
+        "task_breakdown": {t: {"n": len(v), "mean": round(sum(v) / len(v), 6)} for t, v in sorted(by_task.items())},
+        "tongue_breakdown": {t: {"n": len(v), "mean": round(sum(v) / len(v), 6)} for t, v in sorted(by_tongue.items())},
         "per_row": per_row,
     }
 

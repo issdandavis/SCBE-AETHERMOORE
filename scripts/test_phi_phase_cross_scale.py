@@ -29,8 +29,7 @@ def stats(name, history):
     stdev = statistics.stdev(history)
     # crude period detection: count zero-mean crossings
     centered = [v - mean for v in history]
-    crossings = sum(1 for i in range(1, len(centered))
-                    if centered[i - 1] * centered[i] < 0)
+    crossings = sum(1 for i in range(1, len(centered)) if centered[i - 1] * centered[i] < 0)
     period = (2 * len(history) / crossings) if crossings else float("inf")
     bounded = math.isfinite(span) and span < 1e6
     print(f"\n=== {name} ===")
@@ -46,35 +45,43 @@ def stats(name, history):
 
 N = 200
 
+
 # --- ATOMIC: Bohr-like spacing, theta scales with sqrt of step index ---
 def atomic_theta(i, h):
     return 2 * math.pi * math.sqrt(i) / 8.0
 
+
 atomic = run(1.0, 0.5, atomic_theta, N)
+
 
 # --- MOLECULAR: Boltzmann thermal tail, theta decays exponentially ---
 def molecular_theta(i, h):
     return 2 * math.pi * math.exp(-i / 40.0)
 
+
 molecular = run(1.0, 0.5, molecular_theta, N)
+
 
 # --- CELLULAR: 24-step cell cycle clock (G1 -> S -> G2 -> M) ---
 def cellular_theta(i, h):
     return 2 * math.pi * (i % 24) / 24.0
 
+
 cellular = run(1.0, 0.5, cellular_theta, N)
+
 
 # --- MACRO: slow sinusoidal drift (Lotka-Volterra-style modulation) ---
 def macro_theta(i, h):
     return 2 * math.pi * math.sin(i / 30.0)
 
+
 macro = run(1.0, 0.5, macro_theta, N)
 
 results = {
-    "ATOMIC    (Bohr sqrt-n)"  : stats("ATOMIC    (Bohr sqrt-n)",     atomic),
-    "MOLECULAR (Boltzmann exp)": stats("MOLECULAR (Boltzmann exp)",   molecular),
-    "CELLULAR  (24-step clock)": stats("CELLULAR  (24-step clock)",   cellular),
-    "MACRO     (Lotka slow)"   : stats("MACRO     (Lotka slow)",      macro),
+    "ATOMIC    (Bohr sqrt-n)": stats("ATOMIC    (Bohr sqrt-n)", atomic),
+    "MOLECULAR (Boltzmann exp)": stats("MOLECULAR (Boltzmann exp)", molecular),
+    "CELLULAR  (24-step clock)": stats("CELLULAR  (24-step clock)", cellular),
+    "MACRO     (Lotka slow)": stats("MACRO     (Lotka slow)", macro),
 }
 
 print("\n=== SUMMARY ===")

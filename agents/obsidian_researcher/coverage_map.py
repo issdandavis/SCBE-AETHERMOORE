@@ -52,9 +52,11 @@ SCBE_CONCEPTS: List[str] = [
 # Per-concept coverage record
 # ------------------------------------------------------------------
 
+
 @dataclass
 class ConceptCoverage:
     """Coverage statistics for a single SCBE concept."""
+
     concept: str
     academic_refs: int = 0
     internal_refs: int = 0
@@ -67,6 +69,7 @@ class ConceptCoverage:
 # Coverage map
 # ------------------------------------------------------------------
 
+
 class CoverageMap:
     """Aggregate coverage tracker across all SCBE concepts.
 
@@ -78,9 +81,7 @@ class CoverageMap:
 
     def __init__(self, concepts: Optional[List[str]] = None) -> None:
         concept_list = concepts if concepts is not None else SCBE_CONCEPTS
-        self._coverage: Dict[str, ConceptCoverage] = {
-            c: ConceptCoverage(concept=c) for c in concept_list
-        }
+        self._coverage: Dict[str, ConceptCoverage] = {c: ConceptCoverage(concept=c) for c in concept_list}
 
     # ------------------------------------------------------------------
     # Update from ingestion
@@ -94,7 +95,9 @@ class CoverageMap:
         everything else increments ``internal_refs``.
         """
         now = datetime.now(timezone.utc).isoformat()
-        source_type_str = str(result.source_type.value) if hasattr(result.source_type, "value") else str(result.source_type)
+        source_type_str = (
+            str(result.source_type.value) if hasattr(result.source_type, "value") else str(result.source_type)
+        )
         is_academic = source_type_str in ("arxiv", "web_page")
 
         for link in links:
@@ -154,10 +157,7 @@ class CoverageMap:
 
     def get_gaps(self) -> List[str]:
         """Return concepts whose confidence is below 0.4."""
-        return [
-            c for c, cc in self._coverage.items()
-            if cc.confidence < 0.4
-        ]
+        return [c for c, cc in self._coverage.items() if cc.confidence < 0.4]
 
     # ------------------------------------------------------------------
     # Obsidian dashboard rendering
@@ -171,10 +171,7 @@ class CoverageMap:
         total = len(self._coverage)
         gaps = self.get_gaps()
         covered = total - len(gaps)
-        avg_confidence = (
-            sum(cc.confidence for cc in self._coverage.values()) / total
-            if total > 0 else 0.0
-        )
+        avg_confidence = sum(cc.confidence for cc in self._coverage.values()) / total if total > 0 else 0.0
 
         lines: List[str] = [
             "---",
@@ -212,8 +209,7 @@ class CoverageMap:
             for concept in sorted(gaps):
                 cc = self._coverage[concept]
                 lines.append(
-                    f"- [ ] **{concept}** (confidence: {cc.confidence:.2f}) "
-                    f"\u2014 {self._gap_recommendation(cc)}"
+                    f"- [ ] **{concept}** (confidence: {cc.confidence:.2f}) " f"\u2014 {self._gap_recommendation(cc)}"
                 )
         else:
             lines.append("_All concepts have adequate coverage._")

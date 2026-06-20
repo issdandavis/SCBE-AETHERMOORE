@@ -7,7 +7,6 @@ import streamlit as st
 
 from ai_bridge import run_once, write_log
 
-
 st.set_page_config(page_title="SCBE AI Bridge", layout="wide")
 st.title("SCBE AI Bridge (Browser)")
 

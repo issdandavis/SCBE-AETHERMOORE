@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional
 
 class SourceType(str, Enum):
     """Known research source types."""
+
     ARXIV = "arxiv"
     REDDIT = "reddit"
     VAULT = "vault"
@@ -29,6 +30,7 @@ class SourceType(str, Enum):
 @dataclass
 class IngestionResult:
     """Normalized output from any source adapter."""
+
     source_type: SourceType
     raw_content: str
     title: str

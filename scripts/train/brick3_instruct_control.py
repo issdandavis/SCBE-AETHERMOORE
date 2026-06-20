@@ -17,6 +17,7 @@ Usage:
 
 Artifacts land at artifacts/training/brick3_instruct_control/.
 """
+
 from __future__ import annotations
 
 import json

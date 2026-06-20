@@ -40,9 +40,7 @@ def _load_eval_module():
     name = "scbe_code_eval"
     if name in sys.modules:
         return sys.modules[name]
-    spec = importlib.util.spec_from_file_location(
-        name, REPO_ROOT / "scripts" / "benchmark" / "scbe_code_eval.py"
-    )
+    spec = importlib.util.spec_from_file_location(name, REPO_ROOT / "scripts" / "benchmark" / "scbe_code_eval.py")
     assert spec is not None and spec.loader is not None
     mod = importlib.util.module_from_spec(spec)
     sys.modules[name] = mod
@@ -78,7 +76,7 @@ def build_forward_prompt(python_source: str, tongue: str) -> str:
     lang_name, _ = TONGUE_TO_LANG[tongue]
     return (
         f"Translate the following Python function into idiomatic {lang_name}. "
-        f"Preserve the function's name, parameters, return type, and behavior exactly. "
+        "Preserve the function's name, parameters, return type, and behavior exactly. "
         f"Output only the {lang_name} code inside a single fenced code block. No prose.\n\n"
         f"```python\n{python_source}\n```\n"
     )
@@ -88,8 +86,8 @@ def build_back_prompt(other_source: str, tongue: str) -> str:
     lang_name, _ = TONGUE_TO_LANG[tongue]
     return (
         f"Translate the following {lang_name} function back into idiomatic Python. "
-        f"Preserve the function's name, parameters, return type, and behavior exactly. "
-        f"Output only the Python code inside a single fenced code block. No prose.\n\n"
+        "Preserve the function's name, parameters, return type, and behavior exactly. "
+        "Output only the Python code inside a single fenced code block. No prose.\n\n"
         f"```{lang_name.lower()}\n{other_source}\n```\n"
     )
 
@@ -188,10 +186,7 @@ def _python_seed_for_case(case: PromptCase) -> str:
     seeds = {
         "reverse_string": "def reverse_string(s: str) -> str:\n    return s[::-1]\n",
         "safe_divide": (
-            "def safe_divide(a: float, b: float):\n"
-            "    if b == 0:\n"
-            "        return None\n"
-            "    return a / b\n"
+            "def safe_divide(a: float, b: float):\n" "    if b == 0:\n" "        return None\n" "    return a / b\n"
         ),
         "parse_json_name": (
             "import json\n"
@@ -295,7 +290,7 @@ def _hf_adapter(model_id: str) -> GenerateFn:
                 do_sample=False,
                 pad_token_id=tok.eos_token_id,
             )
-        new_tokens = out[0, inputs["input_ids"].shape[1]:]
+        new_tokens = out[0, inputs["input_ids"].shape[1] :]
         return tok.decode(new_tokens, skip_special_tokens=True)
 
     return generate

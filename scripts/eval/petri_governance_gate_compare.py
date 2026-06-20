@@ -49,24 +49,28 @@ def compare(baseline: Dict[str, Any], candidate: Dict[str, Any]) -> Dict[str, An
         c_v = cand[seed_id]["verdict"]
         transitions[f"{b_v}->{c_v}"] += 1
         if b_v == "ALLOW" and c_v == "QUARANTINE":
-            flipped_to_quarantine.append({
-                "seed_id": seed_id,
-                "tags": base[seed_id].get("tags") or [],
-                "baseline_op": base[seed_id].get("op_name"),
-                "baseline_band": base[seed_id].get("op_band"),
-                "baseline_conf": base[seed_id].get("confidence"),
-                "candidate_error_type": cand[seed_id].get("error_type"),
-                "candidate_error_message": (cand[seed_id].get("error_message") or "")[:200],
-            })
+            flipped_to_quarantine.append(
+                {
+                    "seed_id": seed_id,
+                    "tags": base[seed_id].get("tags") or [],
+                    "baseline_op": base[seed_id].get("op_name"),
+                    "baseline_band": base[seed_id].get("op_band"),
+                    "baseline_conf": base[seed_id].get("confidence"),
+                    "candidate_error_type": cand[seed_id].get("error_type"),
+                    "candidate_error_message": (cand[seed_id].get("error_message") or "")[:200],
+                }
+            )
         elif b_v == "QUARANTINE" and c_v == "ALLOW":
-            flipped_to_allow.append({
-                "seed_id": seed_id,
-                "tags": cand[seed_id].get("tags") or [],
-                "candidate_op": cand[seed_id].get("op_name"),
-                "candidate_band": cand[seed_id].get("op_band"),
-                "candidate_conf": cand[seed_id].get("confidence"),
-                "baseline_error_type": base[seed_id].get("error_type"),
-            })
+            flipped_to_allow.append(
+                {
+                    "seed_id": seed_id,
+                    "tags": cand[seed_id].get("tags") or [],
+                    "candidate_op": cand[seed_id].get("op_name"),
+                    "candidate_band": cand[seed_id].get("op_band"),
+                    "candidate_conf": cand[seed_id].get("confidence"),
+                    "baseline_error_type": base[seed_id].get("error_type"),
+                }
+            )
 
     # Per-tag false-allow delta.
     def _per_tag_allow(report: Dict[str, Any]) -> Dict[str, Tuple[int, int]]:
@@ -89,16 +93,18 @@ def compare(baseline: Dict[str, Any], candidate: Dict[str, Any]) -> Dict[str, An
         c_a, c_n = cand_per_tag.get(t, (0, 0))
         b_ratio = (b_a / b_n) if b_n else 0.0
         c_ratio = (c_a / c_n) if c_n else 0.0
-        per_tag_delta.append({
-            "tag": t,
-            "baseline_allow": b_a,
-            "baseline_n": b_n,
-            "baseline_ratio": round(b_ratio, 3),
-            "candidate_allow": c_a,
-            "candidate_n": c_n,
-            "candidate_ratio": round(c_ratio, 3),
-            "ratio_delta": round(c_ratio - b_ratio, 3),
-        })
+        per_tag_delta.append(
+            {
+                "tag": t,
+                "baseline_allow": b_a,
+                "baseline_n": b_n,
+                "baseline_ratio": round(b_ratio, 3),
+                "candidate_allow": c_a,
+                "candidate_n": c_n,
+                "candidate_ratio": round(c_ratio, 3),
+                "ratio_delta": round(c_ratio - b_ratio, 3),
+            }
+        )
     # Sort: largest absolute reduction (improvement) first, then largest regression.
     per_tag_delta.sort(key=lambda r: (r["ratio_delta"], -r["baseline_n"]))
 
@@ -145,10 +151,7 @@ def render_markdown(d: Dict[str, Any]) -> str:
     lines.append("|---|---:|---:|")
     lines.append(f"| total | {h['baseline_total']} | {h['candidate_total']} |")
     lines.append(f"| allow | {h['baseline_allow']} | {h['candidate_allow']} |")
-    lines.append(
-        f"| quar ratio | {h['baseline_quarantine_ratio']:.3f} | "
-        f"{h['candidate_quarantine_ratio']:.3f} |"
-    )
+    lines.append(f"| quar ratio | {h['baseline_quarantine_ratio']:.3f} | " f"{h['candidate_quarantine_ratio']:.3f} |")
     lines.append("")
     lines.append("## Verdict transitions")
     lines.append("| transition | count |")

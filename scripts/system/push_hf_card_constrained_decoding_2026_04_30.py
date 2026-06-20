@@ -56,7 +56,9 @@ v3/v4 (compiler-repair + body-fidelity SFT) are superseded for the binary
 - **Hardware:** local NVIDIA GTX 1660 Ti, 6 GB VRAM, fp16, ~13 minutes wall
 - **Cost:** $0 (no GPU rental)
 - **Reference script:** `scripts/eval/run_bijective_constrained_decoding_local.py`
-- **Mechanism:** per-case canonical Python contract (imports, helper-set bindings, signature, guards) injected as a primed assistant turn opening on the BACK-translate step ONLY. Forward (Python -> other tongue) decoding is unchanged.
+- **Mechanism:** per-case canonical Python contract (imports, helper-set bindings, signature, guards)
+  injected as a primed assistant turn opening on the BACK-translate step ONLY.
+  Forward (Python -> other tongue) decoding is unchanged.
 
 ### Pass rate by tongue
 

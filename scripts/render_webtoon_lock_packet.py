@@ -17,7 +17,6 @@ from typing import Any
 from scripts.grok_image_gen import BACKENDS, check_backends, generate
 from scripts.render_grok_storyboard_packet import nearest_supported_aspect, resolve_backend, should_retry_with_fallback
 
-
 ROOT = Path(__file__).resolve().parent.parent
 
 

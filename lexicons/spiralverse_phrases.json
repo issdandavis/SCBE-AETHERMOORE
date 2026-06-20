@@ -1,0 +1,34 @@
+{
+  "schema": "spiralverse_phrasebook_v1",
+  "note": "Reference phrasebook + dialect/variant data from the canonical Six Sacred Tongues wordlist. Deliberately has NO 'tongue'/'words' key so tongue_lexicon.load_full() SKIPS it -- phrases are multi-word and would never match the single-token classifier. This is for prose/translation + lore, not classification. The single-word vocabulary is already in the per-tongue lexicon files.",
+  "kor_aelin_sacred_phrases": {
+    "Thul'medan kess'ara": "the spiral turns, knowledge grows (general blessing)",
+    "Kor'val zeth'aelin": "heart-bond across eternal (deep commitments)",
+    "Sil'thara nav'een": "unity through difference (collaboration)",
+    "Han'vel zar'ael bren": "sky invites dimensional warmth (welcoming)",
+    "Nav'kor thul'ara": "different hearts spiraling (celebrating diversity)"
+  },
+  "tongue_registry": {
+    "KO": {"name": "Kor'aelin", "meaning": "Heart-Eternal", "function": "intent, binding, collaborative resonance"},
+    "AV": {"name": "Avali", "meaning": "Common Tongue", "function": "diplomacy, cross-paradigm bridge"},
+    "RU": {"name": "Runethic", "meaning": "Ancient Tongue", "function": "temporal anchoring, oaths"},
+    "CA": {"name": "Cassisivadan", "meaning": "Nature's Speech", "function": "root-network wisdom, play"},
+    "UM": {"name": "Umbroth", "meaning": "Shadow Tongue", "function": "concealment, productive severance"},
+    "DR": {"name": "Draumric", "meaning": "Forge Tongue", "function": "manifestation, power-binding"}
+  },
+  "nal_kythraelin_7th": {
+    "note": "Emergent 7th 'unified' tongue -- paradox grammar where contradiction is generative. NOT one of the six governance tongues; lore only.",
+    "particles": {
+      "vel'sek": "invite-severance (welcome productive cutting)",
+      "nav'aya": "difference-learn (growth through otherness)",
+      "kor'sil": "heart-together (individual + collective strength)",
+      "sil'ael": "unity-eternal (temporary + permanent cooperation)"
+    },
+    "sample": "Vel'sek nav'aya kor'sil sil'ael. -- 'Invite-severance difference-learn heart-together unity-eternal.'"
+  },
+  "dialects": {
+    "shadow_malzeth_irun": "Corrupts proper Kor'aelin: 'vel -> 'dom (domination); 'sil -> 'sep (separation). e.g. Thul'medan kess'ara -> Thul'medan'zar kess'ara (spiral-bridges-dimensions, knowledge-dominates).",
+    "sil_speak": "Simplified Kor'aelin for children -- reduced particles, simpler grammar. e.g. 'Zara vel thul' = 'Zara wants to grow'.",
+    "future_steampunk": "Kael's era -- tech integration, e.g. 'Maeji'zar gear' = magic-dimensional technology."
+  }
+}

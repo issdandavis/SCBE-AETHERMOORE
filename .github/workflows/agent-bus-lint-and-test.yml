@@ -16,6 +16,9 @@ defaults:
   run:
     working-directory: packages/agent-bus
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest

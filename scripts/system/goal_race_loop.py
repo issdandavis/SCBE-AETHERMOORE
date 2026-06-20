@@ -16,7 +16,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Sequence
 
-
 DEFAULT_LANES = {
     "research": ["scout", "builder", "reviewer"],
     "money": ["prospector", "builder", "closer"],
@@ -211,7 +210,8 @@ def write_markdown(goal: str, mode: str, packets: Sequence[Packet], scoreboard: 
     ]
     for lane in scoreboard["lanes"]:
         lines.append(
-            f"- `{lane['lane']}`: status=`{lane['status']}` tasks=`{len(lane['tasks'])}` checkpoints=`{lane['checkpoints']}`"
+            f"- `{lane['lane']}`: status=`{lane['status']}` "
+            f"tasks=`{len(lane['tasks'])}` checkpoints=`{lane['checkpoints']}`"
         )
         if lane["skills"]:
             lines.append(f"  skills: {', '.join(f'`{skill}`' for skill in lane['skills'])}")
@@ -219,7 +219,8 @@ def write_markdown(goal: str, mode: str, packets: Sequence[Packet], scoreboard: 
     for packet in packets:
         dep = ", ".join(packet.dependencies) if packet.dependencies else "none"
         lines.append(
-            f"- `{packet.task_id}` [{packet.owner_role}] phase=`{packet.phase_id}` checkpoint=`{str(packet.checkpoint).lower()}` deps=`{dep}`"
+            f"- `{packet.task_id}` [{packet.owner_role}] phase=`{packet.phase_id}` "
+            f"checkpoint=`{str(packet.checkpoint).lower()}` deps=`{dep}`"
         )
         lines.append(f"  goal: {packet.goal}")
         lines.append(f"  skills: {', '.join(packet.recommended_skills)}")

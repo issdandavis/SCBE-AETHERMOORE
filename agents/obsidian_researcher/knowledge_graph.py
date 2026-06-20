@@ -19,7 +19,6 @@ from typing import Any, Dict, List, Set, Tuple
 from .source_adapter import IngestionResult
 from .cross_reference_engine import WikiLink, LinkType
 
-
 # ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------
@@ -52,10 +51,10 @@ class GraphEdge:
 
 # Node shape delimiters by type
 _MERMAID_NODE_SHAPES: Dict[str, Tuple[str, str]] = {
-    "result": ("([", "])"),       # stadium / rounded rect
-    "vault_page": ("[", "]"),     # rect
-    "concept": ("((", "))"),      # circle
-    "domain": ("{{", "}}"),       # hexagon
+    "result": ("([", "])"),  # stadium / rounded rect
+    "vault_page": ("[", "]"),  # rect
+    "concept": ("((", "))"),  # circle
+    "domain": ("{{", "}}"),  # hexagon
 }
 
 # Edge arrow styles by LinkType
@@ -69,10 +68,10 @@ _MERMAID_EDGE_STYLES: Dict[str, str] = {
 
 # Obsidian canvas colour palette by node type
 _CANVAS_COLORS: Dict[str, str] = {
-    "result": "4",       # green
-    "vault_page": "1",   # red
-    "concept": "6",      # purple
-    "domain": "5",       # cyan
+    "result": "4",  # green
+    "vault_page": "1",  # red
+    "concept": "6",  # purple
+    "domain": "5",  # cyan
 }
 
 
@@ -104,11 +103,7 @@ class KnowledgeGraph:
         """
         node_id = self._make_id("result", result.title)
         if node_id not in self.nodes:
-            source_str = (
-                result.source_type.value
-                if hasattr(result.source_type, "value")
-                else str(result.source_type)
-            )
+            source_str = result.source_type.value if hasattr(result.source_type, "value") else str(result.source_type)
             self.nodes[node_id] = GraphNode(
                 id=node_id,
                 label=result.title,
@@ -124,25 +119,29 @@ class KnowledgeGraph:
             if result.scbe_relevance:
                 for concept, score in result.scbe_relevance.items():
                     concept_id = self.add_concept(concept)
-                    self.edges.append(GraphEdge(
-                        source_id=node_id,
-                        target_id=concept_id,
-                        edge_type=LinkType.SEMANTIC,
-                        confidence=score,
-                        label=f"relevance {score:.0%}",
-                    ))
+                    self.edges.append(
+                        GraphEdge(
+                            source_id=node_id,
+                            target_id=concept_id,
+                            edge_type=LinkType.SEMANTIC,
+                            confidence=score,
+                            label=f"relevance {score:.0%}",
+                        )
+                    )
 
             # Auto-extract domain nodes from tags
             for tag in result.tags[:3]:
                 if tag:
                     domain_id = self._add_domain(tag)
-                    self.edges.append(GraphEdge(
-                        source_id=node_id,
-                        target_id=domain_id,
-                        edge_type=LinkType.KEYWORD,
-                        confidence=0.6,
-                        label=f"tagged '{tag}'",
-                    ))
+                    self.edges.append(
+                        GraphEdge(
+                            source_id=node_id,
+                            target_id=domain_id,
+                            edge_type=LinkType.KEYWORD,
+                            confidence=0.6,
+                            label=f"tagged '{tag}'",
+                        )
+                    )
 
         return node_id
 
@@ -155,13 +154,15 @@ class KnowledgeGraph:
         source_id = self._ensure_node(source_title, "result")
         target_id = self._ensure_node(link.target_page, "vault_page")
 
-        self.edges.append(GraphEdge(
-            source_id=source_id,
-            target_id=target_id,
-            edge_type=link.link_type,
-            confidence=link.confidence,
-            label=link.reason,
-        ))
+        self.edges.append(
+            GraphEdge(
+                source_id=source_id,
+                target_id=target_id,
+                edge_type=link.link_type,
+                confidence=link.confidence,
+                label=link.reason,
+            )
+        )
 
     def add_concept(self, concept: str, domain: str = "") -> str:
         """Add or retrieve a ``concept`` node. Returns its ID."""
@@ -176,18 +177,17 @@ class KnowledgeGraph:
         # Link concept to domain if provided
         if domain:
             domain_id = self._add_domain(domain)
-            already_linked = any(
-                e.source_id == node_id and e.target_id == domain_id
-                for e in self.edges
-            )
+            already_linked = any(e.source_id == node_id and e.target_id == domain_id for e in self.edges)
             if not already_linked:
-                self.edges.append(GraphEdge(
-                    source_id=node_id,
-                    target_id=domain_id,
-                    edge_type=LinkType.KEYWORD,
-                    confidence=0.8,
-                    label=f"domain: {domain}",
-                ))
+                self.edges.append(
+                    GraphEdge(
+                        source_id=node_id,
+                        target_id=domain_id,
+                        edge_type=LinkType.KEYWORD,
+                        confidence=0.8,
+                        label=f"domain: {domain}",
+                    )
+                )
         return node_id
 
     # ------------------------------------------------------------------ #
@@ -217,10 +217,11 @@ class KnowledgeGraph:
         # Emit node declarations
         for node in self.nodes.values():
             left, right = _MERMAID_NODE_SHAPES.get(
-                node.node_type, ("[", "]"),
+                node.node_type,
+                ("[", "]"),
             )
             safe_label = self._mermaid_escape(node.label)
-            lines.append(f"    {node.id}{left}\"{safe_label}\"{right}")
+            lines.append(f'    {node.id}{left}"{safe_label}"{right}')
 
         lines.append("")
 
@@ -232,9 +233,7 @@ class KnowledgeGraph:
                 # Truncate long labels for readability
                 if len(safe_label) > 40:
                     safe_label = safe_label[:37] + "..."
-                lines.append(
-                    f"    {edge.source_id} {arrow}|{safe_label}| {edge.target_id}"
-                )
+                lines.append(f"    {edge.source_id} {arrow}|{safe_label}| {edge.target_id}")
             else:
                 lines.append(f"    {edge.source_id} {arrow} {edge.target_id}")
 

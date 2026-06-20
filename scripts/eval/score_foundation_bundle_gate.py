@@ -12,7 +12,6 @@ import json
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 SFT_ROOT = REPO_ROOT / "training-data" / "sft"
 
@@ -54,9 +53,7 @@ def load_rows() -> list[dict]:
     for path in FILES:
         if not path.exists():
             raise FileNotFoundError(path)
-        for line_no, line in enumerate(
-            path.read_text(encoding="utf-8").splitlines(), start=1
-        ):
+        for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
             if not line.strip():
                 continue
             row = json.loads(line)
@@ -69,9 +66,7 @@ def load_rows() -> list[dict]:
 def assistant_payload(row: dict) -> dict:
     messages = row.get("messages", [])
     if not messages or messages[-1].get("role") != "assistant":
-        raise ValueError(
-            f"{row['_source_file']}:{row['_line_no']} missing assistant message"
-        )
+        raise ValueError(f"{row['_source_file']}:{row['_line_no']} missing assistant message")
     return json.loads(messages[-1].get("content", "{}"))
 
 
@@ -86,9 +81,7 @@ def check_transport(payload: dict, errors: list[str], row: dict) -> None:
         return
     try:
         from_hex = bytes.fromhex(str(hex_text).replace(".", " ")).decode("utf-8")
-        from_binary = bytes(int(part, 2) for part in str(binary_text).split()).decode(
-            "utf-8"
-        )
+        from_binary = bytes(int(part, 2) for part in str(binary_text).split()).decode("utf-8")
     except Exception as exc:
         errors.append(f"{loc} transport decode failed: {exc}")
         return
@@ -115,9 +108,7 @@ def main() -> int:
         if split in split_counts:
             split_counts[split] += 1
         else:
-            errors.append(
-                f"{row['_source_file']}:{row['_line_no']} invalid split {split}"
-            )
+            errors.append(f"{row['_source_file']}:{row['_line_no']} invalid split {split}")
 
         payload = assistant_payload(row)
         check_transport(payload, errors, row)
@@ -126,18 +117,10 @@ def main() -> int:
             surfaces = set(payload.get("surfaces", {}).keys())
             missing_surfaces = REQUIRED_SURFACES - surfaces
             if missing_surfaces:
-                errors.append(
-                    f"{row['_source_file']}:{row['_line_no']} missing surfaces {sorted(missing_surfaces)}"
-                )
+                errors.append(f"{row['_source_file']}:{row['_line_no']} missing surfaces {sorted(missing_surfaces)}")
         else:
-            if (
-                "known_state" not in payload
-                or "unknown_state" not in payload
-                or "group_bijection" not in payload
-            ):
-                errors.append(
-                    f"{row['_source_file']}:{row['_line_no']} missing seventh-binding sections"
-                )
+            if "known_state" not in payload or "unknown_state" not in payload or "group_bijection" not in payload:
+                errors.append(f"{row['_source_file']}:{row['_line_no']} missing seventh-binding sections")
 
     for label, required, actual in (
         ("stacks", REQUIRED_STACKS, stacks),

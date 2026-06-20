@@ -8,7 +8,7 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Iterable
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -30,7 +30,6 @@ from scripts.experiments.atomic_tokenizer_rename_benchmark import (  # noqa: E40
     make_operational_flow_feature,
     combine_feature_heads,
 )
-
 
 DEFAULT_OUTPUT = Path("artifacts") / "mathbac" / "cross_primary_braid_consistency"
 
@@ -121,9 +120,7 @@ def cross_primary_cycles(
                 continue
             for start_index in start_indices:
                 start_sample = samples[start_index]
-                bridge_index, first_distance = _nearest_index(
-                    start_index, bridge_indices, features, keys
-                )
+                bridge_index, first_distance = _nearest_index(start_index, bridge_indices, features, keys)
                 return_index, return_distance = _nearest_index(
                     bridge_index,
                     start_indices,
@@ -193,11 +190,7 @@ def summarize_cycles(results: list[CycleResult]) -> dict[str, Any]:
             }
             for family, bucket in sorted(family_buckets.items())
         },
-        "failures": [
-            asdict(result)
-            for result in results
-            if not result.closure_ok
-        ][:40],
+        "failures": [asdict(result) for result in results if not result.closure_ok][:40],
     }
 
 
@@ -226,15 +219,14 @@ def run(
         "primary_families": PRIMARY_FAMILIES,
         "method": (
             "For each concept in primary A, find nearest same-feature sample in primary B, "
-            "then hop back to primary A. A->B->A closure is consistent when the returned concept matches the start concept."
+            "then hop back to primary A. A->B->A closure is consistent when the returned concept matches "
+            "the start concept."
         ),
         "best_closure_feature": best_closure[0],
         "features": feature_reports,
     }
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "cross_primary_braid_consistency.json").write_text(
-        json.dumps(report, indent=2), encoding="utf-8"
-    )
+    (output_dir / "cross_primary_braid_consistency.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     return report
 
 

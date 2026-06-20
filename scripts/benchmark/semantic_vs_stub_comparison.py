@@ -9,16 +9,28 @@ Saves full parameter sets and results for reproducibility.
 """
 
 from __future__ import annotations
-import json, math, time, sys
+import json
+import math
+import time
+import sys
 from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from tests.adversarial.scbe_harness import text_to_tongue_coords, quantize_spin, build_metric_tensor, TONGUE_NAMES, TONGUE_WEIGHTS, PI, PHI, _ADVERSARIAL_PATTERNS, _MULTILINGUAL_OVERRIDE_PATTERNS
+from tests.adversarial.scbe_harness import (
+    text_to_tongue_coords,
+    quantize_spin,
+    build_metric_tensor,
+    TONGUE_NAMES,
+    TONGUE_WEIGHTS,
+    PI,
+    PHI,
+    _ADVERSARIAL_PATTERNS,
+    _MULTILINGUAL_OVERRIDE_PATTERNS,
+)
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, get_all_attacks
 from tests.adversarial.tongue_semantic import semantic_tongue_coords
-
 
 # ═══════════════════════════════════════════════════════════
 # Test corpus
@@ -172,25 +184,32 @@ def main():
     print(f"{'Metric':<35} {'STUB':>15} {'SEMANTIC':>15} {'Delta':>12}")
     print("-" * 80)
     print(
-        f"{'Attacks detected':.<35} {stub['attacks_detected']:>12}/{stub['attacks_total']} {semantic['attacks_detected']:>12}/{semantic['attacks_total']} {'':>12}"
+        f"{'Attacks detected':.<35} {stub['attacks_detected']:>12}/{stub['attacks_total']} "
+        f"{semantic['attacks_detected']:>12}/{semantic['attacks_total']} {'':>12}"
     )
     print(
-        f"{'Detection rate':.<35} {stub['detection_rate']:>14.1%} {semantic['detection_rate']:>14.1%} {(semantic['detection_rate']-stub['detection_rate']):>+11.1%}"
+        f"{'Detection rate':.<35} {stub['detection_rate']:>14.1%} {semantic['detection_rate']:>14.1%} "
+        f"{(semantic['detection_rate']-stub['detection_rate']):>+11.1%}"
     )
     print(
-        f"{'False positives':.<35} {stub['clean_false_positives']:>12}/{stub['clean_total']} {semantic['clean_false_positives']:>12}/{semantic['clean_total']} {'':>12}"
+        f"{'False positives':.<35} {stub['clean_false_positives']:>12}/{stub['clean_total']} "
+        f"{semantic['clean_false_positives']:>12}/{semantic['clean_total']} {'':>12}"
     )
     print(
-        f"{'FP rate':.<35} {stub['false_positive_rate']:>14.1%} {semantic['false_positive_rate']:>14.1%} {(semantic['false_positive_rate']-stub['false_positive_rate']):>+11.1%}"
+        f"{'FP rate':.<35} {stub['false_positive_rate']:>14.1%} {semantic['false_positive_rate']:>14.1%} "
+        f"{(semantic['false_positive_rate']-stub['false_positive_rate']):>+11.1%}"
     )
     print(
-        f"{'RU mean':.<35} {stub['ru_mean']:>15.4f} {semantic['ru_mean']:>15.4f} {(semantic['ru_mean']-stub['ru_mean']):>+12.4f}"
+        f"{'RU mean':.<35} {stub['ru_mean']:>15.4f} {semantic['ru_mean']:>15.4f} "
+        f"{(semantic['ru_mean']-stub['ru_mean']):>+12.4f}"
     )
     print(
-        f"{'RU std':.<35} {stub['ru_std']:>15.4f} {semantic['ru_std']:>15.4f} {(semantic['ru_std']-stub['ru_std']):>+12.4f}"
+        f"{'RU std':.<35} {stub['ru_std']:>15.4f} {semantic['ru_std']:>15.4f} "
+        f"{(semantic['ru_std']-stub['ru_std']):>+12.4f}"
     )
     print(
-        f"{'RU range':.<35} {stub['ru_min']:.2f}-{stub['ru_max']:.2f}{'':>8} {semantic['ru_min']:.2f}-{semantic['ru_max']:.2f}{'':>8}"
+        f"{'RU range':.<35} {stub['ru_min']:.2f}-{stub['ru_max']:.2f}{'':>8} "
+        f"{semantic['ru_min']:.2f}-{semantic['ru_max']:.2f}{'':>8}"
     )
     print()
 
@@ -214,7 +233,8 @@ def main():
         m_rate = m_data["detected"] / max(m_data["total"], 1)
         delta = m_rate - s_rate
         print(
-            f"{cls:<25} {s_data['detected']:>5}/{s_data['total']:<5} {m_data['detected']:>5}/{m_data['total']:<5} {delta:>+9.0%}"
+            f"{cls:<25} {s_data['detected']:>5}/{s_data['total']:<5} "
+            f"{m_data['detected']:>5}/{m_data['total']:<5} {delta:>+9.0%}"
         )
     print()
 
@@ -224,7 +244,8 @@ def main():
     print("-" * 65)
     for cls, profile in sorted(semantic["tongue_profiles"].items()):
         print(
-            f"{cls:<20} {profile['KO']:>7.3f} {profile['AV']:>7.3f} {profile['RU']:>7.3f} {profile['CA']:>7.3f} {profile['UM']:>7.3f} {profile['DR']:>7.3f}"
+            f"{cls:<20} {profile['KO']:>7.3f} {profile['AV']:>7.3f} {profile['RU']:>7.3f} "
+            f"{profile['CA']:>7.3f} {profile['UM']:>7.3f} {profile['DR']:>7.3f}"
         )
 
     # Save everything
@@ -243,8 +264,13 @@ def main():
         "stub": stub,
         "semantic": semantic,
         "parameters": {
-            "stub_method": "text_to_tongue_coords (character counting: uppercase, word count, unique ratio, digits, punctuation)",
-            "semantic_method": "semantic_tongue_coords (keyword->domain resonance from linguisticCrossTalk.ts, 130+ keywords across 6 domains)",
+            "stub_method": (
+                "text_to_tongue_coords (character counting: uppercase, word count, unique ratio, digits, punctuation)"
+            ),
+            "semantic_method": (
+                "semantic_tongue_coords (keyword->domain resonance from linguisticCrossTalk.ts, "
+                "130+ keywords across 6 domains)"
+            ),
             "detection_logic": "2+ signals OR 2+ lexical OR 1+ cross-lingual OR (1 lexical + geometric)",
             "thresholds": {"spin_drift": 5, "tongue_imbalance": 0.6, "cost_exceeded": 12.0, "boundary": 1.5},
         },

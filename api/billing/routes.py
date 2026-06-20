@@ -1,5 +1,20 @@
 """
-Billing API routes.
+Billing API routes (SQLAlchemy + Stripe-SDK stack).
+
+DEPRECATED AS A LIVE MONEY PATH — DO NOT route real revenue through here.
+----------------------------------------------------------------------------
+This is a PARALLEL billing stack behind the separate `api/main.py` app. It is
+retained only because `api/auth.py` and `api/keys/` import its SQLAlchemy models
+(Customer/Subscription/ApiKey) and its rate-limit tiers (api/billing/tiers.py).
+Its Stripe price IDs are placeholders (e.g. "price_starter_monthly"), so it
+cannot actually charge a card.
+
+The CANONICAL live money path is:
+  - src/api/stripe_billing.py  (real price/product IDs, mounted in src/api/main.py)
+  - docs/offers.json           (live Stripe Payment Links + plink_ IDs)
+  - api/billing/stripe_webhook.js (the live Vercel webhook — independent of this file)
+
+Add new checkout/subscription money logic to the canonical path above, not here.
 
 Endpoints for subscription management, checkout, and usage.
 """

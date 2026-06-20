@@ -1,0 +1,46 @@
+name: Rubik's Cube Coding Speed Benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      programs:
+        description: "programs to emit (each -> all 18 languages)"
+        default: "20000"
+      prog_len:
+        description: "ops per program"
+        default: "16"
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: deps
+        run: pip install -q numpy
+      - name: Cube benchmark (GitHub cloud runner)
+        run: |
+          PYTHONPATH=. python scripts/benchmark/rubix_cube_speed_benchmark.py \
+            --programs "${{ inputs.programs }}" --len "${{ inputs.prog_len }}" | tee bench.txt
+          PYTHONPATH=. python scripts/benchmark/rubix_cube_speed_benchmark.py \
+            --programs "${{ inputs.programs }}" --len "${{ inputs.prog_len }}" --json > bench.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rubix-cube-bench
+          path: |
+            bench.txt
+            bench.json
+      - name: Push + run on Kaggle free compute (if KAGGLE creds are in repo secrets)
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_API_TOKEN }}
+        run: |
+          if [ -z "$KAGGLE_USERNAME" ] || [ -z "$KAGGLE_KEY" ]; then
+            echo "::notice::No KAGGLE_USERNAME/KAGGLE_API_TOKEN secrets — GitHub-runner benchmark above stands; skipping Kaggle push."
+            exit 0
+          fi
+          pip install -q kaggle
+          kaggle kernels push -p scripts/kaggle_auto/rubix_bench
+          echo "::notice::Kaggle kernel pushed (issdandavis/rubix-cube-coding-speed-bench). Check kaggle.com for the free-compute run."

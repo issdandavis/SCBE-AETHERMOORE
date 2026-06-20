@@ -69,7 +69,9 @@ def main(argv: list[str] | None = None) -> int:
         matmul_fraction=_pick(args, task_payload, "matmul_fraction", 0.0),
         nonlinear_op_fraction=_pick(args, task_payload, "nonlinear_op_fraction", 0.0),
         precision_required_bits=_pick(args, task_payload, "precision_required_bits", 16),
-        input_is_optical_signal=bool(args.input_is_optical_signal or task_payload.get("input_is_optical_signal", False)),
+        input_is_optical_signal=bool(
+            args.input_is_optical_signal or task_payload.get("input_is_optical_signal", False)
+        ),
         branching_density=_pick(args, task_payload, "branching_density", 0.0),
         memory_access_density=_pick(args, task_payload, "memory_access_density", 0.0),
         latency_budget_ms=_pick(args, task_payload, "latency_budget_ms", 100.0),
@@ -79,23 +81,39 @@ def main(argv: list[str] | None = None) -> int:
     provider = AcceleratorProviderProfile(
         provider_id=args.provider_id or provider_payload.get("provider_id", "photonic_npu_simulator_v1"),
         precision_native_bits=args.provider_precision_bits or provider_payload.get("precision_native_bits", 16),
-        matmul_throughput_score=args.provider_matmul_score
-        if args.provider_matmul_score is not None
-        else provider_payload.get("matmul_throughput_score", 0.88),
-        nonlinear_supported_score=args.provider_nonlinear_score
-        if args.provider_nonlinear_score is not None
-        else provider_payload.get("nonlinear_supported_score", 0.92),
-        optical_input_native=bool(args.provider_optical_input_native or provider_payload.get("optical_input_native", False)),
-        branching_supported_score=args.provider_branching_score
-        if args.provider_branching_score is not None
-        else provider_payload.get("branching_supported_score", 0.12),
-        memory_access_score=args.provider_memory_score
-        if args.provider_memory_score is not None
-        else provider_payload.get("memory_access_score", 0.22),
-        energy_efficiency_score=args.provider_energy_score
-        if args.provider_energy_score is not None
-        else provider_payload.get("energy_efficiency_score", 0.82),
-        latency_score=args.provider_latency_score if args.provider_latency_score is not None else provider_payload.get("latency_score", 0.65),
+        matmul_throughput_score=(
+            args.provider_matmul_score
+            if args.provider_matmul_score is not None
+            else provider_payload.get("matmul_throughput_score", 0.88)
+        ),
+        nonlinear_supported_score=(
+            args.provider_nonlinear_score
+            if args.provider_nonlinear_score is not None
+            else provider_payload.get("nonlinear_supported_score", 0.92)
+        ),
+        optical_input_native=bool(
+            args.provider_optical_input_native or provider_payload.get("optical_input_native", False)
+        ),
+        branching_supported_score=(
+            args.provider_branching_score
+            if args.provider_branching_score is not None
+            else provider_payload.get("branching_supported_score", 0.12)
+        ),
+        memory_access_score=(
+            args.provider_memory_score
+            if args.provider_memory_score is not None
+            else provider_payload.get("memory_access_score", 0.22)
+        ),
+        energy_efficiency_score=(
+            args.provider_energy_score
+            if args.provider_energy_score is not None
+            else provider_payload.get("energy_efficiency_score", 0.82)
+        ),
+        latency_score=(
+            args.provider_latency_score
+            if args.provider_latency_score is not None
+            else provider_payload.get("latency_score", 0.65)
+        ),
     )
     print(json.dumps(route_accelerator_task(packet, provider), indent=2))
     return 0

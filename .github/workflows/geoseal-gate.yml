@@ -1,0 +1,43 @@
+name: geoseal-gate
+
+# Ephemeral, external test surface for the GeoSeal execution gate.
+# The runner is a throwaway VM that GitHub destroys after the job, so the gate's
+# execution path (and the sandbox smoke) can run with zero risk to any real
+# machine. This is the "outside the system" surface.
+
+on:
+  push:
+    paths:
+      - "src/crypto/geoseal_execution_gate.py"
+      - "src/geoseal_cli.py"
+      - "tests/crypto/test_geoseal_execution_gate.py"
+      - "scripts/sandbox/**"
+      - ".github/workflows/geoseal-gate.yml"
+  pull_request:
+    paths:
+      - "src/crypto/geoseal_execution_gate.py"
+      - "tests/crypto/test_geoseal_execution_gate.py"
+      - "scripts/sandbox/**"
+  workflow_dispatch: {}
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      SCBE_SANDBOX: "1"
+      SCBE_FORCE_SKIP_LIBOQS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          pip install -r requirements.txt || true
+      - name: Gate unit tests (scan + simulate, no destructive execution)
+        run: python -m pytest tests/crypto/test_geoseal_execution_gate.py -v -o addopts="" -p no:cacheprovider
+      - name: Sandbox execution smoke (benign runs, destructive refused)
+        run: python scripts/sandbox/sandbox_exec_smoke.py

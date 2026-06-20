@@ -172,10 +172,19 @@ class TrainingTrigger:
         except OSError as exc:
             logger.warning("could not read %s: %s", self.events_log, exc)
             return []
+        # Schema-gate like the replay reader (agent_bus_replay.replay_log): skip
+        # events the validator rejects — e.g. a future major-version payload whose
+        # shape we don't understand — so an incompatible record can't silently
+        # skew the perf window that drives autonomous training.
+        from agents.agent_bus_schema import validate_event
+
         out: List[Dict[str, Any]] = []
         for line in lines[-n:]:
             try:
-                out.append(json.loads(line))
+                rec = json.loads(line)
             except json.JSONDecodeError:
                 continue
+            if not validate_event(rec).ok:
+                continue
+            out.append(rec)
         return out

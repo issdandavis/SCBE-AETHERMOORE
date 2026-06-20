@@ -58,7 +58,7 @@ class ChromeMCPBackend(BrowserBackend):
             "action": "navigate",
             "url": url,
             "tab_id": self.tab_id,
-            "mcp_call": f"mcp__claude-in-chrome__navigate(url='{url}', tabId={self.tab_id})"
+            "mcp_call": f"mcp__claude-in-chrome__navigate(url='{url}', tabId={self.tab_id})",
         }
 
     async def click(self, selector: str) -> Dict[str, Any]:
@@ -75,7 +75,7 @@ class ChromeMCPBackend(BrowserBackend):
             "action": "click",
             "selector": selector,
             "tab_id": self.tab_id,
-            "mcp_call": f"mcp__claude-in-chrome__computer(action='left_click', tabId={self.tab_id})"
+            "mcp_call": f"mcp__claude-in-chrome__computer(action='left_click', tabId={self.tab_id})",
         }
 
     async def type_text(self, selector: str, text: str) -> Dict[str, Any]:
@@ -90,7 +90,7 @@ class ChromeMCPBackend(BrowserBackend):
             "selector": selector,
             "text_length": len(text),
             "tab_id": self.tab_id,
-            "mcp_call": f"mcp__claude-in-chrome__computer(action='type', text='...', tabId={self.tab_id})"
+            "mcp_call": f"mcp__claude-in-chrome__computer(action='type', text='...', tabId={self.tab_id})",
         }
 
     async def get_page_content(self) -> str:
@@ -124,7 +124,7 @@ class ChromeMCPBackend(BrowserBackend):
             "action": "execute_script",
             "script_length": len(script),
             "tab_id": self.tab_id,
-            "mcp_call": f"mcp__claude-in-chrome__javascript_tool(script='...', tabId={self.tab_id})"
+            "mcp_call": f"mcp__claude-in-chrome__javascript_tool(script='...', tabId={self.tab_id})",
         }
 
     async def get_current_url(self) -> str:
@@ -147,7 +147,10 @@ class ChromeMCPBackend(BrowserBackend):
             "action": "scroll",
             "direction": direction,
             "amount": amount,
-            "mcp_call": f"mcp__claude-in-chrome__computer(action='scroll', scroll_direction='{direction}', tabId={self.tab_id})"
+            "mcp_call": (
+                f"mcp__claude-in-chrome__computer(action='scroll', scroll_direction='{direction}', "
+                f"tabId={self.tab_id})"
+            ),
         }
 
     async def find_element(self, text: str) -> Optional[Dict[str, Any]]:
@@ -160,7 +163,7 @@ class ChromeMCPBackend(BrowserBackend):
         return {
             "action": "find",
             "text": text,
-            "mcp_call": f"mcp__claude-in-chrome__find(text='{text}', tabId={self.tab_id})"
+            "mcp_call": f"mcp__claude-in-chrome__find(text='{text}', tabId={self.tab_id})",
         }
 
     async def close(self) -> None:
@@ -172,6 +175,7 @@ class ChromeMCPBackend(BrowserBackend):
 # Helper for Claude Code Integration
 # =============================================================================
 
+
 def get_mcp_commands(action: str, **kwargs) -> str:
     """
     Get the MCP command string for an action.
@@ -182,25 +186,23 @@ def get_mcp_commands(action: str, **kwargs) -> str:
 
     commands = {
         "navigate": f"mcp__claude-in-chrome__navigate(url='{kwargs.get('url', 'URL')}', tabId={tab_id})",
-
-        "click": f"mcp__claude-in-chrome__computer(action='left_click', coordinate={kwargs.get('coord', '[x,y]')}, tabId={tab_id})",
-
+        "click": (
+            f"mcp__claude-in-chrome__computer(action='left_click', "
+            f"coordinate={kwargs.get('coord', '[x,y]')}, tabId={tab_id})"
+        ),
         "type": f"mcp__claude-in-chrome__computer(action='type', text='{kwargs.get('text', 'TEXT')}', tabId={tab_id})",
-
         "screenshot": f"mcp__claude-in-chrome__computer(action='screenshot', tabId={tab_id})",
-
-        "scroll": f"mcp__claude-in-chrome__computer(action='scroll', scroll_direction='{kwargs.get('direction', 'down')}', tabId={tab_id})",
-
+        "scroll": (
+            f"mcp__claude-in-chrome__computer(action='scroll', "
+            f"scroll_direction='{kwargs.get('direction', 'down')}', tabId={tab_id})"
+        ),
         "read_page": f"mcp__claude-in-chrome__read_page(tabId={tab_id})",
-
         "get_text": f"mcp__claude-in-chrome__get_page_text(tabId={tab_id})",
-
-        "javascript": f"mcp__claude-in-chrome__javascript_tool(script='{kwargs.get('script', 'SCRIPT')}', tabId={tab_id})",
-
+        "javascript": (
+            f"mcp__claude-in-chrome__javascript_tool(script='{kwargs.get('script', 'SCRIPT')}', " f"tabId={tab_id})"
+        ),
         "find": f"mcp__claude-in-chrome__find(text='{kwargs.get('text', 'TEXT')}', tabId={tab_id})",
-
         "tabs_context": "mcp__claude-in-chrome__tabs_context_mcp(createIfEmpty=true)",
-
         "create_tab": "mcp__claude-in-chrome__tabs_create_mcp()",
     }
 

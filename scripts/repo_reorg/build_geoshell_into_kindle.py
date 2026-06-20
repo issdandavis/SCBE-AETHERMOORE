@@ -71,8 +71,7 @@ def mirror() -> None:
         print(f"[run]  removing existing {DST.relative_to(REPO).as_posix()}")
         shutil.rmtree(DST)
     DST.parent.mkdir(parents=True, exist_ok=True)
-    print(f"[run]  copying {DIST.relative_to(REPO).as_posix()} -> "
-          f"{DST.relative_to(REPO).as_posix()}")
+    print(f"[run]  copying {DIST.relative_to(REPO).as_posix()} -> " f"{DST.relative_to(REPO).as_posix()}")
     shutil.copytree(DIST, DST)
 
 

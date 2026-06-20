@@ -284,11 +284,10 @@ def write_dataset(output: Path, manifest: Path) -> dict[str, Any]:
             "bytes": 19,
             "logic_pairs": 4,
         },
-        "training_rule": "Binary is the trunk; music and atomic mappings are reference lattices; code is the executable target.",
+        "training_rule": "Binary is the trunk; music and atomic mappings are reference lattices; "
+        "code is the executable target.",
     }
-    manifest.write_text(
-        json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8"
-    )
+    manifest.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
     return payload
 
 
@@ -299,11 +298,7 @@ def main() -> int:
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     manifest = write_dataset(args.output, args.manifest)
-    print(
-        json.dumps(manifest, indent=2)
-        if args.json
-        else f"wrote {manifest['record_count']} records"
-    )
+    print(json.dumps(manifest, indent=2) if args.json else f"wrote {manifest['record_count']} records")
     return 0
 
 

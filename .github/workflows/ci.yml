@@ -167,10 +167,13 @@ jobs:
 
       - name: Install Python linters
         run: |
-          pip install black ruff
+          pip install black ruff flake8
 
       - name: Check Python formatting
-        run: black --check --target-version py311 --line-length 120 src/ tests/
+        run: black --check --target-version py311 --line-length 120 src/ tests/ scripts/ agents/
 
       - name: Run ruff (fast lint)
         run: ruff check --config ruff.toml
+
+      - name: Run flake8 (style + pyflakes)
+        run: flake8 --max-line-length 120 src/ tests/ hydra/ scripts/ agents/

@@ -71,9 +71,7 @@ def append_timeline(timestamp: str, wave: int, topic: str, result: str, link: st
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Log a research result to JSONL + markdown timeline."
-    )
+    parser = argparse.ArgumentParser(description="Log a research result to JSONL + markdown timeline.")
     parser.add_argument(
         "--topic",
         required=True,

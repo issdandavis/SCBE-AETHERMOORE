@@ -1,52 +1,65 @@
 # Dependabot configuration for SCBE-AETHERMOORE
-# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# This is a monorepo: ~25 Python manifests and ~15 npm lockfiles live in nested
+# sub-apps (packages/*, apps/*, game/*, conference-app, examples/*, ...). The old
+# config used singular `directory: "/"` (root only) plus an `exclude-paths:` key
+# that Dependabot does not recognize, so the nested lockfiles were never watched —
+# their advisories just sat open. `directories: ["/**"]` watches every manifest
+# recursively; `groups` batches the bumps so we get a few PRs per ecosystem, not
+# dozens. Vendored / archived lanes are excluded with `!` negation globs.
 version: 2
 updates:
-  # Python dependencies
+  # ── Python (every manifest, recursively) ──────────────────────────────────
   - package-ecosystem: "pip"
-    directory: "/"
+    directories:
+      - "/**"
+      - "!/archive/**"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
       - "security"
+    groups:
+      pip-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+      pip-version:
+        applies-to: version-updates
+        patterns:
+          - "*"
 
-  # NPM dependencies (main)
+  # ── npm (every manifest, recursively, minus vendored / submodule lanes) ───
   - package-ecosystem: "npm"
-    directory: "/"
+    directories:
+      - "/**"
+      - "!/external/**"
+      - "!/external_repos/**"
+      - "!/archive/**"
+      - "!/spiralverse-protocol/**"
+      - "!/aws-lambda-simple-web-app/**"
+      - "!/hioujhn/**"
+      - "!/scbe-aethermoore/**"
+      - "!/packages/six-tongues-geoseal/**"
     schedule:
       interval: "weekly"
-    exclude-paths:
-      # These are vendored or submodule lanes. Dependabot's recursive checkout can
-      # leave them dirty after root npm security updates, which turns a useful
-      # advisory check into a red background run.
-      - "external/**"
-      - "external_repos/**"
-      - "spiralverse-protocol/**"
-      - "aws-lambda-simple-web-app/**"
-      - "hioujhn/**"
-      - "scbe-aethermoore/**"
-      - "packages/six-tongues-geoseal/**"
-      - "archive/**"
-      - "test-install/**"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
       - "security"
+    groups:
+      npm-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+      npm-version:
+        applies-to: version-updates
+        patterns:
+          - "*"
 
-  # NPM dependencies (visual system)
-  - package-ecosystem: "npm"
-    directory: "/scbe-visual-system"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "security"
-
-  # Dev containers
+  # ── Dev containers ────────────────────────────────────────────────────────
   - package-ecosystem: "devcontainers"
     directory: "/"
     schedule:

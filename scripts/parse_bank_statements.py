@@ -169,7 +169,7 @@ for month, line in income_items:
 
 print()
 print("=" * 70)
-print(f"CRYPTO / STOCK ACTIVITY (summary)")
+print("CRYPTO / STOCK ACTIVITY (summary)")
 print("=" * 70)
 btc_buys = [
     l for _, l in crypto_activity if ("btc" in l.lower() or "bitcoin" in l.lower()) and "round up" not in l.lower()
@@ -196,7 +196,7 @@ for month, line in crypto_activity:
 
 print()
 print("=" * 70)
-print(f"PERSONAL SUBSCRIPTIONS (monthly)")
+print("PERSONAL SUBSCRIPTIONS (monthly)")
 print("=" * 70)
 seen = set()
 for month, line in subscriptions:

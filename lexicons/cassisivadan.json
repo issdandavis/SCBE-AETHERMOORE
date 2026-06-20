@@ -1,0 +1,25 @@
+{
+  "tongue": "CA",
+  "name": "Cassisivadan",
+  "role": "Compute/Transforms (Nature's Speech -- root-network wisdom, play; joy-amplification grammar)",
+  "source": "Spiralverse 'Six Sacred Tongues' wordlist (Issac, canonical)",
+  "particles": {
+    "zuni": "fun / joy intensifier",
+    "gear": "tools / making",
+    "aki": "spark / bright"
+  },
+  "words": {
+    "nos": "we",
+    "runa": "run / go fast",
+    "sapi": "knowledge / smart",
+    "spira": "spiral",
+    "zuni": "fun / joy",
+    "nunc": "now",
+    "gear": "tools / making",
+    "nog": "bright / good",
+    "rad": "excellent / amazing",
+    "sapi'gear": "smart-tools",
+    "spira'zuni": "spiral-fun",
+    "kor'aki": "heart-spark"
+  }
+}

@@ -26,12 +26,9 @@ from typing import Any
 SCHEMA_VERSION = "scbe.hook_router.v1"
 DEFAULT_DECISION = "allow"
 
-SECRET_KEY_RE = re.compile(
-    r"(token|secret|password|passwd|api[_-]?key|bearer|authorization|credential)", re.I
-)
+SECRET_KEY_RE = re.compile(r"(token|secret|password|passwd|api[_-]?key|bearer|authorization|credential)", re.I)
 SECRET_VALUE_RE = re.compile(
-    r"(?i)(sk-[A-Za-z0-9_-]{12,}|ghp_[A-Za-z0-9_]{12,}|"
-    r"hf_[A-Za-z0-9_]{12,}|xox[baprs]-[A-Za-z0-9-]{12,})"
+    r"(?i)(sk-[A-Za-z0-9_-]{12,}|ghp_[A-Za-z0-9_]{12,}|" r"hf_[A-Za-z0-9_]{12,}|xox[baprs]-[A-Za-z0-9-]{12,})"
 )
 
 HIGH_RISK_COMMAND_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
@@ -40,9 +37,7 @@ HIGH_RISK_COMMAND_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
         "destructive git operation",
     ),
     (
-        re.compile(
-            r"\bRemove-Item\b[^\n\r;]*\s-(Recurse|r)\b[^\n\r;]*\s-(Force|f)\b", re.I
-        ),
+        re.compile(r"\bRemove-Item\b[^\n\r;]*\s-(Recurse|r)\b[^\n\r;]*\s-(Force|f)\b", re.I),
         "recursive forced delete",
     ),
     (re.compile(r"\brm\s+-[^\n\r;]*r[^\n\r;]*f\b", re.I), "recursive forced delete"),
@@ -52,9 +47,7 @@ HIGH_RISK_COMMAND_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
         "disk/system mutation command",
     ),
     (
-        re.compile(
-            r"\b(npm|pnpm|yarn)\s+publish\b|\bpython\s+-m\s+twine\s+upload\b", re.I
-        ),
+        re.compile(r"\b(npm|pnpm|yarn)\s+publish\b|\bpython\s+-m\s+twine\s+upload\b", re.I),
         "package publish",
     ),
     (
@@ -96,11 +89,7 @@ def _read_input() -> dict[str, Any]:
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError:
-        return {
-            "_raw_stdin_sha256": hashlib.sha256(
-                raw.encode("utf-8", "replace")
-            ).hexdigest()
-        }
+        return {"_raw_stdin_sha256": hashlib.sha256(raw.encode("utf-8", "replace")).hexdigest()}
     return parsed if isinstance(parsed, dict) else {"payload": parsed}
 
 
@@ -164,11 +153,7 @@ def _git_state(root: Path) -> dict[str, Any]:
 def _command_from_tool(payload: dict[str, Any]) -> str:
     tool_input = payload.get("tool_input")
     if not isinstance(tool_input, dict):
-        tool_input = (
-            payload.get("parameters")
-            if isinstance(payload.get("parameters"), dict)
-            else {}
-        )
+        tool_input = payload.get("parameters") if isinstance(payload.get("parameters"), dict) else {}
     for key in ("command", "cmd", "script"):
         value = tool_input.get(key)
         if isinstance(value, str):
@@ -179,13 +164,9 @@ def _command_from_tool(payload: dict[str, Any]) -> str:
 def _classify_prompt(prompt: str) -> dict[str, Any]:
     lowered = prompt.lower()
     labels: list[str] = []
-    if any(
-        word in lowered for word in ("delete", "remove", "clean", "space", "offload")
-    ):
+    if any(word in lowered for word in ("delete", "remove", "clean", "space", "offload")):
         labels.append("filesystem-risk")
-    if any(
-        word in lowered for word in ("push", "merge", "publish", "deploy", "release")
-    ):
+    if any(word in lowered for word in ("push", "merge", "publish", "deploy", "release")):
         labels.append("release-risk")
     if any(word in lowered for word in ("token", "secret", "key", "credential")):
         labels.append("secrets-risk")
@@ -212,9 +193,7 @@ def _classify_tool(payload: dict[str, Any]) -> tuple[str, list[str]]:
     return ("deny" if reasons else DEFAULT_DECISION), reasons
 
 
-def _receipt(
-    root: Path, event: str, payload: dict[str, Any], decision: str, reasons: list[str]
-) -> dict[str, Any]:
+def _receipt(root: Path, event: str, payload: dict[str, Any], decision: str, reasons: list[str]) -> dict[str, Any]:
     git_state = _git_state(root)
     return {
         "schema_version": SCHEMA_VERSION,
@@ -252,9 +231,7 @@ def _session_context(root: Path, receipt: dict[str, Any]) -> str:
     )
 
 
-def handle_event(
-    event: str, payload: dict[str, Any], root: Path
-) -> tuple[int, dict[str, Any], bool]:
+def handle_event(event: str, payload: dict[str, Any], root: Path) -> tuple[int, dict[str, Any], bool]:
     event = event or str(payload.get("hook_event_name") or "Unknown")
     decision = DEFAULT_DECISION
     reasons: list[str] = []
@@ -289,9 +266,7 @@ def handle_event(
         _write_json(root / ".scbe" / "session" / "compact_state.json", receipt)
         return (
             0,
-            {
-                "additionalContext": "SCBE compact state saved to .scbe/session/compact_state.json"
-            },
+            {"additionalContext": "SCBE compact state saved to .scbe/session/compact_state.json"},
             True,
         )
 
@@ -308,8 +283,7 @@ def handle_event(
             2,
             {
                 "hookSpecificOutput": {"permissionDecision": "deny"},
-                "systemMessage": "SCBE hook bridge blocked tool use: "
-                + "; ".join(reasons),
+                "systemMessage": "SCBE hook bridge blocked tool use: " + "; ".join(reasons),
             },
             False,
         )
@@ -325,9 +299,7 @@ def handle_event(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Route Codex/Claude hook events through SCBE local policy"
-    )
+    parser = argparse.ArgumentParser(description="Route Codex/Claude hook events through SCBE local policy")
     parser.add_argument(
         "event",
         nargs="?",

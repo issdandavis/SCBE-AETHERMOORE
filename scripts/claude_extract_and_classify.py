@@ -48,43 +48,148 @@ TONGUE_KEYWORDS = {
 }
 
 CONLANG_MARKERS = [
-    "tongue", "tongues", "sacred tongue", "conlang", "constructed language",
-    "korath", "avion", "runik", "caleth", "umbral", "drath",
-    "token grid", "phi-weight", "phi-scale", "semantic token",
-    "language system", "six languages", "six tongues",
-    "linguistic", "morpheme", "phoneme", "grammar",
-    "translation", "encode", "decode", "cipher",
+    "tongue",
+    "tongues",
+    "sacred tongue",
+    "conlang",
+    "constructed language",
+    "korath",
+    "avion",
+    "runik",
+    "caleth",
+    "umbral",
+    "drath",
+    "token grid",
+    "phi-weight",
+    "phi-scale",
+    "semantic token",
+    "language system",
+    "six languages",
+    "six tongues",
+    "linguistic",
+    "morpheme",
+    "phoneme",
+    "grammar",
+    "translation",
+    "encode",
+    "decode",
+    "cipher",
 ]
 
 FICTION_MARKERS = [
-    "avalon", "pollyoneth", "spiralverse", "aethermoor", "izack", "aria",
-    "zara", "clayborn", "grey", "everweave", "chapter", "novel", "story",
-    "narrative", "character", "quest", "magic", "spire", "realm",
-    "fantasy", "dimensional", "odyssey", "raven", "codex", "lore",
-    "guild", "ritual", "world-building", "worldbuilding",
+    "avalon",
+    "pollyoneth",
+    "spiralverse",
+    "aethermoor",
+    "izack",
+    "aria",
+    "zara",
+    "clayborn",
+    "grey",
+    "everweave",
+    "chapter",
+    "novel",
+    "story",
+    "narrative",
+    "character",
+    "quest",
+    "magic",
+    "spire",
+    "realm",
+    "fantasy",
+    "dimensional",
+    "odyssey",
+    "raven",
+    "codex",
+    "lore",
+    "guild",
+    "ritual",
+    "world-building",
+    "worldbuilding",
 ]
 
 TECHNICAL_MARKERS = [
-    "poincare", "hyperbolic", "harmonic wall", "governance", "axiom",
-    "unitarity", "locality", "causality", "symmetry", "composition",
-    "14-layer", "pipeline", "hamiltonian", "mobius", "spectral",
-    "coherence", "breathing", "quantum", "post-quantum", "pqc",
-    "ml-kem", "ml-dsa", "dilithium", "kyber", "patent", "claim",
-    "layer 1", "layer 2", "layer 3", "layer 4", "layer 5",
-    "layer 6", "layer 7", "layer 8", "layer 9", "layer 10",
-    "layer 11", "layer 12", "layer 13", "layer 14",
-    "scbe", "aethermoore", "sacred egg", "geoseal",
-    "hydra", "fleet", "swarm", "agent", "orchestrat",
-    "typescript", "python", "vitest", "pytest", "docker",
-    "kubernetes", "ci/cd", "deploy", "api", "endpoint",
+    "poincare",
+    "hyperbolic",
+    "harmonic wall",
+    "governance",
+    "axiom",
+    "unitarity",
+    "locality",
+    "causality",
+    "symmetry",
+    "composition",
+    "14-layer",
+    "pipeline",
+    "hamiltonian",
+    "mobius",
+    "spectral",
+    "coherence",
+    "breathing",
+    "quantum",
+    "post-quantum",
+    "pqc",
+    "ml-kem",
+    "ml-dsa",
+    "dilithium",
+    "kyber",
+    "patent",
+    "claim",
+    "layer 1",
+    "layer 2",
+    "layer 3",
+    "layer 4",
+    "layer 5",
+    "layer 6",
+    "layer 7",
+    "layer 8",
+    "layer 9",
+    "layer 10",
+    "layer 11",
+    "layer 12",
+    "layer 13",
+    "layer 14",
+    "scbe",
+    "aethermoore",
+    "sacred egg",
+    "geoseal",
+    "hydra",
+    "fleet",
+    "swarm",
+    "agent",
+    "orchestrat",
+    "typescript",
+    "python",
+    "vitest",
+    "pytest",
+    "docker",
+    "kubernetes",
+    "ci/cd",
+    "deploy",
+    "api",
+    "endpoint",
 ]
 
 # Title words that strongly indicate conlang content
 CONLANG_TITLE_WORDS = [
-    "tongue", "tongues", "conlang", "korath", "avion", "runik",
-    "caleth", "umbral", "drath", "sacred language", "six languages",
-    "lexicon", "phoneme", "morpheme", "linguistic",
-    "kor'aelin", "alphabet", "writing system",
+    "tongue",
+    "tongues",
+    "conlang",
+    "korath",
+    "avion",
+    "runik",
+    "caleth",
+    "umbral",
+    "drath",
+    "sacred language",
+    "six languages",
+    "lexicon",
+    "phoneme",
+    "morpheme",
+    "linguistic",
+    "kor'aelin",
+    "alphabet",
+    "writing system",
 ]
 
 # -------------------------------------------------------------------
@@ -94,10 +199,10 @@ PHI = (1 + math.sqrt(5)) / 2
 TONGUE_WEIGHTS = {
     "KO": 1.0,
     "AV": PHI,
-    "RU": PHI ** 2,
-    "CA": PHI ** 3,
-    "UM": PHI ** 4,
-    "DR": PHI ** 5,
+    "RU": PHI**2,
+    "CA": PHI**3,
+    "UM": PHI**4,
+    "DR": PHI**5,
 }
 
 
@@ -140,11 +245,22 @@ def detect_layers(text_lower):
         if any(p in text_lower for p in patterns):
             layers.add(i)
     keyword_layers = {
-        "context": 1, "realif": 2, "weighted transform": 3, "poincare": 4,
-        "hyperbolic distance": 5, "breathing": 6, "mobius": 7,
-        "hamiltonian": 8, "spectral": 9, "spin coherence": 10,
-        "triadic": 11, "harmonic wall": 12, "risk decision": 13,
-        "governance": 13, "audio axis": 14, "telemetry": 14,
+        "context": 1,
+        "realif": 2,
+        "weighted transform": 3,
+        "poincare": 4,
+        "hyperbolic distance": 5,
+        "breathing": 6,
+        "mobius": 7,
+        "hamiltonian": 8,
+        "spectral": 9,
+        "spin coherence": 10,
+        "triadic": 11,
+        "harmonic wall": 12,
+        "risk decision": 13,
+        "governance": 13,
+        "audio axis": 14,
+        "telemetry": 14,
     }
     for kw, layer in keyword_layers.items():
         if kw in text_lower:
@@ -196,11 +312,13 @@ def extract():
                 full_text = "\n".join(parts)
                 if full_text.strip():
                     total_chars += len(full_text)
-                    msg_list.append({
-                        "role": "user" if sender == "human" else "assistant",
-                        "content": full_text,
-                        "timestamp": m.get("created_at", ""),
-                    })
+                    msg_list.append(
+                        {
+                            "role": "user" if sender == "human" else "assistant",
+                            "content": full_text,
+                            "timestamp": m.get("created_at", ""),
+                        }
+                    )
 
             if not msg_list or total_chars < 100:
                 continue
@@ -235,21 +353,23 @@ def extract():
             first_user = next((m["content"][:200] for m in msg_list if m["role"] == "user"), "")
             first_assistant = next((m["content"][:200] for m in msg_list if m["role"] == "assistant"), "")
 
-            index.append({
-                "file": fname,
-                "id": uuid,
-                "title": name,
-                "created": created,
-                "message_count": len(msg_list),
-                "total_chars": total_chars,
-                "first_user_preview": first_user,
-                "first_assistant_preview": first_assistant,
-                "fiction_score": fiction_score,
-                "technical_score": technical_score,
-                "conlang_score": conlang_score,
-                "code_blocks": code_blocks,
-                "code_languages": sorted(code_languages),
-            })
+            index.append(
+                {
+                    "file": fname,
+                    "id": uuid,
+                    "title": name,
+                    "created": created,
+                    "message_count": len(msg_list),
+                    "total_chars": total_chars,
+                    "first_user_preview": first_user,
+                    "first_assistant_preview": first_assistant,
+                    "fiction_score": fiction_score,
+                    "technical_score": technical_score,
+                    "conlang_score": conlang_score,
+                    "code_blocks": code_blocks,
+                    "code_languages": sorted(code_languages),
+                }
+            )
 
     # Sort by date
     index.sort(key=lambda x: x.get("created", ""))
@@ -301,7 +421,7 @@ def classify():
     with open(INDEX_FILE, "w", encoding="utf-8") as f:
         json.dump(index, f, ensure_ascii=False, indent=2)
 
-    print(f"Classification results:")
+    print("Classification results:")
     for cat, count in sorted(categories.items(), key=lambda x: -x[1]):
         print(f"  {cat:12s}: {count}")
     return index
@@ -378,7 +498,9 @@ def convert():
 
         combined_text = " ".join(m["content"] for m in messages).lower()
         tongue_weights = detect_tongues(combined_text)
-        dominant_tongue = max(tongue_weights, key=tongue_weights.get) if any(v > 0 for v in tongue_weights.values()) else "DR"
+        dominant_tongue = (
+            max(tongue_weights, key=tongue_weights.get) if any(v > 0 for v in tongue_weights.values()) else "DR"
+        )
         code_blocks = entry.get("code_blocks", 0)
         difficulty = estimate_difficulty(combined_text, code_blocks)
         layers = detect_layers(combined_text)
@@ -435,7 +557,7 @@ def convert():
             else:
                 i += 1
 
-    print(f"SFT conversion complete:")
+    print("SFT conversion complete:")
     for cat, count in sorted(counts.items(), key=lambda x: -x[1]):
         print(f"  {cat:12s}: {count} records")
     print(f"  {'TOTAL':12s}: {total} records")

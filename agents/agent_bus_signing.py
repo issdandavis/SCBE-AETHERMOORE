@@ -66,17 +66,22 @@ class _SignerImpl:
 
 def _try_mldsa65(sk: Optional[bytes], pk: Optional[bytes]) -> Optional[_SignerImpl]:
     try:
-        from src.crypto.pqc_liboqs import MLDSA65, LIBOQS_AVAILABLE, PURE_PQC_AVAILABLE
+        from src.crypto.pqc_liboqs import MLDSA65, MLDSAKeyPair, LIBOQS_AVAILABLE, PURE_PQC_AVAILABLE
 
         if not (LIBOQS_AVAILABLE or PURE_PQC_AVAILABLE):
             return None
     except (ImportError, RuntimeError, OSError):
         return None
 
-    impl = MLDSA65() if (sk is None or pk is None) else MLDSA65()
+    # Loading a persisted identity must go through from_keypair so the loaded
+    # secret key is bound into the underlying liboqs Signature object. The old
+    # path (MLDSA65() then overwriting ._secret_key) left the liboqs object
+    # signing with a fresh, throwaway key — signatures never verified after a
+    # process restart, silently downgrading cross-process auth.
     if sk is not None and pk is not None:
-        impl._secret_key = sk
-        impl._public_key = pk
+        impl = MLDSA65.from_keypair(MLDSAKeyPair(public_key=pk, secret_key=sk))
+    else:
+        impl = MLDSA65()
 
     class _MLDSA65Signer(_SignerImpl):
         algorithm = ALG_MLDSA65
@@ -250,6 +255,15 @@ class EventSigner:
         sig = self._impl.sign(canonical)
         return (base64.b64encode(sig).decode(), self.public_key_b64, self._impl.algorithm)
 
+    def sign_bytes(self, message: bytes) -> Tuple[str, str, str]:
+        """Sign exact caller-provided bytes. For interop formats where the
+        canonical form is fixed by an external spec (e.g. RFC 8785 JCS in ACTA
+        receipts) rather than this module's json.dumps convention."""
+        if self._impl is None:
+            return ("", "", ALG_UNSIGNED)
+        sig = self._impl.sign(message)
+        return (base64.b64encode(sig).decode(), self.public_key_b64, self._impl.algorithm)
+
     def verify_own(self, payload: Dict[str, Any], signature_b64: str) -> bool:
         """Verify a signature against this signer's loaded identity. Works in all tiers."""
         if self._impl is None or not signature_b64:
@@ -276,9 +290,26 @@ class EventSigner:
         if not signature_b64 or not public_key_b64:
             return False
         try:
+            canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        except (ValueError, AttributeError) as exc:
+            logger.warning("verify canonicalization failed: %s", exc)
+            return False
+        return EventSigner.verify_bytes(canonical, signature_b64, public_key_b64, algorithm)
+
+    @staticmethod
+    def verify_bytes(
+        message: bytes,
+        signature_b64: str,
+        public_key_b64: str,
+        algorithm: str,
+    ) -> bool:
+        """Public-key-only verification over exact caller-provided bytes
+        (counterpart of ``sign_bytes``). Returns False for HMAC sim."""
+        if not signature_b64 or not public_key_b64:
+            return False
+        try:
             sig = base64.b64decode(signature_b64)
             pk = base64.b64decode(public_key_b64)
-            canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
         except (ValueError, AttributeError) as exc:
             logger.warning("verify decode failed: %s", exc)
             return False
@@ -291,7 +322,7 @@ class EventSigner:
                     return False
                 v = MLDSA65()
                 v._public_key = pk
-                return bool(v.verify(canonical, sig))
+                return bool(v.verify(message, sig))
             except (ImportError, RuntimeError, OSError, AttributeError):
                 return False
 
@@ -300,7 +331,7 @@ class EventSigner:
                 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
                 pk_obj = Ed25519PublicKey.from_public_bytes(pk)
-                pk_obj.verify(sig, canonical)
+                pk_obj.verify(sig, message)
                 return True
             except Exception:  # noqa: BLE001
                 return False

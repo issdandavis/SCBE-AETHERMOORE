@@ -12,7 +12,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-
 IGNORE_DIRS = {
     ".git",
     ".pytest_cache",
@@ -27,7 +26,8 @@ IGNORE_DIRS = {
 
 SIGNATURES = {
     "hardcoded_api_key": {
-        "pattern": r"(?i)(api[_-]?key|api[_-]?token|secret[_-]?key|private[_-]?key)\s*[:=]\s*[\"']?[A-Za-z0-9+/=._-]{20,}[\"']?",
+        "pattern": r"(?i)(api[_-]?key|api[_-]?token|secret[_-]?key|private[_-]?key)"
+        r"\s*[:=]\s*[\"']?[A-Za-z0-9+/=._-]{20,}[\"']?",
         "severity": "high",
         "phase": "UM",
     },
@@ -350,7 +350,8 @@ def _make_task_summary(
     else:
         for chunk in sorted(quarantine_chunks, key=lambda c: (-len(c.findings), c.risk_score), reverse=False)[:40]:
             lines.append(
-                f"- {chunk.chunk_id} | ring={chunk.ring} risk={chunk.risk_score} trust={chunk.trust_score} phase={chunk.phase}"
+                f"- {chunk.chunk_id} | ring={chunk.ring} risk={chunk.risk_score} "
+                f"trust={chunk.trust_score} phase={chunk.phase}"
             )
 
     lines.extend(["", "## Recommended Actions"])

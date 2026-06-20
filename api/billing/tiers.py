@@ -2,6 +2,12 @@
 Pricing tier configuration for SCBE-AETHERMOORE SaaS.
 
 Defines rate limits, features, and Stripe price IDs for each tier.
+
+NOTE: These tiers exist primarily as the RATE-LIMIT policy table consumed by
+api/auth.py (FREE/STARTER/SUPPORTER/PRO/ENTERPRISE). The stripe_price_id values
+default to PLACEHOLDERS (price_starter_monthly, ...) and this stack is NOT the live
+money path. The live, sellable products + real Stripe IDs live in docs/offers.json
+and src/api/stripe_billing.py. Keep prices here from drifting against those.
 """
 
 import os

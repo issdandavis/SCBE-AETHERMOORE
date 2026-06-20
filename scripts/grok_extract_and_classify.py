@@ -22,7 +22,17 @@ from pathlib import Path
 # Paths
 # -------------------------------------------------------------------
 REPO = Path(r"C:\Users\issda\SCBE-AETHERMOORE")
-GROK_JSON = REPO / "training" / "intake" / "grok_export" / "ttl" / "30d" / "export_data" / "6230e339-05a0-4d94-ad56-c80f9771a985" / "prod-grok-backend.json"
+GROK_JSON = (
+    REPO
+    / "training"
+    / "intake"
+    / "grok_export"
+    / "ttl"
+    / "30d"
+    / "export_data"
+    / "6230e339-05a0-4d94-ad56-c80f9771a985"
+    / "prod-grok-backend.json"
+)
 CONV_DIR = REPO / "training" / "intake" / "grok_export" / "conversations"
 INDEX_FILE = CONV_DIR / "_index.json"
 CLASSIFIED_FILE = CONV_DIR / "_classified.json"
@@ -48,33 +58,117 @@ TONGUE_KEYWORDS = {
 }
 
 CONLANG_MARKERS = [
-    "tongue", "tongues", "sacred tongue", "conlang", "constructed language",
-    "korath", "avion", "runik", "caleth", "umbral", "drath",
-    "token grid", "phi-weight", "phi-scale", "semantic token",
-    "language system", "six languages", "six tongues",
-    "linguistic", "morpheme", "phoneme", "grammar",
-    "translation", "encode", "decode", "cipher",
+    "tongue",
+    "tongues",
+    "sacred tongue",
+    "conlang",
+    "constructed language",
+    "korath",
+    "avion",
+    "runik",
+    "caleth",
+    "umbral",
+    "drath",
+    "token grid",
+    "phi-weight",
+    "phi-scale",
+    "semantic token",
+    "language system",
+    "six languages",
+    "six tongues",
+    "linguistic",
+    "morpheme",
+    "phoneme",
+    "grammar",
+    "translation",
+    "encode",
+    "decode",
+    "cipher",
 ]
 
 FICTION_MARKERS = [
-    "avalon", "pollyoneth", "spiralverse", "aethermoor", "izack", "aria",
-    "zara", "clayborn", "grey", "everweave", "chapter", "novel", "story",
-    "narrative", "character", "quest", "magic", "spire", "realm",
-    "fantasy", "dimensional", "odyssey", "raven", "codex", "lore",
-    "guild", "ritual", "world-building", "worldbuilding",
+    "avalon",
+    "pollyoneth",
+    "spiralverse",
+    "aethermoor",
+    "izack",
+    "aria",
+    "zara",
+    "clayborn",
+    "grey",
+    "everweave",
+    "chapter",
+    "novel",
+    "story",
+    "narrative",
+    "character",
+    "quest",
+    "magic",
+    "spire",
+    "realm",
+    "fantasy",
+    "dimensional",
+    "odyssey",
+    "raven",
+    "codex",
+    "lore",
+    "guild",
+    "ritual",
+    "world-building",
+    "worldbuilding",
 ]
 
 TECHNICAL_MARKERS = [
-    "poincare", "hyperbolic", "harmonic wall", "governance", "axiom",
-    "unitarity", "locality", "causality", "symmetry", "composition",
-    "14-layer", "pipeline", "hamiltonian", "mobius", "spectral",
-    "coherence", "breathing", "quantum", "post-quantum", "pqc",
-    "ml-kem", "ml-dsa", "dilithium", "kyber", "patent", "claim",
-    "layer 1", "layer 2", "layer 3", "layer 4", "layer 5",
-    "layer 6", "layer 7", "layer 8", "layer 9", "layer 10",
-    "layer 11", "layer 12", "layer 13", "layer 14",
-    "scbe", "aethermoore", "sacred egg", "geoseal",
-    "trust vector", "risk decision", "allow", "quarantine", "escalate", "deny",
+    "poincare",
+    "hyperbolic",
+    "harmonic wall",
+    "governance",
+    "axiom",
+    "unitarity",
+    "locality",
+    "causality",
+    "symmetry",
+    "composition",
+    "14-layer",
+    "pipeline",
+    "hamiltonian",
+    "mobius",
+    "spectral",
+    "coherence",
+    "breathing",
+    "quantum",
+    "post-quantum",
+    "pqc",
+    "ml-kem",
+    "ml-dsa",
+    "dilithium",
+    "kyber",
+    "patent",
+    "claim",
+    "layer 1",
+    "layer 2",
+    "layer 3",
+    "layer 4",
+    "layer 5",
+    "layer 6",
+    "layer 7",
+    "layer 8",
+    "layer 9",
+    "layer 10",
+    "layer 11",
+    "layer 12",
+    "layer 13",
+    "layer 14",
+    "scbe",
+    "aethermoore",
+    "sacred egg",
+    "geoseal",
+    "trust vector",
+    "risk decision",
+    "allow",
+    "quarantine",
+    "escalate",
+    "deny",
 ]
 
 
@@ -100,11 +194,27 @@ def estimate_difficulty(text: str) -> float:
     if not words:
         return 0.1
     technical_words = [
-        "arcosh", "manifold", "bijective", "isometric", "norm",
-        "eigenvalue", "gradient", "convergence", "topology",
-        "homomorphism", "diffeomorphism", "tensor", "lagrangian",
-        "hamiltonian", "fourier", "spectral", "coherence",
-        "phi", "golden ratio", "fibonacci", "exponential",
+        "arcosh",
+        "manifold",
+        "bijective",
+        "isometric",
+        "norm",
+        "eigenvalue",
+        "gradient",
+        "convergence",
+        "topology",
+        "homomorphism",
+        "diffeomorphism",
+        "tensor",
+        "lagrangian",
+        "hamiltonian",
+        "fourier",
+        "spectral",
+        "coherence",
+        "phi",
+        "golden ratio",
+        "fibonacci",
+        "exponential",
     ]
     tech_count = sum(1 for w in words if w.lower() in technical_words)
     density = tech_count / len(words)
@@ -147,11 +257,13 @@ def extract():
                 sender = resp.get("sender", "unknown")
                 msg_time = resp.get("create_time", "")
                 if msg:
-                    messages.append({
-                        "role": "assistant" if sender == "ASSISTANT" else "user",
-                        "content": msg,
-                        "timestamp": msg_time,
-                    })
+                    messages.append(
+                        {
+                            "role": "assistant" if sender == "ASSISTANT" else "user",
+                            "content": msg,
+                            "timestamp": msg_time,
+                        }
+                    )
                     total_chars += len(msg)
 
             # Save conversation file
@@ -175,20 +287,22 @@ def extract():
             # Combine all text for scoring
             all_text = title + " " + " ".join(m["content"] for m in messages[:10])
 
-            index.append({
-                "file": conv_file.name,
-                "id": conv_id,
-                "title": title,
-                "created": created,
-                "message_count": len(messages),
-                "total_chars": total_chars,
-                "first_user_preview": first_user,
-                "first_assistant_preview": first_asst,
-                "last_message_preview": last_msg,
-                "fiction_score": score_text(all_text, FICTION_MARKERS),
-                "technical_score": score_text(all_text, TECHNICAL_MARKERS),
-                "conlang_score": score_text(all_text, CONLANG_MARKERS),
-            })
+            index.append(
+                {
+                    "file": conv_file.name,
+                    "id": conv_id,
+                    "title": title,
+                    "created": created,
+                    "message_count": len(messages),
+                    "total_chars": total_chars,
+                    "first_user_preview": first_user,
+                    "first_assistant_preview": first_asst,
+                    "last_message_preview": last_msg,
+                    "fiction_score": score_text(all_text, FICTION_MARKERS),
+                    "technical_score": score_text(all_text, TECHNICAL_MARKERS),
+                    "conlang_score": score_text(all_text, CONLANG_MARKERS),
+                }
+            )
 
             if conv_count % 50 == 0:
                 print(f"  ... extracted {conv_count} conversations")
@@ -201,11 +315,17 @@ def extract():
     print(f"Index: {INDEX_FILE}")
 
     # Print category distribution based on keyword scoring
-    fiction = sum(1 for e in index if e["fiction_score"] > e["technical_score"] and e["fiction_score"] > e["conlang_score"])
-    technical = sum(1 for e in index if e["technical_score"] > e["fiction_score"] and e["technical_score"] > e["conlang_score"])
-    conlang = sum(1 for e in index if e["conlang_score"] > e["fiction_score"] and e["conlang_score"] > e["technical_score"])
+    fiction = sum(
+        1 for e in index if e["fiction_score"] > e["technical_score"] and e["fiction_score"] > e["conlang_score"]
+    )
+    technical = sum(
+        1 for e in index if e["technical_score"] > e["fiction_score"] and e["technical_score"] > e["conlang_score"]
+    )
+    conlang = sum(
+        1 for e in index if e["conlang_score"] > e["fiction_score"] and e["conlang_score"] > e["technical_score"]
+    )
     mixed = conv_count - fiction - technical - conlang
-    print(f"\nPreliminary keyword classification:")
+    print("\nPreliminary keyword classification:")
     print(f"  Fiction/Lore: {fiction}")
     print(f"  Technical/SCBE: {technical}")
     print(f"  Conlang/Tongues: {conlang}")
@@ -294,7 +414,7 @@ def classify():
                 entry["category"] = category
             elif resp.status_code == 503:
                 # Model loading, wait and retry
-                print(f"  Model loading, waiting 20s...")
+                print("  Model loading, waiting 20s...")
                 time.sleep(20)
                 continue
             else:
@@ -337,7 +457,7 @@ def classify():
         cat = e.get("category", "unknown")
         cats[cat] = cats.get(cat, 0) + 1
 
-    print(f"\nClassification results:")
+    print("\nClassification results:")
     for cat, count in sorted(cats.items(), key=lambda x: -x[1]):
         print(f"  {cat}: {count}")
     print(f"\nSaved: {CLASSIFIED_FILE}")
@@ -360,8 +480,16 @@ def convert():
         with open(INDEX_FILE, encoding="utf-8") as f:
             classified = json.load(f)
         conlang_title_words = [
-            "tongue", "conlang", "linguistic", "language", "lexicon", "dialect",
-            "hybris", "avali code", "intent-modulated", "spiralverse lang",
+            "tongue",
+            "conlang",
+            "linguistic",
+            "language",
+            "lexicon",
+            "dialect",
+            "hybris",
+            "avali code",
+            "intent-modulated",
+            "spiralverse lang",
         ]
         for entry in classified:
             title_lower = entry.get("title", "").lower()
@@ -446,7 +574,9 @@ def convert():
             if category == "fiction":
                 system_content += "You are discussing Spiralverse lore, worldbuilding, and creative writing."
             elif category == "conlang":
-                system_content += "You are discussing the Six Sacred Tongues constructed language system and its applications."
+                system_content += (
+                    "You are discussing the Six Sacred Tongues constructed language system and its applications."
+                )
             elif category == "technical":
                 system_content += "You are discussing SCBE technical architecture, hyperbolic geometry, and AI safety."
             elif category == "code":
@@ -493,11 +623,11 @@ def convert():
             total += 1
             i = j + 1
 
-    print(f"\nSFT conversion complete:")
+    print("\nSFT conversion complete:")
     print(f"  Total records: {total}")
     for cat, count in sorted(counts.items(), key=lambda x: -x[1]):
         print(f"  {cat}: {count}")
-    print(f"\nOutput files:")
+    print("\nOutput files:")
     print(f"  {SFT_FICTION}")
     print(f"  {SFT_TECHNICAL}")
     print(f"  {SFT_CONLANG}")

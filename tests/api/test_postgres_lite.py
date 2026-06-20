@@ -25,7 +25,9 @@ def test_resolved_dsn_skips_sqlite_database_url(monkeypatch: pytest.MonkeyPatch)
     assert resolved_postgres_dsn() is None
 
 
-def test_probe_not_configured() -> None:
+def test_probe_not_configured(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("SCBE_POSTGRES_URL", raising=False)
+    monkeypatch.delenv("DATABASE_URL", raising=False)
     r = probe_postgres(dsn="")
     assert r["configured"] is False
     assert r["reachable"] is False

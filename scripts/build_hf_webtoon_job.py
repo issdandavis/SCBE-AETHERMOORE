@@ -8,7 +8,6 @@ from pathlib import Path
 
 from scripts.webtoon_gen import compile_panel_prompt
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROMPTS_DIR = REPO_ROOT / "artifacts" / "webtoon" / "panel_prompts"
 DEFAULT_OUTPUT_PATH = REPO_ROOT / "artifacts" / "webtoon" / "hf_jobs" / "webtoon_hf_embedded_job.py"
@@ -105,8 +104,7 @@ def build_uv_job_script(
     prompt_pack_json = json.dumps(chapters, indent=2, ensure_ascii=False)
     total_panels = sum(len(ch.get("panels", [])) for ch in chapters)
 
-    header = textwrap.dedent(
-        """\
+    header = textwrap.dedent("""\
         # /// script
         # dependencies = [
         #   "diffusers>=0.35.0",
@@ -117,8 +115,7 @@ def build_uv_job_script(
         #   "torch",
         # ]
         # ///
-        """
-    )
+        """)
 
     body = f"""
 import argparse
@@ -140,7 +137,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Remote webtoon panel generation on Hugging Face Jobs")
     parser.add_argument("--output-repo", default=DEFAULT_OUTPUT_REPO, help="Dataset repo for generated outputs")
     parser.add_argument("--model-id", default=DEFAULT_MODEL_ID, help="Diffusers model id to use")
-    parser.add_argument("--run-name", default=time.strftime("panels_%Y%m%d_%H%M%S"), help="Folder prefix in the dataset repo")
+    parser.add_argument(
+        "--run-name", default=time.strftime("panels_%Y%m%d_%H%M%S"), help="Folder prefix in the dataset repo"
+    )
     parser.add_argument("--max-panels", type=int, default=None, help="Limit panels per chapter for smoke runs")
     parser.add_argument("--only-chapters", default="", help="Comma-separated chapter ids to include")
     parser.add_argument("--seed-base", type=int, default=4000)
@@ -187,7 +186,10 @@ def main():
 
     print(f"Embedded chapters: {{len(PROMPT_PACK)}}")
     print(f"Selected chapters: {{len(selected)}}")
-    print(f"Selected panels: {{sum(len(ch['panels']) if args.max_panels is None else min(len(ch['panels']), args.max_panels) for ch in selected)}}")
+    selected_panels = sum(
+        len(ch['panels']) if args.max_panels is None else min(len(ch['panels']), args.max_panels) for ch in selected
+    )
+    print(f"Selected panels: {{selected_panels}}")
     print(f"Output repo: {{args.output_repo}}")
     print(f"Run name: {{args.run_name}}")
     print(f"Model: {{args.model_id}}")

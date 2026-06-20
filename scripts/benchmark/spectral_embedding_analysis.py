@@ -30,7 +30,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from scripts.benchmark.dimensional_flux_analysis import simulate_neural_pipeline, TONGUE_NAMES, TONGUE_WEIGHTS
 
-
 # ═══════════════════════════════════════════════════════════
 # Corpus — same as flux analysis for continuity
 # ═══════════════════════════════════════════════════════════
@@ -377,7 +376,9 @@ def run_spectral_analysis():
     for cat, data in results.items():
         td = data["tongue_dominance"][0]
         print(
-            f"{cat:<18} {td.dominant_tongue:>10} {td.dominance_ratio:>9.2f} {td.tongue_energies.get('KO',0):>8.4f} {td.tongue_energies.get('AV',0):>8.4f} {td.tongue_energies.get('RU',0):>8.4f} {td.tongue_energies.get('DR',0):>8.4f}"
+            f"{cat:<18} {td.dominant_tongue:>10} {td.dominance_ratio:>9.2f} "
+            f"{td.tongue_energies.get('KO', 0):>8.4f} {td.tongue_energies.get('AV', 0):>8.4f} "
+            f"{td.tongue_energies.get('RU', 0):>8.4f} {td.tongue_energies.get('DR', 0):>8.4f}"
         )
 
     print(f"\n{'PASS 6: SETTLING DYNAMICS':^80}")

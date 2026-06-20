@@ -28,7 +28,6 @@ from scripts.experiments.cross_primary_braid_consistency import (  # noqa: E402
     build_feature_heads,
 )
 
-
 DEFAULT_OUTPUT = Path("artifacts") / "mathbac" / "binary_branch_braid_router"
 
 
@@ -214,7 +213,9 @@ def summarize(routes: list[BranchRoute]) -> dict[str, Any]:
     }
 
 
-def run(input_dir: Path = DEFAULT_INPUT, output_dir: Path = DEFAULT_OUTPUT, byte_map_mode: str = "hex") -> dict[str, Any]:
+def run(
+    input_dir: Path = DEFAULT_INPUT, output_dir: Path = DEFAULT_OUTPUT, byte_map_mode: str = "hex"
+) -> dict[str, Any]:
     samples = _load_samples(input_dir)
     sources = [sample.source for sample in samples]
     feature_heads = build_feature_heads(byte_map_mode)
@@ -229,8 +230,9 @@ def run(input_dir: Path = DEFAULT_INPUT, output_dir: Path = DEFAULT_OUTPUT, byte
         "input_dir": str(input_dir),
         "sample_count": len(samples),
         "method": (
-            "Derive a deterministic binary fingerprint from each feature vector, choose a branch family from the bit pattern, "
-            "route through the nearest sample in that family, then test return closure to the starting primary."
+            "Derive a deterministic binary fingerprint from each feature vector, choose a branch family from "
+            "the bit pattern, route through the nearest sample in that family, then test return closure to "
+            "the starting primary."
         ),
         "best_feature": best[0],
         "features": reports,

@@ -28,6 +28,7 @@ CLEAN_PY = "def add(x, y):\n    return x + y\n"
 MIXED_SCRIPT_PY = "def login(pаssword):\n    return pаssword\n"  # Cyrillic а
 CONFUSABLE_PY = "def get():\n    аре = 1\n    return аре\n"  # all Cyrillic
 INVISIBLE_PY = "def admin‍_check(x):\n    return x\n"  # ZWJ
+BIDI_COMMENT_PY = "def safe():\n    return 'ok'  # \u202e hidden control\n"
 GREEK_PY = "def τ(x):\n    return x\n"  # legitimate Greek single-script
 
 
@@ -100,6 +101,15 @@ def test_confusable_only_quarantines():
 def test_invisible_char_denies():
     gate = RuntimeGate(use_identifier_canonicality=True)
     result = gate.evaluate(INVISIBLE_PY)
+    assert result.decision == Decision.DENY
+    assert result.identifier_canonicality_kind == "invisible"
+    assert result.identifier_canonicality_score == 1.0
+    assert any("identifier_canonicality_veto_deny" in s for s in result.signals)
+
+
+def test_bidi_control_in_comment_denies():
+    gate = RuntimeGate(use_identifier_canonicality=True)
+    result = gate.evaluate(BIDI_COMMENT_PY)
     assert result.decision == Decision.DENY
     assert result.identifier_canonicality_kind == "invisible"
     assert result.identifier_canonicality_score == 1.0

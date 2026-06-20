@@ -53,9 +53,7 @@ def _load_eval_module():
     name = "scbe_code_eval"
     if name in sys.modules:
         return sys.modules[name]
-    spec = importlib.util.spec_from_file_location(
-        name, REPO_ROOT / "scripts" / "benchmark" / "scbe_code_eval.py"
-    )
+    spec = importlib.util.spec_from_file_location(name, REPO_ROOT / "scripts" / "benchmark" / "scbe_code_eval.py")
     assert spec is not None and spec.loader is not None
     mod = importlib.util.module_from_spec(spec)
     sys.modules[name] = mod
@@ -224,23 +222,14 @@ _SEED_BODIES: Dict[str, str] = {
         "        return 1\n"
         "    return n * factorial(n - 1)\n"
     ),
-    "eval_runner": (
-        "    _ALLOWED = {'__builtins__': {}}\n"
-        "    return eval(expr, _ALLOWED)\n"
-    ),
+    "eval_runner": ("    _ALLOWED = {'__builtins__': {}}\n" "    return eval(expr, _ALLOWED)\n"),
 }
 
 
 _SEED_SPECS: Dict[str, str] = {
-    "reverse_string": (
-        "def reverse_string(s: str) -> str:\n"
-        '    """Return s reversed."""\n'
-        "    pass\n"
-    ),
+    "reverse_string": ("def reverse_string(s: str) -> str:\n" '    """Return s reversed."""\n' "    pass\n"),
     "safe_divide": (
-        "def safe_divide(a: float, b: float):\n"
-        '    """Return a/b, or None if b is zero."""\n'
-        "    pass\n"
+        "def safe_divide(a: float, b: float):\n" '    """Return a/b, or None if b is zero."""\n' "    pass\n"
     ),
     "parse_json_name": (
         "import json\n"
@@ -249,9 +238,7 @@ _SEED_SPECS: Dict[str, str] = {
         "    pass\n"
     ),
     "bounded_factorial": (
-        "def factorial(n: int) -> int:\n"
-        '    """Return n!, raise ValueError for negative n."""\n'
-        "    pass\n"
+        "def factorial(n: int) -> int:\n" '    """Return n!, raise ValueError for negative n."""\n' "    pass\n"
     ),
     "eval_runner": (
         "def run_expr(expr: str) -> object:\n"
@@ -318,7 +305,7 @@ def _hf_adapter(model_id: str) -> GenerateFn:
                 do_sample=False,
                 pad_token_id=tok.eos_token_id,
             )
-        new_tokens = out[0, inputs["input_ids"].shape[1]:]
+        new_tokens = out[0, inputs["input_ids"].shape[1] :]
         return tok.decode(new_tokens, skip_special_tokens=True)
 
     return generate

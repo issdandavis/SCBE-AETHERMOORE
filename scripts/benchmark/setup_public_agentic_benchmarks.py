@@ -13,9 +13,7 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_CONFIG = (
-    REPO_ROOT / "config" / "eval" / "public_agentic_benchmark_sources.v1.json"
-)
+DEFAULT_CONFIG = REPO_ROOT / "config" / "eval" / "public_agentic_benchmark_sources.v1.json"
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "artifacts" / "public_agentic_benchmark_setup"
 SCHEMA_VERSION = "scbe_public_agentic_benchmark_setup_v1"
 
@@ -39,9 +37,7 @@ def _utc_now() -> str:
 def load_sources(path: Path) -> tuple[Path, list[BenchmarkSource]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if payload.get("schema_version") != "scbe_public_agentic_benchmark_sources_v1":
-        raise ValueError(
-            f"unsupported source config schema: {payload.get('schema_version')}"
-        )
+        raise ValueError(f"unsupported source config schema: {payload.get('schema_version')}")
     source_root = REPO_ROOT / str(payload.get("source_root", "external/benchmarks"))
     sources = []
     for row in payload.get("benchmarks", []):
@@ -52,9 +48,7 @@ def load_sources(path: Path) -> tuple[Path, list[BenchmarkSource]]:
                 official_url=str(row["official_url"]),
                 repo_url=str(row["repo_url"]),
                 local_dir=str(row["local_dir"]),
-                tool_checks=[
-                    [str(part) for part in item] for item in row.get("tool_checks", [])
-                ],
+                tool_checks=[[str(part) for part in item] for item in row.get("tool_checks", [])],
                 install_notes=[str(item) for item in row.get("install_notes", [])],
                 dry_run_command=[str(item) for item in row.get("dry_run_command", [])],
             )
@@ -139,18 +133,12 @@ def _check_cwd(source: BenchmarkSource, source_root: Path, command: list[str]) -
         and command[:2] == ["python", "benchmark/benchmark.py"]
     ):
         return local_path
-    if (
-        source.benchmark_id == "vexp_swe_bench"
-        and local_path.exists()
-        and command[:2] == ["node", "dist/cli.js"]
-    ):
+    if source.benchmark_id == "vexp_swe_bench" and local_path.exists() and command[:2] == ["node", "dist/cli.js"]:
         return local_path
     return REPO_ROOT
 
 
-def inspect_source(
-    source: BenchmarkSource, source_root: Path, download: bool, run_dry: bool
-) -> dict[str, Any]:
+def inspect_source(source: BenchmarkSource, source_root: Path, download: bool, run_dry: bool) -> dict[str, Any]:
     local_path = source_root / source.local_dir
     clone_result = _clone_or_status(source, source_root) if download else None
     repo_present = local_path.exists()
@@ -187,45 +175,23 @@ def inspect_source(
                 "stderr_tail": "dry-run command unavailable on PATH",
             }
     blockers = []
-    if (
-        source.benchmark_id in {"terminal_bench", "swe_bench"}
-        and shutil.which("docker") is None
-    ):
+    if source.benchmark_id in {"terminal_bench", "swe_bench"} and shutil.which("docker") is None:
         blockers.append("Docker is not installed or not on PATH.")
     if source.benchmark_id == "terminal_bench" and shutil.which("tb") is None:
         blockers.append("Terminal-Bench CLI `tb` is not installed.")
     if source.benchmark_id == "swe_bench" and not any(
-        item["ok"]
-        and item["command"][:3] == ["python", "-m", "swebench.harness.run_evaluation"]
+        item["ok"] and item["command"][:3] == ["python", "-m", "swebench.harness.run_evaluation"]
         for item in tool_results
     ):
-        blockers.append(
-            "SWE-bench Python package is not installed in the active Python environment."
-        )
+        blockers.append("SWE-bench Python package is not installed in the active Python environment.")
     if source.benchmark_id == "aider_polyglot" and not repo_present:
-        blockers.append(
-            "Aider repository is not downloaded; benchmark/benchmark.py is unavailable."
-        )
-    if (
-        source.benchmark_id == "aider_polyglot"
-        and repo_present
-        and any(not item["ok"] for item in tool_results)
-    ):
-        blockers.append(
-            "Aider benchmark Python dependencies are not installed in the active environment."
-        )
+        blockers.append("Aider repository is not downloaded; benchmark/benchmark.py is unavailable.")
+    if source.benchmark_id == "aider_polyglot" and repo_present and any(not item["ok"] for item in tool_results):
+        blockers.append("Aider benchmark Python dependencies are not installed in the active environment.")
     if source.benchmark_id == "vexp_swe_bench" and not repo_present:
-        blockers.append(
-            "Vexp SWE-bench harness is not downloaded; dist/cli.js is unavailable."
-        )
-    if (
-        source.benchmark_id == "vexp_swe_bench"
-        and repo_present
-        and any(not item["ok"] for item in tool_results)
-    ):
-        blockers.append(
-            "Vexp SWE-bench harness dependencies/build are not ready in the local checkout."
-        )
+        blockers.append("Vexp SWE-bench harness is not downloaded; dist/cli.js is unavailable.")
+    if source.benchmark_id == "vexp_swe_bench" and repo_present and any(not item["ok"] for item in tool_results):
+        blockers.append("Vexp SWE-bench harness dependencies/build are not ready in the local checkout.")
     return {
         "benchmark_id": source.benchmark_id,
         "display_name": source.display_name,
@@ -244,60 +210,39 @@ def inspect_source(
 
 def next_steps(results: list[dict[str, Any]]) -> list[str]:
     steps = []
+    if any("Docker is not installed or not on PATH." in row["blockers"] for row in results):
+        steps.append("Install or enable Docker before full Terminal-Bench or SWE-bench runs.")
     if any(
-        "Docker is not installed or not on PATH." in row["blockers"] for row in results
-    ):
-        steps.append(
-            "Install or enable Docker before full Terminal-Bench or SWE-bench runs."
-        )
-    if any(
-        row["benchmark_id"] == "terminal_bench"
-        and "Terminal-Bench CLI `tb` is not installed." in row["blockers"]
+        row["benchmark_id"] == "terminal_bench" and "Terminal-Bench CLI `tb` is not installed." in row["blockers"]
         for row in results
     ):
-        steps.append(
-            "Install Terminal-Bench CLI in an isolated environment, then rerun this setup dry-run."
-        )
+        steps.append("Install Terminal-Bench CLI in an isolated environment, then rerun this setup dry-run.")
     if any(
         row["benchmark_id"] == "swe_bench"
-        and "SWE-bench Python package is not installed in the active Python environment."
-        in row["blockers"]
+        and "SWE-bench Python package is not installed in the active Python environment." in row["blockers"]
         for row in results
     ):
-        steps.append(
-            "Install SWE-bench from its checkout with pip install -e . after Docker is available."
-        )
-    if any(
-        row["benchmark_id"] == "aider_polyglot" and not row["repo_present"]
-        for row in results
-    ):
-        steps.append(
-            "Run with --download to shallow-clone Aider before checking benchmark/benchmark.py."
-        )
-    if any(
-        row["benchmark_id"] == "vexp_swe_bench" and not row["repo_present"]
-        for row in results
-    ):
-        steps.append(
-            "Run with --download to shallow-clone Vexp SWE-bench before checking its agent-comparison CLI."
-        )
+        steps.append("Install SWE-bench from its checkout with pip install -e . after Docker is available.")
+    if any(row["benchmark_id"] == "aider_polyglot" and not row["repo_present"] for row in results):
+        steps.append("Run with --download to shallow-clone Aider before checking benchmark/benchmark.py.")
+    if any(row["benchmark_id"] == "vexp_swe_bench" and not row["repo_present"] for row in results):
+        steps.append("Run with --download to shallow-clone Vexp SWE-bench before checking its agent-comparison CLI.")
     if any(
         row["benchmark_id"] == "aider_polyglot"
-        and "Aider benchmark Python dependencies are not installed in the active environment."
-        in row["blockers"]
+        and "Aider benchmark Python dependencies are not installed in the active environment." in row["blockers"]
         for row in results
     ):
         steps.append(
-            "Run python scripts/benchmark/aider_polyglot_smoke.py --execute to use the isolated uv-based Aider Polyglot smoke."
+            "Run python scripts/benchmark/aider_polyglot_smoke.py --execute to use the isolated "
+            "uv-based Aider Polyglot smoke."
         )
     if any(row["benchmark_id"] in {"terminal_bench", "swe_bench"} for row in results):
         steps.append(
-            "Use the manual public-agentic-benchmarks GitHub workflow for Docker-heavy public harness setup instead of filling the local disk."
+            "Use the manual public-agentic-benchmarks GitHub workflow for Docker-heavy public "
+            "harness setup instead of filling the local disk."
         )
     if not steps:
-        steps.append(
-            "All public harness repos/tools are dry-run ready; wire GeoSeal as the agent runtime next."
-        )
+        steps.append("All public harness repos/tools are dry-run ready; wire GeoSeal as the agent runtime next.")
     return steps
 
 
@@ -316,7 +261,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
         tool_ok = f"{sum(1 for item in row['tool_checks'] if item['ok'])}/{len(row['tool_checks'])}"
         blockers = "; ".join(row["blockers"]) if row["blockers"] else "none"
         lines.append(
-            f"| {row['display_name']} | `{row['repo_present']}` | `{tool_ok}` | `{row['ready_for_full_run']}` | {blockers} |"
+            f"| {row['display_name']} | `{row['repo_present']}` | `{tool_ok}` "
+            f"| `{row['ready_for_full_run']}` | {blockers} |"
         )
     lines.extend(["", "## Next Steps", ""])
     lines.extend(f"- {step}" for step in payload["next_steps"])
@@ -326,14 +272,9 @@ def render_markdown(payload: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def build_report(
-    config: Path, output_root: Path, download: bool, run_dry: bool
-) -> dict[str, Any]:
+def build_report(config: Path, output_root: Path, download: bool, run_dry: bool) -> dict[str, Any]:
     source_root, sources = load_sources(config)
-    results = [
-        inspect_source(source, source_root, download=download, run_dry=run_dry)
-        for source in sources
-    ]
+    results = [inspect_source(source, source_root, download=download, run_dry=run_dry) for source in sources]
     payload = {
         "schema_version": SCHEMA_VERSION,
         "created_at": _utc_now(),
@@ -348,9 +289,7 @@ def build_report(
     output_root.mkdir(parents=True, exist_ok=True)
     json_path = output_root / "latest_setup.json"
     md_path = output_root / "latest_setup.md"
-    json_path.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    json_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     md_path.write_text(render_markdown(payload), encoding="utf-8")
     return {"payload": payload, "json": str(json_path), "markdown": str(md_path)}
 
@@ -374,9 +313,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = build_parser().parse_args()
-    report = build_report(
-        args.config, args.output_root, download=args.download, run_dry=args.dry_run
-    )
+    report = build_report(args.config, args.output_root, download=args.download, run_dry=args.dry_run)
     print(
         json.dumps(
             {

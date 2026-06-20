@@ -448,8 +448,8 @@ def augment_task(task: Dict, variation: int) -> Dict:
         augmented["task"] = " ".join(words)
 
     # Slightly vary layers
-    augmented["layers"] = sorted(list(set([l + random.choice([-1, 0, 1]) for l in task["layers"]])))
-    augmented["layers"] = [max(1, min(14, l)) for l in augmented["layers"]]
+    augmented["layers"] = sorted(list(set([layer + random.choice([-1, 0, 1]) for layer in task["layers"]])))
+    augmented["layers"] = [max(1, min(14, layer)) for layer in augmented["layers"]]
 
     return augmented
 

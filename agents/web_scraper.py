@@ -9,12 +9,9 @@ gate system — RED-zone sites require approval before scraping.
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
-import re
 from dataclasses import dataclass, field, asdict
 from typing import Any, Dict, List, Optional
-from urllib.parse import urljoin, urlparse
 
 logger = logging.getLogger("scbe.agents.web_scraper")
 

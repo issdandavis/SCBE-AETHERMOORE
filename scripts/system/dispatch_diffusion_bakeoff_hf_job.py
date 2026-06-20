@@ -228,7 +228,11 @@ def generate_with_diffusion(model_id: str, prompts: list[dict]) -> list[dict]:
         new_tokens = gen[0, enc.shape[1]:] if gen.dim() > 1 else gen
         response = tok.decode(new_tokens, skip_special_tokens=True)
         elapsed = time.time() - t0
-        print(f"[diffusion] {{i+1}}/{{len(prompts)}} {{p.get('id')}} ({{elapsed:.1f}}s, {{len(response)}} chars)", flush=True)
+        print(
+            f"[diffusion] {{i+1}}/{{len(prompts)}} {{p.get('id')}} "
+            f"({{elapsed:.1f}}s, {{len(response)}} chars)",
+            flush=True,
+        )
         out.append({{"label": "diffusion", "id": p.get("id"), "response": response, "seconds": elapsed}})
     del model, tok
     free_memory()
@@ -499,9 +503,7 @@ def maybe_dispatch(packet: dict, dispatch: bool) -> dict:
         print(proc.stdout, flush=True)
     if proc.stderr:
         print(proc.stderr, file=sys.stderr, flush=True)
-    Path(packet["run_dir"], "job_packet.json").write_text(
-        json.dumps(packet, indent=2), encoding="utf-8"
-    )
+    Path(packet["run_dir"], "job_packet.json").write_text(json.dumps(packet, indent=2), encoding="utf-8")
     return packet
 
 
@@ -511,7 +513,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--baseline-model", default="Qwen/Qwen2.5-Coder-7B-Instruct")
     p.add_argument("--diffusion-model", default="apple/DiffuCoder-7B-Instruct")
     p.add_argument("--results-repo", default="issdandavis/scbe-diffusion-bakeoff-results")
-    p.add_argument("--results-public", action="store_true", help="Default is private; pass to make the results repo public.")
+    p.add_argument(
+        "--results-public", action="store_true", help="Default is private; pass to make the results repo public."
+    )
     p.add_argument("--flavor", default="l4x1")
     p.add_argument("--timeout", default="1h")
     p.add_argument("--max-new-tokens", type=int, default=320)

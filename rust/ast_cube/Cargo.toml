@@ -1,0 +1,21 @@
+[package]
+name = "ast_cube"
+version = "0.1.0"
+edition = "2021"
+description = "Fast Rust AST cube-vector encoder for SCBE-AETHERMOORE"
+
+[[bin]]
+name = "ast_cube"
+path = "src/main.rs"
+
+[dependencies]
+rustpython-parser = "0.4"
+serde_json = "1"
+base64 = "0.22"
+sha2 = "0.10"
+mimalloc = "0.1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

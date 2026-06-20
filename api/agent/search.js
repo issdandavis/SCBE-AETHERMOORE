@@ -186,12 +186,49 @@ async function searchArxiv(query) {
   });
 }
 
+async function searchPubMed(query) {
+  const search = await fetchJson(
+    `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=4&term=${encodeURIComponent(
+      query
+    )}`
+  );
+  const ids = ((search.esearchresult || {}).idlist || []).filter(Boolean);
+  if (!ids.length) return [];
+  const summary = await fetchJson(
+    `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${ids.join(',')}`
+  );
+  const result = (summary && summary.result) || {};
+  return ids.map((id) => {
+    const row = result[id] || {};
+    return {
+      title: row.title || `PubMed ${id}`,
+      url: `https://pubmed.ncbi.nlm.nih.gov/${id}/`,
+      excerpt: row.fulljournalname ? `${row.fulljournalname} ${row.pubdate || ''}`.trim() : '',
+      source: 'pubmed',
+    };
+  });
+}
+
+async function searchGitHub(query) {
+  const data = await fetchJson(
+    `https://api.github.com/search/repositories?per_page=4&q=${encodeURIComponent(query)}`
+  );
+  return (data.items || []).map((row) => ({
+    title: row.full_name || row.name,
+    url: row.html_url,
+    excerpt: row.description || '',
+    source: 'github',
+  }));
+}
+
 const SOURCE_FNS = {
   duckduckgo: searchDuckDuckGo,
   wikipedia: searchWikipedia,
   openalex: searchOpenAlex,
   crossref: searchCrossref,
   arxiv: searchArxiv,
+  pubmed: searchPubMed,
+  github: searchGitHub,
   npm: searchNpm,
   hackernews: searchHackerNews,
 };
@@ -220,11 +257,17 @@ async function searchAll(query, options = {}) {
       sourceStatus.unknown.push({ ok: false, error: reason });
     }
   }
+  const results = dedupeResults(rows, Number(options.maxResults || MAX_RESULTS));
+  const okSourceCount = Object.values(sourceStatus).filter(
+    (status) => status && status.ok === true
+  ).length;
   return {
     query,
     cost: 'zero-credit-public-sources',
+    source_count: okSourceCount,
+    result_count: results.length,
     source_status: sourceStatus,
-    results: dedupeResults(rows, Number(options.maxResults || MAX_RESULTS)),
+    results,
   };
 }
 

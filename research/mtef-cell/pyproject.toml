@@ -1,0 +1,9 @@
+[project]
+name = "mtef-cell"
+version = "0.1.0"
+description = "Research and prototype scaffold for the Magneto-Triboelectric Fluid Cell concept"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

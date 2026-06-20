@@ -65,7 +65,8 @@ def run_tests():
     print("\n--- AI Orchestration Tests ---")
     run_command("python -c \"from src.ai_orchestration.security import PromptSanitizer; print('Security module OK')\"")
     run_command(
-        "python -c \"from src.science_packs import get_total_pack_count; print(f'Science packs: {get_total_pack_count()}')\""
+        'python -c "from src.science_packs import get_total_pack_count; '
+        "print(f'Science packs: {get_total_pack_count()}')\""
     )
 
 

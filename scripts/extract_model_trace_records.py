@@ -19,7 +19,6 @@ if str(REPO_ROOT) not in sys.path:
 
 from jsonschema import Draft202012Validator
 
-
 SCHEMA_VERSION = "scbe_model_trace_record_v1"
 HASH_LENGTH = 16
 CODE_BLOCK_RE = re.compile(r"```(?:[\w.+-]+)?\n(.*?)```", re.DOTALL)
@@ -361,7 +360,9 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     repo_root = REPO_ROOT
-    paths = [(repo_root / Path(value)).resolve() if not Path(value).is_absolute() else Path(value) for value in args.input]
+    paths = [
+        (repo_root / Path(value)).resolve() if not Path(value).is_absolute() else Path(value) for value in args.input
+    ]
     output_jsonl = repo_root / Path(args.output_jsonl)
     schema_path = repo_root / Path(args.schema_path)
     output_jsonl.parent.mkdir(parents=True, exist_ok=True)

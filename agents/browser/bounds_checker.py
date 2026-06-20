@@ -40,6 +40,7 @@ EPSILON = 1e-10
 # Data Structures
 # ============================================================================
 
+
 class Decision(Enum):
     ALLOW = "ALLOW"
     QUARANTINE = "QUARANTINE"
@@ -49,6 +50,7 @@ class Decision(Enum):
 @dataclass
 class BoundsResult:
     """Result of a complete bounds check."""
+
     decision: Decision
     is_inside: bool
     violations: List[str]
@@ -60,12 +62,13 @@ class BoundsResult:
 @dataclass
 class ActionContext:
     """Context for a proposed action."""
-    risk_score: float          # 0-1 normalized risk
-    scope_delta: float         # change in permissions (0 = none, 1 = full escalation)
-    provenance_score: float    # memory trust (0 = untrusted, 1 = fully trusted)
-    touches_secrets: bool      # does action access secrets?
-    tool_class: str            # action type: navigate, click, type, execute, admin
-    coherence: float           # current system coherence (0-1)
+
+    risk_score: float  # 0-1 normalized risk
+    scope_delta: float  # change in permissions (0 = none, 1 = full escalation)
+    provenance_score: float  # memory trust (0 = untrusted, 1 = fully trusted)
+    touches_secrets: bool  # does action access secrets?
+    tool_class: str  # action type: navigate, click, type, execute, admin
+    coherence: float  # current system coherence (0-1)
 
     # Optional HYDRA governance
     votes: Optional[List[str]] = None  # list of 'APPROVE' or 'DENY'
@@ -86,9 +89,9 @@ TOOL_CLASS_IDS = {
 
 # Quorum requirements by risk tier
 QUORUM_THRESHOLDS = {
-    "low": 3,       # 3/6 for low risk
-    "medium": 4,    # 4/6 for medium
-    "high": 5,      # 5/6 for high
+    "low": 3,  # 3/6 for low risk
+    "medium": 4,  # 4/6 for medium
+    "high": 5,  # 5/6 for high
     "critical": 6,  # unanimous for critical
 }
 
@@ -96,6 +99,7 @@ QUORUM_THRESHOLDS = {
 # ============================================================================
 # Core Math (Poincaré Ball)
 # ============================================================================
+
 
 def realify(c: np.ndarray) -> np.ndarray:
     """L1-L2: Complex → Real (interleave real and imaginary parts)."""
@@ -140,8 +144,8 @@ def spectral_stability(signal: np.ndarray) -> float:
     if len(signal) < 2:
         return 1.0
     fft_result = np.fft.fft(signal)
-    magnitudes = np.abs(fft_result[:len(signal) // 2])
-    total_energy = np.sum(magnitudes ** 2)
+    magnitudes = np.abs(fft_result[: len(signal) // 2])
+    total_energy = np.sum(magnitudes**2)
     if total_energy < EPSILON:
         return 1.0
     # High frequency = upper half of spectrum
@@ -196,7 +200,7 @@ def graph_fourier_high_freq_energy(
     # High-frequency = eigenvalues above median
     median_eig = np.median(eigenvalues)
     hf_mask = eigenvalues > median_eig
-    total_energy = np.sum(x_hat ** 2)
+    total_energy = np.sum(x_hat**2)
     if total_energy < EPSILON:
         return 0.0
     hf_energy = np.sum(x_hat[hf_mask] ** 2)
@@ -206,6 +210,7 @@ def graph_fourier_high_freq_energy(
 # ============================================================================
 # BoundsChecker
 # ============================================================================
+
 
 class BoundsChecker:
     """
@@ -267,28 +272,32 @@ class BoundsChecker:
         tool_id = TOOL_CLASS_IDS.get(ctx.tool_class.lower(), 0.5)
 
         # Raw features
-        raw = np.array([
-            ctx.risk_score,
-            ctx.scope_delta,
-            ctx.provenance_score,
-            float(ctx.touches_secrets),
-            tool_id,
-            ctx.coherence,
-        ])
+        raw = np.array(
+            [
+                ctx.risk_score,
+                ctx.scope_delta,
+                ctx.provenance_score,
+                float(ctx.touches_secrets),
+                tool_id,
+                ctx.coherence,
+            ]
+        )
 
         # Safe baseline: low risk, no escalation, high trust, no secrets, read, high coherence
         baseline = np.array([0.1, 0.0, 0.9, 0.0, 0.1, 0.9])
 
         # Center: deviation from safe baseline
         # For provenance and coherence, invert (higher = safer → lower deviation)
-        deviation = np.array([
-            raw[0] - baseline[0],       # risk: higher = more dangerous
-            raw[1] - baseline[1],       # scope: higher = more escalation
-            baseline[2] - raw[2],       # provenance: lower = more dangerous (inverted)
-            raw[3] - baseline[3],       # secrets: 1 = dangerous
-            raw[4] - baseline[4],       # tool: higher class = more dangerous
-            baseline[5] - raw[5],       # coherence: lower = more dangerous (inverted)
-        ])
+        deviation = np.array(
+            [
+                raw[0] - baseline[0],  # risk: higher = more dangerous
+                raw[1] - baseline[1],  # scope: higher = more escalation
+                baseline[2] - raw[2],  # provenance: lower = more dangerous (inverted)
+                raw[3] - baseline[3],  # secrets: 1 = dangerous
+                raw[4] - baseline[4],  # tool: higher class = more dangerous
+                baseline[5] - raw[5],  # coherence: lower = more dangerous (inverted)
+            ]
+        )
 
         # Scale so safe actions have small deviation magnitude
         features = deviation * 0.5
@@ -314,25 +323,25 @@ class BoundsChecker:
 
     def check_realm_bounds(self, u: np.ndarray) -> Tuple[bool, float]:
         """B_realm: min_k dH(u, μ_k) ≤ R_realm"""
-        d_star = min(
-            hyperbolic_distance(u, center) for center in self.realm_centers
-        )
+        d_star = min(hyperbolic_distance(u, center) for center in self.realm_centers)
         return d_star <= self.R_realm, d_star
 
     def check_spectral_bounds(self, ctx: ActionContext) -> Tuple[bool, float]:
         """B_spectral: S_spec ≥ threshold"""
         # Generate a signal from the action context for spectral analysis
         # In production this would come from real telemetry
-        signal = np.array([
-            ctx.risk_score,
-            ctx.scope_delta,
-            ctx.provenance_score,
-            ctx.coherence,
-            1.0 - ctx.risk_score,
-            ctx.coherence ** 2,
-            math.sin(ctx.risk_score * math.pi),
-            math.cos(ctx.coherence * math.pi),
-        ])
+        signal = np.array(
+            [
+                ctx.risk_score,
+                ctx.scope_delta,
+                ctx.provenance_score,
+                ctx.coherence,
+                1.0 - ctx.risk_score,
+                ctx.coherence**2,
+                math.sin(ctx.risk_score * math.pi),
+                math.cos(ctx.coherence * math.pi),
+            ]
+        )
         s_spec = spectral_stability(signal)
         return s_spec >= self.threshold_spectral, s_spec
 
@@ -346,14 +355,16 @@ class BoundsChecker:
         Mixed signals (high coherence but high risk) = misaligned → low C_spin.
         """
         # Safety indicators in [0, 1] — higher = safer
-        safety_signals = np.array([
-            ctx.coherence,
-            ctx.provenance_score,
-            1.0 - ctx.risk_score,
-            1.0 - ctx.scope_delta,
-            1.0 - float(ctx.touches_secrets),
-            ctx.coherence * ctx.provenance_score,  # compound safety
-        ])
+        safety_signals = np.array(
+            [
+                ctx.coherence,
+                ctx.provenance_score,
+                1.0 - ctx.risk_score,
+                1.0 - ctx.scope_delta,
+                1.0 - float(ctx.touches_secrets),
+                ctx.coherence * ctx.provenance_score,  # compound safety
+            ]
+        )
 
         # Convert to phasors: safe (>0.5) → phase near 0, unsafe (<0.5) → phase near π
         # Use 2π range for stronger separation of mixed signals
