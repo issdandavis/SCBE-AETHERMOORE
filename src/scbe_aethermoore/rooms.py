@@ -17,7 +17,7 @@ import hashlib
 import json
 import re
 from dataclasses import dataclass, field
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Sequence, Tuple
 
 from scbe_aethermoore import scan  # governance gate
 
@@ -130,6 +130,65 @@ def _policy_explain(message: str) -> str:
     if hits:
         return "; ".join(hits)
     return "SCBE decision tiers: ALLOW>=0.75 | QUARANTINE>=0.45 | ESCALATE>=0.20 | DENY<0.20."
+
+
+# ── MCP-to-MCP forwarding: route a governed sub-aspect to an EXTERNAL MCP sub-server ──────────
+# The room's gate runs in Room.ask BEFORE any handler, so an ESCALATE/DENY message is refused and
+# never reaches the sub-server. This closes the one gap between the in-process room and a real
+# multi-tool MCP control plane: now a niche tool can be another MCP server, still gated + receipted.
+
+
+def forward_to_mcp(
+    command: str,
+    args: Sequence[str],
+    remote_tool: str,
+    message: str,
+    arg_name: str = "message",
+    timeout: float = 15.0,
+) -> str:
+    """Open a stdio MCP client to an external sub-server, call ONE remote tool, return its text. A sync
+    wrapper over the async SDK (lazy import, so the engine has no hard MCP dependency). Raises on any
+    failure -- the caller's handler turns that into a receipted error so a broken sub-server never crashes
+    the room."""
+    import asyncio
+
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+
+    async def _call() -> str:
+        params = StdioServerParameters(command=command, args=list(args))
+        async with stdio_client(params) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                res = await session.call_tool(remote_tool, {arg_name: message})
+                parts = [getattr(c, "text", "") for c in getattr(res, "content", [])]
+                return "".join(p for p in parts if p)
+
+    return asyncio.run(asyncio.wait_for(_call(), timeout))
+
+
+def mcp_niche_tool(
+    name: str,
+    description: str,
+    keywords: Sequence[str],
+    command: str,
+    args: Sequence[str] = (),
+    remote_tool: str = "echo",
+    arg_name: str = "message",
+    timeout: float = 15.0,
+) -> NicheTool:
+    """A NicheTool that FORWARDS a routed sub-aspect to an external MCP sub-server. Because Room.ask gates
+    before calling any handler, an ESCALATE/DENY message is refused and this forward never fires -- the
+    sub-server is unreachable to an attacker. A forwarding error is returned as receipted text, not raised."""
+
+    def handler(message: str) -> str:
+        try:
+            out = forward_to_mcp(command, args, remote_tool, message, arg_name=arg_name, timeout=timeout)
+            return out or "(empty result from %s)" % remote_tool
+        except Exception as exc:  # a broken/absent sub-server is a receipted error, never a room crash
+            return "MCP forward to %r failed: %s: %s" % (remote_tool, type(exc).__name__, exc)
+
+    return NicheTool(name, description, tuple(keywords), handler)
 
 
 def build_security_room() -> Room:
