@@ -1,63 +1,58 @@
-# colab_run — drive a Colab notebook from the terminal
+# colab_run — drive a hosted Colab notebook from the terminal
 
-Google offers **no headless CLI for hosted Colab**, so the robust way to run a paid-Colab notebook from
-the terminal is to reuse *your own authenticated browser session*. You launch Chrome once with a remote
-debugging port and log into Colab; `colab_run.py` attaches over CDP (Playwright `connect_over_cdp`),
-opens the notebook, runs all cells, waits out the run, and prints the result back to your terminal.
-
-## Setup (one time)
-
-Start Chrome with a debugging port and a dedicated profile, then log into Colab in that window:
-
-```bat
-"C:\Program Files\Google\Chrome\Application\chrome.exe" ^
-  --remote-debugging-port=9222 ^
-  --user-data-dir="%USERPROFILE%\.colab-cdp-profile"
-```
-
-(Use a *separate* `--user-data-dir` so the debug port opens reliably and your normal profile is untouched.)
+Google offers **no headless CLI** for hosted Colab, and it **blocks sign-in in a Playwright-launched
+browser** (the automation flag trips Chrome's "unsupported command-line flag" bar and Google's "this
+browser may not be secure" wall). The path that actually works — validated live — is to launch a
+**plain `chrome.exe`** ourselves with only a debug port (no automation flags, so Google lets you sign
+in), then **attach over CDP** and drive the notebook. Attaching adds no automation flag, so the login
+goes through and the session persists.
 
 ## Run
 
 ```bash
-# 1. confirm the tool can attach + load the notebook (no execution)
-python tools/colab/colab_run.py --dry-run
+# first time: opens a window, you do the ONE-TIME Google sign-in, then it verifies and closes
+python tools/colab/colab_run.py --dry-run --keep-open 240
 
-# 2. run all cells and wait for the result (default notebook = the VTC lift harness)
-python tools/colab/colab_run.py --run
+# run the notebook: run-all, feed the corpus, wait, print the result
+python tools/colab/colab_run.py --run --upload "C:/path/to/vtc_mbpp_refined.jsonl"
 ```
 
-It polls the rendered output for a **completion marker** (`NET LIFT` for the VTC notebook — what
-`code_lift.render()` prints last) and prints the matching block. Override per notebook with
-`--done-marker "<text the last cell prints>"`.
+The first run pops a Chrome window for the **one-time Google login** (a human must do it — Google blocks
+automated credential entry). The login persists in the profile, so every later run is zero-touch. The
+tool then opens the notebook, handles the **"Run anyway" / Connect** prompts, runs all cells, and
+**feeds `--upload` into the notebook's `files.upload()` cell** so the run never blocks on a file dialog.
+Completion is detected by polling the outputs for `--done-marker` (default `NET LIFT`, what the VTC
+notebook's `code_lift.render()` prints) — your notebook's own result, not Colab's brittle run-state DOM.
 
-Useful flags: `--notebook <url|catalog-name>`, `--timeout <seconds>` (default 5400 = 90 min for a
-training run), `--port <cdp-port>`, `--launch` (own Chrome + `--profile` instead of attach),
-`--upload <file>` (best-effort: feed a pending `files.upload()` input).
+## Flags
 
-## Corpus delivery (the VTC notebook)
+| Flag | Meaning |
+|------|---------|
+| `--run` / `--dry-run` | execute, or just launch + load (verify / sign in) |
+| `--upload <file>` | local corpus fed into the notebook's `files.upload()` cell during the run |
+| `--notebook <url\|name>` | a Colab URL, a catalog name, or omit for the VTC lift notebook |
+| `--profile <dir>` | persistent Chrome profile (login persists here; default `~/.colab-cdp-profile`) |
+| `--port <n>` | Chrome debug port (launched for you; or your own with `--attach`) |
+| `--attach` | attach to a Chrome **you** started with `--remote-debugging-port` instead of launching one |
+| `--done-marker <text>` | output text that signals completion (default `NET LIFT`) |
+| `--timeout <s>` / `--login-timeout <s>` | max wait for the result (default 90 min) / for the one-time sign-in |
+| `--chrome-path <exe>` | path to `chrome.exe` (auto-detected if omitted) |
 
-The notebook's cell 2 tries **Drive → URL → upload**. For an *unattended* terminal run, set one so it
-never blocks on a dialog: put the corpus on Drive at `DRIVE_CORPUS`, or set `CORPUS_URL` to a secret
-gist/release raw URL. Manual `files.upload()` is the fallback.
+## Why this design (and what didn't work)
 
-## Transport options (your call: #1 now; #2/#3 documented)
-
-| # | Mode | How | When |
-|---|------|-----|------|
-| **1** | **Attach (default)** | `connect_over_cdp` to the Chrome you started with `--remote-debugging-port` | **Recommended now.** Reuses your live Google login, no re-auth, works with hosted paid Colab. |
-| 2 | Launch | `--launch` opens its own Chrome with a persistent `--profile` you log into once | If you can't expose a debug port. Google may flag automation in that profile. |
-| 3 | Runtime socket | Talk to the Jupyter kernel directly, no UI | Most robust *ceiling* — but for **hosted** Colab the kernel endpoint is proxied/rotated by Google and not cleanly extractable. Only pays off for a **local/self-hosted** runtime (see `scbe-n8n-colab-bridge`). |
-
-**Most-robust verdict for hosted paid Colab: option 1.** Option 3's "no brittle DOM" advantage only
-materializes when you control the runtime; against hosted Colab it isn't reliably reachable, so attach
-(#1) is both the now-path and the most robust *practical* choice. #2 is the fallback if a debug port
-isn't an option.
+- **Playwright-launched Chrome → blocked.** `launch`/`launch_persistent_context` set `--enable-automation`
+  + `navigator.webdriver`, which Google detects → "browser may not be secure", no login. Don't use it.
+- **Plain `chrome.exe` + `connect_over_cdp` → works.** No automation flag is set, so Google treats it as
+  a normal browser and the sign-in succeeds; CDP-attach then drives it.
+- **Runtime-socket (drive the Jupyter kernel directly, no UI)** is the most robust *ceiling*, but for
+  **hosted** Colab the kernel endpoint is proxied/rotated by Google and not cleanly reachable — it only
+  pays off for a local/self-hosted runtime (see `scbe-n8n-colab-bridge`). So attach-to-real-Chrome is the
+  best practical option for hosted paid Colab.
 
 ## Honest caveat
 
 Colab's UI is not a stable automation target. Run-all uses the `Ctrl+F9` shortcut (more durable than
-clicking the menu), and completion is detected by *your notebook's own printed marker* (not Colab's
-run-state DOM) — both deliberately robust. The trust-dialog / Connect-button selectors are best-effort
-and may need a one-line tweak on the first live run; `--dry-run` lets you confirm attach + load first.
-Reuses the repo's notebook catalog (`scripts/system/colab_workflow_catalog.py`) for `--notebook <name>`.
+clicking the menu); the trust-dialog / Connect / sign-in selectors are best-effort and may need a
+one-line tweak on a first live run. `--dry-run` confirms attach + load before a long training run. The
+corpus cell on the VTC notebook tries Drive → URL → upload; for a fully unattended run, prefer the
+`--upload` feed (corpus stays local) or set `CORPUS_URL`/`DRIVE_CORPUS` in the notebook.
