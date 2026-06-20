@@ -62,6 +62,21 @@ EXACT: Dict[str, Tuple[int, object]] = {
     "round": (1, lambda a: float(round(a))),
     "inc": (1, lambda a: a + 1),
     "dec": (1, lambda a: a - 1),
+    # --- ops added to the verified portable core (kept in sync with polyglot) ---
+    "sign": (1, lambda a: 1.0 if a > 0 else (-1.0 if a < 0 else 0.0)),
+    "log": (1, lambda a: math.log(a) if a > 0 else 0.0),  # safe domain (x>0), else roundabout 0.0
+    "exp": (1, lambda a: math.exp(a) if a < 709 else math.inf),  # guard overflow (e^709 ~ max f64)
+    "isnan": (1, lambda a: 1.0 if math.isnan(a) else 0.0),
+    "isinf": (1, lambda a: 1.0 if math.isinf(a) else 0.0),
+    "isfinite": (1, lambda a: 1.0 if math.isfinite(a) else 0.0),
+    "cmp": (2, lambda a, b: 1.0 if a > b else (-1.0 if a < b else 0.0)),
+    # integer bitwise on the finite domain (roundabout to 0.0 on nan/inf so the fitness loop can't crash)
+    "and": (2, lambda a, b: float(int(a) & int(b)) if math.isfinite(a) and math.isfinite(b) else 0.0),
+    "or": (2, lambda a, b: float(int(a) | int(b)) if math.isfinite(a) and math.isfinite(b) else 0.0),
+    "xor": (2, lambda a, b: float(int(a) ^ int(b)) if math.isfinite(a) and math.isfinite(b) else 0.0),
+    "not": (1, lambda a: float(~int(a)) if math.isfinite(a) else 0.0),
+    "shl": (2, lambda a, b: float(int(a) << int(b)) if math.isfinite(a) and math.isfinite(b) and b >= 0 else 0.0),
+    "shr": (2, lambda a, b: float(int(a) >> int(b)) if math.isfinite(a) and math.isfinite(b) and b >= 0 else 0.0),
 }
 
 # the ops intuition can't do in its head — it fudges these

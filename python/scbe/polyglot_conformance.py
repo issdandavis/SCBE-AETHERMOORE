@@ -62,8 +62,29 @@ def _close(x: Optional[float], r: Optional[float]) -> bool:
     return abs(x - r) <= TOL + TOL * abs(r)
 
 
-def _arglist(args: Sequence[float]) -> str:
-    return ", ".join(repr(float(a)) for a in args)
+# per-language literals for the special IEEE values, so nan/inf can actually be fed to each backend
+# (repr(float('nan')) == 'nan' is a valid literal in NONE of js/rust/c -- this is what lets the harness
+# verify the predicate ops isnan/isinf/isfinite on the inputs that actually exercise them).
+_SPECIAL = {
+    "javascript": ("NaN", "Infinity"),
+    "rust": ("f64::NAN", "f64::INFINITY"),
+    "c": ("NAN", "INFINITY"),
+    "go": ("math.NaN()", "math.Inf(1)"),
+}
+
+
+def _fmt(a: float, lang: str) -> str:
+    a = float(a)
+    nan, inf = _SPECIAL.get(lang, ("nan", "inf"))
+    if math.isnan(a):
+        return nan
+    if math.isinf(a):
+        return ("-" + inf) if a < 0 else inf
+    return repr(a)
+
+
+def _arglist(args: Sequence[float], lang: str = "python") -> str:
+    return ", ".join(_fmt(a, lang) for a in args)
 
 
 def run_python(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
@@ -84,7 +105,7 @@ def _run_subprocess_float(cmd: Sequence[str], cwd: Optional[Path] = None, timeou
 
 
 def run_node(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
-    src = P.emit(prog, "javascript") + "\nprocess.stdout.write(String(tongue_fn(%s)));\n" % _arglist(args)
+    src = P.emit(prog, "javascript") + "\nprocess.stdout.write(String(tongue_fn(%s)));\n" % _arglist(args, "javascript")
     with tempfile.TemporaryDirectory() as td:
         f = Path(td) / "prog.js"
         f.write_text(src, encoding="utf-8")
@@ -92,7 +113,7 @@ def run_node(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
 
 
 def run_rust(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
-    src = P.emit(prog, "rust") + '\nfn main() { println!("{:.17}", tongue_fn(%s)); }\n' % _arglist(args)
+    src = P.emit(prog, "rust") + '\nfn main() { println!("{:.17}", tongue_fn(%s)); }\n' % _arglist(args, "rust")
     with tempfile.TemporaryDirectory() as td:
         f = Path(td) / "prog.rs"
         f.write_text(src, encoding="utf-8")
@@ -102,7 +123,9 @@ def run_rust(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
 
 
 def run_c(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
-    src = P.emit(prog, "c") + '\nint main(void) { printf("%%.17g\\n", tongue_fn(%s)); return 0; }\n' % _arglist(args)
+    src = P.emit(prog, "c") + '\nint main(void) { printf("%%.17g\\n", tongue_fn(%s)); return 0; }\n' % _arglist(
+        args, "c"
+    )
     with tempfile.TemporaryDirectory() as td:
         f = Path(td) / "prog.c"
         f.write_text(src, encoding="utf-8")
@@ -112,7 +135,7 @@ def run_c(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
 
 
 def run_go(prog: Sequence[int], args: Sequence[float]) -> Optional[float]:
-    src = P.emit(prog, "go") + "\nfunc main() { fmt.Println(tongue_fn(%s)) }\n" % _arglist(args)
+    src = P.emit(prog, "go") + "\nfunc main() { fmt.Println(tongue_fn(%s)) }\n" % _arglist(args, "go")
     with tempfile.TemporaryDirectory() as td:
         f = Path(td) / "prog.go"
         f.write_text(src, encoding="utf-8")

@@ -41,7 +41,9 @@ try:  # bijective seal (proven invertible)
 except Exception:  # pragma: no cover - optional
     _HAVE_SEAL = False
 
-# --- base pairing: an involution over the v1 scalar core (11 pairs, 22 ops) -----
+# --- base pairing: an involution over the universal scalar core (11 pairs, 22 ops) -----
+# The DNA bijection is over SCALAR_OPS, the core EVERY language face implements. (The verified-portable
+# EMITTER subset polyglot.PORTABLE_OPS is larger, but those extra ops aren't woven into the DNA strand.)
 _PAIRS = [
     ("add", "sub"),
     ("mul", "div"),
@@ -92,9 +94,21 @@ def decode_from_source(src: str) -> List[int]:
 
 
 def faces_agree(prog: Sequence[int]) -> Dict[str, bool]:
-    """Emit P to every language face and decode each back; all must equal P."""
+    """Emit P to every language face that IMPLEMENTS its ops, and decode each back; all must equal P.
+
+    A face that hasn't implemented one of the program's ops (e.g. a verified-portable op the inline
+    faces have but a bundled-language track doesn't yet) is NOT APPLICABLE -- it is skipped, not counted
+    as a disagreement. The honest claim is 'every face that can emit this program round-trips it', not a
+    false 'all 18 agree' that would silently include faces which never ran the op."""
     want = list(prog)
-    return {lang: decode_from_source(P.emit(prog, lang)) == want for lang in P.languages()}
+    out: Dict[str, bool] = {}
+    for lang in P.languages():
+        try:
+            src = P.emit(prog, lang)
+        except ValueError:
+            continue  # this face doesn't implement an op in prog -> not applicable, skip it
+        out[lang] = decode_from_source(src) == want
+    return out
 
 
 # --- reverse-complement: the antiparallel strand --------------------------------
