@@ -106,7 +106,15 @@ def test_destructive_path_in_any_param_is_screened_not_just_text_param():
 
 def test_windows_native_destructive_verbs_are_caught():
     reg = default_registry()
-    for cmd in ("Remove-Item -Recurse C:/x", "rd /s C:/y", "format c:", "shutil.rmtree(p)"):
+    for cmd in (
+        "Remove-Item -Recurse C:/x",
+        "rd /s C:/y",
+        "format c:",
+        "shutil.rmtree(p)",
+        "os.rmdir(p)",  # dir removal slipped the python clause until it listed .rmdir(
+        "os.truncate(f, 0)",  # data-loss truncate
+        "Path('x').rmdir()",
+    ):
         assert reg.invoke("run_allowed_command", {"command": cmd}, confirm="ok")["decision"] == "REFUSED", cmd
 
 
