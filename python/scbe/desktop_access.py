@@ -56,7 +56,8 @@ _DESTRUCTIVE = re.compile(
     r"\bremove-item\b|\bri\s+-(?:re|fo)|"  # powershell
     r"\bformat\b|\bmkfs\b|\bfdisk\b|\bdiskpart\b|\bsdelete\b|\bdd\s+if=|"  # format/partition/overwrite
     r"\bshutdown\b|\breboot\b|>\s*/dev/sd|chmod\s+-r\s+000|"  # power / device overwrite
-    r"os\.remove|os\.unlink|shutil\.rmtree|\.unlink\(|"  # python
+    r"os\.remove|os\.unlink|os\.rmdir|os\.removedirs|os\.truncate|shutil\.rmtree|"  # python delete/dir-remove
+    r"\.unlink\(|\.rmdir\(|\.truncate\(|"  # python Path/file: unlink / rmdir / truncate (slipped the old screen)
     r"\bdrop\s+table\b|\btruncate\s+table\b|"  # sql
     # verb-LESS destructive ops a red-team confirmed escape a shell-verb regex (no rm/del/format word):
     r"\bvssadmin\s+delete\b|\bwbadmin\s+delete\b|\bwevtutil\s+cl\b|\bbcdedit\b|\btakeown\b|"  # backup/log/boot/own
