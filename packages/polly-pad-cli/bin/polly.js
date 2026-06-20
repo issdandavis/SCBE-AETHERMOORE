@@ -1059,17 +1059,42 @@ function buildPowerShellArgs(namedParams, positionalArgs) {
   return resolved.concat(positionalArgs || []);
 }
 
+function defaultPowerShellExecutableName() {
+  return process.platform === 'win32' ? 'pwsh.exe' : 'pwsh';
+}
+
+function resolveExecutableFromPath(candidate) {
+  const hasPathSeparator = candidate.includes('/') || candidate.includes('\\');
+  const searchDirs = hasPathSeparator ? [''] : String(process.env.PATH || '').split(path.delimiter).filter(Boolean);
+  const extensions =
+    process.platform === 'win32' && !path.extname(candidate)
+      ? String(process.env.PATHEXT || '.EXE;.CMD;.BAT;.COM').split(';').filter(Boolean)
+      : [''];
+
+  for (const dir of searchDirs) {
+    for (const ext of extensions) {
+      const resolved = path.resolve(dir || '.', candidate + ext);
+      try {
+        const stat = fs.statSync(resolved);
+        if (stat.isFile()) return resolved;
+      } catch (_) {}
+    }
+  }
+  return null;
+}
+
 function findPowerShellExecutable() {
   if (process.env.POLLY_POWERSHELL) return process.env.POLLY_POWERSHELL;
   const candidates = process.platform === 'win32' ? ['pwsh.exe', 'powershell.exe'] : ['pwsh'];
   for (const candidate of candidates) {
-    const probe = spawnSync(candidate, ['-NoProfile', '-Command', '$PSVersionTable.PSVersion.ToString()'], {
-      encoding: 'utf8',
-      timeout: 5000,
-    });
-    if (!probe.error && probe.status === 0) return candidate;
+    const resolved = resolveExecutableFromPath(candidate);
+    if (resolved) return resolved;
   }
   return candidates[0];
+}
+
+function powerShellExecutableDryRunLabel() {
+  return process.env.POLLY_POWERSHELL || defaultPowerShellExecutableName();
 }
 
 // ---------------------------------------------------------------------------
@@ -2246,9 +2271,9 @@ const COMMANDS = {
       }
       const namedParams = parseJsonObjectFlag(flags.params, '--params');
       const resolvedArgs = buildPowerShellArgs(namedParams, rest);
-      const executable = findPowerShellExecutable();
       const commandArgs = ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', resolved.script.full_path].concat(resolvedArgs);
       const dryRun = flags['dry-run'] || flags.dryRun || !flags.yes;
+      const executable = dryRun ? powerShellExecutableDryRunLabel() : findPowerShellExecutable();
       const payload = {
         schema_version: 'polly_powershell_run_v1',
         dry_run: !!dryRun,
