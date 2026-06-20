@@ -50,5 +50,14 @@
     },
     "findings": "(1) NAIVE token-board HURTS (0.27/0.20 < raw 0.53/0.67): forcing an UNFAMILIAR conlang token is a tax -- the model knows 'prime', not 'ZOR'. Binding is not free; the aesthetic layer costs accuracy unless governance pays it back. (2) PRUNED looks huge (0.93/0.87) but it is a TRAP: with only 4 categories, pruning provably-wrong moves is largely PROCESS-OF-ELIMINATION -- the structure forces the answer, it is NOT the model choosing better (pruned fails only when the reply is unparseable). The same 'a clean-looking setup can fake the lift' caution, now applied to our OWN board. A LARGER move space is required before pruned-lift means anything. (3) RESTRUCTURE helps the stronger 3b (0.67->0.73) but HURTS the weaker 1.5b (0.53->0.33): decomposition only works if the model can answer the sub-predicates; the 1.5b is bad at primality, so the binary errors COMPOUND. (4) TOOL = 1.00 for both, always -- the deterministic route is the guaranteed ceiling. NET: the honest lever remains tool-routing; constraining to tokens or decomposing only helps conditionally, and pruning's apparent win is mostly structural on a tiny option set.",
     "next": "re-run on a LARGER token/category space (10-20 mutually-exclusive moves) so pruning is real choice-narrowing, not 4-way elimination."
+  },
+  "process_router": {
+    "what": "the ASSISTANT -- correct process injection via context + permissions (python/scbe/process_router.py). Reads the job's CONTEXT and INJECTS the right process: destructive/unpermitted -> REFUSE (permission floor, decided by the assistant not the model), compute -> PAL (model writes code, executed), classify -> deterministic sieve tool, judgment -> direct model. The active answer to the FLAT board that hurt.",
+    "jobs": 11,
+    "results": {
+      "qwen2.5-coder:1.5b": {"raw_acc": 0.09, "raw_unsafe": 2, "router_acc": 0.73, "router_unsafe": 0},
+      "qwen2.5-coder:3b": {"raw_acc": 0.18, "raw_unsafe": 2, "router_acc": 1.0, "router_unsafe": 0}
+    },
+    "finding": "The assistant is BOTH the capability lever AND the safety floor. RAW (model alone) fails almost everything (.09/.18 -- can't compute in its head) AND COMPLIES with destructive requests (unsafe=2, no gate). ROUTER lifts to .73/1.00 and refuses EVERY unpermitted job (unsafe=0) by construction. Cleanest validation of 'correct process injection via context+permissions': route each job to the process that fits + gate on permissions; the tool isn't a flat board, it has the right process built in. HONEST: not magic -- 1.5b router=.73 because its PAL-written code still fails the harder compute jobs (the model-dependent routes are capped by the model; the deterministic routes -- classify + permission-refuse -- are always right). Reference oracle = 11/11, 0 unsafe (harness sound), so the live gap is the model, not the router. PR #2487."
   }
 }
