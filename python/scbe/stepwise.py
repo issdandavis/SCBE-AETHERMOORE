@@ -23,9 +23,17 @@ mistake into the final answer with no chance to recover. This machine removes bo
     committed, it falls through to stuck. (Caveat, no overclaim: when the `check` is derived from the
     same rule as the oracle, that gate is only a legality wall -- not an independent correctness
     proof. The gate is exactly as strong as the predicates the step supplies, no stronger.)
+  * STUCK-PRIOR / FORCED DEVIATION (`prune_wrong`) -- the data says self-repair gives ~+0: told its
+    answer is wrong, a weak model re-proposes the SAME wrong thing (its System-1 prior is sticky).
+    So don't just ask again the same way -- RESTRUCTURE: a value that fails the check is eliminated
+    from the menu offered next, so the model literally cannot fall back into the rut. Pruning removes
+    only proven-wrong values (never the correct one, which passes the check), so it can only narrow
+    toward the answer, never away. This is the harness supplying the "notice I'm looping and change
+    approach" metacognition the model doesn't have. Rescue ladder: retry -> restructure -> tool -> stop.
 
-So the scaffold carries the exactness, the memory, AND a tool fallback; the model supplies judgement,
-its mistakes are caught + rewound, and the steps a tool CAN do are auto-rescued when it can't.
+So the scaffold carries the exactness, the memory, a tool fallback, AND the deliberate-deviation the
+model can't run internally; the model supplies judgement, its mistakes are caught + rewound, the rut
+is pruned out from under it, and the steps a tool CAN do are auto-rescued when even that isn't enough.
 Proposers are pluggable callables; the scripted stubs prove the loop, a real model drops into the slot.
 
     t = number_label_task(6)                 # r3=6%3, r5=6%5 done by CALC; the label is the choice
@@ -82,21 +90,37 @@ def build_context(task: Task, state: Dict[str, Any], step: Step, options: List[s
     return "\n".join(lines)
 
 
-def run_stepwise(task: Task, proposer: Proposer, max_rewinds: int = 3, allow_offload: bool = True) -> Dict[str, Any]:
+def run_stepwise(
+    task: Task,
+    proposer: Proposer,
+    max_rewinds: int = 3,
+    allow_offload: bool = True,
+    prune_wrong: bool = True,
+) -> Dict[str, Any]:
     """Walk the steps. Calc steps run in code; choice steps call the model and rewind on a misstep.
+
+    STUCK-PRIOR / FORCED DEVIATION (`prune_wrong`): a weak model often LOOPS -- it re-proposes the
+    same wrong value, because "try again" hits the same System-1 reflex (the +0 self-repair wall).
+    So a value that fails the step's check is ELIMINATED from the options offered on the next retry:
+    the model cannot re-pick a proven-wrong answer because it is no longer on the menu. This is the
+    harness externalizing "deliberately deviate from my habit" -- the metacognition the model lacks.
+    Pruning only removes PROVEN-WRONG values (they failed the check), never the correct answer (it
+    passes the check, so it is never eliminated), so the final commit is still gated and still correct;
+    if the answer is in the options, monotone narrowing forces the model toward it. A re-proposal of an
+    already-eliminated value is the stuck-prior tell, counted in `stuck_priors`.
 
     When a choice step exhausts its rewinds: if `allow_offload` and the step has an `oracle`, fall
     back to the oracle (auto-offload) instead of going stuck -- but only if the oracle's value clears
-    the SAME gate the model must (legal/in-options, and the step's check if any); otherwise it falls
-    through to stuck, so a gate-failing oracle value is never committed. With no oracle (or
-    allow_offload=False) the step stops honestly at the model's ceiling; `allow_offload=False`
-    measures the un-rescued baseline.
+    the SAME gate the model must (legal/in the FULL options, and the step's check if any); otherwise it
+    falls through to stuck. The rescue ladder is retry -> restructure (prune) -> tool (offload) -> stuck.
+    `allow_offload=False` measures the un-rescued baseline; `prune_wrong=False` the un-restructured one.
     """
     state: Dict[str, Any] = {}
     trace: List[dict] = []
     pos = 0
     total_rewinds = 0
     model_calls = 0
+    stuck_priors = 0
     offloaded: List[str] = []
     while pos < len(task.steps):
         step = task.steps[pos]
@@ -106,31 +130,61 @@ def run_stepwise(task: Task, proposer: Proposer, max_rewinds: int = 3, allow_off
             trace.append({"step": step.name, "source": "calc", "value": v, "status": "ok"})
             pos += 1
             continue
-        options = step.options(state) if step.options else []
+        full_options = step.options(state) if step.options else []
+        tried_wrong: List[str] = []  # proven-wrong values at this step -> eliminated from the menu
         rewinds = 0
         while True:
+            # forced deviation: offer the menu minus everything already proven wrong at this step
+            options = [o for o in full_options if o not in tried_wrong] if prune_wrong else list(full_options)
             ctx = build_context(task, state, step, options, trace)
             value = proposer(ctx, options)
             model_calls += 1
-            legal = (not options) or (value in options)
+            repeated = value in tried_wrong  # the stuck-prior tell: re-proposing a known-wrong value
+            if repeated:
+                stuck_priors += 1
+            legal = (not full_options) or (value in options)
             correct = step.check(state, value) if step.check else legal
             if legal and correct:
                 state[step.key] = value
                 state.pop("_warning", None)
-                trace.append({"step": step.name, "source": "model", "value": value, "status": "ok", "rewinds": rewinds})
+                trace.append(
+                    {
+                        "step": step.name,
+                        "source": "model",
+                        "value": value,
+                        "status": "ok",
+                        "rewinds": rewinds,
+                        "remaining": len(options),
+                    }
+                )
                 pos += 1
                 break
             rewinds += 1
             total_rewinds += 1
-            why = "not in the allowed set" if not legal else "failed the step's check"
-            trace.append({"step": step.name, "source": "model", "value": value, "status": "misstep", "why": why})
+            why = (
+                "repeated a proven-wrong answer"
+                if repeated
+                else ("not in the allowed set" if not legal else "failed the step's check")
+            )
+            if value in full_options and value not in tried_wrong:
+                tried_wrong.append(value)  # proven wrong -> eliminate from the menu (forced deviation)
+            trace.append(
+                {
+                    "step": step.name,
+                    "source": "model",
+                    "value": value,
+                    "status": "misstep",
+                    "why": why,
+                    "repeated": repeated,
+                }
+            )
             if rewinds > max_rewinds:  # model exhausted -> try the deterministic oracle, else stop honestly
                 state.pop("_warning", None)
                 if allow_offload and step.oracle is not None:
                     ov = step.oracle(state)
-                    # hold the oracle to the SAME gate as the model: legal (in options) AND, if the step
-                    # has a check, passing it. A gate-failing oracle value is never committed -> stuck.
-                    legal = (not options) or (ov in options)
+                    # hold the oracle to the SAME gate as the model: legal (in the FULL options) AND, if
+                    # the step has a check, passing it. A gate-failing oracle value is never committed.
+                    legal = (not full_options) or (ov in full_options)
                     if legal and (step.check(state, ov) if step.check else True):
                         state[step.key] = ov
                         offloaded.append(step.name)
@@ -143,22 +197,24 @@ def run_stepwise(task: Task, proposer: Proposer, max_rewinds: int = 3, allow_off
                     "state": state,
                     "rewinds": total_rewinds,
                     "model_calls": model_calls,
+                    "stuck_priors": stuck_priors,
                     "offloaded": offloaded,
                     "trace": trace,
                 }
             # rewind: position is unchanged (the bad value was never committed); retry with a warning
-            state["_warning"] = "misstep at '%s': %r %s -- back up and choose from %s" % (
-                step.name,
-                value,
-                why,
-                options,
-            )
+            warning = "misstep at '%s': %r %s." % (step.name, value, why)
+            if prune_wrong and tried_wrong:
+                warning += " Eliminated (do NOT repeat): %s. Choose from %s" % (tried_wrong, options)
+            else:
+                warning += " Back up and choose from %s" % (options,)
+            state["_warning"] = warning
     return {
         "completed": True,
         "answer": trace[-1]["value"] if trace else None,
         "state": state,
         "rewinds": total_rewinds,
         "model_calls": model_calls,
+        "stuck_priors": stuck_priors,
         "offloaded": offloaded,
         "trace": trace,
     }
@@ -180,6 +236,19 @@ def scripted_proposer(seq: List[str]) -> Proposer:
 def always_proposer(value: str) -> Proposer:
     def p(_ctx: str, _options: List[str]) -> str:
         return value
+
+    return p
+
+
+def sticky_proposer(favorite: str) -> Proposer:
+    """A sticky System-1 prior: keep proposing `favorite`; only when forced deviation eliminates it
+    from the menu does it fall to the first still-legal option. Models the loop the +0 repair data
+    showed -- it never self-corrects, it just stops repeating once the rut is pruned out from under it."""
+
+    def p(_ctx: str, options: List[str]) -> str:
+        if favorite in options:
+            return favorite
+        return options[0] if options else favorite
 
     return p
 
@@ -249,6 +318,32 @@ def main(argv: Optional[List[str]] = None) -> int:
         % (r["completed"], r.get("answer"), r["offloaded"])
     )
     print("  (the model burned its tries; the deterministic rule supplied the right label -> 6 is 'Fizz')")
+
+    print("\n== STUCK PRIOR: a model that keeps re-proposing the same wrong label (10 is 'Buzz') ==")
+    sticky = sticky_proposer("Fizz")  # its sticky prior: always grab 'Fizz' (wrong for 10)
+    r = run_stepwise(number_label_task(10), sticky, max_rewinds=3, allow_offload=False, prune_wrong=False)
+    print(
+        "  no restructure -> completed=%s  stuck_at=%s  stuck_priors=%d  (it loops on 'Fizz', never deviates)"
+        % (r["completed"], r.get("stuck_at"), r["stuck_priors"])
+    )
+
+    print("\n== FORCED DEVIATION: eliminate the proven-wrong label; the model can't fall back into the rut ==")
+    r = run_stepwise(
+        number_label_task(10), sticky_proposer("Fizz"), max_rewinds=3, allow_offload=False, prune_wrong=True
+    )
+    for t in r["trace"]:
+        if t["source"] == "model":
+            note = (
+                ("  <- " + t["why"])
+                if t["status"] == "misstep"
+                else ("  (remaining options: %d)" % t.get("remaining", 0))
+            )
+            print("  %-6s %-9s %-6s%s" % (t["step"], t["status"], t["value"], note))
+    print(
+        "  -> %s  completed=%s  rewinds=%d  stuck_priors=%d  offloaded=%s"
+        % (r["answer"], r["completed"], r["rewinds"], r["stuck_priors"], r["offloaded"])
+    )
+    print("  (no tool used: pruning 'Fizz' off the menu forced the model onto 'Buzz' -- restructure, not offload)")
     return 0
 
 
