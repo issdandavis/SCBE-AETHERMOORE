@@ -1,0 +1,16 @@
+{
+  "tongue": "UM",
+  "name": "Umbroth",
+  "role": "Redaction/Privacy (the Shadow Tongue -- concealment, productive severance)",
+  "source": "Spiralverse 'Six Sacred Tongues' wordlist (Issac, canonical)",
+  "note": "The severance vocabulary below is Mal'kythric -- Umbroth's CHILD dialect (concealment hardened into severance). Assigned to UM (its parent governance tongue). WARNING in lore: pure severance stripped of grammar 'consumes its own speaker'.",
+  "words": {
+    "sek": "sever / slice (clean separation)",
+    "drath": "collapse (structural failure)",
+    "grul": "chaos / void (meaning dissolution)",
+    "phen": "calcify (hardened separation)",
+    "kraz": "wound / gap (productive emptiness)",
+    "rend": "unmake (complete severance)",
+    "azh": "void / nothing (absolute separation)"
+  }
+}

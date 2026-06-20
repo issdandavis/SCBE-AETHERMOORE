@@ -71,3 +71,16 @@ def test_load_conlang_file_directly():
     assert data["tongue"] == "KO" and "words" in data  # valid conlang-file shape
     lex = tl.Lexicon().load_conlang(str(path))
     assert lex.best("zar'sil'ael") == "KO" and "eternal" in lex.meaning("zar'sil'ael")["KO"]
+
+
+def test_all_five_word_tongues_classify_from_real_vocab():
+    # the full Six Sacred Tongues wordlist: AV/RU/CA/UM/KO now have real words (DR has none yet)
+    full = tl.load_full()
+    assert full.size() > 200  # seed 96 + the five tongues' vocab
+    assert full.best("nos busca sabia in spiral-unity") == "AV"
+    assert full.best("gol the vel'ar med'ar oath") == "RU"
+    assert full.best("sapi'gear spira'zuni nog rad") == "CA"
+    assert full.best("sek drath grul azh the bond") == "UM"
+    assert full.best("maeji and kor'val and zar'thul") == "KO"
+    assert full.meaning("busca") == {"AV": "seek / search"}
+    assert "sever" in full.meaning("sek")["UM"]
