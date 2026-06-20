@@ -35,10 +35,7 @@ vi.mock('@openai/agents', () => {
 });
 
 // Import AFTER mock is established
-import {
-  runWorkflow,
-  TriageCategory,
-} from '../../workflows/openai/customer_support_triage.js';
+import { runWorkflow, TriageCategory } from '../../workflows/openai/customer_support_triage.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 

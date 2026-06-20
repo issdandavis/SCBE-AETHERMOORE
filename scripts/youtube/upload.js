@@ -63,7 +63,10 @@ function cleanCategoryId(value) {
 
 function cleanTags(value) {
   if (!Array.isArray(value)) return [];
-  return value.map((tag) => cleanText(tag, 60)).filter(Boolean).slice(0, 30);
+  return value
+    .map((tag) => cleanText(tag, 60))
+    .filter(Boolean)
+    .slice(0, 30);
 }
 
 function safeReceiptPath(value) {
@@ -89,7 +92,9 @@ function processingSummary(processing) {
   if (!processing || typeof processing !== 'object') return null;
   return {
     ok: Boolean(processing.ok),
-    status: cleanText(processing.details?.processingStatus || processing.details?.reason || '', 128) || null,
+    status:
+      cleanText(processing.details?.processingStatus || processing.details?.reason || '', 128) ||
+      null,
   };
 }
 
