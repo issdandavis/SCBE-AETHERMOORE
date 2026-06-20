@@ -216,6 +216,18 @@ class Maze:
         self.cases.append(Case(cid or ("case_%d" % len(self.cases)), problem, code, source))
         return self
 
+    def learn(self, problem: str, code: str, checks: Optional[Sequence[str]] = None, cid: Optional[str] = None) -> bool:
+        """Add a freshly-VERIFIED solve back into the maze -- the SOAR/Stitch abstraction-library move the
+        ARC winners use: the library grows with use, so RECURRENCE (not a frozen corpus) drives the hit
+        rate. This is the honest answer to '0% on all-distinct MBPP': don't expect a static library to
+        cover novel work -- let it accrete what gets solved, so the second time a shape recurs it is free.
+        If `checks` are given the code must pass them first (only verified cases enter); returns admitted."""
+        code = strip_to_code(code)
+        if checks is not None and not pb._verify(code, list(checks), [], [])["public_passed"]:
+            return False
+        self.add(problem, code, cid=cid, source="learned")
+        return True
+
     def cracks(self, query: str) -> List[Tuple[float, Case]]:
         """Neighbors ranked by alignment (high = a crack pointing that way). Returns (alignment, case)."""
         q = featurize(query)
@@ -415,11 +427,87 @@ def render_measure(m: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _reword(prompt: str) -> str:
+    """A mild deterministic paraphrase (keeps most words so alignment stays high -- a realistic recurrence,
+    not a byte-identical repeat)."""
+    p = (prompt or "").strip()
+    return "Implement the following. " + (p[0].lower() + p[1:] if p else p)
+
+
+def _rename(text: str, old: str, new: str) -> str:
+    return re.sub(r"\b" + re.escape(old) + r"\b", new, text)
+
+
+def measure_recurrence(base_k: int = 40, public_k: int = 1) -> Dict[str, Any]:
+    """Honest demo of the self-growing library (the answer to 0%-on-all-distinct). A stream where each
+    base problem RECURS once as a paraphrase (reworded prompt + renamed function). Processed in order:
+    the library is tried first; a miss is solved 'expensively' (via the reference, simulating a model) and
+    -- with learning ON -- LEARNED back. A later paraphrase of a learned problem is then sunk for FREE.
+    Compares learning ON vs OFF. Every free hit is accepted only on HELD-BACK tests (no weak-oracle pass),
+    and the paraphrase's renamed reference is the correct algorithm, so a hit is genuine. The 50% recurrence
+    here is constructed -- the real free-hit rate tracks YOUR workload's recurrence, which is the point."""
+    ps = pb.pull_mbpp()
+    base = [
+        p
+        for p in ps[: base_k * 3]
+        if p.get("test_list") and pb._verify(p["code"], [], p["test_list"], p.get("test_imports", []))["hidden_passed"]
+    ][:base_k]
+
+    def run(learning: bool) -> Dict[str, int]:
+        maze = Maze()
+        free = recur_free = expensive = 0
+        for p in base:
+            old = target_name(p["test_list"]) or "f"
+            new = old + "_v2"
+            items = [
+                ("orig", p["prompt"], list(p["test_list"]), old),
+                ("para", _reword(p["prompt"]), [_rename(t, old, new) for t in p["test_list"]], new),
+            ]
+            for kind, prompt, tests, name in items:
+                imps = p.get("test_imports", [])
+                public, held = tests[:public_k], tests[public_k:]
+                out = analog_solve(prompt, public, maze, imports=imps)
+                hit = out["solved"] and ((not held) or pb._verify(out["code"], [], held, imps)["hidden_passed"])
+                if hit:
+                    free += 1
+                    recur_free += kind == "para"
+                else:
+                    expensive += 1
+                    if learning:  # solve it via the reference (the expensive club), then keep it
+                        maze.learn(prompt, adapt(p["code"], tests), checks=tests, cid="%s_%s" % (p["task_id"], kind))
+        return {"free": free, "recurrence_free": recur_free, "expensive": expensive, "stream": 2 * len(base)}
+
+    on, off = run(True), run(False)
+    return {
+        "base_k": len(base),
+        "with_learning": on,
+        "without_learning": off,
+        "amortized_free": on["free"] - off["free"],
+    }
+
+
+def render_recurrence(m: Dict[str, Any]) -> str:
+    on, off = m["with_learning"], m["without_learning"]
+    return "\n".join(
+        [
+            "SELF-GROWING LIBRARY on a constructed 50%%-recurrence stream (%d base, %d items)"
+            % (m["base_k"], on["stream"]),
+            "  WITH learning : %d/%d sunk FREE by the library (%d of them recurrences)"
+            % (on["free"], on["stream"], on["recurrence_free"]),
+            "  WITHOUT       : %d/%d free  <- a frozen library can't amortize" % (off["free"], off["stream"]),
+            "  amortized free solves: %d   <- recurrence the growing library bought back" % m["amortized_free"],
+        ]
+    )
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     if argv is None:
         argv = sys.argv[1:]
     if "--measure" in argv:
         print(render_measure(measure_mbpp()))
+        return 0
+    if "--recurrence" in argv:
+        print(render_recurrence(measure_recurrence()))
         return 0
     out = demo()
     print("ANALOG INFERENCE (no neural forward pass)")
