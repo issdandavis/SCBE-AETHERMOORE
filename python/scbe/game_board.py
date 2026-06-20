@@ -179,7 +179,8 @@ def add_move_action(reg: ActionRegistry) -> ActionRegistry:
             "button",
             "Move",
             lambda p: "move %s" % p.get("move", ""),
-            text_param="move",  # even a move string is screened for destructive content
+            # no text_param: a move is screened for destructive content by the deterministic all-param
+            # screen, but it is NOT free-text intent (the L13 heuristic false-positives on short ids).
         )
     )
     return reg
@@ -202,7 +203,10 @@ def play_governed(
         if move not in game.legal_moves():  # the rules are the walls -- referee refuses
             transcript.append({"ply": plies, "move": move, "status": "ILLEGAL"})
             break
-        reg.invoke("commit_move", {"move": move})  # screened + sealed audit of the move
+        rec = reg.invoke("commit_move", {"move": move})  # the screen is a WALL, not just a log entry
+        if rec["decision"] != "ALLOWED":  # a screened-out move is NOT played
+            transcript.append({"ply": plies, "move": move, "status": "BLOCKED", "decision": rec["decision"]})
+            break
         game.play(move)
         head = move.split()[0] if move else "0"
         program.append(int(head) & 0xF if head.isdigit() else 0)
