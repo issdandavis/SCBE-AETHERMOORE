@@ -116,6 +116,16 @@ def test_basis_still_falls_back_on_genuine_novelty():
     assert out["solved"] is False and out["code"] is None
 
 
+def test_learn_admits_only_verified_and_enables_free_recurrence():
+    maze = Maze()
+    assert maze.learn("add a and b", "def add(a, b):\n    return a + b", checks=["assert add(2, 3) == 5"]) is True
+    assert maze.learn("bad", "def sub(a, b):\n    return a - b", checks=["assert sub(2, 3) == 5"]) is False  # rejected
+    assert len(maze.cases) == 1  # only the verified solve grew the library
+    # a paraphrase of the learned problem is now sunk for free (recurrence the growing library bought)
+    out = analog_solve("sum / total of a and b", ["assert total(2, 3) == 5"], maze)
+    assert out["solved"] is True
+
+
 def test_analog_solver_is_run_step_compatible():
     maze = Maze.from_solved(
         [("add two numbers a and b", "def add(a, b):\n    return a + b", ["assert add(2, 3) == 5"])]
