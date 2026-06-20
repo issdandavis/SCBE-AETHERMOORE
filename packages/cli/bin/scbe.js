@@ -1179,8 +1179,8 @@ function runInteractiveShell(flags = {}) {
 
       // Run through GeoSeal governance
       const busBin = resolveAgentBusBin();
-      let governance = { decision: 'ALLOW', reason: 'governance-unavailable' };
-      let blocked = false;
+      let governance = { decision: 'DENY', reason: 'governance-unavailable' };
+      let blocked = true;
 
       if (busBin) {
         try {
@@ -1189,15 +1189,24 @@ function runInteractiveShell(flags = {}) {
             [busBin, 'pipeline', 'compile', '--intent', proposed, '--json'],
             { encoding: 'utf8', timeout: 15000, maxBuffer: 1024 * 512 }
           );
-          if (r.status === 0 && r.stdout) {
+          if (r.stdout) {
             const plan = JSON.parse(r.stdout);
             if (plan.policy) {
               governance = { decision: plan.policy.decision, reason: plan.policy.reason };
               blocked = plan.policy.decision !== 'ALLOW';
+            } else {
+              governance = { decision: 'DENY', reason: 'governance-policy-missing' };
+              blocked = true;
             }
             if (plan.semantic?.discourseProfile) governance.semantic = plan.semantic.discourseProfile;
+          } else {
+            governance = { decision: 'DENY', reason: 'governance-empty-response' };
+            blocked = true;
           }
-        } catch { /* stays ALLOW */ }
+        } catch {
+          governance = { decision: 'DENY', reason: 'governance-parse-failed' };
+          blocked = true;
+        }
       }
 
       if (blocked) {
