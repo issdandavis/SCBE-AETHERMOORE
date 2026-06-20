@@ -24,13 +24,12 @@ The thesis is **lift**: not a smarter model, the *same* model with its choices r
 
 ### LIFT — the headline (PR #2456)
 
-| 1.5B, reasoning ladder | total /20 |
-|---|---|
-| RAW (mental math) | 8–9 |
-| **PAL (routed through code execution)** | **15** (stable ×3) |
-| **lift** | **+6 to +7** |
+| reasoning ladder, /20 | RAW (mental math) | PAL (routed through code execution) | lift |
+|---|---|---|---|
+| **1.5B** | 8–9 | **15** (stable ×3) | **+6 to +7** |
+| **3B** | 10 | **17–18** (stable) | **+7 to +8** |
 
-`program_aided_climber`: the model **writes** a short Python program that computes the answer; it runs in a sandboxed subprocess; we read the printed number. Same weights — only the *routing* changed.
+`program_aided_climber`: the model **writes** a short Python program that computes the answer; it runs in a sandboxed subprocess; we read the printed number. Same weights — only the *routing* changed. The lift holds across both models and scales slightly with the base.
 
 **Honest caveats:** program-aided reasoning (PAL/PoT) is an established technique, not novel here. It lifts *computation-heavy* reasoning specifically (plays to a coder model's strength: writing code), and is **not** universal — tool/rails routing gave no lift on some tasks elsewhere. The contiguous-tier metric *understates* it (PAL trips one trivial arithmetic item → reads tier 0); the **total** (8.3 → 15) is the signal.
 
@@ -38,13 +37,12 @@ The thesis is **lift**: not a smarter model, the *same* model with its choices r
 
 `make_repair_generator`: write code → run the **public** test → on failure, feed the error back and retry (hidden held out, no leakage).
 
-| 1.5B, code ladder | total /15 |
-|---|---|
-| RAW (single shot) | 13 |
-| repair (2 rounds) | **13** |
-| **lift** | **+0** |
+| code ladder, /15 | RAW (single shot) | repair (2 rounds) | lift |
+|---|---|---|---|
+| **1.5B** | 13 | **13** | **+0** |
+| **3B** | 13 | **13** | **+0** |
 
-The +0 is the finding, not a dud. The loop **fires** on both remaining misses (public fails for `fizzbuzz` + `regex`; a unit test proves it retries with the failure in the prompt) — but the 1.5B regenerates code that *still fails*. It can't act on the signal: `fizzbuzz` is a **prior-override** (it keeps writing the reflexive Fizz/Buzz despite the failing test), `regex` is a real **capability ceiling**.
+The +0 is the finding, not a dud. The loop **fires** on the remaining misses (public fails for `fizzbuzz` + `regex`; a unit test proves it retries with the failure in the prompt) — but the model regenerates code that *still fails*. It can't act on the signal: `fizzbuzz` is a **prior-override** (it keeps writing the reflexive Fizz/Buzz despite the failing test), `regex` is a real **capability ceiling**.
 
 **The lesson:** tool-routing lifts when it **supplies a missing capability** (compute the math the model can't do in its head → reasoning **+6–7**); it does **nothing** when the failure is a prior or capability ceiling (code **+0**). This is "harness rescues interface/computation gaps, not capability" in two contrasting measurements.
 
