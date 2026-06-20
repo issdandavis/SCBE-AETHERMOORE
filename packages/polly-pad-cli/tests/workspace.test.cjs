@@ -784,3 +784,36 @@ test('polly next handles an empty workspace', () => {
     cleanup(dir);
   }
 });
+
+// ---------------------------------------------------------------------------
+// polly ps run dry-run does not execute PATH-resolved pwsh probes
+// ---------------------------------------------------------------------------
+test('polly ps run dry-run does not execute PATH-resolved pwsh probes', () => {
+  const dir = mktemp();
+  const binDir = mktemp();
+  try {
+    run(dir, ['init', 'PsRunNoProbeTest']);
+    fs.writeFileSync(path.join(dir, 'echo.ps1'), 'Write-Output "hello"\n', 'utf8');
+
+    const marker = path.join(dir, 'pwsh-probe-ran.txt');
+    const fakePwsh = path.join(binDir, process.platform === 'win32' ? 'pwsh.cmd' : 'pwsh');
+    const fakePwshBody =
+      process.platform === 'win32'
+        ? '@echo off\r\necho probe > "' + marker + '"\r\nexit /b 0\r\n'
+        : '#!/bin/sh\necho probe > "' + marker + '"\nexit 0\n';
+    fs.writeFileSync(fakePwsh, fakePwshBody, 'utf8');
+    if (process.platform !== 'win32') fs.chmodSync(fakePwsh, 0o755);
+
+    const result = run(dir, ['ps', 'run', 'echo', '--json'], {
+      POLLY_PS_ROOT: dir,
+      PATH: binDir + path.delimiter + process.env.PATH,
+    });
+    assert.strictEqual(result.status, 0, 'ps run dry-run should exit 0\nstdout: ' + result.stdout + '\nstderr: ' + result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.strictEqual(payload.dry_run, true);
+    assert.strictEqual(fs.existsSync(marker), false, 'dry-run must not execute pwsh discovery probes');
+  } finally {
+    cleanup(dir);
+    cleanup(binDir);
+  }
+});
