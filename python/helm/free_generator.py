@@ -21,8 +21,10 @@ from __future__ import annotations
 import json
 import os
 import re
+import subprocess
+import sys
 import urllib.request
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional, Sequence
 
 DEFAULT_BASE = "http://localhost:11434/v1"  # Ollama's OpenAI-compatible endpoint
 DEFAULT_MODEL = "qwen2.5-coder:7b"
@@ -76,12 +78,53 @@ def make_generator(
     return generator
 
 
+def _diagnose(code: str, asserts: Sequence[str], imports: Sequence[str], timeout: int = 15) -> List[str]:
+    """Run each failing assert and report GOT-vs-EXPECTED (or the raised exception) -- the signal a
+    bare 'AssertionError()' lacks. Brace-safe (built by line-join, not str.format)."""
+    runner = "\n".join(
+        list(imports)
+        + [
+            code,
+            "import json as _j",
+            "_A = " + repr(list(asserts)),
+            "_O = []",
+            "for _a in _A:",
+            "    try:",
+            "        exec(_a, globals()); continue",
+            "    except Exception as _e:",
+            "        _err = repr(_e)",
+            "    _b = _a[7:].strip() if _a.strip().startswith('assert ') else _a",
+            "    if ' == ' in _b:",
+            "        _l, _r = _b.split(' == ', 1)",
+            "        try:",
+            "            _g = repr(eval(_l))",
+            "        except Exception as _e2:",
+            "            _g = '<raised ' + repr(_e2) + '>'",
+            "        try:",
+            "            _x = repr(eval(_r))",
+            "        except Exception:",
+            "            _x = _r",
+            "        _O.append(_a + '  ->  got ' + _g + ', expected ' + _x)",
+            "    else:",
+            "        _O.append(_a + '  ->  ' + _err)",
+            "print(_j.dumps(_O))",
+        ]
+    )
+    try:
+        proc = subprocess.run([sys.executable, "-c", runner], capture_output=True, text=True, timeout=timeout)
+        if proc.returncode == 0 and proc.stdout.strip():
+            return json.loads(proc.stdout.strip().splitlines()[-1])
+    except Exception:
+        pass
+    return list(asserts)
+
+
 def make_repair_generator(
     base: Optional[str] = None,
     key: Optional[str] = None,
     model: Optional[str] = None,
     public_k: int = 1,
-    rounds: int = 2,
+    rounds: int = 3,
 ) -> Callable[[Dict[str, Any]], str]:
     """Execution-feedback repair -- the CODE-ladder analog of routing reasoning through execution.
 
@@ -104,16 +147,15 @@ def make_repair_generator(
             res = pb._verify(code, public, [], imports)  # PUBLIC only; hidden never shown
             if res.get("public_passed"):
                 break
-            fails = "; ".join(res.get("public_failures", []) or [])[:300]
+            diag = _diagnose(code, public, imports)
+            feedback = "\n".join(str(d) for d in diag)[:700]
             prompt = (
                 (problem.get("prompt") or problem.get("text") or "").strip()
                 + "\n\nYour previous code:\n"
                 + code
-                + "\n\nIt FAILED this check:\n"
-                + "\n".join(public)
-                + "\nError: "
-                + (fails or "did not pass")
-                + "\nReturn ONLY corrected Python code."
+                + "\n\nIt FAILED these checks (showing got vs expected):\n"
+                + feedback
+                + "\nFix the function so every check passes. Return ONLY corrected Python code."
             )
             try:
                 code = strip_to_code(_chat([{"role": "user", "content": prompt}], base=base, key=key, model=model))
