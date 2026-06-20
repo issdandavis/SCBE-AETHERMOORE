@@ -45,9 +45,21 @@ def _chat(messages, *, base: str, key: str, model: str, timeout: int = 120) -> s
 
 
 def strip_to_code(text: str) -> str:
-    """Pull the code out of a model reply (handles ```python fences or bare code)."""
-    m = re.search(r"```(?:python)?\s*(.*?)```", text or "", re.S)
-    return (m.group(1) if m else (text or "")).strip()
+    """Pull the code out of a model reply. Robust to: fenced ```python blocks (takes the LARGEST), a
+    truncated/unclosed fence, bare code with no fences, and leading prose before the first code line.
+
+    The naive version (return-whole-text when no closing fence) silently fed prose/markdown into the
+    verifier, so good solutions failed to parse -- which crushed the repair-loop + harvest solve rates.
+    This is the same extraction the lift notebook uses; fixing it here lifts every caller at once."""
+    blocks = re.findall(r"```(?:python)?\s*(.*?)```", text or "", re.S)
+    if blocks:
+        return max(blocks, key=len).strip()
+    body = re.sub(r"^\s*```(?:python)?\s*", "", (text or "").strip())  # drop a dangling open fence
+    lines = body.splitlines()
+    for i, ln in enumerate(lines):
+        if ln.lstrip().startswith(("def ", "import ", "from ", "class ", "@")):
+            return "\n".join(lines[i:]).strip()
+    return body.strip()
 
 
 def make_generator(
