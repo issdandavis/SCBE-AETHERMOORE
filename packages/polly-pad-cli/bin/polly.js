@@ -704,6 +704,17 @@ function getGitInfo(dir) {
 // Tool registry
 // ---------------------------------------------------------------------------
 
+function findBundledToolsRoot() {
+  let dir = __dirname;
+  for (let i = 0; i < 6; i++) {
+    const toolsPath = path.join(dir, 'packages', 'agent-bus', 'tools.json');
+    const pollyPath = path.join(dir, 'packages', 'polly-pad-cli', 'bin', 'polly.js');
+    if (fs.existsSync(toolsPath) && fs.existsSync(pollyPath)) return dir;
+    dir = path.dirname(dir);
+  }
+  return null;
+}
+
 function findToolsJson(repoRoot) {
   // Priority: env var → repo root → __dirname proximity → null
   if (process.env.POLLY_TOOLS_JSON) {
@@ -714,14 +725,8 @@ function findToolsJson(repoRoot) {
     const p = path.join(repoRoot, 'packages', 'agent-bus', 'tools.json');
     if (fs.existsSync(p)) return p;
   }
-  // Walk up from __dirname looking for packages/agent-bus/tools.json
-  let dir = __dirname;
-  for (let i = 0; i < 6; i++) {
-    const p = path.join(dir, 'packages', 'agent-bus', 'tools.json');
-    if (fs.existsSync(p)) return p;
-    dir = path.dirname(dir);
-  }
-  return null;
+  const bundledRoot = findBundledToolsRoot();
+  return bundledRoot ? path.join(bundledRoot, 'packages', 'agent-bus', 'tools.json') : null;
 }
 
 function loadToolsRegistry(repoRoot) {
@@ -747,6 +752,135 @@ function unresolvedPlaceholders(resolvedArgs) {
   const all = resolvedArgs.join(' ');
   const matches = all.match(/\{[a-zA-Z]\w*\}/g);
   return matches ? [...new Set(matches)] : [];
+}
+
+
+const TRUSTED_TOOL_SIGNATURES = new Map([
+  ['geoseal-compile', { command: 'python', args: ['-m', 'src.geoseal_cli', 'compile', '--json', '{task}'] }],
+  [
+    'geoseal-exec',
+    { command: 'python', args: ['-m', 'src.geoseal_cli', 'exec', '--json', '--max-tier', 'ALLOW', '--', '{task}'] },
+  ],
+  ['geoseal-seal', { command: 'python', args: ['-m', 'src.geoseal_cli', 'seal', '{task}', '--json'] }],
+  [
+    'geoseal-explain-route',
+    {
+      command: 'python',
+      args: [
+        '-m',
+        'src.geoseal_cli',
+        'explain-route',
+        '--content',
+        '{task}',
+        '--language',
+        'python',
+        '--source-name',
+        'bus_task',
+        '--json',
+      ],
+    },
+  ],
+  ['geoseal-encode', { command: 'python', args: ['-m', 'src.geoseal_cli', 'encode-cmd', '--json', '--', '{task}'] }],
+  ['geoseal-verify', { command: 'python', args: ['-m', 'src.geoseal_cli', 'verify', '--json', '{task}'] }],
+  [
+    'scbe-agentbus',
+    {
+      command: 'python',
+      args: [
+        'scripts/scbe-system-cli.py',
+        '--json',
+        'agentbus',
+        'run',
+        '--task',
+        '{task}',
+        '--task-type',
+        '{taskType}',
+        '--series-id',
+        '{seriesId}',
+        '--privacy',
+        '{privacy}',
+      ],
+    },
+  ],
+  ['scbe-antivirus', { command: 'python', args: ['scripts/scbe-system-cli.py', '--json', 'antivirus'] }],
+  ['scbe-governance-fuse', { command: 'python', args: ['scripts/scbe-system-cli.py', '--json', 'antivirus-fuse'] }],
+  ['scbe-runtime', { command: 'python', args: ['scripts/scbe-system-cli.py', '--json', 'runtime', 'run', '--task', '{task}'] }],
+  ['scbe-flow', { command: 'python', args: ['scripts/scbe-system-cli.py', '--json', 'flow', '--task', '{task}'] }],
+  ['scbe-tongues', { command: 'python', args: ['scripts/scbe-system-cli.py', '--json', 'tongues', '{task}'] }],
+  ['scbe-cli-shell-bench', { command: 'node', args: ['packages/cli/scripts/shell_benchmark.cjs'] }],
+  [
+    'scbe-cli-task-corpus',
+    { command: 'node', args: ['packages/cli/scripts/bench_task_corpus.cjs', '--max-corpus-turns=40'] },
+  ],
+  ['scbe-cli-harness-matrix', { command: 'node', args: ['packages/cli/scripts/bench_harness_matrix.cjs'] }],
+  [
+    'rubix-browser-plan',
+    {
+      command: 'node',
+      args: ['packages/agent-bus/bin/scbe-agent-bus.cjs', 'rubix-browser', 'plan', '--task', '{task}', '--json'],
+    },
+  ],
+  [
+    'rubix-browser-bench',
+    {
+      command: 'node',
+      args: ['packages/agent-bus/bin/scbe-agent-bus.cjs', 'rubix-browser', 'bench', '--headless', '--json'],
+    },
+  ],
+]);
+
+function sameStringArray(left, right) {
+  if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) return false;
+  for (let i = 0; i < left.length; i++) {
+    if (left[i] !== right[i]) return false;
+  }
+  return true;
+}
+
+function validateTrustedTool(tool) {
+  if (!tool || typeof tool.name !== 'string') return { ok: false, reason: 'missing tool name' };
+  if (typeof tool.command !== 'string') return { ok: false, reason: 'missing command' };
+  if (!Array.isArray(tool.args) || !tool.args.every((arg) => typeof arg === 'string')) {
+    return { ok: false, reason: 'args must be an array of strings' };
+  }
+  const trusted = TRUSTED_TOOL_SIGNATURES.get(tool.name);
+  if (!trusted) return { ok: false, reason: 'tool is not in Polly trusted execution allowlist' };
+  if (tool.command !== trusted.command || !sameStringArray(tool.args, trusted.args)) {
+    return { ok: false, reason: 'registry command or args do not match Polly trusted signature' };
+  }
+  return { ok: true, reason: null };
+}
+
+function buildToolEnv(env) {
+  const allowExact = new Set([
+    'CI',
+    'COMSPEC',
+    'FORCE_COLOR',
+    'HOME',
+    'NODE_PATH',
+    'NO_COLOR',
+    'PATH',
+    'PATHEXT',
+    'Path',
+    'POLLY_HOME',
+    'PYTHON',
+    'PYTHONPATH',
+    'SCBE_BUS_PLUGINS',
+    'SCBE_BUS_TOOLS',
+    'SCBE_REPO_ROOT',
+    'SYSTEMROOT',
+    'TEMP',
+    'TERM',
+    'TMP',
+    'TMPDIR',
+    'USER',
+    'USERPROFILE',
+  ]);
+  const clean = {};
+  for (const key of Object.keys(env || {})) {
+    if (allowExact.has(key)) clean[key] = env[key];
+  }
+  return clean;
 }
 
 // ---------------------------------------------------------------------------
@@ -1622,6 +1756,7 @@ const COMMANDS = {
         console.error('Run `polly tools list` to see available tools.');
         process.exit(1);
       }
+      const trust = validateTrustedTool(tool);
 
       // Build template vars from --input and --params
       let vars = {};
@@ -1638,7 +1773,7 @@ const COMMANDS = {
       // Positional args after tool name also fill {task}
       if (rest.length > 0 && !vars.task) vars.task = rest.join(' ');
 
-      const resolvedArgs = substituteArgs(tool.args, vars);
+      const resolvedArgs = substituteArgs(Array.isArray(tool.args) ? tool.args : [], vars);
       const unresolved = unresolvedPlaceholders(resolvedArgs);
       const runAt = new Date().toISOString();
 
@@ -1651,6 +1786,8 @@ const COMMANDS = {
           args: resolvedArgs,
           unresolved_placeholders: unresolved,
           vars_provided: vars,
+          trusted_execution: trust.ok,
+          trust_reason: trust.reason,
         };
         if (ws) appendAudit(ws, 'tool.run.requested', toolName, Object.assign({ dry_run: true }, dryResult));
         if (flags.json) {
@@ -1683,6 +1820,48 @@ const COMMANDS = {
         process.exit(1);
       }
 
+      if (!ws) {
+        console.error('No .polly workspace found. Run `polly init` before executing governed tools.');
+        process.exit(1);
+      }
+
+      if (!trust.ok) {
+        appendAudit(ws, 'tool.run.denied', toolName, {
+          tool_name: toolName,
+          command: tool.command,
+          args: Array.isArray(tool.args) ? tool.args : [],
+          reason: trust.reason,
+          registry_path: registry.path,
+          run_at: runAt,
+        });
+        console.error('Refusing to execute untrusted tool registry entry: ' + trust.reason);
+        console.error('Only Polly built-in governed tool signatures may be executed by `polly tools run`.');
+        process.exit(1);
+      }
+
+      const trustedRoot = findBundledToolsRoot();
+      if (!trustedRoot) {
+        appendAudit(ws, 'tool.run.denied', toolName, {
+          tool_name: toolName,
+          reason: 'trusted bundled tool root not found',
+          run_at: runAt,
+        });
+        console.error('Refusing to execute governed tool: trusted bundled tool root not found.');
+        process.exit(1);
+      }
+
+      if (flags.cwd && path.resolve(flags.cwd) !== trustedRoot) {
+        appendAudit(ws, 'tool.run.denied', toolName, {
+          tool_name: toolName,
+          requested_cwd: path.resolve(flags.cwd),
+          trusted_cwd: trustedRoot,
+          reason: 'custom cwd is not allowed for governed tool execution',
+          run_at: runAt,
+        });
+        console.error('Refusing to execute governed tool with custom --cwd outside the trusted tool root.');
+        process.exit(1);
+      }
+
       // Audit: requested
       if (ws)
         appendAudit(ws, 'tool.run.requested', toolName, {
@@ -1698,7 +1877,7 @@ const COMMANDS = {
       }
 
       // Execute
-      const cwd = flags.cwd ? path.resolve(flags.cwd) : repoRoot || process.cwd();
+      const cwd = trustedRoot;
       const timeoutMs = flags.timeout ? parseInt(flags.timeout, 10) : 60000;
 
       let spawnResult;
@@ -1707,7 +1886,7 @@ const COMMANDS = {
           cwd,
           encoding: 'utf8',
           timeout: timeoutMs,
-          env: process.env,
+          env: buildToolEnv(process.env),
           shell: false,
         });
       } catch (spawnErr) {
