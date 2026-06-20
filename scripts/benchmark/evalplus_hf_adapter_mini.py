@@ -15,7 +15,6 @@ from evalplus.evaluate import evaluate
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-
 BASE_MODEL = os.environ.get("SCBE_EVAL_BASE_MODEL", "Qwen/Qwen2.5-Coder-0.5B-Instruct")
 ADAPTER_REPO = os.environ.get(
     "SCBE_EVAL_ADAPTER_REPO",

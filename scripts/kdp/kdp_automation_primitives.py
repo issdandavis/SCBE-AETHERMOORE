@@ -72,6 +72,7 @@ USAGE
     wait_for_upload(page, filename="miracle-memory.epub")
     new_url = click_publish_via_navigation(page, "#save-and-publish-announce")
 """
+
 from __future__ import annotations
 
 import re
@@ -147,7 +148,6 @@ def react_select(page: Page, selector: str, *, match: Callable[[str], bool]) -> 
     on the element instance via a hidden property and skips its handler
     when the value changes "outside" its event pipeline.
     """
-    needle = match.__doc__ or "<callable>"
     # Pass the textual matcher into the page so it can find the right option
     result = page.evaluate(
         """([sel, needleRegexSrc]) => {
@@ -220,15 +220,14 @@ def click_mdn_checkbox(page: Page, *, label_substr: str) -> dict:
             });
             if (!cb) return {error: 'no checkbox', needle};
             cb.click();
-            return {clicked: true, ariaChecked: cb.getAttribute('aria-checked'), label: (cb.parentElement?.innerText||'').slice(0,150)};
+            return {clicked: true, ariaChecked: cb.getAttribute('aria-checked'),
+                    label: (cb.parentElement?.innerText||'').slice(0,150)};
         }""",
         label_substr,
     )
 
 
-def wait_for_upload(
-    page: Page, *, filename: str, timeout_s: int = 180, poll_s: float = 2.0
-) -> bool:
+def wait_for_upload(page: Page, *, filename: str, timeout_s: int = 180, poll_s: float = 2.0) -> bool:
     """Wait until KDP shows the uploaded filename in the page body.
 
     KDP's success text reads `"<filename>" uploaded successfully!`. There
@@ -237,12 +236,10 @@ def wait_for_upload(
     fn_escaped = re.escape(filename)
     elapsed = 0.0
     while elapsed < timeout_s:
-        ok = page.evaluate(
-            f"""() => {{
+        ok = page.evaluate(f"""() => {{
                 const body = (document.body.innerText || '').replace(/\\s+/g, ' ');
                 return /{fn_escaped}/i.test(body);
-            }}"""
-        )
+            }}""")
         if ok:
             return True
         time.sleep(poll_s)
@@ -282,8 +279,7 @@ def click_publish_via_navigation(page: Page, selector: str, timeout_s: int = 30)
 
 
 KINDLE_FROM_PAPERBACK_URL = (
-    "https://kdp.amazon.com/en_US/title-setup/kindle/new/details"
-    "?existing={paperback_id}&item={paperback_id}"
+    "https://kdp.amazon.com/en_US/title-setup/kindle/new/details" "?existing={paperback_id}&item={paperback_id}"
 )
 
 

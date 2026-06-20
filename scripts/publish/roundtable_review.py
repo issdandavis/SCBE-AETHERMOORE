@@ -248,7 +248,8 @@ def phase_synthesize(token):
         [f"=== {e['model']} ===\n{e['notes'][:1000]}" for e in roundtable[-6:]]  # Last 6 entries
     )
 
-    prompt = f"""You are the chair of a book review panel. Read the round table discussion below and produce a FINAL SYNTHESIS.
+    prompt = f"""You are the chair of a book review panel. \
+Read the round table discussion below and produce a FINAL SYNTHESIS.
 
 {all_discussion}
 
@@ -267,7 +268,7 @@ PRODUCE:
     if response.startswith("ERROR"):
         print("FAILED")
     else:
-        print(f"OK")
+        print("OK")
         entry = {
             "timestamp": datetime.now().isoformat(),
             "phase": "synthesis",
@@ -281,7 +282,7 @@ PRODUCE:
         ts = datetime.now().strftime("%Y%m%dT%H%M%S")
         report_path = REPORT_DIR / f"{ts}_final_synthesis.md"
         with open(report_path, "w", encoding="utf-8") as f:
-            f.write(f"# Round Table Final Synthesis\n\n")
+            f.write("# Round Table Final Synthesis\n\n")
             f.write(f"Generated: {ts}\n\n")
             f.write(response)
         print(f"\n  Report: {report_path}")

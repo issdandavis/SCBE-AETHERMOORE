@@ -55,7 +55,9 @@ def _random_ball_vector(rng: random.Random, dims: int, radius: float) -> list[fl
     return [x * scaled_radius for x in direction]
 
 
-def build_dataset(*, rng: random.Random, doc_count: int, dims: int, topic_count: int) -> tuple[list[Doc], list[list[float]]]:
+def build_dataset(
+    *, rng: random.Random, doc_count: int, dims: int, topic_count: int
+) -> tuple[list[Doc], list[list[float]]]:
     centers = [_random_ball_vector(rng, dims, 0.7) for _ in range(topic_count)]
     docs: list[Doc] = []
     for i in range(doc_count):

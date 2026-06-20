@@ -437,7 +437,8 @@ def encode_token(
 # =============================================================================
 
 if __name__ == "__main__":
-    import sys, io
+    import io
+    import sys
 
     # Force UTF-8 output on Windows
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")

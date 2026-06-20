@@ -18,7 +18,6 @@ import re
 from pathlib import Path
 from typing import Any, Iterable, Iterator
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_LOG_DIR = REPO_ROOT / "artifacts" / "ai_ide_logs"
 DEFAULT_OUT = REPO_ROOT / "training-data" / "sft" / "ai_ide_sft.jsonl"

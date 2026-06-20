@@ -29,7 +29,6 @@ from src.cli.petri_seed_loader import (
     split_by_training_safety,
 )
 
-
 DEFAULT_SEEDS_DIR = Path("external/benchmarks/petri-seeds")
 
 

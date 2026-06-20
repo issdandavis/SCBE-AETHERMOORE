@@ -1,0 +1,52 @@
+name: Rosetta Conformance
+
+# Runs the verified Rosetta benchmark where MORE compilers exist than on a laptop.
+# GitHub's ubuntu runner ships python, node, rust, cc, go, ruby, php preinstalled, so the
+# verified-face count rises from ~3 (a dev box) toward ~7 -- and the harness only ever reports
+# faces it actually ran (NO_TOOLCHAIN otherwise). Informational: it prints the coverage matrix.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "python/scbe/rosetta.py"
+      - "python/scbe/polyglot_conformance.py"
+      - "python/scbe/polyglot.py"
+      - "python/scbe/polyglot_dialects.json"
+      - "python/scbe/loomflow.py"
+      - "python/scbe/loomtongue.py"
+      - ".github/workflows/rosetta-conformance.yml"
+
+jobs:
+  rosetta:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python deps (numpy + jsonschema are the only third-party imports the scbe package __init__ needs)
+        run: pip install numpy jsonschema
+      - name: Show available toolchains
+        run: |
+          set +e
+          echo "python: $(python --version 2>&1)"
+          echo "node:   $(node --version 2>&1)"
+          echo "rustc:  $(rustc --version 2>&1)"
+          echo "cc:     $(cc --version 2>&1 | head -1)"
+          echo "go:     $(go version 2>&1)"
+          echo "ruby:   $(ruby --version 2>&1)"
+          echo "php:    $(php --version 2>&1 | head -1)"
+          echo "lua:    $(lua -v 2>&1 | head -1)"
+      - name: Verified Rosetta benchmark (more faces than a laptop can run)
+        run: PYTHONPATH=. python -m python.scbe.rosetta --benchmark
+      - name: Single-song detail (the Rosetta stone, run + read back)
+        run: PYTHONPATH=. python -m python.scbe.rosetta "C E" --source python
+      - name: Loomflow -- a real branching loop verified across faces (incl. C here)
+        run: |
+          PYTHONPATH=. python -m python.scbe.loomflow sum_1_to_5
+          PYTHONPATH=. python -m python.scbe.loomflow factorial_5
+      - name: Loomtongue -- the SAME loop played in the conlang, verified across faces
+        run: |
+          PYTHONPATH=. python -m python.scbe.loomtongue sum_1_to_5
+          PYTHONPATH=. python -m python.scbe.loomtongue factorial_5

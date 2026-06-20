@@ -18,9 +18,7 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PROFILE = (
-    REPO_ROOT / "config" / "model_training" / "scbe-zero-cost-local-0.5b.json"
-)
+DEFAULT_PROFILE = REPO_ROOT / "config" / "model_training" / "scbe-zero-cost-local-0.5b.json"
 
 
 def _load_profile(path: Path) -> dict[str, Any]:
@@ -47,9 +45,7 @@ def _dataset_paths(profile: dict[str, Any]) -> list[str]:
 def _resolve_path(rel: str, dataset_root: str) -> Path:
     root = (dataset_root or ".").strip() or "."
     base = REPO_ROOT / root if root in (".", "") else REPO_ROOT / root
-    return (
-        (base / rel).resolve() if not Path(rel).is_absolute() else Path(rel).resolve()
-    )
+    return (base / rel).resolve() if not Path(rel).is_absolute() else Path(rel).resolve()
 
 
 def run_preflight(profile_path: Path) -> dict[str, Any]:
@@ -70,11 +66,7 @@ def run_preflight(profile_path: Path) -> dict[str, Any]:
         checks.append(
             {
                 "path": rel,
-                "resolved": (
-                    str(path.relative_to(REPO_ROOT))
-                    if path.is_relative_to(REPO_ROOT)
-                    else str(path)
-                ),
+                "resolved": (str(path.relative_to(REPO_ROOT)) if path.is_relative_to(REPO_ROOT) else str(path)),
                 "exists": exists,
                 "bytes": size,
                 "ok": ok,
@@ -98,8 +90,7 @@ def run_preflight(profile_path: Path) -> dict[str, Any]:
         "fix_commands": {
             "consolidate_regularized_jsonl": "python scripts/system/consolidate_ai_training.py",
             "consolidate_with_remote_buckets": (
-                "python scripts/system/consolidate_ai_training.py "
-                "--include-kaggle --include-hf --include-cloud"
+                "python scripts/system/consolidate_ai_training.py " "--include-kaggle --include-hf --include-cloud"
             ),
             "agentic_workbench": "npm run training:agentic-workbench",
         },
@@ -108,17 +99,13 @@ def run_preflight(profile_path: Path) -> dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Preflight zero-cost training dataset paths"
-    )
+    parser = argparse.ArgumentParser(description="Preflight zero-cost training dataset paths")
     parser.add_argument(
         "--profile",
         default=str(DEFAULT_PROFILE),
         help="Path to scbe-zero-cost-local-0.5b.json (or compatible profile)",
     )
-    parser.add_argument(
-        "--json", action="store_true", help="Print machine-readable JSON only"
-    )
+    parser.add_argument("--json", action="store_true", help="Print machine-readable JSON only")
     args = parser.parse_args()
 
     profile_path = Path(args.profile)

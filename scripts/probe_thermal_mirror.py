@@ -13,7 +13,6 @@ from typing import Any
 
 import numpy as np
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -40,7 +39,6 @@ from src.minimal.mirror_problem_fft import (  # noqa: E402
     signal_mirror,
     whole_mirror,
 )
-
 
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "artifacts" / "thermal_mirror"
 DIFFERENTIAL_PAIRS = (

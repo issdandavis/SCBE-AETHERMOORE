@@ -93,9 +93,7 @@ def count_links(html: str) -> tuple[int, int]:
         parser.feed(html)
     except Exception:
         return 0, 0
-    external = sum(
-        1 for href in parser.links if href.startswith(("http://", "https://"))
-    )
+    external = sum(1 for href in parser.links if href.startswith(("http://", "https://")))
     internal = len(parser.links) - external
     return internal, external
 
@@ -128,9 +126,7 @@ def replace_section_by_id(html: str, section_id: str, replacement: str) -> str:
 def page_flags(html: str) -> dict[str, bool]:
     lower = html.lower()
 
-    includes_match = re.search(
-        r"<section[^>]*\bid=\"includes\"[^>]*>([\s\S]*?)</section>", lower
-    )
+    includes_match = re.search(r"<section[^>]*\bid=\"includes\"[^>]*>([\s\S]*?)</section>", lower)
     includes_text = includes_match.group(1) if includes_match else ""
 
     offer_match = re.search(
@@ -139,9 +135,7 @@ def page_flags(html: str) -> dict[str, bool]:
     )
     offer_text = offer_match.group(1) if offer_match else ""
 
-    has_concrete_includes = all(
-        term in includes_text for term in REQUIRED_INCLUDES_TERMS
-    )
+    has_concrete_includes = all(term in includes_text for term in REQUIRED_INCLUDES_TERMS)
 
     return {
         "has_h1": "<h1" in lower,
@@ -155,8 +149,7 @@ def page_flags(html: str) -> dict[str, bool]:
         "has_faq": '<section id="faq"' in lower,
         "has_buyer_fit": ("good fit" in lower) and ("not for" in lower),
         "has_success_check": ("success check" in lower) or ("first win" in lower),
-        "has_hero_image": ("<img" in lower)
-        and bool(re.search(r'src="[^"]*hero\.(png|jpg|jpeg|webp|svg)"', lower)),
+        "has_hero_image": ("<img" in lower) and bool(re.search(r'src="[^"]*hero\.(png|jpg|jpeg|webp|svg)"', lower)),
         "has_concrete_includes": has_concrete_includes,
         "has_primary_cta_in_hero": "btn btn-primary" in offer_text,
         "has_final_cta": "final cta" in lower,
@@ -177,28 +170,16 @@ def score_page(html: str) -> tuple[dict[str, float], list[str], list[str]]:
 
     flags = page_flags(html)
 
-    includes_match = re.search(
-        r"<section[^>]*\bid=\"includes\"[^>]*>([\s\S]*?)</section>", lower
-    )
+    includes_match = re.search(r"<section[^>]*\bid=\"includes\"[^>]*>([\s\S]*?)</section>", lower)
     includes_text = includes_match.group(1) if includes_match else ""
 
     # Category scoring (0-10): strict and discriminating.
     clarity = 0.0
     clarity += 2.0 if flags["has_h1"] else 0.0
-    clarity += (
-        2.0
-        if (550 <= word_count <= 1050)
-        else 1.0 if (450 <= word_count <= 1350) else 0.0
-    )
-    clarity += (
-        2.0 if ("what you get" in lower or "inside the package" in lower) else 0.0
-    )
+    clarity += 2.0 if (550 <= word_count <= 1050) else 1.0 if (450 <= word_count <= 1350) else 0.0
+    clarity += 2.0 if ("what you get" in lower or "inside the package" in lower) else 0.0
     clarity += 1.0 if flags["has_faq"] else 0.0
-    clarity += (
-        2.0
-        if flags["has_concrete_includes"]
-        else 0.5 if "manual" in includes_text else 0.0
-    )
+    clarity += 2.0 if flags["has_concrete_includes"] else 0.5 if "manual" in includes_text else 0.0
     clarity += 1.0 if flags["has_success_check"] else 0.0
     clarity = clamp_0_10(clarity)
 
@@ -260,9 +241,7 @@ def score_page(html: str) -> tuple[dict[str, float], list[str], list[str]]:
     if not flags["has_hero_image"]:
         risks.append("Hero has no visible product image (only metadata).")
     if not flags["has_concrete_includes"]:
-        risks.append(
-            "Includes section is still abstract; missing concrete deliverables phrasing."
-        )
+        risks.append("Includes section is still abstract; missing concrete deliverables phrasing.")
     if not flags["has_success_check"]:
         risks.append("Missing explicit success check / first win criteria.")
     if not flags["has_faq"]:
@@ -271,23 +250,13 @@ def score_page(html: str) -> tuple[dict[str, float], list[str], list[str]]:
     if flags["has_buyer_fit"]:
         strengths.append("Buyer fit is explicitly scoped (good fit + not for).")
     if flags["has_manual"] and flags["has_delivery"] and flags["has_support"]:
-        strengths.append(
-            "Trust path is inspectable before checkout (manual + delivery + support)."
-        )
+        strengths.append("Trust path is inspectable before checkout (manual + delivery + support).")
     if flags["has_price"] and flags["has_one_time"] and flags["has_no_subscription"]:
         strengths.append("Offer is explicit (price + one-time + no subscription).")
-    if (
-        flags["has_use_cases_link"]
-        and flags["has_comparison_link"]
-        and flags["has_manual_proof_link"]
-    ):
-        strengths.append(
-            "Supporting pages exist (use cases + comparison + manual proof)."
-        )
+    if flags["has_use_cases_link"] and flags["has_comparison_link"] and flags["has_manual_proof_link"]:
+        strengths.append("Supporting pages exist (use cases + comparison + manual proof).")
     if flags["has_concrete_includes"]:
-        strengths.append(
-            "Deliverables are concrete (templates/worksheet/checklist/notes/manual/delivery)."
-        )
+        strengths.append("Deliverables are concrete (templates/worksheet/checklist/notes/manual/delivery).")
 
     metrics = {
         "clarity": round(clarity, 2),
@@ -297,8 +266,7 @@ def score_page(html: str) -> tuple[dict[str, float], list[str], list[str]]:
         "cta_discipline": round(cta_discipline, 2),
         "friction_control": round(friction, 2),
         "overall": round(
-            (clarity + offer_strength + proof + buyer_fit + cta_discipline + friction)
-            / 6,
+            (clarity + offer_strength + proof + buyer_fit + cta_discipline + friction) / 6,
             2,
         ),
     }
@@ -357,10 +325,7 @@ def build_backlog(audit: PageAudit) -> list[dict[str, str]]:
         if not (ROOT / "docs" / item["page_slug"]).exists():
             backlog.append(item)
 
-    if (
-        audit.metrics["proof"] < 8.5
-        and not (ROOT / "docs" / "proof/red-team-summary.html").exists()
-    ):
+    if audit.metrics["proof"] < 8.5 and not (ROOT / "docs" / "proof/red-team-summary.html").exists():
         backlog.insert(
             0,
             {
@@ -374,12 +339,8 @@ def build_backlog(audit: PageAudit) -> list[dict[str, str]]:
     return backlog
 
 
-def build_model_packets(
-    audit: PageAudit, backlog: Iterable[dict[str, str]]
-) -> dict[str, str]:
-    backlog_lines = "\n".join(
-        f"- {item['page_slug']}: {item['reason']}" for item in backlog
-    )
+def build_model_packets(audit: PageAudit, backlog: Iterable[dict[str, str]]) -> dict[str, str]:
+    backlog_lines = "\n".join(f"- {item['page_slug']}: {item['reason']}" for item in backlog)
     summary = json.dumps(audit.metrics, indent=2)
     return {
         "closer_pass": (
@@ -388,20 +349,21 @@ def build_model_packets(
             f"Risks: {', '.join(audit.risks) if audit.risks else 'none'}"
         ),
         "operator_pass": (
-            "Review this page as an operator. Focus on delivery, manual, buyer path, support, and post-checkout trust.\n"
+            "Review this page as an operator. "
+            "Focus on delivery, manual, buyer path, support, and post-checkout trust.\n"
             f"Strengths: {', '.join(audit.strengths) if audit.strengths else 'none'}"
         ),
-        "proof_pass": "Review this page for defensible claims. Flag any language that overstates implementation, proof, or scope.",
+        "proof_pass": (
+            "Review this page for defensible claims. "
+            "Flag any language that overstates implementation, proof, or scope."
+        ),
         "expansion_pass": (
-            "Propose the next three supporting sales pages that should exist.\n"
-            f"Current backlog:\n{backlog_lines}"
+            "Propose the next three supporting sales pages that should exist.\n" f"Current backlog:\n{backlog_lines}"
         ),
     }
 
 
-def ollama_generate(
-    *, base_url: str, model: str, prompt: str, timeout_s: int = 120
-) -> str:
+def ollama_generate(*, base_url: str, model: str, prompt: str, timeout_s: int = 120) -> str:
     url = base_url.rstrip("/") + "/api/generate"
     payload = {
         "model": model,
@@ -413,9 +375,7 @@ def ollama_generate(
         },
     }
     data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        url, data=data, headers={"Content-Type": "application/json"}
-    )
+    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=timeout_s) as resp:
             out = json.loads(resp.read().decode("utf-8"))
@@ -442,30 +402,23 @@ def escape_text(value: str) -> str:
 
 def build_ul(items: list[str], *, klass: str | None = None) -> str:
     class_attr = f' class="{klass}"' if klass else ""
-    lis = "\n".join(
-        f"              <li>{escape_text(item.strip())}</li>"
-        for item in items
-        if item.strip()
-    )
+    lis = "\n".join(f"              <li>{escape_text(item.strip())}</li>" for item in items if item.strip())
     return f"            <ul{class_attr}>\n{lis}\n            </ul>"
 
 
 def build_includes_section(packet: dict[str, object]) -> str:
-    headline = escape_text(
-        str(
-            packet.get("headline", "This is the part you can open and use first.")
-        ).strip()
-    )
+    headline = escape_text(str(packet.get("headline", "This is the part you can open and use first.")).strip())
     paragraph = escape_text(str(packet.get("paragraph", "")).strip())
     inside = [str(x) for x in (packet.get("inside_package_bullets") or [])]
-    first_win_title = escape_text(
-        str(packet.get("first_win_title", "First win")).strip()
-    )
+    first_win_title = escape_text(str(packet.get("first_win_title", "First win")).strip())
     first_win = [str(x) for x in (packet.get("first_win_bullets") or [])]
     helps = [str(x) for x in (packet.get("helps_you_do_bullets") or [])]
 
     if not paragraph:
-        paragraph = "The toolkit is built for fast starts: concrete templates, a pilot-first worksheet path, and a short manual that tells you what to do first."
+        paragraph = (
+            "The toolkit is built for fast starts: concrete templates, a pilot-first worksheet path, "
+            "and a short manual that tells you what to do first."
+        )
 
     return f"""<section id="includes">
       <div class="section-inner">
@@ -484,7 +437,9 @@ def build_includes_section(packet: dict[str, object]) -> str:
           <article class="slab">
             <h3>{first_win_title}</h3>
 {build_ul(first_win, klass="checklist")}
-            <p style="margin-top:12px; color: var(--muted); font-size: 16px;">If you can do those steps, the toolkit is working.</p>
+            <p style="margin-top:12px; color: var(--muted); font-size: 16px;">
+              If you can do those steps, the toolkit is working.
+            </p>
           </article>
           <article class="slab">
             <h3>What this helps you do</h3>
@@ -497,9 +452,7 @@ def build_includes_section(packet: dict[str, object]) -> str:
 
 def validate_includes_packet(packet: dict[str, object]) -> list[str]:
     issues: list[str] = []
-    inside_text = " ".join(
-        str(x).lower() for x in (packet.get("inside_package_bullets") or [])
-    )
+    inside_text = " ".join(str(x).lower() for x in (packet.get("inside_package_bullets") or []))
     if not inside_text:
         issues.append("inside_package_bullets is empty")
         return issues
@@ -520,9 +473,11 @@ def validate_includes_packet(packet: dict[str, object]) -> list[str]:
 
 def build_includes_prompt(*, current_section_text: str) -> str:
     return (
-        'You are improving one section of a landing page: the "What you get" section for a $29 one-time purchase called the '
+        'You are improving one section of a landing page: the "What you get" section '
+        "for a $29 one-time purchase called the "
         "SCBE AI Governance Toolkit.\n\n"
-        "Write buyer-first, concrete copy. No enterprise promises, no hype, no guarantees. Avoid deep internal jargon.\n\n"
+        "Write buyer-first, concrete copy. No enterprise promises, no hype, no guarantees. "
+        "Avoid deep internal jargon.\n\n"
         "Return ONLY valid JSON. No markdown.\n\n"
         "JSON schema:\n"
         "{\n"
@@ -534,7 +489,8 @@ def build_includes_prompt(*, current_section_text: str) -> str:
         '  "helps_you_do_bullets": ["..."]\n'
         "}\n\n"
         "Hard constraints:\n"
-        "- inside_package_bullets MUST mention: decision record template, threshold worksheet, pilot checklist, review notes format, manual, delivery + recovery.\n"
+        "- inside_package_bullets MUST mention: decision record template, threshold worksheet, "
+        "pilot checklist, review notes format, manual, delivery + recovery.\n"
         "- Bullet length <= 16 words each.\n"
         "- first_win_bullets should be 3-6 short steps.\n\n"
         "Current section text (for context):\n"
@@ -595,16 +551,12 @@ def pick_best_includes_rewrite(
             best_html = trial_html
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "rewrite_candidates.json").write_text(
-        json.dumps(candidates, indent=2), encoding="utf-8"
-    )
+    (output_dir / "rewrite_candidates.json").write_text(json.dumps(candidates, indent=2), encoding="utf-8")
 
     if best is None or best_html is None:
         return None, {"error": "no_valid_rewrite"}
 
-    (output_dir / "chosen_rewrite.json").write_text(
-        json.dumps(best, indent=2), encoding="utf-8"
-    )
+    (output_dir / "chosen_rewrite.json").write_text(json.dumps(best, indent=2), encoding="utf-8")
     return best_html, best
 
 
@@ -612,9 +564,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Run a repeatable sales-improvement audit and packet builder for the website."
     )
-    parser.add_argument(
-        "--page", default="docs/index.html", help="Target page relative to repo root."
-    )
+    parser.add_argument("--page", default="docs/index.html", help="Target page relative to repo root.")
     parser.add_argument(
         "--output-dir",
         default="artifacts/marketing/website_sales_train",
@@ -641,9 +591,7 @@ def main() -> None:
         action="store_true",
         help="Write improved HTML back to the target page during iterations (backup is created once).",
     )
-    parser.add_argument(
-        "--sleep-ms", type=int, default=0, help="Optional delay between iterations."
-    )
+    parser.add_argument("--sleep-ms", type=int, default=0, help="Optional delay between iterations.")
     args = parser.parse_args()
 
     page = ROOT / args.page
@@ -657,15 +605,9 @@ def main() -> None:
         backlog = build_backlog(audit)
         packets = build_model_packets(audit, backlog)
 
-        (output_dir / "audit.json").write_text(
-            json.dumps(asdict(audit), indent=2), encoding="utf-8"
-        )
-        (output_dir / "backlog.json").write_text(
-            json.dumps(backlog, indent=2), encoding="utf-8"
-        )
-        (output_dir / "model_packets.json").write_text(
-            json.dumps(packets, indent=2), encoding="utf-8"
-        )
+        (output_dir / "audit.json").write_text(json.dumps(asdict(audit), indent=2), encoding="utf-8")
+        (output_dir / "backlog.json").write_text(json.dumps(backlog, indent=2), encoding="utf-8")
+        (output_dir / "model_packets.json").write_text(json.dumps(packets, indent=2), encoding="utf-8")
 
         summary = {
             "page": audit.path,
@@ -693,15 +635,9 @@ def main() -> None:
         audit = audit_html(page, best_html)
         backlog = build_backlog(audit)
         packets = build_model_packets(audit, backlog)
-        (iter_dir / "audit.json").write_text(
-            json.dumps(asdict(audit), indent=2), encoding="utf-8"
-        )
-        (iter_dir / "backlog.json").write_text(
-            json.dumps(backlog, indent=2), encoding="utf-8"
-        )
-        (iter_dir / "model_packets.json").write_text(
-            json.dumps(packets, indent=2), encoding="utf-8"
-        )
+        (iter_dir / "audit.json").write_text(json.dumps(asdict(audit), indent=2), encoding="utf-8")
+        (iter_dir / "backlog.json").write_text(json.dumps(backlog, indent=2), encoding="utf-8")
+        (iter_dir / "model_packets.json").write_text(json.dumps(packets, indent=2), encoding="utf-8")
 
         rewritten_html, chosen = pick_best_includes_rewrite(
             base_html=best_html,
@@ -721,9 +657,7 @@ def main() -> None:
                 page.write_text(best_html, encoding="utf-8")
         else:
             (iter_dir / "page_snapshot.html").write_text(best_html, encoding="utf-8")
-            (iter_dir / "rewrite_failed.json").write_text(
-                json.dumps(chosen, indent=2), encoding="utf-8"
-            )
+            (iter_dir / "rewrite_failed.json").write_text(json.dumps(chosen, indent=2), encoding="utf-8")
 
         if args.sleep_ms > 0:
             time.sleep(args.sleep_ms / 1000.0)

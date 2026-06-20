@@ -119,7 +119,7 @@ def create_browser(
     agent_id: str = "governed-browser-001",
     scbe_url: str = "http://127.0.0.1:8080",
     scbe_key: str = "",
-    **backend_kwargs
+    **backend_kwargs,
 ) -> GovernedBrowser:
     """
     Factory function to create a governed browser with specified backend.
@@ -149,21 +149,13 @@ def create_browser(
         browser = create_browser("chrome_mcp", tab_id=12345)
     """
     if backend_type not in BACKENDS:
-        raise ValueError(
-            f"Unknown backend: {backend_type}. "
-            f"Available: {list(BACKENDS.keys())}"
-        )
+        raise ValueError(f"Unknown backend: {backend_type}. " f"Available: {list(BACKENDS.keys())}")
 
     backend_class = BACKENDS[backend_type]["class"]
     backend = backend_class(**backend_kwargs)
 
     if governed:
-        return GovernedBrowser(
-            backend,
-            agent_id=agent_id,
-            scbe_url=scbe_url,
-            scbe_key=scbe_key
-        )
+        return GovernedBrowser(backend, agent_id=agent_id, scbe_url=scbe_url, scbe_key=scbe_key)
     else:
         return backend
 

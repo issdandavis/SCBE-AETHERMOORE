@@ -1,9 +1,13 @@
 """47-step Mars blackout-resumption sim — history reducer + Fibonacci trust ladder."""
+
 from dataclasses import dataclass, field
 from typing import List, Dict, Set
-import time, random, statistics
+import random
+import statistics
+import time
 
-phi = (1 + 5 ** 0.5) / 2
+phi = (1 + 5**0.5) / 2
+
 
 @dataclass
 class WorldState:
@@ -25,6 +29,7 @@ def apply_step(state: WorldState, delta: Dict) -> WorldState:
     prev2, prev1 = state.trust_ladder[-2], state.trust_ladder[-1]
     betrayal_delta = float(delta.get("betrayal", 0.0))
     import math
+
     depth = max(1, len(state.trust_ladder) - 1)
     soft_phi = phi ** (1.0 / depth)
     if betrayal_delta > 0:
@@ -60,9 +65,13 @@ def synth_deltas(n=47, seed=7):
     rng = random.Random(seed)
     out = []
     for i in range(n):
-        d = {"scalars": {"power": rng.uniform(-0.05, 0.1),
-                         "knowledge": rng.uniform(0.0, 0.08),
-                         "culture": rng.uniform(-0.02, 0.05)}}
+        d = {
+            "scalars": {
+                "power": rng.uniform(-0.05, 0.1),
+                "knowledge": rng.uniform(0.0, 0.08),
+                "culture": rng.uniform(-0.02, 0.05),
+            }
+        }
         if i in (15, 32):
             d["betrayal"] = 1.0
             d["neg"] = [f"breach_{i}"]
@@ -75,13 +84,15 @@ if __name__ == "__main__":
     deltas = synth_deltas()
     final, timings = run(state, deltas, max_steps=47)
     drift = max(abs(t - statistics.mean(timings)) for t in timings)
-    print({
-        "year": final.year,
-        "trust_level": round(final.trust_ladder[-1], 3),
-        "betrayal_count": final.betrayal_count,
-        "mean_step_us": round(statistics.mean(timings) * 1e6, 2),
-        "max_step_us": round(max(timings) * 1e6, 2),
-        "timing_drift_us": round(drift * 1e6, 2),
-        "memory_len": len(final.memory),
-        "negative_flags": sorted(final.negative_flags),
-    })
+    print(
+        {
+            "year": final.year,
+            "trust_level": round(final.trust_ladder[-1], 3),
+            "betrayal_count": final.betrayal_count,
+            "mean_step_us": round(statistics.mean(timings) * 1e6, 2),
+            "max_step_us": round(max(timings) * 1e6, 2),
+            "timing_drift_us": round(drift * 1e6, 2),
+            "memory_len": len(final.memory),
+            "negative_flags": sorted(final.negative_flags),
+        }
+    )

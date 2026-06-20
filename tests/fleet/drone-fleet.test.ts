@@ -33,7 +33,6 @@ import {
   classifyManeuver,
   createManeuver,
   harmonicWallCost,
-  DEFAULT_SPHERE_CUBE_CONFIG,
 } from '../../src/fleet/drone-fleet/sphereCubeTopology';
 
 // 3. Harmonic Camouflage

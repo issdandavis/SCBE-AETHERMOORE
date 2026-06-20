@@ -1,5 +1,19 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { parseShellTemplate, execPlan, type GeoSealPlan } from '../src/pipeline.js';
+import {
+  parseShellTemplate,
+  execPlan,
+  createGovernedPipelineState,
+  saveGovernedPipelineState,
+  loadGovernedPipelineState,
+  classifyGovernedMove,
+  reachableMoveSet,
+  evaluateTrajectoryGate,
+  summarizeGovernedPipelineState,
+  type GeoSealPlan,
+} from '../src/pipeline.js';
 
 // ─── parseShellTemplate ───────────────────────────────────────────────────────
 
@@ -127,5 +141,128 @@ describe('runPipeline policy gate', async () => {
     expect(result.blocked).toBe(true);
     expect(result.plan).toBeNull();
     expect(result.block_reason).toMatch(/geoseal compile failed/);
+  });
+});
+
+// ─── persisted trajectory gate ───────────────────────────────────────────────
+
+describe('governed trajectory gate', () => {
+  const basePlan: GeoSealPlan = {
+    schema_version: 'scbe_command_plan_v1',
+    intent: { text: 'inspect repo status', permission_mode: 'observe' },
+    tool: {
+      class: 'read',
+      contract: { tool: 'read', risk: 'low', approval: 'auto' },
+    },
+    policy: { ok: true, decision: 'ALLOW', reason: 'profile_allows' },
+    command: { key: 'status', template: 'git status --short', runnable: true },
+    hashes: { intent_sha256: 'intent-a', plan_sha256: 'plan-a' },
+  };
+
+  it('starts with only low-risk classes reachable', () => {
+    const state = createGovernedPipelineState('session one');
+    expect(state.session_id).toBe('session-one');
+    expect(reachableMoveSet(state)).toEqual(['observe', 'read', 'verify']);
+  });
+
+  it('classifies destructive and deployment commands before execution', () => {
+    expect(
+      classifyGovernedMove({
+        ...basePlan,
+        intent: { text: 'deploy to production', permission_mode: 'execute' },
+        command: { key: 'deploy', template: 'vercel deploy --prod', runnable: true },
+      })
+    ).toBe('deploy');
+
+    expect(
+      classifyGovernedMove({
+        ...basePlan,
+        intent: { text: 'delete generated cache', permission_mode: 'execute' },
+        command: { key: 'delete', template: 'rm -rf .cache', runnable: true },
+      })
+    ).toBe('destructive');
+  });
+
+  it('blocks deploy until verification and network moves have been accepted', () => {
+    const deployPlan: GeoSealPlan = {
+      ...basePlan,
+      intent: { text: 'deploy the app', permission_mode: 'execute' },
+      command: { key: 'deploy', template: 'vercel deploy --prod', runnable: true },
+      hashes: { intent_sha256: 'intent-deploy', plan_sha256: 'plan-deploy' },
+    };
+
+    const state = createGovernedPipelineState('release-lane');
+    let gate = evaluateTrajectoryGate(deployPlan, state, {
+      sessionId: state.session_id,
+      statePath: 'state.json',
+    });
+    expect(gate.allowed).toBe(false);
+    expect(gate.reachable_set).not.toContain('deploy');
+
+    state.accepted_moves.push({
+      at: new Date().toISOString(),
+      intent_sha256: 'intent-verify',
+      plan_sha256: 'plan-verify',
+      command_key: 'test',
+      move_class: 'verify',
+      decision: 'ACCEPT',
+      reason: 'tests passed',
+    });
+    state.accepted_moves.push({
+      at: new Date().toISOString(),
+      intent_sha256: 'intent-network',
+      plan_sha256: 'plan-network',
+      command_key: 'push',
+      move_class: 'network',
+      decision: 'ACCEPT',
+      reason: 'remote check passed',
+    });
+
+    gate = evaluateTrajectoryGate(deployPlan, state, {
+      sessionId: state.session_id,
+      statePath: 'state.json',
+    });
+    expect(gate.allowed).toBe(true);
+    expect(gate.reachable_set).toContain('deploy');
+  });
+
+  it('round-trips governed state to the filesystem', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'scbe-governed-state-'));
+    const statePath = path.join(dir, 'lane.json');
+    const state = createGovernedPipelineState('lane');
+    state.rejected_moves.push({
+      at: new Date().toISOString(),
+      intent_sha256: 'intent-bad',
+      plan_sha256: 'plan-bad',
+      command_key: 'deploy',
+      move_class: 'deploy',
+      decision: 'REJECT',
+      reason: 'not reachable',
+    });
+
+    saveGovernedPipelineState(statePath, state);
+    const restored = loadGovernedPipelineState(statePath, 'lane');
+    expect(restored.rejected_moves[0]?.move_class).toBe('deploy');
+    expect(restored.schema_version).toBe('scbe.agent_bus.governed_state.v1');
+  });
+
+  it('summarizes governed state for CLI inspection', () => {
+    const state = createGovernedPipelineState('patent lane');
+    state.accepted_moves.push({
+      at: new Date().toISOString(),
+      intent_sha256: 'intent-read',
+      plan_sha256: 'plan-read',
+      command_key: 'inspect',
+      move_class: 'read',
+      decision: 'ACCEPT',
+      reason: 'read accepted',
+    });
+
+    const summary = summarizeGovernedPipelineState(state, 'state.json');
+    expect(summary.schema_version).toBe('scbe.agent_bus.governed_state_summary.v1');
+    expect(summary.session_id).toBe('patent-lane');
+    expect(summary.accepted_count).toBe(1);
+    expect(summary.reachable_set).toContain('write');
+    expect(summary.last_accepted?.command_key).toBe('inspect');
   });
 });

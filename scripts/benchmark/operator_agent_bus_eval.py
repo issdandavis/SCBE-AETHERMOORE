@@ -117,9 +117,7 @@ def score_eval_record(row: dict[str, Any]) -> dict[str, Any]:
     checks: dict[str, bool] = {"json_parse": True}
     for field in required:
         checks[f"has_{field}"] = field in payload
-    checks["no_execution_command"] = not any(
-        key in payload for key in ("shell_command", "powershell", "bash", "cmd")
-    )
+    checks["no_execution_command"] = not any(key in payload for key in ("shell_command", "powershell", "bash", "cmd"))
     checks["has_source_metadata"] = bool(metadata.get("source_path") and metadata.get("dedupe_key"))
     passed = sum(1 for value in checks.values() if value)
     total = len(checks)
@@ -136,11 +134,7 @@ def score_eval_record(row: dict[str, Any]) -> dict[str, Any]:
 def evaluate_dataset(eval_path: Path = DEFAULT_EVAL_PATH) -> dict[str, Any]:
     rows = _load_jsonl(eval_path)
     record_scores = [score_eval_record(row) for row in rows]
-    average = (
-        round(sum(item["score"] for item in record_scores) / len(record_scores), 4)
-        if record_scores
-        else 0.0
-    )
+    average = round(sum(item["score"] for item in record_scores) / len(record_scores), 4) if record_scores else 0.0
     return {
         "eval_path": str(eval_path),
         "record_count": len(rows),
@@ -241,11 +235,7 @@ def evaluate_endpoint(run_id: str, *, run_live: bool = True) -> dict[str, Any]:
         return {"run_live": False, "task_count": 0, "average_score": 0.0, "task_scores": []}
     raw_results = [run_endpoint_task(task, run_id) for task in ENDPOINT_TASKS]
     task_scores = [score_endpoint_result(result) for result in raw_results]
-    average = (
-        round(sum(item["score"] for item in task_scores) / len(task_scores), 4)
-        if task_scores
-        else 0.0
-    )
+    average = round(sum(item["score"] for item in task_scores) / len(task_scores), 4) if task_scores else 0.0
     return {
         "run_live": True,
         "task_count": len(ENDPOINT_TASKS),
@@ -270,14 +260,14 @@ def build_report(
     endpoint_weight = 0.45 if run_live_endpoint else 0.0
     denominator = dataset_weight + endpoint_weight
     overall = round(
-        (
-            dataset["average_score"] * dataset_weight
-            + endpoint["average_score"] * endpoint_weight
-        )
-        / denominator,
+        (dataset["average_score"] * dataset_weight + endpoint["average_score"] * endpoint_weight) / denominator,
         4,
     )
-    decision = "PASS" if dataset["average_score"] >= 0.9 and (not run_live_endpoint or endpoint["average_score"] >= 0.9) else "HOLD"
+    decision = (
+        "PASS"
+        if dataset["average_score"] >= 0.9 and (not run_live_endpoint or endpoint["average_score"] >= 0.9)
+        else "HOLD"
+    )
     report = {
         "schema_version": "scbe_operator_agent_bus_eval_v1",
         "purpose": "operator_agent_bus",
@@ -289,7 +279,9 @@ def build_report(
         "endpoint_score": endpoint["average_score"],
         "dataset": dataset,
         "endpoint": endpoint,
-        "promotion_gate": "PASS only when held-out records preserve route/proof/risk fields and endpoint artifacts exist.",
+        "promotion_gate": (
+            "PASS only when held-out records preserve route/proof/risk fields and endpoint artifacts exist."
+        ),
     }
     run_dir = output_dir / run_id
     _write_json(run_dir / "report.json", report)

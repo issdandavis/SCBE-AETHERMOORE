@@ -2,7 +2,8 @@
 
 Typical uses:
   python scripts/train/recover_tongue_table_run.py --run artifacts/tongue-table-lora-v2-weighted-rerun
-  python scripts/train/recover_tongue_table_run.py --run artifacts/tongue-table-lora-v2-weighted --alias artifacts/tongue-table-lora-v2-weighted-rerun
+  python scripts/train/recover_tongue_table_run.py --run artifacts/tongue-table-lora-v2-weighted \\
+      --alias artifacts/tongue-table-lora-v2-weighted-rerun
 """
 
 from __future__ import annotations

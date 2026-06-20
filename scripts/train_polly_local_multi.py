@@ -147,23 +147,27 @@ def load_round_datasets(file_list: list[str]) -> Dataset:
                 user_text = row.get("instruction", "")
                 assistant_text = row.get("response") or row.get("output") or row.get("positive", "")
                 if user_text and assistant_text:
-                    all_records.append({
-                        "messages": [
-                            {"role": "user", "content": user_text},
-                            {"role": "assistant", "content": assistant_text},
-                        ]
-                    })
+                    all_records.append(
+                        {
+                            "messages": [
+                                {"role": "user", "content": user_text},
+                                {"role": "assistant", "content": assistant_text},
+                            ]
+                        }
+                    )
             # prompt/ideal_contains format (probes)
             elif "prompt" in cols:
                 user_text = row.get("prompt", "")
                 assistant_text = row.get("ideal_contains") or row.get("response", "")
                 if user_text and assistant_text:
-                    all_records.append({
-                        "messages": [
-                            {"role": "user", "content": user_text},
-                            {"role": "assistant", "content": str(assistant_text)},
-                        ]
-                    })
+                    all_records.append(
+                        {
+                            "messages": [
+                                {"role": "user", "content": user_text},
+                                {"role": "assistant", "content": str(assistant_text)},
+                            ]
+                        }
+                    )
 
     # Summary
     print("\n" + "=" * 60)
@@ -211,14 +215,17 @@ def train_round(round_name: str, config: dict) -> None:
     )
 
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
-    model = get_peft_model(model, LoraConfig(
-        r=16,
-        lora_alpha=32,
-        lora_dropout=0.05,
-        bias="none",
-        task_type="CAUSAL_LM",
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
-    ))
+    model = get_peft_model(
+        model,
+        LoraConfig(
+            r=16,
+            lora_alpha=32,
+            lora_dropout=0.05,
+            bias="none",
+            task_type="CAUSAL_LM",
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+        ),
+    )
     model.print_trainable_parameters()
 
     push = os.getenv("POLLY_PUSH_TO_HUB", "0") == "1"
@@ -265,9 +272,9 @@ def train_round(round_name: str, config: dict) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Polly multi-round local training")
-    parser.add_argument("--round", required=True,
-                        choices=list(ROUNDS.keys()) + ["all"],
-                        help="Which training round to run")
+    parser.add_argument(
+        "--round", required=True, choices=list(ROUNDS.keys()) + ["all"], help="Which training round to run"
+    )
     args = parser.parse_args()
 
     # Auth

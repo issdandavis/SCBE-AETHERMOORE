@@ -30,7 +30,6 @@ from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from trl import SFTConfig, SFTTrainer
 
-
 BASE_MODEL = os.getenv("POLLY_BASE_MODEL", "Qwen/Qwen2.5-0.5B-Instruct")
 TARGET_MODEL = os.getenv("POLLY_TARGET_MODEL", "issdandavis/polly-focused-qwen-0.5b")
 OUTPUT_DIR = os.getenv("POLLY_OUTPUT_DIR", "artifacts/training/polly-focused-0.5b")
@@ -89,12 +88,14 @@ def load_focused_datasets() -> Dataset:
             user_text = row.get("instruction", "")
             assistant_text = row.get("response") or row.get("output", "")
             if user_text and assistant_text:
-                all_records.append({
-                    "messages": [
-                        {"role": "user", "content": user_text},
-                        {"role": "assistant", "content": assistant_text},
-                    ]
-                })
+                all_records.append(
+                    {
+                        "messages": [
+                            {"role": "user", "content": user_text},
+                            {"role": "assistant", "content": assistant_text},
+                        ]
+                    }
+                )
 
     # Print composition summary
     print("\n" + "=" * 60)
@@ -143,14 +144,17 @@ def main() -> None:
 
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
 
-    model = get_peft_model(model, LoraConfig(
-        r=16,
-        lora_alpha=32,
-        lora_dropout=0.05,
-        bias="none",
-        task_type="CAUSAL_LM",
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
-    ))
+    model = get_peft_model(
+        model,
+        LoraConfig(
+            r=16,
+            lora_alpha=32,
+            lora_dropout=0.05,
+            bias="none",
+            task_type="CAUSAL_LM",
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+        ),
+    )
     model.print_trainable_parameters()
 
     # No peft_config — LoRA already applied. No fp16 — avoids BF16 AMP bug on Turing.

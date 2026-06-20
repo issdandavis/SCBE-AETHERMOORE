@@ -16,7 +16,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -104,7 +103,11 @@ def branch_cleanup_lanes(branches: list[str], merged: set[str]) -> dict[str, lis
         if not branch.startswith("origin/"):
             continue
         lane, reasons = classify_branch(branch, merged)
-        paths = changed_paths_against_main(branch, limit=25) if lane not in {"safe-delete-merged", "backup-preserve"} else []
+        paths = (
+            changed_paths_against_main(branch, limit=25)
+            if lane not in {"safe-delete-merged", "backup-preserve"}
+            else []
+        )
         lanes[lane].append(
             {
                 "branch": branch,
@@ -199,7 +202,9 @@ def build_report() -> dict[str, object]:
         deploy_by_kind[classify_deploy_file(path)].append(path)
 
     prefix_counts = Counter(prefix_of(branch) for branch in branches if branch.startswith("origin/"))
-    delete_candidates = [branch for branch in branches if branch.startswith("origin/") and safe_delete_candidate(branch, merged)]
+    delete_candidates = [
+        branch for branch in branches if branch.startswith("origin/") and safe_delete_candidate(branch, merged)
+    ]
     cleanup_lanes = branch_cleanup_lanes(branches, merged)
 
     return {

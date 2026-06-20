@@ -15,7 +15,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "docs" / "scbe_full_system_layer_manifest.json"
 SCHEMA_PATH = ROOT / "docs" / "scbe_full_system_layer_manifest.schema.json"

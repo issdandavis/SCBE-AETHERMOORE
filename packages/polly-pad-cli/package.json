@@ -1,0 +1,23 @@
+{
+  "name": "scbe-polly-pad-cli",
+  "version": "0.1.0",
+  "description": "Polly — governed terminal workpad for AI operators. Persistent workspace, task state, LLM routing, tool recipes, and audit receipts.",
+  "type": "commonjs",
+  "bin": { "polly": "bin/polly.js" },
+  "files": ["bin", "tests", "README.md", "LICENSE", "LICENSE-APACHE"],
+  "scripts": {
+    "help": "node ./bin/polly.js --help",
+    "doctor": "node ./bin/polly.js doctor",
+    "test": "node --test tests/*.test.cjs"
+  },
+  "engines": { "node": ">=20.0.0" },
+  "keywords": ["scbe", "polly", "cli", "agent", "workspace", "ai-operator", "governance"],
+  "author": "Issac Daniel Davis <issdandavis@gmail.com>",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git",
+    "directory": "packages/polly-pad-cli"
+  },
+  "publishConfig": { "access": "public" }
+}

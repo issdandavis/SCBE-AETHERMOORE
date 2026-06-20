@@ -26,7 +26,6 @@ from typing import Optional, Dict, Any, List
 from enum import Enum
 from datetime import datetime, timezone
 
-
 # =============================================================================
 # Configuration
 # =============================================================================
@@ -65,6 +64,7 @@ DOMAIN_RISK = {
 # Data Classes
 # =============================================================================
 
+
 class Decision(str, Enum):
     ALLOW = "ALLOW"
     QUARANTINE = "QUARANTINE"
@@ -75,6 +75,7 @@ class Decision(str, Enum):
 @dataclass
 class GovernanceResult:
     """Result from SCBE governance check."""
+
     decision: Decision
     decision_id: str
     score: float
@@ -102,6 +103,7 @@ class GovernanceResult:
 @dataclass
 class BrowserAction:
     """Represents a browser action to be governed."""
+
     action_type: str
     target: str
     data: Optional[Dict[str, Any]] = None
@@ -113,6 +115,7 @@ class BrowserAction:
 @dataclass
 class EscalationResult:
     """Result from escalation to higher AI or human."""
+
     source: str  # "higher_ai" or "human"
     decision: Decision
     reason: str
@@ -123,6 +126,7 @@ class EscalationResult:
 # SCBE Client
 # =============================================================================
 
+
 class SCBEClient:
     """Client for SCBE-AETHERMOORE API."""
 
@@ -130,10 +134,12 @@ class SCBEClient:
         self.api_url = api_url.rstrip("/")
         self.api_key = api_key
         self.session = requests.Session()
-        self.session.headers.update({
-            "Content-Type": "application/json",
-            "x-api-key": self.api_key,
-        })
+        self.session.headers.update(
+            {
+                "Content-Type": "application/json",
+                "x-api-key": self.api_key,
+            }
+        )
 
     def _candidate_paths(self, *paths: str) -> List[str]:
         candidates: List[str] = []
@@ -164,27 +170,20 @@ class SCBEClient:
         action: str,
         target: str,
         sensitivity: float = 0.5,
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
     ) -> GovernanceResult:
         """Request authorization from SCBE API."""
         payload = {
             "agent_id": agent_id,
             "action": action,
             "target": target,
-            "context": {
-                "sensitivity": sensitivity,
-                **(context or {})
-            }
+            "context": {"sensitivity": sensitivity, **(context or {})},
         }
 
         last_error: Optional[Exception] = None
         for path in self._candidate_paths("/authorize"):
             try:
-                resp = self.session.post(
-                    f"{self.api_url}{path}",
-                    json=payload,
-                    timeout=10
-                )
+                resp = self.session.post(f"{self.api_url}{path}", json=payload, timeout=10)
                 resp.raise_for_status()
                 data = resp.json()
 
@@ -194,7 +193,7 @@ class SCBEClient:
                     score=data["score"],
                     explanation=data["explanation"],
                     token=data.get("token"),
-                    expires_at=data.get("expires_at")
+                    expires_at=data.get("expires_at"),
                 )
             except requests.exceptions.RequestException as exc:
                 last_error = exc
@@ -203,61 +202,31 @@ class SCBEClient:
             decision=Decision.DENY,
             decision_id="error",
             score=0.0,
-            explanation={"error": str(last_error) if last_error else "authorization endpoint unavailable"}
+            explanation={"error": str(last_error) if last_error else "authorization endpoint unavailable"},
         )
 
     def roundtable(
-        self,
-        action: str,
-        target: str,
-        tier: int,
-        signers: List[str],
-        context: Optional[Dict[str, Any]] = None
+        self, action: str, target: str, tier: int, signers: List[str], context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Request Roundtable multi-sig approval."""
-        payload = {
-            "action": action,
-            "target": target,
-            "tier": tier,
-            "signers": signers,
-            "context": context or {}
-        }
+        payload = {"action": action, "target": target, "tier": tier, "signers": signers, "context": context or {}}
 
         try:
-            resp = self.session.post(
-                f"{self.api_url}/v1/roundtable",
-                json=payload,
-                timeout=30
-            )
+            resp = self.session.post(f"{self.api_url}/v1/roundtable", json=payload, timeout=30)
             resp.raise_for_status()
             return resp.json()
         except requests.exceptions.RequestException as e:
             print(f"[SCBE] Roundtable failed: {e}")
             return {"status": "REJECTED", "error": str(e)}
 
-    def register_agent(
-        self,
-        agent_id: str,
-        name: str,
-        role: str,
-        initial_trust: float = 0.5
-    ) -> Dict[str, Any]:
+    def register_agent(self, agent_id: str, name: str, role: str, initial_trust: float = 0.5) -> Dict[str, Any]:
         """Register a new agent with SCBE."""
-        payload = {
-            "agent_id": agent_id,
-            "name": name,
-            "role": role,
-            "initial_trust": initial_trust
-        }
+        payload = {"agent_id": agent_id, "name": name, "role": role, "initial_trust": initial_trust}
 
         last_error: Optional[Exception] = None
         for path in self._candidate_paths("/agents"):
             try:
-                resp = self.session.post(
-                    f"{self.api_url}{path}",
-                    json=payload,
-                    timeout=10
-                )
+                resp = self.session.post(f"{self.api_url}{path}", json=payload, timeout=10)
                 if resp.status_code == 409:
                     return {"agent_id": agent_id, "status": "exists"}
                 resp.raise_for_status()
@@ -272,6 +241,7 @@ class SCBEClient:
 # Escalation Handlers
 # =============================================================================
 
+
 class EscalationHandler:
     """Handles escalation to higher AI or human."""
 
@@ -279,11 +249,7 @@ class EscalationHandler:
         self.higher_ai_decisions: List[EscalationResult] = []
         self.human_decisions: List[EscalationResult] = []
 
-    def ask_higher_ai(
-        self,
-        action: BrowserAction,
-        original_result: GovernanceResult
-    ) -> EscalationResult:
+    def ask_higher_ai(self, action: BrowserAction, original_result: GovernanceResult) -> EscalationResult:
         """
         Simulate asking a higher AI for approval.
         In production, this would call another AI model.
@@ -304,10 +270,7 @@ class EscalationHandler:
             reason = "High sensitivity - requires human approval"
 
         result = EscalationResult(
-            source="higher_ai",
-            decision=decision,
-            reason=reason,
-            timestamp=datetime.now(timezone.utc).isoformat()
+            source="higher_ai", decision=decision, reason=reason, timestamp=datetime.now(timezone.utc).isoformat()
         )
         self.higher_ai_decisions.append(result)
 
@@ -315,10 +278,7 @@ class EscalationHandler:
         return result
 
     def ask_human(
-        self,
-        action: BrowserAction,
-        original_result: GovernanceResult,
-        ai_result: Optional[EscalationResult] = None
+        self, action: BrowserAction, original_result: GovernanceResult, ai_result: Optional[EscalationResult] = None
     ) -> EscalationResult:
         """
         Ask human for approval via console input.
@@ -353,10 +313,7 @@ class EscalationHandler:
                 print("Please enter y, n, or q")
 
         result = EscalationResult(
-            source="human",
-            decision=decision,
-            reason=reason,
-            timestamp=datetime.now(timezone.utc).isoformat()
+            source="human", decision=decision, reason=reason, timestamp=datetime.now(timezone.utc).isoformat()
         )
         self.human_decisions.append(result)
 
@@ -367,6 +324,7 @@ class EscalationHandler:
 # =============================================================================
 # Browser Agent
 # =============================================================================
+
 
 class SCBEBrowserAgent:
     """
@@ -420,10 +378,7 @@ class SCBEBrowserAgent:
 
         # Register agent
         result = self.scbe.register_agent(
-            agent_id=self.agent_id,
-            name=self.agent_name,
-            role="browser_automation",
-            initial_trust=self.initial_trust
+            agent_id=self.agent_id, name=self.agent_name, role="browser_automation", initial_trust=self.initial_trust
         )
         print(f"[AGENT] Registered: {result}")
 
@@ -460,7 +415,7 @@ class SCBEBrowserAgent:
         action: BrowserAction,
         result: GovernanceResult,
         executed: bool,
-        escalation: Optional[EscalationResult] = None
+        escalation: Optional[EscalationResult] = None,
     ):
         """Log action for audit trail."""
         entry = {
@@ -472,7 +427,7 @@ class SCBEBrowserAgent:
             "score": result.score,
             "decision_id": result.decision_id,
             "executed": executed,
-            "escalation": escalation.__dict__ if escalation else None
+            "escalation": escalation.__dict__ if escalation else None,
         }
         self.action_log.append(entry)
 
@@ -496,7 +451,7 @@ class SCBEBrowserAgent:
             action=action.action_type.upper(),
             target=action.target,
             sensitivity=action.sensitivity,
-            context=action.data
+            context=action.data,
         )
 
         print(f"         Decision: {result.decision.value} (score: {result.score:.3f})")
@@ -511,11 +466,9 @@ class SCBEBrowserAgent:
 
         elif result.quarantined:
             print("         [QUARANTINE] Action isolated for monitoring")
-            self.quarantine_queue.append({
-                "action": action,
-                "result": result,
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            })
+            self.quarantine_queue.append(
+                {"action": action, "result": result, "timestamp": datetime.now(timezone.utc).isoformat()}
+            )
             # Only auto-execute quarantined actions on low-risk domains
             domain_risk = self._get_domain_risk(action.target)
             can_execute = domain_risk < 0.5
@@ -558,11 +511,7 @@ class SCBEBrowserAgent:
 
     def navigate(self, url: str) -> bool:
         """Navigate to a URL (governed)."""
-        action = BrowserAction(
-            action_type="navigate",
-            target=url,
-            data={"url": url}
-        )
+        action = BrowserAction(action_type="navigate", target=url, data={"url": url})
 
         can_execute, result = self.govern(action)
 
@@ -570,6 +519,7 @@ class SCBEBrowserAgent:
             print(f"         Navigating to: {url}")
             if self.runtime:
                 import asyncio
+
                 asyncio.get_event_loop().run_until_complete(self.runtime.navigate(url))
             return True
         return False
@@ -577,9 +527,7 @@ class SCBEBrowserAgent:
     def click(self, selector: str, page_url: str = "") -> bool:
         """Click an element (governed)."""
         action = BrowserAction(
-            action_type="click",
-            target=f"{page_url}::{selector}",
-            data={"selector": selector, "page": page_url}
+            action_type="click", target=f"{page_url}::{selector}", data={"selector": selector, "page": page_url}
         )
 
         can_execute, result = self.govern(action)
@@ -588,6 +536,7 @@ class SCBEBrowserAgent:
             print(f"         Clicking: {selector}")
             if self.runtime:
                 import asyncio
+
                 asyncio.get_event_loop().run_until_complete(self.runtime.click(selector))
             return True
         return False
@@ -600,7 +549,7 @@ class SCBEBrowserAgent:
         action = BrowserAction(
             action_type="type",
             target=f"{page_url}::{selector}",
-            data={"selector": selector, "text_length": len(text), "masked": masked_text}
+            data={"selector": selector, "text_length": len(text), "masked": masked_text},
         )
 
         can_execute, result = self.govern(action)
@@ -609,6 +558,7 @@ class SCBEBrowserAgent:
             print(f"         Typing into: {selector}")
             if self.runtime:
                 import asyncio
+
                 asyncio.get_event_loop().run_until_complete(self.runtime.type_text(selector, text))
             return True
         return False
@@ -616,9 +566,7 @@ class SCBEBrowserAgent:
     def submit_form(self, form_selector: str, page_url: str = "") -> bool:
         """Submit a form (governed - higher sensitivity)."""
         action = BrowserAction(
-            action_type="submit",
-            target=f"{page_url}::{form_selector}",
-            data={"form": form_selector, "page": page_url}
+            action_type="submit", target=f"{page_url}::{form_selector}", data={"form": form_selector, "page": page_url}
         )
 
         can_execute, result = self.govern(action)
@@ -627,6 +575,7 @@ class SCBEBrowserAgent:
             print(f"         Submitting form: {form_selector}")
             if self.runtime:
                 import asyncio
+
                 asyncio.get_event_loop().run_until_complete(self.runtime.submit_form(form_selector))
             return True
         return False
@@ -634,10 +583,7 @@ class SCBEBrowserAgent:
     def download_file(self, url: str, filename: str = "") -> bool:
         """Download a file (governed - high sensitivity)."""
         action = BrowserAction(
-            action_type="download",
-            target=url,
-            data={"filename": filename},
-            sensitivity=0.8  # High sensitivity
+            action_type="download", target=url, data={"filename": filename}, sensitivity=0.8  # High sensitivity
         )
 
         can_execute, result = self.govern(action)
@@ -656,7 +602,7 @@ class SCBEBrowserAgent:
             action_type="execute_script",
             target=f"{page_url}::script",
             data={"script_hash": script_hash, "script_length": len(script)},
-            sensitivity=0.9  # Very high sensitivity
+            sensitivity=0.9,  # Very high sensitivity
         )
 
         can_execute, result = self.govern(action)
@@ -665,6 +611,7 @@ class SCBEBrowserAgent:
             print(f"         Executing script (hash: {script_hash})")
             if self.runtime:
                 import asyncio
+
                 asyncio.get_event_loop().run_until_complete(self.runtime.evaluate(script))
             return True
         return False
@@ -674,11 +621,7 @@ class SCBEBrowserAgent:
     # =========================================================================
 
     def critical_action(
-        self,
-        action_type: str,
-        target: str,
-        tier: int = 4,
-        signers: Optional[List[str]] = None
+        self, action_type: str, target: str, tier: int = 4, signers: Optional[List[str]] = None
     ) -> bool:
         """
         Execute a critical action requiring Roundtable multi-sig approval.
@@ -691,21 +634,17 @@ class SCBEBrowserAgent:
         print(f"\n[ROUNDTABLE] Tier {tier} approval required for: {action_type}")
 
         result = self.scbe.roundtable(
-            action=action_type,
-            target=target,
-            tier=tier,
-            signers=signers,
-            context={"agent": self.agent_id}
+            action=action_type, target=target, tier=tier, signers=signers, context={"agent": self.agent_id}
         )
 
         print(f"             Status: {result.get('status')}")
         print(f"             Tongues: {result.get('tongues_used', [])}")
 
         if result.get("status") == "APPROVED":
-            print(f"             [APPROVED] Proceeding with critical action")
+            print("             [APPROVED] Proceeding with critical action")
             return True
         elif result.get("status") == "ESCALATE_TO_HUMAN":
-            print(f"             [ESCALATE] Requires human approval")
+            print("             [ESCALATE] Requires human approval")
             # Ask human (handle non-interactive mode)
             try:
                 human_input = input("             Human approval required [y/n]: ").strip().lower()
@@ -714,7 +653,7 @@ class SCBEBrowserAgent:
                 print("             [NON-INTERACTIVE] Defaulting to DENY")
                 return False
         else:
-            print(f"             [REJECTED] Critical action blocked")
+            print("             [REJECTED] Critical action blocked")
             return False
 
     # =========================================================================
@@ -756,18 +695,16 @@ class SCBEBrowserAgent:
 # Demo / CLI
 # =============================================================================
 
+
 def demo():
     """Run a demo of the SCBE Browser Agent."""
-    print("="*60)
+    print("=" * 60)
     print("SCBE-AETHERMOORE Browser Agent Demo")
-    print("="*60)
+    print("=" * 60)
 
     # Create agent
     agent = SCBEBrowserAgent(
-        agent_id="demo-browser-001",
-        agent_name="Demo Browser Agent",
-        initial_trust=0.75,
-        auto_escalate=True
+        agent_id="demo-browser-001", agent_name="Demo Browser Agent", initial_trust=0.75, auto_escalate=True
     )
 
     # Test various actions
@@ -787,11 +724,7 @@ def demo():
     agent.execute_script("console.log('test');", "https://example.com")
 
     print("\n--- Testing Critical Action (Roundtable) ---")
-    agent.critical_action(
-        action_type="DEPLOY",
-        target="production-config",
-        tier=4
-    )
+    agent.critical_action(action_type="DEPLOY", target="production-config", tier=4)
 
     # Print summary
     agent.print_summary()

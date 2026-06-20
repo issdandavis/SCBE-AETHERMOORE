@@ -20,19 +20,19 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
-
 # ------------------------------------------------------------------
 # Data structures
 # ------------------------------------------------------------------
+
 
 @dataclass
 class SemanticNode:
     """A single classified element from the page."""
 
-    tongue: str          # KO, AV, RU, CA, UM, DR
-    element_type: str    # heading, link, media, form, table, text, button, meta
-    text_preview: str    # first 80 characters of text content
-    depth: int           # nesting level (approximate)
+    tongue: str  # KO, AV, RU, CA, UM, DR
+    element_type: str  # heading, link, media, form, table, text, button, meta
+    text_preview: str  # first 80 characters of text content
+    depth: int  # nesting level (approximate)
 
 
 @dataclass
@@ -134,37 +134,83 @@ class SemanticSkeleton:
 # Element tag -> tongue assignment
 _TONGUE_MAP: Dict[str, str] = {
     # KO -- navigation
-    "nav": "KO", "a": "KO", "menu": "KO",
+    "nav": "KO",
+    "a": "KO",
+    "menu": "KO",
     # AV -- media
-    "img": "AV", "video": "AV", "audio": "AV", "svg": "AV",
-    "picture": "AV", "canvas": "AV",
+    "img": "AV",
+    "video": "AV",
+    "audio": "AV",
+    "svg": "AV",
+    "picture": "AV",
+    "canvas": "AV",
     # RU -- text / content
-    "p": "RU", "article": "RU", "section": "RU", "blockquote": "RU",
-    "span": "RU", "div": "RU", "li": "RU", "dd": "RU", "dt": "RU",
+    "p": "RU",
+    "article": "RU",
+    "section": "RU",
+    "blockquote": "RU",
+    "span": "RU",
+    "div": "RU",
+    "li": "RU",
+    "dd": "RU",
+    "dt": "RU",
     # CA -- interactive
-    "button": "CA", "select": "CA", "details": "CA", "dialog": "CA",
+    "button": "CA",
+    "select": "CA",
+    "details": "CA",
+    "dialog": "CA",
     # UM -- forms
-    "form": "UM", "input": "UM", "textarea": "UM", "label": "UM",
+    "form": "UM",
+    "input": "UM",
+    "textarea": "UM",
+    "label": "UM",
     "fieldset": "UM",
     # DR -- metadata / structural
-    "meta": "DR", "head": "DR", "script": "DR", "style": "DR",
-    "link": "DR", "title": "DR", "base": "DR",
+    "meta": "DR",
+    "head": "DR",
+    "script": "DR",
+    "style": "DR",
+    "link": "DR",
+    "title": "DR",
+    "base": "DR",
 }
 
 # Tag -> semantic element_type
 _ELEMENT_TYPE_MAP: Dict[str, str] = {
-    "h1": "heading", "h2": "heading", "h3": "heading",
-    "h4": "heading", "h5": "heading", "h6": "heading",
-    "a": "link", "nav": "link", "menu": "link",
-    "img": "media", "video": "media", "audio": "media",
-    "svg": "media", "picture": "media", "canvas": "media",
-    "form": "form", "input": "form", "textarea": "form",
-    "label": "form", "fieldset": "form",
-    "table": "table", "thead": "table", "tbody": "table",
-    "button": "button", "select": "button",
-    "details": "button", "dialog": "button",
-    "meta": "meta", "head": "meta", "script": "meta",
-    "style": "meta", "link": "meta", "title": "meta", "base": "meta",
+    "h1": "heading",
+    "h2": "heading",
+    "h3": "heading",
+    "h4": "heading",
+    "h5": "heading",
+    "h6": "heading",
+    "a": "link",
+    "nav": "link",
+    "menu": "link",
+    "img": "media",
+    "video": "media",
+    "audio": "media",
+    "svg": "media",
+    "picture": "media",
+    "canvas": "media",
+    "form": "form",
+    "input": "form",
+    "textarea": "form",
+    "label": "form",
+    "fieldset": "form",
+    "table": "table",
+    "thead": "table",
+    "tbody": "table",
+    "button": "button",
+    "select": "button",
+    "details": "button",
+    "dialog": "button",
+    "meta": "meta",
+    "head": "meta",
+    "script": "meta",
+    "style": "meta",
+    "link": "meta",
+    "title": "meta",
+    "base": "meta",
 }
 
 # ------------------------------------------------------------------
@@ -205,6 +251,7 @@ def _strip_tags(html: str) -> str:
 # ReconGoggles
 # ------------------------------------------------------------------
 
+
 class ReconGoggles:
     """Analyse raw HTML and produce a :class:`SemanticSkeleton`.
 
@@ -227,10 +274,14 @@ class ReconGoggles:
             text = _strip_tags(m.group(2))[:80]
             if text:
                 skeleton.headings.append(text)
-                skeleton.nodes.append(SemanticNode(
-                    tongue="RU", element_type="heading",
-                    text_preview=text, depth=int(m.group(1)),
-                ))
+                skeleton.nodes.append(
+                    SemanticNode(
+                        tongue="RU",
+                        element_type="heading",
+                        text_preview=text,
+                        depth=int(m.group(1)),
+                    )
+                )
                 tongue_counts["RU"] += 1
 
         # --- links ---
@@ -238,67 +289,95 @@ class ReconGoggles:
             href = m.group(1).strip()
             if href and not href.startswith("#") and not href.startswith("javascript:"):
                 skeleton.links.append(href)
-                skeleton.nodes.append(SemanticNode(
-                    tongue="KO", element_type="link",
-                    text_preview=href[:80], depth=0,
-                ))
+                skeleton.nodes.append(
+                    SemanticNode(
+                        tongue="KO",
+                        element_type="link",
+                        text_preview=href[:80],
+                        depth=0,
+                    )
+                )
                 tongue_counts["KO"] += 1
 
         # --- forms ---
         form_count = len(_FORM_RE.findall(html))
         skeleton.forms = form_count
         for _ in range(form_count):
-            skeleton.nodes.append(SemanticNode(
-                tongue="UM", element_type="form",
-                text_preview="<form>", depth=0,
-            ))
+            skeleton.nodes.append(
+                SemanticNode(
+                    tongue="UM",
+                    element_type="form",
+                    text_preview="<form>",
+                    depth=0,
+                )
+            )
             tongue_counts["UM"] += 1
 
         # --- tables ---
         table_count = len(_TABLE_RE.findall(html))
         skeleton.tables = table_count
         for _ in range(table_count):
-            skeleton.nodes.append(SemanticNode(
-                tongue="RU", element_type="table",
-                text_preview="<table>", depth=0,
-            ))
+            skeleton.nodes.append(
+                SemanticNode(
+                    tongue="RU",
+                    element_type="table",
+                    text_preview="<table>",
+                    depth=0,
+                )
+            )
             tongue_counts["RU"] += 1
 
         # --- media ---
         media_count = len(_MEDIA_RE.findall(html))
         skeleton.media = media_count
         for _ in range(media_count):
-            skeleton.nodes.append(SemanticNode(
-                tongue="AV", element_type="media",
-                text_preview="<media>", depth=0,
-            ))
+            skeleton.nodes.append(
+                SemanticNode(
+                    tongue="AV",
+                    element_type="media",
+                    text_preview="<media>",
+                    depth=0,
+                )
+            )
             tongue_counts["AV"] += 1
 
         # --- buttons (input[type=button/submit/reset]) ---
         for _ in _INPUT_BUTTON_RE.finditer(html):
-            skeleton.nodes.append(SemanticNode(
-                tongue="CA", element_type="button",
-                text_preview="<button>", depth=0,
-            ))
+            skeleton.nodes.append(
+                SemanticNode(
+                    tongue="CA",
+                    element_type="button",
+                    text_preview="<button>",
+                    depth=0,
+                )
+            )
             tongue_counts["CA"] += 1
 
         # --- metadata (script/style/meta tags) ---
         meta_count = len(re.findall(r"<(?:script|style|meta)\b", html, re.IGNORECASE))
         for _ in range(meta_count):
-            skeleton.nodes.append(SemanticNode(
-                tongue="DR", element_type="meta",
-                text_preview="<meta>", depth=0,
-            ))
+            skeleton.nodes.append(
+                SemanticNode(
+                    tongue="DR",
+                    element_type="meta",
+                    text_preview="<meta>",
+                    depth=0,
+                )
+            )
             tongue_counts["DR"] += 1
 
         # --- text blocks (paragraphs) ---
         for m in re.finditer(r"<p\b[^>]*>(.*?)</p>", html, re.IGNORECASE | re.DOTALL):
             text = _strip_tags(m.group(1))[:80]
             if text and len(text) > 5:
-                skeleton.nodes.append(SemanticNode(
-                    tongue="RU", element_type="text",
-                    text_preview=text, depth=0,
-                ))
+                skeleton.nodes.append(
+                    SemanticNode(
+                        tongue="RU",
+                        element_type="text",
+                        text_preview=text,
+                        depth=0,
+                    )
+                )
                 tongue_counts["RU"] += 1
 
         skeleton.tongue_counts = tongue_counts

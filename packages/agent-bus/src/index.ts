@@ -7,6 +7,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import path from 'node:path';
 import { WorkspaceExportManifestSchema, parseReceipt } from './schemas.js';
 import { detectTaskType, decompose, scoreDialogue } from './semantic-bridge.js';
+import { autoDiscoverTools, buildToolArgv, getTool } from './tools.js';
 
 // Plugin + queue subsystems
 export {
@@ -73,11 +74,23 @@ export {
   type GeoSealPlanPolicy,
   type GeoSealPlanCommand,
   type PipelineRunResult,
+  type GovernedMoveClass,
+  type GovernedMoveRecord,
+  type GovernedPipelineState,
+  type GovernedPipelineStateSummary,
+  type TrajectoryGateResult,
   compilePlan,
   execPlan,
   runPipeline,
   parseShellTemplate,
   resolveRepoRoot,
+  createGovernedPipelineState,
+  loadGovernedPipelineState,
+  saveGovernedPipelineState,
+  summarizeGovernedPipelineState,
+  classifyGovernedMove,
+  reachableMoveSet,
+  evaluateTrajectoryGate,
 } from './pipeline.js';
 
 // Structured output contracts
@@ -106,6 +119,9 @@ export {
 
 export {
   type CliTool,
+  type ToolPatentSurface,
+  type ToolAuditEntry,
+  type ToolRegistryAudit,
   registerTool,
   unregisterTool,
   listTools,
@@ -113,7 +129,158 @@ export {
   clearTools,
   buildToolArgv,
   autoDiscoverTools,
+  auditToolRegistry,
 } from './tools.js';
+
+export {
+  type ToolCommand,
+  type ToolSpec,
+  type KnownPatentSurface,
+  type ValidationResult,
+  type VerificationResult,
+  type RegistrationResult,
+  type ListResult,
+  ALLOWED_COMMANDS,
+  KNOWN_PATENT_SURFACES,
+  validateToolSpec,
+  verifyToolSpec,
+  registerTool as registerToolSpecInFile,
+  unregisterTool as unregisterToolSpecInFile,
+  listTools as listToolSpecsFromFile,
+} from './tool-factory.js';
+
+export {
+  type Tongue,
+  type TraversalType,
+  type Algorithm,
+  type StarNode,
+  type StarEdge,
+  type StarGraph,
+  type MissionPhase,
+  type MissionTrajectory,
+  type GalaxyMap,
+  type StarPathBenchResult,
+  buildStarGraph,
+  buildGalaxyMap,
+  bfs,
+  dijkstra,
+  aStar,
+  runStarPathBench,
+} from './star-path.js';
+
+export {
+  type AgentIdentity,
+  type SkillLevel,
+  type CareerEntry,
+  type AgentLifeRecord,
+  type EncounterResult,
+  type LifeSummary,
+  createLifeRecord,
+  encounter,
+  gainSkillXP,
+  startCareer,
+  endCareer,
+  completeTask,
+  joinGroup,
+  leaveGroup,
+  isKnown,
+  getAlignmentScore,
+  getKnownAgents,
+  getCurrentRole,
+  summarize,
+  serializeLifeRecord,
+  deserializeLifeRecord,
+} from './life-ledger.js';
+
+export {
+  type CellType,
+  type SecurityTier,
+  type NavAlgorithm,
+  type AblationTag,
+  type RunLabel,
+  type MazeCell,
+  type MazeConfig,
+  type MazeGrid,
+  type LatticeWeights,
+  type VectorBreakdown,
+  type MoveReceipt,
+  type AgentState,
+  type BenchmarkScore,
+  type AlgorithmSummary,
+  type AblationEntry,
+  type NavBenchResult,
+  type FluidHeatCell,
+  type RandomSolveSweepResult,
+  DEFAULT_WEIGHTS,
+  VECTOR_KERNEL_3X3,
+  BENCHMARK_MAZES,
+  generateMaze,
+  oracleBFS,
+  createAgent,
+  computeVTotal,
+  runMission,
+  scoreRun,
+  buildFluidHeatMap,
+  buildRandomMazeConfigs,
+  runRandomSolveSweep,
+  verifyReceiptChain,
+  runNavBench,
+} from './vector-field-nav.js';
+
+export {
+  type HermesTaskMode,
+  type ScbeCompassMode,
+  type ScbeFormation,
+  type ScbeTongueDomain,
+  type ScbeBoardMechanic,
+  type ScbeRollKind,
+  type HermesModelLane,
+  type HermesRoutePlan,
+  type ScbeFormationStep,
+  type ScbeCommandNode,
+  type ScbeOctreeContextPack,
+  type ScbeCliParityTarget,
+  type ScbeBoardRule,
+  type ScbeRollCard,
+  type ScbeRollStackPlan,
+  type ScbeRollStackStep,
+  type ScbeCompassRoutePlan,
+  classifyHermesTask,
+  classifyScbeCompassTask,
+  buildScbeRollStack,
+  hermesModelLanes,
+  scbeCompassModelLanes,
+  planHermesRoute,
+  planScbeCompassRoute,
+  scbeCompassCommandTree,
+  scbeCompassParityTargets,
+  scbeCompassBoardRules,
+  scbeCompassRollCards,
+} from './hermes.js';
+
+export {
+  type RubixBrowserFace,
+  type RubixBrowserBenchmarkCase,
+  type RubixBrowserBenchmarkReport,
+  type RubixBrowserBenchmarkRow,
+  type RubixBrowserMove,
+  type RubixBrowserPermission,
+  type RubixBrowserPlan,
+  RUBIX_BROWSER_BENCHMARK_CASES,
+  RUBIX_BROWSER_FACES,
+  buildRubixBrowserPlan,
+  runRubixBrowserBenchmark,
+} from './rubix-browser.js';
+
+export {
+  type ResumePacket,
+  type ResumePacketOptions,
+  type ToolCallRecord,
+  type ToolLoopDetection,
+  type ToolLoopDetectorOptions,
+  createResumePacket,
+  createToolLoopDetector,
+} from './task-ledger.js';
 
 export type AgentBusPrivacy = 'local_only' | 'remote_allowed' | string;
 
@@ -135,6 +302,19 @@ export interface RunOptions {
   geosealBin?: string;
   python?: string;
   continueOnError?: boolean;
+  /**
+   * Optional persisted trajectory gate for GeoSeal pipelines.
+   * When enabled, the pipeline checks whether the compiled plan is reachable
+   * from the session's current governed state before execution.
+   */
+  governedState?:
+    | boolean
+    | {
+        enabled?: boolean;
+        sessionId?: string;
+        statePath?: string;
+        root?: string;
+      };
 }
 
 export interface AgentBusResult {
@@ -1560,6 +1740,71 @@ export async function runEvent(
 
   const repoRoot = path.resolve(options.repoRoot || process.cwd());
   const python = options.python || process.env.PYTHON || 'python';
+  const startedAt = new Date().toISOString();
+
+  if (normalized.tool) {
+    autoDiscoverTools();
+    const registeredTool = getTool(normalized.tool);
+    if (!registeredTool) {
+      const d = decompose(normalized.task);
+      return {
+        schema_version: 'scbe-agentbus-node-result-v1',
+        event_index: 1,
+        started_at: startedAt,
+        finished_at: new Date().toISOString(),
+        ok: false,
+        exit_code: null,
+        stderr_tail: `unknown tool: '${normalized.tool}' is not registered`,
+        event: {
+          task_sha256: null,
+          task_chars: normalized.task.length,
+          series_id: normalized.seriesId,
+          operation_command_chars: normalized.operationCommand.length,
+        },
+        result: null,
+        ...(d.tokenCount > 0 ? { semantic: d } : {}),
+        ...(d.discourseProfile ? { discourse_profile: d.discourseProfile } : {}),
+        ...(d.discourseProfile ? { dialogue_score: scoreDialogue(normalized.task) } : {}),
+      };
+    }
+
+    const built = buildToolArgv(registeredTool, normalized, options, normalized.seriesId);
+    const result = spawnSync(built.command, built.args, {
+      cwd: repoRoot,
+      encoding: 'utf-8',
+      maxBuffer: 1024 * 1024 * 8,
+      env: { ...process.env },
+    });
+    const stdout = result.stdout || '';
+    const payload = parseJson(stdout);
+    const d = decompose(normalized.task);
+    return {
+      schema_version: 'scbe-agentbus-node-result-v1',
+      event_index: 1,
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+      ok: result.status === 0,
+      exit_code: result.status,
+      stderr_tail: tail(result.stderr || ''),
+      event: {
+        task_sha256: null,
+        task_chars: normalized.task.length,
+        series_id: normalized.seriesId,
+        operation_command_chars: normalized.operationCommand.length,
+      },
+      result: {
+        tool: normalized.tool,
+        command: built.command,
+        args: built.args,
+        stdout: stdout.slice(-4000),
+        parsed: payload,
+      },
+      ...(d.tokenCount > 0 ? { semantic: d } : {}),
+      ...(d.discourseProfile ? { discourse_profile: d.discourseProfile } : {}),
+      ...(d.discourseProfile ? { dialogue_score: scoreDialogue(normalized.task) } : {}),
+    };
+  }
+
   const cli = path.join(repoRoot, 'scripts', 'scbe-system-cli.py');
   const argv = [
     cli,
@@ -1588,7 +1833,6 @@ export async function runEvent(
     argv.push('--dispatch');
   }
 
-  const startedAt = new Date().toISOString();
   const result = spawnSync(python, argv, {
     cwd: repoRoot,
     encoding: 'utf-8',
@@ -1846,3 +2090,206 @@ export async function runAgentBusTerminalUi(options: AgentBusClientOptions = {})
     rl.close();
   }
 }
+
+export {
+  type BoardDomain,
+  type BoardOccupancy,
+  type BoardKnownState,
+  type ClearanceLevel,
+  type BoardCell,
+  type BoardState,
+  type BoardPlacement,
+  type BoardedChain,
+  type BoardedChainRunResult,
+  createBoard,
+  getCell,
+  setCell,
+  canEnter,
+  measureTickDistance,
+  runBoardedChain,
+} from './board-fields.js';
+
+export {
+  type ReactionSpec,
+  type ReactionChain,
+  type ReactionStepStatus,
+  type ReactionStepState,
+  type ChainRunStatus,
+  type ReactionChainState,
+  type ChainStartResult,
+  type ChainAdvanceResult,
+  type ReactionRunnerFn,
+  type ReactionChainRunOptions,
+  type ReactionChainRunResult,
+  startChain,
+  getReadyReactions,
+  advanceChain,
+  renderTask,
+  buildReactionEvent,
+  runReactionChain,
+} from './reaction-chain.js';
+
+export {
+  type District,
+  type ZoneState,
+  type TransitMode,
+  type AgentLane,
+  type ZoneClearance,
+  type PortProtocol,
+  type HealthColor,
+  type GravityFrame,
+  type CulturalProtocol,
+  type StationZone,
+  type TransitRoute,
+  type TransitNode,
+  type DockingPort,
+  type PadSurface,
+  type SecurityBoundary,
+  type StationManifest,
+  type TransitHop,
+  type TransitPlan,
+  type KeeperRepairAction,
+  type KeeperSweepResult,
+  type DistrictHealthRecord,
+  type StationSummary,
+  type DamageReport,
+  ALL_DISTRICTS,
+  defaultGravityFrame,
+  defaultCulturalProtocol,
+  createStation,
+  addZone,
+  removeZone,
+  updateZone,
+  getZone,
+  observeZone,
+  canEnterZone,
+  resolveGravity,
+  planTransit,
+  getDockingPort,
+  dockAgent,
+  undockAgent,
+  sweepKeepers,
+  summarizeStation,
+  reportDamage,
+} from './station-manifest.js';
+
+export {
+  type KeeperConfig,
+  type KeeperEscalation,
+  type KeeperAgent,
+  type KeeperRepairResult,
+  type KeeperRunResult,
+  type KeeperStatus,
+  createKeeper,
+  queueRepair,
+  clearRepairQueue,
+  escalate as escalateToKeeper,
+  resolveEscalation,
+  applyRepair as applyKeeperRepair,
+  drainRepairQueue,
+  runSweep,
+  getKeeperStatus,
+} from './keeper-agent.js';
+
+export {
+  type ControlSource,
+  type ControlDomain,
+  type ControlMode,
+  type ControlAxes,
+  type ControlCommands,
+  type SafetyFrame,
+  type ControlMetadata,
+  type ControlIntent,
+  type SafetyValidation,
+  type ROS2Twist,
+  type PX4OffboardSetpoint,
+  type MAVLinkGuidedVelocity,
+  type CARLAVehicleControl,
+  type AirSimCarControls,
+  type MSFSSimVarMap,
+  type XPlaneDatarefMap,
+  type FlightControlView,
+  type DrivingControlView,
+  ZERO_AXES,
+  ZERO_COMMANDS,
+  createControlIntent,
+  mergeIntents,
+  validateSafety,
+  toROS2Twist,
+  toPX4OffboardSetpoint,
+  toMAVLinkGuidedVelocity,
+  toCARLAVehicleControl,
+  toAirSimCarControls,
+  toMSFSSimVars,
+  toXPlaneDatarefs,
+  toFlightView,
+  toDrivingView,
+} from './control-intent.js';
+
+export {
+  type PollySourceRef,
+  type PollyOperatorMode,
+  type PollySeverity,
+  type PollyOperatorAlert,
+  type PollyOperatorAction,
+  type PollyOperatorBrief,
+  type PollyOperatorBriefOptions,
+  POLLY_OPERATOR_SOURCE_REFS,
+  buildPollyOperatorAlerts,
+  buildPollyOperatorActions,
+  buildPollyOperatorHeadline,
+  renderPollyOperatorCliLines,
+  buildPollyOperatorBrief,
+  renderPollyOperatorBrief,
+} from './polly-operator.js';
+
+export {
+  type HandoffFlightState,
+  type HandoffAuthority,
+  type HandoffPriority,
+  type HandoffMission,
+  type HandoffReceipt,
+  type HandoffPacket,
+  type HandoffOptions,
+  type HandoffValidation,
+  type HandoffSummary,
+  createHandoff,
+  throwHandoff,
+  catchHandoff,
+  validateHandoff,
+  completeHandoff,
+  dropHandoff,
+  isHandoffExpired,
+  getReceipts,
+  summarizeHandoff,
+} from './handoff-packet.js';
+
+export {
+  type StationCycleOptions,
+  type StationCycleResult,
+  runStationCycle,
+} from './station-cycle.js';
+
+export {
+  type SearchPlane,
+  type SearchNodeState,
+  type SearchColorGrade,
+  type SearchSector,
+  type SearchSpaceNode,
+  type SearchAbridgement,
+  type SearchContractionResult,
+  type SearchLaneAgent,
+  type SearchLane,
+  type SearchLaneAllocation,
+  type SearchResult,
+  type MergedSearchResult,
+  type SearchResultMerge,
+  createSearchNode,
+  gradeSearchNode,
+  reorderSearchQueries,
+  expandSearchNode,
+  contractSearchSpace,
+  repositionSearchNode,
+  allocateParallelSearchLanes,
+  mergeSearchResults,
+} from './search-space-router.js';

@@ -47,7 +47,8 @@ def parse_args() -> argparse.Namespace:
         "--local-glob",
         action="append",
         default=[],
-        help="Glob pattern for local training data (repeatable). Defaults to training/**/*.jsonl + training-data/**/*.jsonl",
+        help="Glob pattern for local training data (repeatable). "
+        "Defaults to training/**/*.jsonl + training-data/**/*.jsonl",
     )
     parser.add_argument(
         "--push-to-hub", dest="push_to_hub", action="store_true", help="Upload artifacts to Hugging Face model repo"

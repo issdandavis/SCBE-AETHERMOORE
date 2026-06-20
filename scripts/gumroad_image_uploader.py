@@ -180,7 +180,8 @@ def upload_product_image(driver: WebDriver, product: Product, image_path: Path) 
         (By.CSS_SELECTOR, f"a[href*='/{product.product_id}']"),
         (
             By.XPATH,
-            f"//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{product.name.lower()}')]",
+            "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), "
+            f"'{product.name.lower()}')]",
         ),
         (By.XPATH, f"//a[contains(@href, '{product.product_id}') or contains(@href, '/{product.product_id}') ]"),
     ]

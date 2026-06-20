@@ -17,7 +17,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PATTERNS = [
     "training-data/rom_sessions/*.jsonl",

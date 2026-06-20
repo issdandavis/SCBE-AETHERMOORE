@@ -1,0 +1,46 @@
+# math-claims registry -- the one line of math each module implements.
+#
+# THE RULE (the second immune system): before new work lands, write its one-line math claim and
+# run  `python scripts/ci/redundancy_gate.py --claim "<your one-liner>"`.  Review anything it
+# surfaces BEFORE building -- that is what catches conceptually-redundant work (the #2422/#2423
+# two-string-designs near-collision) that execution + cross-face cannot see.
+#
+# Format:  <path>[#tag] :: <one-line math claim, in shared vocabulary>
+# Keep claims in shared words; the gate matches keywords, not meaning.
+
+python/scbe/loomfn.py :: dispatch-loop vm with a call-frame stack and heap arrays over a flat slot store, emitted to language faces
+python/scbe/loomfn.py#strings :: a string is a heap array of char codes
+python/helm/ladder.py :: graded tier-ladder kernel - score a climber per tier, report the highest contiguous tier cleared from the bottom
+python/helm/curriculum.py :: score a code generator by held-out hidden tests, graded into difficulty tiers (uses the ladder kernel)
+python/helm/reasoning_ladder.py :: score an answer generator by held-out exact-match reasoning questions, graded into difficulty tiers (uses the ladder kernel)
+python/helm/substrate_climber.py :: differential testing - emit a program to multiple language faces, run each, require agreement
+python/helm/public_bench.py :: run a generated program against public and held-out hidden asserts in a sandbox, detect overfit
+python/scbe/geometric_router.py :: route tasks to agents by tongue-weighted finsler distance through a hyperbolic manifold
+python/scbe/geometric_router.py#streams :: bind two instruction streams where their embedded points are within epsilon, a depth coordinate gating the distance
+python/scbe/dna_parse.py :: bijective hex to base-4 codec, one nibble is two base-4 symbols
+python/scbe/bijective_dna.py :: opcode strand with an involution complement and midpoint replication-fork assembly across language faces
+python/scbe/stepwise.py :: guided step machine - run calc steps in code, a misstep rewinds to before the bad step and retries with rebuilt context
+python/scbe/pair_loop.py :: juggling harness routing small or free models - improvise only when needed, by strength
+python/scbe/game_board.py :: a task as a board game - the rules are governance, winning is the work
+python/scbe/failure_map.py :: aggregate stepwise runs across tasks and models into a drift map - per-run drift point, per-task wall, cross-model clearers, universal-fail steps
+scripts/system/agentic_pazaak_board.py :: pazaak bitboard planner - score task lanes by value and risk and verified, recommend the next card move
+python/helm/host_capability.py :: probe the host for toolchains models and resources and certify which capabilities run here (aetherdesk boot check)
+python/helm/ask.py :: summon a local model with a prompt, return its text without executing it, log an audit receipt (ai-in-terminal)
+python/scbe/desktop_access.py :: governed action registry - allowlist safe/guarded/denied + destructive-command screen + sealed receipts, surfaced as api/dom/pixels
+python/scbe/blocks.py :: scratch-style command blocks with safe/caution/destructive classes, destructive gated and drive-scope refused
+python/scbe/bit_spine.py :: brainfuck-class instruction set (8 ops) over an unbounded tape - turing complete core; plus binary/hex/trit byte projections
+python/loom/machine.py :: minsky register machine (inc/dec-branch/jmp) - turing complete with two registers, woven into many languages
+
+python/scbe/token_board.py :: conlang tokens bound to verified prime-classification predicates; a constrained legal-move board scored under escalating governance (raw/board/pruned/restructured/tool), graded by the math (exact) not a fuzzy matcher
+
+python/scbe/process_router.py :: the assistant -- correct process injection via context+permissions; classify a job and route it (destructive->refuse permission floor, compute->PAL, classify->deterministic tool, judgment->direct), measured router vs raw on a mixed job set
+
+python/scbe/code_factory.py :: warehouse-topology job orchestrator -- gate, conveyor-route, cheap station does the work, QC verifies (differential cross-check for compute), ship if ok else summon a capable manager on exception; headline metric = manager-call rate
+
+python/scbe/tongue_diff.py :: differential dimension analysis over the six sacred tongues -- multi-state venn membership across the 6 tongue dimensions + phi-weighted differential (shared vs distinguishing tongues + phase deviation); governance tongues UM/DR drift weighs more than transport
+
+python/scbe/tongue_lexicon.py :: semantic classifier on top of the tongue grid -- a pluggable lexicon (tongue-specific conlang word -> tongue + meaning) that classifies input by which tongue vocabulary its words belong to; seeded from the real sixtongues fragments, mergeable with fuller word lists
+
+python/helm/verified_trajectory.py :: rejection-sampling SFT engine -- run graded problems through a model, verify each by execution (hidden tests), keep ONLY verified trajectories as training data; the agent own verified solving becomes its training set
+python/helm/freeze_dataset.py :: content-hash a jsonl dataset to a sha256 identity and emit an immutable freeze manifest (stats, task range, timestamp) with a hash-named backup, so dataset drift before/after training is detectable
+python/helm/code_lift.py#recovery :: measure recovery lift -- run base vs trained through the write-run-repair loop on held-out problems, count solves that needed >1 attempt (recovered), report recovery-rate delta alongside net solve lift

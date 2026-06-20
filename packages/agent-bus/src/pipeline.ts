@@ -17,6 +17,7 @@
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import type { AgentBusResult, RunOptions } from './index.js';
 import { checkCircuit, recordSuccess, recordFailure } from './resilience.js';
 import { decompose, type DecompositionResult } from './semantic-bridge.js';
@@ -170,6 +171,64 @@ export interface PipelineRunResult {
   semantic_escalation?: string;
   /** Populated when blocked=false. */
   result?: AgentBusResult;
+  /** Populated when the optional trajectory gate evaluated the plan. */
+  trajectory_gate?: TrajectoryGateResult;
+}
+
+export type GovernedMoveClass =
+  | 'observe'
+  | 'read'
+  | 'verify'
+  | 'write'
+  | 'network'
+  | 'deploy'
+  | 'destructive'
+  | 'unknown';
+
+export interface GovernedMoveRecord {
+  at: string;
+  intent_sha256: string;
+  plan_sha256: string;
+  command_key: string;
+  move_class: GovernedMoveClass;
+  decision: 'ACCEPT' | 'REJECT';
+  reason: string;
+}
+
+export interface GovernedPipelineState {
+  schema_version: 'scbe.agent_bus.governed_state.v1';
+  session_id: string;
+  created_at: string;
+  updated_at: string;
+  accepted_moves: GovernedMoveRecord[];
+  rejected_moves: GovernedMoveRecord[];
+}
+
+export interface TrajectoryGateResult {
+  enabled: boolean;
+  allowed: boolean;
+  session_id: string;
+  state_path: string;
+  move_class: GovernedMoveClass;
+  reachable_set: GovernedMoveClass[];
+  reason: string;
+}
+
+export interface GovernedPipelineStateSummary {
+  schema_version: 'scbe.agent_bus.governed_state_summary.v1';
+  session_id: string;
+  state_path: string;
+  accepted_count: number;
+  rejected_count: number;
+  reachable_set: GovernedMoveClass[];
+  last_accepted: GovernedMoveRecord | null;
+  last_rejected: GovernedMoveRecord | null;
+}
+
+interface GovernedStateConfig {
+  enabled: boolean;
+  sessionId: string;
+  statePath: string;
 }
 
 // ─── Shell template parser ────────────────────────────────────────────────────
@@ -206,6 +265,209 @@ export function parseShellTemplate(template: string): string[] {
   }
   if (current.length > 0) args.push(current);
   return args;
+}
+
+// ─── Persisted trajectory gate ────────────────────────────────────────────────
+
+function slugifyStateId(value: string): string {
+  return (
+    String(value || 'default')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 80) || 'default'
+  );
+}
+
+function resolveGovernedStateConfig(options: RunOptions): GovernedStateConfig | null {
+  const raw = options.governedState;
+  if (!raw) return null;
+  if (raw === true) {
+    const root = path.join(resolveRepoRoot(options), '.aethermoor-bus', 'governed-state');
+    return {
+      enabled: true,
+      sessionId: 'default',
+      statePath: path.join(root, 'default.json'),
+    };
+  }
+  if (typeof raw !== 'object' || raw.enabled === false) return null;
+  const sessionId = slugifyStateId(raw.sessionId || 'default');
+  const root = path.resolve(
+    raw.root || path.join(resolveRepoRoot(options), '.aethermoor-bus', 'governed-state')
+  );
+  return {
+    enabled: true,
+    sessionId,
+    statePath: path.resolve(raw.statePath || path.join(root, `${sessionId}.json`)),
+  };
+}
+
+export function createGovernedPipelineState(sessionId = 'default'): GovernedPipelineState {
+  const now = new Date().toISOString();
+  return {
+    schema_version: 'scbe.agent_bus.governed_state.v1',
+    session_id: slugifyStateId(sessionId),
+    created_at: now,
+    updated_at: now,
+    accepted_moves: [],
+    rejected_moves: [],
+  };
+}
+
+export function loadGovernedPipelineState(
+  statePath: string,
+  sessionId = 'default'
+): GovernedPipelineState {
+  if (!fs.existsSync(statePath)) {
+    return createGovernedPipelineState(sessionId);
+  }
+  const parsed = JSON.parse(fs.readFileSync(statePath, 'utf8')) as GovernedPipelineState;
+  if (parsed.schema_version !== 'scbe.agent_bus.governed_state.v1') {
+    throw new Error(`unsupported governed state schema at ${statePath}`);
+  }
+  return parsed;
+}
+
+export function saveGovernedPipelineState(statePath: string, state: GovernedPipelineState): void {
+  fs.mkdirSync(path.dirname(statePath), { recursive: true });
+  fs.writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+}
+
+function hasRecentAccepted(state: GovernedPipelineState, classes: GovernedMoveClass[]): boolean {
+  return state.accepted_moves
+    .slice(-8)
+    .some((move) => classes.includes(move.move_class) && move.decision === 'ACCEPT');
+}
+
+export function classifyGovernedMove(plan: GeoSealPlan): GovernedMoveClass {
+  const haystack = [
+    plan.intent.text,
+    plan.intent.requested_tool || '',
+    plan.tool.class,
+    plan.tool.contract.tool,
+    plan.tool.contract.risk,
+    plan.command.key,
+    plan.command.template,
+  ]
+    .join(' ')
+    .toLowerCase();
+
+  if (
+    /(^|\s)(rm\s+-rf|remove-item|delete|destroy|drop\s+table|wipe|purge|reset\s+--hard)(\s|$)/.test(
+      haystack
+    )
+  ) {
+    return 'destructive';
+  }
+  if (
+    /\b(deploy|release|publish|upload|vercel|netlify|railway|docker\s+push|kubectl)\b/.test(
+      haystack
+    )
+  ) {
+    return 'deploy';
+  }
+  if (/\b(curl|invoke-webrequest|wget|fetch|http|https|api|gh\s+pr|git\s+push)\b/.test(haystack)) {
+    return 'network';
+  }
+  if (
+    /\b(test|verify|lint|format|check|pytest|vitest|npm\s+test|npm\s+run\s+lint)\b/.test(haystack)
+  ) {
+    return 'verify';
+  }
+  if (/\b(write|edit|patch|apply|commit|create|mkdir|copy|move)\b/.test(haystack)) {
+    return 'write';
+  }
+  if (/\b(read|cat|type|get-content|grep|rg|find|list|ls|dir|inspect|summarize)\b/.test(haystack)) {
+    return 'read';
+  }
+  if (/\b(observe|status|health|scan|measure|explain)\b/.test(haystack)) {
+    return 'observe';
+  }
+  return 'unknown';
+}
+
+export function reachableMoveSet(state: GovernedPipelineState): GovernedMoveClass[] {
+  const base: GovernedMoveClass[] = ['observe', 'read', 'verify'];
+
+  if (hasRecentAccepted(state, ['observe', 'read', 'verify', 'write'])) {
+    base.push('write');
+  }
+  if (hasRecentAccepted(state, ['verify'])) {
+    base.push('network');
+  }
+  if (hasRecentAccepted(state, ['verify']) && hasRecentAccepted(state, ['network'])) {
+    base.push('deploy');
+  }
+  return Array.from(new Set(base));
+}
+
+export function summarizeGovernedPipelineState(
+  state: GovernedPipelineState,
+  statePath: string
+): GovernedPipelineStateSummary {
+  return {
+    schema_version: 'scbe.agent_bus.governed_state_summary.v1',
+    session_id: state.session_id,
+    state_path: statePath,
+    accepted_count: state.accepted_moves.length,
+    rejected_count: state.rejected_moves.length,
+    reachable_set: reachableMoveSet(state),
+    last_accepted: state.accepted_moves.at(-1) || null,
+    last_rejected: state.rejected_moves.at(-1) || null,
+  };
+}
+
+export function evaluateTrajectoryGate(
+  plan: GeoSealPlan,
+  state: GovernedPipelineState,
+  config: Pick<GovernedStateConfig, 'sessionId' | 'statePath'>
+): TrajectoryGateResult {
+  const moveClass = classifyGovernedMove(plan);
+  const reachable = reachableMoveSet(state);
+  const allowed = reachable.includes(moveClass);
+  return {
+    enabled: true,
+    allowed,
+    session_id: config.sessionId,
+    state_path: config.statePath,
+    move_class: moveClass,
+    reachable_set: reachable,
+    reason: allowed
+      ? `move class ${moveClass} is reachable from governed state`
+      : `move class ${moveClass} is not reachable; allowed next classes: ${reachable.join(', ')}`,
+  };
+}
+
+function recordGovernedMove(
+  state: GovernedPipelineState,
+  plan: GeoSealPlan,
+  moveClass: GovernedMoveClass,
+  decision: 'ACCEPT' | 'REJECT',
+  reason: string
+): GovernedPipelineState {
+  const next: GovernedPipelineState = {
+    ...state,
+    updated_at: new Date().toISOString(),
+    accepted_moves: [...state.accepted_moves],
+    rejected_moves: [...state.rejected_moves],
+  };
+  const record: GovernedMoveRecord = {
+    at: next.updated_at,
+    intent_sha256:
+      plan.hashes.intent_sha256 ||
+      crypto.createHash('sha256').update(plan.intent.text).digest('hex'),
+    plan_sha256: plan.hashes.plan_sha256,
+    command_key: plan.command.key,
+    move_class: moveClass,
+    decision,
+    reason,
+  };
+  if (decision === 'ACCEPT') next.accepted_moves.push(record);
+  else next.rejected_moves.push(record);
+  next.accepted_moves = next.accepted_moves.slice(-64);
+  next.rejected_moves = next.rejected_moves.slice(-64);
+  return next;
 }
 
 // ─── Core functions ───────────────────────────────────────────────────────────
@@ -373,6 +635,42 @@ export async function runPipeline(
     };
   }
 
+  const governedConfig = resolveGovernedStateConfig(options);
+  let trajectoryGate: TrajectoryGateResult | undefined;
+  let governedState: GovernedPipelineState | undefined;
+  if (governedConfig?.enabled) {
+    governedState = loadGovernedPipelineState(governedConfig.statePath, governedConfig.sessionId);
+    trajectoryGate = evaluateTrajectoryGate(plan, governedState, governedConfig);
+    if (!trajectoryGate.allowed) {
+      const rejected = recordGovernedMove(
+        governedState,
+        plan,
+        trajectoryGate.move_class,
+        'REJECT',
+        trajectoryGate.reason
+      );
+      saveGovernedPipelineState(governedConfig.statePath, rejected);
+      return {
+        plan,
+        blocked: true,
+        block_reason: `trajectory gate: ${trajectoryGate.reason}`,
+        trajectory_gate: trajectoryGate,
+      };
+    }
+  }
+
   const result = execPlan(plan, options);
-  return { plan, blocked: false, result };
+  if (governedConfig?.enabled && governedState && trajectoryGate) {
+    const nextState = recordGovernedMove(
+      governedState,
+      plan,
+      trajectoryGate.move_class,
+      result.ok ? 'ACCEPT' : 'REJECT',
+      result.ok
+        ? trajectoryGate.reason
+        : `execution failed after trajectory allow: exit ${result.exit_code}`
+    );
+    saveGovernedPipelineState(governedConfig.statePath, nextState);
+  }
+  return { plan, blocked: false, result, trajectory_gate: trajectoryGate };
 }

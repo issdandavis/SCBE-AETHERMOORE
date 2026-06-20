@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OFFERS = REPO_ROOT / "docs" / "offers.json"
 DEFAULT_APP_CONFIG = REPO_ROOT / "docs" / "app-config.json"
@@ -159,11 +158,15 @@ def audit_launch(offers_path: Path = DEFAULT_OFFERS, app_config_path: Path = DEF
         and price <= STARTER_PRICE_MAX
     ]
     subscriptions = [offer for offer in live_offers if str(offer.get("type", "")).lower() == "subscription"]
-    service_offers = [offer for offer in live_offers if str(offer.get("type", "")).lower() in {"service", "usage_credit"}]
+    service_offers = [
+        offer for offer in live_offers if str(offer.get("type", "")).lower() in {"service", "usage_credit"}
+    ]
 
     checks.extend(
         [
-            LaunchCheck("mix:starter_offer", bool(starter_offers), f"{len(starter_offers)} offers at <= ${STARTER_PRICE_MAX:g}"),
+            LaunchCheck(
+                "mix:starter_offer", bool(starter_offers), f"{len(starter_offers)} offers at <= ${STARTER_PRICE_MAX:g}"
+            ),
             LaunchCheck("mix:subscription_offer", bool(subscriptions), f"{len(subscriptions)} subscription offers"),
             LaunchCheck("mix:service_offer", bool(service_offers), f"{len(service_offers)} service/usage offers"),
         ]
@@ -230,7 +233,8 @@ def render_markdown(report: dict[str, Any]) -> str:
             "",
             "## Launch Rule",
             "",
-            "Keep one low-friction starter offer buyable, keep proof pages local and linked, keep legal/support surfaces present, and verify checkout routes before promotion.",
+            "Keep one low-friction starter offer buyable, keep proof pages local and linked, "
+            "keep legal/support surfaces present, and verify checkout routes before promotion.",
             "",
         ]
     )

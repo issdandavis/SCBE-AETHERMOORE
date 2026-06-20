@@ -227,6 +227,7 @@ def generate_stubs():
 
     # Summary by domain
     from collections import Counter
+
     domain_counts = Counter(r["domain"] for r in records)
     for d, c in sorted(domain_counts.items()):
         print(f"    {d}: {c} stubs")

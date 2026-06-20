@@ -1,11 +1,10 @@
 // src/extension/content.js
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request.action === 'getPageContent') {
-    const text = extractVisibleText();
     sendResponse({
       url: window.location.href,
       title: document.title,
-      text: text,
+      text: extractVisibleText(),
       headings: extractHeadings(),
       links: extractLinks(),
       buttons: extractButtons(),
@@ -14,7 +13,9 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       pageType: inferPageType(),
     });
   }
-  return true;
+  // return false (implicit) — sendResponse was called synchronously;
+  // returning true would keep the channel open and trigger the
+  // "message channel closed before a response was received" warning.
 });
 
 function extractVisibleText() {

@@ -86,7 +86,7 @@ def main():
 
     batch_size = 200
     for i in range(0, len(all_texts), batch_size):
-        batch = all_texts[i:i + batch_size]
+        batch = all_texts[i : i + batch_size]
         batch_bundles = [generate_quantum_bundle(t) for t in batch]
         bundles.extend(batch_bundles)
         batch_sft = generate_quantum_sft_records(batch_bundles)
@@ -115,16 +115,19 @@ def main():
     print(f"SFT records: {len(sft_records)}")
     print(f"Output: {output_path}")
     print()
-    print(f"Sources:")
+    print("Sources:")
     for name, count in source_counts.items():
         print(f"  {name}: {count}")
     print()
-    print(f"Excitation stats:")
+    print("Excitation stats:")
     print(f"  Mean max excitation: {summary['excitation']['mean_max']}")
-    print(f"  Ground states: {summary['excitation']['ground_state_count']} "
-          f"({summary['excitation']['ground_state_pct']}%)")
-    print(f"  Max excited: {summary['excitation']['max_excited_count']} "
-          f"({summary['excitation']['max_excited_pct']}%)")
+    print(
+        f"  Ground states: {summary['excitation']['ground_state_count']} "
+        f"({summary['excitation']['ground_state_pct']}%)"
+    )
+    print(
+        f"  Max excited: {summary['excitation']['max_excited_count']} " f"({summary['excitation']['max_excited_pct']}%)"
+    )
     print()
     print("Visual vector means (polychromatic emission):")
     for t, v in summary["visual_vector_means"].items():
@@ -135,8 +138,10 @@ def main():
         print(f"  {band:>12}: {v:.4f}")
     print()
     print(f"Mean harmonic cost: {summary['governance']['mean_harmonic_cost']:.4f}")
-    print(f"Total spectral lines: {summary['total_spectral_lines']} "
-          f"(mean {summary['mean_lines_per_record']:.1f}/record)")
+    print(
+        f"Total spectral lines: {summary['total_spectral_lines']} "
+        f"(mean {summary['mean_lines_per_record']:.1f}/record)"
+    )
     print()
     print("Dominant tongue distribution:")
     for t, c in summary["dominant_tongue_distribution"].items():
@@ -151,17 +156,19 @@ def main():
     ga = summary.get("gallery_ambient", {})
     if ga:
         print("Gallery Ambient (dead tone detection):")
-        print(f"  Autorotation active: {ga.get('autorotation_active_count', 0)} "
-              f"({ga.get('autorotation_active_pct', 0.0)}%)")
+        print(
+            f"  Autorotation active: {ga.get('autorotation_active_count', 0)} "
+            f"({ga.get('autorotation_active_pct', 0.0)}%)"
+        )
         print(f"  Mean gallery energy: {ga.get('mean_gallery_energy', 0):.4f}")
-        print(f"  Dominant dead tone distribution:")
+        print("  Dominant dead tone distribution:")
         for tone, c in ga.get("dominant_dead_tone_distribution", {}).items():
             pct = c / max(1, summary["count"]) * 100
             print(f"    {tone:>15}: {c:>5} ({pct:.1f}%)")
-        print(f"  Mean blind spot proximity:")
+        print("  Mean blind spot proximity:")
         for tone, v in ga.get("mean_blind_spot_proximity", {}).items():
             print(f"    {tone:>15}: {v:.4f}")
-        print(f"  Mean coupling strength:")
+        print("  Mean coupling strength:")
         for tone, v in ga.get("mean_coupling_strength", {}).items():
             print(f"    {tone:>15}: {v:.4f}")
     print("=" * 70)

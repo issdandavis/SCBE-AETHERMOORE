@@ -15,6 +15,7 @@ so the boost is coverage-aligned with what Brick 0's validator actually scores.
 
 Deterministic: seeded from Brick 1 run seed 0xB1.
 """
+
 from __future__ import annotations
 
 import json

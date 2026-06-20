@@ -105,7 +105,7 @@ OPERATIONS: list[dict] = [
         "code": {
             "Python": "for i in range(10):\n    print(i)",
             "TypeScript": "for (let i = 0; i < 10; i++) {\n    console.log(i);\n}",
-            "Rust": "for i in 0..10 {\n    println!(\"{}\", i);\n}",
+            "Rust": 'for i in 0..10 {\n    println!("{}", i);\n}',
             "Go": "for i := 0; i < 10; i++ {\n    fmt.Println(i)\n}",
             "Java": "for (int i = 0; i < 10; i++) {\n    System.out.println(i);\n}",
             "C++": "for (int i = 0; i < 10; i++) {\n    std::cout << i << std::endl;\n}",
@@ -122,7 +122,7 @@ OPERATIONS: list[dict] = [
         "code": {
             "Python": "count = 0\nwhile count < 5:\n    print(count)\n    count += 1",
             "TypeScript": "let count = 0;\nwhile (count < 5) {\n    console.log(count);\n    count++;\n}",
-            "Rust": "let mut count = 0;\nwhile count < 5 {\n    println!(\"{}\", count);\n    count += 1;\n}",
+            "Rust": 'let mut count = 0;\nwhile count < 5 {\n    println!("{}", count);\n    count += 1;\n}',
             "Go": "count := 0\nfor count < 5 {\n    fmt.Println(count)\n    count++\n}",
             "Java": "int count = 0;\nwhile (count < 5) {\n    System.out.println(count);\n    count++;\n}",
             "C++": "int count = 0;\nwhile (count < 5) {\n    std::cout << count << std::endl;\n    count++;\n}",
@@ -189,16 +189,16 @@ OPERATIONS: list[dict] = [
         "name": "Struct / Data Class",
         "desc": "Define a typed data container",
         "code": {
-            "Python": 'from dataclasses import dataclass\n\n@dataclass\nclass Point:\n    x: float\n    y: float\n\np = Point(3.0, 4.0)\ndist = (p.x**2 + p.y**2) ** 0.5',
-            "TypeScript": 'interface Point {\n    x: number;\n    y: number;\n}\n\nconst p: Point = { x: 3.0, y: 4.0 };\nconst dist = Math.sqrt(p.x ** 2 + p.y ** 2);',
-            "Rust": 'struct Point {\n    x: f64,\n    y: f64,\n}\n\nlet p = Point { x: 3.0, y: 4.0 };\nlet dist = (p.x.powi(2) + p.y.powi(2)).sqrt();',
-            "Go": 'type Point struct {\n    X float64\n    Y float64\n}\n\np := Point{X: 3.0, Y: 4.0}\ndist := math.Sqrt(p.X*p.X + p.Y*p.Y)',
-            "Java": 'record Point(double x, double y) {}\n\nvar p = new Point(3.0, 4.0);\ndouble dist = Math.sqrt(p.x() * p.x() + p.y() * p.y());',
-            "C++": 'struct Point {\n    double x;\n    double y;\n};\n\nPoint p{3.0, 4.0};\ndouble dist = std::sqrt(p.x * p.x + p.y * p.y);',
-            "C#": 'record Point(double X, double Y);\n\nvar p = new Point(3.0, 4.0);\ndouble dist = Math.Sqrt(p.X * p.X + p.Y * p.Y);',
-            "Ruby": 'Point = Struct.new(:x, :y)\n\np = Point.new(3.0, 4.0)\ndist = Math.sqrt(p.x**2 + p.y**2)',
-            "Swift": 'struct Point {\n    let x: Double\n    let y: Double\n}\n\nlet p = Point(x: 3.0, y: 4.0)\nlet dist = sqrt(p.x * p.x + p.y * p.y)',
-            "Kotlin": 'data class Point(val x: Double, val y: Double)\n\nval p = Point(3.0, 4.0)\nval dist = sqrt(p.x.pow(2) + p.y.pow(2))',
+            "Python": "from dataclasses import dataclass\n\n@dataclass\nclass Point:\n    x: float\n    y: float\n\np = Point(3.0, 4.0)\ndist = (p.x**2 + p.y**2) ** 0.5",
+            "TypeScript": "interface Point {\n    x: number;\n    y: number;\n}\n\nconst p: Point = { x: 3.0, y: 4.0 };\nconst dist = Math.sqrt(p.x ** 2 + p.y ** 2);",
+            "Rust": "struct Point {\n    x: f64,\n    y: f64,\n}\n\nlet p = Point { x: 3.0, y: 4.0 };\nlet dist = (p.x.powi(2) + p.y.powi(2)).sqrt();",
+            "Go": "type Point struct {\n    X float64\n    Y float64\n}\n\np := Point{X: 3.0, Y: 4.0}\ndist := math.Sqrt(p.X*p.X + p.Y*p.Y)",
+            "Java": "record Point(double x, double y) {}\n\nvar p = new Point(3.0, 4.0);\ndouble dist = Math.sqrt(p.x() * p.x() + p.y() * p.y());",
+            "C++": "struct Point {\n    double x;\n    double y;\n};\n\nPoint p{3.0, 4.0};\ndouble dist = std::sqrt(p.x * p.x + p.y * p.y);",
+            "C#": "record Point(double X, double Y);\n\nvar p = new Point(3.0, 4.0);\ndouble dist = Math.Sqrt(p.X * p.X + p.Y * p.Y);",
+            "Ruby": "Point = Struct.new(:x, :y)\n\np = Point.new(3.0, 4.0)\ndist = Math.sqrt(p.x**2 + p.y**2)",
+            "Swift": "struct Point {\n    let x: Double\n    let y: Double\n}\n\nlet p = Point(x: 3.0, y: 4.0)\nlet dist = sqrt(p.x * p.x + p.y * p.y)",
+            "Kotlin": "data class Point(val x: Double, val y: Double)\n\nval p = Point(3.0, 4.0)\nval dist = sqrt(p.x.pow(2) + p.y.pow(2))",
         },
     },
     # ── Functions ──
@@ -333,7 +333,7 @@ OPERATIONS: list[dict] = [
             "Rust": 'async fn fetch_data(url: &str) -> Result<String, reqwest::Error> {\n    let body = reqwest::get(url).await?.text().await?;\n    Ok(body)\n}\n\n#[tokio::main]\nasync fn main() {\n    let result = fetch_data("https://example.com").await.unwrap();\n    println!("{}", result);\n}',
             "Go": 'func fetchData(url string) <-chan string {\n    ch := make(chan string)\n    go func() {\n        resp, _ := http.Get(url)\n        body, _ := io.ReadAll(resp.Body)\n        ch <- string(body)\n    }()\n    return ch\n}\n\nresult := <-fetchData("https://example.com")',
             "Java": 'CompletableFuture<String> fetchData(String url) {\n    return CompletableFuture.supplyAsync(() -> {\n        // HTTP call here\n        return "data";\n    });\n}\n\nString result = fetchData("https://example.com").join();',
-            "C++": '// C++20 coroutines (simplified)\ntask<std::string> fetch_data(std::string url) {\n    auto response = co_await http_get(url);\n    co_return response.body();\n}',
+            "C++": "// C++20 coroutines (simplified)\ntask<std::string> fetch_data(std::string url) {\n    auto response = co_await http_get(url);\n    co_return response.body();\n}",
             "C#": 'async Task<string> FetchData(string url) {\n    using var client = new HttpClient();\n    return await client.GetStringAsync(url);\n}\n\nstring result = await FetchData("https://example.com");',
             "Ruby": '# Ruby uses fibers/threads\nrequire "async"\n\nAsync do\n  result = Async::HTTP::Internet.new.get("https://example.com")\n  puts result.read\nend',
             "Swift": 'func fetchData(url: URL) async throws -> String {\n    let (data, _) = try await URLSession.shared.data(from: url)\n    return String(data: data, encoding: .utf8) ?? ""\n}\n\nlet result = try await fetchData(url: myURL)',
@@ -384,9 +384,9 @@ OPERATIONS: list[dict] = [
             "TypeScript": 'const data = JSON.parse(\'{"name": "Polly", "age": 1}\');\nconsole.log(data.name);',
             "Rust": 'use serde_json::Value;\n\nlet data: Value = serde_json::from_str(r#"{"name": "Polly", "age": 1}"#).unwrap();\nprintln!("{}", data["name"]);',
             "Go": 'var data map[string]interface{}\njson.Unmarshal([]byte(`{"name": "Polly", "age": 1}`), &data)\nfmt.Println(data["name"])',
-            "Java": 'var mapper = new ObjectMapper();\nvar data = mapper.readTree("{\\\"name\\\": \\\"Polly\\\", \\\"age\\\": 1}");\nSystem.out.println(data.get("name").asText());',
+            "Java": 'var mapper = new ObjectMapper();\nvar data = mapper.readTree("{\\"name\\": \\"Polly\\", \\"age\\": 1}");\nSystem.out.println(data.get("name").asText());',
             "C++": '// Using nlohmann/json\nauto data = nlohmann::json::parse(R"({"name": "Polly", "age": 1})");\nstd::cout << data["name"];',
-            "C#": 'using System.Text.Json;\nvar data = JsonDocument.Parse("{\\\"name\\\": \\\"Polly\\\", \\\"age\\\": 1}");\nConsole.WriteLine(data.RootElement.GetProperty("name"));',
+            "C#": 'using System.Text.Json;\nvar data = JsonDocument.Parse("{\\"name\\": \\"Polly\\", \\"age\\": 1}");\nConsole.WriteLine(data.RootElement.GetProperty("name"));',
             "Ruby": 'require "json"\n\ndata = JSON.parse(\'{"name": "Polly", "age": 1}\')\nputs data["name"]',
             "Swift": 'let json = Data(#"{"name": "Polly", "age": 1}"#.utf8)\nlet data = try JSONSerialization.jsonObject(with: json) as! [String: Any]\nprint(data["name"]!)',
             "Kotlin": 'import kotlinx.serialization.json.*\n\nval data = Json.parseToJsonElement("""{"name": "Polly", "age": 1}""")\nprintln(data.jsonObject["name"])',
@@ -398,16 +398,16 @@ OPERATIONS: list[dict] = [
         "name": "Interface / Trait / Protocol",
         "desc": "Define a contract that types must satisfy",
         "code": {
-            "Python": 'from abc import ABC, abstractmethod\n\nclass Shape(ABC):\n    @abstractmethod\n    def area(self) -> float: ...\n\nclass Circle(Shape):\n    def __init__(self, r: float):\n        self.r = r\n    def area(self) -> float:\n        return 3.14159 * self.r ** 2',
-            "TypeScript": 'interface Shape {\n    area(): number;\n}\n\nclass Circle implements Shape {\n    constructor(private r: number) {}\n    area(): number {\n        return Math.PI * this.r ** 2;\n    }\n}',
-            "Rust": 'trait Shape {\n    fn area(&self) -> f64;\n}\n\nstruct Circle { r: f64 }\n\nimpl Shape for Circle {\n    fn area(&self) -> f64 {\n        std::f64::consts::PI * self.r.powi(2)\n    }\n}',
-            "Go": 'type Shape interface {\n    Area() float64\n}\n\ntype Circle struct {\n    R float64\n}\n\nfunc (c Circle) Area() float64 {\n    return math.Pi * c.R * c.R\n}',
-            "Java": 'interface Shape {\n    double area();\n}\n\nclass Circle implements Shape {\n    private double r;\n    Circle(double r) { this.r = r; }\n    public double area() {\n        return Math.PI * r * r;\n    }\n}',
-            "C++": 'class Shape {\npublic:\n    virtual double area() const = 0;\n    virtual ~Shape() = default;\n};\n\nclass Circle : public Shape {\n    double r;\npublic:\n    Circle(double r) : r(r) {}\n    double area() const override {\n        return M_PI * r * r;\n    }\n};',
-            "C#": 'interface IShape {\n    double Area();\n}\n\nclass Circle : IShape {\n    private double r;\n    public Circle(double r) => this.r = r;\n    public double Area() => Math.PI * r * r;\n}',
-            "Ruby": 'module Shape\n  def area\n    raise NotImplementedError\n  end\nend\n\nclass Circle\n  include Shape\n  def initialize(r)\n    @r = r\n  end\n  def area\n    Math::PI * @r**2\n  end\nend',
-            "Swift": 'protocol Shape {\n    func area() -> Double\n}\n\nstruct Circle: Shape {\n    let r: Double\n    func area() -> Double {\n        return .pi * r * r\n    }\n}',
-            "Kotlin": 'interface Shape {\n    fun area(): Double\n}\n\nclass Circle(private val r: Double) : Shape {\n    override fun area(): Double = Math.PI * r * r\n}',
+            "Python": "from abc import ABC, abstractmethod\n\nclass Shape(ABC):\n    @abstractmethod\n    def area(self) -> float: ...\n\nclass Circle(Shape):\n    def __init__(self, r: float):\n        self.r = r\n    def area(self) -> float:\n        return 3.14159 * self.r ** 2",
+            "TypeScript": "interface Shape {\n    area(): number;\n}\n\nclass Circle implements Shape {\n    constructor(private r: number) {}\n    area(): number {\n        return Math.PI * this.r ** 2;\n    }\n}",
+            "Rust": "trait Shape {\n    fn area(&self) -> f64;\n}\n\nstruct Circle { r: f64 }\n\nimpl Shape for Circle {\n    fn area(&self) -> f64 {\n        std::f64::consts::PI * self.r.powi(2)\n    }\n}",
+            "Go": "type Shape interface {\n    Area() float64\n}\n\ntype Circle struct {\n    R float64\n}\n\nfunc (c Circle) Area() float64 {\n    return math.Pi * c.R * c.R\n}",
+            "Java": "interface Shape {\n    double area();\n}\n\nclass Circle implements Shape {\n    private double r;\n    Circle(double r) { this.r = r; }\n    public double area() {\n        return Math.PI * r * r;\n    }\n}",
+            "C++": "class Shape {\npublic:\n    virtual double area() const = 0;\n    virtual ~Shape() = default;\n};\n\nclass Circle : public Shape {\n    double r;\npublic:\n    Circle(double r) : r(r) {}\n    double area() const override {\n        return M_PI * r * r;\n    }\n};",
+            "C#": "interface IShape {\n    double Area();\n}\n\nclass Circle : IShape {\n    private double r;\n    public Circle(double r) => this.r = r;\n    public double Area() => Math.PI * r * r;\n}",
+            "Ruby": "module Shape\n  def area\n    raise NotImplementedError\n  end\nend\n\nclass Circle\n  include Shape\n  def initialize(r)\n    @r = r\n  end\n  def area\n    Math::PI * @r**2\n  end\nend",
+            "Swift": "protocol Shape {\n    func area() -> Double\n}\n\nstruct Circle: Shape {\n    let r: Double\n    func area() -> Double {\n        return .pi * r * r\n    }\n}",
+            "Kotlin": "interface Shape {\n    fun area(): Double\n}\n\nclass Circle(private val r: Double) : Shape {\n    override fun area(): Double = Math.PI * r * r\n}",
         },
     },
     {
@@ -433,16 +433,16 @@ OPERATIONS: list[dict] = [
         "name": "Unit Test",
         "desc": "Write a basic unit test",
         "code": {
-            "Python": 'import pytest\n\ndef add(a, b):\n    return a + b\n\ndef test_add():\n    assert add(2, 3) == 5\n    assert add(-1, 1) == 0\n    assert add(0, 0) == 0',
+            "Python": "import pytest\n\ndef add(a, b):\n    return a + b\n\ndef test_add():\n    assert add(2, 3) == 5\n    assert add(-1, 1) == 0\n    assert add(0, 0) == 0",
             "TypeScript": 'import { describe, it, expect } from "vitest";\n\nfunction add(a: number, b: number) { return a + b; }\n\ndescribe("add", () => {\n    it("adds two numbers", () => {\n        expect(add(2, 3)).toBe(5);\n        expect(add(-1, 1)).toBe(0);\n    });\n});',
-            "Rust": '#[cfg(test)]\nmod tests {\n    fn add(a: i32, b: i32) -> i32 { a + b }\n\n    #[test]\n    fn test_add() {\n        assert_eq!(add(2, 3), 5);\n        assert_eq!(add(-1, 1), 0);\n    }\n}',
+            "Rust": "#[cfg(test)]\nmod tests {\n    fn add(a: i32, b: i32) -> i32 { a + b }\n\n    #[test]\n    fn test_add() {\n        assert_eq!(add(2, 3), 5);\n        assert_eq!(add(-1, 1), 0);\n    }\n}",
             "Go": 'func add(a, b int) int { return a + b }\n\nfunc TestAdd(t *testing.T) {\n    if add(2, 3) != 5 {\n        t.Error("expected 5")\n    }\n    if add(-1, 1) != 0 {\n        t.Error("expected 0")\n    }\n}',
-            "Java": '@Test\nvoid testAdd() {\n    assertEquals(5, add(2, 3));\n    assertEquals(0, add(-1, 1));\n    assertEquals(0, add(0, 0));\n}',
-            "C++": '// Using Google Test\nTEST(AddTest, BasicCases) {\n    EXPECT_EQ(add(2, 3), 5);\n    EXPECT_EQ(add(-1, 1), 0);\n    EXPECT_EQ(add(0, 0), 0);\n}',
-            "C#": '[Fact]\npublic void TestAdd() {\n    Assert.Equal(5, Add(2, 3));\n    Assert.Equal(0, Add(-1, 1));\n    Assert.Equal(0, Add(0, 0));\n}',
+            "Java": "@Test\nvoid testAdd() {\n    assertEquals(5, add(2, 3));\n    assertEquals(0, add(-1, 1));\n    assertEquals(0, add(0, 0));\n}",
+            "C++": "// Using Google Test\nTEST(AddTest, BasicCases) {\n    EXPECT_EQ(add(2, 3), 5);\n    EXPECT_EQ(add(-1, 1), 0);\n    EXPECT_EQ(add(0, 0), 0);\n}",
+            "C#": "[Fact]\npublic void TestAdd() {\n    Assert.Equal(5, Add(2, 3));\n    Assert.Equal(0, Add(-1, 1));\n    Assert.Equal(0, Add(0, 0));\n}",
             "Ruby": 'require "minitest/autorun"\n\nclass TestAdd < Minitest::Test\n  def test_add\n    assert_equal 5, add(2, 3)\n    assert_equal 0, add(-1, 1)\n  end\nend',
-            "Swift": 'import XCTest\n\nclass AddTests: XCTestCase {\n    func testAdd() {\n        XCTAssertEqual(add(2, 3), 5)\n        XCTAssertEqual(add(-1, 1), 0)\n    }\n}',
-            "Kotlin": '@Test\nfun testAdd() {\n    assertEquals(5, add(2, 3))\n    assertEquals(0, add(-1, 1))\n    assertEquals(0, add(0, 0))\n}',
+            "Swift": "import XCTest\n\nclass AddTests: XCTestCase {\n    func testAdd() {\n        XCTAssertEqual(add(2, 3), 5)\n        XCTAssertEqual(add(-1, 1), 0)\n    }\n}",
+            "Kotlin": "@Test\nfun testAdd() {\n    assertEquals(5, add(2, 3))\n    assertEquals(0, add(-1, 1))\n    assertEquals(0, add(0, 0))\n}",
         },
     },
     # ── HTTP ──
@@ -504,16 +504,16 @@ OPERATIONS: list[dict] = [
         "name": "Euclidean Distance",
         "desc": "Compute distance between two points",
         "code": {
-            "Python": 'import math\n\ndef distance(x1, y1, x2, y2):\n    return math.sqrt((x2-x1)**2 + (y2-y1)**2)',
-            "TypeScript": 'function distance(x1: number, y1: number, x2: number, y2: number): number {\n    return Math.sqrt((x2-x1)**2 + (y2-y1)**2);\n}',
-            "Rust": 'fn distance(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {\n    ((x2-x1).powi(2) + (y2-y1).powi(2)).sqrt()\n}',
-            "Go": 'func distance(x1, y1, x2, y2 float64) float64 {\n    return math.Sqrt(math.Pow(x2-x1, 2) + math.Pow(y2-y1, 2))\n}',
-            "Java": 'static double distance(double x1, double y1, double x2, double y2) {\n    return Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2));\n}',
-            "C++": 'double distance(double x1, double y1, double x2, double y2) {\n    return std::sqrt(std::pow(x2-x1, 2) + std::pow(y2-y1, 2));\n}',
-            "C#": 'static double Distance(double x1, double y1, double x2, double y2) {\n    return Math.Sqrt(Math.Pow(x2-x1, 2) + Math.Pow(y2-y1, 2));\n}',
-            "Ruby": 'def distance(x1, y1, x2, y2)\n  Math.sqrt((x2-x1)**2 + (y2-y1)**2)\nend',
-            "Swift": 'func distance(_ x1: Double, _ y1: Double, _ x2: Double, _ y2: Double) -> Double {\n    return sqrt(pow(x2-x1, 2) + pow(y2-y1, 2))\n}',
-            "Kotlin": 'fun distance(x1: Double, y1: Double, x2: Double, y2: Double): Double {\n    return sqrt((x2-x1).pow(2) + (y2-y1).pow(2))\n}',
+            "Python": "import math\n\ndef distance(x1, y1, x2, y2):\n    return math.sqrt((x2-x1)**2 + (y2-y1)**2)",
+            "TypeScript": "function distance(x1: number, y1: number, x2: number, y2: number): number {\n    return Math.sqrt((x2-x1)**2 + (y2-y1)**2);\n}",
+            "Rust": "fn distance(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {\n    ((x2-x1).powi(2) + (y2-y1).powi(2)).sqrt()\n}",
+            "Go": "func distance(x1, y1, x2, y2 float64) float64 {\n    return math.Sqrt(math.Pow(x2-x1, 2) + math.Pow(y2-y1, 2))\n}",
+            "Java": "static double distance(double x1, double y1, double x2, double y2) {\n    return Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2));\n}",
+            "C++": "double distance(double x1, double y1, double x2, double y2) {\n    return std::sqrt(std::pow(x2-x1, 2) + std::pow(y2-y1, 2));\n}",
+            "C#": "static double Distance(double x1, double y1, double x2, double y2) {\n    return Math.Sqrt(Math.Pow(x2-x1, 2) + Math.Pow(y2-y1, 2));\n}",
+            "Ruby": "def distance(x1, y1, x2, y2)\n  Math.sqrt((x2-x1)**2 + (y2-y1)**2)\nend",
+            "Swift": "func distance(_ x1: Double, _ y1: Double, _ x2: Double, _ y2: Double) -> Double {\n    return sqrt(pow(x2-x1, 2) + pow(y2-y1, 2))\n}",
+            "Kotlin": "fun distance(x1: Double, y1: Double, x2: Double, y2: Double): Double {\n    return sqrt((x2-x1).pow(2) + (y2-y1).pow(2))\n}",
         },
     },
 ]
@@ -545,40 +545,41 @@ def build_records() -> list[dict]:
             if lang in code:
                 answer += f"**{lang}:**\n```{lang.lower().replace('c++', 'cpp').replace('c#', 'csharp')}\n{code[lang]}\n```\n\n"
 
-        records.append({
-            "messages": [
-                {"role": "system", "content": SYSTEM},
-                {"role": "user", "content": user_q},
-                {"role": "assistant", "content": answer},
-            ],
-            "tags": ["rosetta", cat, "all-languages"],
-        })
+        records.append(
+            {
+                "messages": [
+                    {"role": "system", "content": SYSTEM},
+                    {"role": "user", "content": user_q},
+                    {"role": "assistant", "content": answer},
+                ],
+                "tags": ["rosetta", cat, "all-languages"],
+            }
+        )
 
         # ── Record Type 2: Per-language pair (user asks in one lang, gets another) ──
-        lang_list = [l for l in LANGS if l in code]
+        lang_list = [lang for lang in LANGS if lang in code]
         for i in range(len(lang_list)):
             for j in range(i + 1, len(lang_list)):
                 src_lang = lang_list[i]
                 tgt_lang = lang_list[j]
-                user_q2 = (
-                    f"I know how to {desc.lower()} in {src_lang}. "
-                    f"How do I do the same thing in {tgt_lang}?"
-                )
+                user_q2 = f"I know how to {desc.lower()} in {src_lang}. " f"How do I do the same thing in {tgt_lang}?"
                 answer2 = (
                     f"Here's the {name} operation translated from {src_lang} to {tgt_lang}:\n\n"
                     f"**{src_lang}:**\n```{src_lang.lower().replace('c++', 'cpp').replace('c#', 'csharp')}\n{code[src_lang]}\n```\n\n"
                     f"**{tgt_lang}:**\n```{tgt_lang.lower().replace('c++', 'cpp').replace('c#', 'csharp')}\n{code[tgt_lang]}\n```\n\n"
                     f"Key differences: {src_lang} and {tgt_lang} handle {cat} differently "
-                    f"in syntax and idiom, but the operation is semantically identical."
+                    "in syntax and idiom, but the operation is semantically identical."
                 )
-                records.append({
-                    "messages": [
-                        {"role": "system", "content": SYSTEM},
-                        {"role": "user", "content": user_q2},
-                        {"role": "assistant", "content": answer2},
-                    ],
-                    "tags": ["rosetta", cat, f"{src_lang}-to-{tgt_lang}"],
-                })
+                records.append(
+                    {
+                        "messages": [
+                            {"role": "system", "content": SYSTEM},
+                            {"role": "user", "content": user_q2},
+                            {"role": "assistant", "content": answer2},
+                        ],
+                        "tags": ["rosetta", cat, f"{src_lang}-to-{tgt_lang}"],
+                    }
+                )
 
         # ── Record Type 3: "What's different?" comparison ──
         user_q3 = f"What are the key differences in how languages handle {name.lower()}?"
@@ -590,20 +591,22 @@ def build_records() -> list[dict]:
             answer3 += f"- **{lang}**: `{snippet_first_line}`\n"
         answer3 += (
             f"\nThe core operation ({desc.lower()}) is the same, "
-            f"but syntax, type systems, and idioms differ. "
-            f"Statically-typed languages (Rust, Go, Java) require explicit types. "
-            f"Dynamic languages (Python, Ruby) infer everything. "
-            f"The SCBE pipeline implements critical functions in both TypeScript and Python "
-            f"with cross-language parity tests to ensure identical behavior."
+            "but syntax, type systems, and idioms differ. "
+            "Statically-typed languages (Rust, Go, Java) require explicit types. "
+            "Dynamic languages (Python, Ruby) infer everything. "
+            "The SCBE pipeline implements critical functions in both TypeScript and Python "
+            "with cross-language parity tests to ensure identical behavior."
         )
-        records.append({
-            "messages": [
-                {"role": "system", "content": SYSTEM},
-                {"role": "user", "content": user_q3},
-                {"role": "assistant", "content": answer3},
-            ],
-            "tags": ["rosetta", cat, "comparison"],
-        })
+        records.append(
+            {
+                "messages": [
+                    {"role": "system", "content": SYSTEM},
+                    {"role": "user", "content": user_q3},
+                    {"role": "assistant", "content": answer3},
+                ],
+                "tags": ["rosetta", cat, "comparison"],
+            }
+        )
 
     return records
 

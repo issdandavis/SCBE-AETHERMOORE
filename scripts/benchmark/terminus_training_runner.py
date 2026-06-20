@@ -17,7 +17,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
 
-
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT_DIR = ROOT / "artifacts" / "terminus_training"
 
@@ -58,7 +57,9 @@ def build_world() -> dict[str, Room]:
             "Home base. Use ls, cd GuildDistrict, or cd WesternForest.",
             exits=["GuildDistrict", "WesternForest", "MIT"],
             items={
-                "WelcomeLetter": "Use ls to survey, cd Place to move, less Item to inspect, and solve Enemy answer in MathArena.",
+                "WelcomeLetter": (
+                    "Use ls to survey, cd Place to move, less Item to inspect, and solve Enemy answer in MathArena."
+                ),
             },
             checkpoint=True,
         ),
@@ -168,7 +169,9 @@ def build_world() -> dict[str, Room]:
             items={"Professor": "mv Item Location moves an item when allowed."},
             checkpoint=True,
         ),
-        "MIT": Room("MIT", "Original advanced campus route.", exits=["Home"], items={"AdmissionLetter": "Welcome to MIT."}),
+        "MIT": Room(
+            "MIT", "Original advanced campus route.", exits=["Home"], items={"AdmissionLetter": "Welcome to MIT."}
+        ),
     }
     return world
 
@@ -240,7 +243,8 @@ class TerminusTrainingSession:
                 return room.items[name], 2, {"event_type": "read_item", "item": name}
             enemy = room.enemies[name]
             return (
-                f"Enemy: {enemy.name}\nProblem: {enemy.problem}\nDomain: {enemy.domain}\nCommand: solve {enemy.name} answer",
+                f"Enemy: {enemy.name}\nProblem: {enemy.problem}\nDomain: {enemy.domain}\n"
+                f"Command: solve {enemy.name} answer",
                 2,
                 {"event_type": "inspect_enemy", "enemy": enemy.name, "domain": enemy.domain},
             )
@@ -369,7 +373,10 @@ def write_session(session: TerminusTrainingSession, out_dir: Path, scenario: str
                             "messages": [
                                 {
                                     "role": "system",
-                                    "content": "Play Terminus through command-line actions. Prefer valid routes, inspect before solving, and solve math enemies exactly.",
+                                    "content": (
+                                        "Play Terminus through command-line actions. Prefer valid "
+                                        "routes, inspect before solving, and solve math enemies exactly."
+                                    ),
                                 },
                                 {"role": "user", "content": previous_response},
                                 {"role": "assistant", "content": record.command},
@@ -450,7 +457,9 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
     if args.cmd == "run":
-        payload = run_scripted(BENCHMARK_PATHS[args.scenario], agent_id=args.agent_id, scenario=args.scenario, out_dir=args.out_dir)
+        payload = run_scripted(
+            BENCHMARK_PATHS[args.scenario], agent_id=args.agent_id, scenario=args.scenario, out_dir=args.out_dir
+        )
     elif args.cmd == "benchmark":
         payload = run_benchmark(args.out_dir, agent_id=args.agent_id)
     else:

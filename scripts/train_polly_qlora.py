@@ -18,6 +18,7 @@ Usage:
 Environment:
     HF_TOKEN — HuggingFace write token (required for --push)
 """
+
 from __future__ import annotations
 
 import argparse
@@ -103,13 +104,15 @@ def load_conversations(max_records: int = 0) -> list[dict]:
                 instruction = target.get("instruction", "").strip()
                 response = target.get("response", "").strip()
                 if instruction and response:
-                    records.append({
-                        "messages": [
-                            {"role": "system", "content": POLLY_SYSTEM_PROMPT},
-                            {"role": "user", "content": instruction},
-                            {"role": "assistant", "content": response},
-                        ]
-                    })
+                    records.append(
+                        {
+                            "messages": [
+                                {"role": "system", "content": POLLY_SYSTEM_PROMPT},
+                                {"role": "user", "content": instruction},
+                                {"role": "assistant", "content": response},
+                            ]
+                        }
+                    )
 
     if max_records > 0:
         records = records[:max_records]
@@ -240,9 +243,7 @@ def train(args):
         log.info("Merging adapter into base model...")
         from peft import AutoPeftModelForCausalLM
 
-        merged = AutoPeftModelForCausalLM.from_pretrained(
-            adapter_path, device_map="auto", trust_remote_code=True
-        )
+        merged = AutoPeftModelForCausalLM.from_pretrained(adapter_path, device_map="auto", trust_remote_code=True)
         merged = merged.merge_and_unload()
         merged_path = os.path.join(output_dir, "merged_model")
         merged.save_pretrained(merged_path)
@@ -264,19 +265,15 @@ def train(args):
 
 def main():
     parser = argparse.ArgumentParser(description="Polly QLoRA Training")
-    parser.add_argument("--model", default="Qwen/Qwen2.5-0.5B-Instruct",
-                        help="Base model (default: Qwen2.5-0.5B-Instruct)")
+    parser.add_argument(
+        "--model", default="Qwen/Qwen2.5-0.5B-Instruct", help="Base model (default: Qwen2.5-0.5B-Instruct)"
+    )
     parser.add_argument("--epochs", type=int, default=3, help="Training epochs")
-    parser.add_argument("--max-records", type=int, default=0,
-                        help="Max records to load (0=all)")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Load data and print stats without training")
-    parser.add_argument("--merge", action="store_true",
-                        help="Merge LoRA adapter into base model after training")
-    parser.add_argument("--push", action="store_true",
-                        help="Push to HuggingFace after training")
-    parser.add_argument("--hf-repo", default=None,
-                        help="HF repo ID (default: issdandavis/polly-scbe-v1)")
+    parser.add_argument("--max-records", type=int, default=0, help="Max records to load (0=all)")
+    parser.add_argument("--dry-run", action="store_true", help="Load data and print stats without training")
+    parser.add_argument("--merge", action="store_true", help="Merge LoRA adapter into base model after training")
+    parser.add_argument("--push", action="store_true", help="Push to HuggingFace after training")
+    parser.add_argument("--hf-repo", default=None, help="HF repo ID (default: issdandavis/polly-scbe-v1)")
     args = parser.parse_args()
     train(args)
 

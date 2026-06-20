@@ -25,6 +25,12 @@ from .phase_lattice_lookup import (
     holographic_overlay_cells,
     origami_fold_path,
 )
+from .rotating_drop_box import (
+    KeyLease,
+    RotationReceipt,
+    RotationTimingMonitor,
+    RotatingDropBoxAuthorizer,
+)
 
 __all__ = [
     "AccessLevel",
@@ -32,6 +38,10 @@ __all__ = [
     "PhaseLatticeHit",
     "PhaseLatticeLookup",
     "RiskSignal",
+    "KeyLease",
+    "RotationReceipt",
+    "RotationTimingMonitor",
+    "RotatingDropBoxAuthorizer",
     "TrajectoryDecision",
     "TrajectoryRiskDecision",
     "TrajectoryRiskGate",

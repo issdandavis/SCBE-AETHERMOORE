@@ -5,6 +5,7 @@ This creates a Gradio app that serves as the AI's home - a living reference
 for lore, systems, relationships, timelines, and technical architecture.
 Any AI can query this space to get grounded in the SCBE-AETHERMOORE universe.
 """
+
 import os
 import argparse
 from huggingface_hub import HfApi, login
@@ -63,12 +64,12 @@ def get_stats():
 with gr.Blocks(title="SCBE-AETHERMOORE AI Hub", theme=gr.themes.Soft()) as app:
     gr.Markdown("""# SCBE-AETHERMOORE AI Hub
     ### The Living Reference for AI Training & Knowledge
-    
+
     This is the central knowledge base for the SCBE-AETHERMOORE universe.
     AI agents can query here for lore, technical systems, relationship
     dynamics, timelines, and architectural references.
     """)
-    
+
     with gr.Tab("Search Knowledge"):
         query_input = gr.Textbox(label="Search Query", placeholder="e.g. Sacred Tongue, fleet coordination, Polly...")
         category_input = gr.Dropdown(
@@ -78,12 +79,12 @@ with gr.Blocks(title="SCBE-AETHERMOORE AI Hub", theme=gr.themes.Soft()) as app:
         search_btn = gr.Button("Search", variant="primary")
         results_output = gr.Markdown(label="Results")
         search_btn.click(search_knowledge, inputs=[query_input, category_input], outputs=results_output)
-    
+
     with gr.Tab("Dataset Stats"):
         stats_btn = gr.Button("Load Stats")
         stats_output = gr.Markdown()
         stats_btn.click(get_stats, outputs=stats_output)
-    
+
     gr.Markdown(f"""---
     *Connected to dataset: [{dataset_id}](https://huggingface.co/datasets/{dataset_id})*
     *Powered by the Notion-to-Dataset Pipeline*
@@ -122,7 +123,7 @@ def main():
         path_in_repo="app.py",
         repo_id=args.space,
         repo_type="space",
-        commit_message=f"Update AI Hub with latest dataset reference",
+        commit_message="Update AI Hub with latest dataset reference",
     )
 
     # Upload requirements.txt

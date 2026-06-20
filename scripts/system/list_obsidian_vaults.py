@@ -7,7 +7,8 @@ Integrates with: obsidian_byproduct_note.py, HYDRA canvas, cross-talk
 Usage:
     python list_obsidian_vaults.py
     python list_obsidian_vaults.py --roots "C:\\Users\\issda\\OneDrive\\Documents"
-    python list_obsidian_vaults.py --dump-to "C:\\Users\\issda\\OneDrive\\Documents\\DOCCUMENTS\\A follder\\AI Workspace"
+    python list_obsidian_vaults.py \\
+        --dump-to "C:\\Users\\issda\\OneDrive\\Documents\\DOCCUMENTS\\A follder\\AI Workspace"
     python list_obsidian_vaults.py --json
 """
 

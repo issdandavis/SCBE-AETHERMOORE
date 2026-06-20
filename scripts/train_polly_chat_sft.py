@@ -25,7 +25,6 @@ from peft import LoraConfig
 from transformers import AutoTokenizer
 from trl import SFTConfig, SFTTrainer
 
-
 BASE_MODEL = os.getenv("POLLY_BASE_MODEL", "issdandavis/scbe-pivot-qwen-0.5b")
 TARGET_MODEL = os.getenv("POLLY_TARGET_MODEL", "issdandavis/polly-chat-qwen-0.5b")
 DATASET_MODE = os.getenv("POLLY_DATASET_MODE", "local")

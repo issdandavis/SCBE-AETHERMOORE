@@ -417,8 +417,7 @@ def _build_html(hitl_items: List[Dict[str, Any]], html_path: pathlib.Path, scree
             rel = html.escape(str(pathlib.Path("screenshots") / pathlib.Path(shot_file).name))
             shot_html = f"<a href='{rel}' target='_blank'><img src='{rel}' alt='screenshot'></a>"
 
-        cards.append(
-            f"""
+        cards.append(f"""
 <section class='card'>
   <h3>{order_id} <span class='muted'>({clay_id})</span></h3>
   <p><strong>Reasons:</strong><br>{reasons}</p>
@@ -428,8 +427,7 @@ def _build_html(hitl_items: List[Dict[str, Any]], html_path: pathlib.Path, scree
   </details>
   {shot_html}
 </section>
-""".strip()
-        )
+""".strip())
 
     body = "\n".join(cards) if cards else "<p>No pending HITL items.</p>"
 
@@ -447,7 +445,8 @@ p {{ line-height: 1.4; }}
 .card {{ background: #18222c; border: 1px solid #2f3e4e; border-radius: 10px; padding: 0.8rem; }}
 .muted {{ color: #b3c0cc; }}
 img {{ width: 100%; height: auto; border: 1px solid #2f3e4e; border-radius: 8px; }}
-pre {{ white-space: pre-wrap; background: #0b1117; border: 1px solid #2f3e4e; padding: 0.6rem; border-radius: 8px; max-height: 240px; overflow: auto; }}
+pre {{ white-space: pre-wrap; background: #0b1117; border: 1px solid #2f3e4e; padding: 0.6rem;
+      border-radius: 8px; max-height: 240px; overflow: auto; }}
 code {{ background: #0b1117; padding: 0.1rem 0.3rem; border-radius: 5px; }}
 </style>
 </head>

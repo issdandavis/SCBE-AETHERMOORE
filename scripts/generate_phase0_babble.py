@@ -207,7 +207,7 @@ def _system_prompt(tongue: str, difficulty: float) -> str:
         f"[PHASE-0: BABY-BABBLE] [TONGUE: {tongue.upper()} ({name})] "
         f"[PHI-WEIGHT: {weight:.3f}] [DIFFICULTY: {difficulty:.2f}]\n"
         f"You are learning to recognize the sounds of {name}. "
-        f"Listen carefully and respond with what you hear."
+        "Listen carefully and respond with what you hear."
     )
 
 
@@ -595,23 +595,25 @@ def main():
         tier_dist[rec.tier] = tier_dist.get(rec.tier, 0) + 1
 
     print(f"\n{'=' * 70}")
-    print(f"PHASE 0 COMPLETE")
+    print("PHASE 0 COMPLETE")
     print(f"{'=' * 70}")
     print(f"  Total records:  {len(all_records):>10,d}")
     print(f"  File size:      {file_size:>10,d} bytes ({file_size / 1024 / 1024:.1f} MB)")
-    print(f"\n  Tongue distribution:")
+    print("\n  Tongue distribution:")
     for t in TONGUE_CODES:
         name = TONGUE_FULL_NAMES[t]
         ct = tongue_dist.get(t, 0)
         pct = ct / len(all_records) * 100
         bar = "#" * int(pct / 2)
         print(f"    {t.upper()} ({name:.<15s}) {ct:>5,d} ({pct:5.1f}%) {bar}")
-    print(f"\n  Tier distribution:")
+    print("\n  Tier distribution:")
     for tier_name, _ in generators:
         ct = tier_dist.get(tier_name, 0)
         pct = ct / len(all_records) * 100
         print(f"    {tier_name:.<20s} {ct:>5,d} ({pct:5.1f}%)")
-    print(f"\n  Difficulty range: {min(r.difficulty for r in all_records):.3f} — {max(r.difficulty for r in all_records):.3f}")
+    print(
+        f"\n  Difficulty range: {min(r.difficulty for r in all_records):.3f} — {max(r.difficulty for r in all_records):.3f}"
+    )
     print(f"  TPDFF weights:   P1={P1_WEIGHT:.3f} (smooth), P2={P2_WEIGHT:.3f} (pattern), P3={P3_WEIGHT:.3f} (bind)")
 
 

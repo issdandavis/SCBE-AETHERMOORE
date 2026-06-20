@@ -1,0 +1,58 @@
+name: polyglot-faces
+
+# Proves the cross-language identity claim: emit every polyglot face, compile+run
+# it, and assert it computes the SAME number as the Python reference. The local
+# dev box only has python/node/rust; this job adds c, c++, go, ruby, php, lua,
+# haskell, zig, deno(ts) so the faces fixed without a local toolchain are verified
+# for real — and can never silently regress.
+
+on:
+  push:
+    paths:
+      - "python/scbe/polyglot.py"
+      - "python/scbe/polyglot_dialects.json"
+      - "tests/test_polyglot_execution.py"
+      - ".github/workflows/polyglot-faces.yml"
+  pull_request:
+    paths:
+      - "python/scbe/polyglot.py"
+      - "python/scbe/polyglot_dialects.json"
+      - "tests/test_polyglot_execution.py"
+      - ".github/workflows/polyglot-faces.yml"
+  workflow_dispatch:
+
+jobs:
+  faces:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python deps
+        run: pip install --quiet pytest numpy jsonschema
+
+      - name: Install language toolchains (c, c++, php, lua, haskell)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends lua5.4 ghc php-cli
+          # gcc, g++, go, ruby, node are preinstalled on the ubuntu runner.
+
+      - uses: mlugg/setup-zig@v1
+        with:
+          version: 0.13.0
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Report which faces will be executed
+        run: |
+          for t in python3 node gcc g++ go ruby php lua5.4 runghc zig deno javac; do
+            if command -v "$t" >/dev/null 2>&1; then echo "present: $t"; else echo "MISSING: $t (face will be skipped)"; fi
+          done
+
+      - name: Execute every installed polyglot face and assert identical output
+        run: python -m pytest tests/test_polyglot_execution.py -v

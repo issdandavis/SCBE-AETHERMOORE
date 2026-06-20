@@ -29,6 +29,7 @@ except ImportError:
 # Base Backend Interface
 # =============================================================================
 
+
 class BrowserBackend(ABC):
     """
     Abstract base class for browser automation backends.
@@ -87,6 +88,7 @@ class BrowserBackend(ABC):
     async def wait(self, seconds: float) -> None:
         """Wait for specified seconds."""
         import asyncio
+
         await asyncio.sleep(seconds)
 
     async def scroll(self, direction: str = "down", amount: int = 300) -> Dict[str, Any]:
@@ -110,9 +112,11 @@ class BrowserBackend(ABC):
 # Governed Browser Wrapper
 # =============================================================================
 
+
 @dataclass
 class ActionResult:
     """Result of a governed browser action."""
+
     success: bool
     action: str
     target: str
@@ -174,7 +178,7 @@ class GovernedBrowser:
         scbe_url: str = "http://127.0.0.1:8080",
         scbe_key: str = "",
         auto_escalate: bool = True,
-        initial_trust: float = 0.7
+        initial_trust: float = 0.7,
     ):
         self.backend = backend
         self.agent_id = agent_id
@@ -200,12 +204,7 @@ class GovernedBrowser:
             raise RuntimeError("SCBE_API_KEY is required for governed browser startup")
 
         # Create HTTP session
-        self._session = aiohttp.ClientSession(
-            headers={
-                "Content-Type": "application/json",
-                "x-api-key": self.scbe_key
-            }
-        )
+        self._session = aiohttp.ClientSession(headers={"Content-Type": "application/json", "x-api-key": self.scbe_key})
 
         # Check SCBE API
         health_ok = False
@@ -235,8 +234,8 @@ class GovernedBrowser:
                         "agent_id": self.agent_id,
                         "name": f"GovernedBrowser-{self.backend.name}",
                         "role": "browser_automation",
-                        "initial_trust": self.initial_trust
-                    }
+                        "initial_trust": self.initial_trust,
+                    },
                 ) as resp:
                     if resp.status < 400:
                         print(f"[SCBE] Agent registered: {self.agent_id}")
@@ -284,11 +283,7 @@ class GovernedBrowser:
         return min(1.0, (base * 0.6) + (domain * 0.4))
 
     async def _authorize(
-        self,
-        action: str,
-        target: str,
-        sensitivity: float,
-        context: Optional[Dict[str, Any]] = None
+        self, action: str, target: str, sensitivity: float, context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Get SCBE authorization."""
         try:
@@ -298,21 +293,12 @@ class GovernedBrowser:
                     "agent_id": self.agent_id,
                     "action": action.upper(),
                     "target": target,
-                    "context": {
-                        "sensitivity": sensitivity,
-                        "current_url": self.current_url,
-                        **(context or {})
-                    }
-                }
+                    "context": {"sensitivity": sensitivity, "current_url": self.current_url, **(context or {})},
+                },
             ) as resp:
                 return await resp.json()
         except Exception as e:
-            return {
-                "decision": "DENY",
-                "decision_id": "error",
-                "score": 0.0,
-                "explanation": {"error": str(e)}
-            }
+            return {"decision": "DENY", "decision_id": "error", "score": 0.0, "explanation": {"error": str(e)}}
 
     async def _governed_action(
         self,
@@ -320,7 +306,7 @@ class GovernedBrowser:
         target: str,
         executor: Callable,
         context: Optional[Dict[str, Any]] = None,
-        skip_governance: bool = False
+        skip_governance: bool = False,
     ) -> ActionResult:
         """Execute an action with SCBE governance."""
 
@@ -339,16 +325,11 @@ class GovernedBrowser:
                     target=target,
                     decision="SKIP",
                     score=1.0,
-                    data=data if isinstance(data, dict) else {"result": data}
+                    data=data if isinstance(data, dict) else {"result": data},
                 )
             except Exception as e:
                 return ActionResult(
-                    success=False,
-                    action=action,
-                    target=target,
-                    decision="ERROR",
-                    score=0.0,
-                    error=str(e)
+                    success=False, action=action, target=target, decision="ERROR", score=0.0, error=str(e)
                 )
 
         # Get authorization
@@ -358,14 +339,7 @@ class GovernedBrowser:
 
         print(f"         Decision: {decision} (score: {score:.3f})")
 
-        result = ActionResult(
-            success=False,
-            action=action,
-            target=target,
-            decision=decision,
-            score=score,
-            data=auth
-        )
+        result = ActionResult(success=False, action=action, target=target, decision=decision, score=score, data=auth)
 
         # Handle decision
         can_execute = False
@@ -414,6 +388,7 @@ class GovernedBrowser:
 
     async def navigate(self, url: str) -> ActionResult:
         """Navigate to URL (governed)."""
+
         async def executor():
             result = await self.backend.navigate(url)
             self.current_url = url
@@ -424,11 +399,7 @@ class GovernedBrowser:
     async def click(self, selector: str) -> ActionResult:
         """Click element (governed)."""
         target = f"{self.current_url}::{selector}"
-        return await self._governed_action(
-            "click",
-            target,
-            lambda: self.backend.click(selector)
-        )
+        return await self._governed_action("click", target, lambda: self.backend.click(selector))
 
     async def type_text(self, selector: str, text: str, mask: bool = True) -> ActionResult:
         """Type text (governed)."""
@@ -440,37 +411,32 @@ class GovernedBrowser:
             "type",
             target,
             lambda: self.backend.type_text(selector, text),
-            context={"text_length": len(text), "masked": display_text}
+            context={"text_length": len(text), "masked": display_text},
         )
 
     async def submit(self, selector: str) -> ActionResult:
         """Submit form (governed - higher sensitivity)."""
         target = f"{self.current_url}::{selector}"
         return await self._governed_action(
-            "submit",
-            target,
-            lambda: self.backend.click(selector)  # Submit is usually a click
+            "submit", target, lambda: self.backend.click(selector)  # Submit is usually a click
         )
 
     async def execute_script(self, script: str) -> ActionResult:
         """Execute JavaScript (governed - high sensitivity)."""
         import hashlib
+
         script_hash = hashlib.sha256(script.encode()).hexdigest()[:16]
 
         return await self._governed_action(
             "execute_script",
             f"{self.current_url}::script:{script_hash}",
             lambda: self.backend.execute_script(script),
-            context={"script_hash": script_hash, "script_length": len(script)}
+            context={"script_hash": script_hash, "script_length": len(script)},
         )
 
     async def screenshot(self) -> ActionResult:
         """Take screenshot (governed - low sensitivity)."""
-        return await self._governed_action(
-            "screenshot",
-            self.current_url,
-            lambda: self.backend.screenshot()
-        )
+        return await self._governed_action("screenshot", self.current_url, lambda: self.backend.screenshot())
 
     async def scroll(self, direction: str = "down", amount: int = 300) -> ActionResult:
         """Scroll page (governed - very low sensitivity)."""
@@ -478,19 +444,13 @@ class GovernedBrowser:
             "scroll",
             f"{self.current_url}::{direction}:{amount}",
             lambda: self.backend.scroll(direction, amount),
-            skip_governance=True  # Low risk
+            skip_governance=True,  # Low risk
         )
 
     async def wait(self, seconds: float) -> ActionResult:
         """Wait (no governance needed)."""
         await self.backend.wait(seconds)
-        return ActionResult(
-            success=True,
-            action="wait",
-            target=f"{seconds}s",
-            decision="SKIP",
-            score=1.0
-        )
+        return ActionResult(success=True, action="wait", target=f"{seconds}s", decision="SKIP", score=1.0)
 
     async def get_content(self) -> ActionResult:
         """Get page content (governed)."""
@@ -498,16 +458,12 @@ class GovernedBrowser:
             "get_content",
             self.current_url,
             lambda: self.backend.get_page_content(),
-            skip_governance=True  # Reading is usually safe
+            skip_governance=True,  # Reading is usually safe
         )
 
     async def get_cookies(self) -> ActionResult:
         """Get cookies (governed)."""
-        return await self._governed_action(
-            "get_cookies",
-            self.current_url,
-            lambda: self.backend.get_cookies()
-        )
+        return await self._governed_action("get_cookies", self.current_url, lambda: self.backend.get_cookies())
 
     async def close(self) -> None:
         """Close browser and session."""
@@ -528,7 +484,7 @@ class GovernedBrowser:
             "total_actions": len(self.action_log),
             "decisions": decisions,
             "quarantined": len(self.quarantine_queue),
-            "current_url": self.current_url
+            "current_url": self.current_url,
         }
 
     def print_summary(self):
@@ -540,7 +496,7 @@ class GovernedBrowser:
         print(f"Agent: {s['agent_id']}")
         print(f"Backend: {s['backend']}")
         print(f"Total actions: {s['total_actions']}")
-        for decision, count in s['decisions'].items():
+        for decision, count in s["decisions"].items():
             print(f"  {decision}: {count}")
         print(f"Quarantined: {s['quarantined']}")
         print(f"{'='*60}")

@@ -11,6 +11,7 @@ Usage:
     python scripts/assemble_manhwa_strip.py --chapter ch01 --slice-height 1400
     python scripts/assemble_manhwa_strip.py --input artifacts/webtoon/ch01/v3 --output artifacts/manhwa/strips/ch01
 """
+
 from __future__ import annotations
 
 import argparse

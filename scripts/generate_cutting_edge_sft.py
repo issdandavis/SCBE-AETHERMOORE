@@ -30,20 +30,72 @@ AXIOM_SETS = [
 ]
 
 RESEARCH_PARALLELS = [
-    ("Nickel and Kiela (2017)", "hyperbolic embeddings for hierarchical data", "SCBE extends this from representation to security enforcement"),
-    ("Ganea et al. (2018)", "hyperbolic neural networks", "SCBE applies the Poincare ball to governance rather than learning"),
-    ("Bracha (1987)", "reliable broadcast under Byzantine faults", "SCBE's multi-surface bus provides geometric broadcast guarantees"),
-    ("Lamport et al. (1982)", "the Byzantine generals problem", "SCBE's harmonic-weighted quorum extends equal-vote BFT to geometric trust"),
-    ("Shapiro et al. (2011)", "CRDTs for eventual consistency", "SCBE defines CRDTs over hyperbolic space with Mobius midpoint as join"),
-    ("Dwork, Lynch, Stockmeyer (1988)", "partial synchrony consensus", "SCBE's tongue-parallel validation achieves 6-dimensional agreement"),
-    ("Carlsson (2009)", "topological data analysis", "SCBE uses polyhedral topology prescriptively for governance, not descriptively"),
-    ("Bell-LaPadula (1973)", "lattice-based mandatory access control", "SCBE replaces flat lattices with hyperbolic manifolds"),
-    ("Abramsky and Coecke (2004)", "categorical quantum mechanics", "SCBE's axiom mesh mirrors their compositional approach"),
-    ("Dolev and Yao (1983)", "formal adversary models for security protocols", "SCBE's Poincare ball provides a geometric Dolev-Yao extension"),
-    ("Lyapunov (1892)", "stability theory for dynamical systems", "the harmonic wall H(d,pd) acts as a Lyapunov function for governance state"),
+    (
+        "Nickel and Kiela (2017)",
+        "hyperbolic embeddings for hierarchical data",
+        "SCBE extends this from representation to security enforcement",
+    ),
+    (
+        "Ganea et al. (2018)",
+        "hyperbolic neural networks",
+        "SCBE applies the Poincare ball to governance rather than learning",
+    ),
+    (
+        "Bracha (1987)",
+        "reliable broadcast under Byzantine faults",
+        "SCBE's multi-surface bus provides geometric broadcast guarantees",
+    ),
+    (
+        "Lamport et al. (1982)",
+        "the Byzantine generals problem",
+        "SCBE's harmonic-weighted quorum extends equal-vote BFT to geometric trust",
+    ),
+    (
+        "Shapiro et al. (2011)",
+        "CRDTs for eventual consistency",
+        "SCBE defines CRDTs over hyperbolic space with Mobius midpoint as join",
+    ),
+    (
+        "Dwork, Lynch, Stockmeyer (1988)",
+        "partial synchrony consensus",
+        "SCBE's tongue-parallel validation achieves 6-dimensional agreement",
+    ),
+    (
+        "Carlsson (2009)",
+        "topological data analysis",
+        "SCBE uses polyhedral topology prescriptively for governance, not descriptively",
+    ),
+    (
+        "Bell-LaPadula (1973)",
+        "lattice-based mandatory access control",
+        "SCBE replaces flat lattices with hyperbolic manifolds",
+    ),
+    (
+        "Abramsky and Coecke (2004)",
+        "categorical quantum mechanics",
+        "SCBE's axiom mesh mirrors their compositional approach",
+    ),
+    (
+        "Dolev and Yao (1983)",
+        "formal adversary models for security protocols",
+        "SCBE's Poincare ball provides a geometric Dolev-Yao extension",
+    ),
+    (
+        "Lyapunov (1892)",
+        "stability theory for dynamical systems",
+        "the harmonic wall H(d,pd) acts as a Lyapunov function for governance state",
+    ),
     ("Sontag (1989)", "Control Barrier Functions", "SCBE's containment boundary enforces forward invariance via CBF"),
-    ("Arrow (1951)", "impossibility of fair voting", "SCBE sidesteps Arrow via geometric weighting rather than ordinal ranking"),
-    ("Fischer, Lynch, Paterson (1985)", "impossibility of consensus with one fault", "SCBE's partial synchrony assumption and harmonic scoring circumvent FLP"),
+    (
+        "Arrow (1951)",
+        "impossibility of fair voting",
+        "SCBE sidesteps Arrow via geometric weighting rather than ordinal ranking",
+    ),
+    (
+        "Fischer, Lynch, Paterson (1985)",
+        "impossibility of consensus with one fault",
+        "SCBE's partial synchrony assumption and harmonic scoring circumvent FLP",
+    ),
 ]
 
 OPEN_PROBLEMS = [
@@ -204,10 +256,11 @@ def pick(lst, seed, n=1):
 
 def pick_one(lst, seed, offset=0):
     rng = random.Random(seed + offset)
-    return lst[rng.randint(0, len(lst)-1)]
+    return lst[rng.randint(0, len(lst) - 1)]
 
 
 # ─── Template Functions (Multiple per question type) ───
+
 
 def formal_template_A(skill_name, cat, invariants, axiom, scbe_conn, parallel, problems):
     """Structure: Invariant classes -> axiom specifics -> SCBE connection -> open problems"""
@@ -447,6 +500,7 @@ The 14-layer pipeline with 5 quantum axioms provides defense-in-depth that no si
 
 # ─── Dispatch ───
 
+
 def generate_response(record):
     inst = record["instruction"]
     seed = deterministic_seed(record)
@@ -571,7 +625,9 @@ def main():
         wc = len(rec["response"].split())
         word_counts.append(wc)
 
-    print(f"Response word counts: min={min(word_counts)}, max={max(word_counts)}, avg={sum(word_counts)/len(word_counts):.0f}")
+    print(
+        f"Response word counts: min={min(word_counts)}, max={max(word_counts)}, avg={sum(word_counts)/len(word_counts):.0f}"
+    )
     short = sum(1 for w in word_counts if w < 300)
     long_ = sum(1 for w in word_counts if w > 800)
     print(f"Below 300 words: {short}, Above 800 words: {long_}")
@@ -587,7 +643,7 @@ def main():
     formal = [r for r in output_records if "formal verification" in r["instruction"]]
     sims = []
     for i in range(min(20, len(formal))):
-        for j in range(i+1, min(20, len(formal))):
+        for j in range(i + 1, min(20, len(formal))):
             sims.append(jaccard(formal[i]["response"], formal[j]["response"]))
     if sims:
         print(f"Avg Jaccard similarity (formal, first 20): {sum(sims)/len(sims):.3f}")

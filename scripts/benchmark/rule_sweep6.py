@@ -11,7 +11,10 @@ Tests:
 7. Neighbor-count-based pixel value
 8. Fill bg with nearest fg color
 """
-import sys, numpy as np
+
+import sys
+
+import numpy as np
 from pathlib import Path
 from collections import Counter, deque
 
@@ -46,6 +49,7 @@ for task in tasks:
 
 print(f"Unsolved: {len(unsolved)}")
 
+
 def cc_labels(grid, ignore_zero=True):
     """Label connected components. Returns label grid."""
     h, w = grid.shape
@@ -62,12 +66,13 @@ def cc_labels(grid, ignore_zero=True):
             labels[r, c] = label_id
             while q:
                 cr, cc_ = q.popleft()
-                for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                    nr, nc = cr+dr, cc_+dc
+                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nr, nc = cr + dr, cc_ + dc
                     if 0 <= nr < h and 0 <= nc < w and labels[nr, nc] == 0 and grid[nr, nc] == grid[cr, cc_]:
                         labels[nr, nc] = label_id
                         q.append((nr, nc))
     return labels, label_id
+
 
 def flood_reachable_bg(grid):
     """Find bg cells reachable from edges."""
@@ -76,17 +81,18 @@ def flood_reachable_bg(grid):
     q = deque()
     for r in range(h):
         for c in range(w):
-            if (r == 0 or r == h-1 or c == 0 or c == w-1) and grid[r, c] == 0:
+            if (r == 0 or r == h - 1 or c == 0 or c == w - 1) and grid[r, c] == 0:
                 visited[r, c] = True
                 q.append((r, c))
     while q:
         r, c = q.popleft()
-        for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-            nr, nc = r+dr, c+dc
+        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nr, nc = r + dr, c + dc
             if 0 <= nr < h and 0 <= nc < w and not visited[nr, nc] and grid[nr, nc] == 0:
                 visited[nr, nc] = True
                 q.append((nr, nc))
     return visited
+
 
 # ── Test 1: Diagnose fill_enclosed tasks ──
 print("\n=== Diagnose fill_enclosed ===")
@@ -98,7 +104,7 @@ for task in unsolved:
         inp, out = ex.input, ex.output
         print(f"    train[{i}]: shape {inp.shape}->{out.shape}")
         if inp.shape != out.shape:
-            print(f"      SHAPE MISMATCH")
+            print("      SHAPE MISMATCH")
             continue
         reachable = flood_reachable_bg(inp)
         enclosed = (inp == 0) & ~reachable
@@ -120,7 +126,7 @@ for task in unsolved:
             unchanged_match = np.array_equal(inp[~changed_mask], out[~changed_mask])
             print(f"      unchanged_cells_match={unchanged_match}")
         else:
-            print(f"      NO CHANGES (identity)")
+            print("      NO CHANGES (identity)")
 
         # Check if bg=0 is the right assumption
         all_colors_in = np.unique(inp)
@@ -146,9 +152,9 @@ for task in unsolved:
             cols = np.where(inp[r, :] == color)[0]
             if len(cols) >= 2:
                 for i in range(len(cols)):
-                    for j in range(i+1, len(cols)):
+                    for j in range(i + 1, len(cols)):
                         c1, c2 = cols[i], cols[j]
-                        for cc in range(c1+1, c2):
+                        for cc in range(c1 + 1, c2):
                             if test_out[r, cc] == 0:
                                 test_out[r, cc] = color
     # Vertical rays
@@ -157,9 +163,9 @@ for task in unsolved:
             rows = np.where(inp[:, c] == color)[0]
             if len(rows) >= 2:
                 for i in range(len(rows)):
-                    for j in range(i+1, len(rows)):
+                    for j in range(i + 1, len(rows)):
                         r1, r2 = rows[i], rows[j]
-                        for rr in range(r1+1, r2):
+                        for rr in range(r1 + 1, r2):
                             if test_out[rr, c] == 0:
                                 test_out[rr, c] = color
 
@@ -191,7 +197,8 @@ for task in unsolved:
         for ex in task.train:
             inp2, out2 = ex.input, ex.output
             if inp2.shape != out2.shape:
-                match = False; break
+                match = False
+                break
             h2, w2 = inp2.shape
             t = np.zeros_like(inp2)
             for c in range(w2):
@@ -199,7 +206,8 @@ for task in unsolved:
                 for i, v in enumerate(reversed(col_vals)):
                     t[h2 - 1 - i, c] = v
             if not np.array_equal(t, out2):
-                match = False; break
+                match = False
+                break
         if match:
             gravity_hits.append(task.task_id)
 
@@ -228,7 +236,8 @@ for task in unsolved:
         for ex in task.train:
             inp2, out2 = ex.input, ex.output
             if inp2.shape != out2.shape:
-                match = False; break
+                match = False
+                break
             h2, w2 = inp2.shape
             t = np.zeros_like(inp2)
             for c in range(w2):
@@ -237,7 +246,8 @@ for task in unsolved:
                 for i, v in enumerate(col_vals):
                     t[start + i, c] = v
             if not np.array_equal(t, out2):
-                match = False; break
+                match = False
+                break
         if match:
             gravity_order_hits.append(task.task_id)
 
@@ -258,26 +268,28 @@ for task in unsolved:
     for r in range(h):
         for c in range(w):
             if inp[r, c] != 0:
-                for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                    nr, nc = r+dr, c+dc
+                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nr, nc = r + dr, c + dc
                     if 0 <= nr < h and 0 <= nc < w and inp[nr, nc] == 0:
                         test_out[nr, nc] = inp[r, c]
     if np.array_equal(test_out, out):
         match = True
         for ex in task.train:
             if ex.input.shape != ex.output.shape:
-                match = False; break
+                match = False
+                break
             h2, w2 = ex.input.shape
             t = ex.input.copy()
             for r in range(h2):
                 for c in range(w2):
                     if ex.input[r, c] != 0:
-                        for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                            nr, nc = r+dr, c+dc
+                        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                            nr, nc = r + dr, c + dc
                             if 0 <= nr < h2 and 0 <= nc < w2 and ex.input[nr, nc] == 0:
                                 t[nr, nc] = ex.input[r, c]
             if not np.array_equal(t, ex.output):
-                match = False; break
+                match = False
+                break
         if match:
             dilate_hits.append(task.task_id)
 
@@ -297,7 +309,7 @@ for task in unsolved:
     if n < 2:
         continue
     sizes = {}
-    for lid in range(1, n+1):
+    for lid in range(1, n + 1):
         sizes[lid] = (labels == lid).sum()
     min_size = min(sizes.values())
     test_out = inp.copy()
@@ -308,12 +320,14 @@ for task in unsolved:
         match = True
         for ex in task.train:
             if ex.input.shape != ex.output.shape:
-                match = False; break
+                match = False
+                break
             l2, n2 = cc_labels(ex.input)
             if n2 < 2:
-                match = False; break
+                match = False
+                break
             sz2 = {}
-            for lid in range(1, n2+1):
+            for lid in range(1, n2 + 1):
                 sz2[lid] = (l2 == lid).sum()
             ms = min(sz2.values())
             t = ex.input.copy()
@@ -321,7 +335,8 @@ for task in unsolved:
                 if s == ms:
                     t[l2 == lid] = 0
             if not np.array_equal(t, ex.output):
-                match = False; break
+                match = False
+                break
         if match:
             rm_small_hits.append(task.task_id)
 
@@ -341,7 +356,7 @@ for task in unsolved:
     if n < 2:
         continue
     sizes = {}
-    for lid in range(1, n+1):
+    for lid in range(1, n + 1):
         sizes[lid] = (labels == lid).sum()
     max_size = max(sizes.values())
     test_out = np.zeros_like(inp)
@@ -352,12 +367,14 @@ for task in unsolved:
         match = True
         for ex in task.train:
             if ex.input.shape != ex.output.shape:
-                match = False; break
+                match = False
+                break
             l2, n2 = cc_labels(ex.input)
             if n2 < 2:
-                match = False; break
+                match = False
+                break
             sz2 = {}
-            for lid in range(1, n2+1):
+            for lid in range(1, n2 + 1):
                 sz2[lid] = (l2 == lid).sum()
             mx = max(sz2.values())
             t = np.zeros_like(ex.input)
@@ -365,7 +382,8 @@ for task in unsolved:
                 if s == mx:
                     t[l2 == lid] = ex.input[l2 == lid]
             if not np.array_equal(t, ex.output):
-                match = False; break
+                match = False
+                break
         if match:
             keep_large_hits.append(task.task_id)
 
@@ -395,8 +413,8 @@ for task in unsolved:
                 q.append((r, c))
     while q:
         r, c = q.popleft()
-        for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-            nr, nc = r+dr, c+dc
+        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nr, nc = r + dr, c + dc
             if 0 <= nr < h and 0 <= nc < w and dist[nr, nc] > dist[r, c] + 1:
                 dist[nr, nc] = dist[r, c] + 1
                 test_out[nr, nc] = test_out[r, c]
@@ -405,7 +423,8 @@ for task in unsolved:
         match = True
         for ex in task.train[1:]:
             if ex.input.shape != ex.output.shape:
-                match = False; break
+                match = False
+                break
             h2, w2 = ex.input.shape
             t = ex.input.copy()
             d = np.full((h2, w2), 999999, dtype=int)
@@ -417,14 +436,15 @@ for task in unsolved:
                         q2.append((r, c))
             while q2:
                 r, c = q2.popleft()
-                for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                    nr, nc = r+dr, c+dc
+                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nr, nc = r + dr, c + dc
                     if 0 <= nr < h2 and 0 <= nc < w2 and d[nr, nc] > d[r, c] + 1:
                         d[nr, nc] = d[r, c] + 1
                         t[nr, nc] = t[r, c]
                         q2.append((nr, nc))
             if not np.array_equal(t, ex.output):
-                match = False; break
+                match = False
+                break
         if match:
             nearest_hits.append(task.task_id)
 
@@ -455,15 +475,18 @@ for task in unsolved:
         for c in range(w):
             if diff[r, c]:
                 if inp[r, c] != 0:
-                    valid = False; break
+                    valid = False
+                    break
                 # Must be adjacent to fg
                 has_fg_neighbor = False
-                for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                    nr, nc = r+dr, c+dc
+                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nr, nc = r + dr, c + dc
                     if 0 <= nr < h and 0 <= nc < w and inp[nr, nc] != 0:
-                        has_fg_neighbor = True; break
+                        has_fg_neighbor = True
+                        break
                 if not has_fg_neighbor:
-                    valid = False; break
+                    valid = False
+                    break
         if not valid:
             break
     if not valid:
@@ -475,12 +498,14 @@ for task in unsolved:
         for c in range(w):
             if inp[r, c] == 0:
                 has_fg = False
-                for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                    nr, nc = r+dr, c+dc
+                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nr, nc = r + dr, c + dc
                     if 0 <= nr < h and 0 <= nc < w and inp[nr, nc] != 0:
-                        has_fg = True; break
+                        has_fg = True
+                        break
                 if has_fg and not diff[r, c]:
-                    all_outline = False; break
+                    all_outline = False
+                    break
         if not all_outline:
             break
 
@@ -489,24 +514,28 @@ for task in unsolved:
         match = True
         for ex in task.train[1:]:
             if ex.input.shape != ex.output.shape:
-                match = False; break
+                match = False
+                break
             d2 = ex.input != ex.output
             h2, w2 = ex.input.shape
             for r in range(h2):
                 for c in range(w2):
-                    is_outline = (ex.input[r, c] == 0)
+                    is_outline = ex.input[r, c] == 0
                     hfn = False
-                    for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                        nr, nc = r+dr, c+dc
+                    for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                        nr, nc = r + dr, c + dc
                         if 0 <= nr < h2 and 0 <= nc < w2 and ex.input[nr, nc] != 0:
-                            hfn = True; break
+                            hfn = True
+                            break
                     expected_change = is_outline and hfn
                     if expected_change:
                         if not d2[r, c] or ex.output[r, c] != outline_color:
-                            match = False; break
+                            match = False
+                            break
                     else:
                         if d2[r, c]:
-                            match = False; break
+                            match = False
+                            break
                 if not match:
                     break
             if not match:
@@ -535,8 +564,8 @@ for task in unsolved:
             if inp[r, c] != 0:
                 color = inp[r, c]
                 # Extend in all 4 directions
-                for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                    nr, nc = r+dr, c+dc
+                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nr, nc = r + dr, c + dc
                     while 0 <= nr < h and 0 <= nc < w:
                         if test_out[nr, nc] == 0:
                             test_out[nr, nc] = color
@@ -548,15 +577,16 @@ for task in unsolved:
         match = True
         for ex in task.train[1:]:
             if ex.input.shape != ex.output.shape:
-                match = False; break
+                match = False
+                break
             h2, w2 = ex.input.shape
             t = ex.input.copy()
             for r in range(h2):
                 for c in range(w2):
                     if ex.input[r, c] != 0:
                         color = ex.input[r, c]
-                        for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                            nr, nc = r+dr, c+dc
+                        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                            nr, nc = r + dr, c + dc
                             while 0 <= nr < h2 and 0 <= nc < w2:
                                 if t[nr, nc] == 0:
                                     t[nr, nc] = color
@@ -565,7 +595,8 @@ for task in unsolved:
                                 nr += dr
                                 nc += dc
             if not np.array_equal(t, ex.output):
-                match = False; break
+                match = False
+                break
         if match:
             ray_edge_hits.append(task.task_id)
 
@@ -588,7 +619,7 @@ for task in unsolved:
             neighbors = []
             for dr in [-1, 0, 1]:
                 for dc in [-1, 0, 1]:
-                    nr, nc = r+dr, c+dc
+                    nr, nc = r + dr, c + dc
                     if 0 <= nr < h and 0 <= nc < w:
                         neighbors.append(int(inp[nr, nc]))
             cnt = Counter(neighbors)
@@ -597,7 +628,8 @@ for task in unsolved:
         match = True
         for ex in task.train[1:]:
             if ex.input.shape != ex.output.shape:
-                match = False; break
+                match = False
+                break
             h2, w2 = ex.input.shape
             t = ex.input.copy()
             for r in range(h2):
@@ -605,13 +637,14 @@ for task in unsolved:
                     nb = []
                     for dr in [-1, 0, 1]:
                         for dc in [-1, 0, 1]:
-                            nr, nc = r+dr, c+dc
+                            nr, nc = r + dr, c + dc
                             if 0 <= nr < h2 and 0 <= nc < w2:
                                 nb.append(int(ex.input[nr, nc]))
                     cnt = Counter(nb)
                     t[r, c] = cnt.most_common(1)[0][0]
             if not np.array_equal(t, ex.output):
-                match = False; break
+                match = False
+                break
         if match:
             denoise_hits.append(task.task_id)
 
@@ -640,7 +673,8 @@ for task in unsolved:
         match = True
         for ex in task.train[1:]:
             if ex.input.shape != ex.output.shape:
-                match = False; break
+                match = False
+                break
             h2, w2 = ex.input.shape
             rc = [(np.count_nonzero(ex.input[r, :]), r) for r in range(h2)]
             if ascending:
@@ -649,7 +683,8 @@ for task in unsolved:
                 rc.sort(reverse=True)
             t = np.array([ex.input[r, :] for _, r in rc])
             if not np.array_equal(t, ex.output):
-                match = False; break
+                match = False
+                break
         if match:
             sort_row_hits.append((task.task_id, "asc" if ascending else "desc"))
 
@@ -677,7 +712,8 @@ for task in unsolved:
         match = True
         for ex in task.train[1:]:
             if ex.input.shape != ex.output.shape:
-                match = False; break
+                match = False
+                break
             h2, w2 = ex.input.shape
             cc2 = [(np.count_nonzero(ex.input[:, c]), c) for c in range(w2)]
             if ascending:
@@ -686,7 +722,8 @@ for task in unsolved:
                 cc2.sort(reverse=True)
             t = np.column_stack([ex.input[:, c] for _, c in cc2])
             if not np.array_equal(t, ex.output):
-                match = False; break
+                match = False
+                break
         if match:
             sort_col_hits.append((task.task_id, "asc" if ascending else "desc"))
 

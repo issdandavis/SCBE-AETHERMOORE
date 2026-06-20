@@ -28,6 +28,9 @@ on:
         default: true
         type: boolean
 
+permissions:
+  contents: read
+
 jobs:
   manual-task:
     runs-on: ubuntu-latest

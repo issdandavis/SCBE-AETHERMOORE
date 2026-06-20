@@ -1415,7 +1415,6 @@ def _execute_runtime(args: argparse.Namespace, *, app_entry: dict | None = None)
     run_id = uuid.uuid4().hex[:12]
     agent_id = getattr(args, "agent_id", "") or ""
     pad_dir: Path | None = None
-    manifest: dict | None = None
     if agent_id:
         if not _ensure_agent_id(agent_id):
             print("Invalid --agent-id. Use 2-64 chars: letters, numbers, . _ -")
@@ -1893,7 +1892,8 @@ def _call_openai_agent(
             "ok": False,
             "agent_id": agent.get("agent_id"),
             "provider": provider,
-            "error": f"HTTP {exc.code}: upstream_error body_present={body_summary['present']} body_length={body_summary['length']}",
+            "error": f"HTTP {exc.code}: upstream_error body_present={body_summary['present']} "
+            f"body_length={body_summary['length']}",
         }
     except Exception as exc:  # pragma: no cover - defensive
         return {
@@ -4304,7 +4304,7 @@ def cmd_model_train(args: argparse.Namespace) -> int:
         payload["returncode"] = result.returncode
         lines = [
             f"Script: {script_path}",
-            f"Executed: yes",
+            "Executed: yes",
             f"Return code: {result.returncode}",
         ]
         _json_result(args, payload, lines)
@@ -4722,7 +4722,7 @@ def cmd_offline_bundle_install(args: argparse.Namespace) -> int:
     return _json_result(args, payload, lines)
 
 
-# â”€â”€ GitHub operations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# -- GitHub operations ---------------------------------------------------------------------------
 
 
 def _gh(args: list, capture: bool = True) -> str:
@@ -4934,7 +4934,8 @@ def _gh_pulse_payload() -> dict[str, object]:
             "--json",
             "conclusion",
             "--jq",
-            '[.[] | .conclusion] | {pass: [.[] | select(. == "success")] | length, fail: [.[] | select(. == "failure")] | length}',
+            '[.[] | .conclusion] | {pass: [.[] | select(. == "success")] | length, '
+            'fail: [.[] | select(. == "failure")] | length}',
         ]
     )
     ci_pass_count = 0
@@ -5035,7 +5036,8 @@ def cmd_gh_ci(args: argparse.Namespace) -> int:
     """Check CI status for current branch or a PR."""
     payload = _gh_ci_payload(args.pr)
     lines = [
-        f"CI for {payload['branch']}: {payload['pass_count']} pass, {payload['fail_count']} fail, {payload['pending_count']} pending"
+        f"CI for {payload['branch']}: {payload['pass_count']} pass, "
+        f"{payload['fail_count']} fail, {payload['pending_count']} pending"
     ]
     if not payload["checks_known"]:
         lines.append("  No open PR detected for the current branch.")
@@ -5199,7 +5201,7 @@ def cmd_gh_cleanup(args: argparse.Namespace) -> int:
                 if "models/hf/" not in gi_text:
                     with open(gitignore, "a") as f:
                         f.write("\n# Local model weights â€” pull from HuggingFace on demand\nmodels/hf/\n")
-                    print(f"    Added models/hf/ to .gitignore")
+                    print("    Added models/hf/ to .gitignore")
                 print(f"    Models kept locally but excluded from git ({size} MB)")
             continue
 
@@ -5270,7 +5272,8 @@ def cmd_gh_doctor(args: argparse.Namespace) -> int:
         "=" * 40,
         f"  Branch:        {payload['ci']['branch']}",
         f"  PR:            {payload['ci']['pr'] or 'none'}",
-        f"  CI:            {payload['ci']['pass_count']} pass / {payload['ci']['fail_count']} fail / {payload['ci']['pending_count']} pending",
+        f"  CI:            {payload['ci']['pass_count']} pass / {payload['ci']['fail_count']} fail / "
+        f"{payload['ci']['pending_count']} pending",
         f"  Scan alerts:   {payload['scan']['open_alerts']}",
         f"  Open PRs:      {payload['prs']['count']}",
         f"  Open issues:   {payload['issues']['count']}",
@@ -6016,7 +6019,7 @@ def build_parser() -> argparse.ArgumentParser:
     pp_snapshot.add_argument("--output")
     pp_snapshot.set_defaults(func=cmd_pollypad_snapshot)
 
-    # â”€â”€ publish: Post content to platforms â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # -- publish: Post content to platforms ------------------------------------------------------
     pub_parser = sub.add_parser("publish", help="Post content â€” Bluesky, GitHub Discussions, or all")
     pub_sub = pub_parser.add_subparsers(dest="pub_cmd", required=True)
 
@@ -6060,7 +6063,7 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
 
-    # â”€â”€ outreach: Cold outreach pipeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # -- outreach: Cold outreach pipeline ---------------------------------------------------------
     outreach_parser = sub.add_parser("outreach", help="Cold outreach â€” draft, preview, send partnership emails")
     outreach_parser.add_argument("outreach_args", nargs=argparse.REMAINDER, help="Args for outreach pipeline")
     outreach_parser.set_defaults(
@@ -6070,7 +6073,7 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
 
-    # â”€â”€ gh: GitHub operations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # -- gh: GitHub operations ---------------------------------------------------------------------
     gh_parser = sub.add_parser("gh", help="GitHub operations - PRs, CI, issues, code scanning, releases")
     gh_sub = gh_parser.add_subparsers(dest="gh_cmd", required=True)
 

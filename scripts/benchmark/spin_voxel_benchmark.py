@@ -63,10 +63,7 @@ def main() -> int:
 
     phased = apply_phason(disordered, n=2, config=cfg)
     norm_drift_max = max(
-        abs(
-            ((s[0] ** 2 + s[1] ** 2 + s[2] ** 2) ** 0.5)
-            - ((p[0] ** 2 + p[1] ** 2 + p[2] ** 2) ** 0.5)
-        )
+        abs(((s[0] ** 2 + s[1] ** 2 + s[2] ** 2) ** 0.5) - ((p[0] ** 2 + p[1] ** 2 + p[2] ** 2) ** 0.5))
         for s, p in zip(disordered, phased)
     )
 

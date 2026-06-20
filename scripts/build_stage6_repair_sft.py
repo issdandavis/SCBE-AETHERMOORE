@@ -19,7 +19,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SFT_ROOT = REPO_ROOT / "training-data" / "sft"
 TRAIN_OUT = SFT_ROOT / "atomic_workflow_stage6_repair_train.sft.jsonl"
@@ -33,9 +32,7 @@ SYSTEM_PROMPT = (
 )
 
 
-def _record(
-    prompt: str, response: str, *, kind: str, token: str, shape: str
-) -> dict[str, Any]:
+def _record(prompt: str, response: str, *, kind: str, token: str, shape: str) -> dict[str, Any]:
     return {
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
@@ -63,9 +60,7 @@ def _token_hex(token: str) -> str:
 # ----------------------------------------------------------------------------
 
 
-def _jump_cancel_full(
-    token: str, next_action: str, overrun: str, budget: str
-) -> dict[str, Any]:
+def _jump_cancel_full(token: str, next_action: str, overrun: str, budget: str) -> dict[str, Any]:
     hex_trace = _token_hex(token)
     prompt = (
         f"Stage 6 route has token `{token}` before `{next_action}`. Budget is {budget}, but `{next_action}` "
@@ -79,14 +74,10 @@ def _jump_cancel_full(
         "fallback, damps the momentum from the attempted jump, preserves the token-to-hex audit, and re-advance is "
         "permitted only after a cheaper substitute fits the remaining budget."
     )
-    return _record(
-        prompt, response, kind="resource_jump_cancel", token=token, shape="full"
-    )
+    return _record(prompt, response, kind="resource_jump_cancel", token=token, shape="full")
 
 
-def _jump_cancel_terse(
-    token: str, next_action: str, overrun: str, budget: str
-) -> dict[str, Any]:
+def _jump_cancel_terse(token: str, next_action: str, overrun: str, budget: str) -> dict[str, Any]:
     hex_trace = _token_hex(token)
     prompt = f"Decide Stage 6: `{token}` -> `{next_action}` would overrun {overrun}. What happens?"
     response = (
@@ -96,14 +87,10 @@ def _jump_cancel_terse(
         "are all checked before launch. Momentum from the attempted jump is damped and re-advance is allowed "
         "only from a cheaper footing."
     )
-    return _record(
-        prompt, response, kind="resource_jump_cancel", token=token, shape="terse"
-    )
+    return _record(prompt, response, kind="resource_jump_cancel", token=token, shape="terse")
 
 
-def _jump_cancel_reverse(
-    token: str, next_action: str, overrun: str, budget: str
-) -> dict[str, Any]:
+def _jump_cancel_reverse(token: str, next_action: str, overrun: str, budget: str) -> dict[str, Any]:
     hex_trace = _token_hex(token)
     prompt = (
         f"You are a Stage 6 controller. The token chain ends at `{next_action}` with budget {budget}. The next "
@@ -116,9 +103,7 @@ def _jump_cancel_reverse(
         "power, compute, time, comms, and wear are all checked. It records the overrun, enters steady-state "
         "fallback, damps momentum, and only re-advance from a cheaper footing is permitted on the next pass."
     )
-    return _record(
-        prompt, response, kind="resource_jump_cancel", token=token, shape="reverse"
-    )
+    return _record(prompt, response, kind="resource_jump_cancel", token=token, shape="reverse")
 
 
 # ----------------------------------------------------------------------------
@@ -169,9 +154,7 @@ def _lane_separation_contrast(token: str, domain: str) -> dict[str, Any]:
         "how it composes with the rest of the route. Material chemistry only enters when the input itself is an "
         "actual chemical formula or reaction; otherwise the chemistry frame stays a structural template only."
     )
-    return _record(
-        prompt, response, kind="lane_separation", token=token, shape="contrast"
-    )
+    return _record(prompt, response, kind="lane_separation", token=token, shape="contrast")
 
 
 # ----------------------------------------------------------------------------
@@ -244,9 +227,7 @@ def _cost_propagation_full(actions: tuple[str, str, str]) -> dict[str, Any]:
         "must hold, apply steady-state fallback, damp momentum, and re-advance through a cheaper substitute "
         "rather than ignoring the budget or launching anyway."
     )
-    return _record(
-        prompt, response, kind="cost_propagation", token=actions[-1], shape="full"
-    )
+    return _record(prompt, response, kind="cost_propagation", token=actions[-1], shape="full")
 
 
 def _cost_propagation_terse(actions: tuple[str, str, str]) -> dict[str, Any]:
@@ -257,9 +238,7 @@ def _cost_propagation_terse(actions: tuple[str, str, str]) -> dict[str, Any]:
         "audits the tokens; the semantic lane checks the action chain. If the roll-up breaches budget on any axis, "
         "the controller holds, falls back, and re-advance only from a cheaper plan."
     )
-    return _record(
-        prompt, response, kind="cost_propagation", token=actions[-1], shape="terse"
-    )
+    return _record(prompt, response, kind="cost_propagation", token=actions[-1], shape="terse")
 
 
 def _cost_propagation_axis(actions: tuple[str, str, str]) -> dict[str, Any]:
@@ -273,9 +252,7 @@ def _cost_propagation_axis(actions: tuple[str, str, str]) -> dict[str, Any]:
         "route must hold, fall back, damp momentum, and re-advance from a cheaper alternative; ignoring the "
         "budget is not allowed."
     )
-    return _record(
-        prompt, response, kind="cost_propagation", token=actions[-1], shape="axis"
-    )
+    return _record(prompt, response, kind="cost_propagation", token=actions[-1], shape="axis")
 
 
 # ----------------------------------------------------------------------------
@@ -414,8 +391,7 @@ def _boundary_variants() -> Iterable[dict[str, Any]]:
             "long term, not just for the first run.",
         ),
         (
-            "Briefly: what happens to the Stage 6 gate if someone copies the held-out prompts into the train "
-            "mix?",
+            "Briefly: what happens to the Stage 6 gate if someone copies the held-out prompts into the train " "mix?",
             "Copying held-out Stage 6 prompts into the train mix invalidates the Stage 6 gate. It is training "
             "pollution: the contract becomes a memorization test instead of an unseen probe, and the gating "
             "rule that holds Stage 6 separate from command-harmony-v5 collapses. The Stage 6 lane must stay "
@@ -432,13 +408,9 @@ def _boundary_variants() -> Iterable[dict[str, Any]]:
     ]
     for shape_idx, (prompt, response) in enumerate(variants):
         for token in base_required:
-            assert (
-                token.lower() in response.lower()
-            ), f"variant {shape_idx} missing required token '{token}'"
+            assert token.lower() in response.lower(), f"variant {shape_idx} missing required token '{token}'"
         for token in forbidden:
-            assert (
-                token.lower() not in response.lower()
-            ), f"variant {shape_idx} hits forbidden token '{token}'"
+            assert token.lower() not in response.lower(), f"variant {shape_idx} hits forbidden token '{token}'"
         yield _record(
             prompt,
             response,
@@ -776,14 +748,10 @@ def _assert_row_vocabulary(row: dict[str, Any]) -> None:
     body = row["messages"][-1]["content"].lower()
     for token in CONTRACT_REQUIRED[kind]:
         if token.lower() not in body:
-            raise AssertionError(
-                f"{kind} row missing required token '{token}': {row['meta']}"
-            )
+            raise AssertionError(f"{kind} row missing required token '{token}': {row['meta']}")
     for token in CONTRACT_FORBIDDEN[kind]:
         if token.lower() in body:
-            raise AssertionError(
-                f"{kind} row hits forbidden token '{token}': {row['meta']}"
-            )
+            raise AssertionError(f"{kind} row hits forbidden token '{token}': {row['meta']}")
 
 
 def build() -> dict[str, Any]:
@@ -835,9 +803,7 @@ def build() -> dict[str, Any]:
         },
         "boundary": "Analog repair examples only. Frozen Stage 6 eval prompts are not copied into training.",
     }
-    MANIFEST_OUT.write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=True), encoding="utf-8"
-    )
+    MANIFEST_OUT.write_text(json.dumps(manifest, indent=2, ensure_ascii=True), encoding="utf-8")
     return manifest
 
 

@@ -16,6 +16,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+
 # ---------------------------------------------------------------------------
 # Secret patterns (high-confidence, low false-positive)
 # ---------------------------------------------------------------------------
@@ -46,16 +47,28 @@ SKIP_PATHS = {
     ".venv",
     "venv",
     "__pycache__",
-    "training-data",   # large SFT files scanned separately via git-secrets
+    "training-data",  # large SFT files scanned separately via git-secrets
     ".scbe",
     "artifacts",
 }
 
 SKIP_EXTENSIONS = {
-    ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico",
-    ".woff", ".woff2", ".ttf", ".eot",
-    ".zip", ".tar", ".gz", ".bz2",
-    ".pyc", ".pyo",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".svg",
+    ".ico",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".eot",
+    ".zip",
+    ".tar",
+    ".gz",
+    ".bz2",
+    ".pyc",
+    ".pyo",
     ".lock",  # lock files are generated, not secrets
 }
 
