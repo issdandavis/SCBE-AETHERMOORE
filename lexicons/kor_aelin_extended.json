@@ -1,0 +1,39 @@
+{
+  "tongue": "KO",
+  "name": "Kor'aelin (extended -- runic letters + vocabulary from the Six Sacred Tongues wordlist)",
+  "source": "Spiralverse 'Six Sacred Tongues' wordlist (Issac, canonical); merges onto kor_aelin.json",
+  "particles": {
+    "ara": "growth / expansion"
+  },
+  "words": {
+    "arul": "origin / creation (runic letter)",
+    "belan": "balance / duality (runic letter)",
+    "calor": "clarity / illumination (runic letter)",
+    "dael": "divinity / sacred trinity (runic letter)",
+    "elar": "air / freedom (runic letter)",
+    "fen": "fire / passion (runic letter)",
+    "gaer": "earth / foundation (runic letter)",
+    "havar": "home / hearth (runic letter)",
+    "maeji": "magic power",
+    "kor'val": "heart-bond",
+    "syn'vel": "rune-awakening",
+    "lin'koral": "leyline-song",
+    "maeji'sil": "spell-weaving (collaborative casting)",
+    "sigan'ael": "time's eternal",
+    "zar'aelin": "dimensional eternity",
+    "mem'val": "memory-bond",
+    "ven'phae": "future-whisper",
+    "thul'oen": "present-spiral",
+    "mem'koral": "memory-stones (the Singing Stones)",
+    "thul'medan": "spiral-turning (evolution)",
+    "sil'thara": "unity-through (collaborative philosophy)",
+    "han'ael": "sky's breath (life force, inspiration)",
+    "sae'ra": "flowing water (natural movement, peace)",
+    "bren'kor": "fire-heart (passionate dedication)",
+    "sae'thul": "water-spiral (adaptive wisdom)",
+    "han'vel": "sky-invitation (open possibilities)",
+    "gal'oen": "earth-circle (grounding completeness)",
+    "kess'ara": "knowledge-growing",
+    "nav'een": "difference-harmony"
+  }
+}

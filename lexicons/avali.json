@@ -1,0 +1,23 @@
+{
+  "tongue": "AV",
+  "name": "Avali",
+  "role": "Transport/Messaging (the Common Tongue -- diplomacy, cross-paradigm bridge)",
+  "source": "Spiralverse 'Six Sacred Tongues' wordlist (Issac, canonical)",
+  "particles": {
+    "es": "collaborative marker (-together)",
+    "uni": "unity indicator (-united)",
+    "ora": "temporal present (now / currently)"
+  },
+  "words": {
+    "nos": "we / us",
+    "busca": "seek / search",
+    "sabia": "wisdom",
+    "speral": "spiral",
+    "uni": "unity",
+    "ora": "now",
+    "sabia'es": "wisdom-together",
+    "speral'uni": "spiral-united",
+    "avali'ora": "common-speech now",
+    "nos'uni": "us-united"
+  }
+}
