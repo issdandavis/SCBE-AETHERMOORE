@@ -30,3 +30,5 @@ python/scbe/desktop_access.py :: governed action registry - allowlist safe/guard
 python/scbe/blocks.py :: scratch-style command blocks with safe/caution/destructive classes, destructive gated and drive-scope refused
 python/scbe/bit_spine.py :: brainfuck-class instruction set (8 ops) over an unbounded tape - turing complete core; plus binary/hex/trit byte projections
 python/loom/machine.py :: minsky register machine (inc/dec-branch/jmp) - turing complete with two registers, woven into many languages
+
+python/scbe/token_board.py :: conlang tokens bound to verified prime-classification predicates; a constrained legal-move board scored under escalating governance (raw/board/pruned/restructured/tool), graded by the math (exact) not a fuzzy matcher
