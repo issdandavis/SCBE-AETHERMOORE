@@ -40,3 +40,5 @@ python/scbe/code_factory.py :: warehouse-topology job orchestrator -- gate, conv
 python/scbe/tongue_diff.py :: differential dimension analysis over the six sacred tongues -- multi-state venn membership across the 6 tongue dimensions + phi-weighted differential (shared vs distinguishing tongues + phase deviation); governance tongues UM/DR drift weighs more than transport
 
 python/scbe/tongue_lexicon.py :: semantic classifier on top of the tongue grid -- a pluggable lexicon (tongue-specific conlang word -> tongue + meaning) that classifies input by which tongue vocabulary its words belong to; seeded from the real sixtongues fragments, mergeable with fuller word lists
+
+python/helm/verified_trajectory.py :: rejection-sampling SFT engine -- run graded problems through a model, verify each by execution (hidden tests), keep ONLY verified trajectories as training data; the agent own verified solving becomes its training set
