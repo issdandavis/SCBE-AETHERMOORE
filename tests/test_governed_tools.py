@@ -35,6 +35,22 @@ def test_destructive_run_code_is_refused_before_running():
     assert box.verify() is True  # the refusals are sealed too
 
 
+def test_dir_removal_and_truncate_ops_are_refused_regression():
+    # regression: os.rmdir / os.removedirs / os.truncate / Path(...).rmdir() previously SLIPPED the
+    # never-delete screen (the shared _DESTRUCTIVE regex covered os.remove/unlink/rmtree but not
+    # directory-removal or truncate). Probed at the real surface (executable Python through run_code),
+    # they must all be REFUSED now that the canonical regex is hardened.
+    box = GovernedToolbox()
+    for snippet in (
+        "import os\nos.rmdir('/x')",
+        "import os\nos.removedirs('/x')",
+        "import os\nos.truncate('/x', 0)",
+        "from pathlib import Path\nPath('/x').rmdir()",
+    ):
+        r = box.call("run_code", snippet, problem={"test_list": ["assert f() == 1"]})
+        assert r["decision"] == "REFUSED", snippet
+
+
 def test_benign_run_code_passes_against_the_example_test():
     box = GovernedToolbox()
     r = box.call("run_code", "def add(a, b):\n    return a + b", problem={"test_list": ["assert add(2, 3) == 5"]})
