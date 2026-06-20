@@ -123,6 +123,33 @@ def test_a_buggy_oracle_never_ships_a_wrong_answer():
     assert "pick" not in r["state"]  # the bad oracle value was never written into state
 
 
+def _check_less_oracle_task(oracle_value):
+    # a step with an oracle but NO check: the only gate is legality (the value must be in options)
+    return Task(
+        name="check_less",
+        goal="pick a legal value; no correctness predicate, just the walls",
+        steps=[Step("pick", "pick", options=lambda st: ["a", "b"], oracle=lambda st: oracle_value)],
+    )
+
+
+def test_check_less_oracle_returning_an_illegal_value_falls_through_to_stuck():
+    # the bug the review caught: a check-less oracle must NOT bypass the legality wall the model obeys.
+    # oracle returns 'z' (not in options) -> it is rejected, never committed, step stops honestly.
+    r = run_stepwise(_check_less_oracle_task("z"), always_proposer("z"), max_rewinds=1, allow_offload=True)
+    assert r["completed"] is False
+    assert r["stuck_at"] == "pick"
+    assert r["offloaded"] == []
+    assert "pick" not in r["state"]  # the illegal oracle value was never written into state
+
+
+def test_check_less_oracle_returning_a_legal_value_is_committed():
+    # the legitimate use: a check-less oracle that returns an in-options value rescues the step
+    r = run_stepwise(_check_less_oracle_task("a"), always_proposer("z"), max_rewinds=1, allow_offload=True)
+    assert r["completed"] is True
+    assert r["answer"] == "a"
+    assert r["offloaded"] == ["pick"]
+
+
 def _no_oracle_task():
     # a genuine judgement the code can't do: a choice step with NO oracle registered
     return Task(
