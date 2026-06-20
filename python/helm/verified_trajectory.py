@@ -87,6 +87,97 @@ def naive_generator(problem: Dict[str, Any]) -> str:
     return "def _f(*a, **k):\n    return None\n"
 
 
+def solve_with_trace(
+    problem: Dict[str, Any],
+    ask: Callable[[str], str],
+    public_k: int = 1,
+    rounds: int = 3,
+) -> Dict[str, Any]:
+    """Run the write->run->repair loop and RECORD every turn, so a verified trajectory teaches the
+    LOOP (failure -> got-vs-expected -> fix), not just the final answer. Verification is on the
+    held-out hidden tests; the model only ever sees the public example + its own execution feedback."""
+    from .free_generator import _diagnose, _norm_code, strip_to_code
+
+    head = (problem.get("prompt") or problem.get("text") or "").strip()
+    tl = list(problem.get("test_list", []))
+    imports = list(problem.get("test_imports", []))
+    public, hidden = tl[:public_k], tl[public_k:]
+    pub_str = "\n".join(public)
+
+    p0 = (
+        head
+        + "\n\nWrite a complete Python solution. It must make this example pass:\n"
+        + pub_str
+        + "\nReturn ONLY the code."
+    )
+    code = strip_to_code(ask(p0))
+    turns: List[Dict[str, str]] = [{"role": "user", "content": p0}, {"role": "assistant", "content": code}]
+    seen = {_norm_code(code)}
+    stuck = False
+    for _ in range(rounds):
+        if _verify(code, public, [], imports).get("public_passed"):
+            break
+        feedback = "\n".join(str(d) for d in _diagnose(code, public, imports))[:700]
+        if stuck:
+            fp = (
+                head + "\n\nYou are STUCK -- the same approach keeps failing the SAME check. Solve it a"
+                " DIFFERENT way.\n\nFailing (got vs expected):\n" + feedback + "\nReturn ONLY new Python code."
+            )
+        else:
+            fp = (
+                "Your code failed these checks (got vs expected):\n"
+                + feedback
+                + "\nFix it. Return ONLY corrected Python code."
+            )
+        try:
+            code = strip_to_code(ask(fp))
+        except Exception:
+            break
+        turns += [{"role": "user", "content": fp}, {"role": "assistant", "content": code}]
+        n = _norm_code(code)
+        stuck = n in seen
+        seen.add(n)
+    verified = bool(_verify(code, public, hidden, imports).get("hidden_passed"))  # TRUTH on held-out
+    attempts = sum(1 for t in turns if t["role"] == "assistant")
+    return {"final_code": code, "verified": verified, "turns": turns, "attempts": attempts}
+
+
+def harvest_traces(
+    problems: Sequence[Dict[str, Any]],
+    ask: Callable[[str], str],
+    public_k: int = 1,
+    rounds: int = 3,
+    system: str = SYSTEM,
+) -> Dict[str, Any]:
+    """Multi-turn version of harvest: keep only VERIFIED trajectories, emitting the full repair loop
+    (so the agent learns to recover, not just to answer). The final assistant turn is the verified code."""
+    records: List[Dict[str, Any]] = []
+    attempted = 0
+    for p in problems:
+        attempted += 1
+        tr = solve_with_trace(p, ask, public_k, rounds)
+        if tr["verified"]:
+            records.append(
+                {
+                    "messages": [{"role": "system", "content": system}] + tr["turns"],
+                    "meta": {
+                        "verified": True,
+                        "task_id": p.get("task_id"),
+                        "attempts": tr["attempts"],
+                        "repaired": tr["attempts"] > 1,
+                        "source": "verified_trajectory_trace",
+                    },
+                }
+            )
+    n = len(problems) or 1
+    return {
+        "records": records,
+        "attempted": attempted,
+        "verified": len(records),
+        "verified_rate": round(len(records) / n, 3),
+    }
+
+
 def write_dataset(result: Dict[str, Any], out_path: str) -> Dict[str, Any]:
     """Write the verified SFT records + a manifest next to them. Returns the manifest."""
     out = Path(out_path)
