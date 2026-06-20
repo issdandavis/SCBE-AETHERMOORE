@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body { font: 13px/1.4 system-ui, sans-serif; width: 320px; margin: 0; padding: 12px; }
+      h1 { font-size: 14px; margin: 0 0 8px; }
+      .row { display: flex; gap: 6px; margin: 6px 0; }
+      input { flex: 1; padding: 4px 6px; font: inherit; }
+      button { padding: 5px 8px; font: inherit; cursor: pointer; }
+      .actions button { width: 100%; text-align: left; margin: 3px 0; }
+      #out { white-space: pre-wrap; background: #f4f4f5; border-radius: 6px; padding: 8px; margin-top: 8px; max-height: 240px; overflow: auto; }
+      .allowed { color: #15803d; } .refused { color: #b91c1c; } .confirm { color: #b45309; }
+      .hint { color: #6b7280; font-size: 11px; }
+    </style>
+  </head>
+  <body>
+    <h1>AetherDesktop — governed Colab</h1>
+    <div class="hint">Start the bridge: <code>python tools/colab/aether_bridge.py</code>, paste its X-Aether-Token.</div>
+    <div class="row">
+      <input id="token" type="password" placeholder="X-Aether-Token" />
+      <button id="save">Save</button>
+    </div>
+    <div class="actions">
+      <button data-action="colab_read_output" data-cell="0">Read output of cell 0</button>
+      <button data-action="colab_run_cell" data-cell="0">Run cell 0 (guarded)</button>
+      <button data-action="colab_run_all">Run all (guarded)</button>
+    </div>
+    <div id="out" class="hint">Every action is screened + sealed by the bridge, then run in this tab only if ALLOWED.</div>
+    <script src="popup.js"></script>
+  </body>
+</html>
