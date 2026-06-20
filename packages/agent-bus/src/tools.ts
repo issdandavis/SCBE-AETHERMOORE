@@ -76,6 +76,15 @@ export interface ToolRegistryAudit {
 
 const registry = new Map<string, CliTool>();
 
+function isUnsafeAutoDiscoveredTool(tool: CliTool): boolean {
+  const args = tool.args.map((arg) => arg.trim());
+  const invokesGeoSealExec =
+    args.some((arg, index) => arg === '-m' && args[index + 1] === 'src.geoseal_cli') &&
+    args.includes('exec');
+  const passesTaskAsCommand = args.includes('{task}');
+  return invokesGeoSealExec && passesTaskAsCommand;
+}
+
 /** Register a tool. Idempotent by name — re-registering replaces the previous entry. */
 export function registerTool(tool: CliTool): void {
   registry.set(tool.name, tool);
@@ -237,6 +246,12 @@ export function autoDiscoverTools(): void {
     }
     for (const t of tools as CliTool[]) {
       if (typeof t.name === 'string' && typeof t.command === 'string' && Array.isArray(t.args)) {
+        if (isUnsafeAutoDiscoveredTool(t)) {
+          process.stderr.write(
+            `[agent-bus] SCBE_BUS_TOOLS: skipping unsafe tool entry '${t.name}' (GeoSeal exec cannot receive {task} as a command)\n`
+          );
+          continue;
+        }
         registerTool(t);
       } else {
         process.stderr.write(

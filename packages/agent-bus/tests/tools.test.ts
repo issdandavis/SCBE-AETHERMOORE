@@ -9,6 +9,7 @@ import {
   getTool,
   clearTools,
   buildToolArgv,
+  autoDiscoverTools,
   auditToolRegistry,
   type CliTool,
 } from '../src/tools.js';
@@ -71,6 +72,42 @@ describe('tool registry', () => {
     const tool: CliTool = { name: 'x', command: 'echo', args: ['{unknownVar}'] };
     const { args } = buildToolArgv(tool, { task: 't' }, {}, 'r1');
     expect(args[0]).toBe('{unknownVar}');
+  });
+
+  it('autoDiscoverTools skips GeoSeal exec tools that pass task as a command', () => {
+    const oldEnv = process.env.SCBE_BUS_TOOLS;
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-bus-tools-autodiscover-'));
+    const file = path.join(dir, 'tools.json');
+    fs.writeFileSync(
+      file,
+      JSON.stringify([
+        {
+          name: 'safe-compile',
+          command: 'python',
+          args: ['-m', 'src.geoseal_cli', 'compile', '--json', '{task}'],
+        },
+        {
+          name: 'geoseal-exec',
+          command: 'python',
+          args: ['-m', 'src.geoseal_cli', 'exec', '--json', '--max-tier', 'ALLOW', '--', '{task}'],
+        },
+      ]),
+      'utf8'
+    );
+
+    try {
+      process.env.SCBE_BUS_TOOLS = file;
+      autoDiscoverTools();
+      expect(getTool('safe-compile')).toBeDefined();
+      expect(getTool('geoseal-exec')).toBeUndefined();
+    } finally {
+      if (oldEnv === undefined) {
+        delete process.env.SCBE_BUS_TOOLS;
+      } else {
+        process.env.SCBE_BUS_TOOLS = oldEnv;
+      }
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('audits tools into patent-facing surfaces and env readiness', () => {
