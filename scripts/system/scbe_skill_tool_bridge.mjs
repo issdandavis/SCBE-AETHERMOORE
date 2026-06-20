@@ -6,7 +6,7 @@
  *              definitions to MCP tool schemas. Supports --action quick | full.
  */
 
-import { readdirSync, readFileSync, existsSync, statSync } from 'fs';
+import { readdirSync, readFileSync, existsSync } from 'fs';
 import { basename, dirname, resolve, join, relative } from 'path';
 
 const ROOT = resolve(import.meta.dirname, '..', '..');
@@ -61,11 +61,17 @@ function readSkill(path) {
   const manifest = join(dirname(path), 'manifest.json');
   const skill = parseSkillMarkdown(path);
 
-  if (!existsSync(manifest) || !statSync(manifest).isFile()) {
+  let manifestData = {};
+  try {
+    manifestData = JSON.parse(readFileSync(manifest, 'utf8'));
+  } catch (error) {
+    if (error && error.code !== 'ENOENT' && error.code !== 'EISDIR') {
+      throw error;
+    }
     return skill;
   }
 
-  return { ...skill, ...JSON.parse(readFileSync(manifest, 'utf8')), path };
+  return { ...skill, ...manifestData, path };
 }
 
 const skills = findSkillFiles(SKILLS_DIR).map(readSkill);
