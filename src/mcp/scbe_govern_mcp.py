@@ -208,9 +208,12 @@ def action_channels(action: str) -> str:
 @mcp.tool(annotations=_READONLY)
 def audit_log() -> str:
     """The sealed receipt transcript for this server process + a chain-integrity check. The seal is
-    FORWARD-CHAINED (reorder/insert/delete/rewrite break chain_ok), so it is tamper-evident -- but only
-    WITHIN this running process: the transcript is in memory and resets on restart. For a durable audit,
-    persist it (and the registry nonce) externally. Tamper-evidence, not proof of safety."""
+    FORWARD-CHAINED: a reorder/insert/delete/rewrite that does NOT re-chain breaks chain_ok. HONEST limit
+    (don't over-trust this) -- the seal is UNKEYED and anchored on the in-memory registry nonce, so it
+    catches accidental corruption and un-re-chained tampering, NOT an in-process forger who reads the
+    nonce and re-chains the whole list; it is also in memory and resets on restart. For a durable,
+    custody-grade audit, persist the transcript to an external append-only sink or HMAC it with an
+    off-host key. This is integrity (tamper-evidence), not proof of safety or custody."""
     return _dump(_audit_log())
 
 
