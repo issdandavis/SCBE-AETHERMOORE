@@ -91,7 +91,7 @@ describe('queue: tool routing', () => {
     delete process.env.SCBE_BUS_QUEUE_ROOT;
   });
 
-  it('dispatches to a registered tool and captures stdout', async () => {
+  it('blocks tool dispatch when allowToolDispatch is not enabled', async () => {
     registerTool({
       name: 'echo-json',
       command: 'node',
@@ -99,6 +99,21 @@ describe('queue: tool routing', () => {
     });
 
     const runId = enqueueEvent({ task: 'hi', tool: 'echo-json' }, {}, 0);
+    await processOneEvent();
+
+    const status = getEventStatus(runId);
+    expect(status!.status).toBe('failed');
+    expect(status!.result?.stderr_tail).toMatch(/tool dispatch is disabled/);
+  });
+
+  it('dispatches to a registered tool and captures stdout', async () => {
+    registerTool({
+      name: 'echo-json',
+      command: 'node',
+      args: ['-e', 'process.stdout.write(JSON.stringify({ok:true,task:{sha256:null}}))'],
+    });
+
+    const runId = enqueueEvent({ task: 'hi', tool: 'echo-json' }, { allowToolDispatch: true }, 0);
     await processOneEvent();
 
     const status = getEventStatus(runId);
@@ -114,7 +129,7 @@ describe('queue: tool routing', () => {
       args: ['-e', 'process.exit(1)'],
     });
 
-    const runId = enqueueEvent({ task: 'fail', tool: 'exit-1' }, {}, 0);
+    const runId = enqueueEvent({ task: 'fail', tool: 'exit-1' }, { allowToolDispatch: true }, 0);
     await processOneEvent();
 
     const status = getEventStatus(runId);
@@ -123,7 +138,11 @@ describe('queue: tool routing', () => {
   });
 
   it('returns failed immediately for unknown tool name', async () => {
-    const runId = enqueueEvent({ task: 'hi', tool: 'no-such-tool' }, {}, 0);
+    const runId = enqueueEvent(
+      { task: 'hi', tool: 'no-such-tool' },
+      { allowToolDispatch: true },
+      0
+    );
     await processOneEvent();
 
     const status = getEventStatus(runId);
@@ -143,7 +162,11 @@ describe('queue: tool routing', () => {
       ],
     });
 
-    const runId = enqueueEvent({ task: 'my-special-task', tool: 'echo-task' }, {}, 0);
+    const runId = enqueueEvent(
+      { task: 'my-special-task', tool: 'echo-task' },
+      { allowToolDispatch: true },
+      0
+    );
     await processOneEvent();
 
     const status = getEventStatus(runId);
