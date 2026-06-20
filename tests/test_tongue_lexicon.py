@@ -1,0 +1,51 @@
+"""tongue_lexicon: the semantic classifier on top of the grid -- a pluggable conlang word->tongue lexicon.
+
+Proves the seed (real sixtongues conlang fragments) classifies tongue-specific words, multi-state Venn
+membership (a word shared by two tongues), and that a fuller word list drops in via add_wordlist/merge.
+"""
+
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from python.scbe import tongue_lexicon as tl  # noqa: E402
+
+
+def test_seed_classifies_conlang_words_to_the_right_tongue():
+    lex = tl.load_seed()
+    assert lex.size() == 96  # 6 tongues x 16 real conlang prefixes
+    assert lex.best("veil the shade in dusk") == "UM"  # redaction/veil tongue
+    assert lex.best("kor vel zar") == "KO"
+    assert lex.best("bip bop fizz the gear") == "CA"
+
+
+def test_multi_state_venn_a_word_shared_by_two_tongues():
+    lex = tl.load_seed()
+    hits = lex.classify("anvil forge seal the oath")
+    assert "DR" in hits  # anvil/forge/seal/oath are Draumric (auth/integrity)
+    assert "oath" in hits.get("RU", []) and "oath" in hits["DR"]  # 'oath' lives in BOTH -> Venn overlap
+
+
+def test_fuller_wordlist_drops_in():
+    lex = tl.load_seed()
+    assert lex.classify("conceal the whisper") == {}  # not in the seed
+    lex.add_wordlist("UM", ["whisper", "conceal", "shroud"])  # ingest a fuller list
+    assert lex.best("conceal the whisper") == "UM"
+
+
+def test_merge_two_lexicons():
+    a = tl.Lexicon()
+    a.add_wordlist("KO", ["qbegin"])
+    b = tl.Lexicon()
+    b.add_wordlist("DR", ["zsign"])
+    a.merge(b)
+    assert a.best("the qbegin step") == "KO"  # a's own word
+    assert a.best("the zsign here") == "DR"  # b's word, after merge
+
+
+def test_no_match_is_empty_not_a_guess():
+    lex = tl.load_seed()
+    assert lex.classify("a plain english sentence with no tongue words") == {}
+    assert lex.best("nothing here") is None
