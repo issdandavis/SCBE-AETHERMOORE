@@ -40,6 +40,13 @@ def _safe_log_text(value: object) -> str:
     return text.replace("\r", "\\r").replace("\n", "\\n")[:240]
 
 
+def _provider_failure_summary(provider: dict) -> str:
+    """Return a non-sensitive provider failure line for console output."""
+    if provider.get("error"):
+        return "request failed; see JSON artifact for redacted details"
+    return "failed"
+
+
 sys.path.insert(0, str(REPO_ROOT))
 
 # ── External published baselines ──────────────────────────────────────────────
@@ -728,7 +735,7 @@ def main() -> int:
             if p.get("ok"):
                 print(f"      {p['provider']:12s}  p50={p['p50_ms']:.0f}ms  ({p['latencies_ms']})")
             else:
-                print(f"      {p['provider']:12s}  {_safe_log_text(p.get('error', 'failed'))}")
+                print(f"      {p['provider']:12s}  {_provider_failure_summary(p)}")
 
     print("\n[4/5] Knowledge accuracy (10 MMLU-style Q)...", flush=True)
     knowledge = run_knowledge_benchmark(skip_live=args.skip_live)
@@ -739,7 +746,7 @@ def main() -> int:
             if p.get("ok"):
                 print(f"      {p['provider']:12s}  {p['correct']}/{p['total']}  ({p['accuracy']:.0%})")
             else:
-                print(f"      {p['provider']:12s}  {_safe_log_text(p.get('error', 'failed'))}")
+                print(f"      {p['provider']:12s}  {_provider_failure_summary(p)}")
 
     print("\n[5/5] TypeScript test suite...", flush=True)
     tests = run_test_suite_benchmark()

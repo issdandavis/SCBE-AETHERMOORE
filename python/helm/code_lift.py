@@ -184,7 +184,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument(
         "--demo",
         action="store_true",
-        help="HARNESS CHECK ONLY: stub(base) vs answer-key(trained) over the offline fixture -- proves the math",
+        help="HARNESS CHECK ONLY: minimal failing base vs reference solution over the offline fixture -- proves the math",
     )
     ap.add_argument("--base", default=None, help="ollama model id for the BASE slot (e.g. qwen2.5-coder:1.5b)")
     ap.add_argument("--trained", default=None, help="ollama model id for the TRAINED slot (e.g. vtc-qwen15)")
@@ -197,7 +197,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if a.demo:
         probs = pb.load_fixture()
         rep = measure_code_lift(pb.naive_generator, pb.reference_generator, probs)
-        print("[DEMO = harness check, NOT a model result: 'base' is a failing stub, 'trained' is the answer key]")
+        print("[HARNESS CHECK ONLY: failing base vs reference solution; this is not a model result]")
         print(render(rep))
         return 0
 

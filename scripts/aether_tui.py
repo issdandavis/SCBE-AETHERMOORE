@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -117,32 +118,45 @@ class AetherApp(App):
         self.mode = "scene"
 
     # ---- run commands, streaming output into the log ----
+    def _catalog_argv(self, cmd: str) -> list[list[str]]:
+        parts = shlex.split(cmd)
+        commands: list[list[str]] = [[]]
+        for part in parts:
+            if part == "&&":
+                commands.append([])
+                continue
+            commands[-1].append(sys.executable if part == "python" else part)
+        return [argv for argv in commands if argv]
+
     @work(thread=True, exclusive=False)
     def run_command(self, cmd: str):
         self.call_from_thread(self.w, f"[green]> {cmd}[/]")
         env = dict(os.environ, PYTHONPATH=".")
         try:
-            proc = subprocess.Popen(
-                cmd,
-                shell=True,
-                cwd=str(REPO),
-                env=env,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                bufsize=1,
-            )
-            for line in proc.stdout:
-                self.call_from_thread(self.w, line.rstrip("\n"))
-            proc.wait()
+            for argv in self._catalog_argv(cmd):
+                proc = subprocess.Popen(
+                    argv,
+                    cwd=str(REPO),
+                    env=env,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    bufsize=1,
+                )
+                assert proc.stdout is not None
+                for line in proc.stdout:
+                    self.call_from_thread(self.w, line.rstrip("\n"))
+                proc.wait()
+                if proc.returncode:
+                    break
             self.call_from_thread(self.w, "[dim](done)[/]")
         except Exception as e:  # pragma: no cover
             self.call_from_thread(self.w, f"[red](error: {e})[/]")
 
     def ask_ai(self, q: str):
-        self.run_command(f'python scbe.py ask "{q}"')
+        self.run_command(f"python scbe.py ask {shlex.quote(q)}")
 
     def choose(self, action):
         if action.get("needs_input"):

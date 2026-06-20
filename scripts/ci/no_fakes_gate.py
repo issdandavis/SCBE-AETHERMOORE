@@ -114,7 +114,7 @@ def scan() -> dict:
             for pid, rx in PATTERNS:
                 if rx.search(line):
                     norm = re.sub(r"\s+", " ", line.strip())[:200]
-                    digest = hashlib.sha1(norm.encode("utf-8")).hexdigest()[:12]
+                    digest = hashlib.sha1(norm.encode("utf-8"), usedforsecurity=False).hexdigest()[:12]
                     # key is line-position independent (path + pattern + content hash)
                     key = f"{rel}::{pid}::{digest}"
                     hits[key] = f"{rel}:{lineno} [{pid}] {norm}"

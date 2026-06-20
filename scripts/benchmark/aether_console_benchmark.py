@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import subprocess
 import sys
 import time
@@ -66,6 +67,17 @@ def classify(action: dict) -> str:
     return "run"
 
 
+def catalog_argv(cmd: str) -> list[list[str]]:
+    parts = shlex.split(cmd)
+    commands: list[list[str]] = [[]]
+    for part in parts:
+        if part == "&&":
+            commands.append([])
+            continue
+        commands[-1].append(sys.executable if part == "python" else part)
+    return [argv for argv in commands if argv]
+
+
 def run_one(action: dict):
     cmd = action["command"]
     if action.get("needs_input"):
@@ -76,17 +88,22 @@ def run_one(action: dict):
     env = dict(os.environ, PYTHONPATH=".")
     t0 = time.perf_counter()
     try:
-        proc = subprocess.run(
-            cmd,
-            shell=True,
-            cwd=str(REPO),
-            env=env,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=TIMEOUT,
-        )
+        proc = None
+        for argv in catalog_argv(cmd):
+            proc = subprocess.run(
+                argv,
+                cwd=str(REPO),
+                env=env,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=TIMEOUT,
+            )
+            if proc.returncode:
+                break
+        if proc is None:
+            return {"status": "skip:empty-command", "ms": 0}
         ms = (time.perf_counter() - t0) * 1000.0
         # exit 0 = pass; exit 3 = graceful "optional dependency missing" (still a real capability boundary)
         if proc.returncode == 0:

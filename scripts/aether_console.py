@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -78,7 +79,7 @@ def status_line():
 
 
 def clear():
-    os.system("cls" if os.name == "nt" else "clear")
+    print("\033[2J\033[H", end="")
 
 
 def header(title: str, narration: str = ""):
@@ -93,17 +94,31 @@ def header(title: str, narration: str = ""):
         print(c(f"  {narration}", "mag"))
 
 
+def _catalog_argv(cmd: str) -> list[list[str]]:
+    parts = shlex.split(cmd)
+    commands: list[list[str]] = [[]]
+    for part in parts:
+        if part == "&&":
+            commands.append([])
+            continue
+        commands[-1].append(sys.executable if part == "python" else part)
+    return [argv for argv in commands if argv]
+
+
 def run_command(cmd: str):
     print(c(f"\n  > {cmd}\n", "green"))
     env = dict(os.environ, PYTHONPATH=".")
     try:
-        subprocess.run(cmd, shell=True, cwd=str(REPO), env=env)
+        for argv in _catalog_argv(cmd):
+            result = subprocess.run(argv, cwd=str(REPO), env=env)
+            if result.returncode:
+                break
     except Exception as e:  # pragma: no cover
         print(c(f"  (error: {e})", "red"))
 
 
 def ask_ai(q: str):
-    run_command(f'python scbe.py ask "{q}"')
+    run_command(f"python scbe.py ask {shlex.quote(q)}")
 
 
 def take_choice(action: dict):
@@ -194,8 +209,6 @@ def main():
         demo()
         return
     _enable_utf8()
-    if os.name == "nt":
-        os.system("")  # enable ANSI/VT on Windows 10+
     try:
         cats = load_catalog()
     except Exception as e:
