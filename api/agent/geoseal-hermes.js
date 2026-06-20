@@ -36,7 +36,10 @@ function sha(value) {
 }
 
 function shellQuote(value) {
-  return `"${String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+  const text = String(value);
+  if (!text) return "''";
+  if (/^[A-Za-z0-9_./:=@\-]+$/.test(text)) return text;
+  return `'${text.replace(/'/g, `'\\''`)}'`;
 }
 
 function classify(task) {
@@ -47,15 +50,18 @@ function classify(task) {
   return 'ask';
 }
 
+function argvFor(task, routeType, outputMode) {
+  const action = routeType === 'hosted' ? 'do' : classify(task);
+  const argv = [action, String(task)];
+  if (routeType === 'api') argv.push('--api-base', 'http://127.0.0.1:8002');
+  if (outputMode === 'json') argv.push('--json');
+  return argv;
+}
+
 function commandFor(task, routeType, outputMode) {
-  const jsonFlag = outputMode === 'json' ? ' --json' : '';
-  if (routeType === 'api') {
-    return `geoseal ${classify(task)} ${shellQuote(task)} --api-base http://127.0.0.1:8002${jsonFlag}`;
-  }
-  if (routeType === 'hosted') {
-    return `geoseal do ${shellQuote(task)}${jsonFlag} # hosted intake: https://aethermoore.com/hosted-run`;
-  }
-  return `geoseal ${classify(task)} ${shellQuote(task)}${jsonFlag}`;
+  const argv = ['geoseal', ...argvFor(task, routeType, outputMode)];
+  const suffix = routeType === 'hosted' ? ' # hosted intake: https://aethermoore.com/hosted-run' : '';
+  return argv.map(shellQuote).join(' ') + suffix;
 }
 
 module.exports = async function handler(req, res) {
@@ -88,9 +94,10 @@ module.exports = async function handler(req, res) {
       backend,
       policy,
       command: commandFor(task, routeType, outputMode),
+      command_argv: ['geoseal', ...argvFor(task, routeType, outputMode)],
       summary: `Prepared a ${routeType} GeoSeal route for a ${classify(task)} task.`,
       next_steps: [
-        'Run the command locally or attach it to the hosted intake.',
+        'Run the command locally or use command_argv for automation without shell parsing.',
         'Keep the JSON receipt with the customer delivery.',
         'Turn repeat routes into one-click product actions.',
       ],
