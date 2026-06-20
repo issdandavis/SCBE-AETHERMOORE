@@ -194,6 +194,82 @@ class AetherDesk:
     def receipt(self) -> List[dict]:
         return self.reg.transcript
 
+    # --- the execution substrate for ROUTED steps ----------------------------------------------------
+    # The router (failure_map -> pre-allocate each typed step to its best block/model) decides WHO solves
+    # each step. AetherDesk is WHERE it runs: bounded, execution-VERIFIED, and sealed into the receipt.
+    def run_step(
+        self,
+        name: str,
+        spec: str,
+        check: Optional[List[str]],
+        solver: Any,
+        solver_name: str = "solver",
+        confirm: Optional[str] = None,
+    ) -> dict:
+        """Run ONE routed step: the chosen `solver` (a deterministic block or a model, `spec`->code)
+        produces a candidate, it is execution-verified against `check` (assert lines) inside the
+        workspace, and a governed receipt is sealed. A wrong solver is recorded as FAILED, never hidden.
+        Returns {step, solver, verified, candidate}. verified is None when there is no check to run."""
+        from python.helm import public_bench as pb
+
+        try:
+            candidate = str(solver(spec))
+        except Exception as exc:
+            candidate = "# solver raised: %s: %s" % (type(exc).__name__, exc)
+        verified: Optional[bool] = None
+        if check:
+            verified = bool(pb._verify(candidate, [], list(check), [])["hidden_passed"])
+        rec: dict = {
+            "hop": len(self.reg.transcript) + 1,
+            "action": "run_step:" + name,
+            "params": {"solver": solver_name, "spec": str(spec)[:200], "checks": len(check or [])},
+            "decision": "VERIFIED" if verified else ("UNVERIFIED" if verified is None else "FAILED"),
+            "result": candidate[:300],
+        }
+        if confirm:
+            rec["confirm"] = str(confirm)
+        rec["_prev"] = self.reg.transcript[-1]["seal"] if self.reg.transcript else self.reg.nonce
+        rec["seal"] = _seal(rec)
+        self.reg.transcript.append(rec)
+        return {"step": name, "solver": solver_name, "verified": verified, "candidate": candidate, "seal": rec["seal"]}
+
+    def run_pipeline(self, steps: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Run a routed plan -- a list of {name, spec, check, solver, solver_name}. Each step is verified
+        + sealed; returns the per-step results, whether every checked step verified, and the receipt
+        integrity. The router's plan, made runnable and governed."""
+        out = [
+            self.run_step(
+                s["name"],
+                s.get("spec", ""),
+                s.get("check"),
+                s["solver"],
+                s.get("solver_name", "solver"),
+                s.get("confirm"),
+            )
+            for s in steps
+        ]
+        checked = [r for r in out if r["verified"] is not None]
+        return {
+            "steps": out,
+            "all_verified": all(r["verified"] for r in checked) if checked else None,
+            "sealed": self.verify(),
+        }
+
+
+# --- solvers: a routed step is assigned to a deterministic BLOCK (free + exact) or a MODEL ----------
+def block_solver(code: Any) -> Any:
+    """A DETERMINISTIC block as a solver -- the $0, provably-exact path for a known-hard step. `code` is
+    proven source (a str) or `spec`->str. Prefer this over a stronger model wherever a block exists."""
+    return (lambda spec: str(code(spec))) if callable(code) else (lambda spec: str(code))
+
+
+def model_solver(ask: Any) -> Any:
+    """A model as a solver -- generate code from the spec via a prompt->str `ask`. The escalation path,
+    used only where no deterministic block covers the step."""
+    from python.helm.free_generator import strip_to_code
+
+    return lambda spec: strip_to_code(ask(spec))
+
 
 # --- the v0 "oh shit" demo: a governed agent doing real local work it cannot escape -----------------
 _BUGGY = "def add(a, b):\n    return a - b   # bug\n"
