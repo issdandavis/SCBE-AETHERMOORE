@@ -886,20 +886,35 @@ function gateCommand(command, options = {}) {
 function fallbackGateCommand(command, source, extra = {}) {
   const lower = String(command || '').toLowerCase();
   const findings = [];
-  if (/\b(remove-item|rm|del|rmdir)\b/.test(lower) && /\b(-recurse|-r|\/s)\b/.test(lower)) {
-    findings.push({ rule: 'fallback.recursive_delete', message: 'recursive delete command' });
+  const denyPatterns = [
+    [/\bwsl(?:\.exe)?\b.*(?:\s|^)--shutdown\b/, 'fallback.wsl_shutdown', 'WSL VM shutdown command'],
+    [/\b(?:shutdown|restart-computer|stop-computer|poweroff|reboot)\b/, 'fallback.system_power_state', 'host power-state command'],
+    [/\bpowercfg\b.*\b(?:hibernate|standby|sleep|h(?:ibernate)?\s+(?:on|off)|-h\s+(?:on|off))\b/, 'fallback.powercfg_state_change', 'host sleep/hibernate configuration change'],
+    [/\b(?:bcdedit|diskpart|format|manage-bde|reagentc)\b/, 'fallback.system_disk_boot_tool', 'boot/disk/system configuration tool'],
+    [/\b(?:disable-netadapter|restart-netadapter|enable-netadapter|netsh)\b/, 'fallback.network_adapter_control', 'network adapter or stack control'],
+    [/\bdocker\b\s+system\s+prune\b.*(?:\s-a\b|\s--all\b)/, 'fallback.docker_system_prune_all', 'global Docker prune-all command'],
+    [/\btaskkill\b.*(?:\s\/f\b|\s\/t\b).*(?:\s\/im\s+\*|\s\/pid\s+0\b|python\.exe|node\.exe|code\.exe)/, 'fallback.broad_taskkill', 'broad forced process kill'],
+    [/\bstop-process\b.*(?:-force|\s-id\s+0\b|-name\s+\*|python|node|code)/, 'fallback.broad_stop_process', 'broad forced PowerShell process kill'],
+    [/\b(?:stress|stress-ng|sysbench)\b|\bwhile\s+(?:true\b|\(\s*\$true\s*\))/, 'fallback.host_stress_loop', 'host stress or unbounded loop command'],
+    [/\brm\b(?=.*(?:\s-[a-z]*r[a-z]*\b|\s--recursive\b))(?=.*(?:\s-[a-z]*f[a-z]*\b|\s--force\b))/, 'fallback.destructive_rm', 'recursive force delete'],
+    [/\b(?:remove-item|ri|rm)\b.*(?:\s|^)-recurse\b/, 'fallback.destructive_remove_item', 'recursive PowerShell delete'],
+    [/\binvoke-expression\b|\biex\b/, 'fallback.powershell_iex', 'dynamic PowerShell execution'],
+    [/\bcurl\b.*\|\s*(sh|bash|powershell|pwsh|iex)\b/, 'fallback.curl_pipe_exec', 'download-to-exec chain'],
+    [/\bwget\b.*\|\s*(sh|bash|powershell|pwsh|iex)\b/, 'fallback.wget_pipe_exec', 'download-to-exec chain'],
+    [/(curl|wget|irm|iwr|invoke-webrequest|invoke-restmethod).*(iex|invoke-expression|sh|bash|powershell|pwsh)/, 'fallback.download_to_exec', 'download-to-execute chain'],
+    [/config[/\\]connector_oauth/, 'fallback.connector_secret_path', 'connector OAuth secret path'],
+    [/\.env(\.|$|\s)/, 'fallback.env_secret_path', 'environment secret file path'],
+    [/(secret|secrets|credential|credentials|connector_oauth|api[_-]?key|token)/, 'fallback.secret_path', 'command touches a secret or credential path'],
+    [/(encodedcommand|-enc)\b/, 'fallback.encoded_powershell', 'encoded PowerShell command'],
+  ];
+  for (const [pattern, rule, message] of denyPatterns) {
+    if (pattern.test(lower)) findings.push({ rule, message });
   }
-  if (/\b(force|\/q|-f)\b/.test(lower) && /\b(remove-item|rm|del|rmdir)\b/.test(lower)) {
-    findings.push({ rule: 'fallback.force_delete', message: 'forced delete command' });
-  }
-  if (/(secret|secrets|credential|credentials|connector_oauth|\.env|api[_-]?key|token)/.test(lower)) {
-    findings.push({ rule: 'fallback.secret_path', message: 'command touches a secret or credential path' });
-  }
-  if (/(curl|wget|irm|iwr|invoke-webrequest|invoke-restmethod).*(iex|invoke-expression|sh|bash|powershell)/.test(lower)) {
-    findings.push({ rule: 'fallback.download_to_exec', message: 'download-to-execute chain' });
-  }
-  if (/(encodedcommand|-enc)\b/.test(lower)) {
-    findings.push({ rule: 'fallback.encoded_powershell', message: 'encoded PowerShell command' });
+  if (/\b(?:python|python\.exe|py|node|node\.exe)\b/.test(lower) && /(?:^|\s)-(?:c|e)(?:\s|$)/.test(lower)) {
+    findings.push({ rule: 'fallback.inline_interpreter', message: 'inline interpreter execution requires explicit allowance' });
+    if (/\b(?:shutil\.rmtree|os\.(?:system|remove|unlink|rmdir|removedirs|popen|kill|execv)|subprocess\.(?:run|call|popen|check_call|check_output)|eval\s*\(|exec\s*\(|compile\s*\(|__import__\s*\(|child_process|fs\.(?:rm|rmdir|rmsync|rmdirsync|unlink|unlinksync)|execsync|spawnsync|exec\s*\()/.test(lower)) {
+      findings.push({ rule: 'fallback.inline_danger_payload', message: 'inline interpreter payload contains destructive or process operations' });
+    }
   }
   if (findings.length) {
     return {
