@@ -18,11 +18,26 @@ emitter PRODUCES source for every backend; it does NOT mean the backends compute
 results -- they provably diverge on e.g. .5 rounding (Python half-to-even vs JS/Rust),
 which the harness surfaces as DISAGREE rather than hiding.
 
-Op coverage (v1, the cleanly-portable scalar core over a float64 stack):
-  arithmetic  add sub mul div mod neg inc dec
-  math fns    pow abs sqrt floor ceil round min max
-  comparison  eq neq lt lte gt gte   (-> 1.0 / 0.0, keeps the number stack)
-The remaining CA ops (bitwise, aggregation) extend via each Dialect's prelude.
+Two op sets, kept distinct on purpose:
+  * SCALAR_OPS   (22) -- the UNIVERSAL core every one of the 18 language faces implements, and which
+                         the DNA bijection (bijective_dna) is built over.
+  * PORTABLE_OPS (35) -- the conformance-VERIFIED polyglot-emitter subset: every op below is proven
+                         identical across python/js/rust by polyglot_conformance (it ran them and they
+                         matched), not merely emitted. Implemented by the inline faces; emit raises a
+                         clean "not implemented in this face" for a bundled track that lacks an op.
+
+The simplest commands are the bit/byte primitives, and they map across languages the most cleanly --
+so the bitwise ops are the load-bearing extension:
+  bitwise      and or xor not shl shr                           (INTEGER: operands truncated to int;
+                 portable on the 32-bit SIGNED domain |x| < 2^31 -- BEYOND it JS uses int32 and the
+                 harness reports DISAGREE. That boundary is the honest limit, surfaced not hidden.)
+  arithmetic   add sub mul div mod neg inc dec
+  math fns     pow abs sqrt floor ceil round min max  log exp   (log domain x>0; exp non-overflowing,
+                                                                  like sqrt's existing x>=0 domain)
+  sign/cmp     sign cmp                                          (-> -1.0 / 0.0 / 1.0)
+  comparison   eq neq lt lte gt gte                              (-> 1.0 / 0.0, keeps the number stack)
+  predicates   isnan isinf isfinite                             (-> 1.0 / 0.0; verified on nan/inf too)
+The remaining CA ops (rotl/rotr/popcount/..., aggregation sum/reduce/sort/...) are NOT yet portable.
 """
 
 from __future__ import annotations
@@ -41,10 +56,38 @@ BYTE_TO_NAME: Dict[int, str] = {b: e.name for b, e in OP_TABLE.items()}
 # --- op categories (language-agnostic) -----------------------------------
 BINOPS = {"add": "+", "sub": "-", "mul": "*", "div": "/"}
 CMPS = {"eq": "==", "neq": "!=", "lt": "<", "lte": "<=", "gt": ">", "gte": ">="}
-FUNC2 = {"pow", "min", "max", "mod"}  # pop a,b -> dialect.func2[name]
-FUNC1 = {"neg", "abs", "sqrt", "floor", "ceil", "round", "inc", "dec"}  # pop a
+# The ORIGINAL universal core every one of the 18 language faces implements (and which the DNA-bijection
+# in bijective_dna is built over). pop a,b -> func2; pop a -> func1.
+_CORE_FUNC2 = {"pow", "min", "max", "mod"}
+_CORE_FUNC1 = {"neg", "abs", "sqrt", "floor", "ceil", "round", "inc", "dec"}
+# The VERIFIED-PORTABLE EXTENSION -- proven identical across python/js/rust by polyglot_conformance,
+# implemented (so far) by the inline faces. cmp = spaceship (-1/0/1); and/or/xor = INTEGER bitwise
+# (operands truncated to int; portable on the 32-bit signed domain, see the conformance note); sign =
+# -1/0/1; log/exp on their natural domain; isnan/isinf/isfinite = 1.0/0.0 predicates.
+_EXT_FUNC2 = {"cmp", "and", "or", "xor", "shl", "shr"}
+_EXT_FUNC1 = {"sign", "log", "exp", "isnan", "isinf", "isfinite", "not"}
 
-SCALAR_OPS = set(BINOPS) | set(CMPS) | FUNC2 | FUNC1
+FUNC2 = _CORE_FUNC2 | _EXT_FUNC2
+FUNC1 = _CORE_FUNC1 | _EXT_FUNC1
+
+# SCALAR_OPS = the UNIVERSAL cube/DNA core (22): every face implements it, the bijection covers it.
+SCALAR_OPS = set(BINOPS) | set(CMPS) | _CORE_FUNC2 | _CORE_FUNC1
+# PORTABLE_OPS = the conformance-VERIFIED polyglot-emitter subset (32): emittable for any face that
+# implements the op (the inline python/js/c/rust faces do). This is the "more than 20" portable core.
+PORTABLE_OPS = set(BINOPS) | set(CMPS) | FUNC2 | FUNC1
+
+
+def _dialect_supports(d: "Dialect", name: str) -> bool:
+    """Does this language face implement `name`? Operators (BINOPS/CMPS) are universal; FUNC1/FUNC2
+    ops need a per-dialect template. Lets `emit` raise a clear 'not implemented in this face' error
+    instead of a raw KeyError when a newer op outruns an older dialect."""
+    if name in BINOPS or name in CMPS:
+        return True
+    if name in FUNC1:
+        return name in d.func1
+    if name in FUNC2:
+        return name in d.func2
+    return False
 
 
 def _sub(tmpl: str, **kw: object) -> str:
@@ -137,8 +180,10 @@ def emit(
     d = REGISTRY[lang]
     names = [BYTE_TO_NAME[t] for t in tokens]
     for n in names:
-        if n not in SCALAR_OPS:
-            raise ValueError(f"op {n!r} (0x{NAME_TO_BYTE[n]:02x}) not in v1 scalar core for {lang}")
+        if n not in PORTABLE_OPS:
+            raise ValueError(f"op {n!r} (0x{NAME_TO_BYTE[n]:02x}) not in the portable op core for {lang}")
+        if not _dialect_supports(d, n):  # portable, but this face hasn't implemented it yet
+            raise ValueError(f"op {n!r} not implemented in the {lang!r} dialect (no func1/func2 template)")
     args = list(arg_names or ["a", "b", "c"])
     # identifiers only — a fn_name/arg like "f(0x05)" would inject a phantom (0xNN)
     # opcode tag into the source and break the face-decode bijection.
@@ -202,8 +247,26 @@ register(
             "round": "round({a})",
             "inc": "({a} + 1)",
             "dec": "({a} - 1)",
+            "sign": "(1.0 if {a} > 0 else (-1.0 if {a} < 0 else 0.0))",
+            "log": "math.log({a})",
+            "exp": "math.exp({a})",
+            "isnan": "(1.0 if math.isnan({a}) else 0.0)",
+            "isinf": "(1.0 if math.isinf({a}) else 0.0)",
+            "isfinite": "(1.0 if math.isfinite({a}) else 0.0)",
+            "not": "float(~int({a}))",
         },
-        func2={"pow": "({a} ** {b})", "min": "min({a}, {b})", "max": "max({a}, {b})", "mod": "({a} % {b})"},
+        func2={
+            "pow": "({a} ** {b})",
+            "min": "min({a}, {b})",
+            "max": "max({a}, {b})",
+            "mod": "({a} % {b})",
+            "cmp": "(1.0 if {a} > {b} else (-1.0 if {a} < {b} else 0.0))",
+            "and": "float(int({a}) & int({b}))",
+            "or": "float(int({a}) | int({b}))",
+            "xor": "float(int({a}) ^ int({b}))",
+            "shl": "float(int({a}) << int({b}))",
+            "shr": "float(int({a}) >> int({b}))",
+        },
         cmp_tmpl="(1.0 if {cond} else 0.0)",
         main_tmpl=("if __name__ == '__main__':", "    print({fn}(2.0, 3.0, 4.0))"),
     )
@@ -232,12 +295,25 @@ register(
             "round": "Math.round({a})",
             "inc": "({a} + 1)",
             "dec": "({a} - 1)",
+            "sign": "({a} > 0 ? 1.0 : ({a} < 0 ? -1.0 : 0.0))",
+            "log": "Math.log({a})",
+            "exp": "Math.exp({a})",
+            "isnan": "(Number.isNaN({a}) ? 1.0 : 0.0)",
+            "isinf": "((!Number.isFinite({a}) && !Number.isNaN({a})) ? 1.0 : 0.0)",
+            "isfinite": "(Number.isFinite({a}) ? 1.0 : 0.0)",
+            "not": "(~({a}))",
         },
         func2={
             "pow": "Math.pow({a}, {b})",
             "min": "Math.min({a}, {b})",
             "max": "Math.max({a}, {b})",
             "mod": "({a} % {b})",
+            "cmp": "({a} > {b} ? 1.0 : ({a} < {b} ? -1.0 : 0.0))",
+            "and": "(({a}) & ({b}))",
+            "or": "(({a}) | ({b}))",
+            "xor": "(({a}) ^ ({b}))",
+            "shl": "(({a}) << ({b}))",
+            "shr": "(({a}) >> ({b}))",
         },
         cmp_tmpl="({cond} ? 1.0 : 0.0)",
         main_tmpl=("console.log({fn}(2.0, 3.0, 4.0));",),
@@ -272,8 +348,26 @@ register(
             "round": "round({a})",
             "inc": "({a} + 1)",
             "dec": "({a} - 1)",
+            "sign": "(({a}) > 0 ? 1.0 : (({a}) < 0 ? -1.0 : 0.0))",
+            "log": "log({a})",
+            "exp": "exp({a})",
+            "isnan": "(isnan({a}) ? 1.0 : 0.0)",
+            "isinf": "(isinf({a}) ? 1.0 : 0.0)",
+            "isfinite": "(isfinite({a}) ? 1.0 : 0.0)",
+            "not": "(double)(~((long)({a})))",
         },
-        func2={"pow": "pow({a}, {b})", "min": "cmin({a}, {b})", "max": "cmax({a}, {b})", "mod": "fmod({a}, {b})"},
+        func2={
+            "pow": "pow({a}, {b})",
+            "min": "cmin({a}, {b})",
+            "max": "cmax({a}, {b})",
+            "mod": "fmod({a}, {b})",
+            "cmp": "(({a}) > ({b}) ? 1.0 : (({a}) < ({b}) ? -1.0 : 0.0))",
+            "and": "(double)(((long)({a})) & ((long)({b})))",
+            "or": "(double)(((long)({a})) | ((long)({b})))",
+            "xor": "(double)(((long)({a})) ^ ((long)({b})))",
+            "shl": "(double)(((long)({a})) << ((long)({b})))",
+            "shr": "(double)(((long)({a})) >> ((long)({b})))",
+        },
         cmp_tmpl="(({cond}) ? 1.0 : 0.0)",
         main_tmpl=("int main(void) {", '    printf("%.17g\\n", {fn}(2.0, 3.0, 4.0));', "    return 0;", "}"),
     )
@@ -302,8 +396,26 @@ register(
             "round": "({a}).round()",
             "inc": "({a} + 1.0)",
             "dec": "({a} - 1.0)",
+            "sign": "(if {a} > 0.0 { 1.0 } else if {a} < 0.0 { -1.0 } else { 0.0 })",
+            "log": "({a}).ln()",
+            "exp": "({a}).exp()",
+            "isnan": "(if ({a}).is_nan() { 1.0 } else { 0.0 })",
+            "isinf": "(if ({a}).is_infinite() { 1.0 } else { 0.0 })",
+            "isfinite": "(if ({a}).is_finite() { 1.0 } else { 0.0 })",
+            "not": "((!(({a}) as i64)) as f64)",
         },
-        func2={"pow": "({a}).powf({b})", "min": "({a}).min({b})", "max": "({a}).max({b})", "mod": "({a} % {b})"},
+        func2={
+            "pow": "({a}).powf({b})",
+            "min": "({a}).min({b})",
+            "max": "({a}).max({b})",
+            "mod": "({a} % {b})",
+            "cmp": "(if {a} > {b} { 1.0 } else if {a} < {b} { -1.0 } else { 0.0 })",
+            "and": "(((({a}) as i64) & (({b}) as i64)) as f64)",
+            "or": "(((({a}) as i64) | (({b}) as i64)) as f64)",
+            "xor": "(((({a}) as i64) ^ (({b}) as i64)) as f64)",
+            "shl": "(((({a}) as i64) << (({b}) as i64)) as f64)",
+            "shr": "(((({a}) as i64) >> (({b}) as i64)) as f64)",
+        },
         cmp_tmpl="(if {cond} { 1.0 } else { 0.0 })",
         main_tmpl=("fn main() {", '    println!("{}", {fn}(2.0, 3.0, 4.0));', "}"),
     )
