@@ -933,6 +933,16 @@ const _AGENT_JSON_SYSTEM_PROMPT = [
 ].join('\n');
 
 function translateToolCommand(cmd) {
+  const parseReadRange = (rawRange) => {
+    const [rawStart = '1', rawEnd = '50'] = String(rawRange || '1:50').split(':', 2);
+    const startNum = Number.parseInt(rawStart, 10);
+    const endNum = Number.parseInt(rawEnd, 10);
+    const start = Number.isInteger(startNum) && startNum > 0 ? startNum : 1;
+    const endCandidate = Number.isInteger(endNum) && endNum > 0 ? endNum : 50;
+    const end = endCandidate >= start ? endCandidate : start;
+    return { start, end };
+  };
+
   const trimmed = cmd.trim();
   if (!trimmed.startsWith(':')) return null;
   const space = trimmed.indexOf(' ');
@@ -945,8 +955,8 @@ function translateToolCommand(cmd) {
   if (tool === 'read') {
     const parts = args.split(/\s+/);
     const fp = (parts[0] || 'README.md').replace(/'/g, "'\\''");
-    const range = (parts[1] || '1:50').split(':');
-    return `sed -n '${range[0] || 1},${range[1] || 50}p' '${fp}'`;
+    const { start, end } = parseReadRange(parts[1]);
+    return `sed -n '${start},${end}p' '${fp}'`;
   }
   if (tool === 'test') {
     return `${args} && echo SCBE_TEST_PASS || echo SCBE_TEST_FAIL`;
