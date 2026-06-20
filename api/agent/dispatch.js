@@ -8,6 +8,13 @@ module.exports = async function handler(req, res) {
   if (req.method !== "POST") return sendJson(res, 405, { ok: false, error: "POST required" });
 
   const cfg = envConfig();
+  if (!cfg.dispatchSecret) {
+    return sendJson(res, 503, {
+      ok: false,
+      error: "AGENT_DISPATCH_SECRET is not configured",
+      required_env: ["AGENT_DISPATCH_SECRET"],
+    });
+  }
   if (!authOk(req, cfg)) {
     return sendJson(res, 401, { ok: false, error: "invalid dispatch secret" });
   }

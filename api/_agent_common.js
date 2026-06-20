@@ -55,7 +55,7 @@ function envConfig() {
 }
 
 function authOk(req, cfg) {
-  if (!cfg.dispatchSecret) return true;
+  if (!cfg.dispatchSecret) return false;
   const bearer = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
   const headerSecret = String(req.headers["x-agent-dispatch-secret"] || "");
   return bearer === cfg.dispatchSecret || headerSecret === cfg.dispatchSecret;
