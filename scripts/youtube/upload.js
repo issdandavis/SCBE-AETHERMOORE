@@ -2,7 +2,6 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { spawn } = require('child_process');
 
 function usage() {
   console.error(
@@ -36,6 +35,62 @@ for (let i = 0; i < argv.length; i++) {
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(path.resolve(filePath), 'utf8'));
+}
+
+function cleanText(value, maxLen) {
+  return String(value || '')
+    .replace(/[\u0000-\u001f\u007f]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, maxLen);
+}
+
+function cleanPrivacy(value) {
+  const privacy = cleanText(value || 'private', 32).toLowerCase();
+  if (!['private', 'unlisted', 'public'].includes(privacy)) {
+    throw new Error('invalid --privacy');
+  }
+  return privacy;
+}
+
+function cleanCategoryId(value) {
+  const categoryId = cleanText(value || '22', 8);
+  if (!/^\d{1,8}$/.test(categoryId)) {
+    throw new Error('invalid --category-id');
+  }
+  return categoryId;
+}
+
+function cleanTags(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map((tag) => cleanText(tag, 60)).filter(Boolean).slice(0, 30);
+}
+
+function safeReceiptPath(value) {
+  const base = process.cwd();
+  const resolved = path.resolve(value || path.join(base, 'youtube-upload-receipt.json'));
+  const relative = path.relative(base, resolved);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error('receipt output must stay inside the current workspace');
+  }
+  return resolved;
+}
+
+function uploadResourceSummary(resource) {
+  if (!resource || typeof resource !== 'object') return {};
+  return {
+    id: cleanText(resource.id || resource.videoId || '', 128) || null,
+    kind: cleanText(resource.kind || '', 128) || null,
+    etag: cleanText(resource.etag || '', 256) || null,
+  };
+}
+
+function processingSummary(processing) {
+  if (!processing || typeof processing !== 'object') return null;
+  return {
+    ok: Boolean(processing.ok),
+    status: cleanText(processing.details?.processingStatus || processing.details?.reason || '', 128) || null,
+  };
 }
 
 if (opts.manifest) {
@@ -77,7 +132,6 @@ if (!fs.existsSync(opts.file)) {
 const CLIENT_ID = process.env.YT_CLIENT_ID || process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.YT_CLIENT_SECRET || process.env.CLIENT_SECRET;
 const REFRESH_TOKEN = process.env.YT_REFRESH_TOKEN || process.env.REFRESH_TOKEN;
-const CHANNEL_ID = process.env.YT_CHANNEL_ID || process.env.CHANNEL_ID;
 
 if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH_TOKEN) {
   console.error('Missing YT_CLIENT_ID, YT_CLIENT_SECRET, or YT_REFRESH_TOKEN in env');
@@ -253,9 +307,9 @@ function computeSha256Stream(filePath) {
 (async () => {
   try {
     const filePath = opts.file;
-    const title = opts.title || path.basename(filePath);
-    const description = opts.description || '';
-    const privacyStatus = opts.privacy || 'private';
+    const title = cleanText(opts.title || path.basename(filePath), 100);
+    const description = cleanText(opts.description || '', 5000);
+    const privacyStatus = cleanPrivacy(opts.privacy);
     const mimeType = 'video/mp4';
     const stat = fs.statSync(filePath);
     const fileSize = stat.size;
@@ -271,10 +325,10 @@ function computeSha256Stream(filePath) {
 
     const metadata = {
       snippet: {
-        title: title,
-        description: description,
-        categoryId: opts.categoryId || '22',
-        ...(Array.isArray(opts.tags) && opts.tags.length ? { tags: opts.tags } : {}),
+        title,
+        description,
+        categoryId: cleanCategoryId(opts.categoryId),
+        ...(cleanTags(opts.tags).length ? { tags: cleanTags(opts.tags) } : {}),
       },
       status: {
         privacyStatus: privacyStatus,
@@ -306,12 +360,12 @@ function computeSha256Stream(filePath) {
       chunkSize,
       maxRetries,
       manifest: opts.manifest || null,
-      uploadResponse: resource,
-      processing,
+      uploadResponse: uploadResourceSummary(resource),
+      processing: processingSummary(processing),
       uploaded_at: new Date().toISOString(),
     };
 
-    const out = opts.receiptOut || path.join(process.cwd(), 'youtube-upload-receipt.json');
+    const out = safeReceiptPath(opts.receiptOut);
     fs.writeFileSync(out, JSON.stringify(receipt, null, 2) + '\n', 'utf8');
     console.log('Wrote receipt to', out);
     process.exit(0);
