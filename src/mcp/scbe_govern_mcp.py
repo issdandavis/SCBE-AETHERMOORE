@@ -76,15 +76,24 @@ _READONLY = {"readOnlyHint": True, "openWorldHint": False}
 
 
 def _load_executor() -> Optional[Callable[[str, Dict[str, Any]], Any]]:
-    """The executor seam: SCBE_DESKTOP_EXECUTOR='module:function' -> the hands behind the allowlist."""
+    """The executor seam: SCBE_DESKTOP_EXECUTOR='module:function' -> the hands behind the allowlist.
+
+    Unset -> safe stubs (intended). But a SET-but-broken spec FAILS LOUD -- a missing ':' or a target
+    that doesn't import or isn't callable must never silently fall back to stubs (the operator wanted a
+    real driver; quietly running no-ops would hide that the host control never happened)."""
     spec = os.environ.get("SCBE_DESKTOP_EXECUTOR", "").strip()
-    if not spec or ":" not in spec:
+    if not spec:
         return None
+    if ":" not in spec:
+        raise SystemExit("SCBE_DESKTOP_EXECUTOR=%r is malformed -- expected 'module:function'" % spec)
     mod_name, fn_name = spec.split(":", 1)
     try:
-        return getattr(importlib.import_module(mod_name), fn_name)
-    except Exception as exc:  # a misconfigured executor must fail loud, not silently fall back to stubs
+        fn = getattr(importlib.import_module(mod_name), fn_name)
+    except Exception as exc:
         raise SystemExit("SCBE_DESKTOP_EXECUTOR=%r could not load: %s: %s" % (spec, type(exc).__name__, exc))
+    if not callable(fn):
+        raise SystemExit("SCBE_DESKTOP_EXECUTOR=%r resolved to a non-callable %s" % (spec, type(fn).__name__))
+    return fn
 
 
 def _build_registry() -> "DA.ActionRegistry":
@@ -198,8 +207,10 @@ def action_channels(action: str) -> str:
 
 @mcp.tool(annotations=_READONLY)
 def audit_log() -> str:
-    """The sealed receipt transcript for this server process + a chain-integrity check -- your record
-    of every action proposed and how the gate decided, tamper-evident via the forward seal."""
+    """The sealed receipt transcript for this server process + a chain-integrity check. The seal is
+    FORWARD-CHAINED (reorder/insert/delete/rewrite break chain_ok), so it is tamper-evident -- but only
+    WITHIN this running process: the transcript is in memory and resets on restart. For a durable audit,
+    persist it (and the registry nonce) externally. Tamper-evidence, not proof of safety."""
     return _dump(_audit_log())
 
 

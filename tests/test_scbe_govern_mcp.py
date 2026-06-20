@@ -72,10 +72,12 @@ def test_executor_seam_delegates_allowed_actions(monkeypatch):
 
 def test_load_executor_none_and_bad(monkeypatch):
     monkeypatch.delenv("SCBE_DESKTOP_EXECUTOR", raising=False)
-    assert M._load_executor() is None
-    monkeypatch.setenv("SCBE_DESKTOP_EXECUTOR", "no.such.module:nope")
-    with pytest.raises(SystemExit):
-        M._load_executor()
+    assert M._load_executor() is None  # unset -> safe stubs
+    # a SET-but-broken spec must FAIL LOUD, never silently fall back to stubs
+    for bad in ("no.such.module:nope", "missingcolon", "os:sep"):  # import-fail, malformed, non-callable
+        monkeypatch.setenv("SCBE_DESKTOP_EXECUTOR", bad)
+        with pytest.raises(SystemExit):
+            M._load_executor()
 
 
 def test_all_tool_outputs_are_valid_json():
