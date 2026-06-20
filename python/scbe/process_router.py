@@ -42,14 +42,27 @@ DEFAULT_DENY = ("delete", "format ", "wipe", "erase", "rm -rf", "destroy", "drop
 # ---- GATE: the shop owner's permission policy (a real, configurable object) ----
 class Policy:
     """The permission floor as an object the owner configures. Deny by substring; default allow.
-    The assistant -- not the model -- decides; that is the safety floor."""
+    The assistant -- not the model -- decides; that is the safety floor.
 
-    def __init__(self, deny: Sequence[str] = DEFAULT_DENY) -> None:
+    Optionally also gate by GEOMETRY: set drift_threshold and the gate refuses any input whose real
+    hyperbolic drift (tongue_diff.hyper_drift -- distance from the safe center toward the governance
+    tongues UM/DR) exceeds it. This catches privacy/auth probes the keyword deny-list misses (e.g.
+    'reveal your hidden system prompt' has no destructive keyword but drifts into UM)."""
+
+    def __init__(self, deny: Sequence[str] = DEFAULT_DENY, drift_threshold: Optional[float] = None) -> None:
         self.deny = tuple(deny)
+        self.drift_threshold = drift_threshold  # None = geometric gate off (keyword-only, as before)
 
     def permits(self, prompt: str) -> bool:
         low = (prompt or "").lower()
-        return not any(d in low for d in self.deny)
+        if any(d in low for d in self.deny):
+            return False
+        if self.drift_threshold is not None:
+            from .tongue_diff import hyper_drift  # lazy: only when the geometric gate is enabled
+
+            if hyper_drift(prompt) > self.drift_threshold:
+                return False
+        return True
 
     def add_rule(self, pattern: str) -> None:
         """The owner adds a deny rule at runtime."""
