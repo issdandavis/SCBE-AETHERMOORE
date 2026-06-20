@@ -52,12 +52,12 @@
     "next": "re-run on a LARGER token/category space (10-20 mutually-exclusive moves) so pruning is real choice-narrowing, not 4-way elimination."
   },
   "process_router": {
-    "what": "the ASSISTANT -- correct process injection via context + permissions (python/scbe/process_router.py). Reads the job's CONTEXT and INJECTS the right process: destructive/unpermitted -> REFUSE (permission floor, decided by the assistant not the model), compute -> PAL (model writes code, executed), classify -> deterministic sieve tool, judgment -> direct model. The active answer to the FLAT board that hurt.",
-    "jobs": 11,
+    "what": "the ASSISTANT as a TERNARY pipeline so no stage is overloaded (Issac's suggestion): GATE (Policy -- the owner's permission rules, a configurable object) -> TRIAGE (the router-manager: rule-based reference OR the MODEL as a 'WiFi router' that only NAMES the route) -> EXECUTOR (inject the process: compute->PAL, classify->sieve, judge->direct). python/scbe/process_router.py, PRs #2489 + #2490.",
+    "jobs": 15,
     "results": {
-      "qwen2.5-coder:1.5b": {"raw_acc": 0.09, "raw_unsafe": 2, "router_acc": 0.73, "router_unsafe": 0},
-      "qwen2.5-coder:3b": {"raw_acc": 0.18, "raw_unsafe": 2, "router_acc": 1.0, "router_unsafe": 0}
+      "qwen2.5-coder:1.5b": {"raw_acc": 0.20, "raw_unsafe": 3, "assistant_rules_acc": 0.80, "assistant_model_router_acc": 0.67, "model_routing_acc": 0.75},
+      "qwen2.5-coder:3b": {"raw_acc": 0.40, "raw_unsafe": 2, "assistant_rules_acc": 1.0, "assistant_model_router_acc": 0.87, "model_routing_acc": 0.83}
     },
-    "finding": "The assistant is BOTH the capability lever AND the safety floor. RAW (model alone) fails almost everything (.09/.18 -- can't compute in its head) AND COMPLIES with destructive requests (unsafe=2, no gate). ROUTER lifts to .73/1.00 and refuses EVERY unpermitted job (unsafe=0) by construction. Cleanest validation of 'correct process injection via context+permissions': route each job to the process that fits + gate on permissions; the tool isn't a flat board, it has the right process built in. HONEST: not magic -- 1.5b router=.73 because its PAL-written code still fails the harder compute jobs (the model-dependent routes are capped by the model; the deterministic routes -- classify + permission-refuse -- are always right). Reference oracle = 11/11, 0 unsafe (harness sound), so the live gap is the model, not the router. PR #2487."
+    "finding": "The ternary split keeps each assistant small (gate/triage/execute), and the assistant (deterministic routing) strongly beats raw (.80/1.00 vs .20/.40) AND is safe (unsafe 0 vs 3/2 -- raw COMPLIES with destructive). WIFI-ROUTER THESIS (Issac: 'just train the model to be a router-manager, like a wifi router'): SUPPORTED with a caveat -- the model ROUTES better (.75/.83) than it DOES the tasks (raw .20/.40), so a weak model's effort is far better spent NAMING the backend than doing the work. But routing isn't perfect, so the MODEL-router assistant (.67/.87) trails the RULES-router (.80/1.00) by exactly the model's routing errors. NET: best system = deterministic routing where you can, model routing where you must, backends carry the capability; the model is a better manager than a doer. Reference oracle (rule-router) = 15/15, 0 unsafe (harness sound), so the live gap is the model. The earlier flat token-board HURT; this active, split, permission-gated router is the working form."
   }
 }
