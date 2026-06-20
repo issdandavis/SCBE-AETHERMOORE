@@ -10,6 +10,16 @@ def test_strip_to_code_handles_fences_and_bare():
     assert fg.strip_to_code("def g():\n    return 2") == "def g():\n    return 2"
 
 
+def test_strip_to_code_robust_cases():
+    # leading prose before bare code (the old version returned the prose too -> failed to parse)
+    assert fg.strip_to_code("Sure, here it is:\ndef g(x):\n    return x + 1") == "def g(x):\n    return x + 1"
+    # truncated / unclosed fence (a cut-off generation)
+    assert fg.strip_to_code("```python\ndef h():\n    return 2") == "def h():\n    return 2"
+    # two blocks -> take the largest (the real solution, not a one-liner example)
+    got = fg.strip_to_code("```\nx = 1\n``` then ```python\ndef big():\n    return 99\n```")
+    assert "def big" in got and "return 99" in got
+
+
 def test_generator_with_mocked_correct_model(monkeypatch):
     probs = load_fixture()
 
