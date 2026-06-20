@@ -43,4 +43,4 @@ python/scbe/tongue_lexicon.py :: semantic classifier on top of the tongue grid -
 
 python/helm/verified_trajectory.py :: rejection-sampling SFT engine -- run graded problems through a model, verify each by execution (hidden tests), keep ONLY verified trajectories as training data; the agent own verified solving becomes its training set
 python/helm/freeze_dataset.py :: content-hash a jsonl dataset to a sha256 identity and emit an immutable freeze manifest (stats, task range, timestamp) with a hash-named backup, so dataset drift before/after training is detectable
-python/helm/vtc_lift.py :: measure training lift -- run base vs trained code generator through the verify-repair loop on held-out problems (task_ids not in the corpus), report solved-delta, regressions, and recovery-rate delta
+python/helm/code_lift.py#recovery :: measure recovery lift -- run base vs trained through the write-run-repair loop on held-out problems, count solves that needed >1 attempt (recovered), report recovery-rate delta alongside net solve lift
