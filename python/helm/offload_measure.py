@@ -45,19 +45,30 @@ GROUND_TRUTH = {
 
 
 def model_proposer(base: str, key: str, model: str) -> Proposer:
-    """A proposer backed by a live model: hand it the rebuilt context, take back one legal label."""
+    """A proposer backed by a live model: hand it the rebuilt context, take back one legal label.
+
+    Mapping is exact-match-first, then substring with options sorted LONGEST-first -- so a correct
+    'prime-power' reply is NOT swallowed by the shorter 'prime' (a real bug a review caught: 'prime'
+    is a substring of 'prime-power', so naive first-match mislabelled every correct prime-power answer
+    as 'prime' and fabricated fake rescues). A transport failure is raised, never returned: a dead
+    endpoint must fail loud, not masquerade as a model ceiling that the oracle then 'rescues'.
+    """
 
     def p(ctx: str, options: List[str]) -> str:
         prompt = ctx + "\n\nReply with EXACTLY one of these labels and nothing else: " + ", ".join(options)
         try:
             reply = _chat([{"role": "user", "content": prompt}], base=base, key=key, model=model)
-        except Exception as exc:  # a dead endpoint must not masquerade as a model failure
-            return "(endpoint-error: %s)" % type(exc).__name__
-        reply = (reply or "").strip().splitlines()[0].strip().strip(".'\"` ")
-        for opt in options:  # tolerate "the answer is composite" -> composite
-            if opt.lower() in reply.lower():
+        except Exception as exc:  # infra failure, NOT a model failure -> fail loud (never count as a lift)
+            raise ConnectionError("LLM endpoint error: %s: %s" % (type(exc).__name__, exc)) from exc
+        text = ((reply or "").strip().splitlines() or [""])[0].strip().strip(".'\"` ")
+        low = text.lower()
+        for opt in options:  # an exact label wins outright
+            if low == opt.lower():
                 return opt
-        return reply  # let an off-menu answer count as a misstep (it is not in options)
+        for opt in sorted(options, key=len, reverse=True):  # longest-first: 'prime-power' beats 'prime'
+            if opt.lower() in low:
+                return opt
+        return text  # genuinely off-menu -> a legitimate misstep (not in options)
 
     return p
 
@@ -70,15 +81,17 @@ def measure(numbers: List[int], proposer: Proposer, ground_truth: dict = None, m
     rows = []
     base_stuck = rescued = wrong = unverified = 0
     for n in numbers:
-        off = run_stepwise(classify_number_task(n), proposer, max_rewinds=max_rewinds, allow_offload=False)
-        on = run_stepwise(classify_number_task(n), proposer, max_rewinds=max_rewinds, allow_offload=True)
+        # prune_wrong=False on BOTH arms: offload (the tool) is the only variable under test, so the
+        # restructure rung must stay off or it would complete steps and steal credit from the oracle.
+        off = run_stepwise(classify_number_task(n), proposer, max_rewinds, allow_offload=False, prune_wrong=False)
+        on = run_stepwise(classify_number_task(n), proposer, max_rewinds, allow_offload=True, prune_wrong=False)
         was_stuck = not off["completed"]
         got = on.get("answer")
         offloaded = bool(on.get("offloaded"))
         exp = truth.get(n)  # independent ground truth, or None if this number cannot be verified
         correct = (got == exp) if (on["completed"] and exp is not None) else None
         base_stuck += was_stuck
-        rescued += bool(was_stuck and on["completed"])
+        rescued += int(was_stuck and on["completed"] and offloaded)  # a rescue means the TOOL actually fired
         wrong += int(correct is False)
         unverified += int(on["completed"] and exp is None)
         rows.append(
@@ -106,7 +119,11 @@ def main(argv: object = None) -> int:
     model = os.environ.get("SCBE_LLM_MODEL", "qwen2.5-coder:1.5b")
     print("OFFLOAD_MEASURE  live model=%s  (baseline=no offload vs. auto-offload)\n" % model)
 
-    res = measure(DEFAULT_NUMBERS, model_proposer(base, key, model))
+    try:
+        res = measure(DEFAULT_NUMBERS, model_proposer(base, key, model))
+    except ConnectionError as exc:  # a dead endpoint must never read as a clean lift
+        print("  [endpoint down] %s\n  -> NO measurement produced (a transport failure is not a result)" % exc)
+        return 2
     print("  %-4s %-12s %-9s %-12s %-9s %s" % ("n", "truth", "stuck?", "answer", "offload?", "vs truth"))
     for r in res["rows"]:
         if r["correct"] is None:
