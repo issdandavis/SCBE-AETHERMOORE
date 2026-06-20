@@ -109,6 +109,9 @@ def climb_on_board(
             except Exception as e:  # a malformed board program is a fail, never a fake pass
                 note = "%s: %s" % (type(e).__name__, str(e)[:60])
                 break
+            if r.get("reference_error"):  # the reference itself could not run -> a loud, recorded fail
+                note = "reference_error: %s" % str(r["reference_error"])[:60]
+                break
             ref = r["reference"]
             if ref is not None and abs(float(ref) - float(expected)) <= 1e-9:
                 value_ok += 1

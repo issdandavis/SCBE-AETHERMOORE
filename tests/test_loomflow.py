@@ -65,3 +65,22 @@ def test_javascript_face_runs_the_loop_and_agrees():
 def test_rust_face_runs_the_loop_and_agrees():
     r = verify(parse(EXAMPLES["sum_1_to_5"]), faces=("rust",))
     assert r["results"]["rust"] == {"status": "AGREE", "value": 15.0}
+
+
+def test_reference_exception_surfaces_not_crashes():
+    # div-by-zero is a real divergence point: Python raises, JS/Rust give Infinity. The reference is now
+    # guarded like the faces, so a raising reference becomes reference_error -- not a verifier crash and
+    # not a silent "verified" -- and nothing is certified.
+    prog = parse("const a 1\nconst b 0\ndiv r a b\nprint r\nhalt")
+    with pytest.raises(ZeroDivisionError):
+        interpret(prog)
+    r = verify(prog, faces=("python",))
+    assert r["reference_error"] is not None and r["reference"] is None
+    assert r["verified"] == [] and r["results"]["python"]["status"] == "NO_REFERENCE"
+
+
+def test_normal_program_is_unaffected_by_the_guard():
+    # regression: guarding the reference must not change a well-defined program's result.
+    r = verify(parse("const a 6\nconst b 7\nmul r a b\nprint r\nhalt"), faces=("python",))
+    assert r["reference"] == 42.0 and r["reference_error"] is None
+    assert r["results"]["python"]["status"] == "AGREE"

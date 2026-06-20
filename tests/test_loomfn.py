@@ -15,7 +15,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from python.scbe.loomfn import EXAMPLES, emit, interpret, parse, verify  # noqa: E402
+from python.scbe.loomfn import EXAMPLES, _index, emit, interpret, parse, verify  # noqa: E402
 
 _HAVE_NODE = shutil.which("node") is not None
 _HAVE_RUST = shutil.which("rustc") is not None
@@ -165,3 +165,36 @@ def test_rust_face_agrees_on_arrays_and_recursion():
     for name in ("array_max", "factorial_recursive", "fib_recursive", "sum_array_fn"):
         r = verify(parse(EXAMPLES[name]), faces=("rust",))
         assert r["results"]["rust"] == {"status": "AGREE", "value": _EXPECT[name]}
+
+
+# --- index contract: the one place the faces genuinely disagree must never be silently "verified" ----
+
+
+def test_index_contract_helper_truncates_and_rejects_out_of_contract():
+    # in-bounds, non-negative: ok (fractional truncates toward zero, matching int())
+    assert _index(2.0, 5, "get") == 2
+    assert _index(2.9, 5, "get") == 2
+    assert _index(-0.5, 5, "get") == 0  # truncates to 0 -- still in contract (all three faces agree)
+    # truncates negative (Python wraps, JS undefined, Rust saturates to 0) and OOB -> reject
+    for bad in (-1.0, -1.5, 5.0, 100.0):
+        with pytest.raises(IndexError, match="out of contract"):
+            _index(bad, 5, "get")
+
+
+def test_out_of_bounds_index_is_a_reference_error_not_a_silent_pass():
+    # get index 5 from a length-1 array: Python raises, JS is undefined, Rust panics -- three behaviours.
+    # The reference enforces the contract, so verify reports reference_error and certifies NOTHING.
+    prog = parse("arr a / const v 3 / push a v / const i 5 / get r a i / print r / halt")
+    with pytest.raises(IndexError):
+        interpret(prog)
+    r = verify(prog, faces=("python",))
+    assert r["reference_error"] is not None and r["reference"] is None
+    assert r["verified"] == []  # an out-of-contract program is never "verified"
+
+
+def test_reference_exception_does_not_crash_the_verifier():
+    # the guard: a reference that raises must surface as reference_error, not propagate out of verify().
+    prog = parse("arr a / const i 0 / get r a i / print r / halt")  # get from an empty array
+    r = verify(prog, faces=("python",))
+    assert r["reference_error"] is not None
+    assert all(res["status"] != "AGREE" for res in r["results"].values())
