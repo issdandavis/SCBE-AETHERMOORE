@@ -83,6 +83,7 @@ def main(argv=None) -> int:
 
     total = len(records)
     indep_pass = mismatch = no_tool_turn = demo_leak = missing_problem = 0
+    repair = confirm = multi_call = 0
     task_ids = []
     tool_counter = Counter()
     mismatches = []
@@ -96,10 +97,25 @@ def main(argv=None) -> int:
         # structural checks
         if "triple(n)" in json.dumps(rec):
             demo_leak += 1
-        if not any(m.get("role") == "user" and str(m.get("content", "")).startswith("TOOL ") for m in msgs):
+        tool_turns = [
+            str(m.get("content", ""))
+            for m in msgs
+            if m.get("role") == "user" and str(m.get("content", "")).startswith("TOOL ")
+        ]
+        if not tool_turns:
             no_tool_turn += 1
         for t in meta.get("tools_used", []):
             tool_counter[t] += 1
+
+        # trajectory SHAPE -- not whether the answer is right (the re-verify covers that), but whether the
+        # trajectory teaches the deep loop. repair = a tool returned FAIL and the model still reached a
+        # verified answer (the 'becoming' loop); confirm = tool only rubber-stamped already-correct code.
+        if any("FAIL" in t for t in tool_turns):
+            repair += 1
+        elif tool_turns:
+            confirm += 1
+        if len(tool_turns) > 1:
+            multi_call += 1
 
         # INDEPENDENT held-back re-verification
         problem = by_id.get(tid)
@@ -128,6 +144,10 @@ def main(argv=None) -> int:
     print("  duplicate task_ids    : %d  %s" % (len(dupes), dupes[:20] if dupes else ""))
     print("  problems unresolved   : %d" % missing_problem)
     print("  tool-call distribution: %s" % dict(tool_counter))
+    print("  -- trajectory shape (teaching depth, not correctness) --")
+    print("  repair (FAIL->fix->pass): %d  [the 'becoming' loop]" % repair)
+    print("  confirm (tool PASS only): %d  [tool rubber-stamped correct code]" % confirm)
+    print("  multi-call (>1 tool)    : %d  [iterative tool use]" % multi_call)
     ok = mismatch == 0 and demo_leak == 0 and not dupes
     print("  VERDICT               : %s" % ("PASS -- numbers are real" if ok else "FAIL -- see above"))
     print("=" * 64)
